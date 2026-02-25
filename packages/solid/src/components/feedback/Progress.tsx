@@ -10,7 +10,7 @@ import {
 export type ProgressTheme = SemanticTheme;
 
 export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  /** 진행률 (0~1 범위, 0 = 0%, 1 = 100%) */
+  /** Progress value (range 0-1, 0 = 0%, 1 = 100%) */
   value: number;
   theme?: ProgressTheme;
   size?: ComponentSizeCompact;

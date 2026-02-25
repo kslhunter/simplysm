@@ -10,26 +10,26 @@ export default function TabPage() {
     <div class="space-y-12 p-6">
       {/* Basic usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <div class="space-y-4">
           <Tabs value={tab1()} onValueChange={setTab1}>
-            <Tabs.Tab value="general">일반</Tabs.Tab>
-            <Tabs.Tab value="advanced">고급</Tabs.Tab>
-            <Tabs.Tab value="about">정보</Tabs.Tab>
+            <Tabs.Tab value="general">General</Tabs.Tab>
+            <Tabs.Tab value="advanced">Advanced</Tabs.Tab>
+            <Tabs.Tab value="about">About</Tabs.Tab>
           </Tabs>
           <div class="rounded border border-base-200 p-4 dark:border-base-700">
             <Show when={tab1() === "general"}>
-              <p>일반 설정 내용입니다.</p>
+              <p>General settings content.</p>
             </Show>
             <Show when={tab1() === "advanced"}>
-              <p>고급 설정 내용입니다.</p>
+              <p>Advanced settings content.</p>
             </Show>
             <Show when={tab1() === "about"}>
-              <p>정보 페이지입니다.</p>
+              <p>About page.</p>
             </Show>
           </div>
           <p class="text-sm text-base-600 dark:text-base-400">
-            선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{tab1()}</code>
+            Selected: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{tab1()}</code>
           </p>
         </div>
       </section>
@@ -38,40 +38,40 @@ export default function TabPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Disabled</h2>
         <Tabs value="a">
-          <Tabs.Tab value="a">활성</Tabs.Tab>
+          <Tabs.Tab value="a">Active</Tabs.Tab>
           <Tabs.Tab value="b" disabled>
-            비활성
+            Disabled
           </Tabs.Tab>
-          <Tabs.Tab value="c">활성</Tabs.Tab>
+          <Tabs.Tab value="c">Active</Tabs.Tab>
         </Tabs>
       </section>
 
       {/* Size */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Size</h2>
         <div class="space-y-6">
           <div>
             <h3 class="mb-3 text-lg font-bold">Small</h3>
             <Tabs size="sm" value={tab2()} onValueChange={setTab2}>
-              <Tabs.Tab value="a">탭 A</Tabs.Tab>
-              <Tabs.Tab value="b">탭 B</Tabs.Tab>
-              <Tabs.Tab value="c">탭 C</Tabs.Tab>
+              <Tabs.Tab value="a">Tab A</Tabs.Tab>
+              <Tabs.Tab value="b">Tab B</Tabs.Tab>
+              <Tabs.Tab value="c">Tab C</Tabs.Tab>
             </Tabs>
           </div>
           <div>
             <h3 class="mb-3 text-lg font-bold">Default</h3>
             <Tabs value={tab2()} onValueChange={setTab2}>
-              <Tabs.Tab value="a">탭 A</Tabs.Tab>
-              <Tabs.Tab value="b">탭 B</Tabs.Tab>
-              <Tabs.Tab value="c">탭 C</Tabs.Tab>
+              <Tabs.Tab value="a">Tab A</Tabs.Tab>
+              <Tabs.Tab value="b">Tab B</Tabs.Tab>
+              <Tabs.Tab value="c">Tab C</Tabs.Tab>
             </Tabs>
           </div>
           <div>
             <h3 class="mb-3 text-lg font-bold">Large</h3>
             <Tabs size="lg" value={tab2()} onValueChange={setTab2}>
-              <Tabs.Tab value="a">탭 A</Tabs.Tab>
-              <Tabs.Tab value="b">탭 B</Tabs.Tab>
-              <Tabs.Tab value="c">탭 C</Tabs.Tab>
+              <Tabs.Tab value="a">Tab A</Tabs.Tab>
+              <Tabs.Tab value="b">Tab B</Tabs.Tab>
+              <Tabs.Tab value="c">Tab C</Tabs.Tab>
             </Tabs>
           </div>
         </div>

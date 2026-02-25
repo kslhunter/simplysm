@@ -728,17 +728,17 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   // #region Display
   const displayItems = flatItems;
 
-  // Is expand feature column "last fixed" (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
+  // Is expand feature column "last fixed" (no regular fixed columns and no select feature)
   const isExpandColLastFixed = () =>
     hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
-  // Is select feature column "last fixed" (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
+  // Is select feature column "last fixed" (no regular fixed columns and select is rightmost feature)
   const isSelectColLastFixed = () =>
     hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
   const isReorderColLastFixed = () => hasReorderFeature() && lastFixedIndex() < 0;
 
-  // Total header row count + 합계 행 수 (기능 컬럼의 rowspan에 사용)
+  // Total header row count + summary row count (used for feature column rowspan)
   const featureHeaderRowspan = createMemo(() => {
     const headerRows = headerTable().length;
     const summaryRow = hasSummary() ? 1 : 0;
@@ -824,7 +824,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
             <For each={headerTable()}>
               {(row, rowIndex) => (
                 <tr ref={(el: HTMLElement) => registerHeaderRow(rowIndex(), el)}>
-                  {/* 확장 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */}
+                  {/* Expand feature column header — show only in first row (cover all with rowspan) */}
                   <Show when={hasExpandFeature() && rowIndex() === 0}>
                     <th
                       class={twMerge(
@@ -856,7 +856,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       </div>
                     </th>
                   </Show>
-                  {/* 선택 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */}
+                  {/* Select feature column header — show only in first row (cover all with rowspan) */}
                   <Show when={hasSelectFeature() && rowIndex() === 0}>
                     <th
                       class={twMerge(
@@ -891,7 +891,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       </Show>
                     </th>
                   </Show>
-                  {/* 드래그 재정렬 기능 컬럼 헤더 — 첫 번째 행에만 표시 */}
+                  {/* Drag reorder feature column header — show only in first row */}
                   <Show when={hasReorderFeature() && rowIndex() === 0}>
                     <th
                       class={twMerge(
@@ -921,7 +921,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                               ? effectiveColumns()[c().colIndex!].key
                               : undefined;
 
-                          // 그룹 헤더의 고정 여부: colspan 범위 내 모든 컬럼이 fixed인지
+                          // Group header fixed status: all columns in colspan range are fixed
                           const isGroupFixed = (): boolean => {
                             if (c().isLastRow) return false;
                             const start = cellColIndex();
@@ -933,14 +933,14 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                             return true;
                           };
 
-                          // 셀의 고정 컬럼 여부 (마지막 행이면 colIndex 기반, 그 외 그룹 기반)
+                          // Cell fixed column status (based on colIndex if last row, group-based otherwise)
                           const isCellFixed = () =>
                             (c().isLastRow &&
                               c().colIndex != null &&
                               effectiveColumns()[c().colIndex!].fixed) ||
                             isGroupFixed();
 
-                          // 셀의 마지막 고정 여부
+                          // Cell's last fixed status
                           const isCellLastFixed = () => {
                             if (c().isLastRow && c().colIndex != null)
                               return isLastFixed(c().colIndex!);
@@ -951,17 +951,17 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                             return false;
                           };
 
-                          // 고정 셀의 left + top 인라인 style
+                          // Fixed cell left + top inline style
                           const cellStyle = (): string | undefined => {
                             const parts: string[] = [];
-                            // top: 모든 th에 적용 (헤더 상단 고정)
+                            // top: apply to all th (fix header to top)
                             const top = headerRowTops()[rowIndex()];
                             parts.push(`top: ${top}px`);
-                            // left: 고정 컬럼에만 적용
+                            // left: apply only to fixed columns
                             if (c().isLastRow && c().colIndex != null) {
                               const left = getFixedStyle(c().colIndex!);
                               if (left != null) parts.push(left);
-                              // max-width: 명시적 너비가 있으면 적용 (컬럼이 내용물보다 작아질 수 있도록)
+                              // max-width: apply if explicit width exists (allow column to shrink below content)
                               const col = effectiveColumns()[c().colIndex!];
                               if (col.width != null) parts.push(`max-width: ${col.width}`);
                             } else if (isGroupFixed()) {
@@ -1063,7 +1063,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
             </For>
             <Show when={hasSummary()}>
               <tr>
-                {/* 확장 기능 컬럼의 합계 셀은 rowspan으로 이미 덮여있으므로 제외 */}
+                {/* Expand feature column summary cell already covered by rowspan, skip */}
                 <For each={effectiveColumns()}>
                   {(col, colIndex) => {
                     const summaryStyle = (): string | undefined => {
@@ -1105,7 +1105,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                   }}
                   class={local.autoSelect === "click" ? "cursor-pointer" : undefined}
                 >
-                  {/* 확장 기능 컬럼 바디 셀 */}
+                  {/* Expand feature column body cell */}
                   <Show when={hasExpandFeature()}>
                     <td
                       class={twMerge(
@@ -1143,7 +1143,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       </div>
                     </td>
                   </Show>
-                  {/* 선택 기능 컬럼 바디 셀 */}
+                  {/* Select feature column body cell */}
                   <Show when={hasSelectFeature()}>
                     {(() => {
                       const selectable = () => getItemSelectable(flat.item);
@@ -1165,7 +1165,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                           <Show
                             when={local.selectMode === "multiple"}
                             fallback={
-                              /* single 모드 */
+                              /* single mode */
                               <Show when={selectable() === true}>
                                 <div
                                   class={featureCellBodyClickableClass}
@@ -1185,7 +1185,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                               </Show>
                             }
                           >
-                            {/* multi 모드 */}
+                            {/* multi mode */}
                             <div
                               class={featureCellBodyClickableClass}
                               onClick={(e) => {
@@ -1219,7 +1219,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       );
                     })()}
                   </Show>
-                  {/* 드래그 재정렬 기능 컬럼 바디 셀 */}
+                  {/* Drag reorder feature column body cell */}
                   <Show when={hasReorderFeature()}>
                     <td
                       class={twMerge(

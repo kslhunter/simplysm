@@ -5,12 +5,12 @@ function SampleDialogContent() {
   const dialog = useDialogInstance<string>();
   return (
     <div class="space-y-4 p-4">
-      <p class="text-sm">이것은 프로그래매틱으로 열린 다이얼로그입니다.</p>
+      <p class="text-sm">This dialog was opened programmatically.</p>
       <div class="flex gap-2">
-        <Button theme="primary" variant="solid" onClick={() => dialog?.close("확인")}>
-          확인
+        <Button theme="primary" variant="solid" onClick={() => dialog?.close("OK")}>
+          OK
         </Button>
-        <Button onClick={() => dialog?.close()}>취소</Button>
+        <Button onClick={() => dialog?.close()}>Cancel</Button>
       </div>
     </div>
   );
@@ -39,7 +39,7 @@ export default function ModalPage() {
 
   const handleProgrammaticOpen = async () => {
     const result = await dialog.show<string>(() => <SampleDialogContent />, {
-      header: "프로그래매틱 다이얼로그",
+      header: "Programmatic Dialog",
       closeOnBackdrop: true,
       closeOnEscape: true,
     });
@@ -50,19 +50,19 @@ export default function ModalPage() {
     <div class="space-y-8 p-6">
       {/* Basic dialog */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 다이얼로그</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Dialog</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          선언적으로 Dialog 컴포넌트를 사용합니다. 버튼을 클릭하여 다이얼로그를 열고 닫습니다.
+          Use the Dialog component declaratively. Click the button to open and close the dialog.
         </p>
         <Button theme="primary" variant="solid" onClick={() => setBasicOpen(true)}>
-          다이얼로그 열기
+          Open Dialog
         </Button>
         <Dialog open={basicOpen()} onOpenChange={setBasicOpen}>
-          <Dialog.Header>기본 다이얼로그</Dialog.Header>
+          <Dialog.Header>Basic Dialog</Dialog.Header>
           <div class="p-4">
-            <p class="text-sm">이것은 기본 다이얼로그입니다.</p>
+            <p class="text-sm">This is a basic dialog.</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-              헤더의 X 버튼으로 닫을 수 있습니다.
+              You can close it with the X button in the header.
             </p>
           </div>
         </Dialog>
@@ -71,19 +71,18 @@ export default function ModalPage() {
       {/* Programmatic dialog */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          프로그래매틱 다이얼로그
+          Programmatic Dialog
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          useDialog().show()를 사용하여 코드에서 다이얼로그를 열고, close() 호출 시 결과값을
-          Promise로 받습니다.
+          Use useDialog().show() to open dialogs from code, and receive the result as a Promise when close() is called.
         </p>
         <div class="flex items-center gap-4">
           <Button theme="primary" variant="solid" onClick={handleProgrammaticOpen}>
-            프로그래매틱 다이얼로그 열기
+            Open Programmatic Dialog
           </Button>
           {programmaticResult() !== undefined && (
             <span class="text-sm text-base-600 dark:text-base-400">
-              결과: {programmaticResult()}
+              Result: {programmaticResult()}
             </span>
           )}
         </div>
@@ -91,13 +90,12 @@ export default function ModalPage() {
 
       {/* Close options */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">닫기 옵션</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Close Options</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          closeOnBackdrop과 closeOnEscape를 활성화하여, 백드롭 클릭이나 Escape 키로 다이얼로그를
-          닫을 수 있습니다.
+          Enable closeOnBackdrop and closeOnEscape to allow closing the dialog by clicking the backdrop or pressing Escape.
         </p>
         <Button theme="info" variant="solid" onClick={() => setCloseOptionOpen(true)}>
-          닫기 옵션 다이얼로그 열기
+          Open Close Options Dialog
         </Button>
         <Dialog
           open={closeOptionOpen()}
@@ -105,29 +103,28 @@ export default function ModalPage() {
           closeOnBackdrop
           closeOnEscape
         >
-          <Dialog.Header>닫기 옵션</Dialog.Header>
+          <Dialog.Header>Close Options</Dialog.Header>
           <div class="p-4">
-            <p class="text-sm">백드롭을 클릭하거나 Escape 키를 눌러 닫을 수 있습니다.</p>
+            <p class="text-sm">You can close this dialog by clicking the backdrop or pressing Escape.</p>
           </div>
         </Dialog>
       </section>
 
       {/* Float dialog */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Float 다이얼로그</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Float Dialog</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          float=true로 백드롭 없이 플로팅 형태의 다이얼로그를 표시합니다. 뒤의 컨텐츠와 상호작용이
-          가능합니다.
+          Set float=true to display a floating dialog without a backdrop. You can interact with the content behind it.
         </p>
         <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
-          {floatOpen() ? "Float 다이얼로그 닫기" : "Float 다이얼로그 열기"}
+          {floatOpen() ? "Close Float Dialog" : "Open Float Dialog"}
         </Button>
         <Dialog open={floatOpen()} onOpenChange={setFloatOpen} float width={320}>
-          <Dialog.Header>Float 다이얼로그</Dialog.Header>
+          <Dialog.Header>Float Dialog</Dialog.Header>
           <div class="p-4">
-            <p class="text-sm">백드롭이 없는 플로팅 다이얼로그입니다.</p>
+            <p class="text-sm">This is a floating dialog without a backdrop.</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-              뒤의 페이지와 상호작용할 수 있습니다.
+              You can interact with the page behind it.
             </p>
           </div>
         </Dialog>
@@ -135,19 +132,19 @@ export default function ModalPage() {
 
       {/* Fill dialog */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Fill 다이얼로그</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Fill Dialog</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          fill=true로 전체 화면을 차지하는 다이얼로그를 표시합니다.
+          Set fill=true to display a dialog that fills the entire screen.
         </p>
         <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
-          Fill 다이얼로그 열기
+          Open Fill Dialog
         </Button>
         <Dialog open={fillOpen()} onOpenChange={setFillOpen} fill closeOnEscape>
-          <Dialog.Header>Fill 다이얼로그</Dialog.Header>
+          <Dialog.Header>Fill Dialog</Dialog.Header>
           <div class="flex flex-1 flex-col items-center justify-center p-4">
-            <p class="text-lg font-bold">전체 화면 다이얼로그</p>
+            <p class="text-lg font-bold">Full Screen Dialog</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-              Escape 키 또는 X 버튼으로 닫을 수 있습니다.
+              You can close it with the Escape key or X button.
             </p>
           </div>
         </Dialog>

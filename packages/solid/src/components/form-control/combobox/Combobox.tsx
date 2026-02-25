@@ -15,7 +15,7 @@ import { Invalid } from "../Invalid";
 
 void ripple;
 
-// Combobox 전용 스타일
+// Combobox-specific styles
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden");
 const inputClass = clsx(
   "min-w-0 flex-1",
@@ -26,69 +26,69 @@ const inputClass = clsx(
 const noResultsClass = clsx("px-3 py-2", textMuted);
 
 /**
- * 아이템 템플릿 서브 컴포넌트
+ * Item template sub-component
  */
 const ComboboxItemTemplate = <TArgs extends unknown[]>(props: {
   children: (...args: TArgs) => JSX.Element;
 }) => {
   const ctx = useComboboxContext();
-  // eslint-disable-next-line solid/reactivity -- 렌더 함수를 signal에 저장, JSX tracked scope에서 호출됨
+  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
   ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
 };
 
-// Props 정의
+// Props definition
 export interface ComboboxProps<TValue = unknown> {
-  /** 현재 선택된 값 */
+  /** Currently selected value */
   value?: TValue;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: TValue) => void;
 
-  /** 아이템 로드 함수 (필수) */
+  /** Item load function (required) */
   loadItems: (query: string) => TValue[] | Promise<TValue[]>;
 
-  /** 디바운스 딜레이 (기본값: 300ms) */
+  /** Debounce delay (default: 300ms) */
   debounceMs?: number;
 
-  /** 커스텀 값 허용 */
+  /** Allow custom values */
   allowCustomValue?: boolean;
 
-  /** 커스텀 값 파싱 함수 */
+  /** Custom value parsing function */
   parseCustomValue?: (text: string) => TValue;
 
-  /** 선택된 값을 렌더링하는 함수 (필수) */
+  /** Function to render selected value (required) */
   renderValue: (value: TValue) => JSX.Element;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: TValue | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 
-  /** 플레이스홀더 */
+  /** Placeholder text */
   placeholder?: string;
 
-  /** 트리거 크기 */
+  /** Trigger size */
   size?: ComponentSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** children (Combobox.Item 또는 Combobox.ItemTemplate) */
+  /** Children (Combobox.Item or Combobox.ItemTemplate) */
   children?: JSX.Element;
 }
 
@@ -99,13 +99,13 @@ interface ComboboxComponent {
 }
 
 /**
- * Combobox 컴포넌트
+ * Combobox component
  *
- * 비동기 검색과 아이템 선택을 지원하는 자동완성 컴포넌트입니다.
+ * An autocomplete component supporting async search and item selection.
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <Combobox
  *   loadItems={async (query) => {
  *     const response = await fetch(`/api/search?q=${query}`);
@@ -120,7 +120,7 @@ interface ComboboxComponent {
  *   </Combobox.ItemTemplate>
  * </Combobox>
  *
- * // children 방식
+ * // Children approach
  * <Combobox loadItems={loadItems} renderValue={(v) => v.name}>
  *   <For each={items()}>
  *     {(item) => <Combobox.Item value={item}>{item.name}</Combobox.Item>}
@@ -149,52 +149,52 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     "touchMode",
   ]);
 
-  // 상태
+  // State
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   const [items, setItems] = createSignal<T[]>([]);
   const [busyCount, setBusyCount] = createSignal(0);
 
-  // 선택된 값 관리 (controlled/uncontrolled 패턴)
+  // Selected value management (controlled/uncontrolled pattern)
   const [getValue, setInternalValue] = createControllableSignal<T | undefined>({
     value: () => local.value,
     onChange: () => local.onValueChange,
   } as Parameters<typeof createControllableSignal<T | undefined>>[0]);
 
-  // 디바운스 큐 (마운트 시 한 번만 생성, debounceMs는 초기값만 사용)
-  // eslint-disable-next-line solid/reactivity -- 디바운스 큐는 마운트 시점의 debounceMs로 한 번만 생성
+  // Debounce queue (created once on mount, debounceMs only used as initial value)
+  // eslint-disable-next-line solid/reactivity -- Debounce queue created once with debounceMs from mount time
   const debounceQueue = new DebounceQueue(local.debounceMs ?? 300);
 
   onCleanup(() => {
     debounceQueue.dispose();
   });
 
-  // 값이 선택되어 있는지 확인
+  // Check if value is selected
   const isSelected = (value: T): boolean => {
     const current = getValue();
     return current === value;
   };
 
-  // 값 선택
+  // Select value
   const selectValue = (value: T) => {
     setInternalValue(value);
     setQuery("");
     setOpen(false);
   };
 
-  // 드롭다운 닫기
+  // Close dropdown
   const closeDropdown = () => {
     setOpen(false);
   };
 
-  // 아이템 템플릿 signal
+  // Item template signal
   const [itemTemplate, _setItemTemplate] = createSignal<
     ((...args: unknown[]) => JSX.Element) | undefined
   >();
   const setItemTemplate = (fn: ((...args: unknown[]) => JSX.Element) | undefined) =>
     _setItemTemplate(() => fn);
 
-  // Context 값
+  // Context value
   const contextValue: ComboboxContextValue<T> = {
     isSelected,
     selectValue,
@@ -202,9 +202,9 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     setItemTemplate,
   };
 
-  // 검색 실행
+  // Perform search
   const performSearch = (searchQuery: string) => {
-    // loadItems 함수 참조를 캡처하여 사용
+    // Capture loadItems function reference for use
     const loadItemsFn = local.loadItems;
     debounceQueue.run(async () => {
       setBusyCount((c) => c + 1);
@@ -217,7 +217,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     });
   };
 
-  // 입력 핸들러
+  // Input handler
   const handleInput = (e: InputEvent) => {
     const target = e.currentTarget as HTMLInputElement;
     const newQuery = target.value;
@@ -229,7 +229,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     }
   };
 
-  // Dropdown 열림/닫힘 변경 핸들러
+  // Dropdown open/close change handler
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
@@ -237,7 +237,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     }
   };
 
-  // 트리거 키보드 처리
+  // Trigger keyboard handling
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
     if (local.disabled) return;
 
@@ -255,15 +255,15 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     }
   };
 
-  // 유효성 검사 메시지
+  // Validation message
   const errorMsg = createMemo(() => {
     const v = getValue();
     if (local.required && (v === undefined || v === null || v === ""))
-      return "필수 입력 항목입니다";
+      return "This field is required";
     return local.validate?.(v);
   });
 
-  // 트리거 클래스
+  // Trigger class
   const getTriggerClassName = () =>
     getTriggerClass({
       size: local.size,
@@ -272,19 +272,19 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       class: clsx(!local.inset && "bg-primary-50 dark:bg-primary-950/30", local.class),
     });
 
-  // 참고: 초기 검색은 handleTriggerClick에서 수행됨
-  // 입력 시에는 handleInput에서 performSearch가 호출됨
+  // Note: Initial search performed in handleTriggerClick
+  // Input triggers performSearch in handleInput
 
-  // 선택된 값 또는 입력 표시
+  // Render selected value or input
   const renderDisplayContent = (): JSX.Element => {
     const currentValue = getValue();
 
-    // 드롭다운이 열려있거나 값이 없으면 입력 필드 표시
+    // Show input field if dropdown is open or no value selected
     if (open() || currentValue === undefined) {
       return (
         <input
           ref={(el) => {
-            // 드롭다운이 열릴 때 input에 포커스
+            // Focus input when dropdown opens
             if (open()) {
               requestAnimationFrame(() => el.focus());
             }
@@ -300,25 +300,25 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       );
     }
 
-    // 값이 있고 드롭다운이 닫혀있으면 값 표시
+    // Show value if selected and dropdown is closed
     return <div class="truncate">{local.renderValue(currentValue)}</div>;
   };
 
-  // 아이템 렌더링
+  // Render items
   const renderItems = (): JSX.Element => {
     const template = itemTemplate() as ((item: T, index: number) => JSX.Element) | undefined;
 
-    // 로딩 중
+    // Loading
     if (busyCount() > 0) {
-      return <div class={noResultsClass}>검색 중...</div>;
+      return <div class={noResultsClass}>Searching...</div>;
     }
 
-    // items가 비어있는 경우
+    // Items empty
     if (items().length === 0) {
-      return <div class={noResultsClass}>검색 결과가 없습니다</div>;
+      return <div class={noResultsClass}>No results found</div>;
     }
 
-    // ItemTemplate 방식
+    // ItemTemplate approach
     if (template) {
       return (
         <For each={items()}>
@@ -327,7 +327,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       );
     }
 
-    // 기본 렌더링
+    // Default rendering
     return (
       <For each={items()}>{(item) => <ComboboxItem value={item}>{String(item)}</ComboboxItem>}</For>
     );

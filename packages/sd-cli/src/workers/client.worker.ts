@@ -13,7 +13,7 @@ import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils"
 //#region Types
 
 /**
- * Client 빌드 정보 (일회성 빌드용)
+ * Client build information (for one-time build)
  */
 export interface ClientBuildInfo {
   name: string;
@@ -23,7 +23,7 @@ export interface ClientBuildInfo {
 }
 
 /**
- * Client 빌드 결과
+ * Client build result
  */
 export interface ClientBuildResult {
   success: boolean;
@@ -31,19 +31,19 @@ export interface ClientBuildResult {
 }
 
 /**
- * Client Watch 정보
+ * Client watch information
  */
 export interface ClientWatchInfo {
   name: string;
   config: SdClientPackageConfig;
   cwd: string;
   pkgDir: string;
-  /** sd.config.ts의 replaceDeps 설정 */
+  /** replaceDeps configuration from sd.config.ts */
   replaceDeps?: Record<string, string>;
 }
 
 /**
- * 빌드 이벤트
+ * Build event
  */
 export interface ClientBuildEvent {
   success: boolean;
@@ -51,21 +51,21 @@ export interface ClientBuildEvent {
 }
 
 /**
- * 서버 준비 이벤트
+ * Server ready event
  */
 export interface ClientServerReadyEvent {
   port: number;
 }
 
 /**
- * 에러 이벤트
+ * Error event
  */
 export interface ClientErrorEvent {
   message: string;
 }
 
 /**
- * Worker 이벤트 타입
+ * Worker event types
  */
 export interface ClientWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
@@ -77,19 +77,19 @@ export interface ClientWorkerEvents extends Record<string, unknown> {
 
 //#endregion
 
-//#region 리소스 관리
+//#region Resource Management
 
 const logger = consola.withTag("sd:cli:client:worker");
 
-/** Vite dev server (정리 대상) */
+/** Vite dev server (to be cleaned up) */
 let viteServer: ViteDevServer | undefined;
 
 /**
- * 리소스 정리
+ * Clean up resources
  */
 async function cleanup(): Promise<void> {
-  // 전역 변수를 임시 변수로 캡처 후 초기화
-  // (Promise.all 대기 중 다른 호출에서 전역 변수를 수정할 수 있으므로)
+  // Capture global variable to temporary variable and initialize
+  // (other calls can modify global variable while Promise.all is waiting)
   const serverToClose = viteServer;
   viteServer = undefined;
 
@@ -98,9 +98,9 @@ async function cleanup(): Promise<void> {
   }
 }
 
-// 프로세스 종료 전 리소스 정리 (SIGTERM/SIGINT)
-// 주의: worker.terminate()는 이 핸들러들을 호출하지 않고 즉시 종료됨.
-// 그러나 watch 모드에서 정상 종료는 메인 프로세스의 SIGINT/SIGTERM을 통해 이루어지므로 문제없음.
+// Clean up resources before process termination (SIGTERM/SIGINT)
+// Note: worker.terminate() terminates immediately without calling these handlers.
+// However, normal shutdown in watch mode is done through SIGINT/SIGTERM of main process, so no issues.
 registerCleanupHandlers(cleanup, logger);
 
 //#endregion
@@ -108,22 +108,22 @@ registerCleanupHandlers(cleanup, logger);
 //#region Worker
 
 /**
- * 일회성 빌드
+ * One-time build
  */
 async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   try {
-    // tsconfig 파싱
+    // Parse tsconfig
     const parsedConfig = parseRootTsconfig(info.cwd);
     const tsconfigPath = path.join(info.cwd, "tsconfig.json");
 
-    // browser 타겟용 compilerOptions 생성
+    // Create compilerOptions for browser target
     const compilerOptions = await getCompilerOptionsForPackage(
       parsedConfig.options,
       "browser",
       info.pkgDir,
     );
 
-    // Vite 설정 생성 및 빌드
+    // Create Vite configuration and build
     const viteConfig = createViteConfig({
       pkgDir: info.pkgDir,
       name: info.name,
@@ -151,33 +151,33 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
 const guardStartWatch = createOnceGuard("startWatch");
 
 /**
- * watch 시작 (Vite dev server)
- * @remarks 이 함수는 Worker당 한 번만 호출되어야 합니다.
- * @throws 이미 watch가 시작된 경우
+ * Start watch (Vite dev server)
+ * @remarks This function should be called only once per worker.
+ * @throws If watch is already started
  */
 async function startWatch(info: ClientWatchInfo): Promise<void> {
   guardStartWatch();
 
   try {
-    // tsconfig 파싱
+    // Parse tsconfig
     const parsedConfig = parseRootTsconfig(info.cwd);
     const tsconfigPath = path.join(info.cwd, "tsconfig.json");
 
-    // browser 타겟용 compilerOptions 생성
+    // Create compilerOptions for browser target
     const compilerOptions = await getCompilerOptionsForPackage(
       parsedConfig.options,
       "browser",
       info.pkgDir,
     );
 
-    // server가 0이면 자동 포트 할당 (서버 연결 클라이언트)
-    // server가 숫자면 해당 포트로 고정 (standalone 클라이언트)
+    // If server is 0, auto-assign port (server-connected client)
+    // If server is a number, use that port (standalone client)
     const serverPort = typeof info.config.server === "number" ? info.config.server : 0;
 
-    // 의존성 기반 replaceDeps 수집
+    // Collect replaceDeps based on dependencies
     const { replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
 
-    // Vite 설정 생성
+    // Create Vite configuration
     const viteConfig = createViteConfig({
       pkgDir: info.pkgDir,
       name: info.name,
@@ -190,7 +190,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
       onScopeRebuild: () => sender.send("scopeRebuild", {}),
     });
 
-    // Vite dev server 시작
+    // Start Vite dev server
     viteServer = await createServer(viteConfig);
     await viteServer.listen();
 
@@ -199,12 +199,12 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     fs.mkdirSync(path.dirname(confDistPath), { recursive: true });
     fs.writeFileSync(confDistPath, JSON.stringify(info.config.configs ?? {}, undefined, 2));
 
-    // 실제 할당된 포트 반환 (config.server.port는 설정값이므로 httpServer에서 실제 포트를 가져옴)
+    // Get actual assigned port (config.server.port is the configured value, so get actual port from httpServer)
     const address = viteServer.httpServer?.address();
     const actualPort = typeof address === "object" && address != null ? address.port : undefined;
 
     if (actualPort == null) {
-      sender.send("error", { message: "Vite dev server port를 확인할 수 없습니다." });
+      sender.send("error", { message: "Unable to determine Vite dev server port." });
       return;
     }
 
@@ -217,8 +217,8 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
 }
 
 /**
- * watch 중지
- * @remarks Vite dev server를 정리합니다.
+ * Stop watch
+ * @remarks Clean up Vite dev server.
  */
 async function stopWatch(): Promise<void> {
   await cleanup();

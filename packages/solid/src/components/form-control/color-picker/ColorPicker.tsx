@@ -5,13 +5,13 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { Invalid } from "../Invalid";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 
-// 기본 스타일
+// Base style
 const baseClass = clsx(
   "size-field",
   "rounded",
   "border border-black/10 dark:border-white/10",
   "cursor-pointer",
-  // color input 기본 스타일 제거
+  // Remove color input default styles
   "[&::-webkit-color-swatch-wrapper]:p-0",
   "[&::-webkit-color-swatch]:border-none",
   "[&::-webkit-color-swatch]:rounded-none",
@@ -19,7 +19,7 @@ const baseClass = clsx(
   "[&::-moz-color-swatch]:rounded-none",
 );
 
-// 사이즈별 스타일
+// Size-specific styles
 const sizeClasses: Record<ComponentSize, string> = {
   xs: "size-field-xs",
   sm: "size-field-sm",
@@ -27,7 +27,7 @@ const sizeClasses: Record<ComponentSize, string> = {
   xl: "size-field-xl",
 };
 
-// disabled 스타일 - 대각선 줄무늬로 표시
+// Disabled style - shown as diagonal stripes
 // eslint-disable-next-line tailwindcss/enforces-shorthand
 const disabledClass = clsx(
   "cursor-default",
@@ -37,42 +37,42 @@ const disabledClass = clsx(
 );
 
 export interface ColorPickerProps {
-  /** 색상 값 (#RRGGBB 형식) */
+  /** Color value (#RRGGBB format) */
   value?: string;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: string | undefined) => void;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: ComponentSize;
 
-  /** inset 모드 (DataSheet 셀 내부 등) */
+  /** inset mode (e.g., inside DataSheet cell) */
   inset?: boolean;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: string | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
 /**
- * ColorPicker 컴포넌트
+ * ColorPicker component
  *
  * @example
  * ```tsx
@@ -113,7 +113,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && (v === undefined || v === "")) return "필수 입력 항목입니다";
+    if (local.required && (v === undefined || v === "")) return "This field is required";
     return local.validate?.(v);
   });
 

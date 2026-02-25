@@ -28,7 +28,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
 
     await expect(
       runServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] }),
-    ).rejects.toThrow("서비스[Unknown]를 찾을 수 없습니다.");
+    ).rejects.toThrow("Service [Unknown] not found.");
   });
 
   it("throws when method not found", async () => {
@@ -39,7 +39,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
 
     await expect(
       runServiceMethod(server, { serviceName: "Test", methodName: "nonexistent", params: [] }),
-    ).rejects.toThrow("메소드[Test.nonexistent]를 찾을 수 없습니다.");
+    ).rejects.toThrow("Method [Test.nonexistent] not found.");
   });
 
   it("blocks unauthenticated access to auth-required service", async () => {
@@ -53,7 +53,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
 
     await expect(
       runServiceMethod(server, { serviceName: "Protected", methodName: "secret", params: [] }),
-    ).rejects.toThrow("로그인이 필요합니다.");
+    ).rejects.toThrow("Login is required.");
   });
 
   it("blocks unauthorized role access", async () => {
@@ -74,7 +74,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
         params: [],
         http: { clientName: "test", authTokenPayload: { roles: ["user"], data: {} } as any },
       }),
-    ).rejects.toThrow("권한이 부족합니다.");
+    ).rejects.toThrow("Insufficient permissions.");
   });
 
   it("allows access with correct role", async () => {

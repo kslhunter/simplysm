@@ -9,54 +9,54 @@ import { Invalid } from "../../form-control/Invalid";
 type DateTimePickerUnit = "minute" | "second";
 
 export interface DateTimePickerProps {
-  /** 입력 값 */
+  /** Input value */
   value?: DateTime;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: DateTime | undefined) => void;
 
-  /** 날짜시간 단위 */
+  /** DateTime unit */
   unit?: DateTimePickerUnit;
 
-  /** 최소 날짜시간 */
+  /** Minimum datetime */
   min?: DateTime;
 
-  /** 최대 날짜시간 */
+  /** Maximum datetime */
   max?: DateTime;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: DateTime | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 }
 
 /**
- * DateTime 값을 타입에 맞는 문자열로 변환
+ * Convert DateTime value to format string matching type
  */
 function formatDateTimeValue(
   value: DateTime | undefined,
@@ -73,14 +73,14 @@ function formatDateTimeValue(
 }
 
 /**
- * 입력 문자열을 DateTime으로 변환
+ * Convert input string to DateTime
  */
 function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined {
   if (str === "") return undefined;
 
   switch (unit) {
     case "minute": {
-      // yyyy-MM-ddTHH:mm 형식
+      // yyyy-MM-ddTHH:mm format
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new DateTime(
@@ -93,7 +93,7 @@ function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined
       );
     }
     case "second": {
-      // yyyy-MM-ddTHH:mm:ss 형식
+      // yyyy-MM-ddTHH:mm:ss format
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new DateTime(
@@ -109,20 +109,20 @@ function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined
 }
 
 /**
- * DateTimePicker 컴포넌트
+ * DateTimePicker component
  *
- * 날짜시간 입력 필드. minute, second 단위를 지원한다.
- * 내부적으로 string ↔ DateTime 타입 변환을 처리한다.
+ * DateTime input field supporting minute and second units.
+ * Handles string ↔ DateTime type conversion internally.
  *
  * @example
  * ```tsx
- * // 날짜시간 입력 (분 단위)
+ * // DateTime input (minute unit)
  * <DateTimePicker unit="minute" value={dateTime()} onValueChange={setDateTime} />
  *
- * // 날짜시간 입력 (초 단위)
+ * // DateTime input (second unit)
  * <DateTimePicker unit="second" value={dateTime()} onValueChange={setDateTime} />
  *
- * // min/max 제한
+ * // With min/max constraints
  * <DateTimePicker
  *   unit="minute"
  *   value={dateTime()}
@@ -150,26 +150,26 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
     "touchMode",
   ]);
 
-  // 기본 단위는 minute
+  // Default unit is minute
   const fieldType = () => local.unit ?? "minute";
 
-  // controlled/uncontrolled 패턴 지원
+  // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
 
-  // 표시 값
+  // Display value
   const displayValue = () => formatDateTimeValue(value(), fieldType()) ?? "";
 
-  // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
+  // Change handler (on blur or Enter)
   const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     const newValue = e.currentTarget.value;
     const parsed = parseValue(newValue, fieldType());
     setValue(parsed);
   };
 
-  // wrapper 클래스 (includeCustomClass: inset 모드에서는 커스텀 class를 외부 div에 적용)
+  // Wrapper class (includeCustomClass: whether to apply custom class to outer div in inset mode)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
       size: local.size,
@@ -179,21 +179,21 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
       extra: "min-w-44",
     });
 
-  // 편집 가능 여부
+  // Editable check
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // step 속성 (second일 때 1)
+  // Step attribute (1 when second)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (local.required && v === undefined) return "This field is required";
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
-        return `${local.min.toFormatString("yyyy-MM-dd HH:mm:ss")}보다 크거나 같아야 합니다`;
+        return `Must be greater than or equal to ${local.min.toFormatString("yyyy-MM-dd HH:mm:ss")}`;
       if (local.max !== undefined && v.tick > local.max.tick)
-        return `${local.max.toFormatString("yyyy-MM-dd HH:mm:ss")}보다 작거나 같아야 합니다`;
+        return `Must be less than or equal to ${local.max.toFormatString("yyyy-MM-dd HH:mm:ss")}`;
     }
     return local.validate?.(v);
   });
@@ -207,7 +207,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
       <Show
         when={local.inset}
         fallback={
-          // standalone 모드
+          // standalone mode
           <Show
             when={isEditable()}
             fallback={
@@ -238,7 +238,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
           </Show>
         }
       >
-        {/* inset 모드: dual-element overlay 패턴 */}
+        {/* inset mode: dual-element overlay pattern */}
         <div
           {...rest}
           data-datetime-field

@@ -1,8 +1,8 @@
 # Codebase English Conversion — Package Checklist
 
 **Status:** 🚀 YOLO Mode - Rapid Progress
-**Last Updated:** 2026-02-25
-**Progress:** ~70% complete
+**Last Updated:** 2026-02-25 (19:45)
+**Progress:** ~75% complete
 
 ---
 
@@ -12,13 +12,13 @@
 |---------|:-------:|:-------:|:-------:|:-------:|:-------:|
 | **core-browser** | ✅ | ✅ | ⏳ | ✅ | — |
 | **core-node** | ✅ | ✅ | ⏳ | ✅ | — |
-| **core-common** | ✅ | ⏳ | ⏳ | ✅ | ❌ |
+| **core-common** | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | **service-common** | ✅ | ✅ | ⏳ | ✅ | — |
 | **service-client** | ✅ | ✅ | ⏳ | ✅ | — |
 | **service-server** | ✅ | ✅ | ⏳ | ✅ | — |
 | **orm-common** | ✅ | ⏳ | ⏳ | ✅ | — |
 | **orm-node** | ✅ | ⏳ | ⏳ | ✅ | — |
-| **solid** | ⏳ | ⏳ | ⏳ | ✅ | ❌ |
+| **solid** | ⏳ | ⏳ | ⏳ | ✅ | — |
 | **solid-demo** | ✅ | ⏳ | ⏳ | ✅ | — |
 | **solid-demo-server** | ✅ | — | — | ✅ | — |
 | **excel** | ✅ | ✅ | ✅ | ✅ | — |
@@ -111,9 +111,9 @@
 - packages/sd-cli/package.json
 - packages/sd-claude/package.json
 
-### Phase 5: Function Naming (TODO ❌)
-- [ ] Rename `strGetSuffix` → `koreanGetSuffix` in core-common
-- [ ] Korean locale data decision for date-format.ts and Calendar.tsx
+### Phase 5: Function Naming (COMPLETE ✅)
+- ✅ Renamed `strGetSuffix` → `koreanGetSuffix` in core-common
+- ⏳ Korean locale data decision for date-format.ts and Calendar.tsx (preserve Korean)
 
 ---
 
@@ -160,3 +160,11 @@
 - `dd947d137` - core-common Phase 1
 - `c44791062` - all package.json author
 - `3ee93c56c` - orm, sd-claude, lint, tsconfig Phase 1
+- `dfd83f302` - Phase 5: strGetSuffix → koreanGetSuffix rename
+
+**Currently In Progress (5 parallel agents):**
+- solid-demo Phase 2: UI text translation (1,127 items)
+- core-common/orm Phase 3: test descriptions (104 files)
+- solid-components Phase 1: component comments (~60 remaining)
+- sd-cli Phase 1-2: CLI command translations (~30 remaining)
+- service-*/solid-demo Phase 3: test descriptions

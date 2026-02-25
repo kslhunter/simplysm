@@ -1,7 +1,7 @@
 import { type Component, Show } from "solid-js";
 import { textMuted } from "../../../styles/tokens.styles";
 
-/** 값이 없을 때 placeholder 또는 NBSP를 표시하는 공유 컴포넌트 */
+/** Shared component to display placeholder or NBSP when value is empty */
 export const PlaceholderFallback: Component<{ value?: string; placeholder?: string }> = (props) => (
   <>
     <Show

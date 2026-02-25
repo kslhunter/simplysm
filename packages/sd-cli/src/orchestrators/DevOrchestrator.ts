@@ -104,9 +104,9 @@ export class DevOrchestrator {
   }
 
   /**
-   * 서버 URL 출력 (debounce 300ms)
+   * Print server URL (debounce 300ms)
    *
-   * 서버 리빌드와 scope 리빌드가 동시에 발생할 때 중복 출력을 방지한다.
+   * Prevents duplicate output when server rebuild and scope rebuild occur simultaneously.
    */
   private _schedulePrintServers(): void {
     if (this._printServersTimer != null) clearTimeout(this._printServersTimer);
@@ -116,42 +116,42 @@ export class DevOrchestrator {
   }
 
   /**
-   * Orchestrator 초기화
-   * - sd.config.ts 로드
-   * - 패키지 분류
-   * - 환경변수 준비
+   * Initialize Orchestrator
+   * - Load sd.config.ts
+   * - Classify packages
+   * - Prepare environment variables
    */
   async initialize(): Promise<void> {
     const { targets } = this._options;
-    this._logger.debug("dev 시작", { targets });
+    this._logger.debug("Starting dev mode", { targets });
 
-    // sd.config.ts 로드 (dev는 패키지 빌드 정보가 필요하므로 필수)
+    // Load sd.config.ts (required for dev mode to access package build information)
     try {
       this._sdConfig = await loadSdConfig({
         cwd: this._cwd,
         dev: true,
         opt: this._options.options,
       });
-      this._logger.debug("sd.config.ts 로드 완료");
+      this._logger.debug("sd.config.ts loaded successfully");
     } catch (err) {
-      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`Failed to load sd.config.ts: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
     }
 
-    // replaceDeps 설정이 있으면 watch 시작 (초기 교체는 sd-cli.ts에서 처리됨)
+    // Start watch for replaceDeps if configured (initial replacement is handled in sd-cli.ts)
     if (this._sdConfig.replaceDeps != null) {
       this._replaceDepWatcher = await watchReplaceDeps(this._cwd, this._sdConfig.replaceDeps);
     }
 
-    // VER, DEV 환경변수 준비
+    // Prepare VER, DEV environment variables
     const version = await getVersion(this._cwd);
     this._baseEnv = { VER: version, DEV: "true" };
 
-    // targets 필터링
+    // Filter targets
     const allPackages = filterPackagesByTargets(this._sdConfig.packages, targets);
 
-    // client/server 패키지만 필터링
+    // Filter only client/server packages
     for (const [name, config] of Object.entries(allPackages)) {
       if (config.target === "server") {
         this._serverPackages.push({ name, config });
@@ -161,13 +161,13 @@ export class DevOrchestrator {
     }
 
     if (this._serverPackages.length === 0 && this._clientPackages.length === 0) {
-      process.stdout.write("⚠ dev할 client/server 패키지가 없습니다.\n");
+      process.stdout.write("⚠ No client/server packages to develop.\n");
       return;
     }
 
     this._hasPackages = true;
 
-    // 서버와 연결된 클라이언트 찾기 (서버가 dev 대상인 경우만)
+    // Find clients connected to servers (only if server is a dev target)
     const serverNames = new Set(this._serverPackages.map(({ name }) => name));
     for (const { name, config } of this._clientPackages) {
       if (typeof config.server === "string" && serverNames.has(config.server)) {
@@ -177,11 +177,11 @@ export class DevOrchestrator {
       }
     }
 
-    // 인프라 초기화
+    // Initialize infrastructure
     this._rebuildManager = new RebuildManager(this._logger);
     this._signalHandler = new SignalHandler();
 
-    // 배치 완료 시 에러와 서버 URL 출력
+    // Print errors and server URL when batch is complete
     this._rebuildManager.on("batchComplete", () => {
       printErrors(this._results);
       this._schedulePrintServers();
@@ -189,11 +189,11 @@ export class DevOrchestrator {
   }
 
   /**
-   * Dev 모드 시작
-   * - Worker 생성
-   * - 이벤트 핸들러 등록
-   * - 초기 빌드 및 서버 시작
-   * - Capacitor 초기화
+   * Start dev mode
+   * - Create workers
+   * - Register event handlers
+   * - Initial build and server startup
+   * - Initialize Capacitor
    */
   async start(): Promise<void> {
     if (!this._hasPackages) {
@@ -202,14 +202,14 @@ export class DevOrchestrator {
 
     const serverNames = new Set(this._serverPackages.map(({ name }) => name));
 
-    // Worker 경로
+    // Worker paths
     const clientWorkerPath = import.meta.resolve("../workers/client.worker");
     const serverWorkerPath = import.meta.resolve("../workers/server.worker");
     const serverRuntimeWorkerPath = import.meta.resolve("../workers/server-runtime.worker");
 
-    // 클라이언트가 단독 실행인 경우:
-    // - server가 숫자인 경우
-    // - server가 문자열이지만 해당 서버가 dev 대상이 아닌 경우
+    // Standalone client cases:
+    // - server is a number
+    // - server is a string but the server is not a dev target
     this._standaloneClientWorkers = this._clientPackages
       .filter(
         ({ config }) =>
@@ -224,7 +224,7 @@ export class DevOrchestrator {
         buildResolver: undefined,
       }));
 
-    // 서버에 연결된 클라이언트의 Vite Worker (서버가 dev 대상인 경우만)
+    // Vite workers for clients connected to servers (only if server is a dev target)
     this._viteClientWorkers = this._clientPackages
       .filter(({ config }) => typeof config.server === "string" && serverNames.has(config.server))
       .map(({ name, config }) => ({
@@ -235,7 +235,7 @@ export class DevOrchestrator {
         buildResolver: undefined,
       }));
 
-    // 각 섹션별 setup 및 워커 시작
+    // Setup and start workers for each section
     const standaloneClientPromises = this._setupStandaloneClients();
     const { buildPromises: viteClientPromises, readyPromises: viteClientReadyPromises } =
       this._setupViteClients();
@@ -245,8 +245,8 @@ export class DevOrchestrator {
       viteClientReadyPromises,
     );
 
-    // 초기 빌드 완료까지 대기 (병렬 실행)
-    this._logger.debug("초기 빌드 시작 (Promise.allSettled)");
+    // Wait for initial build to complete (parallel execution)
+    this._logger.debug("Starting initial build (Promise.allSettled)");
     const initialBuildPromises: Array<{ name: string; promise: Promise<void> }> = [
       ...standaloneClientPromises,
       ...viteClientPromises,
@@ -260,13 +260,13 @@ export class DevOrchestrator {
     initialResults.forEach((result, index) => {
       const taskName = initialBuildPromises[index].name;
       if (result.status === "rejected") {
-        this._logger.debug(`[${taskName}] 초기 빌드 실패:`, result.reason);
+        this._logger.debug(`[${taskName}] Initial build failed:`, result.reason);
       } else {
-        this._logger.debug(`[${taskName}] 초기 빌드 완료`);
+        this._logger.debug(`[${taskName}] Initial build completed`);
       }
     });
 
-    // Capacitor 초기화 (client 타겟 중 capacitor 설정이 있는 패키지)
+    // Initialize Capacitor (for packages in client target with capacitor configuration)
     const capacitorPackages: Array<[string, SdClientPackageConfig]> = [];
     for (const { name, config } of this._clientPackages) {
       if (config.capacitor != null) {
@@ -302,13 +302,13 @@ export class DevOrchestrator {
       }
     }
 
-    // 초기 빌드 결과 출력
+    // Print initial build results
     printErrors(this._results);
     printServers(this._results, this._serverClientsMap);
   }
 
   /**
-   * Standalone client Worker 설정 및 시작
+   * Setup and start standalone client workers
    */
   private _setupStandaloneClients(): Array<{ name: string; promise: Promise<void> }> {
     const buildPromises = new Map<string, Promise<void>>();
@@ -346,12 +346,12 @@ export class DevOrchestrator {
         });
       });
 
-      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      // Print server URL when scope package rebuild is detected
       workerInfo.worker.on("scopeRebuild", () => {
         this._schedulePrintServers();
       });
 
-      // 워커 시작
+      // Start worker
       const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
       const clientConfig: SdClientPackageConfig = {
         ...workerInfo.config,
@@ -383,7 +383,7 @@ export class DevOrchestrator {
   }
 
   /**
-   * Vite client (서버 연결) Worker 설정 및 시작
+   * Setup and start Vite client (server-connected) workers
    */
   private _setupViteClients(): {
     buildPromises: Array<{ name: string; promise: Promise<void> }>;
@@ -398,7 +398,7 @@ export class DevOrchestrator {
           workerInfo.buildResolver = resolve;
         }),
       );
-      // Vite 서버 준비 완료 Promise (서버가 클라이언트 포트를 알 때까지 대기)
+      // Vite server ready promise (wait until server knows client port)
       let readyResolver!: () => void;
       const readyPromise = new Promise<void>((resolve) => {
         readyResolver = resolve;
@@ -409,7 +409,7 @@ export class DevOrchestrator {
       });
     }
 
-    // 이벤트 핸들러 등록
+    // Register event handlers
     for (const workerInfo of this._viteClientWorkers) {
       const completeTask = registerWorkerEventHandlers(
         workerInfo as unknown as BaseWorkerInfo,
@@ -422,14 +422,14 @@ export class DevOrchestrator {
         this._rebuildManager,
       );
 
-      // serverReady - Vite 포트를 clientPorts에 저장 (URL은 서버를 통해 출력)
+      // serverReady - Store Vite port in clientPorts (URL is printed via server)
       workerInfo.worker.on("serverReady", (data) => {
         const event = data as ServerReadyEventData;
         this._logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(event.port)})`);
         this._clientPorts[workerInfo.name] = event.port;
-        // Vite 서버 준비 완료 알림 (서버가 프록시 설정을 위해 대기 중)
+        // Notify Vite server ready (server is waiting for proxy setup)
         readyPromises.get(workerInfo.name)?.resolver();
-        // 빌드 완료를 위해 completeTask 호출 (Vite는 build 이벤트를 발생시키지 않음)
+        // Call completeTask for build completion (Vite doesn't emit build event)
         completeTask({
           name: workerInfo.name,
           target: workerInfo.config.target,
@@ -438,23 +438,23 @@ export class DevOrchestrator {
         });
       });
 
-      // Vite client error 시에도 readyPromises resolve
-      // (서버가 await Promise.all(clientReadyPromises)에서 무한 대기하지 않도록)
+      // Also resolve readyPromises on Vite client error
+      // (prevent server from hanging indefinitely in await Promise.all(clientReadyPromises))
       workerInfo.worker.on("error", () => {
         readyPromises.get(workerInfo.name)?.resolver();
       });
 
-      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      // Print server URL when scope package rebuild is detected
       workerInfo.worker.on("scopeRebuild", () => {
         this._schedulePrintServers();
       });
 
-      // 워커 시작
+      // Start worker
       const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
-      // Vite가 자동으로 포트를 할당하도록 설정
+      // Allow Vite to automatically assign port
       const viteConfig: SdClientPackageConfig = {
         ...workerInfo.config,
-        server: 0, // Vite가 자동으로 포트 할당
+        server: 0, // Vite will automatically assign port
         env: { ...this._baseEnv, ...workerInfo.config.env },
       };
       workerInfo.worker
@@ -486,14 +486,14 @@ export class DevOrchestrator {
   }
 
   /**
-   * Server Build/Runtime Worker 설정 및 시작
+   * Setup and start Server Build/Runtime workers
    */
   private _setupServers(
     serverWorkerPath: string,
     serverRuntimeWorkerPath: string,
     viteClientReadyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
   ): Array<{ name: string; promise: Promise<void> }> {
-    // Server Build Worker 및 Promise 생성
+    // Create Server Build Worker and promise
     for (const { name } of this._serverPackages) {
       let resolver!: () => void;
       const promise = new Promise<void>((resolve) => {
@@ -506,7 +506,7 @@ export class DevOrchestrator {
       });
     }
 
-    // Server Runtime Promise (초기 서버 시작 완료 대기용)
+    // Server Runtime Promise (wait for initial server startup to complete)
     const serverRuntimePromises = new Map<
       string,
       { promise: Promise<void>; resolver: () => void }
@@ -519,14 +519,14 @@ export class DevOrchestrator {
       serverRuntimePromises.set(name, { promise, resolver });
     }
 
-    // Server Build Worker 이벤트 핸들러 등록
+    // Register Server Build Worker event handlers
     for (const { name } of this._serverPackages) {
       const serverBuild = this._serverBuildWorkers.get(name)!;
       let isFirstBuild = true;
 
       serverBuild.worker.on("buildStart", () => {
         if (!isFirstBuild) {
-          // 리빌드 시 RebuildManager에 등록
+          // Register with RebuildManager on rebuild
           const resolver = this._rebuildManager.registerBuild(`${name}:server`, `${name} (server)`);
           this._serverBuildWorkers.set(name, {
             ...serverBuild,
@@ -539,7 +539,7 @@ export class DevOrchestrator {
         const event = data as ServerBuildEventData;
         this._logger.debug(`[${name}] server build: success=${String(event.success)}`);
 
-        // warnings 출력
+        // Print warnings
         if (event.warnings != null && event.warnings.length > 0) {
           this._logger.warn(formatBuildMessages(name, "server", event.warnings));
         }
@@ -561,10 +561,10 @@ export class DevOrchestrator {
           return;
         }
 
-        // 빌드 성공 시 런타임 워커 시작 (async 로직은 별도 함수로 분리하여 에러 전파 방지)
+        // Start runtime worker on build success (separate async function to prevent error propagation)
         void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
           const message = errorMessage(err);
-          this._logger.error(`[${name}] Server Runtime 시작 중 오류:`, message);
+          this._logger.error(`[${name}] Error starting Server Runtime:`, message);
 
           this._results.set(`${name}:server`, {
             name,
@@ -584,39 +584,39 @@ export class DevOrchestrator {
       });
 
       /**
-       * 서버 런타임 워커 시작.
-       * async 이벤트 핸들러의 에러를 catch할 수 있도록 별도 함수로 분리.
+       * Start server runtime worker.
+       * Separated as a dedicated function to catch errors from async event handlers.
        */
       const startServerRuntime = async (serverName: string, mainJsPath: string): Promise<void> => {
         this._logger.debug(`[${serverName}] startServerRuntime: ${mainJsPath}`);
         const updatedBuild = this._serverBuildWorkers.get(serverName)!;
         updatedBuild.mainJsPath = mainJsPath;
 
-        // 기존 Server Runtime Worker 종료
+        // Terminate existing Server Runtime Worker
         const existingRuntime = this._serverRuntimeWorkers.get(serverName);
         if (existingRuntime != null) {
-          this._logger.info(`[${serverName}] 서버 재시작 중...`);
+          this._logger.info(`[${serverName}] Restarting server...`);
           await existingRuntime.terminate();
         }
 
-        // 새 Server Runtime Worker 생성 및 시작
+        // Create and start new Server Runtime Worker
         const runtimeWorker =
           Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
         this._serverRuntimeWorkers.set(serverName, runtimeWorker);
 
-        // 이 서버에 연결된 클라이언트들의 Vite 서버가 준비될 때까지 대기
+        // Wait for Vite servers of clients connected to this server to be ready
         const connectedClients = this._serverClientsMap.get(serverName) ?? [];
         const clientReadyPromises = connectedClients
           .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
           .filter((p): p is Promise<void> => p != null);
         this._logger.debug(
-          `[${serverName}] 클라이언트 대기: ${String(clientReadyPromises.length)}개`,
+          `[${serverName}] Waiting for clients: ${String(clientReadyPromises.length)} total`,
         );
         if (clientReadyPromises.length > 0) {
           await Promise.all(clientReadyPromises);
         }
 
-        // 이 서버에 연결된 클라이언트 포트 수집
+        // Collect client ports for this server
         const serverClientPorts: Record<string, number> = {};
         for (const clientName of connectedClients) {
           if (clientName in this._clientPorts) {
@@ -624,7 +624,7 @@ export class DevOrchestrator {
           }
         }
 
-        // Server Runtime 이벤트 핸들러
+        // Server Runtime event handlers
         runtimeWorker.on("serverReady", (readyData) => {
           const readyEvent = readyData as ServerReadyEventData;
           this._results.set(`${serverName}:server`, {
@@ -659,9 +659,9 @@ export class DevOrchestrator {
           updatedBuild.buildResolver();
         });
 
-        // Server Runtime 시작
-        // Worker가 크래시하면 "serverReady"/"error" 이벤트 없이 종료되므로
-        // promise rejection을 catch하여 무한 대기를 방지
+        // Start Server Runtime
+        // If worker crashes, it terminates without emitting "serverReady"/"error" events,
+        // so catch promise rejection to prevent hanging
         runtimeWorker
           .start({
             mainJsPath,
@@ -669,7 +669,7 @@ export class DevOrchestrator {
           })
           .catch((err: unknown) => {
             const message = errorMessage(err);
-            this._logger.error(`[${serverName}] Server Runtime Worker 크래시:`, message);
+            this._logger.error(`[${serverName}] Server Runtime Worker crashed:`, message);
 
             this._results.set(`${serverName}:server`, {
               name: serverName,
@@ -704,7 +704,7 @@ export class DevOrchestrator {
       });
     }
 
-    // Server Build 워커 시작
+    // Start Server Build workers
     for (const { name, config } of this._serverPackages) {
       const pkgDir = path.join(this._cwd, "packages", name);
       const serverBuild = this._serverBuildWorkers.get(name)!;
@@ -738,7 +738,7 @@ export class DevOrchestrator {
   }
 
   /**
-   * 종료 시그널 대기
+   * Wait for termination signal
    */
   async awaitTermination(): Promise<void> {
     if (!this._hasPackages) {
@@ -748,15 +748,15 @@ export class DevOrchestrator {
   }
 
   /**
-   * Orchestrator 종료
+   * Shutdown orchestrator
    */
   async shutdown(): Promise<void> {
     if (!this._hasPackages) {
       return;
     }
 
-    // Worker 종료 (모든 워커)
-    process.stdout.write("⏳ 종료 중...\n");
+    // Terminate workers (all workers)
+    process.stdout.write("⏳ Shutting down...\n");
     await Promise.all([
       ...this._standaloneClientWorkers.map(({ worker }) => worker.terminate()),
       ...this._viteClientWorkers.map(({ worker }) => worker.terminate()),
@@ -764,7 +764,7 @@ export class DevOrchestrator {
       ...[...this._serverRuntimeWorkers.values()].map((worker) => worker.terminate()),
     ]);
     this._replaceDepWatcher?.dispose();
-    process.stdout.write("✔ 완료\n");
+    process.stdout.write("✔ Done\n");
   }
 }
 

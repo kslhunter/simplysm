@@ -9,54 +9,54 @@ import { Invalid } from "../../form-control/Invalid";
 type TimePickerUnit = "minute" | "second";
 
 export interface TimePickerProps {
-  /** 입력 값 */
+  /** Input value */
   value?: Time;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: Time | undefined) => void;
 
-  /** 시간 단위 */
+  /** Time unit */
   unit?: TimePickerUnit;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** 최소 시간 */
+  /** Minimum time */
   min?: Time;
 
-  /** 최대 시간 */
+  /** Maximum time */
   max?: Time;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: Time | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 }
 
 /**
- * Time 값을 input value용 문자열로 변환
+ * Convert Time value to input value string
  */
 function formatValue(value: Time | undefined, unit: TimePickerUnit): string {
   if (value == null) return "";
@@ -70,20 +70,20 @@ function formatValue(value: Time | undefined, unit: TimePickerUnit): string {
 }
 
 /**
- * 입력 문자열을 Time으로 변환
+ * Convert input string to Time
  */
 function parseValue(str: string, unit: TimePickerUnit): Time | undefined {
   if (str === "") return undefined;
 
   switch (unit) {
     case "minute": {
-      // HH:mm 형식
+      // HH:mm format
       const match = /^(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new Time(Number(match[1]), Number(match[2]), 0);
     }
     case "second": {
-      // HH:mm:ss 형식
+      // HH:mm:ss format
       const match = /^(\d{2}):(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new Time(Number(match[1]), Number(match[2]), Number(match[3]));
@@ -92,17 +92,17 @@ function parseValue(str: string, unit: TimePickerUnit): Time | undefined {
 }
 
 /**
- * TimePicker 컴포넌트
+ * TimePicker component
  *
- * 시간 입력 필드. minute, second 단위를 지원한다.
- * 내부적으로 string ↔ Time 타입 변환을 처리한다.
+ * Time input field supporting minute and second units.
+ * Handles string ↔ Time type conversion internally.
  *
  * @example
  * ```tsx
- * // 시간 입력 (분 단위)
+ * // Time input (minute unit)
  * <TimePicker unit="minute" value={time()} onValueChange={setTime} />
  *
- * // 시간 입력 (초 단위)
+ * // Time input (second unit)
  * <TimePicker unit="second" value={time()} onValueChange={setTime} />
  * ```
  */
@@ -125,26 +125,26 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     "touchMode",
   ]);
 
-  // 기본 단위는 minute
+  // Default unit is minute
   const fieldType = () => local.unit ?? "minute";
 
-  // controlled/uncontrolled 패턴 지원
+  // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
 
-  // 표시 값
+  // Display value
   const displayValue = () => formatValue(value(), fieldType());
 
-  // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
+  // Change handler (on blur or Enter)
   const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     const newValue = e.currentTarget.value;
     const parsed = parseValue(newValue, fieldType());
     setValue(parsed);
   };
 
-  // wrapper 클래스
+  // Wrapper class
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
       size: local.size,
@@ -154,21 +154,21 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
       extra: "min-w-24",
     });
 
-  // 편집 가능 여부
+  // Editable check
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // step 속성 (second일 때 1)
+  // Step attribute (1 when second)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (local.required && v === undefined) return "This field is required";
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
-        return `${local.min.toFormatString("HH:mm:ss")}보다 크거나 같아야 합니다`;
+        return `Must be greater than or equal to ${local.min.toFormatString("HH:mm:ss")}`;
       if (local.max !== undefined && v.tick > local.max.tick)
-        return `${local.max.toFormatString("HH:mm:ss")}보다 작거나 같아야 합니다`;
+        return `Must be less than or equal to ${local.max.toFormatString("HH:mm:ss")}`;
     }
     return local.validate?.(v);
   });
@@ -182,7 +182,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
       <Show
         when={local.inset}
         fallback={
-          // standalone 모드
+          // standalone mode
           <Show
             when={isEditable()}
             fallback={
@@ -211,7 +211,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
           </Show>
         }
       >
-        {/* inset 모드: dual-element overlay 패턴 */}
+        {/* inset mode: dual-element overlay pattern */}
         <div {...rest} data-time-field class={clsx("relative", local.class)} style={local.style}>
           <div
             data-time-field-content

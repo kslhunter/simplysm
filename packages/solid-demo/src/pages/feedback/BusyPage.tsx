@@ -10,7 +10,7 @@ const BusyDemo: Component = () => {
   const [readyState, setReadyState] = createSignal(false);
 
   const handleGlobalBusy = () => {
-    busy.show("전역 로딩 중...");
+    busy.show("Loading globally...");
     setTimeout(() => busy.hide(), 2000);
   };
 
@@ -44,34 +44,34 @@ const BusyDemo: Component = () => {
       {/* Global Busy */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          전역 Busy (Provider)
+          Global Busy (Provider)
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          useBusy() 훅으로 전역 로딩 오버레이를 표시합니다.
+          Display a global loading overlay using the useBusy() hook.
         </p>
         <Button theme="primary" variant="solid" onClick={handleGlobalBusy}>
-          전역 Busy 2초
+          Global Busy for 2 seconds
         </Button>
       </section>
 
       {/* Local Spinner */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          로컬 BusyContainer (Spinner)
+          Local BusyContainer (Spinner)
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          특정 영역에 spinner 타입 로딩을 표시합니다.
+          Display a spinner-type loading indicator in a specific area.
         </p>
         <Button theme="base" variant="outline" onClick={handleLocalBusy}>
-          로컬 Spinner 2초
+          Local Spinner for 2 seconds
         </Button>
         <BusyContainer
           busy={localBusy()}
           variant="spinner"
-          message="로딩 중..."
+          message="Loading..."
           class="mt-4 h-40 rounded border border-base-200 dark:border-base-700"
         >
-          <div class="flex h-full items-center justify-center text-base-500">콘텐츠 영역</div>
+          <div class="flex h-full items-center justify-center text-base-500">Content area</div>
         </BusyContainer>
       </section>
 

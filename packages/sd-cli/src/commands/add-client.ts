@@ -48,30 +48,30 @@ export async function runAddClient(_options: AddClientOptions): Promise<void> {
 
   // 2. Interactive prompt
   const clientSuffix = await input({
-    message: "클라이언트 이름을 입력하세요 (client-___):",
+    message: "Enter client name suffix (client-___):",
     validate: (value) => {
-      if (!value.trim()) return "이름을 입력해주세요.";
-      if (!/^[a-z][a-z0-9-]*$/.test(value)) return "소문자, 숫자, 하이픈만 사용 가능합니다.";
+      if (!value.trim()) return "Please enter a name.";
+      if (!/^[a-z][a-z0-9-]*$/.test(value)) return "Only lowercase letters, numbers, and hyphens are allowed.";
       return true;
     },
   });
 
   const useRouter = await confirm({
-    message: "라우터를 사용하시겠습니까?",
+    message: "Do you want to use router?",
     default: true,
   });
 
   const clientName = `client-${clientSuffix}`;
 
-  // 3. 패키지 디렉토리 중복 확인
+  // 3. Check for duplicate package directory
   const packageDir = path.join(cwd, "packages", clientName);
   if (fs.existsSync(packageDir)) {
-    consola.error(`packages/${clientName} 디렉토리가 이미 존재합니다.`);
+    consola.error(`packages/${clientName} directory already exists.`);
     process.exitCode = 1;
     return;
   }
 
-  // 4. 템플릿 렌더링
+  // 4. Render template
   const pkgRoot = findPackageRoot(import.meta.dirname);
   const templateDir = path.join(pkgRoot, "templates", "add-client");
 
@@ -86,39 +86,39 @@ export async function runAddClient(_options: AddClientOptions): Promise<void> {
     __CLIENT__: clientName,
   };
 
-  logger.info(`${clientName} 패키지 생성 중...`);
+  logger.info(`Creating ${clientName} package...`);
   await renderTemplateDir(templateDir, path.join(cwd, "packages"), context, dirReplacements);
-  logger.success(`packages/${clientName} 생성 완료`);
+  logger.success(`packages/${clientName} created successfully`);
 
-  // 5. sd.config.ts 업데이트
+  // 5. Update sd.config.ts
   const sdConfigPath = path.join(cwd, "sd.config.ts");
   const added = addPackageToSdConfig(sdConfigPath, clientName, { target: "client" });
   if (added) {
-    logger.success("sd.config.ts 업데이트 완료");
+    logger.success("sd.config.ts updated successfully");
   } else {
-    consola.warn(`"${clientName}"이(가) sd.config.ts에 이미 존재합니다.`);
+    consola.warn(`"${clientName}" already exists in sd.config.ts.`);
   }
 
-  // 6. eslint.config.ts tailwind 설정 추가 (첫 클라이언트인 경우)
+  // 6. Add tailwind configuration to eslint.config.ts (if first client)
   const eslintConfigPath = path.join(cwd, "eslint.config.ts");
   if (fs.existsSync(eslintConfigPath)) {
     const tailwindAdded = addTailwindToEslintConfig(eslintConfigPath, clientName);
     if (tailwindAdded) {
-      logger.success("eslint.config.ts에 tailwind 설정 추가");
+      logger.success("Added tailwind configuration to eslint.config.ts");
     }
   }
 
   // 7. pnpm install
-  logger.info("pnpm install 실행 중...");
+  logger.info("Running pnpm install...");
   await execa("pnpm", ["install"], { cwd });
-  logger.success("pnpm install 완료");
+  logger.success("pnpm install completed");
 
-  // 완료
+  // Done
   consola.box(
     [
-      `클라이언트 "${clientName}"이(가) 추가되었습니다!`,
+      `Client "${clientName}" has been added!`,
       "",
-      `  pnpm dev ${clientName}    개발 서버 실행`,
+      `  pnpm dev ${clientName}    Run development server`,
     ].join("\n"),
   );
 }

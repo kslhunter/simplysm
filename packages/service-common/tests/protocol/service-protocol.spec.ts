@@ -15,7 +15,7 @@ describe("ServiceProtocol", () => {
   });
 
   describe("encode", () => {
-    it("단일 메시지 인코딩", () => {
+    it("encodes a single message", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ test: "data" }] };
 
@@ -25,7 +25,7 @@ describe("ServiceProtocol", () => {
       expect(result.totalSize).toBeGreaterThan(0);
     });
 
-    it("body 없는 메시지 인코딩", () => {
+    it("encodes a message without body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = {
         name: "reload",
@@ -37,18 +37,18 @@ describe("ServiceProtocol", () => {
       expect(result.chunks.length).toBe(1);
     });
 
-    it("100MB 초과 시 에러", () => {
+    it("throws error when message exceeds 100MB", () => {
       const uuid = Uuid.new().toString();
-      // 100MB 이상의 데이터 생성
+      // Generate data larger than 100MB
       const largeData = "x".repeat(101 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 
-      expect(() => protocol.encode(uuid, message)).toThrow("메시지 크기가 제한을 초과했습니다.");
+      expect(() => protocol.encode(uuid, message)).toThrow("Message size exceeds the limit.");
     });
   });
 
   describe("decode", () => {
-    it("단일 메시지 디코딩", () => {
+    it("decodes a single message", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ value: 123 }] };
 
@@ -62,14 +62,14 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("헤더 크기 미달 시 에러", () => {
+    it("throws error when buffer size is smaller than header size", () => {
       const smallBytes = new Uint8Array(20);
 
-      expect(() => protocol.decode(smallBytes)).toThrow("버퍼 크기가 헤더 크기보다 작습니다.");
+      expect(() => protocol.decode(smallBytes)).toThrow("Buffer size is smaller than header size.");
     });
 
-    it("100MB 초과 메시지 디코딩 시 에러", () => {
-      // 헤더를 수동 생성하여 totalSize가 100MB 초과로 설정
+    it("throws error when decoding message exceeds 100MB", () => {
+      // Manually create header with totalSize exceeding 100MB
       const headerBytes = new Uint8Array(28);
       const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
       headerBytes.set(uuidBytes, 0);
@@ -82,14 +82,14 @@ describe("ServiceProtocol", () => {
       headerView.setBigUint64(16, BigInt(101 * 1024 * 1024), false); // 101MB
       headerView.setUint32(24, 0, false);
 
-      expect(() => protocol.decode(headerBytes)).toThrow("메시지 크기가 제한을 초과했습니다.");
+      expect(() => protocol.decode(headerBytes)).toThrow("Message size exceeds the limit.");
     });
   });
 
   describe("chunking", () => {
-    it("3MB 초과 메시지는 청킹됨", () => {
+    it("chunks messages larger than 3MB", () => {
       const uuid = Uuid.new().toString();
-      // 4MB 데이터 생성
+      // Create 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 
@@ -98,16 +98,16 @@ describe("ServiceProtocol", () => {
       expect(result.chunks.length).toBeGreaterThan(1);
     });
 
-    it("청킹된 메시지 조립", () => {
+    it("assembles chunked messages in order", () => {
       const uuid = Uuid.new().toString();
-      // 4MB 데이터
+      // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 
       const encoded = protocol.encode(uuid, message);
       expect(encoded.chunks.length).toBeGreaterThan(1);
 
-      // 청크 순서대로 디코딩
+      // Decode chunks in order
       let result!: ReturnType<typeof protocol.decode>;
       for (let i = 0; i < encoded.chunks.length; i++) {
         result = protocol.decode(encoded.chunks[i]);
@@ -122,44 +122,44 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("청킹된 메시지 역순 조립", () => {
+    it("assembles chunked messages in reverse order", () => {
       const uuid = Uuid.new().toString();
-      // 4MB 데이터
+      // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 
       const encoded = protocol.encode(uuid, message);
       const reversedChunks = [...encoded.chunks].reverse();
 
-      // 역순으로 디코딩
+      // Decode in reverse order
       let result!: ReturnType<typeof protocol.decode>;
       for (let i = 0; i < reversedChunks.length; i++) {
         result = protocol.decode(reversedChunks[i]);
       }
 
-      // 마지막에 완료되어야 함
+      // Should complete at the end
       expect(result.type).toBe("complete");
       if (result.type === "complete") {
         expect(result.message.body).toEqual([largeData]);
       }
     });
 
-    it("패킷 중복 방어", () => {
+    it("prevents duplicate packets", () => {
       const uuid = Uuid.new().toString();
-      // 4MB 데이터
+      // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 
       const encoded = protocol.encode(uuid, message);
 
-      // 첫 번째 청크를 2번 전송
+      // Send first chunk twice
       protocol.decode(encoded.chunks[0]);
-      const result1 = protocol.decode(encoded.chunks[0]); // 중복
+      const result1 = protocol.decode(encoded.chunks[0]); // Duplicate
 
-      // progress 상태여야 하며, completedSize가 중복 증가하지 않아야 함
+      // Should be in progress state, and completedSize should not increase from duplicate
       expect(result1.type).toBe("progress");
 
-      // 나머지 청크 전송
+      // Send remaining chunks
       let result!: ReturnType<typeof protocol.decode>;
       for (let i = 1; i < encoded.chunks.length; i++) {
         result = protocol.decode(encoded.chunks[i]);
@@ -173,11 +173,11 @@ describe("ServiceProtocol", () => {
   });
 
   describe("UUID interleaving", () => {
-    it("복수 UUID 청크 교차 수신", () => {
+    it("receives chunks from multiple UUIDs in interleaved order", () => {
       const uuid1 = Uuid.new().toString();
       const uuid2 = Uuid.new().toString();
 
-      // 각각 4MB 데이터로 청킹 유발
+      // Each with 4MB data to trigger chunking
       const largeData1 = "A".repeat(4 * 1024 * 1024);
       const largeData2 = "B".repeat(4 * 1024 * 1024);
       const message1: ServiceMessage = { name: "test.method1", body: [largeData1] };
@@ -189,7 +189,7 @@ describe("ServiceProtocol", () => {
       expect(encoded1.chunks.length).toBeGreaterThan(1);
       expect(encoded2.chunks.length).toBeGreaterThan(1);
 
-      // 교차로 청크 디코딩 (uuid1[0], uuid2[0], uuid1[1], uuid2[1], ...)
+      // Decode chunks in interleaved order (uuid1[0], uuid2[0], uuid1[1], uuid2[1], ...)
       const maxChunks = Math.max(encoded1.chunks.length, encoded2.chunks.length);
       let result1!: ReturnType<typeof protocol.decode>;
       let result2!: ReturnType<typeof protocol.decode>;
@@ -203,7 +203,7 @@ describe("ServiceProtocol", () => {
         }
       }
 
-      // 두 메시지 모두 완료되어야 함
+      // Both messages should complete
       expect(result1.type).toBe("complete");
       expect(result2.type).toBe("complete");
 
@@ -215,7 +215,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("3개 UUID 무작위 순서 수신", () => {
+    it("receives 3 UUIDs in random order", () => {
       const uuids = [Uuid.new().toString(), Uuid.new().toString(), Uuid.new().toString()];
       const data = [
         "X".repeat(4 * 1024 * 1024),
@@ -229,7 +229,7 @@ describe("ServiceProtocol", () => {
 
       const encodedList = uuids.map((uuid, i) => protocol.encode(uuid, messages[i]));
 
-      // 모든 청크를 하나의 배열로 합침
+      // Combine all chunks into one array
       const allChunks: { uuid: string; chunk: Uint8Array; originalIndex: number }[] = [];
       encodedList.forEach((encoded, msgIdx) => {
         encoded.chunks.forEach((chunk, chunkIdx) => {
@@ -237,16 +237,16 @@ describe("ServiceProtocol", () => {
         });
       });
 
-      // 무작위 순서로 섞기 (시드 기반 섞기 대신 역순 사용)
+      // Randomize order (use reverse instead of seed-based shuffle)
       allChunks.reverse();
 
-      // 모든 청크 디코딩
+      // Decode all chunks
       const results: Map<string, ReturnType<typeof protocol.decode>> = new Map();
       for (const { uuid, chunk } of allChunks) {
         results.set(uuid, protocol.decode(chunk));
       }
 
-      // 모든 메시지 완료 확인
+      // Verify all messages completed
       for (let i = 0; i < 3; i++) {
         const result = results.get(uuids[i]);
         expect(result?.type).toBe("complete");
@@ -259,7 +259,7 @@ describe("ServiceProtocol", () => {
   });
 
   describe("edge cases", () => {
-    it("빈 body 처리", () => {
+    it("handles empty body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [""] };
 
@@ -272,7 +272,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("null body 처리", () => {
+    it("handles null body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [null] };
 
@@ -281,18 +281,18 @@ describe("ServiceProtocol", () => {
 
       expect(decoded.type).toBe("complete");
       if (decoded.type === "complete") {
-        // JsonConvert.stringify/parse는 null을 undefined로 변환
+        // JsonConvert.stringify/parse converts null to undefined
         expect(decoded.message.body).toEqual([undefined]);
       }
     });
 
-    it("복잡한 객체 직렬화", () => {
+    it("serializes complex objects", () => {
       const uuid = Uuid.new().toString();
       const complexData = {
         array: [1, 2, 3],
         nested: { deep: { value: "test" } },
         date: new Date().toISOString(),
-        unicode: "한글 테스트 🚀",
+        unicode: "Korean test 🚀",
       };
       const message: ServiceMessage = { name: "test.method", body: [complexData] };
 
@@ -305,18 +305,18 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("정확히 3MB 경계 메시지", () => {
+    it("handles message at exactly 3MB boundary", () => {
       const uuid = Uuid.new().toString();
-      // 정확히 3MB
-      const data = "x".repeat(3 * 1024 * 1024 - 50); // 약간의 JSON 오버헤드 고려
+      // Exactly 3MB
+      const data = "x".repeat(3 * 1024 * 1024 - 50); // Account for some JSON overhead
       const message: ServiceMessage = { name: "test.method", body: [data] };
 
       const encoded = protocol.encode(uuid, message);
-      // 3MB 이하면 청킹 안됨
+      // Messages up to 3MB should not be chunked
       expect(encoded.chunks.length).toBe(1);
     });
 
-    it("progress 응답에 올바른 정보 포함", () => {
+    it("includes correct information in progress response", () => {
       const uuid = Uuid.new().toString();
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };

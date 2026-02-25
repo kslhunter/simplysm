@@ -9,54 +9,54 @@ import { Invalid } from "../../form-control/Invalid";
 type DatePickerUnit = "year" | "month" | "date";
 
 export interface DatePickerProps {
-  /** 입력 값 */
+  /** Input value */
   value?: DateOnly;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: DateOnly | undefined) => void;
 
-  /** 날짜 단위 */
+  /** Date unit */
   unit?: DatePickerUnit;
 
-  /** 최소 날짜 */
+  /** Minimum date */
   min?: DateOnly;
 
-  /** 최대 날짜 */
+  /** Maximum date */
   max?: DateOnly;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: DateOnly | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 }
 
 /**
- * DateOnly 값을 타입에 맞는 문자열로 변환
+ * Convert DateOnly value to format string matching type
  */
 function formatDateValue(value: DateOnly | undefined, type: DatePickerUnit): string | undefined {
   if (value == null) return undefined;
@@ -72,7 +72,7 @@ function formatDateValue(value: DateOnly | undefined, type: DatePickerUnit): str
 }
 
 /**
- * 입력 문자열을 DateOnly로 변환
+ * Convert input string to DateOnly
  */
 function parseValue(str: string, type: DatePickerUnit): DateOnly | undefined {
   if (str === "") return undefined;
@@ -84,20 +84,20 @@ function parseValue(str: string, type: DatePickerUnit): DateOnly | undefined {
       return new DateOnly(year, 1, 1);
     }
     case "month": {
-      // yyyy-MM 형식
+      // yyyy-MM format
       const match = /^(\d{4})-(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new DateOnly(Number(match[1]), Number(match[2]), 1);
     }
     case "date": {
-      // yyyy-MM-dd 형식
+      // yyyy-MM-dd format
       return DateOnly.parse(str);
     }
   }
 }
 
 /**
- * HTML input의 type 속성 결정
+ * Determine HTML input type attribute
  */
 function getInputType(type: DatePickerUnit): string {
   switch (type) {
@@ -111,23 +111,23 @@ function getInputType(type: DatePickerUnit): string {
 }
 
 /**
- * DatePicker 컴포넌트
+ * DatePicker component
  *
- * 날짜 입력 필드. year, month, date 단위를 지원한다.
- * 내부적으로 string ↔ DateOnly 타입 변환을 처리한다.
+ * Date input field supporting year, month, and date units.
+ * Handles string ↔ DateOnly type conversion internally.
  *
  * @example
  * ```tsx
- * // 날짜 입력
+ * // Date input
  * <DatePicker unit="date" value={date()} onValueChange={setDate} />
  *
- * // 연도만 입력
+ * // Year only
  * <DatePicker unit="year" value={yearDate()} onValueChange={setYearDate} />
  *
- * // 연월 입력
+ * // Year-month input
  * <DatePicker unit="month" value={monthDate()} onValueChange={setMonthDate} />
  *
- * // min/max 제한
+ * // With min/max constraints
  * <DatePicker
  *   unit="date"
  *   value={date()}
@@ -155,26 +155,26 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "touchMode",
   ]);
 
-  // 기본 단위는 date
+  // Default unit is date
   const fieldType = () => local.unit ?? "date";
 
-  // controlled/uncontrolled 패턴 지원
+  // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
 
-  // 표시 값
+  // Display value
   const displayValue = () => formatDateValue(value(), fieldType()) ?? "";
 
-  // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
+  // Change handler (on blur or Enter)
   const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     const newValue = e.currentTarget.value;
     const parsed = parseValue(newValue, fieldType());
     setValue(parsed);
   };
 
-  // wrapper 클래스 (includeCustomClass: 외부 class를 포함할지 여부)
+  // Wrapper class (includeCustomClass: whether to include external class)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
       size: local.size,
@@ -184,18 +184,18 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
       extra: "min-w-32",
     });
 
-  // 편집 가능 여부
+  // Editable check
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (local.required && v === undefined) return "This field is required";
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
-        return `${local.min}보다 크거나 같아야 합니다`;
+        return `Must be greater than or equal to ${local.min}`;
       if (local.max !== undefined && v.tick > local.max.tick)
-        return `${local.max}보다 작거나 같아야 합니다`;
+        return `Must be less than or equal to ${local.max}`;
     }
     return local.validate?.(v);
   });
@@ -239,7 +239,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
           </Show>
         }
       >
-        {/* inset 모드: dual-element overlay 패턴 */}
+        {/* inset mode: dual-element overlay pattern */}
         <div {...rest} data-date-field class={clsx("relative", local.class)} style={local.style}>
           <div
             data-date-field-content

@@ -5,7 +5,7 @@ describe("Errors", () => {
   //#region SdError
 
   describe("SdError", () => {
-    it("cause와 함께 생성한다", () => {
+    it("creates with cause", () => {
       const cause = new Error("original error");
       const error = new SdError(cause, "wrapped message");
 
@@ -14,14 +14,14 @@ describe("Errors", () => {
       expect(error.message).toContain("original error");
     });
 
-    it("cause 메시지를 통합한다", () => {
+    it("integrates cause message", () => {
       const cause = new Error("cause message");
       const error = new SdError(cause, "main message");
 
       expect(error.message).toContain("main message");
     });
 
-    it("다단계 cause 체인을 처리한다", () => {
+    it("handles multi-level cause chain", () => {
       const root = new Error("root error");
       const middle = new SdError(root, "middle error");
       const top = new SdError(middle, "top error");
@@ -31,7 +31,7 @@ describe("Errors", () => {
       expect(top.message).toContain("root error");
     });
 
-    it("cause의 스택을 현재 스택에 통합한다", () => {
+    it("integrates cause stack to current stack", () => {
       const cause = new Error("cause error");
       const error = new SdError(cause, "main error");
 
@@ -39,7 +39,7 @@ describe("Errors", () => {
       expect(error.stack).toContain(cause.stack);
     });
 
-    it("non-Error 객체를 cause로 전달하면 String()으로 변환한다", () => {
+    it("converts non-Error object passed as cause to String()", () => {
       // 숫자
       const errorFromNumber = new SdError(42, "number cause");
       expect(errorFromNumber.message).toContain("42");
@@ -59,7 +59,7 @@ describe("Errors", () => {
   //#region ArgumentError
 
   describe("ArgumentError", () => {
-    it("argObj와 함께 생성한다", () => {
+    it("creates with argObj", () => {
       const error = new ArgumentError("invalid argument", { param: "value", expected: "string" });
 
       // YAML 형식으로 argObj가 메시지에 포함됨
@@ -68,7 +68,7 @@ describe("Errors", () => {
       expect(error.message).toContain("value");
     });
 
-    it("메시지 없이 argObj만으로 생성한다", () => {
+    it("creates with only argObj without message", () => {
       const error = new ArgumentError({ key: "value" });
 
       expect(error.message).toContain("인수가 잘못되었습니다");

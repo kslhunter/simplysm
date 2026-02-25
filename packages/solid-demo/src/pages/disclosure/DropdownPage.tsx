@@ -1,8 +1,8 @@
 import { createSignal, For } from "solid-js";
 import { Button, Dropdown } from "@simplysm/solid";
 
-const menuItems = ["복사", "붙여넣기", "잘라내기", "삭제"];
-const longMenuItems = Array.from({ length: 20 }, (_, i) => `항목 ${i + 1}`);
+const menuItems = ["Copy", "Paste", "Cut", "Delete"];
+const longMenuItems = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
 
 export default function DropdownPage() {
   // Basic dropdown state
@@ -27,16 +27,16 @@ export default function DropdownPage() {
       {/* Basic dropdown menu */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          기본 드롭다운 메뉴
+          Basic Dropdown Menu
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.
+          Automatically closes on outside click, Escape, Tab, or scroll.
         </p>
         <div class="flex items-center gap-4">
           <Dropdown>
             <Dropdown.Trigger>
               <Button theme="primary" variant="solid">
-                메뉴 열기
+                Open Menu
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
@@ -65,23 +65,23 @@ export default function DropdownPage() {
             </Dropdown.Content>
           </Dropdown>
           {basicSelected() != null && (
-            <span class="text-sm text-base-600 dark:text-base-400">선택: {basicSelected()}</span>
+            <span class="text-sm text-base-600 dark:text-base-400">Selected: {basicSelected()}</span>
           )}
         </div>
       </section>
 
       {/* Context menu */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">컨텍스트 메뉴</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">아래 영역에서 우클릭하세요.</p>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Context Menu</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">Right-click in the area below.</p>
         <div
           class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-50 dark:border-base-600 dark:bg-base-800"
           onContextMenu={handleContextMenu}
         >
-          <span class="text-base-500 dark:text-base-400">우클릭 영역</span>
+          <span class="text-base-500 dark:text-base-400">Right-click area</span>
         </div>
         {contextSelected() != null && (
-          <p class="mt-2 text-sm text-base-600 dark:text-base-400">선택: {contextSelected()}</p>
+          <p class="mt-2 text-sm text-base-600 dark:text-base-400">Selected: {contextSelected()}</p>
         )}
         <Dropdown position={contextPosition()} open={contextOpen()} onOpenChange={setContextOpen}>
           <Dropdown.Content>
@@ -115,14 +115,14 @@ export default function DropdownPage() {
 
       {/* Auto position adjustment */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">위치 자동 조정</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Auto Position Adjustment</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          화면 하단에서 열면 위쪽으로 펼쳐집니다. 브라우저 창 크기를 줄여 테스트해 보세요.
+          When opened near the bottom of the screen, it expands upward. Try resizing the browser window to test.
         </p>
         <Dropdown>
           <Dropdown.Trigger>
             <Button theme="info" variant="solid">
-              드롭다운 열기
+              Open Dropdown
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Content>
@@ -145,15 +145,15 @@ export default function DropdownPage() {
 
       {/* Max height setting */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">최대 높이 설정</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Max Height Setting</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          maxHeight prop으로 최대 높이를 설정하면 내용이 넘칠 때 스크롤됩니다.
+          Set max height with the maxHeight prop to enable scrolling when content overflows.
         </p>
         <div class="flex items-center gap-4">
           <Dropdown maxHeight={200}>
             <Dropdown.Trigger>
               <Button theme="success" variant="solid">
-                긴 목록 열기
+                Open Long List
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
@@ -183,7 +183,7 @@ export default function DropdownPage() {
           </Dropdown>
           {maxHeightSelected() != null && (
             <span class="text-sm text-base-600 dark:text-base-400">
-              선택: {maxHeightSelected()}
+              Selected: {maxHeightSelected()}
             </span>
           )}
         </div>

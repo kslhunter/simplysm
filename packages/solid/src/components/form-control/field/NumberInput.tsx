@@ -21,7 +21,7 @@ import {
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
 
-// NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
+// NumberInput-specific input style (right-aligned + spinner hidden)
 const numberInputClass = clsx(
   fieldInputClass,
   "text-right",
@@ -38,67 +38,67 @@ const NumberInputSlotsContext = createContext<NumberInputSlotsContextValue>();
 const NumberInputPrefix = createSlotComponent(NumberInputSlotsContext, (ctx) => ctx.setPrefix);
 
 export interface NumberInputProps {
-  /** 입력 값 */
+  /** Input value */
   value?: number;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: number | undefined) => void;
 
-  /** 천단위 콤마 표시 (기본값: true) */
+  /** Display thousand separator (default: true) */
   comma?: boolean;
 
-  /** 최소 소수점 자릿수 */
+  /** Minimum decimal places */
   minDigits?: number;
 
-  /** 플레이스홀더 */
+  /** Placeholder text */
   placeholder?: string;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disable input */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 최솟값 */
+  /** Minimum value */
   min?: number;
 
-  /** 최댓값 */
+  /** Maximum value */
   max?: number;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: number | undefined) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show errors only after blur */
   touchMode?: boolean;
 
-  /** 자식 요소 (Prefix 슬롯 등) */
+  /** Children (Prefix slot, etc.) */
   children?: JSX.Element;
 }
 
 /**
- * 숫자를 표시용 문자열로 변환한다
- * @param value 숫자 값
- * @param useComma 천단위 콤마 사용 여부
- * @param minDigits 최소 소수점 자릿수
- * @returns 표시용 문자열
+ * Convert number to display string
+ * @param value - Numeric value
+ * @param useComma - Whether to use thousand separator
+ * @param minDigits - Minimum decimal places
+ * @returns Display string
  */
 function formatNumber(value: number | undefined, useComma: boolean, minDigits?: number): string {
   if (value == null) return "";
@@ -106,12 +106,12 @@ function formatNumber(value: number | undefined, useComma: boolean, minDigits?: 
   let result: string;
 
   if (minDigits != null && minDigits > 0) {
-    // 현재 소수점 자릿수 확인
+    // Check current decimal places
     const valueStr = String(value);
     const decimalIndex = valueStr.indexOf(".");
     const currentDigits = decimalIndex >= 0 ? valueStr.length - decimalIndex - 1 : 0;
 
-    // 최소 자릿수보다 작으면 패딩
+    // Pad if less than minimum decimal places
     if (currentDigits < minDigits) {
       result = value.toFixed(minDigits);
     } else {
@@ -122,11 +122,11 @@ function formatNumber(value: number | undefined, useComma: boolean, minDigits?: 
   }
 
   if (useComma) {
-    // 정수부와 소수부 분리
+    // Separate integer and decimal parts
     const dotIndex = result.indexOf(".");
     const integerPart = dotIndex >= 0 ? result.slice(0, dotIndex) : result;
     const decimalPart = dotIndex >= 0 ? result.slice(dotIndex + 1) : null;
-    // 정수부에만 콤마 추가
+    // Add comma only to integer part
     const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     result = decimalPart !== null ? `${formattedInteger}.${decimalPart}` : formattedInteger;
   }
@@ -135,17 +135,17 @@ function formatNumber(value: number | undefined, useComma: boolean, minDigits?: 
 }
 
 /**
- * 표시용 문자열을 숫자로 변환한다
- * @param str 표시용 문자열
- * @returns 숫자 값 또는 undefined
+ * Convert display string to number
+ * @param str - Display string
+ * @returns Numeric value or undefined
  */
 function parseNumber(str: string): number | undefined {
   if (str === "" || str === "-") return undefined;
 
-  // 콤마 제거
+  // Remove commas
   const cleanStr = str.replace(/,/g, "");
 
-  // 숫자로 변환 시도
+  // Attempt number conversion
   const num = Number(cleanStr);
 
   if (Number.isNaN(num)) return undefined;
@@ -154,18 +154,18 @@ function parseNumber(str: string): number | undefined {
 }
 
 /**
- * 입력 문자열이 유효한 숫자 형식인지 확인한다
- * @param str 입력 문자열
- * @returns 유효 여부
+ * Check if input string is valid number format
+ * @param str - Input string
+ * @returns Whether valid
  */
 function isValidNumberInput(str: string): boolean {
   if (str === "" || str === "-" || str === ".") return true;
 
-  // 콤마 제거
+  // Remove commas
   const cleanStr = str.replace(/,/g, "");
 
-  // 숫자 형식 패턴 (입력 중 상태 포함)
-  // 예: "123", "123.", "123.45", "-123", "-", "-.123"
+  // Number format pattern (including input-in-progress state)
+  // Examples: "123", "123.", "123.45", "-123", "-", "-.123"
   return /^-?\d*\.?\d*$/.test(cleanStr);
 }
 
@@ -175,20 +175,20 @@ interface NumberInputComponent {
 }
 
 /**
- * NumberInput 컴포넌트
+ * NumberInput component
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <NumberInput value={num()} onValueChange={setNum} />
  *
- * // 천단위 콤마 없이
+ * // Without thousand separator
  * <NumberInput value={num()} comma={false} />
  *
- * // 최소 소수점 자릿수 지정
+ * // Specify minimum decimal places
  * <NumberInput value={price()} minDigits={2} />
  *
- * // Prefix 슬롯
+ * // Prefix slot
  * <NumberInput value={price()}>
  *   <NumberInput.Prefix>₩</NumberInput.Prefix>
  * </NumberInput>
@@ -216,11 +216,11 @@ export const NumberInput: NumberInputComponent = (props) => {
     "children",
   ]);
 
-  // 입력 중인 상태를 추적하기 위한 내부 문자열 상태
+  // Internal string state to track editing state
   const [inputStr, setInputStr] = createSignal<string>("");
   const [isEditing, setIsEditing] = createSignal(false);
 
-  // controlled/uncontrolled 패턴 지원
+  // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
@@ -229,7 +229,7 @@ export const NumberInput: NumberInputComponent = (props) => {
   const [prefix, setPrefix] = createSlotSignal();
   const prefixEl = () => prefix() !== undefined;
 
-  // 외부 값 변경 시 입력 문자열 동기화
+  // Sync input string when external value changes
   createEffect(() => {
     const val = value();
     if (!isEditing()) {
@@ -237,7 +237,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     }
   });
 
-  // 표시 값 계산
+  // Compute display value
   const displayValue = () => {
     if (isEditing()) {
       return inputStr();
@@ -245,13 +245,13 @@ export const NumberInput: NumberInputComponent = (props) => {
     return formatNumber(value(), local.comma ?? true, local.minDigits);
   };
 
-  // 입력 핸들러
+  // Input handler
   const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
     const newValue = e.currentTarget.value;
 
-    // 유효한 숫자 형식인지 확인
+    // Check if valid number format
     if (!isValidNumberInput(newValue)) {
-      // 유효하지 않은 입력은 무시하고 이전 값 복원
+      // Ignore invalid input and restore previous value
       e.currentTarget.value = inputStr();
       return;
     }
@@ -259,15 +259,15 @@ export const NumberInput: NumberInputComponent = (props) => {
     setInputStr(newValue);
     setIsEditing(true);
 
-    // 숫자로 변환
+    // Convert to number
     const num = parseNumber(newValue);
     setValue(num);
   };
 
-  // focus 핸들러
+  // Focus handler
   const handleFocus: JSX.FocusEventHandler<HTMLInputElement, FocusEvent> = () => {
     setIsEditing(true);
-    // focus 시 콤마 제거된 값으로 설정
+    // On focus, set value without comma
     const val = value();
     if (val != null) {
       setInputStr(String(val));
@@ -276,14 +276,14 @@ export const NumberInput: NumberInputComponent = (props) => {
     }
   };
 
-  // blur 핸들러
+  // Blur handler
   const handleBlur: JSX.FocusEventHandler<HTMLInputElement, FocusEvent> = () => {
     setIsEditing(false);
-    // blur 시 포맷팅 적용
+    // On blur, apply formatting
     setInputStr(formatNumber(value(), local.comma ?? true, local.minDigits));
   };
 
-  // wrapper 클래스 (inset 분기에서는 local.class 제외)
+  // Wrapper class (exclude local.class in inset branch)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
       size: local.size,
@@ -295,13 +295,13 @@ export const NumberInput: NumberInputComponent = (props) => {
 
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (local.required && v === undefined) return "This field is required";
     if (v !== undefined) {
-      if (local.min !== undefined && v < local.min) return `최솟값은 ${local.min}입니다`;
-      if (local.max !== undefined && v > local.max) return `최댓값은 ${local.max}입니다`;
+      if (local.min !== undefined && v < local.min) return `Minimum value is ${local.min}`;
+      if (local.max !== undefined && v > local.max) return `Maximum value is ${local.max}`;
     }
     return local.validate?.(v);
   });
@@ -358,7 +358,7 @@ export const NumberInput: NumberInputComponent = (props) => {
             </Show>
           }
         >
-          {/* inset 모드: dual-element overlay 패턴 */}
+          {/* inset mode: dual-element overlay pattern */}
           <div
             {...rest}
             data-number-field

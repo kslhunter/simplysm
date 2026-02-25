@@ -239,7 +239,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     }
   });
 
-  // 외부 클릭 감지 (pointerdown)
+  // Detect outside click (pointerdown)
   createEffect(() => {
     if (!open()) return;
 
@@ -247,13 +247,13 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       const popup = popupRef();
       const target = e.target as Node;
 
-      // 팝업 내부 클릭은 무시
+      // Ignore clicks inside popup
       if (popup?.contains(target)) return;
 
-      // Trigger 내부 클릭도 무시
+      // Ignore clicks inside trigger
       if (triggerRef?.contains(target)) return;
 
-      // 외부 클릭 -> 닫기
+      // Outside click -> close
       setOpen(false);
     };
 
@@ -261,7 +261,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     onCleanup(() => document.removeEventListener("pointerdown", handlePointerDown));
   });
 
-  // Tab 키 포커스 이동 감지 (focusout)
+  // Detect Tab key focus movement (focusout)
   createEffect(() => {
     if (!open()) return;
 
@@ -269,16 +269,16 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       const popup = popupRef();
       const relatedTarget = e.relatedTarget as Node | null;
 
-      // relatedTarget이 null이면 무시 (pointerdown이 처리)
+      // Ignore if relatedTarget is null (pointerdown handles it)
       if (!relatedTarget) return;
 
-      // 팝업 내부로 이동은 무시
+      // Ignore movement to popup
       if (popup?.contains(relatedTarget)) return;
 
-      // Trigger 내부로 이동도 무시
+      // Ignore movement to trigger
       if (triggerRef?.contains(relatedTarget)) return;
 
-      // 외부로 포커스 이동 -> 닫기
+      // Focus moved outside -> close
       setOpen(false);
     };
 
@@ -286,7 +286,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     onCleanup(() => document.removeEventListener("focusout", handleFocusOut));
   });
 
-  // Escape 키 감지
+  // Detect Escape key
   createEffect(() => {
     if (!open()) return;
 
@@ -301,11 +301,11 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
   });
 
-  // 키보드 네비게이션: 트리거용 핸들러
+  // Keyboard navigation: handler for trigger
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
     if (!local.keyboardNav) return;
 
-    // 닫혀있을 때: ArrowUp/ArrowDown으로 열기
+    // When closed: open with ArrowUp/ArrowDown
     if (!open()) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
@@ -314,7 +314,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       return;
     }
 
-    // 열려있을 때: direction에 따른 처리
+    // When open: handle based on direction
     const popup = popupRef();
     if (!popup) return;
 
@@ -345,19 +345,19 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     }
   };
 
-  // 키보드 네비게이션: 팝업용 핸들러
+  // Keyboard navigation: handler for popup
   const handlePopupKeyDown = (e: KeyboardEvent) => {
     if (!local.keyboardNav) return;
 
-    // List 등에서 이미 처리된 이벤트는 무시
+    // Ignore events already handled (e.g., by List)
     if (e.defaultPrevented) return;
 
     if (!triggerRef) return;
 
     const dir = direction();
 
-    // 팝업에서 ArrowUp/ArrowDown이 처리되지 않았다면 (첫/마지막 아이템)
-    // 트리거로 포커스 이동
+    // If ArrowUp/ArrowDown not handled in popup (first/last item)
+    // Move focus to trigger
     if (dir === "down" && e.key === "ArrowUp") {
       e.preventDefault();
       triggerRef.focus();
@@ -367,24 +367,24 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     }
   };
 
-  // 스크롤 감지
+  // Detect scroll
   createEffect(() => {
     if (!open()) return;
 
     const handleScroll = (e: Event) => {
-      // 팝업 내부 스크롤은 무시
+      // Ignore scroll inside popup
       const popup = popupRef();
       if (popup?.contains(e.target as Node)) return;
 
       setOpen(false);
     };
 
-    // capture로 모든 스크롤 감지
+    // Detect all scroll events with capture
     document.addEventListener("scroll", handleScroll, { capture: true });
     onCleanup(() => document.removeEventListener("scroll", handleScroll, { capture: true }));
   });
 
-  // resize 감지 (뷰포트 크기 변경 시 닫기)
+  // Detect resize (close when viewport size changes)
   createEffect(() => {
     if (!open()) return;
 
@@ -396,20 +396,20 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     onCleanup(() => window.removeEventListener("resize", handleResize));
   });
 
-  // transitionend 이벤트 처리
+  // Handle transitionend event
   const handleTransitionEnd = (e: TransitionEvent) => {
-    // opacity 전환 완료 시에만 처리
+    // Only handle when opacity transition completes
     if (e.propertyName !== "opacity") return;
 
     if (!open()) {
-      // 닫힘 애니메이션 완료 -> DOM에서 제거
+      // Closing animation complete -> remove from DOM
       unmount();
     }
   };
 
   const maxHeight = () => local.maxHeight ?? 300;
 
-  // 애니메이션 클래스 (opacity와 transform만 transition, 위치 속성은 제외)
+  // Animation class (only transition opacity and transform, not position properties)
   const animationClass = () => {
     const base = "transition-[opacity,transform] duration-150 ease-out";
     const visible = animating();
@@ -426,7 +426,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     <DropdownContext.Provider value={{ toggle, setTrigger, setContent }}>
       {local.children}
 
-      {/* Trigger 슬롯 렌더링 (wrapper div에 click/keyboard handler 부착) */}
+      {/* Render trigger slot (attach click/keyboard handlers to wrapper div) */}
       <Show when={triggerSlot()}>
         <div
           ref={(el) => {
@@ -440,7 +440,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
         </div>
       </Show>
 
-      {/* Content 슬롯: Portal + 팝업 */}
+      {/* Content slot: Portal + popup */}
       <Show when={mounted()}>
         <Portal>
           <div

@@ -30,7 +30,7 @@ export default function LoginPage() {
               <FormGroup.Item>
                 <TextInput
                   class="w-full"
-                  placeholder="아이디를 입력하세요"
+                  placeholder="Enter your ID"
                   size="lg"
                   required
                   touchMode
@@ -46,7 +46,7 @@ export default function LoginPage() {
                 <TextInput
                   class="w-full"
                   type="password"
-                  placeholder="비밀번호를 입력하세요"
+                  placeholder="Enter your password"
                   size="lg"
                   required
                   touchMode
@@ -60,16 +60,16 @@ export default function LoginPage() {
               </FormGroup.Item>
               <FormGroup.Item>
                 <Button theme="primary" variant="solid" class="w-full" type="submit" size="xl">
-                  로그인
+                  Login
                 </Button>
               </FormGroup.Item>
               <FormGroup.Item class="flex flex-row justify-center gap-3 pt-4">
-                <Link onClick={() => alert("비밀번호 변경")} class="text-sm text-base-500">
-                  비밀번호 변경
+                <Link onClick={() => alert("Change password")} class="text-sm text-base-500">
+                  Change password
                 </Link>
                 <span class="text-base-300 dark:text-base-600">|</span>
-                <Link onClick={() => alert("회원가입")} class="text-sm text-base-500">
-                  회원가입
+                <Link onClick={() => alert("Sign up")} class="text-sm text-base-500">
+                  Sign up
                 </Link>
               </FormGroup.Item>
             </FormGroup>

@@ -404,7 +404,7 @@ export const Dialog: DialogComponent = (props) => {
       style["min-height"] = `${local.minHeight}px`;
     }
 
-    // position 모드
+    // Position mode
     if (local.position === "bottom-right") {
       style.position = "absolute";
       style.right = "3rem";
@@ -418,7 +418,7 @@ export const Dialog: DialogComponent = (props) => {
     return style;
   };
 
-  // 애니메이션 클래스
+  // Animation class
   const animationClass = () => {
     const base = clsx("transition-[opacity,transform]", "duration-200", "ease-out");
     if (animating()) {
@@ -428,9 +428,9 @@ export const Dialog: DialogComponent = (props) => {
     }
   };
 
-  // wrapper 클래스
+  // Wrapper class
   const wrapperClass = () =>
-    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0은 Chrome 84 미지원
+    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
     clsx(
       "fixed bottom-0 left-0 right-0 top-0",
       "flex flex-col items-center",
@@ -438,9 +438,9 @@ export const Dialog: DialogComponent = (props) => {
       local.float && "pointer-events-none",
     );
 
-  // 백드롭 클래스
+  // Backdrop class
   const backdropClass = () =>
-    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0은 Chrome 84 미지원
+    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
     clsx(
       "absolute bottom-0 left-0 right-0 top-0",
       "bg-black/30",
@@ -451,7 +451,7 @@ export const Dialog: DialogComponent = (props) => {
       animating() ? "opacity-100" : "opacity-0",
     );
 
-  // dialog 클래스
+  // Dialog class
   const dialogBaseClass = () =>
     clsx(
       "relative",
@@ -469,7 +469,7 @@ export const Dialog: DialogComponent = (props) => {
       animationClass(),
     );
 
-  // 헤더 클래스
+  // Header class
   const headerClass = () =>
     clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", borderSubtle);
 
@@ -478,12 +478,12 @@ export const Dialog: DialogComponent = (props) => {
       <Portal>
         <DialogSlotsContext.Provider value={{ setHeader, setAction }}>
           <div ref={setWrapperRef} data-modal class={wrapperClass()}>
-            {/* 백드롭 */}
+            {/* Backdrop */}
             <Show when={!local.float}>
               <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />
             </Show>
 
-            {/* 다이얼로그 */}
+            {/* Dialog */}
             <div
               ref={(el) => {
                 dialogRef = el;
@@ -498,7 +498,7 @@ export const Dialog: DialogComponent = (props) => {
               onFocus={handleDialogFocus}
               onTransitionEnd={handleTransitionEnd}
             >
-              {/* 헤더 */}
+              {/* Header */}
               <Show when={hasHeader()}>
                 <div
                   data-modal-header
@@ -527,12 +527,12 @@ export const Dialog: DialogComponent = (props) => {
                 </div>
               </Show>
 
-              {/* 콘텐츠 */}
+              {/* Content */}
               <div data-modal-content class={dialogContentClass}>
                 {local.children}
               </div>
 
-              {/* 리사이즈 바 */}
+              {/* Resize bars */}
               <Show when={local.resizable}>
                 <For each={RESIZE_DIRECTIONS}>
                   {(direction) => (

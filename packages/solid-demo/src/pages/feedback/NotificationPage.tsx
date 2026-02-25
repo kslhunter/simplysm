@@ -8,91 +8,89 @@ const NotificationDemo: Component = () => {
     <div class="space-y-8">
       {/* Theme-specific notification test */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">테마별 알림</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Theme-specific Notifications</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          각 버튼을 클릭하면 해당 테마의 알림이 발생합니다. 상단 배너와 우측 상단의 벨 아이콘에서
-          확인할 수 있습니다.
+          Click each button to trigger a notification with that theme. You can see them in the top banner and bell icon in the top right.
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
             theme="info"
             variant="solid"
-            onClick={() => notification.info("정보", "일반 정보 알림입니다.")}
+            onClick={() => notification.info("Info", "This is a general information notification.")}
           >
-            Info 알림
+            Info Notification
           </Button>
           <Button
             theme="success"
             variant="solid"
-            onClick={() => notification.success("성공", "작업이 완료되었습니다.")}
+            onClick={() => notification.success("Success", "The operation has been completed.")}
           >
-            Success 알림
+            Success Notification
           </Button>
           <Button
             theme="warning"
             variant="solid"
-            onClick={() => notification.warning("경고", "주의가 필요합니다.")}
+            onClick={() => notification.warning("Warning", "Attention is required.")}
           >
-            Warning 알림
+            Warning Notification
           </Button>
           <Button
             theme="danger"
             variant="solid"
-            onClick={() => notification.danger("에러", "오류가 발생했습니다.")}
+            onClick={() => notification.danger("Error", "An error has occurred.")}
           >
-            Danger 알림
+            Danger Notification
           </Button>
         </div>
       </section>
 
       {/* Notification with action button */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">액션 버튼 포함</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">With Action Button</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          알림에 액션 버튼을 포함할 수 있습니다. 배너에서 버튼을 클릭해 보세요.
+          Notifications can include an action button. Try clicking the button in the banner.
         </p>
         <Button
           theme="primary"
           variant="solid"
           onClick={() =>
-            notification.info("파일 업로드", "file.png 업로드가 완료되었습니다.", {
+            notification.info("File Upload", "file.png upload has been completed.", {
               action: {
-                label: "보기",
-                onClick: () => alert("파일 보기 클릭!"),
+                label: "View",
+                onClick: () => alert("View file clicked!"),
               },
             })
           }
         >
-          액션 포함 알림
+          Notification With Action
         </Button>
       </section>
 
       {/* Multiple notifications */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">연속 알림</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Multiple Notifications</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          여러 개의 알림을 연속으로 발생시킵니다. 벨 아이콘을 클릭하면 모든 알림 목록을 확인할 수
-          있습니다.
+          Trigger multiple notifications in sequence. Click the bell icon to see all notifications.
         </p>
         <Button
           theme="base"
           variant="outline"
           onClick={() => {
-            notification.info("1번째 알림", "첫 번째 알림입니다.");
-            setTimeout(() => notification.success("2번째 알림", "두 번째 알림입니다."), 100);
-            setTimeout(() => notification.warning("3번째 알림", "세 번째 알림입니다."), 200);
+            notification.info("1st Notification", "This is the first notification.");
+            setTimeout(() => notification.success("2nd Notification", "This is the second notification."), 100);
+            setTimeout(() => notification.warning("3rd Notification", "This is the third notification."), 200);
           }}
         >
-          3개 연속 알림 발생
+          Trigger 3 Consecutive Notifications
         </Button>
       </section>
 
       {/* Clear all */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">알림 관리</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">모든 알림을 삭제합니다.</p>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Notification Management</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">Clear all notifications.</p>
         <Button theme="danger" variant="outline" onClick={() => notification.clear()}>
-          전체 알림 삭제
+          Clear All Notifications
         </Button>
       </section>
     </div>

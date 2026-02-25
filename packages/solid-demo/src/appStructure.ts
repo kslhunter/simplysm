@@ -16,11 +16,11 @@ export const { AppStructureProvider, useAppStructure } = createAppStructure(() =
   items: [
     {
       code: "home",
-      title: "홈",
+      title: "Home",
       children: [
         {
           code: "main",
-          title: "메인",
+          title: "Main",
           icon: IconHome,
           component: MainPage,
         },

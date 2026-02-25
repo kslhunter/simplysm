@@ -23,19 +23,19 @@ import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 //#region Types
 
 /**
- * Server 빌드 정보 (일회성 빌드용)
+ * Server build information (for one-time build)
  */
 export interface ServerBuildInfo {
   name: string;
   cwd: string;
   pkgDir: string;
-  /** 빌드 시 치환할 환경변수 */
+  /** Environment variables to substitute during build */
   env?: Record<string, string>;
-  /** 런타임 설정 (dist/.config.json에 기록) */
+  /** Runtime configuration (recorded in dist/.config.json) */
   configs?: Record<string, unknown>;
-  /** sd.config.ts에서 수동 지정한 external 모듈 */
+  /** External modules manually specified in sd.config.ts */
   externals?: string[];
-  /** PM2 설정 (지정 시 dist/pm2.config.cjs 생성) */
+  /** PM2 configuration (generates dist/pm2.config.cjs when specified) */
   pm2?: {
     name?: string;
     ignoreWatchPaths?: string[];
@@ -45,7 +45,7 @@ export interface ServerBuildInfo {
 }
 
 /**
- * Server 빌드 결과
+ * Server build result
  */
 export interface ServerBuildResult {
   success: boolean;
@@ -55,24 +55,24 @@ export interface ServerBuildResult {
 }
 
 /**
- * Server Watch 정보
+ * Server watch information
  */
 export interface ServerWatchInfo {
   name: string;
   cwd: string;
   pkgDir: string;
-  /** 빌드 시 치환할 환경변수 */
+  /** Environment variables to substitute during build */
   env?: Record<string, string>;
-  /** 런타임 설정 (dist/.config.json에 기록) */
+  /** Runtime configuration (recorded in dist/.config.json) */
   configs?: Record<string, unknown>;
-  /** sd.config.ts에서 수동 지정한 external 모듈 */
+  /** External modules manually specified in sd.config.ts */
   externals?: string[];
-  /** sd.config.ts의 replaceDeps 설정 */
+  /** replaceDeps configuration from sd.config.ts */
   replaceDeps?: Record<string, string>;
 }
 
 /**
- * 빌드 이벤트
+ * Build event
  */
 export interface ServerBuildEvent {
   success: boolean;
@@ -82,14 +82,14 @@ export interface ServerBuildEvent {
 }
 
 /**
- * 에러 이벤트
+ * Error event
  */
 export interface ServerErrorEvent {
   message: string;
 }
 
 /**
- * Worker 이벤트 타입
+ * Worker event types
  */
 export interface ServerWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
@@ -99,28 +99,28 @@ export interface ServerWorkerEvents extends Record<string, unknown> {
 
 //#endregion
 
-//#region 리소스 관리
+//#region Resource Management
 
 const logger = consola.withTag("sd:cli:server:worker");
 
-/** esbuild build context (정리 대상) */
+/** esbuild build context (to be cleaned up) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
-/** 마지막 빌드의 metafile (rebuild 시 변경 파일 필터링용) */
+/** Last build metafile (for filtering changed files on rebuild) */
 let lastMetafile: esbuild.Metafile | undefined;
 
-/** public 파일 watcher (정리 대상) */
+/** Public files watcher (to be cleaned up) */
 let publicWatcher: FsWatcher | undefined;
 
-/** 소스 + scope 패키지 watcher (정리 대상) */
+/** Source + scope packages watcher (to be cleaned up) */
 let srcWatcher: FsWatcher | undefined;
 
 /**
- * 리소스 정리
+ * Clean up resources
  */
 async function cleanup(): Promise<void> {
-  // 전역 변수를 임시 변수로 캡처 후 초기화
-  // (Promise.all 대기 중 다른 호출에서 전역 변수를 수정할 수 있으므로)
+  // Capture global variables to temporary variables and initialize
+  // (other calls can modify global variables while Promise.all is waiting)
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
   lastMetafile = undefined;
@@ -145,10 +145,10 @@ async function cleanup(): Promise<void> {
 }
 
 /**
- * 세 가지 소스에서 external 모듈을 수집하여 합친다.
- * 1. 미설치 optional peer deps
- * 2. binding.gyp 네이티브 모듈
- * 3. sd.config.ts 수동 지정
+ * Collect external modules from three sources and merge them.
+ * 1. Uninstalled optional peer dependencies
+ * 2. Native modules from binding.gyp
+ * 3. Manually specified in sd.config.ts
  */
 function collectAllExternals(pkgDir: string, manualExternals?: string[]): string[] {
   const optionalPeerDeps = collectUninstalledOptionalPeerDeps(pkgDir);
@@ -158,13 +158,13 @@ function collectAllExternals(pkgDir: string, manualExternals?: string[]): string
   const merged = [...new Set([...optionalPeerDeps, ...nativeModules, ...manual])];
 
   if (optionalPeerDeps.length > 0) {
-    logger.debug("미설치 optional peer deps (external):", optionalPeerDeps);
+    logger.debug("Uninstalled optional peer deps (external):", optionalPeerDeps);
   }
   if (nativeModules.length > 0) {
-    logger.debug("네이티브 모듈 (external):", nativeModules);
+    logger.debug("Native modules (external):", nativeModules);
   }
   if (manual.length > 0) {
-    logger.debug("수동 지정 (external):", manual);
+    logger.debug("Manually specified (external):", manual);
   }
 
   return merged;

@@ -51,9 +51,9 @@ export default function IconPage() {
     <div class="space-y-8 p-6">
       {/* Basic Usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용법</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Icon 컴포넌트는 @tabler/icons-solidjs의 아이콘을 래핑합니다.
+          The Icon component wraps icons from @tabler/icons-solidjs.
         </p>
         <div class="flex items-center gap-4">
           <Icon icon={IconHome} />
@@ -64,9 +64,9 @@ export default function IconPage() {
 
       {/* Sizes */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">크기</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Sizes</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          size prop으로 아이콘 크기를 조절할 수 있습니다. 기본값은 1.25em입니다.
+          You can adjust the icon size with the size prop. Default is 1.25em.
         </p>
         <div class="flex items-end gap-4">
           <div class="flex flex-col items-center gap-1">
@@ -94,9 +94,9 @@ export default function IconPage() {
 
       {/* Colors */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">색상</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Colors</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          class prop으로 색상을 지정할 수 있습니다.
+          You can specify colors using the class prop.
         </p>
         <div class="flex items-center gap-4">
           <Icon icon={IconHeart} size="1.5em" class="text-danger-500" />
@@ -109,10 +109,9 @@ export default function IconPage() {
 
       {/* Icon Gallery */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">아이콘 갤러리</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Icon Gallery</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          자주 사용되는 아이콘 목록입니다. @tabler/icons-solidjs에서 더 많은 아이콘을 사용할 수
-          있습니다.
+          This is a list of commonly used icons. More icons are available from @tabler/icons-solidjs.
         </p>
         <div class="grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
           <For each={icons}>
@@ -128,7 +127,7 @@ export default function IconPage() {
 
       {/* With Text */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">텍스트와 함께</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">With Text</h2>
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
             <Icon icon={IconMail} class="text-base-500" />
@@ -136,11 +135,11 @@ export default function IconPage() {
           </div>
           <div class="flex items-center gap-2">
             <Icon icon={IconPhone} class="text-base-500" />
-            <span>010-1234-5678</span>
+            <span>+82-10-1234-5678</span>
           </div>
           <div class="flex items-center gap-2">
             <Icon icon={IconMap} class="text-base-500" />
-            <span>서울특별시 강남구</span>
+            <span>Seoul, Gangnam-gu, South Korea</span>
           </div>
         </div>
       </section>

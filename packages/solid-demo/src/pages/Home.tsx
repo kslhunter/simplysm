@@ -21,11 +21,11 @@ export function Home(props: RouteSectionProps) {
           <img src="logo-landscape.png" alt="SIMPLYSM" class="h-9 w-auto" />
         </div>
         <Sidebar.User
-          name="홍길동"
+          name="Hong Gildong"
           description="hong@example.com"
           menus={[
-            { title: "설정", onClick: () => alert("설정") },
-            { title: "로그아웃", onClick: () => navigate("/login") },
+            { title: "Settings", onClick: () => alert("Settings") },
+            { title: "Logout", onClick: () => navigate("/login") },
           ]}
         />
         <Sidebar.Menu menus={appStructure.usableMenus()} class="flex-1" />
@@ -46,7 +46,7 @@ export function Home(props: RouteSectionProps) {
         </Topbar>
 
         <main class="flex-1 overflow-auto">
-          <Suspense fallback={<div>로딩 중...</div>}>{props.children}</Suspense>
+          <Suspense fallback={<div>Loading...</div>}>{props.children}</Suspense>
         </main>
       </Topbar.Container>
     </Sidebar.Container>

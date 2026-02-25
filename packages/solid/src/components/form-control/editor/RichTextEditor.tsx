@@ -27,26 +27,26 @@ import type { FieldSize } from "../field/Field.styles";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface RichTextEditorProps {
-  /** HTML 문자열 값 */
+  /** HTML string value */
   value?: string;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: string) => void;
 
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
-// 에디터 wrapper 스타일
+// Editor wrapper style
 const editorWrapperClass = clsx(
   "flex flex-col",
   "bg-primary-50 dark:bg-primary-950/30",
@@ -56,10 +56,10 @@ const editorWrapperClass = clsx(
   "focus-within:border-primary-500",
 );
 
-// 에디터 disabled 스타일
+// Editor disabled style
 const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
 
-// 에디터 콘텐츠 영역 스타일
+// Editor content area style
 const editorContentClass = clsx(
   "px-4 py-3",
   "min-h-32",
@@ -68,7 +68,7 @@ const editorContentClass = clsx(
   "dark:prose-invert",
 );
 
-// 에디터 콘텐츠 사이즈별 스타일
+// Editor content size-based style
 const editorContentSizeClasses: Record<FieldSize, string> = {
   xs: clsx("px-1.5 py-1", "min-h-12"),
   sm: clsx("px-3 py-2", "min-h-24"),
@@ -91,7 +91,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  // 에디터 내부 업데이트(onUpdate)와 외부 value 변경을 구분하기 위한 플래그
+  // Flag to distinguish editor internal update (onUpdate) from external value change
   let isInternalUpdate = false;
 
   let editorRef!: HTMLDivElement;
@@ -119,7 +119,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
         allowBase64: true,
       }),
     ],
-    // untrack: value/editable 변경 시 에디터 재생성 방지 (createEffect에서 동기화)
+    // untrack: prevent editor recreation on value/editable change (synced in createEffect)
     content: untrack(() => value()),
     editable: untrack(() => !local.disabled),
     onUpdate({ editor: e }) {
@@ -132,7 +132,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     },
   }));
 
-  // disabled 변경 시 에디터 editable 상태 동기화
+  // Sync editor editable state when disabled changes
   createEffect(() => {
     const e = editor();
     if (e) {
@@ -140,12 +140,12 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     }
   });
 
-  // 외부에서 value가 변경될 때만 에디터 콘텐츠 동기화
+  // Sync editor content only when external value changes
   createEffect(
     on(
       () => value(),
       (newValue) => {
-        // 에디터 내부 업데이트로 인한 value 변경은 무시
+        // Ignore value change from editor internal update
         if (isInternalUpdate) return;
 
         const e = editor();
@@ -160,7 +160,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     ),
   );
 
-  // 클린업
+  // Cleanup
   onCleanup(() => {
     editor()?.destroy();
   });
