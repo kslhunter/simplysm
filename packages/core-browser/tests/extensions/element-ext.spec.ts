@@ -16,7 +16,7 @@ describe("Element prototype extensions", () => {
   });
 
   describe("prependChild", () => {
-    it("요소를 첫 번째 자식으로 삽입", () => {
+    it("inserts an element as the first child", () => {
       const existing = document.createElement("span");
       existing.textContent = "existing";
       container.appendChild(existing);
@@ -31,7 +31,7 @@ describe("Element prototype extensions", () => {
       expect(container.children[1]).toBe(existing);
     });
 
-    it("빈 컨테이너에 삽입", () => {
+    it("inserts into an empty container", () => {
       const newChild = document.createElement("div");
       container.prependChild(newChild);
 
@@ -41,7 +41,7 @@ describe("Element prototype extensions", () => {
   });
 
   describe("findAll", () => {
-    it("셀렉터로 하위 요소 전체 검색", () => {
+    it("searches all child elements by selector", () => {
       container.innerHTML = `
         <div class="item">1</div>
         <div class="item">2</div>
@@ -53,7 +53,7 @@ describe("Element prototype extensions", () => {
       expect(result.length).toBe(3);
     });
 
-    it("복합 셀렉터 지원", () => {
+    it("supports multiple selectors", () => {
       container.innerHTML = `
         <div class="a">a</div>
         <span class="b">b</span>
@@ -65,40 +65,40 @@ describe("Element prototype extensions", () => {
       expect(result.length).toBe(2);
     });
 
-    it("매칭 요소 없으면 빈 배열 반환", () => {
+    it("returns empty array when no elements match", () => {
       const result = container.findAll(".not-exist");
       expect(result).toEqual([]);
     });
 
-    it("빈 셀렉터는 빈 배열 반환", () => {
+    it("returns empty array for empty selector", () => {
       container.innerHTML = `<div class="item">1</div>`;
       const result = container.findAll("");
       expect(result).toEqual([]);
     });
 
-    it("공백만 있는 셀렉터는 빈 배열 반환", () => {
+    it("returns empty array for whitespace-only selector", () => {
       container.innerHTML = `<div class="item">1</div>`;
       const result = container.findAll("   ");
       expect(result).toEqual([]);
     });
 
-    it("속성 셀렉터 내 콤마가 포함된 경우 처리", () => {
+    it("handles comma in attribute selector", () => {
       container.innerHTML = `
         <div data-values="a,b,c">1</div>
         <div class="item">2</div>
       `;
 
-      // 속성 셀렉터에 콤마가 포함된 경우
-      // 현재 구현에서는 잘못 분할될 수 있으므로, 단일 셀렉터로만 사용 권장
+      // When comma is in attribute selector
+      // Current implementation may split incorrectly, single selector recommended
       const result = container.findAll('[data-values="a,b,c"]');
 
-      // 엣지 케이스 동작 확인
+      // Edge case behavior verification
       expect(result.length).toBeGreaterThanOrEqual(0);
     });
   });
 
   describe("findFirst", () => {
-    it("첫 번째 매칭 요소 반환", () => {
+    it("returns first matching element", () => {
       container.innerHTML = `
         <div class="item" id="first">1</div>
         <div class="item" id="second">2</div>
@@ -109,18 +109,18 @@ describe("Element prototype extensions", () => {
       expect(result?.id).toBe("first");
     });
 
-    it("매칭 요소 없으면 undefined 반환", () => {
+    it("returns undefined when no element matches", () => {
       const result = container.findFirst(".not-exist");
       expect(result).toBeUndefined();
     });
 
-    it("빈 셀렉터는 undefined 반환", () => {
+    it("returns undefined for empty selector", () => {
       container.innerHTML = `<div class="item">1</div>`;
       const result = container.findFirst("");
       expect(result).toBeUndefined();
     });
 
-    it("공백만 있는 셀렉터는 undefined 반환", () => {
+    it("returns undefined for whitespace-only selector", () => {
       container.innerHTML = `<div class="item">1</div>`;
       const result = container.findFirst("   ");
       expect(result).toBeUndefined();
@@ -128,7 +128,7 @@ describe("Element prototype extensions", () => {
   });
 
   describe("getParents", () => {
-    it("모든 부모 요소 반환", () => {
+    it("returns all parent elements", () => {
       container.innerHTML = `<div id="level1"><div id="level2"><span id="target"></span></div></div>`;
       const target = container.querySelector("#target")!;
 
@@ -139,14 +139,14 @@ describe("Element prototype extensions", () => {
       expect(parents[1].id).toBe("level1");
     });
 
-    it("body까지 포함", () => {
+    it("includes up to body element", () => {
       const parents = container.getParents();
       expect(parents).toContain(document.body);
     });
   });
 
   describe("findFocusableParent", () => {
-    it("포커스 가능한 부모 요소 반환", () => {
+    it("returns focusable parent element", () => {
       container.innerHTML = `<button id="parent-btn"><span id="child">text</span></button>`;
       const child = container.querySelector("#child")!;
 
@@ -155,7 +155,7 @@ describe("Element prototype extensions", () => {
       expect(result?.id).toBe("parent-btn");
     });
 
-    it("포커스 가능한 부모 없으면 undefined", () => {
+    it("returns undefined when no focusable parent exists", () => {
       container.innerHTML = `<div><span id="child">text</span></div>`;
       const child = container.querySelector("#child")!;
 
@@ -164,7 +164,7 @@ describe("Element prototype extensions", () => {
       expect(result).toBeUndefined();
     });
 
-    it("tabindex 속성으로 포커스 가능해진 요소를 찾는다", () => {
+    it("finds focusable element via tabindex attribute", () => {
       const parent = document.createElement("div");
       parent.setAttribute("tabindex", "0");
       const child = document.createElement("span");
@@ -179,69 +179,69 @@ describe("Element prototype extensions", () => {
   });
 
   describe("isOffsetElement", () => {
-    it("position: relative는 offset 요소", () => {
+    it("position: relative is an offset element", () => {
       container.style.position = "relative";
       expect(container.isOffsetElement()).toBe(true);
     });
 
-    it("position: absolute는 offset 요소", () => {
+    it("position: absolute is an offset element", () => {
       container.style.position = "absolute";
       expect(container.isOffsetElement()).toBe(true);
     });
 
-    it("position: fixed는 offset 요소", () => {
+    it("position: fixed is an offset element", () => {
       container.style.position = "fixed";
       expect(container.isOffsetElement()).toBe(true);
     });
 
-    it("position: sticky는 offset 요소", () => {
+    it("position: sticky is an offset element", () => {
       container.style.position = "sticky";
       expect(container.isOffsetElement()).toBe(true);
     });
 
-    it("position: static은 offset 요소 아님", () => {
+    it("position: static is not an offset element", () => {
       container.style.position = "static";
       expect(container.isOffsetElement()).toBe(false);
     });
   });
 
   describe("isVisible", () => {
-    it("기본 요소는 visible", () => {
+    it("basic element is visible", () => {
       container.style.width = "100px";
       container.style.height = "100px";
       expect(container.isVisible()).toBe(true);
     });
 
-    it("visibility: hidden은 not visible", () => {
+    it("visibility: hidden is not visible", () => {
       container.style.visibility = "hidden";
       expect(container.isVisible()).toBe(false);
     });
 
-    it("opacity: 0은 not visible", () => {
+    it("opacity: 0 is not visible", () => {
       container.style.opacity = "0";
       expect(container.isVisible()).toBe(false);
     });
 
-    it("display: none은 not visible", () => {
+    it("display: none is not visible", () => {
       container.style.display = "none";
       expect(container.isVisible()).toBe(false);
     });
 
-    it("width가 0인 요소의 가시성 판단", () => {
+    it("determines visibility of element with zero width", () => {
       container.style.width = "0";
       container.style.height = "100px";
-      // getClientRects().length가 0이면 not visible
+      // When getClientRects().length is 0, it is not visible
       const isVisible = container.isVisible();
-      // 브라우저 환경에 따라 다를 수 있으므로 boolean 타입임을 확인
+      // May vary depending on browser, verify it is boolean type
       expect(typeof isVisible).toBe("boolean");
     });
 
-    it("height가 0인 요소의 가시성 판단", () => {
+    it("determines visibility of element with zero height", () => {
       container.style.width = "100px";
       container.style.height = "0";
-      // getClientRects().length가 0이면 not visible
+      // When getClientRects().length is 0, it is not visible
       const isVisible = container.isVisible();
-      // 브라우저 환경에 따라 다를 수 있으므로 boolean 타입임을 확인
+      // May vary depending on browser, verify it is boolean type
       expect(typeof isVisible).toBe("boolean");
     });
   });
@@ -259,7 +259,7 @@ describe("Element prototype extensions", () => {
       } as unknown as ClipboardEvent;
     }
 
-    it("input 요소의 value 복사", () => {
+    it("copies value of input element", () => {
       container.innerHTML = `<input type="text" value="test value" />`;
       const event = createMockClipboardEvent(container);
 
@@ -269,7 +269,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
-    it("textarea 요소의 value 복사", () => {
+    it("copies value of textarea element", () => {
       container.innerHTML = `<textarea>textarea content</textarea>`;
       const event = createMockClipboardEvent(container);
 
@@ -279,7 +279,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
-    it("input/textarea 없으면 기본 동작 유지", () => {
+    it("maintains default behavior when no input/textarea exists", () => {
       container.innerHTML = `<span>content</span>`;
       const event = createMockClipboardEvent(container);
 
@@ -289,7 +289,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("clipboardData가 null이면 아무것도 안함", () => {
+    it("does nothing when clipboardData is null", () => {
       const event = {
         target: container,
         clipboardData: null,
@@ -301,7 +301,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("target이 Element가 아니면 아무것도 안함", () => {
+    it("does nothing when target is not an Element", () => {
       const event = {
         target: document,
         clipboardData: { setData: vi.fn(), getData: vi.fn() },
@@ -313,7 +313,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("여러 input 중 첫 번째 input의 value 복사", () => {
+    it("copies first input value when multiple inputs exist", () => {
       container.innerHTML = `
         <input type="text" value="first" />
         <input type="text" value="second" />
@@ -347,7 +347,7 @@ describe("Element prototype extensions", () => {
       } as unknown as ClipboardEvent;
     }
 
-    it("클립보드 내용을 input에 붙여넣기", () => {
+    it("pastes clipboard content into input element", () => {
       container.innerHTML = `<input type="text" />`;
       const input = container.querySelector("input")!;
       const event = createMockClipboardEvent(container, "pasted text");
@@ -358,7 +358,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
-    it("붙여넣기 시 input 이벤트 발생", () => {
+    it("triggers input event on paste", () => {
       container.innerHTML = `<input type="text" />`;
       const input = container.querySelector("input")!;
       const inputEventSpy = vi.fn();
@@ -370,7 +370,7 @@ describe("Element prototype extensions", () => {
       expect(inputEventSpy).toHaveBeenCalledTimes(1);
     });
 
-    it("클립보드 내용을 textarea에 붙여넣기", () => {
+    it("pastes clipboard content into textarea element", () => {
       container.innerHTML = `<textarea></textarea>`;
       const textarea = container.querySelector("textarea")!;
       const event = createMockClipboardEvent(container, "pasted text");
@@ -381,7 +381,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
-    it("input/textarea 없으면 아무것도 안함", () => {
+    it("does nothing when no input/textarea exists", () => {
       container.innerHTML = `<div>no input</div>`;
       const event = createMockClipboardEvent(container, "pasted text");
 
@@ -390,7 +390,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("clipboardData가 null이면 아무것도 안함", () => {
+    it("does nothing when clipboardData is null", () => {
       container.innerHTML = `<input type="text" />`;
       const event = {
         target: container,
@@ -403,7 +403,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("target이 Element가 아니면 아무것도 안함", () => {
+    it("does nothing when target is not an Element", () => {
       const event = {
         target: document,
         clipboardData: { setData: vi.fn(), getData: vi.fn().mockReturnValue("text") },
@@ -415,7 +415,7 @@ describe("Element prototype extensions", () => {
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it("여러 input 중 첫 번째 input에 붙여넣기", () => {
+    it("pastes to first input when multiple inputs exist", () => {
       container.innerHTML = `
         <input type="text" value="existing1" />
         <input type="text" value="existing2" />
@@ -439,12 +439,12 @@ describe("Element prototype extensions", () => {
   });
 
   describe("getBounds", () => {
-    it("빈 배열 전달 시 즉시 빈 배열 반환", async () => {
+    it("returns empty array immediately when passed empty array", async () => {
       const result = await getBounds([]);
       expect(result).toEqual([]);
     });
 
-    it("IntersectionObserver로 bounds 조회", async () => {
+    it("queries bounds using IntersectionObserver", async () => {
       const mockObserver = {
         observe: vi.fn(),
         disconnect: vi.fn(),
@@ -490,7 +490,7 @@ describe("Element prototype extensions", () => {
       vi.unstubAllGlobals();
     });
 
-    it("여러 요소 동시 조회", async () => {
+    it("queries multiple elements simultaneously", async () => {
       const el1 = document.createElement("div");
       const el2 = document.createElement("div");
 
@@ -531,7 +531,7 @@ describe("Element prototype extensions", () => {
       vi.unstubAllGlobals();
     });
 
-    it("중복 요소는 한 번만 처리", async () => {
+    it("handles duplicate elements only once", async () => {
       const mockObserver = {
         observe: vi.fn(),
         disconnect: vi.fn(),
@@ -557,19 +557,19 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      // 같은 요소를 3번 전달
+      // Pass the same element 3 times
       const result = await getBounds([container, container, container]);
 
-      // 결과는 1개만 반환
+      // Result should contain only 1 element
       expect(result.length).toBe(1);
       expect(result[0].target).toBe(container);
-      // observe도 1번만 호출
+      // observe should be called only once
       expect(mockObserver.observe).toHaveBeenCalledTimes(1);
 
       vi.unstubAllGlobals();
     });
 
-    it("결과가 입력 순서대로 정렬됨", async () => {
+    it("results are sorted in input order", async () => {
       const el1 = document.createElement("div");
       const el2 = document.createElement("div");
       const el3 = document.createElement("div");
@@ -584,7 +584,7 @@ describe("Element prototype extensions", () => {
         callback: IntersectionObserverCallback,
       ) {
         setTimeout(() => {
-          // 콜백은 역순으로 호출 (el3, el2, el1)
+          // Callback is called in reverse order (el3, el2, el1)
           callback(
             [
               {
@@ -608,10 +608,10 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      // 입력 순서: el1, el2, el3
+      // Input order: el1, el2, el3
       const result = await getBounds([el1, el2, el3]);
 
-      // 결과도 입력 순서대로: el1, el2, el3
+      // Results should also be in input order: el1, el2, el3
       expect(result.length).toBe(3);
       expect(result[0].target).toBe(el1);
       expect(result[1].target).toBe(el2);
@@ -620,26 +620,26 @@ describe("Element prototype extensions", () => {
       vi.unstubAllGlobals();
     });
 
-    it("타임아웃 시 TimeoutError 발생", async () => {
+    it("throws TimeoutError on timeout", async () => {
       const mockObserver = {
         observe: vi.fn(),
         disconnect: vi.fn(),
       };
 
-      // 콜백을 호출하지 않는 Mock (타임아웃 유도)
+      // Mock that does not call the callback (triggers timeout)
       const MockIntersectionObserver = vi.fn(function () {
         return mockObserver;
       });
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      // 50ms 타임아웃으로 테스트
+      // Test with 50ms timeout
       await expect(getBounds([container], 50)).rejects.toThrow(TimeoutError);
 
       vi.unstubAllGlobals();
     });
 
-    it("커스텀 타임아웃 설정", async () => {
+    it("supports custom timeout setting", async () => {
       const mockObserver = {
         observe: vi.fn(),
         disconnect: vi.fn(),
@@ -649,7 +649,7 @@ describe("Element prototype extensions", () => {
         this: IntersectionObserver,
         callback: IntersectionObserverCallback,
       ) {
-        // 100ms 후에 응답
+        // Responds after 100ms
         setTimeout(() => {
           callback(
             [
@@ -666,14 +666,14 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      // 200ms 타임아웃이면 성공해야 함
+      // Should succeed with 200ms timeout
       const result = await getBounds([container], 200);
       expect(result.length).toBe(1);
 
       vi.unstubAllGlobals();
     });
 
-    it("콜백이 여러 번 분할 호출되어도 모든 결과 수집", async () => {
+    it("collects all results even when callback is called multiple times", async () => {
       const el1 = document.createElement("div");
       const el2 = document.createElement("div");
       const el3 = document.createElement("div");
@@ -687,7 +687,7 @@ describe("Element prototype extensions", () => {
         this: IntersectionObserver,
         callback: IntersectionObserverCallback,
       ) {
-        // 첫 번째 콜백 - el1만
+        // First callback - only el1
         setTimeout(() => {
           callback(
             [
@@ -700,7 +700,7 @@ describe("Element prototype extensions", () => {
           );
         }, 0);
 
-        // 두 번째 콜백 - el2, el3
+        // Second callback - el2, el3
         setTimeout(() => {
           callback(
             [
@@ -724,9 +724,9 @@ describe("Element prototype extensions", () => {
 
       const result = await getBounds([el1, el2, el3]);
 
-      // 모든 요소가 수집되어야 함
+      // All elements should be collected
       expect(result.length).toBe(3);
-      // 입력 순서대로 정렬되어야 함
+      // Results should be sorted in input order
       expect(result[0].target).toBe(el1);
       expect(result[1].target).toBe(el2);
       expect(result[2].target).toBe(el3);
