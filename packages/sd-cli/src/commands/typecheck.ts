@@ -272,17 +272,17 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
         const currentIndex = taskIndex++;
         const task = tasks[currentIndex];
 
-        logger.debug(`[${task.displayName}] 타입체크 시작`);
+        logger.debug(`[${task.displayName}] typecheck started`);
         try {
           const result = await worker.build(task.buildInfo);
           allResults.push({ displayName: task.displayName, result });
           if (result.success) {
-            logger.debug(`[${task.displayName}] 타입체크 완료`);
+            logger.debug(`[${task.displayName}] typecheck completed`);
           } else {
-            logger.debug(`[${task.displayName}] 타입체크 실패`, { errorCount: result.errorCount });
+            logger.debug(`[${task.displayName}] typecheck failed`, { errorCount: result.errorCount });
           }
         } catch (err) {
-          logger.error(`Worker 오류: ${task.displayName}`, {
+          logger.error(`Worker error: ${task.displayName}`, {
             error: errorMessage(err),
           });
           allResults.push({
@@ -299,9 +299,9 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
       }
     }
 
-    logger.start(`타입체크 실행 중... (${tasks.length}개 대상, 동시성: ${concurrency})`);
+    logger.start(`Running typecheck... (${tasks.length} targets, concurrency: ${concurrency})`);
     await Promise.all(workers.map((worker) => runNextTask(worker)));
-    logger.success("타입체크 실행 완료");
+    logger.success("Typecheck execution completed");
   } finally {
     await Promise.all(workers.map((w) => w.terminate()));
   }
