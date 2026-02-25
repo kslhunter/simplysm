@@ -9,7 +9,7 @@ export function isCrudDetailAfterDef(value: unknown): value is CrudDetailAfterDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
+/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudDetailAfter(props: { children: JSX.Element }): JSX.Element {
   return {
     __type: "crud-detail-after",
