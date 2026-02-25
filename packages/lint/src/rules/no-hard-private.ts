@@ -18,27 +18,27 @@ function isClassMemberWithAccessibility(
 }
 
 /**
- * ECMAScript private 필드(`#field`) 사용을 제한하고 TypeScript `private` 키워드 사용을 강제하는 ESLint 규칙
+ * ESLint rule that restricts ECMAScript private fields (`#field`) and enforces TypeScript `private` keyword usage.
  *
  * @remarks
- * 이 규칙은 다음을 검사한다:
- * - 클래스 필드 선언: `#field`
- * - 클래스 메서드 선언: `#method()`
- * - 클래스 접근자 선언: `accessor #field`
- * - 멤버 접근 표현식: `this.#field`
+ * This rule checks:
+ * - Class field declarations: `#field`
+ * - Class method declarations: `#method()`
+ * - Class accessor declarations: `accessor #field`
+ * - Member access expressions: `this.#field`
  */
 export default createRule({
   name: "no-hard-private",
   meta: {
     type: "problem",
     docs: {
-      description: '하드 프라이빗 필드(#) 대신 TypeScript "private _" 스타일을 강제한다.',
+      description: 'Enforces TypeScript "private _" style instead of hard private fields (#).',
     },
     messages: {
       preferSoftPrivate:
-        '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
+        'Hard private fields (#) are not allowed. Use the "private _" style instead.',
       nameConflict:
-        '하드 프라이빗 필드 "#{{name}}"을 "_{{name}}"으로 변환할 수 없습니다. 동일한 이름의 멤버가 이미 존재합니다.',
+        'Cannot convert hard private field "#{{name}}" to "_{{name}}". A member with the same name already exists.',
     },
     fixable: "code",
     schema: [],
@@ -46,11 +46,11 @@ export default createRule({
   defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
-    // 중첩 클래스 지원을 위한 스택 구조
+    // Stack structure for supporting nested classes
     const classStack: Set<string>[] = [];
 
     return {
-      // 0. 클래스 진입 시 멤버 이름 수집
+      // 0. Collect member names when entering a class
       "ClassBody"(node: TSESTree.ClassBody) {
         const memberNames = new Set<string>();
         for (const member of node.body) {
@@ -67,7 +67,7 @@ export default createRule({
         classStack.pop();
       },
 
-      // 1. 선언부 감지 (PropertyDefinition, MethodDefinition, AccessorProperty)
+      // 1. Detect declarations (PropertyDefinition, MethodDefinition, AccessorProperty)
       "PropertyDefinition > PrivateIdentifier, MethodDefinition > PrivateIdentifier, AccessorProperty > PrivateIdentifier"(
         node: TSESTree.PrivateIdentifier,
       ) {
@@ -76,11 +76,11 @@ export default createRule({
           return;
         }
 
-        const identifierName = node.name; // '#'을 제외한 이름
+        const identifierName = node.name; // Name without the '#' character
         const targetName = `_${identifierName}`;
         const currentClassMembers = classStack.at(-1);
 
-        // 이름 충돌 검사
+        // Check for name conflicts
         if (currentClassMembers?.has(targetName)) {
           context.report({
             node,
@@ -96,25 +96,25 @@ export default createRule({
           fix(fixer) {
             const fixes: RuleFix[] = [];
 
-            // 1-1. 이름 변경 (#a -> _a)
+            // 1-1. Rename (#a -> _a)
             fixes.push(fixer.replaceText(node, targetName));
 
-            // 1-2. 'private' 접근 제어자 추가 위치 계산
+            // 1-2. Calculate the position to add the 'private' access modifier
             if (parent.accessibility == null) {
-              // 기본 삽입 위치: 부모 노드의 시작 지점 (static, async 등 포함)
+              // Default insertion position: beginning of parent node (including static, async, etc)
               let tokenToInsertBefore = sourceCode.getFirstToken(parent);
 
-              // 데코레이터가 있다면, 마지막 데코레이터 '다음' 토큰 앞에 삽입
+              // If decorators exist, insert before the token after the last decorator
               // (@Deco private static _foo)
               if (parent.decorators.length > 0) {
                 const lastDecorator = parent.decorators.at(-1)!;
                 tokenToInsertBefore = sourceCode.getTokenAfter(lastDecorator);
               }
 
-              // tokenToInsertBefore는 이제 'static', 'async', 'readonly' 또는 변수명('_foo')입니다.
-              // 이 앞에 'private '를 붙이면 자연스럽게 'private static ...' 순서가 됩니다.
-              // tokenToInsertBefore가 null인 경우는 AST 파싱 오류 등 예외 상황이므로,
-              // 이름만 변경되는 불완전한 fix를 방지하기 위해 전체 fix를 생략한다.
+              // tokenToInsertBefore is now 'static', 'async', 'readonly', or a variable name ('_foo').
+              // Inserting 'private ' before it naturally results in the correct order 'private static ...'.
+              // If tokenToInsertBefore is null, it indicates an exceptional situation such as an AST parsing error.
+              // In such cases, skip the entire fix to prevent an incomplete fix that only renames.
               if (tokenToInsertBefore == null) {
                 return [];
               }
@@ -126,7 +126,7 @@ export default createRule({
         });
       },
 
-      // 2. 사용부 감지 (this.#field)
+      // 2. Detect usage (this.#field)
       "MemberExpression > PrivateIdentifier"(node: TSESTree.PrivateIdentifier) {
         const identifierName = node.name;
         context.report({

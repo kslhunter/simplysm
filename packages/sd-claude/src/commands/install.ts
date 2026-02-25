@@ -1,6 +1,6 @@
 /**
- * Claude Code 에셋을 프로젝트의 .claude/ 에 설치한다.
- * postinstall 스크립트 또는 `sd-claude install`로 실행.
+ * Installs Claude Code assets to the project's .claude/ directory.
+ * Executed via postinstall script or `sd-claude install`.
  */
 import fs from "fs";
 import path from "path";
@@ -9,23 +9,23 @@ import { fileURLToPath } from "url";
 export function runInstall(): void {
   try {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    // dist/commands/ → 패키지 루트
+    // dist/commands/ → package root
     const pkgRoot = path.resolve(__dirname, "../..");
     const sourceDir = path.join(pkgRoot, "claude");
 
     const projectRoot = findProjectRoot(__dirname);
     if (projectRoot == null) {
       // eslint-disable-next-line no-console
-      console.log("[@simplysm/sd-claude] 프로젝트 루트를 찾을 수 없어 건너뜁니다.");
+      console.log("[@simplysm/sd-claude] Could not find project root, skipping installation.");
       return;
     }
 
-    // simplysm 모노레포이면서 같은 major 버전이면 실행하지 않음
+    // Skip execution if this is the simplysm monorepo with the same major version
     if (isSimplysmMonorepoSameMajor(projectRoot, pkgRoot)) {
       return;
     }
 
-    // 소스 디렉토리가 없으면 건너뜀 (모노레포 개발 환경에서는 claude/ 미존재)
+    // Skip if the source directory doesn't exist (claude/ may not exist in monorepo dev environment)
     if (!fs.existsSync(sourceDir)) {
       return;
     }
@@ -42,15 +42,15 @@ export function runInstall(): void {
     setupStatusLine(targetDir);
 
     // eslint-disable-next-line no-console
-    console.log(`[@simplysm/sd-claude] ${sourceEntries.length}개의 sd-* 항목을 설치했습니다.`);
+    console.log(`[@simplysm/sd-claude] Installed ${sourceEntries.length} sd-* entries.`);
   } catch (err) {
-    // postinstall 실패가 pnpm install 전체를 막지 않도록 에러 무시
+    // Ignore errors to prevent postinstall failure from blocking the entire pnpm install
     // eslint-disable-next-line no-console
-    console.warn("[@simplysm/sd-claude] postinstall 경고:", (err as Error).message);
+    console.warn("[@simplysm/sd-claude] postinstall warning:", (err as Error).message);
   }
 }
 
-/** INIT_CWD 또는 node_modules 경로에서 프로젝트 루트를 찾는다. */
+/** Finds the project root from INIT_CWD or node_modules path. */
 function findProjectRoot(dirname: string): string | undefined {
   if (process.env["INIT_CWD"] != null) {
     return process.env["INIT_CWD"];
@@ -62,7 +62,7 @@ function findProjectRoot(dirname: string): string | undefined {
   return idx !== -1 ? dirname.substring(0, idx) : undefined;
 }
 
-/** simplysm 모노레포이면서 major 버전이 같은지 확인한다. */
+/** Checks if this is the simplysm monorepo with the same major version. */
 function isSimplysmMonorepoSameMajor(projectRoot: string, pkgRoot: string): boolean {
   const projectPkgPath = path.join(projectRoot, "package.json");
   if (!fs.existsSync(projectPkgPath)) return false;
@@ -85,18 +85,18 @@ function isSimplysmMonorepoSameMajor(projectRoot: string, pkgRoot: string): bool
   return projectMajor != null && projectMajor === sdClaudeMajor;
 }
 
-/** sd-* 항목을 재귀적으로 수집한다. */
+/** Recursively collects sd-* entries. */
 function collectSdEntries(sourceDir: string): string[] {
   const entries: string[] = [];
 
-  // 루트 레벨: sd-*
+  // Root level: sd-*
   for (const name of fs.readdirSync(sourceDir)) {
     if (name.startsWith("sd-")) {
       entries.push(name);
     }
   }
 
-  // 서브 디렉토리: */sd-*
+  // Subdirectories: */sd-*
   for (const dirent of fs.readdirSync(sourceDir, { withFileTypes: true })) {
     if (!dirent.isDirectory() || dirent.name.startsWith("sd-")) continue;
     const subPath = path.join(sourceDir, dirent.name);
@@ -110,18 +110,18 @@ function collectSdEntries(sourceDir: string): string[] {
   return entries;
 }
 
-/** 기존 sd-* 항목을 삭제한다. */
+/** Removes existing sd-* entries. */
 function cleanSdEntries(targetDir: string): void {
   if (!fs.existsSync(targetDir)) return;
 
-  // 루트 레벨 sd-*
+  // Root level sd-*
   for (const name of fs.readdirSync(targetDir)) {
     if (name.startsWith("sd-")) {
       fs.rmSync(path.join(targetDir, name), { recursive: true });
     }
   }
 
-  // 서브 디렉토리 */sd-*
+  // Subdirectories */sd-*
   for (const dirent of fs.readdirSync(targetDir, { withFileTypes: true })) {
     if (!dirent.isDirectory() || dirent.name.startsWith("sd-")) continue;
     const subPath = path.join(targetDir, dirent.name);
@@ -133,7 +133,7 @@ function cleanSdEntries(targetDir: string): void {
   }
 }
 
-/** sd-* 항목을 복사한다. */
+/** Copies sd-* entries. */
 function copySdEntries(sourceDir: string, targetDir: string, entries: string[]): void {
   fs.mkdirSync(targetDir, { recursive: true });
   for (const entry of entries) {
@@ -144,7 +144,7 @@ function copySdEntries(sourceDir: string, targetDir: string, entries: string[]):
   }
 }
 
-/** settings.json에 statusLine 설정을 추가한다. */
+/** Adds statusLine configuration to settings.json. */
 function setupStatusLine(targetDir: string): void {
   const settingsPath = path.join(targetDir, "settings.json");
   const sdStatusLineCommand = "node .claude/sd-statusline.js";

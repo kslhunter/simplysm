@@ -14,9 +14,9 @@ import { DB_CONN_ERRORS, getDialectFromConfig } from "./types/db-conn";
 import { createDbConn } from "./create-db-conn";
 
 /**
- * Node.js 환경용 DbContextExecutor
+ * DbContextExecutor for Node.js environment
  *
- * DbContext에서 사용하는 실행기로, 실제 DB 연결을 담당한다.
+ * Executor used by DbContext that handles actual DB connections.
  */
 export class NodeDbContextExecutor implements DbContextExecutor {
   private _conn?: DbConn;
@@ -27,9 +27,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * DB 연결 수립
+   * Establish DB connection
    *
-   * 커넥션 풀에서 연결을 획득하고 연결 상태를 활성화한다.
+   * Acquires connection from connection pool and activates the connection state.
    */
   async connect(): Promise<void> {
     this._conn = await createDbConn(this._config);
@@ -37,11 +37,11 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * DB 연결 종료
+   * Close DB connection
    *
-   * 커넥션 풀에 연결을 반환한다.
+   * Returns connection to the connection pool.
    *
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @throws {Error} When not connected
    */
   async close(): Promise<void> {
     const conn = this._requireConn();
@@ -50,10 +50,10 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * 트랜잭션 시작
+   * Begin transaction
    *
-   * @param isolationLevel - 트랜잭션 격리 수준
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @param isolationLevel - Transaction isolation level
+   * @throws {Error} When not connected
    */
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._requireConn();
@@ -61,9 +61,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * 트랜잭션 커밋
+   * Commit transaction
    *
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @throws {Error} When not connected
    */
   async commitTransaction(): Promise<void> {
     const conn = this._requireConn();
@@ -71,9 +71,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * 트랜잭션 롤백
+   * Rollback transaction
    *
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @throws {Error} When not connected
    */
   async rollbackTransaction(): Promise<void> {
     const conn = this._requireConn();
@@ -81,12 +81,12 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * 파라미터화된 쿼리 실행
+   * Execute parameterized query
    *
-   * @param query - SQL 쿼리 문자열
-   * @param params - 쿼리 파라미터 배열
-   * @returns 쿼리 결과 배열
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @param query - SQL query string
+   * @param params - Query parameter array
+   * @returns Query result array
+   * @throws {Error} When not connected
    */
   async executeParametrized(
     query: string,
@@ -97,12 +97,12 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * 대량 데이터 삽입 (네이티브 벌크 API 사용)
+   * Bulk insert data (using native bulk API)
    *
-   * @param tableName - 대상 테이블명
-   * @param columnMetas - 컬럼 메타데이터
-   * @param records - 삽입할 레코드 배열
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @param tableName - Target table name
+   * @param columnMetas - Column metadata
+   * @param records - Record array to insert
+   * @throws {Error} When not connected
    */
   async bulkInsert(
     tableName: string,
@@ -114,14 +114,14 @@ export class NodeDbContextExecutor implements DbContextExecutor {
   }
 
   /**
-   * QueryDef 배열 실행
+   * Execute QueryDef array
    *
-   * QueryDef를 SQL로 변환하여 실행하고, ResultMeta를 사용하여 결과를 파싱한다.
+   * Converts QueryDef to SQL and executes, parses results using ResultMeta.
    *
-   * @param defs - 실행할 QueryDef 배열
-   * @param resultMetas - 결과 파싱용 메타데이터 배열 (타입 변환에 사용)
-   * @returns 각 QueryDef의 실행 결과 배열
-   * @throws {Error} 연결되지 않은 상태일 때
+   * @param defs - QueryDef array to execute
+   * @param resultMetas - Result parsing metadata array (used for type conversion)
+   * @returns Array of execution results for each QueryDef
+   * @throws {Error} When not connected
    */
   async executeDefs<T = DataRecord>(
     defs: QueryDef[],
@@ -131,15 +131,15 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
     const builder = createQueryBuilder(this._dialect);
 
-    // 가져올 데이터가 없는 것으로 옵션 설정을 했을 때, 하나의 쿼리로 한번의 요청 보냄
-    // 결과가 필요 없으므로 defs.length개의 빈 배열을 반환하여 인터페이스 계약 유지
+    // When configured not to fetch data, send one request with a single query
+    // Since results are not needed, return empty arrays matching defs.length to maintain interface contract
     if (resultMetas != null && resultMetas.every((item) => item == null)) {
       const combinedSql = defs.map((def) => builder.build(def).sql).join("\n");
       await conn.execute([combinedSql]);
       return defs.map(() => []) as T[][];
     }
 
-    // 각 def를 개별 실행
+    // Execute each def individually
     const results: T[][] = [];
     for (let i = 0; i < defs.length; i++) {
       const def = defs[i];
@@ -148,7 +148,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
       const rawResults = await conn.execute([buildResult.sql]);
 
-      // resultSetIndex가 지정된 경우 해당 인덱스의 결과셋 사용
+      // Use result set at specified index if resultSetIndex is specified
       const targetResultSet =
         buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
 

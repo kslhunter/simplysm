@@ -8,26 +8,26 @@ import type { DbConnConfig } from "./types/db-conn";
 import { NodeDbContextExecutor } from "./node-db-context-executor";
 
 /**
- * Orm 옵션
+ * ORM options
  *
- * DbConnConfig보다 우선 적용되는 DbContext 옵션
+ * DbContext options that take precedence over DbConnConfig
  */
 export interface OrmOptions {
   /**
-   * 데이터베이스 이름 (DbConnConfig의 database 대신 사용)
+   * Database name (used instead of DbConnConfig's database)
    */
   database?: string;
 
   /**
-   * 스키마 이름 (MSSQL: dbo, PostgreSQL: public)
+   * Schema name (MSSQL: dbo, PostgreSQL: public)
    */
   schema?: string;
 }
 
 /**
- * Orm 인스턴스 타입
+ * ORM instance type
  *
- * createOrm에서 반환되는 객체의 타입
+ * Type of the object returned from createOrm
  */
 export interface Orm<TDef extends DbContextDef<any, any, any>> {
   readonly dbContextDef: TDef;
@@ -35,11 +35,11 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
   readonly options?: OrmOptions;
 
   /**
-   * 트랜잭션 내에서 콜백 실행
+   * Execute callback within a transaction
    *
-   * @param callback - DB 연결 후 실행할 콜백
-   * @param isolationLevel - 트랜잭션 격리 수준
-   * @returns 콜백 결과
+   * @param callback - Callback to execute after DB connection
+   * @param isolationLevel - Transaction isolation level
+   * @returns Callback result
    */
   connect<R>(
     callback: (conn: DbContextInstance<TDef>) => Promise<R>,
@@ -47,19 +47,19 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
   ): Promise<R>;
 
   /**
-   * 트랜잭션 없이 콜백 실행
+   * Execute callback without a transaction
    *
-   * @param callback - DB 연결 후 실행할 콜백
-   * @returns 콜백 결과
+   * @param callback - Callback to execute after DB connection
+   * @returns Callback result
    */
   connectWithoutTransaction<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>): Promise<R>;
 }
 
 /**
- * Node.js ORM 팩토리 함수
+ * Node.js ORM factory function
  *
- * DbContext와 DB 연결을 관리하는 인스턴스를 생성합니다.
- * DbContext 정의와 연결 설정을 받아 트랜잭션을 관리합니다.
+ * Creates an instance that manages DbContext and DB connections.
+ * Receives DbContext definition and connection configuration to manage transactions.
  *
  * @example
  * ```typescript
@@ -76,13 +76,13 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
  *   database: "mydb",
  * });
  *
- * // 트랜잭션 내에서 실행
+ * // Execute within a transaction
  * await orm.connect(async (db) => {
  *   const users = await db.user().result();
  *   return users;
  * });
  *
- * // 트랜잭션 없이 실행
+ * // Execute without a transaction
  * await orm.connectWithoutTransaction(async (db) => {
  *   const users = await db.user().result();
  *   return users;
@@ -95,13 +95,13 @@ export function createOrm<TDef extends DbContextDef<any, any, any>>(
   options?: OrmOptions,
 ): Orm<TDef> {
   function _createDbContext(): DbContextInstance<TDef> {
-    // database는 options에서 우선, 없으면 config에서
+    // database from options first, then from config
     const database = options?.database ?? ("database" in config ? config.database : undefined);
     if (database == null || database === "") {
       throw new Error("database is required");
     }
 
-    // schema는 options에서 우선, 없으면 config에서
+    // schema from options first, then from config
     const schema = options?.schema ?? ("schema" in config ? config.schema : undefined);
 
     return createDbContext(dbContextDef, new NodeDbContextExecutor(config), {

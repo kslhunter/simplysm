@@ -2,8 +2,8 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { Expr, WhereExpr } from "../types/expr";
 
 /**
- * 타입 안전한 표현식 래퍼
- * TypeScript 제네릭으로 표현식의 반환 타입을 추적
+ * Type-safe expression wrapper
+ * Tracks expression return type using TypeScript generics
  */
 export class ExprUnit<TPrimitive extends ColumnPrimitive> {
   readonly $infer!: TPrimitive;
@@ -19,13 +19,13 @@ export class ExprUnit<TPrimitive extends ColumnPrimitive> {
 }
 
 /**
- * WHERE 절용 표현식 래퍼
+ * Expression wrapper for WHERE clause
  */
 export class WhereExprUnit {
   constructor(readonly expr: WhereExpr) {}
 }
 
 /**
- * ExprUnit 또는 리터럴 값을 받을 수 있는 입력 타입
+ * Input type that accepts ExprUnit or literal values
  */
 export type ExprInput<TPrimitive extends ColumnPrimitive> = ExprUnit<TPrimitive> | TPrimitive;

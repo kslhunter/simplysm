@@ -30,18 +30,18 @@ import type { ForeignKeyBuilder } from "./schema/factory/relation-builder";
 import type { IndexBuilder } from "./schema/factory/index-builder";
 
 /**
- * DbContext 인스턴스 팩토리
+ * DbContext instance factory
  *
- * DbContextDef(정의)와 DbContextExecutor(실행기)를 받아
- * queryable 접근자, DDL 메서드, 연결/트랜잭션 관리를 포함한
- * 완전한 DbContext 인스턴스를 생성
+ * Takes DbContextDef (definition) and DbContextExecutor (executor) and creates
+ * a complete DbContext instance including queryable accessors, DDL methods,
+ * and connection/transaction management
  *
- * @param def - defineDbContext()로 생성한 정의 객체
- * @param executor - 쿼리 실행기 (NodeDbContextExecutor, ServiceDbContextExecutor 등)
- * @param opt - 데이터베이스 옵션
- * @param opt.database - 데이터베이스 이름
- * @param opt.schema - 스키마 이름 (MSSQL: dbo, PostgreSQL: public)
- * @returns 완전한 DbContext 인스턴스
+ * @param def - Definition object created by defineDbContext()
+ * @param executor - Query executor (NodeDbContextExecutor, ServiceDbContextExecutor, etc.)
+ * @param opt - Database options
+ * @param opt.database - Database name
+ * @param opt.schema - Schema name (MSSQL: dbo, PostgreSQL: public)
+ * @returns A complete DbContext instance
  *
  * @example
  * ```typescript
@@ -93,7 +93,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
         status === "transact" &&
         defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))
       ) {
-        throw new Error("TRANSACTION 상태에서는 DDL을 실행할 수 없습니다.");
+        throw new Error("Cannot execute DDL while in TRANSACTION state.");
       }
       return executor.executeDefs(defs, resultMetas);
     },
@@ -134,10 +134,10 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     //#region ========== Connection management ==========
 
     /**
-     * 트랜잭션 내에서 콜백 실행 (자동 커밋/롤백)
+     * Execute callback within a transaction (automatic commit/rollback)
      *
-     * 연결 -> 트랜잭션 시작 -> 콜백 실행 -> 커밋 -> 연결 종료
-     * 에러 발생 시 자동 롤백 후 연결 종료
+     * Connect -> Start transaction -> Execute callback -> Commit -> Close connection
+     * If error occurs, automatically rollback and close connection
      */
     async connect<TResult>(
       fn: () => Promise<TResult>,
@@ -187,9 +187,9 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     },
 
     /**
-     * 트랜잭션 없이 연결하여 콜백 실행 후 자동 종료
+     * Connect without transaction, execute callback, and auto-close
      *
-     * DDL 작업이나 트랜잭션이 필요 없는 조회 작업에 사용
+     * Used for DDL operations or read operations that don't require transactions
      */
     async connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult> {
       validateRelationsImpl(def);
@@ -213,16 +213,16 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     },
 
     /**
-     * 이미 연결된 상태에서 트랜잭션 시작 (자동 커밋/롤백)
+     * Start transaction in already connected state (automatic commit/rollback)
      *
-     * connectWithoutTransaction 내에서 부분적으로 트랜잭션이 필요할 때 사용
+     * Used when transaction is needed partially within connectWithoutTransaction
      */
     async trans<TResult>(
       fn: () => Promise<TResult>,
       isolationLevel?: IsolationLevel,
     ): Promise<TResult> {
       if (status === "transact") {
-        throw new Error("이미 TRANSACTION 상태입니다.");
+        throw new Error("Already in TRANSACTION state.");
       }
 
       await executor.beginTransaction(isolationLevel);
@@ -246,7 +246,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
           } else {
             throw err1;
           }
-          // NO_ACTIVE_TRANSACTION 에러면 무시하고 원래 에러 throw
+          // If NO_ACTIVE_TRANSACTION error, ignore and throw original error
           status = "connect";
         }
         throw err;

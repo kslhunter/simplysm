@@ -17,17 +17,17 @@ import {
 // ============================================
 
 /**
- * 데이터베이스 테이블 정의 빌더
+ * Database Table definition builder
  *
- * Fluent API를 통해 테이블의 컬럼, PK, 인덱스, 관계를 정의
- * DbContext에서 queryable()과 함께 사용하여 타입 안전한 쿼리 작성
+ * Fluent API를 통해 Table의 컬럼, PK, Index, 관계를 definition
+ * DbContext에서 queryable()과 함께 사용하여 type 안전한 query 작성
  *
- * @template TColumns - 컬럼 정의 레코드 타입
- * @template TRelations - 관계 정의 레코드 타입
+ * @template TColumns - Column definition 레코드 type
+ * @template TRelations - relationship definition 레코드 type
  *
  * @example
  * ```typescript
- * // 테이블 정의
+ * // Table definition
  * const User = Table("User")
  *   .database("mydb")
  *   .columns((c) => ({
@@ -45,37 +45,37 @@ import {
  * }
  * ```
  *
- * @see {@link Table} 팩토리 함수
- * @see {@link queryable} Queryable 생성
+ * @see {@link Table} 팩토리 function
+ * @see {@link queryable} Queryable Generate
  */
 export class TableBuilder<
   TColumns extends ColumnBuilderRecord,
   TRelations extends RelationBuilderRecord,
 > {
-  /** 컬럼 정의 (타입 추론용) */
+  /** Column definition (type 추론용) */
   readonly $columns!: TColumns;
-  /** 관계 정의 (타입 추론용) */
+  /** relationship definition (type 추론용) */
   readonly $relations!: TRelations;
 
-  /** 전체 타입 추론 (컬럼 + 관계) */
+  /** 전체 Type inference (컬럼 + relationship) */
   readonly $infer!: InferColumns<TColumns> & InferDeepRelations<TRelations>;
-  /** 컬럼만 타입 추론 */
+  /** 컬럼만 Type inference */
   readonly $inferColumns!: InferColumns<TColumns>;
-  /** INSERT용 타입 추론 (autoIncrement 제외, nullable/default는 optional) */
+  /** INSERT용 Type inference (autoIncrement exclude, nullable/default는 optional) */
   readonly $inferInsert!: InferInsertColumns<TColumns>;
-  /** UPDATE용 타입 추론 (모든 필드 optional) */
+  /** UPDATE용 Type inference (모든 field optional) */
   readonly $inferUpdate!: InferUpdateColumns<TColumns>;
 
   /**
-   * @param meta - 테이블 메타데이터
-   * @param meta.name - 테이블 이름
-   * @param meta.description - 테이블 설명 (주석)
-   * @param meta.database - 데이터베이스 이름
-   * @param meta.schema - 스키마 이름 (MSSQL/PostgreSQL)
-   * @param meta.columns - 컬럼 정의
-   * @param meta.primaryKey - PK 컬럼 배열
-   * @param meta.relations - 관계 정의
-   * @param meta.indexes - 인덱스 정의
+   * @param meta - Table Metadata
+   * @param meta.name - Table 이름
+   * @param meta.description - Table 설명 (주석)
+   * @param meta.database - Database 이름
+   * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
+   * @param meta.columns - Column definition
+   * @param meta.primaryKey - PK 컬럼 array
+   * @param meta.relations - relationship definition
+   * @param meta.indexes - Index definition
    */
   constructor(
     readonly meta: {
@@ -92,20 +92,20 @@ export class TableBuilder<
   ) {}
 
   /**
-   * 테이블 설명 설정
+   * Table 설명 설정
    *
-   * @param desc - 테이블 설명 (DDL 주석으로 사용)
-   * @returns 새 TableBuilder 인스턴스
+   * @param desc - Table 설명 (DDL Comment으로 사용)
+   * @returns 새 TableBuilder instance
    */
   description(desc: string) {
     return new TableBuilder({ ...this.meta, description: desc });
   }
 
   /**
-   * 데이터베이스 이름 설정
+   * Database 이름 설정
    *
-   * @param db - 데이터베이스 이름
-   * @returns 새 TableBuilder 인스턴스
+   * @param db - Database 이름
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -117,12 +117,12 @@ export class TableBuilder<
   }
 
   /**
-   * 스키마 이름 설정
+   * schema 이름 설정
    *
    * MSSQL, PostgreSQL에서 사용
    *
-   * @param schema - 스키마 이름 (MSSQL: dbo, PostgreSQL: public)
-   * @returns 새 TableBuilder 인스턴스
+   * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -136,13 +136,13 @@ export class TableBuilder<
   }
 
   /**
-   * 컬럼 정의
+   * Column definition
    *
-   * 컬럼 팩토리를 통해 타입 안전한 컬럼 정의
+   * 컬럼 팩토리를 통해 type 안전한 Column definition
    *
-   * @template TNewColumnDefs - 새 컬럼 정의 타입
-   * @param fn - 컬럼 팩토리를 받아 컬럼 정의를 반환하는 함수
-   * @returns 새 TableBuilder 인스턴스
+   * @template TNewColumnDefs - 새 Column definition type
+   * @param fn - Column 팩토리를 받아 Column definition를 반환하는 function
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -167,8 +167,8 @@ export class TableBuilder<
   /**
    * Primary Key 설정
    *
-   * @param columns - PK를 구성할 컬럼 이름들 (복합 PK 가능)
-   * @returns 새 TableBuilder 인스턴스
+   * @param columns - PK를 구성할 column name들 (복합 PK 가능)
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -194,10 +194,10 @@ export class TableBuilder<
   }
 
   /**
-   * 인덱스 정의
+   * Index definition
    *
-   * @param fn - 인덱스 팩토리를 받아 인덱스 배열을 반환하는 함수
-   * @returns 새 TableBuilder 인스턴스
+   * @param fn - Index 팩토리를 받아 Index 배열을 반환하는 function
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -225,13 +225,13 @@ export class TableBuilder<
   }
 
   /**
-   * 관계 정의
+   * relationship definition
    *
-   * FK, 역참조 등 테이블 간 관계 설정
+   * FK, 역참조 등 Table 간 relationship 설정
    *
-   * @template T - 관계 정의 타입
-   * @param fn - 관계 팩토리를 받아 관계 정의를 반환하는 함수
-   * @returns 새 TableBuilder 인스턴스
+   * @template T - relationship definition type
+   * @param fn - relationship 팩토리를 받아 relationship 정의를 반환하는 function
+   * @returns 새 TableBuilder instance
    *
    * @example
    * ```typescript
@@ -243,7 +243,7 @@ export class TableBuilder<
    *   }))
    *   .primaryKey("id")
    *   .relations((r) => ({
-   *     // FK 관계 (N:1)
+   *     // FK relationship (N:1)
    *     author: r.foreignKey(["authorId"], () => User),
    *   }));
    *
@@ -259,8 +259,8 @@ export class TableBuilder<
    *   }));
    * ```
    *
-   * @see {@link ForeignKeyBuilder} FK 빌더
-   * @see {@link ForeignKeyTargetBuilder} FK 역참조 빌더
+   * @see {@link ForeignKeyBuilder} FK builder
+   * @see {@link ForeignKeyTargetBuilder} FK 역참조 builder
    */
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TColumns & string>>) => T,
@@ -273,16 +273,16 @@ export class TableBuilder<
 }
 
 // ============================================
-// Table 함수
+// Table function
 // ============================================
 
 /**
- * 테이블 빌더 생성 팩토리 함수
+ * Table builder Generate 팩토리 function
  *
- * TableBuilder를 생성하여 Fluent API로 테이블 스키마 정의
+ * TableBuilder를 생성하여 Fluent API로 Table schema definition
  *
- * @param name - 테이블 이름
- * @returns TableBuilder 인스턴스
+ * @param name - Table 이름
+ * @returns TableBuilder instance
  *
  * @example
  * ```typescript
@@ -297,7 +297,7 @@ export class TableBuilder<
  *   .primaryKey("id")
  *   .indexes((i) => [i.index("email").unique()]);
  *
- * // 관계 포함
+ * // relationship include
  * const Post = Table("Post")
  *   .database("mydb")
  *   .columns((c) => ({
@@ -312,7 +312,7 @@ export class TableBuilder<
  *   }));
  * ```
  *
- * @see {@link TableBuilder} 빌더 클래스
+ * @see {@link TableBuilder} builder class
  */
 export function Table(name: string) {
   return new TableBuilder({ name });

@@ -43,7 +43,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
   //#region ========== 유틸리티 ==========
 
-  /** 테이블명 렌더링 */
+  /** Table명 Render */
   protected tableName(obj: QueryDefObjectName): string {
     const parts: string[] = [];
     if (obj.database != null) {
@@ -58,7 +58,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     return parts.join(".");
   }
 
-  /** OFFSET...FETCH 절 렌더링 */
+  /** OFFSET...FETCH 절 Render */
   protected renderLimit(limit: [number, number] | undefined): string {
     if (limit == null) return "";
     const [offset, count] = limit;
@@ -71,7 +71,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     // LATERAL JOIN 필요 여부 감지 → MSSQL은 OUTER APPLY 사용
     if (this.needsLateral(join)) {
       // from이 배열(UNION ALL)이면 renderFrom(join.from),
-      // 그 외(orderBy, top, select 등)면 renderFrom(join)으로 서브쿼리 생성
+      // 그 외(orderBy, top, select 등)면 renderFrom(join)으로 Subquery Generate
       const from = Array.isArray(join.from) ? this.renderFrom(join.from) : this.renderFrom(join);
       return ` OUTER APPLY ${from} AS ${alias}`;
     }
@@ -122,7 +122,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       const from = this.renderFrom(def.from);
       sql += ` FROM ${from} AS ${this.expr.wrap(def.as)}`;
 
-      // LOCK (ROWLOCK으로 행 수준 락 강제 - MySQL/PostgreSQL FOR UPDATE와 동일 동작)
+      // LOCK (ROWLOCK으로 row 수준 락 강제 - MySQL/PostgreSQL FOR UPDATE와 동일 Behavior)
       if (def.lock) {
         sql += " WITH (UPDLOCK, ROWLOCK)";
       }
@@ -165,7 +165,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = "";
 
-    // IDENTITY_INSERT ON (AI 컬럼에 명시적 값 삽입 시)
+    // IDENTITY_INSERT ON (AI 컬럼에 explicit value 삽입 시)
     if (def.overrideIdentity) {
       sql += `SET IDENTITY_INSERT ${table} ON;\n`;
     }
@@ -202,7 +202,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
     const values = columns.map((c) => this.expr.escapeValue(def.record[c])).join(", ");
 
-    // existsSelectQuery를 SELECT 1 AS _ 형태로 렌더링
+    // existsSelectQuery를 SELECT 1 AS _ 형태로 Render
     const existsQuerySql = this.select({
       ...def.existsSelectQuery,
       select: { _: { type: "value", value: 1 } },
@@ -396,7 +396,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected truncate(def: TruncateQueryDef): QueryBuildResult {
-    // MSSQL: TRUNCATE는 IDENTITY 자동 리셋
+    // MSSQL: TRUNCATE는 IDENTITY automatic 리셋
     return { sql: `TRUNCATE TABLE ${this.tableName(def.table)}` };
   }
 
@@ -487,7 +487,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(fk.name)} FOREIGN KEY (${fkCols}) REFERENCES ${targetTable} (${targetCols})`;
 
-    // MSSQL/PostgreSQL: FK용 인덱스 별도 생성 필요
+    // MSSQL/PostgreSQL: FK용 Index 별도 Generate 필요
     const idxName = `IDX_${def.table.name}_${fk.name.replace(/^FK_/, "")}`;
     sql += `;\nCREATE INDEX ${this.expr.wrap(idxName)} ON ${table} (${fkCols});`;
 
@@ -574,9 +574,9 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   //#region ========== Utils ==========
 
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
-    // SQL Injection 방지: 식별자 유효성 검증
+    // SQL Injection 방지: 식별자 유효성 Validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
-      throw new Error(`유효하지 않은 데이터베이스명: ${def.database}`);
+      throw new Error(`유효하지 않은 Database명: ${def.database}`);
     }
     const schemaName = def.schema ?? "dbo";
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
@@ -590,22 +590,22 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 DECLARE @sql NVARCHAR(MAX);
 SET @sql = N'';
 
--- FK 제약조건 삭제
+-- FK constraint Delete
 SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_object_id)) + '.' + QUOTENAME(OBJECT_NAME(parent_object_id)) + N' DROP CONSTRAINT ' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.foreign_keys
 WHERE OBJECT_SCHEMA_NAME(parent_object_id) = '${schema}';
 
--- 테이블 삭제
+-- Drop table
 SELECT @sql = @sql + N'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.tables
 WHERE SCHEMA_NAME(schema_id) = '${schema}';
 
--- 뷰 삭제
+-- Drop view
 SELECT @sql = @sql + N'DROP VIEW ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.views
 WHERE schema_id = SCHEMA_ID('${schema}');
 
--- 프로시저 삭제
+-- Procedure Delete
 SELECT @sql = @sql + N'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.procedures
 WHERE SCHEMA_NAME(schema_id) = '${schema}';
@@ -615,9 +615,9 @@ EXEC sp_executesql @sql;`,
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
-    // SQL Injection 방지: 식별자 유효성 검증
+    // SQL Injection 방지: 식별자 유효성 Validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
-      throw new Error(`유효하지 않은 데이터베이스명: ${def.database}`);
+      throw new Error(`유효하지 않은 Database명: ${def.database}`);
     }
     const schemaName = def.schema ?? "dbo";
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {

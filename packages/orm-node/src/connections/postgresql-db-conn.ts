@@ -23,9 +23,9 @@ import type { Client } from "pg";
 const logger = consola.withTag("postgresql-db-conn");
 
 /**
- * PostgreSQL 데이터베이스 연결 클래스
+ * PostgreSQL database connection class
  *
- * pg 라이브러리를 사용하여 PostgreSQL 연결을 관리합니다.
+ * Manages PostgreSQL connections using the pg library.
  */
 export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
@@ -65,7 +65,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     });
 
     client.on("error", (error) => {
-      logger.error("DB 연결 오류", error.message);
+      logger.error("DB connection error", error.message);
     });
 
     await client.connect();
@@ -130,19 +130,19 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   ): Promise<Record<string, unknown>[][]> {
     this._assertConnected();
 
-    logger.debug("쿼리 실행", { queryLength: query.length, params });
+    logger.debug("Query execution", { queryLength: query.length, params });
 
     try {
       const result = await this._client!.query(query, params);
 
       this._startTimeout();
 
-      // PostgreSQL은 단일 결과셋 반환
+      // PostgreSQL returns a single result set
       return [result.rows];
     } catch (err) {
       this._startTimeout();
       const error = err instanceof Error ? err : new Error(String(err));
-      throw new SdError(error, "쿼리 수행중 오류발생\n-- query\n" + query.trim() + "\n--");
+      throw new SdError(error, "Error executing query\n-- query\n" + query.trim() + "\n--");
     }
   }
 
@@ -158,11 +158,11 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     const colNames = Object.keys(columnMetas);
     const wrappedCols = colNames.map((c) => `"${c}"`).join(", ");
 
-    // COPY FROM STDIN 스트림 생성
+    // Create COPY FROM STDIN stream
     const copyQuery = `COPY ${tableName} (${wrappedCols}) FROM STDIN WITH (FORMAT csv, NULL '\\N')`;
     const stream = this._client!.query(this._pgCopyStreams.from(copyQuery));
 
-    // CSV 데이터 생성
+    // Generate CSV data
     const csvLines: string[] = [];
     for (const record of records) {
       const row = colNames.map((colName) =>
@@ -172,7 +172,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     }
     const csvContent = csvLines.join("\n") + "\n";
 
-    // 스트림으로 데이터 전송
+    // Send data via stream
     await new Promise<void>((resolve, reject) => {
       const readable = Readable.from([csvContent]);
 
@@ -189,11 +189,11 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   // ─────────────────────────────────────────────
 
   /**
-   * PostgreSQL COPY CSV용 값 이스케이프
+   * Escape value for PostgreSQL COPY CSV
    */
   private _escapeForCsv(value: unknown, dataType: DataType): string {
     if (value == null) {
-      return "\\N"; // NULL 표현
+      return "\\N"; // NULL representation
     }
 
     switch (dataType.type) {
@@ -211,7 +211,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
       case "char":
       case "text": {
         const str = value as string;
-        // CSV 형식: 쌍따옴표로 감싸고, 내부 쌍따옴표는 두 번
+        // CSV format: wrap with double quotes, escape internal double quotes with double quotes
         if (
           str.includes('"') ||
           str.includes(",") ||
@@ -237,10 +237,10 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
         return (value as Uuid).toString();
 
       case "binary":
-        return '"\\x' + bytesToHex(value as Uint8Array) + '"'; // PostgreSQL bytea hex 형식 (CSV 쌍따옴표로 감쌈)
+        return '"\\x' + bytesToHex(value as Uint8Array) + '"'; // PostgreSQL bytea hex format (wrapped in CSV double quotes)
 
       default:
-        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`Unsupported DataType: ${JSON.stringify(dataType)}`);
     }
   }
 

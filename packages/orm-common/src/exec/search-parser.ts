@@ -1,16 +1,16 @@
 /**
- * 검색 쿼리 파싱 결과 (LIKE 패턴)
+ * Search query parsing result (LIKE pattern)
  */
 export interface ParsedSearchQuery {
-  /** 일반 검색어 (OR 조건) - LIKE 패턴 */
+  /** General search terms (OR condition) - LIKE pattern */
   or: string[];
-  /** 필수 검색어 (AND 조건, + 접두사 또는 따옴표) - LIKE 패턴 */
+  /** Required search terms (AND condition, + prefix or quotes) - LIKE pattern */
   must: string[];
-  /** 제외 검색어 (NOT 조건, - 접두사) - LIKE 패턴 */
+  /** Excluded search terms (NOT condition, - prefix) - LIKE pattern */
   not: string[];
 }
 
-// 이스케이프 시퀀스를 플레이스홀더로 치환
+// Replace escape sequences with placeholders
 const ESC = {
   BACKSLASH: "\x00BACKSLASH\x00",
   ASTERISK: "\x00ASTERISK\x00",
@@ -21,63 +21,63 @@ const ESC = {
 };
 
 /**
- * 검색 쿼리 문자열을 파싱하여 SQL LIKE 패턴으로 변환한다.
+ * Parse search query string and convert to SQL LIKE pattern.
  *
- * ## 검색 문법
+ * ## Search Syntax
  *
- * | 문법 | 의미 | 예시 |
- * |------|------|------|
- * | `term1 term2` | OR (둘 중 하나 포함) | `사과 바나나` |
- * | `+term` | 필수 포함 (AND) | `+사과 +바나나` |
- * | `-term` | 제외 (NOT) | `사과 -바나나` |
- * | `"exact phrase"` | 정확히 일치 (필수) | `"맛있는 과일"` |
- * | `*` | 와일드카드 | `app*` → `app%` |
+ * | Syntax | Meaning | Example |
+ * |--------|---------|---------|
+ * | `term1 term2` | OR (one of them) | `apple banana` |
+ * | `+term` | Required (AND) | `+apple +banana` |
+ * | `-term` | Excluded (NOT) | `apple -banana` |
+ * | `"exact phrase"` | Exact match (required) | `"delicious fruit"` |
+ * | `*` | Wildcard | `app*` → `app%` |
  *
- * ## 이스케이프
+ * ## Escape Sequences
  *
- * | 입력 | 의미 |
- * |------|------|
- * | `\\` | 리터럴 `\` |
- * | `\*` | 리터럴 `*` |
- * | `\%` | 리터럴 `%` |
- * | `\"` | 리터럴 `"` |
- * | `\+` | 리터럴 `+` |
- * | `\-` | 리터럴 `-` |
+ * | Input | Meaning |
+ * |-------|---------|
+ * | `\\` | Literal `\` |
+ * | `\*` | Literal `*` |
+ * | `\%` | Literal `%` |
+ * | `\"` | Literal `"` |
+ * | `\+` | Literal `+` |
+ * | `\-` | Literal `-` |
  *
- * ## 특수 케이스
+ * ## Special Cases
  *
- * - 닫히지 않은 따옴표(`"text`)는 따옴표를 포함한 일반 텍스트로 처리된다.
+ * - Unclosed quotes (`"text`) are treated as regular text including the quote character.
  *
- * ## 예시
+ * ## Examples
  *
  * ```typescript
- * parseSearchQuery('사과 "맛있는 과일" -바나나 +딸기')
- * // 결과:
+ * parseSearchQuery('apple "delicious fruit" -banana +strawberry')
+ * // Result:
  * // {
- * //   or: ["%사과%"],
- * //   must: ["%맛있는 과일%", "%딸기%"],
- * //   not: ["%바나나%"]
+ * //   or: ["%apple%"],
+ * //   must: ["%delicious fruit%", "%strawberry%"],
+ * //   not: ["%banana%"]
  * // }
  *
  * parseSearchQuery('app* test')
- * // 결과:
+ * // Result:
  * // {
- * //   or: ["app%", "%test%"],  // app*는 "app으로 시작", test는 포함검색
+ * //   or: ["app%", "%test%"],  // app* starts with "app", test is substring match
  * //   must: [],
  * //   not: []
  * // }
  *
- * parseSearchQuery('app\\*test')  // 이스케이프된 *
- * // 결과:
+ * parseSearchQuery('app\\*test')  // escaped *
+ * // Result:
  * // {
- * //   or: ["%app*test%"],  // 리터럴 *
+ * //   or: ["%app*test%"],  // literal *
  * //   must: [],
  * //   not: []
  * // }
  * ```
  *
- * @param searchText 검색 쿼리 문자열
- * @returns 파싱된 검색 쿼리 객체 (LIKE 패턴)
+ * @param searchText Search query string
+ * @returns Parsed search query object (LIKE pattern)
  */
 export function parseSearchQuery(searchText: string): ParsedSearchQuery {
   const result: ParsedSearchQuery = {
@@ -98,7 +98,7 @@ export function parseSearchQuery(searchText: string): ParsedSearchQuery {
     .replace(/\\\+/g, ESC.PLUS)
     .replace(/\\-/g, ESC.MINUS);
 
-  // 따옴표로 묶인 부분 추출
+  // Extract quoted sections
   const quotedRegex = /([+-]?)"([^"]*)"/g;
   let match: RegExpExecArray | null;
 
@@ -115,21 +115,21 @@ export function parseSearchQuery(searchText: string): ParsedSearchQuery {
     } else if (prefix === "-") {
       result.not.push(pattern);
     } else {
-      // 따옴표로 묶인 건 must로 처리 (정확히 일치 = 필수)
+      // Quoted text is treated as must (exact match = required)
       result.must.push(pattern);
     }
   }
 
-  // 따옴표 부분 제거
+  // Remove quoted sections
   processed = processed.replace(/[+-]?"[^"]*"/g, " ");
 
-  // 공백으로 토큰 분리
+  // Split tokens by whitespace
   const tokens = processed.split(/\s+/).filter((t) => t.length > 0);
 
   for (let token of tokens) {
     let targetArray = result.or;
 
-    // + 또는 - 접두사 처리
+    // Handle + or - prefix
     if (token.startsWith("+")) {
       targetArray = result.must;
       token = token.slice(1);
@@ -148,42 +148,42 @@ export function parseSearchQuery(searchText: string): ParsedSearchQuery {
 }
 
 /**
- * 검색어를 SQL LIKE 패턴으로 변환 (내부 함수)
+ * Convert search term to SQL LIKE pattern (internal function)
  *
- * 와일드카드 규칙:
- * - `사과` (와일드카드 없음) → `%사과%` (포함 검색, 기본)
- * - `사과*` → `사과%` (시작)
- * - `*사과` → `%사과` (끝)
- * - `*사과*` → `%사과%` (명시적 포함)
- * - `사*과` → `사%과` (중간)
+ * Wildcard rules:
+ * - `apple` (no wildcard) → `%apple%` (substring match, default)
+ * - `apple*` → `apple%` (starts with)
+ * - `*apple` → `%apple` (ends with)
+ * - `*apple*` → `%apple%` (explicit substring)
+ * - `a*ple` → `a%ple` (in the middle)
  */
 function termToLikePattern(term: string): string {
-  // 와일드카드 *를 임시 마커로 변환 (이스케이프된 것은 ESC.ASTERISK로 이미 처리됨)
+  // Convert wildcard * to temporary marker (escaped ones are already handled as ESC.ASTERISK)
   const WILDCARD = "\x01WILDCARD\x01";
   const hasWildcard = term.includes("*");
   let pattern = term.replace(/\*/g, WILDCARD);
 
-  // SQL LIKE 특수문자 이스케이프 (\ → \\, % → \%, _ → \_, [ → \[)
+  // Escape SQL LIKE special characters (\ → \\, % → \%, _ → \_, [ → \[)
   pattern = pattern
     .replace(/\\/g, "\\\\")
     .replace(/%/g, "\\%")
     .replace(/_/g, "\\_")
     .replace(/\[/g, "\\[");
 
-  // 와일드카드 마커 → % (SQL 와일드카드)
+  // Convert wildcard marker → % (SQL wildcard)
   pattern = pattern.replaceAll(WILDCARD, "%");
 
-  // 이스케이프 플레이스홀더 복원
+  // Restore escape placeholders
   pattern = pattern
     .replaceAll(ESC.BACKSLASH, "\\\\") // \\ → SQL \\
-    .replaceAll(ESC.ASTERISK, "*") // \* → 리터럴 * (SQL에서 특수문자 아님)
+    .replaceAll(ESC.ASTERISK, "*") // \* → literal * (not special in SQL)
     .replaceAll(ESC.PERCENT, "\\%") // \% → SQL \%
     .replaceAll(ESC.QUOTE, '"')
     .replaceAll(ESC.PLUS, "+")
     .replaceAll(ESC.MINUS, "-");
 
-  // 와일드카드가 없으면 양쪽에 % 추가 (기본 포함 검색)
-  // 와일드카드가 있으면 사용자가 지정한 패턴 그대로 사용
+  // If no wildcard, add % on both sides (default substring search)
+  // If wildcard exists, use the pattern as specified by the user
   if (hasWildcard) {
     return pattern;
   }

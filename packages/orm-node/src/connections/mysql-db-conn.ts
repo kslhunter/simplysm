@@ -25,9 +25,9 @@ import {
 const logger = consola.withTag("mysql-db-conn");
 
 /**
- * MySQL 데이터베이스 연결 클래스
+ * MySQL database connection class
  *
- * mysql2/promise 라이브러리를 사용하여 MySQL 연결을 관리합니다.
+ * Manages MySQL connections using the mysql2/promise library.
  */
 export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private static readonly _ROOT_USER = "root";
@@ -56,12 +56,12 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
-      // root 사용자는 특정 database에 바인딩되지 않고 연결하여
-      // 모든 데이터베이스에 접근할 수 있도록 함 (관리 작업용)
+      // Root user connects without binding to specific database
+      // to allow access to all databases (for admin operations)
       database: this.config.username === MysqlDbConn._ROOT_USER ? undefined : this.config.database,
       multipleStatements: true,
       charset: "utf8mb4",
-      infileStreamFactory: (filePath: string) => fs.createReadStream(filePath), // LOAD DATA LOCAL INFILE 지원
+      infileStreamFactory: (filePath: string) => fs.createReadStream(filePath), // Support for LOAD DATA LOCAL INFILE
     } as Parameters<typeof this._mysql2.createConnection>[0]);
 
     conn.on("end", () => {
@@ -70,7 +70,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     });
 
     conn.on("error", (error) => {
-      logger.error("DB 연결 오류", error.message);
+      logger.error("DB connection error", error.message);
     });
 
     this._conn = conn;
@@ -100,13 +100,13 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       "READ_UNCOMMITTED"
     ).replace(/_/g, " ");
 
-    // 격리 수준을 먼저 설정 (다음 트랜잭션에 적용됨)
+    // Set isolation level first (applies to next transaction)
     await conn.query({
       sql: `SET SESSION TRANSACTION ISOLATION LEVEL ${level}`,
       timeout: this._timeout,
     });
 
-    // 그 다음 트랜잭션 시작
+    // Then start transaction
     await conn.beginTransaction();
 
     this.isInTransaction = true;
@@ -139,7 +139,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   ): Promise<Record<string, unknown>[][]> {
     const conn = this._assertConnected();
 
-    logger.debug("쿼리 실행", { queryLength: query.length, params });
+    logger.debug("Query execution", { queryLength: query.length, params });
 
     try {
       const [queryResults] = await conn.query({
@@ -150,9 +150,9 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
       this._startTimeout();
 
-      // MySQL은 INSERT/UPDATE/DELETE 문에 대해 ResultSetHeader를 반환함
-      // SELECT 결과만 추출하기 위해 ResultSetHeader 객체를 필터링함
-      // ResultSetHeader는 affectedRows, fieldCount 등의 필드를 가지고 있음
+      // MySQL returns ResultSetHeader for INSERT/UPDATE/DELETE statements
+      // Filter ResultSetHeader objects to extract only SELECT results
+      // ResultSetHeader has fields like affectedRows, fieldCount, etc.
       const result: Record<string, unknown>[] = [];
       if (queryResults instanceof Array) {
         for (const queryResult of queryResults.filter(
@@ -174,7 +174,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       const error = err as Error & { sql?: string };
       throw new SdError(
         error,
-        "쿼리 수행중 오류발생" +
+        "Error executing query" +
           (error.sql != null ? "\n-- query\n" + error.sql.trim() + "\n--" : ""),
       );
     }
@@ -191,12 +191,12 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     const colNames = Object.keys(columnMetas);
 
-    // 임시 CSV 파일 생성
+    // Create temporary CSV file
     const tmpDir = os.tmpdir();
     const tmpFile = path.join(tmpDir, `mysql_bulk_${randomUUID()}.csv`);
 
     try {
-      // CSV 데이터 생성
+      // Generate CSV data
       const csvLines: string[] = [];
       for (const record of records) {
         const row = colNames.map((colName) =>
@@ -206,10 +206,10 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       }
       const csvContent = csvLines.join("\n");
 
-      // 파일 쓰기
+      // Write file
       await fs.promises.writeFile(tmpFile, csvContent, "utf8");
 
-      // UUID/binary 컬럼은 임시 변수로 읽고 SET 절에서 UNHEX() 변환
+      // UUID/binary columns are read as temporary variables and converted with UNHEX() in SET clause
       const binaryColNames = colNames.filter((c) => {
         const dt = columnMetas[c].dataType.type;
         return dt === "uuid" || dt === "binary";
@@ -220,7 +220,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       });
       const setClauses = binaryColNames.map((c) => `\`${c}\` = UNHEX(@_${c})`);
 
-      // LOAD DATA LOCAL INFILE 실행
+      // Execute LOAD DATA LOCAL INFILE
       let query = `LOAD DATA LOCAL INFILE ? INTO TABLE ${tableName} FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' (${normalCols.join(", ")})`;
       if (setClauses.length > 0) {
         query += ` SET ${setClauses.join(", ")}`;
@@ -228,11 +228,11 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
       await conn.query({ sql: query, timeout: this._timeout, values: [tmpFile] });
     } finally {
-      // 임시 파일 삭제
+      // Delete temporary file
       try {
         await fs.promises.unlink(tmpFile);
       } catch {
-        // 삭제 실패 무시
+        // Ignore deletion failure
       }
     }
   }
@@ -242,11 +242,11 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   // ─────────────────────────────────────────────
 
   /**
-   * MySQL LOAD DATA INFILE용 값 이스케이프
+   * Escape value for MySQL LOAD DATA INFILE
    */
   private _escapeForCsv(value: unknown, dataType: DataType): string {
     if (value == null) {
-      return "\\N"; // MySQL NULL 표현
+      return "\\N"; // MySQL NULL representation
     }
 
     switch (dataType.type) {
@@ -264,7 +264,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       case "char":
       case "text": {
         const str = value as string;
-        // 탭, 줄바꿈, 백슬래시 이스케이프
+        // Escape tab, newline, backslash
         return str
           .replace(/\\/g, "\\\\")
           .replace(/\0/g, "\\0")
@@ -283,13 +283,13 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         return (value as Time).toFormatString("HH:mm:ss");
 
       case "uuid":
-        return (value as Uuid).toString().replace(/-/g, ""); // BINARY(16) 저장용 hex
+        return (value as Uuid).toString().replace(/-/g, ""); // Hex for BINARY(16) storage
 
       case "binary":
         return bytesToHex(value as Uint8Array);
 
       default:
-        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`Unsupported DataType: ${JSON.stringify(dataType)}`);
     }
   }
 

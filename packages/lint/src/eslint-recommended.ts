@@ -9,15 +9,15 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import { ESLint } from "eslint";
 import { fileURLToPath } from "url";
 
-//#region 공통 규칙 설정
+//#region Common rules configuration
 
 /**
- * JS/TS 공통 규칙
- * - no-console: 프로덕션 코드에서 console 사용 금지 (성능 저하 방지)
- * - no-warning-comments: TODO/FIXME 주석 경고 (미완성 코드 확인용)
- * - eqeqeq: `===` 사용 강제 (null 체크는 `== null` 허용)
- * - no-self-compare: `x === x` 같은 오타 방지
- * - array-callback-return: map/filter 등에서 return 빠뜨림 방지
+ * Common rules for JS/TS
+ * - no-console: Prohibit console usage in production code (prevent performance degradation)
+ * - no-warning-comments: Warn about TODO/FIXME comments (to check for incomplete code)
+ * - eqeqeq: Enforce `===` usage (allow `== null` for null checks)
+ * - no-self-compare: Prevent typos like `x === x`
+ * - array-callback-return: Prevent missing return in map/filter, etc.
  */
 const commonRules: FlatConfig.Rules = {
   "no-console": "error",
@@ -28,9 +28,9 @@ const commonRules: FlatConfig.Rules = {
 };
 
 /**
- * 모든 패키지에서 Node.js 전용 API 사용 금지 (코드 통일)
- * - Buffer → Uint8Array, bytesToHex/bytesFromHex/bytesConcat 사용
- * - EventEmitter → SdEventEmitter 사용
+ * Prohibit Node.js-specific API usage across all packages (unified codebase)
+ * - Buffer → Uint8Array, bytesToHex/bytesFromHex/bytesConcat
+ * - EventEmitter → SdEventEmitter
  */
 const noNodeBuiltinsRules: FlatConfig.Rules = {
   "no-restricted-globals": [
@@ -38,7 +38,7 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
     {
       name: "Buffer",
       message:
-        "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+        "Use Uint8Array. For complex operations, use BytesUtils from @simplysm/core-common.",
     },
   ],
   "no-restricted-imports": [
@@ -48,15 +48,15 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
         {
           name: "buffer",
           message:
-            "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+            "Use Uint8Array. For complex operations, use BytesUtils from @simplysm/core-common.",
         },
         {
           name: "events",
-          message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
+          message: "Use SdEventEmitter from @simplysm/core-common.",
         },
         {
           name: "eventemitter3",
-          message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
+          message: "Use SdEventEmitter from @simplysm/core-common.",
         },
       ],
     },
@@ -64,9 +64,9 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
 };
 
 /**
- * 미사용 import 처리 규칙
- * - 미사용 import 자동 제거
- * - `_` 접두사 변수/인자는 미사용 허용 (예: `_unused`)
+ * Unused import handling rules
+ * - Auto-remove unused imports
+ * - Allow unused variables/parameters with `_` prefix (e.g., `_unused`)
  */
 const unusedImportsRules: FlatConfig.Rules = {
   "unused-imports/no-unused-imports": "error",
@@ -85,7 +85,7 @@ const unusedImportsRules: FlatConfig.Rules = {
 
 export default defineConfig([
   globalIgnores([
-    // directory/** 형태로 순회 자체를 건너뜀
+    // Skip traversal itself in directory/** form
     "**/node_modules/**",
     "**/dist/**",
     "**/.*/**",
@@ -133,7 +133,7 @@ export default defineConfig([
         },
       ],
 
-      // JS/TS 공통
+      // Common rules for JS/TS
       "@simplysm/no-subpath-imports-from-simplysm": "error",
       "@simplysm/no-hard-private": "error",
 
@@ -194,16 +194,16 @@ export default defineConfig([
       ],
       "@typescript-eslint/prefer-readonly": "error",
 
-      // 실수 방지: void 콜백에 async 함수 전달 (에러 누락 방지)
-      // - arguments: false → socket.on("event", async () => {}) 허용 (내부 try-catch로 처리)
-      // - attributes: false → JSX 이벤트 핸들러 허용 (SolidJS 호환)
+      // Prevent mistakes: passing async function to void callback (prevent error loss)
+      // - arguments: false → allow socket.on("event", async () => {}) (handled with internal try-catch)
+      // - attributes: false → allow JSX event handlers (SolidJS compatible)
       "@typescript-eslint/no-misused-promises": [
         "error",
         { checksVoidReturn: { arguments: false, attributes: false } },
       ],
-      // 실수 방지: Error 아닌 것을 throw (스택 트레이스 손실 방지)
+      // Prevent mistakes: throwing non-Error objects (prevent stack trace loss)
       "@typescript-eslint/only-throw-error": "error",
-      // 실수 방지: 배열에 delete 사용 (희소 배열 버그 방지)
+      // Prevent mistakes: using delete on arrays (prevent sparse array bugs)
       "@typescript-eslint/no-array-delete": "error",
 
       "@simplysm/no-hard-private": "error",
@@ -228,7 +228,7 @@ export default defineConfig([
       ],
     },
   },
-  // 테스트 폴더: 루트 devDependencies(vitest 등) 사용 허용
+  // Test folders: allow root devDependencies (vitest, etc.)
   {
     files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
     rules: {
@@ -237,7 +237,7 @@ export default defineConfig([
       "@simplysm/ts-no-throw-not-implemented-error": "off",
     },
   },
-  // SolidJS TSX 파일: 모든 규칙 명시적으로 설정 (error)
+  // SolidJS TSX files: explicitly configure all rules (error)
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
@@ -246,48 +246,48 @@ export default defineConfig([
     },
     settings: {
       tailwindcss: {
-        // 템플릿 리터럴 태그 지원: clsx`py-0.5 px-1.5` 형태 인식
+        // Support template literal tags: recognize clsx`py-0.5 px-1.5` form
         tags: ["clsx"],
       },
     },
     rules: {
-      // ─── 실수 방지 ───
-      "solid/reactivity": "error", // 반응성 손실 (가장 중요!)
-      "solid/no-destructure": "error", // props 구조분해 → 반응성 손실
-      "solid/components-return-once": "error", // early return → 버그
-      "solid/jsx-no-duplicate-props": "error", // 중복 props
-      "solid/jsx-no-undef": ["error", { typescriptEnabled: true }], // 정의 안 된 변수
-      "solid/no-react-deps": "error", // React 의존성 배열 실수
-      "solid/no-react-specific-props": "error", // React props 실수 (className 등)
+      // ─── Prevent mistakes ───
+      "solid/reactivity": "error", // Reactivity loss (most important!)
+      "solid/no-destructure": "error", // Props destructuring → reactivity loss
+      "solid/components-return-once": "error", // early return → bugs
+      "solid/jsx-no-duplicate-props": "error", // Duplicate props
+      "solid/jsx-no-undef": ["error", { typescriptEnabled: true }], // Undefined variables
+      "solid/no-react-deps": "error", // React dependency array mistakes
+      "solid/no-react-specific-props": "error", // React props mistakes (className, etc.)
 
-      // ─── 보안 ───
-      "solid/no-innerhtml": "error", // XSS 방지
-      "solid/jsx-no-script-url": "error", // javascript: URL 방지
+      // ─── Security ───
+      "solid/no-innerhtml": "error", // Prevent XSS
+      "solid/jsx-no-script-url": "error", // Prevent javascript: URLs
 
-      // ─── 도구 지원 ───
-      "solid/jsx-uses-vars": "error", // unused import 오탐 방지
+      // ─── Tooling support ───
+      "solid/jsx-uses-vars": "error", // Prevent false positives in unused import detection
 
-      // ─── 컨벤션 ───
-      "solid/prefer-for": "error", // For 컴포넌트 권장
-      "solid/event-handlers": "error", // 이벤트 핸들러 네이밍
-      "solid/imports": "error", // import 일관성
-      "solid/style-prop": "error", // style prop 형식
-      "solid/self-closing-comp": "error", // 자체 닫기 태그
+      // ─── Conventions ───
+      "solid/prefer-for": "error", // Recommend For component
+      "solid/event-handlers": "error", // Event handler naming
+      "solid/imports": "error", // Import consistency
+      "solid/style-prop": "error", // style prop format
+      "solid/self-closing-comp": "error", // Self-closing tags
 
       // ─── Tailwind CSS ───
-      "tailwindcss/classnames-order": "warn", // 클래스 순서 자동 정렬
-      "tailwindcss/enforces-negative-arbitrary-values": "error", // 음수 임의값 형식 통일
-      "tailwindcss/enforces-shorthand": "error", // 축약형 사용 권장
-      "tailwindcss/no-contradicting-classname": "error", // 충돌하는 클래스 금지 (p-2 p-4 등)
-      "tailwindcss/no-custom-classname": "error", // Tailwind에 없는 커스텀 클래스 금지
-      "tailwindcss/no-unnecessary-arbitrary-value": "error", // 불필요한 임의값 금지
+      "tailwindcss/classnames-order": "warn", // Auto-sort class order
+      "tailwindcss/enforces-negative-arbitrary-values": "error", // Unify negative arbitrary value format
+      "tailwindcss/enforces-shorthand": "error", // Recommend shorthand usage
+      "tailwindcss/no-contradicting-classname": "error", // Prohibit conflicting classes (p-2 p-4, etc.)
+      "tailwindcss/no-custom-classname": "error", // Prohibit custom classes not in Tailwind
+      "tailwindcss/no-unnecessary-arbitrary-value": "error", // Prohibit unnecessary arbitrary values
     },
   },
-  // 테스트 폴더: solid/reactivity 비활성화
+  // Test folders: disable solid/reactivity
   {
     files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
     rules: {
-      // 테스트에서는 waitFor 등 비동기 콜백 내 signal 접근이 의도된 동작
+      // In tests, signal access within async callbacks like waitFor is intended behavior
       "solid/reactivity": "off",
     },
   },

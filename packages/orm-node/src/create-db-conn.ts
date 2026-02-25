@@ -7,19 +7,19 @@ import { MssqlDbConn } from "./connections/mssql-db-conn";
 import { PostgresqlDbConn } from "./connections/postgresql-db-conn";
 
 /**
- * DB 연결 팩토리
+ * DB connection factory
  *
- * 데이터베이스 연결 인스턴스를 생성하고 풀링을 관리한다.
- * MSSQL, MySQL, PostgreSQL을 지원한다.
+ * Creates database connection instances and manages pooling.
+ * Supports MSSQL, MySQL, and PostgreSQL.
  */
 
-// 설정별 커넥션 풀 캐싱
+// Cache connection pools by configuration
 const poolMap = new Map<string, Pool<DbConn>>();
 
-// 풀 생성 실패 시 마지막 에러 캐싱 (configKey 기준)
+// Cache last error when pool creation fails (by configKey)
 const poolLastErrorMap = new Map<string, Error>();
 
-// 지연 로딩 모듈 캐시
+// Lazy-loaded module cache
 const modules: {
   tedious?: typeof import("tedious");
   mysql?: typeof import("mysql2/promise");
@@ -28,19 +28,19 @@ const modules: {
 } = {};
 
 /**
- * DB 연결 생성
+ * Create DB connection
  *
- * 커넥션 풀에서 연결을 획득하여 반환한다.
- * 풀이 없는 경우 새로 생성한다.
+ * Acquires and returns a connection from the connection pool.
+ * Creates a new pool if one does not exist.
  *
- * @param config - 데이터베이스 연결 설정
- * @returns 풀링된 DB 연결 객체
+ * @param config - Database connection configuration
+ * @returns Pooled DB connection object
  */
 export function createDbConn(config: DbConnConfig): Promise<DbConn> {
-  // 1. 풀 가져오기 (없으면 생성)
+  // 1. Get pool (create if not exists)
   const { pool, getLastCreateError } = getOrCreatePool(config);
 
-  // 2. 래퍼 객체 반환
+  // 2. Return wrapper object
   return Promise.resolve(new PooledDbConn(pool, config, getLastCreateError));
 }
 
@@ -48,7 +48,7 @@ function getOrCreatePool(config: DbConnConfig): {
   pool: Pool<DbConn>;
   getLastCreateError: () => Error | undefined;
 } {
-  // 객체를 키로 쓰기 위해 문자열 변환 (중첩 객체도 정렬하여 동일 설정의 일관된 키 보장)
+  // Convert object to string key (sort nested objects to ensure consistent keys for identical configurations)
   const configKey = JSON.stringify(config, (_, value: unknown) =>
     value != null && typeof value === "object" && !Array.isArray(value)
       ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
@@ -64,10 +64,10 @@ function getOrCreatePool(config: DbConnConfig): {
           return conn;
         },
         destroy: async (conn) => {
-          await conn.close(); // 풀에서 제거될 때 실제 연결 종료
+          await conn.close(); // Close actual connection when removed from pool
         },
         validate: (conn) => {
-          // 획득 시 연결 상태 확인 (끊겨있으면 Pool이 폐기하고 새로 만듦)
+          // Check connection status on acquisition (Pool will dispose and recreate if disconnected)
           return Promise.resolve(conn.isConnected);
         },
       },
@@ -76,7 +76,7 @@ function getOrCreatePool(config: DbConnConfig): {
         max: config.pool?.max ?? 10,
         acquireTimeoutMillis: config.pool?.acquireTimeoutMillis ?? 30000,
         idleTimeoutMillis: config.pool?.idleTimeoutMillis ?? 30000,
-        testOnBorrow: true, // [중요] 빌려줄 때 validate 실행 여부
+        testOnBorrow: true, // [IMPORTANT] Whether to run validate when borrowing
       },
     );
 

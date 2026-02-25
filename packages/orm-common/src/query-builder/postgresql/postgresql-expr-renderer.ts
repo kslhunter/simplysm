@@ -68,7 +68,7 @@ import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/expr-renderer-base";
 
 /**
- * PostgreSQL Expr 렌더러
+ * PostgreSQL expression renderer
  */
 export class PostgresqlExprRenderer extends ExprRendererBase {
   //#region ========== 유틸리티 (public - QueryBuilder에서도 사용) ==========
@@ -78,12 +78,12 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     return `"${name.replace(/"/g, '""')}"`;
   }
 
-  /** SQL 문자열 리터럴용 이스케이프 (따옴표 없이 반환) */
+  /** SQL 문자열 리터럴용 escape (따옴표 없이 return) */
   escapeString(value: string): string {
     return value.replace(/'/g, "''");
   }
 
-  /** 값 이스케이프 */
+  /** value escape */
   escapeValue(value: unknown): string {
     if (value == null) {
       return "NULL";
@@ -112,10 +112,10 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     if (value instanceof Uint8Array) {
       return `'\\x${bytesToHex(value)}'::bytea`;
     }
-    throw new Error(`알 수 없는 값 타입: ${typeof value}`);
+    throw new Error(`알 수 없는 value type: ${typeof value}`);
   }
 
-  /** DataType → SQL 타입 */
+  /** DataType → SQL type */
   renderDataType(dataType: DataType): string {
     switch (dataType.type) {
       case "int":
@@ -153,7 +153,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 값 ==========
+  //#region ========== value ==========
 
   protected column(expr: ExprColumn): string {
     return expr.path.map((p) => this.wrap(p)).join(".");
@@ -172,10 +172,10 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 비교 (null-safe) ==========
+  //#region ========== comparison (null-safe) ==========
 
   protected eq(expr: ExprEq): string {
-    // PostgreSQL: null-safe equal (IS NOT DISTINCT FROM 연산자 사용)
+    // PostgreSQL: null-safe equal (IS NOT DISTINCT FROM operator 사용)
     const left = this.render(expr.source);
     const right = this.render(expr.target);
     return `${left} IS NOT DISTINCT FROM ${right}`;
@@ -216,12 +216,12 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected like(expr: ExprLike): string {
-    // ESCAPE '\' 항상 추가
+    // ESCAPE '\' 항상 Add
     return `${this.render(expr.source)} LIKE ${this.render(expr.pattern)} ESCAPE '\\'`;
   }
 
   protected regexp(expr: ExprRegexp): string {
-    // PostgreSQL: ~ 연산자
+    // PostgreSQL: ~ operator
     return `${this.render(expr.source)} ~ ${this.render(expr.pattern)}`;
   }
 
@@ -238,7 +238,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected exists(expr: ExprExists): string {
-    // SELECT 1로 렌더링
+    // SELECT 1로 Render
     const subquery = this.buildSelect({
       ...expr.query,
       select: { _: { type: "value", value: 1 } },
@@ -248,7 +248,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 논리 ==========
+  //#region ========== logic ==========
 
   protected not(expr: ExprNot): string {
     return `NOT (${this.render(expr.arg)})`;
@@ -266,7 +266,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 문자열 (null 처리) ==========
+  //#region ========== 문자열 (null Process) ==========
 
   protected concat(expr: ExprConcat): string {
     // PostgreSQL: || 연산자와 COALESCE 사용
@@ -303,12 +303,12 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected length(expr: ExprLength): string {
-    // PostgreSQL: LENGTH() (null 처리)
+    // PostgreSQL: LENGTH() (null Process)
     return `LENGTH(COALESCE(${this.render(expr.arg)}, ''))`;
   }
 
   protected byteLength(expr: ExprByteLength): string {
-    // PostgreSQL: OCTET_LENGTH() (null 처리)
+    // PostgreSQL: OCTET_LENGTH() (null Process)
     return `OCTET_LENGTH(COALESCE(${this.render(expr.arg)}, ''))`;
   }
 
@@ -447,7 +447,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 조건 ==========
+  //#region ========== condition ==========
 
   protected ifNull(expr: ExprIfNull): string {
     if (expr.args.length === 0) return "NULL";
@@ -478,7 +478,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 집계 ==========
+  //#region ========== aggregation ==========
 
   protected count(expr: ExprCount): string {
     if (expr.arg != null) {

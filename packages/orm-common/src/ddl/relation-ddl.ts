@@ -13,21 +13,21 @@ import { getMatchedPrimaryKeys } from "../exec/queryable";
 import { getQueryDefObjectName } from "./table-ddl";
 
 /**
- * DROP PRIMARY KEY QueryDef 생성
+ * Generate DROP PRIMARY KEY QueryDef
  */
 export function getDropPkQueryDef(table: QueryDefObjectName): DropPkQueryDef {
   return { type: "dropPk", table };
 }
 
 /**
- * ADD PRIMARY KEY QueryDef 생성
+ * Generate ADD PRIMARY KEY QueryDef
  */
 export function getAddPkQueryDef(table: QueryDefObjectName, columns: string[]): AddPkQueryDef {
   return { type: "addPk", table, columns };
 }
 
 /**
- * ADD FOREIGN KEY QueryDef 생성
+ * Generate ADD FOREIGN KEY QueryDef
  */
 export function getAddFkQueryDef(
   db: DbContextBase,
@@ -52,7 +52,7 @@ export function getAddFkQueryDef(
 }
 
 /**
- * ADD INDEX QueryDef 생성
+ * ADD INDEX QueryDef Generate
  */
 export function getAddIdxQueryDef(
   table: QueryDefObjectName,
@@ -75,14 +75,14 @@ export function getAddIdxQueryDef(
 }
 
 /**
- * DROP FOREIGN KEY QueryDef 생성
+ * DROP FOREIGN KEY QueryDef Generate
  */
 export function getDropFkQueryDef(table: QueryDefObjectName, relationName: string): DropFkQueryDef {
   return { type: "dropFk", table, foreignKey: `FK_${table.name}_${relationName}` };
 }
 
 /**
- * DROP INDEX QueryDef 생성
+ * DROP INDEX QueryDef Generate
  */
 export function getDropIdxQueryDef(table: QueryDefObjectName, columns: string[]): DropIdxQueryDef {
   return { type: "dropIdx", table, index: `IDX_${table.name}_${columns.join("_")}` };

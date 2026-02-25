@@ -1,27 +1,27 @@
 /**
- * 트랜잭션 관련 에러 코드
+ * Transaction-related error codes
  *
- * DBMS별 native 에러 코드를 추상화하여 DBMS 독립적인 에러 처리 가능
+ * Abstracts DBMS-specific native error codes for DBMS-independent error handling
  */
 export enum DbErrorCode {
-  /** 활성 트랜잭션이 없음 (ROLLBACK 시 트랜잭션 없음) */
+  /** No active transaction (no transaction during ROLLBACK) */
   NO_ACTIVE_TRANSACTION = "NO_ACTIVE_TRANSACTION",
 
-  /** 트랜잭션이 이미 시작됨 */
+  /** Transaction already started */
   TRANSACTION_ALREADY_STARTED = "TRANSACTION_ALREADY_STARTED",
 
-  /** 데드락 발생 */
+  /** Deadlock occurred */
   DEADLOCK = "DEADLOCK",
 
-  /** 락 타임아웃 */
+  /** Lock timeout */
   LOCK_TIMEOUT = "LOCK_TIMEOUT",
 }
 
 /**
- * 데이터베이스 트랜잭션 에러
+ * Database transaction error
  *
- * DBMS별 native 에러를 표준화된 에러 코드로 래핑하여
- * DBMS 독립적인 에러 처리 가능
+ * Wraps DBMS-specific native errors with standardized error codes for
+ * DBMS-independent error handling
  *
  * @example
  * ```typescript
@@ -30,7 +30,7 @@ export enum DbErrorCode {
  * } catch (err) {
  *   if (err instanceof DbTransactionError) {
  *     if (err.code === DbErrorCode.NO_ACTIVE_TRANSACTION) {
- *       // 이미 롤백된 경우 무시
+ *       // Ignore if already rolled back
  *       return;
  *     }
  *   }
@@ -42,11 +42,11 @@ export class DbTransactionError extends Error {
   override readonly name = "DbTransactionError";
 
   constructor(
-    /** 표준화된 에러 코드 */
+    /** Standardized error code */
     public readonly code: DbErrorCode,
-    /** 에러 메시지 */
+    /** Error message */
     message: string,
-    /** 원본 DBMS 에러 (디버깅용) */
+    /** Original DBMS error (for debugging) */
     public readonly originalError?: unknown,
   ) {
     super(message);

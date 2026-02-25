@@ -1,11 +1,11 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
 
 /**
- * ESLint 규칙을 생성하는 팩토리 함수
+ * Factory function to create ESLint rules.
  *
  * @remarks
- * `@typescript-eslint/utils`의 `RuleCreator`를 래핑하여
- * 규칙 문서 URL을 자동으로 생성한다.
+ * Wraps `RuleCreator` from `@typescript-eslint/utils` and
+ * automatically generates rule documentation URLs.
  *
  * @example
  * ```typescript

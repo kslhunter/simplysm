@@ -14,12 +14,12 @@ import type { DbContextBase } from "../types/db-context-def";
 import { objClearUndefined } from "@simplysm/core-common";
 
 /**
- * Builder를 CREATE QueryDef로 변환
+ * Builder를 CREATE QueryDef로 Transform
  *
- * @param db - DbContext 인스턴스
- * @param builder - Table/View/Procedure 빌더
+ * @param db - DbContext instance
+ * @param builder - Table/View/Procedure builder
  * @returns CREATE TABLE/VIEW/PROCEDURE QueryDef
- * @throws {Error} 알 수 없는 빌더 타입일 때
+ * @throws {Error} 알 수 없는 builder 타입일 때
  */
 export function getCreateObjectQueryDef(
   db: DbContextBase,
@@ -33,16 +33,16 @@ export function getCreateObjectQueryDef(
     return getCreateProcQueryDef(db, builder);
   }
 
-  throw new Error(`알 수 없는 빌더 타입: ${typeof builder}`);
+  throw new Error(`알 수 없는 builder type: ${typeof builder}`);
 }
 
 /**
- * CREATE TABLE QueryDef 생성
+ * CREATE TABLE QueryDef Generate
  *
- * @param db - DbContext 인스턴스
- * @param table - 테이블 빌더
+ * @param db - DbContext instance
+ * @param table - Table builder
  * @returns CREATE TABLE QueryDef
- * @throws {Error} 테이블에 컬럼이 없을 때
+ * @throws {Error} Table에 컬럼이 없을 때
  */
 export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<any, any>): QueryDef {
   const columns = table.meta.columns as ColumnBuilderRecord | undefined;
@@ -65,12 +65,12 @@ export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<an
 }
 
 /**
- * CREATE VIEW QueryDef 생성
+ * CREATE VIEW QueryDef Generate
  *
- * @param db - DbContext 인스턴스
- * @param view - 뷰 빌더
+ * @param db - DbContext instance
+ * @param view - View builder
  * @returns CREATE VIEW QueryDef
- * @throws {Error} 뷰에 viewFn이 없을 때
+ * @throws {Error} View에 viewFn이 없을 때
  */
 export function getCreateViewQueryDef(
   db: DbContextBase,
@@ -95,12 +95,12 @@ export function getCreateViewQueryDef(
 }
 
 /**
- * CREATE PROCEDURE QueryDef 생성
+ * CREATE PROCEDURE QueryDef Generate
  *
- * @param db - DbContext 인스턴스
- * @param procedure - 프로시저 빌더
+ * @param db - DbContext instance
+ * @param procedure - Procedure builder
  * @returns CREATE PROCEDURE QueryDef
- * @throws {Error} 프로시저에 본문이 없을 때
+ * @throws {Error} Procedure에 본문이 없을 때
  */
 export function getCreateProcQueryDef(
   db: DbContextBase,
@@ -140,14 +140,14 @@ export function getCreateProcQueryDef(
 }
 
 /**
- * DROP TABLE QueryDef 생성
+ * DROP TABLE QueryDef Generate
  */
 export function getDropTableQueryDef(table: QueryDefObjectName): DropTableQueryDef {
   return { type: "dropTable", table };
 }
 
 /**
- * RENAME TABLE QueryDef 생성
+ * RENAME TABLE QueryDef Generate
  */
 export function getRenameTableQueryDef(
   table: QueryDefObjectName,
@@ -157,25 +157,25 @@ export function getRenameTableQueryDef(
 }
 
 /**
- * DROP VIEW QueryDef 생성
+ * DROP VIEW QueryDef Generate
  */
 export function getDropViewQueryDef(view: QueryDefObjectName): DropViewQueryDef {
   return { type: "dropView", view };
 }
 
 /**
- * DROP PROCEDURE QueryDef 생성
+ * DROP PROCEDURE QueryDef Generate
  */
 export function getDropProcQueryDef(procedure: QueryDefObjectName): DropProcQueryDef {
   return { type: "dropProc", procedure };
 }
 
 /**
- * TableBuilder/ViewBuilder를 QueryDefObjectName으로 변환
+ * TableBuilder/ViewBuilder를 QueryDefObjectName으로 Transform
  *
- * @param db - DbContext 인스턴스
- * @param tableOrView - 테이블 또는 뷰 빌더
- * @returns QueryDef에서 사용할 객체 이름 정보
+ * @param db - DbContext instance
+ * @param tableOrView - Table 또는 View builder
+ * @returns QueryDef에서 사용할 object 이름 information
  */
 export function getQueryDefObjectName(
   db: DbContextBase,

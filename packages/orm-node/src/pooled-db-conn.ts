@@ -7,13 +7,13 @@ import { DB_CONN_ERRORS, type DbConn, type DbConnConfig } from "./types/db-conn"
 const logger = consola.withTag("pooled-db-conn");
 
 /**
- * 커넥션 풀에서 관리되는 DB 연결 래퍼
+ * DB connection wrapper managed by connection pool
  *
- * generic-pool 라이브러리를 사용하여 커넥션 풀링을 지원한다.
- * 실제 물리 연결은 풀에서 획득하고 반환한다.
+ * Supports connection pooling using the generic-pool library.
+ * Acquires and returns actual physical connections from/to the pool.
  */
 export class PooledDbConn extends EventEmitter<{ close: void }> implements DbConn {
-  // 풀에서 빌려온 실제 물리 커넥션
+  // Actual physical connection borrowed from pool
   private _rawConn?: DbConn;
 
   constructor(
@@ -40,16 +40,16 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * 풀에서 DB 연결을 획득한다.
+   * Acquire DB connection from pool
    *
-   * @throws {SdError} 이미 연결된 상태일 때
+   * @throws {SdError} When already connected
    */
   async connect(): Promise<void> {
     if (this._rawConn != null) {
       throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
 
-    // 1. 풀에서 커넥션 획득
+    // 1. Acquire connection from pool
     try {
       this._rawConn = await this._pool.acquire();
     } catch (err) {
@@ -57,57 +57,57 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
       const cause = this._getLastCreateError?.() ?? (err instanceof Error ? err : undefined);
       throw new SdError(
         ...(cause != null ? [cause] : []),
-        `DB 연결 실패 [${dialect}://${host}:${port ?? ""}/${database ?? ""}]`,
+        `DB connection failed [${dialect}://${host}:${port ?? ""}/${database ?? ""}]`,
       );
     }
 
-    // 2. 물리 연결이 (타임아웃 등으로) 끊어질 경우를 대비해 리스너 등록
-    //    만약 사용 중에 끊기면 PooledDbConn도 close 이벤트를 발생시켜야 함
+    // 2. Register listener to handle physical connection loss (timeout, etc.)
+    //    If connection disconnects while in use, PooledDbConn must emit close event
     this._rawConn.on("close", this._onRawConnClose);
   }
 
   /**
-   * 풀에 DB 연결을 반환한다. (실제 연결을 종료하지 않음)
+   * Return DB connection to pool (does not terminate actual connection)
    */
   async close(): Promise<void> {
     if (this._rawConn != null) {
-      // 1. 트랜잭션 진행 중이면 롤백하여 깨끗한 상태로 풀에 반환
+      // 1. If transaction is in progress, rollback to return clean state to pool
       if (this._rawConn.isInTransaction) {
         try {
           await this._rawConn.rollbackTransaction();
         } catch (err) {
-          // 롤백 실패 시 로그만 남기고 계속 진행 (연결이 이미 끊긴 경우 등)
-          logger.warn("풀 반환 시 롤백 실패", err instanceof Error ? err.message : String(err));
+          // Log failure and continue (connection may already be disconnected)
+          logger.warn("Rollback failed when returning to pool", err instanceof Error ? err.message : String(err));
         }
       }
 
-      // 2. 리스너 해제 (Pool에 돌아가서 다른 래퍼에 의해 재사용될 때 영향 주지 않도록)
+      // 2. Remove listener (so it won't affect reuse by other wrappers when returned to pool)
       this._rawConn.off("close", this._onRawConnClose);
 
-      // 3. 풀에 커넥션 반환 (실제로 끊지 않음)
+      // 3. Return connection to pool (does not actually close it)
       await this._pool.release(this._rawConn);
       this._rawConn = undefined;
 
-      // 4. 소비자에게 논리적으로 연결이 닫혔음을 알림
+      // 4. Notify consumer that connection is logically closed
       this.emit("close");
     }
   }
 
-  // 물리 연결이 끊겼을 때 처리 핸들러
+  // Handler for physical connection loss
   private readonly _onRawConnClose = () => {
-    // 물리 연결이 끊겼으므로 참조 제거 (Pool에서는 validate 시점에 걸러낼 것임)
+    // Remove reference since physical connection is lost (will be filtered during pool validation)
     this._rawConn = undefined;
-    // 소비자에게 알림
+    // Notify consumer
     this.emit("close");
   };
 
-  // --- 아래는 위임(Delegation) 메소드 ---
+  // --- Below are delegation methods ---
 
   /**
-   * 트랜잭션 시작
+   * Begin transaction
    *
-   * @param isolationLevel - 트랜잭션 격리 수준
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @param isolationLevel - Transaction isolation level
+   * @throws {SdError} When connection is not acquired
    */
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._requireRawConn();
@@ -115,9 +115,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * 트랜잭션 커밋
+   * Commit transaction
    *
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @throws {SdError} When connection is not acquired
    */
   async commitTransaction(): Promise<void> {
     const conn = this._requireRawConn();
@@ -125,9 +125,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * 트랜잭션 롤백
+   * Rollback transaction
    *
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @throws {SdError} When connection is not acquired
    */
   async rollbackTransaction(): Promise<void> {
     const conn = this._requireRawConn();
@@ -135,11 +135,11 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * SQL 쿼리 실행
+   * Execute SQL query
    *
-   * @param queries - 실행할 SQL 쿼리 배열
-   * @returns 각 쿼리의 결과 배열
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @param queries - SQL query array to execute
+   * @returns Result array for each query
+   * @throws {SdError} When connection is not acquired
    */
   async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
     const conn = this._requireRawConn();
@@ -147,12 +147,12 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * 파라미터화된 SQL 쿼리 실행
+   * Execute parameterized SQL query
    *
-   * @param query - SQL 쿼리 문자열
-   * @param params - 쿼리 파라미터 배열
-   * @returns 쿼리 결과 배열
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @param query - SQL query string
+   * @param params - Query parameter array
+   * @returns Query result array
+   * @throws {SdError} When connection is not acquired
    */
   async executeParametrized(
     query: string,
@@ -163,12 +163,12 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   }
 
   /**
-   * 대량 데이터 삽입 (네이티브 벌크 API 사용)
+   * Bulk insert data (using native bulk API)
    *
-   * @param tableName - 대상 테이블명
-   * @param columnMetas - 컬럼 메타데이터
-   * @param records - 삽입할 레코드 배열
-   * @throws {SdError} 연결이 획득되지 않은 상태일 때
+   * @param tableName - Target table name
+   * @param columnMetas - Column metadata
+   * @param records - Record array to insert
+   * @throws {SdError} When connection is not acquired
    */
   async bulkInsert(
     tableName: string,

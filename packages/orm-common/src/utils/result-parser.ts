@@ -9,15 +9,15 @@ declare function setImmediate(callback: () => void): void;
 // ============================================
 
 /**
- * 값을 지정된 타입으로 파싱
+ * 값을 지정된 타입으로 Parse
  *
- * @param value - 파싱할 값
- * @param type - 대상 타입 (ColumnPrimitiveStr)
- * @returns 파싱된 값
- * @throws 파싱 실패 시 Error
+ * @param value - Parse할 value
+ * @param type - 대상 type (ColumnPrimitiveStr)
+ * @returns Parse된 value
+ * @throws Parse 실패 시 Error
  */
 function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
-  // null/undefined는 그대로 반환 (호출부에서 키 제거 처리)
+  // null/undefined는 그대로 return (호출부에서 key Remove Process)
   if (value == null) {
     return undefined;
   }
@@ -26,7 +26,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
     case "number": {
       const num = Number(value);
       if (Number.isNaN(num)) {
-        throw new Error(`number 파싱 실패: ${String(value)}`);
+        throw new Error(`number Parse 실패: ${String(value)}`);
       }
       return num;
     }
@@ -56,7 +56,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
     case "Bytes":
       if (value instanceof Uint8Array) return value;
       if (typeof value === "string") return bytesFromHex(value);
-      throw new Error(`Bytes 파싱 실패: ${typeof value}`);
+      throw new Error(`Bytes Parse 실패: ${typeof value}`);
   }
 }
 
@@ -65,7 +65,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
 // ============================================
 
 /**
- * flat 레코드를 중첩 객체로 변환
+ * flat 레코드를 중첩 객체로 Transform
  *
  * @example
  * { "posts.id": 1, "posts.title": "Hi" } → { posts: { id: 1, title: "Hi" } }
@@ -80,11 +80,11 @@ function flatToNested(
     const rawValue = record[key];
     const parsedValue = parseValue(rawValue, type);
 
-    // undefined는 키 자체를 추가하지 않음
+    // undefined는 key 자체를 추가하지 않음
     if (parsedValue === undefined) continue;
 
     if (key.includes(".")) {
-      // 중첩 키: "posts.id" → { posts: { id: ... } }
+      // 중첩 key: "posts.id" → { posts: { id: ... } }
       const parts = key.split(".");
       let current = result;
       for (let i = 0; i < parts.length - 1; i++) {
@@ -96,7 +96,7 @@ function flatToNested(
       }
       current[parts[parts.length - 1]] = parsedValue;
     } else {
-      // 단순 키
+      // 단순 key
       result[key] = parsedValue;
     }
   }
@@ -125,28 +125,28 @@ const yieldToEventLoop: () => Promise<void> =
     : () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 /**
- * DB 쿼리 결과를 ResultMeta를 통해 TypeScript 객체로 변환
+ * DB Query result를 ResultMeta를 통해 TypeScript 객체로 Transform
  *
- * @param rawResults - DB에서 받은 raw 결과 배열
- * @param meta - 타입 변환 및 JOIN 구조 정보 (필수)
- * @returns 타입 변환 및 중첩화된 결과 배열. 입력이 비거나 유효한 결과가 없으면 undefined
- * @throws 타입 파싱 실패 시 Error
+ * @param rawResults - DB에서 받은 raw result array
+ * @param meta - Type Transform 및 JOIN structure information (required)
+ * @returns type Transform 및 중첩화된 result array. 입력이 비거나 유효한 결과가 없으면 undefined
+ * @throws type Parse 실패 시 Error
  *
  * @remarks
- * - meta 필수: meta가 없으면 이 함수를 호출할 필요 없음 (입력 = 출력)
- * - async only: 대용량 처리 시 외부 인터럽트를 위해 동기 버전 미제공
+ * - meta required: meta가 없으면 이 함수를 호출할 필요 없음 (입력 = Output)
+ * - async only: 대용량 처리 시 외부 인터럽트를 위해 synchronous 버전 미제공
  * - browser/node 모두 지원: setTimeout(resolve, 0)으로 yield
- * - 빈 결과 처리: 입력 배열이 비거나, 파싱 후 모든 레코드가 빈 객체인 경우 undefined 반환
+ * - 빈 result 처리: 입력 배열이 비거나, Parse 후 모든 레코드가 빈 객체인 경우 undefined return
  *
  * @example
  * ```typescript
- * // 1. 단순 타입 파싱
+ * // 1. 단순 type Parse
  * const raw = [{ id: "1", createdAt: "2026-01-07T10:00:00.000Z" }];
  * const meta = { columns: { id: "number", createdAt: "DateTime" }, joins: {} };
  * const result = await parseQueryResult(raw, meta);
  * // [{ id: 1, createdAt: DateTime(...) }]
  *
- * // 2. JOIN 결과 중첩화
+ * // 2. JOIN result 중첩화
  * const raw = [
  *   { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
  *   { id: 1, name: "User1", "posts.id": 11, "posts.title": "Post2" },
@@ -170,17 +170,17 @@ export async function parseQueryResult<TRecord>(
 
   const joinKeys = Object.keys(meta.joins);
 
-  // JOIN이 없는 경우: 단순 타입 파싱만
+  // JOIN이 없는 경우: 단순 type Parse만
   if (joinKeys.length === 0) {
     return parseSimpleRecords<TRecord>(rawResults, meta.columns);
   }
 
-  // JOIN이 있는 경우: 그룹핑 + 중첩화
+  // JOIN이 있는 경우: grouping + 중첩화
   return parseJoinedRecords<TRecord>(rawResults, meta);
 }
 
 /**
- * JOIN 없는 단순 레코드 파싱
+ * JOIN 없는 단순 레코드 Parse
  */
 async function parseSimpleRecords<TRecord>(
   rawResults: Record<string, unknown>[],
@@ -196,18 +196,18 @@ async function parseSimpleRecords<TRecord>(
 
     const parsed = flatToNested(rawResults[i], columns);
 
-    // 빈 객체는 제외
+    // 빈 객체는 exclude
     if (!isEmptyObject(parsed)) {
       results.push(parsed);
     }
   }
 
-  // 빈 배열은 undefined 반환
+  // 빈 배열은 undefined return
   return results.length > 0 ? (results as TRecord[]) : undefined;
 }
 
 /**
- * JOIN 키를 깊이 순으로 정렬 (얕은 것 먼저)
+ * JOIN 키를 깊이 순으로 sorting (얕은 것 먼저)
  * "posts" (1) < "posts.comments" (2)
  */
 function sortJoinKeysByDepth(joinKeys: string[]): string[] {
@@ -219,13 +219,13 @@ function sortJoinKeysByDepth(joinKeys: string[]): string[] {
 }
 
 /**
- * JOIN 있는 레코드 파싱 (재귀적 그룹핑)
+ * JOIN 있는 레코드 Parse (재귀적 grouping)
  */
 async function parseJoinedRecords<TRecord>(
   rawResults: Record<string, unknown>[],
   meta: ResultMeta,
 ): Promise<TRecord[] | undefined> {
-  // 1. 모든 레코드를 중첩 구조로 변환
+  // 1. 모든 레코드를 중첩 structure로 Transform
   const nestedRecords: Record<string, unknown>[] = [];
   for (let i = 0; i < rawResults.length; i++) {
     if (i > 0 && i % YIELD_INTERVAL === 0) {
@@ -234,22 +234,22 @@ async function parseJoinedRecords<TRecord>(
     nestedRecords.push(flatToNested(rawResults[i], meta.columns));
   }
 
-  // 2. JOIN 키를 깊이 순으로 정렬 (얕은 것 먼저)
+  // 2. JOIN 키를 깊이 순으로 sorting (얕은 것 먼저)
   const sortedJoinKeys = sortJoinKeysByDepth(Object.keys(meta.joins));
 
-  // 3. 루트 레벨부터 재귀적으로 그룹핑
+  // 3. 루트 레벨부터 재귀적으로 grouping
   const results = groupRecordsRecursively(nestedRecords, sortedJoinKeys, meta.joins, "");
 
-  // 4. 빈 결과 필터링
+  // 4. 빈 result filtering
   const filteredResults = results.filter((r) => !isEmptyObject(r));
 
   return filteredResults.length > 0 ? (filteredResults as TRecord[]) : undefined;
 }
 
 /**
- * 그룹 키를 문자열로 직렬화 (Map 키로 사용)
+ * 그룹 키를 문자열로 serialize (Map 키로 사용)
  *
- * JSON.stringify보다 빠른 커스텀 직렬화
+ * JSON.stringify보다 빠른 커스텀 serialize
  */
 function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
@@ -257,12 +257,12 @@ function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: s
 }
 
 /**
- * 현재 경로에 해당하는 레코드들을 재귀적으로 그룹핑
+ * 현재 경로에 해당하는 레코드들을 재귀적으로 grouping
  *
  * Map 기반 그룹핑으로 O(n) 복잡도 달성
  *
- * @param records - 그룹핑할 레코드 배열
- * @param allJoinKeys - 모든 JOIN 키 (깊이 순 정렬됨)
+ * @param records - Group핑할 레코드 array
+ * @param allJoinKeys - 모든 JOIN key (깊이 순 정렬됨)
  * @param joinsConfig - JOIN 설정
  * @param currentPath - 현재 경로 (예: "", "posts", "posts.comments")
  */
@@ -280,7 +280,7 @@ function groupRecordsRecursively(
       // 루트 레벨: . 없는 키들
       return !key.includes(".");
     } else {
-      // 하위 레벨: 현재 경로 + "." + 키
+      // 하위 레벨: 현재 경로 + "." + key
       return (
         key.startsWith(currentPath + ".") && key.slice(currentPath.length + 1).indexOf(".") === -1
       );
@@ -292,14 +292,14 @@ function groupRecordsRecursively(
     return records;
   }
 
-  // Map 기반 그룹핑 (O(n) 복잡도)
+  // Map 기반 grouping (O(n) 복잡도)
   const groupMap = new Map<string, Record<string, unknown>>();
 
-  // 키 순서 캐싱 (첫 번째 레코드에서 결정 후 재사용)
+  // key order Caching (첫 번째 레코드에서 결정 후 재사용)
   let groupKeyOrder: string[] | undefined;
 
   for (const record of records) {
-    // 그룹 키 추출 및 직렬화 (JOIN 키 제외)
+    // 그룹 key 추출 및 serialize (JOIN key exclude)
     const groupKey = extractGroupKey(record, childJoinKeys);
     if (groupKeyOrder == null) {
       groupKeyOrder = Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
@@ -309,27 +309,27 @@ function groupRecordsRecursively(
     const existingGroup = groupMap.get(keyStr);
 
     if (existingGroup != null) {
-      // 기존 그룹에 JOIN 데이터 병합
+      // 기존 그룹에 JOIN data merge
       for (const joinKey of childJoinKeys) {
         const localKey = currentPath === "" ? joinKey : joinKey.slice(currentPath.length + 1);
         mergeJoinData(existingGroup, record, localKey, joinsConfig[joinKey].isSingle);
       }
     } else {
-      // 새 그룹 생성
+      // 새 그룹 Generate
       const newGroup = { ...record };
 
-      // 각 JOIN 키를 배열 또는 단일 객체로 초기화
+      // 각 JOIN 키를 array 또는 단일 객체로 Initialize
       for (const joinKey of childJoinKeys) {
         const localKey = currentPath === "" ? joinKey : joinKey.slice(currentPath.length + 1);
         const joinData = newGroup[localKey] as Record<string, unknown> | undefined;
 
         if (joinData != null && !isEmptyObject(joinData)) {
           if (!joinsConfig[joinKey].isSingle) {
-            // 배열로 변환
+            // 배열로 Transform
             newGroup[localKey] = [joinData];
           }
         } else {
-          // 빈 데이터면 키 삭제
+          // 빈 data면 key Delete
           delete newGroup[localKey];
         }
       }
@@ -338,7 +338,7 @@ function groupRecordsRecursively(
     }
   }
 
-  // Map에서 배열로 변환
+  // Map에서 배열로 Transform
   const grouped = Array.from(groupMap.values());
 
   // 각 JOIN의 하위 레벨도 재귀적으로 처리
@@ -348,7 +348,7 @@ function groupRecordsRecursively(
       const joinData = group[localKey];
 
       if (Array.isArray(joinData) && joinData.length > 0) {
-        // 배열인 경우: 하위 레벨 재귀 처리
+        // 배열인 경우: 하위 레벨 recursive 처리
         group[localKey] = groupRecordsRecursively(
           joinData as Record<string, unknown>[],
           allJoinKeys,
@@ -370,7 +370,7 @@ function groupRecordsRecursively(
     }
   }
 
-  // __hashSet__ 내부 속성 제거 (중복 체크용 임시 속성)
+  // __hashSet__ 내부 property Remove (중복 체크용 임시 Property)
   for (const group of grouped) {
     for (const key of Object.keys(group)) {
       if (key.startsWith("__hashSet__")) {
@@ -383,7 +383,7 @@ function groupRecordsRecursively(
 }
 
 /**
- * 레코드에서 JOIN 키를 제외한 그룹 키 추출
+ * 레코드에서 JOIN 키를 제외한 그룹 key 추출
  */
 function extractGroupKey(
   record: Record<string, unknown>,
@@ -391,9 +391,9 @@ function extractGroupKey(
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
-    // JOIN 키가 아닌 것만 포함
+    // JOIN 키가 아닌 것만 include
     if (!joinKeys.some((jk) => jk === key || jk.startsWith(key + "."))) {
-      // 객체/배열이 아닌 primitive 값만 그룹 키로 사용
+      // object/배열이 아닌 primitive 값만 그룹 키로 사용
       if (value == null || typeof value !== "object") {
         result[key] = value;
       }
@@ -403,7 +403,7 @@ function extractGroupKey(
 }
 
 /**
- * JOIN 데이터를 기존 그룹에 병합
+ * JOIN data를 기존 그룹에 merge
  */
 function mergeJoinData(
   existingGroup: Record<string, unknown>,
@@ -414,26 +414,26 @@ function mergeJoinData(
   const newJoinData = newRecord[localKey] as Record<string, unknown> | undefined;
 
   if (newJoinData == null || isEmptyObject(newJoinData)) {
-    return; // 병합할 데이터 없음
+    return; // 병합할 data 없음
   }
 
   const existingJoinData = existingGroup[localKey];
 
   if (isSingle) {
-    // isSingle: true인데 이미 데이터가 있고 다른 값이면 에러
+    // isSingle: true인데 이미 data가 있고 다른 값이면 에러
     if (existingJoinData != null) {
       if (!objEqual(existingJoinData as Record<string, unknown>, newJoinData)) {
-        throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
+        throw new Error(`isSingle relationship '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
       }
     } else {
       existingGroup[localKey] = newJoinData;
     }
   } else {
-    // isSingle: false → 배열에 추가
+    // isSingle: false → 배열에 Add
     const hashSetKey = `__hashSet__${localKey}`;
     if (!Array.isArray(existingJoinData)) {
       existingGroup[localKey] = [newJoinData];
-      // Set 기반 해시 중복 체크를 위한 내부 속성 초기화
+      // Set 기반 해시 중복 체크를 위한 내부 property Initialize
       existingGroup[hashSetKey] = new Set([serializeGroupKey(newJoinData)]);
     } else {
       // Set 기반 중복 체크 (O(1))

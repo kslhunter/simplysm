@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // 출력
+    // Output
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
@@ -21,18 +21,18 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
 
-    // 모듈
+    // Module
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
 
-    // 빌드
+    // Build
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
     "importHelpers": true,
 
-    // 경로
+    // Path
     "baseUrl": ".",
     "paths": {
       "@simplysm/*": ["packages/*/src/index.ts"]

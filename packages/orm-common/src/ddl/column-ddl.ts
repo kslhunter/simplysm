@@ -8,7 +8,7 @@ import type {
 } from "../types/query-def";
 
 /**
- * ADD COLUMN QueryDef 생성
+ * Generate ADD COLUMN QueryDef
  */
 export function getAddColumnQueryDef(
   table: QueryDefObjectName,
@@ -29,7 +29,7 @@ export function getAddColumnQueryDef(
 }
 
 /**
- * DROP COLUMN QueryDef 생성
+ * Generate DROP COLUMN QueryDef
  */
 export function getDropColumnQueryDef(
   table: QueryDefObjectName,
@@ -39,7 +39,7 @@ export function getDropColumnQueryDef(
 }
 
 /**
- * MODIFY COLUMN QueryDef 생성
+ * Generate MODIFY COLUMN QueryDef
  */
 export function getModifyColumnQueryDef(
   table: QueryDefObjectName,
@@ -60,7 +60,7 @@ export function getModifyColumnQueryDef(
 }
 
 /**
- * RENAME COLUMN QueryDef 생성
+ * Generate RENAME COLUMN QueryDef
  */
 export function getRenameColumnQueryDef(
   table: QueryDefObjectName,

@@ -3,12 +3,12 @@
 // ============================================
 
 /**
- * 인덱스 정의 빌더
+ * Index definition builder
  *
- * Fluent API를 통해 인덱스의 컬럼, 유니크 여부, 정렬 순서를 정의
+ * Fluent API를 통해 Index의 컬럼, 유니크 여부, sorting 순서를 definition
  * TableBuilder.indexes()에서 사용
  *
- * @template TKeys - 인덱스 컬럼 키 배열 타입
+ * @template TKeys - Index 컬럼 key array type
  *
  * @example
  * ```typescript
@@ -20,10 +20,10 @@
  *     createdAt: c.datetime(),
  *   }))
  *   .indexes((i) => [
- *     // 유니크 인덱스
+ *     // 유니크 Index
  *     i.index("email").unique(),
  *
- *     // 복합 인덱스 + 정렬 순서
+ *     // 복합 Index + sorting order
  *     i.index("name", "createdAt").orderBy("ASC", "DESC"),
  *
  *     // 커스텀 이름
@@ -31,17 +31,17 @@
  *   ]);
  * ```
  *
- * @see {@link createIndexFactory} 인덱스 팩토리
- * @see {@link TableBuilder} 테이블 빌더
+ * @see {@link createIndexFactory} Index 팩토리
+ * @see {@link TableBuilder} Table builder
  */
 export class IndexBuilder<TKeys extends string[]> {
   /**
-   * @param meta - 인덱스 메타데이터
-   * @param meta.columns - 인덱스 컬럼 배열
-   * @param meta.name - 인덱스 이름 (선택)
-   * @param meta.unique - 유니크 인덱스 여부
-   * @param meta.orderBy - 컬럼별 정렬 순서
-   * @param meta.description - 인덱스 설명
+   * @param meta - Index Metadata
+   * @param meta.columns - Index 컬럼 array
+   * @param meta.name - Index 이름 (Select)
+   * @param meta.unique - 유니크 Index 여부
+   * @param meta.orderBy - Column별 sorting order
+   * @param meta.description - Index 설명
    */
   constructor(
     readonly meta: {
@@ -54,10 +54,10 @@ export class IndexBuilder<TKeys extends string[]> {
   ) {}
 
   /**
-   * 인덱스 이름 설정
+   * Index 이름 설정
    *
-   * @param name - 인덱스 이름
-   * @returns 새 IndexBuilder 인스턴스
+   * @param name - Index 이름
+   * @returns 새 IndexBuilder instance
    *
    * @example
    * ```typescript
@@ -69,9 +69,9 @@ export class IndexBuilder<TKeys extends string[]> {
   }
 
   /**
-   * 유니크 인덱스 설정
+   * 유니크 Index 설정
    *
-   * @returns 새 IndexBuilder 인스턴스
+   * @returns 새 IndexBuilder instance
    *
    * @example
    * ```typescript
@@ -83,12 +83,12 @@ export class IndexBuilder<TKeys extends string[]> {
   }
 
   /**
-   * 정렬 순서 설정
+   * sorting order 설정
    *
    * 각 컬럼에 대해 ASC 또는 DESC 지정
    *
-   * @param orderBy - 컬럼별 정렬 순서 (컬럼 수와 동일해야 함)
-   * @returns 새 IndexBuilder 인스턴스
+   * @param orderBy - Column별 sorting order (컬럼 수와 동일해야 함)
+   * @returns 새 IndexBuilder instance
    *
    * @example
    * ```typescript
@@ -104,10 +104,10 @@ export class IndexBuilder<TKeys extends string[]> {
   }
 
   /**
-   * 인덱스 설명 설정
+   * Index 설명 설정
    *
-   * @param description - 인덱스 설명 (DDL 주석으로 사용)
-   * @returns 새 IndexBuilder 인스턴스
+   * @param description - Index 설명 (DDL Comment으로 사용)
+   * @returns 새 IndexBuilder instance
    */
   description(description: string): IndexBuilder<TKeys> {
     return new IndexBuilder({ ...this.meta, description });
@@ -119,12 +119,12 @@ export class IndexBuilder<TKeys extends string[]> {
 // ============================================
 
 /**
- * 인덱스 빌더 팩토리 생성
+ * Index builder 팩토리 Generate
  *
- * TableBuilder.indexes()에서 사용하는 인덱스 팩토리
+ * TableBuilder.indexes()에서 사용하는 Index 팩토리
  *
- * @template TColumnKey - 테이블 컬럼 키 타입
- * @returns 인덱스 생성 메서드를 포함한 객체
+ * @template TColumnKey - Table 컬럼 key type
+ * @returns Index Generate 메서드를 포함한 object
  *
  * @example
  * ```typescript
@@ -140,16 +140,16 @@ export class IndexBuilder<TKeys extends string[]> {
  *   ]);
  * ```
  *
- * @see {@link IndexBuilder} 인덱스 빌더 클래스
+ * @see {@link IndexBuilder} Index builder class
  */
 export function createIndexFactory<TColumnKey extends string>() {
   return {
     /**
-     * 인덱스 생성
+     * Index Generate
      *
-     * @template TKeys - 인덱스 컬럼 키 배열 타입
-     * @param columns - 인덱스 컬럼명들
-     * @returns IndexBuilder 인스턴스
+     * @template TKeys - Index 컬럼 key array type
+     * @param columns - Index 컬럼명들
+     * @returns IndexBuilder instance
      *
      * @example
      * ```typescript

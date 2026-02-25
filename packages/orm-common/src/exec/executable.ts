@@ -5,22 +5,22 @@ import { ExprUnit } from "../expr/expr-unit";
 import { expr } from "../expr/expr";
 
 /**
- * 저장 프로시저 실행 래퍼 클래스
+ * Stored procedure execution wrapper class
  *
- * ProcedureBuilder로 정의된 프로시저를 실행하기 위한 클래스.
- * DbContext에서 executable() 팩토리 함수를 통해 생성하여 사용한다.
+ * Class for executing procedures defined by ProcedureBuilder.
+ * Created and used through the executable() factory function in DbContext.
  *
- * @template TParams - 프로시저 파라미터 타입
- * @template TReturns - 프로시저 반환 타입
+ * @template TParams - Procedure parameter type
+ * @template TReturns - Procedure return type
  *
  * @example
  * ```typescript
- * // 프로시저 실행
+ * // Execute procedure
  * const result = await db.getUserById().execute({ userId: 1n });
  * ```
  *
- * @see {@link executable} 팩토리 함수
- * @see {@link ProcedureBuilder} 프로시저 정의
+ * @see {@link executable} Factory function
+ * @see {@link ProcedureBuilder} Procedure definition
  */
 export class Executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord> {
   constructor(
@@ -29,12 +29,12 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
   ) {}
 
   /**
-   * 프로시저 실행 QueryDef 생성
+   * Generate procedure execution QueryDef
    */
   getExecProcQueryDef(params?: InferColumnExprs<TParams>) {
     const meta = this._builder.meta;
     if (params && !meta.params) {
-      throw new Error(`프로시저 '${meta.name}'에 파라미터가 없습니다.`);
+      throw new Error(`Procedure '${meta.name}' has no parameters.`);
     }
 
     return {
@@ -59,7 +59,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
   }
 
   /**
-   * 프로시저 실행
+   * Execute procedure
    */
   async execute(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]> {
     return this._db.executeDefs<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
@@ -67,41 +67,41 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
 }
 
 // ============================================
-// executable 함수
+// executable function
 // ============================================
 
 /**
- * Executable 생성 팩토리 함수
+ * Factory function to create Executable
  *
- * DbContext에서 프로시저를 등록할 때 사용한다.
- * ProcedureBuilder로 정의된 프로시저를 Executable로 래핑하여 반환한다.
+ * Used when registering procedures in DbContext.
+ * Wraps procedures defined by ProcedureBuilder and returns them as Executable.
  *
- * @template TParams - 프로시저 파라미터 타입
- * @template TReturns - 프로시저 반환 타입
- * @param db - DbContext 인스턴스
- * @param builder - ProcedureBuilder 인스턴스
- * @returns Executable 생성 함수
+ * @template TParams - Procedure parameter type
+ * @template TReturns - Procedure return type
+ * @param db - DbContext instance
+ * @param builder - ProcedureBuilder instance
+ * @returns Executable factory function
  *
  * @example
  * ```typescript
- * // 프로시저 정의
+ * // Define procedure
  * const GetUserById = Procedure("GetUserById")
  *   .database("mydb")
  *   .params((c) => ({ userId: c.bigint() }))
  *   .returns((c) => ({ id: c.bigint(), name: c.varchar(100) }))
  *   .body("SELECT id, name FROM User WHERE id = userId");
  *
- * // DbContext에서 등록
+ * // Register in DbContext
  * class MyDb extends DbContext {
  *   getUserById = executable(this, GetUserById);
  * }
  *
- * // 사용
+ * // Use
  * const result = await db.getUserById().execute({ userId: 1n });
  * ```
  *
- * @see {@link Executable} 실행 클래스
- * @see {@link ProcedureBuilder} 프로시저 정의
+ * @see {@link Executable} Execution class
+ * @see {@link ProcedureBuilder} Procedure definition
  */
 export function executable<
   TParams extends ColumnBuilderRecord,

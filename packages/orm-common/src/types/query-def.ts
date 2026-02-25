@@ -4,11 +4,11 @@ import type { Expr, WhereExpr } from "./expr";
 //#region ========== 공통 ==========
 
 /**
- * DB 객체 이름 (테이블, 뷰, 프로시저 등)
+ * DB object 이름 (table, View, Procedure 등)
  *
  * DBMS별 네임스페이스:
  * - MySQL: `database.name` (schema 무시)
- * - MSSQL: `database.schema.name` (schema 기본값: dbo)
+ * - MSSQL: `database.schema.name` (schema Default value: dbo)
  * - PostgreSQL: `schema.name` (database는 connection용)
  */
 export interface QueryDefObjectName {
@@ -22,9 +22,9 @@ export interface QueryDefObjectName {
 //#region ========== DML ==========
 
 /**
- * CUD 쿼리의 OUTPUT 절 정의
+ * CUD query의 OUTPUT 절 definition
  *
- * INSERT/UPDATE/DELETE 후 반환값 정의
+ * INSERT/UPDATE/DELETE 후 반환값 definition
  */
 export interface CudOutputDef {
   columns: string[];
@@ -33,22 +33,22 @@ export interface CudOutputDef {
 }
 
 /**
- * SELECT 쿼리 정의
+ * SELECT Query definition
  *
- * @property type - 쿼리 타입 ("select")
- * @property from - FROM 절 (테이블/서브쿼리)
- * @property as - 테이블 별칭
- * @property select - SELECT 절 컬럼 매핑
+ * @property type - Query type ("select")
+ * @property from - FROM 절 (table/Subquery)
+ * @property as - Table 별칭
+ * @property select - SELECT 절 컬럼 Mapping
  * @property distinct - DISTINCT 여부
  * @property top - TOP N (MSSQL)
  * @property lock - 락 여부
- * @property where - WHERE 조건 배열
- * @property joins - JOIN 정의 배열
- * @property orderBy - ORDER BY [컬럼, 방향] 배열
+ * @property where - WHERE condition array
+ * @property joins - JOIN definition array
+ * @property orderBy - ORDER BY [컬럼, 방향] array
  * @property limit - LIMIT [offset, count]
- * @property groupBy - GROUP BY 표현식 배열
- * @property having - HAVING 조건 배열
- * @property with - 재귀 CTE 정의
+ * @property groupBy - GROUP BY expression array
+ * @property having - HAVING condition array
+ * @property with - recursive CTE definition
  */
 export interface SelectQueryDef {
   type: "select";
@@ -68,21 +68,21 @@ export interface SelectQueryDef {
 }
 
 /**
- * JOIN 쿼리 정의
+ * JOIN Query definition
  *
- * SelectQueryDef 확장 + isSingle 플래그
+ * SelectQueryDef 확장 + isSingle flag
  */
 export interface SelectQueryDefJoin extends SelectQueryDef {
-  /** 단일 결과 여부 (1:1 관계) */
+  /** 단일 result 여부 (1:1 relationship) */
   isSingle?: boolean;
 }
 
 /**
- * INSERT 쿼리 정의
+ * INSERT Query definition
  *
- * @property records - 삽입할 레코드 배열
- * @property overrideIdentity - IDENTITY_INSERT 활성화 여부
- * @property output - OUTPUT 절 정의
+ * @property records - Insert할 레코드 array
+ * @property overrideIdentity - IDENTITY_INSERT Enable 여부
+ * @property output - OUTPUT 절 definition
  */
 export interface InsertQueryDef {
   type: "insert";
@@ -93,7 +93,7 @@ export interface InsertQueryDef {
 }
 
 /**
- * 조건부 INSERT 쿼리 정의
+ * 조건부 INSERT Query definition
  *
  * 존재하지 않는 경우에만 삽입
  */
@@ -107,9 +107,9 @@ export interface InsertIfNotExistsQueryDef {
 }
 
 /**
- * INSERT INTO SELECT 쿼리 정의
+ * INSERT INTO SELECT Query definition
  *
- * 서브쿼리 결과를 삽입
+ * Subquery 결과를 삽입
  */
 export interface InsertIntoQueryDef {
   type: "insertInto";
@@ -120,9 +120,9 @@ export interface InsertIntoQueryDef {
 }
 
 /**
- * UPDATE 쿼리 정의
+ * UPDATE Query definition
  *
- * @property record - 업데이트할 컬럼/값 매핑
+ * @property record - Update할 컬럼/value Mapping
  * @property joins - UPDATE JOIN (지원 시)
  */
 export interface UpdateQueryDef {
@@ -138,7 +138,7 @@ export interface UpdateQueryDef {
 }
 
 /**
- * DELETE 쿼리 정의
+ * DELETE Query definition
  */
 export interface DeleteQueryDef {
   type: "delete";
@@ -152,9 +152,9 @@ export interface DeleteQueryDef {
 }
 
 /**
- * UPSERT 쿼리 정의
+ * UPSERT Query definition
  *
- * INSERT or UPDATE (MERGE 패턴)
+ * INSERT or UPDATE (MERGE Pattern)
  */
 export interface UpsertQueryDef {
   type: "upsert";
@@ -170,7 +170,7 @@ export interface UpsertQueryDef {
 
 //#region ========== Utils ==========
 
-/** FK 제약조건 활성화/비활성화 */
+/** FK constraint Enable/Disable */
 export interface SwitchFkQueryDef {
   type: "switchFk";
   table: QueryDefObjectName;
@@ -181,7 +181,7 @@ export interface SwitchFkQueryDef {
 
 //#region ========== DDL - Schema ==========
 
-/** 스키마 초기화 (모든 객체 삭제) */
+/** Clear schema (모든 object Delete) */
 export interface ClearSchemaQueryDef {
   type: "clearSchema";
   database: string;
@@ -249,7 +249,7 @@ export interface DropColumnQueryDef {
   column: string;
 }
 
-/** MODIFY COLUMN (타입/속성 변경) */
+/** MODIFY COLUMN (type/property Change) */
 export interface ModifyColumnQueryDef {
   type: "modifyColumn";
   table: QueryDefObjectName;
@@ -376,7 +376,7 @@ export interface ExecProcQueryDef {
 
 //#region ========== Meta ==========
 
-/** 스키마 존재 여부 확인 */
+/** Check schema existence */
 export interface SchemaExistsQueryDef {
   type: "schemaExists";
   database: string;
@@ -385,13 +385,13 @@ export interface SchemaExistsQueryDef {
 
 //#endregion
 
-//#region ========== DDL 타입 상수 ==========
+//#region ========== DDL type 상수 ==========
 
 /**
- * DDL QueryDef 유니언 (컴파일 타임 검증용)
+ * DDL QueryDef union (컴파일 타임 Validation용)
  *
  * @remarks
- * switchFk는 DDL이 아니므로 제외 (트랜잭션 내 사용 가능)
+ * switchFk는 DDL이 아니므로 exclude (transaction 내 사용 가능)
  */
 type DdlQueryDef =
   | ClearSchemaQueryDef
@@ -415,13 +415,13 @@ type DdlQueryDef =
   | DropProcQueryDef;
 
 /**
- * DDL (Data Definition Language) 타입 상수
+ * DDL (Data Definition Language) type 상수
  *
- * 트랜잭션 내 DDL 차단 및 DDL 타입 검증에 사용
- * satisfies 키워드로 DdlQueryDef와의 동기화를 컴파일 타임에 검증
+ * Transaction 내 DDL 차단 및 DDL type Validation에 사용
+ * satisfies 키워드로 DdlQueryDef와의 synchronous화를 컴파일 타임에 Validation
  *
  * @remarks
- * switchFk는 DDL이 아니므로 제외 (트랜잭션 내 사용 가능)
+ * switchFk는 DDL이 아니므로 exclude (transaction 내 사용 가능)
  */
 export const DDL_TYPES = [
   "clearSchema",
@@ -445,7 +445,7 @@ export const DDL_TYPES = [
   "dropProc",
 ] as const satisfies readonly DdlQueryDef["type"][];
 
-/** DDL 타입 유니언 */
+/** DDL type union */
 export type DdlType = (typeof DDL_TYPES)[number];
 
 //#endregion
@@ -453,16 +453,16 @@ export type DdlType = (typeof DDL_TYPES)[number];
 //#region ========== 통합 Union Type ==========
 
 /**
- * 모든 쿼리 정의 유니언 타입
+ * 모든 Query definition union type
  *
  * DML (SELECT/INSERT/UPDATE/DELETE/UPSERT) +
  * DDL (Table/Column/PK/FK/Index/View/Procedure) +
  * Utils (SwitchFk) + Meta (SchemaExists)
  *
- * @see {@link SelectQueryDef} SELECT 쿼리
- * @see {@link InsertQueryDef} INSERT 쿼리
- * @see {@link UpdateQueryDef} UPDATE 쿼리
- * @see {@link DeleteQueryDef} DELETE 쿼리
+ * @see {@link SelectQueryDef} SELECT query
+ * @see {@link InsertQueryDef} INSERT query
+ * @see {@link UpdateQueryDef} UPDATE query
+ * @see {@link DeleteQueryDef} DELETE query
  */
 export type QueryDef =
   // DML

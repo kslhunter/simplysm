@@ -12,18 +12,18 @@ import {
 // ============================================
 
 /**
- * 데이터베이스 뷰 정의 빌더
+ * Database View definition builder
  *
- * Fluent API를 통해 뷰의 쿼리, 관계를 정의
- * DbContext에서 queryable()과 함께 사용하여 타입 안전한 쿼리 작성
+ * Fluent API를 통해 View의 query, 관계를 definition
+ * DbContext에서 queryable()과 함께 사용하여 type 안전한 query 작성
  *
- * @template TDbContext - DbContext 타입
- * @template TData - 뷰 데이터 레코드 타입
- * @template TRelations - 관계 정의 레코드 타입
+ * @template TDbContext - DbContext type
+ * @template TData - View data 레코드 type
+ * @template TRelations - relationship definition 레코드 type
  *
  * @example
  * ```typescript
- * // 뷰 정의
+ * // View definition
  * const UserSummary = View("UserSummary")
  *   .database("mydb")
  *   .query((db: MyDb) =>
@@ -44,27 +44,27 @@ import {
  * }
  * ```
  *
- * @see {@link View} 팩토리 함수
- * @see {@link queryable} Queryable 생성
+ * @see {@link View} 팩토리 function
+ * @see {@link queryable} Queryable Generate
  */
 export class ViewBuilder<
   TDbContext extends DbContextBase,
   TData extends DataRecord,
   TRelations extends RelationBuilderRecord,
 > {
-  /** 관계 정의 (타입 추론용) */
+  /** relationship definition (type 추론용) */
   readonly $relations!: TRelations;
-  /** 전체 타입 추론 */
+  /** 전체 Type inference */
   readonly $infer!: TData;
 
   /**
-   * @param meta - 뷰 메타데이터
-   * @param meta.name - 뷰 이름
-   * @param meta.description - 뷰 설명 (주석)
-   * @param meta.database - 데이터베이스 이름
-   * @param meta.schema - 스키마 이름 (MSSQL/PostgreSQL)
-   * @param meta.viewFn - 뷰 쿼리 정의 함수
-   * @param meta.relations - 관계 정의
+   * @param meta - View Metadata
+   * @param meta.name - View 이름
+   * @param meta.description - View 설명 (주석)
+   * @param meta.database - Database 이름
+   * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
+   * @param meta.viewFn - View Query definition function
+   * @param meta.relations - relationship definition
    */
   constructor(
     readonly meta: {
@@ -78,20 +78,20 @@ export class ViewBuilder<
   ) {}
 
   /**
-   * 뷰 설명 설정
+   * View 설명 설정
    *
-   * @param desc - 뷰 설명 (DDL 주석으로 사용)
-   * @returns 새 ViewBuilder 인스턴스
+   * @param desc - View 설명 (DDL Comment으로 사용)
+   * @returns 새 ViewBuilder instance
    */
   description(desc: string): ViewBuilder<TDbContext, TData, TRelations> {
     return new ViewBuilder({ ...this.meta, description: desc });
   }
 
   /**
-   * 데이터베이스 이름 설정
+   * Database 이름 설정
    *
-   * @param db - 데이터베이스 이름
-   * @returns 새 ViewBuilder 인스턴스
+   * @param db - Database 이름
+   * @returns 새 ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -103,26 +103,26 @@ export class ViewBuilder<
   }
 
   /**
-   * 스키마 이름 설정
+   * schema 이름 설정
    *
    * MSSQL, PostgreSQL에서 사용
    *
-   * @param schema - 스키마 이름 (MSSQL: dbo, PostgreSQL: public)
-   * @returns 새 ViewBuilder 인스턴스
+   * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
+   * @returns 새 ViewBuilder instance
    */
   schema(schema: string): ViewBuilder<TDbContext, TData, TRelations> {
     return new ViewBuilder({ ...this.meta, schema });
   }
 
   /**
-   * 뷰 쿼리 정의
+   * View Query definition
    *
-   * SELECT 쿼리를 통해 뷰의 데이터 소스 정의
+   * SELECT query를 통해 View의 data 소스 definition
    *
-   * @template TViewData - 뷰 데이터 타입
-   * @template TDb - DbContext 타입
-   * @param viewFn - DbContext를 받아 Queryable을 반환하는 함수
-   * @returns 새 ViewBuilder 인스턴스
+   * @template TViewData - View data type
+   * @template TDb - DbContext type
+   * @param viewFn - DbContext를 받아 Queryable을 반환하는 function
+   * @returns 새 ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -146,13 +146,13 @@ export class ViewBuilder<
   }
 
   /**
-   * 관계 정의
+   * relationship definition
    *
-   * 다른 테이블/뷰와의 관계 설정
+   * 다른 Table/View와의 relationship 설정
    *
-   * @template T - 관계 정의 타입
-   * @param fn - 관계 팩토리를 받아 관계 정의를 반환하는 함수
-   * @returns 새 ViewBuilder 인스턴스
+   * @template T - relationship definition type
+   * @param fn - relationship 팩토리를 받아 relationship 정의를 반환하는 function
+   * @returns 새 ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -163,14 +163,14 @@ export class ViewBuilder<
    *   }));
    * ```
    *
-   * @see {@link ForeignKeyBuilder} FK 빌더
-   * @see {@link ForeignKeyTargetBuilder} FK 역참조 빌더
+   * @see {@link ForeignKeyBuilder} FK builder
+   * @see {@link ForeignKeyTargetBuilder} FK 역참조 builder
    */
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TData & string>>) => T,
   ): ViewBuilder<TDbContext, TData & InferDeepRelations<T>, TRelations> {
-    // TypeScript의 제네릭 타입 추론 한계로 인해 캐스팅 불가피
-    // TRelations 타입 파라미터와 새로 생성되는 관계 타입 T 간의 타입 불일치 해결
+    // TypeScript의 generic Type inference 한계로 인해 캐스팅 불가피
+    // TRelations type 파라미터와 새로 생성되는 relationship type T 간의 type 불일치 해결
     return new ViewBuilder({
       ...this.meta,
       relations: fn(createRelationFactory<this, keyof TData & string>(() => this)),
@@ -179,16 +179,16 @@ export class ViewBuilder<
 }
 
 // ============================================
-// View 함수
+// View function
 // ============================================
 
 /**
- * 뷰 빌더 생성 팩토리 함수
+ * View builder Generate 팩토리 function
  *
- * ViewBuilder를 생성하여 Fluent API로 뷰 스키마 정의
+ * ViewBuilder를 생성하여 Fluent API로 View schema definition
  *
- * @param name - 뷰 이름
- * @returns ViewBuilder 인스턴스
+ * @param name - View 이름
+ * @returns ViewBuilder instance
  *
  * @example
  * ```typescript
@@ -201,7 +201,7 @@ export class ViewBuilder<
  *       .select(u => ({ id: u.id, name: u.name }))
  *   );
  *
- * // 집계 뷰
+ * // aggregation View
  * const UserStats = View("UserStats")
  *   .database("mydb")
  *   .query((db: MyDb) =>
@@ -214,7 +214,7 @@ export class ViewBuilder<
  *   );
  * ```
  *
- * @see {@link ViewBuilder} 빌더 클래스
+ * @see {@link ViewBuilder} builder class
  */
 export function View(name: string) {
   return new ViewBuilder({ name });

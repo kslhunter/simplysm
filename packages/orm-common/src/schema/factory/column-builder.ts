@@ -8,13 +8,13 @@ import type { DataRecord } from "../../types/db";
 // ============================================
 
 /**
- * 컬럼 정의 빌더
+ * Column definition builder
  *
- * Fluent API를 통해 컬럼의 타입, nullable, autoIncrement, default, 설명을 정의
+ * Fluent API를 통해 컬럼의 type, nullable, autoIncrement, default, 설명을 definition
  * TableBuilder.columns()에서 사용
  *
- * @template TValue - 컬럼 값 타입
- * @template TMeta - 컬럼 메타데이터 타입
+ * @template TValue - Column value type
+ * @template TMeta - Column Metadata type
  *
  * @example
  * ```typescript
@@ -23,26 +23,26 @@ import type { DataRecord } from "../../types/db";
  *     id: c.bigint().autoIncrement(),           // bigint, auto increment
  *     name: c.varchar(100),                     // varchar(100), required
  *     email: c.varchar(200).nullable(),         // varchar(200), nullable
- *     status: c.varchar(20).default("active"),  // varchar(20), default 값
+ *     status: c.varchar(20).default("active"),  // varchar(20), default value
  *     createdAt: c.datetime().description("생성일시"),
  *   }));
  * ```
  *
  * @see {@link createColumnFactory} 컬럼 팩토리
- * @see {@link TableBuilder} 테이블 빌더
+ * @see {@link TableBuilder} Table builder
  */
 export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnMeta> {
   /**
-   * @param meta - 컬럼 메타데이터
+   * @param meta - Column Metadata
    */
   constructor(readonly meta: TMeta) {}
 
   /**
    * Auto Increment 설정
    *
-   * INSERT 시 자동 증가. INSERT용 타입 추론에서 optional로 처리
+   * INSERT 시 Auto increment. INSERT용 Type inference에서 optional로 처리
    *
-   * @returns 새 ColumnBuilder 인스턴스
+   * @returns 새 ColumnBuilder instance
    *
    * @example
    * ```typescript
@@ -56,9 +56,9 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   /**
    * Nullable 설정
    *
-   * NULL 허용. 값 타입에 undefined 추가
+   * Allow NULL. value 타입에 undefined Add
    *
-   * @returns 새 ColumnBuilder 인스턴스
+   * @returns 새 ColumnBuilder instance
    *
    * @example
    * ```typescript
@@ -70,12 +70,12 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   }
 
   /**
-   * 기본값 설정
+   * Default value 설정
    *
-   * INSERT 시 값 미지정 시 사용. INSERT용 타입 추론에서 optional로 처리
+   * INSERT 시 value 미지정 시 사용. INSERT용 Type inference에서 optional로 처리
    *
-   * @param value - 기본값
-   * @returns 새 ColumnBuilder 인스턴스
+   * @param value - Default value
+   * @returns 새 ColumnBuilder instance
    *
    * @example
    * ```typescript
@@ -92,12 +92,12 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   /**
    * 컬럼 설명 설정
    *
-   * @param desc - 컬럼 설명 (DDL 주석으로 사용)
-   * @returns 새 ColumnBuilder 인스턴스
+   * @param desc - Column 설명 (DDL Comment으로 사용)
+   * @returns 새 ColumnBuilder instance
    *
    * @example
    * ```typescript
-   * createdAt: c.datetime().description("레코드 생성 일시")
+   * createdAt: c.datetime().description("레코드 Generate 일시")
    * ```
    */
   description(desc: string): ColumnBuilder<TValue, TMeta & { description: string }> {
@@ -110,47 +110,47 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
 // ============================================
 
 /**
- * 컬럼 빌더 팩토리 생성
+ * Column builder 팩토리 Generate
  *
- * TableBuilder.columns()에서 사용하는 컬럼 타입 팩토리
- * 모든 기본 데이터 타입에 대한 빌더 생성 메서드 제공
+ * TableBuilder.columns()에서 사용하는 Column type 팩토리
+ * 모든 기본 data type에 대한 builder Generate method 제공
  *
- * @returns 컬럼 타입별 빌더 생성 메서드를 포함한 객체
+ * @returns Column type별 builder Generate 메서드를 포함한 object
  *
  * @example
  * ```typescript
  * Table("User")
  *   .columns((c) => ({
- *     // 숫자 타입
+ *     // 숫자 type
  *     id: c.bigint().autoIncrement(),
  *     count: c.int(),
  *     price: c.decimal(10, 2),
  *
- *     // 문자열 타입
+ *     // 문자열 type
  *     name: c.varchar(100),
  *     code: c.char(10),
  *     content: c.text(),
  *
- *     // 날짜/시간 타입
+ *     // 날짜/시간 type
  *     createdAt: c.datetime(),
  *     birthDate: c.date(),
  *     startTime: c.time(),
  *
- *     // 기타 타입
+ *     // 기타 type
  *     isActive: c.boolean(),
  *     data: c.binary(),
  *     uuid: c.uuid(),
  *   }));
  * ```
  *
- * @see {@link ColumnBuilder} 컬럼 빌더 클래스
+ * @see {@link ColumnBuilder} Column builder class
  */
 export function createColumnFactory() {
   return {
     /**
      * INT 컬럼 (4 bytes, -2^31 ~ 2^31-1)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     int(): ColumnBuilder<number, { type: "number"; dataType: { type: "int" } }> {
       return new ColumnBuilder({ type: "number", dataType: { type: "int" } });
@@ -159,7 +159,7 @@ export function createColumnFactory() {
     /**
      * BIGINT 컬럼 (8 bytes, -2^63 ~ 2^63-1)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     bigint(): ColumnBuilder<number, { type: "number"; dataType: { type: "bigint" } }> {
       return new ColumnBuilder({ type: "number", dataType: { type: "bigint" } });
@@ -168,7 +168,7 @@ export function createColumnFactory() {
     /**
      * FLOAT 컬럼 (4 bytes, 단정밀도 부동소수점)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     float(): ColumnBuilder<number, { type: "number"; dataType: { type: "float" } }> {
       return new ColumnBuilder({ type: "number", dataType: { type: "float" } });
@@ -177,7 +177,7 @@ export function createColumnFactory() {
     /**
      * DOUBLE 컬럼 (8 bytes, 배정밀도 부동소수점)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     double(): ColumnBuilder<number, { type: "number"; dataType: { type: "double" } }> {
       return new ColumnBuilder({ type: "number", dataType: { type: "double" } });
@@ -187,8 +187,8 @@ export function createColumnFactory() {
      * DECIMAL 컬럼 (고정 소수점)
      *
      * @param precision - 전체 자릿수
-     * @param scale - 소수점 이하 자릿수 (선택)
-     * @returns ColumnBuilder 인스턴스
+     * @param scale - 소수점 이하 자릿수 (Select)
+     * @returns ColumnBuilder instance
      *
      * @example
      * ```typescript
@@ -209,7 +209,7 @@ export function createColumnFactory() {
      * VARCHAR 컬럼 (가변 길이 문자열)
      *
      * @param length - 최대 길이
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      *
      * @example
      * ```typescript
@@ -226,7 +226,7 @@ export function createColumnFactory() {
      * CHAR 컬럼 (고정 길이 문자열)
      *
      * @param length - 고정 길이
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      *
      * @example
      * ```typescript
@@ -242,18 +242,18 @@ export function createColumnFactory() {
     /**
      * TEXT 컬럼 (대용량 문자열)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     text(): ColumnBuilder<string, { type: "string"; dataType: { type: "text" } }> {
       return new ColumnBuilder({ type: "string", dataType: { type: "text" } });
     },
 
     /**
-     * BINARY 컬럼 (바이너리 데이터)
+     * BINARY 컬럼 (바이너리 data)
      *
      * DBMS별: MySQL=LONGBLOB, MSSQL=VARBINARY(MAX), PostgreSQL=BYTEA
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     binary(): ColumnBuilder<Bytes, { type: "Bytes"; dataType: { type: "binary" } }> {
       return new ColumnBuilder({ type: "Bytes", dataType: { type: "binary" } });
@@ -264,7 +264,7 @@ export function createColumnFactory() {
      *
      * DBMS별: MySQL=TINYINT(1), MSSQL=BIT, PostgreSQL=BOOLEAN
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     boolean(): ColumnBuilder<boolean, { type: "boolean"; dataType: { type: "boolean" } }> {
       return new ColumnBuilder({ type: "boolean", dataType: { type: "boolean" } });
@@ -273,7 +273,7 @@ export function createColumnFactory() {
     /**
      * DATETIME 컬럼 (날짜 + 시간)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     datetime(): ColumnBuilder<DateTime, { type: "DateTime"; dataType: { type: "datetime" } }> {
       return new ColumnBuilder({ type: "DateTime", dataType: { type: "datetime" } });
@@ -282,7 +282,7 @@ export function createColumnFactory() {
     /**
      * DATE 컬럼 (날짜만)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     date(): ColumnBuilder<DateOnly, { type: "DateOnly"; dataType: { type: "date" } }> {
       return new ColumnBuilder({ type: "DateOnly", dataType: { type: "date" } });
@@ -291,7 +291,7 @@ export function createColumnFactory() {
     /**
      * TIME 컬럼 (시간만)
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     time(): ColumnBuilder<Time, { type: "Time"; dataType: { type: "time" } }> {
       return new ColumnBuilder({ type: "Time", dataType: { type: "time" } });
@@ -302,7 +302,7 @@ export function createColumnFactory() {
      *
      * DBMS별: MySQL=BINARY(16), MSSQL=UNIQUEIDENTIFIER, PostgreSQL=UUID
      *
-     * @returns ColumnBuilder 인스턴스
+     * @returns ColumnBuilder instance
      */
     uuid(): ColumnBuilder<Uuid, { type: "Uuid"; dataType: { type: "uuid" } }> {
       return new ColumnBuilder({ type: "Uuid", dataType: { type: "uuid" } });
@@ -311,24 +311,24 @@ export function createColumnFactory() {
 }
 
 // ============================================
-// ColumnDefRecord - 컬럼 빌더 레코드
+// ColumnDefRecord - Column builder 레코드
 // ============================================
 
 /**
- * 컬럼 빌더 레코드 타입
+ * Column builder 레코드 type
  *
- * TableBuilder.columns()의 반환 타입으로 사용
+ * TableBuilder.columns()의 return 타입으로 사용
  */
 export type ColumnBuilderRecord = Record<string, ColumnBuilder<ColumnPrimitive, ColumnMeta>>;
 
 // ============================================
-// Infer - 타입 추론 유틸리티
+// Infer - Type inference 유틸리티
 // ============================================
 
 /**
- * 컬럼 빌더 레코드에서 실제 값 타입 추론
+ * Column builder 레코드에서 실제 value Type inference
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  *
  * @example
  * ```typescript
@@ -341,20 +341,20 @@ export type InferColumns<TBuilders extends ColumnBuilderRecord> = {
 };
 
 /**
- * 컬럼 빌더 레코드에서 표현식 입력 타입 추론
+ * Column builder 레코드에서 expression 입력 Type inference
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  */
 export type InferColumnExprs<TBuilders extends ColumnBuilderRecord> = {
   [K in keyof TBuilders]: TBuilders[K] extends ColumnBuilder<infer V, any> ? ExprInput<V> : never;
 };
 
 /**
- * INSERT 시 필수 컬럼 키 추출
+ * INSERT 시 required 컬럼 key 추출
  *
- * autoIncrement, nullable, default가 없는 컬럼만 필수
+ * autoIncrement, nullable, default가 없는 컬럼만 required
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  */
 export type RequiredInsertKeys<TBuilders extends ColumnBuilderRecord> = {
   [K in keyof TBuilders]: TBuilders[K]["meta"] extends infer M extends ColumnMeta
@@ -369,11 +369,11 @@ export type RequiredInsertKeys<TBuilders extends ColumnBuilderRecord> = {
 }[keyof TBuilders];
 
 /**
- * INSERT 시 선택적 컬럼 키 추출
+ * INSERT 시 optional 컬럼 key 추출
  *
  * autoIncrement, nullable, default가 있는 컬럼은 optional
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  */
 export type OptionalInsertKeys<TBuilders extends ColumnBuilderRecord> = Exclude<
   keyof TBuilders,
@@ -381,11 +381,11 @@ export type OptionalInsertKeys<TBuilders extends ColumnBuilderRecord> = Exclude<
 >;
 
 /**
- * INSERT용 타입 추론
+ * INSERT용 Type inference
  *
- * 필수 컬럼은 required, optional 컬럼은 Partial
+ * required 컬럼은 required, optional 컬럼은 Partial
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  *
  * @example
  * ```typescript
@@ -400,20 +400,20 @@ export type InferInsertColumns<TBuilders extends ColumnBuilderRecord> = Pick<
   Partial<Pick<InferColumns<TBuilders>, OptionalInsertKeys<TBuilders>>>;
 
 /**
- * UPDATE용 타입 추론
+ * UPDATE용 Type inference
  *
  * 모든 컬럼이 optional
  *
- * @template T - 컬럼 빌더 레코드 타입
+ * @template T - Column builder 레코드 type
  */
 export type InferUpdateColumns<TBuilders extends ColumnBuilderRecord> = Partial<
   InferColumns<TBuilders>
 >;
 
 /**
- * 데이터 레코드에서 컬럼 빌더 레코드로 변환
+ * data 레코드에서 Column builder 레코드로 Transform
  *
- * @template TData - 데이터 레코드 타입
+ * @template TData - data 레코드 type
  */
 export type DataToColumnBuilderRecord<TData extends DataRecord> = {
   [K in keyof TData as TData[K] extends ColumnPrimitive ? K : never]: ColumnBuilder<

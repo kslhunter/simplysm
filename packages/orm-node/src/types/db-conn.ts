@@ -2,25 +2,25 @@ import type { EventEmitter } from "@simplysm/core-common";
 import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
 
 // ============================================
-// 공통 상수
+// Common constants
 // ============================================
 
 /**
- * DB 연결 수립 타임아웃 (10초)
+ * DB connection establishment timeout (10 seconds)
  */
 export const DB_CONN_CONNECT_TIMEOUT = 10 * 1000;
 
 /**
- * DB 쿼리 기본 타임아웃 (10분)
+ * DB query default timeout (10 minutes)
  */
 export const DB_CONN_DEFAULT_TIMEOUT = 10 * 60 * 1000;
 
 /**
- * DB 연결 에러 메시지
+ * DB connection error messages
  */
 export const DB_CONN_ERRORS = {
-  NOT_CONNECTED: "'Connection'이 연결되어있지 않습니다.",
-  ALREADY_CONNECTED: "이미 'Connection'이 연결되어있습니다.",
+  NOT_CONNECTED: "'Connection' is not connected.",
+  ALREADY_CONNECTED: "'Connection' is already connected.",
 } as const;
 
 // ============================================
@@ -28,86 +28,86 @@ export const DB_CONN_ERRORS = {
 // ============================================
 
 /**
- * 저수준 DB 연결 인터페이스
+ * Low-level DB connection interface
  *
- * 각 DBMS별 구현체가 이 인터페이스를 구현합니다.
- * - {@link MysqlDbConn} - MySQL 연결
- * - {@link MssqlDbConn} - MSSQL 연결
- * - {@link PostgresqlDbConn} - PostgreSQL 연결
+ * Implementations for each DBMS implement this interface.
+ * - {@link MysqlDbConn} - MySQL connection
+ * - {@link MssqlDbConn} - MSSQL connection
+ * - {@link PostgresqlDbConn} - PostgreSQL connection
  *
  * @remarks
- * SdEventEmitter를 상속하여 'close' 이벤트를 발생시킵니다.
+ * Inherits from EventEmitter and emits 'close' events.
  */
 export interface DbConn extends EventEmitter<{ close: void }> {
   /**
-   * 연결 설정
+   * Connection configuration
    */
   config: DbConnConfig;
 
   /**
-   * 연결 여부
+   * Whether connected
    */
   isConnected: boolean;
 
   /**
-   * 트랜잭션 진행 여부
+   * Whether transaction is in progress
    */
   isInTransaction: boolean;
 
   /**
-   * DB 연결 수립
+   * Establish DB connection
    */
   connect(): Promise<void>;
 
   /**
-   * DB 연결 종료
+   * Close DB connection
    */
   close(): Promise<void>;
 
   /**
-   * 트랜잭션 시작
+   * Begin transaction
    *
-   * @param isolationLevel - 격리 수준 (선택)
+   * @param isolationLevel - Isolation level (optional)
    */
   beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
 
   /**
-   * 트랜잭션 커밋
+   * Commit transaction
    */
   commitTransaction(): Promise<void>;
 
   /**
-   * 트랜잭션 롤백
+   * Rollback transaction
    */
   rollbackTransaction(): Promise<void>;
 
   /**
-   * SQL 쿼리 배열 실행
+   * Execute SQL query array
    *
-   * @param queries - 실행할 SQL 문자열 배열
-   * @returns 각 쿼리별 결과 배열의 배열
+   * @param queries - SQL string array to execute
+   * @returns Array of result arrays for each query
    */
   execute(queries: string[]): Promise<Record<string, unknown>[][]>;
 
   /**
-   * 파라미터화된 쿼리 실행
+   * Execute parameterized query
    *
-   * @param query - SQL 쿼리 문자열
-   * @param params - 바인딩 파라미터 (선택)
-   * @returns 결과 배열의 배열
+   * @param query - SQL query string
+   * @param params - Binding parameters (optional)
+   * @returns Array of result arrays
    */
   executeParametrized(query: string, params?: unknown[]): Promise<Record<string, unknown>[][]>;
 
   /**
-   * 대량 INSERT (네이티브 벌크 API 사용)
+   * Bulk INSERT (using native bulk API)
    *
    * - MSSQL: tedious BulkLoad
-   * - MySQL: LOAD DATA LOCAL INFILE (임시 파일)
+   * - MySQL: LOAD DATA LOCAL INFILE (temporary file)
    * - PostgreSQL: COPY FROM STDIN
    *
-   * @param tableName - 테이블명 (database.table 또는 database.schema.table)
-   * @param columnMetas - 컬럼명 → ColumnMeta 매핑
-   * @param records - 삽입할 레코드 배열
+   * @param tableName - Table name (database.table or database.schema.table)
+   * @param columnMetas - Column name → ColumnMeta mapping
+   * @param records - Record array to insert
    */
   bulkInsert(
     tableName: string,
@@ -121,33 +121,33 @@ export interface DbConn extends EventEmitter<{ close: void }> {
 // ============================================
 
 /**
- * 커넥션 풀 설정
+ * Connection pool configuration
  *
  * @remarks
- * 각 값의 기본값:
- * - min: 1 (최소 연결 수)
- * - max: 10 (최대 연결 수)
- * - acquireTimeoutMillis: 30000 (연결 획득 타임아웃)
- * - idleTimeoutMillis: 30000 (유휴 연결 타임아웃)
+ * Default values for each setting:
+ * - min: 1 (minimum connection count)
+ * - max: 10 (maximum connection count)
+ * - acquireTimeoutMillis: 30000 (connection acquisition timeout)
+ * - idleTimeoutMillis: 30000 (idle connection timeout)
  */
 export interface DbPoolConfig {
-  /** 최소 연결 수 (기본: 1) */
+  /** Minimum connection count (default: 1) */
   min?: number;
-  /** 최대 연결 수 (기본: 10) */
+  /** Maximum connection count (default: 10) */
   max?: number;
-  /** 연결 획득 타임아웃 (밀리초, 기본: 30000) */
+  /** Connection acquisition timeout (milliseconds, default: 30000) */
   acquireTimeoutMillis?: number;
-  /** 유휴 연결 타임아웃 (밀리초, 기본: 30000) */
+  /** Idle connection timeout (milliseconds, default: 30000) */
   idleTimeoutMillis?: number;
 }
 
 /**
- * DB 연결 설정 타입 (dialect별 분기)
+ * DB connection configuration type (branching by dialect)
  */
 export type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConfig;
 
 /**
- * MySQL 연결 설정
+ * MySQL connection configuration
  */
 export interface MysqlDbConnConfig {
   dialect: "mysql";
@@ -161,7 +161,7 @@ export interface MysqlDbConnConfig {
 }
 
 /**
- * MSSQL 연결 설정
+ * MSSQL connection configuration
  */
 export interface MssqlDbConnConfig {
   dialect: "mssql" | "mssql-azure";
@@ -176,7 +176,7 @@ export interface MssqlDbConnConfig {
 }
 
 /**
- * PostgreSQL 연결 설정
+ * PostgreSQL connection configuration
  */
 export interface PostgresqlDbConnConfig {
   dialect: "postgresql";
@@ -191,7 +191,7 @@ export interface PostgresqlDbConnConfig {
 }
 
 /**
- * DbConnConfig에서 Dialect 추출
+ * Extract Dialect from DbConnConfig
  */
 export function getDialectFromConfig(config: DbConnConfig): Dialect {
   if (config.dialect === "mssql-azure") {

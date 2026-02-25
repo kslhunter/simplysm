@@ -2,13 +2,13 @@ import { AST_NODE_TYPES, TSESTree } from "@typescript-eslint/utils";
 import { createRule } from "../utils/create-rule";
 
 /**
- * `@simplysm/*` 패키지에서 'src' 서브경로 import를 금지하는 ESLint 규칙
+ * ESLint rule that prohibits 'src' subpath imports from `@simplysm/*` packages.
  *
  * @remarks
- * 이 규칙은 다음을 검사한다:
- * - 정적 import 문: `import ... from '...'`
- * - 동적 import: `import('...')`
- * - re-export 문: `export { ... } from '...'`, `export * from '...'`
+ * This rule checks:
+ * - Static import statements: `import ... from '...'`
+ * - Dynamic imports: `import('...')`
+ * - Re-export statements: `export { ... } from '...'`, `export * from '...'`
  */
 export default createRule({
   name: "no-subpath-imports-from-simplysm",
@@ -16,13 +16,13 @@ export default createRule({
     type: "problem",
     docs: {
       description:
-        "@simplysm 패키지에서 'src' 서브경로 import를 금지한다. (ex: @simplysm/pkg/src/x → 금지)",
+        "Prohibits 'src' subpath imports from @simplysm packages. (e.g., @simplysm/pkg/src/x → prohibited)",
     },
     fixable: "code",
     schema: [],
     messages: {
       noSubpathImport:
-        "'@simplysm/{{pkg}}' 패키지는 'src' 서브경로를 import할 수 없습니다: '{{importPath}}'",
+        "Cannot import 'src' subpath from '@simplysm/{{pkg}}' package: '{{importPath}}'",
     },
   },
   defaultOptions: [],
@@ -32,8 +32,8 @@ export default createRule({
 
       const parts = importPath.split("/");
 
-      // 허용: @simplysm/pkg, @simplysm/pkg/xxx, @simplysm/pkg/xxx/yyy
-      // 금지: @simplysm/pkg/src, @simplysm/pkg/src/xxx
+      // Allowed: @simplysm/pkg, @simplysm/pkg/xxx, @simplysm/pkg/xxx/yyy
+      // Prohibited: @simplysm/pkg/src, @simplysm/pkg/src/xxx
       if (parts.length >= 3 && parts[2] === "src") {
         const fixedPath = `@simplysm/${parts[1]}`;
         context.report({
@@ -52,12 +52,12 @@ export default createRule({
     }
 
     return {
-      // 정적 import: import { x } from '...'
+      // Static import: import { x } from '...'
       ImportDeclaration(node) {
         checkAndReport(node.source, node.source.value);
       },
 
-      // 동적 import: import('...')
+      // Dynamic import: import('...')
       ImportExpression(node) {
         if (node.source.type !== AST_NODE_TYPES.Literal) return;
         const importPath = node.source.value;
@@ -65,13 +65,13 @@ export default createRule({
         checkAndReport(node.source, importPath);
       },
 
-      // re-export: export { x } from '...'
+      // Re-export: export { x } from '...'
       ExportNamedDeclaration(node) {
         if (!node.source) return;
         checkAndReport(node.source, node.source.value);
       },
 
-      // re-export all: export * from '...'
+      // Re-export all: export * from '...'
       ExportAllDeclaration(node) {
         checkAndReport(node.source, node.source.value);
       },

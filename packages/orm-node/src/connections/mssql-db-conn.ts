@@ -24,9 +24,9 @@ import type { DataType as TediousDataType } from "tedious/lib/data-type";
 const logger = consola.withTag("mssql-db-conn");
 
 /**
- * MSSQL 데이터베이스 연결 클래스
+ * MSSQL database connection class
  *
- * tedious 라이브러리를 사용하여 MSSQL/Azure SQL 연결을 관리합니다.
+ * Manages MSSQL/Azure SQL connections using the tedious library.
  */
 export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
@@ -114,11 +114,11 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     const conn = this._conn;
 
-    // 진행 중인 요청 취소
+    // Cancel in-progress requests
     conn.cancel();
     await waitUntil(() => this._requests.length < 1, 30000, 100);
 
-    // 연결 종료 대기
+    // Wait for connection termination
     await new Promise<void>((resolve) => {
       conn.on("end", () => {
         waitUntil(() => this._conn == null, 30000, 100)
@@ -213,7 +213,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     const results: Record<string, unknown>[][] = [];
 
-    logger.debug("쿼리 실행", { queryLength: query.length, params });
+    logger.debug("Query execution", { queryLength: query.length, params });
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
       const queryRequest = new this._tedious.Request(query, (err) => {
@@ -223,17 +223,17 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
           const errRec = err as unknown as Record<string, unknown>;
           if (errRec["code"] === "ECANCEL") {
-            reject(new SdError(err, "쿼리가 취소되었습니다."));
+            reject(new SdError(err, "Query was cancelled."));
           } else {
             const lineNumber = errRec["lineNumber"] as number | undefined;
             if (lineNumber != null && lineNumber > 0) {
               const splitQuery = query.split("\n");
               splitQuery[lineNumber - 1] = "==> " + splitQuery[lineNumber - 1];
               reject(
-                new SdError(err, `쿼리 수행중 오류발생\n-- query\n${splitQuery.join("\n")}\n--`),
+                new SdError(err, `Error executing query\n-- query\n${splitQuery.join("\n")}\n--`),
               );
             } else {
-              reject(new SdError(err, `쿼리 수행중 오류발생\n-- query\n${query}\n--`));
+              reject(new SdError(err, `Error executing query\n-- query\n${query}\n--`));
             }
           }
         }
@@ -267,7 +267,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
           rejected = true;
           this._requests = this._requests.filter((r) => r !== queryRequest);
-          reject(new SdError(err, `쿼리 수행중 오류발생\n-- query\n${query}\n--`));
+          reject(new SdError(err, `Error executing query\n-- query\n${query}\n--`));
         })
         .on("requestCompleted", () => {
           this._startTimeout();
@@ -320,7 +320,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           reject(
             new SdError(
               err,
-              `Bulk Insert 오류발생\n${jsonStringify(tediousColumnDefs)}\n-- data\n${jsonStringify(records).substring(0, 10000)}...\n--`,
+              `Bulk Insert error\n${jsonStringify(tediousColumnDefs)}\n-- data\n${jsonStringify(records).substring(0, 10000)}...\n--`,
             ),
           );
           return;
@@ -334,12 +334,12 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
       }
 
-      // 레코드를 row 배열로 변환 (컬럼 순서 유지, 값 변환 포함)
+      // Convert records to row arrays (maintain column order, include value conversion)
       const rows = records.map((record) =>
         colNames.map((colName) => {
           const val = record[colName];
           if (val instanceof Uuid) return val.toString();
-          // eslint-disable-next-line no-restricted-globals -- tedious 라이브러리가 Buffer를 요구함
+          // eslint-disable-next-line no-restricted-globals -- tedious library requires Buffer
           if (val instanceof Uint8Array) return Buffer.from(val);
           if (val instanceof DateTime) return val.date;
           if (val instanceof DateOnly) return val.date;
@@ -457,19 +457,19 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       case "uuid":
         return { type: this._tedious.TYPES.UniqueIdentifier };
       default:
-        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`Unsupported DataType: ${JSON.stringify(dataType)}`);
     }
   }
 
   /**
-   * 값의 타입을 추론하여 Tedious 데이터 타입 반환
+   * Infer the type of a value and return Tedious data type
    *
-   * @param value - 타입을 추론할 값 (null/undefined 전달 시 오류 발생)
-   * @throws null/undefined가 전달되면 오류 발생
+   * @param value - Value whose type is to be inferred (error if null/undefined is passed)
+   * @throws Error if null/undefined is passed
    */
   private _guessTediousType(value: unknown): TediousDataType {
     if (value == null) {
-      throw new SdError("_guessTediousType: null/undefined 값은 지원하지 않습니다.");
+      throw new SdError("_guessTediousType: null/undefined values are not supported.");
     }
     if (typeof value === "string") {
       return this._tedious.TYPES.NVarChar;
@@ -484,7 +484,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     if (value instanceof Uuid) return this._tedious.TYPES.UniqueIdentifier;
     if (value instanceof Uint8Array) return this._tedious.TYPES.VarBinary;
 
-    throw new SdError(`알 수 없는 값 타입: ${typeof value}`);
+    throw new SdError(`Unknown value type: ${typeof value}`);
   }
 }
 

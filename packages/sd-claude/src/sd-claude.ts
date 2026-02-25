@@ -9,23 +9,23 @@ import { runAuthList } from "./commands/auth-list.js";
 import { runAuthRemove } from "./commands/auth-remove.js";
 
 await yargs(hideBin(process.argv))
-  .help("help", "도움말")
+  .help("help", "Help")
   .alias("help", "h")
   .command(
     "install",
-    "Claude Code 에셋을 프로젝트에 설치한다.",
+    "Installs Claude Code assets to the project.",
     (cmd) => cmd.version(false).hide("help"),
     () => {
       runInstall();
     },
   )
-  .command("auth", "Claude 계정 프로필을 관리한다.", (cmd) =>
+  .command("auth", "Manages Claude account profiles.", (cmd) =>
     cmd
       .version(false)
       .hide("help")
       .command(
         "add <name>",
-        "현재 로그인된 계정을 저장",
+        "Saves the currently logged-in account",
         (sub) =>
           sub.positional("name", {
             type: "string",
@@ -43,7 +43,7 @@ await yargs(hideBin(process.argv))
       )
       .command(
         "use <name>",
-        "저장된 계정으로 전환",
+        "Switches to a saved account",
         (sub) =>
           sub.positional("name", {
             type: "string",
@@ -61,7 +61,7 @@ await yargs(hideBin(process.argv))
       )
       .command(
         "list",
-        "저장된 계정 목록 표시",
+        "Displays the list of saved accounts",
         (sub) => sub,
         () => {
           try {
@@ -75,7 +75,7 @@ await yargs(hideBin(process.argv))
       )
       .command(
         "remove <name>",
-        "저장된 계정 삭제",
+        "Removes a saved account",
         (sub) =>
           sub.positional("name", {
             type: "string",
@@ -91,8 +91,8 @@ await yargs(hideBin(process.argv))
           }
         },
       )
-      .demandCommand(1, "auth 하위 명령어를 지정해주세요."),
+      .demandCommand(1, "Please specify an auth subcommand."),
   )
-  .demandCommand(1, "명령어를 지정해주세요.")
+  .demandCommand(1, "Please specify a command.")
   .strict()
   .parse();

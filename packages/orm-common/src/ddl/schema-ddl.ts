@@ -7,7 +7,7 @@ import type {
 } from "../types/query-def";
 
 /**
- * CLEAR SCHEMA QueryDef 생성
+ * Generate CLEAR SCHEMA QueryDef
  */
 export function getClearSchemaQueryDef(params: {
   database: string;
@@ -17,21 +17,21 @@ export function getClearSchemaQueryDef(params: {
 }
 
 /**
- * SCHEMA EXISTS QueryDef 생성
+ * Generate SCHEMA EXISTS QueryDef
  */
 export function getSchemaExistsQueryDef(database: string, schema?: string): SchemaExistsQueryDef {
   return { type: "schemaExists", database, schema };
 }
 
 /**
- * TRUNCATE TABLE QueryDef 생성
+ * Generate TRUNCATE TABLE QueryDef
  */
 export function getTruncateQueryDef(table: QueryDefObjectName): TruncateQueryDef {
   return { type: "truncate", table };
 }
 
 /**
- * SWITCH FK QueryDef 생성
+ * Generate SWITCH FK QueryDef
  */
 export function getSwitchFkQueryDef(
   table: QueryDefObjectName,

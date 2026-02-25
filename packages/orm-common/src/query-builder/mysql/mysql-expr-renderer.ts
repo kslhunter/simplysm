@@ -68,7 +68,7 @@ import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/expr-renderer-base";
 
 /**
- * MySQL Expr 렌더러
+ * MySQL expression renderer
  */
 export class MysqlExprRenderer extends ExprRendererBase {
   //#region ========== 유틸리티 (public - QueryBuilder에서도 사용) ==========
@@ -78,7 +78,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
     return `\`${name.replace(/`/g, "``")}\``;
   }
 
-  /** SQL 문자열 리터럴용 이스케이프 (따옴표 없이 반환) */
+  /** SQL 문자열 리터럴용 escape (따옴표 없이 return) */
   escapeString(value: string): string {
     return value
       .replace(/\\/g, "\\\\") // 백슬래시 (최우선)
@@ -89,7 +89,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
       .replace(/\t/g, "\\t"); // 탭
   }
 
-  /** 값 이스케이프 */
+  /** value escape */
   escapeValue(value: unknown): string {
     if (value == null) {
       return "NULL";
@@ -118,10 +118,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
     if (value instanceof Uint8Array) {
       return `0x${bytesToHex(value)}`;
     }
-    throw new Error(`알 수 없는 값 타입: ${typeof value}`);
+    throw new Error(`알 수 없는 value type: ${typeof value}`);
   }
 
-  /** DataType → SQL 타입 */
+  /** DataType → SQL type */
   renderDataType(dataType: DataType): string {
     switch (dataType.type) {
       case "int":
@@ -159,7 +159,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 값 ==========
+  //#region ========== value ==========
 
   protected column(expr: ExprColumn): string {
     return expr.path.map((p) => this.wrap(p)).join(".");
@@ -178,10 +178,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 비교 (null-safe) ==========
+  //#region ========== comparison (null-safe) ==========
 
   protected eq(expr: ExprEq): string {
-    // MySQL: <=> 연산자 (null-safe equal)
+    // MySQL: <=> operator (null-safe equal)
     return `${this.render(expr.source)} <=> ${this.render(expr.target)}`;
   }
 
@@ -220,7 +220,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected like(expr: ExprLike): string {
-    // ESCAPE '\' 항상 추가
+    // ESCAPE '\' 항상 Add
     return `${this.render(expr.source)} LIKE ${this.render(expr.pattern)} ESCAPE '\\\\'`;
   }
 
@@ -241,7 +241,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected exists(expr: ExprExists): string {
-    // SELECT 1로 렌더링
+    // SELECT 1로 Render
     const subquery = this.buildSelect({
       ...expr.query,
       select: { _: { type: "value", value: 1 } },
@@ -251,7 +251,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 논리 ==========
+  //#region ========== logic ==========
 
   protected not(expr: ExprNot): string {
     return `NOT (${this.render(expr.arg)})`;
@@ -269,7 +269,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 문자열 (null 처리) ==========
+  //#region ========== 문자열 (null Process) ==========
 
   protected concat(expr: ExprConcat): string {
     // null 처리: IFNULL(arg, '')
@@ -437,7 +437,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   private convertDateFormat(format: string): string {
-    // 간단한 변환 (yyyy-MM-dd HH:mm:ss 형식)
+    // 간단한 Transform (yyyy-MM-dd HH:mm:ss 형식)
     return format
       .replace(/yyyy/g, "%Y")
       .replace(/MM/g, "%m")
@@ -449,12 +449,12 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 조건 ==========
+  //#region ========== condition ==========
 
   protected ifNull(expr: ExprIfNull): string {
     if (expr.args.length === 0) return "NULL";
     if (expr.args.length === 1) return this.render(expr.args[0]);
-    // COALESCE로 렌더링 (여러 값 중 첫 번째 non-null)
+    // COALESCE로 Render (여러 value 중 첫 번째 non-null)
     return `COALESCE(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
@@ -480,7 +480,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 집계 ==========
+  //#region ========== aggregation ==========
 
   protected count(expr: ExprCount): string {
     if (expr.arg != null) {
@@ -521,7 +521,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected rowNum(_expr: ExprRowNum): string {
-    // MySQL에서는 변수 사용 또는 ROW_NUMBER() 윈도우 함수 사용
+    // MySQL에서는 변수 사용 또는 ROW_NUMBER() Window function 사용
     // 여기서는 ROW_NUMBER()로 구현 (MySQL 8.0+)
     return "ROW_NUMBER() OVER ()";
   }

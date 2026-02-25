@@ -7,7 +7,7 @@ import type { DbContextBase, DbContextDdlMethods } from "./db-context-def";
 // ============================================
 
 /**
- * 지원하는 데이터베이스 방언
+ * 지원하는 Database 방언
  *
  * - `mysql`: MySQL 8.0.14+
  * - `mssql`: Microsoft SQL Server 2012+
@@ -16,13 +16,13 @@ import type { DbContextBase, DbContextDdlMethods } from "./db-context-def";
 export type Dialect = "mysql" | "mssql" | "postgresql";
 
 /**
- * 지원하는 모든 데이터베이스 방언 목록
+ * 지원하는 모든 Database 방언 목록
  *
- * 테스트에서 dialect별 검증 시 사용
+ * testing에서 dialect별 Validation 시 사용
  *
  * @example
  * ```typescript
- * it.each(dialects)("[%s] SQL 검증", (dialect) => {
+ * it.each(dialects)("[%s] SQL Validation", (dialect) => {
  *   const builder = createQueryBuilder(dialect);
  *   expect(builder.build(def)).toMatchSql(expected[dialect]);
  * });
@@ -31,15 +31,15 @@ export type Dialect = "mysql" | "mssql" | "postgresql";
 export const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 
 /**
- * QueryBuilder.build() 반환 타입
+ * QueryBuilder.build() return type
  *
- * 빌드된 SQL 문자열과 다중 결과셋 처리를 위한 메타데이터
+ * 빌드된 SQL 문자열과 다중 결과셋 처리를 위한 Metadata
  *
  * @property sql - 빌드된 SQL 문자열
- * @property resultSetIndex - 결과를 가져올 결과셋 인덱스 (기본: 0)
+ * @property resultSetIndex - Result를 가져올 결과셋 Index (기본: 0)
  *   - MySQL INSERT with OUTPUT: 1 (INSERT + SELECT 중 SELECT)
  * @property resultSetStride - 다중 결과에서 N번째마다 결과셋 추출
- *   - 예: index=1, stride=2 → 1, 3, 5, 7... 의 결과셋 반환
+ *   - 예: index=1, stride=2 → 1, 3, 5, 7... 의 결과셋 return
  *   - MySQL 다중 INSERT: INSERT;SELECT; × N → 1, 3, 5...
  */
 export interface QueryBuildResult {
@@ -49,12 +49,12 @@ export interface QueryBuildResult {
 }
 
 /**
- * 트랜잭션 격리 수준
+ * Transaction isolation level
  *
- * - `READ_UNCOMMITTED`: 커밋되지 않은 데이터 읽기 가능 (Dirty Read)
- * - `READ_COMMITTED`: 커밋된 데이터만 읽기 (기본값)
- * - `REPEATABLE_READ`: 트랜잭션 내 동일 쿼리 동일 결과 보장
- * - `SERIALIZABLE`: 완전 직렬화 (가장 엄격)
+ * - `READ_UNCOMMITTED`: commit되지 않은 data read 가능 (Dirty Read)
+ * - `READ_COMMITTED`: commit된 data만 read (default)
+ * - `REPEATABLE_READ`: Transaction 내 동일 query 동일 result 보장
+ * - `SERIALIZABLE`: 완전 serialize (가장 엄격)
  */
 export type IsolationLevel =
   | "READ_UNCOMMITTED"
@@ -63,25 +63,25 @@ export type IsolationLevel =
   | "SERIALIZABLE";
 
 // ============================================
-// DataRecord - 결과 데이터 타입 (재귀적, 중첩 허용)
+// DataRecord - Result data type (재귀적, 중첩 allow)
 // ============================================
 
 /**
- * 쿼리 결과 데이터 레코드 타입
+ * Query result data 레코드 type
  *
- * 재귀적 구조로 중첩 관계(include) 결과 표현
+ * 재귀적 structure로 중첩 관계(include) result 표현
  *
  * @example
  * ```typescript
  * // 단순 레코드
  * type User = { id: number; name: string; }
  *
- * // 중첩 관계 포함
+ * // 중첩 relationship include
  * type UserWithPosts = {
  *   id: number;
  *   name: string;
- *   posts: { id: number; title: string; }[]  // 1:N 관계
- *   company: { id: number; name: string; }   // N:1 관계
+ *   posts: { id: number; title: string; }[]  // 1:N relationship
+ *   company: { id: number; name: string; }   // N:1 relationship
  * }
  * ```
  */
@@ -94,9 +94,9 @@ export type DataRecord = {
 // ============================================
 
 /**
- * DbContext 실행기 인터페이스
+ * DbContext 실행기 interface
  *
- * 실제 DB 연결과 쿼리 실행을 담당
+ * 실제 DB 연결과 Execute query을 담당
  * NodeDbContextExecutor (서버) 또는 SdOrmServiceClientDbContextExecutor (클라이언트) 구현
  *
  * @example
@@ -119,34 +119,34 @@ export interface DbContextExecutor {
   connect(): Promise<void>;
 
   /**
-   * DB 연결 종료
+   * DB 연결 end
    */
   close(): Promise<void>;
 
   /**
-   * 트랜잭션 시작
+   * Transaction start
    *
-   * @param isolationLevel - 격리 수준 (선택)
+   * @param isolationLevel - isolation level (Select)
    */
   beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
 
   /**
-   * 트랜잭션 커밋
+   * Transaction commit
    */
   commitTransaction(): Promise<void>;
 
   /**
-   * 트랜잭션 롤백
+   * Transaction rollback
    */
   rollbackTransaction(): Promise<void>;
 
   /**
-   * QueryDef 배열 실행
+   * QueryDef array 실행
    *
-   * @template T - 결과 레코드 타입
-   * @param defs - 실행할 QueryDef 배열
-   * @param resultMetas - 결과 변환을 위한 메타데이터 (선택)
-   * @returns 각 QueryDef별 결과 배열의 배열
+   * @template T - Result 레코드 type
+   * @param defs - Execute할 QueryDef array
+   * @param resultMetas - Result Transform을 위한 Metadata (Select)
+   * @returns 각 QueryDef별 result 배열의 array
    */
   executeDefs<T = DataRecord>(
     defs: QueryDef[],
@@ -155,12 +155,12 @@ export interface DbContextExecutor {
 }
 
 /**
- * 쿼리 결과 변환을 위한 메타데이터
+ * Query result Transform을 위한 Metadata
  *
- * SELECT 결과를 TypeScript 객체로 변환 시 사용
+ * SELECT 결과를 TypeScript 객체로 Transform 시 사용
  *
- * @property columns - 컬럼명 → ColumnPrimitiveStr 매핑
- * @property joins - JOIN 별칭 → 단일/배열 여부
+ * @property columns - Column명 → ColumnPrimitiveStr Mapping
+ * @property joins - JOIN 별칭 → 단일/array 여부
  */
 export interface ResultMeta {
   columns: Record<string, ColumnPrimitiveStr>;
@@ -172,12 +172,12 @@ export interface ResultMeta {
 // ============================================
 
 /**
- * 데이터베이스 마이그레이션 정의
+ * Database migration definition
  *
- * 스키마 변경을 버전 관리
+ * schema 변경을 version control
  *
- * @property name - 마이그레이션 고유 이름 (타임스탬프 권장)
- * @property up - 마이그레이션 실행 함수
+ * @property name - Migration 고유 이름 (타임스탬프 권장)
+ * @property up - Migration 실행 function
  *
  * @example
  * ```typescript
@@ -200,7 +200,7 @@ export interface ResultMeta {
  * ];
  * ```
  *
- * @see {@link DbContext.initialize} 마이그레이션 실행
+ * @see {@link DbContext.initialize} migration 실행
  */
 export interface Migration {
   name: string;

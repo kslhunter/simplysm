@@ -33,9 +33,9 @@ import { parseSearchQuery } from "./search-parser";
 import { expr } from "../expr/expr";
 
 /**
- * JOIN 쿼리 빌더
+ * JOIN query builder
  *
- * join/joinSingle 메서드 내부에서 사용되며, 조인 대상 테이블을 지정하는 역할을 수행
+ * Used internally by join/joinSingle methods to specify the table to join
  */
 class JoinQueryable {
   constructor(
@@ -44,20 +44,20 @@ class JoinQueryable {
   ) {}
 
   /**
-   * 조인할 테이블을 지정
+   * Specify the table to join
    *
-   * @param table - 조인 대상 테이블
-   * @returns 조인된 Queryable
+   * @param table - Table to join
+   * @returns Joined Queryable
    */
   from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$infer"], T> {
     return queryable(this._db, table, this._joinAlias)();
   }
 
   /**
-   * 조인 결과의 컬럼을 직접 지정
+   * Directly specify columns in join result
    *
-   * @param columns - 커스텀 컬럼 정의
-   * @returns 커스텀 컬럼이 적용된 Queryable
+   * @param columns - Custom column definition
+   * @returns Queryable with custom columns applied
    */
   select<R extends DataRecord>(columns: QueryableRecord<R>): Queryable<R, never> {
     return new Queryable({
@@ -69,15 +69,15 @@ class JoinQueryable {
   }
 
   /**
-   * 여러 Queryable을 UNION으로 결합
+   * Combine multiple Queryables with UNION
    *
-   * @param queries - UNION할 Queryable 배열 (최소 2개)
-   * @returns UNION된 Queryable
-   * @throws 2개 미만의 queryable이 전달된 경우
+   * @param queries - Array of Queryables to UNION (minimum 2)
+   * @returns UNION-ed Queryable
+   * @throws If less than 2 queryables are passed
    */
   union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData, never> {
     if (queries.length < 2) {
-      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+      throw new ArgumentError("union requires at least 2 queryables.", {
         provided: queries.length,
         minimum: 2,
       });
@@ -95,11 +95,11 @@ class JoinQueryable {
 }
 
 /**
- * 재귀 CTE(Common Table Expression) 빌더
+ * Recursive CTE (Common Table Expression) builder
  *
- * recursive() 메서드 내부에서 사용되며, 재귀 쿼리의 본문을 정의하는 역할을 수행
+ * recursive() method 내부에서 사용되며, Defines the body of a recursive query
  *
- * @template TBaseData - 기본 쿼리의 데이터 타입
+ * @template TBaseData - Base query data type
  */
 class RecursiveQueryable<TBaseData extends DataRecord> {
   constructor(
@@ -108,10 +108,10 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
   ) {}
 
   /**
-   * 재귀 쿼리의 대상 테이블을 지정
+   * recursive query의 대상 Table을 지정
    *
-   * @param table - 재귀할 대상 테이블
-   * @returns self 속성이 추가된 Queryable (자기 참조용)
+   * @param table - Target table to recurse
+   * @returns Queryable with self property added (for self-reference)
    */
   from<T extends TableBuilder<any, any>>(
     table: T,
@@ -132,10 +132,10 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
   }
 
   /**
-   * 재귀 쿼리의 컬럼을 직접 지정
+   * Directly specify columns in recursive query
    *
-   * @param columns - 커스텀 컬럼 정의
-   * @returns self 속성이 추가된 Queryable
+   * @param columns - Custom column definition
+   * @returns Queryable with self property added
    */
   select<R extends DataRecord>(
     columns: QueryableRecord<R>,
@@ -161,17 +161,17 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
   }
 
   /**
-   * 여러 Queryable을 UNION으로 결합 (재귀 쿼리용)
+   * Combine multiple Queryables with UNION (recursive query용)
    *
-   * @param queries - UNION할 Queryable 배열 (최소 2개)
-   * @returns self 속성이 추가된 UNION Queryable
-   * @throws 2개 미만의 queryable이 전달된 경우
+   * @param queries - Array of Queryables to UNION (minimum 2)
+   * @returns UNION Queryable with self property added
+   * @throws If less than 2 queryables are passed
    */
   union<TData extends DataRecord>(
     ...queries: Queryable<TData, any>[]
   ): Queryable<TData & { self?: TBaseData[] }, never> {
     if (queries.length < 2) {
-      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+      throw new ArgumentError("union requires at least 2 queryables.", {
         provided: queries.length,
         minimum: 2,
       });
@@ -201,22 +201,22 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
 }
 
 /**
- * 쿼리 빌더 클래스
+ * Query builder class
  *
- * 테이블/뷰에 대한 SELECT, INSERT, UPDATE, DELETE 등의 쿼리를 체이닝 방식으로 구성
+ * Construct SELECT, INSERT, UPDATE, DELETE queries on tables/views in a chaining manner
  *
- * @template TData - 쿼리 결과의 데이터 타입
- * @template TFrom - 원본 테이블 (CUD 작업에 필요)
+ * @template TData - Data type of query result
+ * @template TFrom - Source table (needed for CUD operations)
  *
  * @example
  * ```typescript
- * // 기본 조회
+ * // Basic query
  * const users = await db.user()
  *   .where((u) => [expr.eq(u.isActive, true)])
  *   .orderBy((u) => u.name)
  *   .result();
  *
- * // JOIN 조회
+ * // JOIN query
  * const posts = await db.post()
  *   .include((p) => p.user)
  *   .result();
@@ -227,17 +227,17 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  */
 export class Queryable<
   TData extends DataRecord,
-  TFrom extends TableBuilder<any, any> | never, // CUD는 TableBuilder만 지원하기 위함
+  TFrom extends TableBuilder<any, any> | never, // Only TableBuilder is supported for CUD operations
 > {
   constructor(readonly meta: QueryableMeta<TData>) {}
 
-  //#region ========== 옵션 - SELECT / DISTINCT / LOCK ==========
+  //#region ========== option - SELECT / DISTINCT / LOCK ==========
 
   /**
-   * SELECT할 컬럼을 지정합니다.
+   * Specify columns to SELECT.
    *
-   * @param fn - 컬럼 매핑 함수. 원본 컬럼을 받아 새 컬럼 구조를 반환
-   * @returns 새로운 컬럼 구조가 적용된 Queryable
+   * @param fn - Column mapping function. Receives original columns and returns new column structure
+   * @returns Queryable with new column structure applied
    *
    * @example
    * ```typescript
@@ -269,9 +269,9 @@ export class Queryable<
   }
 
   /**
-   * DISTINCT 옵션을 적용하여 중복 행을 제거
+   * Apply DISTINCT option to remove duplicate rows
    *
-   * @returns DISTINCT가 적용된 Queryable
+   * @returns Queryable with DISTINCT applied
    *
    * @example
    * ```typescript
@@ -296,11 +296,11 @@ export class Queryable<
   }
 
   /**
-   * 행 잠금(FOR UPDATE)을 적용
+   * Apply row lock (FOR UPDATE)
    *
-   * 트랜잭션 내에서 선택된 행에 대한 배타적 잠금을 획득
+   * Acquire exclusive lock on selected rows within transaction
    *
-   * @returns 잠금이 적용된 Queryable
+   * @returns Queryable with lock applied
    *
    * @example
    * ```typescript
@@ -329,13 +329,13 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 제한 - TOP / LIMIT ==========
+  //#region ========== restrict - TOP / LIMIT ==========
 
   /**
    * 상위 N개의 행만 조회 (ORDER BY 없이 사용 가능)
    *
-   * @param count - 조회할 행 수
-   * @returns TOP이 적용된 Queryable
+   * @param count - 조회할 row 수
+   * @returns TOP이 apply된 Queryable
    *
    * @example
    * ```typescript
@@ -364,9 +364,9 @@ export class Queryable<
    * 페이지네이션을 위한 LIMIT/OFFSET을 설정합니다.
    * 반드시 orderBy()를 먼저 호출해야 합니다.
    *
-   * @param skip - 건너뛸 행 수 (OFFSET)
-   * @param take - 가져올 행 수 (LIMIT)
-   * @returns 페이지네이션이 적용된 Queryable
+   * @param skip - 건너뛸 row 수 (OFFSET)
+   * @param take - 가져올 row 수 (LIMIT)
+   * @returns 페이지네이션이 apply된 Queryable
    * @throws ORDER BY 절이 없으면 에러
    *
    * @example
@@ -400,14 +400,14 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 정렬 - ORDER BY ==========
+  //#region ========== sorting - ORDER BY ==========
 
   /**
-   * 정렬 조건을 추가합니다. 여러 번 호출하면 순서대로 적용됩니다.
+   * sorting 조건을 추가합니다. 여러 번 호출하면 순서대로 apply됩니다.
    *
-   * @param fn - 정렬 기준 컬럼을 반환하는 함수
-   * @param orderBy - 정렬 방향 (ASC/DESC). 기본값: ASC
-   * @returns 정렬 조건이 추가된 Queryable
+   * @param fn - Sort 기준 컬럼을 반환하는 function
+   * @param orderBy - Sort 방향 (ASC/DESC). Default value: ASC
+   * @returns sorting 조건이 추가된 Queryable
    *
    * @example
    * ```typescript
@@ -443,7 +443,7 @@ export class Queryable<
   /**
    * WHERE 조건을 추가합니다. 여러 번 호출하면 AND로 결합됩니다.
    *
-   * @param predicate - 조건 배열을 반환하는 함수
+   * @param predicate - Condition 배열을 반환하는 function
    * @returns 조건이 추가된 Queryable
    *
    * @example
@@ -474,11 +474,11 @@ export class Queryable<
    * 텍스트 검색을 수행
    *
    * 검색 문법은 {@link parseSearchQuery}를 참조
-   * - 공백으로 구분된 단어는 OR 조건
-   * - `+`로 시작하는 단어는 필수 포함 (AND 조건)
-   * - `-`로 시작하는 단어는 제외 (NOT 조건)
+   * - 공백으로 구분된 단어는 OR condition
+   * - `+`로 시작하는 단어는 required include (AND Condition)
+   * - `-`로 시작하는 단어는 exclude (NOT Condition)
    *
-   * @param fn - 검색 대상 컬럼을 반환하는 함수
+   * @param fn - 검색 대상 컬럼을 반환하는 function
    * @param searchText - 검색 텍스트
    * @returns 검색 조건이 추가된 Queryable
    *
@@ -509,7 +509,7 @@ export class Queryable<
 
     const conditions: WhereExprUnit[] = [];
 
-    // OR 조건: 각 컬럼에서 pattern 하나라도 매치하면 OK
+    // OR condition: 각 컬럼에서 pattern 하나라도 매치하면 OK
     if (parsed.or.length === 1) {
       const pattern = parsed.or[0];
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
@@ -524,13 +524,13 @@ export class Queryable<
       conditions.push(expr.or(orConditions));
     }
 
-    // MUST 조건: 각 pattern이 어떤 컬럼에서든 매치해야 함 (AND)
+    // MUST condition: 각 pattern이 어떤 컬럼에서든 매치해야 함 (AND)
     for (const pattern of parsed.must) {
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
       conditions.push(expr.or(columnMatches));
     }
 
-    // NOT 조건: 모든 컬럼에서 매치하지 않아야 함 (AND NOT)
+    // NOT condition: 모든 컬럼에서 매치하지 않아야 함 (AND NOT)
     for (const pattern of parsed.not) {
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
       conditions.push(expr.not(expr.or(columnMatches)));
@@ -548,10 +548,10 @@ export class Queryable<
   //#region ========== 그룹 - GROUP BY / HAVING ==========
 
   /**
-   * GROUP BY 절을 추가
+   * GROUP BY 절을 Add
    *
-   * @param fn - 그룹화 기준 컬럼을 반환하는 함수
-   * @returns GROUP BY가 적용된 Queryable
+   * @param fn - Group화 기준 컬럼을 반환하는 function
+   * @returns Queryable with GROUP BY applied
    *
    * @example
    * ```typescript
@@ -580,10 +580,10 @@ export class Queryable<
   }
 
   /**
-   * HAVING 절을 추가 (GROUP BY 후 필터링)
+   * HAVING 절을 Add (GROUP BY 후 filtering)
    *
-   * @param predicate - 조건 배열을 반환하는 함수
-   * @returns HAVING이 적용된 Queryable
+   * @param predicate - Condition 배열을 반환하는 function
+   * @returns HAVING이 apply된 Queryable
    *
    * @example
    * ```typescript
@@ -615,14 +615,14 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 조인 - JOIN / JOIN SINGLE ==========
+  //#region ========== join - JOIN / JOIN SINGLE ==========
 
   /**
-   * 1:N 관계의 LEFT OUTER JOIN을 수행 (배열로 결과 추가)
+   * 1:N 관계의 LEFT OUTER JOIN을 수행 (배열로 result Add)
    *
-   * @param as - 결과에 추가할 속성 이름
-   * @param fwd - 조인 조건을 정의하는 콜백 함수
-   * @returns 조인 결과가 배열로 추가된 Queryable
+   * @param as - Result에 추가할 property 이름
+   * @param fwd - Join 조건을 정의하는 콜백 function
+   * @returns join 결과가 배열로 추가된 Queryable
    *
    * @example
    * ```typescript
@@ -631,7 +631,7 @@ export class Queryable<
    *     qr.from(Post)
    *       .where((p) => [expr.eq(p.userId, u.id)])
    *   )
-   * // 결과: { id, name, posts: [{ id, title }, ...] }
+   * // Result: { id, name, posts: [{ id, title }, ...] }
    * ```
    */
   join<A extends string, R extends DataRecord>(
@@ -647,16 +647,16 @@ export class Queryable<
       });
     }
 
-    // 1. join alias 생성
+    // 1. join alias Generate
     const joinAlias = `${this.meta.as}.${as}`;
 
-    // 2. target → Queryable 변환 (alias 전달)
+    // 2. target → Queryable Transform (alias 전달)
     const joinQr = new JoinQueryable(this.meta.db, joinAlias);
 
-    // 3. fwd 실행 (where 등 조건 추가된 Queryable 반환)
+    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
     const resultQr = fwd(joinQr, this.meta.columns);
 
-    // 4. 새 columns에 join 결과 추가
+    // 4. 새 columns에 join result Add
     const joinColumns = transformColumnsAlias(resultQr.meta.columns, joinAlias);
 
     return new Queryable({
@@ -671,11 +671,11 @@ export class Queryable<
   }
 
   /**
-   * N:1 또는 1:1 관계의 LEFT OUTER JOIN을 수행 (단일 객체로 결과 추가)
+   * N:1 또는 1:1 관계의 LEFT OUTER JOIN을 수행 (단일 객체로 result Add)
    *
-   * @param as - 결과에 추가할 속성 이름
-   * @param fwd - 조인 조건을 정의하는 콜백 함수
-   * @returns 조인 결과가 단일 객체로 추가된 Queryable
+   * @param as - Result에 추가할 property 이름
+   * @param fwd - Join 조건을 정의하는 콜백 function
+   * @returns join 결과가 단일 객체로 추가된 Queryable
    *
    * @example
    * ```typescript
@@ -684,7 +684,7 @@ export class Queryable<
    *     qr.from(User)
    *       .where((u) => [expr.eq(u.id, p.userId)])
    *   )
-   * // 결과: { id, title, user: { id, name } | undefined }
+   * // Result: { id, title, user: { id, name } | undefined }
    * ```
    */
   joinSingle<A extends string, R extends DataRecord>(
@@ -703,16 +703,16 @@ export class Queryable<
       });
     }
 
-    // 1. join alias 생성
+    // 1. join alias Generate
     const joinAlias = `${this.meta.as}.${as}`;
 
-    // 2. target → Queryable 변환 (alias 전달)
+    // 2. target → Queryable Transform (alias 전달)
     const joinQr = new JoinQueryable(this.meta.db, joinAlias);
 
-    // 3. fwd 실행 (where 등 조건 추가된 Queryable 반환)
+    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
     const resultQr = fwd(joinQr, this.meta.columns);
 
-    // 4. 새 columns에 join 결과 추가
+    // 4. 새 columns에 join result Add
     const joinColumns = transformColumnsAlias(resultQr.meta.columns, joinAlias);
 
     return new Queryable({
@@ -728,25 +728,25 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 조인 - INCLUDE ==========
+  //#region ========== join - INCLUDE ==========
 
   /**
-   * 관계된 테이블을 자동으로 JOIN합니다.
+   * 관계된 Table을 automatic으로 JOIN합니다.
    * TableBuilder에 정의된 FK/FKT 관계를 기반으로 동작합니다.
    *
-   * @param fn - 포함할 관계를 선택하는 함수 (PathProxy를 통해 타입 체크됨)
+   * @param fn - 포함할 관계를 선택하는 function (PathProxy를 통해 type 체크됨)
    * @returns JOIN이 추가된 Queryable
    * @throws 관계가 정의되지 않은 경우 에러
    *
    * @example
    * ```typescript
-   * // 단일 관계 포함
+   * // 단일 relationship include
    * db.post.include((p) => p.user)
    *
-   * // 중첩 관계 포함
+   * // 중첩 relationship include
    * db.post.include((p) => p.user.company)
    *
-   * // 다중 관계 포함
+   * // 다중 relationship include
    * db.user
    *   .include((u) => u.company)
    *   .include((u) => u.posts)
@@ -784,11 +784,11 @@ export class Queryable<
       const parentChain = chainParts.join(".");
       chainParts.push(relationName);
 
-      // 이미 JOIN된 경우 중복 추가 방지
+      // 이미 JOIN된 경우 중복 Add 방지
       const targetAlias = `${result.meta.as}.${chainParts.join(".")}`;
       const existingJoin = result.meta.joins?.find((j) => j.queryable.meta.as === targetAlias);
       if (existingJoin) {
-        // 기존 JOIN의 테이블로 currentTable 업데이트 후 continue
+        // 기존 JOIN의 Table로 currentTable 업데이트 후 continue
         const existingFrom = existingJoin.queryable.meta.from;
         if (existingFrom instanceof TableBuilder) {
           currentTable = existingFrom;
@@ -803,7 +803,7 @@ export class Queryable<
 
       if (relationDef instanceof ForeignKeyBuilder || relationDef instanceof RelationKeyBuilder) {
         // FK/RelationKey (N:1): Post.user → User
-        // 조건: Post.userId = User.id
+        // condition: Post.userId = User.id
         const targetTable = relationDef.meta.targetFn();
         const fkColKeys = relationDef.meta.columns;
         const targetPkColKeys = getMatchedPrimaryKeys(fkColKeys, targetTable);
@@ -834,14 +834,14 @@ export class Queryable<
         relationDef instanceof RelationKeyTargetBuilder
       ) {
         // FKT/RelationKeyTarget (1:N 또는 1:1): User.posts → Post[]
-        // 조건: Post.userId = User.id
+        // condition: Post.userId = User.id
         const targetTable = relationDef.meta.targetTableFn();
         const fkRelName = relationDef.meta.relationName;
         const sourceFk = targetTable.meta.relations?.[fkRelName];
         if (!(sourceFk instanceof ForeignKeyBuilder) && !(sourceFk instanceof RelationKeyBuilder)) {
           throw new Error(
             `'${relationName}'이 참조하는 '${fkRelName}'이(가) ` +
-              `${targetTable.meta.name} 테이블의 유효한 ForeignKey/RelationKey가 아닙니다.`,
+              `${targetTable.meta.name} Table의 유효한 ForeignKey/RelationKey가 아닙니다.`,
           );
         }
         const sourceTable = targetTable;
@@ -883,14 +883,14 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 서브쿼리 - WRAP / UNION ==========
+  //#region ========== Subquery - WRAP / UNION ==========
 
   /**
-   * 현재 Queryable을 서브쿼리로 감싸기
+   * 현재 Queryable을 Subquery로 감싸기
    *
    * distinct() 또는 groupBy() 후 count() 사용 시 필요
    *
-   * @returns 서브쿼리로 감싸진 Queryable
+   * @returns Subquery로 감싸진 Queryable
    *
    * @example
    * ```typescript
@@ -903,7 +903,7 @@ export class Queryable<
    * ```
    */
   wrap(): Queryable<TData, never> {
-    // 현재 Queryable을 서브쿼리로 감싸기
+    // 현재 Queryable을 Subquery로 감싸기
     const wrapAlias = this.meta.db.getNextAlias();
     return new Queryable({
       db: this.meta.db,
@@ -914,11 +914,11 @@ export class Queryable<
   }
 
   /**
-   * 여러 Queryable을 UNION으로 결합 (중복 제거)
+   * Combine multiple Queryables with UNION (remove duplicates)
    *
-   * @param queries - UNION할 Queryable 배열 (최소 2개)
-   * @returns UNION된 Queryable
-   * @throws 2개 미만의 queryable이 전달된 경우
+   * @param queries - Array of Queryables to UNION (minimum 2)
+   * @returns UNION-ed Queryable
+   * @throws If less than 2 queryables are passed
    *
    * @example
    * ```typescript
@@ -932,7 +932,7 @@ export class Queryable<
     ...queries: Queryable<TData, any>[]
   ): Queryable<TData, never> {
     if (queries.length < 2) {
-      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+      throw new ArgumentError("union requires at least 2 queryables.", {
         provided: queries.length,
         minimum: 2,
       });
@@ -950,15 +950,15 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== 재귀 - WITH RECURSIVE ==========
+  //#region ========== recursive - WITH RECURSIVE ==========
 
   /**
-   * 재귀 CTE(Common Table Expression)를 생성
+   * recursive CTE(Common Table Expression)를 Generate
    *
-   * 계층 구조 데이터(조직도, 카테고리 트리 등)를 조회할 때 사용
+   * 계층 structure data(조직도, 카테고리 트리 등)를 조회할 때 사용
    *
-   * @param fwd - 재귀 부분을 정의하는 콜백 함수
-   * @returns 재귀 CTE가 적용된 Queryable
+   * @param fwd - recursive 부분을 정의하는 콜백 function
+   * @returns recursive CTE가 apply된 Queryable
    *
    * @example
    * ```typescript
@@ -982,13 +982,13 @@ export class Queryable<
         columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
       });
     }
-    // 동적 CTE 이름 생성
+    // 동적 CTE 이름 Generate
     const cteName = this.meta.db.getNextAlias();
 
-    // 2. target → Queryable 변환 (CTE 이름 전달)
+    // 2. target → Queryable Transform (CTE 이름 전달)
     const cteQr = new RecursiveQueryable(this, cteName);
 
-    // 3. fwd 실행 (where 등 조건 추가된 Queryable 반환)
+    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
     const resultQr = fwd(cteQr);
 
     return new Queryable({
@@ -998,7 +998,7 @@ export class Queryable<
       columns: transformColumnsAlias(this.meta.columns, this.meta.as, ""),
       with: {
         name: cteName,
-        base: this as any, // 순환 참조 타입 추론 차단
+        base: this as any, // circular 참조 Type inference 차단
         recursive: resultQr,
       },
     });
@@ -1006,12 +1006,12 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== [쿼리] 조회 - SELECT ==========
+  //#region ========== [query] 조회 - SELECT ==========
 
   /**
-   * SELECT 쿼리를 실행하고 결과 배열을 반환
+   * SELECT query를 실행하고 result 배열을 return
    *
-   * @returns 쿼리 결과 배열
+   * @returns Query result array
    *
    * @example
    * ```typescript
@@ -1029,9 +1029,9 @@ export class Queryable<
   }
 
   /**
-   * 단일 결과를 반환 (2개 이상이면 에러)
+   * 단일 결과를 return (2개 이상이면 Error)
    *
-   * @returns 단일 결과 또는 undefined
+   * @returns 단일 result 또는 undefined
    * @throws 2개 이상의 결과가 반환된 경우
    *
    * @example
@@ -1053,7 +1053,7 @@ export class Queryable<
   }
 
   /**
-   * 쿼리 소스 이름 반환 (에러 메시지용)
+   * query 소스 이름 return (error message용)
    */
   private _getSourceName(): string {
     const from = this.meta.from;
@@ -1067,9 +1067,9 @@ export class Queryable<
   }
 
   /**
-   * 첫 번째 결과를 반환 (여러 개여도 첫 번째만)
+   * 첫 번째 결과를 return (여러 개여도 첫 번째만)
    *
-   * @returns 첫 번째 결과 또는 undefined
+   * @returns 첫 번째 result 또는 undefined
    *
    * @example
    * ```typescript
@@ -1084,10 +1084,10 @@ export class Queryable<
   }
 
   /**
-   * 결과 행 수를 반환
+   * result row 수를 return
    *
-   * @param fwd - 카운트할 컬럼을 지정하는 함수 (선택)
-   * @returns 행 수
+   * @param fwd - 카운트할 컬럼을 지정하는 function (Select)
+   * @returns row 수
    * @throws distinct() 또는 groupBy() 후 직접 호출 시 에러 (wrap() 필요)
    *
    * @example
@@ -1115,7 +1115,7 @@ export class Queryable<
   }
 
   /**
-   * 조건에 맞는 데이터 존재 여부를 확인
+   * 조건에 맞는 data 존재 여부를 확인
    *
    * @returns 존재하면 true, 없으면 false
    *
@@ -1233,13 +1233,13 @@ export class Queryable<
           // primitive 컬럼
           columns[fullKey] = val.dataType;
         } else if (Array.isArray(val)) {
-          // 배열 (1:N 관계)
+          // array (1:N relationship)
           if (val.length > 0) {
             joins[fullKey] = { isSingle: false };
             buildResultMeta(val[0], fullKey);
           }
         } else if (typeof val === "object") {
-          // 단일 객체 (N:1, 1:1 관계)
+          // 단일 object (N:1, 1:1 relationship)
           joins[fullKey] = { isSingle: true };
           buildResultMeta(val, fullKey);
         }
@@ -1253,16 +1253,16 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== [쿼리] 삽입 - INSERT ==========
+  //#region ========== [query] 삽입 - INSERT ==========
 
   /**
-   * INSERT 쿼리를 실행
+   * INSERT query를 실행
    *
-   * MSSQL의 1000개 제한을 위해 자동으로 1000개씩 청크로 분할하여 실행
+   * MSSQL의 1000개 제한을 위해 automatic으로 1000개씩 청크로 분할하여 실행
    *
-   * @param records - 삽입할 레코드 배열
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 삽입된 레코드 배열 반환
+   * @param records - Insert할 레코드 array
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 삽입된 레코드 array return
    *
    * @example
    * ```typescript
@@ -1271,7 +1271,7 @@ export class Queryable<
    *   { name: "홍길동", email: "hong@test.com" },
    * ]);
    *
-   * // 삽입 후 ID 반환
+   * // 삽입 후 ID return
    * const [inserted] = await db.user().insert(
    *   [{ name: "홍길동" }],
    *   ["id"],
@@ -1291,7 +1291,7 @@ export class Queryable<
       return outputColumns ? [] : undefined;
     }
 
-    // MSSQL 1000개 제한을 위해 청크 분할
+    // MSSQL 1000개 제한을 위해 청크 split
     const CHUNK_SIZE = 1000;
     const allResults: Pick<TFrom["$inferColumns"], K>[] = [];
 
@@ -1314,17 +1314,17 @@ export class Queryable<
   }
 
   /**
-   * WHERE 조건에 맞는 데이터가 없으면 INSERT
+   * WHERE 조건에 맞는 data가 없으면 INSERT
    *
-   * @param record - 삽입할 레코드
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 삽입된 레코드 반환
+   * @param record - Insert할 레코드
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 삽입된 레코드 return
    *
    * @example
    * ```typescript
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .insertIfNotExists({ name: "테스트", email: "test@test.com" });
+   *   .insertIfNotExists({ name: "testing", email: "test@test.com" });
    * ```
    */
   async insertIfNotExists(record: TFrom["$inferInsert"]): Promise<void>;
@@ -1347,11 +1347,11 @@ export class Queryable<
   }
 
   /**
-   * INSERT INTO ... SELECT (현재 SELECT 결과를 다른 테이블에 INSERT)
+   * INSERT INTO ... SELECT (현재 SELECT 결과를 다른 Table에 INSERT)
    *
-   * @param targetTable - 삽입 대상 테이블
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 삽입된 레코드 배열 반환
+   * @param targetTable - Insert 대상 Table
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 삽입된 레코드 array return
    *
    * @example
    * ```typescript
@@ -1389,7 +1389,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    // AI 컬럼에 명시적 값이 있으면 overrideIdentity 설정
+    // AI 컬럼에 explicit 값이 있으면 overrideIdentity 설정
     const overrideIdentity =
       outputDef.aiColName != null &&
       records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] !== undefined);
@@ -1455,14 +1455,14 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== [쿼리] 수정 - UPDATE / DELETE ==========
+  //#region ========== [query] Modify - UPDATE / DELETE ==========
 
   /**
-   * UPDATE 쿼리를 실행
+   * UPDATE query를 실행
    *
-   * @param recordFwd - 업데이트할 컬럼과 값을 반환하는 함수
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 업데이트된 레코드 배열 반환
+   * @param recordFwd - Update할 컬럼과 값을 반환하는 function
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 업데이트된 레코드 array return
    *
    * @example
    * ```typescript
@@ -1474,7 +1474,7 @@ export class Queryable<
    *     updatedAt: expr.val("DateTime", DateTime.now()),
    *   }));
    *
-   * // 기존 값 참조
+   * // 기존 value 참조
    * await db.product()
    *   .update((p) => ({
    *     price: expr.mul(p.price, expr.val("number", 1.1)),
@@ -1503,19 +1503,19 @@ export class Queryable<
   }
 
   /**
-   * DELETE 쿼리를 실행
+   * DELETE query를 실행
    *
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 삭제된 레코드 배열 반환
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 삭제된 레코드 array return
    *
    * @example
    * ```typescript
-   * // 단순 삭제
+   * // 단순 Delete
    * await db.user()
    *   .where((u) => [expr.eq(u.id, 1)])
    *   .delete();
    *
-   * // 삭제된 데이터 반환
+   * // 삭제된 data return
    * const deleted = await db.user()
    *   .where((u) => [expr.eq(u.isExpired, true)])
    *   .delete(["id", "name"]);
@@ -1588,29 +1588,29 @@ export class Queryable<
 
   //#endregion
 
-  //#region ========== [쿼리] 수정 - UPSERT ==========
+  //#region ========== [query] Modify - UPSERT ==========
 
   /**
-   * UPSERT (UPDATE or INSERT) 쿼리를 실행
+   * UPSERT (UPDATE or INSERT) query를 실행
    *
-   * WHERE 조건에 맞는 데이터가 있으면 UPDATE, 없으면 INSERT
+   * WHERE 조건에 맞는 data가 있으면 UPDATE, 없으면 INSERT
    *
-   * @param updateFwd - 업데이트할 컬럼과 값을 반환하는 함수
-   * @param insertFwd - 삽입할 레코드를 반환하는 함수 (선택, 미지정 시 updateFwd와 동일)
-   * @param outputColumns - 반환받을 컬럼 이름 배열 (선택)
-   * @returns outputColumns 지정 시 영향받은 레코드 배열 반환
+   * @param updateFwd - Update할 컬럼과 값을 반환하는 function
+   * @param insertFwd - Insert할 레코드를 반환하는 function (selection, 미지정 시 updateFwd와 동일)
+   * @param outputColumns - 반환받을 column name array (Select)
+   * @returns outputColumns 지정 시 영향받은 레코드 array return
    *
    * @example
    * ```typescript
-   * // UPDATE/INSERT 동일 데이터
+   * // UPDATE/INSERT 동일 data
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
    *   .upsert(() => ({
-   *     name: expr.val("string", "테스트"),
+   *     name: expr.val("string", "testing"),
    *     email: expr.val("string", "test@test.com"),
    *   }));
    *
-   * // UPDATE/INSERT 다른 데이터
+   * // UPDATE/INSERT 다른 data
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
    *   .upsert(
@@ -1679,14 +1679,14 @@ export class Queryable<
 
     const { select: _sel, ...existsSelectQuery } = this.getSelectQueryDef();
 
-    // updateRecord 생성
+    // updateRecord Generate
     const updateQrRecord = updateRecordFwd(this.meta.columns);
     const updateRecord: Record<string, Expr> = {};
     for (const [key, value] of Object.entries(updateQrRecord)) {
       updateRecord[key] = expr.toExpr(value);
     }
 
-    // insertRecord 생성 (updateRecordRaw를 두 번째 인자로)
+    // insertRecord Generate (updateRecordRaw를 두 번째 인자로)
     const insertRecordRaw = insertRecordFwd(updateQrRecord);
     const insertRecord = Object.fromEntries(
       Object.entries(insertRecordRaw).map(([key, value]) => [key, expr.toExpr(value)]),
@@ -1713,7 +1713,7 @@ export class Queryable<
   //#region ========== DDL Helper ==========
 
   /**
-   * FK 제약조건 on/off (트랜잭션 내 사용 가능)
+   * FK constraint on/off (transaction 내 사용 가능)
    */
   async switchFk(switch_: "on" | "off"): Promise<void> {
     const from = this.meta.from;
@@ -1737,7 +1737,7 @@ export class Queryable<
 
     if (from instanceof TableBuilder) {
       if (from.meta.columns == null) {
-        throw new Error(`테이블 '${from.meta.name}'에 컬럼 정의가 없습니다.`);
+        throw new Error(`테이블 '${from.meta.name}'에 Column definition가 없습니다.`);
       }
 
       let aiColName: string | undefined;
@@ -1762,11 +1762,11 @@ export class Queryable<
 //#region ========== Helper Functions ==========
 
 /**
- * FK 컬럼 배열과 대상 테이블의 PK를 매칭하여 PK 컬럼명 배열을 반환
+ * FK 컬럼 배열과 대상 Table의 PK를 매칭하여 PK 컬럼명 배열을 return
  *
- * @param fkCols - FK 컬럼명 배열
- * @param targetTable - 참조 대상 테이블 빌더
- * @returns 매칭된 PK 컬럼명 배열
+ * @param fkCols - FK 컬럼명 array
+ * @param targetTable - 참조 대상 Table builder
+ * @returns 매칭된 PK 컬럼명 array
  * @throws FK/PK 컬럼 수 불일치 시
  */
 export function getMatchedPrimaryKeys(
@@ -1783,18 +1783,18 @@ export function getMatchedPrimaryKeys(
 }
 
 /**
- * 중첩 columns 구조를 새 alias로 변환하는 공용 헬퍼
+ * 중첩 columns structure를 새 alias로 Transform하는 공용 헬퍼
  *
- * 서브쿼리/JOIN 시 기존 alias를 새 alias로 변환하면서,
+ * Subquery/JOIN 시 기존 alias를 새 alias로 Transform하면서,
  * 중첩 키(posts.userId)는 평면화된 키로 유지한다.
  *
  * 예: posts[0].userId 컬럼의 경로가 ["T1.posts", "userId"]인 경우,
- *     새 alias "T2"로 변환하면 ["T2", "posts.userId"]가 된다.
+ *     새 alias "T2"로 Transform하면 ["T2", "posts.userId"]가 된다.
  *
- * @param columns - 변환할 컬럼 레코드
- * @param alias - 새 테이블 alias (예: "T2")
- * @param keyPrefix - 현재 중첩 경로 (재귀 호출용, 기본값 "")
- * @returns 변환된 컬럼 레코드
+ * @param columns - Transform할 컬럼 레코드
+ * @param alias - 새 Table alias (예: "T2")
+ * @param keyPrefix - 현재 중첩 경로 (recursive 호출용, Default value "")
+ * @returns Transform된 컬럼 레코드
  */
 function transformColumnsAlias<TRecord extends DataRecord>(
   columns: QueryableRecord<TRecord>,
@@ -1898,9 +1898,9 @@ export type NullableQueryableRecord<TData extends DataRecord> = {
 };
 
 /**
- * QueryableRecord에서 DataRecord로 역변환
+ * QueryableRecord에서 DataRecord로 역transform
  *
- * ExprUnit<T>를 T로, 중첩 객체/배열을 재귀적으로 풀어냄
+ * ExprUnit<T>를 T로, 중첩 object/배열을 재귀적으로 풀어냄
  */
 export type UnwrapQueryableRecord<R> = {
   [K in keyof R]: R[K] extends ExprUnit<infer T>
@@ -1914,15 +1914,15 @@ export type UnwrapQueryableRecord<R> = {
         : never;
 };
 
-//#region ========== PathProxy - include용 타입 안전 경로 빌더 ==========
+//#region ========== PathProxy - include용 type 안전 경로 builder ==========
 
 /**
- * include()에서 관계 경로를 타입 안전하게 지정하기 위한 Proxy 타입
- * ColumnPrimitive가 아닌 필드(FK, FKT 관계)만 접근 가능
+ * include()에서 relationship 경로를 type 안전하게 지정하기 위한 Proxy type
+ * ColumnPrimitive가 아닌 필드(FK, FKT relationship)만 access 가능
  *
  * @example
  * ```typescript
- * // item.user.company 접근 시 내부적으로 ["user", "company"] 경로 수집
+ * // item.user.company access 시 내부적으로 ["user", "company"] 경로 수집
  * db.post.include(item => item.user.company)
  *
  * // item.title은 string(ColumnPrimitive)이므로 컴파일 에러
@@ -1930,14 +1930,14 @@ export type UnwrapQueryableRecord<R> = {
  * ```
  */
 /**
- * 배열이면 요소 타입 추출
+ * 배열이면 요소 type 추출
  */
 type UnwrapArray<TArray> = TArray extends (infer TElement)[] ? TElement : TArray;
 
 const PATH_SYMBOL = Symbol("path");
 
 /**
- * include()용 타입 안전 경로 프록시
+ * include()용 type 안전 경로 프록시
  */
 export type PathProxy<TObject> = {
   [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<
@@ -1946,7 +1946,7 @@ export type PathProxy<TObject> = {
 } & { readonly [PATH_SYMBOL]: string[] };
 
 /**
- * PathProxy 인스턴스 생성
+ * PathProxy instance Generate
  * Proxy를 사용하여 프로퍼티 접근을 가로채고 경로를 수집
  */
 function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
@@ -1962,14 +1962,14 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
 //#endregion
 
 /**
- * 테이블 또는 뷰에 대한 Queryable 팩토리 함수를 생성
+ * Table 또는 View에 대한 Queryable 팩토리 함수를 Generate
  *
- * DbContext에서 테이블/뷰별 getter를 정의할 때 사용
+ * DbContext에서 Table/View별 getter를 정의할 때 사용
  *
- * @param db - DbContext 인스턴스
- * @param tableOrView - TableBuilder 또는 ViewBuilder 인스턴스
- * @param as - alias 지정 (선택, 미지정 시 자동 생성)
- * @returns Queryable을 반환하는 팩토리 함수
+ * @param db - DbContext instance
+ * @param tableOrView - TableBuilder 또는 ViewBuilder instance
+ * @param as - alias 지정 (selection, 미지정 시 automatic Create)
+ * @returns Queryable을 반환하는 팩토리 function
  *
  * @example
  * ```typescript
@@ -2017,7 +2017,7 @@ export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<
     if (tableOrView instanceof ViewBuilder && tableOrView.meta.viewFn != null) {
       const baseQr = tableOrView.meta.viewFn(db);
 
-      // TFrom을 ViewBuilder로 설정하여 반환
+      // TFrom을 ViewBuilder로 설정하여 return
       return new Queryable({
         db,
         from: tableOrView,
@@ -2026,7 +2026,7 @@ export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<
       }) as any;
     }
 
-    throw new Error(`잘못된 테이블/뷰 메타데이터: ${tableOrView.meta.name}`);
+    throw new Error(`잘못된 Table/View Metadata: ${tableOrView.meta.name}`);
   };
 }
 

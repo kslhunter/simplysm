@@ -2,7 +2,7 @@ export default {
   extends: ["stylelint-config-standard", "stylelint-config-tailwindcss"],
   plugins: ["stylelint-no-unsupported-browser-features", "stylelint-no-unresolved-module"],
   rules: {
-    // Chrome 84+ 호환성 체크
+    // Chrome 84+ compatibility check
     "plugin/no-unsupported-browser-features": [
       true,
       {
@@ -11,9 +11,9 @@ export default {
         ignore: ["css-cascade-layers", "css-nesting", "css-overflow"],
       },
     ],
-    // inset은 Chrome 87+이므로 shorthand 강제 비활성화
+    // inset requires Chrome 87+, so enforce shorthand is disabled
     "declaration-block-no-redundant-longhand-properties": [true, { ignoreShorthands: ["inset"] }],
-    // @import, url() 파일 존재 체크
+    // Check for file existence in @import and url()
     "plugin/no-unresolved-module": true,
   },
 };

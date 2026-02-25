@@ -68,12 +68,12 @@ import type {
 import type { SelectQueryDef } from "../../types/query-def";
 
 /**
- * Expr → SQL 렌더링 추상 기본 클래스
+ * Expr → SQL Render 추상 기본 class
  *
  * Base 원칙:
  * - 100% 모든 dialect가 동일한 로직만 구현 (dispatch)
  * - 조금이라도 다르면 전부 abstract
- * - 메서드명은 expr.type과 동일 (동적 dispatch 가능)
+ * - Method명은 expr.type과 동일 (동적 dispatch 가능)
  */
 export abstract class ExprRendererBase {
   constructor(protected buildSelect: (def: SelectQueryDef) => string) {}
@@ -87,14 +87,14 @@ export abstract class ExprRendererBase {
   abstract wrap(name: string): string;
 
   /**
-   * SQL 문자열 리터럴용 이스케이프
-   * 동적 SQL이나 시스템 쿼리에서 문자열 값으로 사용될 때 호출
+   * SQL 문자열 리터럴용 escape
+   * 동적 SQL이나 시스템 query에서 문자열 값으로 사용될 때 호출
    * 예: WHERE schema_name = 'escaped_value'
    */
   abstract escapeString(value: string): string;
 
   /**
-   * 값 이스케이프 (타입에 따라 적절한 SQL 리터럴로 변환)
+   * value escape (타입에 따라 적절한 SQL 리터럴로 Transform)
    */
   abstract escapeValue(value: unknown): string;
 
@@ -105,7 +105,7 @@ export abstract class ExprRendererBase {
   render(expr: Expr | WhereExpr): string {
     const method = this[expr.type as keyof this];
     if (typeof method !== "function") {
-      throw new Error(`알 수 없는 Expr 타입: ${expr.type}`);
+      throw new Error(`알 수 없는 Expr type: ${expr.type}`);
     }
     return (method as (e: Expr | WhereExpr) => string).call(this, expr);
   }
@@ -117,7 +117,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 값 ==========
+  //#region ========== Abstract - Value ==========
 
   protected abstract column(expr: ExprColumn): string;
   protected abstract value(expr: ExprValue): string;
@@ -125,7 +125,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 비교 (null-safe 필수) ==========
+  //#region ========== Abstract - comparison (null-safe required) ==========
 
   protected abstract eq(expr: ExprEq): string;
   protected abstract gt(expr: ExprGt): string;
@@ -142,7 +142,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 논리 ==========
+  //#region ========== Abstract - logic ==========
 
   protected abstract not(expr: ExprNot): string;
   protected abstract and(expr: ExprAnd): string;
@@ -150,7 +150,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 문자열 (null 처리 필수) ==========
+  //#region ========== Abstract - 문자열 (null 처리 required) ==========
 
   protected abstract concat(expr: ExprConcat): string;
   protected abstract left(expr: ExprLeft): string;
@@ -193,7 +193,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 조건 ==========
+  //#region ========== Abstract - Condition ==========
 
   protected abstract ifNull(expr: ExprIfNull): string;
   protected abstract nullIf(expr: ExprNullIf): string;
@@ -203,7 +203,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 집계 ==========
+  //#region ========== Abstract - Aggregate ==========
 
   protected abstract count(expr: ExprCount): string;
   protected abstract sum(expr: ExprSum): string;
