@@ -15,15 +15,15 @@ export interface ComboboxItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "value" | "onClick"
 > {
-  /** 아이템의 값 */
+  /** Item value */
   value: TValue;
 
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
 }
 
 /**
- * Combobox 드롭다운 내의 선택 가능한 아이템
+ * Selectable item in Combobox dropdown
  */
 export const ComboboxItem: ParentComponent<ComboboxItemProps> = <T,>(
   props: ComboboxItemProps<T> & { children?: JSX.Element },

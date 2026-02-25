@@ -10,7 +10,7 @@ export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
+/* eslint-disable solid/reactivity -- plain object return pattern, reactive context not needed */
 export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.Element {
   return {
     __type: "crud-sheet-column",

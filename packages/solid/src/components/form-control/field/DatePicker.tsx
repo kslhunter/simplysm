@@ -209,7 +209,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
       <Show
         when={local.inset}
         fallback={
-          // standalone 모드: 기존 Show 패턴 유지
+          // standalone mode: maintain existing Show pattern
           <Show
             when={isEditable()}
             fallback={

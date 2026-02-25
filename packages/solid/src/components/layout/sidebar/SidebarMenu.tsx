@@ -38,7 +38,7 @@ export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement
   menus: AppMenu[];
 }
 
-// 내부 Context: 초기 펼침 상태 공유
+// Internal Context: share initial open state
 interface MenuContextValue {
   initialOpenItems: Accessor<Set<AppMenu>>;
 }
@@ -46,14 +46,14 @@ interface MenuContextValue {
 const MenuContext = createContext<MenuContextValue>();
 
 /**
- * 사이드바 메뉴 컴포넌트
+ * Sidebar menu component
  *
  * @remarks
- * - "MENU" 헤더 고정 표시
- * - List/ListItem으로 재귀적 메뉴 렌더링
- * - pathname 정확 일치로 선택 상태 판단 (query string 무시)
- * - 선택된 메뉴의 부모들은 초기 렌더링 시 자동 펼침
- * - 외부 링크(://포함)는 새 탭에서 열기
+ * - "MENU" header always shown
+ * - Recursive menu rendering with List/ListItem
+ * - Selection state determined by exact pathname match (ignores query string)
+ * - Parent items of selected menu automatically open on initial render
+ * - External links (containing ://) open in new tab
  *
  * @example
  * ```tsx
@@ -75,7 +75,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
 
   const location = useLocation();
 
-  // 현재 pathname과 일치하는 메뉴의 부모들을 찾아 펼침 상태 계산
+  // Find parents of menu matching current pathname and calculate open state
   const findSelectedPath = (
     menus: AppMenu[],
     pathname: string,
@@ -94,11 +94,11 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
     return null;
   };
 
-  // pathname 변경에 반응하여 펼침 상태 재계산
+  // Recalculate open state in response to pathname change
   const initialOpenItems = createMemo(() => {
     const selectedPath = findSelectedPath(local.menus, location.pathname);
     return selectedPath
-      ? new Set(selectedPath.slice(0, -1)) // 마지막 항목(선택된 메뉴)은 제외하고 부모들만 펼침
+      ? new Set(selectedPath.slice(0, -1)) // Open parents only, exclude last item (selected menu)
       : new Set<AppMenu>();
   });
 
@@ -128,18 +128,18 @@ const MenuItem: Component<MenuItemProps> = (props) => {
 
   const hasChildren = () => props.menu.children !== undefined && props.menu.children.length > 0;
 
-  // 외부 링크 여부 확인
+  // Check if external link
   const isExternalLink = () => props.menu.href?.includes("://") ?? false;
 
-  // 선택 상태
+  // Selection state
   const isSelected = () => props.menu.href === location.pathname;
 
-  // 펼침 상태 계산 (object reference로 비교)
+  // Calculate open state (compare by object reference)
   const shouldBeOpen = () => menuContext.initialOpenItems().has(props.menu);
 
   const [open, setOpen] = createSignal(false);
 
-  // pathname 변경에 반응하여 펼침 상태 업데이트
+  // Update open state in response to pathname change
   createEffect(() => {
     if (shouldBeOpen()) {
       setOpen(true);
