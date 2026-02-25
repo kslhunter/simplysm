@@ -86,7 +86,7 @@ const patterns = {
   z: /z/g,
 };
 
-const weekStrings = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
 
 //#endregion
 

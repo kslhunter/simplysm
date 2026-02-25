@@ -656,7 +656,7 @@ describe("object utils", () => {
       const obj = { parent: { name: "child" } };
 
       expect(() => objGetChainValueByDepth(obj, "parent", 0)).toThrow(
-        "depth must be 1 or greater.",
+        "depth must be 1 or greater",
       );
     });
 

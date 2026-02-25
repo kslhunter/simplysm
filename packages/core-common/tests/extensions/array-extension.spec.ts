@@ -163,7 +163,7 @@ describe("Array prototype extensions", () => {
           { id: 1, name: "a" },
           { id: 1, name: "b" },
         ].toMap((x) => x.id),
-      ).toThrow("Duplicate key");
+      ).toThrow("Duplicated key");
     });
   });
 
@@ -658,7 +658,7 @@ describe("Array prototype extensions", () => {
     });
 
     it("Throws error for non-number type", () => {
-      expect(() => (["a", "b"] as unknown as number[]).sum()).toThrow("sum only works for number");
+      expect(() => (["a", "b"] as unknown as number[]).sum()).toThrow("sum can only be used with numbers");
     });
   });
 
@@ -673,7 +673,7 @@ describe("Array prototype extensions", () => {
 
     it("Throws error for non-number/string type", () => {
       expect(() => ([true, false] as unknown as number[]).min()).toThrow(
-        "min only works for number/string",
+        "min can only be used with numbers/strings",
       );
     });
   });
@@ -689,7 +689,7 @@ describe("Array prototype extensions", () => {
 
     it("Throws error for non-number/string type", () => {
       expect(() => ([{}, {}] as unknown as number[]).max()).toThrow(
-        "max only works for number/string",
+        "max can only be used with numbers/strings",
       );
     });
   });

@@ -177,7 +177,7 @@ describe("SerialQueue", () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0]).toBeInstanceOf(SdError);
-      expect(errors[0].message).toContain("Error during queue task execution");
+      expect(errors[0].message).toContain("Error occurred while executing queue task");
       expect(errors[0].message).toContain("test error");
     });
 

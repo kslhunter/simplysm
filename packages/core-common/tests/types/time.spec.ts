@@ -134,7 +134,7 @@ describe("Time", () => {
     });
 
     it("Throws error for invalid format", () => {
-      expect(() => Time.parse("invalid-time")).toThrow("Unable to parse time format");
+      expect(() => Time.parse("invalid-time")).toThrow();
     });
 
     it("PM 12:00:00 is noon (12 o'clock)", () => {

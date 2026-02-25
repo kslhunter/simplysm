@@ -98,6 +98,26 @@ export class DateTime {
       );
     }
 
+    // Korean AM/PM format (오전/오후)
+    const matchKorean =
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(
+        str,
+      );
+    if (matchKorean != null) {
+      const rawHour = Number(matchKorean[5]);
+      const isPM = matchKorean[4] === "오후";
+      const hour = convert12To24(rawHour, isPM);
+      return new DateTime(
+        Number(matchKorean[1]),
+        Number(matchKorean[2]),
+        Number(matchKorean[3]),
+        hour,
+        Number(matchKorean[6]),
+        Number(matchKorean[7]),
+        matchKorean[9] ? Number(matchKorean[9].padEnd(3, "0")) : undefined,
+      );
+    }
+
     const match2 = /^[0-9]{14}$/.exec(str);
     if (match2 != null) {
       return new DateTime(

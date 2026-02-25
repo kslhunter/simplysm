@@ -448,12 +448,12 @@ describe("JsonConvert", () => {
 
       // "__hidden__" is data serialized with redactBytes option, so parse throws error
       expect(() => parse<typeof obj>(json)).toThrow(
-        "Uint8Array serialized with redactBytes option cannot be restored with parse",
+        "Uint8Array serialized with redactBytes option cannot be restored via parse",
       );
     });
 
     it("Invalid JSON throws error", () => {
-      expect(() => parse("invalid json")).toThrow("JSON parse error");
+      expect(() => parse("invalid json")).toThrow("JSON parsing error");
     });
 
     it("In DEV mode, full JSON included in error message", () => {

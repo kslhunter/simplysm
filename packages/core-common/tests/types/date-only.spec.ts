@@ -106,7 +106,7 @@ describe("DateOnly", () => {
     });
 
     it("Throws error for invalid format", () => {
-      expect(() => DateOnly.parse("invalid-date")).toThrow("Unable to parse date format");
+      expect(() => DateOnly.parse("invalid-date")).toThrow("Failed to parse date format");
     });
 
     it("Parses year-end boundary (December 31)", () => {

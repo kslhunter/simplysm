@@ -71,7 +71,7 @@ describe("Errors", () => {
     it("Creates with only argObj without message", () => {
       const error = new ArgumentError({ key: "value" });
 
-      expect(error.message).toContain("Argument is invalid");
+      expect(error.message).toContain("Invalid arguments");
       expect(error.message).toContain("key");
     });
   });
