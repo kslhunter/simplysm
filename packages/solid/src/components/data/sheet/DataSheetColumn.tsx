@@ -10,7 +10,7 @@ export function isDataSheetColumnDef(value: unknown): value is DataSheetColumnDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
+/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function DataSheetColumn<TItem>(props: DataSheetColumnProps<TItem>): JSX.Element {
   return {
     __type: "sheet-column",
