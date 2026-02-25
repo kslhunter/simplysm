@@ -1,13 +1,14 @@
 ---
 name: sd-email-analyze
 description: "Email file (.eml/.msg) parsing (explicit invocation only)"
+model: haiku
 ---
 
 # Email Analyzer
 
 ## Overview
 
-Python script that parses `.eml` and `.msg` (Outlook) email files. Extracts mail headers, body text, inline images, and attachments to disk. Content analysis of extracted files is delegated to Claude's Read tool and document-skills plugin.
+Python script that parses `.eml` and `.msg` (Outlook) email files. Extracts mail headers, body text, inline images, and attachments to disk. Content analysis of extracted files is delegated to Claude's Read tool and `sd-document` skill.
 
 ## When to Use
 
@@ -26,7 +27,7 @@ First run auto-installs: `extract-msg`.
 
 1. Read the markdown output (mail info, body text, file paths)
 2. **Inline images**: Use **Read** tool on each saved path to view
-3. **Attachments**: Use **Read** tool (PDF, images) or let **document-skills** plugin handle (XLSX, PPTX, DOCX)
+3. **Attachments**: Use **Read** tool (images) or **sd-document** skill scripts (DOCX, XLSX, PPTX, PDF)
 
 ## Output
 
