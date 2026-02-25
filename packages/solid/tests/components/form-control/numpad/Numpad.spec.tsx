@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Numpad } from "../../../../src/components/form-control/numpad/Numpad";
 
 describe("Numpad", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("data-numpad 속성이 있는 루트 요소를 렌더링한다", () => {
       const { container } = render(() => <Numpad />);
       const root = container.querySelector("[data-numpad]");

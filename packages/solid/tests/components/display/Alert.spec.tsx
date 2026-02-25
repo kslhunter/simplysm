@@ -3,13 +3,13 @@ import { describe, it, expect } from "vitest";
 import { Alert } from "../../../src/components/display/Alert";
 
 describe("Alert 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 Alert 내부에 표시된다", () => {
       const { getByText } = render(() => <Alert>This is a note</Alert>);
       expect(getByText("This is a note")).toBeTruthy();
     });
 
-    it("div 요소로 렌더링된다", () => {
+    it("renders as div element", () => {
       const { container } = render(() => <Alert>Content</Alert>);
       const alert = container.firstChild as HTMLElement;
       expect(alert.tagName).toBe("DIV");
@@ -28,8 +28,8 @@ describe("Alert 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Alert class="my-alert">Content</Alert>);
       const alert = container.firstChild as HTMLElement;
@@ -37,8 +37,8 @@ describe("Alert 컴포넌트", () => {
     });
   });
 
-  describe("HTML 속성 전달", () => {
-    it("data-* 속성이 전달된다", () => {
+  describe("HTML attribute forwarding", () => {
+    it("passes data-* attributes", () => {
       const { container } = render(() => <Alert data-testid="test-alert">Content</Alert>);
       const alert = container.firstChild as HTMLElement;
       expect(alert.getAttribute("data-testid")).toBe("test-alert");

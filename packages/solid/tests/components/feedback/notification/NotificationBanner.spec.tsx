@@ -6,7 +6,7 @@ import { NotificationBanner } from "../../../../src/components/feedback/notifica
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationBanner", () => {
-  it("알림이 없으면 배너가 표시되지 않는다", () => {
+  it("does not display banner when no notification", () => {
     const { container } = render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>
@@ -18,7 +18,7 @@ describe("NotificationBanner", () => {
     expect(container.querySelector("[data-notification-banner]")).toBeNull();
   });
 
-  it("알림이 있으면 배너가 표시된다", async () => {
+  it("displays banner when notification is present", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -33,17 +33,17 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트 제목", "테스트 메시지");
+    notification!.info("Test Title", "Test Message");
 
     await waitFor(() => {
       const banner = document.querySelector("[data-notification-banner]");
       expect(banner).not.toBeNull();
-      expect(banner?.textContent).toContain("테스트 제목");
-      expect(banner?.textContent).toContain("테스트 메시지");
+      expect(banner?.textContent).toContain("Test Title");
+      expect(banner?.textContent).toContain("Test Message");
     });
   });
 
-  it("닫기 버튼 클릭 시 배너가 사라진다", async () => {
+  it("closes banner when close button is clicked", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -58,14 +58,14 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트");
+    notification!.info("Test");
 
     await waitFor(() => {
       expect(document.querySelector("[data-notification-banner]")).not.toBeNull();
     });
 
     const closeButton = document.querySelector(
-      "[data-notification-banner] [aria-label='알림 닫기']",
+      "[data-notification-banner] [aria-label='Close notification']",
     );
     fireEvent.click(closeButton!);
 
@@ -74,7 +74,7 @@ describe("NotificationBanner", () => {
     });
   });
 
-  it("role=alert 속성이 있다", async () => {
+  it("has role=alert attribute", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -89,7 +89,7 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트");
+    notification!.info("Test");
 
     await waitFor(() => {
       const banner = document.querySelector("[data-notification-banner]");
@@ -97,7 +97,7 @@ describe("NotificationBanner", () => {
     });
   });
 
-  it("테마별로 data-theme 속성이 설정된다", async () => {
+  it("sets data-theme attribute for each theme", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -112,7 +112,7 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.danger("에러");
+    notification!.danger("Error");
 
     await waitFor(() => {
       const banner = document.querySelector("[data-notification-banner]");
@@ -120,7 +120,7 @@ describe("NotificationBanner", () => {
     });
   });
 
-  it("action이 있으면 액션 버튼이 표시된다", async () => {
+  it("displays action button when action is present", async () => {
     let notification: ReturnType<typeof useNotification>;
     const handleAction = vi.fn();
 
@@ -136,15 +136,15 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트", "메시지", {
-      action: { label: "확인", onClick: handleAction },
+    notification!.info("Test", "Message", {
+      action: { label: "Confirm", onClick: handleAction },
     });
 
     await waitFor(() => {
       const actionButton = document.querySelector(
         "[data-notification-banner] button:not([aria-label])",
       );
-      expect(actionButton?.textContent).toBe("확인");
+      expect(actionButton?.textContent).toBe("Confirm");
     });
 
     const actionButton = document.querySelector(
@@ -155,7 +155,7 @@ describe("NotificationBanner", () => {
     expect(handleAction).toHaveBeenCalled();
   });
 
-  it("새 알림이 오면 배너가 교체된다", async () => {
+  it("replaces banner when new notification arrives", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -170,19 +170,17 @@ describe("NotificationBanner", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("첫 번째");
+    notification!.info("First");
 
     await waitFor(() => {
-      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain(
-        "첫 번째",
-      );
+      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain("First");
     });
 
-    notification!.info("두 번째");
+    notification!.info("Second");
 
     await waitFor(() => {
       expect(document.querySelector("[data-notification-banner]")?.textContent).toContain(
-        "두 번째",
+        "Second",
       );
     });
   });

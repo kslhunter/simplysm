@@ -10,10 +10,10 @@ import {
 
 describe("NotificationContext", () => {
   describe("useNotification", () => {
-    it("Provider 없이 사용하면 에러가 발생한다", () => {
+    it("throws error when used without Provider", () => {
       createRoot((dispose) => {
         expect(() => useNotification()).toThrow(
-          "useNotification은 NotificationProvider 내부에서만 사용할 수 있습니다",
+          "useNotification can only be used inside NotificationProvider",
         );
         dispose();
       });
@@ -22,7 +22,7 @@ describe("NotificationContext", () => {
 });
 
 describe("NotificationProvider", () => {
-  it("Provider 내에서 useNotification이 정상 동작한다", () => {
+  it("useNotification works normally inside Provider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -40,7 +40,7 @@ describe("NotificationProvider", () => {
     expect(notification!.unreadCount()).toBe(0);
   });
 
-  it("info 호출 시 알림이 추가된다", async () => {
+  it("adds notification when info is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -54,18 +54,18 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트 제목", "테스트 메시지");
+    notification!.info("Test Title", "Test Message");
 
     await waitFor(() => {
       expect(notification!.items().length).toBe(1);
       expect(notification!.items()[0].theme).toBe("info");
-      expect(notification!.items()[0].title).toBe("테스트 제목");
-      expect(notification!.items()[0].message).toBe("테스트 메시지");
+      expect(notification!.items()[0].title).toBe("Test Title");
+      expect(notification!.items()[0].message).toBe("Test Message");
       expect(notification!.unreadCount()).toBe(1);
     });
   });
 
-  it("success/warning/danger 테마가 올바르게 적용된다", async () => {
+  it("correctly applies success/warning/danger themes", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -79,9 +79,9 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.success("성공", "성공 메시지");
-    notification!.warning("경고", "경고 메시지");
-    notification!.danger("에러", "에러 메시지");
+    notification!.success("Success", "Success message");
+    notification!.warning("Warning", "Warning message");
+    notification!.danger("Error", "Error message");
 
     await waitFor(() => {
       const items = notification!.items();
@@ -91,7 +91,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("markAsRead 호출 시 해당 알림이 읽음 처리된다", async () => {
+  it("marks notification as read when markAsRead is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -105,7 +105,7 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트", "메시지");
+    notification!.info("Test", "Message");
 
     await waitFor(() => {
       expect(notification!.unreadCount()).toBe(1);
@@ -120,7 +120,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("clear 호출 시 모든 알림이 삭제된다", async () => {
+  it("removes all notifications when clear is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -134,8 +134,8 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("알림1");
-    notification!.info("알림2");
+    notification!.info("Notification 1");
+    notification!.info("Notification 2");
 
     await waitFor(() => {
       expect(notification!.items().length).toBe(2);
@@ -148,7 +148,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("최대 50개까지만 알림을 유지한다", async () => {
+  it("maintains maximum 50 notifications", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -162,19 +162,19 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    // 51개 알림 추가
+    // Add 51 notifications
     for (let i = 0; i < 51; i++) {
-      notification!.info(`알림 ${i}`);
+      notification!.info(`Notification ${i}`);
     }
 
     await waitFor(() => {
       expect(notification!.items().length).toBe(50);
-      // 첫 번째 알림이 삭제되고 마지막 알림이 유지
-      expect(notification!.items()[49].title).toBe("알림 50");
+      // First notification deleted, last notification retained
+      expect(notification!.items()[49].title).toBe("Notification 50");
     });
   });
 
-  it("latestUnread가 가장 최신 읽지 않은 알림을 반환한다", async () => {
+  it("latestUnread returns the most recent unread notification", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -188,15 +188,15 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("첫 번째");
-    notification!.info("두 번째");
+    notification!.info("First");
+    notification!.info("Second");
 
     await waitFor(() => {
-      expect(notification!.latestUnread()?.title).toBe("두 번째");
+      expect(notification!.latestUnread()?.title).toBe("Second");
     });
   });
 
-  it("dismissBanner 호출 시 latestUnread가 undefined가 되고 읽음 처리된다", async () => {
+  it("latestUnread becomes undefined and marked as read when dismissBanner is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -210,7 +210,7 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트");
+    notification!.info("Test");
 
     await waitFor(() => {
       expect(notification!.latestUnread()).toBeDefined();
@@ -220,14 +220,14 @@ describe("NotificationProvider", () => {
 
     await waitFor(() => {
       expect(notification!.latestUnread()).toBeUndefined();
-      // items에는 여전히 존재하지만 읽음 처리됨
+      // Still exists in items but marked as read
       expect(notification!.items().length).toBe(1);
       expect(notification!.items()[0].read).toBe(true);
       expect(notification!.unreadCount()).toBe(0);
     });
   });
 
-  it("info 호출 시 생성된 알림의 id를 반환한다", async () => {
+  it("returns id of created notification when info is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -241,7 +241,7 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    const id = notification!.info("테스트 제목");
+    const id = notification!.info("Test Title");
 
     await waitFor(() => {
       expect(typeof id).toBe("string");
@@ -249,7 +249,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("update 호출 시 알림 내용이 수정된다", async () => {
+  it("updates notification content when update is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -263,18 +263,18 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    const id = notification!.info("원래 제목", "원래 메시지");
+    const id = notification!.info("Original Title", "Original Message");
 
-    notification!.update(id, { title: "수정된 제목", message: "수정된 메시지" });
+    notification!.update(id, { title: "Updated Title", message: "Updated Message" });
 
     await waitFor(() => {
       const item = notification!.items()[0];
-      expect(item.title).toBe("수정된 제목");
-      expect(item.message).toBe("수정된 메시지");
+      expect(item.title).toBe("Updated Title");
+      expect(item.message).toBe("Updated Message");
     });
   });
 
-  it("remove 호출 시 알림이 삭제된다", async () => {
+  it("removes notification when remove is called", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -288,8 +288,8 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    const id = notification!.info("삭제될 알림");
-    notification!.info("유지될 알림");
+    const id = notification!.info("Notification to delete");
+    notification!.info("Notification to keep");
 
     await waitFor(() => {
       expect(notification!.items().length).toBe(2);
@@ -299,11 +299,11 @@ describe("NotificationProvider", () => {
 
     await waitFor(() => {
       expect(notification!.items().length).toBe(1);
-      expect(notification!.items()[0].title).toBe("유지될 알림");
+      expect(notification!.items()[0].title).toBe("Notification to keep");
     });
   });
 
-  it("update with renotify: 읽은 알림이 다시 읽지 않음으로 변경된다", async () => {
+  it("update with renotify: read notification changes back to unread", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -317,14 +317,14 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    const id = notification!.info("알림");
+    const id = notification!.info("Notification");
     notification!.markAsRead(id);
 
     await waitFor(() => {
       expect(notification!.unreadCount()).toBe(0);
     });
 
-    notification!.update(id, { message: "완료!" }, { renotify: true });
+    notification!.update(id, { message: "Done!" }, { renotify: true });
 
     await waitFor(() => {
       expect(notification!.unreadCount()).toBe(1);
@@ -332,7 +332,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("update with renotify: 읽지 않은 알림은 그대로 읽지 않음 상태 유지", async () => {
+  it("update with renotify: unread notification remains unread", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -346,16 +346,16 @@ describe("NotificationProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    const id = notification!.info("알림");
+    const id = notification!.info("Notification");
 
     await waitFor(() => {
       expect(notification!.unreadCount()).toBe(1);
     });
 
-    notification!.update(id, { message: "업데이트" }, { renotify: true });
+    notification!.update(id, { message: "Updated" }, { renotify: true });
 
     await waitFor(() => {
-      // 여전히 1개 (증가하지 않음)
+      // Still 1 (not increased)
       expect(notification!.unreadCount()).toBe(1);
     });
   });

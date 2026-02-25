@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { CheckboxGroup } from "../../../../src/components/form-control/checkbox/CheckboxGroup";
 
 describe("CheckboxGroup 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("컨테이너가 렌더링된다", () => {
       const { container } = render(() => (
         <CheckboxGroup>
@@ -75,7 +75,7 @@ describe("CheckboxGroup 컴포넌트", () => {
           <CheckboxGroup.Item value="a">A</CheckboxGroup.Item>
         </CheckboxGroup>
       ));
-      expect(getGroupHiddenInput(container).validationMessage).toBe("항목을 선택해 주세요");
+      expect(getGroupHiddenInput(container).validationMessage).toBe("Please select an item");
     });
 
     it("required일 때 선택 항목이 있으면 유효하다", () => {

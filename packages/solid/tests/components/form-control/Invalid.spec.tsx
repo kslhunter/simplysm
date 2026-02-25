@@ -3,12 +3,12 @@ import { describe, it, expect } from "vitest";
 import { createSignal } from "solid-js";
 import { Invalid } from "../../../src/components/form-control/Invalid";
 
-describe("Invalid 컴포넌트", () => {
-  describe("Fragment 렌더링", () => {
-    it("래퍼 div 없이 children과 hidden input을 렌더링한다", () => {
+describe("Invalid component", () => {
+  describe("Fragment rendering", () => {
+    it("renders children and hidden input without wrapper div", () => {
       const { container } = render(() => (
-        <Invalid message="에러">
-          <div data-testid="child">내용</div>
+        <Invalid message="error">
+          <div data-testid="child">Content</div>
         </Invalid>
       ));
       const child = container.querySelector("[data-testid='child']");
@@ -20,35 +20,35 @@ describe("Invalid 컴포넌트", () => {
   });
 
   describe("setCustomValidity", () => {
-    it("message가 있으면 setCustomValidity가 설정된다", () => {
+    it("sets setCustomValidity when message is present", () => {
       const { container } = render(() => (
-        <Invalid message="필수 입력 항목입니다">
-          <div>내용</div>
+        <Invalid message="This is a required field">
+          <div>Content</div>
         </Invalid>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
-    it("message가 없으면 유효 상태이다", () => {
+    it("is valid when no message is provided", () => {
       const { container } = render(() => (
         <Invalid>
-          <div>내용</div>
+          <div>Content</div>
         </Invalid>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("message가 변경되면 setCustomValidity도 업데이트된다", () => {
-      const [msg, setMsg] = createSignal<string | undefined>("에러");
+    it("updates setCustomValidity when message changes", () => {
+      const [msg, setMsg] = createSignal<string | undefined>("error");
       const { container } = render(() => (
         <Invalid message={msg()}>
-          <div>내용</div>
+          <div>Content</div>
         </Invalid>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("에러");
+      expect(hiddenInput.validationMessage).toBe("error");
 
       setMsg(undefined);
       expect(hiddenInput.validity.valid).toBe(true);
@@ -56,11 +56,11 @@ describe("Invalid 컴포넌트", () => {
   });
 
   describe("variant='border'", () => {
-    it("message가 있으면 target에 border-danger-500 클래스가 추가된다", () => {
+    it("adds border-danger-500 class to target when message is present", () => {
       const { container } = render(() => (
-        <Invalid variant="border" message="에러">
+        <Invalid variant="border" message="error">
           <div data-testid="target" class="border">
-            내용
+            Content
           </div>
         </Invalid>
       ));
@@ -68,11 +68,11 @@ describe("Invalid 컴포넌트", () => {
       expect(target.classList.contains("border-danger-500")).toBe(true);
     });
 
-    it("message가 없으면 border-danger-500 클래스가 없다", () => {
+    it("does not have border-danger-500 class when no message", () => {
       const { container } = render(() => (
         <Invalid variant="border">
           <div data-testid="target" class="border">
-            내용
+            Content
           </div>
         </Invalid>
       ));
@@ -81,11 +81,11 @@ describe("Invalid 컴포넌트", () => {
     });
   });
 
-  describe("variant='dot' (기본값)", () => {
-    it("message가 있으면 target 내부에 dot 요소가 삽입된다", () => {
+  describe("variant='dot' (default)", () => {
+    it("inserts dot element inside target when message is present", () => {
       const { container } = render(() => (
-        <Invalid message="에러">
-          <div data-testid="target">내용</div>
+        <Invalid message="error">
+          <div data-testid="target">Content</div>
         </Invalid>
       ));
       const target = container.querySelector("[data-testid='target']") as HTMLElement;
@@ -93,10 +93,10 @@ describe("Invalid 컴포넌트", () => {
       expect(dot).toBeTruthy();
     });
 
-    it("message가 없으면 dot 요소가 없다", () => {
+    it("has no dot element when no message", () => {
       const { container } = render(() => (
         <Invalid>
-          <div data-testid="target">내용</div>
+          <div data-testid="target">Content</div>
         </Invalid>
       ));
       const target = container.querySelector("[data-testid='target']") as HTMLElement;
@@ -106,11 +106,11 @@ describe("Invalid 컴포넌트", () => {
   });
 
   describe("touchMode", () => {
-    it("touchMode일 때 초기에는 시각적 표시가 없다", () => {
+    it("has no visual indication initially in touchMode", () => {
       const { container } = render(() => (
-        <Invalid variant="border" message="에러" touchMode>
+        <Invalid variant="border" message="error" touchMode>
           <div data-testid="target" class="border">
-            내용
+            Content
           </div>
         </Invalid>
       ));
@@ -118,14 +118,14 @@ describe("Invalid 컴포넌트", () => {
       expect(target.classList.contains("border-danger-500")).toBe(false);
     });
 
-    it("touchMode일 때 setCustomValidity는 항상 설정된다", () => {
+    it("setCustomValidity is always set in touchMode", () => {
       const { container } = render(() => (
-        <Invalid variant="border" message="에러" touchMode>
-          <div>내용</div>
+        <Invalid variant="border" message="error" touchMode>
+          <div>Content</div>
         </Invalid>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("에러");
+      expect(hiddenInput.validationMessage).toBe("error");
     });
   });
 });

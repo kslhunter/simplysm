@@ -58,6 +58,6 @@ export default {
   },
   content: [`${__dirname}src/**/*.{ts,tsx}`, `${__dirname}dist/**/*.js`],
   corePlugins: {
-    aspectRatio: false, // Chrome 84 미지원
+    aspectRatio: false, // Not supported in Chrome 84
   },
 };

@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/solid",
   "version": "13.0.69",
-  "description": "심플리즘 패키지 - SolidJS 라이브러리",
+  "description": "Simplysm package - SolidJS library",
   "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {

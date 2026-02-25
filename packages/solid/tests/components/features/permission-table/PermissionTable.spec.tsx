@@ -169,7 +169,7 @@ describe("changePermCheck", () => {
 // =====================
 
 describe("PermissionTable 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("data-permission-table 속성이 있는 div로 렌더링된다", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
       const wrapper = container.querySelector("[data-permission-table]");

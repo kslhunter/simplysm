@@ -2,22 +2,22 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { FormGroup } from "../../../src/components/layout/FormGroup";
 
-describe("FormGroup 컴포넌트", () => {
-  describe("기본 렌더링", () => {
-    it("children이 FormGroup 내부에 표시된다", () => {
+describe("FormGroup component", () => {
+  describe("basic rendering", () => {
+    it("displays children inside FormGroup", () => {
       const { getByText } = render(() => <FormGroup>Content</FormGroup>);
       expect(getByText("Content")).toBeTruthy();
     });
 
-    it("div 요소로 렌더링된다", () => {
+    it("renders as div element", () => {
       const { container } = render(() => <FormGroup>Content</FormGroup>);
       const group = container.firstChild as HTMLElement;
       expect(group.tagName).toBe("DIV");
     });
   });
 
-  describe("inline 속성", () => {
-    it("inline prop에 따라 스타일이 달라진다", () => {
+  describe("inline property", () => {
+    it("styles differ based on inline prop", () => {
       const { container: defaultContainer } = render(() => <FormGroup>Content</FormGroup>);
       const { container: inlineContainer } = render(() => <FormGroup inline>Content</FormGroup>);
 
@@ -28,8 +28,8 @@ describe("FormGroup 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <FormGroup class="my-form-group">Content</FormGroup>);
       const group = container.firstChild as HTMLElement;
@@ -38,9 +38,9 @@ describe("FormGroup 컴포넌트", () => {
   });
 });
 
-describe("FormGroup.Item 컴포넌트", () => {
-  describe("기본 렌더링", () => {
-    it("children이 Item 내부에 표시된다", () => {
+describe("FormGroup.Item component", () => {
+  describe("basic rendering", () => {
+    it("displays children inside Item", () => {
       const { getByText } = render(() => (
         <FormGroup>
           <FormGroup.Item>Field Content</FormGroup.Item>
@@ -49,7 +49,7 @@ describe("FormGroup.Item 컴포넌트", () => {
       expect(getByText("Field Content")).toBeTruthy();
     });
 
-    it("div 요소로 렌더링된다", () => {
+    it("renders as div element", () => {
       const { container } = render(() => (
         <FormGroup>
           <FormGroup.Item>Content</FormGroup.Item>
@@ -60,8 +60,8 @@ describe("FormGroup.Item 컴포넌트", () => {
     });
   });
 
-  describe("label 속성", () => {
-    it("label이 표시된다", () => {
+  describe("label property", () => {
+    it("displays label", () => {
       const { getByText } = render(() => (
         <FormGroup>
           <FormGroup.Item label="Name">Input</FormGroup.Item>
@@ -70,7 +70,7 @@ describe("FormGroup.Item 컴포넌트", () => {
       expect(getByText("Name")).toBeTruthy();
     });
 
-    it("label이 JSX.Element일 수 있다", () => {
+    it("label can be JSX.Element", () => {
       const { getByText } = render(() => (
         <FormGroup>
           <FormGroup.Item label={<span>Custom Label</span>}>Input</FormGroup.Item>
@@ -79,7 +79,7 @@ describe("FormGroup.Item 컴포넌트", () => {
       expect(getByText("Custom Label")).toBeTruthy();
     });
 
-    it("label이 없을 때 label 요소가 렌더링되지 않는다", () => {
+    it("label element is not rendered when no label is provided", () => {
       const { container } = render(() => (
         <FormGroup>
           <FormGroup.Item>Input</FormGroup.Item>
@@ -89,8 +89,8 @@ describe("FormGroup.Item 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 Item에 적용된다", () => {
+  describe("class merging", () => {
+    it("applies custom classes to Item", () => {
       const { container } = render(() => (
         <FormGroup>
           {/* eslint-disable-next-line tailwindcss/no-custom-classname */}

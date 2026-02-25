@@ -13,8 +13,8 @@ function TestProvider(props: { children: JSX.Element; value: SelectContextValue 
 }
 
 describe("SelectItem 컴포넌트", () => {
-  describe("기본 렌더링", () => {
-    it("children이 렌더링된다", () => {
+  describe("basic rendering", () => {
+    it("renders children", () => {
       const mockContext: SelectContextValue = {
         multiple: () => false,
         isSelected: () => false,
@@ -146,7 +146,7 @@ describe("SelectItem 컴포넌트", () => {
     });
   });
 
-  describe("disabled 상태", () => {
+  describe("disabled state", () => {
     it("disabled일 때 클릭해도 toggleValue가 호출되지 않는다", () => {
       const toggleValue = vi.fn();
       const mockContext: SelectContextValue = {

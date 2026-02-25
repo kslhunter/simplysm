@@ -24,7 +24,7 @@ import { NotificationProvider } from "../../../../src/components/feedback/notifi
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
 import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/TopbarContext";
 
-// Helper: TopbarContext에서 actions accessor를 추출
+// Helper: extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
   props.onCapture(actions);
@@ -45,7 +45,7 @@ function TestWrapper(props: { children: JSX.Element }) {
 }
 
 describe("CrudDetail types", () => {
-  it("CrudDetailToolsDef 타입이 __type 필드를 가진다", () => {
+  it("CrudDetailToolsDef type has __type field", () => {
     const def: CrudDetailToolsDef = {
       __type: "crud-detail-tools",
       children: null as any,
@@ -53,7 +53,7 @@ describe("CrudDetail types", () => {
     expect(def.__type).toBe("crud-detail-tools");
   });
 
-  it("CrudDetailBeforeDef 타입이 __type 필드를 가진다", () => {
+  it("CrudDetailBeforeDef type has __type field", () => {
     const def: CrudDetailBeforeDef = {
       __type: "crud-detail-before",
       children: null as any,
@@ -61,7 +61,7 @@ describe("CrudDetail types", () => {
     expect(def.__type).toBe("crud-detail-before");
   });
 
-  it("CrudDetailAfterDef 타입이 __type 필드를 가진다", () => {
+  it("CrudDetailAfterDef type has __type field", () => {
     const def: CrudDetailAfterDef = {
       __type: "crud-detail-after",
       children: null as any,
@@ -71,7 +71,7 @@ describe("CrudDetail types", () => {
 });
 
 describe("CrudDetail sub-components", () => {
-  it("CrudDetailTools: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudDetailTools: returns plain object and is identifiable by type guard", () => {
     const def = CrudDetailTools({
       children: <div>tools</div>,
     });
@@ -80,7 +80,7 @@ describe("CrudDetail sub-components", () => {
     expect((def as any).__type).toBe("crud-detail-tools");
   });
 
-  it("CrudDetailBefore: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudDetailBefore: returns plain object and is identifiable by type guard", () => {
     const def = CrudDetailBefore({
       children: <div>before</div>,
     });
@@ -89,7 +89,7 @@ describe("CrudDetail sub-components", () => {
     expect((def as any).__type).toBe("crud-detail-before");
   });
 
-  it("CrudDetailAfter: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudDetailAfter: returns plain object and is identifiable by type guard", () => {
     const def = CrudDetailAfter({
       children: <div>after</div>,
     });
@@ -98,7 +98,7 @@ describe("CrudDetail sub-components", () => {
     expect((def as any).__type).toBe("crud-detail-after");
   });
 
-  it("type guard: 일반 객체는 false를 반환한다", () => {
+  it("type guard: returns false for plain objects", () => {
     expect(isCrudDetailToolsDef({})).toBe(false);
     expect(isCrudDetailToolsDef(null)).toBe(false);
     expect(isCrudDetailBeforeDef("string")).toBe(false);
@@ -107,7 +107,7 @@ describe("CrudDetail sub-components", () => {
 });
 
 describe("CrudDetail rendering", () => {
-  it("기본 렌더링: load 후 children이 표시된다", async () => {
+  it("basic rendering: children are displayed after load", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -127,7 +127,7 @@ describe("CrudDetail rendering", () => {
     expect(container.textContent).toContain("홍길동");
   });
 
-  it("submit 제공 시 저장 버튼이 toolbar에 표시된다 (page/control 모드)", async () => {
+  it("Save button is displayed in toolbar when submit is provided (page/control mode)", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -145,10 +145,10 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("저장");
+    expect(container.textContent).toContain("Save");
   });
 
-  it("submit 미제공 시 저장 버튼이 없다", async () => {
+  it("Save button is absent when submit is not provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -165,10 +165,10 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("저장");
+    expect(container.textContent).not.toContain("Save");
   });
 
-  it("toggleDelete 제공 시 삭제 버튼이 toolbar에 표시된다", async () => {
+  it("Delete button is displayed in toolbar when toggleDelete is provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -186,10 +186,10 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("삭제");
+    expect(container.textContent).toContain("Delete");
   });
 
-  it("새로고침 버튼이 항상 toolbar에 표시된다", async () => {
+  it("Refresh button is always displayed in toolbar", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -206,10 +206,10 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).toContain("Refresh");
   });
 
-  it("editable=false 시 toolbar이 표시되지 않는다", async () => {
+  it("toolbar is not displayed when editable=false", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -228,11 +228,11 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("저장");
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).not.toContain("Save");
+    expect(container.textContent).toContain("Refresh");
   });
 
-  it("deletable=false 시 toggleDelete 제공해도 삭제 버튼이 표시되지 않는다", async () => {
+  it("Delete button is not displayed even with toggleDelete when deletable=false", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -251,11 +251,11 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("삭제");
-    expect(container.textContent).not.toContain("복구");
+    expect(container.textContent).not.toContain("Delete");
+    expect(container.textContent).not.toContain("Restore");
   });
 
-  it("deletable 미지정 시 toggleDelete 있으면 삭제 버튼 표시된다", async () => {
+  it("Delete button is displayed when toggleDelete is provided and deletable is not set", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -273,10 +273,10 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("삭제");
+    expect(container.textContent).toContain("Delete");
   });
 
-  it("lastModifiedAt/By가 있으면 수정 정보가 표시된다", async () => {
+  it("modification info is displayed when lastModifiedAt/By is present", async () => {
     const { DateTime } = await import("@simplysm/core-common");
 
     const { container } = render(() => (
@@ -300,13 +300,13 @@ describe("CrudDetail rendering", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("최종 수정");
+    expect(container.textContent).toContain("Last modified");
     expect(container.textContent).toContain("관리자");
   });
 });
 
 describe("CrudDetail button layout by mode", () => {
-  it("control 모드: toolbar에 저장/새로고침/삭제가 표시된다", async () => {
+  it("control mode: Save/Refresh/Delete are displayed in toolbar", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -325,12 +325,12 @@ describe("CrudDetail button layout by mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("저장");
-    expect(container.textContent).toContain("새로고침");
-    expect(container.textContent).toContain("삭제");
+    expect(container.textContent).toContain("Save");
+    expect(container.textContent).toContain("Refresh");
+    expect(container.textContent).toContain("Delete");
   });
 
-  it("control 모드 + editable=false: 새로고침만 표시된다", async () => {
+  it("control mode + editable=false: only Refresh is displayed", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -350,12 +350,12 @@ describe("CrudDetail button layout by mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("저장");
-    expect(container.textContent).toContain("새로고침");
-    expect(container.textContent).not.toContain("삭제");
+    expect(container.textContent).not.toContain("Save");
+    expect(container.textContent).toContain("Refresh");
+    expect(container.textContent).not.toContain("Delete");
   });
 
-  it("page 모드: topbar에 저장/삭제/새로고침이 등록되고 toolbar에는 표시되지 않는다", async () => {
+  it("page mode: Save/Delete/Refresh are registered in topbar and not displayed in toolbar", async () => {
     let actionsAccessor!: Accessor<JSX.Element | undefined>;
 
     const { container } = render(() => (
@@ -380,25 +380,24 @@ describe("CrudDetail button layout by mode", () => {
 
     await new Promise((r) => setTimeout(r, 100));
 
-    // topbar에 actions가 등록됨
+    // actions are registered in topbar
     expect(actionsAccessor()).toBeTruthy();
 
-    // container(toolbar 영역)에는 저장/새로고침/삭제가 없어야 함
+    // Save/Refresh/Delete should not be in toolbar area
     const toolbarArea = container.querySelector("[data-topbar-container]")!;
 
-    // topbar actions 영역이 아닌 content 영역만 확인하기 위해
-    // toolbar 내부 버튼 텍스트가 중복되지 않는지 확인
+    // Only check content area, excluding topbar actions area
     const buttons = toolbarArea.querySelectorAll("button");
     const toolbarButtons = Array.from(buttons).filter(
       (btn) => !btn.closest("[data-topbar-actions]"),
     );
     const toolbarText = toolbarButtons.map((b) => b.textContent).join("");
-    expect(toolbarText).not.toContain("저장");
-    expect(toolbarText).not.toContain("새로고침");
-    expect(toolbarText).not.toContain("삭제");
+    expect(toolbarText).not.toContain("Save");
+    expect(toolbarText).not.toContain("Refresh");
+    expect(toolbarText).not.toContain("Delete");
   });
 
-  it("page 모드 + Tools: toolbar에 tools만 표시된다", async () => {
+  it("page mode + Tools: only tools are displayed in toolbar", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <Topbar.Container>
@@ -428,7 +427,7 @@ describe("CrudDetail button layout by mode", () => {
     expect(container.textContent).toContain("커스텀도구");
   });
 
-  it("control 모드 + Tools: toolbar에 저장/새로고침과 tools가 함께 표시된다", async () => {
+  it("control mode + Tools: Save/Refresh and tools are both displayed in toolbar", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -453,12 +452,12 @@ describe("CrudDetail button layout by mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("저장");
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).toContain("Save");
+    expect(container.textContent).toContain("Refresh");
     expect(container.textContent).toContain("커스텀도구");
   });
 
-  it("control 모드 + editable=false + Tools: 새로고침과 tools만 표시된다", async () => {
+  it("control mode + editable=false + Tools: only Refresh and tools are displayed", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -484,8 +483,8 @@ describe("CrudDetail button layout by mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("저장");
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).not.toContain("Save");
+    expect(container.textContent).toContain("Refresh");
     expect(container.textContent).toContain("커스텀도구");
   });
 });

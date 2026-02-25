@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { ColorPicker } from "../../../../src/components/form-control/color-picker/ColorPicker";
 
 describe("ColorPicker 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("input type=color가 렌더링된다", () => {
       const { container } = render(() => <ColorPicker />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -44,7 +44,7 @@ describe("ColorPicker 컴포넌트", () => {
     });
   });
 
-  describe("disabled 상태", () => {
+  describe("disabled state", () => {
     it("disabled=true일 때 input이 비활성화된다", () => {
       const { container } = render(() => <ColorPicker disabled />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -58,8 +58,8 @@ describe("ColorPicker 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <ColorPicker class="my-custom-class" />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -68,10 +68,10 @@ describe("ColorPicker 컴포넌트", () => {
   });
 
   describe("validation", () => {
-    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+    it("sets error message when required and value is empty", () => {
       const { container } = render(() => <ColorPicker required value={undefined} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
     it("required일 때 값이 있으면 유효하다", () => {

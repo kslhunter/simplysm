@@ -341,7 +341,7 @@ describe("DataSelectButton", () => {
     // Invalid 컴포넌트가 hidden input에 setCustomValidity 설정
     const hiddenInput = container.querySelector("input[type='text']") as HTMLInputElement;
     expect(hiddenInput).not.toBeNull();
-    expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    expect(hiddenInput.validationMessage).toBe("Required field");
   });
 
   it("custom validate function works", async () => {

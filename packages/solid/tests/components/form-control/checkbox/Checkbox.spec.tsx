@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Checkbox } from "../../../../src/components/form-control/checkbox/Checkbox";
 
 describe("Checkbox 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("checkbox role로 렌더링된다", () => {
       const { getByRole } = render(() => <Checkbox />);
       expect(getByRole("checkbox")).toBeTruthy();
@@ -21,7 +21,7 @@ describe("Checkbox 컴포넌트", () => {
     });
   });
 
-  describe("클릭 동작", () => {
+  describe("click behavior", () => {
     it("클릭하면 checked 상태가 토글된다", () => {
       const { getByRole } = render(() => <Checkbox />);
       const checkbox = getByRole("checkbox");
@@ -101,8 +101,8 @@ describe("Checkbox 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => <Checkbox class="my-custom-class" />);
       expect(getByRole("checkbox").classList.contains("my-custom-class")).toBe(true);
@@ -113,7 +113,7 @@ describe("Checkbox 컴포넌트", () => {
     it("required일 때 체크되지 않으면 에러 메시지가 설정된다", () => {
       const { container } = render(() => <Checkbox required value={false} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 선택 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This is a required selection");
     });
 
     it("required일 때 체크되면 유효하다", () => {

@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { NumberInput } from "../../../../src/components/form-control/field/NumberInput";
 
 describe("NumberInput", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("input 요소를 렌더링한다", () => {
       render(() => <NumberInput />);
 
@@ -275,10 +275,10 @@ describe("NumberInput", () => {
   });
 
   describe("validation", () => {
-    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+    it("sets error message when required and value is empty", () => {
       const { container } = render(() => <NumberInput required value={undefined} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
     it("required일 때 값이 있으면 유효하다", () => {
@@ -290,13 +290,13 @@ describe("NumberInput", () => {
     it("min 위반 시 에러 메시지가 설정된다", () => {
       const { container } = render(() => <NumberInput min={10} value={5} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("최솟값은 10입니다");
+      expect(hiddenInput.validationMessage).toBe("Minimum value is 10");
     });
 
     it("max 위반 시 에러 메시지가 설정된다", () => {
       const { container } = render(() => <NumberInput max={100} value={150} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("최댓값은 100입니다");
+      expect(hiddenInput.validationMessage).toBe("Maximum value is 100");
     });
 
     it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {

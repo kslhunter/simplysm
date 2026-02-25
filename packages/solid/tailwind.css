@@ -26,7 +26,7 @@
     outline: none;
   }
 
-  /* 스크롤바 스타일 */
+  /* Scrollbar styles */
   ::-webkit-scrollbar {
     width: 0.5rem;
     height: 0.5rem;
@@ -49,7 +49,7 @@
     background-color: rgb(0 0 0 / 8%);
   }
 
-  /* 다크모드 스크롤바 - zinc 계열 중립 톤 */
+  /* Dark mode scrollbar - neutral zinc tones */
   .dark ::-webkit-scrollbar-track {
     background-color: rgb(161 161 170 / 10%);
   }
@@ -67,7 +67,7 @@
     background-color: rgb(161 161 170 / 10%);
   }
 
-  /* 텍스트 선택 영역 */
+  /* Text selection area */
   ::selection {
     @apply bg-primary-200 text-primary-900;
   }
@@ -76,7 +76,7 @@
     @apply bg-primary-800 text-primary-100;
   }
 
-  /* 다크모드 날짜/시간 입력 아이콘 */
+  /* Dark mode date/time input icon */
   .dark ::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }

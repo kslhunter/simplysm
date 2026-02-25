@@ -4,7 +4,7 @@ import { Sidebar, type SidebarUserMenu } from "../../../../src";
 
 describe("SidebarUser", () => {
   beforeEach(() => {
-    // requestAnimationFrame mock (Collapse 애니메이션용)
+    // requestAnimationFrame mock (for Collapse animation)
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
       cb(0);
       return 0;
@@ -15,103 +15,103 @@ describe("SidebarUser", () => {
     vi.restoreAllMocks();
   });
 
-  describe("렌더링", () => {
-    it("name prop을 렌더링", () => {
-      const { getByText } = render(() => <Sidebar.User name="사용자 이름" />);
+  describe("rendering", () => {
+    it("renders name prop", () => {
+      const { getByText } = render(() => <Sidebar.User name="User Name" />);
 
-      expect(getByText("사용자 이름")).toBeTruthy();
+      expect(getByText("User Name")).toBeTruthy();
     });
 
-    it("menus가 없을 때 버튼에 aria-expanded 없음", () => {
-      const { container } = render(() => <Sidebar.User name="사용자" />);
+    it("does not have aria-expanded when menus are not provided", () => {
+      const { container } = render(() => <Sidebar.User name="User" />);
 
       const button = container.querySelector("button");
       expect(button?.hasAttribute("aria-expanded")).toBe(false);
     });
 
-    it("menus가 있을 때 버튼에 aria-expanded=false", () => {
-      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
+    it("has aria-expanded=false when menus are provided", () => {
+      const menus: SidebarUserMenu[] = [{ title: "Logout", onClick: () => {} }];
 
-      const { container } = render(() => <Sidebar.User name="사용자" menus={menus} />);
+      const { container } = render(() => <Sidebar.User name="User" menus={menus} />);
 
       const button = container.querySelector("button");
       expect(button?.getAttribute("aria-expanded")).toBe("false");
     });
   });
 
-  describe("클릭 동작", () => {
-    it("menus가 없을 때 클릭해도 드롭다운이 열리지 않음", () => {
-      const { container } = render(() => <Sidebar.User name="사용자" />);
+  describe("click behavior", () => {
+    it("does not open dropdown when clicked without menus", () => {
+      const { container } = render(() => <Sidebar.User name="User" />);
 
       const button = container.querySelector("button")!;
       fireEvent.click(button);
 
-      // aria-expanded가 없거나 변경되지 않음
+      // aria-expanded not present or unchanged
       expect(button.hasAttribute("aria-expanded")).toBe(false);
     });
 
-    it("menus가 있을 때 클릭으로 드롭다운 토글", () => {
-      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
+    it("toggles dropdown when clicked with menus", () => {
+      const menus: SidebarUserMenu[] = [{ title: "Logout", onClick: () => {} }];
 
-      const { container } = render(() => <Sidebar.User name="사용자" menus={menus} />);
+      const { container } = render(() => <Sidebar.User name="User" menus={menus} />);
 
       const button = container.querySelector("button")!;
 
-      // 초기 상태: 닫힘
+      // Initial state: closed
       expect(button.getAttribute("aria-expanded")).toBe("false");
 
-      // 첫 번째 클릭: 열림
+      // First click: open
       fireEvent.click(button);
       expect(button.getAttribute("aria-expanded")).toBe("true");
 
-      // 두 번째 클릭: 닫힘
+      // Second click: close
       fireEvent.click(button);
       expect(button.getAttribute("aria-expanded")).toBe("false");
     });
   });
 
-  describe("메뉴 아이템 클릭", () => {
-    it("메뉴 아이템 클릭 시 onClick 호출", () => {
+  describe("menu item click", () => {
+    it("calls onClick when menu item is clicked", () => {
       const onLogout = vi.fn();
-      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: onLogout }];
+      const menus: SidebarUserMenu[] = [{ title: "Logout", onClick: onLogout }];
 
-      const { container, getByText } = render(() => <Sidebar.User name="사용자" menus={menus} />);
+      const { container, getByText } = render(() => <Sidebar.User name="User" menus={menus} />);
 
-      // 드롭다운 열기
+      // Open dropdown
       const button = container.querySelector("button")!;
       fireEvent.click(button);
 
-      // 메뉴 아이템 클릭
-      fireEvent.click(getByText("로그아웃"));
+      // Click menu item
+      fireEvent.click(getByText("Logout"));
 
       expect(onLogout).toHaveBeenCalledTimes(1);
     });
 
-    it("메뉴 아이템 클릭 시 드롭다운 닫힘", () => {
-      const menus: SidebarUserMenu[] = [{ title: "프로필", onClick: () => {} }];
+    it("closes dropdown when menu item is clicked", () => {
+      const menus: SidebarUserMenu[] = [{ title: "Profile", onClick: () => {} }];
 
-      const { container, getByText } = render(() => <Sidebar.User name="사용자" menus={menus} />);
+      const { container, getByText } = render(() => <Sidebar.User name="User" menus={menus} />);
 
       const button = container.querySelector("button")!;
 
-      // 드롭다운 열기
+      // Open dropdown
       fireEvent.click(button);
       expect(button.getAttribute("aria-expanded")).toBe("true");
 
-      // 메뉴 아이템 클릭
-      fireEvent.click(getByText("프로필"));
+      // Click menu item
+      fireEvent.click(getByText("Profile"));
 
-      // 드롭다운 닫힘
+      // Dropdown closed
       expect(button.getAttribute("aria-expanded")).toBe("false");
     });
   });
 
-  describe("menus 유무에 따른 스타일", () => {
-    it("menus prop에 따라 스타일이 달라진다", () => {
-      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
+  describe("styles based on menu presence", () => {
+    it("styles differ based on menus prop", () => {
+      const menus: SidebarUserMenu[] = [{ title: "Logout", onClick: () => {} }];
 
-      const { container: withoutMenus } = render(() => <Sidebar.User name="사용자" />);
-      const { container: withMenus } = render(() => <Sidebar.User name="사용자" menus={menus} />);
+      const { container: withoutMenus } = render(() => <Sidebar.User name="User" />);
+      const { container: withMenus } = render(() => <Sidebar.User name="User" menus={menus} />);
 
       const buttonWithout = withoutMenus.querySelector("button")!;
       const buttonWith = withMenus.querySelector("button")!;
@@ -120,11 +120,11 @@ describe("SidebarUser", () => {
     });
   });
 
-  describe("스타일 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("style merging", () => {
+    it("merges custom classes", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Sidebar.User name="사용자" class="my-custom-class" />
+        <Sidebar.User name="User" class="my-custom-class" />
       ));
 
       expect(container.querySelector(".my-custom-class")).toBeTruthy();

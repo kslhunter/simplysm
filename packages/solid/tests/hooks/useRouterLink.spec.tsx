@@ -60,8 +60,8 @@ describe("useRouterLink", () => {
     ));
   };
 
-  describe("일반 클릭 (SPA 라우팅)", () => {
-    it("useNavigate를 호출", () => {
+  describe("Normal click (SPA routing)", () => {
+    it("calls useNavigate", () => {
       const { getByTestId } = renderWithRouter({ href: "/dashboard" });
 
       fireEvent.click(getByTestId("test-button"));
@@ -69,7 +69,7 @@ describe("useRouterLink", () => {
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard", undefined);
     });
 
-    it("state가 있으면 navigate에 전달", () => {
+    it("passes state to navigate if present", () => {
       const state = { from: "list" };
       const { getByTestId } = renderWithRouter({
         href: "/users/123",
@@ -82,8 +82,8 @@ describe("useRouterLink", () => {
     });
   });
 
-  describe("Ctrl/Cmd + 클릭 (새 탭)", () => {
-    it("Ctrl + 클릭 시 window.open으로 새 탭 열기", () => {
+  describe("Ctrl/Cmd + click (new tab)", () => {
+    it("opens new tab with window.open on Ctrl + click", () => {
       const { getByTestId } = renderWithRouter({ href: "/dashboard" });
 
       fireEvent.click(getByTestId("test-button"), { ctrlKey: true });
@@ -92,7 +92,7 @@ describe("useRouterLink", () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it("Meta(Cmd) + 클릭 시 window.open으로 새 탭 열기", () => {
+    it("opens new tab with window.open on Meta(Cmd) + click", () => {
       const { getByTestId } = renderWithRouter({ href: "/dashboard" });
 
       fireEvent.click(getByTestId("test-button"), { metaKey: true });
@@ -101,7 +101,7 @@ describe("useRouterLink", () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it("Alt + 클릭 시 window.open으로 새 탭 열기", () => {
+    it("opens new tab with window.open on Alt + click", () => {
       const { getByTestId } = renderWithRouter({ href: "/dashboard" });
 
       fireEvent.click(getByTestId("test-button"), { altKey: true });
@@ -111,8 +111,8 @@ describe("useRouterLink", () => {
     });
   });
 
-  describe("Shift + 클릭 (새 창)", () => {
-    it("기본 크기(800x800)로 새 창 열기", () => {
+  describe("Shift + click (new window)", () => {
+    it("opens new window with default size (800x800)", () => {
       const { getByTestId } = renderWithRouter({ href: "/dashboard" });
 
       fireEvent.click(getByTestId("test-button"), { shiftKey: true });
@@ -121,7 +121,7 @@ describe("useRouterLink", () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it("커스텀 크기로 새 창 열기", () => {
+    it("opens new window with custom size", () => {
       const { getByTestId } = renderWithRouter({
         href: "/dashboard",
         windowOptions: { width: 1024, height: 768 },
@@ -133,8 +133,8 @@ describe("useRouterLink", () => {
     });
   });
 
-  describe("이벤트 처리", () => {
-    it("e.preventDefault() 호출", () => {
+  describe("Event handling", () => {
+    it("calls e.preventDefault()", () => {
       let capturedHandler: ((e: MouseEvent) => void) | undefined;
       renderWithRouter({
         href: "/dashboard",
@@ -157,7 +157,7 @@ describe("useRouterLink", () => {
       expect(mockEvent.preventDefault).toHaveBeenCalled();
     });
 
-    it("e.stopPropagation() 호출", () => {
+    it("calls e.stopPropagation()", () => {
       let capturedHandler: ((e: MouseEvent) => void) | undefined;
       renderWithRouter({
         href: "/dashboard",

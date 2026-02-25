@@ -7,12 +7,12 @@ import { usePrint } from "../../src/hooks/usePrint";
 import { Print } from "../../src/components/feedback/print/Print";
 import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
 
-// window.print 모킹
+// Mock window.print
 vi.stubGlobal("print", vi.fn());
 
 describe("usePrint", () => {
-  describe("훅 인터페이스", () => {
-    it("toPrinter와 toPdf 함수를 반환한다", () => {
+  describe("Hook interface", () => {
+    it("returns toPrinter and toPdf functions", () => {
       let result: ReturnType<typeof usePrint> | undefined;
 
       render(() => (
@@ -33,7 +33,7 @@ describe("usePrint", () => {
   });
 
   describe("toPrinter", () => {
-    it("Print 없는 단순 콘텐츠를 인쇄한다", async () => {
+    it("prints simple content without Print", async () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;
 
       render(() => (
@@ -48,11 +48,11 @@ describe("usePrint", () => {
         </BusyProvider>
       ));
 
-      await printFn!(() => <div>테스트 내용</div>);
+      await printFn!(() => <div>test content</div>);
       expect(window.print).toHaveBeenCalled();
     });
 
-    it("usePrintInstance().ready() 대기 후 인쇄한다", async () => {
+    it("prints after waiting for usePrintInstance().ready()", async () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;
 
       render(() => (
@@ -72,7 +72,7 @@ describe("usePrint", () => {
         onMount(() => {
           setTimeout(() => print?.ready(), 50);
         });
-        return <div>내용</div>;
+        return <div>content</div>;
       }
 
       await printFn!(() => <AsyncContent />);
@@ -81,7 +81,7 @@ describe("usePrint", () => {
   });
 
   describe("toPdf", () => {
-    it("Uint8Array를 반환한다", async () => {
+    it("returns Uint8Array", async () => {
       let pdfFn: ReturnType<typeof usePrint>["toPdf"] | undefined;
 
       render(() => (
@@ -96,12 +96,12 @@ describe("usePrint", () => {
         </BusyProvider>
       ));
 
-      const result = await pdfFn!(() => <div>PDF 내용</div>);
+      const result = await pdfFn!(() => <div>PDF content</div>);
       expect(result).toBeInstanceOf(Uint8Array);
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it("Print.Page로 다중 페이지 PDF를 생성한다", async () => {
+    it("generates multi-page PDF with Print.Page", async () => {
       let pdfFn: ReturnType<typeof usePrint>["toPdf"] | undefined;
 
       render(() => (
@@ -119,10 +119,10 @@ describe("usePrint", () => {
       const result = await pdfFn!(() => (
         <Print>
           <Print.Page>
-            <div style={{ height: "100px" }}>페이지 1</div>
+            <div style={{ height: "100px" }}>Page 1</div>
           </Print.Page>
           <Print.Page>
-            <div style={{ height: "100px" }}>페이지 2</div>
+            <div style={{ height: "100px" }}>Page 2</div>
           </Print.Page>
         </Print>
       ));

@@ -51,7 +51,7 @@ import { Icon } from "@simplysm/solid";
 // With validation
 <TextInput required minLength={3} value={name()} onValueChange={setName} />
 <TextInput
-  validate={(v) => v.includes("@") ? undefined : "이메일 형식이 아닙니다"}
+  validate={(v) => v.includes("@") ? undefined : "Invalid email format"}
   value={email()}
   onValueChange={setEmail}
 />
@@ -72,10 +72,10 @@ import { Icon } from "@simplysm/solid";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
-| `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
-| `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
-| `pattern` | `string` | - | Regex pattern string (error: "입력 형식이 올바르지 않습니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
+| `minLength` | `number` | - | Minimum character length (error: "Please enter at least N characters") |
+| `maxLength` | `number` | - | Maximum character length (error: "Maximum N characters allowed") |
+| `pattern` | `string` | - | Regex pattern string (error: "Invalid input format") |
 | `validate` | `(value: string) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -123,7 +123,7 @@ import { NumberInput } from "@simplysm/solid";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `min` | `number` | - | Minimum value (error: "최솟값은 N입니다") |
 | `max` | `number` | - | Maximum value (error: "최댓값은 N입니다") |
 | `validate` | `(value: number \| undefined) => string \| undefined` | - | Custom validation function |
@@ -178,7 +178,7 @@ import { DateOnly } from "@simplysm/core-common";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `validate` | `(value: DateOnly \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -225,7 +225,7 @@ import { DateTime } from "@simplysm/core-common";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `validate` | `(value: DateTime \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -272,7 +272,7 @@ import { Time } from "@simplysm/core-common";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `validate` | `(value: Time \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -346,9 +346,9 @@ import { Textarea } from "@simplysm/solid";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
-| `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
-| `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
+| `minLength` | `number` | - | Minimum character length (error: "Please enter at least N characters") |
+| `maxLength` | `number` | - | Maximum character length (error: "Maximum N characters allowed") |
 | `validate` | `(value: string) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -419,7 +419,7 @@ import { Select } from "@simplysm/solid";
 | `hideSelectAll` | `boolean` | - | Hide select all button (multiple selection) |
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
@@ -646,7 +646,7 @@ import { Combobox } from "@simplysm/solid";
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `validate` | `(value: T \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -766,7 +766,7 @@ import { ColorPicker } from "@simplysm/solid";
 | `title` | `string` | - | Tooltip title |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
-| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `required` | `boolean` | - | Required field (error: "This is a required field") |
 | `validate` | `(value: string \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -877,7 +877,7 @@ import { Button, TextInput, NumberInput } from "@simplysm/solid";
   <TextInput required placeholder="이름" value={name()} onValueChange={setName} />
   <TextInput required minLength={3} placeholder="최소 3자" value={nick()} onValueChange={setNick} />
   <TextInput
-    validate={(v) => v.includes("@") ? undefined : "이메일 형식이 아닙니다"}
+    validate={(v) => v.includes("@") ? undefined : "Invalid email format"}
     placeholder="이메일"
     value={email()}
     onValueChange={setEmail}
@@ -899,12 +899,12 @@ validate?: (value: T) => string | undefined
 
 | Condition | Message |
 |-----------|---------|
-| `required` empty (text/number/date) | "필수 입력 항목입니다" |
+| `required` empty (text/number/date) | "This is a required field" |
 | `required` unchecked (Checkbox/Radio) | "필수 선택 항목입니다" |
 | `required` empty (CheckboxGroup/RadioGroup) | "항목을 선택해 주세요" |
-| `minLength` not met | "최소 N자 이상 입력하세요" |
-| `maxLength` exceeded | "최대 N자까지 입력 가능합니다" |
-| `pattern` mismatch | "입력 형식이 올바르지 않습니다" |
+| `minLength` not met | "Please enter at least N characters" |
+| `maxLength` exceeded | "Maximum N characters allowed" |
+| `pattern` mismatch | "Invalid input format" |
 | `min` underflow (NumberInput) | "최솟값은 N입니다" |
 | `max` overflow (NumberInput) | "최댓값은 N입니다" |
 | `min` underflow (DatePicker/DateTimePicker/TimePicker) | "{min}보다 크거나 같아야 합니다" |

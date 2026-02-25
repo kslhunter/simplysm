@@ -90,7 +90,7 @@ describe("useLogger", () => {
     const { result } = renderHook(() => useLogger());
 
     expect(() => result.configure(() => ({ write: vi.fn() }))).toThrow(
-      "configure()는 LoggerProvider 내부에서만 사용할 수 있습니다",
+      "configure() can only be used inside LoggerProvider",
     );
   });
 

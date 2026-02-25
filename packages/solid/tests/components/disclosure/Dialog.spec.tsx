@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { Dialog } from "../../../src/components/disclosure/Dialog";
 
 describe("Dialog 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("open=true일 때 다이얼로그가 렌더링된다", async () => {
       render(() => (
         <Dialog open={true}>
@@ -210,7 +210,7 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("접근성", () => {
+  describe("accessibility", () => {
     it("role=dialog와 aria-modal 속성이 설정된다", async () => {
       render(() => (
         <Dialog open={true}>

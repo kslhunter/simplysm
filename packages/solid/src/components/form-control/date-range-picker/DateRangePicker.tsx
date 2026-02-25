@@ -107,7 +107,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     onChange: () => local.onToChange,
   });
 
-  // Period type change handler
+  // Handle period type change
   const handlePeriodTypeChange = (newType: DateRangePeriodType | DateRangePeriodType[]) => {
     const type = Array.isArray(newType) ? newType[0] : newType;
     setPeriodType(type);
@@ -127,7 +127,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     }
   };
 
-  // From date change handler
+  // Handle from date change
   const handleFromChange = (newFrom: DateOnly | undefined) => {
     setFrom(newFrom);
 
@@ -145,12 +145,12 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     }
   };
 
-  // To date change handler
+  // Handle to date change
   const handleToChange = (newTo: DateOnly | undefined) => {
     setTo(newTo);
   };
 
-  // Wrapper class
+  // Wrapper CSS class
   const getWrapperClass = () => twMerge(baseClass, local.class);
 
   return (
@@ -159,16 +159,16 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         value={periodType()}
         onValueChange={handlePeriodTypeChange}
         renderValue={(v: DateRangePeriodType) => (
-          <>{{ day: "일", month: "월", range: "범위" }[v]}</>
+          <>{{ day: "Day", month: "Month", range: "Range" }[v]}</>
         )}
         required
         disabled={local.disabled}
         size={local.size}
         inset
       >
-        <Select.Item value={"day" as DateRangePeriodType}>일</Select.Item>
-        <Select.Item value={"month" as DateRangePeriodType}>월</Select.Item>
-        <Select.Item value={"range" as DateRangePeriodType}>범위</Select.Item>
+        <Select.Item value={"day" as DateRangePeriodType}>Day</Select.Item>
+        <Select.Item value={"month" as DateRangePeriodType}>Month</Select.Item>
+        <Select.Item value={"range" as DateRangePeriodType}>Range</Select.Item>
       </Select>
 
       <Show

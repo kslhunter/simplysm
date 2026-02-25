@@ -1,78 +1,78 @@
-# Solid 패키지 컴포넌트 의존성 정리
+# Solid Package Component Dependencies Overview
 
-`src/components` 디렉토리 기준으로 각 컴포넌트가 다른 컴포넌트를 어떻게 의존하는지 Depth별로 정리합니다.
-(외부 라이브러리, hooks, helpers, styles, directives, Context 파일은 의존성 대상에서 제외)
+Organized by Depth, showing how components in `src/components` depend on other components.
+(External libraries, hooks, helpers, styles, directives, and Context files are excluded from dependencies)
 
 ---
 
-## Depth 1 — 다른 컴포넌트에 의존하지 않는 컴포넌트
+## Depth 1 — Components with no dependencies on other components
 
 ### display
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `Icon` | `display/Icon.tsx` | 없음 |
-| `Alert` | `display/Alert.tsx` | 없음 |
-| `Card` | `display/Card.tsx` | 없음 |
-| `Tag` | `display/Tag.tsx` | 없음 |
-| `Link` | `display/Link.tsx` | 없음 |
-| `Barcode` | `display/Barcode.tsx` | 없음 |
-| `Echarts` | `display/Echarts.tsx` | 없음 |
+| `Icon` | `display/Icon.tsx` | None |
+| `Alert` | `display/Alert.tsx` | None |
+| `Card` | `display/Card.tsx` | None |
+| `Tag` | `display/Tag.tsx` | None |
+| `Link` | `display/Link.tsx` | None |
+| `Barcode` | `display/Barcode.tsx` | None |
+| `Echarts` | `display/Echarts.tsx` | None |
 
 ### form-control
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `Button` | `form-control/Button.tsx` | 없음 |
-| `Invalid` | `form-control/Invalid.tsx` | 없음 |
-| `FieldPlaceholder` | `form-control/field/FieldPlaceholder.tsx` | 없음 |
+| `Button` | `form-control/Button.tsx`  | None |
+| `Invalid` | `form-control/Invalid.tsx`  | None |
+| `FieldPlaceholder` | `form-control/field/FieldPlaceholder.tsx`  | None |
 
 ### disclosure
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `Collapse` | `disclosure/Collapse.tsx` | 없음 |
-| `Dropdown` | `disclosure/Dropdown.tsx` | 없음 |
-| `Tabs` | `disclosure/Tabs.tsx` | 없음 |
+| `Collapse` | `disclosure/Collapse.tsx`  | None |
+| `Dropdown` | `disclosure/Dropdown.tsx`  | None |
+| `Tabs` | `disclosure/Tabs.tsx`  | None |
 
 ### feedback
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `Progress` | `feedback/Progress.tsx` | 없음 |
+| `Progress` | `feedback/Progress.tsx`  | None |
 
 ### data
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `Table` | `data/Table.tsx` | 없음 |
-| `Calendar` | `data/calendar/Calendar.tsx` | 없음 |
-| `DataSheetColumn` | `data/sheet/DataSheetColumn.tsx` | 없음 |
+| `Table` | `data/Table.tsx`  | None |
+| `Calendar` | `data/calendar/Calendar.tsx`  | None |
+| `DataSheetColumn` | `data/sheet/DataSheetColumn.tsx`  | None |
 | `List` | `data/list/List.tsx` | 없음 (자체 내부 ListItem 정의 포함, 상호참조지만 ListContext 통해 연결) |
 
 ### layout
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `FormGroup` | `layout/FormGroup.tsx` | 없음 |
-| `FormTable` | `layout/FormTable.tsx` | 없음 |
-| `TopbarActions` | `layout/topbar/TopbarActions.tsx` | 없음 (TopbarContext만 참조) |
-| `TopbarContainer` | `layout/topbar/TopbarContainer.tsx` | 없음 (TopbarContext만 참조) |
-| `SidebarContainer` | `layout/sidebar/SidebarContainer.tsx` | 없음 (SidebarContext만 참조) |
+| `FormGroup` | `layout/FormGroup.tsx`  | None |
+| `FormTable` | `layout/FormTable.tsx`  | None |
+| `TopbarActions` | `layout/topbar/TopbarActions.tsx`  | None (only TopbarContext referenced) |
+| `TopbarContainer` | `layout/topbar/TopbarContainer.tsx`  | None (only TopbarContext referenced) |
+| `SidebarContainer` | `layout/sidebar/SidebarContainer.tsx`  | None (only SidebarContext referenced) |
 
 ---
 
-## Depth 2 — Depth 1 컴포넌트만 의존하는 컴포넌트
+## Depth 2 — Components depending only on Depth 1 components
 
 ### display
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `NotificationBanner` | `feedback/notification/NotificationBanner.tsx` | `Icon` |
 
 ### form-control
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `Checkbox` | `form-control/checkbox/Checkbox.tsx` | `Icon`, `Invalid` |
 | `Radio` | `form-control/checkbox/Radio.tsx` | `Invalid` |
@@ -89,30 +89,30 @@
 
 ### data
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `Pagination` | `data/Pagination.tsx` | `Button`, `Icon` |
 | `ListItem` | `data/list/ListItem.tsx` | `Icon`, `Collapse`, `List` |
 
 ### disclosure
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `Dialog` | `disclosure/Dialog.tsx` | `Icon`, `Button` |
 
 ### feedback
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
-| `BusyContainer` | `feedback/busy/BusyContainer.tsx` | 없음 (BusyContext만 참조) |
+| `BusyContainer` | `feedback/busy/BusyContainer.tsx`  | None (only BusyContext referenced) |
 
 ---
 
-## Depth 3 — Depth 1~2 컴포넌트를 의존하는 컴포넌트
+## Depth 3 — Components depending on Depth 1~2 components
 
 ### form-control
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `CheckboxGroup` | `form-control/checkbox/CheckboxGroup.tsx` | `Checkbox` |
 | `RadioGroup` | `form-control/checkbox/RadioGroup.tsx` | `Radio` |
@@ -120,35 +120,35 @@
 | `SelectItem` | `form-control/select/SelectItem.tsx` | `Icon`, `Collapse`, `List` |
 | `SelectList` | `form-control/select-list/SelectList.tsx` | `List`, `Pagination`, `TextInput` |
 | `Combobox` | `form-control/combobox/Combobox.tsx` | `Icon`, `Dropdown`, `List`, `Invalid` |
-| `ComboboxItem` | `form-control/combobox/ComboboxItem.tsx` | 없음 (ComboboxContext만 참조) |
+| `ComboboxItem` | `form-control/combobox/ComboboxItem.tsx`  | None (only ComboboxContext referenced) |
 | `Numpad` | `form-control/numpad/Numpad.tsx` | `Button`, `NumberInput`, `Icon` |
 | `RichTextEditor` | `form-control/editor/RichTextEditor.tsx` | `EditorToolbar` |
 
 ### data
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `DataSheet` | `data/sheet/DataSheet.tsx` | `Icon`, `Checkbox`, `Pagination`, `DataSheetColumn`, (DialogContext로 DataSheetConfigDialog 동적 import) |
 | `Kanban` | `data/kanban/Kanban.tsx` | `Card`, `Checkbox`, `Icon`, `BusyContainer` |
 
 ### disclosure
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `DialogProvider` | `disclosure/DialogProvider.tsx` | `Dialog` |
 
 ### feedback
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `BusyProvider` | `feedback/busy/BusyProvider.tsx` | `BusyContainer` |
 | `NotificationBell` | `feedback/notification/NotificationBell.tsx` | `Dropdown`, `Icon`, `NotificationBanner` |
-| `NotificationProvider` | `feedback/notification/NotificationProvider.tsx` | 없음 (NotificationContext만 참조) |
+| `NotificationProvider` | `feedback/notification/NotificationProvider.tsx`  | None (only NotificationContext referenced) |
 | `PrintProvider` | `feedback/print/PrintProvider.tsx` | `BusyContainer` (BusyContext 통해) |
 
 ### layout
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `SidebarMenu` | `layout/sidebar/SidebarMenu.tsx` | `Icon`, `List`, `ListItem` |
 | `SidebarUser` | `layout/sidebar/SidebarUser.tsx` | `Icon`, `Collapse`, `List`, `ListItem` |
@@ -157,36 +157,36 @@
 
 ### features
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `DataSelectButton` | `features/data-select-button/DataSelectButton.tsx` | `Icon`, `Invalid` |
 
 ---
 
-## Depth 4 — Depth 1~3 컴포넌트를 의존하는 컴포넌트
+## Depth 4 — Components depending on Depth 1~3 components
 
 ### form-control
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `DateRangePicker` | `form-control/date-range-picker/DateRangePicker.tsx` | `DatePicker`, `Select` |
 
 ### data
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `DataSheetConfigDialog` | `data/sheet/DataSheetConfigDialog.tsx` | `DataSheet`, `Checkbox`, `TextInput`, `Button` |
 
 ### layout
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `Sidebar` | `layout/sidebar/Sidebar.tsx` | `SidebarContainer`, `SidebarMenu`, `SidebarUser` |
 | `Topbar` | `layout/topbar/Topbar.tsx` | `Icon`, `Button`, `TopbarActions`, `TopbarContainer`, `TopbarMenu`, `TopbarUser` |
 
 ### features
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `AddressSearch` | `features/address/AddressSearch.tsx` | `BusyContainer` |
 | `SharedDataSelect` | `features/shared-data/SharedDataSelect.tsx` | `Select`, `Icon` |
@@ -196,18 +196,18 @@
 
 ---
 
-## Depth 5 — Depth 1~4 컴포넌트를 의존하는 컴포넌트
+## Depth 5 — Components depending on Depth 1~4 components
 
 ### features
 
-| 컴포넌트 | 파일 | 의존하는 컴포넌트 |
+| Component | File | Dependencies |
 |----------|------|------------------|
 | `CrudDetail` | `features/crud-detail/CrudDetail.tsx` | `BusyContainer`, `Button`, `Icon`, `Dialog` |
-| `CrudDetailTools` | `features/crud-detail/CrudDetailTools.tsx` | 없음 (slot 정의용) |
-| `CrudDetailBefore` | `features/crud-detail/CrudDetailBefore.tsx` | 없음 (slot 정의용) |
-| `CrudDetailAfter` | `features/crud-detail/CrudDetailAfter.tsx` | 없음 (slot 정의용) |
+| `CrudDetailTools` | `features/crud-detail/CrudDetailTools.tsx`  | None (slot definition) |
+| `CrudDetailBefore` | `features/crud-detail/CrudDetailBefore.tsx`  | None (slot definition) |
+| `CrudDetailAfter` | `features/crud-detail/CrudDetailAfter.tsx`  | None (slot definition) |
 | `CrudSheet` | `features/crud-sheet/CrudSheet.tsx` | `DataSheet`, `DataSheetColumn`, `BusyContainer`, `Button`, `Icon`, `FormGroup`, `Dialog`, `Link` |
 | `CrudSheetColumn` | `features/crud-sheet/CrudSheetColumn.tsx` | `DataSheetColumn` (sheetUtils 통해) |
-| `CrudSheetFilter` | `features/crud-sheet/CrudSheetFilter.tsx` | 없음 (slot 정의용) |
-| `CrudSheetTools` | `features/crud-sheet/CrudSheetTools.tsx` | 없음 (slot 정의용) |
-| `CrudSheetHeader` | `features/crud-sheet/CrudSheetHeader.tsx` | 없음 (slot 정의용) |
+| `CrudSheetFilter` | `features/crud-sheet/CrudSheetFilter.tsx`  | None (slot definition) |
+| `CrudSheetTools` | `features/crud-sheet/CrudSheetTools.tsx`  | None (slot definition) |
+| `CrudSheetHeader` | `features/crud-sheet/CrudSheetHeader.tsx`  | None (slot definition) |

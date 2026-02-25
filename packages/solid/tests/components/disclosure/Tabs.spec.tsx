@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Tabs } from "../../../src/components/disclosure/Tabs";
 
 describe("Tabs 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("tablist role로 렌더링된다", () => {
       const { getByRole } = render(() => (
         <Tabs>
@@ -166,7 +166,7 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("접근성", () => {
+  describe("accessibility", () => {
     it("disabled 탭에 aria-disabled가 설정된다", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
@@ -194,7 +194,7 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
+  describe("class merging", () => {
     it("Tabs에 사용자 정의 class가 병합된다", () => {
       const { getByRole } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname

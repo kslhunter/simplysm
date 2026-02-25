@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { BusyContainer } from "../../../../src/components/feedback/busy/BusyContainer";
 
 describe("BusyContainer", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 표시된다", () => {
       const { getByText } = render(() => (
         <BusyContainer>

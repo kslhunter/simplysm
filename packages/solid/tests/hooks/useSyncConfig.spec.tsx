@@ -8,7 +8,7 @@ import {
   type StorageAdapter,
 } from "../../src/providers/SyncStorageContext";
 
-/** SyncStorageProvider 안에서 adapter를 configure한 뒤 children을 렌더하는 헬퍼 */
+/** Helper to configure adapter within SyncStorageProvider and render children */
 function ConfigureStorage(props: { storage: StorageAdapter; children: any }) {
   useSyncStorage()!.configure(() => props.storage);
   return <>{props.children}</>;

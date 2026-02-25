@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest";
 import { Print } from "../../../../src/components/feedback/print/Print";
 
 describe("Print 컴포넌트", () => {
-  describe("기본 렌더링", () => {
-    it("children이 렌더링된다", () => {
+  describe("basic rendering", () => {
+    it("renders children", () => {
       const { getByText } = render(() => <Print>테스트 내용</Print>);
       expect(getByText("테스트 내용")).toBeTruthy();
     });

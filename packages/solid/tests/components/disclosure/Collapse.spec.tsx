@@ -16,7 +16,7 @@ describe("Collapse", () => {
     vi.restoreAllMocks();
   });
 
-  describe("렌더링", () => {
+  describe("rendering", () => {
     it("open={false}일 때 콘텐츠가 visibility:hidden", () => {
       const { container } = render(() => <Collapse open={false}>Content</Collapse>);
       const contentDiv = container.querySelector("[data-collapse]")

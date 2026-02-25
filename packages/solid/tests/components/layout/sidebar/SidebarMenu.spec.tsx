@@ -28,9 +28,9 @@ const mockWindowOpen = vi.fn();
 describe("SidebarMenu", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setMockPathname("/"); // pathname 초기화
+    setMockPathname("/"); // Initialize pathname
     vi.spyOn(window, "open").mockImplementation(mockWindowOpen);
-    // requestAnimationFrame mock (Collapse 애니메이션용)
+    // requestAnimationFrame mock (for Collapse animation)
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
       cb(0);
       return 0;
@@ -54,49 +54,49 @@ describe("SidebarMenu", () => {
     ));
   };
 
-  describe("렌더링", () => {
-    it("메뉴 아이템을 렌더링", () => {
+  describe("rendering", () => {
+    it("renders menu items", () => {
       const menus: AppMenu[] = [
-        { title: "대시보드", href: "/dashboard" },
-        { title: "설정", href: "/settings" },
+        { title: "Dashboard", href: "/dashboard" },
+        { title: "Settings", href: "/settings" },
       ];
 
       const { getByText } = renderWithRouter(menus);
 
-      expect(getByText("대시보드")).toBeTruthy();
-      expect(getByText("설정")).toBeTruthy();
+      expect(getByText("Dashboard")).toBeTruthy();
+      expect(getByText("Settings")).toBeTruthy();
     });
 
-    it("MENU 헤더를 표시", () => {
-      const menus: AppMenu[] = [{ title: "홈", href: "/" }];
+    it("displays MENU header", () => {
+      const menus: AppMenu[] = [{ title: "Home", href: "/" }];
 
       const { getByText } = renderWithRouter(menus);
 
       expect(getByText("MENU")).toBeTruthy();
     });
 
-    it("중첩 메뉴를 렌더링", () => {
+    it("renders nested menu", () => {
       const menus: AppMenu[] = [
         {
-          title: "설정",
+          title: "Settings",
           children: [
-            { title: "프로필", href: "/settings/profile" },
-            { title: "보안", href: "/settings/security" },
+            { title: "Profile", href: "/settings/profile" },
+            { title: "Security", href: "/settings/security" },
           ],
         },
       ];
 
       const { getByText } = renderWithRouter(menus);
 
-      expect(getByText("설정")).toBeTruthy();
+      expect(getByText("Settings")).toBeTruthy();
     });
 
-    it("아이콘이 있는 메뉴를 렌더링", () => {
+    it("renders menu with icon", () => {
       const MockIcon = (props: { class?: string }) => (
         <svg data-testid="mock-icon" class={props.class} />
       );
 
-      const menus: AppMenu[] = [{ title: "대시보드", href: "/dashboard", icon: MockIcon }];
+      const menus: AppMenu[] = [{ title: "Dashboard", href: "/dashboard", icon: MockIcon }];
 
       const { container } = renderWithRouter(menus);
 
@@ -104,23 +104,23 @@ describe("SidebarMenu", () => {
     });
   });
 
-  describe("링크 동작", () => {
-    it("내부 링크 클릭 시 SPA 라우팅", () => {
-      const menus: AppMenu[] = [{ title: "대시보드", href: "/dashboard" }];
+  describe("link behavior", () => {
+    it("navigates using SPA routing on internal link click", () => {
+      const menus: AppMenu[] = [{ title: "Dashboard", href: "/dashboard" }];
 
       const { getByText } = renderWithRouter(menus);
 
-      fireEvent.click(getByText("대시보드"));
+      fireEvent.click(getByText("Dashboard"));
 
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
     });
 
-    it("외부 링크 클릭 시 새 탭에서 열기", () => {
-      const menus: AppMenu[] = [{ title: "외부 링크", href: "https://example.com" }];
+    it("opens external link in new tab on click", () => {
+      const menus: AppMenu[] = [{ title: "External Link", href: "https://example.com" }];
 
       const { getByText } = renderWithRouter(menus);
 
-      fireEvent.click(getByText("외부 링크"));
+      fireEvent.click(getByText("External Link"));
 
       expect(mockWindowOpen).toHaveBeenCalledWith(
         "https://example.com",
@@ -130,76 +130,76 @@ describe("SidebarMenu", () => {
     });
   });
 
-  describe("펼침/접힘 동작", () => {
-    it("자식 있는 메뉴 클릭 시 펼침 토글", () => {
+  describe("expand/collapse behavior", () => {
+    it("toggles expanded when clicking menu with children", () => {
       const menus: AppMenu[] = [
         {
-          title: "설정",
-          children: [{ title: "프로필", href: "/settings/profile" }],
+          title: "Settings",
+          children: [{ title: "Profile", href: "/settings/profile" }],
         },
       ];
 
       const { getByText, container } = renderWithRouter(menus);
 
-      // 초기 상태: 접힘
+      // Initial state: collapsed
       const listItem = container.querySelector("[data-list-item]") as HTMLElement;
       expect(listItem.getAttribute("aria-expanded")).toBe("false");
 
-      // 클릭 후: 펼침
-      fireEvent.click(getByText("설정"));
+      // After click: expanded
+      fireEvent.click(getByText("Settings"));
       expect(listItem.getAttribute("aria-expanded")).toBe("true");
     });
   });
 
-  describe("pathname 반응성", () => {
-    it("pathname과 일치하는 메뉴의 부모가 자동으로 펼쳐짐", () => {
-      // 초기 pathname을 중첩 메뉴 경로로 설정
+  describe("pathname reactivity", () => {
+    it("automatically expands parent menu when pathname matches nested menu", () => {
+      // Set initial pathname to nested menu path
       setMockPathname("/settings/profile");
 
       const menus: AppMenu[] = [
-        { title: "대시보드", href: "/dashboard" },
+        { title: "Dashboard", href: "/dashboard" },
         {
-          title: "설정",
+          title: "Settings",
           children: [
-            { title: "프로필", href: "/settings/profile" },
-            { title: "보안", href: "/settings/security" },
+            { title: "Profile", href: "/settings/profile" },
+            { title: "Security", href: "/settings/security" },
           ],
         },
       ];
 
       const { container } = renderWithRouter(menus);
 
-      // "설정" 메뉴가 자동으로 펼쳐져야 함
+      // "Settings" menu should automatically expand
       const settingsItem = container.querySelectorAll("[data-list-item]")[1] as HTMLElement;
       expect(settingsItem.getAttribute("aria-expanded")).toBe("true");
     });
 
-    it("pathname 변경 시 해당 경로의 부모 메뉴가 펼쳐짐", () => {
+    it("expands parent menu of matching pathname when pathname changes", () => {
       const menus: AppMenu[] = [
-        { title: "대시보드", href: "/dashboard" },
+        { title: "Dashboard", href: "/dashboard" },
         {
-          title: "설정",
-          children: [{ title: "프로필", href: "/settings/profile" }],
+          title: "Settings",
+          children: [{ title: "Profile", href: "/settings/profile" }],
         },
       ];
 
       const { container } = renderWithRouter(menus);
 
-      // 초기 상태: 설정 메뉴 접힘
+      // Initial state: Settings menu collapsed
       const settingsItem = container.querySelectorAll("[data-list-item]")[1] as HTMLElement;
       expect(settingsItem.getAttribute("aria-expanded")).toBe("false");
 
-      // pathname 변경
+      // Change pathname
       setMockPathname("/settings/profile");
 
-      // 설정 메뉴가 펼쳐져야 함
+      // Settings menu should expand
       expect(settingsItem.getAttribute("aria-expanded")).toBe("true");
     });
   });
 
-  describe("스타일 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
-      const menus: AppMenu[] = [{ title: "홈", href: "/" }];
+  describe("style merging", () => {
+    it("merges custom classes", () => {
+      const menus: AppMenu[] = [{ title: "Home", href: "/" }];
 
       const { container } = render(() => (
         <Router base="" root={(props) => props.children}>

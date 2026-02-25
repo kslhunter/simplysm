@@ -9,15 +9,15 @@ describe("Combobox 컴포넌트", () => {
     mockLoadItems.mockClear();
   });
 
-  describe("기본 렌더링", () => {
-    it("트리거가 렌더링된다", () => {
+  describe("basic rendering", () => {
+    it("renders trigger", () => {
       const { getByRole } = render(() => (
         <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
       ));
       expect(getByRole("combobox")).not.toBeNull();
     });
 
-    it("placeholder가 표시된다", () => {
+    it("displays placeholder", () => {
       const { container } = render(() => (
         <Combobox
           loadItems={mockLoadItems}
@@ -45,7 +45,7 @@ describe("Combobox 컴포넌트", () => {
     });
   });
 
-  describe("드롭다운 열기/닫기", () => {
+  describe("dropdown opening/closing", () => {
     it("입력 시 드롭다운이 열린다", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container } = render(() => (
@@ -198,7 +198,7 @@ describe("Combobox 컴포넌트", () => {
   });
 
   describe("validation", () => {
-    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+    it("sets error message when required and value is empty", () => {
       const { container } = render(() => (
         <Combobox
           loadItems={mockLoadItems}
@@ -208,7 +208,7 @@ describe("Combobox 컴포넌트", () => {
         />
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
     it("required일 때 값이 있으면 유효하다", () => {

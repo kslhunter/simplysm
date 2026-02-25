@@ -14,7 +14,7 @@ describe("LoggerContext", () => {
     cleanup();
   });
 
-  it("Provider 없이 useContext하면 undefined를 반환한다", () => {
+  it("returns undefined when useContext is called without Provider", () => {
     createRoot((dispose) => {
       const value = useContext(LoggerContext);
       expect(value).toBeUndefined();
@@ -22,7 +22,7 @@ describe("LoggerContext", () => {
     });
   });
 
-  it("LoggerProvider가 LoggerContextValue를 정상 제공한다", () => {
+  it("LoggerProvider provides LoggerContextValue correctly", () => {
     let received: LoggerContextValue | undefined;
 
     function TestComponent() {
@@ -42,7 +42,7 @@ describe("LoggerContext", () => {
     expect(received!.adapter()).toBeDefined();
   });
 
-  it("configure()로 decorator function을 통해 adapter를 설정할 수 있다", () => {
+  it("can configure adapter via decorator function", () => {
     const writeSpy = vi.fn();
 
     let received: LoggerContextValue | undefined;

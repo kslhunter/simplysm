@@ -3,38 +3,38 @@ import { describe, it, expect, afterEach } from "vitest";
 import { createSignal, Show } from "solid-js";
 import { Topbar, createTopbarActions } from "../../../../src";
 
-describe("Topbar.Actions 컴포넌트", () => {
+describe("Topbar.Actions component", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("createTopbarActions로 등록한 내용이 Topbar.Actions 위치에 렌더링된다", () => {
+  it("renders registered actions at Topbar.Actions position", () => {
     function PageWithActions() {
-      createTopbarActions(() => <button>저장</button>);
+      createTopbarActions(() => <button>Save</button>);
       return <div>Page Content</div>;
     }
 
     const { getByText } = render(() => (
       <Topbar.Container>
         <Topbar>
-          <span>타이틀</span>
+          <span>Title</span>
           <Topbar.Actions />
         </Topbar>
         <PageWithActions />
       </Topbar.Container>
     ));
 
-    expect(getByText("저장")).toBeTruthy();
+    expect(getByText("Save")).toBeTruthy();
   });
 
-  it("actions가 없으면 아무것도 렌더링하지 않는다", () => {
+  it("renders nothing when actions are not provided", () => {
     const { container } = render(() => (
       <Topbar.Container>
         <Topbar>
-          <span>타이틀</span>
+          <span>Title</span>
           <Topbar.Actions />
         </Topbar>
-        <div>콘텐츠</div>
+        <div>Content</div>
       </Topbar.Container>
     ));
 
@@ -42,14 +42,14 @@ describe("Topbar.Actions 컴포넌트", () => {
     expect(actionsSlot?.childNodes.length ?? 0).toBe(0);
   });
 
-  it("컴포넌트 전환 시 이전 actions가 해제되고 새 actions가 표시된다", () => {
+  it("releases previous actions and displays new actions when switching components", () => {
     function PageA() {
-      createTopbarActions(() => <button>저장</button>);
+      createTopbarActions(() => <button>Save</button>);
       return <div>Page A</div>;
     }
 
     function PageB() {
-      createTopbarActions(() => <button>삭제</button>);
+      createTopbarActions(() => <button>Delete</button>);
       return <div>Page B</div>;
     }
 
@@ -66,12 +66,12 @@ describe("Topbar.Actions 컴포넌트", () => {
       </Topbar.Container>
     ));
 
-    expect(getByText("저장")).toBeTruthy();
-    expect(queryByText("삭제")).toBeNull();
+    expect(getByText("Save")).toBeTruthy();
+    expect(queryByText("Delete")).toBeNull();
 
     setPage("b");
 
-    expect(queryByText("저장")).toBeNull();
-    expect(getByText("삭제")).toBeTruthy();
+    expect(queryByText("Save")).toBeNull();
+    expect(getByText("Delete")).toBeTruthy();
   });
 });

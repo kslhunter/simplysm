@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { createSignal, type Accessor, type JSX } from "solid-js";
 import { Topbar, createTopbarActions, useTopbarActionsAccessor } from "../../../../src";
 
-// Helper: TopbarContext에서 actions accessor를 추출
+// Helper: Extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
   props.onCapture(actions);
@@ -15,7 +15,7 @@ describe("createTopbarActions", () => {
     cleanup();
   });
 
-  it("등록한 actions가 context를 통해 전달된다", () => {
+  it("registered actions are passed through context", () => {
     let actionsAccessor!: Accessor<JSX.Element | undefined>;
 
     render(() => (
@@ -26,14 +26,14 @@ describe("createTopbarActions", () => {
     ));
 
     function TestChild() {
-      createTopbarActions(() => <button>저장</button>);
+      createTopbarActions(() => <button>Save</button>);
       return null;
     }
 
     expect(actionsAccessor()).toBeTruthy();
   });
 
-  it("컴포넌트 언마운트 시 actions가 자동 해제된다", () => {
+  it("actions are automatically released when component unmounts", () => {
     let actionsAccessor!: Accessor<JSX.Element | undefined>;
     const [show, setShow] = createSignal(true);
 
@@ -45,7 +45,7 @@ describe("createTopbarActions", () => {
     ));
 
     function TestChild() {
-      createTopbarActions(() => <button>저장</button>);
+      createTopbarActions(() => <button>Save</button>);
       return null;
     }
 
@@ -55,10 +55,10 @@ describe("createTopbarActions", () => {
     expect(actionsAccessor()).toBeUndefined();
   });
 
-  it("TopbarContainer 없이 호출하면 에러가 발생한다", () => {
+  it("throws error when called without TopbarContainer", () => {
     expect(() => {
       render(() => {
-        createTopbarActions(() => <button>저장</button>);
+        createTopbarActions(() => <button>Save</button>);
         return null;
       });
     }).toThrow();

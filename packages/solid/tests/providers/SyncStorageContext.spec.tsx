@@ -15,7 +15,7 @@ describe("SyncStorageContext", () => {
     cleanup();
   });
 
-  it("Provider 없이 useContext하면 undefined를 반환한다", () => {
+  it("returns undefined when useContext is called without Provider", () => {
     createRoot((dispose) => {
       const value = useContext(SyncStorageContext);
       expect(value).toBeUndefined();
@@ -23,7 +23,7 @@ describe("SyncStorageContext", () => {
     });
   });
 
-  it("SyncStorageProvider가 SyncStorageContextValue를 정상 제공한다", () => {
+  it("SyncStorageProvider provides SyncStorageContextValue correctly", () => {
     let received: SyncStorageContextValue | undefined;
 
     function TestComponent() {
@@ -43,7 +43,7 @@ describe("SyncStorageContext", () => {
     expect(received!.adapter()).toBeDefined();
   });
 
-  it("configure()로 decorator function을 통해 adapter를 설정할 수 있다", () => {
+  it("can configure adapter via decorator function", () => {
     const mockGetItem = vi.fn().mockResolvedValue(null);
 
     let received: SyncStorageContextValue | undefined;

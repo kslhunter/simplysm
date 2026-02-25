@@ -842,7 +842,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                           type="button"
                           class={expandToggleClass}
                           onClick={toggleExpandAll}
-                          title={isAllExpanded() ? "전체 접기" : "전체 펼치기"}
+                          title={isAllExpanded() ? "Collapse all" : "Expand all"}
                         >
                           <Icon
                             icon={IconChevronDown}

@@ -13,7 +13,7 @@ describe("useLocalStorage", () => {
     localStorage.clear();
   });
 
-  it("초기값이 없으면 undefined를 반환한다", () => {
+  it("returns undefined when no initial value is provided", () => {
     let value!: () => string | undefined;
 
     function TestComponent() {
@@ -30,7 +30,7 @@ describe("useLocalStorage", () => {
     expect(value()).toBeUndefined();
   });
 
-  it("초기값을 제공하면 해당 값을 반환한다", () => {
+  it("returns provided initial value", () => {
     let value!: () => string | undefined;
 
     function TestComponent() {
@@ -47,7 +47,7 @@ describe("useLocalStorage", () => {
     expect(value()).toBe("default");
   });
 
-  it("localStorage에 기존 값이 있으면 해당 값을 반환한다", () => {
+  it("returns existing value from localStorage if available", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
     let value!: () => string | undefined;
@@ -66,7 +66,7 @@ describe("useLocalStorage", () => {
     expect(value()).toBe("stored");
   });
 
-  it("값을 설정하면 localStorage에 저장된다", () => {
+  it("saves value to localStorage when set", () => {
     let value!: () => string | undefined;
     let setValue!: (v: string) => void;
 
@@ -86,7 +86,7 @@ describe("useLocalStorage", () => {
     expect(localStorage.getItem("testApp.test-key")).toBe(JSON.stringify("new-value"));
   });
 
-  it("값을 undefined로 설정하면 localStorage에서 제거된다", () => {
+  it("removes from localStorage when set to undefined", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
     let value!: () => string | undefined;
@@ -110,7 +110,7 @@ describe("useLocalStorage", () => {
     expect(localStorage.getItem("testApp.test-key")).toBeNull();
   });
 
-  it("다른 키는 독립적으로 동작한다", () => {
+  it("different keys work independently", () => {
     let value1!: () => string | undefined;
     let setValue1!: (v: string) => void;
     let value2!: () => string | undefined;
@@ -135,7 +135,7 @@ describe("useLocalStorage", () => {
     expect(value2()).toBe("value2");
   });
 
-  it("복잡한 객체를 저장하고 읽을 수 있다", () => {
+  it("can store and read complex objects", () => {
     let value!: () => { name: string; count: number } | undefined;
     let setValue!: (v: { name: string; count: number }) => void;
 
@@ -156,7 +156,7 @@ describe("useLocalStorage", () => {
     expect(localStorage.getItem("testApp.test-key")).toBe(JSON.stringify(obj));
   });
 
-  it("잘못된 JSON은 초기값으로 대체된다", () => {
+  it("invalid JSON is replaced with initial value", () => {
     localStorage.setItem("testApp.test-key", "invalid-json");
 
     let value!: () => string | undefined;
@@ -175,7 +175,7 @@ describe("useLocalStorage", () => {
     expect(value()).toBe("default");
   });
 
-  it("같은 키로 여러 훅을 생성하면 독립적인 시그널을 갖는다", () => {
+  it("creates independent signals with same key", () => {
     let value1!: () => string | undefined;
     let setValue1!: (v: string) => void;
     let value2!: () => string | undefined;
@@ -192,17 +192,17 @@ describe("useLocalStorage", () => {
       </ConfigContext.Provider>
     ));
 
-    // 초기값은 같음
+    // Initial values are the same
     expect(value1()).toBe("initial");
     expect(value2()).toBe("initial");
 
-    // 하나를 변경하면 localStorage는 업데이트되지만 다른 시그널은 변경되지 않음
+    // Changing one updates localStorage but does not change the other signal
     setValue1("changed");
     expect(value1()).toBe("changed");
-    expect(value2()).toBe("initial"); // 여전히 초기값
+    expect(value2()).toBe("initial"); // Still initial value
   });
 
-  it("clientName으로 키가 prefix된다", () => {
+  it("key is prefixed with clientName", () => {
     let setValue!: (v: string) => void;
 
     function TestComponent() {

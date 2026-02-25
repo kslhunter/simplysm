@@ -10,10 +10,10 @@ describe("ConfigContext", () => {
   });
 
   describe("useConfig", () => {
-    it("Provider 없이 사용하면 에러가 발생한다", () => {
+    it("throws error when used without Provider", () => {
       createRoot((dispose) => {
         expect(() => useConfig()).toThrow(
-          "useConfig는 ConfigProvider 내부에서만 사용할 수 있습니다",
+          "useConfig can only be used inside ConfigProvider",
         );
         dispose();
       });
@@ -21,7 +21,7 @@ describe("ConfigContext", () => {
   });
 
   describe("ConfigProvider", () => {
-    it("clientName을 올바르게 제공한다", () => {
+    it("provides clientName correctly", () => {
       let receivedClientName: string | undefined;
 
       function TestComponent() {

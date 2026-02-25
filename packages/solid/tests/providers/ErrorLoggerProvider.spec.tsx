@@ -4,7 +4,7 @@ import { ErrorLoggerProvider } from "../../src/providers/ErrorLoggerProvider";
 import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerContext";
 import { useLogger } from "../../src/hooks/useLogger";
 
-/** LoggerProvider 안에서 adapter를 configure한 뒤 children을 렌더하는 헬퍼 */
+/** Helper to configure adapter within LoggerProvider and render children */
 function ConfigureLogger(props: { adapter: LogAdapter; children: any }) {
   useLogger().configure(() => props.adapter);
   return <>{props.children}</>;
@@ -15,7 +15,7 @@ describe("ErrorLoggerProvider", () => {
     cleanup();
   });
 
-  it("children을 정상적으로 렌더링한다", () => {
+  it("renders children correctly", () => {
     const { getByText } = render(() => (
       <ErrorLoggerProvider>
         <div>child content</div>
@@ -25,7 +25,7 @@ describe("ErrorLoggerProvider", () => {
     expect(getByText("child content")).toBeDefined();
   });
 
-  it("window error 이벤트를 캡처하여 logger.error를 호출한다", () => {
+  it("captures window error events and calls logger.error", () => {
     const writeSpy = vi.fn();
     const adapter: LogAdapter = { write: writeSpy };
 
@@ -48,7 +48,7 @@ describe("ErrorLoggerProvider", () => {
     expect(writeSpy).toHaveBeenCalledWith("error", "Uncaught error:", expect.any(Error));
   });
 
-  it("unhandledrejection 이벤트를 캡처하여 logger.error를 호출한다", () => {
+  it("captures unhandledrejection events and calls logger.error", () => {
     const writeSpy = vi.fn();
     const adapter: LogAdapter = { write: writeSpy };
 

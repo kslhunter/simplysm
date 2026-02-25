@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Textarea } from "../../../../src/components/form-control/field/Textarea";
 
 describe("Textarea 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("textarea 요소가 렌더링된다", () => {
       const { container } = render(() => <Textarea />);
       const textarea = container.querySelector("textarea");
@@ -65,7 +65,7 @@ describe("Textarea 컴포넌트", () => {
     });
   });
 
-  describe("disabled 상태", () => {
+  describe("disabled state", () => {
     it("disabled=true일 때 textarea가 렌더링되지 않는다", () => {
       const { container } = render(() => <Textarea disabled value="Disabled text" />);
       const textarea = container.querySelector("textarea");
@@ -154,7 +154,7 @@ describe("Textarea 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
+  describe("class merging", () => {
     it("사용자 정의 class가 기존 스타일과 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Textarea class="my-custom-class" />);
@@ -177,7 +177,7 @@ describe("Textarea 컴포넌트", () => {
     it("required일 때 빈 값이면 hidden input에 에러 메시지가 설정된다", () => {
       const { container } = render(() => <Textarea required value="" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
     it("required일 때 값이 있으면 유효하다", () => {
@@ -189,13 +189,13 @@ describe("Textarea 컴포넌트", () => {
     it("minLength 위반 시 에러 메시지가 설정된다", () => {
       const { container } = render(() => <Textarea minLength={3} value="ab" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("최소 3자 이상 입력하세요");
+      expect(hiddenInput.validationMessage).toBe("Enter at least 3 characters");
     });
 
     it("maxLength 위반 시 에러 메시지가 설정된다", () => {
       const { container } = render(() => <Textarea maxLength={5} value="abcdef" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("최대 5자까지 입력 가능합니다");
+      expect(hiddenInput.validationMessage).toBe("Enter up to 5 characters");
     });
 
     it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
@@ -218,7 +218,7 @@ describe("Textarea 컴포넌트", () => {
         />
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
   });
 });

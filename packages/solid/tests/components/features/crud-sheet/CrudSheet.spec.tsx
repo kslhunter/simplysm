@@ -53,7 +53,7 @@ function DialogWrapper(props: { children: JSX.Element }) {
 }
 
 describe("CrudSheet types", () => {
-  it("CrudSheetColumn: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudSheetColumn: returns plain object and is identifiable by type guard", () => {
     const def = CrudSheetColumn<TestItem>({
       key: "name",
       header: "이름",
@@ -64,7 +64,7 @@ describe("CrudSheet types", () => {
     expect((def as any).key).toBe("name");
   });
 
-  it("CrudSheetFilter: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudSheetFilter: returns plain object and is identifiable by type guard", () => {
     const def = CrudSheetFilter({
       children: (_filter, _setFilter) => <div>filter</div>,
     });
@@ -72,7 +72,7 @@ describe("CrudSheet types", () => {
     expect(isCrudSheetFilterDef(def)).toBe(true);
   });
 
-  it("CrudSheetTools: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudSheetTools: returns plain object and is identifiable by type guard", () => {
     const def = CrudSheetTools({
       children: (_ctx) => <div>tools</div>,
     });
@@ -80,7 +80,7 @@ describe("CrudSheet types", () => {
     expect(isCrudSheetToolsDef(def)).toBe(true);
   });
 
-  it("CrudSheetHeader: plain object를 반환하고 type guard로 식별 가능하다", () => {
+  it("CrudSheetHeader: returns plain object and is identifiable by type guard", () => {
     const def = CrudSheetHeader({
       children: <div>header</div>,
     });
@@ -90,7 +90,7 @@ describe("CrudSheet types", () => {
 });
 
 describe("CrudSheet rendering", () => {
-  it("기본 렌더링: 컬럼, 필터, BusyContainer가 표시된다", async () => {
+  it("basic rendering: column, filter, and BusyContainer are displayed", async () => {
     const searchFn = () =>
       Promise.resolve({
         items: [{ id: 1, name: "홍길동", isDeleted: false }],
@@ -115,19 +115,19 @@ describe("CrudSheet rendering", () => {
       </TestWrapper>
     ));
 
-    // 비동기 조회 대기
+    // Wait for async search
     await new Promise((r) => setTimeout(r, 100));
 
-    // DataSheet가 렌더링됨
+    // DataSheet is rendered
     const ths = container.querySelectorAll("thead th");
     expect(ths.length).toBeGreaterThanOrEqual(1);
     expect(ths[0].textContent).toContain("이름");
 
-    // 데이터 행이 표시됨
+    // Data rows are displayed
     expect(container.textContent).toContain("홍길동");
   });
 
-  it("filterInitial 없으면 빈 객체로 초기화된다", async () => {
+  it("filterInitial not provided: initializes with empty object", async () => {
     const searchFn = () => Promise.resolve({ items: [] as TestItem[] });
 
     const { container } = render(() => (
@@ -158,7 +158,7 @@ describe("CrudSheet inline edit", () => {
       pageCount: 1,
     });
 
-  it("inlineEdit 제공 시 행추가 버튼이 표시된다", async () => {
+  it("Add Row button is displayed when inlineEdit is provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -177,10 +177,10 @@ describe("CrudSheet inline edit", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("행 추가");
+    expect(container.textContent).toContain("Add Row");
   });
 
-  it("inlineEdit 미제공 시 행추가 버튼이 없다", async () => {
+  it("Add Row button is not present when inlineEdit is not provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -195,10 +195,10 @@ describe("CrudSheet inline edit", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("행 추가");
+    expect(container.textContent).not.toContain("Add Row");
   });
 
-  it("deleteProp 제공 시 삭제 컬럼이 자동 생성된다", async () => {
+  it("delete column is auto-generated when deleteProp is provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -219,14 +219,14 @@ describe("CrudSheet inline edit", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    // 삭제 컬럼이 첫 번째 fixed 컬럼으로 추가됨
+    // Delete column is added as the first fixed column
     const columns = container.querySelectorAll("thead th");
-    expect(columns.length).toBe(2); // 삭제 컬럼 + 이름 컬럼
+    expect(columns.length).toBe(2); // delete column + name column
   });
 });
 
 describe("CrudSheet itemDeletable", () => {
-  it("itemDeletable=false인 아이템의 인라인 삭제 버튼이 disabled이다", async () => {
+  it("inline delete button is disabled for items where itemDeletable=false", async () => {
     const searchFn = () =>
       Promise.resolve({
         items: [
@@ -258,14 +258,14 @@ describe("CrudSheet itemDeletable", () => {
 
     await new Promise((r) => setTimeout(r, 100));
 
-    // 삭제 컬럼의 링크들
+    // Links in the delete column
     const deleteLinks = container.querySelectorAll('a[aria-disabled="true"]');
-    expect(deleteLinks.length).toBe(1); // id=1인 아이템만 disabled
+    expect(deleteLinks.length).toBe(1); // only item with id=1 is disabled
   });
 });
 
 describe("CrudSheet editable (renamed from canEdit)", () => {
-  it("editable=false 시 인라인 편집 버튼이 숨겨진다", async () => {
+  it("inline edit buttons are hidden when editable=false", async () => {
     const searchFn = () =>
       Promise.resolve({
         items: [{ id: 1, name: "홍길동", isDeleted: false }],
@@ -291,12 +291,12 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("행 추가");
+    expect(container.textContent).not.toContain("Add Row");
   });
 });
 
 describe("CrudSheet select mode", () => {
-  it("selectMode 설정 시 toolbar이 숨겨진다", async () => {
+  it("toolbar is hidden when selectMode is set", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -317,10 +317,10 @@ describe("CrudSheet select mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("행 추가");
+    expect(container.textContent).not.toContain("Add Row");
   });
 
-  it("selectMode='multiple' 시 확인 버튼이 표시된다", async () => {
+  it("Confirm button is displayed when selectMode='multiple'", async () => {
     render(() => (
       <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -339,12 +339,12 @@ describe("CrudSheet select mode", () => {
     await new Promise((r) => setTimeout(r, 100));
     // Dialog renders via Portal so content is in document.body
     const dialogContent = document.querySelector("[data-modal-content]");
-    expect(dialogContent?.textContent).toContain("확인");
+    expect(dialogContent?.textContent).toContain("Confirm");
   });
 });
 
 describe("CrudSheet control mode", () => {
-  it("topbar/dialog 없이 inlineEdit 제공 시 저장/새로고침 버튼이 표시된다", async () => {
+  it("Save/Refresh buttons are displayed when inlineEdit is provided without topbar/dialog", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -363,11 +363,11 @@ describe("CrudSheet control mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("저장");
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).toContain("Save");
+    expect(container.textContent).toContain("Refresh");
   });
 
-  it("inlineEdit 없으면 저장 버튼이 없고 새로고침 버튼은 있다", async () => {
+  it("Save button is absent and Refresh button is present when inlineEdit is not provided", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -382,13 +382,13 @@ describe("CrudSheet control mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("저장");
-    expect(container.textContent).toContain("새로고침");
+    expect(container.textContent).not.toContain("Save");
+    expect(container.textContent).toContain("Refresh");
   });
 });
 
 describe("CrudSheet modal mode", () => {
-  it("Dialog 안에서 selectMode='multiple' 시 하단 바가 표시된다", async () => {
+  it("bottom bar is displayed when selectMode='multiple' inside Dialog", async () => {
     render(() => (
       <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -407,10 +407,10 @@ describe("CrudSheet modal mode", () => {
     await new Promise((r) => setTimeout(r, 100));
     // Dialog renders via Portal so content is in document.body
     const dialogContent = document.querySelector("[data-modal-content]");
-    expect(dialogContent?.textContent).toContain("확인");
+    expect(dialogContent?.textContent).toContain("Confirm");
   });
 
-  it("Dialog 없이 selectMode='multiple'이면 하단 바가 표시되지 않는다", async () => {
+  it("bottom bar is not displayed when selectMode='multiple' without Dialog", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -427,6 +427,6 @@ describe("CrudSheet modal mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).not.toContain("확인");
+    expect(container.textContent).not.toContain("Confirm");
   });
 });

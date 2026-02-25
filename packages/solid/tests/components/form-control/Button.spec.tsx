@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { Button } from "../../../src/components/form-control/Button";
 
 describe("Button 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 버튼 내부에 표시된다", () => {
       const { getByRole } = render(() => <Button>Click Me</Button>);
       const button = getByRole("button");
@@ -108,8 +108,8 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => <Button class="my-custom-class">Click</Button>);
 

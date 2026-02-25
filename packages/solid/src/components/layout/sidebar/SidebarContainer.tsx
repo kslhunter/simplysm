@@ -111,7 +111,7 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
             onClick={handleBackdropClick}
             onKeyDown={(e) => e.key === "Escape" && handleBackdropClick()}
             role="button"
-            aria-label="사이드바 닫기"
+            aria-label="Close sidebar"
             tabIndex={0}
           />
         </Show>

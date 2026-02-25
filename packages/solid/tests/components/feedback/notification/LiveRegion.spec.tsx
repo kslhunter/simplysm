@@ -5,7 +5,7 @@ import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("Notification Live Region", () => {
-  it("Provider에 role=status인 live region이 있다", () => {
+  it("Provider has live region with role=status", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>content</NotificationProvider>
@@ -16,7 +16,7 @@ describe("Notification Live Region", () => {
     expect(liveRegion).not.toBeNull();
   });
 
-  it("알림 발생 시 live region 텍스트가 업데이트된다", async () => {
+  it("updates live region text when notification occurs", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -30,16 +30,16 @@ describe("Notification Live Region", () => {
       </ConfigContext.Provider>
     ));
 
-    notification!.info("테스트 제목", "테스트 메시지");
+    notification!.info("Test Title", "Test Message");
 
     await waitFor(() => {
       const liveRegion = document.querySelector('[role="status"]');
-      expect(liveRegion?.textContent).toContain("알림: 테스트 제목");
-      expect(liveRegion?.textContent).toContain("테스트 메시지");
+      expect(liveRegion?.textContent).toContain("Notification: Test Title");
+      expect(liveRegion?.textContent).toContain("Test Message");
     });
   });
 
-  it("live region은 시각적으로 숨겨져 있다 (sr-only)", () => {
+  it("live region is visually hidden (sr-only)", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>content</NotificationProvider>

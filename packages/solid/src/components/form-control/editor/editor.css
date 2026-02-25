@@ -1,4 +1,4 @@
-/* 에디터 콘텐츠 영역 기본 스타일 */
+/* Editor content area default styles */
 [data-rich-text-editor] .tiptap {
   outline: none;
 }
@@ -11,7 +11,7 @@
   pointer-events: none;
 }
 
-/* 테이블 스타일 */
+/* Table styles */
 [data-rich-text-editor] .tiptap table {
   border-collapse: collapse;
   width: 100%;
@@ -40,7 +40,7 @@
   background-color: #374151;
 }
 
-/* 이미지 스타일 */
+/* Image styles */
 [data-rich-text-editor] .tiptap img {
   max-width: 100%;
   height: auto;
@@ -51,7 +51,7 @@
   outline: 2px solid #3b82f6;
 }
 
-/* 코드 블록 스타일 */
+/* Code block styles */
 [data-rich-text-editor] .tiptap pre {
   background-color: #1e293b;
   color: #e2e8f0;
@@ -68,7 +68,7 @@
   padding: 0;
 }
 
-/* 인용 블록 */
+/* Block quote */
 [data-rich-text-editor] .tiptap blockquote {
   border-left: 3px solid #d1d5db;
   padding-left: 1rem;

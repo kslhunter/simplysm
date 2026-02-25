@@ -65,7 +65,7 @@ function createMockNotification(): NotificationContextValue {
   };
 }
 
-/** SharedDataProvider 안에서 configure()를 호출한 뒤 children을 렌더하는 헬퍼 */
+/** Helper to call configure() within SharedDataProvider and render children */
 function ConfigureSharedData(props: {
   definitions: { user: SharedDataDefinition<TestUser> };
   children: any;
@@ -88,7 +88,7 @@ function TestConsumer(props: { onData?: (shared: any) => void }) {
 }
 
 describe("SharedDataProvider", () => {
-  it("초기 데이터를 로드하고 items()로 접근할 수 있다", async () => {
+  it("loads initial data and allows access via items()", async () => {
     const { serviceClientValue } = createMockServiceClient();
     const mockUsers: TestUser[] = [
       { id: 1, name: "Alice" },
@@ -122,7 +122,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("get()으로 O(1) 단일 항목 조회가 가능하다", async () => {
+  it("allows O(1) single item lookup via get()", async () => {
     const { serviceClientValue } = createMockServiceClient();
     const mockUsers: TestUser[] = [
       { id: 1, name: "Alice" },
@@ -166,7 +166,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("orderBy에 따라 정렬된 결과를 반환한다", async () => {
+  it("returns results sorted by orderBy", async () => {
     const { serviceClientValue } = createMockServiceClient();
     const mockUsers: TestUser[] = [
       { id: 2, name: "Charlie" },
@@ -210,7 +210,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("busy()은 로드 중 true, 완료 후 false", async () => {
+  it("busy() returns true during loading and false after completion", async () => {
     const { serviceClientValue } = createMockServiceClient();
 
     let resolveUsers!: (value: TestUser[]) => void;
@@ -238,12 +238,12 @@ describe("SharedDataProvider", () => {
       </NotificationContext.Provider>
     ));
 
-    // 로딩 중
+    // During loading
     await vi.waitFor(() => {
       expect(result.getByTestId("busy").textContent).toBe("true");
     });
 
-    // 로드 완료
+    // After loading completes
     resolveUsers([{ id: 1, name: "Alice" }]);
 
     await vi.waitFor(() => {
@@ -253,7 +253,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("메타 함수를 포함한 configure 시 accessor에서 함수에 접근할 수 있다", async () => {
+  it("can access meta functions in accessor when included in configure", async () => {
     const { serviceClientValue } = createMockServiceClient();
 
     const getKeyFn = (item: TestUser) => item.id;
@@ -294,13 +294,13 @@ describe("SharedDataProvider", () => {
       expect(result.getByTestId("count").textContent).toBe("1");
     });
 
-    // accessor에서 메타 함수 참조가 definition과 동일한지 확인
+    // Verify meta function references in accessor match definition
     expect(sharedRef!.user.getKey).toBe(getKeyFn);
     expect(sharedRef!.user.getSearchText).toBe(getSearchTextFn);
     expect(sharedRef!.user.getIsHidden).toBe(getIsHiddenFn);
     expect(sharedRef!.user.getParentKey).toBe(getParentKeyFn);
 
-    // 실제 호출 결과 검증
+    // Verify actual call results
     const testItem: TestUser = { id: 42, name: "Test" };
     expect(sharedRef!.user.getKey(testItem)).toBe(42);
     expect(sharedRef!.user.getSearchText(testItem)).toBe("Test");
@@ -310,7 +310,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("메타 함수 미지정 시 accessor에서 undefined로 접근된다", async () => {
+  it("accessor returns undefined when meta functions are not specified", async () => {
     const { serviceClientValue } = createMockServiceClient();
 
     const getKeyFn = (item: TestUser) => item.id;
@@ -322,7 +322,7 @@ describe("SharedDataProvider", () => {
         fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
         getKey: getKeyFn,
         orderBy: [[(item) => item.name, "asc"]],
-        // getSearchText, getIsHidden, getParentKey 미지정
+        // getSearchText, getIsHidden, getParentKey not specified
       },
     };
 
@@ -346,10 +346,10 @@ describe("SharedDataProvider", () => {
       expect(result.getByTestId("count").textContent).toBe("1");
     });
 
-    // getKey는 항상 존재
+    // getKey always exists
     expect(sharedRef!.user.getKey).toBe(getKeyFn);
 
-    // 옵셔널 메타 함수는 미지정 시 undefined
+    // Optional meta functions are undefined when not specified
     expect(sharedRef!.user.getSearchText).toBeUndefined();
     expect(sharedRef!.user.getIsHidden).toBeUndefined();
     expect(sharedRef!.user.getParentKey).toBeUndefined();
@@ -357,7 +357,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("configure() 직후에는 fetch하지 않고, items() 접근 시 lazy하게 fetch한다", async () => {
+  it("does not fetch immediately after configure(), fetches lazily when items() is accessed", async () => {
     const { serviceClientValue, mockClient } = createMockServiceClient();
     const mockUsers: TestUser[] = [{ id: 1, name: "Alice" }];
 
@@ -371,7 +371,7 @@ describe("SharedDataProvider", () => {
       },
     };
 
-    // configure만 호출하고 items()에 접근하지 않는 컴포넌트
+    // Component that only calls configure() and does not access items()
     function ConfigureOnly() {
       const shared = useTestSharedData();
       shared.configure(() => definitions);
@@ -388,7 +388,7 @@ describe("SharedDataProvider", () => {
       </NotificationContext.Provider>
     ));
 
-    // configure 직후: fetch와 addEventListener가 호출되지 않아야 함
+    // After configure: fetch and addEventListener should not be called
     await vi.waitFor(() => {
       expect(result.getByTestId("configured").textContent).toBe("configured");
     });

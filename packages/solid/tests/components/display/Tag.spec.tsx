@@ -3,13 +3,13 @@ import { describe, it, expect } from "vitest";
 import { Tag } from "../../../src/components/display/Tag";
 
 describe("Tag 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 Tag 내부에 표시된다", () => {
       const { getByText } = render(() => <Tag>New</Tag>);
       expect(getByText("New")).toBeTruthy();
     });
 
-    it("span 요소로 렌더링된다", () => {
+    it("renders as span element", () => {
       const { container } = render(() => <Tag>Tag</Tag>);
       const tag = container.firstChild as HTMLElement;
       expect(tag.tagName).toBe("SPAN");
@@ -28,8 +28,8 @@ describe("Tag 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Tag class="my-tag">Tag</Tag>);
       const tag = container.firstChild as HTMLElement;
@@ -37,8 +37,8 @@ describe("Tag 컴포넌트", () => {
     });
   });
 
-  describe("HTML 속성 전달", () => {
-    it("data-* 속성이 전달된다", () => {
+  describe("HTML attribute forwarding", () => {
+    it("passes data-* attributes", () => {
       const { container } = render(() => <Tag data-testid="test-tag">Tag</Tag>);
       const tag = container.firstChild as HTMLElement;
       expect(tag.getAttribute("data-testid")).toBe("test-tag");

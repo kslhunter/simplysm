@@ -112,9 +112,9 @@ export function changePermCheck<TModule>(
   return result;
 }
 
-// --- 내부 헬퍼 ---
+// --- Internal Helpers ---
 
-/** 모듈 필터에 의해 보이는지 확인 (객체 참조 유지) */
+/** Check if item is visible by module filter (preserve object reference) */
 function isItemVisible<TModule>(item: AppPerm<TModule>, modules: TModule[] | undefined): boolean {
   if (!modules || modules.length === 0) return true;
   if (item.modules && !item.modules.some((m) => modules.includes(m))) return false;
@@ -124,7 +124,7 @@ function isItemVisible<TModule>(item: AppPerm<TModule>, modules: TModule[] | und
   return true;
 }
 
-/** 보이는 아이템에서만 고유 perm 타입 수집 */
+/** Collect unique perm types from visible items only */
 function collectVisiblePerms<TModule>(
   items: AppPerm<TModule>[],
   modules: TModule[] | undefined,
@@ -145,7 +145,7 @@ function collectVisiblePerms<TModule>(
   return [...set];
 }
 
-/** 그룹 노드의 체크 상태: 하위 중 하나라도 체크면 true */
+/** Get check state of group node: true if any child is checked */
 function isGroupPermChecked<TModule>(
   item: AppPerm<TModule>,
   perm: string,
@@ -160,7 +160,7 @@ function isGroupPermChecked<TModule>(
   return false;
 }
 
-/** 하위에 특정 perm이 하나라도 있으면 true */
+/** Check if specific perm exists in subtree */
 function hasPermInTree<TModule>(item: AppPerm<TModule>, perm: string): boolean {
   if (item.perms?.includes(perm)) return true;
   if (item.children) {
@@ -169,7 +169,7 @@ function hasPermInTree<TModule>(item: AppPerm<TModule>, perm: string): boolean {
   return false;
 }
 
-/** 기본 권한(perms[0])이 꺼져 있어서 비활성화해야 하는지 */
+/** Check if perm should be disabled (base perm is off) */
 function isPermDisabled<TModule>(
   item: AppPerm<TModule>,
   perm: string,
@@ -181,7 +181,7 @@ function isPermDisabled<TModule>(
   return !(value[item.href + "/" + basePerm] ?? false);
 }
 
-/** 확장 가능한 모든 아이템 수집 (객체 참조 유지) */
+/** Collect all expandable items (preserve object reference) */
 function collectExpandable<TModule>(
   items: AppPerm<TModule>[],
   getChildren: (item: AppPerm<TModule>) => AppPerm<TModule>[] | undefined,
@@ -202,7 +202,7 @@ function collectExpandable<TModule>(
   return result;
 }
 
-// --- 컴포넌트 ---
+// --- Component ---
 
 export const PermissionTable: Component<PermissionTableProps> = (props) => {
   const [local] = splitProps(props, [
@@ -215,14 +215,14 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
     "style",
   ]);
 
-  // 보이는 최상위 아이템 (객체 참조 유지)
+  // Visible top-level items (preserve object reference)
   const visibleItems = createMemo(() => {
     const items = local.items ?? [];
     if (!local.modules || local.modules.length === 0) return items;
     return items.filter((item) => isItemVisible(item, local.modules));
   });
 
-  // Sheet의 getChildren — 모듈 필터 적용, 객체 참조 유지
+  // Sheet's getChildren — apply module filter, preserve object reference
   const getChildren = (item: AppPerm): AppPerm[] | undefined => {
     if (!item.children || item.children.length === 0) return undefined;
     const modules = local.modules;
@@ -231,17 +231,17 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
     return filtered.length > 0 ? filtered : undefined;
   };
 
-  // 보이는 아이템의 모든 고유 perm 타입
+  // All unique perm types from visible items
   const allPerms = createMemo(() => collectVisiblePerms(local.items ?? [], local.modules));
 
   const currentValue = createMemo(() => local.value ?? {});
 
-  // 확장 상태 — 기본적으로 모두 펼침
+  // Expanded state — all expanded by default
   const getAllExpandable = () => collectExpandable(visibleItems(), getChildren);
 
   const [expandedItems, setExpandedItems] = createSignal<AppPerm[]>(getAllExpandable());
 
-  // 트리 구조 변경 시 모두 다시 펼침 (모듈 필터 변경 등)
+  // Re-expand all when tree structure changes (e.g., module filter changed)
   createEffect(
     on(
       visibleItems,
@@ -266,7 +266,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
         onExpandedItemsChange={setExpandedItems}
         hideConfigBar
       >
-        <DataSheet.Column key="title" header="권한 항목" sortable={false} resizable={false}>
+        <DataSheet.Column key="title" header="Permission Item" sortable={false} resizable={false}>
           {(ctx) => {
             const item = ctx.item as AppPerm;
             return (

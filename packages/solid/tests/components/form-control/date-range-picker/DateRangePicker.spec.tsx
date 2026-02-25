@@ -4,7 +4,7 @@ import { DateOnly } from "@simplysm/core-common";
 import { DateRangePicker } from "../../../../src/components/form-control/date-range-picker/DateRangePicker";
 
 describe("DateRangePicker 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("Select와 DatePicker가 렌더링된다", () => {
       const { container } = render(() => <DateRangePicker />);
 
@@ -131,7 +131,7 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("disabled 상태", () => {
+  describe("disabled state", () => {
     it("Select에 aria-disabled가 적용된다", () => {
       const { container } = render(() => <DateRangePicker disabled />);
       const wrapper = container.querySelector("[data-date-range-picker]");
@@ -146,19 +146,19 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("기간 타입 라벨", () => {
-    it("기본 periodType 'range'에서 '범위' 라벨이 표시된다", () => {
+  describe("period type labels", () => {
+    it("displays 'Range' label for default periodType 'range'", () => {
       const { container } = render(() => <DateRangePicker />);
 
       const wrapper = container.querySelector("[data-date-range-picker]");
       const select = wrapper?.querySelector("[data-select]");
 
-      expect(select?.textContent).toContain("범위");
+      expect(select?.textContent).toContain("Range");
     });
   });
 
-  describe("class 병합", () => {
-    it("커스텀 class가 wrapper에 적용된다", () => {
+  describe("class merging", () => {
+    it("applies custom class to wrapper", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <DateRangePicker class="my-custom-class" />);
       const wrapper = container.querySelector("[data-date-range-picker]") as HTMLElement;

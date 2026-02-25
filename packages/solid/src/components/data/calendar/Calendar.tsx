@@ -17,7 +17,7 @@ export interface CalendarProps<TValue> extends Omit<
   minDaysInFirstWeek?: number;
 }
 
-const WEEKS = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const baseClass = clsx(
   "w-full",

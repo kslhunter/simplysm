@@ -2,7 +2,7 @@ import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Component, Setter } from "solid-js";
 
-// 미디어 쿼리 mock
+// Media query mock
 const mockCreateMediaQuery = vi.fn(() => () => true as boolean);
 vi.mock("@solid-primitives/media", () => ({
   createMediaQuery: () => mockCreateMediaQuery(),
@@ -17,37 +17,37 @@ vi.mock("@solidjs/router", () => ({
 
 import { Sidebar, useSidebarContext } from "../../../../src";
 
-// ToggleCapture helper - Context에서 setToggle을 추출하여 외부에서 제어
+// ToggleCapture helper - Extract setToggle from Context for external control
 const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
   const { setToggle } = useSidebarContext();
   props.onCapture(setToggle);
   return null;
 };
 
-describe("SidebarContainer 컴포넌트", () => {
+describe("SidebarContainer component", () => {
   beforeEach(() => {
-    mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑 모드
+    mockCreateMediaQuery.mockReturnValue(() => true); // Desktop mode
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  describe("기본 렌더링", () => {
-    it("children이 컨테이너 내부에 표시된다", () => {
+  describe("basic rendering", () => {
+    it("displays children inside container", () => {
       const { getByText } = render(() => (
         <Sidebar.Container>
-          <span>콘텐츠</span>
+          <span>Content</span>
         </Sidebar.Container>
       ));
 
-      expect(getByText("콘텐츠")).toBeTruthy();
+      expect(getByText("Content")).toBeTruthy();
     });
   });
 
-  describe("padding-left 처리", () => {
-    it("데스크탑에서 열림 상태일 때 padding-left 적용", () => {
-      mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
+  describe("padding-left handling", () => {
+    it("applies padding-left when open on desktop", () => {
+      mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -55,13 +55,13 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      // toggle=false (초기값) → 데스크탑에서 열림
+      // toggle=false (initial) → open on desktop
       const containerEl = container.firstElementChild as HTMLElement;
       expect(containerEl.style.paddingLeft).toBe("16rem");
     });
 
-    it("데스크탑에서 닫힘 상태일 때 padding-left 없음", () => {
-      mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
+    it("removes padding-left when closed on desktop", () => {
+      mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
@@ -71,13 +71,13 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      setToggle(true); // 닫힘으로 전환
+      setToggle(true); // Switch to closed
       const containerEl = container.firstElementChild as HTMLElement;
       expect(containerEl.style.paddingLeft).toBe("");
     });
 
-    it("모바일에서는 padding-left 없음", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
+    it("has no padding-left on mobile", () => {
+      mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -90,9 +90,9 @@ describe("SidebarContainer 컴포넌트", () => {
     });
   });
 
-  describe("backdrop 렌더링", () => {
-    it("모바일에서 열림 상태일 때 backdrop이 렌더링된다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
+  describe("backdrop rendering", () => {
+    it("renders backdrop when open on mobile", () => {
+      mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
@@ -102,13 +102,13 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      setToggle(true); // 모바일에서 열림
-      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
+      setToggle(true); // Open on mobile
+      const backdrop = container.querySelector('[role="button"][aria-label="Close sidebar"]');
       expect(backdrop).toBeTruthy();
     });
 
-    it("모바일에서 닫힘 상태일 때 backdrop이 렌더링되지 않는다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
+    it("does not render backdrop when closed on mobile", () => {
+      mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -116,13 +116,13 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      // toggle=false (초기값) → 모바일에서 닫힘
-      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
+      // toggle=false (initial) → closed on mobile
+      const backdrop = container.querySelector('[role="button"][aria-label="Close sidebar"]');
       expect(backdrop).toBeFalsy();
     });
 
-    it("데스크탑에서는 backdrop이 렌더링되지 않는다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
+    it("does not render backdrop on desktop", () => {
+      mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -130,14 +130,14 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
+      const backdrop = container.querySelector('[role="button"][aria-label="Close sidebar"]');
       expect(backdrop).toBeFalsy();
     });
   });
 
-  describe("backdrop 클릭 이벤트", () => {
-    it("backdrop 클릭 시 사이드바가 닫힌다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
+  describe("backdrop click events", () => {
+    it("closes sidebar when backdrop is clicked", () => {
+      mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
       let setToggle!: Setter<boolean>;
       let toggleValue = false;
 
@@ -153,8 +153,8 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      setToggle(true); // 열림 상태로 전환
-      // setToggle을 감싸서 변경 추적
+      setToggle(true); // Switch to open state
+      // Wrap setToggle to track changes
       const originalSetToggle = setToggle;
       setToggle = ((val: boolean) => {
         toggleValue = val;
@@ -162,18 +162,18 @@ describe("SidebarContainer 컴포넌트", () => {
       }) as Setter<boolean>;
 
       const backdrop = container.querySelector(
-        '[role="button"][aria-label="사이드바 닫기"]',
+        '[role="button"][aria-label="Close sidebar"]',
       ) as HTMLElement;
       expect(backdrop).toBeTruthy();
 
       fireEvent.click(backdrop);
 
-      // toggle이 false로 변경되었는지 확인
+      // Verify toggle changed to false
       expect(toggleValue).toBe(false);
     });
 
-    it("backdrop에서 Escape 키 누르면 사이드바가 닫힌다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
+    it("closes sidebar when Escape key is pressed on backdrop", () => {
+      mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
       let setToggle!: Setter<boolean>;
       let toggleValue = false;
 
@@ -189,8 +189,8 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      setToggle(true); // 열림 상태로 전환
-      // setToggle을 감싸서 변경 추적
+      setToggle(true); // Switch to open state
+      // Wrap setToggle to track changes
       const originalSetToggle = setToggle;
       setToggle = ((val: boolean) => {
         toggleValue = val;
@@ -198,7 +198,7 @@ describe("SidebarContainer 컴포넌트", () => {
       }) as Setter<boolean>;
 
       const backdrop = container.querySelector(
-        '[role="button"][aria-label="사이드바 닫기"]',
+        '[role="button"][aria-label="Close sidebar"]',
       ) as HTMLElement;
       expect(backdrop).toBeTruthy();
 
@@ -208,8 +208,8 @@ describe("SidebarContainer 컴포넌트", () => {
     });
   });
 
-  describe("스타일 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("style merging", () => {
+    it("merges custom classes", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
         <Sidebar.Container class="my-custom-class">
@@ -221,7 +221,7 @@ describe("SidebarContainer 컴포넌트", () => {
       expect(containerEl.classList.contains("my-custom-class")).toBe(true);
     });
 
-    it("사용자 정의 style이 병합된다", () => {
+    it("merges custom styles", () => {
       const { container } = render(() => (
         <Sidebar.Container style={{ "background-color": "red" }}>
           <div>Content</div>

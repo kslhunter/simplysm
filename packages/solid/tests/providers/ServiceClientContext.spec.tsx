@@ -11,10 +11,10 @@ import { ConfigContext } from "../../src/providers/ConfigContext";
 
 describe("ServiceClientContext", () => {
   describe("useServiceClient", () => {
-    it("Provider 없이 사용하면 에러가 발생한다", () => {
+    it("throws error when used without Provider", () => {
       createRoot((dispose) => {
         expect(() => useServiceClient()).toThrow(
-          "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다",
+          "useServiceClient can only be used inside ServiceClientProvider",
         );
         dispose();
       });
@@ -23,7 +23,7 @@ describe("ServiceClientContext", () => {
 });
 
 describe("ServiceClientProvider", () => {
-  it("Provider 내에서 useServiceClient가 정상 동작한다", () => {
+  it("useServiceClient works correctly inside Provider", () => {
     let serviceClient: ServiceClientContextValue;
 
     render(() => (
@@ -46,7 +46,7 @@ describe("ServiceClientProvider", () => {
     expect(typeof serviceClient!.isConnected).toBe("function");
   });
 
-  it("연결하지 않은 키로 get 호출 시 에러가 발생한다", () => {
+  it("throws error when get is called with unconnected client key", () => {
     let serviceClient: ServiceClientContextValue;
 
     render(() => (
@@ -63,11 +63,11 @@ describe("ServiceClientProvider", () => {
     ));
 
     expect(() => serviceClient!.get("unknown")).toThrow(
-      "연결하지 않은 클라이언트 키입니다. unknown",
+      "Client key not connected: unknown",
     );
   });
 
-  it("연결하지 않은 키로 isConnected 호출 시 false를 반환한다", () => {
+  it("returns false when isConnected is called with unconnected key", () => {
     let serviceClient: ServiceClientContextValue;
 
     render(() => (

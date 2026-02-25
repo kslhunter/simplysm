@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Radio } from "../../../../src/components/form-control/checkbox/Radio";
 
 describe("Radio 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("radio role로 렌더링된다", () => {
       const { getByRole } = render(() => <Radio />);
       expect(getByRole("radio")).toBeTruthy();
@@ -21,7 +21,7 @@ describe("Radio 컴포넌트", () => {
     });
   });
 
-  describe("클릭 동작", () => {
+  describe("click behavior", () => {
     it("클릭하면 선택된다", () => {
       const { getByRole } = render(() => <Radio />);
       const radio = getByRole("radio");
@@ -102,8 +102,8 @@ describe("Radio 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => <Radio class="my-custom-class" />);
       expect(getByRole("radio").classList.contains("my-custom-class")).toBe(true);
@@ -114,7 +114,7 @@ describe("Radio 컴포넌트", () => {
     it("required일 때 선택되지 않으면 에러 메시지가 설정된다", () => {
       const { container } = render(() => <Radio required value={false} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("필수 선택 항목입니다");
+      expect(hiddenInput.validationMessage).toBe("This is a required selection");
     });
 
     it("required일 때 선택되면 유효하다", () => {

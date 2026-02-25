@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoot, createSignal } from "solid-js";
 import { createMountTransition } from "../../src/hooks/createMountTransition";
 
-// SolidJS의 createEffect는 마이크로태스크로 스케줄링되므로
-// effect가 실행될 때까지 기다리는 헬퍼 함수
+// SolidJS createEffect is scheduled as a microtask
+// Helper function to wait until effect runs
 const flushEffects = () => new Promise<void>((resolve) => queueMicrotask(resolve));
 
 describe("createMountTransition", () => {
@@ -15,7 +15,7 @@ describe("createMountTransition", () => {
     vi.useRealTimers();
   });
 
-  it("open=false일 때 mounted=false, animating=false", () => {
+  it("mounted=false and animating=false when open=false", () => {
     createRoot((dispose) => {
       const { mounted, animating } = createMountTransition(() => false);
       expect(mounted()).toBe(false);
@@ -24,7 +24,7 @@ describe("createMountTransition", () => {
     });
   });
 
-  it("open=true로 변경 시 mounted=true", async () => {
+  it("mounted=true when open changes to true", async () => {
     const outerDispose = await new Promise<() => void>((resolveDispose) => {
       void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(false);
@@ -40,7 +40,7 @@ describe("createMountTransition", () => {
     outerDispose();
   });
 
-  it("open=false로 변경 시 animating=false, fallback 타이머 후 mounted=false", async () => {
+  it("animating=false and mounted=false after fallback timer when open changes to false", async () => {
     const outerDispose = await new Promise<() => void>((resolveDispose) => {
       void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(true);
@@ -63,7 +63,7 @@ describe("createMountTransition", () => {
     outerDispose();
   });
 
-  it("unmount()로 즉시 마운트 해제", async () => {
+  it("immediately unmounts via unmount()", async () => {
     const outerDispose = await new Promise<() => void>((resolveDispose) => {
       void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(true);

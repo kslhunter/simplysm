@@ -8,7 +8,7 @@ describe("PwaUpdateProvider", () => {
     cleanup();
   });
 
-  it("children을 정상적으로 렌더링한다", () => {
+  it("renders children correctly", () => {
     const { getByText } = render(() => (
       <NotificationProvider>
         <PwaUpdateProvider>

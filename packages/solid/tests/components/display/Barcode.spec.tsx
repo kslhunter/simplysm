@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { Barcode } from "../../../src/components/display/Barcode";
 
 describe("Barcode 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("data-barcode 속성으로 렌더링된다", () => {
       const { container } = render(() => <Barcode type="qrcode" value="test" />);
       expect(container.querySelector("[data-barcode]")).toBeTruthy();
@@ -50,8 +50,8 @@ describe("Barcode 컴포넌트", () => {
     });
   });
 
-  describe("class 병합", () => {
-    it("사용자 정의 class가 병합된다", () => {
+  describe("class merging", () => {
+    it("merges custom classes", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Barcode type="qrcode" value="test" class="my-custom" />);
       const el = container.querySelector("[data-barcode]")!;

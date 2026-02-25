@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { SharedDataSelectList } from "@simplysm/solid";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
 
-// SharedDataAccessor mock 팩토리
+// SharedDataAccessor mock factory
 function createMockAccessor<T>(
   items: T[],
   options?: {
@@ -21,7 +21,7 @@ function createMockAccessor<T>(
   };
 }
 
-// DialogProvider 래퍼
+// DialogProvider wrapper
 function renderWithDialog(ui: () => import("solid-js").JSX.Element) {
   return render(() => <DialogProvider>{ui()}</DialogProvider>);
 }
@@ -31,10 +31,10 @@ describe("SharedDataSelectList", () => {
     cleanup();
   });
 
-  // ─── 아이템 렌더링 ─────────────────────────────────────
+  // ─── Item Rendering ─────────────────────────────────────
 
-  describe("아이템 렌더링", () => {
-    it("items가 List.Item으로 렌더링된다", () => {
+  describe("item rendering", () => {
+    it("items are rendered as List.Item", () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
 
       renderWithDialog(() => (
@@ -48,7 +48,7 @@ describe("SharedDataSelectList", () => {
       expect(screen.getByText("Cherry")).toBeTruthy();
     });
 
-    it("children render function에 item과 index가 전달된다", () => {
+    it("children render function receives item and index", () => {
       const accessor = createMockAccessor(["A", "B"]);
 
       renderWithDialog(() => (
@@ -62,10 +62,10 @@ describe("SharedDataSelectList", () => {
     });
   });
 
-  // ─── 선택/토글 ─────────────────────────────────────────
+  // ─── Selection/Toggle ─────────────────────────────────────────
 
-  describe("선택/토글", () => {
-    it("아이템 클릭 시 onValueChange가 호출된다", () => {
+  describe("selection/toggle", () => {
+    it("onValueChange is called when an item is clicked", () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -79,7 +79,7 @@ describe("SharedDataSelectList", () => {
       expect(onChange).toHaveBeenCalledWith("Banana");
     });
 
-    it("이미 선택된 아이템 재클릭 시 선택 해제 (required가 아닐 때)", () => {
+    it("re-clicking already selected item deselects it (when not required)", () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -93,7 +93,7 @@ describe("SharedDataSelectList", () => {
       expect(onChange).toHaveBeenCalledWith(undefined);
     });
 
-    it("required일 때 재클릭해도 선택 해제되지 않는다", () => {
+    it("re-clicking does not deselect when required", () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -107,7 +107,7 @@ describe("SharedDataSelectList", () => {
       expect(onChange).toHaveBeenCalledWith("Apple");
     });
 
-    it("disabled일 때 클릭이 무시된다", () => {
+    it("click is ignored when disabled", () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -122,20 +122,20 @@ describe("SharedDataSelectList", () => {
     });
   });
 
-  // ─── 미지정 항목 ───────────────────────────────────────
+  // ─── Unspecified Item ───────────────────────────────────────
 
-  describe("미지정 항목", () => {
-    it("required가 아니면 미지정 항목이 표시된다", () => {
+  describe("unspecified item", () => {
+    it("Unspecified item is displayed when not required", () => {
       const accessor = createMockAccessor(["Apple"]);
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor}>{(item) => <>{item}</>}</SharedDataSelectList>
       ));
 
-      expect(screen.getByText("미지정")).toBeTruthy();
+      expect(screen.getByText("Unspecified")).toBeTruthy();
     });
 
-    it("required이면 미지정 항목이 표시되지 않는다", () => {
+    it("Unspecified item is not displayed when required", () => {
       const accessor = createMockAccessor(["Apple"]);
 
       renderWithDialog(() => (
@@ -144,10 +144,10 @@ describe("SharedDataSelectList", () => {
         </SharedDataSelectList>
       ));
 
-      expect(screen.queryByText("미지정")).toBeNull();
+      expect(screen.queryByText("Unspecified")).toBeNull();
     });
 
-    it("미지정 클릭 시 undefined로 변경된다", () => {
+    it("clicking Unspecified changes value to undefined", () => {
       const accessor = createMockAccessor(["Apple"]);
       const onChange = vi.fn();
 
@@ -157,15 +157,15 @@ describe("SharedDataSelectList", () => {
         </SharedDataSelectList>
       ));
 
-      fireEvent.click(screen.getByText("미지정"));
+      fireEvent.click(screen.getByText("Unspecified"));
       expect(onChange).toHaveBeenCalledWith(undefined);
     });
   });
 
-  // ─── canChange 가드 ────────────────────────────────────
+  // ─── canChange Guard ────────────────────────────────────
 
-  describe("canChange 가드", () => {
-    it("canChange가 false를 반환하면 변경 차단", async () => {
+  describe("canChange guard", () => {
+    it("change is blocked when canChange returns false", async () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -187,7 +187,7 @@ describe("SharedDataSelectList", () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it("canChange가 true를 반환하면 변경 허용", async () => {
+    it("change is allowed when canChange returns true", async () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
       const onChange = vi.fn();
 
@@ -210,10 +210,10 @@ describe("SharedDataSelectList", () => {
     });
   });
 
-  // ─── 페이지네이션 ──────────────────────────────────────
+  // ─── Pagination ──────────────────────────────────────
 
-  describe("페이지네이션", () => {
-    it("pageSize가 있으면 항목이 페이지 단위로 표시된다", () => {
+  describe("pagination", () => {
+    it("items are displayed per page when pageSize is set", () => {
       const items = Array.from({ length: 10 }, (_, i) => `Item ${i + 1}`);
       const accessor = createMockAccessor(items);
 
@@ -228,7 +228,7 @@ describe("SharedDataSelectList", () => {
       expect(listItems[0]?.textContent).toContain("Item 1");
     });
 
-    it("Pagination 컴포넌트로 페이지 전환이 동작한다", async () => {
+    it("page switching works with Pagination component", async () => {
       const items = Array.from({ length: 10 }, (_, i) => `Item ${i + 1}`);
       const accessor = createMockAccessor(items);
 
@@ -246,7 +246,7 @@ describe("SharedDataSelectList", () => {
       });
     });
 
-    it("총 항목이 pageSize 이하이면 Pagination이 표시되지 않는다", () => {
+    it("Pagination is not displayed when total items are within pageSize", () => {
       const accessor = createMockAccessor(["A", "B"]);
 
       renderWithDialog(() => (
@@ -259,10 +259,10 @@ describe("SharedDataSelectList", () => {
     });
   });
 
-  // ─── 필터링 ────────────────────────────────────────────
+  // ─── Filtering ────────────────────────────────────────────
 
-  describe("필터링", () => {
-    it("getIsHidden으로 숨겨진 항목은 표시되지 않는다", () => {
+  describe("filtering", () => {
+    it("items hidden by getIsHidden are not displayed", () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"], {
         getIsHidden: (item) => item === "Banana",
       });
@@ -278,7 +278,7 @@ describe("SharedDataSelectList", () => {
       expect(screen.getByText("Cherry")).toBeTruthy();
     });
 
-    it("filterFn으로 필터링된 항목만 표시된다", () => {
+    it("only items filtered by filterFn are displayed", () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
 
       renderWithDialog(() => (
@@ -296,7 +296,7 @@ describe("SharedDataSelectList", () => {
   // ─── header / modal ────────────────────────────────────
 
   describe("header / modal", () => {
-    it("header가 있으면 헤더 텍스트가 표시된다", () => {
+    it("header text is displayed when header is provided", () => {
       const accessor = createMockAccessor(["Apple"]);
 
       renderWithDialog(() => (
@@ -308,7 +308,7 @@ describe("SharedDataSelectList", () => {
       expect(screen.getByText("과일 목록")).toBeTruthy();
     });
 
-    it("modal이 있으면 관리 버튼이 표시된다", () => {
+    it("management button is displayed when modal is provided", () => {
       const accessor = createMockAccessor(["Apple"]);
 
       renderWithDialog(() => (
@@ -317,7 +317,7 @@ describe("SharedDataSelectList", () => {
         </SharedDataSelectList>
       ));
 
-      // Button이 렌더링됨 (IconExternalLink 포함)
+      // Button is rendered (with IconExternalLink)
       const headerArea = screen.getByText("과일").parentElement!;
       const button = headerArea.querySelector("button");
       expect(button).toBeTruthy();

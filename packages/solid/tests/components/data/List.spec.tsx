@@ -5,7 +5,7 @@ import { IconCheck } from "@tabler/icons-solidjs";
 import { List } from "../../../src/components/data/list/List";
 
 describe("List 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 List 내부에 표시된다", () => {
       const { getByText } = render(() => (
         <List>
@@ -255,7 +255,7 @@ describe("List 컴포넌트", () => {
 });
 
 describe("List.Item 컴포넌트", () => {
-  describe("기본 렌더링", () => {
+  describe("basic rendering", () => {
     it("children이 List.Item 내부에 표시된다", () => {
       const { getByText } = render(() => (
         <List>
@@ -439,7 +439,7 @@ describe("List.Item 컴포넌트", () => {
     });
   });
 
-  describe("disabled 상태", () => {
+  describe("disabled state", () => {
     it("disabled prop에 따라 스타일이 달라진다", () => {
       const { container: defaultContainer } = render(() => (
         <List>

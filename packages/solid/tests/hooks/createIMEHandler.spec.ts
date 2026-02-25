@@ -11,7 +11,7 @@ describe("createIMEHandler", () => {
     vi.useRealTimers();
   });
 
-  it("비조합 상태에서 handleInput 호출 시 즉시 setValue", () => {
+  it("immediately calls setValue when handleInput is called in non-composing state", () => {
     const setValue = vi.fn();
 
     createRoot((dispose) => {
@@ -25,7 +25,7 @@ describe("createIMEHandler", () => {
     });
   });
 
-  it("조합 중 handleInput 호출 시 composingValue만 업데이트", () => {
+  it("only updates composingValue when handleInput is called during composition", () => {
     const setValue = vi.fn();
 
     void createRoot((dispose) => {
@@ -40,7 +40,7 @@ describe("createIMEHandler", () => {
     });
   });
 
-  it("compositionEnd 후 setTimeout(0)에서 setValue 호출", () => {
+  it("calls setValue via setTimeout(0) after compositionEnd", () => {
     const setValue = vi.fn();
 
     void createRoot((dispose) => {
@@ -61,7 +61,7 @@ describe("createIMEHandler", () => {
     });
   });
 
-  it("flushComposition으로 미커밋 값 즉시 커밋", () => {
+  it("immediately commits uncommitted value via flushComposition", () => {
     const setValue = vi.fn();
 
     void createRoot((dispose) => {
