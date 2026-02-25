@@ -8,32 +8,32 @@ import { type ComponentSize } from "../../../styles/tokens.styles";
 
 /** SharedDataSelect Props */
 export interface SharedDataSelectProps<TItem> {
-  /** 공유 데이터 접근자 */
+  /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
 
-  /** 현재 선택된 값 */
+  /** Currently selected value */
   value?: unknown;
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: unknown) => void;
-  /** 다중 선택 모드 */
+  /** Multiple selection mode */
   multiple?: boolean;
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
-  /** 트리거 크기 */
+  /** Trigger size */
   size?: ComponentSize;
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 항목 필터 함수 */
+  /** Item filter function */
   filterFn?: (item: TItem, index: number) => boolean;
-  /** 선택 모달 컴포넌트 팩토리 */
+  /** Selection modal component factory */
   modal?: () => JSX.Element;
-  /** 편집 모달 컴포넌트 팩토리 */
+  /** Edit modal component factory */
   editModal?: () => JSX.Element;
 
-  /** 아이템 렌더링 함수 */
+  /** Item rendering function */
   children: (item: TItem, index: number, depth: number) => JSX.Element;
 }
 
@@ -42,27 +42,27 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
 
   const dialog = useDialog();
 
-  // filterFn 적용된 items
+  // Items with filterFn applied
   const items = createMemo(() => {
     const allItems = local.data.items();
     if (!local.filterFn) return allItems;
     return allItems.filter(local.filterFn);
   });
 
-  // modal 열기
+  // Open modal
   const handleOpenModal = async () => {
     if (!local.modal) return;
     await dialog.show(local.modal, {});
   };
 
-  // editModal 열기
+  // Open edit modal
   const handleOpenEditModal = async () => {
     if (!local.editModal) return;
     await dialog.show(local.editModal, {});
   };
 
-  // Select의 discriminated union (multiple: true | false?)과 TItem → unknown 변환을 위해 mergeProps + as 사용
-  // getter로 래핑하여 SolidJS 반응성 lint 규칙 충족
+  // Use mergeProps + as for Select's discriminated union (multiple: true | false?) and TItem → unknown conversion
+  // Wrap with getter to satisfy SolidJS reactivity lint rules
   const selectProps = mergeProps(rest, {
     get items() {
       return items();
