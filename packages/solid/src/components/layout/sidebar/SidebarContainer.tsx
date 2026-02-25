@@ -63,10 +63,10 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
 
   const [toggle, setToggle] = createSignal(false);
 
-  // Tailwind sm: breakpoint 감지
+  // Detect Tailwind sm: breakpoint
   const isDesktop = createMediaQuery(SM_MEDIA_QUERY);
 
-  // 사이드바 열림 여부 계산
+  // Calculate sidebar open state
   const isOpen = createMemo(() => {
     if (isDesktop()) {
       return !toggle();
@@ -74,19 +74,19 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
     return toggle();
   });
 
-  // backdrop 클릭 시 닫기
+  // Close on backdrop click
   const handleBackdropClick = () => {
     setToggle(false);
   };
 
-  // 모바일에서 페이지 이동 시 자동 닫기
+  // Auto-close on page navigation on mobile
   useBeforeLeave(() => {
     if (!isDesktop() && toggle()) {
       setToggle(false);
     }
   });
 
-  // 데스크탑에서 사이드바 열림 시 padding-left 적용 (16rem = w-64)
+  // Apply padding-left on desktop when sidebar is open (16rem = w-64)
   const getPaddingLeft = () => {
     if (isDesktop() && isOpen()) {
       return "16rem";
