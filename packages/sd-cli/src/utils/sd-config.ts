@@ -38,7 +38,7 @@ export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
     typeof config.packages !== "object" ||
     Array.isArray(config.packages)
   ) {
-    throw new SdError(`sd.config.ts의 반환값이 올바른 형식이 아닙니다: ${sdConfigPath}`);
+    throw new SdError(`sd.config.ts return value is not in the correct format: ${sdConfigPath}`);
   }
   return config as SdConfig;
 }

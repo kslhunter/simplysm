@@ -19,7 +19,7 @@ describe("SELECT - GROUP BY", () => {
       .groupBy((item) => [item.name])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -32,7 +32,7 @@ describe("SELECT - GROUP BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.groupSingle[dialect]);
     });
@@ -50,7 +50,7 @@ describe("SELECT - GROUP BY", () => {
       .groupBy((item) => [item.name, item.isActive])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -67,7 +67,7 @@ describe("SELECT - GROUP BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.groupMultiple[dialect]);
     });
@@ -88,7 +88,7 @@ describe("SELECT - GROUP BY", () => {
       .groupBy((item) => [item.name])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -105,7 +105,7 @@ describe("SELECT - GROUP BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.groupAggregate[dialect]);
     });
@@ -129,7 +129,7 @@ describe("SELECT - HAVING", () => {
       .having((item) => [expr.gt(item.cnt, 5)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -149,7 +149,7 @@ describe("SELECT - HAVING", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.havingSingle[dialect]);
     });
@@ -168,7 +168,7 @@ describe("SELECT - HAVING", () => {
       .having((item) => [expr.gt(item.cnt, 5), expr.gte(item.avgAge, 25)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -194,7 +194,7 @@ describe("SELECT - HAVING", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.havingMultiple[dialect]);
     });
@@ -213,7 +213,7 @@ describe("SELECT - HAVING", () => {
       .orderBy((item) => item.cnt, "DESC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -234,7 +234,7 @@ describe("SELECT - HAVING", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.havingOrderCombo[dialect]);
     });

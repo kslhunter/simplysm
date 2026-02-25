@@ -3,40 +3,40 @@ import { getPrimitiveTypeStr, DateTime, DateOnly, Time, Uuid } from "@simplysm/c
 
 describe("primitive utils", () => {
   describe("getPrimitiveTypeStr()", () => {
-    it("string을 반환한다", () => {
+    it("Returns string", () => {
       expect(getPrimitiveTypeStr("hello")).toBe("string");
     });
 
-    it("number를 반환한다", () => {
+    it("Returns number", () => {
       expect(getPrimitiveTypeStr(42)).toBe("number");
     });
 
-    it("boolean을 반환한다", () => {
+    it("Returns boolean", () => {
       expect(getPrimitiveTypeStr(true)).toBe("boolean");
       expect(getPrimitiveTypeStr(false)).toBe("boolean");
     });
 
-    it("DateTime을 반환한다", () => {
+    it("Returns DateTime", () => {
       expect(getPrimitiveTypeStr(new DateTime())).toBe("DateTime");
     });
 
-    it("DateOnly를 반환한다", () => {
+    it("Returns DateOnly", () => {
       expect(getPrimitiveTypeStr(new DateOnly())).toBe("DateOnly");
     });
 
-    it("Time을 반환한다", () => {
+    it("Returns Time", () => {
       expect(getPrimitiveTypeStr(new Time())).toBe("Time");
     });
 
-    it("Uuid를 반환한다", () => {
+    it("Returns Uuid", () => {
       expect(getPrimitiveTypeStr(Uuid.new())).toBe("Uuid");
     });
 
-    it("Uint8Array는 Bytes를 반환한다", () => {
+    it("Uint8Array returns Bytes", () => {
       expect(getPrimitiveTypeStr(new Uint8Array([1, 2]))).toBe("Bytes");
     });
 
-    it("지원하지 않는 타입은 에러를 던진다", () => {
+    it("Unsupported type throws error", () => {
       expect(() => getPrimitiveTypeStr({} as never)).toThrow();
     });
   });

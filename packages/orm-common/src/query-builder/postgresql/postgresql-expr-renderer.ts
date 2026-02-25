@@ -112,7 +112,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     if (value instanceof Uint8Array) {
       return `'\\x${bytesToHex(value)}'::bytea`;
     }
-    throw new Error(`알 수 없는 value type: ${typeof value}`);
+    throw new Error(`Unknown value type: ${typeof value}`);
   }
 
   /** DataType → SQL type */
@@ -509,13 +509,13 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   //#region ========== 기타 ==========
 
   protected greatest(expr: ExprGreatest): string {
-    if (expr.args.length === 0) throw new Error("greatest는 최소 하나의 인자가 필요합니다.");
+    if (expr.args.length === 0) throw new Error("greatest requires at least one argument.");
     // PostgreSQL: GREATEST 네이티브 지원
     return `GREATEST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
   protected least(expr: ExprLeast): string {
-    if (expr.args.length === 0) throw new Error("least는 최소 하나의 인자가 필요합니다.");
+    if (expr.args.length === 0) throw new Error("least requires at least one argument.");
     // PostgreSQL: LEAST 네이티브 지원
     return `LEAST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }

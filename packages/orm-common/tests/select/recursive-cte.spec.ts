@@ -38,7 +38,7 @@ describe("SELECT - Recursive CTE", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -103,7 +103,7 @@ describe("SELECT - Recursive CTE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.basicSubordinates[dialect]);
     });
@@ -136,7 +136,7 @@ describe("SELECT - Recursive CTE", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -203,7 +203,7 @@ describe("SELECT - Recursive CTE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.depthLimit[dialect]);
     });
@@ -238,7 +238,7 @@ describe("SELECT - Recursive CTE", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -302,7 +302,7 @@ describe("SELECT - Recursive CTE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upwardManagers[dialect]);
     });
@@ -337,7 +337,7 @@ describe("SELECT - Recursive CTE", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -403,7 +403,7 @@ describe("SELECT - Recursive CTE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.cteWithOrderBy[dialect]);
     });
@@ -437,7 +437,7 @@ describe("SELECT - Recursive CTE", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -506,7 +506,7 @@ describe("SELECT - Recursive CTE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.cteWithWhere[dialect]);
     });

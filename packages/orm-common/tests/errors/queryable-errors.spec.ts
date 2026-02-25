@@ -4,19 +4,19 @@ import { Queryable } from "../../src/exec/queryable";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { expr } from "../../src/expr/expr";
 
-describe("Queryable 에러 케이스", () => {
-  describe("expr.and()/expr.or() 에러", () => {
-    it("빈 배열로 and() 호출 시 ArgumentError", () => {
+describe("Queryable error cases", () => {
+  describe("expr.and()/expr.or() errors", () => {
+    it("ArgumentError when calling and() with empty array", () => {
       expect(() => expr.and([])).toThrow("빈 배열은 허용되지 않습니다");
     });
 
-    it("빈 배열로 or() 호출 시 ArgumentError", () => {
+    it("ArgumentError when calling or() with empty array", () => {
       expect(() => expr.or([])).toThrow("빈 배열은 허용되지 않습니다");
     });
   });
 
-  describe("executable 에러", () => {
-    it("파라미터 없는 프로시저에 파라미터 전달 시 에러", () => {
+  describe("executable errors", () => {
+    it("Error when passing parameters to procedure without parameters", () => {
       const db = createTestDb();
       expect(() => {
         // @ts-expect-error - 파라미터 없는 프로시저에 파라미터 전달 테스트
@@ -25,28 +25,28 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("include() 에러", () => {
-    it("존재하지 않는 관계를 include하면 에러", () => {
+  describe("include() errors", () => {
+    it("Error when including non-existent relation", () => {
       const db = createTestDb();
 
       expect(() => {
-        // @ts-expect-error - 존재하지 않는 관계 테스트
+        // @ts-expect-error - non-existent relation test
         db.user().include((item) => item.nonExistentRelation);
       }).toThrow("관계 'nonExistentRelation'을(를) 찾을 수 없습니다.");
     });
 
-    it("ViewBuilder 기반 queryable에서 include 호출 시 에러", () => {
+    it("Error when calling include on ViewBuilder-based queryable", () => {
       const db = createTestDb();
 
       expect(() => {
-        // @ts-expect-error - ViewBuilder에는 relations가 없어 include 불가
+        // @ts-expect-error - ViewBuilder has no relations, include not supported
         db.activeUsers().include((item) => item.someRelation);
       }).toThrow("include()는 TableBuilder 기반 queryable에서만 사용할 수 있습니다.");
     });
   });
 
-  describe("union() 에러", () => {
-    it("queryable 1개로 union하면 에러", () => {
+  describe("union() errors", () => {
+    it("Error when calling union with a single queryable", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -55,8 +55,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("limit() 에러", () => {
-    it("ORDER BY 없이 limit하면 에러", () => {
+  describe("limit() errors", () => {
+    it("Error when calling limit without ORDER BY", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -65,8 +65,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("regexp() 에러", () => {
-    it("MSSQL에서 regexp 사용하면 에러", () => {
+  describe("regexp() errors", () => {
+    it("Error when using regexp in MSSQL", () => {
       const db = createTestDb();
       const def = db
         .user()
@@ -80,8 +80,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("inQuery() 에러", () => {
-    it("다중 컬럼 서브쿼리 사용 시 에러", () => {
+  describe("inQuery() errors", () => {
+    it("Error when using multi-column subquery", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -89,7 +89,7 @@ describe("Queryable 에러 케이스", () => {
           .where((u) => [
             expr.inQuery(
               u.id,
-              // @ts-expect-error - 다중 컬럼 서브쿼리
+              // @ts-expect-error - multi-column subquery
               db.post().select((p) => ({ userId: p.userId, title: p.title })),
             ),
           ])
@@ -97,7 +97,7 @@ describe("Queryable 에러 케이스", () => {
       }).toThrow("inQuery의 서브쿼리는 단일 컬럼만 SELECT해야 합니다.");
     });
 
-    it("컬럼 지정 없는 서브쿼리 사용 시 에러", () => {
+    it("Error when using subquery without column specification", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -105,7 +105,7 @@ describe("Queryable 에러 케이스", () => {
           .where((u) => [
             expr.inQuery(
               u.id,
-              // @ts-expect-error - SELECT 없는 서브쿼리
+              // @ts-expect-error - subquery without SELECT
               db.post(),
             ),
           ])
@@ -114,8 +114,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("countAsync() 에러", () => {
-    it("distinct() 후 직접 호출하면 에러", async () => {
+  describe("countAsync() errors", () => {
+    it("Error when calling directly after distinct()", async () => {
       const db = createTestDb();
 
       await expect(
@@ -129,7 +129,7 @@ describe("Queryable 에러 케이스", () => {
       );
     });
 
-    it("groupBy() 후 직접 호출하면 에러", async () => {
+    it("Error when calling directly after groupBy()", async () => {
       const db = createTestDb();
 
       await expect(
@@ -141,8 +141,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("RecursiveQueryable.union() 에러", () => {
-    it("queryable 1개로 union하면 에러", () => {
+  describe("RecursiveQueryable.union() errors", () => {
+    it("Error when calling union with a single queryable", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -152,7 +152,7 @@ describe("Queryable 에러 케이스", () => {
       }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
     });
 
-    it("queryable 0개로 union하면 에러", () => {
+    it("Error when calling union with zero queryables", () => {
       const db = createTestDb();
 
       expect(() => {
@@ -163,8 +163,8 @@ describe("Queryable 에러 케이스", () => {
     });
   });
 
-  describe("JoinQueryable.union() 에러", () => {
-    it("join 내에서 queryable 1개로 union하면 에러", () => {
+  describe("JoinQueryable.union() errors", () => {
+    it("Error when calling union with a single queryable inside join", () => {
       const db = createTestDb();
 
       expect(() => {

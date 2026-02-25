@@ -1,29 +1,29 @@
 import { describe, it, expect } from "vitest";
 import "../../src/extensions/set-ext";
 
-describe("Set 프로토타입 확장", () => {
+describe("Set prototype extensions", () => {
   //#region adds
 
   describe("adds()", () => {
-    it("여러 항목을 한 번에 추가", () => {
+    it("Adds multiple items at once", () => {
       const set = new Set([1, 2, 3]);
       const result = set.adds(4, 5, 6);
 
-      expect(result).toBe(set); // 원본 반환
+      expect(result).toBe(set); // returns original
       expect(set.size).toBe(6);
       expect(set.has(4)).toBe(true);
       expect(set.has(5)).toBe(true);
       expect(set.has(6)).toBe(true);
     });
 
-    it("중복 항목을 자동으로 제거", () => {
+    it("Automatically removes duplicate items", () => {
       const set = new Set([1, 2, 3]);
       set.adds(2, 3, 4);
 
       expect(set.size).toBe(4); // 1, 2, 3, 4
     });
 
-    it("빈 Set에 여러 항목 추가", () => {
+    it("Adds multiple items to empty Set", () => {
       const set = new Set<number>();
       set.adds(1, 2, 3);
 
@@ -36,16 +36,16 @@ describe("Set 프로토타입 확장", () => {
   //#region toggle
 
   describe("toggle()", () => {
-    it("항목이 없으면 추가", () => {
+    it("Adds item if not exists", () => {
       const set = new Set([1, 2, 3]);
       const result = set.toggle(4);
 
-      expect(result).toBe(set); // 원본 반환
+      expect(result).toBe(set); // returns original
       expect(set.has(4)).toBe(true);
       expect(set.size).toBe(4);
     });
 
-    it("항목이 있으면 제거", () => {
+    it("Removes item if exists", () => {
       const set = new Set([1, 2, 3]);
       set.toggle(2);
 
@@ -53,20 +53,20 @@ describe("Set 프로토타입 확장", () => {
       expect(set.size).toBe(2);
     });
 
-    it("addOrDel='add'로 강제 추가", () => {
+    it("Force adds with addOrDel='add'", () => {
       const set = new Set([1, 2, 3]);
-      set.toggle(2, "add"); // 이미 있지만 add 옵션
+      set.toggle(2, "add"); // already exists but add option
 
       expect(set.has(2)).toBe(true);
-      expect(set.size).toBe(3); // 변경 없음
+      expect(set.size).toBe(3); // unchanged
     });
 
-    it("addOrDel='del'로 강제 제거", () => {
+    it("Force removes with addOrDel='del'", () => {
       const set = new Set([1, 2, 3]);
-      set.toggle(4, "del"); // 없지만 del 옵션
+      set.toggle(4, "del"); // not exists but del option
 
       expect(set.has(4)).toBe(false);
-      expect(set.size).toBe(3); // 변경 없음
+      expect(set.size).toBe(3); // unchanged
     });
   });
 

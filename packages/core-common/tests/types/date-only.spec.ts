@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import { DateOnly } from "@simplysm/core-common";
 
 describe("DateOnly", () => {
-  //#region 생성자
+  //#region Constructor
 
-  describe("생성자", () => {
-    it("인수 없이 생성하면 오늘 날짜를 반환", () => {
+  describe("constructor", () => {
+    it("Returns today's date when created without arguments", () => {
       const now = new Date();
       const dateOnly = new DateOnly();
 
@@ -14,7 +14,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(now.getDate());
     });
 
-    it("year/month/day로 생성", () => {
+    it("Creates with year/month/day", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
 
       expect(dateOnly.year).toBe(2025);
@@ -22,7 +22,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("tick (millisecond)으로 생성한다", () => {
+    it("Creates with tick (millisecond)", () => {
       const tick = new Date(2025, 0, 6).getTime();
       const dateOnly = new DateOnly(tick);
 
@@ -31,7 +31,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("Date 타입으로 생성한다", () => {
+    it("Creates with Date type", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45);
       const dateOnly = new DateOnly(date);
 
@@ -40,7 +40,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("Date 타입에서 생성할 때 시간을 무시한다", () => {
+    it("Ignores time when creating from Date type", () => {
       const date1 = new Date(2025, 0, 6, 0, 0, 0);
       const date2 = new Date(2025, 0, 6, 23, 59, 59);
 
@@ -50,7 +50,7 @@ describe("DateOnly", () => {
       expect(dateOnly1.tick).toBe(dateOnly2.tick);
     });
 
-    it("윤년 2월 29일을 생성한다", () => {
+    it("Creates February 29 in leap year", () => {
       const dateOnly = new DateOnly(2024, 2, 29);
 
       expect(dateOnly.year).toBe(2024);
@@ -59,7 +59,7 @@ describe("DateOnly", () => {
       expect(dateOnly.isValid).toBe(true);
     });
 
-    it("평년 2월 29일은 3월 1일로 조정된다 (JS Date 동작)", () => {
+    it("Adjusts February 29 to March 1 in non-leap year (JS Date behavior)", () => {
       const dateOnly = new DateOnly(2023, 2, 29);
 
       expect(dateOnly.year).toBe(2023);
@@ -67,7 +67,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(1);
     });
 
-    it("유효하지 않은 월(13)은 다음 해 1월로 조정된다 (JS Date 동작)", () => {
+    it("Adjusts invalid month (13) to January next year (JS Date behavior)", () => {
       const dateOnly = new DateOnly(2024, 13, 1);
 
       expect(dateOnly.year).toBe(2025);
@@ -81,7 +81,7 @@ describe("DateOnly", () => {
   //#region parse
 
   describe("parse()", () => {
-    it("yyyy-MM-dd 형식을 파싱한다", () => {
+    it("Parses yyyy-MM-dd format", () => {
       const dateOnly = DateOnly.parse("2025-01-06");
 
       expect(dateOnly.year).toBe(2025);
@@ -89,7 +89,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("yyyyMMdd 형식을 파싱한다", () => {
+    it("Parses yyyyMMdd format", () => {
       const dateOnly = DateOnly.parse("20250106");
 
       expect(dateOnly.year).toBe(2025);
@@ -97,7 +97,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("ISO 8601 형식을 파싱한다", () => {
+    it("Parses ISO 8601 format", () => {
       const dateOnly = DateOnly.parse("2025-01-06T00:00:00Z");
 
       expect(dateOnly.year).toBe(2025);
@@ -105,11 +105,11 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("잘못된 형식이면 에러를 던진다", () => {
-      expect(() => DateOnly.parse("invalid-date")).toThrow("날짜 형식을 파싱할 수 없습니다");
+    it("Throws error for invalid format", () => {
+      expect(() => DateOnly.parse("invalid-date")).toThrow("Unable to parse date format");
     });
 
-    it("연말 경계(12월 31일)를 파싱한다", () => {
+    it("Parses year-end boundary (December 31)", () => {
       const dateOnly = DateOnly.parse("2024-12-31");
 
       expect(dateOnly.year).toBe(2024);
@@ -117,7 +117,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(31);
     });
 
-    it("연초 경계(1월 1일)를 파싱한다", () => {
+    it("Parses year-start boundary (January 1)", () => {
       const dateOnly = DateOnly.parse("2025-01-01");
 
       expect(dateOnly.year).toBe(2025);
@@ -125,7 +125,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(1);
     });
 
-    it("윤년 2월 29일을 파싱한다", () => {
+    it("Parses February 29 in leap year", () => {
       const dateOnly = DateOnly.parse("2024-02-29");
 
       expect(dateOnly.year).toBe(2024);
@@ -133,7 +133,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(29);
     });
 
-    it("윤년 2월 28일을 파싱한다", () => {
+    it("Parses February 28 in leap year", () => {
       const dateOnly = DateOnly.parse("2024-02-28");
 
       expect(dateOnly.year).toBe(2024);
@@ -147,38 +147,38 @@ describe("DateOnly", () => {
   //#region Getters
 
   describe("Getters", () => {
-    it("year를 반환한다", () => {
+    it("Returns year", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.year).toBe(2025);
     });
 
-    it("month를 반환한다 (1~12)", () => {
+    it("Returns month (1-12)", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.month).toBe(1);
     });
 
-    it("day를 반환한다", () => {
+    it("Returns day", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.day).toBe(6);
     });
 
-    it("tick을 반환한다", () => {
+    it("Returns tick", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.tick).toBe(new Date(2025, 0, 6).getTime());
     });
 
-    it("dayOfWeek를 반환한다 (일~토: 0~6)", () => {
-      // 2025-01-06은 월요일 (1)
+    it("Returns dayOfWeek (Sunday-Saturday: 0-6)", () => {
+      // 2025-01-06 is Monday (1)
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.dayOfWeek).toBe(1);
     });
 
-    it("isValid를 반환한다", () => {
+    it("Returns isValid", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.isValid).toBe(true);
     });
 
-    it("유효하지 않은 날짜는 isValid가 false를 반환한다", () => {
+    it("Invalid date returns isValid as false", () => {
       const dateOnly = new DateOnly(NaN);
       expect(dateOnly.isValid).toBe(false);
     });
@@ -186,50 +186,50 @@ describe("DateOnly", () => {
 
   //#endregion
 
-  //#region setX 메서드 (불변)
+  //#region setX methods (immutable)
 
   describe("setYear()", () => {
-    it("연도를 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with year changed", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.setYear(2026);
 
       expect(newDateOnly.year).toBe(2026);
       expect(newDateOnly.month).toBe(1);
       expect(newDateOnly.day).toBe(6);
-      expect(dateOnly.year).toBe(2025); // 원본 불변
+      expect(dateOnly.year).toBe(2025); // original immutable
     });
 
-    it("윤년 2월 29일에서 평년으로 setYear하면 3월 1일로 조정된다", () => {
-      const dateOnly = new DateOnly(2024, 2, 29); // 2024년은 윤년
-      const newDateOnly = dateOnly.setYear(2023); // 2023년은 평년
+    it("Adjusts February 29 from leap year to non-leap year with setYear", () => {
+      const dateOnly = new DateOnly(2024, 2, 29); // 2024 is leap year
+      const newDateOnly = dateOnly.setYear(2023); // 2023 is non-leap year
 
       expect(newDateOnly.year).toBe(2023);
       expect(newDateOnly.month).toBe(3);
-      expect(newDateOnly.day).toBe(1); // 2월 29일 → 3월 1일로 조정
+      expect(newDateOnly.day).toBe(1); // February 29 → March 1
     });
   });
 
   describe("setMonth()", () => {
-    it("월을 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with month changed", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.setMonth(2);
 
       expect(newDateOnly.year).toBe(2025);
       expect(newDateOnly.month).toBe(2);
       expect(newDateOnly.day).toBe(6);
-      expect(dateOnly.month).toBe(1); // 원본 불변
+      expect(dateOnly.month).toBe(1); // original immutable
     });
 
-    it("대상 월의 마지막 날보다 큰 경우 마지막 날로 조정한다", () => {
-      // 1월 31일 → 2월 (28일까지)
+    it("Adjusts to last day of month if target month has fewer days", () => {
+      // January 31 → February (28 days max)
       const dateOnly = new DateOnly(2025, 1, 31);
       const newDateOnly = dateOnly.setMonth(2);
 
       expect(newDateOnly.month).toBe(2);
-      expect(newDateOnly.day).toBe(28); // 2월 마지막 날
+      expect(newDateOnly.day).toBe(28); // February's last day
     });
 
-    it("setMonth(13)은 다음 해 1월을 반환한다", () => {
+    it("setMonth(13) returns January next year", () => {
       const dateOnly = new DateOnly(2025, 6, 15);
       const result = dateOnly.setMonth(13);
 
@@ -238,7 +238,7 @@ describe("DateOnly", () => {
       expect(result.day).toBe(15);
     });
 
-    it("setMonth(0)은 이전 해 12월을 반환한다", () => {
+    it("setMonth(0) returns December previous year", () => {
       const dateOnly = new DateOnly(2025, 6, 15);
       const result = dateOnly.setMonth(0);
 
@@ -247,7 +247,7 @@ describe("DateOnly", () => {
       expect(result.day).toBe(15);
     });
 
-    it("setMonth(-1)은 이전 해 11월을 반환한다", () => {
+    it("setMonth(-1) returns November previous year", () => {
       const dateOnly = new DateOnly(2025, 6, 15);
       const result = dateOnly.setMonth(-1);
 
@@ -258,23 +258,23 @@ describe("DateOnly", () => {
   });
 
   describe("setDay()", () => {
-    it("일을 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with day changed", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.setDay(15);
 
       expect(newDateOnly.year).toBe(2025);
       expect(newDateOnly.month).toBe(1);
       expect(newDateOnly.day).toBe(15);
-      expect(dateOnly.day).toBe(6); // 원본 불변
+      expect(dateOnly.day).toBe(6); // original immutable
     });
   });
 
   //#endregion
 
-  //#region addX 메서드 (불변)
+  //#region addX methods (immutable)
 
   describe("addYears()", () => {
-    it("양수 연도를 더한다", () => {
+    it("Adds positive years", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.addYears(2);
 
@@ -283,7 +283,7 @@ describe("DateOnly", () => {
       expect(newDateOnly.day).toBe(6);
     });
 
-    it("음수 연도를 더한다 (빼기)", () => {
+    it("Adds negative years (subtraction)", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.addYears(-1);
 
@@ -292,7 +292,7 @@ describe("DateOnly", () => {
   });
 
   describe("addMonths()", () => {
-    it("양수 월을 더한다", () => {
+    it("Adds positive months", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.addMonths(3);
 
@@ -301,14 +301,14 @@ describe("DateOnly", () => {
       expect(newDateOnly.day).toBe(6);
     });
 
-    it("음수 월을 더한다 (빼기)", () => {
+    it("Adds negative months (subtraction)", () => {
       const dateOnly = new DateOnly(2025, 3, 6);
       const newDateOnly = dateOnly.addMonths(-2);
 
       expect(newDateOnly.month).toBe(1);
     });
 
-    it("연도를 넘어가는 경우를 처리한다", () => {
+    it("Handles year boundary when adding months", () => {
       const dateOnly = new DateOnly(2025, 11, 6);
       const newDateOnly = dateOnly.addMonths(3);
 
@@ -318,7 +318,7 @@ describe("DateOnly", () => {
   });
 
   describe("addDays()", () => {
-    it("양수 일을 더한다", () => {
+    it("Adds positive days", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       const newDateOnly = dateOnly.addDays(10);
 
@@ -327,14 +327,14 @@ describe("DateOnly", () => {
       expect(newDateOnly.day).toBe(16);
     });
 
-    it("음수 일을 더한다 (빼기)", () => {
+    it("Adds negative days (subtraction)", () => {
       const dateOnly = new DateOnly(2025, 1, 16);
       const newDateOnly = dateOnly.addDays(-10);
 
       expect(newDateOnly.day).toBe(6);
     });
 
-    it("월을 넘어가는 경우를 처리한다", () => {
+    it("Handles month boundary when adding days", () => {
       const dateOnly = new DateOnly(2025, 1, 31);
       const newDateOnly = dateOnly.addDays(1);
 
@@ -345,33 +345,33 @@ describe("DateOnly", () => {
 
   //#endregion
 
-  //#region 포맷팅
+  //#region Formatting
 
   describe("toFormatString()", () => {
-    it("yyyy-MM-dd 형식으로 포맷팅한다", () => {
+    it("Formats to yyyy-MM-dd format", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toFormatString("yyyy-MM-dd")).toBe("2025-01-06");
     });
 
-    it("yyyyMMdd 형식으로 포맷팅한다", () => {
+    it("Formats to yyyyMMdd format", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toFormatString("yyyyMMdd")).toBe("20250106");
     });
 
-    it("yyyy년 M월 d일 형식으로 포맷팅한다", () => {
+    it("Formats with Korean date format pattern (yyyy year M month d day)", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toFormatString("yyyy년 M월 d일")).toBe("2025년 1월 6일");
     });
 
-    it("요일을 포함한 형식으로 포맷팅한다", () => {
-      // 2025-01-06은 월요일
+    it("Formats with day of week", () => {
+      // 2025-01-06 is Monday
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toFormatString("yyyy-MM-dd (ddd)")).toBe("2025-01-06 (월)");
     });
   });
 
   describe("toString()", () => {
-    it("기본 형식 yyyy-MM-dd로 반환한다", () => {
+    it("Returns default format yyyy-MM-dd", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toString()).toBe("2025-01-06");
     });
@@ -379,24 +379,24 @@ describe("DateOnly", () => {
 
   //#endregion
 
-  //#region tick 비교
+  //#region tick comparison
 
-  describe("tick 비교", () => {
-    it("같은 날짜는 같은 tick을 가진다", () => {
+  describe("tick comparison", () => {
+    it("Same dates have same tick", () => {
       const d1 = new DateOnly(2025, 3, 15);
       const d2 = new DateOnly(2025, 3, 15);
 
       expect(d1.tick).toBe(d2.tick);
     });
 
-    it("다른 날짜는 다른 tick을 가진다", () => {
+    it("Different dates have different ticks", () => {
       const d1 = new DateOnly(2025, 3, 15);
       const d2 = new DateOnly(2025, 3, 16);
 
       expect(d1.tick).not.toBe(d2.tick);
     });
 
-    it("tick으로 날짜 순서를 비교할 수 있다", () => {
+    it("Can compare date order by tick", () => {
       const d1 = new DateOnly(2025, 1, 1);
       const d2 = new DateOnly(2025, 6, 15);
       const d3 = new DateOnly(2025, 12, 31);
@@ -405,7 +405,7 @@ describe("DateOnly", () => {
       expect(d2.tick).toBeLessThan(d3.tick);
     });
 
-    it("연도가 다른 날짜도 tick으로 비교할 수 있다", () => {
+    it("Can compare dates with different years by tick", () => {
       const d2024 = new DateOnly(2024, 12, 31);
       const d2025 = new DateOnly(2025, 1, 1);
 
@@ -415,12 +415,12 @@ describe("DateOnly", () => {
 
   //#endregion
 
-  //#region 주차 계산
+  //#region Week calculation
 
   describe("getWeekSeqOfYear()", () => {
-    describe("ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)", () => {
-      it("연도 중간의 주차를 반환한다", () => {
-        // 2025-01-06 (월요일)
+    describe("ISO 8601 standard (Monday start, first week min 4 days)", () => {
+      it("Returns week sequence in middle of year", () => {
+        // 2025-01-06 (Monday)
         const dateOnly = new DateOnly(2025, 1, 6);
         const result = dateOnly.getWeekSeqOfYear();
 
@@ -428,8 +428,8 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(2);
       });
 
-      it("연초가 이번 연도 1주차에 속하는 경우를 처리한다", () => {
-        // 2025-01-01 (수요일) - ISO 8601에서 1월 2일(목)이 같은 주에 있으므로 2025년 1주차
+      it("Handles year-start when within week 1 of current year", () => {
+        // 2025-01-01 (Wednesday) - ISO 8601, January 2 (Thursday) is in same week, so 2025 week 1
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfYear();
 
@@ -437,8 +437,8 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(1);
       });
 
-      it("연말이 다음 연도 주차에 속하는 경우를 처리한다", () => {
-        // 2024-12-30 (월요일) - 같은 주에 2025년 1월 2일(목)이 있으므로 2025년 1주차
+      it("Handles year-end when belonging to next year's week", () => {
+        // 2024-12-30 (Monday) - Same week has 2025 January 2 (Thursday), so 2025 week 1
         const dateOnly = new DateOnly(2024, 12, 30);
         const result = dateOnly.getWeekSeqOfYear();
 
@@ -447,9 +447,9 @@ describe("DateOnly", () => {
       });
     });
 
-    describe("미국식 (일요일 시작, 첫 주 최소 1일)", () => {
-      it("연도 첫 날이 첫 주차에 속한다", () => {
-        // 2025-01-01 (수요일)
+    describe("US style (Sunday start, first week min 1 day)", () => {
+      it("Year's first day belongs to week 1", () => {
+        // 2025-01-01 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfYear(0, 1);
 
@@ -457,8 +457,8 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(1);
       });
 
-      it("연도 중간의 주차를 반환한다", () => {
-        // 2025-01-12 (일요일) - 미국식 3주차 시작
+      it("Returns week sequence in middle of year", () => {
+        // 2025-01-12 (Sunday) - US style week 3 start
         const dateOnly = new DateOnly(2025, 1, 12);
         const result = dateOnly.getWeekSeqOfYear(0, 1);
 
@@ -467,9 +467,9 @@ describe("DateOnly", () => {
       });
     });
 
-    describe("윤년 처리", () => {
-      it("윤년의 2월 29일을 처리한다", () => {
-        // 2024년은 윤년, 2024-02-29 (목요일)
+    describe("Leap year handling", () => {
+      it("Handles February 29 in leap year", () => {
+        // 2024 is leap year, 2024-02-29 (Thursday)
         const dateOnly = new DateOnly(2024, 2, 29);
         const result = dateOnly.getWeekSeqOfYear();
 
@@ -480,9 +480,9 @@ describe("DateOnly", () => {
   });
 
   describe("getWeekSeqOfMonth()", () => {
-    describe("ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)", () => {
-      it("월 중간의 주차를 반환한다", () => {
-        // 2025-01-15 (수요일)
+    describe("ISO 8601 standard (Monday start, first week min 4 days)", () => {
+      it("Returns week sequence in middle of month", () => {
+        // 2025-01-15 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 15);
         const result = dateOnly.getWeekSeqOfMonth();
 
@@ -491,17 +491,17 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(3);
       });
 
-      it("월초가 이전 달 주차에 속하는 경우를 처리한다", () => {
-        // 2025-02-01 (토요일) - 1월의 마지막 주에 속함
+      it("Handles month-start when belonging to previous month's week", () => {
+        // 2025-02-01 (Saturday) - Belongs to January's last week
         const dateOnly = new DateOnly(2025, 2, 1);
         const result = dateOnly.getWeekSeqOfMonth();
 
-        // 2월 1일이 토요일이고 첫 주 최소 4일 조건을 충족하지 못하면 1월 주차
+        // February 1 is Saturday, doesn't meet 4-day minimum, so January week
         expect(result.monthSeq).toBe(1);
       });
 
-      it("월말이 다음 달 주차에 속하는 경우를 처리한다", () => {
-        // 2025-01-30 (목요일) - 2월 1주차에 속할 수 있음
+      it("Handles month-end when potentially belonging to next month's week", () => {
+        // 2025-01-30 (Thursday) - Can belong to February week
         const dateOnly = new DateOnly(2025, 1, 30);
         const result = dateOnly.getWeekSeqOfMonth();
 
@@ -509,9 +509,9 @@ describe("DateOnly", () => {
       });
     });
 
-    describe("미국식 (일요일 시작, 첫 주 최소 1일)", () => {
-      it("월 첫 날이 첫 주차에 속한다", () => {
-        // 2025-01-01 (수요일)
+    describe("US style (Sunday start, first week min 1 day)", () => {
+      it("Month's first day belongs to week 1", () => {
+        // 2025-01-01 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfMonth(0, 1);
 
@@ -523,7 +523,7 @@ describe("DateOnly", () => {
   });
 
   describe("getBaseYearMonthSeqForWeekSeq()", () => {
-    it("일반적인 날짜에서 현재 연월을 반환한다", () => {
+    it("Returns current year-month for general date", () => {
       const dateOnly = new DateOnly(2025, 1, 15);
       const result = dateOnly.getBaseYearMonthSeqForWeekSeq();
 
@@ -531,31 +531,31 @@ describe("DateOnly", () => {
       expect(result.monthSeq).toBe(1);
     });
 
-    it("월 경계에서 이전 달을 반환할 수 있다", () => {
-      // 주 시작 요일에 따라 이전/다음 달로 분류될 수 있음
+    it("Can return previous month at month boundary", () => {
+      // May vary based on week start day
       const dateOnly = new DateOnly(2025, 2, 1);
       const result = dateOnly.getBaseYearMonthSeqForWeekSeq();
 
-      // 2025-02-01이 토요일이면 이전 달(1월) 주차에 속함
+      // 2025-02-01 is Saturday, so may belong to January week
       expect(result.year).toBe(2025);
     });
   });
 
   describe("getWeekSeqStartDate()", () => {
-    describe("ISO 8601 표준 (월요일 시작)", () => {
-      it("주의 시작 날짜(월요일)를 반환한다", () => {
-        // 2025-01-08 (수요일)
+    describe("ISO 8601 standard (Monday start)", () => {
+      it("Returns week start date (Monday)", () => {
+        // 2025-01-08 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 8);
         const result = dateOnly.getWeekSeqStartDate();
 
         expect(result.year).toBe(2025);
         expect(result.month).toBe(1);
-        expect(result.day).toBe(6); // 월요일
+        expect(result.day).toBe(6); // Monday
         expect(result.dayOfWeek).toBe(1);
       });
 
-      it("이미 월요일이면 같은 날짜를 반환한다", () => {
-        // 2025-01-06 (월요일)
+      it("Returns same date if already Monday", () => {
+        // 2025-01-06 (Monday)
         const dateOnly = new DateOnly(2025, 1, 6);
         const result = dateOnly.getWeekSeqStartDate();
 
@@ -563,71 +563,71 @@ describe("DateOnly", () => {
       });
     });
 
-    describe("미국식 (일요일 시작)", () => {
-      it("주의 시작 날짜(일요일)를 반환한다", () => {
-        // 2025-01-08 (수요일)
+    describe("US style (Sunday start)", () => {
+      it("Returns week start date (Sunday)", () => {
+        // 2025-01-08 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 8);
         const result = dateOnly.getWeekSeqStartDate(0, 1);
 
         expect(result.year).toBe(2025);
         expect(result.month).toBe(1);
-        expect(result.day).toBe(5); // 일요일
+        expect(result.day).toBe(5); // Sunday
         expect(result.dayOfWeek).toBe(0);
       });
     });
   });
 
   describe("getDateByYearWeekSeq()", () => {
-    describe("ISO 8601 표준", () => {
-      it("연간 주차로부터 시작일을 반환한다", () => {
-        // 2025년 2주차
+    describe("ISO 8601 standard", () => {
+      it("Returns start date from year week sequence", () => {
+        // 2025 week 2
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 });
 
         expect(result.year).toBe(2025);
         expect(result.month).toBe(1);
-        expect(result.day).toBe(6); // 2025-01-06 (월요일)
+        expect(result.day).toBe(6); // 2025-01-06 (Monday)
       });
 
-      it("월간 주차로부터 시작일을 반환한다", () => {
-        // 2025년 1월 3주차
+      it("Returns start date from year-month week sequence", () => {
+        // 2025 January week 3
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, month: 1, weekSeq: 3 });
 
         expect(result.year).toBe(2025);
         expect(result.month).toBe(1);
-        expect(result.day).toBe(13); // 2025-01-13 (월요일)
+        expect(result.day).toBe(13); // 2025-01-13 (Monday)
       });
     });
 
-    describe("미국식", () => {
-      it("연간 주차로부터 시작일을 반환한다", () => {
-        // 2025년 1주차 (미국식)
+    describe("US style", () => {
+      it("Returns start date from year week sequence", () => {
+        // 2025 week 1 (US style)
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 1 }, 0, 1);
 
         expect(result.year).toBe(2024);
         expect(result.month).toBe(12);
-        expect(result.day).toBe(29); // 2024-12-29 (일요일)
+        expect(result.day).toBe(29); // 2024-12-29 (Sunday)
       });
     });
 
-    describe("연도 경계 처리", () => {
-      it("53주차가 있는 연도를 처리한다", () => {
-        // 2020년은 53주까지 있음 (ISO 8601)
+    describe("Year boundary handling", () => {
+      it("Handles year with 53 weeks", () => {
+        // 2020 has 53 weeks (ISO 8601)
         const result = DateOnly.getDateByYearWeekSeq({ year: 2020, weekSeq: 53 });
 
         expect(result.year).toBe(2020);
         expect(result.month).toBe(12);
-        expect(result.day).toBe(28); // 2020-12-28 (월요일)
+        expect(result.day).toBe(28); // 2020-12-28 (Monday)
       });
     });
 
-    describe("윤년 처리", () => {
-      it("윤년의 주차를 올바르게 계산한다", () => {
-        // 2024년 (윤년) 10주차
+    describe("Leap year handling", () => {
+      it("Correctly calculates week for leap year", () => {
+        // 2024 (leap year) week 10
         const result = DateOnly.getDateByYearWeekSeq({ year: 2024, weekSeq: 10 });
 
         expect(result.year).toBe(2024);
         expect(result.month).toBe(3);
-        expect(result.day).toBe(4); // 2024-03-04 (월요일)
+        expect(result.day).toBe(4); // 2024-03-04 (Monday)
       });
     });
   });

@@ -1,27 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { SdError, ArgumentError } from "@simplysm/core-common";
 
-describe("에러", () => {
+describe("Errors", () => {
   //#region SdError
 
   describe("SdError", () => {
-    it("cause와 함께 생성", () => {
+    it("Creates with cause", () => {
       const cause = new Error("original error");
       const error = new SdError(cause, "wrapped message");
 
-      // 메시지가 "wrapped message => original error" 형식으로 결합됨
+      // Message combined as "wrapped message => original error" format
       expect(error.message).toContain("wrapped message");
       expect(error.message).toContain("original error");
     });
 
-    it("cause 메시지를 통합", () => {
+    it("Integrates cause message", () => {
       const cause = new Error("cause message");
       const error = new SdError(cause, "main message");
 
       expect(error.message).toContain("main message");
     });
 
-    it("다중 레벨 cause 체인 처리", () => {
+    it("Handles multi-level cause chain", () => {
       const root = new Error("root error");
       const middle = new SdError(root, "middle error");
       const top = new SdError(middle, "top error");
@@ -31,7 +31,7 @@ describe("에러", () => {
       expect(top.message).toContain("root error");
     });
 
-    it("cause 스택을 현재 스택에 통합", () => {
+    it("Integrates cause stack to current stack", () => {
       const cause = new Error("cause error");
       const error = new SdError(cause, "main error");
 
@@ -39,12 +39,12 @@ describe("에러", () => {
       expect(error.stack).toContain(cause.stack);
     });
 
-    it("cause로 전달된 비Error 객체를 String()으로 변환", () => {
-      // 숫자
+    it("Converts non-Error object passed as cause using String()", () => {
+      // number
       const errorFromNumber = new SdError(42, "number cause");
       expect(errorFromNumber.message).toContain("42");
 
-      // 객체
+      // object
       const errorFromObject = new SdError({ code: 500, reason: "server error" }, "object cause");
       expect(errorFromObject.message).toContain("object cause");
 
@@ -59,19 +59,19 @@ describe("에러", () => {
   //#region ArgumentError
 
   describe("ArgumentError", () => {
-    it("argObj와 함께 생성", () => {
+    it("Creates with argObj", () => {
       const error = new ArgumentError("invalid argument", { param: "value", expected: "string" });
 
-      // argObj가 YAML 형식으로 메시지에 포함됨
+      // argObj included in message as YAML format
       expect(error.message).toContain("invalid argument");
       expect(error.message).toContain("param");
       expect(error.message).toContain("value");
     });
 
-    it("메시지 없이 argObj만으로 생성", () => {
+    it("Creates with only argObj without message", () => {
       const error = new ArgumentError({ key: "value" });
 
-      expect(error.message).toContain("인수가 잘못되었습니다");
+      expect(error.message).toContain("Argument is invalid");
       expect(error.message).toContain("key");
     });
   });

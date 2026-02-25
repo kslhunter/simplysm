@@ -7,7 +7,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./relation-builder.expected";
 import { Table } from "../../src/schema/table-builder";
 
-// 테스트용 테이블 정의
+// Test table definition
 const User = Table("User")
   .database("TestDb")
   .schema("TestSchema")
@@ -21,7 +21,7 @@ const User = Table("User")
 describe("DDL - Relation Builder", () => {
   //#region ========== ForeignKeyBuilder ==========
 
-  describe("ForeignKeyBuilder - 기본 FK", () => {
+  describe("ForeignKeyBuilder - basic FK", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -42,7 +42,7 @@ describe("DDL - Relation Builder", () => {
       fkBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
@@ -55,13 +55,13 @@ describe("DDL - Relation Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.basicForeignKey[dialect]);
     });
   });
 
-  describe("ForeignKeyBuilder - description 지정", () => {
+  describe("ForeignKeyBuilder - description specified", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -73,7 +73,7 @@ describe("DDL - Relation Builder", () => {
       .relations(() => ({}));
 
     const RelationFactory = createRelationFactory(() => Post);
-    const fkBuilder = RelationFactory.foreignKey(["userId"], () => User).description("사용자 관계");
+    const fkBuilder = RelationFactory.foreignKey(["userId"], () => User).description("User relationship");
 
     const db = createTestDb();
     const def = db.getAddFkQueryDef(
@@ -82,7 +82,7 @@ describe("DDL - Relation Builder", () => {
       fkBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
@@ -95,13 +95,13 @@ describe("DDL - Relation Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.basicForeignKey[dialect]);
     });
   });
 
-  describe("ForeignKeyBuilder - 복합 FK", () => {
+  describe("ForeignKeyBuilder - composite FK", () => {
     const Company = Table("Company")
       .database("TestDb")
       .schema("TestSchema")
@@ -134,7 +134,7 @@ describe("DDL - Relation Builder", () => {
       fkBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -147,7 +147,7 @@ describe("DDL - Relation Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.compositeForeignKey[dialect]);
     });
@@ -157,7 +157,7 @@ describe("DDL - Relation Builder", () => {
 
   //#region ========== ForeignKeyTargetBuilder ==========
 
-  describe("ForeignKeyTargetBuilder - 기본 (배열)", () => {
+  describe("ForeignKeyTargetBuilder - basic (array)", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -171,9 +171,9 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => User);
     const targetBuilder = RelationFactory.foreignKeyTarget(() => Post, "posts");
 
-    // ForeignKeyTargetBuilder는 역방향 관계로 QueryDef가 없음
-    // 타입 추론 테스트만 수행
-    it("메타 데이터 검증", () => {
+    // ForeignKeyTargetBuilder has no QueryDef as it is a reverse relationship
+    // Only type inference testing is performed
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "posts",
@@ -183,7 +183,7 @@ describe("DDL - Relation Builder", () => {
     });
   });
 
-  describe("ForeignKeyTargetBuilder - single()", () => {
+  describe("ForeignKeyTargetBuilder - single() method", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -197,7 +197,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => User);
     const targetBuilder = RelationFactory.foreignKeyTarget(() => Post, "primaryPost").single();
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "primaryPost",
@@ -207,7 +207,7 @@ describe("DDL - Relation Builder", () => {
     });
   });
 
-  describe("ForeignKeyTargetBuilder - description 지정", () => {
+  describe("ForeignKeyTargetBuilder - description specified", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -220,14 +220,14 @@ describe("DDL - Relation Builder", () => {
 
     const RelationFactory = createRelationFactory(() => User);
     const targetBuilder = RelationFactory.foreignKeyTarget(() => Post, "posts").description(
-      "사용자의 게시물 목록",
+      "List of posts by user",
     );
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "posts",
-        description: "사용자의 게시물 목록",
+        description: "List of posts by user",
         isSingle: undefined,
       });
     });
@@ -237,7 +237,7 @@ describe("DDL - Relation Builder", () => {
 
   //#region ========== RelationKeyBuilder ==========
 
-  describe("RelationKeyBuilder - 기본", () => {
+  describe("RelationKeyBuilder - basic", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -251,9 +251,9 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => Post);
     const rkBuilder = RelationFactory.relationKey(["authorId"], () => User);
 
-    // RelationKey는 DB에 FK를 등록하지 않으므로 getAddFkQueryDef 테스트 불가
-    // 메타데이터만 검증
-    it("메타 데이터 검증", () => {
+    // RelationKey does not register FK in DB so getAddFkQueryDef test is not possible
+    // Only metadata validation
+    it("should validate metadata", () => {
       expect(rkBuilder.meta).toEqual({
         ownerFn: expect.any(Function),
         columns: ["authorId"],
@@ -263,7 +263,7 @@ describe("DDL - Relation Builder", () => {
     });
   });
 
-  describe("RelationKeyBuilder - description 지정", () => {
+  describe("RelationKeyBuilder - description specified", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -276,15 +276,15 @@ describe("DDL - Relation Builder", () => {
 
     const RelationFactory = createRelationFactory(() => Post);
     const rkBuilder = RelationFactory.relationKey(["authorId"], () => User).description(
-      "작성자 관계 (논리적)",
+      "Author relationship (logical)",
     );
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(rkBuilder.meta).toEqual({
         ownerFn: expect.any(Function),
         columns: ["authorId"],
         targetFn: expect.any(Function),
-        description: "작성자 관계 (논리적)",
+        description: "Author relationship (logical)",
       });
     });
   });
@@ -293,7 +293,7 @@ describe("DDL - Relation Builder", () => {
 
   //#region ========== RelationKeyTargetBuilder ==========
 
-  describe("RelationKeyTargetBuilder - 기본 (배열)", () => {
+  describe("RelationKeyTargetBuilder - basic (array)", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -307,7 +307,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => User);
     const targetBuilder = RelationFactory.relationKeyTarget(() => Post, "authoredPosts");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "authoredPosts",
@@ -317,7 +317,7 @@ describe("DDL - Relation Builder", () => {
     });
   });
 
-  describe("RelationKeyTargetBuilder - single()", () => {
+  describe("RelationKeyTargetBuilder - single() method", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -331,7 +331,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => User);
     const targetBuilder = RelationFactory.relationKeyTarget(() => Post, "featuredPost").single();
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "featuredPost",
@@ -341,7 +341,7 @@ describe("DDL - Relation Builder", () => {
     });
   });
 
-  describe("RelationKeyTargetBuilder - description 지정", () => {
+  describe("RelationKeyTargetBuilder - description specified", () => {
     const Post = Table("Post")
       .database("TestDb")
       .schema("TestSchema")
@@ -356,13 +356,13 @@ describe("DDL - Relation Builder", () => {
     const targetBuilder = RelationFactory.relationKeyTarget(
       () => Post,
       "authoredPosts",
-    ).description("작성한 게시물 목록 (논리적)");
+    ).description("List of authored posts (logical)");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(targetBuilder.meta).toEqual({
         targetTableFn: expect.any(Function),
         relationName: "authoredPosts",
-        description: "작성한 게시물 목록 (논리적)",
+        description: "List of authored posts (logical)",
         isSingle: undefined,
       });
     });

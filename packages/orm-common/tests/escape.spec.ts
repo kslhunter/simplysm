@@ -4,47 +4,47 @@ import { MysqlExprRenderer } from "../src/query-builder/mysql/mysql-expr-rendere
 describe("MysqlExprRenderer.escapeString", () => {
   const renderer = new MysqlExprRenderer(() => "");
 
-  //#region ========== 기본 이스케이프 ==========
+  //#region ========== Basic Escaping ==========
 
-  it("따옴표를 이스케이프해야 함", () => {
+  it("should escape quotes", () => {
     const result = renderer.escapeString("O'Reilly");
     expect(result).toBe("O''Reilly");
   });
 
-  it("백슬래시를 이스케이프해야 함", () => {
+  it("should escape backslashes", () => {
     const result = renderer.escapeString("C:\\path");
     expect(result).toBe("C:\\\\path");
   });
 
-  it("NULL 바이트를 이스케이프해야 함", () => {
+  it("should escape NULL bytes", () => {
     const result = renderer.escapeString("admin\0--");
     expect(result).toBe("admin\\0--");
   });
 
   //#endregion
 
-  //#region ========== 제어 문자 이스케이프 ==========
+  //#region ========== Control Character Escaping ==========
 
-  it("줄바꿈을 이스케이프해야 함", () => {
+  it("should escape newlines", () => {
     const result = renderer.escapeString("line1\nline2");
     expect(result).toBe("line1\\nline2");
   });
 
-  it("캐리지 리턴을 이스케이프해야 함", () => {
+  it("should escape carriage returns", () => {
     const result = renderer.escapeString("line1\rline2");
     expect(result).toBe("line1\\rline2");
   });
 
-  it("탭을 이스케이프해야 함", () => {
+  it("should escape tabs", () => {
     const result = renderer.escapeString("col1\tcol2");
     expect(result).toBe("col1\\tcol2");
   });
 
   //#endregion
 
-  //#region ========== 조합 공격 테스트 ==========
+  //#region ========== Combined Attack Test ==========
 
-  it("SQL 인젝션 시도를 방어해야 함", () => {
+  it("should defend against SQL injection attempts", () => {
     const malicious = "'; DROP TABLE users; --";
     const result = renderer.escapeString(malicious);
     expect(result).toBe("''; DROP TABLE users; --");

@@ -8,7 +8,7 @@ import * as expected from "./date.expected";
 import { DateTime } from "@simplysm/core-common";
 
 describe("Expr - 날짜/시간 함수", () => {
-  describe("year - 연도 추출", () => {
+  describe("year - extract year", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -17,7 +17,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         yearPart: {
           type: "year",
@@ -26,13 +26,13 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.year[dialect]);
     });
   });
 
-  describe("month - 월 추출", () => {
+  describe("month - extract month", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -41,7 +41,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         monthPart: {
           type: "month",
@@ -50,13 +50,13 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.month[dialect]);
     });
   });
 
-  describe("day - 일 추출", () => {
+  describe("day - extract day", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -65,7 +65,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         dayPart: {
           type: "day",
@@ -74,7 +74,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.day[dialect]);
     });
@@ -89,7 +89,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         hourPart: {
           type: "hour",
@@ -98,13 +98,13 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.hour[dialect]);
     });
   });
 
-  describe("minute - 분 추출", () => {
+  describe("minute - extract minute", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -113,7 +113,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         minutePart: {
           type: "minute",
@@ -122,13 +122,13 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.minute[dialect]);
     });
   });
 
-  describe("second - 초 추출", () => {
+  describe("second - extract second", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -137,7 +137,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         secondPart: {
           type: "second",
@@ -146,7 +146,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.second[dialect]);
     });
@@ -162,7 +162,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         daysDiff: {
           type: "dateDiff",
@@ -173,7 +173,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffDay[dialect]);
     });
@@ -189,7 +189,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         yearsDiff: {
           type: "dateDiff",
@@ -200,7 +200,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffYear[dialect]);
     });
@@ -216,7 +216,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         monthsDiff: {
           type: "dateDiff",
@@ -227,7 +227,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffMonth[dialect]);
     });
@@ -243,7 +243,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         hoursDiff: {
           type: "dateDiff",
@@ -254,7 +254,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffHour[dialect]);
     });
@@ -270,7 +270,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         minutesDiff: {
           type: "dateDiff",
@@ -281,7 +281,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffMinute[dialect]);
     });
@@ -297,7 +297,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         secondsDiff: {
           type: "dateDiff",
@@ -308,7 +308,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffSecond[dialect]);
     });
@@ -323,7 +323,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         nextMonth: {
           type: "dateAdd",
@@ -334,7 +334,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddMonth[dialect]);
     });
@@ -349,7 +349,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddYear[dialect]);
     });
@@ -364,7 +364,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddDay[dialect]);
     });
@@ -379,7 +379,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddHour[dialect]);
     });
@@ -394,7 +394,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddMinute[dialect]);
     });
@@ -409,7 +409,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateAddSecond[dialect]);
     });
@@ -424,7 +424,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         formatted: {
           type: "formatDate",
@@ -434,7 +434,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.formatDate[dialect]);
     });
@@ -449,7 +449,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         week: {
           type: "isoWeek",
@@ -462,7 +462,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.isoWeek[dialect]);
     });
@@ -477,7 +477,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         weekStart: {
           type: "isoWeekStartDate",
@@ -490,7 +490,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.isoWeekStartDate[dialect]);
     });
@@ -505,7 +505,7 @@ describe("Expr - 날짜/시간 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         yearMonth: {
           type: "isoYearMonth",
@@ -518,7 +518,7 @@ describe("Expr - 날짜/시간 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.isoYearMonth[dialect]);
     });

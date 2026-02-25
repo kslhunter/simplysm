@@ -6,18 +6,18 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./upsert.expected";
 
-describe("UPSERT - 기본", () => {
-  describe("단순 UPSERT (WHERE 조건)", () => {
+describe("UPSERT - Basic", () => {
+  describe("simple UPSERT (WHERE condition)", () => {
     const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
-        () => ({ name: expr.val("string", "새이름") }),
+        () => ({ name: expr.val("string", "new name") }),
         (upd) => ({ name: upd.name, departmentId: expr.val("number", 1) }),
       );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "upsert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -34,16 +34,16 @@ describe("UPSERT - 기본", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         insertRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
           departmentId: { type: "value", value: 1 },
         },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upsertSimple[dialect]);
     });
@@ -65,7 +65,7 @@ describe("UPSERT - 기본", () => {
         }),
       );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "upsert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -93,7 +93,7 @@ describe("UPSERT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upsertReuse[dialect]);
     });
@@ -110,7 +110,7 @@ describe("UPSERT - 기본", () => {
         ["id", "name"],
       );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "upsert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -127,10 +127,10 @@ describe("UPSERT - 기본", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         insertRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         output: {
           columns: ["id", "name"],
@@ -140,7 +140,7 @@ describe("UPSERT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upsertWithOutput[dialect]);
     });
@@ -160,7 +160,7 @@ describe("UPSERT - 기본", () => {
         }),
       );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "upsert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -192,7 +192,7 @@ describe("UPSERT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upsertMultiWhere[dialect]);
     });
@@ -208,7 +208,7 @@ describe("UPSERT - 기본", () => {
         (upd) => ({ name: upd.name, departmentId: 1 }),
       );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "upsert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -225,16 +225,16 @@ describe("UPSERT - 기본", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         insertRecord: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
           departmentId: { type: "value", value: 1 },
         },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upsertPlainValues[dialect]);
     });

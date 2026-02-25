@@ -157,7 +157,7 @@ export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitive
   if (value instanceof Time) return "Time";
   if (value instanceof Uuid) return "Uuid";
   if (value instanceof Uint8Array) return "Bytes";
-  throw new Error(`알 수 없는 value type: ${typeof value}`);
+  throw new Error(`Unknown value type: ${typeof value}`);
 }
 
 // ============================================

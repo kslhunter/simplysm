@@ -13,7 +13,7 @@ describe("View - 기본", () => {
     const db = createTestDb();
     const def = db.activeUsers().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -21,7 +21,7 @@ describe("View - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.viewSelect[dialect]);
     });
@@ -34,7 +34,7 @@ describe("View - 기본", () => {
       .where((u) => [expr.gt(u.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -49,7 +49,7 @@ describe("View - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.viewSelectWhere[dialect]);
     });
@@ -65,7 +65,7 @@ describe("View - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -77,7 +77,7 @@ describe("View - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.viewSelectColumns[dialect]);
     });
@@ -90,7 +90,7 @@ describe("View - 기본", () => {
       .orderBy((u) => u.name, "ASC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -99,7 +99,7 @@ describe("View - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.viewSelectOrderBy[dialect]);
     });
@@ -113,7 +113,7 @@ describe("View - 기본", () => {
       .limit(0, 10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -123,7 +123,7 @@ describe("View - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.viewSelectOrderByLimit[dialect]);
     });
@@ -135,7 +135,7 @@ describe("View - SELECT가 있는 뷰", () => {
     const db = createTestDb();
     const def = db.userSummary().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "UserSummary" },
@@ -143,7 +143,7 @@ describe("View - SELECT가 있는 뷰", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.userSummarySelect[dialect]);
     });
@@ -158,7 +158,7 @@ describe("View - SELECT가 있는 뷰", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         from: { database: "TestDb", schema: "TestSchema", name: "UserSummary" },
@@ -169,7 +169,7 @@ describe("View - SELECT가 있는 뷰", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.userSummarySelectColumn[dialect]);
     });
@@ -181,7 +181,7 @@ describe("View - DDL", () => {
     const db = createTestDb();
     const def = db.getCreateViewQueryDef(ActiveUsers);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "createView",
         view: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -200,7 +200,7 @@ describe("View - DDL", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.createActiveUsersView[dialect]);
     });
@@ -210,7 +210,7 @@ describe("View - DDL", () => {
     const db = createTestDb();
     const def = db.getCreateViewQueryDef(UserSummary);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "createView",
         view: { database: "TestDb", schema: "TestSchema", name: "UserSummary" },
@@ -227,7 +227,7 @@ describe("View - DDL", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.createUserSummaryView[dialect]);
     });

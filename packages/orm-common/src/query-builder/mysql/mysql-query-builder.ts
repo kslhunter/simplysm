@@ -165,7 +165,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
 
     if (def.records.length === 0) {
-      throw new Error("INSERT는 최소 하나의 레코드가 필요합니다.");
+      throw new Error("INSERT requires at least one record.");
     }
 
     const columns = Object.keys(def.records[0]);
@@ -723,7 +723,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // information_schema에서 Table 목록 조회 후 DROP
     // SQL Injection 방지: 식별자 유효성 Validation
     if (!/^[a-zA-Z0-9_]+$/.test(def.database)) {
-      throw new Error(`유효하지 않은 Database명: ${def.database}`);
+      throw new Error(`Invalid database name: ${def.database}`);
     }
 
     const dbName = this.expr.escapeString(def.database);

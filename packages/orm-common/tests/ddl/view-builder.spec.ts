@@ -7,10 +7,10 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./view-builder.expected";
 
 describe("DDL - View Builder", () => {
-  describe("기본 뷰 (이름만)", () => {
+  describe("basic view (name only)", () => {
     const view = View("TestView");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta).toEqual({
         name: "TestView",
         description: undefined,
@@ -22,13 +22,13 @@ describe("DDL - View Builder", () => {
     });
   });
 
-  describe("description 지정", () => {
-    const view = View("TestView").description("테스트 뷰입니다");
+  describe("description specified", () => {
+    const view = View("TestView").description("This is a test view");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta).toEqual({
         name: "TestView",
-        description: "테스트 뷰입니다",
+        description: "This is a test view",
         database: undefined,
         schema: undefined,
         viewFn: undefined,
@@ -37,10 +37,10 @@ describe("DDL - View Builder", () => {
     });
   });
 
-  describe("database 지정", () => {
+  describe("database specified", () => {
     const view = View("TestView").database("CustomDb");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta).toEqual({
         name: "TestView",
         description: undefined,
@@ -52,10 +52,10 @@ describe("DDL - View Builder", () => {
     });
   });
 
-  describe("schema 지정", () => {
+  describe("schema specified", () => {
     const view = View("TestView").schema("CustomSchema");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta).toEqual({
         name: "TestView",
         description: undefined,
@@ -67,7 +67,7 @@ describe("DDL - View Builder", () => {
     });
   });
 
-  describe("query 지정 (기본 SELECT)", () => {
+  describe("query specified (basic SELECT)", () => {
     const view = View("TestView").query((db: TestDbContext) =>
       db.user().select((u) => ({
         id: u.id,
@@ -75,7 +75,7 @@ describe("DDL - View Builder", () => {
       })),
     );
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta.name).toBe("TestView");
       expect(view.meta.viewFn).toBeTypeOf("function");
     });
@@ -83,7 +83,7 @@ describe("DDL - View Builder", () => {
     const db = createTestDb();
     const def = db.getCreateViewQueryDef(view);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createView",
         view: { database: "TestDb", schema: "TestSchema", name: "TestView" },
@@ -99,17 +99,17 @@ describe("DDL - View Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.queryBasic[dialect]);
     });
   });
 
-  describe("복합 옵션 (database + schema + description + query)", () => {
+  describe("combined options (database + schema + description + query)", () => {
     const view = View("TestView")
       .database("CustomDb")
       .schema("CustomSchema")
-      .description("복합 옵션 뷰")
+      .description("Combined options view")
       .query((db: TestDbContext) =>
         db.user().select((u) => ({
           id: u.id,
@@ -117,18 +117,18 @@ describe("DDL - View Builder", () => {
         })),
       );
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta.name).toBe("TestView");
       expect(view.meta.database).toBe("CustomDb");
       expect(view.meta.schema).toBe("CustomSchema");
-      expect(view.meta.description).toBe("복합 옵션 뷰");
+      expect(view.meta.description).toBe("Combined options view");
       expect(view.meta.viewFn).toBeTypeOf("function");
     });
 
     const db = createTestDb();
     const def = db.getCreateViewQueryDef(view);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createView",
         view: { database: "CustomDb", schema: "CustomSchema", name: "TestView" },
@@ -144,13 +144,13 @@ describe("DDL - View Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.combined[dialect]);
     });
   });
 
-  describe("relations 지정", () => {
+  describe("relations specified", () => {
     const Company = View("Company").query((db: TestDbContext) =>
       db.company().select((c) => ({ id: c.id })),
     );
@@ -167,7 +167,7 @@ describe("DDL - View Builder", () => {
         company: r.relationKey(["companyId"], () => Company),
       }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(view.meta.name).toBe("TestView");
       expect(view.meta.relations).toBeDefined();
       expect(view.meta.relations?.["company"]).toBeDefined();

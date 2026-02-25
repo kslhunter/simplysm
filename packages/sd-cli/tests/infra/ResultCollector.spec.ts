@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { ResultCollector, type BuildResult } from "../../src/infra/ResultCollector";
 
 describe("ResultCollector", () => {
-  it("결과를 추가하고 조회할 수 있다", () => {
+  it("adds and retrieves result", () => {
     const collector = new ResultCollector();
     const result: BuildResult = {
       name: "core-common",
@@ -16,7 +16,7 @@ describe("ResultCollector", () => {
     expect(collector.get("core-common:build")).toEqual(result);
   });
 
-  it("같은 키로 결과를 추가하면 덮어쓴다", () => {
+  it("overwrites result when added with same key", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "pending" });
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
@@ -27,7 +27,7 @@ describe("ResultCollector", () => {
     expect(collector.toMap().size).toBe(1);
   });
 
-  it("내부 Map을 반환할 수 있다", () => {
+  it("returns internal Map", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
 

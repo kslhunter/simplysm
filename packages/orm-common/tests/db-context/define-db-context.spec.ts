@@ -5,7 +5,7 @@ import { User } from "../setup/models/User";
 import { Post } from "../setup/models/Post";
 import { ActiveUsers } from "../setup/views/ActiveUsers";
 
-describe("DbContext types", () => {
+describe("DbContext Types", () => {
   it("DbContextBase interface has required members", () => {
     // Type-level test: verify the interface exists with correct shape
     const base: DbContextBase = {

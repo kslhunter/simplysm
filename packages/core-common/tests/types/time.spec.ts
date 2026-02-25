@@ -2,20 +2,20 @@ import { describe, it, expect } from "vitest";
 import { Time } from "@simplysm/core-common";
 
 describe("Time", () => {
-  //#region 생성자
+  //#region Constructor
 
   describe("constructor", () => {
-    it("인수 없이 생성하면 현재 시간을 반환한다", () => {
+    it("Returns current time when created without arguments", () => {
       const time = new Time();
 
-      // 시간은 실시간으로 변하므로 범위 테스트
+      // Time changes in real-time so range test
       expect(time.hour).toBeGreaterThanOrEqual(0);
       expect(time.hour).toBeLessThanOrEqual(23);
       expect(time.minute).toBeGreaterThanOrEqual(0);
       expect(time.minute).toBeLessThanOrEqual(59);
     });
 
-    it("시분초로 생성한다", () => {
+    it("Creates with hour, minute, second", () => {
       const time = new Time(15, 30, 45);
 
       expect(time.hour).toBe(15);
@@ -24,7 +24,7 @@ describe("Time", () => {
       expect(time.millisecond).toBe(0);
     });
 
-    it("시분초 밀리초로 생성한다", () => {
+    it("Creates with hour, minute, second, millisecond", () => {
       const time = new Time(15, 30, 45, 123);
 
       expect(time.hour).toBe(15);
@@ -33,7 +33,7 @@ describe("Time", () => {
       expect(time.millisecond).toBe(123);
     });
 
-    it("tick (millisecond)로 생성한다", () => {
+    it("Creates with tick (millisecond)", () => {
       // 15:30:45.123 = (15*60*60 + 30*60 + 45)*1000 + 123
       const tick = (15 * 60 * 60 + 30 * 60 + 45) * 1000 + 123;
       const time = new Time(tick);
@@ -44,7 +44,7 @@ describe("Time", () => {
       expect(time.millisecond).toBe(123);
     });
 
-    it("Date 타입으로 생성한다", () => {
+    it("Creates with Date type", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45, 123);
       const time = new Time(date);
 
@@ -54,23 +54,23 @@ describe("Time", () => {
       expect(time.millisecond).toBe(123);
     });
 
-    it("24시간을 넘으면 나머지만 저장한다", () => {
-      // 25시간 = 1시간
+    it("Normalizes to 24 hours if exceeds", () => {
+      // 25 hours = 1 hour
       const time = new Time(25, 0, 0);
 
       expect(time.hour).toBe(1);
     });
 
-    it("음수 시분초로 생성하면 24시간 내로 정규화된다", () => {
-      // -1시간 30분 = 23시간 30분 (24 - 0.5 = 23.5)
+    it("Normalizes negative hours/minutes/seconds to within 24 hours", () => {
+      // -1 hour 30 minutes = 23 hours 30 minutes (24 - 0.5 = 23.5)
       const time = new Time(-1, 30, 0);
 
       expect(time.hour).toBe(23);
       expect(time.minute).toBe(30);
     });
 
-    it("음수 tick으로 생성하면 24시간 내로 정규화된다", () => {
-      // -1시간 = -3600000ms → 23시간
+    it("Normalizes negative tick to within 24 hours", () => {
+      // -1 hour = -3600000ms → 23 hours
       const time = new Time(-3600000);
 
       expect(time.hour).toBe(23);
@@ -78,7 +78,7 @@ describe("Time", () => {
       expect(time.second).toBe(0);
     });
 
-    it("음수 tick(-1ms)은 23:59:59.999로 정규화된다", () => {
+    it("Negative tick (-1ms) normalizes to 23:59:59.999", () => {
       const time = new Time(-1);
 
       expect(time.hour).toBe(23);
@@ -93,7 +93,7 @@ describe("Time", () => {
   //#region parse
 
   describe("parse()", () => {
-    it("HH:mm:ss 형식을 파싱한다", () => {
+    it("Parses HH:mm:ss format", () => {
       const time = Time.parse("15:30:45");
 
       expect(time.hour).toBe(15);
@@ -102,7 +102,7 @@ describe("Time", () => {
       expect(time.millisecond).toBe(0);
     });
 
-    it("HH:mm:ss.fff 형식을 파싱한다", () => {
+    it("Parses HH:mm:ss.fff format", () => {
       const time = Time.parse("15:30:45.123");
 
       expect(time.hour).toBe(15);
@@ -111,66 +111,66 @@ describe("Time", () => {
       expect(time.millisecond).toBe(123);
     });
 
-    it("오전 HH:mm:ss 형식을 파싱한다", () => {
-      const time = Time.parse("오전 9:30:45");
+    it("Parses AM HH:mm:ss format", () => {
+      const time = Time.parse("AM 9:30:45");
 
       expect(time.hour).toBe(9);
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
     });
 
-    it("오후 HH:mm:ss 형식을 파싱한다", () => {
-      const time = Time.parse("오후 3:30:45");
+    it("Parses PM HH:mm:ss format", () => {
+      const time = Time.parse("PM 3:30:45");
 
       expect(time.hour).toBe(15); // 12 + 3
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
     });
 
-    it("밀리초 자릿수가 부족하면 0으로 패딩한다", () => {
+    it("Pads milliseconds with 0 if insufficient digits", () => {
       const time = Time.parse("15:30:45.1");
 
       expect(time.millisecond).toBe(100); // '1' → '100'
     });
 
-    it("잘못된 형식이면 에러를 던진다", () => {
-      expect(() => Time.parse("invalid-time")).toThrow("시간 형식을 파싱할 수 없습니다");
+    it("Throws error for invalid format", () => {
+      expect(() => Time.parse("invalid-time")).toThrow("Unable to parse time format");
     });
 
-    it("오후 12:00:00은 정오(12시)", () => {
-      const time = Time.parse("오후 12:00:00");
+    it("PM 12:00:00 is noon (12 o'clock)", () => {
+      const time = Time.parse("PM 12:00:00");
 
       expect(time.hour).toBe(12);
       expect(time.minute).toBe(0);
       expect(time.second).toBe(0);
     });
 
-    it("오전 12:00:00은 자정(0시)", () => {
-      const time = Time.parse("오전 12:00:00");
+    it("AM 12:00:00 is midnight (0 o'clock)", () => {
+      const time = Time.parse("AM 12:00:00");
 
       expect(time.hour).toBe(0);
       expect(time.minute).toBe(0);
       expect(time.second).toBe(0);
     });
 
-    it("오후 12:30:45는 정오 이후(12시 30분 45초)", () => {
-      const time = Time.parse("오후 12:30:45");
+    it("PM 12:30:45 is after noon (12:30:45)", () => {
+      const time = Time.parse("PM 12:30:45");
 
       expect(time.hour).toBe(12);
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
     });
 
-    it("오전 12:30:45는 자정 이후(0시 30분 45초)", () => {
-      const time = Time.parse("오전 12:30:45");
+    it("AM 12:30:45 is after midnight (0:30:45)", () => {
+      const time = Time.parse("AM 12:30:45");
 
       expect(time.hour).toBe(0);
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
     });
 
-    it("ISO 8601 형식에서 시간 부분을 파싱한다 (UTC -> 로컬 변환)", () => {
-      // UTC 시간은 로컬 시간으로 변환됨
+    it("Parses time from ISO 8601 format (UTC -> local conversion)", () => {
+      // UTC time is converted to local time
       const time = Time.parse("2025-01-15T10:30:45Z");
       const expected = new Date("2025-01-15T10:30:45Z");
 
@@ -179,8 +179,8 @@ describe("Time", () => {
       expect(time.second).toBe(45);
     });
 
-    it("ISO 8601 형식에서 밀리초도 파싱한다 (UTC -> 로컬 변환)", () => {
-      // UTC 시간은 로컬 시간으로 변환됨
+    it("Parses milliseconds from ISO 8601 format (UTC -> local conversion)", () => {
+      // UTC time is converted to local time
       const time = Time.parse("2025-01-15T10:30:45.123Z");
       const expected = new Date("2025-01-15T10:30:45.123Z");
 
@@ -196,27 +196,27 @@ describe("Time", () => {
   //#region Getters
 
   describe("Getters", () => {
-    it("hour를 반환한다", () => {
+    it("Returns hour", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.hour).toBe(15);
     });
 
-    it("minute를 반환한다", () => {
+    it("Returns minute", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.minute).toBe(30);
     });
 
-    it("second를 반환한다", () => {
+    it("Returns second", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.second).toBe(45);
     });
 
-    it("millisecond를 반환한다", () => {
+    it("Returns millisecond", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.millisecond).toBe(123);
     });
 
-    it("tick을 반환한다", () => {
+    it("Returns tick", () => {
       const time = new Time(15, 30, 45, 123);
       const expectedTick = (15 * 60 * 60 + 30 * 60 + 45) * 1000 + 123;
       expect(time.tick).toBe(expectedTick);
@@ -225,24 +225,24 @@ describe("Time", () => {
 
   //#endregion
 
-  //#region tick 비교
+  //#region tick comparison
 
-  describe("tick 비교", () => {
-    it("같은 시간은 같은 tick을 가진다", () => {
+  describe("tick comparison", () => {
+    it("Same times have same tick", () => {
       const t1 = new Time(10, 30, 45, 123);
       const t2 = new Time(10, 30, 45, 123);
 
       expect(t1.tick).toBe(t2.tick);
     });
 
-    it("다른 시간은 다른 tick을 가진다", () => {
+    it("Different times have different ticks", () => {
       const t1 = new Time(10, 30, 45, 123);
       const t2 = new Time(10, 30, 45, 124);
 
       expect(t1.tick).not.toBe(t2.tick);
     });
 
-    it("tick으로 시간 순서를 비교할 수 있다", () => {
+    it("Can compare time order by tick", () => {
       const t1 = new Time(0, 0, 0);
       const t2 = new Time(12, 30, 0);
       const t3 = new Time(23, 59, 59);
@@ -251,28 +251,28 @@ describe("Time", () => {
       expect(t2.tick).toBeLessThan(t3.tick);
     });
 
-    it("밀리초 단위 비교가 가능하다", () => {
+    it("Millisecond precision comparison is possible", () => {
       const t1 = new Time(10, 30, 45, 0);
       const t2 = new Time(10, 30, 45, 1);
 
       expect(t2.tick - t1.tick).toBe(1);
     });
 
-    it("시간 차이를 tick으로 계산할 수 있다", () => {
+    it("Can calculate time difference by tick", () => {
       const t1 = new Time(10, 0, 0);
       const t2 = new Time(11, 0, 0);
 
-      // 1시간 = 3600000ms
+      // 1 hour = 3600000ms
       expect(t2.tick - t1.tick).toBe(3600000);
     });
   });
 
   //#endregion
 
-  //#region setX 메서드 (불변)
+  //#region setX methods (immutable)
 
   describe("setHour()", () => {
-    it("시를 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with hour changed", () => {
       const time = new Time(15, 30, 45, 123);
       const newTime = time.setHour(20);
 
@@ -280,12 +280,12 @@ describe("Time", () => {
       expect(newTime.minute).toBe(30);
       expect(newTime.second).toBe(45);
       expect(newTime.millisecond).toBe(123);
-      expect(time.hour).toBe(15); // 원본 불변
+      expect(time.hour).toBe(15); // original immutable
     });
   });
 
   describe("setMinute()", () => {
-    it("분을 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with minute changed", () => {
       const time = new Time(15, 30, 45, 123);
       const newTime = time.setMinute(50);
 
@@ -293,12 +293,12 @@ describe("Time", () => {
       expect(newTime.minute).toBe(50);
       expect(newTime.second).toBe(45);
       expect(newTime.millisecond).toBe(123);
-      expect(time.minute).toBe(30); // 원본 불변
+      expect(time.minute).toBe(30); // original immutable
     });
   });
 
   describe("setSecond()", () => {
-    it("초를 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with second changed", () => {
       const time = new Time(15, 30, 45, 123);
       const newTime = time.setSecond(55);
 
@@ -306,12 +306,12 @@ describe("Time", () => {
       expect(newTime.minute).toBe(30);
       expect(newTime.second).toBe(55);
       expect(newTime.millisecond).toBe(123);
-      expect(time.second).toBe(45); // 원본 불변
+      expect(time.second).toBe(45); // original immutable
     });
   });
 
   describe("setMillisecond()", () => {
-    it("밀리초를 변경한 새 인스턴스를 반환한다", () => {
+    it("Returns new instance with millisecond changed", () => {
       const time = new Time(15, 30, 45, 123);
       const newTime = time.setMillisecond(456);
 
@@ -319,16 +319,16 @@ describe("Time", () => {
       expect(newTime.minute).toBe(30);
       expect(newTime.second).toBe(45);
       expect(newTime.millisecond).toBe(456);
-      expect(time.millisecond).toBe(123); // 원본 불변
+      expect(time.millisecond).toBe(123); // original immutable
     });
   });
 
   //#endregion
 
-  //#region addX 메서드 (불변)
+  //#region addX methods (immutable)
 
   describe("addHours()", () => {
-    it("양수 시를 더한다", () => {
+    it("Adds positive hours", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addHours(3);
 
@@ -337,14 +337,14 @@ describe("Time", () => {
       expect(newTime.second).toBe(45);
     });
 
-    it("음수 시를 더한다 (빼기)", () => {
+    it("Adds negative hours (subtraction)", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addHours(-5);
 
       expect(newTime.hour).toBe(10);
     });
 
-    it("24시간을 넘어가면 나머지만 저장한다", () => {
+    it("Keeps remainder if exceeds 24 hours", () => {
       const time = new Time(22, 0, 0);
       const newTime = time.addHours(5);
 
@@ -353,7 +353,7 @@ describe("Time", () => {
   });
 
   describe("addMinutes()", () => {
-    it("양수 분을 더한다", () => {
+    it("Adds positive minutes", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addMinutes(20);
 
@@ -361,14 +361,14 @@ describe("Time", () => {
       expect(newTime.minute).toBe(50);
     });
 
-    it("음수 분을 더한다 (빼기)", () => {
+    it("Adds negative minutes (subtraction)", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addMinutes(-20);
 
       expect(newTime.minute).toBe(10);
     });
 
-    it("60분을 넘어가면 시간이 증가한다", () => {
+    it("Increases hour if exceeds 60 minutes", () => {
       const time = new Time(15, 50, 0);
       const newTime = time.addMinutes(20);
 
@@ -378,7 +378,7 @@ describe("Time", () => {
   });
 
   describe("addSeconds()", () => {
-    it("양수 초를 더한다", () => {
+    it("Adds positive seconds", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addSeconds(10);
 
@@ -387,14 +387,14 @@ describe("Time", () => {
       expect(newTime.second).toBe(55);
     });
 
-    it("음수 초를 더한다 (빼기)", () => {
+    it("Adds negative seconds (subtraction)", () => {
       const time = new Time(15, 30, 45);
       const newTime = time.addSeconds(-10);
 
       expect(newTime.second).toBe(35);
     });
 
-    it("60초를 넘어가면 분이 증가한다", () => {
+    it("Increases minute if exceeds 60 seconds", () => {
       const time = new Time(15, 30, 50);
       const newTime = time.addSeconds(20);
 
@@ -404,21 +404,21 @@ describe("Time", () => {
   });
 
   describe("addMilliseconds()", () => {
-    it("양수 밀리초를 더한다", () => {
+    it("Adds positive milliseconds", () => {
       const time = new Time(15, 30, 45, 100);
       const newTime = time.addMilliseconds(50);
 
       expect(newTime.millisecond).toBe(150);
     });
 
-    it("음수 밀리초를 더한다 (빼기)", () => {
+    it("Adds negative milliseconds (subtraction)", () => {
       const time = new Time(15, 30, 45, 100);
       const newTime = time.addMilliseconds(-50);
 
       expect(newTime.millisecond).toBe(50);
     });
 
-    it("1000밀리초를 넘어가면 초가 증가한다", () => {
+    it("Increases second if exceeds 1000 milliseconds", () => {
       const time = new Time(15, 30, 45, 900);
       const newTime = time.addMilliseconds(200);
 
@@ -429,11 +429,11 @@ describe("Time", () => {
 
   //#endregion
 
-  //#region 음수 연산 (24시간 경계 처리)
+  //#region Negative operations (24-hour boundary handling)
 
-  describe("음수 연산 (24시간 경계)", () => {
-    it("addHours(-25)는 전날 같은 시간 (23시간 전)", () => {
-      // 10시에서 25시간을 빼면 전날 9시 = 24 - 25 + 10 = 9시
+  describe("Negative operations (24-hour boundary)", () => {
+    it("addHours(-25) is same time yesterday (23 hours ago)", () => {
+      // Subtracting 25 hours from 10:00 = previous day 9:00 = 24 - 25 + 10 = 9:00
       const time = new Time(10, 0, 0);
       const newTime = time.addHours(-25);
 
@@ -442,16 +442,16 @@ describe("Time", () => {
       expect(newTime.second).toBe(0);
     });
 
-    it("addHours(-10)에서 자정을 넘으면 전날 시간", () => {
-      // 5시에서 10시간을 빼면 19시
+    it("addHours(-10) crosses midnight to previous day", () => {
+      // Subtracting 10 hours from 5:00 = 19:00
       const time = new Time(5, 0, 0);
       const newTime = time.addHours(-10);
 
       expect(newTime.hour).toBe(19);
     });
 
-    it("addMinutes(-90)는 1시간 30분 전", () => {
-      // 1시 30분에서 90분을 빼면 0시 0분
+    it("addMinutes(-90) is 1 hour 30 minutes ago", () => {
+      // Subtracting 90 minutes from 1:30 = 0:00
       const time = new Time(1, 30, 0);
       const newTime = time.addMinutes(-90);
 
@@ -459,8 +459,8 @@ describe("Time", () => {
       expect(newTime.minute).toBe(0);
     });
 
-    it("addMinutes(-90)에서 자정을 넘으면 전날 시간", () => {
-      // 0시 30분에서 90분을 빼면 전날 23시 0분
+    it("addMinutes(-90) crosses midnight to previous day", () => {
+      // Subtracting 90 minutes from 0:30 = previous day 23:00
       const time = new Time(0, 30, 0);
       const newTime = time.addMinutes(-90);
 
@@ -468,8 +468,8 @@ describe("Time", () => {
       expect(newTime.minute).toBe(0);
     });
 
-    it("addSeconds(-3700)는 약 1시간 전", () => {
-      // 1시 0분 0초에서 3700초(1시간 1분 40초)를 빼면 23시 58분 20초
+    it("addSeconds(-3700) is about 1 hour ago", () => {
+      // Subtracting 3700 seconds (1 hour 1 minute 40 seconds) from 1:00:00 = 23:58:20
       const time = new Time(1, 0, 0);
       const newTime = time.addSeconds(-3700);
 
@@ -478,8 +478,8 @@ describe("Time", () => {
       expect(newTime.second).toBe(20);
     });
 
-    it("addMilliseconds(-1000)에서 자정을 넘으면 전날 시간", () => {
-      // 0시 0분 0초 500ms에서 1000ms를 빼면 23시 59분 59초 500ms
+    it("addMilliseconds(-1000) crosses midnight to previous day", () => {
+      // Subtracting 1000ms from 0:00:00.500ms = previous day 23:59:59.500ms
       const time = new Time(0, 0, 0, 500);
       const newTime = time.addMilliseconds(-1000);
 
@@ -495,23 +495,23 @@ describe("Time", () => {
   //#region isValid
 
   describe("isValid", () => {
-    it("유효한 시간은 true를 반환한다", () => {
+    it("Valid time returns true", () => {
       const time = new Time(15, 30, 45);
       expect(time.isValid).toBe(true);
     });
 
-    it("기본 생성자는 유효한 시간이다", () => {
+    it("Default constructor is valid time", () => {
       const time = new Time();
       expect(time.isValid).toBe(true);
     });
 
-    it("tick으로 생성한 시간은 유효하다", () => {
+    it("Time created with tick is valid", () => {
       const tick = (15 * 60 * 60 + 30 * 60 + 45) * 1000;
       const time = new Time(tick);
       expect(time.isValid).toBe(true);
     });
 
-    it("NaN tick으로 생성한 시간은 isValid가 false다", () => {
+    it("Time created with NaN tick has isValid false", () => {
       const time = new Time(NaN);
       expect(time.isValid).toBe(false);
     });
@@ -519,37 +519,37 @@ describe("Time", () => {
 
   //#endregion
 
-  //#region 포맷팅
+  //#region Formatting
 
   describe("toFormatString()", () => {
-    it("HH:mm:ss 형식으로 포맷팅한다", () => {
+    it("Formats to HH:mm:ss format", () => {
       const time = new Time(15, 30, 45);
       expect(time.toFormatString("HH:mm:ss")).toBe("15:30:45");
     });
 
-    it("HH:mm:ss.fff 형식으로 포맷팅한다", () => {
+    it("Formats to HH:mm:ss.fff format", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.toFormatString("HH:mm:ss.fff")).toBe("15:30:45.123");
     });
 
-    it("tt hh:mm:ss 형식으로 포맷팅한다 (오전)", () => {
+    it("Formats to tt hh:mm:ss format (AM)", () => {
       const time = new Time(9, 30, 45);
-      expect(time.toFormatString("tt hh:mm:ss")).toBe("오전 09:30:45");
+      expect(time.toFormatString("tt hh:mm:ss")).toBe("AM 09:30:45");
     });
 
-    it("tt hh:mm:ss 형식으로 포맷팅한다 (오후)", () => {
+    it("Formats to tt hh:mm:ss format (PM)", () => {
       const time = new Time(15, 30, 45);
-      expect(time.toFormatString("tt hh:mm:ss")).toBe("오후 03:30:45");
+      expect(time.toFormatString("tt hh:mm:ss")).toBe("PM 03:30:45");
     });
 
-    it("H:m:s 형식으로 포맷팅한다 (패딩 없음)", () => {
+    it("Formats to H:m:s format (no padding)", () => {
       const time = new Time(9, 5, 3);
       expect(time.toFormatString("H:m:s")).toBe("9:5:3");
     });
   });
 
   describe("toString()", () => {
-    it("기본 형식 HH:mm:ss.fff로 반환한다", () => {
+    it("Returns default format HH:mm:ss.fff", () => {
       const time = new Time(15, 30, 45, 123);
       expect(time.toString()).toBe("15:30:45.123");
     });

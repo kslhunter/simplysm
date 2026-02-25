@@ -15,10 +15,10 @@ describe("SdWorker", () => {
     }
   });
 
-  //#region 메서드 호출
+  //#region Method invocation
 
-  describe("메서드 호출", () => {
-    it("워커 메서드 호출 및 결과 반환", async () => {
+  describe("method invocation", () => {
+    it("calls worker method and returns result", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const result = await worker.add(10, 20);
@@ -26,7 +26,7 @@ describe("SdWorker", () => {
       expect(result).toBe(30);
     });
 
-    it("문자열 반환 메서드 호출", async () => {
+    it("calls method that returns string", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const result = await worker.echo("Hello");
@@ -34,24 +34,24 @@ describe("SdWorker", () => {
       expect(result).toBe("Echo: Hello");
     });
 
-    it("워커에서 에러 발생 시 reject", async () => {
+    it("rejects when error occurs in worker", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       await expect(worker.throwError()).rejects.toThrow();
     });
 
-    it("존재하지 않는 메서드 호출 시 에러", async () => {
+    it("throws error when calling nonexistent method", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
-      // 타입 시스템을 우회하여 존재하지 않는 메서드 호출
+      // Bypass type system to call nonexistent method
       const unknownWorker = worker as unknown as { unknownMethod: () => Promise<void> };
 
       await expect(unknownWorker.unknownMethod()).rejects.toThrow(
-        "알 수 없는 메서드: unknownMethod",
+        "Unknown method: unknownMethod",
       );
     });
 
-    it("다중 요청 동시 처리", async () => {
+    it("handles multiple concurrent requests", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const [result1, result2, result3] = await Promise.all([
@@ -65,7 +65,7 @@ describe("SdWorker", () => {
       expect(result3).toBe(11);
     });
 
-    it("void 반환 메서드 호출", async () => {
+    it("calls method that returns void", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const result = await worker.noReturn();
@@ -76,10 +76,10 @@ describe("SdWorker", () => {
 
   //#endregion
 
-  //#region 이벤트
+  //#region Events
 
-  describe("이벤트", () => {
-    it("워커에서 이벤트 수신", async () => {
+  describe("events", () => {
+    it("receives events from worker", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const events: number[] = [];
@@ -92,7 +92,7 @@ describe("SdWorker", () => {
       expect(events).toContain(50);
     });
 
-    it("off()로 이벤트 리스너 제거", async () => {
+    it("removes event listener with off()", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const events: number[] = [];
@@ -103,11 +103,11 @@ describe("SdWorker", () => {
       worker.on("progress", listener);
       await worker.add(1, 2);
 
-      // 리스너 제거
+      // Remove listener
       worker.off("progress", listener);
       await worker.add(3, 4);
 
-      // 첫 번째 호출의 이벤트만 수신되어야 함
+      // Should only receive event from first call
       expect(events).toHaveLength(1);
       expect(events[0]).toBe(50);
     });
@@ -115,40 +115,40 @@ describe("SdWorker", () => {
 
   //#endregion
 
-  //#region terminate
+  //#region Terminate
 
   describe("terminate", () => {
-    it("대기 중인 요청이 Worker terminated 에러와 함께 reject", async () => {
+    it("rejects pending requests with Worker terminated error", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const runPromise = worker.delay(5000);
 
-      // 워커 종료 전에 미리 에러를 캐치할 준비를 한다
+      // Prepare to catch error before terminating worker
       const errorPromise = runPromise.catch((err: unknown) => err);
 
-      // 워커 종료
+      // Terminate worker
       await worker.terminate();
       worker = undefined;
 
       const error = await errorPromise;
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe("워커가 종료됨 (method: delay)");
+      expect((error as Error).message).toBe("Worker terminated (method: delay)");
     });
 
-    it("워커 비정상 종료 시 대기 중인 요청 reject", async () => {
+    it("rejects pending requests when worker crashes", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
-      // 긴 delay를 먼저 호출하여 pending 상태로 만듦
+      // Call long delay first to put it in pending state
       const delayPromise = worker.delay(5000).catch((err: unknown) => err);
 
-      // 짧은 대기 후 crash 호출 (delay가 pending 상태인 동안)
+      // Call crash after short wait (while delay is pending)
       await new Promise((resolve) => setTimeout(resolve, 10));
       await worker.crash();
 
-      // 워커가 비정상 종료되면 pending 상태의 delay 요청이 reject되어야 함
+      // When worker crashes, pending delay request should be rejected
       const error = await delayPromise;
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toContain("워커가 비정상 종료됨");
+      expect((error as Error).message).toContain("Worker crashed");
     });
   });
 
@@ -157,22 +157,22 @@ describe("SdWorker", () => {
   //#region stdout/stderr
 
   describe("stdout/stderr", () => {
-    it("워커의 console.log 출력이 메인 프로세스로 전달", async () => {
+    it("forwards worker console.log output to main process", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
       const result = await worker.logMessage("test message");
 
-      // 메서드가 정상 반환되면 stdout 파이핑이 동작한 것
+      // If method returns normally, stdout piping is working
       expect(result).toBe("logged");
     });
   });
 
   //#endregion
 
-  //#region env 옵션
+  //#region env option
 
-  describe("env 옵션", () => {
-    it("env 옵션이 워커에 전달", async () => {
+  describe("env option", () => {
+    it("passes env option to worker", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath, {
         env: {
           TEST_ENV_VAR: "test-value-123",

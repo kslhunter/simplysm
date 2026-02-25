@@ -6,8 +6,8 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./math.expected";
 
-describe("Expr - 수학 함수", () => {
-  describe("abs - 절댓값", () => {
+describe("Expr - Math functions", () => {
+  describe("abs - absolute value", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -16,7 +16,7 @@ describe("Expr - 수학 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         absAge: {
           type: "abs",
@@ -25,13 +25,13 @@ describe("Expr - 수학 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.abs[dialect]);
     });
   });
 
-  describe("round - 반올림", () => {
+  describe("round - rounding", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -40,7 +40,7 @@ describe("Expr - 수학 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         rounded: {
           type: "round",
@@ -50,13 +50,13 @@ describe("Expr - 수학 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.round[dialect]);
     });
   });
 
-  describe("ceil - 올림", () => {
+  describe("ceil - ceiling", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -65,7 +65,7 @@ describe("Expr - 수학 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         ceiled: {
           type: "ceil",
@@ -74,13 +74,13 @@ describe("Expr - 수학 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.ceil[dialect]);
     });
   });
 
-  describe("floor - 내림", () => {
+  describe("floor - flooring", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -89,7 +89,7 @@ describe("Expr - 수학 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         floored: {
           type: "floor",
@@ -98,7 +98,7 @@ describe("Expr - 수학 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.floor[dialect]);
     });

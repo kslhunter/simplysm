@@ -12,7 +12,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
     const db = createTestDb();
     const def = db.user().wrap().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -24,7 +24,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.wrapBasic[dialect]);
     });
@@ -38,7 +38,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       .select((item) => ({ id: item.id, name: item.name }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -54,7 +54,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.wrapThenSelect[dialect]);
     });
@@ -68,7 +68,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       .wrap()
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -84,7 +84,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectThenWrap[dialect]);
     });
@@ -99,7 +99,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -125,7 +125,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereThenWrapThenWhere[dialect]);
     });
@@ -140,7 +140,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       .select((item) => ({ postUserId: item.posts![0].userId }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -185,7 +185,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.includeThenWrapThenSelect[dialect]);
     });
@@ -204,7 +204,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       .orderBy((item) => item.cnt, "DESC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T2",
@@ -226,7 +226,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.groupByThenWrapThenOrderBy[dialect]);
     });
@@ -240,7 +240,7 @@ describe("SELECT - UNION", () => {
     const qr2 = db.user().where((item) => [expr.gt(item.age, 30)]);
     const def = Queryable.union(qr1, qr2).getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T3",
@@ -273,7 +273,7 @@ describe("SELECT - UNION", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unionBasic[dialect]);
     });
@@ -286,7 +286,7 @@ describe("SELECT - UNION", () => {
     const qr3 = db.user().where((item) => [expr.eq(item.age, 40)]);
     const def = Queryable.union(qr1, qr2, qr3).getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T4",
@@ -331,7 +331,7 @@ describe("SELECT - UNION", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unionThree[dialect]);
     });
@@ -345,7 +345,7 @@ describe("SELECT - UNION", () => {
       .where((item) => [expr.eq(item.isActive, true)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T3",
@@ -378,7 +378,7 @@ describe("SELECT - UNION", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unionThenWhere[dialect]);
     });
@@ -394,7 +394,7 @@ describe("SELECT - UNION", () => {
       .limit(0, 10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T4",
@@ -433,7 +433,7 @@ describe("SELECT - UNION", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unionThenWrapThenOrderByLimit[dialect]);
     });
@@ -445,7 +445,7 @@ describe("SELECT - UNION", () => {
     const qr2 = db.user().select((item) => ({ id: item.id, name: item.name }));
     const def = Queryable.union(qr1, qr2).getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T3",
@@ -472,7 +472,7 @@ describe("SELECT - UNION", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unionThenSelect[dialect]);
     });
@@ -498,7 +498,7 @@ describe("SELECT - SCALAR SUBQUERY (expr.subquery)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -527,7 +527,7 @@ describe("SELECT - SCALAR SUBQUERY (expr.subquery)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.scalarSubquery[dialect]);
     });

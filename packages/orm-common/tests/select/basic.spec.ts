@@ -6,12 +6,12 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./basic.expected";
 
-describe("SELECT - 기본", () => {
+describe("SELECT - Basic", () => {
   describe("테이블에서 가져오기", () => {
     const db = createTestDb();
     const def = db.user().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -19,7 +19,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectAll[dialect]);
     });
@@ -35,7 +35,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -47,7 +47,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectColumns[dialect]);
     });
@@ -62,7 +62,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -79,7 +79,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectConcat[dialect]);
     });
@@ -98,7 +98,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -113,7 +113,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectAggregate[dialect]);
     });
@@ -128,7 +128,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -145,7 +145,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectIfNull2[dialect]);
     });
@@ -160,7 +160,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -178,7 +178,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectIfNull3[dialect]);
     });
@@ -193,7 +193,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -208,7 +208,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectNullIf[dialect]);
     });
@@ -223,7 +223,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -239,7 +239,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectSubstring[dialect]);
     });
@@ -254,7 +254,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -269,7 +269,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectSubstringNoLength[dialect]);
     });
@@ -284,7 +284,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -299,7 +299,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectIndexOf[dialect]);
     });
@@ -314,7 +314,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -331,7 +331,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectLeast[dialect]);
     });
@@ -346,7 +346,7 @@ describe("SELECT - 기본", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -363,7 +363,7 @@ describe("SELECT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectGreatest[dialect]);
     });
@@ -375,7 +375,7 @@ describe("SELECT - 옵션", () => {
     const db = createTestDb();
     const def = db.user().distinct().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -384,7 +384,7 @@ describe("SELECT - 옵션", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectDistinct[dialect]);
     });
@@ -394,7 +394,7 @@ describe("SELECT - 옵션", () => {
     const db = createTestDb();
     const def = db.user().lock().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -403,7 +403,7 @@ describe("SELECT - 옵션", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectLock[dialect]);
     });
@@ -413,7 +413,7 @@ describe("SELECT - 옵션", () => {
     const db = createTestDb();
     const def = db.user().distinct().lock().getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -423,7 +423,7 @@ describe("SELECT - 옵션", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectDistinctLock[dialect]);
     });
@@ -435,7 +435,7 @@ describe("SELECT - 제한", () => {
     const db = createTestDb();
     const def = db.user().top(10).getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -444,7 +444,7 @@ describe("SELECT - 제한", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectTop[dialect]);
     });
@@ -458,7 +458,7 @@ describe("SELECT - 제한", () => {
       .limit(0, 10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -468,7 +468,7 @@ describe("SELECT - 제한", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectLimit[dialect]);
     });
@@ -482,7 +482,7 @@ describe("SELECT - 제한", () => {
       .limit(20, 10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -492,7 +492,7 @@ describe("SELECT - 제한", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectLimitOffset[dialect]);
     });

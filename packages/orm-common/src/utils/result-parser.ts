@@ -26,7 +26,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
     case "number": {
       const num = Number(value);
       if (Number.isNaN(num)) {
-        throw new Error(`number Parse 실패: ${String(value)}`);
+        throw new Error(`Failed to parse number: ${String(value)}`);
       }
       return num;
     }
@@ -56,7 +56,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
     case "Bytes":
       if (value instanceof Uint8Array) return value;
       if (typeof value === "string") return bytesFromHex(value);
-      throw new Error(`Bytes Parse 실패: ${typeof value}`);
+      throw new Error(`Failed to parse Bytes: ${typeof value}`);
   }
 }
 
@@ -423,7 +423,7 @@ function mergeJoinData(
     // isSingle: true인데 이미 data가 있고 다른 값이면 에러
     if (existingJoinData != null) {
       if (!objEqual(existingJoinData as Record<string, unknown>, newJoinData)) {
-        throw new Error(`isSingle relationship '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
+        throw new Error(`isSingle relationship '${localKey}' has multiple different results.`);
       }
     } else {
       existingGroup[localKey] = newJoinData;

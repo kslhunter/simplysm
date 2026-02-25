@@ -2,16 +2,16 @@ import { Sidebar, Topbar, type AppMenu } from "@simplysm/solid";
 import { IconFolder, IconHome, IconSettings } from "@tabler/icons-solidjs";
 
 const sampleMenus: AppMenu[] = [
-  { title: "홈", href: "#", icon: IconHome },
+  { title: "Home", href: "#", icon: IconHome },
   {
-    title: "문서",
+    title: "Documents",
     icon: IconFolder,
     children: [
-      { title: "시작하기", href: "#" },
-      { title: "API 참조", href: "#" },
+      { title: "Getting Started", href: "#" },
+      { title: "API Reference", href: "#" },
     ],
   },
-  { title: "설정", href: "#", icon: IconSettings },
+  { title: "Settings", href: "#", icon: IconSettings },
 ];
 
 export default function MobileLayoutDemoPage() {
@@ -21,34 +21,34 @@ export default function MobileLayoutDemoPage() {
         <Sidebar>
           <div class="p-2 px-4 font-bold">LOGO</div>
           <Sidebar.User
-            name="홍길동"
+            name="Hong Gildong"
             description="hong@example.com"
             menus={[
-              { title: "프로필", onClick: () => alert("프로필") },
-              { title: "로그아웃", onClick: () => alert("로그아웃") },
+              { title: "Profile", onClick: () => alert("Profile") },
+              { title: "Logout", onClick: () => alert("Logout") },
             ]}
           />
           <Sidebar.Menu menus={sampleMenus} />
         </Sidebar>
         <Topbar.Container>
           <Topbar>
-            <h1 class="m-0 text-base font-bold">모바일 데모</h1>
+            <h1 class="m-0 text-base font-bold">Mobile Demo</h1>
             <div class="flex-1" />
             <Topbar.User
               menus={[
-                { title: "프로필", onClick: () => alert("프로필") },
-                { title: "로그아웃", onClick: () => alert("로그아웃") },
+                { title: "Profile", onClick: () => alert("Profile") },
+                { title: "Logout", onClick: () => alert("Logout") },
               ]}
             >
-              홍길동
+              Hong Gildong
             </Topbar.User>
           </Topbar>
           <div class="flex-1 overflow-auto p-4">
             <p class="text-sm text-base-600 dark:text-base-400">
-              햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.
+              Click the hamburger button to open the sidebar.
             </p>
             <p class="mt-4 text-sm text-base-600 dark:text-base-400">
-              사이드바 외부를 클릭하면 사이드바가 닫힙니다.
+              Click outside the sidebar to close it.
             </p>
           </div>
         </Topbar.Container>

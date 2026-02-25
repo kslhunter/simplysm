@@ -3,7 +3,7 @@ import { consola } from "consola";
 import { RebuildManager } from "../../src/utils/rebuild-manager";
 
 describe("RebuildManager", () => {
-  it("리빌드 배치 시 start/success 로그를 출력한다", async () => {
+  it("logs start/success messages on rebuild batch", async () => {
     const logger = consola.withTag("test");
     const startSpy = vi.spyOn(logger, "start");
     const successSpy = vi.spyOn(logger, "success");
@@ -22,7 +22,7 @@ describe("RebuildManager", () => {
     expect(successSpy).toHaveBeenCalledWith("리빌드 완료 (pkg1 (node))");
   });
 
-  it("여러 빌드를 하나의 배치로 묶어 로그를 출력한다", async () => {
+  it("batches multiple builds and logs them together", async () => {
     const logger = consola.withTag("test");
     const startSpy = vi.spyOn(logger, "start");
     const successSpy = vi.spyOn(logger, "success");

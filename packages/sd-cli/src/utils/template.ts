@@ -10,9 +10,9 @@ import { fsCopy, fsMkdir, fsRead, fsReaddir, fsStat, fsWrite } from "@simplysm/c
  * - Other files: copy as-is (binary)
  *
  * @param srcDir - Template source directory
- * @param destDir - 출력 대상 디렉토리
- * @param context - Handlebars 템플릿 변수
- * @param dirReplacements - 디렉토리 이름 치환 맵 (예: `{ __CLIENT__: "client-admin" }`)
+ * @param destDir - Output destination directory
+ * @param context - Handlebars template variables
+ * @param dirReplacements - Directory name substitution map (e.g., `{ __CLIENT__: "client-admin" }`)
  */
 export async function renderTemplateDir(
   srcDir: string,
@@ -29,7 +29,7 @@ export async function renderTemplateDir(
     const stat = await fsStat(srcPath);
 
     if (stat.isDirectory()) {
-      // 디렉토리 이름 치환 적용
+      // Apply directory name substitution
       const destName = dirReplacements?.[entry] ?? entry;
       await renderTemplateDir(
         path.join(srcDir, entry),
@@ -38,18 +38,18 @@ export async function renderTemplateDir(
         dirReplacements,
       );
     } else if (entry.endsWith(".hbs")) {
-      // Handlebars 템플릿 렌더링
+      // Render Handlebars template
       const source = await fsRead(srcPath);
       const template = Handlebars.compile(source, { noEscape: true });
       const result = template(context);
 
-      // 빈 결과면 파일 생성 스킵
+      // Skip file creation if result is empty or whitespace-only
       if (result.trim().length === 0) continue;
 
-      const destFileName = entry.slice(0, -4); // .hbs 제거
+      const destFileName = entry.slice(0, -4); // Remove .hbs
       await fsWrite(path.join(destDir, destFileName), result);
     } else {
-      // 바이너리 파일은 그대로 복사
+      // Copy binary files as-is
       await fsCopy(srcPath, path.join(destDir, entry));
     }
   }

@@ -5,12 +5,12 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";
 import * as expected from "./basic.expected";
 
-describe("Executable - 기본", () => {
-  describe("getExecProcQueryDef - 파라미터 없이", () => {
+describe("Executable - Basic", () => {
+  describe("getExecProcQueryDef - without parameters", () => {
     const db = createTestDb();
     const def = db.getUserById().getExecProcQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "execProc",
         procedure: {
@@ -22,17 +22,17 @@ describe("Executable - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.execProcNoParams[dialect]);
     });
   });
 
-  describe("getExecProcQueryDef - 파라미터 포함", () => {
+  describe("getExecProcQueryDef - with parameters", () => {
     const db = createTestDb();
     const def = db.getUserById().getExecProcQueryDef({ userId: 123 });
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "execProc",
         procedure: {
@@ -46,7 +46,7 @@ describe("Executable - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.execProcWithParams[dialect]);
     });

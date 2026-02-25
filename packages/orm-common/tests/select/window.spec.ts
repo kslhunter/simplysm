@@ -7,7 +7,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./window.expected";
 
 describe("SELECT - Window Functions", () => {
-  describe("ROW_NUMBER: 부서별 급여 순위", () => {
+  describe("ROW_NUMBER: Department salary ranking", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -19,7 +19,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -40,13 +40,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rowNumber[dialect]);
     });
   });
 
-  describe("RANK: 전체 점수 순위 (동점 시 건너뜀)", () => {
+  describe("RANK: Overall score ranking (skip on tie)", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -57,7 +57,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -76,13 +76,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rank[dialect]);
     });
   });
 
-  describe("DENSE_RANK: 전체 점수 순위 (동점 시 연속)", () => {
+  describe("DENSE_RANK: Overall score ranking (consecutive on tie)", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -92,7 +92,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -110,13 +110,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.denseRank[dialect]);
     });
   });
 
-  describe("NTILE: 4분위로 나누기", () => {
+  describe("NTILE: Divide into quartiles", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -126,7 +126,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -144,13 +144,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.ntile[dialect]);
     });
   });
 
-  describe("LAG: 이전 행 값 조회", () => {
+  describe("LAG: Get previous row value", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -165,7 +165,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -189,13 +189,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lag[dialect]);
     });
   });
 
-  describe("LEAD: 다음 행 값 조회", () => {
+  describe("LEAD: Get next row value", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -205,7 +205,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -227,13 +227,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lead[dialect]);
     });
   });
 
-  describe("LAG with default: 이전 행이 없을 때 기본값", () => {
+  describe("LAG with default: Default value when no previous row", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -243,7 +243,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -266,13 +266,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lagWithDefault[dialect]);
     });
   });
 
-  describe("LEAD with default: 다음 행이 없을 때 기본값", () => {
+  describe("LEAD with default: Default value when no next row", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -282,7 +282,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -305,13 +305,13 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.leadWithDefault[dialect]);
     });
   });
 
-  describe("SUM OVER: 누적 합계", () => {
+  describe("SUM OVER: Cumulative sum", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -324,7 +324,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -346,7 +346,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.sumOver[dialect]);
     });
@@ -362,7 +362,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -383,7 +383,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.avgOver[dialect]);
     });
@@ -399,7 +399,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -417,7 +417,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.countOver[dialect]);
     });
@@ -440,7 +440,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -473,7 +473,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.firstLastValue[dialect]);
     });
@@ -496,7 +496,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -536,7 +536,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.combined[dialect]);
     });
@@ -552,7 +552,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -573,7 +573,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.minOver[dialect]);
     });
@@ -589,7 +589,7 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -610,7 +610,7 @@ describe("SELECT - Window Functions", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.maxOver[dialect]);
     });

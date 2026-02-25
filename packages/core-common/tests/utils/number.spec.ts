@@ -10,42 +10,42 @@ describe("number utils", () => {
   //#region numParseInt
 
   describe("numParseInt()", () => {
-    it("숫자 문자열을 정수로 파싱한다", () => {
+    it("Parses numeric string to integer", () => {
       expect(parseInt("123")).toBe(123);
     });
 
-    it("음수 문자열을 파싱한다", () => {
+    it("Parses negative string", () => {
       expect(parseInt("-123")).toBe(-123);
     });
 
-    it("실수 문자열은 정수 부분만 반환한다", () => {
+    it("Floating string returns only integer part", () => {
       expect(parseInt("123.45")).toBe(123);
     });
 
-    it("숫자 타입이면 소수점 이하를 버린다", () => {
+    it("Number type discards decimal places", () => {
       expect(parseInt(123.7)).toBe(123);
       expect(parseInt(123.3)).toBe(123);
     });
 
-    it("비숫자 문자를 제거 후 파싱한다", () => {
+    it("Removes non-numeric characters then parses", () => {
       expect(parseInt("$1,234")).toBe(1234);
-      expect(parseInt("가나다123")).toBe(123);
+      expect(parseInt("abc123")).toBe(123);
     });
 
-    it("문자 사이의 음수 부호를 처리한다", () => {
-      expect(parseInt("가-123나")).toBe(-123);
+    it("Handles minus sign between characters", () => {
+      expect(parseInt("abc-123def")).toBe(-123);
       expect(parseInt("abc-456def")).toBe(-456);
     });
 
-    it("빈 문자열이면 undefined를 반환한다", () => {
+    it("Empty string returns undefined", () => {
       expect(parseInt("")).toBe(undefined);
     });
 
-    it("숫자가 없는 문자열이면 undefined를 반환한다", () => {
+    it("String with no digits returns undefined", () => {
       expect(parseInt("abc")).toBe(undefined);
     });
 
-    it("string이 아닌 타입이면 undefined를 반환한다", () => {
+    it("Non-string type returns undefined", () => {
       expect(parseInt(null)).toBe(undefined);
       expect(parseInt(undefined)).toBe(undefined);
       expect(parseInt({})).toBe(undefined);
@@ -57,20 +57,20 @@ describe("number utils", () => {
   //#region numParseRoundedInt
 
   describe("numParseRoundedInt()", () => {
-    it("실수 문자열을 반올림하여 정수로 반환한다", () => {
+    it("Rounds floating string to integer", () => {
       expect(parseRoundedInt("123.5")).toBe(124);
       expect(parseRoundedInt("123.4")).toBe(123);
     });
 
-    it("정수 문자열은 그대로 반환한다", () => {
+    it("Integer string returned as-is", () => {
       expect(parseRoundedInt("123")).toBe(123);
     });
 
-    it("숫자 타입을 반올림하여 반환한다", () => {
+    it("Rounds number type", () => {
       expect(parseRoundedInt(123.7)).toBe(124);
     });
 
-    it("파싱 불가능하면 undefined를 반환한다", () => {
+    it("Returns undefined if not parseable", () => {
       expect(parseRoundedInt("abc")).toBe(undefined);
     });
   });
@@ -80,35 +80,35 @@ describe("number utils", () => {
   //#region numParseFloat
 
   describe("numParseFloat()", () => {
-    it("실수 문자열을 파싱한다", () => {
+    it("Parses floating string", () => {
       expect(parseFloat("123.45")).toBe(123.45);
     });
 
-    it("정수 문자열을 실수로 파싱한다", () => {
+    it("Parses integer string as float", () => {
       expect(parseFloat("123")).toBe(123);
     });
 
-    it("음수 실수 문자열을 파싱한다", () => {
+    it("Parses negative floating string", () => {
       expect(parseFloat("-123.45")).toBe(-123.45);
     });
 
-    it("숫자 타입이면 그대로 반환한다", () => {
+    it("Number type returned as-is", () => {
       expect(parseFloat(123.45)).toBe(123.45);
     });
 
-    it("비숫자 문자를 제거 후 파싱한다", () => {
+    it("Removes non-numeric characters then parses", () => {
       expect(parseFloat("$1,234.56")).toBe(1234.56);
     });
 
-    it("빈 문자열이면 undefined를 반환한다", () => {
+    it("Empty string returns undefined", () => {
       expect(parseFloat("")).toBe(undefined);
     });
 
-    it("숫자가 없는 문자열이면 undefined를 반환한다", () => {
+    it("String with no digits returns undefined", () => {
       expect(parseFloat("abc")).toBe(undefined);
     });
 
-    it("string이 아닌 타입이면 undefined를 반환한다", () => {
+    it("Non-string type returns undefined", () => {
       expect(parseFloat(null)).toBe(undefined);
       expect(parseFloat(undefined)).toBe(undefined);
     });
@@ -119,36 +119,36 @@ describe("number utils", () => {
   //#region numFormat
 
   describe("numFormat()", () => {
-    it("천단위 구분자를 적용한다", () => {
+    it("Applies thousands separator", () => {
       expect(format(1234567)).toBe("1,234,567");
     });
 
-    it("실수에 천단위 구분자를 적용한다", () => {
+    it("Applies thousands separator to float", () => {
       const result = format(1234567.89);
       expect(result).toContain("1,234,567");
     });
 
-    it("최대 소수점 자릿수를 지정한다", () => {
+    it("Specifies maximum decimal places", () => {
       expect(format(123.456, { max: 2 })).toBe("123.46");
     });
 
-    it("최소 소수점 자릿수를 지정한다", () => {
+    it("Specifies minimum decimal places", () => {
       expect(format(123, { min: 2 })).toBe("123.00");
     });
 
-    it("최대/최소 소수점 자릿수를 함께 지정한다", () => {
+    it("Specifies both max and min decimal places", () => {
       expect(format(123.4, { max: 3, min: 2 })).toBe("123.40");
     });
 
-    it("undefined이면 undefined를 반환한다", () => {
+    it("Undefined returns undefined", () => {
       expect(format(undefined)).toBe(undefined);
     });
 
-    it("0을 포맷팅한다", () => {
+    it("Formats zero", () => {
       expect(format(0)).toBe("0");
     });
 
-    it("음수를 포맷팅한다", () => {
+    it("Formats negative number", () => {
       expect(format(-1234567)).toBe("-1,234,567");
     });
   });

@@ -6,7 +6,7 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./string.expected";
 
-describe("Expr - 문자열 함수", () => {
+describe("Expr - String functions", () => {
   describe("concat - 문자열 연결 (null 처리)", () => {
     const db = createTestDb();
     const def = db
@@ -16,7 +16,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         fullName: {
           type: "concat",
@@ -29,7 +29,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.concat[dialect]);
     });
@@ -44,7 +44,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         nameLength: {
           type: "length",
@@ -53,7 +53,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.length[dialect]);
     });
@@ -68,7 +68,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         byteLen: {
           type: "byteLength",
@@ -77,7 +77,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.byteLength[dialect]);
     });
@@ -92,7 +92,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         prefix: {
           type: "left",
@@ -102,7 +102,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.left[dialect]);
     });
@@ -117,7 +117,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         suffix: {
           type: "right",
@@ -127,13 +127,13 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.right[dialect]);
     });
   });
 
-  describe("trim - 공백 제거", () => {
+  describe("trim - remove whitespace", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -142,7 +142,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         trimmed: {
           type: "trim",
@@ -151,7 +151,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.trim[dialect]);
     });
@@ -166,7 +166,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         padded: {
           type: "padStart",
@@ -177,13 +177,13 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.padStart[dialect]);
     });
   });
 
-  describe("replace - 문자 치환", () => {
+  describe("replace - character replacement", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -192,7 +192,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         replaced: {
           type: "replace",
@@ -203,13 +203,13 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.replace[dialect]);
     });
   });
 
-  describe("upper - 대문자 변환", () => {
+  describe("upper - convert to uppercase", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -218,7 +218,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         upper: {
           type: "upper",
@@ -227,13 +227,13 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upper[dialect]);
     });
   });
 
-  describe("lower - 소문자 변환", () => {
+  describe("lower - convert to lowercase", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -242,7 +242,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         lower: {
           type: "lower",
@@ -251,13 +251,13 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lower[dialect]);
     });
   });
 
-  describe("substring - 부분 문자열", () => {
+  describe("substring - substring", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -266,7 +266,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         sub: {
           type: "substring",
@@ -277,7 +277,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.substring[dialect]);
     });
@@ -292,7 +292,7 @@ describe("Expr - 문자열 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         pos: {
           type: "indexOf",
@@ -302,7 +302,7 @@ describe("Expr - 문자열 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.indexOf[dialect]);
     });
@@ -315,7 +315,7 @@ describe("Expr - 문자열 함수", () => {
       .where((item) => [expr.like(item.name, "%test%")])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.where).toEqual([
         {
           type: "like",
@@ -325,7 +325,7 @@ describe("Expr - 문자열 함수", () => {
       ]);
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.like[dialect]);
     });
@@ -338,7 +338,7 @@ describe("Expr - 문자열 함수", () => {
       .where((item) => [expr.like(item.name, "%\\%%")])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.where).toEqual([
         {
           type: "like",
@@ -348,7 +348,7 @@ describe("Expr - 문자열 함수", () => {
       ]);
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.likeEscape[dialect]);
     });

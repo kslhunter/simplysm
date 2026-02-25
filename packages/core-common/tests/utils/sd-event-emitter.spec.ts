@@ -12,7 +12,7 @@ describe("SdEventEmitter", () => {
   //#region on/emit
 
   describe("on() / emit()", () => {
-    it("이벤트를 발생시키고 수신한다", () => {
+    it("Emits and receives event", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -23,7 +23,7 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenCalledTimes(1);
     });
 
-    it("여러 번 emit하면 리스너가 여러 번 호출된다", () => {
+    it("Listener called multiple times on multiple emit", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -38,7 +38,7 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenNthCalledWith(3, 3);
     });
 
-    it("객체 데이터를 전달한다", () => {
+    it("Passes object data", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -48,7 +48,7 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenCalledWith({ id: 1, name: "test" });
     });
 
-    it("void 이벤트를 처리한다", () => {
+    it("Handles void event", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -58,7 +58,7 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenCalledTimes(1);
     });
 
-    it("같은 이벤트에 여러 리스너를 등록할 수 있다", () => {
+    it("Can register multiple listeners for same event", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener1 = vi.fn();
       const listener2 = vi.fn();
@@ -77,7 +77,7 @@ describe("SdEventEmitter", () => {
   //#region off
 
   describe("off()", () => {
-    it("리스너를 해제한다", () => {
+    it("Removes listener", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -88,7 +88,7 @@ describe("SdEventEmitter", () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    it("해제된 리스너만 제거되고 다른 리스너는 유지된다", () => {
+    it("Removes only specified listener, others remain", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener1 = vi.fn();
       const listener2 = vi.fn();
@@ -102,11 +102,11 @@ describe("SdEventEmitter", () => {
       expect(listener2).toHaveBeenCalledWith("test");
     });
 
-    it("등록되지 않은 리스너를 해제해도 에러가 발생하지 않는다", () => {
+    it("No error removing unregistered listener", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
-      // 에러 없이 실행되어야 함
+      // Should run without error
       expect(() => {
         emitter.off("message", listener);
       }).not.toThrow();
@@ -118,7 +118,7 @@ describe("SdEventEmitter", () => {
   //#region listenerCount
 
   describe("listenerCount()", () => {
-    it("리스너 수를 정확히 카운트한다", () => {
+    it("Accurately counts listeners", () => {
       const emitter = new EventEmitter<TestEvents>();
 
       expect(emitter.listenerCount("message")).toBe(0);
@@ -130,7 +130,7 @@ describe("SdEventEmitter", () => {
       expect(emitter.listenerCount("message")).toBe(2);
     });
 
-    it("off 후 카운트가 감소한다", () => {
+    it("Count decreases after off", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -141,14 +141,14 @@ describe("SdEventEmitter", () => {
       expect(emitter.listenerCount("message")).toBe(0);
     });
 
-    it("등록되지 않은 이벤트 타입의 카운트는 0이다", () => {
+    it("Unregistered event type has 0 count", () => {
       const emitter = new EventEmitter<TestEvents>();
 
       expect(emitter.listenerCount("message")).toBe(0);
       expect(emitter.listenerCount("count")).toBe(0);
     });
 
-    it("다른 이벤트 타입의 카운트는 독립적이다", () => {
+    it("Different event types have independent counts", () => {
       const emitter = new EventEmitter<TestEvents>();
 
       emitter.on("message", () => {});
@@ -162,16 +162,16 @@ describe("SdEventEmitter", () => {
 
   //#endregion
 
-  //#region 중복 등록 방지
+  //#region Prevent duplicate registration
 
-  describe("중복 등록 방지", () => {
-    it("동일한 리스너를 중복 등록하면 무시된다", () => {
+  describe("Prevent duplicate registration", () => {
+    it("Duplicate registration of same listener is ignored", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
       emitter.on("message", listener);
-      emitter.on("message", listener); // 중복 등록 시도
-      emitter.on("message", listener); // 중복 등록 시도
+      emitter.on("message", listener); // duplicate registration attempt
+      emitter.on("message", listener); // duplicate registration attempt
 
       expect(emitter.listenerCount("message")).toBe(1);
 
@@ -179,7 +179,7 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenCalledTimes(1);
     });
 
-    it("동일한 리스너를 서로 다른 이벤트에 등록할 수 있다", () => {
+    it("Can register same listener to different events", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
@@ -197,12 +197,12 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenNthCalledWith(2, 123);
     });
 
-    it("중복 등록 후 off 한 번 호출로 제거된다", () => {
+    it("Single off call removes after duplicate registration", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener = vi.fn();
 
       emitter.on("message", listener);
-      emitter.on("message", listener); // 중복 등록 시도
+      emitter.on("message", listener); // duplicate registration attempt
 
       emitter.off("message", listener);
       expect(emitter.listenerCount("message")).toBe(0);

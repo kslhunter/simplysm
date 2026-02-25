@@ -24,7 +24,7 @@ describe("object utils", () => {
   //#region clone
 
   describe("objClone()", () => {
-    it("primitive 값을 복사한다", () => {
+    it("Clones primitive values", () => {
       expect(clone(42)).toBe(42);
       expect(clone("hello")).toBe("hello");
       expect(clone(true)).toBe(true);
@@ -32,7 +32,7 @@ describe("object utils", () => {
       expect(clone(undefined)).toBe(undefined);
     });
 
-    it("배열을 깊은 복사한다", () => {
+    it("Deep clones array", () => {
       const arr = [1, [2, 3], { a: 4 }];
       const cloned = clone(arr);
 
@@ -42,7 +42,7 @@ describe("object utils", () => {
       expect(cloned[2]).not.toBe(arr[2]);
     });
 
-    it("객체를 깊은 복사한다", () => {
+    it("Deep clones object", () => {
       const obj = { a: 1, b: { c: 2 }, d: [3, 4] };
       const cloned = clone(obj);
 
@@ -52,7 +52,7 @@ describe("object utils", () => {
       expect(cloned.d).not.toBe(obj.d);
     });
 
-    it("Date를 복사한다", () => {
+    it("Clones Date", () => {
       const date = new Date(2024, 2, 15);
       const cloned = clone(date);
 
@@ -60,7 +60,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(date);
     });
 
-    it("DateTime을 복사한다", () => {
+    it("Clones DateTime", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
       const cloned = clone(dt);
 
@@ -68,7 +68,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(dt);
     });
 
-    it("DateOnly를 복사한다", () => {
+    it("Clones DateOnly", () => {
       const d = new DateOnly(2024, 3, 15);
       const cloned = clone(d);
 
@@ -76,7 +76,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(d);
     });
 
-    it("Uuid를 복사한다", () => {
+    it("Clones Uuid", () => {
       const uuid = Uuid.new();
       const cloned = clone(uuid);
 
@@ -84,7 +84,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(uuid);
     });
 
-    it("Map을 복사한다", () => {
+    it("Clones Map", () => {
       const map = new Map<string, number | { c: number }>([
         ["a", 1],
         ["b", { c: 2 }],
@@ -96,20 +96,20 @@ describe("object utils", () => {
       expect(cloned.get("b")).not.toBe(map.get("b"));
     });
 
-    it("Set을 복사한다", () => {
+    it("Clones Set", () => {
       const obj = { a: 1 };
       const set = new Set([1, 2, obj]);
       const cloned = clone(set);
 
       expect(cloned.has(1)).toBe(true);
       expect(cloned.has(2)).toBe(true);
-      // Set에 있는 obj는 복사됨
+      // Object in Set is cloned
       const clonedObj = Array.from(cloned).find((item) => typeof item === "object");
       expect(clonedObj).toEqual(obj);
       expect(clonedObj).not.toBe(obj);
     });
 
-    it("순환 참조를 처리한다", () => {
+    it("Handles circular references", () => {
       const obj: Record<string, unknown> = { a: 1 };
       obj["self"] = obj;
 
@@ -120,7 +120,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(obj);
     });
 
-    it("RegExp를 복사한다", () => {
+    it("Clones RegExp", () => {
       const regex = /test/gi;
       const cloned = clone(regex);
 
@@ -130,7 +130,7 @@ describe("object utils", () => {
       expect(cloned.flags).toBe("gi");
     });
 
-    it("Error를 복사한다", () => {
+    it("Clones Error", () => {
       const error = new Error("test error");
       const cloned = clone(error);
 
@@ -138,7 +138,7 @@ describe("object utils", () => {
       expect(cloned).not.toBe(error);
     });
 
-    it("Error의 cause를 복사한다", () => {
+    it("Clones Error cause", () => {
       const cause = new Error("cause error");
       const error = new Error("test error", { cause });
       const cloned = clone(error);
@@ -148,7 +148,7 @@ describe("object utils", () => {
       expect((cloned.cause as Error).message).toBe("cause error");
     });
 
-    it("Error의 커스텀 속성을 복사한다", () => {
+    it("Clones Error custom properties", () => {
       const error = new Error("test") as Error & { code: string; detail: object };
       error.code = "ERR_CODE";
       error.detail = { key: "value" };
@@ -159,7 +159,7 @@ describe("object utils", () => {
       expect(cloned.detail).not.toBe(error.detail);
     });
 
-    it("Uint8Array를 복사한다", () => {
+    it("Clones Uint8Array", () => {
       const arr = new Uint8Array([1, 2, 3, 4, 5]);
       const cloned = clone(arr);
 
@@ -168,8 +168,8 @@ describe("object utils", () => {
       expect(cloned.buffer).not.toBe(arr.buffer);
     });
 
-    it("Symbol 키는 복사되지 않는다", () => {
-      // Object.keys()는 Symbol 키를 열거하지 않으므로 복사되지 않음
+    it("Symbol keys are not cloned", () => {
+      // Object.keys() does not enumerate Symbol keys, so they are not cloned
       const sym = Symbol("test");
       const obj = { a: 1, [sym]: "symbol value" };
       const cloned = clone(obj);
@@ -184,7 +184,7 @@ describe("object utils", () => {
   //#region equal
 
   describe("objEqual()", () => {
-    it("primitive 값을 비교한다", () => {
+    it("Compares primitive values", () => {
       expect(objEqual(1, 1)).toBe(true);
       expect(objEqual(1, 2)).toBe(false);
       expect(objEqual("a", "a")).toBe(true);
@@ -193,24 +193,24 @@ describe("object utils", () => {
       expect(objEqual(null, undefined)).toBe(false);
     });
 
-    it("배열을 비교한다", () => {
+    it("Compares arrays", () => {
       expect(objEqual([1, 2, 3], [1, 2, 3])).toBe(true);
       expect(objEqual([1, 2, 3], [1, 2])).toBe(false);
       expect(objEqual([1, 2, 3], [1, 3, 2])).toBe(false);
     });
 
-    it("객체를 비교한다", () => {
+    it("Compares objects", () => {
       expect(objEqual({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
       expect(objEqual({ a: 1, b: 2 }, { a: 1, b: 3 })).toBe(false);
       expect(objEqual({ a: 1 }, { a: 1, b: 2 })).toBe(false);
     });
 
-    it("중첩된 객체를 비교한다", () => {
+    it("Compares nested objects", () => {
       expect(objEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 1 } } })).toBe(true);
       expect(objEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 2 } } })).toBe(false);
     });
 
-    it("DateTime을 비교한다", () => {
+    it("Compares DateTime", () => {
       const dt1 = new DateTime(2024, 3, 15);
       const dt2 = new DateTime(2024, 3, 15);
       const dt3 = new DateTime(2024, 3, 16);
@@ -219,7 +219,7 @@ describe("object utils", () => {
       expect(objEqual(dt1, dt3)).toBe(false);
     });
 
-    it("Uuid를 비교한다", () => {
+    it("Compares Uuid", () => {
       const uuid1 = new Uuid("12345678-9abc-def0-1234-56789abcdef0");
       const uuid2 = new Uuid("12345678-9abc-def0-1234-56789abcdef0");
       const uuid3 = new Uuid("12345678-9abc-def0-1234-56789abcdef1");
@@ -228,18 +228,18 @@ describe("object utils", () => {
       expect(objEqual(uuid1, uuid3)).toBe(false);
     });
 
-    it("RegExp를 비교한다", () => {
+    it("Compares RegExp", () => {
       const regex1 = /test/gi;
       const regex2 = /test/gi;
       const regex3 = /test/g;
       const regex4 = /other/gi;
 
       expect(objEqual(regex1, regex2)).toBe(true);
-      expect(objEqual(regex1, regex3)).toBe(false); // flags 다름
-      expect(objEqual(regex1, regex4)).toBe(false); // source 다름
+      expect(objEqual(regex1, regex3)).toBe(false); // Different flags
+      expect(objEqual(regex1, regex4)).toBe(false); // Different source
     });
 
-    it("Map을 비교한다", () => {
+    it("Compares Map", () => {
       const map1 = new Map([
         ["a", 1],
         ["b", 2],
@@ -257,7 +257,7 @@ describe("object utils", () => {
       expect(objEqual(map1, map3)).toBe(false);
     });
 
-    it("Set을 비교한다", () => {
+    it("Compares Set", () => {
       const set1 = new Set([1, 2, 3]);
       const set2 = new Set([1, 2, 3]);
       const set3 = new Set([1, 2, 4]);
@@ -266,7 +266,7 @@ describe("object utils", () => {
       expect(objEqual(set1, set3)).toBe(false);
     });
 
-    it("topLevelIncludes 옵션으로 특정 키만 비교한다", () => {
+    it("Compares only specific keys with topLevelIncludes option", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
@@ -274,18 +274,18 @@ describe("object utils", () => {
       expect(objEqual(obj1, obj2, { topLevelIncludes: ["a", "b"] })).toBe(false);
     });
 
-    it("topLevelExcludes 옵션으로 특정 키를 제외한다", () => {
+    it("Excludes specific keys with topLevelExcludes option", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
       expect(objEqual(obj1, obj2, { topLevelExcludes: ["b", "c"] })).toBe(true);
     });
 
-    it("ignoreArrayIndex 옵션으로 배열 순서를 무시한다", () => {
+    it("Ignores array order with ignoreArrayIndex option", () => {
       expect(objEqual([1, 2, 3], [3, 2, 1], { ignoreArrayIndex: true })).toBe(true);
     });
 
-    it("onlyOneDepth 옵션으로 얕은 비교를 한다", () => {
+    it("Performs shallow comparison with onlyOneDepth option", () => {
       const inner = { c: 1 };
       const obj1 = { a: 1, b: inner };
       const obj2 = { a: 1, b: inner };
@@ -301,7 +301,7 @@ describe("object utils", () => {
   //#region merge
 
   describe("objMerge()", () => {
-    it("source가 null이면 target을 복사한다", () => {
+    it("Copies target when source is null", () => {
       const target = { a: 1 };
       const result = objMerge(null, target);
 
@@ -309,14 +309,14 @@ describe("object utils", () => {
       expect(result).not.toBe(target);
     });
 
-    it("target이 undefined면 source를 복사한다", () => {
+    it("Copies source when target is undefined", () => {
       const source = { a: 1 };
       const result = objMerge(source, undefined);
 
       expect(result).toEqual({ a: 1 });
     });
 
-    it("객체를 병합한다", () => {
+    it("Merges objects", () => {
       const source = { a: 1, b: 2 };
       const target = { b: 3, c: 4 };
       const result = objMerge(source, target);
@@ -324,7 +324,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1, b: 3, c: 4 });
     });
 
-    it("중첩된 객체를 병합한다", () => {
+    it("Merges nested objects", () => {
       const source = { a: { b: 1, c: 2 } };
       const target = { a: { c: 3, d: 4 } };
       const result = objMerge(source, target);
@@ -332,7 +332,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: { b: 1, c: 3, d: 4 } });
     });
 
-    it("arrayProcess: replace로 배열을 대체한다", () => {
+    it("Replaces array with arrayProcess: replace", () => {
       const source = { arr: [1, 2, 3] };
       const target = { arr: [4, 5] };
       const result = objMerge(source, target, { arrayProcess: "replace" });
@@ -340,16 +340,16 @@ describe("object utils", () => {
       expect(result.arr).toEqual([4, 5]);
     });
 
-    it("arrayProcess: concat으로 배열을 합친다", () => {
+    it("Concatenates arrays with arrayProcess: concat", () => {
       const source = { arr: [1, 2, 3] };
       const target = { arr: [3, 4, 5] };
       const result = objMerge(source, target, { arrayProcess: "concat" });
 
-      // Set으로 중복 제거됨
+      // Duplicates removed via Set
       expect(result.arr).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it("useDelTargetNull로 null이면 삭제한다", () => {
+    it("Deletes when null with useDelTargetNull option", () => {
       const source = { a: 1, b: 2 };
       const target = { b: null };
       const result = objMerge(source, target, { useDelTargetNull: true });
@@ -357,7 +357,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1 });
     });
 
-    it("source가 object이고 target이 primitive면 target을 반환한다", () => {
+    it("Returns target when source is object and target is primitive", () => {
       const source = { a: 1 };
       const target = "string";
 
@@ -366,7 +366,7 @@ describe("object utils", () => {
       expect(result).toBe("string");
     });
 
-    it("source가 primitive이고 target이 object면 target을 반환한다", () => {
+    it("Returns target when source is primitive and target is object", () => {
       const source = "string";
       const target = { a: 1 };
 
@@ -375,7 +375,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1 });
     });
 
-    it("source가 배열이고 target이 일반 객체면 target을 반환한다", () => {
+    it("Returns target when source is array and target is plain object", () => {
       const source = [1, 2, 3];
       const target = { a: 1 };
 
@@ -384,7 +384,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1 });
     });
 
-    it("source가 일반 객체이고 target이 배열이면 target을 반환한다", () => {
+    it("Returns target when source is plain object and target is array", () => {
       const source = { a: 1 };
       const target = [1, 2, 3];
 
@@ -393,7 +393,7 @@ describe("object utils", () => {
       expect(result).toEqual([1, 2, 3]);
     });
 
-    it("3단계 이상 중첩된 객체를 병합한다", () => {
+    it("Merges deeply nested objects (3+ levels)", () => {
       const source = {
         level1: {
           level2: {
@@ -436,7 +436,7 @@ describe("object utils", () => {
       });
     });
 
-    it("4단계 중첩에서 깊은 값만 변경한다", () => {
+    it("Modifies only deep value in 4-level nesting", () => {
       const source = {
         a: {
           b: {
@@ -461,21 +461,21 @@ describe("object utils", () => {
       expect(result.a.b.c.d.value).toBe(2);
     });
 
-    it("Map 병합 시 target의 새 키-값이 clone된다", () => {
+    it("Clones new key-value in Map merge", () => {
       const sourceMap = new Map<string, { value: number }>([["key1", { value: 1 }]]);
       const targetObj = { value: 2 };
       const targetMap = new Map<string, { value: number }>([["key2", targetObj]]);
 
       const result = objMerge(sourceMap, targetMap);
 
-      // key2의 값이 clone되어 원본과 다른 참조여야 함
+      // key2 value is cloned, should be different reference
       expect(result.get("key2")).toEqual({ value: 2 });
       expect(result.get("key2")).not.toBe(targetObj);
     });
   });
 
   describe("objMerge3()", () => {
-    it("source만 변경된 경우 source 값을 사용한다", () => {
+    it("Uses source value when only source changes", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 3 };
       const target = { a: 1, b: 2 };
@@ -485,7 +485,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1, b: 3 });
     });
 
-    it("target만 변경된 경우 target 값을 사용한다", () => {
+    it("Uses target value when only target changes", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 2 };
       const target = { a: 1, b: 4 };
@@ -495,7 +495,7 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1, b: 4 });
     });
 
-    it("source와 target이 같은 값으로 변경된 경우 충돌 없이 해당 값을 사용한다", () => {
+    it("Uses value without conflict when both change to same value", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 5 };
       const target = { a: 1, b: 5 };
@@ -505,71 +505,71 @@ describe("object utils", () => {
       expect(result).toEqual({ a: 1, b: 5 });
     });
 
-    it("source와 target이 다른 값으로 변경된 경우 충돌을 반환한다", () => {
+    it("Returns conflict when both change to different values", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 3 };
       const target = { a: 1, b: 4 };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      // origin 값 유지
+      // Origin value preserved
       expect(result.b).toBe(2);
     });
 
-    it("여러 키에서 일부만 충돌하면 충돌을 반환한다", () => {
+    it("Returns conflict when only some keys conflict", () => {
       const origin = { a: 1, b: 2, c: 3 };
       const source = { a: 10, b: 20, c: 3 };
       const target = { a: 1, b: 30, c: 4 };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      expect(result.a).toBe(10); // source만 변경
-      expect(result.b).toBe(2); // 둘 다 다르게 변경 → 충돌 → origin 유지
-      expect(result.c).toBe(4); // target만 변경
+      expect(result.a).toBe(10); // Only source changed
+      expect(result.b).toBe(2); // Both changed differently → conflict → origin preserved
+      expect(result.c).toBe(4); // Only target changed
     });
 
-    it("중첩된 객체에서 충돌을 감지한다", () => {
+    it("Detects conflict in nested objects", () => {
       const origin = { a: { b: 1, c: 2 } };
       const source = { a: { b: 10, c: 2 } };
       const target = { a: { b: 20, c: 2 } };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      expect(result.a.b).toBe(1); // 둘 다 다르게 변경 → 충돌 → origin 유지
+      expect(result.a.b).toBe(1); // Both changed differently → conflict → origin preserved
       expect(result.a.c).toBe(2);
     });
 
-    it("중첩된 객체에서 각각 다른 내부 키가 변경되어도 객체 단위로 비교하므로 충돌로 감지된다", () => {
-      // merge3는 키 단위로 비교하므로, { a: {...} } 전체를 비교함
-      // source.a와 origin.a가 다르고, target.a와 origin.a도 다르면 충돌
+    it("Detects conflict in nested object when different internal keys change", () => {
+      // merge3 compares at key level, so entire { a: {...} } is compared
+      // If source.a differs from origin.a and target.a differs from origin.a, conflict
       const origin = { a: { b: 1, c: 2 } };
       const source = { a: { b: 10, c: 2 } };
       const target = { a: { b: 1, c: 20 } };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      expect(result.a.b).toBe(1); // 충돌 시 origin 유지
+      expect(result.a.b).toBe(1); // Conflict → origin preserved
       expect(result.a.c).toBe(2);
     });
 
-    it("배열에서 충돌을 감지한다", () => {
+    it("Detects conflict in array", () => {
       const origin = { arr: [1, 2, 3] };
       const source = { arr: [1, 2, 4] };
       const target = { arr: [1, 2, 5] };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      expect(result.arr).toEqual([1, 2, 3]); // 충돌 시 origin 유지
+      expect(result.arr).toEqual([1, 2, 3]); // Conflict → origin preserved
     });
 
-    it("primitive 값에서 충돌을 감지한다", () => {
+    it("Detects conflict in primitive value", () => {
       const origin = { value: "original" };
       const source = { value: "from source" };
       const target = { value: "from target" };
       const { conflict, result } = objMerge3(source, origin, target);
 
       expect(conflict).toBe(true);
-      expect(result.value).toBe("original"); // 충돌 시 origin 유지
+      expect(result.value).toBe("original"); // Conflict → origin preserved
     });
   });
 
@@ -578,14 +578,14 @@ describe("object utils", () => {
   //#region omit / pick
 
   describe("objOmit()", () => {
-    it("특정 키들을 제외한다", () => {
+    it("Excludes specific keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
       const result = objOmit(obj, ["b"]);
 
       expect(result).toEqual({ a: 1, c: 3 });
     });
 
-    it("여러 키를 제외한다", () => {
+    it("Excludes multiple keys", () => {
       const obj = { a: 1, b: 2, c: 3, d: 4 };
       const result = objOmit(obj, ["a", "c"]);
 
@@ -594,7 +594,7 @@ describe("object utils", () => {
   });
 
   describe("objOmitByFilter()", () => {
-    it("조건에 맞는 키를 제외한다", () => {
+    it("Excludes keys matching condition", () => {
       const obj = { a: 1, b: 2, c: 3 };
       const result = objOmitByFilter(obj, (key) => key === "b");
 
@@ -603,7 +603,7 @@ describe("object utils", () => {
   });
 
   describe("objPick()", () => {
-    it("특정 키들만 선택한다", () => {
+    it("Selects only specific keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
       const result = objPick(obj, ["a", "c"]);
 
@@ -616,19 +616,19 @@ describe("object utils", () => {
   //#region chain value
 
   describe("objGetChainValue()", () => {
-    it("점 표기법으로 값을 가져온다", () => {
+    it("Gets value using dot notation", () => {
       const obj = { a: { b: { c: 1 } } };
 
       expect(objGetChainValue(obj, "a.b.c")).toBe(1);
     });
 
-    it("배열 표기법으로 값을 가져온다", () => {
+    it("Gets value using array notation", () => {
       const obj = { arr: [{ name: "first" }, { name: "second" }] };
 
       expect(objGetChainValue(obj, "arr[1].name")).toBe("second");
     });
 
-    it("optional: true로 없는 경로는 undefined를 반환한다", () => {
+    it("Returns undefined for non-existent path with optional: true", () => {
       const obj = { a: 1 };
 
       expect(objGetChainValue(obj, "b.c.d", true)).toBe(undefined);
@@ -636,7 +636,7 @@ describe("object utils", () => {
   });
 
   describe("objGetChainValueByDepth()", () => {
-    it("depth만큼 같은 키로 내려간다", () => {
+    it("Descends by depth using same key", () => {
       const obj = {
         parent: {
           parent: {
@@ -652,15 +652,15 @@ describe("object utils", () => {
       expect(result).toEqual({ parent: { name: "leaf" } });
     });
 
-    it("depth가 0이면 에러를 던진다", () => {
+    it("Throws error when depth is 0", () => {
       const obj = { parent: { name: "child" } };
 
       expect(() => objGetChainValueByDepth(obj, "parent", 0)).toThrow(
-        "depth는 1 이상이어야 합니다.",
+        "depth must be 1 or greater.",
       );
     });
 
-    it("depth가 1이면 한 단계만 내려간다", () => {
+    it("Descends one level when depth is 1", () => {
       const obj = { parent: { name: "child" } };
 
       const result = objGetChainValueByDepth(obj, "parent", 1);
@@ -668,7 +668,7 @@ describe("object utils", () => {
       expect(result).toEqual({ name: "child" });
     });
 
-    it("optional: true로 중간 경로가 없으면 undefined를 반환한다", () => {
+    it("Returns undefined when intermediate path missing with optional: true", () => {
       const obj = { parent: { name: "child" } };
 
       const result = objGetChainValueByDepth(obj, "parent", 5, true);
@@ -676,32 +676,32 @@ describe("object utils", () => {
       expect(result).toBe(undefined);
     });
 
-    it("optional 없이 중간 경로가 없으면 에러 발생 가능", () => {
+    it("Throws error when intermediate path missing without optional", () => {
       const obj = { parent: undefined as unknown };
 
-      // optional이 없으면 undefined에서 키를 접근하려 해서 에러 발생 가능
-      // 하지만 현재 구현에서는 result == null 체크가 optional 조건 내에서만 동작
-      // 따라서 optional 없이 사용 시 주의 필요
+      // Without optional, trying to access property on undefined throws error
+      // Current implementation only checks result == null inside optional condition
+      // So without optional, error is possible
       expect(() => objGetChainValueByDepth(obj as any, "parent", 2)).toThrow();
     });
   });
 
   describe("objSetChainValue()", () => {
-    it("점 표기법으로 값을 설정한다", () => {
+    it("Sets value using dot notation", () => {
       const obj: Record<string, unknown> = {};
       objSetChainValue(obj, "a.b.c", 1);
 
       expect(obj).toEqual({ a: { b: { c: 1 } } });
     });
 
-    it("기존 값을 덮어쓴다", () => {
+    it("Overwrites existing value", () => {
       const obj = { a: { b: { c: 1 } } };
       objSetChainValue(obj, "a.b.c", 2);
 
       expect(obj.a.b.c).toBe(2);
     });
 
-    it("빈 체인은 에러를 던진다", () => {
+    it("Throws error for empty chain", () => {
       const obj: Record<string, unknown> = {};
 
       expect(() => objSetChainValue(obj, "", 1)).toThrow();
@@ -709,36 +709,36 @@ describe("object utils", () => {
   });
 
   describe("objDeleteChainValue()", () => {
-    it("체인 경로의 값을 삭제한다", () => {
+    it("Deletes value at chain path", () => {
       const obj = { a: { b: { c: 1, d: 2 } } };
       objDeleteChainValue(obj, "a.b.c");
 
       expect(obj.a.b).toEqual({ d: 2 });
     });
 
-    it("존재하지 않는 경로는 에러 없이 무시한다", () => {
+    it("Silently ignores non-existent path", () => {
       const obj = { a: 1 };
 
-      // 중간 경로가 없어도 에러 없음
+      // No error when intermediate path missing
       expect(() => objDeleteChainValue(obj, "b.c.d")).not.toThrow();
       expect(obj).toEqual({ a: 1 });
     });
 
-    it("중간 경로가 undefined여도 에러 없이 무시한다", () => {
+    it("Silently ignores undefined intermediate path", () => {
       const obj: Record<string, unknown> = { a: undefined };
 
       expect(() => objDeleteChainValue(obj, "a.b.c")).not.toThrow();
       expect(obj).toEqual({ a: undefined });
     });
 
-    it("중간 경로가 null이어도 에러 없이 무시한다", () => {
+    it("Silently ignores null intermediate path", () => {
       const obj: Record<string, unknown> = { a: null };
 
       expect(() => objDeleteChainValue(obj, "a.b.c")).not.toThrow();
       expect(obj).toEqual({ a: null });
     });
 
-    it("배열 인덱스 경로도 삭제한다", () => {
+    it("Deletes using array index path", () => {
       const obj = { arr: [{ name: "first" }, { name: "second" }] };
       objDeleteChainValue(obj, "arr[0].name");
 
@@ -746,7 +746,7 @@ describe("object utils", () => {
       expect(obj.arr[1]).toEqual({ name: "second" });
     });
 
-    it("빈 체인은 에러를 던진다", () => {
+    it("Throws error for empty chain", () => {
       const obj = { a: 1 };
 
       expect(() => objDeleteChainValue(obj, "")).toThrow();
@@ -758,7 +758,7 @@ describe("object utils", () => {
   //#region clear / transform
 
   describe("objClearUndefined()", () => {
-    it("undefined 값을 가진 키를 삭제한다", () => {
+    it("Deletes keys with undefined value", () => {
       const obj = { a: 1, b: undefined, c: 3 };
       const result = objClearUndefined(obj);
 
@@ -768,7 +768,7 @@ describe("object utils", () => {
   });
 
   describe("objClear()", () => {
-    it("모든 키를 삭제한다", () => {
+    it("Deletes all keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
       const result = objClear(obj);
 
@@ -777,25 +777,25 @@ describe("object utils", () => {
   });
 
   describe("objNullToUndefined()", () => {
-    it("null을 undefined로 변환한다", () => {
+    it("Converts null to undefined", () => {
       expect(objNullToUndefined(null)).toBe(undefined);
     });
 
-    it("중첩된 null도 변환한다", () => {
+    it("Converts nested null to undefined", () => {
       const obj = { a: 1, b: null, c: { d: null } };
       const result = objNullToUndefined(obj);
 
       expect(result).toEqual({ a: 1, b: undefined, c: { d: undefined } });
     });
 
-    it("배열의 null도 변환한다", () => {
+    it("Converts null in array to undefined", () => {
       const arr = [1, null, { a: null }];
       const result = objNullToUndefined(arr);
 
       expect(result).toEqual([1, undefined, { a: undefined }]);
     });
 
-    it("순환 참조가 있는 객체를 안전하게 처리한다", () => {
+    it("Safely handles object with circular references", () => {
       const obj: Record<string, unknown> = { a: null };
       obj["self"] = obj;
       const result = objNullToUndefined(obj);
@@ -803,7 +803,7 @@ describe("object utils", () => {
       expect((result as Record<string, unknown>)["a"]).toBeUndefined();
     });
 
-    it("순환 참조가 있는 배열을 안전하게 처리한다", () => {
+    it("Safely handles array with circular references", () => {
       const arr: unknown[] = [null, 1];
       arr.push(arr);
       const result = objNullToUndefined(arr);
@@ -814,7 +814,7 @@ describe("object utils", () => {
   });
 
   describe("objUnflatten()", () => {
-    it("flat된 객체를 nested로 변환한다", () => {
+    it("Converts flattened object to nested", () => {
       const flat = { "a.b.c": 1, "a.b.d": 2, "e": 3 };
       const result = objUnflatten(flat);
 

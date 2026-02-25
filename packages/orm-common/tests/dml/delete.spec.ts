@@ -7,7 +7,7 @@ import "../setup/test-utils";
 import * as expected from "./delete.expected";
 
 describe("TRUNCATE", () => {
-  describe("테이블 전체 삭제 (TRUNCATE)", () => {
+  describe("delete entire table (TRUNCATE)", () => {
     const db = createTestDb();
 
     const def = db.getTruncateQueryDef({
@@ -16,22 +16,22 @@ describe("TRUNCATE", () => {
       name: "Employee",
     });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "truncate",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.truncate[dialect]);
     });
   });
 });
 
-describe("DELETE - 기본", () => {
-  describe("단순 DELETE", () => {
+describe("DELETE - Basic", () => {
+  describe("simple DELETE", () => {
     const db = createTestDb();
 
     const def = db
@@ -39,7 +39,7 @@ describe("DELETE - 기본", () => {
       .where((e) => [expr.eq(e.id, 1)])
       .getDeleteQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "delete",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -54,13 +54,13 @@ describe("DELETE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.deleteSimple[dialect]);
     });
   });
 
-  describe("여러 조건으로 DELETE", () => {
+  describe("DELETE with multiple conditions", () => {
     const db = createTestDb();
 
     const def = db
@@ -68,7 +68,7 @@ describe("DELETE - 기본", () => {
       .where((e) => [expr.eq(e.departmentId, 1), expr.null(e.managerId)])
       .getDeleteQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "delete",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -87,13 +87,13 @@ describe("DELETE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.deleteMultiCond[dialect]);
     });
   });
 
-  describe("output 컬럼 지정", () => {
+  describe("output column specified", () => {
     const db = createTestDb();
 
     const def = db
@@ -101,7 +101,7 @@ describe("DELETE - 기본", () => {
       .where((e) => [expr.eq(e.id, 1)])
       .getDeleteQueryDef(["id", "name"]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "delete",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -121,7 +121,7 @@ describe("DELETE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.deleteWithOutput[dialect]);
     });
@@ -136,7 +136,7 @@ describe("DELETE - 기본", () => {
       .top(100)
       .getDeleteQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "delete",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -152,7 +152,7 @@ describe("DELETE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.deleteWithTop[dialect]);
     });

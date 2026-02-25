@@ -9,10 +9,10 @@ import {
 } from "@simplysm/core-common";
 
 describe("TransferableConvert", () => {
-  //#region encode - 특수 타입
+  //#region encode - Special types
 
-  describe("encode() - 특수 타입", () => {
-    it("DateTime을 인코딩한다", () => {
+  describe("encode() - Special types", () => {
+    it("Encodes DateTime", () => {
       const dt = new DateTime(2025, 1, 6, 15, 30, 45, 123);
       const { result } = transferEncode(dt);
 
@@ -22,7 +22,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("DateOnly를 인코딩한다", () => {
+    it("Encodes DateOnly", () => {
       const d = new DateOnly(2025, 1, 6);
       const { result } = transferEncode(d);
 
@@ -32,7 +32,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Time을 인코딩한다", () => {
+    it("Encodes Time", () => {
       const t = new Time(15, 30, 45, 123);
       const { result } = transferEncode(t);
 
@@ -42,7 +42,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Uuid를 인코딩한다", () => {
+    it("Encodes Uuid", () => {
       const uuid = Uuid.new();
       const { result } = transferEncode(uuid);
 
@@ -52,7 +52,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Error를 인코딩한다", () => {
+    it("Encodes Error", () => {
       const err = new Error("test error");
       err.stack = "test stack";
       const { result } = transferEncode(err);
@@ -67,7 +67,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Error의 cause를 재귀적으로 인코딩한다", () => {
+    it("Recursively encodes Error cause", () => {
       const cause = new Error("cause error");
       const err = new Error("main error", { cause });
       const { result } = transferEncode(err);
@@ -97,7 +97,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Error의 code 속성을 인코딩한다", () => {
+    it("Encodes Error code property", () => {
       const err = new Error("test error") as Error & { code: string };
       err.code = "ERR_CUSTOM";
       const { result } = transferEncode(err);
@@ -114,7 +114,7 @@ describe("TransferableConvert", () => {
       expect(typedResult.data.code).toBe("ERR_CUSTOM");
     });
 
-    it("Error의 detail 속성을 인코딩한다", () => {
+    it("Encodes Error detail property", () => {
       const err = new Error("test error") as Error & { detail: unknown };
       err.detail = { userId: 123, action: "delete" };
       const { result } = transferEncode(err);
@@ -131,7 +131,7 @@ describe("TransferableConvert", () => {
       expect(typedResult.data.detail).toEqual({ userId: 123, action: "delete" });
     });
 
-    it("Error의 detail에 포함된 특수 타입도 인코딩한다", () => {
+    it("Encodes special types in Error detail", () => {
       const err = new Error("test error") as Error & { detail: unknown };
       const dt = new DateTime(2025, 1, 6);
       err.detail = { timestamp: dt };
@@ -152,7 +152,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Uint8Array를 인코딩하고 transferList에 추가한다", () => {
+    it("Encodes Uint8Array and adds to transferList", () => {
       const bytes = new TextEncoder().encode("hello");
       const { result, transferList } = transferEncode(bytes);
 
@@ -160,7 +160,7 @@ describe("TransferableConvert", () => {
       expect(transferList).toContain(bytes.buffer);
     });
 
-    it("Date를 인코딩한다", () => {
+    it("Encodes Date", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45, 123);
       const { result } = transferEncode(date);
 
@@ -170,7 +170,7 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("RegExp를 인코딩한다", () => {
+    it("Encodes RegExp", () => {
       const regex = /test\d+/gi;
       const { result } = transferEncode(regex);
 
@@ -183,10 +183,10 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region encode - 컬렉션
+  //#region encode - Collections
 
-  describe("encode() - 컬렉션", () => {
-    it("배열을 재귀적으로 인코딩한다", () => {
+  describe("encode() - Collections", () => {
+    it("Recursively encodes array", () => {
       const arr = [new DateTime(2025, 1, 6), Uuid.new(), "string", 123] as const;
       const { result } = transferEncode(arr);
 
@@ -199,7 +199,7 @@ describe("TransferableConvert", () => {
       expect(resultArr[3]).toBe(123);
     });
 
-    it("Map을 재귀적으로 인코딩한다", () => {
+    it("Recursively encodes Map", () => {
       const map = new Map<string, DateTime | Uuid>([
         ["key1", new DateTime(2025, 1, 6)],
         ["key2", Uuid.new()],
@@ -213,7 +213,7 @@ describe("TransferableConvert", () => {
       expect(resultMap.get("key2")).toMatchObject({ __type__: "Uuid" });
     });
 
-    it("Set을 재귀적으로 인코딩한다", () => {
+    it("Recursively encodes Set", () => {
       const set = new Set([new DateTime(2025, 1, 6), Uuid.new()]);
       const { result } = transferEncode(set);
 
@@ -225,7 +225,7 @@ describe("TransferableConvert", () => {
       expect(arr[1]).toMatchObject({ __type__: "Uuid" });
     });
 
-    it("중첩된 객체를 재귀적으로 인코딩한다", () => {
+    it("Recursively encodes nested object", () => {
       const obj = {
         dt: new DateTime(2025, 1, 6),
         nested: {
@@ -251,53 +251,53 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region encode - 순환 참조 감지
+  //#region encode - Circular reference detection
 
-  describe("encode() - 순환 참조 감지", () => {
-    it("자기 참조 객체를 인코딩하면 TypeError를 던진다", () => {
+  describe("encode() - Circular reference detection", () => {
+    it("Throws TypeError when encoding self-referencing object", () => {
       const obj: Record<string, unknown> = { a: 1 };
       obj["self"] = obj;
 
       expect(() => transferEncode(obj)).toThrow(TypeError);
-      expect(() => transferEncode(obj)).toThrow("순환 참조가 감지되었습니다");
+      expect(() => transferEncode(obj)).toThrow("Circular reference detected");
     });
 
-    it("중첩된 순환 참조를 감지한다", () => {
+    it("Detects nested circular references", () => {
       const a: Record<string, unknown> = { name: "a" };
       const b: Record<string, unknown> = { name: "b", ref: a };
       a["ref"] = b;
 
-      expect(() => transferEncode(a)).toThrow("순환 참조가 감지되었습니다");
+      expect(() => transferEncode(a)).toThrow("Circular reference detected");
     });
 
-    it("배열 내 순환 참조를 감지한다", () => {
+    it("Detects circular references in array", () => {
       const arr: unknown[] = [1, 2, 3];
       arr.push(arr);
 
-      expect(() => transferEncode(arr)).toThrow("순환 참조가 감지되었습니다");
+      expect(() => transferEncode(arr)).toThrow("Circular reference detected");
     });
 
-    it("Map 내 순환 참조를 감지한다", () => {
+    it("Detects circular references in Map", () => {
       const map = new Map<string, unknown>();
       map.set("self", map);
 
-      expect(() => transferEncode(map)).toThrow("순환 참조가 감지되었습니다");
+      expect(() => transferEncode(map)).toThrow("Circular reference detected");
     });
 
-    it("Set 내 순환 참조를 감지한다", () => {
+    it("Detects circular references in Set", () => {
       const set = new Set<unknown>();
       set.add(set);
 
-      expect(() => transferEncode(set)).toThrow("순환 참조가 감지되었습니다");
+      expect(() => transferEncode(set)).toThrow("Circular reference detected");
     });
   });
 
   //#endregion
 
-  //#region encode - DAG (공유 객체)
+  //#region encode - DAG (Shared objects)
 
-  describe("encode() - DAG (공유 객체)", () => {
-    it("동일 객체를 여러 곳에서 참조해도 에러 없이 인코딩된다", () => {
+  describe("encode() - DAG (Shared objects)", () => {
+    it("Encodes without error when same object is referenced from multiple places", () => {
       const shared = { name: "shared" };
       const data = { a: shared, b: shared };
       const { result } = transferEncode(data);
@@ -306,7 +306,7 @@ describe("TransferableConvert", () => {
       expect(decoded["b"]["name"]).toBe("shared");
     });
 
-    it("동일 배열을 여러 곳에서 참조해도 에러 없이 인코딩된다", () => {
+    it("Encodes without error when same array is referenced from multiple places", () => {
       const sharedArr = [1, 2, 3];
       const data = { x: sharedArr, y: sharedArr };
       const { result } = transferEncode(data);
@@ -315,7 +315,7 @@ describe("TransferableConvert", () => {
       expect(decoded["y"]).toEqual([1, 2, 3]);
     });
 
-    it("순환 참조는 여전히 TypeError를 던진다", () => {
+    it("Still throws TypeError for circular references", () => {
       const a: Record<string, unknown> = {};
       const b: Record<string, unknown> = { a };
       a["b"] = b;
@@ -325,10 +325,10 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region decode - 특수 타입
+  //#region decode - Special types
 
-  describe("decode() - 특수 타입", () => {
-    it("DateTime을 디코딩한다", () => {
+  describe("decode() - Special types", () => {
+    it("Decodes DateTime", () => {
       const tick = new DateTime(2025, 1, 6, 15, 30, 45, 123).tick;
       const encoded = { __type__: "DateTime", data: tick };
       const decoded = transferDecode(encoded);
@@ -344,7 +344,7 @@ describe("TransferableConvert", () => {
       expect(dt.millisecond).toBe(123);
     });
 
-    it("DateOnly를 디코딩한다", () => {
+    it("Decodes DateOnly", () => {
       const tick = new DateOnly(2025, 1, 6).tick;
       const encoded = { __type__: "DateOnly", data: tick };
       const decoded = transferDecode(encoded);
@@ -356,7 +356,7 @@ describe("TransferableConvert", () => {
       expect(d.day).toBe(6);
     });
 
-    it("Time을 디코딩한다", () => {
+    it("Decodes Time", () => {
       const tick = new Time(15, 30, 45, 123).tick;
       const encoded = { __type__: "Time", data: tick };
       const decoded = transferDecode(encoded);
@@ -369,7 +369,7 @@ describe("TransferableConvert", () => {
       expect(t.millisecond).toBe(123);
     });
 
-    it("Uuid를 디코딩한다", () => {
+    it("Decodes Uuid", () => {
       const uuid = Uuid.new();
       const encoded = { __type__: "Uuid", data: uuid.toString() };
       const decoded = transferDecode(encoded);
@@ -378,7 +378,7 @@ describe("TransferableConvert", () => {
       expect((decoded as Uuid).toString()).toBe(uuid.toString());
     });
 
-    it("Error를 디코딩한다", () => {
+    it("Decodes Error", () => {
       const encoded = {
         __type__: "Error",
         data: {
@@ -396,7 +396,7 @@ describe("TransferableConvert", () => {
       expect(err.stack).toBe("test stack");
     });
 
-    it("Error의 cause를 재귀적으로 디코딩한다", () => {
+    it("Recursively decodes Error cause", () => {
       const encoded = {
         __type__: "Error",
         data: {
@@ -420,7 +420,7 @@ describe("TransferableConvert", () => {
       expect((err.cause as Error).message).toBe("cause error");
     });
 
-    it("Error의 code 속성을 디코딩한다", () => {
+    it("Decodes Error code property", () => {
       const encoded = {
         __type__: "Error",
         data: {
@@ -436,7 +436,7 @@ describe("TransferableConvert", () => {
       expect(err.code).toBe("ERR_CUSTOM");
     });
 
-    it("Error의 detail 속성을 디코딩한다", () => {
+    it("Decodes Error detail property", () => {
       const encoded = {
         __type__: "Error",
         data: {
@@ -452,7 +452,7 @@ describe("TransferableConvert", () => {
       expect(err.detail).toEqual({ userId: 123, action: "delete" });
     });
 
-    it("Error의 detail에 포함된 특수 타입도 디코딩한다", () => {
+    it("Decodes special types in Error detail", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const encoded = {
         __type__: "Error",
@@ -470,7 +470,7 @@ describe("TransferableConvert", () => {
       expect(err.detail?.timestamp.tick).toBe(tick);
     });
 
-    it("Date를 디코딩한다", () => {
+    it("Decodes Date", () => {
       const tick = new Date(2025, 0, 6, 15, 30, 45, 123).getTime();
       const encoded = { __type__: "Date", data: tick };
       const decoded = transferDecode(encoded);
@@ -486,7 +486,7 @@ describe("TransferableConvert", () => {
       expect(date.getMilliseconds()).toBe(123);
     });
 
-    it("RegExp를 디코딩한다", () => {
+    it("Decodes RegExp", () => {
       const encoded = {
         __type__: "RegExp",
         data: { source: "test\\d+", flags: "gi" },
@@ -497,7 +497,7 @@ describe("TransferableConvert", () => {
       const regex = decoded as RegExp;
       expect(regex.source).toBe("test\\d+");
       expect(regex.flags).toBe("gi");
-      // g 플래그가 있는 정규식은 lastIndex가 stateful이므로 리셋 후 테스트
+      // RegExp with g flag is stateful, so reset lastIndex before testing
       expect(regex.test("test123")).toBe(true);
       regex.lastIndex = 0;
       expect(regex.test("TEST456")).toBe(true);
@@ -506,10 +506,10 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region decode - 컬렉션
+  //#region decode - Collections
 
-  describe("decode() - 컬렉션", () => {
-    it("배열을 재귀적으로 디코딩한다", () => {
+  describe("decode() - Collections", () => {
+    it("Recursively decodes array", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const uuidStr = Uuid.new().toString();
       const encoded = [
@@ -528,7 +528,7 @@ describe("TransferableConvert", () => {
       expect(arr[3]).toBe(123);
     });
 
-    it("Map을 재귀적으로 디코딩한다", () => {
+    it("Recursively decodes Map", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const encoded = new Map<string, unknown>([
         ["key1", { __type__: "DateTime", data: tick }],
@@ -542,7 +542,7 @@ describe("TransferableConvert", () => {
       expect(map.get("key2")).toBe("value");
     });
 
-    it("Set을 재귀적으로 디코딩한다", () => {
+    it("Recursively decodes Set", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const encoded = new Set([{ __type__: "DateTime", data: tick }, "string"]);
       const decoded = transferDecode(encoded);
@@ -554,7 +554,7 @@ describe("TransferableConvert", () => {
       expect(arr[1]).toBe("string");
     });
 
-    it("중첩된 객체를 재귀적으로 디코딩한다", () => {
+    it("Recursively decodes nested object", () => {
       const dtTick = new DateTime(2025, 1, 6).tick;
       const uuidStr = Uuid.new().toString();
       const dTick = new DateOnly(2025, 1, 6).tick;
@@ -583,24 +583,24 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region decode 원본 보존
+  //#region decode - Preserve original
 
-  describe("decode() - 원본 보존", () => {
-    it("원본 배열이 변경되지 않는다", () => {
+  describe("decode() - Preserve original", () => {
+    it("Original array is not modified", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = [{ __type__: "DateTime", data: tick }, "string", 123];
       const originalCopy = JSON.stringify(original);
 
       transferDecode(original);
 
-      // 원본이 변경되지 않았는지 확인
+      // Verify original is not modified
       expect(JSON.stringify(original)).toBe(originalCopy);
       expect(original[0]).toEqual({ __type__: "DateTime", data: tick });
       expect(original[1]).toBe("string");
       expect(original[2]).toBe(123);
     });
 
-    it("원본 객체가 변경되지 않는다", () => {
+    it("Original object is not modified", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = {
         dt: { __type__: "DateTime", data: tick },
@@ -610,13 +610,13 @@ describe("TransferableConvert", () => {
 
       transferDecode(original);
 
-      // 원본이 변경되지 않았는지 확인
+      // Verify original is not modified
       expect(JSON.stringify(original)).toBe(originalCopy);
       expect(original.dt).toEqual({ __type__: "DateTime", data: tick });
       expect(original.value).toBe(123);
     });
 
-    it("중첩 배열/객체도 원본이 보존된다", () => {
+    it("Original is preserved for nested arrays/objects", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = {
         nested: {
@@ -630,15 +630,15 @@ describe("TransferableConvert", () => {
       expect(JSON.stringify(original)).toBe(originalCopy);
     });
 
-    it("decode 결과는 새 인스턴스다 (원본과 다름)", () => {
+    it("Decode result is a new instance (different from original)", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = [{ __type__: "DateTime", data: tick }];
 
       const decoded = transferDecode(original);
 
-      // 결과는 새 배열
+      // Result is a new array
       expect(decoded).not.toBe(original);
-      // 배열 내용은 변환됨
+      // Array contents are converted
       expect(Array.isArray(decoded)).toBe(true);
       expect((decoded as unknown[])[0] instanceof DateTime).toBe(true);
     });
@@ -646,10 +646,10 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
-  //#region 왕복 변환 (round-trip)
+  //#region Round-trip conversion (encode → decode)
 
-  describe("왕복 변환 (encode → decode)", () => {
-    it("Date를 왕복 변환한다", () => {
+  describe("Round-trip conversion (encode → decode)", () => {
+    it("Round-trips Date", () => {
       const original = new Date(2025, 0, 6, 15, 30, 45, 123);
       const { result } = transferEncode(original);
       const decoded = transferDecode(result) as Date;
@@ -657,7 +657,7 @@ describe("TransferableConvert", () => {
       expect(decoded.getTime()).toBe(original.getTime());
     });
 
-    it("DateTime을 왕복 변환한다", () => {
+    it("Round-trips DateTime", () => {
       const original = new DateTime(2025, 1, 6, 15, 30, 45, 123);
       const { result } = transferEncode(original);
       const decoded = transferDecode(result) as DateTime;
@@ -665,7 +665,7 @@ describe("TransferableConvert", () => {
       expect(decoded.tick).toBe(original.tick);
     });
 
-    it("복잡한 객체를 왕복 변환한다", () => {
+    it("Round-trips complex object", () => {
       const original = {
         dt: new DateTime(2025, 1, 6),
         d: new DateOnly(2025, 1, 6),
@@ -688,7 +688,7 @@ describe("TransferableConvert", () => {
       expect(Array.from(decoded.set)[0] instanceof Time).toBe(true);
     });
 
-    it("RegExp를 왕복 변환한다", () => {
+    it("Round-trips RegExp", () => {
       const original = /test\d+/gi;
       const { result } = transferEncode(original);
       const decoded = transferDecode(result) as RegExp;

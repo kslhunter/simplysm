@@ -20,7 +20,7 @@ describe("getTypesFromPackageJson", () => {
     vi.restoreAllMocks();
   });
 
-  it("@types/* devDependencies를 types 목록으로 변환", async () => {
+  it("converts @types/* devDependencies to types list", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
     const mockFsReadJson = vi.mocked(fsReadJson);
@@ -41,7 +41,7 @@ describe("getTypesFromPackageJson", () => {
     expect(result).toEqual(["node", "express"]);
   });
 
-  it("package.json이 없으면 빈 배열 반환", async () => {
+  it("returns empty array if package.json does not exist", async () => {
     const packageDir = "/project/packages/unknown";
     const mockFsExists = vi.mocked(fsExists);
 
@@ -52,7 +52,7 @@ describe("getTypesFromPackageJson", () => {
     expect(result).toEqual([]);
   });
 
-  it("devDependencies가 없으면 빈 배열 반환", async () => {
+  it("returns empty array if devDependencies does not exist", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
     const mockFsReadJson = vi.mocked(fsReadJson);
@@ -68,7 +68,7 @@ describe("getTypesFromPackageJson", () => {
     expect(result).toEqual([]);
   });
 
-  it("@types/*가 아닌 의존성은 필터링", async () => {
+  it("filters out dependencies that are not @types/*", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
     const mockFsReadJson = vi.mocked(fsReadJson);
@@ -87,7 +87,7 @@ describe("getTypesFromPackageJson", () => {
     expect(result).toEqual([]);
   });
 
-  it("scoped @types 패키지도 올바르게 처리", async () => {
+  it("handles scoped @types packages correctly", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
     const mockFsReadJson = vi.mocked(fsReadJson);

@@ -227,10 +227,10 @@ function scanOptionalPeerDeps(
 //#region Native Module Externals
 
 /**
- * 의존성 중 binding.gyp가 있는 네이티브 모듈 수집
+ * Collect native modules with binding.gyp from dependencies
  *
- * node-gyp로 빌드되는 네이티브 모듈은 esbuild가 번들링할 수 없으므로
- * external로 지정해야 한다.
+ * Native modules built with node-gyp cannot be bundled by esbuild,
+ * so they must be specified as externals.
  */
 export function collectNativeModuleExternals(pkgDir: string): string[] {
   const external = new Set<string>();
@@ -264,12 +264,12 @@ function scanNativeModules(
 
   const depDir = path.dirname(pkgJsonPath);
 
-  // binding.gyp 존재 여부로 네이티브 모듈 감지
+  // Detect native modules by checking for binding.gyp
   if (existsSync(path.join(depDir, "binding.gyp"))) {
     external.add(pkgName);
   }
 
-  // 하위 dependencies도 재귀 탐색
+  // Recursively traverse sub-dependencies
   const depPkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
   for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
     scanNativeModules(dep, depDir, external, visited);

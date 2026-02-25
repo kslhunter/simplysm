@@ -5,17 +5,17 @@ describe("Wait", () => {
   //#region time
 
   describe("time()", () => {
-    it("지정된 시간만큼 대기한다", async () => {
+    it("Waits for specified time", async () => {
       const start = Date.now();
       await time(100);
       const elapsed = Date.now() - start;
 
-      // 100ms ± 오차 범위 - CI 환경 부하 및 타이머 정밀도 고려
+      // 100ms ± tolerance - CI environment load and timer precision considered
       expect(elapsed).toBeGreaterThanOrEqual(95);
       expect(elapsed).toBeLessThan(250);
     });
 
-    it("0ms 대기도 정상 동작한다", async () => {
+    it("Works normally with 0ms wait", async () => {
       const start = Date.now();
       await time(0);
       const elapsed = Date.now() - start;
@@ -29,7 +29,7 @@ describe("Wait", () => {
   //#region until
 
   describe("until()", () => {
-    it("조건이 참이 될 때까지 대기한다", async () => {
+    it("Waits until condition becomes true", async () => {
       let count = 0;
 
       await until(() => {
@@ -40,7 +40,7 @@ describe("Wait", () => {
       expect(count).toBe(3);
     });
 
-    it("비동기 조건 함수도 지원한다", async () => {
+    it("Supports async condition function", async () => {
       let count = 0;
 
       await until(async () => {
@@ -52,7 +52,7 @@ describe("Wait", () => {
       expect(count).toBe(3);
     });
 
-    it("조건이 이미 참이면 즉시 반환한다", async () => {
+    it("Returns immediately if condition already true", async () => {
       const start = Date.now();
       await until(() => true, 100);
       const elapsed = Date.now() - start;
@@ -60,7 +60,7 @@ describe("Wait", () => {
       expect(elapsed).toBeLessThan(50);
     });
 
-    it("최대 시도 횟수 초과 시 TimeoutError를 던진다", async () => {
+    it("Throws TimeoutError on max attempts exceeded", async () => {
       let count = 0;
 
       await expect(async () => {
@@ -77,10 +77,10 @@ describe("Wait", () => {
       expect(count).toBe(5);
     });
 
-    it("maxCount가 undefined면 무제한 대기한다", async () => {
+    it("Waits indefinitely if maxCount undefined", async () => {
       let count = 0;
 
-      // 무제한 대기지만 조건이 참이 되면 반환
+      // Unlimited wait but returns when condition true
       await until(
         () => {
           count++;
@@ -93,7 +93,7 @@ describe("Wait", () => {
       expect(count).toBe(10);
     });
 
-    it("milliseconds 기본값은 100ms다", async () => {
+    it("Default milliseconds is 100ms", async () => {
       let count = 0;
       const start = Date.now();
 
@@ -103,12 +103,12 @@ describe("Wait", () => {
       });
 
       const elapsed = Date.now() - start;
-      // 100ms * 2회 대기 = 200ms (첫 체크는 즉시), 타이머 오차 고려
+      // 100ms * 2 waits = 200ms (first check immediate), timer tolerance considered
       expect(elapsed).toBeGreaterThanOrEqual(190);
       expect(elapsed).toBeLessThan(350);
     });
 
-    it("maxCount=1이면 한 번만 시도 후 에러", async () => {
+    it("With maxCount=1, tries once then errors", async () => {
       let count = 0;
 
       await expect(async () => {
@@ -125,7 +125,7 @@ describe("Wait", () => {
       expect(count).toBe(1);
     });
 
-    it("조건이 maxCount 내에 참이 되면 성공", async () => {
+    it("Success if condition true within maxCount", async () => {
       let count = 0;
 
       await until(

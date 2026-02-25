@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import "../../src/extensions/map-ext";
 
-describe("Map 프로토타입 확장", () => {
+describe("Map prototype extensions", () => {
   //#region getOrCreate
 
   describe("getOrCreate()", () => {
-    it("키가 없을 때 값을 직접 설정하고 반환", () => {
+    it("Sets and returns value directly if key not exists", () => {
       const map = new Map<string, number>();
 
       const result = map.getOrCreate("key", 100);
@@ -15,7 +15,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.size).toBe(1);
     });
 
-    it("키가 없을 때 팩토리 함수를 호출하여 값을 설정하고 반환", () => {
+    it("Calls factory function and sets value if key not exists", () => {
       const map = new Map<string, number[]>();
       let factoryCalled = false;
 
@@ -29,7 +29,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toEqual([1, 2, 3]);
     });
 
-    it("키가 있을 때 기존 값을 반환하고 팩토리 함수는 호출하지 않음", () => {
+    it("Returns existing value if key exists, factory not called", () => {
       const map = new Map<string, number>();
       map.set("key", 50);
       let factoryCalled = false;
@@ -44,7 +44,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toBe(50);
     });
 
-    it("키가 있을 때 기존 값 반환 (직접 값)", () => {
+    it("Returns existing value if key exists (direct value)", () => {
       const map = new Map<string, number>();
       map.set("key", 50);
 
@@ -54,7 +54,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.size).toBe(1);
     });
 
-    it("기본값으로 빈 배열 설정 가능", () => {
+    it("Can set empty array as default value", () => {
       const map = new Map<string, number[]>();
 
       const arr = map.getOrCreate("key", []);
@@ -63,7 +63,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toEqual([1, 2, 3]);
     });
 
-    it("팩토리 함수로 복잡한 객체 생성 가능", () => {
+    it("Can create complex object with factory function", () => {
       const map = new Map<string, { count: number; items: string[] }>();
 
       const obj = map.getOrCreate("key", () => ({ count: 0, items: [] }));
@@ -73,11 +73,11 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toEqual({ count: 1, items: ["item1"] });
     });
 
-    it("V 타입이 함수일 때 함수 값을 팩토리로 래핑", () => {
+    it("Wraps function value in factory when V type is function", () => {
       const map = new Map<string, () => number>();
       const fn = () => 42;
 
-      // 함수 값은 저장하기 위해 팩토리로 래핑해야 함
+      // Function value must be wrapped in factory to store
       const result = map.getOrCreate("key", () => fn);
 
       expect(result).toBe(fn);
@@ -91,7 +91,7 @@ describe("Map 프로토타입 확장", () => {
   //#region update
 
   describe("update()", () => {
-    it("기존 키의 값을 업데이트", () => {
+    it("Updates value of existing key", () => {
       const map = new Map<string, number>();
       map.set("key", 10);
 
@@ -100,7 +100,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toBe(15);
     });
 
-    it("존재하지 않는 키에는 undefined 전달", () => {
+    it("Passes undefined for non-existing key", () => {
       const map = new Map<string, number>();
       let receivedValue: number | undefined;
 
@@ -113,7 +113,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toBe(100);
     });
 
-    it("콜백 반환값으로 값 교체", () => {
+    it("Replaces value with callback return value", () => {
       const map = new Map<string, string>();
       map.set("key", "hello");
 
@@ -122,7 +122,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toBe("hello world");
     });
 
-    it("객체 값 업데이트 가능", () => {
+    it("Can update object value", () => {
       const map = new Map<string, { count: number }>();
       map.set("key", { count: 5 });
 
@@ -131,7 +131,7 @@ describe("Map 프로토타입 확장", () => {
       expect(map.get("key")).toEqual({ count: 6 });
     });
 
-    it("연속해서 여러 번 업데이트 가능", () => {
+    it("Can update multiple times sequentially", () => {
       const map = new Map<string, number>();
       map.set("counter", 0);
 

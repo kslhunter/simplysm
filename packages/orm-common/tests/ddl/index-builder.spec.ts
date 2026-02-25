@@ -9,7 +9,7 @@ import * as expected from "./index-builder.expected";
 const IndexFactory = createIndexFactory<"name" | "email" | "age">();
 
 describe("DDL - Index Builder", () => {
-  describe("IndexBuilder - 단일 컬럼 인덱스", () => {
+  describe("IndexBuilder - single column index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email");
     const def = db.getAddIdxQueryDef(
@@ -17,7 +17,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -29,13 +29,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.singleColumnIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - unique 인덱스", () => {
+  describe("IndexBuilder - unique index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").unique();
     const def = db.getAddIdxQueryDef(
@@ -43,7 +43,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -55,13 +55,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.uniqueIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - 복합 인덱스", () => {
+  describe("IndexBuilder - composite index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email");
     const def = db.getAddIdxQueryDef(
@@ -69,7 +69,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -84,13 +84,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.compositeIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - orderBy 지정", () => {
+  describe("IndexBuilder - orderBy specified", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").orderBy("DESC", "ASC");
     const def = db.getAddIdxQueryDef(
@@ -98,7 +98,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -113,13 +113,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderByIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - name 지정", () => {
+  describe("IndexBuilder - name specified", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").name("UQ_User_email");
     const def = db.getAddIdxQueryDef(
@@ -127,7 +127,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -139,13 +139,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.customNameIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - description 지정", () => {
+  describe("IndexBuilder - description specified", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").description("이메일 검색용 인덱스");
     const def = db.getAddIdxQueryDef(
@@ -153,7 +153,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -165,13 +165,13 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.singleColumnIndex[dialect]);
     });
   });
 
-  describe("IndexBuilder - 복합 옵션 (unique + orderBy)", () => {
+  describe("IndexBuilder - combined options (unique + orderBy)", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").unique().orderBy("DESC", "ASC");
     const def = db.getAddIdxQueryDef(
@@ -179,7 +179,7 @@ describe("DDL - Index Builder", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -194,7 +194,7 @@ describe("DDL - Index Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.uniqueOrderByIndex[dialect]);
     });

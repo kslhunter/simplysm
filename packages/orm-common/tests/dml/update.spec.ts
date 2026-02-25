@@ -6,24 +6,24 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";
 import * as expected from "./update.expected";
 
-describe("UPDATE - 기본", () => {
-  describe("단순 UPDATE", () => {
+describe("UPDATE - Basic", () => {
+  describe("simple UPDATE", () => {
     const db = createTestDb();
 
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef((_e) => ({
-        name: expr.val("string", "새이름"),
+        name: expr.val("string", "new name"),
       }));
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         where: [
           {
@@ -35,13 +35,13 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateSimple[dialect]);
     });
   });
 
-  describe("여러 컬럼 UPDATE", () => {
+  describe("UPDATE multiple columns", () => {
     const db = createTestDb();
 
     const def = db
@@ -52,13 +52,13 @@ describe("UPDATE - 기본", () => {
         departmentId: expr.val("number", 2),
       }));
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
           departmentId: { type: "value", value: 2 },
         },
         where: [
@@ -71,7 +71,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateMultiCol[dialect]);
     });
@@ -88,13 +88,13 @@ describe("UPDATE - 기본", () => {
         departmentId: 2,
       }));
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
           departmentId: { type: "value", value: 2 },
         },
         where: [
@@ -107,7 +107,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updatePlainValues[dialect]);
     });
@@ -124,13 +124,13 @@ describe("UPDATE - 기본", () => {
         managerId: expr.raw("number")`${e.managerId} + 1`,
       }));
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
           managerId: {
             type: "raw",
             sql: "$1 + 1",
@@ -147,7 +147,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateMixed[dialect]);
     });
@@ -164,7 +164,7 @@ describe("UPDATE - 기본", () => {
         managerId: expr.raw("number")`${e.managerId} + 1`,
       }));
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -186,7 +186,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateWithRef[dialect]);
     });
@@ -205,13 +205,13 @@ describe("UPDATE - 기본", () => {
         ["id", "name"],
       );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         where: [
           {
@@ -228,7 +228,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateWithOutput[dialect]);
     });
@@ -245,13 +245,13 @@ describe("UPDATE - 기본", () => {
         name: expr.val("string", "새이름"),
       }));
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "update",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "새이름" },
+          name: { type: "value", value: "new name" },
         },
         top: 10,
         where: [
@@ -264,7 +264,7 @@ describe("UPDATE - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateWithTop[dialect]);
     });
@@ -280,7 +280,7 @@ describe("FK 스위치", () => {
       "off",
     );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "switchFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -288,7 +288,7 @@ describe("FK 스위치", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.fkOff[dialect]);
     });
@@ -302,7 +302,7 @@ describe("FK 스위치", () => {
       "on",
     );
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "switchFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -310,7 +310,7 @@ describe("FK 스위치", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.fkOn[dialect]);
     });

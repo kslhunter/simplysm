@@ -6,7 +6,7 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./utility.expected";
 
-describe("Expr - 유틸리티 함수", () => {
+describe("Expr - Utility functions", () => {
   //#region ========== ROW_NUM ==========
 
   describe("rowNum - 행 번호 (윈도우 없이)", () => {
@@ -19,14 +19,14 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         rowNum: { type: "rowNum" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rowNum[dialect]);
     });
@@ -46,14 +46,14 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         randomVal: { type: "random" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.random[dialect]);
     });
@@ -73,7 +73,7 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         ageInt: {
@@ -84,7 +84,7 @@ describe("Expr - 유틸리티 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.castToInt[dialect]);
     });
@@ -100,7 +100,7 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         ageStr: {
@@ -111,7 +111,7 @@ describe("Expr - 유틸리티 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.castToVarchar[dialect]);
     });
@@ -131,7 +131,7 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         serverTime: {
@@ -142,7 +142,7 @@ describe("Expr - 유틸리티 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rawBasic[dialect]);
     });
@@ -158,7 +158,7 @@ describe("Expr - 유틸리티 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         id: { type: "column", path: ["T1", "id"] },
         combined: {
@@ -172,7 +172,7 @@ describe("Expr - 유틸리티 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rawWithParam[dialect]);
     });

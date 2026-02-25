@@ -6,69 +6,69 @@ import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import * as expected from "./insert.expected";
 
-describe("INSERT - 기본", () => {
-  //#region ========== 단일/다중 INSERT ==========
+describe("INSERT - Basic", () => {
+  //#region ========== Single/Multiple INSERT ==========
 
-  describe("단일 레코드 INSERT", () => {
+  describe("single record INSERT", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }]);
+      .getInsertQueryDef([{ name: "Hong Gildong", managerId: undefined, departmentId: 1 }]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        records: [{ name: "홍길동", managerId: undefined, departmentId: 1 }],
+        records: [{ name: "Hong Gildong", managerId: undefined, departmentId: 1 }],
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertSingle[dialect]);
     });
   });
 
-  describe("다중 레코드 INSERT (bulk)", () => {
+  describe("multiple records INSERT (bulk)", () => {
     const db = createTestDb();
     const def = db.employee().getInsertQueryDef([
-      { name: "홍길동", departmentId: 1 },
-      { name: "김철수", managerId: 1, departmentId: 1 },
-      { name: "이영희", managerId: 1, departmentId: 2 },
+      { name: "Hong Gildong", departmentId: 1 },
+      { name: "Kim Chulsu", managerId: 1, departmentId: 1 },
+      { name: "Lee Younghee", managerId: 1, departmentId: 2 },
     ]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         records: [
-          { name: "홍길동", departmentId: 1 },
-          { name: "김철수", managerId: 1, departmentId: 1 },
-          { name: "이영희", managerId: 1, departmentId: 2 },
+          { name: "Hong Gildong", departmentId: 1 },
+          { name: "Kim Chulsu", managerId: 1, departmentId: 1 },
+          { name: "Lee Younghee", managerId: 1, departmentId: 2 },
         ],
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertBulk[dialect]);
     });
   });
 
-  describe("output 컬럼 지정 (RETURNING/OUTPUT)", () => {
+  describe("output column specified (RETURNING/OUTPUT)", () => {
     const db = createTestDb();
     const def = db
       .employee()
       .getInsertQueryDef(
-        [{ name: "홍길동", managerId: undefined, departmentId: 1 }],
+        [{ name: "Hong Gildong", managerId: undefined, departmentId: 1 }],
         ["id", "name"],
       );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        records: [{ name: "홍길동", managerId: undefined, departmentId: 1 }],
+        records: [{ name: "Hong Gildong", managerId: undefined, departmentId: 1 }],
         output: {
           columns: ["id", "name"],
           pkColNames: ["id"],
@@ -77,25 +77,25 @@ describe("INSERT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertWithOutput[dialect]);
     });
   });
 
-  describe("nullable 컬럼 생략", () => {
+  describe("omit nullable column", () => {
     const db = createTestDb();
-    const def = db.employee().getInsertQueryDef([{ name: "홍길동" }]);
+    const def = db.employee().getInsertQueryDef([{ name: "Hong Gildong" }]);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        records: [{ name: "홍길동" }],
+        records: [{ name: "Hong Gildong" }],
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertNullable[dialect]);
     });
@@ -107,7 +107,7 @@ describe("INSERT - 기본", () => {
       .employee()
       .getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -116,7 +116,7 @@ describe("INSERT - 기본", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertWithAi[dialect]);
     });
@@ -135,7 +135,7 @@ describe("INSERT IF NOT EXISTS", () => {
       .where((e) => [expr.eq(e.name, "홍길동")])
       .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertIfNotExists",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -155,7 +155,7 @@ describe("INSERT IF NOT EXISTS", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertIfNotExistsBasic[dialect]);
     });
@@ -168,7 +168,7 @@ describe("INSERT IF NOT EXISTS", () => {
       .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
       .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertIfNotExists",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
@@ -193,7 +193,7 @@ describe("INSERT IF NOT EXISTS", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertIfNotExistsMultiple[dialect]);
     });
@@ -222,7 +222,7 @@ describe("INSERT INTO ... SELECT", () => {
       }))
       .getInsertIntoQueryDef(EmployeeBackup);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertInto",
         table: { database: "TestDb", schema: "TestSchema", name: "EmployeeBackup" },
@@ -238,7 +238,7 @@ describe("INSERT INTO ... SELECT", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertIntoSelect[dialect]);
     });
@@ -255,7 +255,7 @@ describe("INSERT INTO ... SELECT", () => {
       }))
       .getInsertIntoQueryDef(EmployeeBackup);
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertInto",
         table: { database: "TestDb", schema: "TestSchema", name: "EmployeeBackup" },
@@ -278,7 +278,7 @@ describe("INSERT INTO ... SELECT", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertIntoSelectWhere[dialect]);
     });

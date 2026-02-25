@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { parseSearchQuery } from "../../src/exec/search-parser";
 
 describe("parseSearchQuery", () => {
-  //#region ========== 기본 동작 ==========
+  //#region ========== Basic behavior ==========
 
-  describe("기본 동작", () => {
-    it("빈 문자열 → 빈 결과", () => {
+  describe("Basic behavior", () => {
+    it("Empty string → empty result", () => {
       expect(parseSearchQuery("")).toEqual({ or: [], must: [], not: [] });
       expect(parseSearchQuery("   ")).toEqual({ or: [], must: [], not: [] });
     });
 
-    it("단일 단어 → or 배열에 LIKE 패턴 추가", () => {
+    it("Single word → add LIKE pattern to or array", () => {
       expect(parseSearchQuery("사과")).toEqual({
         or: ["%사과%"],
         must: [],
@@ -18,7 +18,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("여러 단어 (공백 구분) → OR 조건", () => {
+    it("Multiple words (space separated) → OR condition", () => {
       expect(parseSearchQuery("사과 바나나")).toEqual({
         or: ["%사과%", "%바나나%"],
         must: [],
@@ -29,10 +29,10 @@ describe("parseSearchQuery", () => {
 
   //#endregion
 
-  //#region ========== 접두사 ==========
+  //#region ========== Prefixes ==========
 
-  describe("접두사", () => {
-    it("+ 접두사 → must (AND 조건)", () => {
+  describe("Prefixes", () => {
+    it("+ prefix → must (AND condition)", () => {
       expect(parseSearchQuery("+사과")).toEqual({
         or: [],
         must: ["%사과%"],
@@ -40,7 +40,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("- 접두사 → not (NOT 조건)", () => {
+    it("- prefix → not (NOT condition)", () => {
       expect(parseSearchQuery("-바나나")).toEqual({
         or: [],
         must: [],
@@ -48,7 +48,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("혼합 접두사", () => {
+    it("Mixed prefixes", () => {
       expect(parseSearchQuery("사과 +딸기 -바나나")).toEqual({
         or: ["%사과%"],
         must: ["%딸기%"],
@@ -56,7 +56,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("여러 개의 동일 접두사", () => {
+    it("Multiple identical prefixes", () => {
       expect(parseSearchQuery("+사과 +바나나")).toEqual({
         or: [],
         must: ["%사과%", "%바나나%"],
@@ -64,32 +64,32 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("접두사만 있는 경우 무시", () => {
+    it("Ignore when only prefixes present", () => {
       expect(parseSearchQuery("+ - ")).toEqual({ or: [], must: [], not: [] });
       expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%사과%"], must: [], not: [] });
     });
 
-    it("연속된 접두사", () => {
-      // 첫 번째 접두사가 처리되고, 나머지는 리터럴로 포함됨
+    it("Consecutive prefixes", () => {
+      // First prefix is processed, remaining are included as literal
       expect(parseSearchQuery("++term")).toEqual({
         or: [],
-        must: ["%+term%"], // + 접두사 처리 후 "+term"이 남아 리터럴 + 포함
+        must: ["%+term%"], // + prefix processed, "+term" remains as literal including +
         not: [],
       });
       expect(parseSearchQuery("--word")).toEqual({
         or: [],
         must: [],
-        not: ["%-word%"], // - 접두사 처리 후 "-word"이 남아 리터럴 - 포함
+        not: ["%-word%"], // - prefix processed, "-word" remains as literal including -
       });
     });
   });
 
   //#endregion
 
-  //#region ========== 따옴표 ==========
+  //#region ========== Quotes ==========
 
-  describe("따옴표", () => {
-    it("따옴표로 묶인 문구 → must (정확히 일치)", () => {
+  describe("Quotes", () => {
+    it("Quoted phrase → must (exact match)", () => {
       expect(parseSearchQuery('"맛있는 과일"')).toEqual({
         or: [],
         must: ["%맛있는 과일%"],
@@ -97,7 +97,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("+따옴표 → must", () => {
+    it("+quote → must", () => {
       expect(parseSearchQuery('+"맛있는 과일"')).toEqual({
         or: [],
         must: ["%맛있는 과일%"],
@@ -105,7 +105,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("-따옴표 → not", () => {
+    it("-quote → not", () => {
       expect(parseSearchQuery('-"맛있는 과일"')).toEqual({
         or: [],
         must: [],
@@ -113,12 +113,12 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("빈 따옴표 무시", () => {
+    it("Ignore empty quotes", () => {
       expect(parseSearchQuery('""')).toEqual({ or: [], must: [], not: [] });
       expect(parseSearchQuery('"  "')).toEqual({ or: [], must: [], not: [] });
     });
 
-    it("따옴표와 일반 단어 혼합", () => {
+    it("Mix quotes and regular words", () => {
       expect(parseSearchQuery('사과 "맛있는 과일" 바나나')).toEqual({
         or: ["%사과%", "%바나나%"],
         must: ["%맛있는 과일%"],
@@ -129,10 +129,10 @@ describe("parseSearchQuery", () => {
 
   //#endregion
 
-  //#region ========== 와일드카드 ==========
+  //#region ========== Wildcards ==========
 
-  describe("와일드카드", () => {
-    it("앞에 * → 끝으로 검색", () => {
+  describe("Wildcards", () => {
+    it("* at start → search by suffix", () => {
       expect(parseSearchQuery("*사과")).toEqual({
         or: ["%사과"],
         must: [],
@@ -140,7 +140,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("뒤에 * → 시작으로 검색", () => {
+    it("* at end → search by prefix", () => {
       expect(parseSearchQuery("사과*")).toEqual({
         or: ["사과%"],
         must: [],
@@ -148,7 +148,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("양쪽 * → 포함 검색 (명시적)", () => {
+    it("* on both sides → contains search (explicit)", () => {
       expect(parseSearchQuery("*사과*")).toEqual({
         or: ["%사과%"],
         must: [],
@@ -156,7 +156,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("중간 * → 중간 와일드카드", () => {
+    it("* in middle → middle wildcard", () => {
       expect(parseSearchQuery("사*과")).toEqual({
         or: ["사%과"],
         must: [],
@@ -167,10 +167,10 @@ describe("parseSearchQuery", () => {
 
   //#endregion
 
-  //#region ========== 이스케이프 ==========
+  //#region ========== Escaping ==========
 
-  describe("이스케이프", () => {
-    it("\\* → 리터럴 *", () => {
+  describe("Escaping", () => {
+    it("\\* → literal *", () => {
       expect(parseSearchQuery("app\\*test")).toEqual({
         or: ["%app*test%"],
         must: [],
@@ -186,7 +186,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it('\\" → 리터럴 "', () => {
+    it('\\" → literal "', () => {
       expect(parseSearchQuery('\\"test\\"')).toEqual({
         or: ['%"test"%'],
         must: [],
@@ -194,7 +194,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("\\+ → 리터럴 + (접두사 아님)", () => {
+    it("\\+ → literal + (not prefix)", () => {
       expect(parseSearchQuery("\\+positive")).toEqual({
         or: ["%+positive%"],
         must: [],
@@ -202,7 +202,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("\\- → 리터럴 - (접두사 아님)", () => {
+    it("\\- → literal - (not prefix)", () => {
       expect(parseSearchQuery("\\-negative")).toEqual({
         or: ["%-negative%"],
         must: [],
@@ -210,7 +210,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("\\\\ → 리터럴 \\", () => {
+    it("\\\\ → literal \\", () => {
       expect(parseSearchQuery("path\\\\to\\\\file")).toEqual({
         or: ["%path\\\\to\\\\file%"],
         must: [],
@@ -221,10 +221,10 @@ describe("parseSearchQuery", () => {
 
   //#endregion
 
-  //#region ========== SQL 특수문자 ==========
+  //#region ========== SQL special characters ==========
 
-  describe("SQL 특수문자 이스케이프", () => {
-    it("_ → \\_ (SQL LIKE 이스케이프)", () => {
+  describe("SQL special character escaping", () => {
+    it("_ → \\_ (SQL LIKE escape)", () => {
       expect(parseSearchQuery("file_name")).toEqual({
         or: ["%file\\_name%"],
         must: [],
@@ -232,7 +232,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("% → \\% (SQL LIKE 이스케이프)", () => {
+    it("% → \\% (SQL LIKE escape)", () => {
       expect(parseSearchQuery("100%")).toEqual({
         or: ["%100\\%%"],
         must: [],
@@ -240,7 +240,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("[ → \\[ (SQL LIKE 이스케이프)", () => {
+    it("[ → \\[ (SQL LIKE escape)", () => {
       expect(parseSearchQuery("array[0]")).toEqual({
         or: ["%array\\[0]%"],
         must: [],
@@ -251,10 +251,10 @@ describe("parseSearchQuery", () => {
 
   //#endregion
 
-  //#region ========== 복합 검색 ==========
+  //#region ========== Complex search ==========
 
-  describe("복합 검색", () => {
-    it("TSDoc 예시: 일반 + 따옴표 + 제외 + 필수", () => {
+  describe("Complex search", () => {
+    it("TSDoc example: normal + quote + exclude + required", () => {
       expect(parseSearchQuery('사과 "맛있는 과일" -바나나 +딸기')).toEqual({
         or: ["%사과%"],
         must: ["%맛있는 과일%", "%딸기%"],
@@ -262,7 +262,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("와일드카드와 일반 단어 혼합", () => {
+    it("Mix wildcards and regular words", () => {
       expect(parseSearchQuery("app* test")).toEqual({
         or: ["app%", "%test%"],
         must: [],
@@ -270,7 +270,7 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("모든 요소 혼합", () => {
+    it("Mix all elements", () => {
       expect(parseSearchQuery('*start end* +must -not "exact phrase"')).toEqual({
         or: ["%start", "end%"],
         must: ["%exact phrase%", "%must%"],

@@ -20,7 +20,7 @@ describe("collectDeps", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("workspace direct deps를 수집한다", () => {
+  it("collects workspace direct dependencies", () => {
     // root package.json with scope
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
@@ -41,7 +41,7 @@ describe("collectDeps", () => {
     expect(result.replaceDeps).toEqual([]);
   });
 
-  it("workspace transitive deps를 수집한다", () => {
+  it("collects workspace transitive dependencies", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     // packages/utils (no deps)
@@ -68,7 +68,7 @@ describe("collectDeps", () => {
     expect(result.replaceDeps).toEqual([]);
   });
 
-  it("replaceDeps glob 패턴 매칭을 처리한다", () => {
+  it("handles replaceDeps glob pattern matching", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     const pkgDir = path.join(tmpDir, "packages", "app");
@@ -82,7 +82,7 @@ describe("collectDeps", () => {
     expect(result.workspaceDeps).toEqual([]);
   });
 
-  it("workspace → replaceDeps transitive tracking을 처리한다", () => {
+  it("handles workspace to replaceDeps transitive tracking", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     // packages/core depends on @external/lib-a
@@ -102,7 +102,7 @@ describe("collectDeps", () => {
     expect(result.replaceDeps).toEqual(["@external/lib-a"]);
   });
 
-  it("replaceDeps → replaceDeps transitive tracking을 처리한다", () => {
+  it("handles replaceDeps to replaceDeps transitive tracking", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     // node_modules/@external/lib-a depends on @external/lib-b
@@ -127,7 +127,7 @@ describe("collectDeps", () => {
     expect(result.replaceDeps).toContain("@external/lib-b");
   });
 
-  it("circular dependency에서 무한루프를 방지한다 (visited set)", () => {
+  it("prevents infinite loop in circular dependency (visited set)", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     // packages/a depends on @myapp/b
@@ -148,7 +148,7 @@ describe("collectDeps", () => {
     // Should not infinite loop - a is already visited
   });
 
-  it("replaceDeps exact 패턴 매칭을 처리한다", () => {
+  it("handles replaceDeps exact pattern matching", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     const pkgDir = path.join(tmpDir, "packages", "app");
@@ -164,7 +164,7 @@ describe("collectDeps", () => {
     expect(result.replaceDeps).toEqual(["exact-pkg"]);
   });
 
-  it("external 패키지는 무시한다", () => {
+  it("ignores external packages", () => {
     writePkgJson(tmpDir, { name: "@myapp/root" });
 
     const pkgDir = path.join(tmpDir, "packages", "app");

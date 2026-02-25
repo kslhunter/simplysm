@@ -11,16 +11,16 @@ export default function NumpadPage() {
     <div class="space-y-12 p-6">
       {/* Basic usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <div class="space-y-6">
           <div>
             <Numpad
               value={basicValue()}
               onValueChange={setBasicValue}
-              placeholder="숫자를 입력하세요"
+              placeholder="Enter a number"
             />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              값:{" "}
+              Value:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">
                 {JSON.stringify(basicValue())}
               </code>
@@ -31,12 +31,12 @@ export default function NumpadPage() {
 
       {/* Initial value */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">초기값</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Initial Value</h2>
         <div class="space-y-6">
           <div>
             <Numpad value={initialValue()} onValueChange={setInitialValue} />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              값:{" "}
+              Value:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">
                 {JSON.stringify(initialValue())}
               </code>
@@ -47,7 +47,7 @@ export default function NumpadPage() {
 
       {/* ENT & Minus button */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">ENT & Minus 버튼</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">ENT & Minus Button</h2>
         <div class="space-y-6">
           <div>
             <Numpad
@@ -55,10 +55,10 @@ export default function NumpadPage() {
               onValueChange={setEnterValue}
               useEnterButton
               useMinusButton
-              onEnterButtonClick={() => alert(`입력 값: ${enterValue()}`)}
+              onEnterButtonClick={() => alert(`Entered value: ${enterValue()}`)}
             />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              값:{" "}
+              Value:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">
                 {JSON.stringify(enterValue())}
               </code>
@@ -70,7 +70,7 @@ export default function NumpadPage() {
       {/* Input disabled & required */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          입력 비활성화 & 필수
+          Input Disabled & Required
         </h2>
         <div class="space-y-6">
           <div>
@@ -80,16 +80,16 @@ export default function NumpadPage() {
               inputDisabled
               required
               useEnterButton
-              onEnterButtonClick={() => alert(`입력 값: ${disabledValue()}`)}
+              onEnterButtonClick={() => alert(`Entered value: ${disabledValue()}`)}
             />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              값:{" "}
+              Value:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">
                 {JSON.stringify(disabledValue())}
               </code>
             </p>
             <p class="mt-1 text-sm text-base-500 dark:text-base-400">
-              텍스트 필드 직접 입력 비활성화, 값이 없으면 ENT 버튼 비활성화
+              Direct text field input is disabled. ENT button is disabled when there is no value.
             </p>
           </div>
         </div>

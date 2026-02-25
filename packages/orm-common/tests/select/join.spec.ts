@@ -17,7 +17,7 @@ describe("SELECT - JOIN", () => {
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -55,7 +55,7 @@ describe("SELECT - JOIN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.joinBasic[dialect]);
     });
@@ -68,7 +68,7 @@ describe("SELECT - JOIN", () => {
       .joinSingle("user", (q, c) => q.from(User).where((item) => [expr.eq(item.id, c.userId)]))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -106,13 +106,13 @@ describe("SELECT - JOIN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.joinSingle[dialect]);
     });
   });
 
-  it("select 후 join", () => {
+  it("join after select", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -152,7 +152,7 @@ describe("SELECT - JOIN", () => {
     });
   });
 
-  it("다중 join", () => {
+  it("Multiple join", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -227,7 +227,7 @@ describe("SELECT - JOIN", () => {
       )
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -295,7 +295,7 @@ describe("SELECT - JOIN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.joinSingleMultiLevel[dialect]);
     });
@@ -314,7 +314,7 @@ describe("SELECT - JOIN", () => {
       )
       .getSelectQueryDef();
 
-    it("QueryDef 검증 - orderBy, top 포함", () => {
+    it("Verify QueryDef - includes orderBy, top", () => {
       const join = def.joins![0];
       expect(join.orderBy).toEqual([
         [{ type: "column", path: ["T1.latestPost", "publishedAt"] }, "DESC"],
@@ -323,7 +323,7 @@ describe("SELECT - JOIN", () => {
       expect(join.isSingle).toBe(true);
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.joinSingleLateral[dialect]);
     });
@@ -341,19 +341,19 @@ describe("SELECT - JOIN", () => {
       )
       .getSelectQueryDef();
 
-    it("QueryDef 검증 - select 포함", () => {
+    it("Verify QueryDef - includes select", () => {
       const join = def.joins![0];
       expect(join.select).toBeDefined();
       expect(join.select!["cnt"]).toEqual({ type: "count" });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.joinSingleLateralAgg[dialect]);
     });
   });
 
-  it("join + where 조합", () => {
+  it("Combination of join + where", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -495,7 +495,7 @@ describe("SELECT - INCLUDE", () => {
     });
   });
 
-  it("다단계 include (FK -> FK)", () => {
+  it("Multi-level include (FK -> FK)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -555,7 +555,7 @@ describe("SELECT - INCLUDE", () => {
     });
   });
 
-  it("다중 include", () => {
+  it("Multiple include", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -617,7 +617,7 @@ describe("SELECT - INCLUDE", () => {
     });
   });
 
-  it("include + select 조합", () => {
+  it("Combination of include + select", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -654,7 +654,7 @@ describe("SELECT - INCLUDE", () => {
     });
   });
 
-  it("include + where 조합", () => {
+  it("Combination of include + where", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -714,7 +714,7 @@ describe("SELECT - INCLUDE", () => {
       .include((item) => item.user.posts.user)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -797,7 +797,7 @@ describe("SELECT - INCLUDE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.include3Depth[dialect]);
     });

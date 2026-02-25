@@ -1380,7 +1380,7 @@ export const expr = {
     // 2. non-null 리터럴에서 추론
     const nonNullLiteral = allValues.find((v) => v != null) as ColumnPrimitive;
     if (nonNullLiteral == null) {
-      throw new Error("if의 then/else 중 적어도 하나는 non-null이어야 합니다.");
+      throw new Error("At least one of if's then/else must be non-null.");
     }
 
     return new ExprUnit(inferColumnPrimitiveStr(nonNullLiteral), {
@@ -2097,7 +2097,7 @@ function createSwitchBuilder<TPrimitive extends ColumnPrimitive>(): SwitchExprBu
       // 2. non-null 리터럴에서 추론
       const nonNullLiteral = allValues.find((v) => v != null) as ColumnPrimitive;
       if (nonNullLiteral == null) {
-        throw new Error("switch의 case/default 중 적어도 하나는 non-null이어야 합니다.");
+        throw new Error("At least one of switch's case/default must be non-null.");
       }
 
       return new ExprUnit(inferColumnPrimitiveStr(nonNullLiteral), {
@@ -2121,7 +2121,7 @@ function findDataType<TPrimitive extends ColumnPrimitive>(
 ): ColumnPrimitiveStr {
   const exprUnit = args.find((a): a is ExprUnit<TPrimitive> => a instanceof ExprUnit);
   if (!exprUnit) {
-    throw new Error("args중 적어도 하나는 ExprUnit이어야 합니다.");
+    throw new Error("At least one of the arguments must be an ExprUnit.");
   }
   return exprUnit.dataType;
 }

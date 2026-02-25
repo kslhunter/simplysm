@@ -10,10 +10,10 @@ describe("LazyGcMap", () => {
     vi.useRealTimers();
   });
 
-  //#region 기본 Map 동작
+  //#region Basic Map operations
 
-  describe("기본 Map 동작", () => {
-    it("set/get으로 값을 저장하고 가져온다", () => {
+  describe("Basic Map operations", () => {
+    it("Stores and retrieves values with set/get", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -23,7 +23,7 @@ describe("LazyGcMap", () => {
       expect(map.get("key1")).toBe(100);
     });
 
-    it("has로 키 존재 여부를 확인한다", () => {
+    it("Checks key existence with has", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -34,7 +34,7 @@ describe("LazyGcMap", () => {
       expect(map.has("key2")).toBe(false);
     });
 
-    it("delete로 값을 삭제한다", () => {
+    it("Deletes values with delete", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -43,10 +43,10 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       expect(map.delete("key1")).toBe(true);
       expect(map.has("key1")).toBe(false);
-      expect(map.delete("key1")).toBe(false); // 이미 삭제됨
+      expect(map.delete("key1")).toBe(false); // Already deleted
     });
 
-    it("dispose로 모든 값을 삭제한다", () => {
+    it("Deletes all values with dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -62,7 +62,7 @@ describe("LazyGcMap", () => {
       expect(map.has("key2")).toBe(false);
     });
 
-    it("size로 크기를 확인한다", () => {
+    it("Gets size with size property", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -77,7 +77,7 @@ describe("LazyGcMap", () => {
       expect(map.size).toBe(1);
     });
 
-    it("없는 키를 get하면 undefined를 반환한다", () => {
+    it("Returns undefined for non-existent keys", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -92,7 +92,7 @@ describe("LazyGcMap", () => {
   //#region getOrCreate
 
   describe("getOrCreate()", () => {
-    it("없는 키는 factory로 생성한다", () => {
+    it("Creates new value with factory for non-existent keys", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -103,7 +103,7 @@ describe("LazyGcMap", () => {
       expect(map.get("key1")).toBe(100);
     });
 
-    it("있는 키는 기존 값을 반환한다", () => {
+    it("Returns existing value without calling factory", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -116,11 +116,11 @@ describe("LazyGcMap", () => {
         return 200;
       });
 
-      expect(value).toBe(100); // 기존 값
-      expect(factoryCalls).toHaveLength(0); // factory 호출 안 됨
+      expect(value).toBe(100); // Existing value
+      expect(factoryCalls).toHaveLength(0); // Factory not called
     });
 
-    it("factory는 호출될 때마다 새 값을 생성한다", () => {
+    it("Factory creates new value each time for different keys", () => {
       const map = new LazyGcMap<string, { id: number }>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -137,25 +137,25 @@ describe("LazyGcMap", () => {
 
   //#endregion
 
-  //#region 자동 만료 (GC)
+  //#region Automatic expiration (GC)
 
-  describe("자동 만료 (GC)", () => {
-    it("expireTime 이후 미접근 시 자동 삭제된다", async () => {
+  describe("Automatic expiration (GC)", () => {
+    it("Automatically deletes values after expireTime without access", async () => {
       const map = new LazyGcMap<string, number>({
-        gcInterval: 100, // 100ms마다 GC
-        expireTime: 200, // 200ms 후 만료
+        gcInterval: 100, // GC every 100ms
+        expireTime: 200, // Expire after 200ms
       });
 
       map.set("key1", 100);
       expect(map.has("key1")).toBe(true);
 
-      // expireTime(200) + gcInterval(100) = 300ms 후 GC 실행됨
+      // GC runs after expireTime(200) + gcInterval(100) = 300ms
       await vi.advanceTimersByTimeAsync(350);
 
       expect(map.has("key1")).toBe(false);
     });
 
-    it("접근하면 만료 시간이 갱신된다 (LRU)", async () => {
+    it("Refreshes expiration time on access (LRU)", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -163,20 +163,20 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
 
-      // 150ms마다 접근 (expireTime 200ms보다 짧음)
+      // Access every 150ms (less than expireTime 200ms)
       await vi.advanceTimersByTimeAsync(150);
-      map.get("key1"); // 접근 → 시간 갱신
+      map.get("key1"); // Access refreshes time
 
       await vi.advanceTimersByTimeAsync(150);
-      map.get("key1"); // 접근 → 시간 갱신
+      map.get("key1"); // Access refreshes time
 
       await vi.advanceTimersByTimeAsync(150);
 
-      // 계속 접근했으므로 만료 안 됨
+      // Continuous access prevents expiration
       expect(map.has("key1")).toBe(true);
     });
 
-    it("has()는 접근 시간을 갱신하지 않는다", async () => {
+    it("has() does not refresh access time", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -184,20 +184,20 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
 
-      // 150ms마다 has()만 호출 (get()이 아님)
+      // Call has() every 150ms (not get())
       await vi.advanceTimersByTimeAsync(150);
-      map.has("key1"); // has()는 접근 시간을 갱신하지 않음
+      map.has("key1"); // has() does not refresh access time
 
       await vi.advanceTimersByTimeAsync(150);
-      map.has("key1"); // has()는 접근 시간을 갱신하지 않음
+      map.has("key1"); // has() does not refresh access time
 
       await vi.advanceTimersByTimeAsync(100);
 
-      // has()는 접근 시간을 갱신하지 않으므로 만료됨
+      // has() does not refresh, so expires
       expect(map.has("key1")).toBe(false);
     });
 
-    it("getOrCreate도 접근 시간을 갱신한다", async () => {
+    it("getOrCreate also refreshes access time", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -206,14 +206,14 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
 
       await vi.advanceTimersByTimeAsync(150);
-      map.getOrCreate("key1", () => 200); // 접근 → 시간 갱신
+      map.getOrCreate("key1", () => 200); // Access refreshes time
 
       await vi.advanceTimersByTimeAsync(150);
 
       expect(map.has("key1")).toBe(true);
     });
 
-    it("여러 항목 중 만료된 것만 삭제한다", async () => {
+    it("Deletes only expired items among multiple items", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -221,16 +221,16 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
       await vi.advanceTimersByTimeAsync(150);
-      map.set("key2", 200); // key1보다 150ms 늦게 추가
+      map.set("key2", 200); // Added 150ms after key1
 
       await vi.advanceTimersByTimeAsync(200);
 
-      // key1은 만료, key2는 아직 살아있음
+      // key1 expires, key2 still alive
       expect(map.has("key1")).toBe(false);
       expect(map.has("key2")).toBe(true);
     });
 
-    it("모든 항목이 만료되면 GC 타이머가 중지된다", async () => {
+    it("GC timer stops when all items expire", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -238,11 +238,11 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
 
-      // 만료 대기
+      // Wait for expiration
       await vi.advanceTimersByTimeAsync(350);
 
       expect(map.size).toBe(0);
-      // GC 타이머 중지 확인 (더 기다려도 문제 없음)
+      // Verify GC timer stopped (waiting more is safe)
       await vi.advanceTimersByTimeAsync(200);
       expect(map.size).toBe(0);
     });
@@ -250,10 +250,10 @@ describe("LazyGcMap", () => {
 
   //#endregion
 
-  //#region onExpire 콜백
+  //#region onExpire callback
 
-  describe("onExpire 콜백", () => {
-    it("만료 시 onExpire 콜백이 호출된다", async () => {
+  describe("onExpire callback", () => {
+    it("Calls onExpire callback when item expires", async () => {
       const expired: Array<[string, number]> = [];
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -269,7 +269,7 @@ describe("LazyGcMap", () => {
       expect(expired).toEqual([["key1", 100]]);
     });
 
-    it("비동기 onExpire 콜백도 지원한다", async () => {
+    it("Supports async onExpire callback", async () => {
       const expired: Array<[string, number]> = [];
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -287,7 +287,7 @@ describe("LazyGcMap", () => {
       expect(expired).toEqual([["key1", 100]]);
     });
 
-    it("여러 항목 만료 시 각각 onExpire가 호출된다", async () => {
+    it("Calls onExpire for each expired item", async () => {
       const expired: Array<[string, number]> = [];
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -306,7 +306,7 @@ describe("LazyGcMap", () => {
       expect(expired).toContainEqual(["key2", 200]);
     });
 
-    it("onExpire 에러는 무시한다", async () => {
+    it("Ignores onExpire errors", async () => {
       const expired: Array<[string, number]> = [];
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -320,12 +320,12 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       await vi.advanceTimersByTimeAsync(350);
 
-      // 에러가 발생해도 만료는 정상 처리됨
+      // Expiration handled normally despite error
       expect(expired).toEqual([["key1", 100]]);
       expect(map.has("key1")).toBe(false);
     });
 
-    it("onExpire 중 같은 키로 set() 호출 시 새 값이 유지된다", async () => {
+    it("Maintains new value if set is called during onExpire for same key", async () => {
       let map: LazyGcMap<string, number>;
       const expired: Array<[string, number]> = [];
 
@@ -334,7 +334,7 @@ describe("LazyGcMap", () => {
         expireTime: 200,
         onExpire: (key, value) => {
           expired.push([key, value]);
-          // onExpire 콜백 중에 같은 키로 새 값 등록
+          // Register new value for same key during onExpire
           map.set(key, value + 1000);
         },
       });
@@ -342,13 +342,13 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       await vi.advanceTimersByTimeAsync(350);
 
-      // onExpire는 호출되었지만, 새로 등록된 값은 삭제되지 않음
+      // onExpire called, but new value not deleted
       expect(expired).toEqual([["key1", 100]]);
       expect(map.has("key1")).toBe(true);
       expect(map.get("key1")).toBe(1100);
     });
 
-    it("onExpire 중 다른 키로 set() 호출은 영향 없다", async () => {
+    it("Unaffected by set during onExpire for different key", async () => {
       let map: LazyGcMap<string, number>;
       const expired: Array<[string, number]> = [];
 
@@ -357,7 +357,7 @@ describe("LazyGcMap", () => {
         expireTime: 200,
         onExpire: (key, value) => {
           expired.push([key, value]);
-          // onExpire 콜백 중에 다른 키로 새 값 등록 (key1 만료 시에만)
+          // Register new value for different key during onExpire (only for key1)
           if (key === "key1") {
             map.set("key2", 200);
           }
@@ -365,14 +365,14 @@ describe("LazyGcMap", () => {
       });
 
       map.set("key1", 100);
-      // expireTime(200) + gcInterval(100) = 300ms 후 GC
-      // key2가 등록된 후에도 아직 만료되지 않아야 함
+      // GC runs after expireTime(200) + gcInterval(100) = 300ms
+      // key2 not expired yet after being registered
       await vi.advanceTimersByTimeAsync(350);
 
-      // key1은 만료 삭제됨
+      // key1 deleted after expiration
       expect(expired).toEqual([["key1", 100]]);
       expect(map.has("key1")).toBe(false);
-      // key2는 새로 등록됨 (아직 만료 전)
+      // key2 newly registered (not yet expired)
       expect(map.has("key2")).toBe(true);
       expect(map.get("key2")).toBe(200);
     });
@@ -380,10 +380,10 @@ describe("LazyGcMap", () => {
 
   //#endregion
 
-  //#region dispose (타이머 및 리소스 정리)
+  //#region dispose (Timer and resource cleanup)
 
-  describe("dispose() - 타이머 정리", () => {
-    it("dispose 후 타이머가 정리되어 GC 콜백이 호출되지 않는다", async () => {
+  describe("dispose() - Timer cleanup", () => {
+    it("GC callback not called after dispose when timer is cleaned up", async () => {
       const expired: Array<[string, number]> = [];
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -396,18 +396,18 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       expect(map.has("key1")).toBe(true);
 
-      // dispose 호출로 타이머 정리
+      // Clean up timer with dispose
       map.dispose();
       expect(map.size).toBe(0);
 
-      // expireTime + gcInterval 이상 대기
+      // Wait expireTime + gcInterval or more
       await vi.advanceTimersByTimeAsync(400);
 
-      // GC 콜백이 호출되지 않아야 함 (dispose로 이미 정리됨)
+      // GC callback should not be called (already cleaned by dispose)
       expect(expired).toHaveLength(0);
     });
 
-    it("dispose 후 set은 무시된다", () => {
+    it("set is ignored after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -416,14 +416,14 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       map.dispose();
 
-      // dispose 후 set은 무시됨
+      // set ignored after dispose
       map.set("key2", 200);
       expect(map.has("key2")).toBe(false);
       expect(map.get("key2")).toBeUndefined();
       expect(map.size).toBe(0);
     });
 
-    it("dispose는 여러 번 호출해도 안전하다", () => {
+    it("dispose is safe to call multiple times", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -431,7 +431,7 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
 
-      // 여러 번 호출해도 에러 없음
+      // Safe to call multiple times
       map.dispose();
       map.dispose();
       map.dispose();
@@ -439,7 +439,7 @@ describe("LazyGcMap", () => {
       expect(map.size).toBe(0);
     });
 
-    it("using 문으로 자동 dispose된다", async () => {
+    it("Automatically disposed with using statement", async () => {
       const expired: Array<[string, number]> = [];
       {
         using map = new LazyGcMap<string, number>({
@@ -451,9 +451,9 @@ describe("LazyGcMap", () => {
         });
         map.set("key1", 100);
         expect(map.has("key1")).toBe(true);
-      } // using 블록 종료 시 dispose 자동 호출
+      } // dispose auto-called at end of using block
       await vi.advanceTimersByTimeAsync(350);
-      // dispose로 정리됨 (onExpire 미호출)
+      // Cleaned up by dispose (onExpire not called)
       expect(expired).toHaveLength(0);
     });
   });
@@ -463,7 +463,7 @@ describe("LazyGcMap", () => {
   //#region clear
 
   describe("clear()", () => {
-    it("모든 항목을 삭제한다", () => {
+    it("Deletes all items", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -479,7 +479,7 @@ describe("LazyGcMap", () => {
       expect(map.has("key2")).toBe(false);
     });
 
-    it("clear 후 새 항목을 추가할 수 있다", () => {
+    it("Can add new items after clear", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -493,7 +493,7 @@ describe("LazyGcMap", () => {
       expect(map.get("key2")).toBe(200);
     });
 
-    it("clear는 여러 번 호출해도 안전하다", () => {
+    it("clear is safe to call multiple times", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -501,7 +501,7 @@ describe("LazyGcMap", () => {
 
       map.set("key1", 100);
 
-      // 여러 번 호출해도 에러 없음
+      // Safe to call multiple times
       map.clear();
       map.clear();
       map.clear();
@@ -509,7 +509,7 @@ describe("LazyGcMap", () => {
       expect(map.size).toBe(0);
     });
 
-    it("clear 후 GC가 정상 작동한다", async () => {
+    it("GC works normally after clear", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -518,10 +518,10 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       map.clear();
 
-      // clear 후 새 항목 추가
+      // Add new item after clear
       map.set("key2", 200);
 
-      // GC가 정상 작동하는지 확인
+      // Verify GC works normally
       await vi.advanceTimersByTimeAsync(350);
       expect(map.has("key2")).toBe(false);
     });
@@ -529,13 +529,13 @@ describe("LazyGcMap", () => {
 
   //#endregion
 
-  //#region SharedArrayBuffer 지원
+  //#region SharedArrayBuffer support
 
-  describe("SharedArrayBuffer 지원", () => {
-    it("SharedArrayBuffer를 값으로 사용할 수 있다", () => {
-      // SharedArrayBuffer는 일부 환경에서 보안상 비활성화될 수 있음
+  describe("SharedArrayBuffer support", () => {
+    it("Can use SharedArrayBuffer as value", () => {
+      // SharedArrayBuffer may be disabled for security in some environments
       if (typeof SharedArrayBuffer === "undefined") {
-        expect(true).toBe(true); // 환경에서 지원하지 않으면 스킵
+        expect(true).toBe(true); // Skip if not supported
         return;
       }
 
@@ -557,7 +557,7 @@ describe("LazyGcMap", () => {
   //#region Iterator
 
   describe("Iterator", () => {
-    it("values()로 값들을 순회한다", () => {
+    it("Iterates values with values()", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -574,7 +574,7 @@ describe("LazyGcMap", () => {
       expect(values).toContain(300);
     });
 
-    it("keys()로 키들을 순회한다", () => {
+    it("Iterates keys with keys()", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -587,7 +587,7 @@ describe("LazyGcMap", () => {
       expect(keys).toEqual(["key1", "key2"]);
     });
 
-    it("entries()로 엔트리를 순회한다", () => {
+    it("Iterates entries with entries()", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -606,10 +606,10 @@ describe("LazyGcMap", () => {
 
   //#endregion
 
-  //#region dispose 후 안전성
+  //#region Safety after dispose
 
-  describe("dispose 후 안전성", () => {
-    it("dispose 후 get은 undefined를 반환한다", () => {
+  describe("Safety after dispose", () => {
+    it("Returns undefined on get after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -619,7 +619,7 @@ describe("LazyGcMap", () => {
       expect(map.get("a")).toBeUndefined();
     });
 
-    it("dispose 후 has는 false를 반환한다", () => {
+    it("Returns false on has after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -629,7 +629,7 @@ describe("LazyGcMap", () => {
       expect(map.has("a")).toBe(false);
     });
 
-    it("dispose 후 delete는 false를 반환한다", () => {
+    it("Returns false on delete after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -639,7 +639,7 @@ describe("LazyGcMap", () => {
       expect(map.delete("a")).toBe(false);
     });
 
-    it("dispose 후 getOrCreate는 에러를 던진다", () => {
+    it("Throws error on getOrCreate after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -648,7 +648,7 @@ describe("LazyGcMap", () => {
       expect(() => map.getOrCreate("a", () => 1)).toThrow();
     });
 
-    it("dispose 후 clear는 에러 없이 무시된다", () => {
+    it("clear is safely ignored after dispose without error", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -657,7 +657,7 @@ describe("LazyGcMap", () => {
       expect(() => map.clear()).not.toThrow();
     });
 
-    it("dispose 후 values는 빈 이터레이터를 반환한다", () => {
+    it("Returns empty iterator on values after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -667,7 +667,7 @@ describe("LazyGcMap", () => {
       expect([...map.values()]).toEqual([]);
     });
 
-    it("dispose 후 keys는 빈 이터레이터를 반환한다", () => {
+    it("Returns empty iterator on keys after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,
@@ -677,7 +677,7 @@ describe("LazyGcMap", () => {
       expect([...map.keys()]).toEqual([]);
     });
 
-    it("dispose 후 entries는 빈 이터레이터를 반환한다", () => {
+    it("Returns empty iterator on entries after dispose", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 10000,
         expireTime: 60000,

@@ -53,8 +53,8 @@ describe("sd-cli", () => {
     consola.level = originalConsolaLevel;
   });
 
-  describe("lint 명령어", () => {
-    it("lint 명령어가 올바른 옵션으로 runLint를 호출", async () => {
+  describe("lint command", () => {
+    it("calls runLint with correct options", async () => {
       await createCliParser(["lint", "packages/core-common", "--fix"]).parse();
 
       expect(runLint).toHaveBeenCalledWith({
@@ -64,7 +64,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("lint 명령어의 --timing 옵션이 올바르게 전달됨", async () => {
+    it("passes --timing option correctly", async () => {
       await createCliParser(["lint", "--timing"]).parse();
 
       expect(runLint).toHaveBeenCalledWith({
@@ -74,7 +74,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("lint 명령어에 targets 없이 실행 가능", async () => {
+    it("runs lint command without targets", async () => {
       await createCliParser(["lint"]).parse();
 
       expect(runLint).toHaveBeenCalledWith({
@@ -85,8 +85,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("typecheck 명령어", () => {
-    it("typecheck 명령어가 올바른 옵션으로 runTypecheck를 호출", async () => {
+  describe("typecheck command", () => {
+    it("calls runTypecheck with correct options", async () => {
       await createCliParser(["typecheck", "packages/cli"]).parse();
 
       expect(runTypecheck).toHaveBeenCalledWith({
@@ -95,7 +95,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("typecheck 명령어에 여러 targets 전달 가능", async () => {
+    it("passes multiple targets to typecheck command", async () => {
       await createCliParser(["typecheck", "packages/core-common", "packages/core-node"]).parse();
 
       expect(runTypecheck).toHaveBeenCalledWith({
@@ -104,7 +104,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("typecheck 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+    it("passes --options option correctly", async () => {
       await createCliParser(["typecheck", "-o", "dev", "-o", "test"]).parse();
 
       expect(runTypecheck).toHaveBeenCalledWith({
@@ -114,8 +114,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("check 명령어", () => {
-    it("check 명령어가 올바른 옵션으로 runCheck를 호출", async () => {
+  describe("check command", () => {
+    it("calls runCheck with correct options", async () => {
       await createCliParser(["check", "packages/core-common", "--type", "typecheck,lint"]).parse();
 
       expect(runCheck).toHaveBeenCalledWith({
@@ -124,7 +124,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("check 명령어에 targets 없이 실행 가능", async () => {
+    it("runs check command without targets", async () => {
       await createCliParser(["check"]).parse();
 
       expect(runCheck).toHaveBeenCalledWith({
@@ -133,7 +133,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("check 명령어의 --type 옵션으로 단일 타입 지정", async () => {
+    it("specifies single type using --type option", async () => {
       await createCliParser(["check", "--type", "test"]).parse();
 
       expect(runCheck).toHaveBeenCalledWith({
@@ -143,8 +143,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("watch 명령어", () => {
-    it("watch 명령어가 올바른 옵션으로 runWatch를 호출", async () => {
+  describe("watch command", () => {
+    it("calls runWatch with correct options", async () => {
       await createCliParser(["watch", "solid"]).parse();
 
       expect(runWatch).toHaveBeenCalledWith({
@@ -153,7 +153,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("watch 명령어에 여러 targets 전달 가능", async () => {
+    it("passes multiple targets to watch command", async () => {
       await createCliParser(["watch", "solid", "solid-demo"]).parse();
 
       expect(runWatch).toHaveBeenCalledWith({
@@ -162,7 +162,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("watch 명령어에 targets 없이 실행 가능", async () => {
+    it("runs watch command without targets", async () => {
       await createCliParser(["watch"]).parse();
 
       expect(runWatch).toHaveBeenCalledWith({
@@ -171,7 +171,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("watch 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+    it("passes --options option correctly", async () => {
       await createCliParser(["watch", "-o", "dev"]).parse();
 
       expect(runWatch).toHaveBeenCalledWith({
@@ -181,8 +181,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("build 명령어", () => {
-    it("build 명령어가 올바른 옵션으로 runBuild를 호출", async () => {
+  describe("build command", () => {
+    it("calls runBuild with correct options", async () => {
       await createCliParser(["build", "solid", "core-common"]).parse();
 
       expect(runBuild).toHaveBeenCalledWith({
@@ -191,7 +191,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("build 명령어에 targets 없이 실행 가능", async () => {
+    it("runs build command without targets", async () => {
       await createCliParser(["build"]).parse();
 
       expect(runBuild).toHaveBeenCalledWith({
@@ -200,7 +200,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("build 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+    it("passes --options option correctly", async () => {
       await createCliParser(["build", "-o", "prod"]).parse();
 
       expect(runBuild).toHaveBeenCalledWith({
@@ -210,8 +210,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("publish 명령어", () => {
-    it("publish 명령어가 올바른 옵션으로 runPublish를 호출", async () => {
+  describe("publish command", () => {
+    it("calls runPublish with correct options", async () => {
       await createCliParser(["publish", "solid", "core-common"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -222,7 +222,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어에 targets 없이 실행 가능", async () => {
+    it("runs publish command without targets", async () => {
       await createCliParser(["publish"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -233,7 +233,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어의 --no-build 옵션이 올바르게 전달됨", async () => {
+    it("passes --no-build option correctly", async () => {
       await createCliParser(["publish", "--no-build"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -244,7 +244,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+    it("passes --options option correctly", async () => {
       await createCliParser(["publish", "-o", "prod", "-o", "test"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -255,7 +255,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어에 모든 옵션을 함께 전달 가능", async () => {
+    it("passes all options together", async () => {
       await createCliParser(["publish", "solid", "--no-build", "-o", "prod"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -266,7 +266,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어의 --dry-run 옵션이 올바르게 전달됨", async () => {
+    it("passes --dry-run option correctly", async () => {
       await createCliParser(["publish", "--dry-run"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -277,7 +277,7 @@ describe("sd-cli", () => {
       });
     });
 
-    it("publish 명령어에 --dry-run과 다른 옵션을 함께 사용 가능", async () => {
+    it("uses --dry-run with other options together", async () => {
       await createCliParser(["publish", "solid", "--dry-run", "-o", "prod"]).parse();
 
       expect(runPublish).toHaveBeenCalledWith({
@@ -289,14 +289,14 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("글로벌 --debug 옵션", () => {
-    it("--debug 옵션이 consola.level을 debug로 설정", async () => {
+  describe("global --debug option", () => {
+    it("sets consola.level to debug with --debug option", async () => {
       await createCliParser(["--debug", "lint"]).parse();
 
       expect(consola.level).toBe(LogLevels.debug);
     });
 
-    it("--debug 없이 실행 시 consola.level 변경 안함", async () => {
+    it("does not change consola.level without --debug", async () => {
       const levelBefore = consola.level;
       await createCliParser(["lint"]).parse();
 
@@ -304,8 +304,8 @@ describe("sd-cli", () => {
     });
   });
 
-  describe("에러 처리", () => {
-    it("알 수 없는 명령어 입력 시 에러", async () => {
+  describe("error handling", () => {
+    it("throws error on unknown command", async () => {
       let errorMessage: string | undefined;
       const parser = createCliParser(["unknown"]).fail((msg) => {
         errorMessage = msg;
@@ -316,7 +316,7 @@ describe("sd-cli", () => {
       expect(errorMessage).toMatch(/Unknown argument|알 수 없는 인수/);
     });
 
-    it("명령어 없이 실행 시 에러", async () => {
+    it("throws error when no command specified", async () => {
       let errorMessage: string | undefined;
       const parser = createCliParser([]).fail((msg) => {
         errorMessage = msg;

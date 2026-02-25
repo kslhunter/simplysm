@@ -7,10 +7,10 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./table-builder.expected";
 
 describe("DDL - Table Builder", () => {
-  describe("기본 테이블 (이름만)", () => {
+  describe("basic table (name only)", () => {
     const table = Table("User");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta).toEqual({
         name: "User",
         description: undefined,
@@ -24,13 +24,13 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("description 지정", () => {
-    const table = Table("User").description("사용자 테이블");
+  describe("description specified", () => {
+    const table = Table("User").description("User table");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta).toEqual({
         name: "User",
-        description: "사용자 테이블",
+        description: "User table",
         database: undefined,
         schema: undefined,
         columns: undefined,
@@ -41,10 +41,10 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("database 지정", () => {
+  describe("database specified", () => {
     const table = Table("User").database("CustomDb");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta).toEqual({
         name: "User",
         description: undefined,
@@ -58,10 +58,10 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("schema 지정", () => {
+  describe("schema specified", () => {
     const table = Table("User").schema("CustomSchema");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta).toEqual({
         name: "User",
         description: undefined,
@@ -75,10 +75,10 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("columns 지정 (단일 컬럼)", () => {
+  describe("columns specified (single column)", () => {
     const table = Table("User").columns((c) => ({ id: c.bigint() }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta.name).toBe("User");
       expect(table.meta.columns).toBeDefined();
       expect(Object.keys(table.meta.columns!)).toEqual(["id"]);
@@ -86,14 +86,14 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("columns 지정 (여러 컬럼)", () => {
+  describe("columns specified (multiple columns)", () => {
     const table = Table("User").columns((c) => ({
       id: c.bigint(),
       name: c.varchar(100),
       email: c.varchar(200),
     }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(table.meta.name).toBe("User");
       expect(table.meta.columns).toBeDefined();
       expect(Object.keys(table.meta.columns!)).toEqual(["id", "name", "email"]);
@@ -103,7 +103,7 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("primaryKey 지정 (단일 키)", () => {
+  describe("primaryKey specified (single key)", () => {
     const User = Table("User")
       .database("TestDb")
       .schema("TestSchema")
@@ -113,7 +113,7 @@ describe("DDL - Table Builder", () => {
     const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createTable",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -130,13 +130,13 @@ describe("DDL - Table Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.singlePrimaryKey[dialect]);
     });
   });
 
-  describe("primaryKey 지정 (복합 키)", () => {
+  describe("primaryKey specified (composite key)", () => {
     const Order = Table("Order")
       .database("TestDb")
       .schema("TestSchema")
@@ -150,7 +150,7 @@ describe("DDL - Table Builder", () => {
     const db = createTestDb();
     const def = db.getCreateTableQueryDef(Order);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createTable",
         table: { database: "TestDb", schema: "TestSchema", name: "Order" },
@@ -181,13 +181,13 @@ describe("DDL - Table Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.compositePrimaryKey[dialect]);
     });
   });
 
-  describe("indexes 지정 (단일 인덱스)", () => {
+  describe("indexes specified (single index)", () => {
     const User = Table("User")
       .columns((c) => ({
         id: c.bigint(),
@@ -196,14 +196,14 @@ describe("DDL - Table Builder", () => {
       .primaryKey("id")
       .indexes((i) => [i.index("email")]);
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(User.meta.indexes).toBeDefined();
       expect(User.meta.indexes!.length).toBe(1);
       expect(User.meta.indexes![0].meta.columns).toEqual(["email"]);
     });
   });
 
-  describe("indexes 지정 (여러 인덱스)", () => {
+  describe("indexes specified (multiple indexes)", () => {
     const User = Table("User")
       .columns((c) => ({
         id: c.bigint(),
@@ -214,7 +214,7 @@ describe("DDL - Table Builder", () => {
       .primaryKey("id")
       .indexes((i) => [i.index("email"), i.index("name", "age")]);
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(User.meta.indexes).toBeDefined();
       expect(User.meta.indexes!.length).toBe(2);
       expect(User.meta.indexes![0].meta.columns).toEqual(["email"]);
@@ -222,7 +222,7 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("indexes 지정 (unique 인덱스)", () => {
+  describe("indexes specified (unique index)", () => {
     const User = Table("User")
       .columns((c) => ({
         id: c.bigint(),
@@ -231,7 +231,7 @@ describe("DDL - Table Builder", () => {
       .primaryKey("id")
       .indexes((i) => [i.index("email").unique()]);
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(User.meta.indexes).toBeDefined();
       expect(User.meta.indexes!.length).toBe(1);
       expect(User.meta.indexes![0].meta.columns).toEqual(["email"]);
@@ -239,7 +239,7 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("relations 지정 (foreignKey)", () => {
+  describe("relations specified (foreignKey)", () => {
     const Company = Table("Company")
       .columns((c) => ({ id: c.bigint() }))
       .primaryKey("id");
@@ -254,7 +254,7 @@ describe("DDL - Table Builder", () => {
         company: r.foreignKey(["companyId"], () => Company),
       }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(User.meta.relations).toBeDefined();
       expect(Object.keys(User.meta.relations!)).toEqual(["company"]);
       expect(User.meta.relations!.company.meta.columns).toEqual(["companyId"]);
@@ -262,11 +262,11 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("복합 옵션 1 (database + schema + description)", () => {
+  describe("combined options 1 (database + schema + description)", () => {
     const User = Table("User")
       .database("TestDb")
       .schema("TestSchema")
-      .description("사용자 테이블")
+      .description("User table")
       .columns((c) => ({
         id: c.bigint(),
         name: c.varchar(100),
@@ -276,7 +276,7 @@ describe("DDL - Table Builder", () => {
     const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createTable",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -300,13 +300,13 @@ describe("DDL - Table Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.complexOptions1[dialect]);
     });
   });
 
-  describe("복합 옵션 2 (columns + PK + indexes)", () => {
+  describe("combined options 2 (columns + PK + indexes)", () => {
     const User = Table("User")
       .database("TestDb")
       .schema("TestSchema")
@@ -318,7 +318,7 @@ describe("DDL - Table Builder", () => {
       .primaryKey("id")
       .indexes((i) => [i.index("email").unique()]);
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(User.meta.database).toBe("TestDb");
       expect(User.meta.schema).toBe("TestSchema");
       expect(Object.keys(User.meta.columns!)).toEqual(["id", "email", "name"]);
@@ -328,11 +328,11 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("복합 옵션 3 (다양한 컬럼 타입)", () => {
+  describe("combined options 3 (various column types)", () => {
     const Product = Table("Product")
       .database("TestDb")
       .schema("TestSchema")
-      .description("상품 테이블")
+      .description("Product table")
       .columns((c) => ({
         id: c.bigint().autoIncrement(),
         name: c.varchar(200),
@@ -347,7 +347,7 @@ describe("DDL - Table Builder", () => {
     const db = createTestDb();
     const def = db.getCreateTableQueryDef(Product);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createTable",
         table: { database: "TestDb", schema: "TestSchema", name: "Product" },
@@ -406,14 +406,14 @@ describe("DDL - Table Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.complexOptions3[dialect]);
     });
   });
 
-  describe("체이닝 메서드 순서", () => {
-    // 메서드 체이닝 순서가 달라도 동일한 결과
+  describe("method chaining order", () => {
+    // Same result even with different method chaining order
     const table1 = Table("User")
       .columns((c) => ({ id: c.bigint() }))
       .database("TestDb")
@@ -426,7 +426,7 @@ describe("DDL - Table Builder", () => {
       .columns((c) => ({ id: c.bigint() }))
       .primaryKey("id");
 
-    it("메타 데이터 동일성 검증", () => {
+    it("should validate metadata consistency", () => {
       expect(table1.meta).toEqual(table2.meta);
     });
   });

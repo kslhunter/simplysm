@@ -157,7 +157,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
 
     if (def.records.length === 0) {
-      throw new Error("INSERT는 최소 하나의 레코드가 필요합니다.");
+      throw new Error("INSERT requires at least one record.");
     }
 
     const columns = Object.keys(def.records[0]);
@@ -576,11 +576,11 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
     // SQL Injection 방지: 식별자 유효성 Validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
-      throw new Error(`유효하지 않은 Database명: ${def.database}`);
+      throw new Error(`Invalid database name: ${def.database}`);
     }
     const schemaName = def.schema ?? "dbo";
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
-      throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
+      throw new Error(`Invalid schema name: ${schemaName}`);
     }
 
     const db = this.expr.wrap(def.database);
@@ -617,11 +617,11 @@ EXEC sp_executesql @sql;`,
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
     // SQL Injection 방지: 식별자 유효성 Validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
-      throw new Error(`유효하지 않은 Database명: ${def.database}`);
+      throw new Error(`Invalid database name: ${def.database}`);
     }
     const schemaName = def.schema ?? "dbo";
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
-      throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
+      throw new Error(`Invalid schema name: ${schemaName}`);
     }
 
     const dbName = this.expr.escapeString(def.database);

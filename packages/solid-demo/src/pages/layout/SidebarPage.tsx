@@ -2,16 +2,16 @@ import { Button, Icon, Sidebar, useSidebarContext, type AppMenu } from "@simplys
 import { IconFolder, IconHome, IconMenu2, IconSettings } from "@tabler/icons-solidjs";
 
 const sampleMenuItems: AppMenu[] = [
-  { title: "홈", href: "#", icon: IconHome },
+  { title: "Home", href: "#", icon: IconHome },
   {
-    title: "문서",
+    title: "Documents",
     icon: IconFolder,
     children: [
-      { title: "시작하기", href: "#" },
-      { title: "API 참조", href: "#" },
+      { title: "Getting Started", href: "#" },
+      { title: "API Reference", href: "#" },
     ],
   },
-  { title: "설정", href: "#", icon: IconSettings },
+  { title: "Settings", href: "#", icon: IconSettings },
 ];
 
 const SidebarToggleButton = () => {
@@ -28,22 +28,21 @@ export default function SidebarPage() {
     <div class="space-y-8 p-6">
       {/* 1. Basic Sidebar */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 Sidebar</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Sidebar</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Sidebar + SidebarMenu + SidebarUser 조합. 토글 버튼을 클릭하여 사이드바를 열고 닫을 수
-          있습니다.
+          Combination of Sidebar + SidebarMenu + SidebarUser. Click the toggle button to open and close the sidebar.
         </p>
         <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Sidebar.Container>
             <Sidebar>
               <div class="p-2 px-4 font-bold">LOGO</div>
               <Sidebar.User
-                name="홍길동"
+                name="Hong Gildong"
                 description="hong@example.com"
                 menus={[
-                  { title: "프로필", onClick: () => alert("프로필") },
-                  { title: "설정", onClick: () => alert("설정") },
-                  { title: "로그아웃", onClick: () => alert("로그아웃") },
+                  { title: "Profile", onClick: () => alert("Profile") },
+                  { title: "Settings", onClick: () => alert("Settings") },
+                  { title: "Logout", onClick: () => alert("Logout") },
                 ]}
               />
               <Sidebar.Menu menus={sampleMenuItems} />
@@ -51,11 +50,11 @@ export default function SidebarPage() {
             <main class="h-full overflow-auto p-4">
               <div class="mb-4 flex items-center gap-4">
                 <SidebarToggleButton />
-                <span class="font-medium">콘텐츠 영역</span>
+                <span class="font-medium">Content Area</span>
               </div>
               <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                 <p class="text-sm text-base-600 dark:text-base-400">
-                  사이드바 메뉴를 클릭하면 해당 경로로 이동합니다.
+                  Click the sidebar menu to navigate to that path.
                 </p>
               </div>
             </main>
@@ -65,9 +64,9 @@ export default function SidebarPage() {
 
       {/* 2. Toggled state */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Toggled 상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Toggled State</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          useSidebarContext().setToggle()을 통해 사이드바 토글 상태를 제어합니다.
+          Control the sidebar toggle state through useSidebarContext().setToggle().
         </p>
         <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Sidebar.Container>
@@ -78,11 +77,11 @@ export default function SidebarPage() {
             <main class="h-full overflow-auto p-4">
               <div class="mb-4 flex items-center gap-4">
                 <SidebarToggleButton />
-                <span class="font-medium">토글 버튼으로 상태 제어</span>
+                <span class="font-medium">Control State with Toggle Button</span>
               </div>
               <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                 <p class="text-sm text-base-600 dark:text-base-400">
-                  토글 버튼을 클릭하면 useSidebarContext().setToggle()이 호출됩니다.
+                  Clicking the toggle button calls useSidebarContext().setToggle().
                 </p>
               </div>
             </main>
@@ -92,11 +91,11 @@ export default function SidebarPage() {
 
       {/* 3. SidebarUser variants */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">SidebarUser 변형</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">SidebarUser Variants</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* None */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">없음</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">None</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
@@ -106,7 +105,7 @@ export default function SidebarPage() {
                 <main class="h-full overflow-auto p-4">
                   <SidebarToggleButton />
                   <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">SidebarUser 없음</p>
+                    <p class="text-sm text-base-600 dark:text-base-400">No SidebarUser</p>
                   </div>
                 </main>
               </Sidebar.Container>
@@ -115,19 +114,19 @@ export default function SidebarPage() {
 
           {/* Basic (no menu) */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (메뉴 없음)</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Basic (No Menu)</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
                   <div class="p-2 px-4 font-bold">LOGO</div>
-                  <Sidebar.User name="홍길동" description="hong@example.com" />
+                  <Sidebar.User name="Hong Gildong" description="hong@example.com" />
                   <Sidebar.Menu menus={sampleMenuItems} />
                 </Sidebar>
                 <main class="h-full overflow-auto p-4">
                   <SidebarToggleButton />
                   <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                     <p class="text-sm text-base-600 dark:text-base-400">
-                      메뉴 없이 사용자 정보만 표시
+                      Show user information only without menu
                     </p>
                   </div>
                 </main>
@@ -137,17 +136,17 @@ export default function SidebarPage() {
 
           {/* With menu */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">메뉴 포함</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">With Menu</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
                   <div class="p-2 px-4 font-bold">LOGO</div>
                   <Sidebar.User
-                    name="홍길동"
+                    name="Hong Gildong"
                     description="admin@example.com"
                     menus={[
-                      { title: "프로필", onClick: () => alert("프로필") },
-                      { title: "로그아웃", onClick: () => alert("로그아웃") },
+                      { title: "Profile", onClick: () => alert("Profile") },
+                      { title: "Logout", onClick: () => alert("Logout") },
                     ]}
                   />
                   <Sidebar.Menu menus={sampleMenuItems} />
@@ -156,7 +155,7 @@ export default function SidebarPage() {
                   <SidebarToggleButton />
                   <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                     <p class="text-sm text-base-600 dark:text-base-400">
-                      클릭하면 드롭다운 메뉴 표시
+                      Click to show dropdown menu
                     </p>
                   </div>
                 </main>
@@ -168,9 +167,9 @@ export default function SidebarPage() {
 
       {/* 4. Mobile demo */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">모바일 데모</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Mobile Demo</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          375px x 500px iframe으로 모바일 환경 시뮬레이션
+          Simulate mobile environment with 375px x 500px iframe
         </p>
         <div class="h-[500px] w-[375px] overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <iframe

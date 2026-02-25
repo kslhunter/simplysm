@@ -5,7 +5,7 @@ import { getTailwindConfigDeps } from "../src/utils/tailwind-config-deps";
 const packagesDir = path.resolve(import.meta.dirname, "../..");
 
 describe("getTailwindConfigDeps", () => {
-  it("solid-demo tailwind config의 의존성에 solid tailwind config가 포함되어야 함", () => {
+  it("includes solid tailwind config in dependencies of solid-demo tailwind config", () => {
     const configPath = path.join(packagesDir, "solid-demo/tailwind.config.ts");
     const deps = getTailwindConfigDeps(configPath, ["@simplysm"]);
 
@@ -13,14 +13,14 @@ describe("getTailwindConfigDeps", () => {
     expect(deps).toContain(solidConfig);
   });
 
-  it("config 자신도 의존성에 포함되어야 함", () => {
+  it("includes the config itself in dependencies", () => {
     const configPath = path.join(packagesDir, "solid-demo/tailwind.config.ts");
     const deps = getTailwindConfigDeps(configPath, ["@simplysm"]);
 
     expect(deps).toContain(path.resolve(configPath));
   });
 
-  it("@simplysm/ 이외의 패키지(tailwindcss/colors 등)는 포함하지 않아야 함", () => {
+  it("excludes packages outside @simplysm/ (like tailwindcss/colors)", () => {
     const configPath = path.join(packagesDir, "solid/tailwind.config.ts");
     const deps = getTailwindConfigDeps(configPath, ["@simplysm"]);
 

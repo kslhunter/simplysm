@@ -8,7 +8,7 @@ describe("SignalHandler", () => {
     process.removeAllListeners("SIGTERM");
   });
 
-  it("종료 요청 시 waitForTermination이 resolve된다", async () => {
+  it("resolves waitForTermination when termination is requested", async () => {
     const handler = new SignalHandler();
 
     // 비동기로 종료 요청
@@ -17,7 +17,7 @@ describe("SignalHandler", () => {
     await expect(handler.waitForTermination()).resolves.toBeUndefined();
   });
 
-  it("isTerminated가 종료 상태를 반환한다", () => {
+  it("returns termination status correctly", () => {
     const handler = new SignalHandler();
 
     expect(handler.isTerminated()).toBe(false);
@@ -27,7 +27,7 @@ describe("SignalHandler", () => {
     expect(handler.isTerminated()).toBe(true);
   });
 
-  it("중복 종료 요청은 무시된다", () => {
+  it("ignores duplicate termination requests", () => {
     const handler = new SignalHandler();
 
     handler.requestTermination();

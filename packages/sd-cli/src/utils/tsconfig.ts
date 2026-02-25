@@ -31,22 +31,22 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
 /**
  * Type check environment
  * - node: remove DOM lib + add node types
- * - browser: node 타입 제거
- * - neutral: DOM lib 유지 + node 타입 추가 (Node/브라우저 공용 패키지용)
+ * - browser: remove node types
+ * - neutral: keep DOM lib + add node types (for Node/browser shared packages)
  */
 export type TypecheckEnv = "node" | "browser" | "neutral";
 
 /**
- * 패키지용 컴파일러 옵션 생성
+ * Create compiler options for package
  *
- * @param baseOptions 루트 tsconfig의 컴파일러 옵션
- * @param env 타입체크 환경 (node: DOM lib 제거 + node 타입 추가, browser: node 타입 제거)
- * @param packageDir 패키지 디렉토리 경로
+ * @param baseOptions - Compiler options from root tsconfig
+ * @param env - Type check environment (node: remove DOM lib + add node types, browser: remove node types)
+ * @param packageDir - Package directory path
  *
  * @remarks
- * types 옵션은 baseOptions.types를 무시하고 패키지별로 새로 구성한다.
- * 이는 루트 tsconfig의 전역 타입이 패키지 환경에 맞지 않을 수 있기 때문이다.
- * (예: browser 패키지에 node 타입이 포함되는 것을 방지)
+ * The types option ignores baseOptions.types and is newly constructed per package.
+ * This is because the global types in root tsconfig may not fit the package environment.
+ * (e.g., prevent node types from being included in browser packages)
  */
 export async function getCompilerOptionsForPackage(
   baseOptions: ts.CompilerOptions,
@@ -56,7 +56,7 @@ export async function getCompilerOptionsForPackage(
   const options = { ...baseOptions };
   const packageTypes = await getTypesFromPackageJson(packageDir);
 
-  // pnpm 환경: 패키지별 node_modules/@types와 루트 node_modules/@types 모두 검색
+  // pnpm environment: search both package-specific node_modules/@types and root node_modules/@types
   options.typeRoots = [
     path.join(packageDir, "node_modules", "@types"),
     path.join(process.cwd(), "node_modules", "@types"),
@@ -81,8 +81,8 @@ export async function getCompilerOptionsForPackage(
 }
 
 /**
- * 루트 tsconfig 파싱
- * @throws tsconfig.json을 읽거나 파싱할 수 없는 경우
+ * Parse root tsconfig
+ * @throws If unable to read or parse tsconfig.json
  */
 export function parseRootTsconfig(cwd: string): ts.ParsedCommandLine {
   const tsconfigPath = path.join(cwd, "tsconfig.json");
@@ -90,21 +90,21 @@ export function parseRootTsconfig(cwd: string): ts.ParsedCommandLine {
 
   if (configFile.error) {
     const message = ts.flattenDiagnosticMessageText(configFile.error.messageText, "\n");
-    throw new SdError(`tsconfig.json 읽기 실패: ${message}`);
+    throw new SdError(`Failed to read tsconfig.json: ${message}`);
   }
 
   const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, cwd);
 
   if (parsed.errors.length > 0) {
     const messages = parsed.errors.map((e) => ts.flattenDiagnosticMessageText(e.messageText, "\n"));
-    throw new SdError(`tsconfig.json 파싱 실패: ${messages.join("; ")}`);
+    throw new SdError(`Failed to parse tsconfig.json: ${messages.join("; ")}`);
   }
 
   return parsed;
 }
 
 /**
- * 패키지의 소스 파일 목록 가져오기 (tsconfig 기반)
+ * Get list of package source files (based on tsconfig)
  */
 export function getPackageSourceFiles(
   pkgDir: string,
@@ -115,12 +115,12 @@ export function getPackageSourceFiles(
 }
 
 /**
- * 패키지의 전체 파일 목록 가져오기 (src + tests 포함)
+ * Get full list of package files (including src + tests)
  */
 export function getPackageFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
   return parsedConfig.fileNames.filter((f) => {
     if (!pathIsChildPath(f, pkgDir)) return false;
-    // 패키지 루트 직속 파일(설정 파일)은 제외 — 기타 태스크에서 프로젝트 루트 파일과 동일하게 처리
+    // Exclude files directly in package root (config files) — treated same as project root files in other tasks
     const relative = path.relative(pkgDir, f);
     return path.dirname(relative) !== ".";
   });

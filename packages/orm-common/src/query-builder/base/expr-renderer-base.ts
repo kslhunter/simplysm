@@ -105,7 +105,7 @@ export abstract class ExprRendererBase {
   render(expr: Expr | WhereExpr): string {
     const method = this[expr.type as keyof this];
     if (typeof method !== "function") {
-      throw new Error(`알 수 없는 Expr type: ${expr.type}`);
+      throw new Error(`Unknown Expr type: ${expr.type}`);
     }
     return (method as (e: Expr | WhereExpr) => string).call(this, expr);
   }

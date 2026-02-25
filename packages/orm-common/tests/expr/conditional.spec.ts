@@ -6,8 +6,8 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./conditional.expected";
 
-describe("Expr - 조건 함수", () => {
-  describe("ifNull - null 대체", () => {
+describe("Expr - Conditional functions", () => {
+  describe("ifNull - null replacement", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -16,7 +16,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         nameOrDefault: {
           type: "ifNull",
@@ -28,13 +28,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.ifNull[dialect]);
     });
   });
 
-  describe("nullIf - 값이 같으면 null", () => {
+  describe("nullIf - null if value equals", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -43,7 +43,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         checkedAge: {
           type: "nullIf",
@@ -53,13 +53,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.nullIf[dialect]);
     });
   });
 
-  describe("if - 조건 분기", () => {
+  describe("if - conditional branching", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -68,7 +68,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         status: {
           type: "if",
@@ -83,7 +83,7 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.ifCond[dialect]);
     });
@@ -102,7 +102,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         ageGroup: {
           type: "switch",
@@ -129,13 +129,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.switchCase[dialect]);
     });
   });
 
-  describe("is - 조건 boolean 변환", () => {
+  describe("is - convert condition to boolean", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -144,7 +144,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         isActiveFlag: {
           type: "is",
@@ -157,13 +157,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.isExpr[dialect]);
     });
   });
 
-  describe("greatest - 최댓값", () => {
+  describe("greatest - maximum value", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -172,7 +172,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         maxVal: {
           type: "greatest",
@@ -184,13 +184,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.greatest[dialect]);
     });
   });
 
-  describe("least - 최솟값", () => {
+  describe("least - minimum value", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -199,7 +199,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         minVal: {
           type: "least",
@@ -211,13 +211,13 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.least[dialect]);
     });
   });
 
-  describe("switch - 모든 case/default가 undefined인 경우", () => {
+  describe("switch - all case/default are undefined", () => {
     it("에러를 발생시킨다", () => {
       const db = createTestDb();
       expect(() => {
@@ -233,7 +233,7 @@ describe("Expr - 조건 함수", () => {
     });
   });
 
-  describe("if - then과 else가 모두 undefined인 경우", () => {
+  describe("if - both then and else are undefined", () => {
     it("에러를 발생시킨다", () => {
       const db = createTestDb();
       expect(() => {
@@ -246,7 +246,7 @@ describe("Expr - 조건 함수", () => {
     });
   });
 
-  describe("ifNull - 3개 이상 인자로 COALESCE 생성", () => {
+  describe("ifNull - create COALESCE with 3+ arguments", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -255,7 +255,7 @@ describe("Expr - 조건 함수", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         firstValid: {
           type: "ifNull",
@@ -268,7 +268,7 @@ describe("Expr - 조건 함수", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.ifNullMultiple[dialect]);
     });

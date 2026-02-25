@@ -16,7 +16,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.eq(item.id, 1)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -31,7 +31,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereEq[dialect]);
     });
@@ -44,7 +44,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.not(expr.eq(item.id, 1))])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -62,7 +62,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereNotEq[dialect]);
     });
@@ -75,7 +75,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -90,7 +90,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereGt[dialect]);
     });
@@ -103,7 +103,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.gte(item.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -118,7 +118,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereGte[dialect]);
     });
@@ -131,7 +131,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.lt(item.age, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -146,7 +146,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereLt[dialect]);
     });
@@ -159,7 +159,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       .where((item) => [expr.lte(item.age, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -174,7 +174,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereLte[dialect]);
     });
@@ -193,7 +193,7 @@ describe("SELECT - WHERE - NULL 체크", () => {
       .where((item) => [expr.null(item.email)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -207,7 +207,7 @@ describe("SELECT - WHERE - NULL 체크", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereNull[dialect]);
     });
@@ -220,7 +220,7 @@ describe("SELECT - WHERE - NULL 체크", () => {
       .where((item) => [expr.not(expr.null(item.email))])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -237,7 +237,7 @@ describe("SELECT - WHERE - NULL 체크", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereNotNull[dialect]);
     });
@@ -256,7 +256,7 @@ describe("SELECT - WHERE - IN", () => {
       .where((item) => [expr.in(item.id, [1, 2, 3])])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -275,7 +275,7 @@ describe("SELECT - WHERE - IN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereIn[dialect]);
     });
@@ -288,7 +288,7 @@ describe("SELECT - WHERE - IN", () => {
       .where((item) => [expr.not(expr.in(item.id, [1, 2]))])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -309,7 +309,7 @@ describe("SELECT - WHERE - IN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereNotIn[dialect]);
     });
@@ -328,7 +328,7 @@ describe("SELECT - WHERE - LIKE", () => {
       .where((item) => [expr.like(item.name, "%홍%")])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -343,7 +343,7 @@ describe("SELECT - WHERE - LIKE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereLike[dialect]);
     });
@@ -356,7 +356,7 @@ describe("SELECT - WHERE - LIKE", () => {
       .where((item) => [expr.not(expr.like(item.name, "%테스트%"))])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -374,7 +374,7 @@ describe("SELECT - WHERE - LIKE", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereNotLike[dialect]);
     });
@@ -393,7 +393,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       .where((item) => [expr.eq(item.isActive, true), expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -413,7 +413,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereMultipleAnd[dialect]);
     });
@@ -426,7 +426,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       .where((item) => [expr.or([expr.eq(item.age, 20), expr.eq(item.age, 30)])])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -451,7 +451,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereOr[dialect]);
     });
@@ -464,7 +464,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       .where((item) => [expr.and([expr.gt(item.age, 20), expr.lt(item.age, 30)])])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -489,7 +489,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereAndExplicit[dialect]);
     });
@@ -535,7 +535,7 @@ describe("SELECT - WHERE - BETWEEN", () => {
       .where((item) => [expr.between(item.age, 20, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -551,7 +551,7 @@ describe("SELECT - WHERE - BETWEEN", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereBetween[dialect]);
     });
@@ -570,7 +570,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
       .where((item) => [expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)]))])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -595,7 +595,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereExists[dialect]);
     });
@@ -649,7 +649,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
       ])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -671,7 +671,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereInQuery[dialect]);
     });

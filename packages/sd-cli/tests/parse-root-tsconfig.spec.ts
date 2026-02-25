@@ -28,7 +28,7 @@ describe("parseRootTsconfig", () => {
     vi.restoreAllMocks();
   });
 
-  it("정상적인 tsconfig.json 파싱 성공", () => {
+  it("successfully parses valid tsconfig.json", () => {
     const cwd = "/project";
     const mockConfig = { compilerOptions: { strict: true } };
     const mockParsedConfig: ts.ParsedCommandLine = {
@@ -49,7 +49,7 @@ describe("parseRootTsconfig", () => {
     expect(result).toEqual(mockParsedConfig);
   });
 
-  it("tsconfig.json 읽기 실패 시 에러 throw", () => {
+  it("throws error when tsconfig.json fails to read", () => {
     const cwd = "/project";
     const mockError: ts.Diagnostic = {
       category: ts.DiagnosticCategory.Error,
@@ -65,7 +65,7 @@ describe("parseRootTsconfig", () => {
     expect(() => parseRootTsconfig(cwd)).toThrow("tsconfig.json 읽기 실패");
   });
 
-  it("tsconfig.json 파싱 실패 시 에러 throw", () => {
+  it("throws error when tsconfig.json fails to parse", () => {
     const cwd = "/project";
     const mockConfig = { compilerOptions: { strict: true } };
     const mockError: ts.Diagnostic = {

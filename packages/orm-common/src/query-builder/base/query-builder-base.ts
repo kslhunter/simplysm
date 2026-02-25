@@ -52,7 +52,7 @@ export abstract class QueryBuilderBase {
   build(def: QueryDef): QueryBuildResult {
     const method = this[def.type as keyof this];
     if (typeof method !== "function") {
-      throw new Error(`알 수 없는 QueryDef type: ${def.type}`);
+      throw new Error(`Unknown QueryDef type: ${def.type}`);
     }
     return (method as (d: QueryDef) => QueryBuildResult).call(this, def);
   }
@@ -136,7 +136,7 @@ export abstract class QueryBuilderBase {
   /** FROM 절 소스 Render */
   protected renderFrom(from: SelectQueryDef["from"]): string {
     if (from == null) {
-      throw new Error("FROM이 필요합니다.");
+      throw new Error("FROM clause is required.");
     }
     if (typeof from === "string") {
       return this.expr.wrap(from);

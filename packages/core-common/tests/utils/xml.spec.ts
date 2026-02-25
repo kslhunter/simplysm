@@ -5,14 +5,14 @@ describe("XmlConvert", () => {
   //#region parse
 
   describe("parse()", () => {
-    it("기본 XML을 파싱한다", () => {
+    it("Parses basic XML", () => {
       const xml = "<root><child>value</child></root>";
       const result = parse(xml) as Record<string, unknown>;
 
       expect(result).toHaveProperty("root");
     });
 
-    it("속성을 포함한 XML을 파싱한다", () => {
+    it("Parses XML with attributes", () => {
       const xml = '<root id="1"><child name="test">value</child></root>';
       const result = parse(xml) as {
         root: {
@@ -25,7 +25,7 @@ describe("XmlConvert", () => {
       expect(result.root.child[0].$.name).toBe("test");
     });
 
-    it("중첩된 XML을 파싱한다", () => {
+    it("Parses nested XML", () => {
       const xml = "<root><parent><child>value</child></parent></root>";
       const result = parse(xml) as {
         root: { parent: Array<{ child: string[] }> };
@@ -34,7 +34,7 @@ describe("XmlConvert", () => {
       expect(result.root.parent[0].child[0]).toBe("value");
     });
 
-    it("텍스트 노드를 _ 키로 파싱한다", () => {
+    it("Parses text nodes as _ key", () => {
       const xml = '<item id="1">text content</item>';
       const result = parse(xml) as {
         item: { $: { id: string }; _: string };
@@ -43,7 +43,7 @@ describe("XmlConvert", () => {
       expect(result.item._).toBe("text content");
     });
 
-    it("namespace prefix를 제거한다 (stripTagPrefix: true)", () => {
+    it("Removes namespace prefix (stripTagPrefix: true)", () => {
       const xml = "<ns:root><ns:child>value</ns:child></ns:root>";
       const result = parse(xml, { stripTagPrefix: true }) as {
         root: { child: string[] };
@@ -53,21 +53,21 @@ describe("XmlConvert", () => {
       expect(result.root).toHaveProperty("child");
     });
 
-    it("namespace prefix를 유지한다 (기본)", () => {
+    it("Preserves namespace prefix (default)", () => {
       const xml = "<ns:root><ns:child>value</ns:child></ns:root>";
       const result = parse(xml) as Record<string, unknown>;
 
       expect(result).toHaveProperty("ns:root");
     });
 
-    it("여러 개의 같은 태그를 배열로 파싱한다", () => {
+    it("Parses multiple same tags as array", () => {
       const xml = "<root><item>1</item><item>2</item><item>3</item></root>";
       const result = parse(xml) as { root: { item: string[] } };
 
       expect(result.root.item).toEqual(["1", "2", "3"]);
     });
 
-    it("속성의 namespace prefix는 제거하지 않는다", () => {
+    it("Does not remove namespace prefix from attributes", () => {
       const xml = '<ns:root xmlns:ns="http://example.com"><ns:child>value</ns:child></ns:root>';
       const result = parse(xml, { stripTagPrefix: true }) as {
         root: { $: Record<string, string>; child: string[] };
@@ -82,7 +82,7 @@ describe("XmlConvert", () => {
   //#region stringify
 
   describe("stringify()", () => {
-    it("객체를 XML로 직렬화한다", () => {
+    it("Serializes object to XML", () => {
       const obj = { root: { child: "value" } };
       const result = stringify(obj);
 
@@ -91,7 +91,7 @@ describe("XmlConvert", () => {
       expect(result).toContain("</root>");
     });
 
-    it("속성을 포함한 객체를 직렬화한다", () => {
+    it("Serializes object with attributes", () => {
       const obj = { root: { $: { id: "1" }, child: "value" } };
       const result = stringify(obj);
 
@@ -99,7 +99,7 @@ describe("XmlConvert", () => {
       expect(result).toContain("<child>value</child>");
     });
 
-    it("배열을 여러 태그로 직렬화한다", () => {
+    it("Serializes array as multiple tags", () => {
       const obj = { root: { item: ["1", "2", "3"] } };
       const result = stringify(obj);
 
@@ -108,7 +108,7 @@ describe("XmlConvert", () => {
       expect(result).toContain("<item>3</item>");
     });
 
-    it("텍스트 노드를 _ 키로 직렬화한다", () => {
+    it("Serializes text node as _ key", () => {
       const obj = { item: { $: { id: "1" }, _: "text content" } };
       const result = stringify(obj);
 
@@ -116,7 +116,7 @@ describe("XmlConvert", () => {
       expect(result).toContain("text content");
     });
 
-    it("중첩된 객체를 직렬화한다", () => {
+    it("Serializes nested object", () => {
       const obj = { root: { parent: { child: "value" } } };
       const result = stringify(obj);
 
@@ -131,7 +131,7 @@ describe("XmlConvert", () => {
   //#region roundtrip
 
   describe("parse/stringify roundtrip", () => {
-    it("parse 후 stringify하면 구조가 유지된다", () => {
+    it("Structure preserved after parse then stringify", () => {
       const xml = "<root><child>value</child></root>";
       const parsed = parse(xml);
       const result = stringify(parsed);

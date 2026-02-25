@@ -6,7 +6,7 @@ import { Company } from "../setup/models/Company";
 import { expr } from "../../src/expr/expr";
 
 describe("getResultMeta", () => {
-  it("기본 테이블", () => {
+  it("Basic table", () => {
     const db = createTestDb();
     const meta = db.user().getResultMeta();
 
@@ -24,7 +24,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("join (1:N 배열)", () => {
+  it("join (1:N array)", () => {
     const db = createTestDb();
     const meta = db
       .user()
@@ -53,7 +53,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("joinSingle (N:1 단일)", () => {
+  it("joinSingle (N:1 single)", () => {
     const db = createTestDb();
     const meta = db
       .post()
@@ -82,7 +82,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("다단계 join", () => {
+  it("Multi-level join", () => {
     const db = createTestDb();
     const meta = db
       .post()
@@ -122,7 +122,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("다중 join (배열 + 단일)", () => {
+  it("Multiple join (array + single)", () => {
     const db = createTestDb();
     const meta = db
       .user()
@@ -158,7 +158,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("select로 커스텀 columns", () => {
+  it("Custom columns with select", () => {
     const db = createTestDb();
     const meta = db
       .user()
@@ -235,7 +235,7 @@ describe("getResultMeta", () => {
     });
   });
 
-  it("다단계 include", () => {
+  it("Multi-level include", () => {
     const db = createTestDb();
     const meta = db
       .post()

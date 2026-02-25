@@ -7,10 +7,10 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./procedure-builder.expected";
 
 describe("DDL - Procedure Builder", () => {
-  describe("기본 프로시저 (이름만)", () => {
+  describe("basic procedure (name only)", () => {
     const proc = Procedure("TestProc");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta).toEqual({
         name: "TestProc",
         description: undefined,
@@ -23,10 +23,10 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("description 지정", () => {
-    const proc = Procedure("TestProc").description("테스트 프로시저");
+  describe("description specified", () => {
+    const proc = Procedure("TestProc").description("Test procedure");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta).toEqual({
         name: "TestProc",
         description: "테스트 프로시저",
@@ -39,10 +39,10 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("database 지정", () => {
+  describe("database specified", () => {
     const proc = Procedure("TestProc").database("CustomDb");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta).toEqual({
         name: "TestProc",
         description: undefined,
@@ -55,10 +55,10 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("schema 지정", () => {
+  describe("schema specified", () => {
     const proc = Procedure("TestProc").schema("CustomSchema");
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta).toEqual({
         name: "TestProc",
         description: undefined,
@@ -71,10 +71,10 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("params 지정 (단일 파라미터)", () => {
+  describe("params specified (single parameter)", () => {
     const proc = Procedure("TestProc").params((c) => ({ id: c.bigint() }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta.name).toBe("TestProc");
       expect(proc.meta.params).toBeDefined();
       expect(Object.keys(proc.meta.params!)).toEqual(["id"]);
@@ -82,14 +82,14 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("params 지정 (여러 파라미터)", () => {
+  describe("params specified (multiple parameters)", () => {
     const proc = Procedure("TestProc").params((c) => ({
       id: c.bigint(),
       name: c.varchar(100),
       isActive: c.boolean(),
     }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta.name).toBe("TestProc");
       expect(proc.meta.params).toBeDefined();
       expect(Object.keys(proc.meta.params!)).toEqual(["id", "name", "isActive"]);
@@ -99,10 +99,10 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("returns 지정 (단일 반환)", () => {
+  describe("returns specified (single return)", () => {
     const proc = Procedure("TestProc").returns((c) => ({ id: c.bigint() }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta.name).toBe("TestProc");
       expect(proc.meta.returns).toBeDefined();
       expect(Object.keys(proc.meta.returns!)).toEqual(["id"]);
@@ -110,14 +110,14 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("returns 지정 (여러 반환)", () => {
+  describe("returns specified (multiple returns)", () => {
     const proc = Procedure("TestProc").returns((c) => ({
       id: c.bigint(),
       name: c.varchar(100),
       email: c.varchar(200).nullable(),
     }));
 
-    it("메타 데이터 검증", () => {
+    it("should validate metadata", () => {
       expect(proc.meta.name).toBe("TestProc");
       expect(proc.meta.returns).toBeDefined();
       expect(Object.keys(proc.meta.returns!)).toEqual(["id", "name", "email"]);
@@ -128,7 +128,7 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("body 지정 + 기본 DDL 생성", () => {
+  describe("body specified + basic DDL generation", () => {
     const proc = Procedure("TestProc")
       .database("TestDb")
       .schema("TestSchema")
@@ -137,7 +137,7 @@ describe("DDL - Procedure Builder", () => {
     const db = createTestDb();
     const def = db.getCreateProcQueryDef(proc);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createProc",
         procedure: { database: "TestDb", schema: "TestSchema", name: "TestProc" },
@@ -147,29 +147,29 @@ describe("DDL - Procedure Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.basicProc[dialect]);
     });
   });
 
-  describe("복합 옵션 (params + returns + body)", () => {
+  describe("combined options (params + returns + body)", () => {
     const GetUserById = Procedure("GetUserById")
       .database("TestDb")
       .schema("TestSchema")
-      .description("ID로 사용자 조회")
+      .description("Get user by ID")
       .params((c) => ({ userId: c.bigint() }))
       .returns((c) => ({
         id: c.bigint(),
         name: c.varchar(100),
         email: c.varchar(200).nullable(),
       }))
-      .body("-- DBMS별 맞는 쿼리 작성 --");
+      .body("-- Write the correct query for each DBMS --");
 
     const db = createTestDb();
     const def = db.getCreateProcQueryDef(GetUserById);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createProc",
         procedure: { database: "TestDb", schema: "TestSchema", name: "GetUserById" },
@@ -198,18 +198,18 @@ describe("DDL - Procedure Builder", () => {
             nullable: true,
           },
         ],
-        query: "-- DBMS별 맞는 쿼리 작성 --",
+        query: "-- Write the correct query for each DBMS --",
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.complexProc[dialect]);
     });
   });
 
-  describe("체이닝 메서드 순서", () => {
-    // 메서드 체이닝 순서가 달라도 동일한 결과
+  describe("method chaining order", () => {
+    // Same result even with different method chaining order
     const proc1 = Procedure("TestProc")
       .params((c) => ({ id: c.bigint() }))
       .database("TestDb")
@@ -222,8 +222,8 @@ describe("DDL - Procedure Builder", () => {
       .params((c) => ({ id: c.bigint() }))
       .body("SELECT 1");
 
-    it("메타 데이터 동일성 검증", () => {
-      // params는 객체이므로 깊은 비교 필요
+    it("should validate metadata consistency", () => {
+      // params is an object so deep comparison is needed
       expect(proc1.meta.name).toBe(proc2.meta.name);
       expect(proc1.meta.database).toBe(proc2.meta.database);
       expect(proc1.meta.schema).toBe(proc2.meta.schema);

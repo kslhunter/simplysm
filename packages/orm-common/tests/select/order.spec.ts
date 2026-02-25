@@ -15,7 +15,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => item.id)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -24,7 +24,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderAscDefault[dialect]);
     });
@@ -37,7 +37,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => item.id, "ASC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -46,7 +46,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderAscExplicit[dialect]);
     });
@@ -59,7 +59,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => item.id, "DESC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -68,7 +68,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderDesc[dialect]);
     });
@@ -86,7 +86,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => item.id, "DESC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -98,7 +98,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderMultiple[dialect]);
     });
@@ -115,7 +115,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => expr.length(item.name), "DESC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -124,7 +124,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderExpression[dialect]);
     });
@@ -142,7 +142,7 @@ describe("SELECT - ORDER BY", () => {
       .orderBy((item) => item.name, "ASC")
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -155,7 +155,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderSelectCombo[dialect]);
     });
@@ -169,7 +169,7 @@ describe("SELECT - ORDER BY", () => {
       .limit(0, 10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -179,7 +179,7 @@ describe("SELECT - ORDER BY", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderLimitCombo[dialect]);
     });

@@ -118,7 +118,7 @@ describe("runTypecheck", () => {
     process.cwd = originalCwd;
   });
 
-  it("타입체크할 파일이 없으면 조기 종료", async () => {
+  it("exits early when no files to typecheck", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -134,7 +134,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("tsconfig.json 로드 실패 시 exitCode를 1로 설정", async () => {
+  it("sets exitCode to 1 when tsconfig.json fails to load", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       error: {
         category: ts.DiagnosticCategory.Error,
@@ -149,7 +149,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBe(1);
   });
 
-  it("tsconfig.json 파싱 실패 시 exitCode를 1로 설정", async () => {
+  it("sets exitCode to 1 when tsconfig.json fails to parse", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -167,7 +167,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBe(1);
   });
 
-  it("targets 옵션으로 파일 필터링", async () => {
+  it("filters files using targets option", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -198,7 +198,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("targets 옵션으로 파일 필터링 (tests 포함)", async () => {
+  it("filters files using targets option (including tests)", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -247,7 +247,7 @@ describe("runTypecheck", () => {
     }
   });
 
-  it("sd.config.ts 로드 실패 시 기본값 사용하여 계속 진행", async () => {
+  it("continues with default value when sd.config.ts fails to load", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -270,7 +270,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("sd.config.ts의 default export가 함수가 아닌 경우 기본값 사용", async () => {
+  it("uses default value when default export is not a function", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -299,7 +299,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("sd.config.ts에 default export가 없는 경우 기본값 사용", async () => {
+  it("uses default value when no default export in sd.config.ts", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -328,7 +328,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("복수 패키지 타입체크", async () => {
+  it("typecheck multiple packages", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({
       config: {},
     });
@@ -355,7 +355,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("타입체크 에러 발생 시 exitCode를 1로 설정", async () => {
+  it("sets exitCode to 1 when typecheck errors occur", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
     vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
@@ -398,7 +398,7 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBe(1);
   });
 
-  it("non-package 파일(tests/ 등)이 포함된 경우 기타 task 생성", async () => {
+  it("creates other task when non-package files (like tests/) are included", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
     vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
@@ -460,7 +460,7 @@ describe("runTypecheck", () => {
     expect(pkgCall).toBeDefined();
   });
 
-  it("packages/ 파일만 있으면 기타 task 생성 안 함", async () => {
+  it("does not create other task when only packages/ files exist", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
     vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
@@ -518,7 +518,7 @@ describe("executeTypecheck", () => {
     process.cwd = originalCwd;
   });
 
-  it("에러가 없으면 성공 결과를 반환", async () => {
+  it("returns success result when no errors", async () => {
     const { executeTypecheck } = await import("../src/commands/typecheck");
 
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: { compilerOptions: {} } });
@@ -543,7 +543,7 @@ describe("executeTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("에러가 있으면 실패 결과를 반환하되 exitCode 설정하지 않음", async () => {
+  it("returns failure result without setting exitCode when errors exist", async () => {
     const { executeTypecheck } = await import("../src/commands/typecheck");
     const { Worker } = await import("@simplysm/core-node");
 
@@ -592,7 +592,7 @@ describe("executeTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("tsconfig.json 로드 실패 시 실패 결과를 반환", async () => {
+  it("returns failure result when tsconfig.json fails to load", async () => {
     const { executeTypecheck } = await import("../src/commands/typecheck");
 
     vi.mocked(ts.readConfigFile).mockReturnValue({

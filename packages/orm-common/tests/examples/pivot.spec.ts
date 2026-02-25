@@ -7,7 +7,7 @@ import "../setup/test-utils";
 import * as expected from "./pivot.expected";
 
 describe("SELECT - PIVOT (groupBy + switch)", () => {
-  describe("기본 (SUM)", () => {
+  describe("Basic (SUM)", () => {
     const db = createTestDb();
     const def = db
       .sales()
@@ -20,7 +20,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -62,7 +62,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotSum[dialect]);
     });
@@ -81,7 +81,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -123,7 +123,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotCount[dialect]);
     });
@@ -142,7 +142,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -184,7 +184,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotAvg[dialect]);
     });
@@ -203,7 +203,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -245,7 +245,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotMax[dialect]);
     });
@@ -264,7 +264,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -306,13 +306,13 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotMin[dialect]);
     });
   });
 
-  describe("3개 이상의 피벗 값", () => {
+  describe("3 or more pivot values", () => {
     const db = createTestDb();
     const def = db
       .sales()
@@ -327,7 +327,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -395,13 +395,13 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotMultipleYears[dialect]);
     });
   });
 
-  describe("문자열 피벗 컬럼", () => {
+  describe("String pivot column", () => {
     const db = createTestDb();
     const def = db
       .sales()
@@ -414,7 +414,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -456,7 +456,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotStringColumn[dialect]);
     });
@@ -476,7 +476,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -525,7 +525,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.pivotWithWhere[dialect]);
     });

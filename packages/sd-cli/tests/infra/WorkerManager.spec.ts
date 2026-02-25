@@ -17,7 +17,7 @@ describe("WorkerManager", () => {
     vi.clearAllMocks();
   });
 
-  it("Worker를 생성하고 ID로 조회할 수 있다", () => {
+  it("creates a Worker and retrieves it by ID", () => {
     const manager = new WorkerManager();
 
     const worker = manager.create("test-worker", "/path/to/worker.ts");
@@ -26,13 +26,13 @@ describe("WorkerManager", () => {
     expect(manager.get("test-worker")).toBe(worker);
   });
 
-  it("존재하지 않는 Worker 조회 시 undefined 반환", () => {
+  it("returns undefined when retrieving a non-existent Worker", () => {
     const manager = new WorkerManager();
 
     expect(manager.get("nonexistent")).toBeUndefined();
   });
 
-  it("모든 Worker를 종료할 수 있다", async () => {
+  it("terminates all Workers", async () => {
     const manager = new WorkerManager();
     const worker1 = manager.create("worker1", "/path/to/worker.ts");
     const worker2 = manager.create("worker2", "/path/to/worker.ts");
@@ -44,7 +44,7 @@ describe("WorkerManager", () => {
     expect(manager.size).toBe(0);
   });
 
-  it("특정 Worker만 종료할 수 있다", async () => {
+  it("terminates a specific Worker only", async () => {
     const manager = new WorkerManager();
     const worker1 = manager.create("worker1", "/path/to/worker.ts");
     const worker2 = manager.create("worker2", "/path/to/worker.ts");
@@ -57,13 +57,13 @@ describe("WorkerManager", () => {
     expect(manager.get("worker2")).toBe(worker2);
   });
 
-  it("존재하지 않는 Worker 종료 시 에러 없이 처리된다", async () => {
+  it("handles terminating a non-existent Worker without error", async () => {
     const manager = new WorkerManager();
 
     await expect(manager.terminate("nonexistent")).resolves.toBeUndefined();
   });
 
-  it("관리 중인 Worker 수를 조회할 수 있다", () => {
+  it("retrieves the count of managed Workers", () => {
     const manager = new WorkerManager();
 
     expect(manager.size).toBe(0);
@@ -75,7 +75,7 @@ describe("WorkerManager", () => {
     expect(manager.size).toBe(2);
   });
 
-  it("모든 Worker ID 목록을 조회할 수 있다", () => {
+  it("retrieves list of all Worker IDs", () => {
     const manager = new WorkerManager();
     manager.create("worker1", "/path/to/worker.ts");
     manager.create("worker2", "/path/to/worker.ts");
@@ -85,7 +85,7 @@ describe("WorkerManager", () => {
     expect(ids).toEqual(["worker1", "worker2"]);
   });
 
-  it("같은 ID로 Worker를 생성하면 기존 Worker를 덮어쓴다", () => {
+  it("overwrites existing Worker when creating with the same ID", () => {
     const manager = new WorkerManager();
     const worker1 = manager.create("same-id", "/path/to/worker1.ts");
     const worker2 = manager.create("same-id", "/path/to/worker2.ts");

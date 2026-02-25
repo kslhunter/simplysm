@@ -13,8 +13,8 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";
 import * as expected from "./sampling.expected";
 
-describe("EXAMPLE - 랜덤 샘플링", () => {
-  describe("기본 샘플링 (ORDER BY RANDOM + TOP)", () => {
+describe("EXAMPLE - Random sampling", () => {
+  describe("Basic sampling (ORDER BY RANDOM + TOP)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -22,7 +22,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       .top(5)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -32,13 +32,13 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.samplingBasic[dialect]);
     });
   });
 
-  describe("조건부 샘플링 (WHERE + ORDER BY RANDOM + TOP)", () => {
+  describe("Conditional sampling (WHERE + ORDER BY RANDOM + TOP)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -47,7 +47,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       .top(3)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -64,13 +64,13 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.samplingWithWhere[dialect]);
     });
   });
 
-  describe("컬럼 선택과 샘플링", () => {
+  describe("Column selection with sampling", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -82,7 +82,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       .top(10)
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -96,7 +96,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.samplingWithSelect[dialect]);
     });

@@ -12,7 +12,7 @@ describe("filterPackagesByTargets", () => {
     "empty-pkg": undefined,
   };
 
-  it("빈 targets일 때 scripts 제외한 모든 패키지 반환", () => {
+  it("returns all packages except scripts when targets is empty", () => {
     const result = filterPackagesByTargets(mockPackages, []);
 
     expect(Object.keys(result)).toHaveLength(4);
@@ -24,13 +24,13 @@ describe("filterPackagesByTargets", () => {
     expect(result["empty-pkg"]).toBeUndefined();
   });
 
-  it("scripts 타겟은 targets에 지정해도 제외", () => {
+  it("excludes scripts target even when specified in targets", () => {
     const result = filterPackagesByTargets(mockPackages, ["claude"]);
 
     expect(Object.keys(result)).toHaveLength(0);
   });
 
-  it("특정 패키지만 필터링", () => {
+  it("filters specific packages only", () => {
     const result = filterPackagesByTargets(mockPackages, ["core-common", "core-node"]);
 
     expect(Object.keys(result)).toHaveLength(2);
@@ -38,32 +38,32 @@ describe("filterPackagesByTargets", () => {
     expect(result["core-node"]).toEqual({ target: "node" });
   });
 
-  it("존재하지 않는 패키지 지정 시 빈 결과", () => {
+  it("returns empty result when specifying non-existent package", () => {
     const result = filterPackagesByTargets(mockPackages, ["non-existent"]);
 
     expect(Object.keys(result)).toHaveLength(0);
   });
 
-  it("undefined 패키지 설정은 무시", () => {
+  it("ignores undefined package config", () => {
     const result = filterPackagesByTargets(mockPackages, ["empty-pkg"]);
 
     expect(Object.keys(result)).toHaveLength(0);
   });
 
-  it("client 타겟 패키지 필터링", () => {
+  it("filters client target packages", () => {
     const result = filterPackagesByTargets(mockPackages, ["solid-demo"]);
 
     expect(Object.keys(result)).toHaveLength(1);
     expect(result["solid-demo"]).toEqual({ target: "client", server: 3000 });
   });
 
-  it("빈 packages 객체", () => {
+  it("handles empty packages object", () => {
     const result = filterPackagesByTargets({}, []);
 
     expect(Object.keys(result)).toHaveLength(0);
   });
 
-  it("모든 패키지가 scripts인 경우", () => {
+  it("handles case where all packages are scripts", () => {
     const scriptsOnly: Record<string, SdPackageConfig> = {
       pkg1: { target: "scripts" },
       pkg2: { target: "scripts" },

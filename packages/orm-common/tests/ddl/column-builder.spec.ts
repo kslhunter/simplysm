@@ -7,9 +7,9 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./column-builder.expected";
 
 describe("DDL - Column Builder", () => {
-  //#region ========== 데이터 타입 기본 테스트 ==========
+  //#region ========== Basic Data Type Tests ==========
 
-  describe("int 타입", () => {
+  describe("int type", () => {
     const c = createColumnFactory();
     const column = c.int();
 
@@ -20,7 +20,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -34,13 +34,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.intType[dialect]);
     });
   });
 
-  describe("bigint 타입", () => {
+  describe("bigint type", () => {
     const c = createColumnFactory();
     const column = c.bigint();
 
@@ -51,7 +51,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -65,13 +65,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.bigintType[dialect]);
     });
   });
 
-  describe("float 타입", () => {
+  describe("float type", () => {
     const c = createColumnFactory();
     const column = c.float();
 
@@ -82,7 +82,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "Product" },
@@ -96,13 +96,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.floatType[dialect]);
     });
   });
 
-  describe("double 타입", () => {
+  describe("double type", () => {
     const c = createColumnFactory();
     const column = c.double();
 
@@ -113,7 +113,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "Product" },
@@ -127,13 +127,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.doubleType[dialect]);
     });
   });
 
-  describe("decimal 타입", () => {
+  describe("decimal type", () => {
     const c = createColumnFactory();
     const column = c.decimal(10, 2);
 
@@ -144,7 +144,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "Product" },
@@ -158,13 +158,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.decimalType[dialect]);
     });
   });
 
-  describe("varchar 타입", () => {
+  describe("varchar type", () => {
     const c = createColumnFactory();
     const column = c.varchar(100);
 
@@ -175,7 +175,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -189,13 +189,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.varcharType[dialect]);
     });
   });
 
-  describe("char 타입", () => {
+  describe("char type", () => {
     const c = createColumnFactory();
     const column = c.char(10);
 
@@ -206,7 +206,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -220,13 +220,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.charType[dialect]);
     });
   });
 
-  describe("text 타입", () => {
+  describe("text type", () => {
     const c = createColumnFactory();
     const column = c.text();
 
@@ -237,7 +237,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
@@ -251,13 +251,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.textType[dialect]);
     });
   });
 
-  describe("binary 타입", () => {
+  describe("binary type", () => {
     const c = createColumnFactory();
     const column = c.binary();
 
@@ -268,7 +268,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "File" },
@@ -282,13 +282,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.binaryType[dialect]);
     });
   });
 
-  describe("boolean 타입", () => {
+  describe("boolean type", () => {
     const c = createColumnFactory();
     const column = c.boolean();
 
@@ -299,7 +299,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -313,13 +313,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.booleanType[dialect]);
     });
   });
 
-  describe("datetime 타입", () => {
+  describe("datetime type", () => {
     const c = createColumnFactory();
     const column = c.datetime();
 
@@ -330,7 +330,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -344,13 +344,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.datetimeType[dialect]);
     });
   });
 
-  describe("date 타입", () => {
+  describe("date type", () => {
     const c = createColumnFactory();
     const column = c.date();
 
@@ -361,7 +361,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -375,13 +375,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateType[dialect]);
     });
   });
 
-  describe("time 타입", () => {
+  describe("time type", () => {
     const c = createColumnFactory();
     const column = c.time();
 
@@ -392,7 +392,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "Schedule" },
@@ -406,13 +406,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.timeType[dialect]);
     });
   });
 
-  describe("uuid 타입", () => {
+  describe("uuid type", () => {
     const c = createColumnFactory();
     const column = c.uuid();
 
@@ -423,7 +423,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -437,7 +437,7 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.uuidType[dialect]);
     });
@@ -445,9 +445,9 @@ describe("DDL - Column Builder", () => {
 
   //#endregion
 
-  //#region ========== 메서드 조합 테스트 ==========
+  //#region ========== Method Combination Tests ==========
 
-  describe("nullable 지정", () => {
+  describe("nullable specified", () => {
     const c = createColumnFactory();
     const column = c.varchar(100).nullable();
 
@@ -458,7 +458,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -472,13 +472,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.nullableColumn[dialect]);
     });
   });
 
-  describe("default 지정", () => {
+  describe("default specified", () => {
     const c = createColumnFactory();
     const column = c.int().default(0);
 
@@ -489,7 +489,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -503,13 +503,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.defaultColumn[dialect]);
     });
   });
 
-  describe("autoIncrement 지정", () => {
+  describe("autoIncrement specified", () => {
     const c = createColumnFactory();
     const column = c.bigint().autoIncrement();
 
@@ -520,7 +520,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -534,13 +534,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.autoIncrementColumn[dialect]);
     });
   });
 
-  describe("description 지정", () => {
+  describe("description specified", () => {
     const c = createColumnFactory();
     const column = c.varchar(100).description("사용자 이름");
 
@@ -551,7 +551,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -565,13 +565,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.descriptionColumn[dialect]);
     });
   });
 
-  describe("nullable + default 조합", () => {
+  describe("nullable + default combination", () => {
     const c = createColumnFactory();
     const column = c.varchar(50).nullable().default("Unknown");
 
@@ -582,7 +582,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -596,13 +596,13 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.nullableDefaultColumn[dialect]);
     });
   });
 
-  describe("autoIncrement + description 조합", () => {
+  describe("autoIncrement + description combination", () => {
     const c = createColumnFactory();
     const column = c.bigint().autoIncrement().description("Primary Key");
 
@@ -613,7 +613,7 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -627,7 +627,7 @@ describe("DDL - Column Builder", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.autoIncrementDescColumn[dialect]);
     });

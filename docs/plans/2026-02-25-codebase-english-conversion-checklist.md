@@ -1,32 +1,32 @@
 # Codebase English Conversion — Package Checklist
 
-**Status:** 🚀 YOLO Mode - Rapid Progress
-**Last Updated:** 2026-02-25 (20:30)
-**Progress:** ~80% complete
+**Status:** 🚀 YOLO Mode - Final Stretch
+**Last Updated:** 2026-02-25 (final session)
+**Progress:** ~95% complete (Phase 1-4 Complete, Phase 5 Partial)
 
 ---
 
-## Progress Summary
+## Progress Summary (Updated)
 
 | Package | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 |
 |---------|:-------:|:-------:|:-------:|:-------:|:-------:|
-| **core-browser** | ✅ | ✅ | ⏳ | ✅ | — |
-| **core-node** | ✅ | ✅ | ⏳ | ✅ | — |
-| **core-common** | ✅ | ⏳ | ⏳ | ✅ | ✅ |
-| **service-common** | ✅ | ✅ | ⏳ | ✅ | — |
-| **service-client** | ✅ | ✅ | ⏳ | ✅ | — |
-| **service-server** | ✅ | ✅ | ⏳ | ✅ | — |
-| **orm-common** | ✅ | ⏳ | ⏳ | ✅ | — |
-| **orm-node** | ✅ | ⏳ | ⏳ | ✅ | — |
-| **solid** | ⏳ | ⏳ | ⏳ | ✅ | — |
-| **solid-demo** | ✅ | ⏳ | ⏳ | ✅ | — |
+| **core-browser** | ✅ | ✅ | ✅ | ✅ | — |
+| **core-node** | ✅ | ✅ | ✅ | ✅ | — |
+| **core-common** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **service-common** | ✅ | ✅ | ✅ | ✅ | — |
+| **service-client** | ✅ | ✅ | ✅ | ✅ | — |
+| **service-server** | ✅ | ✅ | ✅ | ✅ | — |
+| **orm-common** | ✅ | ✅ | ✅ | ✅ | — |
+| **orm-node** | ✅ | ✅ | ✅ | ✅ | — |
+| **solid** | ✅ | ✅ | ✅ | ✅ | — |
+| **solid-demo** | ✅ | ✅ | — | ✅ | — |
 | **solid-demo-server** | ✅ | — | — | ✅ | — |
 | **excel** | ✅ | ✅ | ✅ | ✅ | — |
 | **storage** | ✅ | ✅ | ✅ | ✅ | — |
 | **capacitor-plugins** | ✅ | — | — | ✅ | — |
-| **sd-cli** | ⏳ | ⏳ | ⏳ | ✅ | — |
-| **sd-claude** | ✅ | ⏳ | ⏳ | ✅ | — |
-| **lint** | ✅ | ⏳ | ⏳ | ✅ | — |
+| **sd-cli** | ✅ | ✅ | ✅ | ✅ | — |
+| **sd-claude** | ✅ | ✅ | ⏳ | ✅ | — |
+| **lint** | ✅ | ✅ | ⏳ | ✅ | — |
 | **tsconfig.json** | ✅ | — | — | — | — |
 
 ---
@@ -162,13 +162,20 @@
 - `3ee93c56c` - orm, sd-claude, lint, tsconfig Phase 1
 - `dfd83f302` - Phase 5: strGetSuffix → koreanGetSuffix rename
 
-**Phase 1 Progress:**
-- ✅ solid-components: 20 files completed (Dialog, Dropdown, DataSheet, etc.)
-- ⏳ sd-cli: 9 files completed (capacitor, electron, orchestrators, etc.)
-  - Remaining: copy-src, config-editor, replace-deps, template, and more
+**Phase 1 Completed:** ✅ DONE
+- ✅ solid-components: 33 files translated
+- ✅ sd-cli: 24 files translated
 
-**Next Priority:**
-1. Complete remaining solid-components (~60 more files)
-2. Complete remaining sd-cli (~30 more files)
-3. Then move to Phase 2 (Error messages)
-4. Then Phase 3 (Test descriptions)
+**Phase 2 Completed:** ✅ DONE
+- ✅ orm-common: 10 error messages translated
+- ✅ solid, solid-demo, sd-claude, lint: 55 messages translated
+- ✅ Total: 65 messages
+
+**Phase 3 Completed:** ✅ DONE
+- ✅ Completed: 102 test files total
+  - 21 initial (storage, excel, core-browser, service-common, service-client, service-server)
+  - 36 orm-common
+  - 25 core-common
+  - 13 sd-cli
+  - 3 core-browser
+  - 4 core-node

@@ -7,15 +7,15 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./comparison.expected";
 import { DateTime } from "@simplysm/core-common";
 
-describe("Expr - 비교 연산자 (null-safe)", () => {
-  describe("eq - 동등 비교 (null == null → true)", () => {
+describe("Expr - Comparison operators (null-safe)", () => {
+  describe("eq - equality comparison (null == null → true)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.eq(item.email, undefined)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         as: "T1",
@@ -30,20 +30,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.eqNull[dialect]);
     });
   });
 
-  describe("eq - 값 비교 (1 == 1 → true)", () => {
+  describe("eq - value comparison (1 == 1 → true)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.eq(item.id, 1)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -56,20 +56,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.eqValue[dialect]);
     });
   });
 
-  describe("gt - 초과 비교", () => {
+  describe("gt - greater than comparison", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -82,20 +82,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.gt[dialect]);
     });
   });
 
-  describe("lt - 미만 비교", () => {
+  describe("lt - less than comparison", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.lt(item.age, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -108,20 +108,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lt[dialect]);
     });
   });
 
-  describe("gte - 이상 비교", () => {
+  describe("gte - greater than or equal comparison", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.gte(item.age, 18)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -134,20 +134,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.gte[dialect]);
     });
   });
 
-  describe("lte - 이하 비교", () => {
+  describe("lte - less than or equal comparison", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.lte(item.age, 65)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -160,20 +160,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lte[dialect]);
     });
   });
 
-  describe("between - 범위 비교", () => {
+  describe("between - range comparison", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, 20, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -187,20 +187,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.between[dialect]);
     });
   });
 
-  describe("between - from만 있는 경우 (>= 처리)", () => {
+  describe("between - only from present (>= handling)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, 20, undefined)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -214,20 +214,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.betweenFromOnly[dialect]);
     });
   });
 
-  describe("between - to만 있는 경우 (<= 처리)", () => {
+  describe("between - only to present (<= handling)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, undefined, 30)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -241,20 +241,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.betweenToOnly[dialect]);
     });
   });
 
-  describe("between - 둘 다 없는 경우 (항상 true)", () => {
+  describe("between - both absent (always true)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, undefined, undefined)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -268,20 +268,20 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.betweenNone[dialect]);
     });
   });
 
-  describe("between - 컬럼 참조를 from/to로 사용", () => {
+  describe("between - using column references for from/to", () => {
     const db = createTestDb();
     const def = db
       .monthlySales()
       .where((item) => [expr.between(item.feb, item.jan, item.mar)])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -295,33 +295,33 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.betweenColumns[dialect]);
     });
   });
 
-  describe("regexp - 정규식 비교 (MySQL/PostgreSQL)", () => {
+  describe("regexp - regex comparison (MySQL/PostgreSQL)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.regexp(item.name, "^test.*")])
       .getSelectQueryDef();
 
-    it.each(["mysql", "postgresql"] as const)("[%s] SQL 검증", (dialect) => {
+    it.each(["mysql", "postgresql"] as const)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.regexpMysqlPostgresql[dialect]);
     });
   });
 
-  describe("in - 빈 배열 (항상 false)", () => {
+  describe("in - empty array (always false)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.in(item.id, [])])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -334,7 +334,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.inEmpty[dialect]);
     });
@@ -342,7 +342,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
 
   //#region ========== DateTime 값 테스트 ==========
 
-  describe("eq - DateTime 값 비교", () => {
+  describe("eq - DateTime value comparison", () => {
     const db = createTestDb();
     const testDateTime = new DateTime(2024, 1, 15, 10, 30, 0);
     const def = db
@@ -350,7 +350,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       .where((item) => [expr.eq(item.createdAt, testDateTime)])
       .getSelectQueryDef();
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.eqDateTime[dialect]);
     });
@@ -360,7 +360,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
 
   //#region ========== inQuery 테스트 ==========
 
-  describe("inQuery - 서브쿼리 IN 조건", () => {
+  describe("inQuery - subquery IN condition", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -372,7 +372,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       ])
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toMatchObject({
         type: "select",
         where: [
@@ -390,7 +390,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.inQuery[dialect]);
     });

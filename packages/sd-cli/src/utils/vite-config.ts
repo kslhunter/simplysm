@@ -263,9 +263,9 @@ export interface ViteConfigOptions {
 /**
  * Create Vite config
  *
- * SolidJS + TailwindCSS 기반의 client 패키지 빌드/개발 서버용 설정입니다.
- * - build 모드: production 빌드 (logLevel: silent)
- * - dev 모드: dev server (define으로 env 치환, server 설정)
+ * Configuration for building/dev server for client packages based on SolidJS + TailwindCSS.
+ * - build mode: production build (logLevel: silent)
+ * - dev mode: dev server (env substitution via define, server configuration)
  */
 export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, replaceDeps } =
@@ -276,7 +276,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string };
   const appName = pkgJson.name.replace(/^@[^/]+\//, "");
 
-  // process.env 치환 (build/dev 모두 적용)
+  // Process.env substitution (applied to both build and dev modes)
   const envDefine: Record<string, string> = {};
   if (env != null) {
     envDefine["process.env"] = JSON.stringify(env);
@@ -320,17 +320,17 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
     },
   };
 
-  // process.env 치환 (build/dev 모두 적용)
+  // Process.env substitution (applied to both build and dev modes)
   config.define = envDefine;
 
   if (mode === "build") {
     config.logLevel = "silent";
   } else {
-    // dev 모드
+    // Dev mode
     config.server = {
-      // serverPort === 0: 서버 연결 클라이언트 (proxy 대상)
-      // → host를 127.0.0.1로 명시하여 IPv4 바인딩 보장
-      //   (Windows에서 localhost가 ::1(IPv6)로 해석되면 proxy가 127.0.0.1로 연결 시 ECONNREFUSED 발생)
+      // serverPort === 0: server-connected client (proxy target)
+      // → explicitly set host to 127.0.0.1 to ensure IPv4 binding
+      //   (On Windows, if localhost resolves to ::1 (IPv6), proxy connection to 127.0.0.1 causes ECONNREFUSED)
       host: serverPort === 0 ? "127.0.0.1" : undefined,
       port: serverPort === 0 ? undefined : serverPort,
       strictPort: serverPort !== 0 && serverPort !== undefined,

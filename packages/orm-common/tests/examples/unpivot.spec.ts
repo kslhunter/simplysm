@@ -7,7 +7,7 @@ import "../setup/test-utils";
 import * as expected from "./unpivot.expected";
 
 describe("SELECT - UNPIVOT (join + union)", () => {
-  describe("기본", () => {
+  describe("Basic", () => {
     const db = createTestDb();
     const def = db
       .monthlySales()
@@ -26,7 +26,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -73,13 +73,13 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unpivotBasic[dialect]);
     });
   });
 
-  describe("2개 컬럼 unpivot", () => {
+  describe("2-column unpivot", () => {
     const db = createTestDb();
     const def = db
       .monthlySales()
@@ -98,7 +98,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -138,7 +138,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unpivotTwoColumns[dialect]);
     });
@@ -164,7 +164,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       }))
       .getSelectQueryDef();
 
-    it("QueryDef 검증", () => {
+    it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "select",
         as: "T1",
@@ -218,7 +218,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.unpivotWithWhere[dialect]);
     });

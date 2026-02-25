@@ -10,7 +10,7 @@ import path from "path";
 import os from "os";
 
 describe("resolveReplaceDepEntries", () => {
-  test("glob * 패턴이 캡처되어 소스 경로의 *에 치환된다", () => {
+  test("captures glob * pattern and substitutes it in source path", () => {
     const result = resolveReplaceDepEntries({ "@simplysm/*": "../simplysm/packages/*" }, [
       "@simplysm/solid",
       "@simplysm/core-common",
@@ -21,7 +21,7 @@ describe("resolveReplaceDepEntries", () => {
     ]);
   });
 
-  test("* 없는 정확한 패키지명도 매칭된다", () => {
+  test("matches exact package names without *", () => {
     const result = resolveReplaceDepEntries({ "@other/lib": "../other-project/lib" }, [
       "@other/lib",
       "@other/unused",
@@ -29,14 +29,14 @@ describe("resolveReplaceDepEntries", () => {
     expect(result).toEqual([{ targetName: "@other/lib", sourcePath: "../other-project/lib" }]);
   });
 
-  test("매칭되지 않는 패키지는 결과에 포함되지 않는다", () => {
+  test("non-matching packages are not included in results", () => {
     const result = resolveReplaceDepEntries({ "@simplysm/*": "../simplysm/packages/*" }, [
       "@other/lib",
     ]);
     expect(result).toEqual([]);
   });
 
-  test("여러 replaceDeps 항목이 모두 처리된다", () => {
+  test("processes multiple replaceDeps entries", () => {
     const result = resolveReplaceDepEntries(
       {
         "@simplysm/*": "../simplysm/packages/*",
@@ -52,21 +52,21 @@ describe("resolveReplaceDepEntries", () => {
 });
 
 describe("parseWorkspaceGlobs", () => {
-  test("packages glob 배열을 파싱한다", () => {
+  test("parses packages glob array", () => {
     const yaml = `packages:\n  - "packages/*"\n  - "tools/*"`;
     expect(parseWorkspaceGlobs(yaml)).toEqual(["packages/*", "tools/*"]);
   });
 
-  test("따옴표 없는 glob도 파싱한다", () => {
+  test("parses glob without quotes", () => {
     const yaml = `packages:\n  - packages/*\n  - tools/*`;
     expect(parseWorkspaceGlobs(yaml)).toEqual(["packages/*", "tools/*"]);
   });
 
-  test("빈 내용이면 빈 배열을 반환한다", () => {
+  test("returns empty array for empty content", () => {
     expect(parseWorkspaceGlobs("")).toEqual([]);
   });
 
-  test("packages 섹션이 없으면 빈 배열을 반환한다", () => {
+  test("returns empty array if packages section is missing", () => {
     const yaml = `# some comment\nsomething: value`;
     expect(parseWorkspaceGlobs(yaml)).toEqual([]);
   });
@@ -122,7 +122,7 @@ describe("setupReplaceDeps", () => {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   });
 
-  test("node_modules 내 패키지를 소스 디렉토리로 복사 교체한다", async () => {
+  test("replaces package in node_modules by copying from source directory", async () => {
     const appRoot = path.join(tmpDir, "app");
 
     await setupReplaceDeps(appRoot, {
@@ -144,7 +144,7 @@ describe("setupReplaceDeps", () => {
     expect(readmeContent).toBe("readme");
   });
 
-  test("복사 시 node_modules, package.json, .cache, tests를 제외한다", async () => {
+  test("excludes node_modules, package.json, .cache, and tests when copying", async () => {
     const appRoot = path.join(tmpDir, "app");
 
     await setupReplaceDeps(appRoot, {
@@ -164,7 +164,7 @@ describe("setupReplaceDeps", () => {
     expect(fs.existsSync(path.join(targetPath, "tests"))).toBe(false);
   });
 
-  test("소스 경로가 없으면 해당 패키지를 스킵한다", async () => {
+  test("skips package if source path does not exist", async () => {
     const appRoot = path.join(tmpDir, "app");
 
     // no-exist 패키지의 .pnpm 스토어 생성
@@ -200,7 +200,7 @@ describe("setupReplaceDeps", () => {
     expect(noExistStat.isSymbolicLink()).toBe(true);
   });
 
-  test("workspace 패키지의 node_modules도 처리한다", async () => {
+  test("processes node_modules in workspace packages", async () => {
     const appRoot = path.join(tmpDir, "app");
 
     // workspace 패키지 구조 생성 (.pnpm 스토어 방식)
@@ -287,7 +287,7 @@ describe("watchReplaceDeps", () => {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   });
 
-  test("watch 시작 후 소스 파일 변경 시 대상 경로로 복사된다", async () => {
+  test("copies source files to target when modified after watch starts", async () => {
     const appRoot = path.join(tmpDir, "app");
     const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
     const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");

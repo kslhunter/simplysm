@@ -23,19 +23,19 @@ describe("SdFsWatcher", () => {
   //#region watch
 
   describe("watch", () => {
-    it("파일 감시 시작", async () => {
+    it("starts watching files", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
       expect(watcher).toBeDefined();
     });
 
-    it("옵션과 함께 파일 감시 시작", async () => {
+    it("starts watching files with options", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")], {
         ignoreInitial: false,
       });
       expect(watcher).toBeDefined();
     });
 
-    it("에러 이벤트 발생 시 로깅 처리", async () => {
+    it("logs errors when error events occur", async () => {
       // chokidar는 존재하지 않는 경로도 정상적으로 감시 시작함
       // 에러 이벤트는 실제 파일 시스템 오류 시에만 발생
       const nonExistentPath = path.join(testDir, "non-existent-dir-" + Date.now());
@@ -51,7 +51,7 @@ describe("SdFsWatcher", () => {
   //#region close
 
   describe("close", () => {
-    it("감시 종료", async () => {
+    it("closes the watcher", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
 
       // close()가 에러 없이 완료되면 테스트 통과
@@ -67,7 +67,7 @@ describe("SdFsWatcher", () => {
   //#region chaining
 
   describe("onChange", () => {
-    it("onChange 메서드 체이닝 지원", async () => {
+    it("supports onChange method chaining", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
 
       const fn = vi.fn();
@@ -76,7 +76,7 @@ describe("SdFsWatcher", () => {
       expect(result).toBe(watcher);
     });
 
-    it("delay 옵션 지정 가능", async () => {
+    it("can specify delay option with various values", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
 
       const fn = vi.fn();
@@ -92,7 +92,7 @@ describe("SdFsWatcher", () => {
   //#region Types
 
   describe("Types", () => {
-    it("SdFsWatcherEvent 타입 정의 확인", () => {
+    it("verifies SdFsWatcherEvent type definition", () => {
       // 이벤트 타입이 올바르게 정의되어 있는지 확인
       const validEvents = ["add", "addDir", "change", "unlink", "unlinkDir"];
       expect(validEvents).toContain("add");
@@ -102,7 +102,7 @@ describe("SdFsWatcher", () => {
       expect(validEvents).toContain("unlinkDir");
     });
 
-    it("SdFsWatcherChangeInfo 구조 확인", () => {
+    it("verifies SdFsWatcherChangeInfo structure", () => {
       // 인터페이스 구조 확인용 타입 체크
       const mockChangeInfo = {
         event: "add" as const,
@@ -118,7 +118,7 @@ describe("SdFsWatcher", () => {
 
   //#region glob 패턴 필터링
 
-  describe("glob 패턴 필터링", () => {
+  describe("glob pattern filtering", () => {
     const DELAY = 300;
 
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -134,7 +134,7 @@ describe("SdFsWatcher", () => {
       });
     };
 
-    it("glob 패턴에 매칭되는 파일만 이벤트 수신", async () => {
+    it("receives events only for files matching glob pattern", async () => {
       // .txt 파일만 감시하는 glob 패턴
       const globPattern = path.join(testDir, "**/*.txt");
 
@@ -162,16 +162,16 @@ describe("SdFsWatcher", () => {
 
   //#region 이벤트 병합 (Event Merging)
 
-  describe("이벤트 병합", () => {
+  describe("event merging", () => {
     const DELAY = 300;
 
     /**
-     * 지정 시간 대기 헬퍼 함수.
+     * Helper function to wait for specified time.
      */
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     /**
-     * 이벤트 콜백이 호출될 때까지 대기하는 헬퍼 함수.
+     * Helper function to wait until event callback is called.
      */
     const waitForChanges = (
       watcherInstance: FsWatcher,
@@ -184,7 +184,7 @@ describe("SdFsWatcher", () => {
       });
     };
 
-    it("파일 추가 후 변경 시 add 이벤트만 반환", async () => {
+    it("returns only add event when file is added then modified", async () => {
       const testFile = path.join(testDir, "test-add-change.txt");
 
       watcher = await FsWatcher.watch([testDir]);
@@ -206,7 +206,7 @@ describe("SdFsWatcher", () => {
       expect(changes[0].event).toBe("add");
     });
 
-    it("파일 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
+    it("produces no events or no changes when file is added then deleted", async () => {
       const testFile = path.join(testDir, "test-add-unlink.txt");
 
       watcher = await FsWatcher.watch([testDir]);
@@ -238,7 +238,7 @@ describe("SdFsWatcher", () => {
       expect(changes.length).toBe(0);
     });
 
-    it("디렉토리 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
+    it("produces no events or no changes when directory is added then deleted", async () => {
       const testSubDir = path.join(testDir, "test-addDir-unlinkDir");
 
       watcher = await FsWatcher.watch([testDir]);
@@ -270,7 +270,7 @@ describe("SdFsWatcher", () => {
       expect(changes.length).toBe(0);
     });
 
-    it("파일 삭제 후 재생성 시 add 이벤트로 병합", async () => {
+    it("merges to add event when file is deleted then recreated", async () => {
       const testFile = path.join(testDir, "test-unlink-add.txt");
 
       // 파일 미리 생성
@@ -296,7 +296,7 @@ describe("SdFsWatcher", () => {
       expect(["add", "change"]).toContain(changes[0].event);
     });
 
-    it("여러 파일 변경 시 올바른 이벤트 병합", async () => {
+    it("correctly merges events when multiple files are modified", async () => {
       const file1 = path.join(testDir, "file1.txt");
       const file2 = path.join(testDir, "file2.txt");
       const file3 = path.join(testDir, "file3.txt");

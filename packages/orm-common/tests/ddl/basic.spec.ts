@@ -19,7 +19,7 @@ describe("DDL - Database", () => {
     const db = createTestDb();
     const def = db.getClearSchemaQueryDef({ database: "TestDb", schema: "TestSchema" });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "clearSchema",
         database: "TestDb",
@@ -27,7 +27,7 @@ describe("DDL - Database", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.clearSchema[dialect]);
     });
@@ -37,7 +37,7 @@ describe("DDL - Database", () => {
     const db = createTestDb();
     const def = db.getSchemaExistsQueryDef("TestDb", "TestSchema");
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "schemaExists",
         database: "TestDb",
@@ -45,7 +45,7 @@ describe("DDL - Database", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.schemaExists[dialect]);
     });
@@ -57,7 +57,7 @@ describe("DDL - Table", () => {
     const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createTable",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -116,7 +116,7 @@ describe("DDL - Table", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.createTable[dialect]);
     });
@@ -126,14 +126,14 @@ describe("DDL - Table", () => {
     const db = createTestDb();
     const def = db.getTruncateQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "truncate",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.truncate[dialect]);
     });
@@ -146,7 +146,7 @@ describe("DDL - Table", () => {
       "on",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "switchFk",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -154,7 +154,7 @@ describe("DDL - Table", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.switchFkOn[dialect]);
     });
@@ -167,7 +167,7 @@ describe("DDL - Table", () => {
       "off",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "switchFk",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -175,7 +175,7 @@ describe("DDL - Table", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.switchFkOff[dialect]);
     });
@@ -185,14 +185,14 @@ describe("DDL - Table", () => {
     const db = createTestDb();
     const def = db.getDropTableQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropTable",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropTable[dialect]);
     });
@@ -205,7 +205,7 @@ describe("DDL - Table", () => {
       "Member",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "renameTable",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -213,7 +213,7 @@ describe("DDL - Table", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.renameTable[dialect]);
     });
@@ -230,7 +230,7 @@ describe("DDL - Column", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -244,7 +244,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addColumn[dialect]);
     });
@@ -259,7 +259,7 @@ describe("DDL - Column", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -273,7 +273,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addColumnWithDefault[dialect]);
     });
@@ -288,7 +288,7 @@ describe("DDL - Column", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -302,7 +302,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addColumnWithAutoIncrement[dialect]);
     });
@@ -315,7 +315,7 @@ describe("DDL - Column", () => {
       "email",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -323,7 +323,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropColumn[dialect]);
     });
@@ -338,7 +338,7 @@ describe("DDL - Column", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "modifyColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -352,7 +352,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.modifyColumn[dialect]);
     });
@@ -367,7 +367,7 @@ describe("DDL - Column", () => {
       column,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "modifyColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -381,7 +381,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.modifyColumnTypeAndDefault[dialect]);
     });
@@ -395,7 +395,7 @@ describe("DDL - Column", () => {
       "fullName",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "renameColumn",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -404,7 +404,7 @@ describe("DDL - Column", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.renameColumn[dialect]);
     });
@@ -416,14 +416,14 @@ describe("DDL - Primary Key", () => {
     const db = createTestDb();
     const def = db.getDropPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropPk",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropPk[dialect]);
     });
@@ -435,7 +435,7 @@ describe("DDL - Primary Key", () => {
       "id",
     ]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addPk",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -443,7 +443,7 @@ describe("DDL - Primary Key", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addPk[dialect]);
     });
@@ -456,7 +456,7 @@ describe("DDL - Primary Key", () => {
       ["userId", "roleId"],
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addPk",
         table: { database: "TestDb", schema: "TestSchema", name: "UserRole" },
@@ -464,7 +464,7 @@ describe("DDL - Primary Key", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addPkComposite[dialect]);
     });
@@ -485,7 +485,7 @@ describe("DDL - Foreign Key / Index", () => {
       userRelation,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
@@ -498,7 +498,7 @@ describe("DDL - Foreign Key / Index", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addFk[dialect]);
     });
@@ -511,7 +511,7 @@ describe("DDL - Foreign Key / Index", () => {
       "user",
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
@@ -519,7 +519,7 @@ describe("DDL - Foreign Key / Index", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropFk[dialect]);
     });
@@ -534,7 +534,7 @@ describe("DDL - Foreign Key / Index", () => {
       indexBuilder,
     );
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "addIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -546,7 +546,7 @@ describe("DDL - Foreign Key / Index", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.addIdx[dialect]);
     });
@@ -558,7 +558,7 @@ describe("DDL - Foreign Key / Index", () => {
       "email",
     ]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -566,7 +566,7 @@ describe("DDL - Foreign Key / Index", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropIdx[dialect]);
     });
@@ -579,7 +579,7 @@ describe("DDL - Foreign Key / Index", () => {
       "email",
     ]);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropIdx",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
@@ -587,7 +587,7 @@ describe("DDL - Foreign Key / Index", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropIdxComposite[dialect]);
     });
@@ -600,7 +600,7 @@ describe("DDL - View", () => {
 
     const def = db.getCreateViewQueryDef(ActiveUsers);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createView",
         view: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
@@ -619,7 +619,7 @@ describe("DDL - View", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.createView[dialect]);
     });
@@ -633,14 +633,14 @@ describe("DDL - View", () => {
       name: "ActiveUsers",
     });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropView",
         view: { database: "TestDb", schema: "TestSchema", name: "ActiveUsers" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropView[dialect]);
     });
@@ -652,7 +652,7 @@ describe("DDL - Procedure", () => {
     const db = createTestDb();
     const def = db.getCreateProcQueryDef(GetUserById);
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "createProc",
         procedure: { database: "TestDb", schema: "TestSchema", name: "GetUserById" },
@@ -685,7 +685,7 @@ describe("DDL - Procedure", () => {
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.createProc[dialect]);
     });
@@ -699,14 +699,14 @@ describe("DDL - Procedure", () => {
       name: "GetUserById",
     });
 
-    it("QueryDef 검증", () => {
+    it("should validate QueryDef", () => {
       expect(def).toEqual({
         type: "dropProc",
         procedure: { database: "TestDb", schema: "TestSchema", name: "GetUserById" },
       });
     });
 
-    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+    it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dropProc[dialect]);
     });
