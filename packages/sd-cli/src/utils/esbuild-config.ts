@@ -7,11 +7,11 @@ import { solidPlugin } from "esbuild-plugin-solid";
 import type { TypecheckEnv } from "./tsconfig";
 
 /**
- * esbuild outputFiles 중 실제로 변경된 파일만 디스크에 쓴다.
+ * Write only changed files from esbuild outputFiles to disk
  *
- * - .js 파일: ESM 상대 import 경로에 .js 확장자를 추가한 후 비교
- * - 그 외 파일(.js.map 등): 원본 그대로 비교
- * - 기존 파일과 내용이 동일하면 쓰기를 건너뛰어 타임스탬프를 유지한다.
+ * - .js files: Add .js extension to ESM relative import paths before comparing
+ * - Other files (.js.map etc): Compare original content as-is
+ * - Skip writing if content matches existing file to preserve timestamps
  */
 export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<boolean> {
   let hasChanges = false;
@@ -43,9 +43,9 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
 }
 
 /**
- * Library 빌드용 esbuild 옵션
- * - bundle: false (개별 파일 트랜스파일)
- * - platform: target에 따라 node 또는 browser
+ * esbuild options for Library build
+ * - bundle: false (transpile individual files)
+ * - platform: node or browser depending on target
  */
 export interface LibraryEsbuildOptions {
   pkgDir: string;
@@ -55,20 +55,20 @@ export interface LibraryEsbuildOptions {
 }
 
 /**
- * Server 빌드용 esbuild 옵션
- * - bundle: true (모든 의존성 포함한 단일 번들)
+ * esbuild options for Server build
+ * - bundle: true (single bundle with all dependencies)
  */
 export interface ServerEsbuildOptions {
   pkgDir: string;
   entryPoints: string[];
   compilerOptions: Record<string, unknown>;
   env?: Record<string, string>;
-  /** 번들에서 제외할 외부 모듈 */
+  /** External modules to exclude from bundle */
   external?: string[];
 }
 
 /**
- * package.json에서 solid-js 의존성 감지
+ * Detect solid-js dependency in package.json
  */
 function hasSolidDependency(pkgDir: string): boolean {
   const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
@@ -77,12 +77,12 @@ function hasSolidDependency(pkgDir: string): boolean {
 }
 
 /**
- * Library용 esbuild 설정 생성
+ * Create esbuild config for Library build
  *
- * node/browser/neutral 타겟의 라이브러리 패키지 빌드에 사용합니다.
- * - bundle: false (개별 파일을 각각 트랜스파일)
- * - platform: target이 node면 node, 그 외는 browser
- * - target: node면 node20, 그 외는 chrome84
+ * Used to build library packages with node/browser/neutral targets
+ * - bundle: false (transpile each file individually)
+ * - platform: node if target is node, otherwise browser
+ * - target: node20 if target is node, otherwise chrome84
  */
 export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esbuild.BuildOptions {
   const plugins: esbuild.Plugin[] = [];
@@ -110,13 +110,13 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
 }
 
 /**
- * Server용 esbuild 설정 생성
+ * Create esbuild config for Server build
  *
- * 서버 패키지 빌드에 사용합니다.
- * - bundle: true (모든 의존성 포함한 단일 번들)
- * - minify: true (코드 보호를 위한 압축)
- * - banner: CJS 패키지의 require() 지원을 위한 createRequire shim
- * - env를 define 옵션으로 치환 (process.env.KEY 형태)
+ * Used for server package builds
+ * - bundle: true (single bundle with all dependencies)
+ * - minify: true (minify for code protection)
+ * - banner: createRequire shim for CJS package require() support
+ * - Replace env with define option (process.env.KEY format)
  */
 export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbuild.BuildOptions {
   const define: Record<string, string> = {};
@@ -147,10 +147,10 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
 }
 
 /**
- * 빌드 타겟에서 TypecheckEnv 추출
+ * Extract TypecheckEnv from build target
  *
- * 빌드용이므로 neutral은 browser로 처리합니다.
- * (neutral 패키지는 Node/브라우저 공용이지만, 빌드 시에는 browser 환경 기준으로 처리)
+ * Neutral is treated as browser for builds.
+ * (neutral packages are Node/browser universal, but we treat as browser for build)
  */
 export function getTypecheckEnvFromTarget(target: "node" | "browser" | "neutral"): TypecheckEnv {
   return target === "node" ? "node" : "browser";
@@ -165,10 +165,10 @@ interface PkgJson {
 }
 
 /**
- * 의존성 트리에서 미설치 optional peer dep 수집
+ * Collect uninstalled optional peer deps from dependency tree
  *
- * 서버 빌드(bundle: true) 시 설치되지 않은 optional peer dependency를
- * esbuild external로 지정하여 빌드 실패를 방지한다.
+ * For server builds (bundle: true), specify uninstalled optional peer dependencies
+ * as esbuild externals to prevent build failures
  */
 export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
   const external = new Set<string>();
