@@ -3,8 +3,8 @@
 /**
  * CLI Launcher
  *
- * .ts 실행 (개발): CPU affinity 적용 후 sd-cli-entry 직접 import
- * .js 실행 (배포): replaceDeps 실행 후 새 프로세스로 sd-cli-entry spawn
+ * .ts execution (dev): apply CPU affinity then directly import sd-cli-entry
+ * .js execution (production): run replaceDeps then spawn sd-cli-entry in new process
  */
 
 import { execa } from "execa";
@@ -17,16 +17,16 @@ const __dirname = path.dirname(__filename);
 const isDev = path.extname(__filename) === ".ts";
 
 if (isDev) {
-  // 개발 모드 (.ts): affinity 적용 후 직접 실행
-  // import만으로는 메인 모듈 감지가 실패하므로 (process.argv[1] ≠ sd-cli-entry)
-  // createCliParser를 명시적으로 호출한다.
+  // Dev mode (.ts): apply affinity then run directly
+  // Main module detection fails with import only (process.argv[1] ≠ sd-cli-entry)
+  // so createCliParser must be called explicitly.
   configureAffinityAndPriority(process.pid);
   const { createCliParser } = await import("./sd-cli-entry.js");
   await createCliParser(process.argv.slice(2)).parse();
 } else {
-  // 배포 모드 (.js): 2단계 실행
+  // Production mode (.js): two-stage execution
 
-  // Phase 1: replaceDeps (inline — 설치된 버전으로 복사)
+  // Phase 1: replaceDeps (inline — copy to installed version)
   try {
     const { loadSdConfig } = await import("./utils/sd-config.js");
     const { setupReplaceDeps } = await import("./utils/replace-deps.js");
@@ -35,10 +35,10 @@ if (isDev) {
       await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);
     }
   } catch {
-    // sd.config.ts 없거나 replaceDeps 미설정 시 스킵
+    // Skip if sd.config.ts is missing or replaceDeps is not configured
   }
 
-  // Phase 2: 새 프로세스로 실제 CLI 실행 (모듈 캐시 초기화)
+  // Phase 2: Run actual CLI in new process (reset module cache)
   const cliEntryFilePath = path.join(__dirname, "sd-cli-entry.js");
   const subprocess = execa(
     "node",
@@ -56,10 +56,10 @@ if (isDev) {
 }
 
 /**
- * CPU affinity mask 계산 (앞쪽 코어 제외)
+ * Calculate CPU affinity mask (exclude front cores)
  *
- * CPU 4개당 1개를 제외하고, 나머지 코어의 비트를 ON으로 설정한다.
- * 예: 8코어 → 2개 제외 → 0xFC (코어 2~7)
+ * Exclude 1 core per 4 CPUs, then set bits ON for remaining cores.
+ * Example: 8 cores → exclude 2 → 0xFC (cores 2~7)
  */
 function calculateAffinityMask(cpuCount: number): string {
   const exclude = cpuCount <= 1 ? 0 : Math.ceil(cpuCount / 4);
@@ -71,12 +71,12 @@ function calculateAffinityMask(cpuCount: number): string {
 }
 
 /**
- * Cross-platform CPU affinity + priority 설정
+ * Configure CPU affinity and priority (cross-platform)
  *
  * - Windows: PowerShell ProcessorAffinity + PriorityClass
  * - Linux/WSL: taskset + renice
  *
- * 실패해도 경고만 출력하고 CLI 동작에는 영향 없음.
+ * Only print warning on failure; does not affect CLI operation.
  */
 function configureAffinityAndPriority(pid: number): void {
   const cpuCount = os.cpus().length;
@@ -96,6 +96,6 @@ function configureAffinityAndPriority(pid: number): void {
 
   execa({ shell: true })`${command}`.catch((err: Error) => {
     // eslint-disable-next-line no-console
-    console.warn("CPU affinity/priority 설정 실패:", err.message);
+    console.warn("Failed to configure CPU affinity/priority:", err.message);
   });
 }
