@@ -36,19 +36,19 @@ export abstract class AutoUpdate {
               class="_button"
               href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end"
             >
-              다운로드
+              Download
             </a>
           `
         : "";
 
     throw new Error(html`
-      APK파일을 다시 다운로드 받아, 설치해야 합니다(${code}). ${downloadHtml}
+      You need to re-download and install the APK file(${code}). ${downloadHtml}
     `);
   }
 
   private static async _checkPermission(log: (messageHtml: string) => void, targetHref?: string) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
-      throw new Error("안드로이드만 지원합니다.");
+      throw new Error("Only Android is supported.");
     }
 
     try {
@@ -57,19 +57,19 @@ export abstract class AutoUpdate {
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error("[AutoUpdate] hasPermissionManifest 체크 실패:", err);
+      console.error("[AutoUpdate] hasPermissionManifest check failed:", err);
       this._throwAboutReinstall(2, targetHref);
     }
 
     const hasPerm = await ApkInstaller.hasPermission();
     if (!hasPerm) {
       log(html`
-        설치권한이 설정되어야합니다.
+        Installation permission must be enabled.
         <style>
           button { ${this._BUTTON_CSS} }
           button:active { ${this._BUTTON_ACTIVE_CSS} }
         </style>
-        <button onclick="location.reload()">재시도</button>
+        <button onclick="location.reload()">Retry</button>
       `);
       await ApkInstaller.requestPermission();
       // Wait up to 5 minutes (300 seconds) - time for user to grant permission in settings
@@ -88,12 +88,12 @@ export abstract class AutoUpdate {
     apkFilePath: string,
   ): Promise<void> {
     log(html`
-      최신버전을 설치한 후 재시작하세요.
+      Please install the latest version and restart.
       <style>
         button { ${this._BUTTON_CSS} }
         button:active { ${this._BUTTON_ACTIVE_CSS} }
       </style>
-      <button onclick="location.reload()">재시도</button>
+      <button onclick="location.reload()">Retry</button>
     `);
     const apkFileUri = await FileSystem.getFileUri(apkFilePath);
     await ApkInstaller.install(apkFileUri);
@@ -101,7 +101,7 @@ export abstract class AutoUpdate {
 
   private static _getErrorMessage(err: unknown) {
     return html`
-      업데이트 중 오류 발생:
+      Error occurred during update:
       <br />
       ${err instanceof Error ? err.message : String(err)}
     `;
@@ -113,7 +113,7 @@ export abstract class AutoUpdate {
 
   static async run(opt: { log: (messageHtml: string) => void; serviceClient: ServiceClient }) {
     try {
-      opt.log(`최신버전 확인 중...`);
+      opt.log(`Checking latest version...`);
 
       // Get version and download link from server
       const autoUpdateServiceClient =
@@ -122,11 +122,11 @@ export abstract class AutoUpdate {
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
         // eslint-disable-next-line no-console
-        console.log("서버에서 최신버전 정보를 가져오지 못했습니다.");
+        console.log("Failed to get latest version information from server.");
         return;
       }
 
-      opt.log(`권한 확인 중...`);
+      opt.log(`Checking permission...`);
       await this._checkPermission(
         opt.log,
         opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
@@ -148,7 +148,7 @@ export abstract class AutoUpdate {
         return;
       }
 
-      opt.log(`최신버전 파일 다운로드중...`);
+      opt.log(`Downloading latest version file...`);
       const buffer = await fetchUrlBytes(
         opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
         {
@@ -156,7 +156,7 @@ export abstract class AutoUpdate {
             const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
               2,
             );
-            opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+            opt.log(`Downloading latest version file...(${progressText}%)`);
           },
         },
       );
@@ -174,10 +174,10 @@ export abstract class AutoUpdate {
 
   static async runByExternalStorage(opt: { log: (messageHtml: string) => void; dirPath: string }) {
     try {
-      opt.log(`권한 확인 중...`);
+      opt.log(`Checking permission...`);
       await this._checkPermission(opt.log);
 
-      opt.log(`최신버전 확인 중...`);
+      opt.log(`Checking latest version...`);
 
       // Get versions
       const externalPath = await FileSystem.getStoragePath("external");
@@ -205,7 +205,7 @@ export abstract class AutoUpdate {
       // Return if no valid semver versions
       if (latestVersion == null) {
         // eslint-disable-next-line no-console
-        console.log("유효한 semver 버전 파일이 없습니다.");
+        console.log("No valid semver version files found.");
         return;
       }
 

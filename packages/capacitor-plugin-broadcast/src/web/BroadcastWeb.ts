@@ -4,7 +4,7 @@ import type { IBroadcastPlugin, IBroadcastResult } from "../IBroadcastPlugin";
 export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
   private static readonly _warn = () =>
     // eslint-disable-next-line no-console
-    console.warn("[Broadcast] 웹 환경에서는 Broadcast를 지원하지 않습니다.");
+    console.warn("[Broadcast] Broadcast is not supported in web environment.");
 
   subscribe(
     _options: { filters: string[] },

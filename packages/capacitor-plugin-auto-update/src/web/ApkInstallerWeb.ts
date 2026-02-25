@@ -3,7 +3,7 @@ import type { IApkInstallerPlugin, IVersionInfo } from "../IApkInstallerPlugin";
 
 export class ApkInstallerWeb extends WebPlugin implements IApkInstallerPlugin {
   install(_options: { uri: string }): Promise<void> {
-    alert("[ApkInstaller] 웹 환경에서는 APK 설치를 지원하지 않습니다.");
+    alert("[ApkInstaller] APK installation is not supported in web environment.");
     return Promise.resolve();
   }
 
