@@ -2,7 +2,7 @@
   "name": "@simplysm/lint",
   "version": "13.0.69",
   "description": "심플리즘 패키지 - Lint 설정 (ESLint + Stylelint)",
-  "author": "김석래",
+  "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@
   "name": "@simplysm/sd-cli",
   "version": "13.0.69",
   "description": "심플리즘 패키지 - CLI 도구",
-  "author": "김석래",
+  "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
