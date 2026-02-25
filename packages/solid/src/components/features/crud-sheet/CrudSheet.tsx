@@ -116,7 +116,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
   let originalItems: TItem[] = [];
 
-  // eslint-disable-next-line solid/reactivity -- filterInitial은 초기값으로만 사용
+  // eslint-disable-next-line solid/reactivity -- filterInitial is used only for initial value
   const [filter, setFilter] = createStore<TFilter>((local.filterInitial ?? {}) as TFilter);
   const [lastFilter, setLastFilter] = createSignal<TFilter>(objClone(filter));
 
@@ -171,7 +171,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setTotalPageCount(result.pageCount ?? 0);
   }
 
-  /* eslint-disable solid/reactivity -- 이벤트 핸들러에서만 호출, store 즉시 읽기 */
+  /* eslint-disable solid/reactivity -- called only in event handlers, immediate store read */
   function getItemDiffs() {
     return items.oneWayDiffs(originalItems, (item) => local.getItemKey(item), {
       excludes: local.inlineEdit?.diffsExcludes,
@@ -338,7 +338,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Select Mode --
   function handleSelectedItemsChange(newSelectedItems: TItem[]) {
-    // 현재 페이지 아이템들의 key Set
+    // Current page items key Set
     const currentItems = items as unknown as TItem[];
     const currentKeys = new Set<string | number>();
     for (const item of currentItems) {
@@ -346,22 +346,22 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       if (key != null) currentKeys.add(key);
     }
 
-    // 새로 선택된 아이템들의 key
+    // Newly selected items key
     const newSelectedKeys = new Set<string | number>();
     for (const item of newSelectedItems) {
       const key = local.getItemKey(item);
       if (key != null) newSelectedKeys.add(key);
     }
 
-    // 다른 페이지 key 보존 + 현재 페이지 key 갱신
+    // Preserve other page keys + update current page keys
     const merged = new Set<string | number>();
     for (const key of selectedKeys()) {
       if (!currentKeys.has(key)) {
-        merged.add(key); // 다른 페이지 key 보존
+        merged.add(key); // Preserve other page keys
       }
     }
     for (const key of newSelectedKeys) {
-      merged.add(key); // 현재 페이지 선택 추가
+      merged.add(key); // Add current page selection
     }
 
     setSelectedKeys(merged);
@@ -400,7 +400,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
 
   // -- Route Leave Guard --
-  // eslint-disable-next-line solid/reactivity -- inlineEdit는 초기 설정값으로만 사용
+  // eslint-disable-next-line solid/reactivity -- inlineEdit is used only for initial value
   if (!isModal && local.inlineEdit) {
     try {
       useBeforeLeave((e) => {
@@ -409,7 +409,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         }
       });
     } catch {
-      // Router context 없으면 skip
+      // Skip if no Router context
     }
   }
 
