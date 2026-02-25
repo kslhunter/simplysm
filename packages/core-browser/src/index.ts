@@ -1,4 +1,4 @@
-// core-browser: 브라우저 전용 유틸리티
+// core-browser: Browser-only utilities
 
 // extensions (side-effect)
 import "./extensions/element-ext";

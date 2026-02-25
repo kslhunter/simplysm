@@ -56,17 +56,17 @@ async function cleanup(): Promise<void> {
   serverInstance = undefined;
 }
 
-// 서버 listen() 이후 발생하는 런타임 에러를 잡아서 custom "error" 이벤트로 전송
-// (이 핸들러가 없으면 worker가 crash만 하고, dev.ts의 buildResolver가 호출되지 않아 listr가 멈춤)
+// Catch runtime errors that occur after server listen() and send them as a custom "error" event
+// (Without this handler, the worker will crash but dev.ts's buildResolver won't be called, causing listr to hang)
 process.on("uncaughtException", (err) => {
-  logger.error("Server Runtime 미처리 오류", err);
+  logger.error("Unhandled server runtime error", err);
   sender.send("error", {
     message: errorMessage(err),
   });
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.error("Server Runtime 미처리 Promise 거부", reason);
+  logger.error("Unhandled server runtime promise rejection", reason);
   sender.send("error", {
     message: errorMessage(reason),
   });
@@ -75,7 +75,7 @@ process.on("unhandledRejection", (reason) => {
 registerCleanupHandlers(cleanup, logger);
 
 /**
- * 포트가 사용 가능한지 확인
+ * Check if a port is available for use
  */
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -89,7 +89,7 @@ function isPortAvailable(port: number): Promise<boolean> {
 }
 
 /**
- * 시작 포트부터 사용 가능한 포트를 찾아 반환
+ * Find and return an available port starting from the specified port
  */
 async function findAvailablePort(startPort: number, maxRetries = 20): Promise<number> {
   for (let i = 0; i < maxRetries; i++) {
@@ -99,36 +99,36 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
     }
   }
   throw new Error(
-    `포트 ${startPort}부터 ${startPort + maxRetries - 1}까지 사용 가능한 포트가 없습니다.`,
+    `No available port found between ${startPort} and ${startPort + maxRetries - 1}.`,
   );
 }
 
 /**
- * Server Runtime 시작
- * main.js를 import하고, Vite proxy를 설정한 후 listen
+ * Start Server Runtime
+ * Import main.js, configure Vite proxy, then listen
  */
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
-    // main.js import (server 인스턴스를 export해야 함)
+    // Import main.js (must export a server instance)
     const module = await import(pathToFileURL(info.mainJsPath).href);
     const server = module.server;
 
     if (server == null) {
-      throw new Error("main.js에서 server 인스턴스를 export해야 합니다.");
+      throw new Error("main.js must export a server instance.");
     }
 
-    // 서버 인스턴스 저장 (cleanup용)
+    // Save server instance (for cleanup)
     serverInstance = server;
 
-    // 사용 가능한 포트 탐색 (포트 충돌 시 자동 증가)
+    // Find available port (auto-increment on port conflict)
     const originalPort = server.options.port;
     const availablePort = await findAvailablePort(originalPort);
     if (availablePort !== originalPort) {
-      logger.info(`포트 ${originalPort} 사용 중 → ${availablePort}로 변경`);
+      logger.info(`Port ${originalPort} in use, changing to ${availablePort}`);
       server.options.port = availablePort;
     }
 
-    // Vite proxy 설정 (clientPorts가 있는 경우만)
+    // Configure Vite proxy (only if clientPorts exists)
     for (const [name, port] of Object.entries(info.clientPorts)) {
       await server.fastify.register(proxy, {
         prefix: `/${name}`,
@@ -138,12 +138,12 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
       });
     }
 
-    // 서버 시작
+    // Start server
     await server.listen();
 
     sender.send("serverReady", { port: server.options.port });
   } catch (err) {
-    logger.error("Server Runtime 시작 실패", err);
+    logger.error("Server Runtime startup failed", err);
     sender.send("error", {
       message: errorMessage(err),
     });

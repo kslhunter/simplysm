@@ -2,18 +2,18 @@ import { parentPort } from "worker_threads";
 import { SdError, transferableDecode, transferableEncode } from "@simplysm/core-common";
 import type { WorkerRequest, WorkerResponse } from "./types";
 
-//#region createSdWorker
+//#region createWorker
 
 /**
- * 워커 스레드에서 사용할 워커 팩토리.
+ * Worker factory for use in worker threads.
  *
  * @example
- * // 이벤트 없는 워커
+ * // Worker without events
  * export default createWorker({
  *   add: (a: number, b: number) => a + b,
  * });
  *
- * // 이벤트 있는 워커
+ * // Worker with events
  * interface MyEvents { progress: number; }
  * const methods = {
  *   calc: (x: number) => { sender.send("progress", 50); return x * 2; },
@@ -37,8 +37,8 @@ export function createWorker<
 
   const port = parentPort;
 
-  // Worker 스레드의 stdout은 메인 스레드로 자동 전달되지 않음
-  // stdout.write를 가로채서 메시지 프로토콜을 통해 메인 스레드로 전달
+  // Worker thread's stdout is not automatically forwarded to the main thread
+  // Intercept stdout.write and forward it to the main thread via message protocol
   process.stdout.write = (
     chunk: string | Uint8Array,
     encodingOrCallback?: BufferEncoding | ((err?: Error) => void),
@@ -60,7 +60,7 @@ export function createWorker<
   port.on("message", async (serializedRequest: unknown) => {
     const decoded = transferableDecode(serializedRequest);
 
-    // 요청 구조 검증
+    // Validate request structure
     if (
       decoded == null ||
       typeof decoded !== "object" ||
@@ -85,9 +85,9 @@ export function createWorker<
     }
     const request = decoded as WorkerRequest;
 
-    const methodFn = methods[request.method] as ((...args: unknown[]) => unknown) | undefined;
+    const methodFn = (methods[request.method] as ((...args: unknown[]) => unknown)) || undefined;
 
-    if (methodFn == null) {
+    if (!methodFn) {
       const response: WorkerResponse = {
         request,
         type: "error",

@@ -71,7 +71,7 @@ function encodeImpl(
       throw new TypeError(`Circular reference detected: ${currentPath}`);
     }
 
-    // Cache hit → reuse previous encoding result
+    // If object was already encoded, reuse cached result
     const cached = cache.get(obj);
     if (cached !== undefined) return cached;
 
@@ -85,7 +85,7 @@ function encodeImpl(
     // 1. Uint8Array
     if (obj instanceof Uint8Array) {
       // SharedArrayBuffer is already shared memory, so don't add to transferList
-      // Add only ArrayBuffer to transferList
+      // Add only ArrayBuffer to transferList for zero-copy transfer
       const isSharedArrayBuffer =
         typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
       const buffer = obj.buffer as ArrayBuffer;
@@ -94,7 +94,7 @@ function encodeImpl(
       }
       result = obj;
     }
-    // 2. Special type conversion (convert to struct without JSON.stringify)
+    // 2. Special type conversion (convert to tagged object without JSON.stringify)
     else if (obj instanceof Date) {
       result = { __type__: "Date", data: obj.getTime() };
     } else if (obj instanceof DateTime) {

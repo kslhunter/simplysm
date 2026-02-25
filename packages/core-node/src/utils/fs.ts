@@ -287,12 +287,12 @@ export async function fsReadJson<TData = unknown>(targetPath: string): Promise<T
 
 //#endregion
 
-//#region 파일 쓰기
+//#region Write File
 
 /**
- * 파일 쓰기 (부모 디렉토리 자동 생성).
- * @param targetPath - 쓸 파일 경로
- * @param data - 쓸 데이터 (문자열 또는 바이너리)
+ * Writes data to a file (auto-creates parent directories).
+ * @param targetPath - Path of the file to write
+ * @param data - Data to write (string or binary)
  */
 export function fsWriteSync(targetPath: string, data: string | Uint8Array): void {
   fsMkdirSync(path.dirname(targetPath));
@@ -305,9 +305,9 @@ export function fsWriteSync(targetPath: string, data: string | Uint8Array): void
 }
 
 /**
- * 파일 쓰기 (부모 디렉토리 자동 생성, 비동기).
- * @param targetPath - 쓸 파일 경로
- * @param data - 쓸 데이터 (문자열 또는 바이너리)
+ * Writes data to a file (auto-creates parent directories, asynchronous).
+ * @param targetPath - Path of the file to write
+ * @param data - Data to write (string or binary)
  */
 export async function fsWrite(targetPath: string, data: string | Uint8Array): Promise<void> {
   await fsMkdir(path.dirname(targetPath));
@@ -320,10 +320,10 @@ export async function fsWrite(targetPath: string, data: string | Uint8Array): Pr
 }
 
 /**
- * JSON 파일 쓰기 (JsonConvert 사용).
- * @param targetPath - 쓸 JSON 파일 경로
- * @param data - 쓸 데이터
- * @param options - JSON 직렬화 옵션
+ * Writes data to a JSON file (using JsonConvert).
+ * @param targetPath - Path of the JSON file to write
+ * @param data - Data to write
+ * @param options - JSON serialization options
  */
 export function fsWriteJsonSync(
   targetPath: string,
@@ -338,10 +338,10 @@ export function fsWriteJsonSync(
 }
 
 /**
- * JSON 파일 쓰기 (JsonConvert 사용, 비동기).
- * @param targetPath - 쓸 JSON 파일 경로
- * @param data - 쓸 데이터
- * @param options - JSON 직렬화 옵션
+ * Writes data to a JSON file (using JsonConvert, asynchronous).
+ * @param targetPath - Path of the JSON file to write
+ * @param data - Data to write
+ * @param options - JSON serialization options
  */
 export async function fsWriteJson(
   targetPath: string,
@@ -357,11 +357,11 @@ export async function fsWriteJson(
 
 //#endregion
 
-//#region 디렉토리 읽기
+//#region Read Directory
 
 /**
- * 디렉토리 내용 읽기.
- * @param targetPath - 읽을 디렉토리 경로
+ * Reads the contents of a directory.
+ * @param targetPath - Path of the directory to read
  */
 export function fsReaddirSync(targetPath: string): string[] {
   try {
@@ -372,8 +372,8 @@ export function fsReaddirSync(targetPath: string): string[] {
 }
 
 /**
- * 디렉토리 내용 읽기 (비동기).
- * @param targetPath - 읽을 디렉토리 경로
+ * Reads the contents of a directory (asynchronous).
+ * @param targetPath - Path of the directory to read
  */
 export async function fsReaddir(targetPath: string): Promise<string[]> {
   try {
@@ -385,11 +385,11 @@ export async function fsReaddir(targetPath: string): Promise<string[]> {
 
 //#endregion
 
-//#region 파일 정보
+//#region File Information
 
 /**
- * 파일/디렉토리 정보 (심볼릭 링크 따라감).
- * @param targetPath - 정보를 조회할 경로
+ * Gets file/directory information (follows symbolic links).
+ * @param targetPath - Path to query information for
  */
 export function fsStatSync(targetPath: string): fs.Stats {
   try {
@@ -400,8 +400,8 @@ export function fsStatSync(targetPath: string): fs.Stats {
 }
 
 /**
- * 파일/디렉토리 정보 (심볼릭 링크 따라감, 비동기).
- * @param targetPath - 정보를 조회할 경로
+ * Gets file/directory information (follows symbolic links, asynchronous).
+ * @param targetPath - Path to query information for
  */
 export async function fsStat(targetPath: string): Promise<fs.Stats> {
   try {
@@ -412,8 +412,8 @@ export async function fsStat(targetPath: string): Promise<fs.Stats> {
 }
 
 /**
- * 파일/디렉토리 정보 (심볼릭 링크 따라가지 않음).
- * @param targetPath - 정보를 조회할 경로
+ * Gets file/directory information (does not follow symbolic links).
+ * @param targetPath - Path to query information for
  */
 export function fsLstatSync(targetPath: string): fs.Stats {
   try {
@@ -424,8 +424,8 @@ export function fsLstatSync(targetPath: string): fs.Stats {
 }
 
 /**
- * 파일/디렉토리 정보 (심볼릭 링크 따라가지 않음, 비동기).
- * @param targetPath - 정보를 조회할 경로
+ * Gets file/directory information (does not follow symbolic links, asynchronous).
+ * @param targetPath - Path to query information for
  */
 export async function fsLstat(targetPath: string): Promise<fs.Stats> {
   try {
@@ -437,13 +437,13 @@ export async function fsLstat(targetPath: string): Promise<fs.Stats> {
 
 //#endregion
 
-//#region 글로브
+//#region Glob
 
 /**
- * 글로브 패턴으로 파일 검색.
- * @param pattern - 글로브 패턴 (예: "**\/*.ts")
- * @param options - glob 옵션
- * @returns 매칭된 파일들의 절대 경로 배열
+ * Searches for files using a glob pattern.
+ * @param pattern - Glob pattern (e.g., "**/*.ts")
+ * @param options - glob options
+ * @returns Array of absolute paths for matched files
  */
 export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
   return globRawSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) =>
@@ -452,10 +452,10 @@ export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
 }
 
 /**
- * 글로브 패턴으로 파일 검색 (비동기).
- * @param pattern - 글로브 패턴 (예: "**\/*.ts")
- * @param options - glob 옵션
- * @returns 매칭된 파일들의 절대 경로 배열
+ * Searches for files using a glob pattern (asynchronous).
+ * @param pattern - Glob pattern (e.g., "**/*.ts")
+ * @param options - glob options
+ * @returns Array of absolute paths for matched files
  */
 export async function fsGlob(pattern: string, options?: GlobOptions): Promise<string[]> {
   return (await globRaw(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
@@ -465,11 +465,11 @@ export async function fsGlob(pattern: string, options?: GlobOptions): Promise<st
 
 //#endregion
 
-//#region 유틸리티
+//#region Utilities
 
 /**
- * 지정 디렉토리 하위의 빈 디렉토리를 재귀적으로 탐색하여 삭제.
- * 하위 디렉토리가 모두 삭제되어 빈 디렉토리가 된 경우, 해당 디렉토리도 삭제 대상이 됨.
+ * Recursively searches and deletes empty directories under a specified directory.
+ * If all child directories are deleted and a parent becomes empty, it will also be deleted.
  */
 export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
   if (!(await fsExists(dirPath))) return;
@@ -486,23 +486,23 @@ export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
     }
   }
 
-  // 파일이 있었다면 삭제 불가
+  // If there are files, cannot delete
   if (hasFiles) return;
 
-  // 파일이 없었던 경우에만 재확인 (하위 디렉토리가 삭제되었을 수 있음)
+  // Only re-check if there were no files (child directories may have been deleted)
   if ((await fsReaddir(dirPath)).length === 0) {
     await fsRm(dirPath);
   }
 }
 
 /**
- * 시작 경로부터 루트 방향으로 상위 디렉토리를 순회하며 glob 패턴 검색.
- * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집.
- * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
- * @param fromPath - 검색 시작 경로
- * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지).
- *                   **주의**: fromPath가 rootPath의 자식 경로여야 함.
- *                   그렇지 않으면 파일시스템 루트까지 검색함.
+ * Searches for files matching a glob pattern by traversing parent directories from a start path towards the root.
+ * Collects all file paths matching the childGlob pattern in each directory.
+ * @param childGlob - Glob pattern to search for in each directory
+ * @param fromPath - Path to start searching from
+ * @param rootPath - Path to stop searching at (if not specified, searches to filesystem root).
+ *                   **Note**: fromPath must be a child path of rootPath.
+ *                   Otherwise, searches to the filesystem root.
  */
 export function fsFindAllParentChildPathsSync(
   childGlob: string,
@@ -528,13 +528,13 @@ export function fsFindAllParentChildPathsSync(
 }
 
 /**
- * 시작 경로부터 루트 방향으로 상위 디렉토리를 순회하며 glob 패턴 검색 (비동기).
- * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집.
- * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
- * @param fromPath - 검색 시작 경로
- * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지).
- *                   **주의**: fromPath가 rootPath의 자식 경로여야 함.
- *                   그렇지 않으면 파일시스템 루트까지 검색함.
+ * Searches for files matching a glob pattern by traversing parent directories from a start path towards the root (asynchronous).
+ * Collects all file paths matching the childGlob pattern in each directory.
+ * @param childGlob - Glob pattern to search for in each directory
+ * @param fromPath - Path to start searching from
+ * @param rootPath - Path to stop searching at (if not specified, searches to filesystem root).
+ *                   **Note**: fromPath must be a child path of rootPath.
+ *                   Otherwise, searches to the filesystem root.
  */
 export async function fsFindAllParentChildPaths(
   childGlob: string,

@@ -1,5 +1,5 @@
 /**
- * 파일 선택 다이얼로그를 프로그래밍 방식으로 열기
+ * Programmatically open file selection dialog
  */
 export function openFileDialog(options?: {
   accept?: string;

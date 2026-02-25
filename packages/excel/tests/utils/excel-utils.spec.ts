@@ -22,7 +22,7 @@ describe("ExcelUtils", () => {
     });
 
     it("handles Excel maximum column index (XFD, 16383)", () => {
-      // Excel 최대 열은 XFD (16383번 인덱스, 0-based)
+      // Excel maximum column is XFD (index 16383, 0-based)
       expect(ExcelUtils.stringifyColAddr(16383)).toBe("XFD");
       expect(ExcelUtils.parseColAddrCode("XFD")).toBe(16383);
     });
@@ -123,7 +123,7 @@ describe("ExcelUtils", () => {
       const date = new Date(Date.UTC(1970, 0, 1, 0, 0, 0));
       const tick = date.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
-      // 1970-01-01은 Excel 기준 25569일째
+      // 1970-01-01 is 25569 days in Excel's date system
       expect(excelNum).toBeCloseTo(25569, 0);
     });
 
@@ -131,7 +131,7 @@ describe("ExcelUtils", () => {
       const date = new Date(Date.UTC(2024, 5, 15, 0, 0, 0));
       const tick = date.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
-      // 대략적인 값 확인
+      // Verify approximate value
       expect(excelNum).toBeGreaterThan(45000);
     });
 
@@ -139,7 +139,7 @@ describe("ExcelUtils", () => {
       const date = new Date(Date.UTC(2024, 5, 15, 12, 0, 0));
       const tick = date.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
-      // 12시 = 0.5일 추가
+      // 12:00 = 0.5 days additional
       const baseNum = ExcelUtils.convertTimeTickToNumber(
         new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime(),
       );
@@ -151,7 +151,7 @@ describe("ExcelUtils", () => {
       const tick = originalDate.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
       const recoveredTick = ExcelUtils.convertNumberToTimeTick(excelNum);
-      // 밀리초 단위까지 정확히 일치하지 않을 수 있으므로 초 단위로 비교
+      // May not match exactly to milliseconds, so compare at second level
       expect(Math.floor(recoveredTick / 1000)).toBe(Math.floor(tick / 1000));
     });
   });
@@ -167,24 +167,24 @@ describe("ExcelUtils", () => {
       expect(ExcelUtils.convertNumFmtCodeToName("dd-mmm-yyyy")).toBe("DateOnly");
     });
 
-    // NOTE: 현재 구현에서 'mm'은 날짜(month)와 시간(minute) 둘 다에서 사용됨
-    // 정규식: hasDate = /yy|dd|mm/i, hasTime = /hh|ss/i
-    // 따라서 "hh:mm:ss"는 hasDate(mm)=true, hasTime(hh,ss)=true → DateTime
-    // "h:mm"은 hasDate(mm)=true, hasTime=false (h는 hh가 아님) → DateOnly
+    // NOTE: In the current implementation, 'mm' is used in both date (month) and time (minute)
+    // Regex: hasDate = /yy|dd|mm/i, hasTime = /hh|ss/i
+    // Therefore "hh:mm:ss" has hasDate(mm)=true, hasTime(hh,ss)=true → DateTime
+    // "h:mm" has hasDate(mm)=true, hasTime=false (h≠hh) → DateOnly
     it("handles time pattern (note mm ambiguity)", () => {
       // "hh:mm:ss": hasDate(mm)=true, hasTime(hh,ss)=true → DateTime
       expect(ExcelUtils.convertNumFmtCodeToName("hh:mm:ss")).toBe("DateTime");
       // "h:mm": hasDate(mm)=true, hasTime=false (h≠hh) → DateOnly
       expect(ExcelUtils.convertNumFmtCodeToName("h:mm")).toBe("DateOnly");
-      // 순수 시간 포맷 (ss만 있고 mm 없는 경우)
+      // Pure time format (only ss, no mm)
       expect(ExcelUtils.convertNumFmtCodeToName("[h]:ss")).toBe("Time");
     });
 
     it("recognizes date+time pattern as DateTime", () => {
       expect(ExcelUtils.convertNumFmtCodeToName("yyyy-mm-dd hh:mm:ss")).toBe("DateTime");
-      // "yy/mm/dd h:mm"는 날짜만 감지됨 (h:mm에서 hh가 아니고 ss도 없으므로)
+      // "yy/mm/dd h:mm" detects only date (h:mm has no hh and no ss)
       expect(ExcelUtils.convertNumFmtCodeToName("yy/mm/dd h:mm")).toBe("DateOnly");
-      // 명확한 DateTime 패턴
+      // Clear DateTime pattern
       expect(ExcelUtils.convertNumFmtCodeToName("yyyy/mm/dd hh:mm:ss")).toBe("DateTime");
     });
 

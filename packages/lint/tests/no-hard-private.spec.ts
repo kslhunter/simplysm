@@ -5,9 +5,9 @@ import rule from "../src/rules/no-hard-private";
 
 const ruleTester = new RuleTester();
 
-describe("no-hard-private 규칙", () => {
-  describe("허용되는 코드들 (valid)", () => {
-    describe("TypeScript private 키워드 사용", () => {
+describe("no-hard-private rule", () => {
+  describe("allowed code (valid)", () => {
+    describe("using TypeScript private keyword", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [
           {
@@ -22,7 +22,7 @@ describe("no-hard-private 규칙", () => {
       });
     });
 
-    describe("TypeScript private 메서드 사용", () => {
+    describe("using TypeScript private method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [
           {
@@ -39,7 +39,7 @@ describe("no-hard-private 규칙", () => {
       });
     });
 
-    describe("public/protected 필드는 허용", () => {
+    describe("public/protected fields are allowed", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [
           {
@@ -56,8 +56,8 @@ describe("no-hard-private 규칙", () => {
     });
   });
 
-  describe("오류가 발생해야 하는 코드들 (invalid)", () => {
-    describe("ECMAScript # private 필드 선언", () => {
+  describe("code that should cause errors (invalid)", () => {
+    describe("ECMAScript # private field declaration", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -78,7 +78,7 @@ describe("no-hard-private 규칙", () => {
       });
     });
 
-    describe("ECMAScript # private 메서드 선언", () => {
+    describe("ECMAScript # private method declaration", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -103,7 +103,7 @@ describe("no-hard-private 규칙", () => {
       });
     });
 
-    describe("# private 필드 사용 (this.#field)", () => {
+    describe("# private field usage (this.#field)", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -130,7 +130,7 @@ describe("no-hard-private 규칙", () => {
       });
     });
 
-    describe("화살표 함수 필드 내 # private 필드 사용", () => {
+    describe("# private field usage in arrow function field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -154,8 +154,8 @@ describe("no-hard-private 규칙", () => {
     });
   });
 
-  describe("autofix 테스트", () => {
-    describe("# private 필드를 private _ 스타일로 변환", () => {
+  describe("autofix tests", () => {
+    describe("convert # private field to private _ style", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -176,7 +176,7 @@ class MyClass {
       });
     });
 
-    describe("# private 메서드를 private _ 스타일로 변환", () => {
+    describe("convert # private method to private _ style", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -201,7 +201,7 @@ class MyClass {
       });
     });
 
-    describe("사용부의 this.#field를 this._field로 변환", () => {
+    describe("convert this.#field to this._field in usage", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -228,7 +228,7 @@ class MyClass {
       });
     });
 
-    describe("static # private 필드 변환", () => {
+    describe("convert static # private field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -249,7 +249,7 @@ class MyClass {
       });
     });
 
-    describe("static # private 메서드 변환", () => {
+    describe("convert static # private method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -274,7 +274,7 @@ class MyClass {
       });
     });
 
-    describe("readonly # private 필드 변환", () => {
+    describe("convert readonly # private field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -295,7 +295,7 @@ class MyClass {
       });
     });
 
-    describe("static readonly # private 필드 변환", () => {
+    describe("convert static readonly # private field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -316,7 +316,7 @@ class MyClass {
       });
     });
 
-    describe("# private getter를 private _ 스타일로 변환", () => {
+    describe("convert # private getter to private _ style", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -341,7 +341,7 @@ class MyClass {
       });
     });
 
-    describe("# private setter를 private _ 스타일로 변환", () => {
+    describe("convert # private setter to private _ style", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -366,7 +366,7 @@ class MyClass {
       });
     });
 
-    describe("# private getter/setter 쌍 변환", () => {
+    describe("convert # private getter/setter pair", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -397,7 +397,7 @@ class MyClass {
       });
     });
 
-    describe("여러 인접한 # private 필드/메서드 변환", () => {
+    describe("convert multiple adjacent # private fields/methods", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -429,7 +429,7 @@ class MyClass {
       });
     });
 
-    describe("데코레이터가 있는 # private 필드 변환", () => {
+    describe("convert # private field with decorator", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [

@@ -180,7 +180,7 @@ export function jsonParse<TResult = unknown>(json: string): TResult {
     return objNullToUndefined(
       JSON.parse(json, (_key, value: unknown) => {
         if (value != null && typeof value === "object") {
-          // Type restoration based on __type__
+          // Restore types based on __type__ marker
           if ("__type__" in value && "data" in value) {
             const typed = value as TypedObject;
             if (typed.__type__ === "Date" && typeof typed.data === "string") {

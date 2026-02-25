@@ -1,8 +1,8 @@
 /**
- * Blob을 파일로 다운로드
+ * Download Blob as file
  *
- * @param blob - 다운로드할 Blob 객체
- * @param fileName - 저장될 파일 이름
+ * @param blob - Blob object to download
+ * @param fileName - File name to save as
  */
 export function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);

@@ -277,7 +277,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("빈 문자열 인자는 기본 메시지로 폴백", () => {
+    describe("empty string argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -297,7 +297,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("null 인자는 기본 메시지로 폴백", () => {
+    describe("null argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -317,7 +317,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("undefined 인자는 기본 메시지로 폴백", () => {
+    describe("undefined argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -338,7 +338,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
     });
   });
 
-  describe("namespace import는 다른 패키지면 허용", () => {
+  describe("namespace import from other packages is allowed", () => {
     ruleTester.run("ts-no-throw-not-implemented-error", rule, {
       valid: [
         {
@@ -352,11 +352,11 @@ describe("ts-no-throw-not-implemented-error rule", () => {
     });
   });
 
-  describe("제한사항: re-export된 NotImplementedError는 감지하지 않음", () => {
+  describe("limitation: re-exported NotImplementedError is not detected", () => {
     ruleTester.run("ts-no-throw-not-implemented-error", rule, {
       valid: [
         {
-          // 다른 모듈에서 re-export된 경우는 감지하지 않음
+          // re-exported from another module is not detected
           code: `
             import { NotImplementedError } from "./my-errors";
             throw new NotImplementedError();
@@ -367,11 +367,11 @@ describe("ts-no-throw-not-implemented-error rule", () => {
     });
   });
 
-  describe("제한사항: 동적 import는 감지하지 않음", () => {
+  describe("limitation: dynamic import is not detected", () => {
     ruleTester.run("ts-no-throw-not-implemented-error", rule, {
       valid: [
         {
-          // 동적 import 후 사용하는 경우는 감지하지 않음
+          // dynamic import usage is not detected
           code: `
             async function test() {
               const { NotImplementedError } = await import("@simplysm/core-common");

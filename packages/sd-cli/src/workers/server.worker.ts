@@ -246,7 +246,7 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     ].join("\n"),
   );
 
-  // dist/pm2.config.cjs (pm2 설정이 있을 때만)
+  // dist/pm2.config.cjs (only when pm2 option is present)
   if (info.pm2 != null) {
     logger.debug("GEN pm2.config.cjs...");
 
@@ -290,9 +290,9 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
   }
 }
 
-// 프로세스 종료 전 리소스 정리 (SIGTERM/SIGINT)
-// 주의: worker.terminate()는 이 핸들러들을 호출하지 않고 즉시 종료됨.
-// 그러나 watch 모드에서 정상 종료는 메인 프로세스의 SIGINT/SIGTERM을 통해 이루어지므로 문제없음.
+// Clean up resources before process termination (SIGTERM/SIGINT)
+// Note: worker.terminate() does not call these handlers and terminates immediately.
+// However, normal shutdown in watch mode is handled via SIGINT/SIGTERM from the main process, so this is fine.
 registerCleanupHandlers(cleanup, logger);
 
 //#endregion
@@ -300,27 +300,27 @@ registerCleanupHandlers(cleanup, logger);
 //#region Worker
 
 /**
- * 일회성 빌드
+ * One-time build
  */
 async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
   const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
 
   try {
-    // tsconfig 파싱
+    // Parse tsconfig
     const parsedConfig = parseRootTsconfig(info.cwd);
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
-    // 서버는 node 환경
+    // Server target is node environment
     const compilerOptions = await getCompilerOptionsForPackage(
       parsedConfig.options,
       "node",
       info.pkgDir,
     );
 
-    // 모든 external 수집 (optional peer deps + native modules + manual)
+    // Collect all externals (optional peer deps + native modules + manual)
     const external = collectAllExternals(info.pkgDir, info.externals);
 
-    // esbuild 일회성 빌드
+    // One-time esbuild
     const esbuildOptions = createServerEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,

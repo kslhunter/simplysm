@@ -29,15 +29,15 @@ describe("PostgresqlDbConn", () => {
     }
   });
 
-  describe("연결", () => {
-    it("연결 성공", async () => {
+  describe("Connection", () => {
+    it("Successful connection", async () => {
       const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await testConn.connect();
       expect(testConn.isConnected).toBe(true);
       await testConn.close();
     });
 
-    it("중복 연결 시 에러", async () => {
+    it("Error on duplicate connection", async () => {
       const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await testConn.connect();
       try {
@@ -47,7 +47,7 @@ describe("PostgresqlDbConn", () => {
       }
     });
 
-    it("연결 종료", async () => {
+    it("Connection close", async () => {
       const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await testConn.connect();
       await testConn.close();
@@ -55,12 +55,12 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("쿼리 실행", () => {
+  describe("Query execution", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
 
-      // 테스트 테이블 생성
+      // Create test table
       await conn.execute([
         `DROP TABLE IF EXISTS "TestTable"`,
         `CREATE TABLE "TestTable" (
@@ -76,7 +76,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("INSERT 및 SELECT", async () => {
+    it("INSERT and SELECT", async () => {
       await conn.execute([`INSERT INTO "TestTable" (name, value) VALUES ('test', 123)`]);
 
       const results = await conn.execute([`SELECT * FROM "TestTable" WHERE name = 'test'`]);
@@ -86,7 +86,7 @@ describe("PostgresqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리", async () => {
+    it("Parameterized query", async () => {
       const results = await conn.executeParametrized(`SELECT * FROM "TestTable" WHERE name = $1`, [
         "test",
       ]);
@@ -95,7 +95,7 @@ describe("PostgresqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 숫자 타입", async () => {
+    it("Parameterized query - numeric type", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM "TestTable" WHERE value = $1`,
         [123],
@@ -105,7 +105,7 @@ describe("PostgresqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 여러 파라미터", async () => {
+    it("Parameterized query - multiple parameters", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM "TestTable" WHERE name = $1 AND value = $2`,
         ["test", 123],
@@ -116,15 +116,15 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("연결 오류 처리", () => {
-    it("미연결 상태에서 쿼리 실행 시 에러", async () => {
+  describe("Connection error handling", () => {
+    it("Error when executing query on disconnected connection", async () => {
       const disconnectedConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
         DB_CONN_ERRORS.NOT_CONNECTED,
       );
     });
 
-    it("잘못된 쿼리 실행 시 에러", async () => {
+    it("Error on invalid query execution", async () => {
       const tempConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await tempConn.connect();
 

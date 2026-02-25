@@ -1,26 +1,26 @@
 # Angular Guidelines (v12 only)
 
-> v13에는 Angular 없음 (SolidJS로 대체됨). 아래 규칙은 v12 전용.
+> v13 has no Angular (replaced by SolidJS). Rules below are v12 only.
 
 ## Core Rules
 
-- **Signal 기반**: 상태에 RxJS 사용 금지. `$signal`, `$computed`, `$effect` 사용
-- **Standalone only**: 모든 컴포넌트 `standalone: true`
-- **OnPush + None**: `ChangeDetectionStrategy.OnPush`, `ViewEncapsulation.None` 필수
-- **input()/output()**: `@Input()`, `@Output()` 데코레이터 사용 금지 → `input()`, `output()`, `model()` 사용
-- **Control flow**: `@if`, `@for`, `@switch` 사용 (`*ngIf`, `*ngFor` 금지)
-- **DI**: `inject()` 사용 (생성자 파라미터 주입 금지)
-- **아이콘**: `@ng-icons/tabler-icons` 사용 (FontAwesome 아님)
-- **패키지 import**: `@simplysm/sd-angular` 루트에서만 import (서브폴더 접근 금지)
+- **Signal-based**: Do not use RxJS for state. Use `$signal`, `$computed`, `$effect`
+- **Standalone only**: All components must have `standalone: true`
+- **OnPush + None**: `ChangeDetectionStrategy.OnPush` and `ViewEncapsulation.None` are mandatory
+- **input()/output()**: Do not use `@Input()`, `@Output()` decorators → use `input()`, `output()`, `model()` instead
+- **Control flow**: Use `@if`, `@for`, `@switch` (no `*ngIf`, `*ngFor`)
+- **DI**: Use `inject()` (no constructor parameter injection)
+- **Icons**: Use `@ng-icons/tabler-icons` (not FontAwesome)
+- **Package imports**: Import `@simplysm/sd-angular` only from root (no subfolders)
 
 ## Signal Utilities
 
-- `$signal<T>(value?)` — writable signal (`$mark()`로 dirty 표시 가능)
-- `$computed(fn)` — 동기 computed. 비동기: `$computed([deps], asyncFn, { initialValue })`
-- `$effect(fn)` — 조건 추적 가능: `$effect([() => dep1()], () => { ... })`
-- `$arr(signal)` — 배열 조작 (`.insert()`, `.remove()`, `.toggle()`, `.diffs()`)
-- `$obj(signal)` — 객체 조작 (`.updateField()`, `.snapshot()`, `.changed()`)
-- `$set(signal)` — Set 조작 (`.add()`, `.toggle()`)
+- `$signal<T>(value?)` — writable signal (can mark dirty with `$mark()`)
+- `$computed(fn)` — synchronous computed. Async: `$computed([deps], asyncFn, { initialValue })`
+- `$effect(fn)` — dependency tracking: `$effect([() => dep1()], () => { ... })`
+- `$arr(signal)` — array operations (`.insert()`, `.remove()`, `.toggle()`, `.diffs()`)
+- `$obj(signal)` — object operations (`.updateField()`, `.snapshot()`, `.changed()`)
+- `$set(signal)` — Set operations (`.add()`, `.toggle()`)
 
 ## Component Pattern
 
@@ -66,7 +66,7 @@ sdHmrBootstrapAsync(AppPage, {
 
 ## Modal
 
-`ISdModal<T>` 인터페이스 구현:
+Implement `ISdModal<T>` interface:
 
 ```typescript
 export class MyModal implements ISdModal<TResult> {
@@ -74,22 +74,22 @@ export class MyModal implements ISdModal<TResult> {
   close = output<TResult>();
 }
 
-// 호출
+// Usage
 await this.#sdModal.showAsync({
   type: MyModal,
-  title: "제목",
+  title: "Title",
   inputs: { param: "value" },
 });
 ```
 
 ## Data Sheet
 
-CRUD 테이블은 `AbsSdDataSheet<TFilter, TItem, TKey>` 확장:
+CRUD tables extend `AbsSdDataSheet<TFilter, TItem, TKey>`:
 
-- `search()` — 데이터 조회
-- `submit()` — 변경사항 저장
-- `downloadExcel()` / `uploadExcel()` — 엑셀 연동
-- `$mark()` — 셀 수정 시 dirty 표시 필수
+- `search()` — query data
+- `submit()` — save changes
+- `downloadExcel()` / `uploadExcel()` — Excel integration
+- `$mark()` — mark dirty when cell is modified (mandatory)
 
 ## Busy / Error Handling
 
@@ -106,9 +106,9 @@ try {
 
 ## Theming
 
-- CSS 변수 사용: `--theme-primary-default`, `--gap-sm`, `--border-radius-default` 등
-- 하드코딩 색상 금지
-- 테마: `"compact"` | `"mobile"` | `"kiosk"` + dark mode
+- Use CSS variables: `--theme-primary-default`, `--gap-sm`, `--border-radius-default`, etc.
+- Do not hardcode colors
+- Themes: `"compact"` | `"mobile"` | `"kiosk"` + dark mode
 
 ## Permissions
 

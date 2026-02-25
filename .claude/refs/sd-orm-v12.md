@@ -1,40 +1,40 @@
 # ORM Guidelines (v12)
 
-## Table Definition — Decorator 기반
+## Table Definition — Decorator-based
 
 ```typescript
-@Table({ description: "사용자", database: "mydb" })
+@Table({ description: "Users", database: "mydb" })
 export class User {
   @Column({ primaryKey: 1, autoIncrement: true, description: "ID" })
   id!: number;
 
-  @Column({ dataType: { type: "STRING", length: 100 }, description: "이름" })
+  @Column({ dataType: { type: "STRING", length: 100 }, description: "Name" })
   name!: string;
 
-  @Column({ nullable: true, description: "이메일" })
+  @Column({ nullable: true, description: "Email" })
   email?: string;
 
-  @ForeignKey(["departmentId"], () => Department, "부서")
+  @ForeignKey(["departmentId"], () => Department, "Department")
   department?: Department;
 
-  @ForeignKeyTarget(() => Order, "user", "주문 목록")
+  @ForeignKeyTarget(() => Order, "user", "Orders")
   orders?: Order[];
 }
 ```
 
 ### Decorators
 
-- `@Table({ description, database?, schema?, name?, view?, procedure? })` — 테이블/뷰/프로시저 정의
-- `@Column({ description, name?, dataType?, nullable?, autoIncrement?, primaryKey? })` — 컬럼 정의
-- `@ForeignKey(columnNames, targetTypeFwd, description)` — FK 관계
-- `@ForeignKeyTarget(sourceTypeFwd, fkPropertyKey, description, multiplicity?)` — FK 역방향
-- `@ReferenceKey(columnNames, targetTypeFwd, description)` — 참조 관계
-- `@ReferenceKeyTarget(sourceTypeFwd, refKeyPropertyKey, description, multiplicity?)` — 참조 역방향
-- `@Index({ name?, order?, orderBy?, unique? })` — 인덱스
+- `@Table({ description, database?, schema?, name?, view?, procedure? })` — define table/view/procedure
+- `@Column({ description, name?, dataType?, nullable?, autoIncrement?, primaryKey? })` — define column
+- `@ForeignKey(columnNames, targetTypeFwd, description)` — FK relationship
+- `@ForeignKeyTarget(sourceTypeFwd, fkPropertyKey, description, multiplicity?)` — FK reverse relationship
+- `@ReferenceKey(columnNames, targetTypeFwd, description)` — reference relationship
+- `@ReferenceKeyTarget(sourceTypeFwd, refKeyPropertyKey, description, multiplicity?)` — reference reverse relationship
+- `@Index({ name?, order?, orderBy?, unique? })` — index
 
-### 요구사항
+### Requirements
 
-- `tsconfig`에 `experimentalDecorators: true`, `emitDecoratorMetadata: true` 필요
+- `tsconfig` requires `experimentalDecorators: true` and `emitDecoratorMetadata: true`
 
 ## DbContext
 
@@ -59,11 +59,11 @@ const users = await db.user
   .resultAsync();
 
 // Insert
-await db.user.insertAsync([{ name: "홍길동" }]);
+await db.user.insertAsync([{ name: "John Doe" }]);
 
 // Connect with transaction
 await db.connectAsync(async () => {
-  await db.user.insertAsync([{ name: "홍길동" }]);
+  await db.user.insertAsync([{ name: "John Doe" }]);
 });
 ```
 

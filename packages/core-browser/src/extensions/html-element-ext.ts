@@ -50,8 +50,8 @@ declare global {
 }
 
 HTMLElement.prototype.repaint = function (): void {
-  // offsetHeight 접근 시 브라우저는 동기적 레이아웃 계산(forced synchronous layout)을 수행하며,
-  // 이로 인해 현재 배치된 스타일 변경사항이 즉시 적용되어 리페인트가 트리거된다.
+  // Accessing offsetHeight triggers forced synchronous layout in browser,
+  // causing style changes in current layout to be applied immediately and triggering repaint.
   void this.offsetHeight;
 };
 

@@ -4,7 +4,7 @@ export interface DownloadProgress {
 }
 
 /**
- * URL에서 바이너리 데이터 다운로드 (진행률 콜백 지원)
+ * Download binary data from URL (with progress callback support)
  */
 export async function fetchUrlBytes(
   url: string,
@@ -22,7 +22,7 @@ export async function fetchUrlBytes(
   }
 
   try {
-    // Content-Length를 알 수 있으면 미리 할당하여 메모리 효율성 향상
+    // If Content-Length is known, pre-allocate for memory efficiency
     if (contentLength > 0) {
       const result = new Uint8Array(contentLength);
       let receivedLength = 0;
@@ -39,7 +39,7 @@ export async function fetchUrlBytes(
       return result;
     }
 
-    // Content-Length를 모르면 청크 수집 후 병합 (chunked encoding)
+    // If Content-Length is unknown, collect chunks then merge (chunked encoding)
     const chunks: Uint8Array[] = [];
     let receivedLength = 0;
 
@@ -51,7 +51,7 @@ export async function fetchUrlBytes(
       receivedLength += value.length;
     }
 
-    // 청크 병합
+    // Merge chunks
     const result = new Uint8Array(receivedLength);
     let position = 0;
     for (const chunk of chunks) {
