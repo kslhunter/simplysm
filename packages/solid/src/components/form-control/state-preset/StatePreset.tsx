@@ -117,7 +117,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   const notification = useNotification();
 
-  // presetKey는 마운트 시 한 번만 설정되는 식별자이므로 즉시 평가하여 캡처
+  // presetKey is an identifier set only once at mount, evaluate immediately to capture
   /* eslint-disable solid/reactivity */
   const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(
     `state-preset.${local.presetKey}`,
