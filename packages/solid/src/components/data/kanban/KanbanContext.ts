@@ -1,7 +1,7 @@
 import { createContext, useContext, type Accessor, type Setter } from "solid-js";
 import type { SlotAccessor } from "../../../hooks/createSlotSignal";
 
-// ── 타입 ──────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────
 
 export interface KanbanCardRef<L = unknown, T = unknown> {
   value: T | undefined;

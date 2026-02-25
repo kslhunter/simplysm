@@ -108,7 +108,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     }
     e.dataTransfer?.setData("text/plain", "");
     const heightOnDrag = hostRef.offsetHeight;
-    // 브라우저가 드래그 고스트 이미지를 캡처한 뒤 숨기기 위해 한 프레임 지연
+    // Delay one frame so the browser can capture the drag ghost image before hiding
     requestAnimationFrame(() => {
       boardCtx.setDragCard({
         value: local.value,
@@ -144,7 +144,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     boardCtx.onDropTo(laneCtx.value(), local.value, current?.position ?? "before");
   };
 
-  // Shift+Click 다중 선택 토글
+  // Shift+Click multi-select toggle
   const handleClick = (e: MouseEvent) => {
     if (longPressed) {
       e.preventDefault();
@@ -160,7 +160,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     boardCtx.toggleSelection(local.value);
   };
 
-  // Long press → 해당 카드만 단독 선택 (다른 선택 모두 해제)
+  // Long press → select only this card (deselect all others)
   let longPressTimer: ReturnType<typeof setTimeout> | undefined;
   let longPressed = false;
 
@@ -329,10 +329,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const [dropTarget, setDropTarget] = createSignal<KanbanDropTarget>();
   const [dragEnterCount, setDragEnterCount] = createSignal(0);
 
-  // 드래그 오버 상태: 카운터 > 0 && 드래그 중
+  // Drag-over state: counter > 0 && dragging
   const isDragOverLane = () => dragEnterCount() > 0 && boardCtx.dragCard() != null;
 
-  // dragCard가 리셋되면 dropTarget, 카운터도 초기화
+  // When dragCard resets, also reset dropTarget and counter
   createEffect(() => {
     if (!boardCtx.dragCard()) {
       setDragEnterCount(0);
@@ -340,7 +340,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
   });
 
-  // Lane 이탈 감지: dragenter/dragleave 카운터
+  // Lane exit detection: dragenter/dragleave counter
   const handleLaneDragEnter = () => {
     setDragEnterCount((c) => c + 1);
   };
@@ -353,23 +353,23 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
   };
 
-  // 빈 영역 dragover (카드가 없거나 카드 아래 영역)
+  // Empty area dragover (no cards, or below cards)
   const handleLaneDragOver = (e: DragEvent) => {
     if (!boardCtx.dragCard()) return;
     e.preventDefault();
   };
 
-  // 빈 영역 또는 placeholder drop
+  // Empty area or placeholder drop
   const handleLaneDrop = (e: DragEvent) => {
     if (!boardCtx.dragCard()) return;
     e.preventDefault();
 
     const current = dropTarget();
     if (current) {
-      // placeholder나 카드 사이 gap에 drop된 경우 — dropTarget 위치 사용
+      // Dropped on placeholder or gap between cards — use dropTarget position
       boardCtx.onDropTo(local.value, current.value, current.position);
     } else {
-      // 빈 레인에 drop된 경우 — 끝에 추가
+      // Dropped onto an empty lane — append to end
       boardCtx.onDropTo(local.value, undefined, undefined);
     }
   };
@@ -391,7 +391,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const hasHeader = () =>
     local.collapsible || hasSelectableCards() || title() != null || tools() != null;
 
-  // placeholder div (Lane이 소유, DOM 직접 제어)
+  // Placeholder div (owned by Lane, direct DOM control)
   let bodyRef: HTMLDivElement | undefined;
   const placeholderEl = document.createElement("div");
   placeholderEl.className = placeholderBaseClass;
@@ -407,14 +407,14 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       return;
     }
 
-    // placeholder 높이 설정
+    // Set placeholder height
     placeholderEl.style.height = `${dc.heightOnDrag}px`;
 
-    // 삽입 위치 계산
+    // Calculate insertion position
     const referenceNode =
       target.position === "before" ? target.element : target.element.nextElementSibling;
 
-    // 이미 올바른 위치면 DOM 조작 생략
+    // Skip DOM manipulation if already in the correct position
     if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
       return;
     }

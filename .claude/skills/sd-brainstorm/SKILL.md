@@ -1,7 +1,6 @@
 ---
 name: sd-brainstorm
 description: "Design exploration before implementation (explicit invocation only)"
-model: opus
 ---
 
 # Brainstorming Ideas Into Designs

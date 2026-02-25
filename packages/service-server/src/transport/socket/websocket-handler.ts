@@ -171,7 +171,9 @@ export function createWebSocketHandler(
 
           const connectionDateTimeText =
             prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-          logger.debug(`Disconnected previous client connection: ${clientId}: ${connectionDateTimeText}`);
+          logger.debug(
+            `Disconnected previous client connection: ${clientId}: ${connectionDateTimeText}`,
+          );
         }
 
         socketMap.set(clientId, serviceSocket);

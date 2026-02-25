@@ -1,7 +1,6 @@
 ---
 name: sd-plan
 description: "Implementation plan from brainstorm designs (explicit invocation only)"
-model: opus
 ---
 
 # Writing Plans

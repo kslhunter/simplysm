@@ -1,20 +1,20 @@
 /**
- * 오류의 Tree 구조 구성이 가능한 오류 클래스
- * ES2024 cause 속성 활용
+ * Error class supporting Tree structure composition
+ * Utilizes ES2024 cause property
  *
  * @example
- * // 원인 에러를 감싸서 생성
+ * // Wrap a cause error
  * try {
  *   await fetch(url);
  * } catch (err) {
- *   throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
+ *   throw new SdError(err, "API call failed", "User load failed");
  * }
- * // 결과 메시지: "사용자 로드 실패 => API 호출 실패 => 원본 에러 메시지"
+ * // Result message: "User load failed => API call failed => original error message"
  *
  * @example
- * // 메시지만으로 생성
- * throw new SdError("잘못된 상태", "처리 불가");
- * // 결과 메시지: "처리 불가 => 잘못된 상태"
+ * // Create with message only
+ * throw new SdError("invalid state", "processing not possible");
+ * // Result message: "processing not possible => invalid state"
  */
 export class SdError extends Error {
   override cause?: Error;

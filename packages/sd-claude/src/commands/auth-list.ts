@@ -27,8 +27,6 @@ export function runAuthList(homeDir?: string): void {
 
     const oauthAccount = authData["oauthAccount"] as Record<string, unknown> | undefined;
     const email = (oauthAccount?.["emailAddress"] as string | undefined) ?? "";
-    const organizationName =
-      (oauthAccount?.["organizationName"] as string | undefined) ?? "Personal";
     const userID = authData["userID"] as string | undefined;
     const oauth = credData["claudeAiOauth"] as Record<string, unknown> | undefined;
     let expiresStr = "unknown";
@@ -41,6 +39,6 @@ export function runAuthList(homeDir?: string): void {
     const prefix = isActive ? "*" : " ";
 
     // eslint-disable-next-line no-console
-    console.log(`${prefix} ${name} (${email}) [${organizationName}] expires: ${expiresStr}`);
+    console.log(`${prefix} ${name} (${email}) expires: ${expiresStr}`);
   }
 }

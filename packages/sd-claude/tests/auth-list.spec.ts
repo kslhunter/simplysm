@@ -66,18 +66,12 @@ describe("runAuthList", () => {
 
     expect(spy).toHaveBeenCalledTimes(2);
     // alpha comes first (alphabetical), and is active
-    expect(spy).toHaveBeenNthCalledWith(
-      1,
-      "* alpha (alpha@example.com) [AlphaCorp] expires: 2025-06-25",
-    );
+    expect(spy).toHaveBeenNthCalledWith(1, "* alpha (alpha@example.com) expires: 2025-06-25");
     // beta is not active
-    expect(spy).toHaveBeenNthCalledWith(
-      2,
-      "  beta (beta@example.com) [BetaCorp] expires: 2025-06-20",
-    );
+    expect(spy).toHaveBeenNthCalledWith(2, "  beta (beta@example.com) expires: 2025-06-20");
   });
 
-  test("shows 'Personal' when organizationName is missing", () => {
+  test("shows email even when organizationName is missing", () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     const profileDir = path.join(authDir, "personal");
@@ -98,7 +92,7 @@ describe("runAuthList", () => {
 
     runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  personal (user@gmail.com) [Personal] expires: 2025-07-01");
+    expect(spy).toHaveBeenCalledWith("  personal (user@gmail.com) expires: 2025-07-01");
   });
 
   test("shows 'unknown' when expiresAt is missing", () => {
@@ -119,7 +113,7 @@ describe("runAuthList", () => {
 
     runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  noexpiry (noexp@example.com) [SomeCorp] expires: unknown");
+    expect(spy).toHaveBeenCalledWith("  noexpiry (noexp@example.com) expires: unknown");
   });
 
   test("marks active profile with * when userID matches", () => {
@@ -146,7 +140,7 @@ describe("runAuthList", () => {
 
     runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("* work (work@company.com) [WorkCorp] expires: 2025-12-31");
+    expect(spy).toHaveBeenCalledWith("* work (work@company.com) expires: 2025-12-31");
   });
 
   test("non-active profile has space prefix instead of *", () => {
@@ -176,6 +170,6 @@ describe("runAuthList", () => {
 
     runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  other (other@example.com) [OtherCorp] expires: 2025-08-15");
+    expect(spy).toHaveBeenCalledWith("  other (other@example.com) expires: 2025-08-15");
   });
 });

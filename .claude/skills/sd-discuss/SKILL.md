@@ -1,7 +1,6 @@
 ---
 name: sd-discuss
 description: "Technical discussion with industry research (explicit invocation only)"
-model: opus
 ---
 
 # Standards-Based Technical Discussion

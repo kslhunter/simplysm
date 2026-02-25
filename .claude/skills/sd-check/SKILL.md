@@ -1,6 +1,7 @@
 ---
 name: sd-check
 description: "Typecheck, lint, test verification (explicit invocation only)"
+model: sonnet
 allowed-tools: Bash(npm run check), Bash(npm run typecheck), Bash(npm run lint --fix), Bash(npm run vitest)
 ---
 

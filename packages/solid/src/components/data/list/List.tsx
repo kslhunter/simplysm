@@ -18,20 +18,20 @@ const insetClass = clsx(
 
 export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**
-   * 투명 배경 스타일 적용
+   * Apply transparent background style
    */
   inset?: boolean;
 }
 
 /**
- * ListItem들을 담는 컨테이너 컴포넌트
+ * Container component for ListItems
  *
- * 트리뷰 스타일 키보드 네비게이션 지원:
- * - `Space`/`Enter`: 현재 항목 토글
- * - `ArrowUp`/`ArrowDown`: 이전/다음 항목으로 포커스 이동
- * - `Home`/`End`: 첫 번째/마지막 항목으로 포커스 이동
- * - `ArrowRight`: 닫혀있으면 열기, 열려있으면 첫 번째 자식으로 포커스
- * - `ArrowLeft`: 열려있으면 닫기, 닫혀있으면 부모로 포커스
+ * Supports tree-view style keyboard navigation:
+ * - `Space`/`Enter`: toggle current item
+ * - `ArrowUp`/`ArrowDown`: move focus to previous/next item
+ * - `Home`/`End`: move focus to first/last item
+ * - `ArrowRight`: open if closed, or focus first child if open
+ * - `ArrowLeft`: close if open, or focus parent if closed
  *
  * @example
  * ```tsx
@@ -78,7 +78,7 @@ const ListBase: ParentComponent<ListProps> = (props) => {
     if (!isOpen) {
       current.click();
     } else {
-      // button의 다음 형제 요소(Collapse) 내에서 첫 번째 자식 항목 찾기
+      // Find the first child item inside the next sibling (Collapse) of the button
       const collapse = current.nextElementSibling;
       const nestedItem = collapse?.querySelector<HTMLElement>("[data-list-item]");
       nestedItem?.focus();
@@ -92,7 +92,7 @@ const ListBase: ParentComponent<ListProps> = (props) => {
     if (hasChildren && isOpen) {
       current.click();
     } else {
-      // Collapse의 이전 형제가 부모 button
+      // The previous sibling of the Collapse is the parent button
       const parentItem = current.closest("[data-collapse]")
         ?.previousElementSibling as HTMLElement | null;
       if (parentItem?.hasAttribute("data-list-item")) {

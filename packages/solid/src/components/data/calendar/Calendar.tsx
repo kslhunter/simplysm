@@ -73,7 +73,7 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
     const items = local.items;
     const getDate = local.getItemDate;
 
-    // 아이템을 날짜별로 그룹핑 (O(N))
+    // Group items by date (O(N))
     const itemMap = new Map<number, { item: TValue; index: number }[]>();
     for (let i = 0; i < items.length; i++) {
       const date = getDate(items[i], i);

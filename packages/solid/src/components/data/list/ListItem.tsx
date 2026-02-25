@@ -46,64 +46,64 @@ export interface ListItemProps extends Omit<
   "onClick"
 > {
   /**
-   * 중첩 리스트의 열림 상태 (controlled 모드)
+   * Open state of the nested list (controlled mode)
    */
   open?: boolean;
 
   /**
-   * 열림 상태 변경 콜백 (있으면 controlled 모드)
+   * Callback for open state change (enables controlled mode)
    */
   onOpenChange?: (open: boolean) => void;
 
   /**
-   * 선택된 상태
+   * Selected state
    */
   selected?: boolean;
 
   /**
-   * 읽기 전용 (클릭 비활성화, 일반 색상 유지)
+   * Readonly (click disabled, normal color retained)
    */
   readonly?: boolean;
 
   /**
-   * 비활성화 (클릭 불가, 흐려짐)
+   * Disabled (unclickable, dimmed)
    */
   disabled?: boolean;
 
   /**
-   * 선택 표시 아이콘 컴포넌트 (중첩 List가 없을 때만 표시)
+   * Selection icon component (shown only when no nested List)
    */
   selectedIcon?: Component<IconProps>;
 
   /**
-   * 아이템 크기
+   * Item size
    */
   size?: ComponentSize;
 
   /**
-   * 클릭 핸들러 (중첩 List가 없을 때 호출)
+   * Click handler (called when no nested List)
    */
   onClick?: (e: MouseEvent) => void;
 }
 
 /**
- * 리스트 아이템 컴포넌트
+ * List item component
  *
- * `ListItem.Children`으로 중첩 리스트를 포함하면 아코디언 동작을 지원한다.
- * controlled 모드로 사용하려면 open과 onOpenChange를 함께 제공한다.
+ * Supports accordion behavior when a nested list is included via `ListItem.Children`.
+ * Provide both open and onOpenChange for controlled mode.
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <List.Item>Simple item</List.Item>
  *
- * // 선택 상태
+ * // Selected state
  * <List.Item selected>Selected item</List.Item>
  *
- * // 선택 아이콘
+ * // Selection icon
  * <List.Item selectedIcon={IconCheck} selected>Icon selection</List.Item>
  *
- * // 중첩 리스트 (아코디언)
+ * // Nested list (accordion)
  * <List.Item>
  *   Folder
  *   <List.Item.Children>

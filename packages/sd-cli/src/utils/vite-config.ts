@@ -11,11 +11,11 @@ import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
 import { FsWatcher, pathNorm } from "@simplysm/core-node";
 
 /**
- * Tailwind config의 scope 패키지 의존성을 watch하는 Vite 플러그인.
+ * Vite plugin that watches scope package dependencies of a Tailwind config.
  *
- * Tailwind CSS의 내장 의존성 추적은 상대 경로 import만 처리하므로,
- * preset 등으로 참조하는 scope 패키지의 config 변경을 감지하지 못한다.
- * 이 플러그인이 해당 파일들을 watch하고, 변경 시 Tailwind 캐시를 무효화한다.
+ * Tailwind CSS's built-in dependency tracking only handles relative path imports,
+ * so it cannot detect config changes in scope packages referenced via presets.
+ * This plugin watches those files and invalidates the Tailwind cache on change.
  */
 function sdTailwindConfigDepsPlugin(pkgDir: string, replaceDeps: string[]): Plugin {
   return {
@@ -35,14 +35,14 @@ function sdTailwindConfigDepsPlugin(pkgDir: string, replaceDeps: string[]): Plug
 
       server.watcher.on("change", (changed) => {
         if (externalDeps.some((d) => pathNorm(d) === pathNorm(changed))) {
-          // jiti (Tailwind의 config 로더)가 사용하는 require 캐시를 정리하여
-          // config 재로드 시 변경된 파일이 새로 읽히도록 한다
+          // Clear require cache used by jiti (Tailwind's config loader)
+          // so changed files are re-read on config reload
           const _require = createRequire(import.meta.url);
           for (const dep of allDeps) {
             delete _require.cache[dep];
           }
 
-          // Tailwind 캐시 무효화: config의 mtime을 갱신하여 재로드 유도
+          // Invalidate Tailwind cache: update config mtime to trigger reload
           const now = new Date();
           fs.utimesSync(configPath, now, now);
           server.ws.send({ type: "full-reload" });
@@ -53,12 +53,12 @@ function sdTailwindConfigDepsPlugin(pkgDir: string, replaceDeps: string[]): Plug
 }
 
 /**
- * 패키지가 subpath-only export인지 확인 (exports에 "."이 없는 패키지)
+ * Check if a package is subpath-only export (no "." in exports field)
  *
- * 예: @tiptap/pm은 "./state", "./view" 등 subpath만 export하므로 pre-bundling 불가
- * pnpm 구조에서 두 경로를 시도:
- * 1. realpath를 따라 .pnpm node_modules에서 찾기
- * 2. symlink된 workspace 패키지의 node_modules에서 fallback
+ * e.g., @tiptap/pm only exports "./state", "./view" etc., so pre-bundling is not possible.
+ * Tries two paths in pnpm structure:
+ * 1. Follow realpath to find in .pnpm node_modules
+ * 2. Fallback to symlinked workspace package's node_modules
  */
 function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
   try {
@@ -77,14 +77,14 @@ function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
       return true;
     }
   } catch {
-    // 읽기 실패 시 false 반환 (pre-bundling 포함)
+    // Return false on read failure (include in pre-bundling)
   }
   return false;
 }
 
 /**
- * public-dev/ 디렉토리의 파일을 dev 모드에서 public/보다 우선하여 서빙하는 Vite 플러그인.
- * Vite의 기본 publicDir(public/)은 그대로 유지하면서, public-dev/의 파일이 같은 경로에 있으면 우선한다.
+ * Vite plugin that serves files from public-dev/ directory with priority over public/ in dev mode.
+ * Keeps Vite's default publicDir (public/) while giving precedence to public-dev/ files at the same path.
  */
 function sdPublicDevPlugin(pkgDir: string): Plugin {
   const publicDevDir = path.join(pkgDir, "public-dev");
@@ -94,14 +94,14 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
     configureServer(server) {
       if (!fs.existsSync(publicDevDir)) return;
 
-      // Vite의 기본 static 서빙보다 먼저 public-dev/ 파일을 체크
+      // Check public-dev/ files before Vite's default static serving
       server.middlewares.use((req, res, next) => {
         if (req.url == null) {
           next();
           return;
         }
 
-        // base path 제거
+        // Strip base path
         const base = server.config.base || "/";
         let urlPath = req.url.split("?")[0];
         if (urlPath.startsWith(base)) {
@@ -111,7 +111,7 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
           urlPath = urlPath.slice(1);
         }
 
-        // path traversal 방어: publicDevDir 범위 밖의 파일 접근 차단
+        // Path traversal defense: block access to files outside publicDevDir
         const decodedPath = decodeURIComponent(urlPath);
         const filePath = path.resolve(publicDevDir, decodedPath);
         const normalizedRoot = path.resolve(publicDevDir);
@@ -121,7 +121,7 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
         }
 
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-          // sirv 대신 간단히 파일 스트림으로 응답
+          // Respond with file stream instead of sirv
           const stream = fs.createReadStream(filePath);
           stream.pipe(res);
         } else {
@@ -133,13 +133,13 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
 }
 
 /**
- * scope 패키지의 dist 디렉토리 변경을 감지하는 Vite 플러그인.
+ * Vite plugin that detects changes in scope packages' dist directories.
  *
- * Vite는 node_modules를 기본적으로 watch에서 제외하므로,
- * scope 패키지의 dist 파일이 변경되어도 HMR/리빌드가 트리거되지 않는다.
- * 이 플러그인은 별도의 FsWatcher로 scope 패키지의 dist 디렉토리를 감시하고,
- * 변경 시 Vite의 내부 HMR 파이프라인을 트리거한다.
- * optimizeDeps에서 제외하여 pre-bundled 캐시로 인한 변경 무시를 방지한다.
+ * Vite excludes node_modules from watch by default, so dist file changes
+ * in scope packages do not trigger HMR/rebuild.
+ * This plugin uses a separate FsWatcher to monitor scope packages' dist directories
+ * and triggers Vite's internal HMR pipeline on change.
+ * Excludes from optimizeDeps to prevent changes being ignored due to pre-bundled cache.
  */
 function sdScopeWatchPlugin(
   pkgDir: string,
@@ -185,7 +185,7 @@ function sdScopeWatchPlugin(
             nestedDepsToInclude.push(`${pkg} > ${dep}`);
           }
         } catch {
-          // package.json 읽기 실패 시 스킵
+          // Skip on package.json read failure
         }
       }
 

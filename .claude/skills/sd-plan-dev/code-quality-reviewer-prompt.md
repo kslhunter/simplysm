@@ -1,6 +1,6 @@
 # Code Quality Reviewer Prompt
 
-Template for `Task(general-purpose, model: "opus")`.
+Template for `Task(general-purpose)`.
 Runs in parallel with spec reviewer. Fill in all `[bracketed]` sections.
 
 ```

@@ -1,6 +1,6 @@
 # Final Review Prompt
 
-Template for `Task(general-purpose, model: "opus")`.
+Template for `Task(general-purpose)`.
 Run after all batches complete. Fill in all `[bracketed]` sections.
 
 ```

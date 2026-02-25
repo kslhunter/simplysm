@@ -1,7 +1,7 @@
 import { createContext, useContext } from "solid-js";
 
 /**
- * List context - 중첩 level 전달용
+ * List context - for passing nested level
  */
 export interface ListContextValue {
   level: number;
