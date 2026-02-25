@@ -9,7 +9,7 @@ describe("Errors", () => {
       const cause = new Error("original error");
       const error = new SdError(cause, "wrapped message");
 
-      // 메시지는 "wrapped message => original error" 형식으로 결합됨
+      // Message is combined in "wrapped message => original error" format
       expect(error.message).toContain("wrapped message");
       expect(error.message).toContain("original error");
     });
@@ -40,11 +40,11 @@ describe("Errors", () => {
     });
 
     it("converts non-Error object passed as cause to String()", () => {
-      // 숫자
+      // Number
       const errorFromNumber = new SdError(42, "number cause");
       expect(errorFromNumber.message).toContain("42");
 
-      // 객체
+      // Object
       const errorFromObject = new SdError({ code: 500, reason: "server error" }, "object cause");
       expect(errorFromObject.message).toContain("object cause");
 
@@ -62,7 +62,7 @@ describe("Errors", () => {
     it("creates with argObj", () => {
       const error = new ArgumentError("invalid argument", { param: "value", expected: "string" });
 
-      // YAML 형식으로 argObj가 메시지에 포함됨
+      // argObj is included in message in YAML format
       expect(error.message).toContain("invalid argument");
       expect(error.message).toContain("param");
       expect(error.message).toContain("value");
