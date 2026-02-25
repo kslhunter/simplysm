@@ -19,7 +19,7 @@ import { objClearUndefined } from "@simplysm/core-common";
  * @param db - DbContext instance
  * @param builder - Table/View/Procedure builder
  * @returns CREATE TABLE/VIEW/PROCEDURE QueryDef
- * @throws {Error} 알 수 없는 builder 타입일 때
+ * @throws {Error} When unknown builder type
  */
 export function getCreateObjectQueryDef(
   db: DbContextBase,
@@ -33,7 +33,7 @@ export function getCreateObjectQueryDef(
     return getCreateProcQueryDef(db, builder);
   }
 
-  throw new Error(`알 수 없는 builder type: ${typeof builder}`);
+  throw new Error(`Unknown builder type: ${typeof builder}`);
 }
 
 /**
@@ -42,12 +42,12 @@ export function getCreateObjectQueryDef(
  * @param db - DbContext instance
  * @param table - Table builder
  * @returns CREATE TABLE QueryDef
- * @throws {Error} Table에 컬럼이 없을 때
+ * @throws {Error} When table has no columns
  */
 export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<any, any>): QueryDef {
   const columns = table.meta.columns as ColumnBuilderRecord | undefined;
   if (columns == null) {
-    throw new Error(`테이블 '${table.meta.name}'에 컬럼이 없습니다.`);
+    throw new Error(`Table '${table.meta.name}' has no columns.`);
   }
 
   return {
@@ -70,14 +70,14 @@ export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<an
  * @param db - DbContext instance
  * @param view - View builder
  * @returns CREATE VIEW QueryDef
- * @throws {Error} View에 viewFn이 없을 때
+ * @throws {Error} When view has no viewFn
  */
 export function getCreateViewQueryDef(
   db: DbContextBase,
   view: ViewBuilder<any, any, any>,
 ): QueryDef {
   if (view.meta.viewFn == null) {
-    throw new Error(`뷰 '${view.meta.name}'에 viewFn이 없습니다.`);
+    throw new Error(`View '${view.meta.name}' has no viewFn.`);
   }
 
   const qr = view.meta.viewFn(db);
@@ -100,14 +100,14 @@ export function getCreateViewQueryDef(
  * @param db - DbContext instance
  * @param procedure - Procedure builder
  * @returns CREATE PROCEDURE QueryDef
- * @throws {Error} Procedure에 본문이 없을 때
+ * @throws {Error} When procedure has no body
  */
 export function getCreateProcQueryDef(
   db: DbContextBase,
   procedure: ProcedureBuilder<any, any>,
 ): QueryDef {
   if (procedure.meta.query == null) {
-    throw new Error(`프로시저 '${procedure.meta.name}'에 본문이 없습니다.`);
+    throw new Error(`Procedure '${procedure.meta.name}' has no body.`);
   }
 
   const params = procedure.meta.params as ColumnBuilderRecord | undefined;
@@ -171,11 +171,11 @@ export function getDropProcQueryDef(procedure: QueryDefObjectName): DropProcQuer
 }
 
 /**
- * TableBuilder/ViewBuilder를 QueryDefObjectName으로 Transform
+ * Transform TableBuilder/ViewBuilder to QueryDefObjectName
  *
  * @param db - DbContext instance
- * @param tableOrView - Table 또는 View builder
- * @returns QueryDef에서 사용할 object 이름 information
+ * @param tableOrView - Table or View builder
+ * @returns Object name information for use in QueryDef
  */
 export function getQueryDefObjectName(
   db: DbContextBase,

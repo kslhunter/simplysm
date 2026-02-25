@@ -386,7 +386,7 @@ export class Queryable<
     }
 
     if (!this.meta.orderBy) {
-      throw new ArgumentError("limit()은 ORDER BY 절이 필요합니다.", {
+      throw new ArgumentError("limit() requires ORDER BY clause.", {
         method: "limit",
         required: "orderBy",
       });
@@ -778,7 +778,7 @@ export class Queryable<
 
     for (const relationName of relationNames) {
       if (!(currentTable instanceof TableBuilder)) {
-        throw new Error("include()는 TableBuilder 기반 queryable에서만 사용할 수 있습니다.");
+        throw new Error("include() can only be used on TableBuilder-based queryables.");
       }
 
       const parentChain = chainParts.join(".");
@@ -798,7 +798,7 @@ export class Queryable<
 
       const relationDef = currentTable.meta.relations?.[relationName];
       if (relationDef == null) {
-        throw new Error(`관계 '${relationName}'을(를) 찾을 수 없습니다.`);
+        throw new Error(`Relation '${relationName}' not found.`);
       }
 
       if (relationDef instanceof ForeignKeyBuilder || relationDef instanceof RelationKeyBuilder) {
@@ -1044,7 +1044,7 @@ export class Queryable<
   async single(): Promise<TData | undefined> {
     const result = await this.top(2).result();
     if (result.length > 1) {
-      throw new ArgumentError("단일 결과를 기대했지만 2개 이상의 결과가 반환되었습니다.", {
+      throw new ArgumentError("Expected single result but multiple results returned.", {
         table: this._getSourceName(),
         resultCount: result.length,
       });
@@ -1099,10 +1099,10 @@ export class Queryable<
    */
   async count(fwd?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>): Promise<number> {
     if (this.meta.distinct) {
-      throw new Error("distinct() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
+      throw new Error("Cannot use count() after distinct(). Use wrap() first.");
     }
     if (this.meta.groupBy) {
-      throw new Error("groupBy() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
+      throw new Error("Cannot use count() after groupBy(). Use wrap() first.");
     }
 
     const countQr = fwd
@@ -1737,7 +1737,7 @@ export class Queryable<
 
     if (from instanceof TableBuilder) {
       if (from.meta.columns == null) {
-        throw new Error(`테이블 '${from.meta.name}'에 Column definition가 없습니다.`);
+        throw new Error(`Table '${from.meta.name}' has no Column definition.`);
       }
 
       let aiColName: string | undefined;
@@ -1753,7 +1753,7 @@ export class Queryable<
       };
     }
 
-    throw new Error("CUD 작업은 TableBuilder 기반 queryable에서만 사용할 수 있습니다.");
+    throw new Error("CUD operations can only be used on TableBuilder-based queryables.");
   }
 
   //#endregion
@@ -2026,7 +2026,7 @@ export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<
       }) as any;
     }
 
-    throw new Error(`잘못된 Table/View Metadata: ${tableOrView.meta.name}`);
+    throw new Error(`Invalid Table/View Metadata: ${tableOrView.meta.name}`);
   };
 }
 
