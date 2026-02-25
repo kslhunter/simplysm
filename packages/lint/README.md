@@ -295,9 +295,9 @@ It warns even if only creating without throwing. Auto-fix is not supported.
 ```typescript
 import { NotImplementedError } from "@simplysm/core-common";
 
-throw new NotImplementedError();                // Warning: "미구현" (default message)
+throw new NotImplementedError();                // Warning: "Not implemented" (default message)
 throw new NotImplementedError("Feature X");     // Warning: "Feature X"
-const err = new NotImplementedError();           // Warning: "미구현" (default message)
+const err = new NotImplementedError();           // Warning: "Not implemented" (default message)
 ```
 
 **Aliased imports are also detected:**

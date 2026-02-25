@@ -269,7 +269,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },
@@ -289,7 +289,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },
@@ -309,7 +309,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },
@@ -329,7 +329,7 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },

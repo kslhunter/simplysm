@@ -85,9 +85,9 @@ export function createWorker<
     }
     const request = decoded as WorkerRequest;
 
-    const methodFn = (methods[request.method] as ((...args: unknown[]) => unknown)) || undefined;
+    const methodFn = methods[request.method] as ((...args: unknown[]) => unknown) | undefined;
 
-    if (!methodFn) {
+    if (methodFn == null) {
       const response: WorkerResponse = {
         request,
         type: "error",

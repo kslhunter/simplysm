@@ -72,9 +72,9 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
 
     this._worker.on("exit", (code) => {
       if (!this._isTerminated && code !== 0) {
-        logger.error(`Worker exited with error (code: ${code})`);
+        logger.error(`Worker crashed (code: ${code})`);
         // Reject all pending requests on abnormal exit
-        this._rejectAllPending(new Error(`Worker exited abnormally (code: ${code})`));
+        this._rejectAllPending(new Error(`Worker crashed (code: ${code})`));
       }
     });
 
