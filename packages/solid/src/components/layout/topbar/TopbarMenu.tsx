@@ -120,7 +120,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
     return false;
   };
 
-  // 현재 메뉴 또는 하위 메뉴가 선택되었는지 확인 (createMemo로 캐싱)
+  // Check if current menu or submenu is selected (cached with createMemo)
   const isSelected = createMemo(() => {
     if (props.menu.href === location.pathname) return true;
     if (props.menu.children) {
@@ -200,7 +200,7 @@ const TopbarMenuDropdownItem: Component<TopbarMenuDropdownItemProps> = (props) =
       }
       props.onClose();
     }
-    // href가 없고 children만 있는 경우 클릭해도 닫히지 않음
+    // if no href but has children, clicking doesn't close the menu
   };
 
   return (

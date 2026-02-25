@@ -211,14 +211,14 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         />
       </label>
 
-      {/* 6. 구분선 */}
+      {/* 6. Separator */}
       <div class={separatorClass} />
 
       {/* 7. List (Bullet, Ordered) */}
       <button
         type="button"
         class={btnClass(isBulletList)}
-        title="글머리 기호 목록"
+        title="Bullet list"
         onClick={() => props.editor.chain().focus().toggleBulletList().run()}
       >
         <Icon icon={IconList} size="1em" />
@@ -226,20 +226,20 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isOrderedList)}
-        title="번호 매기기 목록"
+        title="Numbered list"
         onClick={() => props.editor.chain().focus().toggleOrderedList().run()}
       >
         <Icon icon={IconListNumbers} size="1em" />
       </button>
 
-      {/* 8. 구분선 */}
+      {/* 8. Separator */}
       <div class={separatorClass} />
 
       {/* 9. Indentation (Increase, Decrease) */}
       <button
         type="button"
         class={toolbarBtnClass}
-        title="들여쓰기"
+        title="Increase indent"
         onClick={() => props.editor.chain().focus().sinkListItem("listItem").run()}
       >
         <Icon icon={IconIndentIncrease} size="1em" />
@@ -247,20 +247,20 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={toolbarBtnClass}
-        title="내어쓰기"
+        title="Decrease indent"
         onClick={() => props.editor.chain().focus().liftListItem("listItem").run()}
       >
         <Icon icon={IconIndentDecrease} size="1em" />
       </button>
 
-      {/* 10. 구분선 */}
+      {/* 10. Separator */}
       <div class={separatorClass} />
 
       {/* 11. Block (Blockquote, CodeBlock) */}
       <button
         type="button"
         class={btnClass(isBlockquote)}
-        title="인용"
+        title="Blockquote"
         onClick={() => props.editor.chain().focus().toggleBlockquote().run()}
       >
         <Icon icon={IconQuote} size="1em" />
@@ -268,20 +268,20 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isCodeBlock)}
-        title="코드 블록"
+        title="Code block"
         onClick={() => props.editor.chain().focus().toggleCodeBlock().run()}
       >
         <Icon icon={IconCode} size="1em" />
       </button>
 
-      {/* 12. 구분선 */}
+      {/* 12. Separator */}
       <div class={separatorClass} />
 
       {/* 13. Alignment (Left, Center, Right, Justify) */}
       <button
         type="button"
         class={btnClass(isAlignLeft)}
-        title="왼쪽 정렬"
+        title="Align left"
         onClick={() => props.editor.chain().focus().setTextAlign("left").run()}
       >
         <Icon icon={IconAlignLeft} size="1em" />
@@ -289,7 +289,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignCenter)}
-        title="가운데 정렬"
+        title="Align center"
         onClick={() => props.editor.chain().focus().setTextAlign("center").run()}
       >
         <Icon icon={IconAlignCenter} size="1em" />
@@ -297,7 +297,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignRight)}
-        title="오른쪽 정렬"
+        title="Align right"
         onClick={() => props.editor.chain().focus().setTextAlign("right").run()}
       >
         <Icon icon={IconAlignRight} size="1em" />
@@ -305,20 +305,20 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignJustify)}
-        title="양쪽 정렬"
+        title="Justify"
         onClick={() => props.editor.chain().focus().setTextAlign("justify").run()}
       >
         <Icon icon={IconAlignJustified} size="1em" />
       </button>
 
-      {/* 14. 구분선 */}
+      {/* 14. Separator */}
       <div class={separatorClass} />
 
       {/* 15. Insert table */}
       <button
         type="button"
         class={toolbarBtnClass}
-        title="테이블 삽입"
+        title="Insert table"
         onClick={() =>
           props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
@@ -327,18 +327,18 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       </button>
 
       {/* 16. Insert image */}
-      <button type="button" class={toolbarBtnClass} title="이미지 삽입" onClick={handleImageInsert}>
+      <button type="button" class={toolbarBtnClass} title="Insert image" onClick={handleImageInsert}>
         <Icon icon={IconPhoto} size="1em" />
       </button>
 
-      {/* 17. 구분선 */}
+      {/* 17. Separator */}
       <div class={separatorClass} />
 
       {/* 18. Clear formatting */}
       <button
         type="button"
         class={toolbarBtnClass}
-        title="서식 지우기"
+        title="Clear formatting"
         onClick={() => props.editor.chain().focus().clearNodes().unsetAllMarks().run()}
       >
         <Icon icon={IconClearFormatting} size="1em" />

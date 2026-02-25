@@ -317,7 +317,7 @@ export const NumberInput: NumberInputComponent = (props) => {
         <Show
           when={local.inset}
           fallback={
-            // standalone 모드: 기존 Show 패턴 유지
+            // standalone mode: keep existing Show pattern
             <Show
               when={isEditable()}
               fallback={

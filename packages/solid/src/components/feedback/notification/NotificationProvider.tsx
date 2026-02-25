@@ -99,10 +99,10 @@ export const NotificationProvider: ParentComponent = (props) => {
 
         const updated = { ...item, ...updates };
 
-        // renotify: 읽은 상태면 다시 읽지 않음으로 변경
+        // renotify: if read, change back to unread
         if (options?.renotify && item.read) {
           updated.read = false;
-          // 배너가 dismiss된 상태에서 renotify되면 다시 보이게
+          // if dismissed banner is renotified, show it again
           setDismissedBannerId(null);
         }
 
@@ -155,10 +155,10 @@ export const NotificationProvider: ParentComponent = (props) => {
 
   return (
     <NotificationContext.Provider value={contextValue}>
-      {/* 스크린 리더용 Live Region */}
+      {/* Screen reader Live Region */}
       <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
         <Show when={latestUnread()}>
-          {(item) => `알림: ${item().title} ${item().message ?? ""}`}
+          {(item) => `Notification: ${item().title} ${item().message ?? ""}`}
         </Show>
       </div>
       {props.children}
