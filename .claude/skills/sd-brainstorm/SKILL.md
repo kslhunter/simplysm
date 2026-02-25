@@ -124,7 +124,7 @@ You can start from any step or skip steps as needed.
    - Path B recommended: small bug fixes, single-file changes, config tweaks, minor adjustments
    - Briefly explain why (1 sentence)
 - Do NOT auto-proceed to any step. Present the overview with recommendation and wait for the user's choice.
-- **Yolo mode**: If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
+- **Yolo mode**: If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B auto"), execute all steps of the chosen path sequentially without stopping between steps.
 - **Yolo sd-check — include dependents**: NEVER check only modified packages. Also check all packages that depend on them:
    1. Identify modified packages from `git diff --name-only`
    2. Trace reverse dependencies (packages that import from modified packages) using `package.json` or project dependency graph

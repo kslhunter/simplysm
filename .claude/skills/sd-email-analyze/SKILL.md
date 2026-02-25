@@ -13,7 +13,7 @@ Python script that parses `.eml` and `.msg` (Outlook) email files. Extracts mail
 ## When to Use
 
 - User provides a `.eml` or `.msg` file to analyze or summarize
-- Korean email content needs proper decoding
+- Email content needs proper decoding
 
 ## Usage
 
@@ -49,4 +49,4 @@ Two sources extracted:
 
 - **Wrong Python**: Ensure `python` points to Python 3.8+
 - **Firewall blocking pip**: First run needs internet for `extract-msg` install
-- **Forgetting inline images**: Always check "본문 삽입 이미지" section and Read each path
+- **Forgetting inline images**: Always check the "Inline images" section and read each path

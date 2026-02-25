@@ -318,7 +318,7 @@ throw new CC.NotImplementedError(); // Warning
 
 **Message display rules:**
 
-- Calling `new NotImplementedError()` without arguments outputs a warning with the Korean default message "미구현".
+- Calling `new NotImplementedError()` without arguments outputs a warning with the default message "Not implemented".
 - If a string argument is passed, that string is used as the warning message.
 
 ## recommended Config Details

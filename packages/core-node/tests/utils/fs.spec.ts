@@ -529,11 +529,11 @@ describe("fs functions", () => {
       const lstatResult = fsLstatSync(linkPath);
       const statResult = fsStatSync(linkPath);
 
-      // lstat은 심볼릭 링크 자체의 정보를 반환
+      // lstat returns information about the symbolic link itself
       expect(lstatResult.isSymbolicLink()).toBe(true);
       expect(lstatResult.isFile()).toBe(false);
 
-      // stat은 링크 대상의 정보를 반환
+      // stat returns information about the target of the link
       expect(statResult.isSymbolicLink()).toBe(false);
       expect(statResult.isFile()).toBe(true);
     });
@@ -558,11 +558,11 @@ describe("fs functions", () => {
       const lstatResult = await fsLstat(linkPath);
       const statResult = await fsStat(linkPath);
 
-      // lstat은 심볼릭 링크 자체의 정보를 반환
+      // lstat returns information about the symbolic link itself
       expect(lstatResult.isSymbolicLink()).toBe(true);
       expect(lstatResult.isFile()).toBe(false);
 
-      // stat은 링크 대상의 정보를 반환
+      // stat returns information about the target of the link
       expect(statResult.isSymbolicLink()).toBe(false);
       expect(statResult.isFile()).toBe(true);
     });
@@ -691,7 +691,7 @@ describe("fs functions", () => {
 
   //#endregion
 
-  //#region 에러 케이스
+  //#region Error Cases
 
   describe("error cases", () => {
     it("includes path information in SdError when reading nonexistent file", () => {

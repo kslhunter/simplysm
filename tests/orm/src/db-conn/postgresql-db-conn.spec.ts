@@ -136,7 +136,7 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("트랜잭션", () => {
+  describe("Transaction", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
@@ -155,7 +155,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("커밋", async () => {
+    it("Commit", async () => {
       await conn.beginTransaction();
       expect(conn.isInTransaction).toBe(true);
 
@@ -167,7 +167,7 @@ describe("PostgresqlDbConn", () => {
       expect(results[0]).toHaveLength(1);
     });
 
-    it("롤백", async () => {
+    it("Rollback", async () => {
       await conn.beginTransaction();
 
       await conn.execute([`INSERT INTO "TxTable" (name) VALUES ('rollback-test')`]);
@@ -199,7 +199,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("대량 INSERT (COPY FROM STDIN)", async () => {
+    it("Bulk INSERT (COPY FROM STDIN)", async () => {
       await conn.bulkInsert('"BulkTable"', bulkColumnMetas, bulkRecords);
 
       const results = await conn.execute([`SELECT * FROM "BulkTable" ORDER BY id`]);
@@ -210,12 +210,12 @@ describe("PostgresqlDbConn", () => {
       expect(results[0][2]).toMatchObject({ id: 3, name: "bulk3" });
     });
 
-    it("빈 배열 INSERT 시 아무 동작 없음", async () => {
-      // 빈 배열로 호출해도 에러 없이 완료되어야 함
+    it("Empty array INSERT has no effect", async () => {
+      // Calling with empty array should complete without error
       await expect(conn.bulkInsert('"BulkTable"', bulkColumnMetas, [])).resolves.toBeUndefined();
     });
 
-    it("특수 문자 포함 데이터 INSERT", async () => {
+    it("INSERT data with special characters", async () => {
       await conn.execute([`DELETE FROM "BulkTable"`]);
 
       const records = [
@@ -235,7 +235,7 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("다양한 타입 테스트", () => {
+  describe("Various type test", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
@@ -259,7 +259,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - 다양한 타입", async () => {
+    it("bulkInsert - various types", async () => {
       await conn.bulkInsert('"TypeTable"', typeColumnMetas, typeRecords);
 
       const results = await conn.execute([`SELECT * FROM "TypeTable" ORDER BY id`]);
@@ -272,7 +272,7 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("bulkInsert NULL 및 특수 타입 테스트", () => {
+  describe("bulkInsert NULL and special type test", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
@@ -292,7 +292,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - NULL 값 삽입", async () => {
+    it("bulkInsert - insert NULL values", async () => {
       await conn.bulkInsert('"NullableTable"', nullableColumnMetas, nullableRecords);
 
       const results = await conn.execute([`SELECT * FROM "NullableTable" ORDER BY id`]);
@@ -309,7 +309,7 @@ describe("PostgresqlDbConn", () => {
     });
   });
 
-  describe("bulkInsert UUID 및 binary 타입 테스트", () => {
+  describe("bulkInsert UUID and binary type test", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
@@ -329,7 +329,7 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - UUID 및 binary 타입 삽입", async () => {
+    it("bulkInsert - insert UUID and binary types", async () => {
       const testUuid1 = Uuid.new();
       const testUuid2 = Uuid.new();
       const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
@@ -347,13 +347,13 @@ describe("PostgresqlDbConn", () => {
       expect(results[0]).toHaveLength(2);
       expect(results[0][0]["uuid_val"]).toBe(testUuid1.toString());
       expect(results[0][1]["uuid_val"]).toBe(testUuid2.toString());
-      // PostgreSQL BYTEA는 Buffer로 반환됨
+      // PostgreSQL BYTEA is returned as Buffer
       expect(new Uint8Array(results[0][0]["binary_val"] as ArrayBuffer)).toEqual(testBinary1);
       expect(new Uint8Array(results[0][1]["binary_val"] as ArrayBuffer)).toEqual(testBinary2);
     });
   });
 
-  describe("트랜잭션 격리 수준 테스트", () => {
+  describe("Transaction isolation level test", () => {
     beforeAll(async () => {
       conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await conn.connect();
@@ -373,8 +373,8 @@ describe("PostgresqlDbConn", () => {
       await conn.close();
     });
 
-    it("READ_UNCOMMITTED 격리 수준", async () => {
-      // PostgreSQL에서 READ_UNCOMMITTED는 READ_COMMITTED와 동일하게 동작
+    it("READ_UNCOMMITTED isolation level", async () => {
+      // In PostgreSQL, READ_UNCOMMITTED behaves the same as READ_COMMITTED
       await conn.beginTransaction("READ_UNCOMMITTED");
       expect(conn.isInTransaction).toBe(true);
 
@@ -383,7 +383,7 @@ describe("PostgresqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("READ_COMMITTED 격리 수준", async () => {
+    it("READ_COMMITTED isolation level", async () => {
       await conn.beginTransaction("READ_COMMITTED");
       expect(conn.isInTransaction).toBe(true);
 
@@ -392,7 +392,7 @@ describe("PostgresqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("REPEATABLE_READ 격리 수준", async () => {
+    it("REPEATABLE_READ isolation level", async () => {
       await conn.beginTransaction("REPEATABLE_READ");
       expect(conn.isInTransaction).toBe(true);
 
@@ -403,7 +403,7 @@ describe("PostgresqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("SERIALIZABLE 격리 수준", async () => {
+    it("SERIALIZABLE isolation level", async () => {
       await conn.beginTransaction("SERIALIZABLE");
       expect(conn.isInTransaction).toBe(true);
 

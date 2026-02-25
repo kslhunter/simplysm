@@ -10,10 +10,10 @@ import {
 } from "@simplysm/core-common";
 
 describe("string utils", () => {
-  //#region getSuffix - Korean postposition handling
+  //#region koreanGetSuffix - Korean postposition handling
 
   describe("koreanGetSuffix()", () => {
-    describe("With final consonant", () => {
+    describe("with final consonant", () => {
       it("'을' type returns '을'", () => {
         expect(koreanGetSuffix("책", "을")).toBe("을");
       });
@@ -43,24 +43,24 @@ describe("string utils", () => {
       });
     });
 
-    describe("Non-Korean character cases", () => {
-      it("Treats words ending with English letter as no final consonant", () => {
+    describe("non-Korean character cases", () => {
+      it("treats words ending with English letter as no final consonant", () => {
         expect(koreanGetSuffix("ABC", "을")).toBe("를");
         expect(koreanGetSuffix("test", "은")).toBe("는");
       });
 
-      it("Treats words ending with number as no final consonant", () => {
+      it("treats words ending with number as no final consonant", () => {
         expect(koreanGetSuffix("123", "을")).toBe("를");
         expect(koreanGetSuffix("456", "은")).toBe("는");
       });
 
-      it("Empty string treated as no final consonant", () => {
+      it("empty string treated as no final consonant", () => {
         expect(koreanGetSuffix("", "을")).toBe("를");
         expect(koreanGetSuffix("", "은")).toBe("는");
       });
     });
 
-    describe("Without final consonant", () => {
+    describe("without final consonant", () => {
       it("'을' type returns '를'", () => {
         expect(koreanGetSuffix("나무", "을")).toBe("를");
       });
@@ -90,20 +90,20 @@ describe("string utils", () => {
       });
     });
 
-    describe("Final consonant ㄹ (special '로' handling)", () => {
+    describe("final consonant ㄹ (special '로' handling)", () => {
       it("'로' type returns '로' for final ㄹ (Seoul)", () => {
         expect(koreanGetSuffix("서울", "로")).toBe("로");
       });
 
-      it("'로' type returns '로' for final ㄹ (Road)", () => {
+      it("'로' type returns '로' for final ㄹ (road)", () => {
         expect(koreanGetSuffix("길", "로")).toBe("로");
       });
 
-      it("'로' type returns '로' for final ㄹ (Foot)", () => {
+      it("'로' type returns '로' for final ㄹ (foot)", () => {
         expect(koreanGetSuffix("발", "로")).toBe("로");
       });
 
-      it("'로' type returns '로' for final ㄹ (Alcohol)", () => {
+      it("'로' type returns '로' for final ㄹ (alcohol)", () => {
         expect(koreanGetSuffix("술", "로")).toBe("로");
       });
 
@@ -119,33 +119,35 @@ describe("string utils", () => {
 
   //#endregion
 
-  //#region replaceSpecialDefaultChar - Full-width to half-width conversion
+  //#endregion
+
+  //#region strReplaceFullWidth - Full-width to half-width conversion
 
   describe("strReplaceFullWidth()", () => {
-    it("Converts full-width alphabet to half-width", () => {
+    it("converts full-width alphabet to half-width", () => {
       expect(strReplaceFullWidth("ＡＢＣＤＥＦＧ")).toBe("ABCDEFG");
       expect(strReplaceFullWidth("ＨＩＪＫＬＭＮ")).toBe("HIJKLMN");
       expect(strReplaceFullWidth("ＯＰＱＲＳＴＵ")).toBe("OPQRSTU");
       expect(strReplaceFullWidth("ＶＷＸＹＺ")).toBe("VWXYZ");
     });
 
-    it("Converts full-width number to half-width", () => {
+    it("converts full-width number to half-width", () => {
       expect(strReplaceFullWidth("０１２３４５６７８９")).toBe("0123456789");
     });
 
-    it("Converts full-width parenthesis to half-width", () => {
+    it("converts full-width parenthesis to half-width", () => {
       expect(strReplaceFullWidth("（ＡＢＣ）")).toBe("(ABC)");
     });
 
-    it("Converts full-width space to half-width space", () => {
+    it("converts full-width space to half-width space", () => {
       expect(strReplaceFullWidth("Ａ　Ｂ　Ｃ")).toBe("A B C");
     });
 
-    it("Converts mixed full-width/half-width string", () => {
+    it("converts mixed full-width/half-width string", () => {
       expect(strReplaceFullWidth("ＡBC１23")).toBe("ABC123");
     });
 
-    it("Returns original if no full-width characters", () => {
+    it("returns original if no full-width characters", () => {
       expect(strReplaceFullWidth("ABC123")).toBe("ABC123");
     });
   });

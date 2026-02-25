@@ -8,12 +8,12 @@ import { type NormPath, pathNorm } from "../utils/path";
 
 //#region Helpers
 
-/** glob 메타문자 패턴 */
+/** Glob metacharacter pattern */
 const GLOB_CHARS_RE = /[*?{[\]]/;
 
 /**
- * glob 패턴에서 base 디렉토리 추출.
- * @example extractGlobBase("/home/user/src/**\/*.ts") → "/home/user/src"
+ * Extracts the base directory from a glob pattern.
+ * @example extractGlobBase("/home/user/src/**/*.ts") → "/home/user/src"
  */
 function extractGlobBase(globPath: string): string {
   const segments = globPath.split(/[/\\]/);
@@ -30,22 +30,22 @@ function extractGlobBase(globPath: string): string {
 //#region Types
 
 /**
- * 지원하는 파일 변경 이벤트 타입 목록.
+ * List of supported file change event types.
  */
 const FS_WATCHER_EVENTS = ["add", "addDir", "change", "unlink", "unlinkDir"] as const;
 
 /**
- * 파일 변경 이벤트 타입.
+ * File change event type.
  */
 export type FsWatcherEvent = (typeof FS_WATCHER_EVENTS)[number];
 
 /**
- * 파일 변경 정보.
+ * File change information.
  */
 export interface FsWatcherChangeInfo {
-  /** 변경 이벤트 타입 */
+  /** Change event type */
   event: FsWatcherEvent;
-  /** 변경된 파일/디렉토리 경로 (정규화됨) */
+  /** Changed file/directory path (normalized) */
   path: NormPath;
 }
 
@@ -54,32 +54,32 @@ export interface FsWatcherChangeInfo {
 //#region FsWatcher
 
 /**
- * chokidar 기반 파일 시스템 감시 래퍼.
- * 짧은 시간 내 발생한 이벤트를 병합하여 콜백 호출.
+ * Chokidar-based file system watcher wrapper.
+ * Merges events that occur within a short time and calls the callback once.
  *
- * **주의**: chokidar의 `ignoreInitial` 옵션은 내부적으로 항상 `true`로 설정된다.
- * `options.ignoreInitial: false`를 전달하면 `onChange` 첫 호출 시 빈 배열로
- * 콜백이 호출되지만, 실제 초기 파일 목록은 포함되지 않는다.
- * 이는 이벤트 병합 로직과의 충돌을 방지하기 위한 의도된 동작이다.
+ * **Note**: The `ignoreInitial` option of chokidar is internally always set to `true`.
+ * If you pass `options.ignoreInitial: false`, the callback will be called with an empty array on the first `onChange` call,
+ * but the actual initial file list is not included.
+ * This is intentional behavior to prevent conflicts with the event merging logic.
  *
  * @example
- * const watcher = await FsWatcher.watch(["src/**\/*.ts"]);
+ * const watcher = await FsWatcher.watch(["src/**/*.ts"]);
  * watcher.onChange({ delay: 300 }, (changes) => {
  *   for (const { path, event } of changes) {
  *     console.log(`${event}: ${path}`);
  *   }
  * });
  *
- * // 종료
+ * // Close
  * await watcher.close();
  */
 export class FsWatcher {
   /**
-   * 파일 감시 시작 (비동기).
-   * ready 이벤트가 발생할 때까지 대기.
+   * Starts watching files (asynchronous).
+   * Waits until the ready event is emitted.
    *
-   * @param paths - 감시할 파일/디렉토리 경로 또는 glob 패턴 배열
-   * @param options - chokidar 옵션
+   * @param paths - Array of file/directory paths or glob patterns to watch
+   * @param options - chokidar options
    */
   static async watch(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher> {
     return new Promise<FsWatcher>((resolve, reject) => {
@@ -111,7 +111,7 @@ export class FsWatcher {
       }
     }
 
-    // 중복 경로 제거
+    // Remove duplicate paths
     const uniquePaths = [...new Set(watchPaths)];
 
     this._watcher = chokidar.watch(uniquePaths, {
@@ -121,18 +121,18 @@ export class FsWatcher {
     });
     this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
 
-    // 감시 중 발생하는 에러 로깅
+    // Log errors that occur during watching
     this._watcher.on("error", (err) => {
       this._logger.error("FsWatcher error:", err);
     });
   }
 
   /**
-   * 파일 변경 이벤트 핸들러 등록.
-   * 지정된 delay 시간 동안 이벤트를 모아서 한 번에 콜백 호출.
+   * Registers a file change event handler.
+   * Collects events for the specified delay time and calls the callback once.
    *
-   * @param opt.delay - 이벤트 병합 대기 시간 (ms)
-   * @param cb - 변경 이벤트 콜백
+   * @param opt.delay - Event merge wait time (ms)
+   * @param cb - Change event callback
    */
   onChange(
     opt: { delay?: number },
@@ -143,7 +143,7 @@ export class FsWatcher {
 
     let changeInfoMap = new Map<string, EventName>();
 
-    // ignoreInitial이 false면 초기에 빈 배열로 콜백 호출
+    // If ignoreInitial is false, call callback with empty array initially
     if (!this._ignoreInitial) {
       fnQ.run(async () => {
         await cb([]);
@@ -151,22 +151,22 @@ export class FsWatcher {
     }
 
     this._watcher.on("all", (event, filePath) => {
-      // 지원하는 이벤트만 처리
+      // Only process supported events
       if (!FS_WATCHER_EVENTS.includes(event as FsWatcherEvent)) return;
 
-      // glob 매처가 있으면 패턴 필터링 적용
+      // If glob matchers exist, apply pattern filtering
       if (this._globMatchers.length > 0) {
         const posixFilePath = filePath.replace(/\\/g, "/");
         if (!this._globMatchers.some((m) => m.match(posixFilePath))) return;
       }
 
       /*
-       * 이벤트 병합 전략:
-       * 짧은 시간 내 같은 파일에 대해 여러 이벤트가 발생하면 최종 상태만 전달한다.
-       * - add + change → add (생성 직후 수정은 생성으로 간주)
-       * - add + unlink → 삭제 (생성 후 즉시 삭제는 변경 없음)
-       * - unlink + add → add (삭제 후 재생성은 생성으로 간주)
-       * - 그 외 → 최신 이벤트로 덮어씀
+       * Event merging strategy:
+       * If multiple events occur for the same file within a short time, only the final state is passed.
+       * - add + change → add (modification immediately after creation is considered as creation)
+       * - add + unlink → no change (immediate deletion after creation is considered as no change)
+       * - unlink + add → add (recreation after deletion is considered as creation)
+       * - otherwise → overwrite with latest event
        */
       if (!changeInfoMap.has(filePath)) {
         changeInfoMap.set(filePath, event);
@@ -174,19 +174,19 @@ export class FsWatcher {
       const prevEvent = changeInfoMap.get(filePath)!;
 
       if (prevEvent === "add" && event === "change") {
-        // add 후 change → add 유지
+        // add followed by change → keep add
         changeInfoMap.set(filePath, "add");
       } else if (
         (prevEvent === "add" && event === "unlink") ||
         (prevEvent === "addDir" && event === "unlinkDir")
       ) {
-        // add 후 unlink → 변경 없음 (삭제)
+        // add followed by unlink → no change (deletion)
         changeInfoMap.delete(filePath);
       } else if (prevEvent === "unlink" && (event === "add" || event === "change")) {
-        // unlink 후 add/change → add (파일 재생성)
+        // unlink followed by add/change → add (file recreation)
         changeInfoMap.set(filePath, "add");
       } else if (prevEvent === "unlinkDir" && event === "addDir") {
-        // unlinkDir 후 addDir → addDir (디렉토리 재생성)
+        // unlinkDir followed by addDir → addDir (directory recreation)
         changeInfoMap.set(filePath, "addDir");
       } else {
         changeInfoMap.set(filePath, event);
@@ -213,7 +213,7 @@ export class FsWatcher {
   }
 
   /**
-   * 파일 감시 종료.
+   * Closes the file watcher.
    */
   async close(): Promise<void> {
     for (const q of this._debounceQueues) {

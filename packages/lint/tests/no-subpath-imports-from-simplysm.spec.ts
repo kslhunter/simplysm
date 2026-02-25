@@ -5,9 +5,9 @@ import rule from "../src/rules/no-subpath-imports-from-simplysm";
 
 const ruleTester = new RuleTester();
 
-describe("no-subpath-imports-from-simplysm 규칙", () => {
-  describe("허용되는 코드들 (valid)", () => {
-    describe("패키지 루트 import는 허용", () => {
+describe("no-subpath-imports-from-simplysm rule", () => {
+  describe("allowed code (valid)", () => {
+    describe("package root import is allowed", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [
           {
@@ -18,7 +18,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("src가 아닌 서브경로 import는 허용", () => {
+    describe("subpath import other than src is allowed", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [
           {
@@ -32,7 +32,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("@simplysm이 아닌 패키지는 허용", () => {
+    describe("packages other than @simplysm are allowed", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [
           {
@@ -46,7 +46,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("동적 import - src가 아닌 경로는 허용", () => {
+    describe("dynamic import - path other than src is allowed", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [
           {
@@ -60,7 +60,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("re-export - src가 아닌 경로는 허용", () => {
+    describe("re-export - path other than src is allowed", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [
           {
@@ -75,8 +75,8 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
     });
   });
 
-  describe("오류가 발생해야 하는 코드들 (invalid)", () => {
-    describe("@simplysm/*/src import는 금지", () => {
+  describe("code that should cause errors (invalid)", () => {
+    describe("@simplysm/*/src import is prohibited", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -97,7 +97,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("@simplysm/*/src/xxx import는 금지", () => {
+    describe("@simplysm/*/src/xxx import is prohibited", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -118,7 +118,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("여러 패키지에서 src import 금지", () => {
+    describe("src import prohibited from multiple packages", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -139,7 +139,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("동적 import에서 src 경로 금지", () => {
+    describe("src path prohibited in dynamic import", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -160,7 +160,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("re-export에서 src 경로 금지", () => {
+    describe("src path prohibited in re-export", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -181,7 +181,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("export * from에서 src 경로 금지", () => {
+    describe("src path prohibited in export * from", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -202,7 +202,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("작은따옴표 사용 시 따옴표 스타일 보존", () => {
+    describe("preserve quote style when using single quotes", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -223,7 +223,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("type-only import에서 src 경로 금지", () => {
+    describe("src path prohibited in type-only import", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -244,7 +244,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("export type에서 src 경로 금지", () => {
+    describe("src path prohibited in export type", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -265,7 +265,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("namespace import에서 src 경로 금지", () => {
+    describe("src path prohibited in namespace import", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -286,7 +286,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("side-effect import에서 src 경로 금지", () => {
+    describe("src path prohibited in side-effect import", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -307,7 +307,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("default import에서 src 경로 금지", () => {
+    describe("src path prohibited in default import", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [
@@ -328,7 +328,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
       });
     });
 
-    describe("mixed import (default + named)에서 src 경로 금지", () => {
+    describe("src path prohibited in mixed import (default + named)", () => {
       ruleTester.run("no-subpath-imports-from-simplysm", rule, {
         valid: [],
         invalid: [

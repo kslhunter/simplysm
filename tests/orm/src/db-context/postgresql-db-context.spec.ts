@@ -3,7 +3,7 @@ import { PostgresqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
 import { Table, defineDbContext, createDbContext } from "@simplysm/orm-common";
 import { postgresqlConfig } from "../test-configs";
 
-// 테스트용 User 테이블
+// Test User table
 const User = Table("User")
   .database("TestDb")
   .schema("public")
@@ -13,7 +13,7 @@ const User = Table("User")
   }))
   .primaryKey("id");
 
-// 테스트용 DbContext
+// Test DbContext
 const TestDbDef = defineDbContext({ tables: { user: User } });
 
 describe("PostgreSQL DbContext - trans", () => {
@@ -27,7 +27,7 @@ describe("PostgreSQL DbContext - trans", () => {
     pg = await import("pg");
     pgCopyStreams = await import("pg-copy-streams");
 
-    // raw SQL 실행을 위한 직접 연결
+    // Direct connection for raw SQL execution
     conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await conn.connect();
     await conn.execute([
@@ -39,27 +39,27 @@ describe("PostgreSQL DbContext - trans", () => {
     ]);
     await conn.close();
 
-    // DbContext 실행기 생성
+    // Create DbContext executor
     executor = new NodeDbContextExecutor(postgresqlConfig);
     db = createDbContext(TestDbDef, executor, { database: "TestDb", schema: "public" });
   });
 
   afterAll(async () => {
-    // 테이블 정리
+    // Clean up tables
     const cleanupConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await cleanupConn.connect();
     await cleanupConn.execute([`DROP TABLE IF EXISTS "TestDb"."public"."User"`]);
     await cleanupConn.close();
   });
 
-  it("에러 발생 시 자동 롤백", async () => {
+  it("Auto rollback on error", async () => {
     await db.connectWithoutTransaction(async () => {
-      // 초기 데이터 삽입 (트랜잭션 내)
+      // Insert initial data (in transaction)
       await db.trans(async () => {
         await db.user().insert([{ id: 1, name: "initial" }]);
       });
 
-      // trans 내부에서 에러 발생 시 롤백되어야 함
+      // Error inside trans should trigger rollback
       await expect(
         db.trans(async () => {
           await db.user().insert([{ id: 2, name: "should-rollback" }]);
@@ -67,7 +67,7 @@ describe("PostgreSQL DbContext - trans", () => {
         }),
       ).rejects.toThrow("Intentional error");
 
-      // 롤백되어 1건만 존재해야 함
+      // Rolled back, only 1 record should exist
       const result = await db.user().result();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ id: 1, name: "initial" });

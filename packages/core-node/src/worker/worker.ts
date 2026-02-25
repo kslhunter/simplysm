@@ -11,11 +11,11 @@ const logger = consola.withTag("sd-worker");
 //#region WorkerInternal
 
 /**
- * Worker 내부 구현 클래스.
- * Proxy를 통해 외부에 노출됨.
+ * Internal implementation class for Worker.
+ * Exposed to the outside through a Proxy.
  *
- * 개발 환경(.ts)에서는 tsx를 통해 TypeScript 워커 파일을 실행하고,
- * 프로덕션 환경(.js)에서는 직접 Worker를 생성한다.
+ * In development (.ts files), TypeScript worker files are executed via tsx.
+ * In production (.js files), Worker is created directly.
  */
 class WorkerInternal extends EventEmitter<Record<string, unknown>> {
   private readonly _worker: WorkerRaw;
@@ -30,13 +30,13 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
 
     const ext = path.extname(import.meta.filename);
 
-    // 타입 가드를 통한 env 객체 추출
+    // Extract env object through type guard
     const envObj = opt?.env != null && typeof opt.env === "object" ? opt.env : {};
 
-    // 개발 환경 (.ts 파일)인 경우 tsx를 통해 실행
-    // worker-dev-proxy.js: tsx로 TypeScript 워커 파일을 동적으로 로드하는 프록시
+    // In development (.ts files), execute via tsx
+    // worker-dev-proxy.js: Proxy to dynamically load TypeScript worker files via tsx
     if (ext === ".ts") {
-      // file:// URL인 경우 절대 경로로 변환 (worker-dev-proxy.js에서 다시 pathToFileURL 적용)
+      // If file:// URL, convert to absolute path (worker-dev-proxy.js applies pathToFileURL again)
       const workerPath = filePath.startsWith("file://") ? fileURLToPath(filePath) : filePath;
       this._worker = new WorkerRaw(
         path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
@@ -52,8 +52,8 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
         },
       );
     } else {
-      // 프로덕션 환경 (.js 파일)
-      // file:// URL인 경우 변환, 이미 절대 경로인 경우 그대로 사용
+      // Production environment (.js files)
+      // If file:// URL, convert it; otherwise use absolute path as-is
       const workerPath = filePath.startsWith("file://") ? fileURLToPath(filePath) : filePath;
       this._worker = new WorkerRaw(workerPath, {
         stdout: true,
@@ -66,30 +66,30 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
       });
     }
 
-    // 워커의 stdout/stderr를 메인에 출력
+    // Pipe worker's stdout/stderr to main process
     this._worker.stdout.pipe(process.stdout);
     this._worker.stderr.pipe(process.stderr);
 
     this._worker.on("exit", (code) => {
       if (!this._isTerminated && code !== 0) {
-        logger.error(`워커가 오류와 함께 닫힘 (code: ${code})`);
-        // 비정상 종료 시 대기 중인 모든 요청 reject
-        this._rejectAllPending(new Error(`워커가 비정상 종료됨 (code: ${code})`));
+        logger.error(`Worker exited with error (code: ${code})`);
+        // Reject all pending requests on abnormal exit
+        this._rejectAllPending(new Error(`Worker exited abnormally (code: ${code})`));
       }
     });
 
     this._worker.on("error", (err) => {
-      logger.error("워커 오류:", err);
-      // 워커 에러 시 대기 중인 모든 요청 reject
+      logger.error("Worker error:", err);
+      // Reject all pending requests on worker error
       this._rejectAllPending(err);
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
       const decoded = transferableDecode(serializedResponse);
 
-      // 응답 구조 검증
+      // Validate response structure
       if (decoded == null || typeof decoded !== "object" || !("type" in decoded)) {
-        logger.warn("워커에서 잘못된 형식의 응답:", decoded);
+        logger.warn("Invalid response format from worker:", decoded);
         return;
       }
       const response = decoded as WorkerResponse;
@@ -116,7 +116,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
   }
 
   /**
-   * 대기 중인 모든 요청을 reject합니다.
+   * Rejects all pending requests.
    */
   private _rejectAllPending(err: Error): void {
     for (const [_id, { method, reject }] of this._pendingRequests) {
@@ -126,7 +126,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
   }
 
   /**
-   * 워커 메서드 호출.
+   * Calls a worker method.
    */
   call(method: string, params: unknown[]): Promise<unknown> {
     return new Promise((resolve, reject) => {
@@ -144,11 +144,11 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
   }
 
   /**
-   * 워커 종료.
+   * Terminates the worker.
    */
   async terminate(): Promise<void> {
     this._isTerminated = true;
-    this._rejectAllPending(new Error("워커가 종료됨"));
+    this._rejectAllPending(new Error("Worker terminated"));
     await this._worker.terminate();
   }
 }
@@ -158,7 +158,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
 //#region Worker
 
 /**
- * 타입 안전한 Worker 래퍼.
+ * Type-safe Worker wrapper.
  *
  * @example
  * // worker.ts
@@ -173,11 +173,11 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
  */
 export const Worker = {
   /**
-   * 타입 안전한 Worker Proxy 생성.
+   * Creates a type-safe Worker Proxy.
    *
-   * @param filePath - 워커 파일 경로 (file:// URL 또는 절대 경로)
-   * @param opt - Worker 옵션
-   * @returns Proxy 객체 (메서드 직접 호출, on(), terminate() 지원)
+   * @param filePath - Worker file path (file:// URL or absolute path)
+   * @param opt - Worker options
+   * @returns Proxy object (supports direct method calls, on(), and terminate())
    */
   create<TModule extends WorkerModule>(
     filePath: string,
@@ -187,7 +187,7 @@ export const Worker = {
 
     return new Proxy({} as WorkerProxy<TModule>, {
       get(_target, prop: string) {
-        // 예약된 메서드: on, off, terminate
+        // Reserved methods: on, off, terminate
         if (prop === "on") {
           return (event: string, listener: (data: unknown) => void) => {
             internal.on(event, listener);
@@ -202,7 +202,7 @@ export const Worker = {
           return () => internal.terminate();
         }
 
-        // 그 외는 워커 메서드로 처리
+        // Otherwise, treat as worker method
         return (...args: unknown[]) => internal.call(prop, args);
       },
     });

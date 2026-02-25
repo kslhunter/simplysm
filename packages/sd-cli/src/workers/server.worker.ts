@@ -361,7 +361,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 const guardStartWatch = createOnceGuard("startWatch");
 
 /**
- * esbuild context 생성 및 초기 빌드 수행
+ * Create esbuild context and perform initial build
  */
 async function createAndBuildContext(
   info: ServerWatchInfo,
@@ -401,7 +401,7 @@ async function createAndBuildContext(
           });
 
           pluginBuild.onEnd(async (result) => {
-            // metafile 저장
+            // Save metafile
             if (result.metafile != null) {
               lastMetafile = result.metafile;
             }
@@ -410,7 +410,7 @@ async function createAndBuildContext(
             const warnings = result.warnings.map((w) => w.text);
             const success = result.errors.length === 0;
 
-            // output 파일 쓰기 및 변경 여부 확인
+            // Write output files and check for changes
             let hasOutputChange = false;
             if (success && result.outputFiles != null) {
               hasOutputChange = await writeChangedOutputFiles(result.outputFiles);
@@ -421,7 +421,7 @@ async function createAndBuildContext(
               fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
             }
 
-            // 첫 빌드이거나, output이 변경되었거나, 에러인 경우에만 build 이벤트 발생
+            // Only emit build event on first build, output change, or error
             if (isBuildFirstTime || hasOutputChange || !success) {
               sender.send("build", {
                 success,
@@ -430,7 +430,7 @@ async function createAndBuildContext(
                 warnings: warnings.length > 0 ? warnings : undefined,
               });
             } else {
-              logger.debug("output 변경 없음, 서버 재시작 skip");
+              logger.debug("No output changes, skipping server restart");
             }
 
             if (isBuildFirstTime) {
@@ -449,35 +449,35 @@ async function createAndBuildContext(
 }
 
 /**
- * watch 시작
- * @remarks 이 함수는 Worker당 한 번만 호출되어야 합니다.
- * @throws 이미 watch가 시작된 경우
+ * Start watch
+ * @remarks This function should be called only once per Worker.
+ * @throws If watch has already been started
  */
 async function startWatch(info: ServerWatchInfo): Promise<void> {
   guardStartWatch();
 
   try {
-    // 첫 번째 빌드 완료 대기를 위한 Promise
+    // Promise to wait for first build completion
     let resolveFirstBuild!: () => void;
     const firstBuildPromise = new Promise<void>((resolve) => {
       resolveFirstBuild = resolve;
     });
 
-    // 초기 esbuild context 생성 및 빌드
+    // Create initial esbuild context and build
     esbuildContext = await createAndBuildContext(info, true, resolveFirstBuild);
 
-    // 첫 번째 빌드 완료 대기
+    // Wait for first build completion
     await firstBuildPromise;
 
     // Watch public/ and public-dev/ (dev mode includes public-dev)
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
-    // 의존성 기반 감시 경로 수집
+    // Collect watch paths based on dependencies
     const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
 
     const watchPaths: string[] = [];
 
-    // 1) 서버 패키지 자신 + workspace 의존 패키지 소스
+    // 1) Server package itself + workspace dependency packages source
     const watchDirs = [
       info.pkgDir,
       ...workspaceDeps.map((d) => path.join(info.cwd, "packages", d)),
@@ -487,7 +487,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
       watchPaths.push(path.join(dir, "*.{ts,js,css}"));
     }
 
-    // 2) replaceDeps 의존 패키지 dist (루트 + 패키지 node_modules)
+    // 2) ReplaceDeps dependency packages dist (root + package node_modules)
     for (const pkg of replaceDeps) {
       watchPaths.push(path.join(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.js"));
       watchPaths.push(
@@ -495,17 +495,17 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
       );
     }
 
-    // FsWatcher 시작
+    // Start FsWatcher
     srcWatcher = await FsWatcher.watch(watchPaths);
 
-    // 파일 변경 감지 시 처리
+    // Handle file changes
     srcWatcher.onChange({ delay: 300 }, async (changes) => {
       try {
-        // 파일 추가/삭제가 있으면 context 재생성 (import graph 변경 가능)
+        // If files are added/removed, recreate context (import graph may change)
         const hasFileAddOrRemove = changes.some((c) => c.event === "add" || c.event === "unlink");
 
         if (hasFileAddOrRemove) {
-          logger.debug("파일 추가/삭제 감지, context 재생성");
+          logger.debug("File add/remove detected, recreating context");
 
           const oldContext = esbuildContext;
           esbuildContext = await createAndBuildContext(info, false);
@@ -516,16 +516,16 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           return;
         }
 
-        // 파일 변경만 있는 경우: metafile 필터링
+        // Only file changes: filter by metafile
         if (esbuildContext == null) return;
 
-        // metafile이 없으면 (첫 빌드 전) 무조건 rebuild
+        // If no metafile (before first build), always rebuild
         if (lastMetafile == null) {
           await esbuildContext.rebuild();
           return;
         }
 
-        // metafile.inputs 키를 절대경로(NormPath)로 변환하여 비교
+        // Convert metafile.inputs keys to absolute paths (NormPath) for comparison
         const metafileAbsPaths = new Set(
           Object.keys(lastMetafile.inputs).map((key) => pathNorm(info.cwd, key)),
         );
@@ -535,7 +535,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
         if (hasRelevantChange) {
           await esbuildContext.rebuild();
         } else {
-          logger.debug("변경된 파일이 빌드에 포함되지 않음, rebuild skip");
+          logger.debug("Changed files not included in build, skipping rebuild");
         }
       } catch (err) {
         sender.send("error", {
@@ -551,8 +551,8 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 }
 
 /**
- * watch 중지
- * @remarks esbuild context를 정리합니다.
+ * Stop watch
+ * @remarks Cleans up esbuild context.
  */
 async function stopWatch(): Promise<void> {
   await cleanup();

@@ -121,7 +121,7 @@ describe("DateTime", () => {
       expect(dt.second).toBe(45);
     });
 
-    it("parses AM/PM format", () => {
+    it("parses Korean AM/PM format", () => {
       const dtAm = DateTime.parse("2024-03-15 오전 10:30:45");
       expect(dtAm.hour).toBe(10);
 

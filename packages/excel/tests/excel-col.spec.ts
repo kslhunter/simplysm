@@ -42,7 +42,7 @@ describe("ExcelCol", () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 데이터 설정으로 범위 지정
+      // Set data to define range
       await ws.cell(0, 0).setVal("A1");
       await ws.cell(1, 0).setVal("A2");
       await ws.cell(2, 0).setVal("A3");
@@ -63,7 +63,7 @@ describe("ExcelCol", () => {
       const col = ws.col(0);
       const cells = await col.getCells();
 
-      // 빈 워크시트의 기본 범위는 (0,0)-(0,0)이므로 하나의 셀 반환
+      // Default range of empty worksheet is (0,0)-(0,0), so returns one cell
       expect(cells.length).toBe(1);
       expect(await cells[0].getVal()).toBeUndefined();
     });
@@ -74,16 +74,16 @@ describe("ExcelCol", () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 데이터 추가 후 너비 설정
+      // Add data and set width
       await ws.cell(0, 0).setVal("Test");
       await ws.col(0).setWidth(20);
 
-      // 라운드트립으로 설정 확인
+      // Verify settings via round-trip
       const bytes = await wb.getBytes();
       const wb2 = new ExcelWorkbook(bytes);
       const ws2 = await wb2.getWorksheet(0);
 
-      // 값이 유지되는지 확인 (너비는 직접 확인하기 어려우므로 에러 없이 동작하는지만 확인)
+      // Verify value is preserved (width is hard to verify directly, so just check it works without error)
       expect(await ws2.cell(0, 0).getVal()).toBe("Test");
     });
 
@@ -99,7 +99,7 @@ describe("ExcelCol", () => {
       await ws.col(1).setWidth(20);
       await ws.col(2).setWidth(30);
 
-      // 에러 없이 라운드트립 가능
+      // Can round-trip without error
       const bytes = await wb.getBytes();
       const wb2 = new ExcelWorkbook(bytes);
       const ws2 = await wb2.getWorksheet(0);

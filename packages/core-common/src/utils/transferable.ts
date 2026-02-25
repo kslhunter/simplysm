@@ -207,7 +207,7 @@ function encodeImpl(
 export function transferableDecode(obj: unknown): unknown {
   if (obj == null) return obj;
 
-  // 1. Restore special types
+  // 1. Restore special types from tagged objects
   if (typeof obj === "object" && "__type__" in obj && "data" in obj) {
     const typed = obj as { __type__: string; data: unknown };
     const data = typed.data;
@@ -245,7 +245,7 @@ export function transferableDecode(obj: unknown): unknown {
     }
   }
 
-  // 2. Array recursion (create new array)
+  // 2. Array recursion
   if (Array.isArray(obj)) {
     return obj.map((item) => transferableDecode(item));
   }
@@ -268,7 +268,7 @@ export function transferableDecode(obj: unknown): unknown {
     return newSet;
   }
 
-  // 5. Object recursion (create new object)
+  // 5. Object recursion
   if (typeof obj === "object") {
     const record = obj as Record<string, unknown>;
     const result: Record<string, unknown> = {};

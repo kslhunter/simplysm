@@ -452,7 +452,7 @@ class MyClass {
       });
     });
 
-    describe("데코레이터가 있는 # private 메서드 변환", () => {
+    describe("convert # private method with decorator", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -479,7 +479,7 @@ class MyClass {
       });
     });
 
-    describe("# private accessor 필드 변환", () => {
+    describe("convert # private accessor field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -500,7 +500,7 @@ class MyClass {
       });
     });
 
-    describe("# private accessor 필드 사용 (this.#value)", () => {
+    describe("# private accessor field usage (this.#value)", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -527,7 +527,7 @@ class MyClass {
       });
     });
 
-    describe("static # private accessor 필드 변환", () => {
+    describe("convert static # private accessor field", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -548,7 +548,7 @@ class MyClass {
       });
     });
 
-    describe("async # private 메서드 변환", () => {
+    describe("convert async # private method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -573,7 +573,7 @@ class MyClass {
       });
     });
 
-    describe("static async # private 메서드 변환", () => {
+    describe("convert static async # private method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -598,7 +598,7 @@ class MyClass {
       });
     });
 
-    describe("generator # private 메서드 변환", () => {
+    describe("convert generator # private method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -625,7 +625,7 @@ class MyClass {
       });
     });
 
-    describe("복수 데코레이터가 있는 # private 필드 변환", () => {
+    describe("convert # private field with multiple decorators", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -650,7 +650,7 @@ class MyClass {
       });
     });
 
-    describe("클래스 표현식에서 # private 필드 변환", () => {
+    describe("convert # private field in class expression", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -671,7 +671,7 @@ const MyClass = class {
       });
     });
 
-    describe("중첩 클래스에서 # private 필드 변환", () => {
+    describe("convert # private field in nested class", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -696,7 +696,7 @@ class Outer {
       });
     });
 
-    describe("타입 어노테이션이 있는 # private 필드 변환", () => {
+    describe("convert # private field with type annotation", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -717,7 +717,7 @@ class MyClass {
       });
     });
 
-    describe("optional 타입의 # private 필드 변환", () => {
+    describe("convert # private field with optional type", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -738,7 +738,7 @@ class MyClass {
       });
     });
 
-    describe("다른 인스턴스의 # private 필드 접근 변환", () => {
+    describe("convert # private field access from other instance", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -765,7 +765,7 @@ class MyClass {
       });
     });
 
-    describe("같은 클래스 인스턴스 간 # private 필드 비교 변환", () => {
+    describe("convert # private field comparison between same class instances", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -796,7 +796,7 @@ class MyClass {
       });
     });
 
-    describe("이미 accessibility가 있는 # private 필드 변환 (private 중복 추가 안 함)", () => {
+    describe("convert # private field with existing accessibility (no duplicate private)", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -843,7 +843,7 @@ class MyClass {
       });
     });
 
-    describe("이미 accessibility가 있는 # private 메서드 변환", () => {
+    describe("convert # private method with existing accessibility", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -868,7 +868,7 @@ class MyClass {
       });
     });
 
-    describe("상속 클래스에서 # private 필드 변환", () => {
+    describe("convert # private field in inherited class", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -895,8 +895,8 @@ class Child extends Parent {
       });
     });
 
-    describe("이름 충돌 시 autofix 미적용", () => {
-      // #field를 _field로 변환할 때 기존 _field가 있으면 충돌 경고만 표시하고 autofix는 적용하지 않는다.
+    describe("no autofix when name conflict", () => {
+      // When converting #field to _field, if existing _field exists, show conflict warning only without autofix.
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -907,14 +907,14 @@ class MyClass {
   #field = 2;
 }
             `.trim(),
-            // output이 없음 = autofix 미적용
+            // no output = no autofix applied
             errors: [{ messageId: "nameConflict", data: { name: "field" } }],
           },
         ],
       });
     });
 
-    describe("이름 충돌 - 메서드", () => {
+    describe("name conflict - method", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -931,7 +931,7 @@ class MyClass {
       });
     });
 
-    describe("static # private 필드 사용 (MyClass.#staticField)", () => {
+    describe("static # private field usage (MyClass.#staticField)", () => {
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [

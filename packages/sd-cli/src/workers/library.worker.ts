@@ -48,7 +48,7 @@ export interface LibraryWatchInfo {
 }
 
 /**
- * 빌드 이벤트
+ * Build event
  */
 export interface LibraryBuildEvent {
   success: boolean;
@@ -57,14 +57,14 @@ export interface LibraryBuildEvent {
 }
 
 /**
- * 에러 이벤트
+ * Error event
  */
 export interface LibraryErrorEvent {
   message: string;
 }
 
 /**
- * Worker 이벤트 타입
+ * Worker event types
  */
 export interface LibraryWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;

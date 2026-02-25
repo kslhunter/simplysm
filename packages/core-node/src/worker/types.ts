@@ -1,11 +1,11 @@
 //#region Types
 
 /**
- * `createWorker()`가 반환하는 워커 모듈의 타입 구조.
- * `Worker.create<typeof import("./worker")>()`에서 타입 추론에 사용된다.
+ * Type structure of the worker module returned by `createWorker()`.
+ * Used for type inference in `Worker.create<typeof import("./worker")>()`.
  *
- * @see createWorker - 워커 모듈 생성
- * @see Worker.create - 워커 프록시 생성
+ * @see createWorker - Create worker module
+ * @see Worker.create - Create worker proxy
  */
 export interface WorkerModule {
   default: {
@@ -15,9 +15,9 @@ export interface WorkerModule {
 }
 
 /**
- * 메서드 타입의 반환값을 Promise로 래핑하는 매핑 타입.
- * 워커 메서드는 postMessage 기반으로 동작하여 항상 비동기이므로,
- * 동기 메서드 타입도 `Promise<Awaited<R>>`로 변환한다.
+ * Mapping type that wraps method return values in Promise.
+ * Worker methods operate based on postMessage and are always asynchronous,
+ * so synchronous method types are also converted to `Promise<Awaited<R>>`.
  */
 export type PromisifyMethods<TMethods> = {
   [K in keyof TMethods]: TMethods[K] extends (...args: infer P) => infer R
@@ -26,14 +26,14 @@ export type PromisifyMethods<TMethods> = {
 };
 
 /**
- * SdWorker.create()가 반환하는 Proxy 타입.
- * Promisified 메서드들 + on() + terminate() 제공.
+ * Proxy type returned by Worker.create().
+ * Provides promisified methods + on() + terminate().
  */
 export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
   TModule["default"]["__methods"]
 > & {
   /**
-   * 워커 이벤트 리스너 등록.
+   * Registers a worker event listener.
    */
   on<K extends keyof TModule["default"]["__events"] & string>(
     event: K,
@@ -41,7 +41,7 @@ export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
   ): void;
 
   /**
-   * 워커 이벤트 리스너 제거.
+   * Unregisters a worker event listener.
    */
   off<K extends keyof TModule["default"]["__events"] & string>(
     event: K,
@@ -49,13 +49,13 @@ export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
   ): void;
 
   /**
-   * 워커 종료.
+   * Terminates the worker.
    */
   terminate(): Promise<void>;
 };
 
 /**
- * Worker 내부 요청 메시지.
+ * Internal worker request message.
  */
 export interface WorkerRequest {
   id: string;
@@ -64,7 +64,7 @@ export interface WorkerRequest {
 }
 
 /**
- * Worker 내부 응답 메시지.
+ * Internal worker response message.
  */
 export type WorkerResponse =
   | {

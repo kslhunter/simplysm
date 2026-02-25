@@ -27,15 +27,15 @@ describe("MysqlDbConn", () => {
     }
   });
 
-  describe("연결", () => {
-    it("연결 성공", async () => {
+  describe("Connection", () => {
+    it("Successful connection", async () => {
       const testConn = new MysqlDbConn(mysql2, mysqlConfig);
       await testConn.connect();
       expect(testConn.isConnected).toBe(true);
       await testConn.close();
     });
 
-    it("중복 연결 시 에러", async () => {
+    it("Error on duplicate connection", async () => {
       const testConn = new MysqlDbConn(mysql2, mysqlConfig);
       await testConn.connect();
       try {
@@ -45,7 +45,7 @@ describe("MysqlDbConn", () => {
       }
     });
 
-    it("연결 종료", async () => {
+    it("Connection close", async () => {
       const testConn = new MysqlDbConn(mysql2, mysqlConfig);
       await testConn.connect();
       await testConn.close();
@@ -53,12 +53,12 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("쿼리 실행", () => {
+  describe("Query execution", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
 
-      // 테스트 테이블 생성
+      // Create test table
       await conn.execute([
         `DROP TABLE IF EXISTS \`TestDb\`.\`TestTable\``,
         `CREATE TABLE \`TestDb\`.\`TestTable\` (
@@ -74,7 +74,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("INSERT 및 SELECT", async () => {
+    it("INSERT and SELECT", async () => {
       await conn.execute([
         `INSERT INTO \`TestDb\`.\`TestTable\` (name, value) VALUES ('test', 123)`,
       ]);
@@ -88,7 +88,7 @@ describe("MysqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리", async () => {
+    it("Parameterized query", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ?`,
         ["test"],
@@ -98,7 +98,7 @@ describe("MysqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 숫자 타입", async () => {
+    it("Parameterized query - numeric type", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE value = ?`,
         [123],
@@ -108,7 +108,7 @@ describe("MysqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 여러 파라미터", async () => {
+    it("Parameterized query - multiple parameters", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ? AND value = ?`,
         ["test", 123],
@@ -119,15 +119,15 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("연결 오류 처리", () => {
-    it("미연결 상태에서 쿼리 실행 시 에러", async () => {
+  describe("Connection error handling", () => {
+    it("Error when executing query on disconnected connection", async () => {
       const disconnectedConn = new MysqlDbConn(mysql2, mysqlConfig);
       await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
         DB_CONN_ERRORS.NOT_CONNECTED,
       );
     });
 
-    it("잘못된 쿼리 실행 시 에러", async () => {
+    it("Error on invalid query execution", async () => {
       const tempConn = new MysqlDbConn(mysql2, mysqlConfig);
       await tempConn.connect();
 
@@ -139,7 +139,7 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("트랜잭션", () => {
+  describe("Transaction", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
@@ -158,7 +158,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("커밋", async () => {
+    it("Commit", async () => {
       await conn.beginTransaction();
       expect(conn.isInTransaction).toBe(true);
 
@@ -172,7 +172,7 @@ describe("MysqlDbConn", () => {
       expect(results[0]).toHaveLength(1);
     });
 
-    it("롤백", async () => {
+    it("Rollback", async () => {
       await conn.beginTransaction();
 
       await conn.execute([`INSERT INTO \`TestDb\`.\`TxTable\` (name) VALUES ('rollback-test')`]);
@@ -206,7 +206,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("대량 INSERT (LOAD DATA INFILE)", async () => {
+    it("Bulk INSERT (LOAD DATA INFILE)", async () => {
       await conn.bulkInsert("`TestDb`.`BulkTable`", bulkColumnMetas, bulkRecords);
 
       const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`BulkTable\` ORDER BY id`]);
@@ -217,14 +217,14 @@ describe("MysqlDbConn", () => {
       expect(results[0][2]).toMatchObject({ id: 3, name: "bulk3" });
     });
 
-    it("빈 배열 INSERT 시 아무 동작 없음", async () => {
-      // 빈 배열로 호출해도 에러 없이 완료되어야 함
+    it("Empty array INSERT has no effect", async () => {
+      // Calling with empty array should complete without error
       await expect(
         conn.bulkInsert("`TestDb`.`BulkTable`", bulkColumnMetas, []),
       ).resolves.toBeUndefined();
     });
 
-    it("특수 문자 포함 데이터 INSERT", async () => {
+    it("INSERT data with special characters", async () => {
       await conn.execute([`DELETE FROM \`TestDb\`.\`BulkTable\``]);
 
       const records = [
@@ -246,7 +246,7 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("다양한 타입 테스트", () => {
+  describe("Various type test", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
@@ -270,7 +270,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - 다양한 타입", async () => {
+    it("bulkInsert - various types", async () => {
       await conn.bulkInsert("`TestDb`.`TypeTable`", typeColumnMetas, typeRecords);
 
       const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TypeTable\` ORDER BY id`]);
@@ -283,7 +283,7 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("bulkInsert NULL 및 특수 타입 테스트", () => {
+  describe("bulkInsert NULL and special type test", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
@@ -303,7 +303,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - NULL 값 삽입", async () => {
+    it("bulkInsert - insert NULL values", async () => {
       await conn.bulkInsert("`TestDb`.`NullableTable`", nullableColumnMetas, nullableRecords);
 
       const results = await conn.execute([
@@ -322,7 +322,7 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("bulkInsert UUID 및 binary 타입 테스트", () => {
+  describe("bulkInsert UUID and binary type test", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
@@ -342,7 +342,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("bulkInsert - UUID 및 binary 타입 삽입", async () => {
+    it("bulkInsert - insert UUID and binary types", async () => {
       const testUuid1 = Uuid.new();
       const testUuid2 = Uuid.new();
       const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
@@ -360,7 +360,7 @@ describe("MysqlDbConn", () => {
       ]);
 
       expect(results[0]).toHaveLength(2);
-      // MySQL은 UUID를 BINARY(16)으로 저장하므로 HEX 변환 결과와 비교
+      // MySQL stores UUID as BINARY(16), so compare with HEX conversion result
       const expectedUuid1Hex = testUuid1.toString().replace(/-/g, "").toUpperCase();
       const expectedUuid2Hex = testUuid2.toString().replace(/-/g, "").toUpperCase();
       expect(results[0][0]["uuid_hex"]).toBe(expectedUuid1Hex);
@@ -370,7 +370,7 @@ describe("MysqlDbConn", () => {
     });
   });
 
-  describe("트랜잭션 격리 수준 테스트", () => {
+  describe("Transaction isolation level test", () => {
     beforeAll(async () => {
       conn = new MysqlDbConn(mysql2, mysqlConfig);
       await conn.connect();
@@ -390,7 +390,7 @@ describe("MysqlDbConn", () => {
       await conn.close();
     });
 
-    it("READ_UNCOMMITTED 격리 수준", async () => {
+    it("READ_UNCOMMITTED isolation level", async () => {
       await conn.beginTransaction("READ_UNCOMMITTED");
       expect(conn.isInTransaction).toBe(true);
 
@@ -399,7 +399,7 @@ describe("MysqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("READ_COMMITTED 격리 수준", async () => {
+    it("READ_COMMITTED isolation level", async () => {
       await conn.beginTransaction("READ_COMMITTED");
       expect(conn.isInTransaction).toBe(true);
 
@@ -408,7 +408,7 @@ describe("MysqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("REPEATABLE_READ 격리 수준", async () => {
+    it("REPEATABLE_READ isolation level", async () => {
       await conn.beginTransaction("REPEATABLE_READ");
       expect(conn.isInTransaction).toBe(true);
 
@@ -421,7 +421,7 @@ describe("MysqlDbConn", () => {
       expect(conn.isInTransaction).toBe(false);
     });
 
-    it("SERIALIZABLE 격리 수준", async () => {
+    it("SERIALIZABLE isolation level", async () => {
       await conn.beginTransaction("SERIALIZABLE");
       expect(conn.isInTransaction).toBe(true);
 

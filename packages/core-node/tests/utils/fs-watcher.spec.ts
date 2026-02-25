@@ -36,12 +36,12 @@ describe("SdFsWatcher", () => {
     });
 
     it("logs errors when error events occur", async () => {
-      // chokidar는 존재하지 않는 경로도 정상적으로 감시 시작함
-      // 에러 이벤트는 실제 파일 시스템 오류 시에만 발생
+      // chokidar starts watching non-existent paths without issue
+      // Error events only occur on actual filesystem errors
       const nonExistentPath = path.join(testDir, "non-existent-dir-" + Date.now());
       watcher = await FsWatcher.watch([nonExistentPath]);
 
-      // 에러 핸들러가 등록되어 있어 에러 발생 시에도 크래시하지 않음
+      // Error handler is registered so it doesn't crash even if an error occurs
       expect(watcher).toBeDefined();
     });
   });
@@ -54,10 +54,10 @@ describe("SdFsWatcher", () => {
     it("closes the watcher", async () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
 
-      // close()가 에러 없이 완료되면 테스트 통과
+      // Test passes if close() completes without error
       await expect(watcher.close()).resolves.toBeUndefined();
 
-      // 종료 후 watcher 참조 해제
+      // Release watcher reference after closing
       watcher = undefined;
     });
   });
@@ -80,7 +80,7 @@ describe("SdFsWatcher", () => {
       watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
 
       const fn = vi.fn();
-      // delay 옵션이 다양한 값으로 지정 가능해야 함
+      // delay option should be specifiable with various values
       expect(() => watcher!.onChange({ delay: 0 }, fn)).not.toThrow();
       expect(() => watcher!.onChange({ delay: 500 }, fn)).not.toThrow();
       expect(() => watcher!.onChange({ delay: 1000 }, fn)).not.toThrow();
@@ -92,8 +92,8 @@ describe("SdFsWatcher", () => {
   //#region Types
 
   describe("Types", () => {
-    it("verifies SdFsWatcherEvent type definition", () => {
-      // 이벤트 타입이 올바르게 정의되어 있는지 확인
+    it("verifies FsWatcherEvent type definition", () => {
+      // Verify that event types are correctly defined
       const validEvents = ["add", "addDir", "change", "unlink", "unlinkDir"];
       expect(validEvents).toContain("add");
       expect(validEvents).toContain("addDir");
@@ -102,8 +102,8 @@ describe("SdFsWatcher", () => {
       expect(validEvents).toContain("unlinkDir");
     });
 
-    it("verifies SdFsWatcherChangeInfo structure", () => {
-      // 인터페이스 구조 확인용 타입 체크
+    it("verifies FsWatcherChangeInfo structure", () => {
+      // Type check to verify interface structure
       const mockChangeInfo = {
         event: "add" as const,
         path: "/test/path",
@@ -116,7 +116,7 @@ describe("SdFsWatcher", () => {
 
   //#endregion
 
-  //#region glob 패턴 필터링
+  //#region Glob Pattern Filtering
 
   describe("glob pattern filtering", () => {
     const DELAY = 300;
@@ -135,23 +135,23 @@ describe("SdFsWatcher", () => {
     };
 
     it("receives events only for files matching glob pattern", async () => {
-      // .txt 파일만 감시하는 glob 패턴
+      // Glob pattern that watches only .txt files
       const globPattern = path.join(testDir, "**/*.txt");
 
       watcher = await FsWatcher.watch([globPattern]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
-      // .txt 파일 생성 (매칭됨)
+      // Create .txt file (matches)
       fs.writeFileSync(path.join(testDir, "matched.txt"), "hello");
 
-      // .json 파일 생성 (매칭 안 됨)
+      // Create .json file (does not match)
       await wait(50);
       fs.writeFileSync(path.join(testDir, "ignored.json"), "{}");
 
       const changes = await changesPromise;
 
-      // .txt 파일만 이벤트를 받아야 함
+      // Should only receive events for .txt file
       expect(changes.length).toBe(1);
       expect(changes[0].path).toContain("matched.txt");
       expect(changes[0].event).toBe("add");

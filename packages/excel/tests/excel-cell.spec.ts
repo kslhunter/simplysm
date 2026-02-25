@@ -79,9 +79,9 @@ describe("ExcelCell", () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      await expect(ws.cell(0, 0).setVal({} as any)).rejects.toThrow("지원되지 않는 타입");
+      await expect(ws.cell(0, 0).setVal({} as any)).rejects.toThrow("Unsupported type");
 
-      await expect(ws.cell(0, 1).setVal([] as any)).rejects.toThrow("지원되지 않는 타입");
+      await expect(ws.cell(0, 1).setVal([] as any)).rejects.toThrow("Unsupported type");
     });
   });
 
@@ -275,7 +275,7 @@ describe("ExcelCell", () => {
       await ws.cell(0, 0).merge(2, 2); // Merge A1:B2
 
       // Attempt to merge overlapping range (B2:C3)
-      await expect(ws.cell(1, 1).merge(2, 2)).rejects.toThrow("병합 셀이 기존 병합 범위");
+      await expect(ws.cell(1, 1).merge(2, 2)).rejects.toThrow("Merged cell overlaps with existing merge range");
     });
   });
 

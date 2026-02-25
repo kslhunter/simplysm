@@ -415,11 +415,13 @@ describe("DateOnly", () => {
 
   //#endregion
 
+  //#endregion
+
   //#region Week calculation
 
   describe("getWeekSeqOfYear()", () => {
     describe("ISO 8601 standard (Monday start, first week min 4 days)", () => {
-      it("Returns week sequence in middle of year", () => {
+      it("returns week sequence in middle of year", () => {
         // 2025-01-06 (Monday)
         const dateOnly = new DateOnly(2025, 1, 6);
         const result = dateOnly.getWeekSeqOfYear();
@@ -428,7 +430,7 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(2);
       });
 
-      it("Handles year-start when within week 1 of current year", () => {
+      it("handles year-start when within week 1 of current year", () => {
         // 2025-01-01 (Wednesday) - ISO 8601, January 2 (Thursday) is in same week, so 2025 week 1
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfYear();
@@ -437,7 +439,7 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(1);
       });
 
-      it("Handles year-end when belonging to next year's week", () => {
+      it("handles year-end when belonging to next year's week", () => {
         // 2024-12-30 (Monday) - Same week has 2025 January 2 (Thursday), so 2025 week 1
         const dateOnly = new DateOnly(2024, 12, 30);
         const result = dateOnly.getWeekSeqOfYear();
@@ -448,7 +450,7 @@ describe("DateOnly", () => {
     });
 
     describe("US style (Sunday start, first week min 1 day)", () => {
-      it("Year's first day belongs to week 1", () => {
+      it("year's first day belongs to week 1", () => {
         // 2025-01-01 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfYear(0, 1);
@@ -457,7 +459,7 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(1);
       });
 
-      it("Returns week sequence in middle of year", () => {
+      it("returns week sequence in middle of year", () => {
         // 2025-01-12 (Sunday) - US style week 3 start
         const dateOnly = new DateOnly(2025, 1, 12);
         const result = dateOnly.getWeekSeqOfYear(0, 1);
@@ -468,7 +470,7 @@ describe("DateOnly", () => {
     });
 
     describe("Leap year handling", () => {
-      it("Handles February 29 in leap year", () => {
+      it("handles February 29 in leap year", () => {
         // 2024 is leap year, 2024-02-29 (Thursday)
         const dateOnly = new DateOnly(2024, 2, 29);
         const result = dateOnly.getWeekSeqOfYear();
@@ -481,7 +483,7 @@ describe("DateOnly", () => {
 
   describe("getWeekSeqOfMonth()", () => {
     describe("ISO 8601 standard (Monday start, first week min 4 days)", () => {
-      it("Returns week sequence in middle of month", () => {
+      it("returns week sequence in middle of month", () => {
         // 2025-01-15 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 15);
         const result = dateOnly.getWeekSeqOfMonth();
@@ -491,7 +493,7 @@ describe("DateOnly", () => {
         expect(result.weekSeq).toBe(3);
       });
 
-      it("Handles month-start when belonging to previous month's week", () => {
+      it("handles month-start when belonging to previous month's week", () => {
         // 2025-02-01 (Saturday) - Belongs to January's last week
         const dateOnly = new DateOnly(2025, 2, 1);
         const result = dateOnly.getWeekSeqOfMonth();
@@ -500,7 +502,7 @@ describe("DateOnly", () => {
         expect(result.monthSeq).toBe(1);
       });
 
-      it("Handles month-end when potentially belonging to next month's week", () => {
+      it("handles month-end when potentially belonging to next month's week", () => {
         // 2025-01-30 (Thursday) - Can belong to February week
         const dateOnly = new DateOnly(2025, 1, 30);
         const result = dateOnly.getWeekSeqOfMonth();
@@ -510,7 +512,7 @@ describe("DateOnly", () => {
     });
 
     describe("US style (Sunday start, first week min 1 day)", () => {
-      it("Month's first day belongs to week 1", () => {
+      it("month's first day belongs to week 1", () => {
         // 2025-01-01 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 1);
         const result = dateOnly.getWeekSeqOfMonth(0, 1);
@@ -523,7 +525,7 @@ describe("DateOnly", () => {
   });
 
   describe("getBaseYearMonthSeqForWeekSeq()", () => {
-    it("Returns current year-month for general date", () => {
+    it("returns current year-month for general date", () => {
       const dateOnly = new DateOnly(2025, 1, 15);
       const result = dateOnly.getBaseYearMonthSeqForWeekSeq();
 
@@ -531,7 +533,7 @@ describe("DateOnly", () => {
       expect(result.monthSeq).toBe(1);
     });
 
-    it("Can return previous month at month boundary", () => {
+    it("can return previous month at month boundary", () => {
       // May vary based on week start day
       const dateOnly = new DateOnly(2025, 2, 1);
       const result = dateOnly.getBaseYearMonthSeqForWeekSeq();
@@ -543,7 +545,7 @@ describe("DateOnly", () => {
 
   describe("getWeekSeqStartDate()", () => {
     describe("ISO 8601 standard (Monday start)", () => {
-      it("Returns week start date (Monday)", () => {
+      it("returns week start date (Monday)", () => {
         // 2025-01-08 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 8);
         const result = dateOnly.getWeekSeqStartDate();
@@ -554,7 +556,7 @@ describe("DateOnly", () => {
         expect(result.dayOfWeek).toBe(1);
       });
 
-      it("Returns same date if already Monday", () => {
+      it("returns same date if already Monday", () => {
         // 2025-01-06 (Monday)
         const dateOnly = new DateOnly(2025, 1, 6);
         const result = dateOnly.getWeekSeqStartDate();
@@ -564,7 +566,7 @@ describe("DateOnly", () => {
     });
 
     describe("US style (Sunday start)", () => {
-      it("Returns week start date (Sunday)", () => {
+      it("returns week start date (Sunday)", () => {
         // 2025-01-08 (Wednesday)
         const dateOnly = new DateOnly(2025, 1, 8);
         const result = dateOnly.getWeekSeqStartDate(0, 1);
@@ -579,7 +581,7 @@ describe("DateOnly", () => {
 
   describe("getDateByYearWeekSeq()", () => {
     describe("ISO 8601 standard", () => {
-      it("Returns start date from year week sequence", () => {
+      it("returns start date from year week sequence", () => {
         // 2025 week 2
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 });
 
@@ -588,7 +590,7 @@ describe("DateOnly", () => {
         expect(result.day).toBe(6); // 2025-01-06 (Monday)
       });
 
-      it("Returns start date from year-month week sequence", () => {
+      it("returns start date from year-month week sequence", () => {
         // 2025 January week 3
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, month: 1, weekSeq: 3 });
 
@@ -599,7 +601,7 @@ describe("DateOnly", () => {
     });
 
     describe("US style", () => {
-      it("Returns start date from year week sequence", () => {
+      it("returns start date from year week sequence", () => {
         // 2025 week 1 (US style)
         const result = DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 1 }, 0, 1);
 
@@ -610,7 +612,7 @@ describe("DateOnly", () => {
     });
 
     describe("Year boundary handling", () => {
-      it("Handles year with 53 weeks", () => {
+      it("handles year with 53 weeks", () => {
         // 2020 has 53 weeks (ISO 8601)
         const result = DateOnly.getDateByYearWeekSeq({ year: 2020, weekSeq: 53 });
 
@@ -621,7 +623,7 @@ describe("DateOnly", () => {
     });
 
     describe("Leap year handling", () => {
-      it("Correctly calculates week for leap year", () => {
+      it("correctly calculates week for leap year", () => {
         // 2024 (leap year) week 10
         const result = DateOnly.getDateByYearWeekSeq({ year: 2024, weekSeq: 10 });
 
