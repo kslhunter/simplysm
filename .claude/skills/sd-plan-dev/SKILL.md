@@ -5,7 +5,7 @@ description: "Parallel execution of plan tasks (explicit invocation only)"
 
 # Parallel Plan Execution
 
-Execute plan tasks via parallel Task agents with dependency-aware scheduling.
+Execute plan tasks via parallel implementers with dependency-aware scheduling.
 
 **Core principle:** Dependency analysis + parallel implementers + orchestrator-managed reviews = maximum throughput
 
@@ -100,9 +100,9 @@ digraph process {
     "Any issues?" -> "Task: implementer fix" [label="yes"];
     "Task: implementer fix" -> "Re-review (parallel Task calls)";
     "Re-review (parallel Task calls)" -> "Any issues?";
-    "Any issues?" -> "More batches?" [label="no"];
-    "More batches?" -> "Batch integration check (typecheck + lint)" [label="yes"];
-    "Batch integration check (typecheck + lint)" -> "Implement the task" [label="next batch"];
+    "Any issues?" -> "Batch integration check (typecheck + lint)" [label="no"];
+    "Batch integration check (typecheck + lint)" -> "More batches?";
+    "More batches?" -> "Implement the task" [label="yes, next batch"];
     "More batches?" -> "Task: final review for entire implementation" [label="no"];
     "Task: final review for entire implementation" -> "Done";
 }
@@ -246,11 +246,11 @@ This catches cross-task integration issues early — especially when the next ba
 - Skip batch integration checks between batches
 - Use `run_in_background: true` on Task calls (use foreground parallel instead)
 
-**If task agent returns questions:**
+**If implementer returns questions:**
 
 - Answer clearly and completely
-- Re-launch that agent with answers included
-- Other parallel agents continue unaffected
+- Re-launch that implementer with answers included
+- Other parallel implementers continue unaffected
 
 **If reviewers find issues:**
 
@@ -271,5 +271,5 @@ This catches cross-task integration issues early — especially when the next ba
 **Related skills:**
 
 - **sd-plan** — creates the plan this skill executes
-- **sd-tdd** — task agents follow TDD
+- **sd-tdd** — implementers follow TDD
 - **sd-worktree** — branch isolation for worktree-based workflows
