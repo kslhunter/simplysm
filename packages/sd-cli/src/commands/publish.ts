@@ -20,21 +20,21 @@ const { Client: SshClient, utils } = ssh2;
 //#region Types
 
 /**
- * Publish 명령 옵션
+ * Publish command options
  */
 export interface PublishOptions {
-  /** 배포할 패키지 필터 (빈 배열이면 publish 설정이 있는 모든 패키지) */
+  /** Filter for packages to deploy (empty array deploys all packages with publish config) */
   targets: string[];
-  /** 빌드 없이 배포 (위험) */
+  /** Deploy without building (dangerous) */
   noBuild: boolean;
-  /** 실제 배포 없이 시뮬레이션 */
+  /** Simulate deployment without actually deploying */
   dryRun: boolean;
-  /** sd.config.ts에 전달할 추가 옵션 */
+  /** Additional options to pass to sd.config.ts */
   options: string[];
 }
 
 /**
- * package.json 타입 (필요한 필드만)
+ * package.json type (required fields only)
  */
 interface PackageJson {
   name: string;
@@ -50,8 +50,8 @@ interface PackageJson {
 //#region Utilities
 
 /**
- * 환경변수 치환 (%VAR% 형식)
- * @throws 치환 결과가 빈 문자열이면 에러
+ * Replace environment variables (%VAR% format)
+ * @throws throws an error if any variable substitution is empty
  */
 function replaceEnvVariables(str: string, version: string, projectPath: string): string {
   const result = str.replace(/%([^%]+)%/g, (match, envName: string) => {
@@ -64,16 +64,16 @@ function replaceEnvVariables(str: string, version: string, projectPath: string):
     return (env[envName] as string | undefined) ?? match;
   });
 
-  // 치환되지 않은 환경변수가 남아있으면 에러
+  // Throw error if any unsubstituted environment variables remain
   if (/%[^%]+%/.test(result)) {
-    throw new Error(`환경변수 치환 실패: ${str} → ${result}`);
+    throw new Error(`Environment variable substitution failed: ${str} → ${result}`);
   }
 
   return result;
 }
 
 /**
- * 카운트다운 대기
+ * Wait with countdown
  */
 async function waitWithCountdown(message: string, seconds: number): Promise<void> {
   for (let i = seconds; i > 0; i--) {
@@ -93,24 +93,24 @@ async function waitWithCountdown(message: string, seconds: number): Promise<void
 }
 
 /**
- * SSH 키 인증 사전 확인 및 설정
+ * Pre-verify and configure SSH key authentication
  *
- * pass가 없는 SFTP 서버에 대해:
- * 1. SSH 키 파일이 없으면 생성
- * 2. 키 인증을 테스트하고, 실패하면 비밀번호로 공개키 등록
+ * For SFTP servers without pass:
+ * 1. Generate SSH key file if it doesn't exist
+ * 2. Test key authentication, and if it fails, register public key using password
  */
 async function ensureSshAuth(
   publishPackages: Array<{ name: string; config: SdPublishConfig }>,
   logger: ReturnType<typeof consola.withTag>,
 ): Promise<void> {
-  // pass 없는 SFTP 서버 수집 (user@host 중복 제거)
+  // Collect SFTP servers without pass (deduplicate user@host)
   const sshTargets = new Map<string, { host: string; port?: number; user: string }>();
   for (const pkg of publishPackages) {
     if (pkg.config === "npm") continue;
     if (pkg.config.type !== "sftp") continue;
     if (pkg.config.pass != null) continue;
     if (pkg.config.user == null) {
-      throw new Error(`[${pkg.name}] SFTP 설정에 user가 없습니다.`);
+      throw new Error(`[${pkg.name}] SFTP config missing user.`);
     }
     const key = `${pkg.config.user}@${pkg.config.host}`;
     sshTargets.set(key, {
@@ -122,13 +122,13 @@ async function ensureSshAuth(
 
   if (sshTargets.size === 0) return;
 
-  // SSH 키 파일 확인/생성
+  // Check/create SSH key file
   const sshDir = path.join(os.homedir(), ".ssh");
   const keyPath = path.join(sshDir, "id_ed25519");
   const pubKeyPath = path.join(sshDir, "id_ed25519.pub");
 
   if (!fs.existsSync(keyPath)) {
-    logger.info("SSH 키가 없습니다. 생성합니다...");
+    logger.info("SSH key not found. Creating one...");
 
     if (!fs.existsSync(sshDir)) {
       fs.mkdirSync(sshDir, { mode: 0o700 });
@@ -138,41 +138,41 @@ async function ensureSshAuth(
     fs.writeFileSync(keyPath, keyPair.private, { mode: 0o600 });
     fs.writeFileSync(pubKeyPath, keyPair.public + "\n", { mode: 0o644 });
 
-    logger.info(`SSH 키 생성 완료: ${keyPath}`);
+    logger.info(`SSH key created: ${keyPath}`);
   }
 
   const privateKeyData = fs.readFileSync(keyPath);
   const publicKey = fs.readFileSync(pubKeyPath, "utf-8").trim();
 
-  // privateKey가 암호화되어 있는지 확인
+  // Check if privateKey is encrypted
   const parsed = utils.parseKey(privateKeyData);
   const isKeyEncrypted = parsed instanceof Error;
   const sshAgent = process.env["SSH_AUTH_SOCK"];
 
-  // 각 서버에 대해 키 인증 확인
+  // Verify key authentication for each server
   for (const [label, target] of sshTargets) {
     const canAuth = await testSshKeyAuth(target, {
       privateKey: isKeyEncrypted ? undefined : privateKeyData,
       agent: sshAgent,
     });
     if (canAuth) {
-      logger.debug(`SSH 키 인증 확인: ${label}`);
+      logger.debug(`SSH key authentication verified: ${label}`);
       continue;
     }
 
-    // 키 인증 실패 → 비밀번호로 공개키 등록
-    logger.info(`${label}: SSH 키가 서버에 등록되어 있지 않습니다.`);
+    // Key authentication failed → register public key using password
+    logger.info(`${label}: SSH key not registered on server.`);
     const pass = await passwordPrompt({
-      message: `${label} 비밀번호 (공개키 등록용):`,
+      message: `${label} password (to register public key):`,
     });
 
     await registerSshPublicKey(target, pass, publicKey);
-    logger.info(`SSH 공개키 등록 완료: ${label}`);
+    logger.info(`SSH public key registered: ${label}`);
   }
 }
 
 /**
- * SSH 키 인증 테스트 (접속 후 즉시 종료)
+ * Test SSH key authentication (connect and immediately disconnect)
  */
 function testSshKeyAuth(
   target: { host: string; port?: number; user: string },
@@ -203,7 +203,7 @@ function testSshKeyAuth(
 }
 
 /**
- * 비밀번호로 서버에 접속하여 SSH 공개키를 등록
+ * Connect to server with password and register SSH public key
  */
 function registerSshPublicKey(
   target: { host: string; port?: number; user: string },
@@ -213,7 +213,7 @@ function registerSshPublicKey(
   return new Promise((resolve, reject) => {
     const conn = new SshClient();
     conn.on("ready", () => {
-      // authorized_keys에 공개키 추가
+      // Add public key to authorized_keys
       const escapedKey = publicKey.replace(/'/g, "'\\''");
       const cmd = [
         "mkdir -p ~/.ssh",
@@ -225,19 +225,19 @@ function registerSshPublicKey(
       conn.exec(cmd, (err, stream) => {
         if (err) {
           conn.end();
-          reject(new Error(`SSH 명령 실행 실패: ${err.message}`));
+          reject(new Error(`Failed to execute SSH command: ${err.message}`));
           return;
         }
 
         let stderr = "";
-        stream.on("data", () => {}); // stdout 소비 (미소비 시 stream 미종료)
+        stream.on("data", () => {}); // Consume stdout (unconsumed stream won't close)
         stream.stderr.on("data", (data: Uint8Array) => {
           stderr += data.toString();
         });
         stream.on("exit", (code: number | null) => {
           conn.end();
           if (code !== 0) {
-            reject(new Error(`SSH 공개키 등록 실패 (exit code: ${code}): ${stderr}`));
+            reject(new Error(`Failed to register SSH public key (exit code: ${code}): ${stderr}`));
           } else {
             resolve();
           }
@@ -245,7 +245,7 @@ function registerSshPublicKey(
       });
     });
     conn.on("error", (err) => {
-      reject(new Error(`SSH 접속 실패 (${target.host}): ${err.message}`));
+      reject(new Error(`SSH connection failed (${target.host}): ${err.message}`));
     });
     conn.connect({
       host: target.host,
@@ -262,8 +262,8 @@ function registerSshPublicKey(
 //#region Version Upgrade
 
 /**
- * 프로젝트 및 패키지 버전 업그레이드
- * @param dryRun true면 파일 수정 없이 새 버전만 계산
+ * Upgrade project and package versions
+ * @param dryRun if true, only calculate new version without modifying files
  */
 async function upgradeVersion(
   cwd: string,
@@ -277,14 +277,14 @@ async function upgradeVersion(
   const currentVersion = projPkg.version;
   const prereleaseInfo = semver.prerelease(currentVersion);
 
-  // prerelease 여부에 따라 증가 방식 결정
+  // Determine increment strategy based on prerelease status
   const newVersion =
     prereleaseInfo !== null
       ? semver.inc(currentVersion, "prerelease")!
       : semver.inc(currentVersion, "patch")!;
 
   if (dryRun) {
-    // dry-run: 파일 수정 없이 새 버전만 반환
+    // dry-run: return new version without modifying files
     return { version: newVersion, changedFiles: [] };
   }
 
@@ -292,7 +292,7 @@ async function upgradeVersion(
   await fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
   changedFiles.push(projPkgPath);
 
-  // 각 패키지 package.json 버전 설정
+  // Set version in each package's package.json
   for (const pkgPath of allPkgPaths) {
     const pkgJsonPath = path.resolve(pkgPath, "package.json");
     const pkgJson = await fsReadJson<PackageJson>(pkgJsonPath);
@@ -301,7 +301,7 @@ async function upgradeVersion(
     changedFiles.push(pkgJsonPath);
   }
 
-  // 템플릿 파일의 @simplysm 패키지 버전 동기화
+  // Synchronize @simplysm package version in template files
   const templateFiles = await fsGlob(path.resolve(cwd, "packages/sd-cli/templates/**/*.hbs"));
   const versionRegex = /("@simplysm\/[^"]+"\s*:\s*)"~[^"]+"/g;
 
@@ -323,8 +323,8 @@ async function upgradeVersion(
 //#region Package Publishing
 
 /**
- * 개별 패키지 배포
- * @param dryRun true면 실제 배포 없이 시뮬레이션
+ * Publish individual package
+ * @param dryRun if true, simulate deployment without actually publishing
  */
 async function publishPackage(
   pkgPath: string,
@@ -354,27 +354,27 @@ async function publishPackage(
 
     await execa("pnpm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
-    // 로컬 디렉토리 복사
+    // Copy to local directory
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
     const distPath = path.resolve(pkgPath, "dist");
 
     if (dryRun) {
-      logger.info(`[DRY-RUN] [${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
+      logger.info(`[DRY-RUN] [${pkgName}] copy to local: ${distPath} → ${targetPath}`);
     } else {
-      logger.debug(`[${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
+      logger.debug(`[${pkgName}] copy to local: ${distPath} → ${targetPath}`);
       await fsCopy(distPath, targetPath);
     }
   } else {
-    // 스토리지 업로드
+    // Upload to storage
     const distPath = path.resolve(pkgPath, "dist");
     const remotePath = publishConfig.path ?? "/";
 
     if (dryRun) {
       logger.info(
-        `[DRY-RUN] [${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`,
+        `[DRY-RUN] [${pkgName}] ${publishConfig.type} upload: ${distPath} → ${remotePath}`,
       );
     } else {
-      logger.debug(`[${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`);
+      logger.debug(`[${pkgName}] ${publishConfig.type} upload: ${distPath} → ${remotePath}`);
       await StorageFactory.connect(
         publishConfig.type,
         {
@@ -396,15 +396,15 @@ async function publishPackage(
 //#region Dependency Levels
 
 /**
- * 배포 패키지의 의존성 레벨을 계산한다.
- * 의존성이 없는 패키지 → Level 0, Level 0에만 의존 → Level 1, ...
+ * Calculate dependency levels for packages to publish.
+ * Packages with no dependencies → Level 0, depends only on Level 0 → Level 1, ...
  */
 async function computePublishLevels(
   publishPkgs: Array<{ name: string; path: string; config: SdPublishConfig }>,
 ): Promise<Array<Array<{ name: string; path: string; config: SdPublishConfig }>>> {
   const pkgNames = new Set(publishPkgs.map((p) => p.name));
 
-  // 각 패키지의 워크스페이스 내 의존성 수집
+  // Collect workspace dependencies for each package
   const depsMap = new Map<string, Set<string>>();
   for (const pkg of publishPkgs) {
     const pkgJson = await fsReadJson<PackageJson>(path.resolve(pkg.path, "package.json"));
@@ -424,7 +424,7 @@ async function computePublishLevels(
     depsMap.set(pkg.name, workspaceDeps);
   }
 
-  // 위상 정렬로 레벨 분류
+  // Topological sort to classify into levels
   const levels: Array<Array<{ name: string; path: string; config: SdPublishConfig }>> = [];
   const assigned = new Set<string>();
   const remaining = new Map(publishPkgs.map((p) => [p.name, p]));
@@ -439,7 +439,7 @@ async function computePublishLevels(
     }
 
     if (level.length === 0) {
-      // 순환 의존성 — 남은 패키지를 모두 마지막 레벨에 배치
+      // Circular dependency — place all remaining packages in final level
       levels.push([...remaining.values()]);
       break;
     }
@@ -459,15 +459,15 @@ async function computePublishLevels(
 //#region Main
 
 /**
- * publish 명령을 실행한다.
+ * Execute publish command.
  *
- * **배포 순서 (안전성 우선):**
- * 1. 사전 검증 (npm 인증, Git 상태)
- * 2. 버전 업그레이드 (package.json + 템플릿)
- * 3. 빌드
- * 4. Git 커밋/태그/푸시 (변경된 파일만 명시적으로 staging)
- * 5. pnpm 배포
- * 6. postPublish (실패해도 계속)
+ * **Deployment order (safety first):**
+ * 1. Pre-validation (npm auth, Git status)
+ * 2. Version upgrade (package.json + templates)
+ * 3. Build
+ * 4. Git commit/tag/push (explicitly stage only changed files)
+ * 5. pnpm deployment
+ * 6. postPublish (continue even if it fails)
  */
 export async function runPublish(options: PublishOptions): Promise<void> {
   const { targets, noBuild, dryRun } = options;
@@ -475,27 +475,27 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const logger = consola.withTag("sd:cli:publish");
 
   if (dryRun) {
-    logger.info("[DRY-RUN] 시뮬레이션 모드 - 실제 배포 없음");
+    logger.info("[DRY-RUN] Simulation mode - no actual deployment");
   }
 
-  logger.debug("배포 시작", { targets, noBuild, dryRun });
+  logger.debug("publish start", { targets, noBuild, dryRun });
 
-  // sd.config.ts 로드
+  // Load sd.config.ts
   let sdConfig: SdConfig;
   try {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
-    logger.debug("sd.config.ts 로드 완료");
+    logger.debug("sd.config.ts loaded");
   } catch (err) {
-    logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`Failed to load sd.config.ts: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
 
-  // package.json 로드
+  // Load package.json
   const projPkgPath = path.resolve(cwd, "package.json");
   const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
-  // pnpm-workspace.yaml에서 워크스페이스 패키지 경로 수집
+  // Collect workspace package paths from pnpm-workspace.yaml
   const workspaceYamlPath = path.resolve(cwd, "pnpm-workspace.yaml");
   const workspaceGlobs: string[] = [];
   if (await fsExists(workspaceYamlPath)) {
@@ -509,7 +509,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     .flat()
     .filter((item) => !path.basename(item).includes("."));
 
-  // publish 설정이 있는 패키지 필터링
+  // Filter packages with publish configuration
   const publishPackages: Array<{
     name: string;
     path: string;
@@ -523,12 +523,12 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     const pkgConfig = config;
     if (pkgConfig.publish == null) continue;
 
-    // targets가 지정되면 해당 패키지만 포함
+    // If targets is specified, include only those packages
     if (targets.length > 0 && !targets.includes(name)) continue;
 
     const pkgPath = allPkgPaths.find((p) => path.basename(p) === name);
     if (pkgPath == null) {
-      logger.warn(`패키지를 찾을 수 없습니다: ${name}`);
+      logger.warn(`Package not found: ${name}`);
       continue;
     }
 
@@ -540,59 +540,59 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   }
 
   if (publishPackages.length === 0) {
-    process.stdout.write("✔ 배포할 패키지가 없습니다.\n");
+    process.stdout.write("✔ No packages to deploy.\n");
     return;
   }
 
   logger.debug(
-    "배포 대상 패키지",
+    "Target packages to deploy",
     publishPackages.map((p) => p.name),
   );
 
-  // Git 사용 여부 확인
+  // Check if Git is available
   const hasGit = await fsExists(path.resolve(cwd, ".git"));
 
-  //#region Phase 1: 사전 검증
+  //#region Phase 1: Pre-validation
 
-  // npm 인증 확인 (npm publish 설정이 있는 경우)
+  // Verify npm authentication (if npm publish config exists)
   if (publishPackages.some((p) => p.config === "npm")) {
-    logger.debug("npm 인증 확인...");
+    logger.debug("Verifying npm authentication...");
     try {
       const { stdout: whoami } = await execa("npm", ["whoami"]);
       if (whoami.trim() === "") {
-        throw new Error("npm 로그인 정보가 없습니다.");
+        throw new Error("npm login information not found.");
       }
-      logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
+      logger.debug(`npm login verified: ${whoami.trim()}`);
     } catch (err) {
-      logger.error(`npm whoami 실패:`, err);
+      logger.error(`npm whoami failed:`, err);
       /*logger.error(
-        "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
-          "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
-          "  npm config set //registry.npmjs.org/:_authToken <토큰>",
+        "npm token is invalid or expired.\n" +
+          "Create a Granular Access Token at https://www.npmjs.com/settings/~/tokens, then:\n" +
+          "  npm config set //registry.npmjs.org/:_authToken <token>",
       );*/
       process.exitCode = 1;
       return;
     }
   }
 
-  // SSH 키 인증 확인 (pass 없는 SFTP publish 설정이 있는 경우)
+  // Verify SSH key authentication (if SFTP publish config without pass exists)
   try {
     await ensureSshAuth(publishPackages, logger);
   } catch (err) {
-    logger.error(`SSH 인증 설정 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`Failed to setup SSH authentication: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
 
-  // Git 미커밋 변경사항 확인 및 자동 커밋 (noBuild가 아닌 경우)
+  // Check for uncommitted changes and attempt auto-commit (unless noBuild is set)
   if (!noBuild && hasGit) {
-    logger.debug("Git 커밋 여부 확인...");
+    logger.debug("Checking git commit status...");
     try {
       const { stdout: diff } = await execa("git", ["diff", "--name-only"]);
       const { stdout: stagedDiff } = await execa("git", ["diff", "--cached", "--name-only"]);
 
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
-        logger.info("커밋되지 않은 변경사항 감지. claude 자동 커밋 시도...");
+        logger.info("Uncommitted changes detected. Attempting auto-commit with claude...");
         try {
           await execa("claude", [
             "-p",
@@ -603,20 +603,20 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           ]);
         } catch (e) {
           throw new Error(
-            "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도하세요.\n" +
+            "Auto-commit failed. Please commit manually and try again.\n" +
               (e instanceof Error ? e.message : String(e)),
           );
         }
 
-        // 커밋 후 재확인
+        // Re-verify after commit
         const { stdout: recheckDiff } = await execa("git", ["diff", "--name-only"]);
         const { stdout: recheckStaged } = await execa("git", ["diff", "--cached", "--name-only"]);
         if (recheckDiff.trim() !== "" || recheckStaged.trim() !== "") {
           throw new Error(
-            "자동 커밋 후에도 미커밋 변경사항이 남아있습니다.\n" + recheckDiff + recheckStaged,
+            "Uncommitted changes still remain after auto-commit.\n" + recheckDiff + recheckStaged,
           );
         }
-        logger.info("자동 커밋 완료.");
+        logger.info("Auto-commit completed.");
       }
     } catch (err) {
       logger.error(err instanceof Error ? err.message : err);
@@ -627,31 +627,31 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#endregion
 
-  //#region Phase 2 & 3: 빌드 또는 noBuild 경고
+  //#region Phase 2 & 3: Build or noBuild warning
 
   let version = projPkg.version;
 
   if (noBuild) {
-    // noBuild 경고
-    logger.warn("빌드하지 않고 배포하는 것은 상당히 위험합니다.");
-    await waitWithCountdown("프로세스를 중지하려면 'CTRL+C'를 누르세요.", 5);
+    // noBuild warning
+    logger.warn("Deploying without building is quite dangerous.");
+    await waitWithCountdown("Press 'CTRL+C' to stop the process.", 5);
   } else {
-    // 버전 업그레이드
-    logger.debug("버전 업그레이드...");
+    // Version upgrade
+    logger.debug("Upgrading version...");
     const upgradeResult = await upgradeVersion(cwd, allPkgPaths, dryRun);
     version = upgradeResult.version;
     const _changedFiles = upgradeResult.changedFiles;
     if (dryRun) {
-      logger.info(`[DRY-RUN] 버전 업그레이드: ${projPkg.version} → ${version} (파일 수정 없음)`);
+      logger.info(`[DRY-RUN] Version upgrade: ${projPkg.version} → ${version} (files not modified)`);
     } else {
-      logger.info(`버전 업그레이드: ${projPkg.version} → ${version}`);
+      logger.info(`Version upgrade: ${projPkg.version} → ${version}`);
     }
 
-    // 빌드 실행
+    // Run build
     if (dryRun) {
-      logger.info("[DRY-RUN] 빌드 시작 (검증용)...");
+      logger.info("[DRY-RUN] Starting build (validation only)...");
     } else {
-      logger.debug("빌드 시작...");
+      logger.debug("Starting build...");
     }
 
     try {
@@ -660,17 +660,17 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         options: options.options,
       });
 
-      // 빌드 실패 확인
+      // Check build failure
       if (process.exitCode === 1) {
-        throw new Error("빌드 실패");
+        throw new Error("Build failed");
       }
     } catch {
       if (dryRun) {
-        logger.error("[DRY-RUN] 빌드 실패");
+        logger.error("[DRY-RUN] Build failed");
       } else {
         logger.error(
-          "빌드 실패. 수동 복구가 필요할 수 있습니다:\n" +
-            "  버전 변경을 되돌리려면:\n" +
+          "Build failed. Manual recovery may be necessary:\n" +
+            "  To revert version changes:\n" +
             "    git checkout -- package.json packages/*/package.json packages/sd-cli/templates/",
         );
       }
@@ -678,34 +678,34 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       return;
     }
 
-    //#region Phase 3: Git 커밋/태그/푸시
+    //#region Phase 3: Git commit/tag/push
 
     if (hasGit) {
       if (dryRun) {
-        logger.info("[DRY-RUN] Git 커밋/태그/푸시 시뮬레이션...");
-        logger.info(`[DRY-RUN] git add (${_changedFiles.length}개 파일)`);
+        logger.info("[DRY-RUN] Simulating Git commit/tag/push...");
+        logger.info(`[DRY-RUN] git add (${_changedFiles.length} files)`);
         logger.info(`[DRY-RUN] git commit -m "v${version}"`);
         logger.info(`[DRY-RUN] git tag -a v${version} -m "v${version}"`);
         logger.info("[DRY-RUN] git push --dry-run");
         await execa("git", ["push", "--dry-run"]);
         logger.info("[DRY-RUN] git push --tags --dry-run");
         await execa("git", ["push", "--tags", "--dry-run"]);
-        logger.info("[DRY-RUN] Git 작업 시뮬레이션 완료");
+        logger.info("[DRY-RUN] Git operations simulation completed");
       } else {
-        logger.debug("Git 커밋/태그/푸시...");
+        logger.debug("Git commit/tag/push...");
         try {
           await execa("git", ["add", ..._changedFiles]);
           await execa("git", ["commit", "-m", `v${version}`]);
           await execa("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
           await execa("git", ["push"]);
           await execa("git", ["push", "--tags"]);
-          logger.debug("Git 작업 완료");
+          logger.debug("Git operations completed");
         } catch (err) {
           logger.error(
-            `Git 작업 실패: ${err instanceof Error ? err.message : err}\n` +
-              "수동 복구가 필요할 수 있습니다:\n" +
-              `  git revert HEAD  # 버전 커밋 되돌리기\n` +
-              `  git tag -d v${version}  # 태그 삭제`,
+            `Git operations failed: ${err instanceof Error ? err.message : err}\n` +
+              "Manual recovery may be necessary:\n" +
+              `  git revert HEAD  # Revert version commit\n` +
+              `  git tag -d v${version}  # Delete tag`,
           );
           process.exitCode = 1;
           return;
@@ -718,20 +718,20 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#endregion
 
-  //#region Phase 4: 배포 (의존성 레벨별 순차, 레벨 내 병렬)
+  //#region Phase 4: Deployment (sequential by dependency level, parallel within level)
 
   const levels = await computePublishLevels(publishPackages);
   const publishedPackages: string[] = [];
   let publishFailed = false;
 
-  // 레벨별 순차 실행
+  // Sequential execution per level
   for (let levelIdx = 0; levelIdx < levels.length; levelIdx++) {
     if (publishFailed) break;
 
     const levelPkgs = levels[levelIdx];
     logger.start(`Level ${levelIdx + 1}/${levels.length}`);
 
-    // 레벨 내 패키지 병렬 실행 (Promise.allSettled)
+    // Parallel execution within level (Promise.allSettled)
     const publishPromises = levelPkgs.map(async (pkg) => {
       const maxRetries = 3;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -745,8 +745,8 @@ export async function runPublish(options: PublishOptions): Promise<void> {
             const delay = attempt * 5_000;
             logger.debug(
               dryRun
-                ? `[DRY-RUN] ${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`
-                : `${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`,
+                ? `[DRY-RUN] ${pkg.name} (retry ${attempt + 1}/${maxRetries})`
+                : `${pkg.name} (retry ${attempt + 1}/${maxRetries})`,
             );
             await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
@@ -754,13 +754,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           }
         }
       }
-      // TypeScript 타입 체커를 위한 fallback (실제로는 도달하지 않음)
+      // Fallback for TypeScript type checker (actually unreachable)
       return { status: "error" as const, name: pkg.name, error: new Error("Unknown error") };
     });
 
     const results = await Promise.allSettled(publishPromises);
 
-    // 레벨 내 실패 확인
+    // Check for failures within level
     const levelFailed = results.some((r) => r.status === "rejected");
     if (levelFailed) {
       publishFailed = true;
@@ -770,23 +770,23 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     }
   }
 
-  // 실패한 패키지 확인
+  // Check failed packages
   const allPkgNames = publishPackages.map((p) => p.name);
   const failedPkgNames = allPkgNames.filter((n) => !publishedPackages.includes(n));
 
   if (failedPkgNames.length > 0) {
     if (publishedPackages.length > 0) {
       logger.error(
-        "배포 중 오류가 발생했습니다.\n" +
-          "이미 배포된 패키지:\n" +
+        "Error during deployment.\n" +
+          "Already deployed packages:\n" +
           publishedPackages.map((n) => `  - ${n}`).join("\n") +
-          "\n\n수동 복구가 필요할 수 있습니다.\n" +
-          "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.",
+          "\n\nManual recovery may be necessary.\n" +
+          "npm packages can be deleted within 72 hours with `npm unpublish <pkg>@<version>`.",
       );
     }
 
     for (const name of failedPkgNames) {
-      logger.error(`[${name}] 배포 실패`);
+      logger.error(`[${name}] Deployment failed`);
     }
     process.exitCode = 1;
     return;
@@ -798,9 +798,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   if (sdConfig.postPublish != null && sdConfig.postPublish.length > 0) {
     if (dryRun) {
-      logger.info("[DRY-RUN] postPublish 스크립트 시뮬레이션...");
+      logger.info("[DRY-RUN] Simulating postPublish scripts...");
     } else {
-      logger.debug("postPublish 스크립트 실행...");
+      logger.debug("Running postPublish scripts...");
     }
 
     for (const script of sdConfig.postPublish) {
@@ -809,15 +809,15 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         const args = script.args.map((arg) => replaceEnvVariables(arg, version, cwd));
 
         if (dryRun) {
-          logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
+          logger.info(`[DRY-RUN] Will execute: ${cmd} ${args.join(" ")}`);
         } else {
-          logger.debug(`실행: ${cmd} ${args.join(" ")}`);
+          logger.debug(`Executing: ${cmd} ${args.join(" ")}`);
           await execa(cmd, args, { cwd });
         }
       } catch (err) {
-        // postPublish 실패 시 경고만 출력 (배포 롤백 불가)
+        // On postPublish failure, only warn (no deployment rollback possible)
         logger.warn(
-          `postPublish 스크립트 실패 (계속 진행): ${err instanceof Error ? err.message : err}`,
+          `postPublish script failed (continuing): ${err instanceof Error ? err.message : err}`,
         );
       }
     }
@@ -826,9 +826,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   //#endregion
 
   if (dryRun) {
-    logger.info(`[DRY-RUN] 시뮬레이션 완료. 실제 배포 시 버전: v${version}`);
+    logger.info(`[DRY-RUN] Simulation completed. Actual deployment version: v${version}`);
   } else {
-    logger.info(`모든 배포가 완료되었습니다. (v${version})`);
+    logger.info(`All deployments completed. (v${version})`);
   }
 }
 

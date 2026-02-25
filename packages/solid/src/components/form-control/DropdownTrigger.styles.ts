@@ -38,7 +38,7 @@ export const triggerSizeClasses: Record<ComponentSize, string> = {
 
 export const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
 
-/** Select/Combobox 공유 트리거 클래스 빌더 */
+/** Select/Combobox shared trigger class builder */
 export function getTriggerClass(options: {
   size?: ComponentSize;
   disabled?: boolean;

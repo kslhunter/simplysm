@@ -1,8 +1,8 @@
 /**
- * 프로세스 종료 시그널을 처리하는 클래스
+ * Class that handles process termination signals
  *
- * SIGINT (Ctrl+C) 및 SIGTERM 시그널을 감지하고,
- * 종료 시점까지 대기하는 Promise를 제공한다.
+ * Detects SIGINT (Ctrl+C) and SIGTERM signals and
+ * provides a Promise that waits until termination.
  */
 export class SignalHandler {
   private _terminateResolver: (() => void) | null = null;
@@ -26,22 +26,22 @@ export class SignalHandler {
   }
 
   /**
-   * 종료 시그널이 수신될 때까지 대기
+   * Wait until termination signal is received
    */
   waitForTermination(): Promise<void> {
     return this._terminatePromise;
   }
 
   /**
-   * 종료 여부 확인
+   * Check if terminated
    */
   isTerminated(): boolean {
     return this._terminated;
   }
 
   /**
-   * 프로그래밍 방식으로 종료 요청
-   * (테스트 또는 외부에서 종료 트리거 시 사용)
+   * Request termination programmatically
+   * (used when triggering termination from tests or externally)
    */
   requestTermination(): void {
     if (!this._terminated) {

@@ -16,7 +16,7 @@ import type { FsWatcher } from "@simplysm/core-node";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 
 /**
- * Watch 명령 옵션
+ * Watch command options
  */
 export interface WatchOrchestratorOptions {
   targets: string[];
@@ -24,11 +24,11 @@ export interface WatchOrchestratorOptions {
 }
 
 /**
- * Watch 모드 실행을 조율하는 Orchestrator
+ * Orchestrator that coordinates watch mode execution
  *
- * Library 패키지(node/browser/neutral)의 watch 모드 실행을 관리한다.
+ * Manages watch mode execution for Library packages (node/browser/neutral).
  * - LibraryBuilder: esbuild watch
- * - DtsBuilder: .d.ts 생성
+ * - DtsBuilder: .d.ts generation
  */
 export class WatchOrchestrator {
   private readonly _cwd: string;
@@ -50,15 +50,15 @@ export class WatchOrchestrator {
   }
 
   /**
-   * Orchestrator 초기화
-   * - sd.config.ts 로드
-   * - 패키지 분류
-   * - Builder 생성 및 초기화
+   * Initialize Orchestrator
+   * - Load sd.config.ts
+   * - Classify packages
+   * - Create and initialize builders
    */
   async initialize(): Promise<void> {
-    this._logger.debug("watch 시작", { targets: this._options.targets });
+    this._logger.debug("watch start", { targets: this._options.targets });
 
-    // sd.config.ts 로드
+    // Load sd.config.ts
     let sdConfig: SdConfig;
     try {
       sdConfig = await loadSdConfig({
@@ -66,22 +66,22 @@ export class WatchOrchestrator {
         dev: true,
         opt: this._options.options,
       });
-      this._logger.debug("sd.config.ts 로드 완료");
+      this._logger.debug("sd.config.ts loaded");
     } catch (err) {
-      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`Failed to load sd.config.ts: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
     }
 
-    // replaceDeps 설정이 있으면 watch 시작 (초기 교체는 sd-cli.ts에서 처리됨)
+    // Start watch if replaceDeps config exists (initial replacement handled in sd-cli.ts)
     if (sdConfig.replaceDeps != null) {
       this._replaceDepWatcher = await watchReplaceDeps(this._cwd, sdConfig.replaceDeps);
     }
 
-    // targets 필터링
+    // Filter by targets
     const allPackages = filterPackagesByTargets(sdConfig.packages, this._options.targets);
 
-    // library 패키지만 필터링 (node, browser, neutral)
+    // Filter only library packages (node, browser, neutral)
     const isLibraryTarget = (target: string): target is BuildTarget =>
       target === "node" || target === "browser" || target === "neutral";
 
@@ -93,11 +93,11 @@ export class WatchOrchestrator {
     }
 
     if (Object.keys(libraryConfigs).length === 0) {
-      process.stdout.write("⚠ watch할 library 패키지가 없습니다.\n");
+      process.stdout.write("⚠ No library packages to watch.\n");
       return;
     }
 
-    // PackageInfo 배열 생성
+    // Create PackageInfo array
     this._packages = Object.entries(libraryConfigs).map(([name, config]) => ({
       name,
       dir: path.join(this._cwd, "packages", name),

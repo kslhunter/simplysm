@@ -1,69 +1,69 @@
 import { createContext, useContext, type Accessor, type JSX } from "solid-js";
 
-/** 다이얼로그 기본 설정 */
+/** Dialog default configuration */
 export interface DialogDefaults {
-  /** ESC 키로 닫기 허용 */
+  /** Allow closing via ESC key */
   closeOnEscape?: boolean;
-  /** 백드롭 클릭으로 닫기 허용 */
+  /** Allow closing via backdrop click */
   closeOnBackdrop?: boolean;
 }
 
-/** 다이얼로그 기본 설정 Context */
+/** Dialog default configuration Context */
 export const DialogDefaultsContext = createContext<Accessor<DialogDefaults>>();
 
-/** 프로그래매틱 다이얼로그 옵션 */
+/** Programmatic dialog options */
 export interface DialogShowOptions {
-  /** 다이얼로그 헤더 */
+  /** Dialog header */
   header?: JSX.Element;
-  /** 닫기 버튼 표시 */
+  /** Show close button */
   closable?: boolean;
-  /** 백드롭 클릭으로 닫기 */
+  /** Close on backdrop click */
   closeOnBackdrop?: boolean;
-  /** ESC 키로 닫기 */
+  /** Close on ESC key */
   closeOnEscape?: boolean;
-  /** 크기 조절 가능 */
+  /** Resizable */
   resizable?: boolean;
-  /** 드래그 이동 가능 */
+  /** Draggable */
   movable?: boolean;
-  /** 플로팅 모드 (우하단 고정) */
+  /** Floating mode (fixed to bottom-right) */
   float?: boolean;
-  /** 전체 화면 채우기 */
+  /** Fill full screen */
   fill?: boolean;
-  /** 초기 너비 (px) */
+  /** Initial width (px) */
   width?: number;
-  /** 초기 높이 (px) */
+  /** Initial height (px) */
   height?: number;
-  /** 최소 너비 (px) */
+  /** Minimum width (px) */
   minWidth?: number;
-  /** 최소 높이 (px) */
+  /** Minimum height (px) */
   minHeight?: number;
-  /** 플로팅 위치 */
+  /** Floating position */
   position?: "bottom-right" | "top-right";
-  /** 헤더 커스텀 스타일 */
+  /** Custom header style */
   headerStyle?: JSX.CSSProperties | string;
-  /** 닫기 전 확인 함수 (false 반환 시 닫기 취소) */
+  /** Confirmation function before closing (return false to cancel) */
   canDeactivate?: () => boolean;
 }
 
-/** 프로그래매틱 다이얼로그 Context 값 */
+/** Programmatic dialog Context value */
 export interface DialogContextValue {
-  /** 다이얼로그를 열고, 닫힐 때까지 대기하여 결과를 반환 */
+  /** Open dialog and wait until closing, returns result */
   show<T = undefined>(
     factory: () => JSX.Element,
     options: DialogShowOptions,
   ): Promise<T | undefined>;
 }
 
-/** 프로그래매틱 다이얼로그 Context */
+/** Programmatic dialog Context */
 export const DialogContext = createContext<DialogContextValue>();
 
 /**
- * 프로그래매틱 다이얼로그에 접근하는 훅
+ * Hook to access programmatic dialogs
  *
- * @throws DialogProvider가 없으면 에러 발생
+ * @throws Throws error if DialogProvider is not present
  */
 export function useDialog(): DialogContextValue {
   const ctx = useContext(DialogContext);
-  if (!ctx) throw new Error("useDialog는 DialogProvider 내부에서만 사용할 수 있습니다");
+  if (!ctx) throw new Error("useDialog can only be used inside DialogProvider");
   return ctx;
 }

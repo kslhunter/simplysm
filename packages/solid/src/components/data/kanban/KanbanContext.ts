@@ -44,7 +44,7 @@ export const KanbanContext = createContext<KanbanContextValue>();
 export function useKanbanContext(): KanbanContextValue {
   const context = useContext(KanbanContext);
   if (!context) {
-    throw new Error("useKanbanContext는 Kanban 내부에서만 사용할 수 있습니다");
+    throw new Error("useKanbanContext can only be used inside Kanban");
   }
   return context;
 }
@@ -70,7 +70,7 @@ export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
 export function useKanbanLaneContext(): KanbanLaneContextValue {
   const context = useContext(KanbanLaneContext);
   if (!context) {
-    throw new Error("useKanbanLaneContext는 Kanban.Lane 내부에서만 사용할 수 있습니다");
+    throw new Error("useKanbanLaneContext can only be used inside Kanban.Lane");
   }
   return context;
 }

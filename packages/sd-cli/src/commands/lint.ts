@@ -10,28 +10,28 @@ import stylelint from "stylelint";
 //#region Types
 
 /**
- * ESLint 실행 옵션
+ * ESLint execution options
  */
 export interface LintOptions {
-  /** 린트할 경로 필터 (예: `packages/core-common`). 빈 배열이면 전체 대상 */
+  /** Path filter for linting (e.g., `packages/core-common`). Empty array targets everything */
   targets: string[];
-  /** 자동 수정 활성화 */
+  /** Enable auto-fix */
   fix: boolean;
-  /** ESLint 규칙별 실행 시간 측정 활성화 (TIMING 환경변수 설정) */
+  /** Enable execution time measurement per ESLint rule (sets TIMING environment variable) */
   timing: boolean;
 }
 
 /**
- * executeLint()의 반환 타입
+ * Return type of executeLint()
  */
 export interface LintResult {
-  /** 린트 에러가 없으면 true */
+  /** true if there are no lint errors */
   success: boolean;
-  /** ESLint + Stylelint 에러 합계 */
+  /** Total error count from ESLint + Stylelint */
   errorCount: number;
-  /** ESLint + Stylelint 경고 합계 */
+  /** Total warning count from ESLint + Stylelint */
   warningCount: number;
-  /** 포맷터 출력 문자열 (stdout에 쓸 내용) */
+  /** Formatter output string (content to write to stdout) */
   formattedOutput: string;
 }
 
@@ -39,7 +39,7 @@ export interface LintResult {
 
 //#region Utilities
 
-/** ESLint 설정 파일 탐색 순서 */
+/** ESLint config file search order */
 const ESLINT_CONFIG_FILES = [
   "eslint.config.ts",
   "eslint.config.mts",
@@ -47,7 +47,7 @@ const ESLINT_CONFIG_FILES = [
   "eslint.config.mjs",
 ] as const;
 
-/** Stylelint 설정 파일 탐색 순서 */
+/** Stylelint config file search order */
 const STYLELINT_CONFIG_FILES = [
   "stylelint.config.ts",
   "stylelint.config.mts",
@@ -58,21 +58,21 @@ const STYLELINT_CONFIG_FILES = [
 ] as const;
 
 /**
- * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드
+ * Type guard to check if an ESLint config object has only ignores property
  */
 function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
   if (item == null || typeof item !== "object") return false;
   if (!("ignores" in item)) return false;
-  if ("files" in item) return false; // files가 있으면 globalIgnores가 아님
+  if ("files" in item) return false; // if files exists, it's not globalIgnores
   const ignores = (item as { ignores: unknown }).ignores;
   if (!Array.isArray(ignores)) return false;
   return ignores.every((i) => typeof i === "string");
 }
 
 /**
- * eslint.config.ts/js에서 globalIgnores 패턴을 추출한다.
- * files 속성 없이 ignores만 있는 설정 객체가 globalIgnores이다.
- * @internal 테스트용으로 export
+ * Extract globalIgnores patterns from eslint.config.ts/js.
+ * A config object with only ignores (no files) is a globalIgnores.
+ * @internal exported for testing
  */
 export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   let configPath: string | undefined;
@@ -86,7 +86,7 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
 
   if (configPath == null) {
     throw new SdError(
-      `ESLint 설정 파일을 찾을 수 없습니다 (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`,
+      `Cannot find ESLint config file (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`,
     );
   }
 
@@ -105,18 +105,18 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   ) {
     configs = configModule.default;
   } else {
-    throw new SdError(`ESLint 설정 파일이 올바른 형식이 아닙니다: ${configPath}`);
+    throw new SdError(`ESLint config file is not in correct format: ${configPath}`);
   }
 
   if (!Array.isArray(configs)) {
-    throw new SdError(`ESLint 설정이 배열이 아닙니다: ${configPath}`);
+    throw new SdError(`ESLint config is not an array: ${configPath}`);
   }
 
   return configs.filter(isGlobalIgnoresConfig).flatMap((item) => item.ignores);
 }
 
 /**
- * Stylelint 설정 파일이 존재하는지 확인한다.
+ * Check if Stylelint config file exists.
  */
 async function hasStylelintConfig(cwd: string): Promise<boolean> {
   for (const f of STYLELINT_CONFIG_FILES) {
@@ -130,36 +130,36 @@ async function hasStylelintConfig(cwd: string): Promise<boolean> {
 //#region Main
 
 /**
- * ESLint/Stylelint를 실행하고 결과를 반환한다.
+ * Run ESLint/Stylelint and return results.
  *
- * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
- * - consola를 사용하여 진행 상황 표시
- * - 캐시 활성화 (`.cache/eslint.cache`에 저장, 설정 변경 시 자동 무효화)
- * - stdout 출력이나 process.exitCode 설정은 하지 않음 (호출자가 판단)
+ * - Extract globalIgnores patterns from `eslint.config.ts/js` and apply to glob filtering
+ * - Show progress using consola
+ * - Enable cache (saved to `.cache/eslint.cache`, auto invalidated on config changes)
+ * - No stdout output or process.exitCode setting (caller decides)
  *
- * @param options - 린트 실행 옵션
- * @returns 린트 결과 (성공 여부, 에러/경고 수, 포맷터 출력)
+ * @param options - lint execution options
+ * @returns lint result (success status, error/warning counts, formatter output)
  */
 export async function executeLint(options: LintOptions): Promise<LintResult> {
   const { targets, fix, timing } = options;
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:lint");
 
-  logger.debug("린트 시작", { targets, fix, timing });
+  logger.debug("start lint", { targets, fix, timing });
 
-  // TIMING 환경변수 설정
+  // Set TIMING environment variable
   if (timing) {
     process.env["TIMING"] = "1";
   }
 
-  // ESLint 설정 로드
-  logger.start("ESLint 설정 로드");
+  // Load ESLint configuration
+  logger.start("loading ESLint config");
   const ignorePatterns = await loadIgnorePatterns(cwd);
-  logger.debug("ignore 패턴 로드 완료", { ignorePatternCount: ignorePatterns.length });
-  logger.success(`ESLint 설정 로드 (${ignorePatterns.length}개 ignore 패턴)`);
+  logger.debug("ignore patterns loaded", { ignorePatternCount: ignorePatterns.length });
+  logger.success(`loaded ESLint config (${ignorePatterns.length} ignore patterns)`);
 
-  // 린트 대상 파일 수집
-  logger.start("린트 대상 파일 수집");
+  // Collect lint target files
+  logger.start("collecting lint target files");
   let files = await fsGlob("**/*.{ts,tsx,js,jsx}", {
     cwd,
     ignore: ignorePatterns,
@@ -167,14 +167,14 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
     absolute: true,
   });
   files = pathFilterByTargets(files, targets, cwd);
-  logger.debug("파일 수집 완료", { fileCount: files.length });
-  logger.success(`린트 대상 파일 수집 (${files.length}개)`);
+  logger.debug("file collection complete", { fileCount: files.length });
+  logger.success(`collected lint target files (${files.length} files)`);
 
-  // 린트 실행
+  // Run lint
   let eslint: ESLint | undefined;
   let eslintResults: ESLint.LintResult[] | undefined;
   if (files.length > 0) {
-    logger.start(`린트 실행 중... (${files.length}개 파일)`);
+    logger.start(`running lint... (${files.length} files)`);
     eslint = new ESLint({
       cwd,
       fix,
@@ -182,13 +182,13 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
       cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
     });
     eslintResults = await eslint.lintFiles(files);
-    logger.success("린트 실행 완료");
+    logger.success("lint complete");
 
-    // 자동 수정 적용
+    // Apply auto-fix
     if (fix) {
-      logger.debug("자동 수정 적용 중...");
+      logger.debug("applying auto-fix...");
       await ESLint.outputFixes(eslintResults);
-      logger.debug("자동 수정 적용 완료");
+      logger.debug("auto-fix applied");
     }
   }
 
@@ -196,7 +196,7 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
   const hasStylelintCfg = await hasStylelintConfig(cwd);
   let stylelintResult: stylelint.LinterResult | undefined;
   if (hasStylelintCfg) {
-    logger.start("CSS 파일 수집");
+    logger.start("collecting CSS files");
     let cssFiles = await fsGlob("**/*.css", {
       cwd,
       ignore: ignorePatterns,
@@ -204,10 +204,10 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
       absolute: true,
     });
     cssFiles = pathFilterByTargets(cssFiles, targets, cwd);
-    logger.success(`CSS 파일 수집 (${cssFiles.length}개)`);
+    logger.success(`collected CSS files (${cssFiles.length} files)`);
 
     if (cssFiles.length > 0) {
-      logger.start(`Stylelint 실행 중... (${cssFiles.length}개 파일)`);
+      logger.start(`running Stylelint... (${cssFiles.length} files)`);
       let configFile: string | undefined;
       for (const f of STYLELINT_CONFIG_FILES) {
         const configPath = path.join(cwd, f);
@@ -217,7 +217,7 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
         }
       }
 
-      // TypeScript 설정 파일 지원: jiti로 로드 후 config 객체로 전달
+      // Support TypeScript config files: load with jiti, pass as config object
       let stylelintOptions: stylelint.LinterOptions;
       if (configFile != null && /\.ts$/.test(configFile)) {
         const jiti = createJiti(import.meta.url);

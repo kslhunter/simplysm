@@ -31,7 +31,7 @@ const { Group } = createSelectionGroup({
   mode: "multiple",
   contextName: "CheckboxGroup",
   ItemComponent: Checkbox,
-  emptyErrorMsg: "항목을 선택해 주세요",
+  emptyErrorMsg: "Please select an item",
 });
 
 export const CheckboxGroup = Group as unknown as CheckboxGroupComponent;

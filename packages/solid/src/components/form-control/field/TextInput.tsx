@@ -25,72 +25,72 @@ type TextInputType = "text" | "password" | "email";
 const TextInputPrefix = createSlotComponent(TextInputSlotsContext, (ctx) => ctx.setPrefix);
 
 export interface TextInputProps {
-  /** 입력 값 */
+  /** Input value */
   value?: string;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: string) => void;
 
-  /** 입력 타입 */
+  /** Input type */
   type?: TextInputType;
 
-  /** 플레이스홀더 */
+  /** Placeholder */
   placeholder?: string;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 자동완성 */
+  /** Autocomplete */
   autocomplete?: JSX.HTMLAutocomplete;
 
-  /** 비활성화 */
+  /** Disabled state */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 입력 포맷 (예: XXX-XXXX-XXXX) */
+  /** Input format (e.g., XXX-XXXX-XXXX) */
   format?: string;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 최소 길이 */
+  /** Minimum length */
   minLength?: number;
 
-  /** 최대 길이 */
+  /** Maximum length */
   maxLength?: number;
 
-  /** 입력 패턴 (정규식 문자열) */
+  /** Input pattern (regex string) */
   pattern?: string;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: string) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: Show error only after blur */
   touchMode?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 
-  /** children (TextInput.Prefix 슬롯) */
+  /** children (TextInput.Prefix slot) */
   children?: JSX.Element;
 }
 
 /**
- * 값에 포맷을 적용한다
- * @param value 원본 값
- * @param format 포맷 문자열 (예: XXX-XXXX-XXXX)
- * @returns 포맷이 적용된 값
+ * Apply format to value
+ * @param value original value
+ * @param format format string (e.g., XXX-XXXX-XXXX)
+ * @returns formatted value
  */
 function applyFormat(value: string, format: string): string {
   if (!value || !format) return value;
@@ -111,10 +111,10 @@ function applyFormat(value: string, format: string): string {
 }
 
 /**
- * 포맷 문자를 제거하여 원본 값을 추출한다
- * @param formattedValue 포맷이 적용된 값
- * @param format 포맷 문자열
- * @returns 원본 값
+ * Remove format characters to extract original value
+ * @param formattedValue formatted value
+ * @param format format string
+ * @returns original value
  */
 function removeFormat(formattedValue: string, format: string): string {
   if (!formattedValue || !format) return formattedValue;
@@ -135,18 +135,18 @@ function removeFormat(formattedValue: string, format: string): string {
 }
 
 /**
- * TextInput 컴포넌트
+ * TextInput component
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <TextInput value={text()} onValueChange={setText} />
  *
- * // 포맷 적용
+ * // With format
  * <TextInput format="XXX-XXXX-XXXX" value={phone()} onValueChange={setPhone} />
  *
- * // password 타입
- * <TextInput type="password" placeholder="비밀번호 입력" />
+ * // Password type
+ * <TextInput type="password" placeholder="Enter password" />
  * ```
  */
 interface TextInputComponent {
@@ -178,13 +178,13 @@ const TextInputInner = (props: TextInputProps) => {
     "children",
   ]);
 
-  // controlled/uncontrolled 패턴 지원
+  // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
     onChange: () => local.onValueChange,
   });
 
-  // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
+  // Delay onValueChange during IME composition to prevent DOM recreation (Korean composition break)
   const ime = createIMEHandler((v) => setValue(v));
 
   function extractValue(el: HTMLInputElement): string {
@@ -195,7 +195,7 @@ const TextInputInner = (props: TextInputProps) => {
     return val;
   }
 
-  // input 요소용 값 (composingValue 미포함 — IME 조합 방해 방지)
+  // Value for input element (excludes composingValue — prevent IME composition disruption)
   const inputValue = () => {
     const val = value();
     if (local.format != null && local.format !== "") {
@@ -204,7 +204,7 @@ const TextInputInner = (props: TextInputProps) => {
     return val;
   };
 
-  // content div용 표시 값 (composingValue 포함 — 셀 너비 결정)
+  // Display value for content div (includes composingValue — determines cell width)
   const displayValue = () => {
     const composing = ime.composingValue();
     if (composing != null) {
@@ -226,11 +226,11 @@ const TextInputInner = (props: TextInputProps) => {
     ime.handleCompositionEnd(extractValue(e.currentTarget));
   };
 
-  // Prefix 슬롯 Context 등록
+  // Register Prefix slot Context
   const [prefix, setPrefix] = createSlotSignal();
   const prefixEl = () => prefix() !== undefined;
 
-  // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
+  // Wrapper class (exclude local.class when includeCustomClass=false — only apply to outer in inset)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
       size: local.size,
@@ -240,27 +240,27 @@ const TextInputInner = (props: TextInputProps) => {
       extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
     });
 
-  // 편집 가능 여부
+  // Whether editable
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // disabled 전환 시 미커밋 조합 값 flush
+  // Flush uncommitted composition value when toggling disabled
   createEffect(() => {
     if (!isEditable()) {
       ime.flushComposition();
     }
   });
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation error message (check in order, return first failure message)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && !v) return "필수 입력 항목입니다";
+    if (local.required && !v) return "This is a required field";
     if (v) {
       if (local.minLength != null && v.length < local.minLength)
-        return `최소 ${local.minLength}자 이상 입력하세요`;
+        return `Enter at least ${local.minLength} characters`;
       if (local.maxLength != null && v.length > local.maxLength)
-        return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+        return `Enter up to ${local.maxLength} characters`;
       if (local.pattern != null && !new RegExp(local.pattern).test(v))
-        return "입력 형식이 올바르지 않습니다";
+        return "The input format is invalid";
     }
     return local.validate?.(v);
   });
@@ -276,7 +276,7 @@ const TextInputInner = (props: TextInputProps) => {
         <Show
           when={local.inset}
           fallback={
-            // standalone 모드: 기존 Show 패턴 유지
+            // standalone mode: maintain existing Show pattern
             <Show
               when={isEditable()}
               fallback={
@@ -313,7 +313,7 @@ const TextInputInner = (props: TextInputProps) => {
             </Show>
           }
         >
-          {/* inset 모드: dual-element overlay 패턴 */}
+          {/* inset mode: dual-element overlay pattern */}
           <div
             {...rest}
             data-text-field

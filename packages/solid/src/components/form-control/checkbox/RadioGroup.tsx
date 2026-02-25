@@ -31,7 +31,7 @@ const { Group } = createSelectionGroup({
   mode: "single",
   contextName: "RadioGroup",
   ItemComponent: Radio,
-  emptyErrorMsg: "항목을 선택해 주세요",
+  emptyErrorMsg: "Please select an item",
 });
 
 export const RadioGroup = Group as unknown as RadioGroupComponent;

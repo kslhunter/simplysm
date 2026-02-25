@@ -10,7 +10,7 @@ import { findPackageRoot } from "../utils/package-utils";
 //#region Types
 
 /**
- * Add-server 명령 옵션
+ * Add-server command options
  */
 export interface AddServerOptions {}
 
@@ -19,13 +19,13 @@ export interface AddServerOptions {}
 //#region Utilities
 
 /**
- * sd.config.ts를 읽어서 target이 "client"인 패키지명 목록을 반환한다.
+ * Reads sd.config.ts and returns a list of package names with target "client".
  */
 function findClientPackages(sdConfigPath: string): string[] {
   const content = fs.readFileSync(sdConfigPath, "utf-8");
   const clients: string[] = [];
 
-  // 간단한 패턴 매칭으로 client 패키지 찾기
+  // Find client packages using simple pattern matching
   const regex = /"([^"]+)":\s*\{[^}]*target:\s*"client"/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) != null) {
@@ -39,62 +39,62 @@ function findClientPackages(sdConfigPath: string): string[] {
 //#region Main
 
 /**
- * 서버 패키지를 프로젝트에 추가한다.
+ * Adds a server package to the project.
  *
- * 1. 프로젝트 루트 확인
- * 2. 대화형 프롬프트 (이름 접미사, 클라이언트 선택)
- * 3. 패키지 디렉토리 중복 확인
- * 4. Handlebars 템플릿 렌더링
- * 5. sd.config.ts에 서버 패키지 항목 추가
- * 6. 선택된 클라이언트의 server 필드 업데이트
- * 7. pnpm install
+ * 1. Verify project root
+ * 2. Interactive prompts (name suffix, client selection)
+ * 3. Check for duplicate package directory
+ * 4. Render Handlebars template
+ * 5. Add server package entry to sd.config.ts
+ * 6. Update server field in selected clients
+ * 7. Run pnpm install
  */
 export async function runAddServer(_options: AddServerOptions): Promise<void> {
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:add-server");
 
-  // 1. 프로젝트 루트 확인
+  // 1. Verify project root
   const sdConfigPath = path.join(cwd, "sd.config.ts");
   if (!fs.existsSync(sdConfigPath)) {
-    consola.error("sd.config.ts를 찾을 수 없습니다. 프로젝트 루트에서 실행해주세요.");
+    consola.error("Cannot find sd.config.ts. Please run this from the project root.");
     process.exitCode = 1;
     return;
   }
 
   const projectName = path.basename(cwd);
 
-  // 2. 대화형 프롬프트
+  // 2. Interactive prompts
   const serverSuffix = await input({
-    message: '서버 이름 접미사 (비워두면 "server"):',
+    message: 'Server name suffix (leave empty for "server"):',
     validate: (value) => {
-      if (value.trim() === "") return true; // 빈 값 허용
-      if (!/^[a-z][a-z0-9-]*$/.test(value)) return "소문자, 숫자, 하이픈만 사용 가능합니다.";
+      if (value.trim() === "") return true; // Allow empty value
+      if (!/^[a-z][a-z0-9-]*$/.test(value)) return "Only lowercase letters, numbers, and hyphens are allowed.";
       return true;
     },
   });
 
   const serverName = serverSuffix.trim() === "" ? "server" : `server-${serverSuffix}`;
 
-  // 클라이언트 선택 (기존 클라이언트가 있는 경우)
+  // Client selection (if existing clients are present)
   const clientPackages = findClientPackages(sdConfigPath);
   let selectedClients: string[] = [];
 
   if (clientPackages.length > 0) {
     selectedClients = await checkbox({
-      message: "이 서버가 서비스할 클라이언트를 선택하세요:",
+      message: "Select the clients this server will serve:",
       choices: clientPackages.map((name) => ({ name, value: name })),
     });
   }
 
-  // 3. 패키지 디렉토리 중복 확인
+  // 3. Check for duplicate package directory
   const packageDir = path.join(cwd, "packages", serverName);
   if (fs.existsSync(packageDir)) {
-    consola.error(`packages/${serverName} 디렉토리가 이미 존재합니다.`);
+    consola.error(`packages/${serverName} directory already exists.`);
     process.exitCode = 1;
     return;
   }
 
-  // 4. 템플릿 렌더링
+  // 4. Render template
   const pkgRoot = findPackageRoot(import.meta.dirname);
   const templateDir = path.join(pkgRoot, "templates", "add-server");
 
@@ -108,31 +108,31 @@ export async function runAddServer(_options: AddServerOptions): Promise<void> {
     __SERVER__: serverName,
   };
 
-  logger.info(`${serverName} 패키지 생성 중...`);
+  logger.info(`Creating ${serverName} package...`);
   await renderTemplateDir(templateDir, path.join(cwd, "packages"), context, dirReplacements);
-  logger.success(`packages/${serverName} 생성 완료`);
+  logger.success(`packages/${serverName} created successfully`);
 
-  // 5. sd.config.ts에 서버 패키지 추가
+  // 5. Add server package to sd.config.ts
   const added = addPackageToSdConfig(sdConfigPath, serverName, { target: "server" });
   if (added) {
-    logger.success("sd.config.ts에 서버 패키지 추가 완료");
+    logger.success("Server package added to sd.config.ts");
   } else {
-    consola.warn(`"${serverName}"이(가) sd.config.ts에 이미 존재합니다.`);
+    consola.warn(`"${serverName}" already exists in sd.config.ts.`);
   }
 
-  // 6. 선택된 클라이언트의 server 필드 업데이트
+  // 6. Update server field in selected clients
   for (const clientName of selectedClients) {
     setClientServerInSdConfig(sdConfigPath, clientName, serverName);
-    logger.info(`${clientName}의 서버를 "${serverName}"으로 설정`);
+    logger.info(`Set ${clientName} server to "${serverName}"`);
   }
 
-  // 7. pnpm install
-  logger.info("pnpm install 실행 중...");
+  // 7. Run pnpm install
+  logger.info("Running pnpm install...");
   await execa("pnpm", ["install"], { cwd });
-  logger.success("pnpm install 완료");
+  logger.success("pnpm install completed");
 
-  // 완료
-  consola.box(`서버 "${serverName}"이(가) 추가되었습니다!`);
+  // Done
+  consola.box(`Server "${serverName}" has been added!`);
 }
 
 //#endregion

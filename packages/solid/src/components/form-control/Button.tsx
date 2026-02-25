@@ -9,7 +9,7 @@ import {
   disabledOpacity,
 } from "../../styles/tokens.styles";
 
-// Directive 사용 선언 (TypeScript용)
+// Directive usage declaration (for TypeScript)
 void ripple;
 
 type ButtonTheme = SemanticTheme;

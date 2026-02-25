@@ -41,53 +41,53 @@ const DropdownContent = createSlotComponent(DropdownContext, (ctx) => ctx.setCon
 
 export interface DropdownProps {
   /**
-   * 절대 위치 (컨텍스트 메뉴 등, minWidth 없음)
-   * Trigger와 함께 사용 시 Trigger 기준 위치 계산
+   * Absolute position (for context menus, no minWidth)
+   * When used with Trigger, calculates position relative to Trigger
    */
   position?: { x: number; y: number };
 
   /**
-   * 팝업 열림 상태
+   * Popup open state
    */
   open?: boolean;
 
   /**
-   * 열림 상태 변경 시 콜백
+   * Callback when open state changes
    */
   onOpenChange?: (open: boolean) => void;
 
   /**
-   * 팝업 최대 높이 (기본값: 300px), 초과 시 내부 스크롤
+   * Popup max height (default: 300px), scrolls internally if exceeded
    */
   maxHeight?: number;
 
   /**
-   * 비활성화 (Trigger 클릭 무시)
+   * Disabled (Trigger click ignored)
    */
   disabled?: boolean;
 
   /**
-   * 키보드 네비게이션 활성화 (Select 등에서 사용)
+   * Enable keyboard navigation (used in Select, etc)
    *
-   * direction=down일 때:
-   * - 트리거에서 ArrowDown -> 첫 focusable 아이템 포커스
-   * - 첫 아이템에서 ArrowUp -> 트리거 포커스
-   * - 트리거에서 ArrowUp -> 닫기
+   * When direction=down:
+   * - ArrowDown from trigger -> focus first focusable item
+   * - ArrowUp from first item -> focus trigger
+   * - ArrowUp from trigger -> close
    *
-   * direction=up일 때:
-   * - 트리거에서 ArrowUp -> 마지막 focusable 아이템 포커스
-   * - 마지막 아이템에서 ArrowDown -> 트리거 포커스
-   * - 트리거에서 ArrowDown -> 닫기
+   * When direction=up:
+   * - ArrowUp from trigger -> focus last focusable item
+   * - ArrowDown from last item -> focus trigger
+   * - ArrowDown from trigger -> close
    */
   keyboardNav?: boolean;
 
   /**
-   * 팝업에 적용할 커스텀 class
+   * Custom class for popup
    */
   class?: string;
 
   /**
-   * 팝업에 적용할 커스텀 style
+   * Custom style for popup
    */
   style?: JSX.CSSProperties;
 
@@ -103,28 +103,28 @@ interface DropdownComponent extends ParentComponent<DropdownProps> {
 }
 
 /**
- * 드롭다운 팝업 컴포넌트
+ * Dropdown popup component
  *
- * Trigger/Content 슬롯 패턴으로 트리거와 컨텐츠를 분리합니다.
- * Trigger 클릭 시 auto-toggle되며, disabled prop으로 비활성화할 수 있습니다.
+ * Separates trigger and content using Trigger/Content slot pattern.
+ * Auto-toggles on Trigger click, can be disabled with disabled prop.
  *
  * @example
  * ```tsx
  * <Dropdown>
  *   <Dropdown.Trigger>
- *     <Button>열기</Button>
+ *     <Button>Open</Button>
  *   </Dropdown.Trigger>
  *   <Dropdown.Content>
- *     <div>팝업 내용</div>
+ *     <div>Popup content</div>
  *   </Dropdown.Content>
  * </Dropdown>
  * ```
  *
- * @example Context menu (Trigger 없이 position 사용)
+ * @example Context menu (position without Trigger)
  * ```tsx
  * <Dropdown position={{ x: 300, y: 200 }} open={true}>
  *   <Dropdown.Content>
- *     <div>메뉴</div>
+ *     <div>Menu</div>
  *   </Dropdown.Content>
  * </Dropdown>
  * ```
@@ -147,32 +147,32 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     onChange: () => local.onOpenChange,
   });
 
-  // toggle 함수 (disabled 체크 포함)
+  // Toggle function (includes disabled check)
   const toggle = () => {
     if (local.disabled) return;
     setOpen(!open());
   };
 
-  // 슬롯 등록 시그널
+  // Slot registration signals
   const [triggerSlot, setTrigger] = createSlotSignal();
   const [contentSlot, setContent] = createSlotSignal();
 
-  // Trigger wrapper ref (위치 계산에 필요)
+  // Trigger wrapper ref (needed for position calculation)
   let triggerRef: HTMLDivElement | undefined;
 
-  // 팝업 ref
+  // Popup ref
   const [popupRef, setPopupRef] = createSignal<HTMLDivElement>();
 
-  // 애니메이션 상태 (mount transition)
+  // Animation state (mount transition)
   const { mounted, animating, unmount } = createMountTransition(open);
 
-  // 계산된 위치
+  // Computed position
   const [computedStyle, setComputedStyle] = createSignal<JSX.CSSProperties>({});
 
-  // 방향 (위/아래)
+  // Direction (up/down)
   const [direction, setDirection] = createSignal<"down" | "up">("down");
 
-  // 위치 계산 함수 추출
+  // Extract position calculation function
   const updatePosition = () => {
     const popup = popupRef();
     if (!popup) return;
@@ -184,13 +184,13 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // 위/아래 방향 결정 (화면 중앙 기준)
+      // Determine up/down direction (based on viewport center)
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
       const openDown = spaceBelow >= spaceAbove;
       setDirection(openDown ? "down" : "up");
 
-      // 좌/우 조정 (화면 밖으로 나가지 않도록) - 뷰포트 기준
+      // Adjust left/right (prevent off-screen) - relative to viewport
       const adjustedLeft = Math.min(rect.left, viewportWidth - popup.offsetWidth);
 
       style.left = `${Math.max(0, adjustedLeft)}px`;
@@ -205,13 +205,13 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // 위/아래 방향 결정
+      // Determine up/down direction
       const spaceBelow = viewportHeight - local.position.y;
       const spaceAbove = local.position.y;
       const openDown = spaceBelow >= spaceAbove;
       setDirection(openDown ? "down" : "up");
 
-      // 좌/우 조정 - 뷰포트 기준
+      // Adjust left/right - relative to viewport
       const adjustedLeft = Math.min(local.position.x, viewportWidth - (popup.offsetWidth || 200));
       style.left = `${Math.max(0, adjustedLeft)}px`;
 
@@ -225,7 +225,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     setComputedStyle(style);
   };
 
-  // 마운트 시 위치 계산 + popup 크기 변경 시 재계산
+  // Calculate position on mount + recalculate when popup size changes
   createEffect(() => {
     if (!mounted()) return;
 

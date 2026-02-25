@@ -24,7 +24,7 @@ export const Echarts: Component<EchartsProps> = (props) => {
   let chart: echartsType.EChartsType | undefined;
   const [ready, setReady] = createSignal(false);
 
-  // 마운트 시 echarts 동적 로드 + 차트 초기화
+  // On mount, dynamically load echarts + initialize chart
   createEffect(() => {
     void import("echarts").then((echarts) => {
       chart = echarts.init(containerRef, null, { renderer: "svg" });
@@ -34,13 +34,13 @@ export const Echarts: Component<EchartsProps> = (props) => {
     onCleanup(() => chart?.dispose());
   });
 
-  // option 변경 감지
+  // Detect option changes
   createEffect(() => {
     if (!ready()) return;
     chart!.setOption(local.option);
   });
 
-  // busy 상태 변경 감지
+  // Detect busy state changes
   createEffect(() => {
     if (!ready()) return;
     if (local.busy) {
@@ -50,7 +50,7 @@ export const Echarts: Component<EchartsProps> = (props) => {
     }
   });
 
-  // 컨테이너 크기 변경 감지
+  // Detect container size changes
   createResizeObserver(containerRef, () => {
     chart?.resize();
   });

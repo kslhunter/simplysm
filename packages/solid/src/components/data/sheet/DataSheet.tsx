@@ -119,21 +119,21 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   );
 
   // #region Config (useSyncConfig)
-  /* eslint-disable solid/reactivity -- persistKey는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
+  /* eslint-disable solid/reactivity -- persistKey is static and only used once on component mount */
   const [config, setConfig] =
     local.persistKey != null && local.persistKey !== ""
       ? useSyncConfig<DataSheetConfig>(`sheet.${local.persistKey}`, { columnRecord: {} })
       : createSignal<DataSheetConfig>({ columnRecord: {} });
   /* eslint-enable solid/reactivity */
 
-  // 설정이 적용된 최종 컬럼 — config의 hidden/fixed/width/displayOrder 오버라이드 적용
+  // Final columns with config applied — config's hidden/fixed/width/displayOrder overrides are applied
   const effectiveColumns = createMemo(() => {
     const cols = columnDefs();
     const record = config().columnRecord ?? {};
 
     return cols
       .filter((col) => {
-        // config 오버라이드가 있으면 config 우선, 없으면 원래 col.hidden 사용
+        // If config override exists, use config priority, otherwise use original col.hidden
         const saved = record[col.key];
         const isHidden = saved?.hidden ?? col.hidden;
         return !isHidden;

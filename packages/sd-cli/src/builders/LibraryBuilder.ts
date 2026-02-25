@@ -6,10 +6,10 @@ import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
 
 /**
- * Library 패키지 빌드를 담당하는 Builder
+ * Builder responsible for Library package builds
  *
- * node/browser/neutral 타겟 패키지의 esbuild 빌드를 처리한다.
- * Watch 모드와 프로덕션 빌드를 모두 지원한다.
+ * Handles esbuild compilation for node/browser/neutral target packages.
+ * Supports both watch mode and production builds.
  */
 export class LibraryBuilder extends BaseBuilder {
   private readonly _workerPath: string;
@@ -40,7 +40,7 @@ export class LibraryBuilder extends BaseBuilder {
   protected async buildPackage(pkg: PackageInfo): Promise<void> {
     const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
-    // 빌드 완료 Promise 생성
+    // Create build completion Promise
     const buildPromise = new Promise<void>((resolve) => {
       const originalResolver = this.buildResolvers.get(`${pkg.name}:build`);
       this.buildResolvers.set(`${pkg.name}:build`, () => {
@@ -49,8 +49,8 @@ export class LibraryBuilder extends BaseBuilder {
       });
     });
 
-    // 빌드 시작 (await 없이 - 이벤트로 완료 감지)
-    // LibraryBuilder는 library 패키지(node/browser/neutral)만 받으므로 캐스팅 안전
+    // Start build (without await - completion detected via events)
+    // LibraryBuilder only receives library packages (node/browser/neutral), so casting is safe
     void worker.startWatch({
       name: pkg.name,
       config: pkg.config as SdBuildPackageConfig,
@@ -64,7 +64,7 @@ export class LibraryBuilder extends BaseBuilder {
   protected startWatchPackage(pkg: PackageInfo): void {
     const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
-    // LibraryBuilder는 library 패키지(node/browser/neutral)만 받으므로 캐스팅 안전
+    // LibraryBuilder only receives library packages (node/browser/neutral), so casting is safe
     worker
       .startWatch({
         name: pkg.name,
@@ -91,7 +91,7 @@ export class LibraryBuilder extends BaseBuilder {
   override async shutdown(): Promise<void> {
     const shutdownTimeout = 3000;
 
-    // 각 Worker의 stopWatch 메서드 호출 후 terminate
+    // Call stopWatch method on each Worker, then terminate
     await Promise.all(
       this.workerManager.ids.map(async (id) => {
         const worker = this.workerManager.get<typeof LibraryWorkerModule>(id);
@@ -102,7 +102,7 @@ export class LibraryBuilder extends BaseBuilder {
               new Promise<void>((resolve) => setTimeout(resolve, shutdownTimeout)),
             ]);
           } catch {
-            // stopWatch 실패해도 계속 진행
+            // Continue even if stopWatch fails
           }
         }
       }),

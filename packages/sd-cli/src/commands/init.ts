@@ -8,7 +8,7 @@ import { findPackageRoot } from "../utils/package-utils";
 //#region Types
 
 /**
- * Init 명령 옵션
+ * Init command options
  */
 export interface InitOptions {}
 
@@ -17,7 +17,7 @@ export interface InitOptions {}
 //#region Utilities
 
 /**
- * npm 스코프 이름 유효성 검증
+ * Validates npm scope name validity
  */
 function isValidScopeName(name: string): boolean {
   return /^[a-z][a-z0-9-]*$/.test(name);
@@ -28,65 +28,65 @@ function isValidScopeName(name: string): boolean {
 //#region Main
 
 /**
- * 새 Simplysm 프로젝트를 현재 디렉토리에 초기화한다.
+ * Initializes a new Simplysm project in the current directory.
  *
- * 1. 디렉토리 비어있는지 확인
- * 2. 프로젝트명(폴더명) 검증
- * 3. Handlebars 템플릿 렌더링
- * 4. pnpm install 실행
+ * 1. Check if directory is empty
+ * 2. Validate project name (folder name)
+ * 3. Render Handlebars template
+ * 4. Run pnpm install
  */
 export async function runInit(_options: InitOptions): Promise<void> {
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:init");
 
-  // 1. 디렉토리 비어있는지 확인 (dotfile/dotfolder 제외)
+  // 1. Check if directory is empty (exclude dotfiles/dotfolders)
   const entries = fs.readdirSync(cwd).filter((e) => !e.startsWith("."));
   if (entries.length > 0) {
-    consola.error("디렉토리가 비어있지 않습니다. 빈 디렉토리에서 실행해주세요.");
+    consola.error("Directory is not empty. Please run this from an empty directory.");
     process.exitCode = 1;
     return;
   }
 
-  // 2. 프로젝트명 검증
+  // 2. Validate project name
   const projectName = path.basename(cwd);
   if (!isValidScopeName(projectName)) {
     consola.error(
-      `프로젝트 이름 "${projectName}"이(가) 유효하지 않습니다. 소문자, 숫자, 하이픈만 사용 가능합니다.`,
+      `Project name "${projectName}" is not valid. Only lowercase letters, numbers, and hyphens are allowed.`,
     );
     process.exitCode = 1;
     return;
   }
 
-  // 3. 템플릿 렌더링
+  // 3. Render template
   const pkgRoot = findPackageRoot(import.meta.dirname);
   const templateDir = path.join(pkgRoot, "templates", "init");
 
   const context = { projectName };
 
-  logger.info("프로젝트 파일 생성 중...");
+  logger.info("Creating project files...");
   await renderTemplateDir(templateDir, cwd, context);
-  logger.success("프로젝트 파일 생성 완료");
+  logger.success("Project files created successfully");
 
-  // 4. pnpm install
-  logger.info("pnpm install 실행 중...");
+  // 4. Run pnpm install
+  logger.info("Running pnpm install...");
   await execa("pnpm", ["install"], { cwd });
-  logger.success("pnpm install 완료");
+  logger.success("pnpm install completed");
 
-  // 5. git 초기화
-  logger.info("git 저장소 초기화 중...");
+  // 5. Initialize git repository
+  logger.info("Initializing git repository...");
   await execa("git", ["init"], { cwd });
   await execa("git", ["add", "."], { cwd });
   await execa("git", ["commit", "-m", "init"], { cwd });
-  logger.success("git 저장소 초기화 완료");
+  logger.success("git repository initialized");
 
-  // 6. 완료 메시지
+  // 6. Completion message
   consola.box(
     [
-      "프로젝트가 생성되었습니다!",
+      "Project created!",
       "",
-      "다음 단계:",
-      "  sd-cli add client    클라이언트 패키지 추가",
-      "  sd-cli add server    서버 패키지 추가",
+      "Next steps:",
+      "  sd-cli add client    Add a client package",
+      "  sd-cli add server    Add a server package",
     ].join("\n"),
   );
 }

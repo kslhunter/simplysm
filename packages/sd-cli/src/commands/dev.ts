@@ -1,17 +1,17 @@
 import { DevOrchestrator, type DevOrchestratorOptions } from "../orchestrators/DevOrchestrator";
 
 /**
- * Client 및 Server 패키지를 개발 모드로 실행한다.
+ * Run Client and Server packages in development mode.
  *
- * - `sd.config.ts`를 로드하여 패키지별 빌드 타겟 정보 확인 (필수)
- * - `client` 타겟: Vite dev server 시작
- * - `server` 타겟: Server Build Worker + Server Runtime Worker
- * - Server-Client 프록시 연결 지원
- * - Capacitor 초기화 지원
- * - SIGINT/SIGTERM 시그널로 종료
+ * - Load `sd.config.ts` to check build target info per package (required)
+ * - `client` target: Start Vite dev server
+ * - `server` target: Server Build Worker + Server Runtime Worker
+ * - Support Server-Client proxy connections
+ * - Support Capacitor initialization
+ * - Terminate with SIGINT/SIGTERM signals
  *
- * @param options - dev 실행 옵션
- * @returns 종료 시그널 수신 시 resolve
+ * @param options - dev execution options
+ * @returns resolves on termination signal
  */
 export async function runDev(options: DevOrchestratorOptions): Promise<void> {
   const orchestrator = new DevOrchestrator(options);

@@ -12,7 +12,7 @@ import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.style
 
 export type CheckboxSize = ComponentSize;
 
-// wrapper 기본 스타일
+// wrapper base styles
 export const checkboxBaseClass = clsx(
   "inline-flex items-center gap-2",
   "whitespace-nowrap",
@@ -25,7 +25,7 @@ export const checkboxBaseClass = clsx(
   "focus-visible:ring-2",
 );
 
-// 인디케이터 기본 스타일
+// Indicator base styles
 export const indicatorBaseClass = clsx(
   "flex shrink-0 items-center justify-center",
   "size-4",
@@ -36,10 +36,10 @@ export const indicatorBaseClass = clsx(
   "transition-colors",
 );
 
-// 체크 상태 스타일 (primary 고정)
+// Checked state styles (primary fixed)
 export const checkedClass = clsx("border-primary-500 bg-primary-500", "text-white");
 
-// 사이즈별 스타일
+// Size-specific styles
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {
   xs: clsx("h-field-xs", paddingXs),
   sm: clsx("h-field-sm", paddingSm),
@@ -47,14 +47,14 @@ export const checkboxSizeClasses: Record<CheckboxSize, string> = {
   xl: clsx("h-field-xl", paddingXl),
 };
 
-// inset 스타일
+// Inset styles
 export const checkboxInsetClass = clsx(
   "h-field-inset justify-center bg-transparent",
   insetBase,
   insetFocusOutlineSelf,
 );
 
-// inset 사이즈별 높이 (border 2px 제외)
+// Inset size-specific heights (excluding 2px border)
 export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
   xs: "h-field-inset-xs",
   sm: "h-field-inset-sm",
@@ -62,8 +62,8 @@ export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
   xl: "h-field-inset-xl",
 };
 
-// inline 스타일
+// Inline styles
 export const checkboxInlineClass = clsx("!h-auto", "!p-0", "gap-1");
 
-// disabled 스타일
+// Disabled styles
 export const checkboxDisabledClass = disabledOpacity;

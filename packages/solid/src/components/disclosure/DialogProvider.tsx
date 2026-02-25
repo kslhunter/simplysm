@@ -30,10 +30,10 @@ interface DialogEntry {
 let nextId = 0;
 
 /**
- * 프로그래매틱 다이얼로그 Provider
+ * Programmatic dialog Provider
  *
- * `useDialog().show(content, options)` 로 다이얼로그를 열고,
- * `close(result)` 로 닫으면 Promise가 resolve됩니다.
+ * Open dialogs with `useDialog().show(content, options)`,
+ * and close them with `close(result)` to resolve the Promise.
  *
  * @example
  * ```tsx
@@ -73,7 +73,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
     });
   };
 
-  // 닫기 애니메이션 시작 (open을 false로 변경)
+  // Start close animation (set open to false)
   const requestClose = (id: string, result?: unknown) => {
     const entry = entries().find((e) => e.id === id);
     if (entry) {
@@ -82,7 +82,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
     }
   };
 
-  // 애니메이션 완료 후 실제 제거
+  // Actually remove after animation completes
   const removeEntry = (id: string) => {
     setEntries((prev) => {
       const entry = prev.find((e) => e.id === id);

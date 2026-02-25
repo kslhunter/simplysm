@@ -38,41 +38,41 @@ const DialogHeader = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setHea
 const DialogAction = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setAction);
 
 export interface DialogProps {
-  /** 모달 열림 상태 */
+  /** Modal open state */
   open?: boolean;
-  /** 열림 상태 변경 시 콜백 */
+  /** Callback when open state changes */
   onOpenChange?: (open: boolean) => void;
-  /** 닫기 버튼 표시 (기본: true) */
+  /** Show close button (default: true) */
   closable?: boolean;
-  /** 백드롭 클릭으로 닫기 */
+  /** Close on backdrop click */
   closeOnBackdrop?: boolean;
-  /** Escape 키로 닫기 (기본값: true) */
+  /** Close on Escape key (default: true) */
   closeOnEscape?: boolean;
-  /** 리사이즈 가능 여부 (기본: false) */
+  /** Resizable (default: false) */
   resizable?: boolean;
-  /** 드래그 이동 가능 여부 (기본: true) */
+  /** Draggable (default: true) */
   movable?: boolean;
-  /** 플로팅 모드 (백드롭 없음) */
+  /** Floating mode (no backdrop) */
   float?: boolean;
-  /** 전체 화면 모드 */
+  /** Full-screen mode */
   fill?: boolean;
-  /** 너비 */
+  /** Width */
   width?: number;
-  /** 높이 */
+  /** Height */
   height?: number;
-  /** 최소 너비 */
+  /** Minimum width */
   minWidth?: number;
-  /** 최소 높이 */
+  /** Minimum height */
   minHeight?: number;
-  /** 고정 위치 */
+  /** Fixed position */
   position?: "bottom-right" | "top-right";
-  /** 헤더 스타일 */
+  /** Header style */
   headerStyle?: JSX.CSSProperties | string;
-  /** 닫기 전 확인 함수 */
+  /** Confirmation function before closing */
   canDeactivate?: () => boolean;
-  /** 닫기 애니메이션 완료 후 콜백 */
+  /** Callback after close animation completes */
   onCloseComplete?: () => void;
-  /** 추가 CSS 클래스 */
+  /** Additional CSS class */
   class?: string;
 }
 
@@ -122,19 +122,19 @@ const resizePositionMap: Record<ResizeDirection, string> = {
 };
 
 /**
- * 다이얼로그 컴포넌트
+ * Dialog component
  *
- * 선언적 다이얼로그 UI를 제공합니다. 드래그 이동, 8방향 리사이즈,
- * float/fill 모드, z-index 자동 관리 등을 지원합니다.
+ * Provides a declarative dialog UI. Supports dragging, 8-directional resizing,
+ * float/fill modes, automatic z-index management, and more.
  *
  * @example
  * ```tsx
  * const [open, setOpen] = createSignal(false);
  *
- * <Button onClick={() => setOpen(true)}>다이얼로그 열기</Button>
+ * <Button onClick={() => setOpen(true)}>Open Dialog</Button>
  * <Dialog open={open()} onOpenChange={setOpen}>
- *   <Dialog.Header>내 다이얼로그</Dialog.Header>
- *   <div class="p-4">다이얼로그 내용</div>
+ *   <Dialog.Header>My Dialog</Dialog.Header>
+ *   <div class="p-4">Dialog content</div>
  * </Dialog>
  * ```
  */
@@ -179,10 +179,10 @@ export const Dialog: DialogComponent = (props) => {
     onChange: () => local.onOpenChange,
   });
 
-  // 애니메이션 상태 (mount transition)
+  // Animation state (mount transition)
   const { mounted, animating, unmount } = createMountTransition(open);
 
-  // onCloseComplete 중복 호출 방지
+  // Prevent duplicate onCloseComplete calls
   let closeCompleteEmitted = false;
 
   const emitCloseComplete = () => {
@@ -192,7 +192,7 @@ export const Dialog: DialogComponent = (props) => {
     local.onCloseComplete?.();
   };
 
-  // open 변경 시 closeCompleteEmitted 초기화 + fallback unmount 감지
+  // Reset closeCompleteEmitted when open changes + detect fallback unmount
   let wasMounted = false;
   createEffect(() => {
     if (open()) {
@@ -201,23 +201,23 @@ export const Dialog: DialogComponent = (props) => {
     if (mounted()) {
       wasMounted = true;
     } else if (wasMounted) {
-      // fallback timer가 transitionend보다 먼저 실행되어 DOM이 제거된 경우,
-      // onCloseComplete가 호출되지 않는 문제 방지
+      // Prevent onCloseComplete from not being called when fallback timer runs
+      // before transitionend and removes DOM
       emitCloseComplete();
     }
   });
 
-  // dialog ref
+  // Dialog ref
   let dialogRef: HTMLDivElement | undefined;
 
-  // wrapper ref (signal로 관리하여 Portal ref 타이밍 보장)
+  // Wrapper ref (managed as signal to guarantee Portal ref timing)
   const [wrapperRef, setWrapperRef] = createSignal<HTMLDivElement>();
 
   const closeOnEscape = () => local.closeOnEscape ?? dialogDefaults?.().closeOnEscape ?? true;
   const closeOnBackdrop = () =>
     local.closeOnBackdrop ?? dialogDefaults?.().closeOnBackdrop ?? false;
 
-  // Escape 키 감지
+  // Detect Escape key
   createEffect(() => {
     if (!open()) return;
 
@@ -237,7 +237,7 @@ export const Dialog: DialogComponent = (props) => {
     onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
   });
 
-  // 열릴 때 등록, 닫힐 때 해제
+  // Register when opening, unregister when closing
   createEffect(() => {
     if (!open()) return;
     const el = wrapperRef();
@@ -246,24 +246,24 @@ export const Dialog: DialogComponent = (props) => {
     onCleanup(() => unregisterDialog(el));
   });
 
-  // 닫기 시도 (canDeactivate 체크)
+  // Attempt to close (check canDeactivate)
   const tryClose = () => {
     if (local.canDeactivate && !local.canDeactivate()) return;
     setOpen(false);
   };
 
-  // 백드롭 클릭 핸들러
+  // Backdrop click handler
   const handleBackdropClick = () => {
     if (!closeOnBackdrop()) return;
     tryClose();
   };
 
-  // 닫기 버튼 클릭 핸들러
+  // Close button click handler
   const handleCloseClick = () => {
     tryClose();
   };
 
-  // transitionend 이벤트 처리
+  // Handle transitionend event
   const handleTransitionEnd = (e: TransitionEvent) => {
     if (e.propertyName !== "opacity") return;
     if (!open()) {
@@ -271,20 +271,20 @@ export const Dialog: DialogComponent = (props) => {
     }
   };
 
-  // z-index 자동 관리
+  // Automatic z-index management
   const handleDialogFocus = () => {
     const el = wrapperRef();
     if (!el) return;
     bringToFront(el);
   };
 
-  // 드래그 이동
+  // Dragging
   const handleHeaderPointerDown = (event: PointerEvent) => {
-    // movable 기본값은 true
+    // movable default is true
     if (local.movable === false) return;
     const wrapperEl = wrapperRef();
     if (!dialogRef || !wrapperEl) return;
-    // 닫기 버튼 등 인터랙티브 요소에서 시작된 이벤트는 드래그로 처리하지 않음
+    // Do not treat events from interactive elements like close button as drag
     if ((event.target as HTMLElement).closest("button")) return;
 
     const target = event.currentTarget as HTMLElement;
@@ -307,7 +307,7 @@ export const Dialog: DialogComponent = (props) => {
         dialogEl.style.bottom = "auto";
         dialogEl.style.margin = "0";
 
-        // 화면 밖 방지
+        // Prevent off-screen
         if (dialogEl.offsetLeft > wrapperEl.offsetWidth - 100) {
           dialogEl.style.left = wrapperEl.offsetWidth - 100 + "px";
         }
@@ -328,7 +328,7 @@ export const Dialog: DialogComponent = (props) => {
     });
   };
 
-  // 리사이즈
+  // Resize
   const handleResizeBarPointerDown = (event: PointerEvent, direction: ResizeDirection) => {
     if (!local.resizable) return;
     if (!dialogRef) return;
@@ -381,7 +381,7 @@ export const Dialog: DialogComponent = (props) => {
     });
   };
 
-  // dialog 인라인 스타일 계산
+  // Calculate dialog inline styles
   const dialogStyle = (): JSX.CSSProperties => {
     const style: JSX.CSSProperties = {};
 

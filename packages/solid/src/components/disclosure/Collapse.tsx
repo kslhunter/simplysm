@@ -13,11 +13,11 @@ import { mergeStyles } from "../../helpers/mergeStyles";
 
 export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**
-   * 콘텐츠 표시 여부. 기본값: false (닫힘)
+   * Whether to show content. Default: false (closed)
    *
-   * 접근성 참고:
-   * - 토글 버튼에 `aria-expanded`와 `aria-controls`를 사용하세요.
-   * - `Button` 컴포넌트를 사용하면 Enter/Space 키보드 접근성이 자동 지원됩니다.
+   * Accessibility note:
+   * - Use `aria-expanded` and `aria-controls` on the toggle button.
+   * - If using the `Button` component, Enter/Space keyboard accessibility is automatically supported.
    *
    * @example
    * ```tsx
@@ -40,24 +40,24 @@ const transitionClass = clsx(
 export const Collapse: ParentComponent<CollapseProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style", "open"]);
 
-  // 콘텐츠 요소 ref
+  // Content element ref
   const [contentRef, setContentRef] = createSignal<HTMLDivElement>();
 
-  // 콘텐츠 높이 추적
+  // Track content height
   const size = createElementSize(contentRef);
 
-  // 초기 렌더링 시 transition 비활성화 (깜빡임 방지)
-  // requestAnimationFrame으로 다음 프레임에 활성화
+  // Disable transition on initial render (prevent flickering)
+  // Enable it on the next frame via requestAnimationFrame
   const [mounted, setMounted] = createSignal(false);
   onMount(() => {
     const rafId = requestAnimationFrame(() => setMounted(true));
     onCleanup(() => cancelAnimationFrame(rafId));
   });
 
-  // open이 undefined일 때 false로 처리
+  // Treat undefined open as false
   const isOpen = () => local.open ?? false;
 
-  // margin-top 계산
+  // Calculate margin-top
   const marginTop = () => (isOpen() ? undefined : `${-(size.height ?? 0)}px`);
 
   return (
@@ -72,7 +72,7 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
         class={mounted() ? transitionClass : ""}
         style={{
           "margin-top": marginTop(),
-          // 닫힌 상태에서 포커스 가능 요소 접근 차단 및 FOUC 방지
+          // When closed, prevent access to focusable elements and prevent FOUC
           "visibility": !isOpen() ? "hidden" : undefined,
         }}
       >

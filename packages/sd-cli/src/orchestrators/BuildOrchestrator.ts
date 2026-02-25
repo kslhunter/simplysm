@@ -27,17 +27,17 @@ import { formatBuildMessages } from "../utils/output-utils";
 //#region Types
 
 /**
- * Build Orchestrator 옵션
+ * Build Orchestrator options
  */
 export interface BuildOrchestratorOptions {
-  /** 빌드할 패키지 필터 (빈 배열이면 모든 패키지) */
+  /** Package filter for build (empty array includes all packages) */
   targets: string[];
-  /** sd.config.ts에 전달할 추가 옵션 */
+  /** Additional options to pass to sd.config.ts */
   options: string[];
 }
 
 /**
- * 빌드 결과
+ * Build result
  */
 interface BuildStepResult {
   name: string;
@@ -50,14 +50,14 @@ interface BuildStepResult {
 }
 
 /**
- * 패키지 분류 결과
+ * Package classification result
  */
 interface ClassifiedPackages {
-  /** node/browser/neutral 타겟 (JS + dts) */
+  /** node/browser/neutral target (JS + dts) */
   buildPackages: Array<{ name: string; config: SdBuildPackageConfig }>;
-  /** client 타겟 (Vite build + typecheck) */
+  /** client target (Vite build + typecheck) */
   clientPackages: Array<{ name: string; config: SdClientPackageConfig }>;
-  /** server 타겟 (JS 빌드, dts 제외) */
+  /** server target (JS build, no dts) */
   serverPackages: Array<{ name: string; config: SdServerPackageConfig }>;
 }
 
@@ -66,11 +66,11 @@ interface ClassifiedPackages {
 //#region Utilities
 
 /**
- * 패키지를 타겟별로 분류
+ * Classify packages by target
  * - node/browser/neutral: buildPackages (JS + dts)
  * - client: clientPackages (Vite build + typecheck)
- * - server: serverPackages (JS 빌드, dts 제외)
- * - scripts: 제외
+ * - server: serverPackages (JS build, no dts)
+ * - scripts: excluded
  */
 function classifyPackages(
   packages: Record<
@@ -91,7 +91,7 @@ function classifyPackages(
     if (config == null) continue;
     if (config.target === "scripts") continue;
 
-    // targets가 지정되면 해당 패키지만 포함
+    // Include only specified packages if targets is specified
     if (targets.length > 0 && !targets.includes(name)) continue;
 
     if (config.target === "client") {

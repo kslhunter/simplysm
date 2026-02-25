@@ -27,13 +27,13 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
 
   const resolved = children(() => props.children);
 
-  // message 변경 시 setCustomValidity 반응형 업데이트 (touchMode 무관하게 항상)
+  // Reactively update setCustomValidity when message changes (always, regardless of touchMode)
   createEffect(() => {
     const msg = props.message ?? "";
     hiddenInputEl.setCustomValidity(msg);
   });
 
-  // target에 relative 설정 + hidden input을 target 내부에 삽입
+  // Set target to relative + insert hidden input inside target
   createEffect(() => {
     const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
     if (!targetEl) return;
@@ -52,7 +52,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     });
   });
 
-  // 시각적 표시 처리
+  // Handle visual indication
   createEffect(() => {
     const variant = props.variant ?? "dot";
     const message = props.message ?? "";
@@ -102,7 +102,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     }
   });
 
-  // touchMode: target에 focusout 이벤트 등록하여 touched 상태 추적
+  // touchMode: register focusout event on target to track touched state
   createEffect(() => {
     if (!(props.touchMode ?? false)) return;
 
@@ -121,7 +121,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     });
   });
 
-  // hidden input 포커스 시 target의 focusable child로 리디렉션
+  // Redirect hidden input focus to focusable child of target
   hiddenInputEl.addEventListener("focus", () => {
     const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
 

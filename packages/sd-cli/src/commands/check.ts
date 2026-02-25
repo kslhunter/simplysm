@@ -83,7 +83,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
   const { targets, types } = options;
   const logger = consola.withTag("sd:cli:check");
 
-  logger.debug("check 시작", { targets, types });
+  logger.debug("start check", { targets, types });
 
   const tasks: Promise<CheckResult>[] = [];
 
@@ -129,11 +129,11 @@ export async function runCheck(options: CheckOptions): Promise<void> {
     tasks.push(spawnVitest(targets));
   }
 
-  logger.start(`check 실행 중... (${types.join(", ")})`);
+  logger.start(`running check... (${types.join(", ")})`);
   const results = await Promise.allSettled(tasks);
-  logger.success("check 실행 완료");
+  logger.success("check completed");
 
-  // 결과 수집
+  // Collect results
   const checkResults: CheckResult[] = results.map((r) => {
     if (r.status === "fulfilled") return r.value;
     return {
@@ -145,7 +145,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
     };
   });
 
-  // 섹션별 출력 (typecheck → lint → test 순서 보장)
+  // Output by section (guarantee order: typecheck → lint → test)
   const order = ["TYPECHECK", "LINT", "TEST"];
   checkResults.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 

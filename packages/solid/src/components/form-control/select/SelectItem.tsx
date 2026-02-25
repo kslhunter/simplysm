@@ -31,10 +31,10 @@ export interface SelectItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "value" | "onClick"
 > {
-  /** 아이템의 값 */
+  /** Item value */
   value: TValue;
 
-  /** 비활성화 */
+  /** Disabled state */
   disabled?: boolean;
 }
 
@@ -43,13 +43,13 @@ interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectIt
 }
 
 /**
- * Select 드롭다운 내의 선택 가능한 아이템
+ * Selectable item within Select dropdown
  *
  * @example
  * ```tsx
  * <Select.Item value={item}>{item.name}</Select.Item>
  *
- * // 중첩 아이템
+ * // Nested items
  * <Select.Item value={parent}>
  *   {parent.name}
  *   <Select.Item.Children>
@@ -75,7 +75,7 @@ export const SelectItem: SelectItemComponent = <T,>(
 
     context.toggleValue(local.value);
 
-    // 단일 선택 모드에서만 드롭다운 닫기
+    // Close dropdown only in single select mode
     if (!context.multiple()) {
       context.closeDropdown();
     }

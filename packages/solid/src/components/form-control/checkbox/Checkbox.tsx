@@ -17,7 +17,7 @@ import {
 } from "./Checkbox.styles";
 import { Invalid } from "../Invalid";
 
-// Directive 사용 선언 (TypeScript용)
+// Directive usage declaration (for TypeScript)
 void ripple;
 
 export interface CheckboxProps {
@@ -84,7 +84,7 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = local.value ?? false;
-    if (local.required && !v) return "필수 선택 항목입니다";
+    if (local.required && !v) return "This is a required selection";
     return local.validate?.(v);
   });
 

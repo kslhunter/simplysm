@@ -19,33 +19,33 @@ const iconSizes: Record<"sm" | "lg", string> = {
 };
 
 const modeLabels: Record<ThemeMode, string> = {
-  light: "라이트 모드",
-  system: "시스템 설정",
-  dark: "다크 모드",
+  light: "Light mode",
+  system: "System settings",
+  dark: "Dark mode",
 };
 
 export interface ThemeToggleProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "children"
 > {
-  /** 버튼 크기 */
+  /** Button size */
   size?: "sm" | "lg";
 }
 
 /**
- * 테마 토글 버튼 컴포넌트
+ * Theme toggle button component
  *
  * @remarks
- * - ThemeProvider 내부에서 사용해야 함
- * - 클릭 시 light → system → dark → light 순환
- * - 현재 모드에 맞는 아이콘 표시 (☀️ / 💻 / 🌙)
+ * - Must be used inside ThemeProvider
+ * - Cycles through light → system → dark → light on click
+ * - Shows appropriate icon for current mode (☀️ / 💻 / 🌙)
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <ThemeToggle />
  *
- * // 크기 조절
+ * // Adjust size
  * <ThemeToggle size="sm" />
  * <ThemeToggle size="lg" />
  * ```

@@ -8,52 +8,52 @@ import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
 
 export interface TextareaProps {
-  /** 입력 값 */
+  /** Input value */
   value?: string;
 
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: string) => void;
 
-  /** 플레이스홀더 */
+  /** Placeholder */
   placeholder?: string;
 
-  /** 타이틀 (툴팁) */
+  /** Title (tooltip) */
   title?: string;
 
-  /** 비활성화 */
+  /** Disabled state */
   disabled?: boolean;
 
-  /** 읽기 전용 */
+  /** Read-only */
   readonly?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 최소 줄 수 (기본값: 1) */
+  /** Minimum rows (default: 1) */
   minRows?: number;
 
-  /** 필수 입력 여부 */
+  /** Required input */
   required?: boolean;
 
-  /** 최소 길이 */
+  /** Minimum length */
   minLength?: number;
 
-  /** 최대 길이 */
+  /** Maximum length */
   maxLength?: number;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: string) => string | undefined;
 
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: Show error only after blur */
   touchMode?: boolean;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
@@ -67,14 +67,14 @@ const textareaBaseClass = clsx(
 );
 
 /**
- * Textarea 컴포넌트
+ * Textarea component
  *
  * @example
  * ```tsx
- * // 기본 사용
+ * // Basic usage
  * <Textarea value={text()} onValueChange={setText} />
  *
- * // 최소 줄 수 지정
+ * // Specify minimum rows
  * <Textarea minRows={3} value={text()} onValueChange={setText} />
  * ```
  */
@@ -103,10 +103,10 @@ export const Textarea: Component<TextareaProps> = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
+  // Delay onValueChange during IME composition to prevent DOM recreation (Korean composition break)
   const ime = createIMEHandler((v) => setValue(v));
 
-  // content div용 표시 값 (composingValue 포함 — 셀 너비/높이 결정)
+  // Display value for content div (includes composingValue — determines cell width/height)
   const displayValue = () => ime.composingValue() ?? value();
 
   const handleCompositionStart = () => ime.handleCompositionStart();
@@ -135,7 +135,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
       el.selectionStart = start + 1;
       el.selectionEnd = start + 1;
 
-      // input 이벤트를 수동 발행하여 값 동기화
+      // Manually dispatch input event to sync value
       el.dispatchEvent(new InputEvent("input", { bubbles: true }));
     }
   };
@@ -145,11 +145,11 @@ export const Textarea: Component<TextareaProps> = (props) => {
     const val = displayValue();
     const content =
       val !== "" && val.split("\n").length >= rows ? val : "\n".repeat(rows - 1) + "\u00A0";
-    // 마지막이 줄바꿈이면 빈 줄 높이 확보를 위해 공백 추가
+    // Add space if ending with newline to ensure empty line height
     return content.endsWith("\n") ? content + "\u00A0" : content;
   };
 
-  // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
+  // Wrapper class (exclude local.class when includeCustomClass=false — only apply to outer in inset)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getTextareaWrapperClass({
       size: local.size,
@@ -161,25 +161,25 @@ export const Textarea: Component<TextareaProps> = (props) => {
   const getTextareaClass = () =>
     twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size], local.inset && "p-0");
 
-  // 편집 가능 여부
+  // Whether editable
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // disabled 전환 시 미커밋 조합 값 flush
+  // Flush uncommitted composition value when toggling disabled
   createEffect(() => {
     if (!isEditable()) {
       ime.flushComposition();
     }
   });
 
-  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  // Validation error message (check in order, return first failure message)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && !v) return "필수 입력 항목입니다";
+    if (local.required && !v) return "This is a required field";
     if (v) {
       if (local.minLength != null && v.length < local.minLength)
-        return `최소 ${local.minLength}자 이상 입력하세요`;
+        return `Enter at least ${local.minLength} characters`;
       if (local.maxLength != null && v.length > local.maxLength)
-        return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+        return `Enter up to ${local.maxLength} characters`;
     }
     return local.validate?.(v);
   });
@@ -189,7 +189,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
       <Show
         when={local.inset}
         fallback={
-          // standalone 모드: 기존 Show 패턴 유지
+          // standalone mode: maintain existing Show pattern
           <Show
             when={isEditable()}
             fallback={
@@ -235,7 +235,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
           </Show>
         }
       >
-        {/* inset 모드: dual-element overlay 패턴 */}
+        {/* inset mode: dual-element overlay pattern */}
         <div
           {...rest}
           data-textarea-field

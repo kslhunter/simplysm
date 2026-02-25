@@ -26,16 +26,16 @@ import { SignalHandler } from "../infra/SignalHandler";
 //#region Types
 
 /**
- * Dev Orchestrator 옵션
+ * Dev Orchestrator options
  */
 export interface DevOrchestratorOptions {
-  /** dev할 패키지 필터 (빈 배열이면 모든 패키지) */
+  /** Filter for packages to develop (empty array means all packages) */
   targets: string[];
   options: string[];
 }
 
 /**
- * Client Worker 정보 (Vite dev server용)
+ * Client Worker info (for Vite dev server)
  */
 interface ClientWorkerInfo {
   name: string;
@@ -50,14 +50,14 @@ interface ClientWorkerInfo {
 //#region DevOrchestrator
 
 /**
- * Dev 모드 실행을 조율하는 Orchestrator
+ * Orchestrator that coordinates dev mode execution
  *
- * Client 및 Server 패키지의 개발 모드 실행을 관리한다.
- * - `client` 타겟: Vite dev server 시작
- * - `server` 타겟: Server Build Worker + Server Runtime Worker
- * - Server-Client 프록시 연결 지원
- * - Capacitor 초기화 지원
- * - SIGINT/SIGTERM 시그널로 종료
+ * Manages development mode execution for Client and Server packages.
+ * - `client` target: Start Vite dev server
+ * - `server` target: Server Build Worker + Server Runtime Worker
+ * - Support for Server-Client proxy connections
+ * - Support for Capacitor initialization
+ * - Shutdown via SIGINT/SIGTERM signals
  */
 export class DevOrchestrator {
   private readonly _options: DevOrchestratorOptions;

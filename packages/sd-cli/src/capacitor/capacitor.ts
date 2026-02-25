@@ -17,7 +17,7 @@ import type { SdCapacitorConfig } from "../sd-config.types";
 import { execa } from "execa";
 
 /**
- * package.json 타입
+ * package.json type
  */
 interface NpmConfig {
   name: string;
@@ -29,7 +29,7 @@ interface NpmConfig {
 }
 
 /**
- * 설정 검증 에러
+ * Configuration validation error
  */
 class CapacitorConfigError extends Error {
   constructor(message: string) {
@@ -39,11 +39,11 @@ class CapacitorConfigError extends Error {
 }
 
 /**
- * Capacitor 프로젝트 관리 클래스
+ * Capacitor project management class
  *
- * - Capacitor 프로젝트 초기화
- * - Android APK/AAB 빌드
- * - 디바이스에서 앱 실행
+ * - Initialize Capacitor project
+ * - Build Android APK/AAB
+ * - Run app on device
  */
 export class Capacitor {
   private static readonly _ANDROID_KEYSTORE_FILE_NAME = "android.keystore";
@@ -65,10 +65,10 @@ export class Capacitor {
   }
 
   /**
-   * Capacitor 인스턴스 생성 (설정 검증 포함)
+   * Create Capacitor instance (with configuration validation)
    */
   static async create(pkgPath: string, config: SdCapacitorConfig): Promise<Capacitor> {
-    // F5: 런타임 설정 검증
+    // F5: validate runtime configuration
     Capacitor._validateConfig(config);
 
     const npmConfig = await fsReadJson<NpmConfig>(path.resolve(pkgPath, "package.json"));

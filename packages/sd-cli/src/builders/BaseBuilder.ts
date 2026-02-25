@@ -9,10 +9,10 @@ import type { IBuilder, PackageInfo } from "./types";
 const baseBuilderLogger = consola.withTag("sd:cli:build");
 
 /**
- * Builder 추상 베이스 클래스
+ * Abstract base class for Builder
  *
- * 모든 Builder의 공통 로직을 제공하고,
- * 서브클래스에서 구현해야 할 추상 메서드를 정의한다.
+ * Provides common logic for all Builders and
+ * defines abstract methods that subclasses must implement.
  */
 export abstract class BaseBuilder implements IBuilder {
   protected readonly workerManager: WorkerManager;
@@ -22,9 +22,9 @@ export abstract class BaseBuilder implements IBuilder {
   protected readonly cwd: string;
   protected isWatchMode = false;
 
-  /** 초기 빌드 Promise (패키지별) */
+  /** Initial build Promise (per package) */
   protected readonly initialBuildPromises = new Map<string, Promise<void>>();
-  /** 초기 빌드 resolver (패키지별) */
+  /** Initial build resolver (per package) */
   protected readonly buildResolvers = new Map<string, () => void>();
 
   constructor(options: {
@@ -41,10 +41,10 @@ export abstract class BaseBuilder implements IBuilder {
   }
 
   /**
-   * Builder 초기화
+   * Initialize Builder
    */
   initialize(): Promise<void> {
-    // 초기 빌드 Promise 생성
+    // Create initial build Promises
     for (const pkg of this.packages) {
       const key = this.getPackageKey(pkg);
       this.initialBuildPromises.set(
@@ -55,60 +55,60 @@ export abstract class BaseBuilder implements IBuilder {
       );
     }
 
-    // Worker 생성
+    // Create Workers
     this.createWorkers();
 
-    // 이벤트 핸들러 등록
+    // Register event handlers
     this.registerEventHandlers();
 
     return Promise.resolve();
   }
 
   /**
-   * 일회성 빌드 (프로덕션)
+   * One-time build (production)
    */
   async build(): Promise<void> {
     await Promise.all(this.packages.map((pkg) => this.buildPackage(pkg)));
   }
 
   /**
-   * Watch 모드 시작
+   * Start watch mode
    */
   async startWatch(): Promise<void> {
     this.isWatchMode = true;
 
-    // 모든 패키지의 watch 시작 (await 없이 - 백그라운드 실행)
+    // Start watching all packages (without await - run in background)
     for (const pkg of this.packages) {
       this.startWatchPackage(pkg);
     }
 
-    // 초기 빌드 완료까지 대기
+    // Wait until initial build is complete
     await Promise.all(this.initialBuildPromises.values());
   }
 
   /**
-   * Builder 종료
+   * Shutdown Builder
    */
   async shutdown(): Promise<void> {
     await this.workerManager.terminateAll();
   }
 
   /**
-   * 초기 빌드 Promise 맵 반환
+   * Get initial build Promise map
    */
   getInitialBuildPromises(): Map<string, Promise<void>> {
     return this.initialBuildPromises;
   }
 
   /**
-   * 패키지 키 생성 (결과 저장용)
+   * Generate package key (for result storage)
    */
   protected getPackageKey(pkg: PackageInfo): string {
     return `${pkg.name}:${this.getBuilderType()}`;
   }
 
   /**
-   * 빌드 완료 처리
+   * Handle build completion
    */
   protected completeBuild(pkg: PackageInfo): void {
     const key = this.getPackageKey(pkg);
@@ -120,14 +120,14 @@ export abstract class BaseBuilder implements IBuilder {
   }
 
   /**
-   * 공통 Worker 이벤트 핸들러 등록 (buildStart, build, error)
+   * Register common Worker event handlers (buildStart, build, error)
    *
-   * LibraryBuilder와 DtsBuilder에서 동일한 패턴의 이벤트 핸들러를
-   * 중복 없이 등록할 수 있도록 공통 로직을 제공한다.
+   * Provides common logic so LibraryBuilder and DtsBuilder can register
+   * event handlers with the same pattern without duplication.
    *
-   * @param workerKey Worker 식별자 (예: "core-common:build")
-   * @param resultType BuildResult의 type 필드 값
-   * @param listrTitle 리빌드 시 표시할 제목
+   * @param workerKey Worker identifier (e.g., "core-common:build")
+   * @param resultType BuildResult type field value
+   * @param listrTitle Title to display during rebuild
    */
   protected registerEventHandlersForWorker(
     pkg: PackageInfo,
@@ -137,10 +137,10 @@ export abstract class BaseBuilder implements IBuilder {
   ): void {
     const worker = this.workerManager.get(workerKey)!;
 
-    // 초기 빌드 여부 추적
+    // Track if this is initial build
     let isInitialBuild = true;
 
-    // 빌드 시작 (리빌드 시)
+    // Build start (during rebuild)
     worker.on("buildStart", () => {
       if (!isInitialBuild && this.rebuildManager != null) {
         const resolver = this.rebuildManager.registerBuild(workerKey, listrTitle);
@@ -148,11 +148,11 @@ export abstract class BaseBuilder implements IBuilder {
       }
     });
 
-    // 빌드 완료
+    // Build complete
     worker.on("build", (data) => {
       const event = data as BuildEventData;
 
-      // warnings 출력
+      // Output warnings
       if (event.warnings != null && event.warnings.length > 0) {
         baseBuilderLogger.warn(formatBuildMessages(pkg.name, pkg.config.target, event.warnings));
       }
@@ -172,7 +172,7 @@ export abstract class BaseBuilder implements IBuilder {
       this.completeBuild(pkg);
     });
 
-    // 에러
+    // Error
     worker.on("error", (data) => {
       const event = data as ErrorEventData;
       const result: BuildResult = {
@@ -192,27 +192,27 @@ export abstract class BaseBuilder implements IBuilder {
   }
 
   /**
-   * Builder 타입 (결과 키 생성용)
+   * Builder type (for result key generation)
    */
   protected abstract getBuilderType(): string;
 
   /**
-   * Worker 생성
+   * Create Workers
    */
   protected abstract createWorkers(): void;
 
   /**
-   * 이벤트 핸들러 등록
+   * Register event handlers
    */
   protected abstract registerEventHandlers(): void;
 
   /**
-   * 단일 패키지 빌드 (프로덕션)
+   * Single package build (production)
    */
   protected abstract buildPackage(pkg: PackageInfo): Promise<void>;
 
   /**
-   * 단일 패키지 watch 시작
+   * Start watching single package
    */
   protected abstract startWatchPackage(pkg: PackageInfo): void;
 }

@@ -6,10 +6,10 @@ import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
 
 /**
- * .d.ts 파일 생성을 담당하는 Builder
+ * Builder responsible for generating .d.ts files
  *
- * Library 패키지의 TypeScript 선언 파일 생성을 처리한다.
- * Watch 모드와 프로덕션 빌드를 모두 지원한다.
+ * Handles TypeScript declaration file generation for library packages.
+ * Supports both watch mode and production builds.
  */
 export class DtsBuilder extends BaseBuilder {
   private readonly _workerPath: string;
@@ -24,12 +24,12 @@ export class DtsBuilder extends BaseBuilder {
   }
 
   /**
-   * 패키지 타겟에서 TypecheckEnv 결정
+   * Determine TypecheckEnv from package target
    */
   private _getEnv(pkg: PackageInfo): TypecheckEnv {
     const target = pkg.config.target;
     if (target === "node") return "node";
-    return "browser"; // browser, neutral, client 모두 browser 환경
+    return "browser"; // browser, neutral, client all use browser environment
   }
 
   protected createWorkers(): void {

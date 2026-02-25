@@ -10,7 +10,7 @@ import { findPackageRoot } from "../utils/package-utils";
 //#region Types
 
 /**
- * Add-client 명령 옵션
+ * Add-client command options
  */
 export interface AddClientOptions {}
 
@@ -22,31 +22,31 @@ export interface AddClientOptions {}
 //#region Main
 
 /**
- * 클라이언트 패키지를 프로젝트에 추가한다.
+ * Add client package to the project.
  *
- * 1. 프로젝트 루트 확인 (sd.config.ts 존재)
- * 2. 대화형 프롬프트 (이름 접미사, 라우터 사용 여부)
- * 3. 패키지 디렉토리 중복 확인
- * 4. Handlebars 템플릿 렌더링
- * 5. sd.config.ts에 패키지 항목 추가 (ts-morph)
- * 6. eslint.config.ts에 tailwind 설정 추가 (첫 클라이언트인 경우)
+ * 1. Verify project root (sd.config.ts exists)
+ * 2. Interactive prompt (name suffix, router usage)
+ * 3. Check for duplicate package directory
+ * 4. Render Handlebars template
+ * 5. Add package entry to sd.config.ts (ts-morph)
+ * 6. Add tailwind configuration to eslint.config.ts (if first client)
  * 7. pnpm install
  */
 export async function runAddClient(_options: AddClientOptions): Promise<void> {
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:add-client");
 
-  // 1. 프로젝트 루트 확인
+  // 1. Verify project root
   if (!fs.existsSync(path.join(cwd, "sd.config.ts"))) {
-    consola.error("sd.config.ts를 찾을 수 없습니다. 프로젝트 루트에서 실행해주세요.");
+    consola.error("Cannot find sd.config.ts. Please run from the project root.");
     process.exitCode = 1;
     return;
   }
 
-  // 프로젝트명
+  // Project name
   const projectName = path.basename(cwd);
 
-  // 2. 대화형 프롬프트
+  // 2. Interactive prompt
   const clientSuffix = await input({
     message: "클라이언트 이름을 입력하세요 (client-___):",
     validate: (value) => {

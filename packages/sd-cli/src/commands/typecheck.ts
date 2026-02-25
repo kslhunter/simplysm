@@ -14,17 +14,17 @@ import type * as DtsWorkerModule from "../workers/dts.worker";
 //#region Types
 
 /**
- * TypeScript 타입체크 옵션
+ * TypeScript typecheck options
  */
 export interface TypecheckOptions {
-  /** 타입체크할 경로 필터 (예: `packages/core-common`). 빈 배열이면 tsconfig.json에 정의된 모든 파일 대상 */
+  /** Path filter for typecheck (e.g., `packages/core-common`). Empty array targets all files defined in tsconfig.json */
   targets: string[];
-  /** sd.config.ts에 전달할 추가 옵션 */
+  /** Additional options to pass to sd.config.ts */
   options: string[];
 }
 
 /**
- * TypeScript 타입체크 실행 결과
+ * TypeScript typecheck execution result
  */
 export interface TypecheckResult {
   success: boolean;
@@ -33,18 +33,18 @@ export interface TypecheckResult {
   formattedOutput: string;
 }
 
-// 패키지 정보 (packages/* 하위 파일 분류용)
+// Package information (for classifying files under packages/*)
 interface PackageInfo {
   name: string;
   dir: string;
-  envs: TypecheckEnv[]; // neutral은 ["node", "browser"], 나머지는 단일 환경
+  envs: TypecheckEnv[]; // neutral is ["node", "browser"], others are single environment
 }
 
-// 타입체크 작업 정보 (내부 사용)
+// Typecheck task information (internal use)
 interface TypecheckTask {
-  /** 작업 표시 이름 (예: "패키지: core-common [node]") */
+  /** Task display name (e.g., "package: core-common [node]") */
   displayName: string;
-  /** dts.worker에 전달할 정보 */
+  /** Information to pass to dts.worker */
   buildInfo: DtsBuildInfo;
 }
 
@@ -52,31 +52,31 @@ interface TypecheckTask {
 
 //#region Utilities
 
-/** 경로 분류용 정규표현식 */
+/** Regular expression for path classification */
 const PATH_PATTERNS = {
   /** packages/{pkg}/... */
   PACKAGE: /^packages\/([^/]+)\//,
 } as const;
 
 /**
- * 패키지 타겟을 타입체크 환경 목록으로 변환합니다.
- * - node/browser: 해당 환경만
- * - neutral: node + browser 둘 다
- * - client: browser로 처리
- * @param target 패키지 빌드 타겟
- * @returns 타입체크 환경 목록
+ * Convert package target to typecheck environment list.
+ * - node/browser: that environment only
+ * - neutral: both node + browser
+ * - client: treated as browser
+ * @param target package build target
+ * @returns list of typecheck environments
  */
 function toTypecheckEnvs(target: string | undefined): TypecheckEnv[] {
   if (target === "node") return ["node"];
   if (target === "browser" || target === "client") return ["browser"];
-  // neutral 또는 미지정은 둘 다
+  // neutral or unspecified: both
   return ["node", "browser"];
 }
 
 /**
- * 파일 경로에서 패키지 정보를 추출합니다.
- * scripts 타겟 패키지는 제외합니다.
- * @internal 테스트용으로 export
+ * Extract package information from file paths.
+ * Excludes packages with scripts target.
+ * @internal exported for testing
  */
 export function extractPackages(
   fileNames: string[],
@@ -92,7 +92,7 @@ export function extractPackages(
     const packageMatch = relativePath.match(PATH_PATTERNS.PACKAGE);
     if (packageMatch) {
       const pkgName = packageMatch[1];
-      // scripts 타겟 패키지는 제외
+      // Exclude packages with scripts target
       if (config.packages[pkgName]?.target === "scripts") continue;
 
       if (!packages.has(pkgName)) {
@@ -109,24 +109,24 @@ export function extractPackages(
 }
 
 /**
- * tsconfig 파일 목록에서 packages/ 하위가 아닌 파일이 있는지 확인합니다.
+ * Check if there are files not under packages/ in the tsconfig file list.
  */
 function hasNonPackageFiles(fileNames: string[], cwd: string): boolean {
   return fileNames.some((f) => {
     const relativePath = pathPosix(path.relative(cwd, f));
     if (!relativePath.startsWith("packages/")) return true;
-    // 패키지 루트 직속 파일(설정 파일)도 non-package로 처리
+    // Also treat files directly under package root (config files) as non-package
     return relativePath.split("/").length === 3;
   });
 }
 
 /**
- * 패키지 정보로부터 타입체크 작업 목록을 생성합니다.
- * neutral 패키지는 node/browser 두 환경으로 분리하여 각각 체크합니다.
- * @param packages 패키지 정보 맵
- * @param cwd 현재 작업 디렉토리
- * @param includeNonPackage non-package 파일이 있으면 "기타" 작업 추가
- * @returns 타입체크 작업 정보 배열
+ * Create typecheck task list from package information.
+ * Neutral packages are split into node/browser environments and checked separately.
+ * @param packages package information map
+ * @param cwd current working directory
+ * @param includeNonPackage add "other" task if non-package files exist
+ * @returns array of typecheck task information
  */
 function createTypecheckTasks(
   packages: Map<string, PackageInfo>,
@@ -135,27 +135,27 @@ function createTypecheckTasks(
 ): TypecheckTask[] {
   const tasks: TypecheckTask[] = [];
 
-  // packages/* - 각 env마다 별도 task 생성
+  // packages/* - create separate task per env
   for (const info of packages.values()) {
     for (const env of info.envs) {
       const envSuffix = info.envs.length > 1 ? ` [${env}]` : "";
       tasks.push({
-        displayName: `패키지: ${info.name}${envSuffix}`,
+        displayName: `package: ${info.name}${envSuffix}`,
         buildInfo: {
           name: info.name,
           cwd,
           pkgDir: info.dir,
           env,
-          emit: false, // 타입체크만 수행 (dts 생성 안 함)
+          emit: false, // Only typecheck (no dts generation)
         },
       });
     }
   }
 
-  // non-package 파일 (tests/, 루트 *.ts 등)
+  // non-package files (tests/, root *.ts, etc.)
   if (includeNonPackage) {
     tasks.push({
-      displayName: "기타",
+      displayName: "other",
       buildInfo: {
         name: "root",
         cwd,
@@ -172,24 +172,24 @@ function createTypecheckTasks(
 //#region Main
 
 /**
- * TypeScript 타입체크를 실행하고 결과를 반환한다.
+ * Execute TypeScript typecheck and return results.
  *
- * - `tsconfig.json`을 로드하여 컴파일러 옵션 적용
- * - `sd.config.ts`를 로드하여 패키지별 타겟 정보 확인 (없으면 기본값 사용)
- * - Worker threads를 사용하여 실제 병렬 타입체크 수행
- * - incremental 컴파일 사용 (`.cache/typecheck-{env}.tsbuildinfo`)
- * - consola 로깅을 사용하여 진행 상황 표시
- * - stdout 출력이나 exitCode 설정 없이 결과만 반환
+ * - Load `tsconfig.json` to apply compiler options
+ * - Load `sd.config.ts` to check package target info per package (use defaults if missing)
+ * - Perform actual parallel typecheck using Worker threads
+ * - Use incremental compilation (`.cache/typecheck-{env}.tsbuildinfo`)
+ * - Show progress using consola logging
+ * - Return results only, no stdout output or exitCode setting
  *
- * @param options - 타입체크 실행 옵션
- * @returns 타입체크 결과 (성공 여부, 에러/경고 수, 포맷된 출력 문자열)
+ * @param options - typecheck execution options
+ * @returns typecheck result (success status, error/warning counts, formatted output string)
  */
 export async function executeTypecheck(options: TypecheckOptions): Promise<TypecheckResult> {
   const { targets } = options;
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:typecheck");
 
-  logger.debug("타입체크 시작", { targets });
+  logger.debug("start typecheck", { targets });
 
   const formatHost: ts.FormatDiagnosticsHost = {
     getCanonicalFileName: (f) => f,
@@ -197,7 +197,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     getNewLine: () => ts.sys.newLine,
   };
 
-  // tsconfig.json 로드 및 파싱
+  // Load and parse tsconfig.json
   let parsedConfig: ts.ParsedCommandLine;
   try {
     parsedConfig = parseRootTsconfig(cwd);
@@ -206,38 +206,38 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     return { success: false, errorCount: 1, warningCount: 0, formattedOutput: "" };
   }
 
-  // sd.config.ts 로드
+  // Load sd.config.ts
   let sdConfig: SdConfig;
   try {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
-    logger.debug("sd.config.ts 로드 완료");
+    logger.debug("sd.config.ts loaded");
   } catch (err) {
-    // sd.config.ts가 없거나 로드 실패 시 기본값 사용
+    // Use defaults if sd.config.ts is missing or load fails
     sdConfig = { packages: {} };
-    logger.debug("sd.config.ts 로드 실패, 기본값 사용", err);
+    logger.debug("sd.config.ts load failed, using defaults", err);
   }
 
-  // targets가 지정되면 fileNames 필터링
+  // Filter fileNames if targets specified
   const fileNames = pathFilterByTargets(parsedConfig.fileNames, targets, cwd);
 
   if (fileNames.length === 0) {
-    logger.info("타입체크할 파일 없음");
+    logger.info("no files to typecheck");
     return {
       success: true,
       errorCount: 0,
       warningCount: 0,
-      formattedOutput: "✔ 타입체크할 파일이 없습니다.\n",
+      formattedOutput: "✔ No files to typecheck.\n",
     };
   }
 
-  // 패키지 정보 추출
+  // Extract package information
   const packages = extractPackages(fileNames, cwd, sdConfig);
-  logger.debug("패키지 추출 완료", {
+  logger.debug("package extraction complete", {
     packageCount: packages.size,
     packages: [...packages.keys()],
   });
 
-  // 타입체크 작업 생성
+  // Create typecheck tasks
   const nonPackage = hasNonPackageFiles(fileNames, cwd);
   const tasks = createTypecheckTasks(packages, cwd, nonPackage);
 
@@ -246,16 +246,16 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
       success: true,
       errorCount: 0,
       warningCount: 0,
-      formattedOutput: "✔ 타입체크할 대상이 없습니다.\n",
+      formattedOutput: "✔ No typecheck targets.\n",
     };
   }
 
-  // 동시성 설정: CPU 코어의 7/8만 사용 (일반적인 병렬 빌드 도구의 기본값, OS/다른 프로세스 여유분 확보, 최소 1, 작업 수 이하)
+  // Concurrency setting: use 7/8 of CPU cores (standard default for parallel build tools, reserves for OS/other processes, minimum 1, at most task count)
   const maxConcurrency = Math.max(Math.floor((os.cpus().length * 7) / 8), 1);
   const concurrency = Math.min(maxConcurrency, tasks.length);
-  logger.debug("동시성 설정", { concurrency, maxConcurrency, taskCount: tasks.length });
+  logger.debug("concurrency configuration", { concurrency, maxConcurrency, taskCount: tasks.length });
 
-  // Worker 풀 생성
+  // Create Worker pool
   const workerPath = import.meta.resolve("../workers/dts.worker");
   const workers: WorkerProxy<typeof DtsWorkerModule>[] = [];
   for (let i = 0; i < concurrency; i++) {

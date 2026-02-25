@@ -16,7 +16,7 @@ import {
 
 export type FieldSize = ComponentSize;
 
-// 기본 wrapper 스타일
+// Base wrapper styles
 export const fieldBaseClass = clsx(
   "inline-flex items-center",
   fieldSurface,
@@ -25,7 +25,7 @@ export const fieldBaseClass = clsx(
   "[text-decoration:inherit]",
 );
 
-// 사이즈별 스타일
+// Size-specific styles
 export const fieldSizeClasses: Record<FieldSize, string> = {
   xs: clsx("h-field-xs", paddingXs),
   sm: clsx("h-field-sm", paddingSm),
@@ -33,14 +33,14 @@ export const fieldSizeClasses: Record<FieldSize, string> = {
   xl: clsx("h-field-xl", paddingXl),
 };
 
-// inset 스타일
+// Inset styles
 export const fieldInsetClass = clsx(
   insetBase,
   "bg-primary-50 dark:bg-primary-950/30",
   insetFocusOutline,
 );
 
-// inset 높이 (border 2px 제외)
+// Inset heights (excluding 2px border)
 export const fieldInsetHeightClass = "h-field-inset";
 export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
   xs: "h-field-inset-xs",
@@ -49,13 +49,13 @@ export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
   xl: "h-field-inset-xl",
 };
 
-// disabled 스타일
+// Disabled styles
 export const fieldDisabledClass = clsx("bg-base-100 text-base-500 dark:bg-base-800");
 
-// textarea wrapper 스타일 (h-field 제거)
+// Textarea wrapper styles (h-field removed)
 export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface, "px-2 py-1");
 
-// textarea 사이즈별 스타일 (h-field-* 제거)
+// Textarea size-specific styles (h-field-* removed)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
   xs: paddingXs,
   sm: paddingSm,
@@ -63,10 +63,10 @@ export const textAreaSizeClasses: Record<FieldSize, string> = {
   xl: paddingXl,
 };
 
-// input 스타일
+// Input styles
 export const fieldInputClass = inputBase;
 
-// prefixIcon gap 클래스 (nested ternary 대체)
+// Prefix icon gap classes (replaces nested ternary)
 export const fieldGapClasses: Record<FieldSize | "default", string> = {
   xs: "gap-0.5",
   sm: "gap-1.5",
@@ -75,7 +75,7 @@ export const fieldGapClasses: Record<FieldSize | "default", string> = {
   xl: "gap-4",
 };
 
-// 공유 wrapper 클래스 생성 함수
+// Shared wrapper class generation function
 export function getFieldWrapperClass(options: {
   size?: FieldSize;
   disabled?: boolean;
@@ -95,7 +95,7 @@ export function getFieldWrapperClass(options: {
   );
 }
 
-// Textarea 전용 wrapper 클래스 생성 함수
+// Textarea-specific wrapper class generation function
 export function getTextareaWrapperClass(options: {
   size?: FieldSize;
   disabled?: boolean;
