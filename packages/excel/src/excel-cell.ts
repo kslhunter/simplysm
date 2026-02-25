@@ -102,7 +102,7 @@ export class ExcelCell {
       });
     } else {
       throw new Error(
-        `[${ExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${typeof val}`,
+        `[${ExcelUtils.stringifyAddr(this.addr)}] Unsupported type: ${typeof val}`,
       );
     }
   }
@@ -121,7 +121,7 @@ export class ExcelCell {
       const ssId = numParseInt(cellVal);
       if (ssId == null) {
         throw new Error(
-          `[${ExcelUtils.stringifyAddr(this.addr)}] SharedString ID 파싱 실패: ${cellVal}`,
+          `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse SharedString ID: ${cellVal}`,
         );
       }
       return ssData.getStringById(ssId);
@@ -135,7 +135,7 @@ export class ExcelCell {
       return parseFloat(cellVal);
     } else if (cellType === "e") {
       throw new Error(
-        `[${ExcelUtils.stringifyAddr(this.addr)}] 셀 타입 분석 실패: 셀에 에러 값이 포함되어 있습니다 (${cellVal})`,
+        `[${ExcelUtils.stringifyAddr(this.addr)}] Cell type analysis failed: cell contains error value (${cellVal})`,
       );
     } else {
       // cellType === undefined: number or date/time type
@@ -162,7 +162,7 @@ export class ExcelCell {
         const numFmtIdNum = numParseInt(numFmtId);
         if (numFmtIdNum == null) {
           throw new Error(
-            `[${ExcelUtils.stringifyAddr(this.addr)}] numFmtId 파싱 실패: ${numFmtId}`,
+            `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse numFmtId: ${numFmtId}`,
           );
         }
         numFmt = ExcelUtils.convertNumFmtIdToName(numFmtIdNum);
@@ -177,7 +177,7 @@ export class ExcelCell {
         const dateNum = numParseFloat(cellVal);
         if (dateNum == null) {
           throw new Error(
-            `[${ExcelUtils.stringifyAddr(this.addr)}] 날짜 숫자 파싱 실패: ${cellVal}`,
+            `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse date number: ${cellVal}`,
           );
         }
         const tick = ExcelUtils.convertNumberToTimeTick(dateNum);

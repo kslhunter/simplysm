@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import recommended from "../src/eslint-recommended";
 import plugin from "../src/eslint-plugin";
 
-// ESLint 설정 타입 헬퍼
+// ESLint config type helper
 type ConfigItem = (typeof recommended)[number];
 
 const hasIgnores = (config: ConfigItem): config is ConfigItem & { ignores: string[] } => {
@@ -29,13 +29,13 @@ const flattenFiles = (files: (string | string[])[]): string[] => {
   return files.flat();
 };
 
-describe("recommended 설정", () => {
-  it("배열 형태로 export 되어야 함", () => {
+describe("recommended config", () => {
+  it("should export as array", () => {
     expect(Array.isArray(recommended)).toBe(true);
     expect(recommended.length).toBeGreaterThan(0);
   });
 
-  it("globalIgnores 설정이 포함되어야 함", () => {
+  it("should include globalIgnores config", () => {
     const ignoresConfig = recommended.find(hasIgnores);
     expect(ignoresConfig).toBeDefined();
     if (ignoresConfig == null) return;
@@ -44,7 +44,7 @@ describe("recommended 설정", () => {
     expect(ignoresConfig.ignores).toEqual(expect.arrayContaining(expectedPatterns));
   });
 
-  it("JS 파일 설정이 포함되어야 함", () => {
+  it("should include JS file config", () => {
     const jsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.js")),
     );
@@ -55,7 +55,7 @@ describe("recommended 설정", () => {
     }
   });
 
-  it("TS 파일 설정이 포함되어야 함", () => {
+  it("should include TS file config", () => {
     const tsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.ts")),
     );
@@ -67,7 +67,7 @@ describe("recommended 설정", () => {
     }
   });
 
-  it("TS 설정에서 @simplysm 커스텀 규칙이 올바른 severity로 활성화되어야 함", () => {
+  it("should enable @simplysm custom rules with correct severity in TS config", () => {
     const tsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.ts")),
     );
@@ -80,7 +80,7 @@ describe("recommended 설정", () => {
     }
   });
 
-  it("JS 설정에서 @simplysm 커스텀 규칙이 활성화되어야 함", () => {
+  it("should enable @simplysm custom rules in JS config", () => {
     const jsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.js")),
     );
@@ -92,7 +92,7 @@ describe("recommended 설정", () => {
     }
   });
 
-  it("테스트 폴더에서 import/no-extraneous-dependencies가 off 되어야 함", () => {
+  it("should disable import/no-extraneous-dependencies in test folder", () => {
     const testConfig = recommended.find(
       (config) =>
         hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("**/tests/**")),
@@ -104,7 +104,7 @@ describe("recommended 설정", () => {
     }
   });
 
-  it("plugin.rules의 모든 규칙이 recommended 설정에 포함되어야 함", () => {
+  it("should include all plugin.rules in recommended config", () => {
     const tsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.ts")),
     );
@@ -115,14 +115,14 @@ describe("recommended 설정", () => {
       const ruleNames = Object.keys(plugin.rules);
       for (const ruleName of ruleNames) {
         const fullRuleName = `@simplysm/${ruleName}`;
-        expect(tsConfig.rules, `규칙 '${fullRuleName}'이 TS 설정에 포함되어야 함`).toHaveProperty(
+        expect(tsConfig.rules, `rule '${fullRuleName}' should be included in TS config`).toHaveProperty(
           fullRuleName,
         );
       }
     }
   });
 
-  it("TS 설정에서 parserOptions.project가 true로 설정되어야 함", () => {
+  it("should set parserOptions.project to true in TS config", () => {
     const tsConfig = recommended.find(
       (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.ts")),
     ) as ConfigItem & {
@@ -132,9 +132,9 @@ describe("recommended 설정", () => {
     expect(tsConfig.languageOptions?.parserOptions?.project).toBe(true);
   });
 
-  it("TSX 파일에 solid 플러그인이 적용되어야 함", () => {
-    // TSX를 포함하는 설정에서 solid 플러그인이 있는 설정을 찾음
-    // (현재 구현에서는 **/*.ts, **/*.tsx를 함께 처리)
+  it("should apply solid plugin to TSX files", () => {
+    // Find config that includes solid plugin and handles .tsx files
+    // (in current implementation, **/*.ts and **/*.tsx are handled together)
     const tsxSolidConfig = recommended.find(
       (config) =>
         hasFiles(config) &&
@@ -148,7 +148,7 @@ describe("recommended 설정", () => {
       expect(tsxSolidConfig.plugins).toHaveProperty("solid");
     }
     if (hasRules(tsxSolidConfig)) {
-      // eslint-plugin-solid의 flat/typescript 규칙이 적용되어야 함
+      // eslint-plugin-solid flat/typescript rules should be applied
       expect(tsxSolidConfig.rules).toHaveProperty("solid/jsx-no-undef");
     }
   });

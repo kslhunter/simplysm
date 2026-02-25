@@ -74,7 +74,7 @@ describe("FtpStorageClient", () => {
     it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
-        "이미 FTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
+        "Already connected to FTP server. Call close() first.",
       );
     });
 
@@ -87,17 +87,17 @@ describe("FtpStorageClient", () => {
 
   describe("Method calls before connection", () => {
     it("Should throw error when mkdir is called before connection", async () => {
-      await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
+      await expect(client.mkdir("/test")).rejects.toThrow("Not connected to FTP server.");
     });
 
     it("Should throw error when rename is called before connection", async () => {
       await expect(client.rename("/from", "/to")).rejects.toThrow(
-        "FTP 서버에 연결되어있지 않습니다.",
+        "Not connected to FTP server.",
       );
     });
 
     it("Should throw error when readdir is called before connection", async () => {
-      await expect(client.readdir("/")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
+      await expect(client.readdir("/")).rejects.toThrow("Not connected to FTP server.");
     });
   });
 
@@ -247,7 +247,7 @@ describe("FtpStorageClient", () => {
       await client.connect({ host: "test" });
       await client.close();
 
-      await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
+      await expect(client.mkdir("/test")).rejects.toThrow("Not connected to FTP server.");
     });
 
     it("Should allow reconnection after close", async () => {

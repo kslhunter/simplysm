@@ -5,10 +5,10 @@ import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
 describe("ExcelWrapper", () => {
   const testSchema = z.object({
-    name: z.string().describe("이름"),
-    age: z.number().describe("나이"),
-    email: z.string().optional().describe("이메일"),
-    active: z.boolean().default(false).describe("활성화"),
+    name: z.string().describe("Name"),
+    age: z.number().describe("Age"),
+    email: z.string().optional().describe("Email"),
+    active: z.boolean().default(false).describe("Active"),
   });
 
   describe("write", () => {
@@ -24,15 +24,15 @@ describe("ExcelWrapper", () => {
       const ws = await wb.getWorksheet("Users");
 
       // Check headers
-      expect(await ws.cell(0, 0).getVal()).toBe("이름");
-      expect(await ws.cell(0, 1).getVal()).toBe("나이");
-      expect(await ws.cell(0, 2).getVal()).toBe("이메일");
-      expect(await ws.cell(0, 3).getVal()).toBe("활성화");
+      expect(await ws.cell(0, 0).getVal()).toBe("Name");
+      expect(await ws.cell(0, 1).getVal()).toBe("Age");
+      expect(await ws.cell(0, 2).getVal()).toBe("Email");
+      expect(await ws.cell(0, 3).getVal()).toBe("Active");
 
       // Check data
-      expect(await ws.cell(1, 0).getVal()).toBe("홍길동");
+      expect(await ws.cell(1, 0).getVal()).toBe("John Doe");
       expect(await ws.cell(1, 1).getVal()).toBe(30);
-      expect(await ws.cell(2, 0).getVal()).toBe("김철수");
+      expect(await ws.cell(2, 0).getVal()).toBe("Jane Smith");
       expect(await ws.cell(2, 1).getVal()).toBe(25);
 
       await wb.close();
@@ -60,8 +60,8 @@ describe("ExcelWrapper", () => {
 
       // Create Excel first
       const records = [
-        { name: "홍길동", age: 30, email: "hong@test.com", active: true },
-        { name: "김철수", age: 25, active: false },
+        { name: "John Doe", age: 30, email: "john@test.com", active: true },
+        { name: "Jane Smith", age: 25, active: false },
       ];
 
       const wb = await wrapper.write("Users", records);
@@ -72,11 +72,11 @@ describe("ExcelWrapper", () => {
       const readRecords = await wrapper.read(buffer, "Users");
 
       expect(readRecords.length).toBe(2);
-      expect(readRecords[0].name).toBe("홍길동");
+      expect(readRecords[0].name).toBe("John Doe");
       expect(readRecords[0].age).toBe(30);
-      expect(readRecords[0].email).toBe("hong@test.com");
+      expect(readRecords[0].email).toBe("john@test.com");
       expect(readRecords[0].active).toBe(true);
-      expect(readRecords[1].name).toBe("김철수");
+      expect(readRecords[1].name).toBe("Jane Smith");
       expect(readRecords[1].age).toBe(25);
     });
 
@@ -123,8 +123,8 @@ describe("ExcelWrapper", () => {
 
   describe("Date type support", () => {
     const dateSchema = z.object({
-      title: z.string().describe("제목"),
-      date: z.instanceof(DateOnly).optional().describe("날짜"),
+      title: z.string().describe("Title"),
+      date: z.instanceof(DateOnly).optional().describe("Date"),
     });
 
     it("can read and write DateOnly type", async () => {
@@ -148,8 +148,8 @@ describe("ExcelWrapper", () => {
 
     it("can read and write DateTime type", async () => {
       const dateTimeSchema = z.object({
-        title: z.string().describe("제목"),
-        datetime: z.instanceof(DateTime).optional().describe("일시"),
+        title: z.string().describe("Title"),
+        datetime: z.instanceof(DateTime).optional().describe("DateTime"),
       });
 
       const wrapper = new ExcelWrapper(dateTimeSchema);
@@ -172,8 +172,8 @@ describe("ExcelWrapper", () => {
 
     it("can read and write Time type", async () => {
       const timeSchema = z.object({
-        title: z.string().describe("제목"),
-        time: z.instanceof(Time).optional().describe("시간"),
+        title: z.string().describe("Title"),
+        time: z.instanceof(Time).optional().describe("Time"),
       });
 
       const wrapper = new ExcelWrapper(timeSchema);
@@ -202,7 +202,7 @@ describe("ExcelWrapper", () => {
       await wb.close();
 
       await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(
-        "엑셀파일에서 데이터를 찾을 수 없습니다",
+        "No data found in Excel file",
       );
     });
 
@@ -250,26 +250,26 @@ describe("ExcelWrapper", () => {
 
   describe("excludes option", () => {
     const fullSchema = z.object({
-      name: z.string().describe("이름"),
-      age: z.number().describe("나이"),
-      email: z.string().optional().describe("이메일"),
-      phone: z.string().optional().describe("전화번호"),
+      name: z.string().describe("Name"),
+      age: z.number().describe("Age"),
+      email: z.string().optional().describe("Email"),
+      phone: z.string().optional().describe("Phone"),
     });
 
     it("excludes specified fields from columns on write", async () => {
       const wrapper = new ExcelWrapper(fullSchema);
 
-      const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
+      const records = [{ name: "John Doe", age: 30, email: "john@test.com", phone: "010-1234-5678" }];
       const wb = await wrapper.write("Test", records, { excludes: ["email", "phone"] });
       const ws = await wb.getWorksheet("Test");
 
       // Headers: only name and age exist
-      expect(await ws.cell(0, 0).getVal()).toBe("이름");
-      expect(await ws.cell(0, 1).getVal()).toBe("나이");
+      expect(await ws.cell(0, 0).getVal()).toBe("Name");
+      expect(await ws.cell(0, 1).getVal()).toBe("Age");
       expect(await ws.cell(0, 2).getVal()).toBeUndefined();
 
       // Check data
-      expect(await ws.cell(1, 0).getVal()).toBe("홍길동");
+      expect(await ws.cell(1, 0).getVal()).toBe("John Doe");
       expect(await ws.cell(1, 1).getVal()).toBe(30);
 
       await wb.close();
@@ -279,7 +279,7 @@ describe("ExcelWrapper", () => {
       const wrapper = new ExcelWrapper(fullSchema);
 
       // Create Excel with all fields
-      const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
+      const records = [{ name: "John Doe", age: 30, email: "john@test.com", phone: "010-1234-5678" }];
       const wb = await wrapper.write("Test", records);
       const buffer = await wb.getBytes();
       await wb.close();
@@ -287,7 +287,7 @@ describe("ExcelWrapper", () => {
       // Read with excludes
       const readRecords = await wrapper.read(buffer, "Test", { excludes: ["email", "phone"] });
 
-      expect(readRecords[0].name).toBe("홍길동");
+      expect(readRecords[0].name).toBe("John Doe");
       expect(readRecords[0].age).toBe(30);
       expect(readRecords[0].email).toBeUndefined();
       expect(readRecords[0].phone).toBeUndefined();

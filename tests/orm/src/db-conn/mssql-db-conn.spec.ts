@@ -27,15 +27,15 @@ describe("MssqlDbConn", () => {
     }
   });
 
-  describe("연결", () => {
-    it("연결 성공", async () => {
+  describe("Connection", () => {
+    it("Successful connection", async () => {
       const testConn = new MssqlDbConn(tedious, mssqlConfig);
       await testConn.connect();
       expect(testConn.isConnected).toBe(true);
       await testConn.close();
     });
 
-    it("중복 연결 시 에러", async () => {
+    it("Error on duplicate connection", async () => {
       const testConn = new MssqlDbConn(tedious, mssqlConfig);
       await testConn.connect();
       try {
@@ -45,7 +45,7 @@ describe("MssqlDbConn", () => {
       }
     });
 
-    it("연결 종료", async () => {
+    it("Connection close", async () => {
       const testConn = new MssqlDbConn(tedious, mssqlConfig);
       await testConn.connect();
       await testConn.close();
@@ -53,12 +53,12 @@ describe("MssqlDbConn", () => {
     });
   });
 
-  describe("쿼리 실행", () => {
+  describe("Query execution", () => {
     beforeAll(async () => {
       conn = new MssqlDbConn(tedious, mssqlConfig);
       await conn.connect();
 
-      // 테스트 테이블 생성
+      // Create test table
       await conn.execute([
         `IF OBJECT_ID('TestTable', 'U') IS NOT NULL DROP TABLE [TestTable]`,
         `CREATE TABLE [TestTable] (
@@ -74,7 +74,7 @@ describe("MssqlDbConn", () => {
       await conn.close();
     });
 
-    it("INSERT 및 SELECT", async () => {
+    it("INSERT and SELECT", async () => {
       await conn.execute([`INSERT INTO [TestTable] (name, value) VALUES ('test', 123)`]);
 
       const results = await conn.execute([`SELECT * FROM [TestTable] WHERE name = 'test'`]);
@@ -84,7 +84,7 @@ describe("MssqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리", async () => {
+    it("Parameterized query", async () => {
       const results = await conn.executeParametrized(`SELECT * FROM [TestTable] WHERE name = @p0`, [
         "test",
       ]);
@@ -93,7 +93,7 @@ describe("MssqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 숫자 타입", async () => {
+    it("Parameterized query - numeric type", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM [TestTable] WHERE value = @p0`,
         [123],
@@ -103,7 +103,7 @@ describe("MssqlDbConn", () => {
       expect(results[0][0]).toMatchObject({ value: 123 });
     });
 
-    it("파라미터화된 쿼리 - 여러 파라미터", async () => {
+    it("Parameterized query - multiple parameters", async () => {
       const results = await conn.executeParametrized(
         `SELECT * FROM [TestTable] WHERE name = @p0 AND value = @p1`,
         ["test", 123],
@@ -114,15 +114,15 @@ describe("MssqlDbConn", () => {
     });
   });
 
-  describe("연결 오류 처리", () => {
-    it("미연결 상태에서 쿼리 실행 시 에러", async () => {
+  describe("Connection error handling", () => {
+    it("Error when executing query on disconnected connection", async () => {
       const disconnectedConn = new MssqlDbConn(tedious, mssqlConfig);
       await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
         DB_CONN_ERRORS.NOT_CONNECTED,
       );
     });
 
-    it("잘못된 쿼리 실행 시 에러", async () => {
+    it("Error on invalid query execution", async () => {
       const tempConn = new MssqlDbConn(tedious, mssqlConfig);
       await tempConn.connect();
 
@@ -134,7 +134,7 @@ describe("MssqlDbConn", () => {
     });
   });
 
-  describe("트랜잭션", () => {
+  describe("Transaction", () => {
     beforeAll(async () => {
       conn = new MssqlDbConn(tedious, mssqlConfig);
       await conn.connect();
@@ -153,7 +153,7 @@ describe("MssqlDbConn", () => {
       await conn.close();
     });
 
-    it("커밋", async () => {
+    it("Commit", async () => {
       await conn.beginTransaction();
       expect(conn.isInTransaction).toBe(true);
 
@@ -165,7 +165,7 @@ describe("MssqlDbConn", () => {
       expect(results[0]).toHaveLength(1);
     });
 
-    it("롤백", async () => {
+    it("Rollback", async () => {
       await conn.beginTransaction();
 
       await conn.execute([`INSERT INTO [TxTable] (name) VALUES ('rollback-test')`]);

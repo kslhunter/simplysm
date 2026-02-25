@@ -4,7 +4,7 @@ import { globalIgnores } from "eslint/config";
 export default [
   globalIgnores([".legacy-packages/**", "packages/sd-claude/claude/**"]),
   ...simplysmRootConfigs,
-  // Tailwind CSS v3: 설정 파일 경로 지정
+  // Tailwind CSS v3: Specify the config file path
   {
     files: ["**/*.{ts,tsx}"],
     settings: {

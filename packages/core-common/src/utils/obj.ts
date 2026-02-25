@@ -483,7 +483,7 @@ export function objMerge<TSource, TMergeTarget>(
     return objClone(target) as TSource & TMergeTarget;
   }
 
-  // source가 object가 아니거나, source와 target이 다른 종류의 object면 target으로 덮어씀
+  // If source is not an object or source and target are different types of objects, overwrite with target
   if (typeof source !== "object" || source.constructor !== target.constructor) {
     return objClone(target) as TSource & TMergeTarget;
   }

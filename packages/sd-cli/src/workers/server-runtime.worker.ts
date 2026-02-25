@@ -31,7 +31,7 @@ export interface ServerRuntimeErrorEvent {
 }
 
 /**
- * Worker 이벤트 타입
+ * Worker event types
  */
 export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
   serverReady: ServerRuntimeReadyEvent;
@@ -42,11 +42,11 @@ export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
 
 const logger = consola.withTag("sd:cli:server-runtime:worker");
 
-/** 서버 인스턴스 (정리 대상) */
+/** Server instance (to be cleaned up) */
 let serverInstance: { close: () => Promise<void> } | undefined;
 
 /**
- * 리소스 정리
+ * Clean up resources
  */
 async function cleanup(): Promise<void> {
   const server = serverInstance;

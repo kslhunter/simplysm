@@ -14,8 +14,8 @@ describe("ServiceProtocol", () => {
     protocol.dispose();
   });
 
-  describe("인코딩", () => {
-    it("단일 메시지 인코딩", () => {
+  describe("Encoding", () => {
+    it("encode single message", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ test: "data" }] };
 
@@ -25,7 +25,7 @@ describe("ServiceProtocol", () => {
       expect(result.totalSize).toBeGreaterThan(0);
     });
 
-    it("본체 없이 메시지 인코딩", () => {
+    it("encode message without body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = {
         name: "reload",
@@ -37,7 +37,7 @@ describe("ServiceProtocol", () => {
       expect(result.chunks.length).toBe(1);
     });
 
-    it("메시지가 100MB를 초과하면 에러 발생", () => {
+    it("throw error when message exceeds 100MB", () => {
       const uuid = Uuid.new().toString();
       // Generate data larger than 100MB
       const largeData = "x".repeat(101 * 1024 * 1024);
@@ -47,8 +47,8 @@ describe("ServiceProtocol", () => {
     });
   });
 
-  describe("디코딩", () => {
-    it("단일 메시지 디코딩", () => {
+  describe("Decoding", () => {
+    it("decode single message", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ value: 123 }] };
 
@@ -62,13 +62,13 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("버퍼 크기가 헤더 크기보다 작으면 에러 발생", () => {
+    it("throw error when buffer size is smaller than header size", () => {
       const smallBytes = new Uint8Array(20);
 
       expect(() => protocol.decode(smallBytes)).toThrow("Buffer size is smaller than header size.");
     });
 
-    it("디코딩 메시지가 100MB를 초과하면 에러 발생", () => {
+    it("throw error when decoded message exceeds 100MB", () => {
       // Manually create header with totalSize exceeding 100MB
       const headerBytes = new Uint8Array(28);
       const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
@@ -86,8 +86,8 @@ describe("ServiceProtocol", () => {
     });
   });
 
-  describe("청킹", () => {
-    it("3MB보다 큰 메시지 청킹", () => {
+  describe("Chunking", () => {
+    it("chunk message larger than 3MB", () => {
       const uuid = Uuid.new().toString();
       // Create 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
@@ -98,7 +98,7 @@ describe("ServiceProtocol", () => {
       expect(result.chunks.length).toBeGreaterThan(1);
     });
 
-    it("청킹된 메시지를 순서대로 조립", () => {
+    it("assemble chunked message in order", () => {
       const uuid = Uuid.new().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
@@ -122,7 +122,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("청킹된 메시지를 역순으로 조립", () => {
+    it("assemble chunked message in reverse order", () => {
       const uuid = Uuid.new().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
@@ -144,7 +144,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("중복 패킷 방지", () => {
+    it("prevent duplicate packets", () => {
       const uuid = Uuid.new().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
@@ -172,8 +172,8 @@ describe("ServiceProtocol", () => {
     });
   });
 
-  describe("UUID 인터리빙", () => {
-    it("인터리빙된 순서로 여러 UUID에서 청크 수신", () => {
+  describe("UUID interleaving", () => {
+    it("receive chunks from multiple UUIDs in interleaved order", () => {
       const uuid1 = Uuid.new().toString();
       const uuid2 = Uuid.new().toString();
 
@@ -215,7 +215,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("무작위 순서로 3개의 UUID 수신", () => {
+    it("receive 3 UUIDs in random order", () => {
       const uuids = [Uuid.new().toString(), Uuid.new().toString(), Uuid.new().toString()];
       const data = [
         "X".repeat(4 * 1024 * 1024),
@@ -258,8 +258,8 @@ describe("ServiceProtocol", () => {
     });
   });
 
-  describe("경계 케이스", () => {
-    it("빈 본체 처리", () => {
+  describe("Edge cases", () => {
+    it("handle empty body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [""] };
 
@@ -272,7 +272,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("null 본체 처리", () => {
+    it("handle null body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [null] };
 
@@ -286,7 +286,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("복잡한 객체 직렬화", () => {
+    it("serialize complex object", () => {
       const uuid = Uuid.new().toString();
       const complexData = {
         array: [1, 2, 3],
@@ -305,7 +305,7 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("정확히 3MB 경계의 메시지 처리", () => {
+    it("handle message at exactly 3MB boundary", () => {
       const uuid = Uuid.new().toString();
       // Exactly 3MB
       const data = "x".repeat(3 * 1024 * 1024 - 50); // Account for some JSON overhead
@@ -316,7 +316,7 @@ describe("ServiceProtocol", () => {
       expect(encoded.chunks.length).toBe(1);
     });
 
-    it("진행률 응답에 올바른 정보 포함", () => {
+    it("include correct information in progress response", () => {
       const uuid = Uuid.new().toString();
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };

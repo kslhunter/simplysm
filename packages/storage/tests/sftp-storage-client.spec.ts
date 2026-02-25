@@ -63,7 +63,7 @@ describe("SftpStorageClient", () => {
     it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
-        "이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
+        "Already connected to SFTP server. Call close() first.",
       );
     });
 
@@ -76,17 +76,17 @@ describe("SftpStorageClient", () => {
 
   describe("Method calls before connection", () => {
     it("Should throw error when mkdir is called before connection", async () => {
-      await expect(client.mkdir("/test")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
+      await expect(client.mkdir("/test")).rejects.toThrow("Not connected to SFTP server.");
     });
 
     it("Should throw error when rename is called before connection", async () => {
       await expect(client.rename("/from", "/to")).rejects.toThrow(
-        "SFTP 서버에 연결되어있지 않습니다.",
+        "Not connected to SFTP server.",
       );
     });
 
     it("Should throw error when readdir is called before connection", async () => {
-      await expect(client.readdir("/")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
+      await expect(client.readdir("/")).rejects.toThrow("Not connected to SFTP server.");
     });
   });
 
@@ -183,7 +183,7 @@ describe("SftpStorageClient", () => {
       mockGet.mockResolvedValueOnce({ unexpected: "object" });
       await client.connect({ host: "test" });
 
-      await expect(client.readFile("/file.txt")).rejects.toThrow("예상치 못한 응답 타입입니다.");
+      await expect(client.readFile("/file.txt")).rejects.toThrow("Unexpected response type.");
     });
   });
 
@@ -239,7 +239,7 @@ describe("SftpStorageClient", () => {
       await client.connect({ host: "test" });
       await client.close();
 
-      await expect(client.mkdir("/test")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
+      await expect(client.mkdir("/test")).rejects.toThrow("Not connected to SFTP server.");
     });
 
     it("Should allow reconnection after close", async () => {

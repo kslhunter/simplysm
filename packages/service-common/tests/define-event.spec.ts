@@ -3,15 +3,15 @@ import { describe, it, expect } from "vitest";
 import { defineEvent } from "@simplysm/service-common";
 
 describe("defineEvent", () => {
-  it("주어진 이름으로 이벤트 정의 생성", () => {
+  it("create event definition with given name", () => {
     const evt = defineEvent<{ channel: string }, string>("OrderUpdated");
     expect(evt.eventName).toBe("OrderUpdated");
   });
 
-  it("타입 추론에 사용 가능 (컴파일 타임 확인)", () => {
+  it("can be used for type inference (checked at compile time)", () => {
     const _evt = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
 
-    // 타입 레벨 확인 — 잘못되면 컴파일 타임에 실패함
+    // Type level verification — fails at compile time if incorrect
     const info: typeof _evt.$info = { orderId: 123 };
     const data: typeof _evt.$data = { status: "shipped" };
 

@@ -4,7 +4,7 @@ Before starting work, **Read** the relevant reference files from `.claude/refs/`
 
 ## Version Detection
 
-`package.json`의 `version` 필드로 메이저 버전을 판별한다.
+Determine the major version by the `version` field in `package.json`.
 
 - `12.x.x` → **v12** (< 13)
 - `13.x.x` → **v13** (>= 13)
@@ -17,32 +17,32 @@ Before starting work, **Read** the relevant reference files from `.claude/refs/`
 | Working with `.cache/` or Playwright screenshots | `.claude/refs/sd-directories.md`      |
 | Using `@simplysm/*` package APIs                 | `.claude/refs/sd-simplysm-docs.md`    |
 | Debugging, problem-solving, or planning approach | `.claude/refs/sd-workflow.md`         |
-| @simplysm/service-\* 사용 시                     | `.claude/refs/sd-service.md`          |
+| Using `@simplysm/service-*` packages            | `.claude/refs/sd-service.md`          |
 | Migrating/porting code from another codebase     | `.claude/refs/sd-migration.md`        |
 
 ## v12 only (< 13)
 
 | When                                   | Read this file               |
 | -------------------------------------- | ---------------------------- |
-| Angular / @simplysm/sd-angular 작업 시 | `.claude/refs/sd-angular.md` |
-| @simplysm/sd-orm-\* 사용 시            | `.claude/refs/sd-orm-v12.md` |
+| Working on Angular / @simplysm/sd-angular | `.claude/refs/sd-angular.md` |
+| Using `@simplysm/sd-orm-*` packages    | `.claude/refs/sd-orm-v12.md` |
 
-- v12는 **Angular** 기반 (SolidJS 없음)
-- ORM은 **데코레이터** 패턴 (`@Table`, `@Column`)
-- 패키지명: `sd-` prefix 사용 (`sd-core-common`, `sd-orm-common` 등)
-- 패키지 매니저: **yarn**
+- v12 is **Angular** based (no SolidJS)
+- ORM uses **decorator** pattern (`@Table`, `@Column`)
+- Package names: use `sd-` prefix (`sd-core-common`, `sd-orm-common`, etc.)
+- Package manager: **yarn**
 
 ## v13 only (>= 13)
 
 | When                                         | Read this file             |
 | -------------------------------------------- | -------------------------- |
-| SolidJS / @simplysm/solid / Tailwind 작업 시 | `.claude/refs/sd-solid.md` |
-| @simplysm/orm-\* 사용 시                     | `.claude/refs/sd-orm.md`   |
+| Working on SolidJS / @simplysm/solid / Tailwind | `.claude/refs/sd-solid.md` |
+| Using `@simplysm/orm-*` packages             | `.claude/refs/sd-orm.md`   |
 
-- v13는 **SolidJS** 기반 (Angular 없음)
-- ORM은 **함수형 빌더** 패턴 (`Table().columns().primaryKey()`)
-- 패키지명: prefix 없음 (`core-common`, `orm-common` 등)
-- 패키지 매니저: **pnpm**
+- v13 is **SolidJS** based (no Angular)
+- ORM uses **functional builder** pattern (`Table().columns().primaryKey()`)
+- Package names: no prefix (`core-common`, `orm-common`, etc.)
+- Package manager: **pnpm**
 
 ## Rules
 

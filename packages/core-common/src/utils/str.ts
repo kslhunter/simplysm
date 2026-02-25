@@ -17,7 +17,7 @@ const suffixTable = {
 
 /**
  * Return the appropriate Korean particle based on the final consonant
- * @param text The text
+ * @param text The text to check
  * @param type The particle type
  *   - `"을"`: 을/를 (eul/reul - object particle)
  *   - `"은"`: 은/는 (eun/neun - subject particle)
@@ -28,8 +28,8 @@ const suffixTable = {
  *   - `"라"`: 이라/라 (ira/ra - copula particle)
  *
  * @example
- * getSuffix("사과", "을") // "를"
- * getSuffix("책", "이") // "이"
+ * koreanGetSuffix("사과", "을") // "를"
+ * koreanGetSuffix("책", "이") // "이"
  */
 export function koreanGetSuffix(
   text: string,
@@ -37,7 +37,6 @@ export function koreanGetSuffix(
 ): string {
   const table = suffixTable;
 
-  // Empty string or last character is not Hangul - treat as no final consonant
   if (text.length === 0) {
     return table[type].f;
   }
@@ -49,11 +48,11 @@ export function koreanGetSuffix(
     return table[type].f;
   }
 
-  // Check for final consonant existence and calculate jongseong index
+  // Determine if final consonant (jongseong) exists
   const jongseongIndex = (lastCharCode - 0xac00) % 28;
   const hasLast = jongseongIndex !== 0;
 
-  // For "로" particle, when final consonant is ㄹ(jongseong index 8), use "로"
+  // Special handling for "로" particle: when final consonant is ㄹ (jongseong index 8), use "로"
   if (type === "로" && jongseongIndex === 8) {
     return table[type].f;
   }
@@ -66,7 +65,7 @@ export function koreanGetSuffix(
 //#region Full-width to half-width conversion
 
 // Full-width to half-width mapping table (created only once when module loads)
-const specialCharMap: Record<string, string> = {
+const fullWidthCharMap: Record<string, string> = {
   "Ａ": "A",
   "Ｂ": "B",
   "Ｃ": "C",
@@ -135,7 +134,7 @@ const specialCharMap: Record<string, string> = {
 };
 
 // Regex also created only once
-const specialCharRegex = new RegExp(`[${Object.keys(specialCharMap).join("")}]`, "g");
+const fullWidthCharRegex = new RegExp(`[${Object.keys(fullWidthCharMap).join("")}]`, "g");
 
 /**
  * Convert full-width characters to half-width characters
@@ -148,11 +147,11 @@ const specialCharRegex = new RegExp(`[${Object.keys(specialCharMap).join("")}]`,
  * - Full-width parentheses (（） → ())
  *
  * @example
- * replaceSpecialDefaultChar("Ａ１２３") // "A123"
- * replaceSpecialDefaultChar("（株）") // "(株)"
+ * strReplaceFullWidth("Ａ１２３") // "A123"
+ * strReplaceFullWidth("（株）") // "(株)"
  */
 export function strReplaceFullWidth(str: string): string {
-  return str.replace(specialCharRegex, (char) => specialCharMap[char] ?? char);
+  return str.replace(fullWidthCharRegex, (char) => fullWidthCharMap[char] ?? char);
 }
 
 //#endregion
@@ -160,7 +159,7 @@ export function strReplaceFullWidth(str: string): string {
 //#region Case conversion
 
 /**
- * PascalCase로 변환
+ * Convert to PascalCase
  * @example "hello-world" → "HelloWorld"
  * @example "hello_world" → "HelloWorld"
  * @example "hello.world" → "HelloWorld"
@@ -172,7 +171,7 @@ export function strToPascalCase(str: string): string {
 }
 
 /**
- * camelCase로 변환
+ * Convert to camelCase
  * @example "hello-world" → "helloWorld"
  * @example "hello_world" → "helloWorld"
  * @example "HelloWorld" → "helloWorld"

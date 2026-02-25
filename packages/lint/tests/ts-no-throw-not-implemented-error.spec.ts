@@ -5,9 +5,9 @@ import rule from "../src/rules/ts-no-throw-not-implemented-error";
 
 const ruleTester = new RuleTester();
 
-describe("ts-no-throw-not-implemented-error 규칙", () => {
-  describe("허용되는 코드들 (valid)", () => {
-    describe("다른 모듈의 NotImplementedError는 허용", () => {
+describe("ts-no-throw-not-implemented-error rule", () => {
+  describe("allowed code (valid)", () => {
+    describe("NotImplementedError from other modules is allowed", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [
           {
@@ -21,7 +21,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("@simplysm/core-common 외 패키지의 NotImplementedError는 허용", () => {
+    describe("NotImplementedError from packages other than @simplysm/core-common is allowed", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [
           {
@@ -35,7 +35,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("import 없이 사용하는 경우는 허용", () => {
+    describe("usage without import is allowed", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [
           {
@@ -50,8 +50,8 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
     });
   });
 
-  describe("오류가 발생해야 하는 코드들 (invalid)", () => {
-    describe("@simplysm/core-common에서 import된 NotImplementedError를 new로 생성", () => {
+  describe("code that should cause errors (invalid)", () => {
+    describe("creating NotImplementedError imported from @simplysm/core-common with new", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -66,7 +66,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("throw와 함께 사용", () => {
+    describe("usage with throw", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -81,19 +81,19 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("메시지와 함께 사용", () => {
+    describe("usage with message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
           {
             code: `
               import { NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError("이 기능은 아직 구현되지 않았습니다");
+              throw new NotImplementedError("This feature is not yet implemented");
             `,
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "이 기능은 아직 구현되지 않았습니다" },
+                data: { text: "This feature is not yet implemented" },
               },
             ],
           },
@@ -101,7 +101,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("alias로 import된 경우도 감지", () => {
+    describe("also detects when imported as alias", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -116,7 +116,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("변수에 할당하는 경우도 감지", () => {
+    describe("also detects when assigned to variable", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -131,7 +131,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("함수 인자로 전달하는 경우도 감지", () => {
+    describe("also detects when passed as function argument", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -147,7 +147,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("다른 import와 함께 사용", () => {
+    describe("usage with other imports", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -162,26 +162,26 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("여러 번 사용 시 각각 에러 발생", () => {
+    describe("multiple usages produce errors for each", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
           {
             code: `
               import { NotImplementedError } from "@simplysm/core-common";
-              new NotImplementedError("첫 번째");
-              new NotImplementedError("두 번째");
+              new NotImplementedError("first");
+              new NotImplementedError("second");
             `,
             errors: [
-              { messageId: "noThrowNotImplementedError", data: { text: "첫 번째" } },
-              { messageId: "noThrowNotImplementedError", data: { text: "두 번째" } },
+              { messageId: "noThrowNotImplementedError", data: { text: "first" } },
+              { messageId: "noThrowNotImplementedError", data: { text: "second" } },
             ],
           },
         ],
       });
     });
 
-    describe("namespace import로 사용", () => {
+    describe("usage with namespace import", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
@@ -196,19 +196,19 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("namespace import로 메시지와 함께 사용", () => {
+    describe("namespace import with message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
           {
             code: `
               import * as CC from "@simplysm/core-common";
-              new CC.NotImplementedError("아직 구현 안됨");
+              new CC.NotImplementedError("not yet implemented");
             `,
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "아직 구현 안됨" },
+                data: { text: "not yet implemented" },
               },
             ],
           },
@@ -216,19 +216,19 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("템플릿 리터럴 인자는 기본 메시지로 폴백", () => {
+    describe("template literal argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
           {
             code: `
               import { NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError(\`동적 메시지\`);
+              throw new NotImplementedError(\`dynamic message\`);
             `,
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },
@@ -236,20 +236,20 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("변수 인자는 기본 메시지로 폴백", () => {
+    describe("variable argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [
           {
             code: `
               import { NotImplementedError } from "@simplysm/core-common";
-              const msg = "동적 메시지";
+              const msg = "dynamic message";
               throw new NotImplementedError(msg);
             `,
             errors: [
               {
                 messageId: "noThrowNotImplementedError",
-                data: { text: "미구현" },
+                data: { text: "Not implemented" },
               },
             ],
           },
@@ -257,7 +257,7 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
-    describe("숫자 인자는 기본 메시지로 폴백", () => {
+    describe("numeric argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
         invalid: [

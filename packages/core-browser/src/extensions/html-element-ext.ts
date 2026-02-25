@@ -3,44 +3,44 @@ import { ArgumentError } from "@simplysm/core-common";
 declare global {
   interface HTMLElement {
     /**
-     * 강제 리페인트 (reflow 트리거)
+     * Force repaint (triggers reflow)
      */
     repaint(): void;
 
     /**
-     * 부모 요소 기준 상대 위치 계산 (CSS 포지셔닝용)
+     * Calculate relative position based on parent element (for CSS positioning)
      *
      * @remarks
-     * 이 함수는 요소의 위치를 부모 요소 기준으로 계산하되, `window.scrollX/Y`를 포함하여
-     * CSS `top`/`left` 속성에 직접 사용할 수 있는 문서 기준 좌표를 반환한다.
+     * Calculates element position relative to parent element, returning document-based coordinates
+     * including `window.scrollX/Y` that can be directly used in CSS `top`/`left` properties.
      *
-     * 주요 사용 사례:
-     * - 드롭다운, 팝업 등을 `document.body`에 append 후 위치 지정
-     * - 스크롤된 페이지에서도 올바르게 동작
+     * Common use cases:
+     * - Position dropdowns, popups after appending to `document.body`
+     * - Works correctly on scrolled pages
      *
-     * 계산에 포함되는 요소:
-     * - 뷰포트 기준 위치 (getBoundingClientRect)
-     * - 문서 스크롤 위치 (window.scrollX/Y)
-     * - 부모 요소 내부 스크롤 (parentEl.scrollTop/Left)
-     * - 중간 요소들의 border 두께
-     * - CSS transform 변환
+     * Factors included in calculation:
+     * - Viewport-relative position (getBoundingClientRect)
+     * - Document scroll position (window.scrollX/Y)
+     * - Parent element internal scroll (parentEl.scrollTop/Left)
+     * - Border thickness of intermediate elements
+     * - CSS transform transformations
      *
-     * @param parent - 기준이 될 부모 요소 또는 셀렉터 (예: document.body, ".container")
-     * @returns CSS top/left 속성에 사용할 수 있는 좌표
-     * @throws {ArgumentError} 부모 요소를 찾을 수 없는 경우
+     * @param parent - Parent element or selector to use as reference (e.g., document.body, ".container")
+     * @returns Coordinates usable in CSS top/left properties
+     * @throws {ArgumentError} If parent element cannot be found
      */
     getRelativeOffset(parent: HTMLElement | string): { top: number; left: number };
 
     /**
-     * 대상이 offset 영역(고정 헤더/고정 열 등)에 가려진 경우, 보이도록 스크롤
+     * Scroll to make target visible if hidden by offset area (e.g., fixed header/column)
      *
      * @remarks
-     * 이 함수는 대상이 스크롤 영역의 위쪽/왼쪽 경계를 벗어난 경우만 처리한다.
-     * 아래쪽/오른쪽으로 스크롤이 필요한 경우는 브라우저의 기본 포커스 스크롤 동작에 의존한다.
-     * 주로 고정 헤더나 고정 열이 있는 테이블에서 포커스 이벤트와 함께 사용된다.
+     * Only handles cases where target extends beyond top/left boundaries of scroll area.
+     * For scrolling needed downward/rightward, relies on browser's default focus scroll behavior.
+     * Typically used with focus events on tables with fixed headers or columns.
      *
-     * @param target - 대상의 컨테이너 내 위치 (offsetTop, offsetLeft)
-     * @param offset - 가려지면 안 되는 영역 크기 (예: 고정 헤더 높이, 고정 열 너비)
+     * @param target - Target position within container (offsetTop, offsetLeft)
+     * @param offset - Size of area that must not be obscured (e.g., fixed header height, fixed column width)
      */
     scrollIntoViewIfNeeded(
       target: { top: number; left: number },

@@ -172,7 +172,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
         newRange.e.c >= existingRange.s.c
       ) {
         throw new Error(
-          `병합 셀이 기존 병합 범위(${mergeCell.$.ref})와 겹칩니다: ${ExcelUtils.stringifyRangeAddr(newRange)}`,
+          `Merged cell overlaps with existing merge range (${mergeCell.$.ref}): ${ExcelUtils.stringifyRangeAddr(newRange)}`,
         );
       }
     }

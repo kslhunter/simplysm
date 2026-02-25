@@ -204,7 +204,7 @@ export class ExcelXmlStyle implements ExcelXml {
             | undefined;
           if (fill == null) {
             throw new Error(
-              `존재하지 않는 fill ID: ${xf.$.fillId} (범위: 0-${this.data.styleSheet.fills[0].fill.length - 1})`,
+              `Non-existent fill ID: ${xf.$.fillId} (Range: 0-${this.data.styleSheet.fills[0].fill.length - 1})`,
             );
           }
           result.background = fill.patternFill[0].fgColor?.[0].$.rgb;
@@ -221,7 +221,7 @@ export class ExcelXmlStyle implements ExcelXml {
           | undefined;
         if (border == null) {
           throw new Error(
-            `존재하지 않는 border ID: ${xf.$.borderId} (범위: 0-${this.data.styleSheet.borders[0].border.length - 1})`,
+            `Non-existent border ID: ${xf.$.borderId} (Range: 0-${this.data.styleSheet.borders[0].border.length - 1})`,
           );
         }
         if (

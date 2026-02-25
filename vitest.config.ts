@@ -23,31 +23,31 @@ export default defineConfig({
     coverage: {
       reportsDirectory: "./.coverage",
     },
-    // 여기에 projects 배열로 정의
+    // Define projects array here
     projects: [
-      // Node 환경 테스트 (node + common 패키지)
+      // Node environment tests (node + common packages)
       {
         extends: true,
         test: {
           name: "node",
           include: ["packages/*/tests/**/*.spec.{ts,tsx,js}"],
           exclude: [
-            // browser 전용 패키지 제외
+            // Exclude browser-only packages
             "packages/core-browser/tests/**/*.spec.{ts,tsx,js}",
-            // solid 패키지는 별도 프로젝트에서 테스트
+            // solid package is tested in a separate project
             "packages/solid/tests/**/*.spec.{ts,tsx,js}",
           ],
           testTimeout: 30000,
         },
       },
-      // Playwright 환경 테스트 (browser + common 패키지)
+      // Playwright environment tests (browser + common packages)
       {
         extends: true,
         test: {
           name: "browser",
           include: ["packages/*/tests/**/*.spec.{ts,tsx,js}"],
           exclude: [
-            // node 전용 패키지 제외
+            // Exclude node-only packages
             "packages/sd-cli/tests/**/*.spec.{ts,tsx,js}",
             "packages/sd-claude/tests/**/*.spec.{ts,tsx,js}",
             "packages/core-node/tests/**/*.spec.{ts,tsx,js}",
@@ -55,7 +55,7 @@ export default defineConfig({
             "packages/orm-node/tests/**/*.spec.{ts,tsx,js}",
             "packages/service-server/tests/**/*.spec.{ts,tsx,js}",
             "packages/storage/tests/**/*.spec.{ts,tsx,js}",
-            // solid 패키지는 별도 프로젝트에서 테스트
+            // solid package is tested in a separate project
             "packages/solid/tests/**/*.spec.{ts,tsx,js}",
           ],
           browser: {
@@ -67,7 +67,7 @@ export default defineConfig({
           },
         },
       },
-      // SolidJS 테스트 (solid 패키지 전용)
+      // SolidJS tests (solid package only)
       {
         extends: true,
         plugins: [(await import("vite-plugin-solid")).default() as never],
@@ -83,7 +83,7 @@ export default defineConfig({
           },
         },
       },
-      // 통합 테스트 - ORM (Docker DB 필요)
+      // Integration tests - ORM (requires Docker DB)
       {
         extends: true,
         test: {
@@ -93,7 +93,7 @@ export default defineConfig({
           fileParallelism: false,
         },
       },
-      // 통합 테스트 - Service (서버 필요 + 브라우저 테스트)
+      // Integration tests - Service (requires server + browser tests)
       {
         extends: true,
         test: {

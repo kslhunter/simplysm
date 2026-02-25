@@ -2,82 +2,82 @@ import { isFocusable } from "tabbable";
 import { TimeoutError } from "@simplysm/core-common";
 
 /**
- * 요소 bounds 정보 타입
+ * Element bounds information type
  */
 export interface ElementBounds {
-  /** 측정 대상 요소 */
+  /** Element to be measured */
   target: Element;
-  /** 뷰포트 기준 상단 위치 */
+  /** Top position relative to viewport */
   top: number;
-  /** 뷰포트 기준 왼쪽 위치 */
+  /** Left position relative to viewport */
   left: number;
-  /** 요소 너비 */
+  /** Element width */
   width: number;
-  /** 요소 높이 */
+  /** Element height */
   height: number;
 }
 
 declare global {
   interface Element {
     /**
-     * 셀렉터로 하위 요소 전체 검색
+     * Find all child elements matching selector
      *
-     * @param selector - CSS 셀렉터
-     * @returns 매칭된 요소 배열 (빈 셀렉터는 빈 배열 반환)
+     * @param selector - CSS selector
+     * @returns Array of matching elements (empty selector returns empty array)
      */
     findAll<T extends Element = Element>(selector: string): T[];
 
     /**
-     * 셀렉터로 첫 번째 매칭 요소 검색
+     * Find first element matching selector
      *
-     * @param selector - CSS 셀렉터
-     * @returns 첫 번째 매칭 요소 또는 undefined (빈 셀렉터는 undefined 반환)
+     * @param selector - CSS selector
+     * @returns First matching element or undefined (empty selector returns undefined)
      */
     findFirst<T extends Element = Element>(selector: string): T | undefined;
 
     /**
-     * 요소를 첫 번째 자식으로 삽입
+     * Insert element as first child
      *
-     * @param child - 삽입할 자식 요소
-     * @returns 삽입된 자식 요소
+     * @param child - Child element to insert
+     * @returns Inserted child element
      */
     prependChild<T extends Element>(child: T): T;
 
     /**
-     * 모든 부모 요소 목록 반환 (가까운 순서)
+     * Get all parent elements (in order of proximity)
      *
-     * @returns 부모 요소 배열 (가까운 부모부터 순서대로)
+     * @returns Array of parent elements (from closest to farthest)
      */
     getParents(): Element[];
 
     /**
-     * 부모 중 첫 번째 포커스 가능 요소 검색 (tabbable 사용)
+     * Find first focusable parent element (using tabbable)
      *
-     * @returns 포커스 가능한 첫 번째 부모 요소 또는 undefined
+     * @returns First focusable parent element or undefined
      */
     findFocusableParent(): HTMLElement | undefined;
 
     /**
-     * 자식 중 첫 번째 포커스 가능 요소 검색 (tabbable 사용)
+     * Find first focusable child element (using tabbable)
      *
-     * @returns 포커스 가능한 첫 번째 자식 요소 또는 undefined
+     * @returns First focusable child element or undefined
      */
     findFirstFocusableChild(): HTMLElement | undefined;
 
     /**
-     * 요소가 offset 기준 요소인지 확인 (position: relative/absolute/fixed/sticky)
+     * Check if element is an offset parent (position: relative/absolute/fixed/sticky)
      *
-     * @returns position 속성이 relative, absolute, fixed, sticky 중 하나면 true
+     * @returns true if position property is one of relative, absolute, fixed, or sticky
      */
     isOffsetElement(): boolean;
 
     /**
-     * 요소가 화면에 보이는지 확인
+     * Check if element is visible on screen
      *
      * @remarks
-     * clientRects 존재 여부, visibility: hidden, opacity: 0 여부를 확인한다.
+     * Checks existence of clientRects, visibility: hidden, and opacity: 0.
      *
-     * @returns 요소가 화면에 보이면 true
+     * @returns true if element is visible on screen
      */
     isVisible(): boolean;
   }
@@ -144,13 +144,13 @@ Element.prototype.isVisible = function (): boolean {
 };
 
 // ============================================================================
-// 정적 함수 (이벤트 핸들러용 또는 여러 요소 대상)
+// Static functions (for event handlers or multiple elements)
 // ============================================================================
 
 /**
- * 요소 내용을 클립보드에 복사 (copy 이벤트 핸들러에서 사용)
+ * Copy element content to clipboard (use with copy event handler)
  *
- * @param event - copy 이벤트 객체
+ * @param event - copy event object
  */
 export function copyElement(event: ClipboardEvent): void {
   const clipboardData = event.clipboardData;
@@ -167,13 +167,13 @@ export function copyElement(event: ClipboardEvent): void {
 }
 
 /**
- * 클립보드 내용을 요소에 붙여넣기 (paste 이벤트 핸들러에서 사용)
+ * Paste clipboard content to element (use with paste event handler)
  *
  * @remarks
- * 대상 요소 내의 첫 번째 input/textarea를 찾아 전체 값을 클립보드 내용으로 교체한다.
- * 커서 위치나 선택 영역을 고려하지 않는다.
+ * Finds the first input/textarea within the target element and replaces its entire value with clipboard content.
+ * Does not consider cursor position or selection.
  *
- * @param event - paste 이벤트 객체
+ * @param event - paste event object
  */
 export function pasteToElement(event: ClipboardEvent): void {
   const clipboardData = event.clipboardData;
@@ -191,20 +191,20 @@ export function pasteToElement(event: ClipboardEvent): void {
 }
 
 /**
- * IntersectionObserver를 사용하여 요소들의 bounds 정보 조회
+ * Get bounds information for elements using IntersectionObserver
  *
- * @param els - 대상 요소 배열
- * @param timeout - 타임아웃 (밀리초, 기본: 5000)
- * @throws {TimeoutError} 타임아웃 시간 내에 응답이 없을 경우
+ * @param els - Array of target elements
+ * @param timeout - Timeout in milliseconds (default: 5000)
+ * @throws {TimeoutError} If no response within timeout duration
  */
 export async function getBounds(els: Element[], timeout: number = 5000): Promise<ElementBounds[]> {
-  // 중복 제거 및 입력 순서대로 결과를 정렬하기 위한 인덱스 맵
+  // Index map to remove duplicates and sort results in input order
   const indexMap = new Map(els.map((el, i) => [el, i] as const));
   if (indexMap.size === 0) {
     return [];
   }
 
-  // 정렬 성능 최적화를 위한 인덱스 맵
+  // Index map for sorting performance optimization
   const sortIndexMap = new Map(els.map((el, i) => [el, i] as const));
 
   let observer: IntersectionObserver | undefined;
@@ -231,7 +231,7 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
 
           if (indexMap.size === 0) {
             observer?.disconnect();
-            // 입력 순서대로 정렬
+            // Sort in input order
             resolve(
               results.sort((a, b) => sortIndexMap.get(a.target)! - sortIndexMap.get(b.target)!),
             );

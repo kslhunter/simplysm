@@ -41,7 +41,7 @@ export function jsonStringify(
     redactBytes?: boolean;
   },
 ): string {
-  // 순환 참조 감지를 위한 WeakSet
+  // WeakSet for circular reference detection
   const seen = new WeakSet<object>();
 
   /**

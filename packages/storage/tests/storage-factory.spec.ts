@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { StorageFactory } from "../src/storage-factory";
 
-// 모킹된 함수들
+// Mocked functions
 const mockFtpAccess = vi.fn().mockResolvedValue(undefined);
 const mockFtpClose = vi.fn();
 
 const mockSftpConnect = vi.fn().mockResolvedValue(undefined);
 const mockSftpEnd = vi.fn().mockResolvedValue(undefined);
 
-// basic-ftp 모듈 모킹
+// Mock basic-ftp module
 vi.mock("basic-ftp", () => {
   return {
     default: {
@@ -20,7 +20,7 @@ vi.mock("basic-ftp", () => {
   };
 });
 
-// ssh2-sftp-client 모듈 모킹
+// Mock ssh2-sftp-client module
 vi.mock("ssh2-sftp-client", () => {
   return {
     default: class MockSftpClient {

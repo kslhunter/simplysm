@@ -5,19 +5,19 @@ import { glob as globRaw, type GlobOptions, globSync as globRawSync } from "glob
 import { jsonParse, jsonStringify, SdError } from "@simplysm/core-common";
 import "@simplysm/core-common";
 
-//#region 존재 확인
+//#region Existence Check
 
 /**
- * 파일 또는 디렉토리 존재 확인 (동기).
- * @param targetPath - 확인할 경로
+ * Checks if a file or directory exists (synchronous).
+ * @param targetPath - Path to check
  */
 export function fsExistsSync(targetPath: string): boolean {
   return fs.existsSync(targetPath);
 }
 
 /**
- * 파일 또는 디렉토리 존재 확인 (비동기).
- * @param targetPath - 확인할 경로
+ * Checks if a file or directory exists (asynchronous).
+ * @param targetPath - Path to check
  */
 export async function fsExists(targetPath: string): Promise<boolean> {
   try {
@@ -30,11 +30,11 @@ export async function fsExists(targetPath: string): Promise<boolean> {
 
 //#endregion
 
-//#region 디렉토리 생성
+//#region Create Directory
 
 /**
- * 디렉토리 생성 (recursive).
- * @param targetPath - 생성할 디렉토리 경로
+ * Creates a directory (recursive).
+ * @param targetPath - Directory path to create
  */
 export function fsMkdirSync(targetPath: string): void {
   try {
@@ -45,8 +45,8 @@ export function fsMkdirSync(targetPath: string): void {
 }
 
 /**
- * 디렉토리 생성 (recursive, 비동기).
- * @param targetPath - 생성할 디렉토리 경로
+ * Creates a directory (recursive, asynchronous).
+ * @param targetPath - Directory path to create
  */
 export async function fsMkdir(targetPath: string): Promise<void> {
   try {
@@ -58,12 +58,12 @@ export async function fsMkdir(targetPath: string): Promise<void> {
 
 //#endregion
 
-//#region 삭제
+//#region Delete
 
 /**
- * 파일 또는 디렉토리 삭제.
- * @param targetPath - 삭제할 경로
- * @remarks 동기 버전은 재시도 없이 즉시 실패함. 파일 잠금 등 일시적 오류 가능성이 있는 경우 fsRm 사용을 권장함.
+ * Deletes a file or directory.
+ * @param targetPath - Path to delete
+ * @remarks The synchronous version fails immediately without retries. Use fsRm for cases with potential transient errors like file locks.
  */
 export function fsRmSync(targetPath: string): void {
   try {
@@ -74,9 +74,9 @@ export function fsRmSync(targetPath: string): void {
 }
 
 /**
- * 파일 또는 디렉토리 삭제 (비동기).
- * @param targetPath - 삭제할 경로
- * @remarks 비동기 버전은 파일 잠금 등의 일시적 오류에 대해 최대 6회(500ms 간격) 재시도함.
+ * Deletes a file or directory (asynchronous).
+ * @param targetPath - Path to delete
+ * @remarks The asynchronous version retries up to 6 times (500ms interval) for transient errors like file locks.
  */
 export async function fsRm(targetPath: string): Promise<void> {
   try {
@@ -93,21 +93,21 @@ export async function fsRm(targetPath: string): Promise<void> {
 
 //#endregion
 
-//#region 복사
+//#region Copy
 
 /**
- * 파일 또는 디렉토리 복사.
+ * Copies a file or directory.
  *
- * sourcePath가 존재하지 않으면 아무 작업도 수행하지 않고 반환한다.
+ * If sourcePath does not exist, no action is performed and the function returns.
  *
- * @param sourcePath 복사할 원본 경로
- * @param targetPath 복사 대상 경로
- * @param filter 복사 여부를 결정하는 필터 함수.
- *               각 파일/디렉토리의 **절대 경로**가 전달되며,
- *               true를 반환하면 복사, false면 제외.
- *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
- *               모든 하위 항목(자식, 손자 등)에 재귀적으로 filter 함수가 적용된다.
- *               디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 항목이 건너뛰어짐.
+ * @param sourcePath Path of the source to copy
+ * @param targetPath Destination path for the copy
+ * @param filter A filter function that determines whether to copy.
+ *               The **absolute path** of each file/directory is passed.
+ *               Returns true to copy, false to exclude.
+ *               **Note**: The top-level sourcePath is not subject to filtering;
+ *               the filter function is applied recursively to all children (direct and indirect).
+ *               Returning false for a directory skips that directory and all its contents.
  */
 export function fsCopySync(
   sourcePath: string,
@@ -151,18 +151,18 @@ export function fsCopySync(
 }
 
 /**
- * 파일 또는 디렉토리 복사 (비동기).
+ * Copies a file or directory (asynchronous).
  *
- * sourcePath가 존재하지 않으면 아무 작업도 수행하지 않고 반환한다.
+ * If sourcePath does not exist, no action is performed and the function returns.
  *
- * @param sourcePath 복사할 원본 경로
- * @param targetPath 복사 대상 경로
- * @param filter 복사 여부를 결정하는 필터 함수.
- *               각 파일/디렉토리의 **절대 경로**가 전달되며,
- *               true를 반환하면 복사, false면 제외.
- *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
- *               모든 하위 항목(자식, 손자 등)에 재귀적으로 filter 함수가 적용된다.
- *               디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 항목이 건너뛰어짐.
+ * @param sourcePath Path of the source to copy
+ * @param targetPath Destination path for the copy
+ * @param filter A filter function that determines whether to copy.
+ *               The **absolute path** of each file/directory is passed.
+ *               Returns true to copy, false to exclude.
+ *               **Note**: The top-level sourcePath is not subject to filtering;
+ *               the filter function is applied recursively to all children (direct and indirect).
+ *               Returning false for a directory skips that directory and all its contents.
  */
 export async function fsCopy(
   sourcePath: string,
@@ -207,11 +207,11 @@ export async function fsCopy(
 
 //#endregion
 
-//#region 파일 읽기
+//#region Read File
 
 /**
- * 파일 읽기 (UTF-8 문자열).
- * @param targetPath - 읽을 파일 경로
+ * Reads a file as a UTF-8 string.
+ * @param targetPath - Path of the file to read
  */
 export function fsReadSync(targetPath: string): string {
   try {
@@ -222,8 +222,8 @@ export function fsReadSync(targetPath: string): string {
 }
 
 /**
- * 파일 읽기 (UTF-8 문자열, 비동기).
- * @param targetPath - 읽을 파일 경로
+ * Reads a file as a UTF-8 string (asynchronous).
+ * @param targetPath - Path of the file to read
  */
 export async function fsRead(targetPath: string): Promise<string> {
   try {
@@ -234,8 +234,8 @@ export async function fsRead(targetPath: string): Promise<string> {
 }
 
 /**
- * 파일 읽기 (Buffer).
- * @param targetPath - 읽을 파일 경로
+ * Reads a file as a Buffer.
+ * @param targetPath - Path of the file to read
  */
 export function fsReadBufferSync(targetPath: string): Buffer {
   try {
@@ -246,8 +246,8 @@ export function fsReadBufferSync(targetPath: string): Buffer {
 }
 
 /**
- * 파일 읽기 (Buffer, 비동기).
- * @param targetPath - 읽을 파일 경로
+ * Reads a file as a Buffer (asynchronous).
+ * @param targetPath - Path of the file to read
  */
 export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
   try {
@@ -258,8 +258,8 @@ export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
 }
 
 /**
- * JSON 파일 읽기 (JsonConvert 사용).
- * @param targetPath - 읽을 JSON 파일 경로
+ * Reads a JSON file (using JsonConvert).
+ * @param targetPath - Path of the JSON file to read
  */
 export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
   const contents = fsReadSync(targetPath);
@@ -272,8 +272,8 @@ export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
 }
 
 /**
- * JSON 파일 읽기 (JsonConvert 사용, 비동기).
- * @param targetPath - 읽을 JSON 파일 경로
+ * Reads a JSON file (using JsonConvert, asynchronous).
+ * @param targetPath - Path of the JSON file to read
  */
 export async function fsReadJson<TData = unknown>(targetPath: string): Promise<TData> {
   const contents = await fsRead(targetPath);
