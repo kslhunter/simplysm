@@ -272,7 +272,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   //#region ========== 문자열 (null Process) ==========
 
   protected concat(expr: ExprConcat): string {
-    // null 처리: IFNULL(arg, '')
+    // null processing: IFNULL(arg, '')
     const args = expr.args.map((a) => `IFNULL(${this.render(a)}, '')`);
     return `CONCAT(${args.join(", ")})`;
   }
@@ -306,12 +306,12 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected length(expr: ExprLength): string {
-    // null 처리: IFNULL(arg, '')
+    // null processing: IFNULL(arg, '')
     return `CHAR_LENGTH(IFNULL(${this.render(expr.arg)}, ''))`;
   }
 
   protected byteLength(expr: ExprByteLength): string {
-    // null 처리: IFNULL(arg, '')
+    // null processing: IFNULL(arg, '')
     return `LENGTH(IFNULL(${this.render(expr.arg)}, ''))`;
   }
 
@@ -328,7 +328,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 숫자 ==========
+  //#region ========== Number ==========
 
   protected abs(expr: ExprAbs): string {
     return `ABS(${this.render(expr.arg)})`;
@@ -348,7 +348,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 날짜 ==========
+  //#region ========== Date ==========
 
   protected year(expr: ExprYear): string {
     return `YEAR(${this.render(expr.arg)})`;
@@ -508,7 +508,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 기타 ==========
+  //#region ========== Other ==========
 
   protected greatest(expr: ExprGreatest): string {
     if (expr.args.length === 0) throw new Error("greatest requires at least one argument.");
@@ -536,13 +536,13 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 윈도우 ==========
+  //#region ========== Window ==========
 
   protected window(expr: ExprWindow): string {
     const fn = this.renderWindowFn(expr.fn);
     let over = this.renderWindowSpec(expr.spec);
 
-    // LAST_VALUE는 기본 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
+    // LAST_VALUE는 Basic 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
     if (expr.fn.type === "lastValue" && over.length > 0) {
       over += " ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
     }
@@ -603,7 +603,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 시스템 ==========
+  //#region ========== System ==========
 
   protected subquery(expr: ExprSubquery): string {
     return `(${this.buildSelect(expr.queryDef)})`;

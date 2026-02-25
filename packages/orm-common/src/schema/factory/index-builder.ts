@@ -5,10 +5,10 @@
 /**
  * Index definition builder
  *
- * Fluent API를 통해 Index의 컬럼, 유니크 여부, sorting 순서를 definition
- * TableBuilder.indexes()에서 사용
+ * Fluent API를 통해 Index의 column, 유니크 여부, sorting 순서를 definition
+ * TableBuilder.indexes()used in
  *
- * @template TKeys - Index 컬럼 key array type
+ * @template TKeys - Index column key array type
  *
  * @example
  * ```typescript
@@ -31,17 +31,17 @@
  *   ]);
  * ```
  *
- * @see {@link createIndexFactory} Index 팩토리
+ * @see {@link createIndexFactory} Index factory
  * @see {@link TableBuilder} Table builder
  */
 export class IndexBuilder<TKeys extends string[]> {
   /**
    * @param meta - Index Metadata
-   * @param meta.columns - Index 컬럼 array
+   * @param meta.columns - Index column array
    * @param meta.name - Index 이름 (Select)
    * @param meta.unique - 유니크 Index 여부
    * @param meta.orderBy - Column별 sorting order
-   * @param meta.description - Index 설명
+   * @param meta.description - Index description
    */
   constructor(
     readonly meta: {
@@ -54,10 +54,10 @@ export class IndexBuilder<TKeys extends string[]> {
   ) {}
 
   /**
-   * Index 이름 설정
+   * Index set name
    *
    * @param name - Index 이름
-   * @returns 새 IndexBuilder instance
+   * @returns new IndexBuilder instance
    *
    * @example
    * ```typescript
@@ -71,7 +71,7 @@ export class IndexBuilder<TKeys extends string[]> {
   /**
    * 유니크 Index 설정
    *
-   * @returns 새 IndexBuilder instance
+   * @returns new IndexBuilder instance
    *
    * @example
    * ```typescript
@@ -85,17 +85,17 @@ export class IndexBuilder<TKeys extends string[]> {
   /**
    * sorting order 설정
    *
-   * 각 컬럼에 대해 ASC 또는 DESC 지정
+   * 각 column에 대해 ASC 또는 DESC 지정
    *
-   * @param orderBy - Column별 sorting order (컬럼 수와 동일해야 함)
-   * @returns 새 IndexBuilder instance
+   * @param orderBy - Column별 sorting order (column 수와 동일해야 함)
+   * @returns new IndexBuilder instance
    *
    * @example
    * ```typescript
-   * // 단일 컬럼
+   * // 단일 column
    * i.index("createdAt").orderBy("DESC")
    *
-   * // 복합 컬럼
+   * // 복합 column
    * i.index("status", "createdAt").orderBy("ASC", "DESC")
    * ```
    */
@@ -104,10 +104,10 @@ export class IndexBuilder<TKeys extends string[]> {
   }
 
   /**
-   * Index 설명 설정
+   * Index set description
    *
-   * @param description - Index 설명 (DDL Comment으로 사용)
-   * @returns 새 IndexBuilder instance
+   * @param description - Index description (DDL Comment으로 사용)
+   * @returns new IndexBuilder instance
    */
   description(description: string): IndexBuilder<TKeys> {
     return new IndexBuilder({ ...this.meta, description });
@@ -119,11 +119,11 @@ export class IndexBuilder<TKeys extends string[]> {
 // ============================================
 
 /**
- * Index builder 팩토리 Generate
+ * Index builder factory Generate
  *
- * TableBuilder.indexes()에서 사용하는 Index 팩토리
+ * TableBuilder.indexes()used in하는 Index factory
  *
- * @template TColumnKey - Table 컬럼 key type
+ * @template TColumnKey - Table column key type
  * @returns Index Generate 메서드를 포함한 object
  *
  * @example
@@ -147,14 +147,14 @@ export function createIndexFactory<TColumnKey extends string>() {
     /**
      * Index Generate
      *
-     * @template TKeys - Index 컬럼 key array type
-     * @param columns - Index 컬럼명들
+     * @template TKeys - Index column key array type
+     * @param columns - Index column명들
      * @returns IndexBuilder instance
      *
      * @example
      * ```typescript
-     * i.index("email")          // 단일 컬럼
-     * i.index("name", "email")  // 복합 컬럼
+     * i.index("email")          // 단일 column
+     * i.index("name", "email")  // 복합 column
      * ```
      */
     index<TKeys extends TColumnKey[]>(...columns: [...TKeys]): IndexBuilder<TKeys> {

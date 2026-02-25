@@ -6,8 +6,8 @@ import type { ResultMeta } from "../../src/types/db";
 describe("result-parser", () => {
   //#region ========== 타입 파싱 ==========
 
-  describe("타입 파싱", () => {
-    it("number 변환", async () => {
+  describe("type parsing", () => {
+    it("number conversion", async () => {
       const raw = [{ id: "123", count: 456 }];
       const meta: ResultMeta = {
         columns: { id: "number", count: "number" },
@@ -18,18 +18,18 @@ describe("result-parser", () => {
       expect(result).toEqual([{ id: 123, count: 456 }]);
     });
 
-    it("string 변환", async () => {
-      const raw = [{ name: "홍길동", code: 12345 }];
+    it("string conversion", async () => {
+      const raw = [{ name: "Gildong Hong", code: 12345 }];
       const meta: ResultMeta = {
         columns: { name: "string", code: "string" },
         joins: {},
       };
 
       const result = await parseQueryResult(raw, meta);
-      expect(result).toEqual([{ name: "홍길동", code: "12345" }]);
+      expect(result).toEqual([{ name: "Gildong Hong", code: "12345" }]);
     });
 
-    it("boolean 변환 - 0/1", async () => {
+    it("boolean conversion - 0/1", async () => {
       const raw = [{ active: 1, deleted: 0 }];
       const meta: ResultMeta = {
         columns: { active: "boolean", deleted: "boolean" },
@@ -40,7 +40,7 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
-    it("boolean 변환 - true/false", async () => {
+    it("boolean conversion - true/false", async () => {
       const raw = [{ active: true, deleted: false }];
       const meta: ResultMeta = {
         columns: { active: "boolean", deleted: "boolean" },
@@ -51,7 +51,7 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
-    it('boolean 변환 - "0"/"1" 문자열', async () => {
+    it('boolean conversion - "0"/"1" 문자열', async () => {
       const raw = [{ active: "1", deleted: "0" }];
       const meta: ResultMeta = {
         columns: { active: "boolean", deleted: "boolean" },
@@ -62,7 +62,7 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
-    it("DateTime 변환", async () => {
+    it("DateTime conversion", async () => {
       const raw = [{ createdAt: "2026-01-07T10:30:00.000" }];
       const meta: ResultMeta = {
         columns: { createdAt: "DateTime" },
@@ -79,7 +79,7 @@ describe("result-parser", () => {
       expect(result![0].createdAt.minute).toBe(30);
     });
 
-    it("DateOnly 변환", async () => {
+    it("DateOnly conversion", async () => {
       const raw = [{ birthDate: "2000-05-15" }];
       const meta: ResultMeta = {
         columns: { birthDate: "DateOnly" },
@@ -92,7 +92,7 @@ describe("result-parser", () => {
       expect(result![0].birthDate.toString()).toBe("2000-05-15");
     });
 
-    it("Time 변환", async () => {
+    it("Time conversion", async () => {
       const raw = [{ startTime: "14:30:00" }];
       const meta: ResultMeta = {
         columns: { startTime: "Time" },
@@ -107,7 +107,7 @@ describe("result-parser", () => {
       expect(result![0].startTime.second).toBe(0);
     });
 
-    it("Uuid 변환 - 문자열", async () => {
+    it("Uuid conversion - 문자열", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
       const raw = [{ id: uuidStr }];
       const meta: ResultMeta = {
@@ -121,7 +121,7 @@ describe("result-parser", () => {
       expect(result![0].id.toString()).toBe(uuidStr);
     });
 
-    it("Uuid 변환 - Uint8Array", async () => {
+    it("Uuid conversion - Uint8Array", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
       const uuidBytes = bytesFromHex(uuidStr.replace(/-/g, ""));
       const raw = [{ id: uuidBytes }];
@@ -136,7 +136,7 @@ describe("result-parser", () => {
       expect(result![0].id.toString()).toBe(uuidStr);
     });
 
-    it("Bytes 변환 - Uint8Array 그대로", async () => {
+    it("Bytes conversion - Uint8Array 그대로", async () => {
       const bytes = new Uint8Array([0x01, 0x02, 0x03]);
       const raw = [{ data: bytes }];
       const meta: ResultMeta = {
@@ -150,7 +150,7 @@ describe("result-parser", () => {
       expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
     });
 
-    it("Bytes 변환 - hex 문자열", async () => {
+    it("Bytes conversion - hex 문자열", async () => {
       // [0x01, 0x02, 0x03]의 hex 표현
       const hexStr = "010203";
       const raw = [{ data: hexStr }];
@@ -168,9 +168,9 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== null/undefined 처리 ==========
+  //#region ========== null/undefined processing ==========
 
-  describe("null/undefined 처리", () => {
+  describe("null/undefined processing", () => {
     it("null 값은 키가 제거됨", async () => {
       const raw = [{ id: 1, name: null }];
       const meta: ResultMeta = {
@@ -217,25 +217,25 @@ describe("result-parser", () => {
       expect(result).toBeUndefined();
     });
 
-    it("columns에 없는 컬럼은 무시", async () => {
-      const raw = [{ id: 1, name: "홍길동", extra: "무시됨" }];
+    it("columns에 없는 column은 무시", async () => {
+      const raw = [{ id: 1, name: "Gildong Hong", extra: "무시됨" }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
         joins: {},
       };
 
       const result = await parseQueryResult(raw, meta);
-      expect(result).toEqual([{ id: 1, name: "홍길동" }]);
+      expect(result).toEqual([{ id: 1, name: "Gildong Hong" }]);
       expect(result![0]).not.toHaveProperty("extra");
     });
   });
 
   //#endregion
 
-  //#region ========== 에러 처리 ==========
+  //#region ========== 에러 processing ==========
 
-  describe("에러 처리", () => {
-    it("number 파싱 실패 시 throw", async () => {
+  describe("error processing", () => {
+    it("number throw if parsing fails", async () => {
       const raw = [{ id: "invalid" }];
       const meta: ResultMeta = {
         columns: { id: "number" },
@@ -245,7 +245,7 @@ describe("result-parser", () => {
       await expect(parseQueryResult(raw, meta)).rejects.toThrow("number 파싱 실패");
     });
 
-    it("DateTime 파싱 실패 시 throw", async () => {
+    it("DateTime throw if parsing fails", async () => {
       const raw = [{ createdAt: "invalid-date" }];
       const meta: ResultMeta = {
         columns: { createdAt: "DateTime" },
@@ -255,7 +255,7 @@ describe("result-parser", () => {
       await expect(parseQueryResult(raw, meta)).rejects.toThrow();
     });
 
-    it("Uuid 파싱 실패 시 throw", async () => {
+    it("Uuid throw if parsing fails", async () => {
       const raw = [{ id: "invalid-uuid" }];
       const meta: ResultMeta = {
         columns: { id: "Uuid" },
@@ -265,8 +265,8 @@ describe("result-parser", () => {
       await expect(parseQueryResult(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
     });
 
-    it("Bytes 파싱 실패 시 throw", async () => {
-      const raw = [{ data: 12345 }]; // 숫자는 Bytes로 변환 불가
+    it("Bytes throw if parsing fails", async () => {
+      const raw = [{ data: 12345 }]; // Number는 Bytes로 conversion 불가
       const meta: ResultMeta = {
         columns: { data: "Bytes" },
         joins: {},
@@ -280,7 +280,7 @@ describe("result-parser", () => {
 
   //#region ========== 1레벨 JOIN ==========
 
-  describe("1레벨 JOIN", () => {
+  describe("1-level JOIN", () => {
     it("isSingle: true - 단일 객체", async () => {
       const raw = [{ "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }];
       const meta: ResultMeta = {
@@ -351,7 +351,7 @@ describe("result-parser", () => {
       );
     });
 
-    it("빈 JOIN 결과는 키가 없음", async () => {
+    it("빈 JOIN 결과는 키가 N/A", async () => {
       const raw = [{ "id": 1, "name": "User1", "company.id": null, "company.name": null }];
       const meta: ResultMeta = {
         columns: {
@@ -407,7 +407,7 @@ describe("result-parser", () => {
 
   //#region ========== 다중 레벨 JOIN ==========
 
-  describe("다중 레벨 JOIN", () => {
+  describe("multi-level JOIN", () => {
     it("2레벨 중첩", async () => {
       const raw = [
         {
@@ -575,7 +575,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("여러 JOIN 중 일부만 NULL - company는 있고 posts는 없음", async () => {
+    it("여러 JOIN 중 일부만 NULL - company는 있고 posts는 N/A", async () => {
       const raw = [
         {
           "id": 1,
@@ -617,7 +617,7 @@ describe("result-parser", () => {
 
   //#region ========== 에지 케이스 ==========
 
-  describe("에지 케이스", () => {
+  describe("edge cases", () => {
     it("joins가 빈 객체인 경우", async () => {
       const raw = [{ id: 1, name: "User1" }];
       const meta: ResultMeta = {
@@ -654,7 +654,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("isSingle: true - 동일한 데이터는 에러 없음", async () => {
+    it("isSingle: true - 동일한 데이터는 에러 N/A", async () => {
       const raw = [
         { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" },
         { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }, // 동일
@@ -679,7 +679,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("대용량 데이터 yield 처리", async () => {
+    it("대용량 데이터 yield processing", async () => {
       // 250개 레코드 생성 (yield가 2회 발생: i=100, i=200)
       const raw = Array.from({ length: 250 }, (_, i) => ({
         id: String(i + 1),

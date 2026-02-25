@@ -409,8 +409,8 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
       .select((item) => ({
         id: item.id,
         year: item.year,
-        food: expr.sum(expr.if(expr.eq(item.category, "식품"), item.amount, undefined)),
-        electronics: expr.sum(expr.if(expr.eq(item.category, "전자"), item.amount, undefined)),
+        food: expr.sum(expr.if(expr.eq(item.category, "Food"), item.amount, undefined)),
+        electronics: expr.sum(expr.if(expr.eq(item.category, "Electronics"), item.amount, undefined)),
       }))
       .getSelectQueryDef();
 
@@ -433,7 +433,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
               condition: {
                 type: "eq",
                 source: { type: "column", path: ["T1", "category"] },
-                target: { type: "value", value: "식품" },
+                target: { type: "value", value: "Food" },
               },
               then: { type: "column", path: ["T1", "amount"] },
               else: { type: "value", value: undefined },
@@ -446,7 +446,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
               condition: {
                 type: "eq",
                 source: { type: "column", path: ["T1", "category"] },
-                target: { type: "value", value: "전자" },
+                target: { type: "value", value: "Electronics" },
               },
               then: { type: "column", path: ["T1", "amount"] },
               else: { type: "value", value: undefined },
@@ -466,7 +466,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
     const db = createTestDb();
     const def = db
       .sales()
-      .where((item) => [expr.eq(item.category, "식품")])
+      .where((item) => [expr.eq(item.category, "Food")])
       .groupBy((item) => [item.id, item.category])
       .select((item) => ({
         id: item.id,
@@ -485,7 +485,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
           {
             type: "eq",
             source: { type: "column", path: ["T1", "category"] },
-            target: { type: "value", value: "식품" },
+            target: { type: "value", value: "Food" },
           },
         ],
         groupBy: [

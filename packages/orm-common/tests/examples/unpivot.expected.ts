@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== UNPIVOT - 기본 ==========
+//#region ========== UNPIVOT - Basic ==========
 
 export const unpivotBasic: ExpectedSql = {
   mysql: mysql`

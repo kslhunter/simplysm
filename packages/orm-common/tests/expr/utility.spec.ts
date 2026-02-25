@@ -9,7 +9,7 @@ import * as expected from "./utility.expected";
 describe("Expr - Utility functions", () => {
   //#region ========== ROW_NUM ==========
 
-  describe("rowNum - 행 번호 (윈도우 없이)", () => {
+  describe("rowNum - row number (without window)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -36,7 +36,7 @@ describe("Expr - Utility functions", () => {
 
   //#region ========== RANDOM ==========
 
-  describe("random - 랜덤 값", () => {
+  describe("random - random value", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -63,7 +63,7 @@ describe("Expr - Utility functions", () => {
 
   //#region ========== CAST ==========
 
-  describe("cast - INT로 타입 변환", () => {
+  describe("cast - type conversion to INT", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -90,7 +90,7 @@ describe("Expr - Utility functions", () => {
     });
   });
 
-  describe("cast - VARCHAR로 타입 변환", () => {
+  describe("cast - type conversion to VARCHAR", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -121,7 +121,7 @@ describe("Expr - Utility functions", () => {
 
   //#region ========== RAW ==========
 
-  describe("raw - 기본 raw SQL", () => {
+  describe("raw - Basic raw SQL", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -148,7 +148,7 @@ describe("Expr - Utility functions", () => {
     });
   });
 
-  describe("raw - 파라미터가 있는 raw SQL", () => {
+  describe("raw - raw SQL with parameters", () => {
     const db = createTestDb();
     const def = db
       .user()

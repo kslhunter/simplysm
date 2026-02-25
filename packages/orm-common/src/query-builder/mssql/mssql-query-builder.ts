@@ -165,7 +165,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = "";
 
-    // IDENTITY_INSERT ON (AI 컬럼에 explicit value 삽입 시)
+    // IDENTITY_INSERT ON (AI column에 explicit value 삽입 시)
     if (def.overrideIdentity) {
       sql += `SET IDENTITY_INSERT ${table} ON;\n`;
     }
@@ -315,12 +315,12 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const alias = this.expr.wrap(def.existsSelectQuery.as);
     const existsWhere = def.existsSelectQuery.where;
 
-    // UPDATE SET 부분
+    // UPDATE SET part
     const updateSetParts = Object.entries(def.updateRecord).map(
       ([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`,
     );
 
-    // INSERT 부분
+    // INSERT part
     const insertColumns = Object.keys(def.insertRecord);
     const insertColList = insertColumns.map((c) => this.expr.wrap(c)).join(", ");
     const insertValues = insertColumns.map((c) => this.expr.render(def.insertRecord[c])).join(", ");
@@ -447,7 +447,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       colSql += " NOT NULL";
     }
 
-    // MSSQL: ALTER COLUMN (IDENTITY와 DEFAULT는 별도 처리 필요)
+    // MSSQL: ALTER COLUMN (IDENTITY와 DEFAULT는 별도 processing 필요)
     return { sql: `ALTER TABLE ${table} ALTER COLUMN ${colSql}` };
   }
 
@@ -530,7 +530,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   protected createProc(def: CreateProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
 
-    // params 처리
+    // params processing
     const paramList =
       def.params
         ?.map((p) => {

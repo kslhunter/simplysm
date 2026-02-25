@@ -269,7 +269,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   //#region ========== 문자열 (null Process) ==========
 
   protected concat(expr: ExprConcat): string {
-    // MSSQL 2012+: CONCAT 함수는 NULL을 automatic으로 빈 문자열로 처리
+    // MSSQL 2012+: CONCAT 함수는 NULL을 automatic으로 빈 문자열로 processing
     const args = expr.args.map((a) => this.render(a)).join(", ");
     return `CONCAT(${args})`;
   }
@@ -330,7 +330,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 숫자 ==========
+  //#region ========== Number ==========
 
   protected abs(expr: ExprAbs): string {
     return `ABS(${this.render(expr.arg)})`;
@@ -350,7 +350,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 날짜 ==========
+  //#region ========== Date ==========
 
   protected year(expr: ExprYear): string {
     return `YEAR(${this.render(expr.arg)})`;
@@ -498,7 +498,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 기타 ==========
+  //#region ========== Other ==========
 
   protected greatest(expr: ExprGreatest): string {
     if (expr.args.length === 0) throw new Error("greatest requires at least one argument.");
@@ -530,13 +530,13 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 윈도우 ==========
+  //#region ========== Window ==========
 
   protected window(expr: ExprWindow): string {
     const fn = this.renderWindowFn(expr.fn);
     let over = this.renderWindowSpec(expr.spec);
 
-    // LAST_VALUE는 기본 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
+    // LAST_VALUE는 Basic 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
     if (expr.fn.type === "lastValue" && over.length > 0) {
       over += " ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
     }
@@ -597,7 +597,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 시스템 ==========
+  //#region ========== System ==========
 
   protected subquery(expr: ExprSubquery): string {
     return `(${this.buildSelect(expr.queryDef)})`;

@@ -1,5 +1,5 @@
 /**
- * SELECT - WHERE 테스트 Expected SQL
+ * SELECT - WHERE test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
@@ -202,17 +202,17 @@ export const whereLike: ExpectedSql = {
   mysql: mysql`
     SELECT *
     FROM \`TestDb\`.\`User\` AS \`T1\`
-    WHERE \`T1\`.\`name\` LIKE '%홍%' ESCAPE '\\\\'
+    WHERE \`T1\`.\`name\` LIKE '%Hong%' ESCAPE '\\\\'
   `,
   mssql: tsql`
     SELECT *
     FROM [TestDb].[TestSchema].[User] AS [T1]
-    WHERE [T1].[name] LIKE N'%홍%' ESCAPE '\\'
+    WHERE [T1].[name] LIKE N'%Hong%' ESCAPE '\\'
   `,
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE "T1"."name" LIKE '%홍%' ESCAPE '\\'
+    WHERE "T1"."name" LIKE '%Hong%' ESCAPE '\\'
   `,
 };
 
@@ -220,17 +220,17 @@ export const whereNotLike: ExpectedSql = {
   mysql: mysql`
     SELECT *
     FROM \`TestDb\`.\`User\` AS \`T1\`
-    WHERE NOT (\`T1\`.\`name\` LIKE '%테스트%' ESCAPE '\\\\')
+    WHERE NOT (\`T1\`.\`name\` LIKE '%Test%' ESCAPE '\\\\')
   `,
   mssql: tsql`
     SELECT *
     FROM [TestDb].[TestSchema].[User] AS [T1]
-    WHERE NOT ([T1].[name] LIKE N'%테스트%' ESCAPE '\\')
+    WHERE NOT ([T1].[name] LIKE N'%Test%' ESCAPE '\\')
   `,
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE NOT ("T1"."name" LIKE '%테스트%' ESCAPE '\\')
+    WHERE NOT ("T1"."name" LIKE '%Test%' ESCAPE '\\')
   `,
 };
 

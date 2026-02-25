@@ -1,10 +1,10 @@
 /**
- * SELECT - 기본 테스트 Expected SQL
+ * SELECT - Basic test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 기본 SELECT ==========
+//#region ========== Basic SELECT ==========
 
 export const selectAll: ExpectedSql = {
   mysql: mysql`
@@ -83,30 +83,30 @@ export const selectAggregate: ExpectedSql = {
 
 export const selectIfNull2: ExpectedSql = {
   mysql: mysql`
-    SELECT COALESCE(\`T1\`.\`email\`, '없음') AS \`email\`
+    SELECT COALESCE(\`T1\`.\`email\`, 'N/A') AS \`email\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`
-    SELECT COALESCE([T1].[email], N'없음') AS [email]
+    SELECT COALESCE([T1].[email], N'N/A') AS [email]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT COALESCE("T1"."email", '없음') AS "email"
+    SELECT COALESCE("T1"."email", 'N/A') AS "email"
     FROM "TestSchema"."User" AS "T1"
   `,
 };
 
 export const selectIfNull3: ExpectedSql = {
   mysql: mysql`
-    SELECT COALESCE(\`T1\`.\`email\`, \`T1\`.\`name\`, '없음') AS \`contact\`
+    SELECT COALESCE(\`T1\`.\`email\`, \`T1\`.\`name\`, 'N/A') AS \`contact\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`
-    SELECT COALESCE([T1].[email], [T1].[name], N'없음') AS [contact]
+    SELECT COALESCE([T1].[email], [T1].[name], N'N/A') AS [contact]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT COALESCE("T1"."email", "T1"."name", '없음') AS "contact"
+    SELECT COALESCE("T1"."email", "T1"."name", 'N/A') AS "contact"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

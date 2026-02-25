@@ -1,5 +1,5 @@
 /**
- * DELETE 테스트 Expected SQL
+ * DELETE test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
@@ -20,7 +20,7 @@ export const truncate: ExpectedSql = {
 
 //#endregion
 
-//#region ========== DELETE - 기본 ==========
+//#region ========== DELETE - Basic ==========
 
 export const deleteSimple: ExpectedSql = {
   mysql: mysql`

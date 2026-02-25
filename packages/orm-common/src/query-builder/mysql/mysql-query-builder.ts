@@ -41,8 +41,8 @@ import { MysqlExprRenderer } from "./mysql-expr-renderer";
  *
  * MySQL 특이사항:
  * - OUTPUT 미지원: multi-statement 패턴으로 우회 (INSERT + SET @var + SELECT)
- * - INSERT OUTPUT: LAST_INSERT_ID()로 AI 컬럼 조회, 비-AI는 record에서 PK 추출
- * - UPDATE/UPSERT OUTPUT: WHERE 조건이 변경될 수 있으므로 PK를 먼저 임시 Table에 저장 후 SELECT
+ * - INSERT OUTPUT: LAST_INSERT_ID()로 AI column 조회, 비-AI는 record에서 PK 추출
+ * - UPDATE/UPSERT OUTPUT: WHERE condition이 변경될 수 있으므로 PK를 먼저 임시 Table에 저장 후 SELECT
  * - DELETE OUTPUT: Delete 전 output columns를 임시 Table에 저장
  * - switchFk: 전역 설정 (SET FOREIGN_KEY_CHECKS), Table 파라미터 무시됨
  * - FK Add 시 Index automatic 생성됨
@@ -290,7 +290,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // PK가 AI 아님: 임시 Table로 PK 저장 후 조회
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
 
-    // recordsSelectQuery에서 PK 컬럼만 추출한 SELECT Generate
+    // recordsSelectQuery에서 PK column만 추출한 SELECT Generate
     const pkSelectDef: SelectQueryDef = {
       ...def.recordsSelectQuery,
       select: Object.fromEntries(
@@ -341,11 +341,11 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql };
     }
 
-    // OUTPUT 필요: multi-statement (임시테이블에 PK 저장 + UPDATE + SELECT + DROP)
+    // OUTPUT 필요: multi-statement (임시table에 PK 저장 + UPDATE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
 
-    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE 조건이 달라질 수 있으므로)
+    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
     const pkSelectCols = def.output.pkColNames
       .map((pk) => `${alias}.${this.expr.wrap(pk)} AS ${this.expr.wrap(pk)}`)
       .join(", ");
@@ -393,7 +393,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql };
     }
 
-    // OUTPUT 필요: multi-statement (Delete 전 임시테이블에 저장 + DELETE + SELECT + DROP)
+    // OUTPUT 필요: multi-statement (Delete 전 임시table에 저장 + DELETE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
 
@@ -427,12 +427,12 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const alias = this.expr.wrap(def.existsSelectQuery.as);
     const existsQuerySql = this.select(def.existsSelectQuery).sql;
 
-    // UPDATE SET 부분 (alias.column 형태)
+    // UPDATE SET part (alias.column 형태)
     const updateSetParts = Object.entries(def.updateRecord).map(
       ([col, e]) => `${alias}.${this.expr.wrap(col)} = ${this.expr.render(e)}`,
     );
 
-    // INSERT 부분
+    // INSERT part
     const insertColumns = Object.keys(def.insertRecord);
     const insertColList = insertColumns.map((c) => this.expr.wrap(c)).join(", ");
     const insertValues = insertColumns.map((c) => this.expr.render(def.insertRecord[c])).join(", ");
@@ -458,7 +458,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
 
-    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE 조건이 달라질 수 있으므로)
+    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
     const pkSelectCols = def.output.pkColNames.map((pk) => this.expr.wrap(pk)).join(", ");
     const createTempSql = `CREATE TEMPORARY TABLE ${tempTableName} AS SELECT ${pkSelectCols} FROM ${table} AS ${alias} WHERE ${whereCondition}`;
 
@@ -676,7 +676,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected createProc(def: CreateProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
 
-    // params 처리
+    // params processing
     const paramList =
       def.params
         ?.map((p) => {

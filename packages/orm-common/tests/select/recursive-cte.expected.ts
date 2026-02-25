@@ -1,10 +1,10 @@
 /**
- * SELECT - Recursive CTE 테스트 Expected SQL
+ * SELECT - Recursive CTE test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 기본 재귀 CTE ==========
+//#region ========== Basic 재귀 CTE ==========
 
 export const basicSubordinates: ExpectedSql = {
   mysql: mysql`
@@ -143,7 +143,7 @@ export const upwardManagers: ExpectedSql = {
 
 //#endregion
 
-//#region ========== CTE + 후처리 ==========
+//#region ========== CTE + 후processing ==========
 
 export const cteWithOrderBy: ExpectedSql = {
   mysql: mysql`

@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 데이터 타입 기본 테스트 ==========
+//#region ========== 데이터 타입 Basic 테스트 ==========
 
 export const intType: ExpectedSql = {
   mysql: mysql`

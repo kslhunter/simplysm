@@ -7,7 +7,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./string.expected";
 
 describe("Expr - String functions", () => {
-  describe("concat - 문자열 연결 (null 처리)", () => {
+  describe("concat - string concatenation (null processing)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -35,7 +35,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("length - 문자 길이", () => {
+  describe("length - character length", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -59,7 +59,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("byteLength - 바이트 길이", () => {
+  describe("byteLength - byte length", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -83,7 +83,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("left - 왼쪽 문자열 추출", () => {
+  describe("left - extract left string", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -108,7 +108,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("right - 오른쪽 문자열 추출", () => {
+  describe("right - extract right string", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -157,7 +157,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("padStart - 왼쪽 패딩", () => {
+  describe("padStart - left padding", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -283,7 +283,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("indexOf - 문자 위치 (0-based)", () => {
+  describe("indexOf - character position (0-based)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -308,7 +308,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("like - LIKE 패턴 매칭", () => {
+  describe("like - LIKE pattern matching", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -331,7 +331,7 @@ describe("Expr - String functions", () => {
     });
   });
 
-  describe("like - 이스케이프 처리 (%)", () => {
+  describe("like - escape processing (%)", () => {
     const db = createTestDb();
     const def = db
       .user()

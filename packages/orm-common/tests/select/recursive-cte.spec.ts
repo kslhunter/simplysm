@@ -8,7 +8,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./recursive-cte.expected";
 
 describe("SELECT - Recursive CTE", () => {
-  describe("기본: 특정 매니저의 모든 부하직원 조회", () => {
+  describe("Basic: select all subordinates of a specific manager", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -109,7 +109,7 @@ describe("SELECT - Recursive CTE", () => {
     });
   });
 
-  describe("depth 제한: recursive WHERE에서 depth 체크", () => {
+  describe("depth limit: check depth in recursive WHERE", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -209,7 +209,7 @@ describe("SELECT - Recursive CTE", () => {
     });
   });
 
-  describe("상위 탐색: 특정 직원의 모든 상위 매니저 조회", () => {
+  describe("upward search: select all managers above a specific employee", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -308,7 +308,7 @@ describe("SELECT - Recursive CTE", () => {
     });
   });
 
-  describe("CTE 결과에 orderBy 적용", () => {
+  describe("Apply orderBy to CTE result", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -409,7 +409,7 @@ describe("SELECT - Recursive CTE", () => {
     });
   });
 
-  describe("CTE 결과에 where 적용", () => {
+  describe("Apply where to CTE result", () => {
     const db = createTestDb();
     const def = db
       .employee()

@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== View - 기본 ==========
+//#region ========== View - Basic ==========
 
 export const viewSelect: ExpectedSql = {
   mysql: mysql`SELECT * FROM \`TestDb\`.\`ActiveUsers\` AS \`T1\``,

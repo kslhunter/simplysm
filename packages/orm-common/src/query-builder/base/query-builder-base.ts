@@ -37,17 +37,17 @@ import type { QueryBuildResult } from "../../types/db";
 import type { ExprRendererBase } from "./expr-renderer-base";
 
 /**
- * QueryDef → SQL Render 추상 기본 class
+ * QueryDef → SQL render abstract base class
  *
- * Base 원칙:
- * - 100% 모든 dialect가 동일한 로직만 구현 (dispatch)
- * - 조금이라도 다르면 전부 abstract
- * - Method명은 def.type과 동일 (동적 dispatch 가능)
+ * Base principles:
+ * - Implement only 100% identical logic across all dialects (dispatch)
+ * - If different at all, make it abstract
+ * - Method name identical to def.type (enables dynamic dispatch)
  */
 export abstract class QueryBuilderBase {
   protected abstract expr: ExprRendererBase;
 
-  //#region ========== Dispatch (100% 동일) ==========
+  //#region ========== Dispatch (100% identical) ==========
 
   build(def: QueryDef): QueryBuildResult {
     const method = this[def.type as keyof this];
@@ -57,25 +57,25 @@ export abstract class QueryBuilderBase {
     return (method as (d: QueryDef) => QueryBuildResult).call(this, def);
   }
 
-  /** SQL을 QueryBuildResult로 래핑하는 헬퍼 */
+  /** Helper to wrap SQL in QueryBuildResult */
   protected result(sql: string, resultSetIndex?: number): QueryBuildResult {
     return resultSetIndex != null ? { sql, resultSetIndex } : { sql };
   }
 
   //#endregion
 
-  //#region ========== 공통 Render method (100% 동일) ==========
+  //#region ========== Common render method (100% identical) ==========
 
-  /** Table명 Render (dialect별로 다르므로 abstract) */
+  /** Table name render (different per dialect, so abstract) */
   protected abstract tableName(obj: QueryDefObjectName): string;
 
-  /** WHERE 절 Render */
+  /** WHERE clause render */
   protected renderWhere(wheres: WhereExpr[] | undefined): string {
     if (wheres == null || wheres.length === 0) return "";
     return ` WHERE ${this.expr.renderWhere(wheres)}`;
   }
 
-  /** ORDER BY 절 Render */
+  /** ORDER BY clause render */
   protected renderOrderBy(orderBy: [Expr, ("ASC" | "DESC")?][] | undefined): string {
     if (orderBy == null || orderBy.length === 0) return "";
     const parts = orderBy.map(
@@ -84,56 +84,56 @@ export abstract class QueryBuilderBase {
     return ` ORDER BY ${parts.join(", ")}`;
   }
 
-  /** GROUP BY 절 Render */
+  /** GROUP BY clause render */
   protected renderGroupBy(groupBy: Expr[] | undefined): string {
     if (groupBy == null || groupBy.length === 0) return "";
     return ` GROUP BY ${groupBy.map((g) => this.expr.render(g)).join(", ")}`;
   }
 
-  /** HAVING 절 Render */
+  /** HAVING clause render */
   protected renderHaving(having: WhereExpr[] | undefined): string {
     if (having == null || having.length === 0) return "";
     return ` HAVING ${this.expr.renderWhere(having)}`;
   }
 
-  /** JOIN 절 Render */
+  /** JOIN clause render */
   protected renderJoins(joins: SelectQueryDefJoin[] | undefined): string {
     if (joins == null || joins.length === 0) return "";
     return joins.map((j) => this.renderJoin(j)).join("");
   }
 
-  /** 단일 JOIN Render (dialect별로 다르므로 abstract) */
+  /** Single JOIN render (different per dialect, so abstract) */
   protected abstract renderJoin(join: SelectQueryDefJoin): string;
 
   /**
-   * JOIN이 LATERAL/CROSS APPLY가 필요한지 감지
+   * Detect if JOIN needs LATERAL/CROSS APPLY
    *
-   * 기본 JOIN 속성(type, from, as, where, isSingle)만 있으면 일반 JOIN으로 처리.
-   * 그 외 속성이 있으면 Subquery가 필요하므로 LATERAL JOIN 사용:
+   * If JOIN has only basic properties (type, from, as, where, isSingle), treat as normal JOIN.
+   * Otherwise, subquery is needed, so use LATERAL JOIN:
    *
-   * - select: 컬럼 가공/집계가 필요 (일반 JOIN은 Table 전체를 참조)
-   * - joins: 중첩 JOIN을 Subquery 내부에서 처리
-   * - orderBy, top, limit: sorting/제한을 Subquery 내부에서 apply
-   * - groupBy, having: 집계를 Subquery 내부에서 수행
-   * - distinct: 중복 제거를 Subquery 내부에서 apply
+   * - select: column transformation/aggregation needed (normal JOIN references entire table)
+   * - joins: nested JOIN handled inside subquery
+   * - orderBy, top, limit: sorting/limit applied inside subquery
+   * - groupBy, having: aggregation performed inside subquery
+   * - distinct: deduplication applied inside subquery
    * - from (array): UNION ALL pattern
    *
-   * 주의: select와 joins는 중첩 join 시 automatic 생성되므로 basicJoinProps에 포함하지 않음.
-   * 사용자가 직접 .select()를 호출하지 않아도 내부 .joinSingle() 호출로 인해
-   * select/joins가 추가될 수 있으며, 이 경우에도 Subquery가 필요함.
+   * Note: select and joins are auto-generated during nested joins, so not in basicJoinProps.
+   * Even if user doesn't call .select() directly, internal .joinSingle() may add
+   * select/joins, which also requires subquery.
    */
   protected needsLateral(join: SelectQueryDefJoin): boolean {
-    // from이 배열이면 무조건 LATERAL (UNION ALL Pattern)
+    // If from is array, always LATERAL (UNION ALL pattern)
     if (Array.isArray(join.from)) {
       return true;
     }
 
-    // join 자체에 기본 JOIN property 외의 Add 속성이 있으면 LATERAL 필요
+    // LATERAL needed if join has additional properties beyond basic JOIN properties
     const basicJoinProps = ["type", "from", "as", "where", "isSingle"];
     return Object.keys(join).some((key) => !basicJoinProps.includes(key));
   }
 
-  /** FROM 절 소스 Render */
+  /** FROM clause source render */
   protected renderFrom(from: SelectQueryDef["from"]): string {
     if (from == null) {
       throw new Error("FROM clause is required.");

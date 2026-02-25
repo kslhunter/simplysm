@@ -7,8 +7,8 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./subquery.expected";
 
-describe("SELECT - WRAP (서브쿼리)", () => {
-  describe("기본", () => {
+describe("SELECT - WRAP (subquery)", () => {
+  describe("Basic", () => {
     const db = createTestDb();
     const def = db.user().wrap().getSelectQueryDef();
 
@@ -234,7 +234,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 });
 
 describe("SELECT - UNION", () => {
-  describe("기본 (2개)", () => {
+  describe("Basic (2 items)", () => {
     const db = createTestDb();
     const qr1 = db.user().where((item) => [expr.eq(item.isActive, true)]);
     const qr2 = db.user().where((item) => [expr.gt(item.age, 30)]);
@@ -279,7 +279,7 @@ describe("SELECT - UNION", () => {
     });
   });
 
-  describe("3개 이상", () => {
+  describe("3 or more", () => {
     const db = createTestDb();
     const qr1 = db.user().where((item) => [expr.eq(item.age, 20)]);
     const qr2 = db.user().where((item) => [expr.eq(item.age, 30)]);
@@ -337,7 +337,7 @@ describe("SELECT - UNION", () => {
     });
   });
 
-  describe("UNION -> WHERE (각 쿼리에 적용)", () => {
+  describe("UNION -> WHERE (apply to each query)", () => {
     const db = createTestDb();
     const qr1 = db.user();
     const qr2 = db.user();
@@ -482,7 +482,7 @@ describe("SELECT - UNION", () => {
 //#region ========== SCALAR SUBQUERY ==========
 
 describe("SELECT - SCALAR SUBQUERY (expr.subquery)", () => {
-  describe("기본 (COUNT)", () => {
+  describe("Basic (COUNT)", () => {
     const db = createTestDb();
     const def = db
       .user()

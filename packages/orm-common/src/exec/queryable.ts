@@ -87,7 +87,7 @@ class JoinQueryable {
 
     return new Queryable({
       db: first.meta.db,
-      from: queries, // Queryable[] 배열로 저장
+      from: queries, // stored as Queryable[] array
       as: this._joinAlias,
       columns: transformColumnsAlias(first.meta.columns, this._joinAlias, ""),
     });
@@ -97,7 +97,7 @@ class JoinQueryable {
 /**
  * Recursive CTE (Common Table Expression) builder
  *
- * recursive() method 내부에서 사용되며, Defines the body of a recursive query
+ * used internally in recursive() method, Defines the body of a recursive query
  *
  * @template TBaseData - Base query data type
  */
@@ -108,7 +108,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
   ) {}
 
   /**
-   * recursive query의 대상 Table을 지정
+   * specify the target table for recursive query
    *
    * @param table - Target table to recurse
    * @returns Queryable with self property added (for self-reference)
@@ -161,7 +161,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
   }
 
   /**
-   * Combine multiple Queryables with UNION (recursive query용)
+   * Combine multiple Queryables with UNION (for recursive query)
    *
    * @param queries - Array of Queryables to UNION (minimum 2)
    * @returns UNION Queryable with self property added
@@ -183,7 +183,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
 
     return new Queryable<any, never>({
       db: first.meta.db,
-      from: queries, // Queryable[] 배열로 저장
+      from: queries, // stored as Queryable[] array
       as: this._cteName,
       columns: transformColumnsAlias(first.meta.columns, this._cteName, ""),
     }).join(
@@ -222,7 +222,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  *   .result();
  *
  * // INSERT
- * await db.user().insert([{ name: "홍길동", email: "test@test.com" }]);
+ * await db.user().insert([{ name: "Gildong Hong", email: "test@test.com" }]);
  * ```
  */
 export class Queryable<
@@ -332,14 +332,14 @@ export class Queryable<
   //#region ========== restrict - TOP / LIMIT ==========
 
   /**
-   * 상위 N개의 행만 조회 (ORDER BY 없이 사용 가능)
+   * Select only top N rows (can be used without ORDER BY)
    *
-   * @param count - 조회할 row 수
-   * @returns TOP이 apply된 Queryable
+   * @param count - number of rows to select
+   * @returns Queryable with TOP applied
    *
    * @example
    * ```typescript
-   * // 최신 사용자 10명
+   * // Latest 10 users
    * db.user()
    *   .orderBy((u) => u.createdAt, "DESC")
    *   .top(10)
@@ -361,19 +361,19 @@ export class Queryable<
   }
 
   /**
-   * 페이지네이션을 위한 LIMIT/OFFSET을 설정합니다.
-   * 반드시 orderBy()를 먼저 호출해야 합니다.
+   * Set LIMIT/OFFSET for pagination.
+   * Must call orderBy() first.
    *
-   * @param skip - 건너뛸 row 수 (OFFSET)
-   * @param take - 가져올 row 수 (LIMIT)
-   * @returns 페이지네이션이 apply된 Queryable
-   * @throws ORDER BY 절이 없으면 에러
+   * @param skip - number of rows to skip (OFFSET)
+   * @param take - number of rows to fetch (LIMIT)
+   * @returns Queryable with pagination applied
+   * @throws Error if no ORDER BY clause
    *
    * @example
    * ```typescript
    * db.user
    *   .orderBy((u) => u.createdAt)
-   *   .limit(0, 20) // 첫 20개
+   *   .limit(0, 20) // first 20
    * ```
    */
   limit(skip: number, take: number): Queryable<TData, TFrom> {
@@ -403,10 +403,10 @@ export class Queryable<
   //#region ========== sorting - ORDER BY ==========
 
   /**
-   * sorting 조건을 추가합니다. 여러 번 호출하면 순서대로 apply됩니다.
+   * Add sorting condition. Multiple calls apply in order.
    *
-   * @param fn - Sort 기준 컬럼을 반환하는 function
-   * @param orderBy - Sort 방향 (ASC/DESC). Default value: ASC
+   * @param fn - function returning columns to sort by
+   * @param orderBy - Sort direction (ASC/DESC). Default: ASC
    * @returns sorting 조건이 추가된 Queryable
    *
    * @example
@@ -441,7 +441,7 @@ export class Queryable<
   //#region ========== 검색 - WHERE ==========
 
   /**
-   * WHERE 조건을 추가합니다. 여러 번 호출하면 AND로 결합됩니다.
+   * WHERE condition을 추가합니다. 여러 번 호출하면 AND로 결합됩니다.
    *
    * @param predicate - Condition 배열을 반환하는 function
    * @returns 조건이 추가된 Queryable
@@ -478,14 +478,14 @@ export class Queryable<
    * - `+`로 시작하는 단어는 required include (AND Condition)
    * - `-`로 시작하는 단어는 exclude (NOT Condition)
    *
-   * @param fn - 검색 대상 컬럼을 반환하는 function
+   * @param fn - 검색 대상 column을 반환하는 function
    * @param searchText - 검색 텍스트
    * @returns 검색 조건이 추가된 Queryable
    *
    * @example
    * ```typescript
    * db.user()
-   *   .search((u) => [u.name, u.email], "홍길동 -탈퇴")
+   *   .search((u) => [u.name, u.email], "Gildong Hong -탈퇴")
    * ```
    */
   search(
@@ -509,7 +509,7 @@ export class Queryable<
 
     const conditions: WhereExprUnit[] = [];
 
-    // OR condition: 각 컬럼에서 pattern 하나라도 매치하면 OK
+    // OR condition: 각 column에서 pattern 하나라도 매치하면 OK
     if (parsed.or.length === 1) {
       const pattern = parsed.or[0];
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
@@ -524,13 +524,13 @@ export class Queryable<
       conditions.push(expr.or(orConditions));
     }
 
-    // MUST condition: 각 pattern이 어떤 컬럼에서든 매치해야 함 (AND)
+    // MUST condition: 각 pattern이 어떤 column에서든 매치해야 함 (AND)
     for (const pattern of parsed.must) {
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
       conditions.push(expr.or(columnMatches));
     }
 
-    // NOT condition: 모든 컬럼에서 매치하지 않아야 함 (AND NOT)
+    // NOT condition: 모든 column에서 매치하지 않아야 함 (AND NOT)
     for (const pattern of parsed.not) {
       const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
       conditions.push(expr.not(expr.or(columnMatches)));
@@ -550,7 +550,7 @@ export class Queryable<
   /**
    * GROUP BY 절을 Add
    *
-   * @param fn - Group화 기준 컬럼을 반환하는 function
+   * @param fn - Group화 기준 column을 반환하는 function
    * @returns Queryable with GROUP BY applied
    *
    * @example
@@ -942,7 +942,7 @@ export class Queryable<
     const unionAlias = first.meta.db.getNextAlias();
     return new Queryable({
       db: first.meta.db,
-      from: queries, // Queryable[] 배열로 저장
+      from: queries, // stored as Queryable[] array
       as: unionAlias,
       columns: transformColumnsAlias(first.meta.columns, unionAlias, ""),
     });
@@ -957,7 +957,7 @@ export class Queryable<
    *
    * 계층 structure data(조직도, 카테고리 트리 등)를 조회할 때 사용
    *
-   * @param fwd - recursive 부분을 정의하는 콜백 function
+   * @param fwd - recursive part을 정의하는 콜백 function
    * @returns recursive CTE가 apply된 Queryable
    *
    * @example
@@ -1086,7 +1086,7 @@ export class Queryable<
   /**
    * result row 수를 return
    *
-   * @param fwd - 카운트할 컬럼을 지정하는 function (Select)
+   * @param fwd - 카운트할 column을 지정하는 function (Select)
    * @returns row 수
    * @throws distinct() 또는 groupBy() 후 직접 호출 시 에러 (wrap() 필요)
    *
@@ -1230,7 +1230,7 @@ export class Queryable<
         if (outputColumns && !outputColumns.includes(fullKey)) continue;
 
         if (val instanceof ExprUnit) {
-          // primitive 컬럼
+          // primitive column
           columns[fullKey] = val.dataType;
         } else if (Array.isArray(val)) {
           // array (1:N relationship)
@@ -1261,19 +1261,19 @@ export class Queryable<
    * MSSQL의 1000개 제한을 위해 automatic으로 1000개씩 청크로 분할하여 실행
    *
    * @param records - Insert할 레코드 array
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 삽입된 레코드 array return
    *
    * @example
    * ```typescript
    * // 단순 삽입
    * await db.user().insert([
-   *   { name: "홍길동", email: "hong@test.com" },
+   *   { name: "Gildong Hong", email: "hong@test.com" },
    * ]);
    *
    * // 삽입 후 ID return
    * const [inserted] = await db.user().insert(
-   *   [{ name: "홍길동" }],
+   *   [{ name: "Gildong Hong" }],
    *   ["id"],
    * );
    * ```
@@ -1314,10 +1314,10 @@ export class Queryable<
   }
 
   /**
-   * WHERE 조건에 맞는 data가 없으면 INSERT
+   * WHERE condition에 맞는 data가 없으면 INSERT
    *
    * @param record - Insert할 레코드
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 삽입된 레코드 return
    *
    * @example
@@ -1350,7 +1350,7 @@ export class Queryable<
    * INSERT INTO ... SELECT (현재 SELECT 결과를 다른 Table에 INSERT)
    *
    * @param targetTable - Insert 대상 Table
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 삽입된 레코드 array return
    *
    * @example
@@ -1389,7 +1389,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    // AI 컬럼에 explicit 값이 있으면 overrideIdentity 설정
+    // AI column에 explicit 값이 있으면 overrideIdentity 설정
     const overrideIdentity =
       outputDef.aiColName != null &&
       records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] !== undefined);
@@ -1460,8 +1460,8 @@ export class Queryable<
   /**
    * UPDATE query를 실행
    *
-   * @param recordFwd - Update할 컬럼과 값을 반환하는 function
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param recordFwd - Update할 column과 값을 반환하는 function
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 업데이트된 레코드 array return
    *
    * @example
@@ -1470,7 +1470,7 @@ export class Queryable<
    * await db.user()
    *   .where((u) => [expr.eq(u.id, 1)])
    *   .update((u) => ({
-   *     name: expr.val("string", "새이름"),
+   *     name: expr.val("string", "New Name"),
    *     updatedAt: expr.val("DateTime", DateTime.now()),
    *   }));
    *
@@ -1505,7 +1505,7 @@ export class Queryable<
   /**
    * DELETE query를 실행
    *
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 삭제된 레코드 array return
    *
    * @example
@@ -1593,11 +1593,11 @@ export class Queryable<
   /**
    * UPSERT (UPDATE or INSERT) query를 실행
    *
-   * WHERE 조건에 맞는 data가 있으면 UPDATE, 없으면 INSERT
+   * WHERE condition에 맞는 data가 있으면 UPDATE, 없으면 INSERT
    *
-   * @param updateFwd - Update할 컬럼과 값을 반환하는 function
+   * @param updateFwd - Update할 column과 값을 반환하는 function
    * @param insertFwd - Insert할 레코드를 반환하는 function (selection, 미지정 시 updateFwd와 동일)
-   * @param outputColumns - 반환받을 column name array (Select)
+   * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 영향받은 레코드 array return
    *
    * @example
@@ -1762,12 +1762,12 @@ export class Queryable<
 //#region ========== Helper Functions ==========
 
 /**
- * FK 컬럼 배열과 대상 Table의 PK를 매칭하여 PK 컬럼명 배열을 return
+ * FK column 배열과 대상 Table의 PK를 매칭하여 PK column명 배열을 return
  *
- * @param fkCols - FK 컬럼명 array
+ * @param fkCols - FK column명 array
  * @param targetTable - 참조 대상 Table builder
- * @returns 매칭된 PK 컬럼명 array
- * @throws FK/PK 컬럼 수 불일치 시
+ * @returns 매칭된 PK column명 array
+ * @throws FK/PK column 수 불일치 시
  */
 export function getMatchedPrimaryKeys(
   fkCols: string[],
@@ -1776,7 +1776,7 @@ export function getMatchedPrimaryKeys(
   const pk = targetTable.meta.primaryKey;
   if (pk == null || fkCols.length !== pk.length) {
     throw new Error(
-      `FK/PK 컬럼 개수가 일치하지 않습니다 (대상: ${targetTable.meta.name}, FK: ${fkCols.length}개, PK: ${pk?.length ?? 0}개)`,
+      `FK/PK column 개수가 일치하지 않습니다 (대상: ${targetTable.meta.name}, FK: ${fkCols.length}개, PK: ${pk?.length ?? 0}개)`,
     );
   }
   return pk;
@@ -1788,13 +1788,13 @@ export function getMatchedPrimaryKeys(
  * Subquery/JOIN 시 기존 alias를 새 alias로 Transform하면서,
  * 중첩 키(posts.userId)는 평면화된 키로 유지한다.
  *
- * 예: posts[0].userId 컬럼의 경로가 ["T1.posts", "userId"]인 경우,
+ * 예: posts[0].userId column의 경로가 ["T1.posts", "userId"]인 경우,
  *     새 alias "T2"로 Transform하면 ["T2", "posts.userId"]가 된다.
  *
- * @param columns - Transform할 컬럼 레코드
+ * @param columns - Transform할 column 레코드
  * @param alias - 새 Table alias (예: "T2")
  * @param keyPrefix - 현재 중첩 경로 (recursive 호출용, Default value "")
- * @returns Transform된 컬럼 레코드
+ * @returns Transform된 column 레코드
  */
 function transformColumnsAlias<TRecord extends DataRecord>(
   columns: QueryableRecord<TRecord>,
@@ -1962,14 +1962,14 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
 //#endregion
 
 /**
- * Table 또는 View에 대한 Queryable 팩토리 함수를 Generate
+ * Table 또는 View에 대한 Queryable factory 함수를 Generate
  *
  * DbContext에서 Table/View별 getter를 정의할 때 사용
  *
  * @param db - DbContext instance
  * @param tableOrView - TableBuilder 또는 ViewBuilder instance
  * @param as - alias 지정 (selection, 미지정 시 automatic Create)
- * @returns Queryable을 반환하는 팩토리 function
+ * @returns Queryable을 반환하는 factory function
  *
  * @example
  * ```typescript

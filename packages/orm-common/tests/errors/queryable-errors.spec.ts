@@ -7,11 +7,11 @@ import { expr } from "../../src/expr/expr";
 describe("Queryable error cases", () => {
   describe("expr.and()/expr.or() errors", () => {
     it("ArgumentError when calling and() with empty array", () => {
-      expect(() => expr.and([])).toThrow("빈 배열은 허용되지 않습니다");
+      expect(() => expr.and([])).toThrow("empty arrays are not allowed");
     });
 
     it("ArgumentError when calling or() with empty array", () => {
-      expect(() => expr.or([])).toThrow("빈 배열은 허용되지 않습니다");
+      expect(() => expr.or([])).toThrow("empty arrays are not allowed");
     });
   });
 
@@ -51,7 +51,7 @@ describe("Queryable error cases", () => {
 
       expect(() => {
         Queryable.union(db.user());
-      }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
+      }).toThrow("unionrequires at least 2 queryables.");
     });
   });
 
@@ -94,7 +94,7 @@ describe("Queryable error cases", () => {
             ),
           ])
           .getSelectQueryDef();
-      }).toThrow("inQuery의 서브쿼리는 단일 컬럼만 SELECT해야 합니다.");
+      }).toThrow("inQuery의 서브쿼리는 단일 column만 SELECT해야 합니다.");
     });
 
     it("Error when using subquery without column specification", () => {
@@ -110,7 +110,7 @@ describe("Queryable error cases", () => {
             ),
           ])
           .getSelectQueryDef();
-      }).toThrow("inQuery의 서브쿼리는 단일 컬럼만 SELECT해야 합니다.");
+      }).toThrow("inQuery의 서브쿼리는 단일 column만 SELECT해야 합니다.");
     });
   });
 
@@ -149,7 +149,7 @@ describe("Queryable error cases", () => {
         db.employee()
           .where((e) => [expr.null(e.managerId)])
           .recursive((cte) => cte.union(db.employee()));
-      }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
+      }).toThrow("unionrequires at least 2 queryables.");
     });
 
     it("Error when calling union with zero queryables", () => {
@@ -159,7 +159,7 @@ describe("Queryable error cases", () => {
         db.employee()
           .where((e) => [expr.null(e.managerId)])
           .recursive((cte) => cte.union());
-      }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
+      }).toThrow("unionrequires at least 2 queryables.");
     });
   });
 
@@ -171,7 +171,7 @@ describe("Queryable error cases", () => {
         db.user().join("posts", (j, u) =>
           j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])),
         );
-      }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
+      }).toThrow("unionrequires at least 2 queryables.");
     });
   });
 });

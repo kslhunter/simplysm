@@ -220,7 +220,7 @@ export function validateRelations(def: DbContextDef<any, any, any>): void {
 }
 
 /**
- * Table 없음 에러인지 확인
+ * Table N/A 에러인지 확인
  *
  * DBMS별 error code/메시지 pattern:
  * - MySQL: errno 1146 (ER_NO_SUCH_TABLE), "Table 'xxx' doesn't exist"

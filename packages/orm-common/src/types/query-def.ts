@@ -38,13 +38,13 @@ export interface CudOutputDef {
  * @property type - Query type ("select")
  * @property from - FROM 절 (table/Subquery)
  * @property as - Table 별칭
- * @property select - SELECT 절 컬럼 Mapping
+ * @property select - SELECT 절 column Mapping
  * @property distinct - DISTINCT 여부
  * @property top - TOP N (MSSQL)
  * @property lock - 락 여부
  * @property where - WHERE condition array
  * @property joins - JOIN definition array
- * @property orderBy - ORDER BY [컬럼, 방향] array
+ * @property orderBy - ORDER BY [column, 방향] array
  * @property limit - LIMIT [offset, count]
  * @property groupBy - GROUP BY expression array
  * @property having - HAVING condition array
@@ -122,7 +122,7 @@ export interface InsertIntoQueryDef {
 /**
  * UPDATE Query definition
  *
- * @property record - Update할 컬럼/value Mapping
+ * @property record - Update할 column/value Mapping
  * @property joins - UPDATE JOIN (지원 시)
  */
 export interface UpdateQueryDef {

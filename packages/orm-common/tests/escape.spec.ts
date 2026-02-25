@@ -88,12 +88,12 @@ describe("MysqlExprRenderer.escapeValue", () => {
     expect(result).toBe("NULL");
   });
 
-  it("숫자를 문자열로 변환해야 함", () => {
+  it("Number를 문자열로 conversion해야 함", () => {
     const result = renderer.escapeValue(123);
     expect(result).toBe("123");
   });
 
-  it("불리언을 TRUE/FALSE로 변환해야 함", () => {
+  it("불리언을 TRUE/FALSE로 conversion해야 함", () => {
     expect(renderer.escapeValue(true)).toBe("TRUE");
     expect(renderer.escapeValue(false)).toBe("FALSE");
   });

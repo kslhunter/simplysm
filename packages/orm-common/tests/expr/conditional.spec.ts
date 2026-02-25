@@ -251,7 +251,7 @@ describe("Expr - Conditional functions", () => {
     const def = db
       .user()
       .select((item) => ({
-        firstValid: expr.ifNull(item.email, item.name, "익명"),
+        firstValid: expr.ifNull(item.email, item.name, "Anonymous"),
       }))
       .getSelectQueryDef();
 
@@ -262,7 +262,7 @@ describe("Expr - Conditional functions", () => {
           args: [
             { type: "column", path: ["T1", "email"] },
             { type: "column", path: ["T1", "name"] },
-            { type: "value", value: "익명" },
+            { type: "value", value: "Anonymous" },
           ],
         },
       });

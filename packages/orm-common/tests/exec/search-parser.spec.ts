@@ -11,8 +11,8 @@ describe("parseSearchQuery", () => {
     });
 
     it("Single word → add LIKE pattern to or array", () => {
-      expect(parseSearchQuery("사과")).toEqual({
-        or: ["%사과%"],
+      expect(parseSearchQuery("Apple")).toEqual({
+        or: ["%Apple%"],
         must: [],
         not: [],
       });
@@ -20,7 +20,7 @@ describe("parseSearchQuery", () => {
 
     it("Multiple words (space separated) → OR condition", () => {
       expect(parseSearchQuery("사과 바나나")).toEqual({
-        or: ["%사과%", "%바나나%"],
+        or: ["%Apple%", "%Banana%"],
         must: [],
         not: [],
       });
@@ -35,7 +35,7 @@ describe("parseSearchQuery", () => {
     it("+ prefix → must (AND condition)", () => {
       expect(parseSearchQuery("+사과")).toEqual({
         or: [],
-        must: ["%사과%"],
+        must: ["%Apple%"],
         not: [],
       });
     });
@@ -44,29 +44,29 @@ describe("parseSearchQuery", () => {
       expect(parseSearchQuery("-바나나")).toEqual({
         or: [],
         must: [],
-        not: ["%바나나%"],
+        not: ["%Banana%"],
       });
     });
 
     it("Mixed prefixes", () => {
       expect(parseSearchQuery("사과 +딸기 -바나나")).toEqual({
-        or: ["%사과%"],
+        or: ["%Apple%"],
         must: ["%딸기%"],
-        not: ["%바나나%"],
+        not: ["%Banana%"],
       });
     });
 
     it("Multiple identical prefixes", () => {
       expect(parseSearchQuery("+사과 +바나나")).toEqual({
         or: [],
-        must: ["%사과%", "%바나나%"],
+        must: ["%Apple%", "%Banana%"],
         not: [],
       });
     });
 
     it("Ignore when only prefixes present", () => {
       expect(parseSearchQuery("+ - ")).toEqual({ or: [], must: [], not: [] });
-      expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%사과%"], must: [], not: [] });
+      expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%Apple%"], must: [], not: [] });
     });
 
     it("Consecutive prefixes", () => {
@@ -90,26 +90,26 @@ describe("parseSearchQuery", () => {
 
   describe("Quotes", () => {
     it("Quoted phrase → must (exact match)", () => {
-      expect(parseSearchQuery('"맛있는 과일"')).toEqual({
+      expect(parseSearchQuery('"Delicious Fruit"')).toEqual({
         or: [],
-        must: ["%맛있는 과일%"],
+        must: ["%Delicious Fruit%"],
         not: [],
       });
     });
 
     it("+quote → must", () => {
-      expect(parseSearchQuery('+"맛있는 과일"')).toEqual({
+      expect(parseSearchQuery('+"Delicious Fruit"')).toEqual({
         or: [],
-        must: ["%맛있는 과일%"],
+        must: ["%Delicious Fruit%"],
         not: [],
       });
     });
 
     it("-quote → not", () => {
-      expect(parseSearchQuery('-"맛있는 과일"')).toEqual({
+      expect(parseSearchQuery('-"Delicious Fruit"')).toEqual({
         or: [],
         must: [],
-        not: ["%맛있는 과일%"],
+        not: ["%Delicious Fruit%"],
       });
     });
 
@@ -119,9 +119,9 @@ describe("parseSearchQuery", () => {
     });
 
     it("Mix quotes and regular words", () => {
-      expect(parseSearchQuery('사과 "맛있는 과일" 바나나')).toEqual({
-        or: ["%사과%", "%바나나%"],
-        must: ["%맛있는 과일%"],
+      expect(parseSearchQuery('사과 "Delicious Fruit" 바나나')).toEqual({
+        or: ["%Apple%", "%Banana%"],
+        must: ["%Delicious Fruit%"],
         not: [],
       });
     });
@@ -142,7 +142,7 @@ describe("parseSearchQuery", () => {
 
     it("* at end → search by prefix", () => {
       expect(parseSearchQuery("사과*")).toEqual({
-        or: ["사과%"],
+        or: ["Apple%"],
         must: [],
         not: [],
       });
@@ -150,7 +150,7 @@ describe("parseSearchQuery", () => {
 
     it("* on both sides → contains search (explicit)", () => {
       expect(parseSearchQuery("*사과*")).toEqual({
-        or: ["%사과%"],
+        or: ["%Apple%"],
         must: [],
         not: [],
       });
@@ -255,10 +255,10 @@ describe("parseSearchQuery", () => {
 
   describe("Complex search", () => {
     it("TSDoc example: normal + quote + exclude + required", () => {
-      expect(parseSearchQuery('사과 "맛있는 과일" -바나나 +딸기')).toEqual({
-        or: ["%사과%"],
-        must: ["%맛있는 과일%", "%딸기%"],
-        not: ["%바나나%"],
+      expect(parseSearchQuery('사과 "Delicious Fruit" -바나나 +딸기')).toEqual({
+        or: ["%Apple%"],
+        must: ["%Delicious Fruit%", "%딸기%"],
+        not: ["%Banana%"],
       });
     });
 

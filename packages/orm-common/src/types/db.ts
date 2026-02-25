@@ -33,10 +33,10 @@ export const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 /**
  * QueryBuilder.build() return type
  *
- * 빌드된 SQL 문자열과 다중 결과셋 처리를 위한 Metadata
+ * 빌드된 SQL 문자열과 다중 결과셋 processing를 위한 Metadata
  *
  * @property sql - 빌드된 SQL 문자열
- * @property resultSetIndex - Result를 가져올 결과셋 Index (기본: 0)
+ * @property resultSetIndex - Result를 가져올 결과셋 Index (Basic: 0)
  *   - MySQL INSERT with OUTPUT: 1 (INSERT + SELECT 중 SELECT)
  * @property resultSetStride - 다중 결과에서 N번째마다 결과셋 추출
  *   - 예: index=1, stride=2 → 1, 3, 5, 7... 의 결과셋 return
@@ -67,7 +67,7 @@ export type IsolationLevel =
 // ============================================
 
 /**
- * Query result data 레코드 type
+ * Query result data record type
  *
  * 재귀적 structure로 중첩 관계(include) result 표현
  *
@@ -110,7 +110,7 @@ export type DataRecord = {
  * }
  * ```
  *
- * @see {@link DbContext} DbContext에서 사용
+ * @see {@link DbContext} DbContextused in
  */
 export interface DbContextExecutor {
   /**
@@ -143,7 +143,7 @@ export interface DbContextExecutor {
   /**
    * QueryDef array 실행
    *
-   * @template T - Result 레코드 type
+   * @template T - Result record type
    * @param defs - Execute할 QueryDef array
    * @param resultMetas - Result Transform을 위한 Metadata (Select)
    * @returns 각 QueryDef별 result 배열의 array

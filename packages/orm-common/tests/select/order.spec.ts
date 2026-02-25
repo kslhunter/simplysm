@@ -6,9 +6,9 @@ import { dialects } from "../setup/test-utils";
 import * as expected from "./order.expected";
 
 describe("SELECT - ORDER BY", () => {
-  //#region ========== 기본 ORDER BY ==========
+  //#region ========== Basic ORDER BY ==========
 
-  describe("ASC (기본값)", () => {
+  describe("ASC (default)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -30,7 +30,7 @@ describe("SELECT - ORDER BY", () => {
     });
   });
 
-  describe("ASC (명시적)", () => {
+  describe("ASC (explicit)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -78,7 +78,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#region ========== 다중 정렬 ==========
 
-  describe("다중 정렬", () => {
+  describe("multiple sorting", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -108,7 +108,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#region ========== 표현식 정렬 ==========
 
-  describe("표현식으로 정렬", () => {
+  describe("sort by expressions", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -134,7 +134,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#region ========== 조합 ==========
 
-  describe("SELECT + ORDER BY 조합", () => {
+  describe("SELECT + ORDER BY combination", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -161,7 +161,7 @@ describe("SELECT - ORDER BY", () => {
     });
   });
 
-  describe("ORDER BY + LIMIT 조합", () => {
+  describe("ORDER BY + LIMIT combination", () => {
     const db = createTestDb();
     const def = db
       .user()

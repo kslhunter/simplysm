@@ -13,14 +13,14 @@ import type { ViewBuilder } from "../view-builder";
  * DB에 실제 FK constraint Generate
  *
  * @template TOwner - 소유 Table builder type
- * @template TTargetFn - 참조 Table builder 팩토리 type
+ * @template TTargetFn - 참조 Table builder factory type
  *
  * @example
  * ```typescript
  * const Post = Table("Post")
  *   .columns((c) => ({
  *     id: c.bigint().autoIncrement(),
- *     authorId: c.bigint(),  // FK 컬럼
+ *     authorId: c.bigint(),  // FK column
  *   }))
  *   .primaryKey("id")
  *   .relations((r) => ({
@@ -38,10 +38,10 @@ export class ForeignKeyBuilder<
 > {
   /**
    * @param meta - FK Metadata
-   * @param meta.ownerFn - 소유 Table 팩토리
-   * @param meta.columns - FK 컬럼명 array
-   * @param meta.targetFn - 참조 Table 팩토리
-   * @param meta.description - relationship 설명
+   * @param meta.ownerFn - 소유 Table factory
+   * @param meta.columns - FK column명 array
+   * @param meta.targetFn - 참조 Table factory
+   * @param meta.description - relationship description
    */
   constructor(
     readonly meta: {
@@ -53,9 +53,9 @@ export class ForeignKeyBuilder<
   ) {}
 
   /**
-   * relationship 설명 설정
+   * relationship set description
    *
-   * @param desc - relationship 설명
+   * @param desc - relationship description
    * @returns 새 ForeignKeyBuilder instance
    */
   description(desc: string): ForeignKeyBuilder<TOwner, TTargetFn> {
@@ -69,7 +69,7 @@ export class ForeignKeyBuilder<
  * 다른 Table에서 현재 Table을 참조하는 FK의 역참조 definition
  * include() 시 배열로 로드 (single() 호출 시 단일 object)
  *
- * @template TTargetTableFn - 참조하는 Table builder 팩토리 type
+ * @template TTargetTableFn - 참조하는 Table builder factory type
  * @template TIsSingle - 단일 object 여부
  *
  * @example
@@ -97,9 +97,9 @@ export class ForeignKeyTargetBuilder<
 > {
   /**
    * @param meta - FK 역참조 Metadata
-   * @param meta.targetTableFn - 참조하는 Table 팩토리
+   * @param meta.targetTableFn - 참조하는 Table factory
    * @param meta.relationName - 참조하는 Table의 FK 관계명
-   * @param meta.description - relationship 설명
+   * @param meta.description - relationship description
    * @param meta.isSingle - 단일 object 여부
    */
   constructor(
@@ -112,9 +112,9 @@ export class ForeignKeyTargetBuilder<
   ) {}
 
   /**
-   * relationship 설명 설정
+   * relationship set description
    *
-   * @param desc - relationship 설명
+   * @param desc - relationship description
    * @returns 새 ForeignKeyTargetBuilder instance
    */
   description(desc: string): ForeignKeyTargetBuilder<TTargetTableFn, TIsSingle> {
@@ -124,7 +124,7 @@ export class ForeignKeyTargetBuilder<
   /**
    * 단일 object 관계로 설정 (1:1)
    *
-   * 기본은 array (1:N), single() 호출 시 단일 object
+   * Basic은 array (1:N), single() 호출 시 단일 object
    *
    * @returns 새 ForeignKeyTargetBuilder instance (isSingle=true)
    *
@@ -149,7 +149,7 @@ export class ForeignKeyTargetBuilder<
  * View(View)에서도 사용 가능
  *
  * @template TOwner - 소유 Table/View builder type
- * @template TTargetFn - 참조 Table/View builder 팩토리 type
+ * @template TTargetFn - 참조 Table/View builder factory type
  *
  * @example
  * ```typescript
@@ -177,10 +177,10 @@ export class RelationKeyBuilder<
 > {
   /**
    * @param meta - relationship Metadata
-   * @param meta.ownerFn - 소유 Table/View 팩토리
-   * @param meta.columns - relationship 컬럼명 array
-   * @param meta.targetFn - 참조 Table/View 팩토리
-   * @param meta.description - relationship 설명
+   * @param meta.ownerFn - 소유 Table/View factory
+   * @param meta.columns - relationship column명 array
+   * @param meta.targetFn - 참조 Table/View factory
+   * @param meta.description - relationship description
    */
   constructor(
     readonly meta: {
@@ -192,9 +192,9 @@ export class RelationKeyBuilder<
   ) {}
 
   /**
-   * relationship 설명 설정
+   * relationship set description
    *
-   * @param desc - relationship 설명
+   * @param desc - relationship description
    * @returns 새 RelationKeyBuilder instance
    */
   description(desc: string): RelationKeyBuilder<TOwner, TTargetFn> {
@@ -208,7 +208,7 @@ export class RelationKeyBuilder<
  * ForeignKeyTargetBuilder와 동일하지만 DB에 FK 제약조건을 생성하지 않음
  * View(View)에서도 사용 가능
  *
- * @template TTargetTableFn - 참조하는 Table/View builder 팩토리 type
+ * @template TTargetTableFn - 참조하는 Table/View builder factory type
  * @template TIsSingle - 단일 object 여부
  *
  * @example
@@ -229,9 +229,9 @@ export class RelationKeyTargetBuilder<
 > {
   /**
    * @param meta - relationship 역참조 Metadata
-   * @param meta.targetTableFn - 참조하는 Table/View 팩토리
+   * @param meta.targetTableFn - 참조하는 Table/View factory
    * @param meta.relationName - 참조하는 Table/View의 관계명
-   * @param meta.description - relationship 설명
+   * @param meta.description - relationship description
    * @param meta.isSingle - 단일 object 여부
    */
   constructor(
@@ -244,9 +244,9 @@ export class RelationKeyTargetBuilder<
   ) {}
 
   /**
-   * relationship 설명 설정
+   * relationship set description
    *
-   * @param desc - relationship 설명
+   * @param desc - relationship description
    * @returns 새 RelationKeyTargetBuilder instance
    */
   description(desc: string): RelationKeyTargetBuilder<TTargetTableFn, TIsSingle> {
@@ -256,7 +256,7 @@ export class RelationKeyTargetBuilder<
   /**
    * 단일 object 관계로 설정 (1:1)
    *
-   * 기본은 array (1:N), single() 호출 시 단일 object
+   * Basic은 array (1:N), single() 호출 시 단일 object
    *
    * @returns 새 RelationKeyTargetBuilder instance (isSingle=true)
    */
@@ -266,7 +266,7 @@ export class RelationKeyTargetBuilder<
 }
 
 /**
- * FK relationship 팩토리 type (table 전용)
+ * FK relationship factory type (table 전용)
  *
  * @template TOwner - 소유 Table builder type
  * @template TColumnKey - Column key type
@@ -285,7 +285,7 @@ type RelationFkFactory<TOwner extends TableBuilder<any, any>, TColumnKey extends
 };
 
 /**
- * 논리적 relationship 팩토리 type (table/View 공용)
+ * 논리적 relationship factory type (table/View 공용)
  *
  * @template TOwner - 소유 Table/View builder type
  * @template TColumnKey - Column key type
@@ -309,15 +309,15 @@ type RelationRkFactory<
 };
 
 /**
- * relationship builder 팩토리 Generate
+ * relationship builder factory Generate
  *
- * TableBuilder.relations() 및 ViewBuilder.relations()에서 사용
+ * TableBuilder.relations() 및 ViewBuilder.relations()used in
  * Table은 FK + RelationKey 모두 사용 가능, View는 RelationKey만 사용 가능
  *
  * @template TOwner - 소유 Table/View builder type
  * @template TColumnKey - Column key type
- * @param ownerFn - 소유 Table/View 팩토리 function
- * @returns relationship builder 팩토리
+ * @param ownerFn - 소유 Table/View factory function
+ * @returns relationship builder factory
  *
  * @example
  * ```typescript
@@ -378,7 +378,7 @@ export function createRelationFactory<
 // ============================================
 
 /**
- * relationship builder 레코드 type
+ * relationship builder record type
  *
  * TableBuilder.relations() 및 ViewBuilder.relations()의 return type
  */
@@ -436,9 +436,9 @@ export type ExtractRelationTargetResult<TRelation> = TRelation extends
 /**
  * relationship 정의에서 깊은 relationship Type inference
  *
- * 모든 관계를 optional로 만들어 include() 없이 access 시 undefined 처리
+ * 모든 관계를 optional로 만들어 include() 없이 access 시 undefined processing
  *
- * @template TRelations - relationship builder 레코드 type
+ * @template TRelations - relationship builder record type
  *
  * @example
  * ```typescript

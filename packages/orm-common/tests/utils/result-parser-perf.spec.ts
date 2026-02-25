@@ -7,11 +7,11 @@ import type { ResultMeta } from "../../src/types/db";
  *
  * 목적: objClone 제거 최적화 효과 측정
  * 측정 항목:
- * - 대용량 단순 레코드 처리 시간
- * - 대용량 JOIN 레코드 처리 시간
- * - 중첩 JOIN 처리 시간
+ * - 대용량 단순 레코드 processing 시간
+ * - 대용량 JOIN 레코드 processing 시간
+ * - 중첩 JOIN processing 시간
  */
-describe("result-parser 성능", () => {
+describe("result-parser performance", () => {
   // 테스트 데이터 생성 헬퍼
   function generateSimpleRecords(count: number): Record<string, unknown>[] {
     return Array.from({ length: count }, (_, i) => ({
@@ -62,8 +62,8 @@ describe("result-parser 성능", () => {
     return records;
   }
 
-  describe("단순 레코드 처리", () => {
-    it("10,000개 레코드 처리 - 500ms 이내", async () => {
+  describe("simple record processing", () => {
+    it("10,000개 레코드 processing - 500ms 이내", async () => {
       const raw = generateSimpleRecords(10_000);
       const meta: ResultMeta = {
         columns: {
@@ -85,7 +85,7 @@ describe("result-parser 성능", () => {
       console.log(`  단순 10,000개: ${elapsed.toFixed(2)}ms`);
     });
 
-    it("50,000개 레코드 처리 - 3000ms 이내", async () => {
+    it("50,000개 레코드 processing - 3000ms 이내", async () => {
       const raw = generateSimpleRecords(50_000);
       const meta: ResultMeta = {
         columns: {
@@ -108,7 +108,7 @@ describe("result-parser 성능", () => {
     });
   });
 
-  describe("1레벨 JOIN 처리", () => {
+  describe("1-level JOIN processing", () => {
     it("1,000 users × 10 posts = 10,000개 레코드 - 600ms 이내", async () => {
       const raw = generateJoinRecords(1_000, 10);
       const meta: ResultMeta = {
@@ -154,7 +154,7 @@ describe("result-parser 성능", () => {
     });
   });
 
-  describe("2레벨 중첩 JOIN 처리", () => {
+  describe("2-level nested JOIN processing", () => {
     it("100 users × 10 posts × 5 comments = 5,000개 레코드 - 500ms 이내", async () => {
       const raw = generateNestedJoinRecords(100, 10, 5);
       const meta: ResultMeta = {

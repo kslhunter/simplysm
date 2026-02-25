@@ -23,7 +23,7 @@ SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_objec
 FROM [TestDb].sys.foreign_keys
 WHERE OBJECT_SCHEMA_NAME(parent_object_id) = 'TestSchema';
 
--- 테이블 삭제
+-- table 삭제
 SELECT @sql = @sql + N'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM [TestDb].sys.tables
 WHERE SCHEMA_NAME(schema_id) = 'TestSchema';
@@ -53,7 +53,7 @@ BEGIN
     EXECUTE 'ALTER TABLE ' || r.tablename || ' DROP CONSTRAINT ' || quote_ident(r.conname);
   END LOOP;
 
-  -- 테이블 삭제
+  -- table 삭제
   FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'TestSchema')
   LOOP
     EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
@@ -311,7 +311,7 @@ export const createProc: ExpectedSql = {
   mysql: mysql`
 CREATE PROCEDURE \`TestDb\`.\`GetUserById\`(IN \`userId\` BIGINT)
 BEGIN
--- DBMS별 맞는 쿼리 작성 --;
+-- DBMSwrite matching query --;
 END
   `,
   mssql: tsql`
@@ -319,14 +319,14 @@ CREATE OR ALTER PROCEDURE [TestDb].[TestSchema].[GetUserById] @userId BIGINT
 AS
 BEGIN
 SET NOCOUNT ON;
--- DBMS별 맞는 쿼리 작성 --
+-- DBMSwrite matching query --
 END
   `,
   postgresql: pgsql`
 CREATE OR REPLACE FUNCTION "TestSchema"."GetUserById"("userId" BIGINT)
 RETURNS TABLE("id" BIGINT, "name" VARCHAR(100), "email" VARCHAR(200)) AS $$
 BEGIN
--- DBMS별 맞는 쿼리 작성 --;
+-- DBMSwrite matching query --;
 END;
 $$ LANGUAGE plpgsql
   `,

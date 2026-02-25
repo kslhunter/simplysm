@@ -28,7 +28,7 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  *   }))
  *   .body("SELECT id, name, email FROM User WHERE id = userId");
  *
- * // DbContext에서 사용
+ * // DbContextused in
  * class MyDb extends DbContext {
  *   readonly getUserById = executable(this, GetUserById);
  * }
@@ -37,22 +37,22 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  * const users = await db.getUserById({ userId: 1n }).result();
  * ```
  *
- * @see {@link Procedure} 팩토리 function
+ * @see {@link Procedure} factory function
  * @see {@link executable} Executable Generate
  */
 export class ProcedureBuilder<
   TParams extends ColumnBuilderRecord,
   TReturns extends ColumnBuilderRecord,
 > {
-  /** 파라미터 definition (type 추론용) */
+  /** 파라미터 definition (type for inference) */
   readonly $params!: TParams;
-  /** return type definition (type 추론용) */
+  /** return type definition (type for inference) */
   readonly $returns!: TReturns;
 
   /**
    * @param meta - Procedure Metadata
    * @param meta.name - Procedure 이름
-   * @param meta.description - Procedure 설명 (주석)
+   * @param meta.description - Procedure description (주석)
    * @param meta.database - Database 이름
    * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
    * @param meta.params - 파라미터 definition
@@ -72,20 +72,20 @@ export class ProcedureBuilder<
   ) {}
 
   /**
-   * Procedure 설명 설정
+   * Procedure set description
    *
-   * @param desc - Procedure 설명 (DDL Comment으로 사용)
-   * @returns 새 ProcedureBuilder instance
+   * @param desc - Procedure description (DDL Comment으로 사용)
+   * @returns new ProcedureBuilder instance
    */
   description(desc: string): ProcedureBuilder<TParams, TReturns> {
     return new ProcedureBuilder({ ...this.meta, description: desc });
   }
 
   /**
-   * Database 이름 설정
+   * Database set name
    *
    * @param db - Database 이름
-   * @returns 새 ProcedureBuilder instance
+   * @returns new ProcedureBuilder instance
    *
    * @example
    * ```typescript
@@ -97,12 +97,12 @@ export class ProcedureBuilder<
   }
 
   /**
-   * schema 이름 설정
+   * schema set name
    *
-   * MSSQL, PostgreSQL에서 사용
+   * MSSQL, PostgreSQLused in
    *
    * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
-   * @returns 새 ProcedureBuilder instance
+   * @returns new ProcedureBuilder instance
    */
   schema(schema: string): ProcedureBuilder<TParams, TReturns> {
     return new ProcedureBuilder({ ...this.meta, schema });
@@ -115,8 +115,8 @@ export class ProcedureBuilder<
    * DBMS별 파라미터 문법 차이 주의 (MSSQL: @param, MySQL/PostgreSQL: param)
    *
    * @template T - 새 파라미터 definition type
-   * @param fn - Column 팩토리를 받아 파라미터 정의를 반환하는 function
-   * @returns 새 ProcedureBuilder instance
+   * @param fn - Column factory를 받아 파라미터 정의를 반환하는 function
+   * @returns new ProcedureBuilder instance
    *
    * @example
    * ```typescript
@@ -139,8 +139,8 @@ export class ProcedureBuilder<
    * Procedure return result Column definition
    *
    * @template T - 새 return type definition
-   * @param fn - Column 팩토리를 받아 return Column definition를 반환하는 function
-   * @returns 새 ProcedureBuilder instance
+   * @param fn - Column factory를 받아 return Column definition를 반환하는 function
+   * @returns new ProcedureBuilder instance
    *
    * @example
    * ```typescript
@@ -168,7 +168,7 @@ export class ProcedureBuilder<
    * - PostgreSQL: RETURN QUERY 필요
    *
    * @param sql - Procedure 본문 SQL
-   * @returns 새 ProcedureBuilder instance
+   * @returns new ProcedureBuilder instance
    *
    * @example
    * ```typescript
@@ -193,7 +193,7 @@ export class ProcedureBuilder<
 // ============================================
 
 /**
- * Procedure builder Generate 팩토리 function
+ * Procedure builder Generate factory function
  *
  * ProcedureBuilder를 생성하여 Fluent API로 저장 Procedure schema definition
  *
@@ -202,7 +202,7 @@ export class ProcedureBuilder<
  *
  * @example
  * ```typescript
- * // 기본 사용
+ * // Basic 사용
  * const GetUserById = Procedure("GetUserById")
  *   .database("mydb")
  *   .params((c) => ({

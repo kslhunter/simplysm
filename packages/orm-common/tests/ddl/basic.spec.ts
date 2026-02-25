@@ -358,7 +358,7 @@ describe("DDL - Column", () => {
     });
   });
 
-  describe("getModifyColumnQueryDef - TYPE + DEFAULT 동시 변경", () => {
+  describe("getModifyColumnQueryDef - change TYPE + DEFAULT simultaneously", () => {
     const db = createTestDb();
     const column = Column.int().default(100);
     const def = db.getModifyColumnQueryDef(
@@ -681,7 +681,7 @@ describe("DDL - Procedure", () => {
             nullable: true,
           },
         ],
-        query: "-- DBMS별 맞는 쿼리 작성 --",
+        query: "-- DBMSwrite matching query --",
       });
     });
 

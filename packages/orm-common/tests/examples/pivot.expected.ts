@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== PIVOT - 기본 집계 함수 ==========
+//#region ========== PIVOT - Basic 집계 함수 ==========
 
 export const pivotSum: ExpectedSql = {
   mysql: mysql`
@@ -160,22 +160,22 @@ GROUP BY "T1"."id", "T1"."category"
 export const pivotStringColumn: ExpectedSql = {
   mysql: mysql`
 SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`year\` AS \`year\`,
-  SUM(IF(\`T1\`.\`category\`<=>'식품',\`T1\`.\`amount\`,NULL)) AS \`food\`,
-  SUM(IF(\`T1\`.\`category\`<=>'전자',\`T1\`.\`amount\`,NULL)) AS \`electronics\`
+  SUM(IF(\`T1\`.\`category\`<=>'Food',\`T1\`.\`amount\`,NULL)) AS \`food\`,
+  SUM(IF(\`T1\`.\`category\`<=>'Electronics',\`T1\`.\`amount\`,NULL)) AS \`electronics\`
 FROM \`TestDb\`.\`Sales\` AS \`T1\`
 GROUP BY \`T1\`.\`id\`, \`T1\`.\`year\`
   `,
   mssql: tsql`
 SELECT [T1].[id] AS [id], [T1].[year] AS [year],
-  SUM(CASE WHEN (([T1].[category] IS NULL AND N'식품' IS NULL) OR [T1].[category] = N'식품') THEN [T1].[amount] ELSE NULL END) AS [food],
-  SUM(CASE WHEN (([T1].[category] IS NULL AND N'전자' IS NULL) OR [T1].[category] = N'전자') THEN [T1].[amount] ELSE NULL END) AS [electronics]
+  SUM(CASE WHEN (([T1].[category] IS NULL AND N'Food' IS NULL) OR [T1].[category] = N'Food') THEN [T1].[amount] ELSE NULL END) AS [food],
+  SUM(CASE WHEN (([T1].[category] IS NULL AND N'Electronics' IS NULL) OR [T1].[category] = N'Electronics') THEN [T1].[amount] ELSE NULL END) AS [electronics]
 FROM [TestDb].[TestSchema].[Sales] AS [T1]
 GROUP BY [T1].[id], [T1].[year]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."year" AS "year",
-  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM '식품' THEN "T1"."amount" ELSE NULL END) AS "food",
-  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM '전자' THEN "T1"."amount" ELSE NULL END) AS "electronics"
+  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM 'Food' THEN "T1"."amount" ELSE NULL END) AS "food",
+  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM 'Electronics' THEN "T1"."amount" ELSE NULL END) AS "electronics"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."year"
   `,
@@ -187,7 +187,7 @@ SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`category\` AS \`category\`,
   SUM(IF(\`T1\`.\`year\`<=>2020,\`T1\`.\`amount\`,NULL)) AS \`y2020\`,
   SUM(IF(\`T1\`.\`year\`<=>2021,\`T1\`.\`amount\`,NULL)) AS \`y2021\`
 FROM \`TestDb\`.\`Sales\` AS \`T1\`
-WHERE \`T1\`.\`category\`<=>'식품'
+WHERE \`T1\`.\`category\`<=>'Food'
 GROUP BY \`T1\`.\`id\`, \`T1\`.\`category\`
   `,
   mssql: tsql`
@@ -195,7 +195,7 @@ SELECT [T1].[id] AS [id], [T1].[category] AS [category],
   SUM(CASE WHEN (([T1].[year] IS NULL AND 2020 IS NULL) OR [T1].[year] = 2020) THEN [T1].[amount] ELSE NULL END) AS [y2020],
   SUM(CASE WHEN (([T1].[year] IS NULL AND 2021 IS NULL) OR [T1].[year] = 2021) THEN [T1].[amount] ELSE NULL END) AS [y2021]
 FROM [TestDb].[TestSchema].[Sales] AS [T1]
-WHERE (([T1].[category] IS NULL AND N'식품' IS NULL) OR [T1].[category] = N'식품')
+WHERE (([T1].[category] IS NULL AND N'Food' IS NULL) OR [T1].[category] = N'Food')
 GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
@@ -203,7 +203,7 @@ SELECT "T1"."id" AS "id", "T1"."category" AS "category",
   SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
   SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
-WHERE "T1"."category" IS NOT DISTINCT FROM '식품'
+WHERE "T1"."category" IS NOT DISTINCT FROM 'Food'
 GROUP BY "T1"."id", "T1"."category"
   `,
 };

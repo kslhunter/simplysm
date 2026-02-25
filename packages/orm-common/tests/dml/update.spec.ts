@@ -48,7 +48,7 @@ describe("UPDATE - Basic", () => {
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef(() => ({
-        name: expr.val("string", "새이름"),
+        name: expr.val("string", "New Name"),
         departmentId: expr.val("number", 2),
       }));
 
@@ -77,14 +77,14 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("일반 값으로 UPDATE (expr.val 없이)", () => {
+  describe("UPDATE with literal values (without expr.val)", () => {
     const db = createTestDb();
 
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef(() => ({
-        name: "새이름",
+        name: "New Name",
         departmentId: 2,
       }));
 
@@ -113,14 +113,14 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("일반 값과 expr 혼합 UPDATE", () => {
+  describe("UPDATE mixing literal values and expressions", () => {
     const db = createTestDb();
 
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef((e) => ({
-        name: "새이름",
+        name: "New Name",
         managerId: expr.raw("number")`${e.managerId} + 1`,
       }));
 
@@ -153,7 +153,7 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("현재 값 참조하여 UPDATE (e.g., count = count + 1)", () => {
+  describe("UPDATE referencing current values (e.g., count = count + 1)", () => {
     const db = createTestDb();
 
     const def = db
@@ -192,7 +192,7 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("output 컬럼 지정", () => {
+  describe("Specify output column", () => {
     const db = createTestDb();
 
     const def = db
@@ -200,7 +200,7 @@ describe("UPDATE - Basic", () => {
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef(
         () => ({
-          name: expr.val("string", "새이름"),
+          name: expr.val("string", "New Name"),
         }),
         ["id", "name"],
       );
@@ -234,7 +234,7 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("TOP으로 업데이트 개수 제한", () => {
+  describe("Limit update count with TOP", () => {
     const db = createTestDb();
 
     const def = db
@@ -242,7 +242,7 @@ describe("UPDATE - Basic", () => {
       .where((e) => [expr.eq(e.departmentId, 1)])
       .top(10)
       .getUpdateQueryDef(() => ({
-        name: expr.val("string", "새이름"),
+        name: expr.val("string", "New Name"),
       }));
 
     it("Verify QueryDef", () => {
@@ -271,7 +271,7 @@ describe("UPDATE - Basic", () => {
   });
 });
 
-describe("FK 스위치", () => {
+describe("FK switch", () => {
   describe("FK off", () => {
     const db = createTestDb();
 

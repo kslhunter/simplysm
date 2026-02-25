@@ -7,7 +7,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./basic.expected";
 
 describe("SELECT - Basic", () => {
-  describe("테이블에서 가져오기", () => {
+  describe("Select from table", () => {
     const db = createTestDb();
     const def = db.user().getSelectQueryDef();
 
@@ -25,7 +25,7 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("컬럼 선택", () => {
+  describe("Select columns", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -53,7 +53,7 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("표현식 사용 (concat)", () => {
+  describe("Use expressions (concat)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -85,7 +85,7 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("집계 함수", () => {
+  describe("Aggregate functions", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -119,12 +119,12 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("ifNull (2개 인자)", () => {
+  describe("ifNull (2 arguments)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        email: expr.ifNull(item.email, "없음"),
+        email: expr.ifNull(item.email, "N/A"),
       }))
       .getSelectQueryDef();
 
@@ -138,7 +138,7 @@ describe("SELECT - Basic", () => {
             type: "ifNull",
             args: [
               { type: "column", path: ["T1", "email"] },
-              { type: "value", value: "없음" },
+              { type: "value", value: "N/A" },
             ],
           },
         },
@@ -151,12 +151,12 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("ifNull (3개 인자, COALESCE)", () => {
+  describe("ifNull (3 arguments, COALESCE)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        contact: expr.ifNull(item.email, item.name, "없음"),
+        contact: expr.ifNull(item.email, item.name, "N/A"),
       }))
       .getSelectQueryDef();
 
@@ -171,7 +171,7 @@ describe("SELECT - Basic", () => {
             args: [
               { type: "column", path: ["T1", "email"] },
               { type: "column", path: ["T1", "name"] },
-              { type: "value", value: "없음" },
+              { type: "value", value: "N/A" },
             ],
           },
         },
@@ -245,7 +245,7 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("substring (length 생략)", () => {
+  describe("substring (length omitted)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -370,7 +370,7 @@ describe("SELECT - Basic", () => {
   });
 });
 
-describe("SELECT - 옵션", () => {
+describe("SELECT - Options", () => {
   describe("DISTINCT", () => {
     const db = createTestDb();
     const def = db.user().distinct().getSelectQueryDef();
@@ -409,7 +409,7 @@ describe("SELECT - 옵션", () => {
     });
   });
 
-  describe("DISTINCT + LOCK 조합", () => {
+  describe("DISTINCT + LOCK combination", () => {
     const db = createTestDb();
     const def = db.user().distinct().lock().getSelectQueryDef();
 
@@ -430,7 +430,7 @@ describe("SELECT - 옵션", () => {
   });
 });
 
-describe("SELECT - 제한", () => {
+describe("SELECT - Limit", () => {
   describe("TOP", () => {
     const db = createTestDb();
     const def = db.user().top(10).getSelectQueryDef();
@@ -474,7 +474,7 @@ describe("SELECT - 제한", () => {
     });
   });
 
-  describe("LIMIT - offset 포함", () => {
+  describe("LIMIT - with offset", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -498,5 +498,5 @@ describe("SELECT - 제한", () => {
     });
   });
 
-  // 랜덤 샘플링은 examples/sampling.spec.ts 참고
+  // Random sampling see examples/sampling.spec.ts
 });

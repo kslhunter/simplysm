@@ -49,14 +49,14 @@ describe("UPSERT - Basic", () => {
     });
   });
 
-  describe("UPDATE 값 재사용하여 INSERT", () => {
+  describe("INSERT reusing UPDATE values", () => {
     const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
         () => ({
-          name: expr.val("string", "홍길동"),
+          name: expr.val("string", "Gildong Hong"),
           departmentId: expr.val("number", 2),
         }),
         (upd) => ({
@@ -82,11 +82,11 @@ describe("UPSERT - Basic", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "홍길동" },
+          name: { type: "value", value: "Gildong Hong" },
           departmentId: { type: "value", value: 2 },
         },
         insertRecord: {
-          name: { type: "value", value: "홍길동" },
+          name: { type: "value", value: "Gildong Hong" },
           departmentId: { type: "value", value: 2 },
           managerId: { type: "value", value: 100 },
         },
@@ -99,13 +99,13 @@ describe("UPSERT - Basic", () => {
     });
   });
 
-  describe("output 컬럼 지정", () => {
+  describe("Specify output column", () => {
     const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
-        () => ({ name: expr.val("string", "새이름") }),
+        () => ({ name: expr.val("string", "New Name") }),
         (upd) => ({ name: upd.name }),
         ["id", "name"],
       );
@@ -146,15 +146,15 @@ describe("UPSERT - Basic", () => {
     });
   });
 
-  describe("복합 WHERE 조건", () => {
+  describe("Complex WHERE condition", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
+      .where((e) => [expr.eq(e.name, "Gildong Hong"), expr.eq(e.departmentId, 1)])
       .getUpsertQueryDef(
         () => ({ managerId: expr.val("number", 10) }),
         (upd) => ({
-          name: expr.val("string", "홍길동"),
+          name: expr.val("string", "Gildong Hong"),
           departmentId: expr.val("number", 1),
           managerId: upd.managerId,
         }),
@@ -172,7 +172,7 @@ describe("UPSERT - Basic", () => {
             {
               type: "eq",
               source: { type: "column", path: ["T1", "name"] },
-              target: { type: "value", value: "홍길동" },
+              target: { type: "value", value: "Gildong Hong" },
             },
             {
               type: "eq",
@@ -185,7 +185,7 @@ describe("UPSERT - Basic", () => {
           managerId: { type: "value", value: 10 },
         },
         insertRecord: {
-          name: { type: "value", value: "홍길동" },
+          name: { type: "value", value: "Gildong Hong" },
           departmentId: { type: "value", value: 1 },
           managerId: { type: "value", value: 10 },
         },
@@ -198,13 +198,13 @@ describe("UPSERT - Basic", () => {
     });
   });
 
-  describe("일반 값으로 UPSERT (expr.val 없이)", () => {
+  describe("UPSERT with literal values (without expr.val)", () => {
     const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
-        () => ({ name: "새이름" }),
+        () => ({ name: "New Name" }),
         (upd) => ({ name: upd.name, departmentId: 1 }),
       );
 

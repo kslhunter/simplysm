@@ -8,8 +8,8 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./view.expected";
 
-describe("View - 기본", () => {
-  describe("View에서 SELECT", () => {
+describe("View - Basic", () => {
+  describe("SELECT from view", () => {
     const db = createTestDb();
     const def = db.activeUsers().getSelectQueryDef();
 
@@ -27,7 +27,7 @@ describe("View - 기본", () => {
     });
   });
 
-  describe("View에서 SELECT + WHERE", () => {
+  describe("SELECT + WHERE from view", () => {
     const db = createTestDb();
     const def = db
       .activeUsers()
@@ -55,7 +55,7 @@ describe("View - 기본", () => {
     });
   });
 
-  describe("View에서 SELECT + 컬럼 선택", () => {
+  describe("SELECT + select column from view", () => {
     const db = createTestDb();
     const def = db
       .activeUsers()
@@ -83,7 +83,7 @@ describe("View - 기본", () => {
     });
   });
 
-  describe("View에서 SELECT + ORDER BY", () => {
+  describe("SELECT + ORDER BY from view", () => {
     const db = createTestDb();
     const def = db
       .activeUsers()
@@ -105,7 +105,7 @@ describe("View - 기본", () => {
     });
   });
 
-  describe("View에서 SELECT + ORDER BY + LIMIT", () => {
+  describe("SELECT + ORDER BY + LIMIT from view", () => {
     const db = createTestDb();
     const def = db
       .activeUsers()
@@ -130,8 +130,8 @@ describe("View - 기본", () => {
   });
 });
 
-describe("View - SELECT가 있는 뷰", () => {
-  describe("UserSummaryView에서 SELECT", () => {
+describe("View - view with SELECT", () => {
+  describe("SELECT from UserSummaryView", () => {
     const db = createTestDb();
     const def = db.userSummary().getSelectQueryDef();
 
@@ -149,7 +149,7 @@ describe("View - SELECT가 있는 뷰", () => {
     });
   });
 
-  describe("UserSummaryView에서 특정 컬럼 선택", () => {
+  describe("Select specific column from UserSummaryView", () => {
     const db = createTestDb();
     const def = db
       .userSummary()

@@ -8,7 +8,7 @@ import * as expected from "./filter.expected";
 
 //#region ========== 비교 연산 ==========
 
-describe("SELECT - WHERE - 비교 연산", () => {
+describe("SELECT - WHERE - comparison operations", () => {
   describe("eq (equal)", () => {
     const db = createTestDb();
     const def = db
@@ -185,7 +185,7 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
 //#region ========== NULL 체크 ==========
 
-describe("SELECT - WHERE - NULL 체크", () => {
+describe("SELECT - WHERE - NULL check", () => {
   describe("null", () => {
     const db = createTestDb();
     const def = db
@@ -325,7 +325,7 @@ describe("SELECT - WHERE - LIKE", () => {
     const db = createTestDb();
     const def = db
       .user()
-      .where((item) => [expr.like(item.name, "%홍%")])
+      .where((item) => [expr.like(item.name, "%Hong%")])
       .getSelectQueryDef();
 
     it("Verify QueryDef", () => {
@@ -337,7 +337,7 @@ describe("SELECT - WHERE - LIKE", () => {
           {
             type: "like",
             source: { type: "column", path: ["T1", "name"] },
-            pattern: { type: "value", value: "%홍%" },
+            pattern: { type: "value", value: "%Hong%" },
           },
         ],
       });
@@ -353,7 +353,7 @@ describe("SELECT - WHERE - LIKE", () => {
     const db = createTestDb();
     const def = db
       .user()
-      .where((item) => [expr.not(expr.like(item.name, "%테스트%"))])
+      .where((item) => [expr.not(expr.like(item.name, "%Test%"))])
       .getSelectQueryDef();
 
     it("Verify QueryDef", () => {
@@ -367,7 +367,7 @@ describe("SELECT - WHERE - LIKE", () => {
             arg: {
               type: "like",
               source: { type: "column", path: ["T1", "name"] },
-              pattern: { type: "value", value: "%테스트%" },
+              pattern: { type: "value", value: "%Test%" },
             },
           },
         ],
@@ -385,7 +385,7 @@ describe("SELECT - WHERE - LIKE", () => {
 
 //#region ========== 논리 연산 ==========
 
-describe("SELECT - WHERE - 논리 연산", () => {
+describe("SELECT - WHERE - logical operations", () => {
   describe("다중 조건 (AND)", () => {
     const db = createTestDb();
     const def = db
@@ -419,7 +419,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
     });
   });
 
-  describe("or 조건", () => {
+  describe("or condition", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -457,7 +457,7 @@ describe("SELECT - WHERE - 논리 연산", () => {
     });
   });
 
-  describe("and 조건 (명시적)", () => {
+  describe("and condition (explicit)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -683,11 +683,11 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
 //#region ========== SEARCH ==========
 
 describe("SELECT - SEARCH", () => {
-  it("단일 검색어 - 단일 컬럼", () => {
+  it("단일 검색어 - 단일 column", () => {
     const db = createTestDb();
     const def = db
       .post()
-      .search((item) => [item.title], "사과")
+      .search((item) => [item.title], "Apple")
       .getSelectQueryDef();
 
     expect(def).toEqual({
@@ -707,7 +707,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
               ],
             },
@@ -744,7 +744,7 @@ describe("SELECT - SEARCH", () => {
                         type: "lower",
                         arg: { type: "column", path: ["T1", "title"] },
                       },
-                      pattern: { type: "value", value: "%사과%" },
+                      pattern: { type: "value", value: "%Apple%" },
                     },
                   ],
                 },
@@ -757,7 +757,7 @@ describe("SELECT - SEARCH", () => {
                         type: "lower",
                         arg: { type: "column", path: ["T1", "title"] },
                       },
-                      pattern: { type: "value", value: "%바나나%" },
+                      pattern: { type: "value", value: "%Banana%" },
                     },
                   ],
                 },
@@ -773,7 +773,7 @@ describe("SELECT - SEARCH", () => {
     const db = createTestDb();
     const def = db
       .post()
-      .search((item) => [item.title], '"맛있는 과일"')
+      .search((item) => [item.title], '"Delicious Fruit"')
       .getSelectQueryDef();
 
     expect(def).toEqual({
@@ -793,7 +793,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%맛있는 과일%" },
+                  pattern: { type: "value", value: "%Delicious Fruit%" },
                 },
               ],
             },
@@ -871,11 +871,11 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("다중 컬럼 검색 (OR)", () => {
+  it("다중 column 검색 (OR)", () => {
     const db = createTestDb();
     const def = db
       .post()
-      .search((item) => [item.title, item.content], "사과")
+      .search((item) => [item.title, item.content], "Apple")
       .getSelectQueryDef();
 
     expect(def).toEqual({
@@ -895,7 +895,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
                 {
                   type: "like",
@@ -903,7 +903,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "content"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
               ],
             },
@@ -937,7 +937,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
               ],
             },
@@ -952,7 +952,7 @@ describe("SELECT - SEARCH", () => {
                       type: "lower",
                       arg: { type: "column", path: ["T1", "title"] },
                     },
-                    pattern: { type: "value", value: "%바나나%" },
+                    pattern: { type: "value", value: "%Banana%" },
                   },
                 ],
               },
@@ -967,7 +967,7 @@ describe("SELECT - SEARCH", () => {
     const db = createTestDb();
     const def = db
       .post()
-      .search((item) => [item.title, item.content], '사과 "맛있는 과일" -바나나')
+      .search((item) => [item.title, item.content], '사과 "Delicious Fruit" -바나나')
       .getSelectQueryDef();
 
     expect(def).toEqual({
@@ -987,7 +987,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
                 {
                   type: "like",
@@ -995,7 +995,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "content"] },
                   },
-                  pattern: { type: "value", value: "%사과%" },
+                  pattern: { type: "value", value: "%Apple%" },
                 },
               ],
             },
@@ -1008,7 +1008,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "title"] },
                   },
-                  pattern: { type: "value", value: "%맛있는 과일%" },
+                  pattern: { type: "value", value: "%Delicious Fruit%" },
                 },
                 {
                   type: "like",
@@ -1016,7 +1016,7 @@ describe("SELECT - SEARCH", () => {
                     type: "lower",
                     arg: { type: "column", path: ["T1", "content"] },
                   },
-                  pattern: { type: "value", value: "%맛있는 과일%" },
+                  pattern: { type: "value", value: "%Delicious Fruit%" },
                 },
               ],
             },
@@ -1031,7 +1031,7 @@ describe("SELECT - SEARCH", () => {
                       type: "lower",
                       arg: { type: "column", path: ["T1", "title"] },
                     },
-                    pattern: { type: "value", value: "%바나나%" },
+                    pattern: { type: "value", value: "%Banana%" },
                   },
                   {
                     type: "like",
@@ -1039,7 +1039,7 @@ describe("SELECT - SEARCH", () => {
                       type: "lower",
                       arg: { type: "column", path: ["T1", "content"] },
                     },
-                    pattern: { type: "value", value: "%바나나%" },
+                    pattern: { type: "value", value: "%Banana%" },
                   },
                 ],
               },

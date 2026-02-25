@@ -2,18 +2,18 @@ import type { ColumnPrimitive, DataType } from "./column";
 import type { SelectQueryDef } from "./query-def";
 
 /**
- * 날짜 연산 단위
+ * Date 연산 단위
  *
- * dateDiff, dateAdd 등 Date function에서 사용
+ * dateDiff, dateAdd 등 Date functionused in
  */
 export type DateSeparator = "year" | "month" | "day" | "hour" | "minute" | "second";
 
 //#region ========== value expression ==========
 
 /**
- * 컬럼 참조 expression
+ * column 참조 expression
  *
- * @property path - Column 경로 (테이블별칭.컬럼명 등)
+ * @property path - Column 경로 (table별칭.column명 등)
  */
 export interface ExprColumn {
   type: "column";
@@ -53,28 +53,28 @@ export interface ExprEq {
   target: Expr;
 }
 
-/** 초과 comparison (>) */
+/** Greater than comparison (>) */
 export interface ExprGt {
   type: "gt";
   source: Expr;
   target: Expr;
 }
 
-/** 미만 comparison (<) */
+/** Less than comparison (<) */
 export interface ExprLt {
   type: "lt";
   source: Expr;
   target: Expr;
 }
 
-/** 이상 comparison (>=) */
+/** Greater than or equal comparison (>=) */
 export interface ExprGte {
   type: "gte";
   source: Expr;
   target: Expr;
 }
 
-/** 이하 comparison (<=) */
+/** Less than or equal comparison (<=) */
 export interface ExprLte {
   type: "lte";
   source: Expr;
@@ -221,7 +221,7 @@ export interface ExprByteLength {
   arg: Expr;
 }
 
-/** 부분 문자열 (SUBSTRING) */
+/** part 문자열 (SUBSTRING) */
 export interface ExprSubstring {
   type: "substring";
   source: Expr;
@@ -238,7 +238,7 @@ export interface ExprIndexOf {
 
 //#endregion
 
-//#region ========== 숫자 function ==========
+//#region ========== Number function ==========
 
 /** 절대값 (ABS) */
 export interface ExprAbs {
@@ -323,7 +323,7 @@ export interface ExprIsoYearMonth {
   arg: Expr;
 }
 
-/** 날짜 차이 (DATEDIFF) */
+/** Date 차이 (DATEDIFF) */
 export interface ExprDateDiff {
   type: "dateDiff";
   separator: DateSeparator;
@@ -331,7 +331,7 @@ export interface ExprDateDiff {
   to: Expr;
 }
 
-/** 날짜 연산 (DATEADD) */
+/** Date 연산 (DATEADD) */
 export interface ExprDateAdd {
   type: "dateAdd";
   separator: DateSeparator;
@@ -339,7 +339,7 @@ export interface ExprDateAdd {
   value: Expr;
 }
 
-/** 날짜 포맷 (FORMAT/DATE_FORMAT) */
+/** Date 포맷 (FORMAT/DATE_FORMAT) */
 export interface ExprFormatDate {
   type: "formatDate";
   source: Expr;
@@ -421,7 +421,7 @@ export interface ExprMin {
 
 //#endregion
 
-//#region ========== 기타 ==========
+//#region ========== Other ==========
 
 /** 최대값 selection (GREATEST) */
 export interface ExprGreatest {
@@ -445,7 +445,7 @@ export interface ExprRandom {
   type: "random";
 }
 
-/** type Transform (CAST) */
+/** type transformation (CAST) */
 export interface ExprCast {
   type: "cast";
   source: Expr;
@@ -507,31 +507,31 @@ export interface WinFnLastValue {
   column: Expr;
 }
 
-/** 윈도우 SUM */
+/** Window SUM */
 export interface WinFnSum {
   type: "sum";
   column: Expr;
 }
 
-/** 윈도우 AVG */
+/** Window AVG */
 export interface WinFnAvg {
   type: "avg";
   column: Expr;
 }
 
-/** 윈도우 COUNT */
+/** Window COUNT */
 export interface WinFnCount {
   type: "count";
   column?: Expr;
 }
 
-/** 윈도우 MIN */
+/** Window MIN */
 export interface WinFnMin {
   type: "min";
   column: Expr;
 }
 
-/** 윈도우 MAX */
+/** Window MAX */
 export interface WinFnMax {
   type: "max";
   column: Expr;
@@ -558,10 +558,10 @@ export type WinFn =
   | WinFnMax;
 
 /**
- * 윈도우 스펙 (OVER 절)
+ * Window 스펙 (OVER 절)
  *
  * @property partitionBy - PARTITION BY expression 목록
- * @property orderBy - ORDER BY [컬럼, 방향] 목록
+ * @property orderBy - ORDER BY [column, 방향] 목록
  */
 export interface WinSpec {
   partitionBy?: Expr[];
@@ -569,9 +569,9 @@ export interface WinSpec {
 }
 
 /**
- * 윈도우 expression
+ * Window expression
  *
- * Window function + 윈도우 스펙 composition
+ * Window function + Window 스펙 composition
  */
 export interface ExprWindow {
   type: "window";
@@ -581,7 +581,7 @@ export interface ExprWindow {
 
 //#endregion
 
-//#region ========== 시스템 ==========
+//#region ========== System ==========
 
 /** 스칼라 Subquery */
 export interface ExprSubquery {
@@ -597,7 +597,7 @@ export interface ExprSubquery {
  * WHERE 절에 사용되는 expression (boolean return)
  *
  * comparison 연산 + logic 연산의 union type
- * where(), having() 등에서 사용
+ * where(), having() 등used in
  */
 export type WhereExpr =
   // Comparison
@@ -622,8 +622,8 @@ export type WhereExpr =
 /**
  * 모든 expression union type
  *
- * value, 문자열, 숫자, 날짜, condition, aggregation, 윈도우 등 모든 expression
- * select(), orderBy() 등에서 사용
+ * value, 문자열, Number, Date, condition, aggregation, Window 등 모든 expression
+ * select(), orderBy() 등used in
  *
  * @see {@link WhereExpr} WHERE 절 전용 expression
  */

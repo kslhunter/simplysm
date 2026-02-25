@@ -1,5 +1,5 @@
 /**
- * SELECT - GROUP BY / HAVING 테스트 Expected SQL
+ * SELECT - GROUP BY / HAVING test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";

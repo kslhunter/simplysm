@@ -10,7 +10,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./join.expected";
 
 describe("SELECT - JOIN", () => {
-  describe("기본", () => {
+  describe("Basic", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -329,7 +329,7 @@ describe("SELECT - JOIN", () => {
     });
   });
 
-  describe("joinSingle + LATERAL (select 집계)", () => {
+  describe("joinSingle + LATERAL (select aggregation)", () => {
     const db = createTestDb();
     const def = db
       .user()

@@ -7,7 +7,7 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./date.expected";
 import { DateTime } from "@simplysm/core-common";
 
-describe("Expr - 날짜/시간 함수", () => {
+describe("Expr - Date/Time functions", () => {
   describe("year - extract year", () => {
     const db = createTestDb();
     const def = db
@@ -80,7 +80,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("hour - 시 추출", () => {
+  describe("hour - extract hour", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -152,7 +152,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (일)", () => {
+  describe("dateDiff - date difference (days)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -179,7 +179,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (년)", () => {
+  describe("dateDiff - date difference (years)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -206,7 +206,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (월)", () => {
+  describe("dateDiff - date difference (months)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -233,7 +233,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (시)", () => {
+  describe("dateDiff - date difference (hours)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -260,7 +260,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (분)", () => {
+  describe("dateDiff - date difference (minutes)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -287,7 +287,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateDiff - 날짜 차이 (초)", () => {
+  describe("dateDiff - date difference (seconds)", () => {
     const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
@@ -314,7 +314,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (월)", () => {
+  describe("dateAdd - add date (months)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -340,7 +340,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (년)", () => {
+  describe("dateAdd - add date (years)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -355,7 +355,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (일)", () => {
+  describe("dateAdd - add date (days)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -370,7 +370,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (시)", () => {
+  describe("dateAdd - add date (hours)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -385,7 +385,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (분)", () => {
+  describe("dateAdd - add date (minutes)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -400,7 +400,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("dateAdd - 날짜 더하기 (초)", () => {
+  describe("dateAdd - add date (seconds)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -415,7 +415,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("formatDate - 날짜 포맷팅", () => {
+  describe("formatDate - date formatting", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -440,7 +440,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("isoWeek - ISO 주차", () => {
+  describe("isoWeek - ISO week", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -468,7 +468,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("isoWeekStartDate - ISO 주차 시작일", () => {
+  describe("isoWeekStartDate - ISO week start date", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -496,7 +496,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("isoYearMonth - ISO 년월 (YYYY-MM)", () => {
+  describe("isoYearMonth - ISO year-month (YYYY-MM)", () => {
     const db = createTestDb();
     const def = db
       .user()

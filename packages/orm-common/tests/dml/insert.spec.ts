@@ -101,17 +101,17 @@ describe("INSERT - Basic", () => {
     });
   });
 
-  describe("AI 컬럼 명시적 지정", () => {
+  describe("Explicitly specify AI column", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
+      .getInsertQueryDef([{ id: 100, name: "Gildong Hong", managerId: undefined, departmentId: 1 }]);
 
     it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insert",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        records: [{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }],
+        records: [{ id: 100, name: "Gildong Hong", managerId: undefined, departmentId: 1 }],
         overrideIdentity: true,
       });
     });
@@ -128,18 +128,18 @@ describe("INSERT - Basic", () => {
 describe("INSERT IF NOT EXISTS", () => {
   //#region ========== INSERT IF NOT EXISTS ==========
 
-  describe("기본: WHERE NOT EXISTS로 중복 방지", () => {
+  describe("Basic: prevent duplicates with WHERE NOT EXISTS", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .where((e) => [expr.eq(e.name, "홍길동")])
-      .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
+      .where((e) => [expr.eq(e.name, "Gildong Hong")])
+      .getInsertIfNotExistsQueryDef({ name: "Gildong Hong", departmentId: 1 });
 
     it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertIfNotExists",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        record: { name: "홍길동", departmentId: 1 },
+        record: { name: "Gildong Hong", departmentId: 1 },
         existsSelectQuery: {
           type: "select",
           as: "T1",
@@ -148,7 +148,7 @@ describe("INSERT IF NOT EXISTS", () => {
             {
               type: "eq",
               source: { type: "column", path: ["T1", "name"] },
-              target: { type: "value", value: "홍길동" },
+              target: { type: "value", value: "Gildong Hong" },
             },
           ],
         },
@@ -161,18 +161,18 @@ describe("INSERT IF NOT EXISTS", () => {
     });
   });
 
-  describe("복합 조건으로 중복 체크", () => {
+  describe("Check duplicates with complex conditions", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
-      .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
+      .where((e) => [expr.eq(e.name, "Gildong Hong"), expr.eq(e.departmentId, 1)])
+      .getInsertIfNotExistsQueryDef({ name: "Gildong Hong", departmentId: 1 });
 
     it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "insertIfNotExists",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        record: { name: "홍길동", departmentId: 1 },
+        record: { name: "Gildong Hong", departmentId: 1 },
         existsSelectQuery: {
           type: "select",
           as: "T1",
@@ -181,7 +181,7 @@ describe("INSERT IF NOT EXISTS", () => {
             {
               type: "eq",
               source: { type: "column", path: ["T1", "name"] },
-              target: { type: "value", value: "홍길동" },
+              target: { type: "value", value: "Gildong Hong" },
             },
             {
               type: "eq",
@@ -212,7 +212,7 @@ describe("INSERT INTO ... SELECT", () => {
 
   //#region ========== INSERT INTO SELECT ==========
 
-  describe("기본: SELECT 결과를 다른 테이블에 INSERT", () => {
+  describe("Basic: INSERT SELECT results to different table", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -244,7 +244,7 @@ describe("INSERT INTO ... SELECT", () => {
     });
   });
 
-  describe("WHERE 조건과 함께 INSERT INTO SELECT", () => {
+  describe("INSERT INTO SELECT with WHERE condition", () => {
     const db = createTestDb();
     const def = db
       .employee()

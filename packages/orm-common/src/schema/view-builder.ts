@@ -18,8 +18,8 @@ import {
  * DbContext에서 queryable()과 함께 사용하여 type 안전한 query 작성
  *
  * @template TDbContext - DbContext type
- * @template TData - View data 레코드 type
- * @template TRelations - relationship definition 레코드 type
+ * @template TData - View data record type
+ * @template TRelations - relationship definition record type
  *
  * @example
  * ```typescript
@@ -38,13 +38,13 @@ import {
  *       }))
  *   );
  *
- * // DbContext에서 사용
+ * // DbContextused in
  * class MyDb extends DbContext {
  *   readonly userSummary = queryable(this, UserSummary);
  * }
  * ```
  *
- * @see {@link View} 팩토리 function
+ * @see {@link View} factory function
  * @see {@link queryable} Queryable Generate
  */
 export class ViewBuilder<
@@ -52,7 +52,7 @@ export class ViewBuilder<
   TData extends DataRecord,
   TRelations extends RelationBuilderRecord,
 > {
-  /** relationship definition (type 추론용) */
+  /** relationship definition (type for inference) */
   readonly $relations!: TRelations;
   /** 전체 Type inference */
   readonly $infer!: TData;
@@ -60,7 +60,7 @@ export class ViewBuilder<
   /**
    * @param meta - View Metadata
    * @param meta.name - View 이름
-   * @param meta.description - View 설명 (주석)
+   * @param meta.description - View description (주석)
    * @param meta.database - Database 이름
    * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
    * @param meta.viewFn - View Query definition function
@@ -78,20 +78,20 @@ export class ViewBuilder<
   ) {}
 
   /**
-   * View 설명 설정
+   * View set description
    *
-   * @param desc - View 설명 (DDL Comment으로 사용)
-   * @returns 새 ViewBuilder instance
+   * @param desc - View description (DDL Comment으로 사용)
+   * @returns new ViewBuilder instance
    */
   description(desc: string): ViewBuilder<TDbContext, TData, TRelations> {
     return new ViewBuilder({ ...this.meta, description: desc });
   }
 
   /**
-   * Database 이름 설정
+   * Database set name
    *
    * @param db - Database 이름
-   * @returns 새 ViewBuilder instance
+   * @returns new ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -103,12 +103,12 @@ export class ViewBuilder<
   }
 
   /**
-   * schema 이름 설정
+   * schema set name
    *
-   * MSSQL, PostgreSQL에서 사용
+   * MSSQL, PostgreSQLused in
    *
    * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
-   * @returns 새 ViewBuilder instance
+   * @returns new ViewBuilder instance
    */
   schema(schema: string): ViewBuilder<TDbContext, TData, TRelations> {
     return new ViewBuilder({ ...this.meta, schema });
@@ -122,7 +122,7 @@ export class ViewBuilder<
    * @template TViewData - View data type
    * @template TDb - DbContext type
    * @param viewFn - DbContext를 받아 Queryable을 반환하는 function
-   * @returns 새 ViewBuilder instance
+   * @returns new ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -151,8 +151,8 @@ export class ViewBuilder<
    * 다른 Table/View와의 relationship 설정
    *
    * @template T - relationship definition type
-   * @param fn - relationship 팩토리를 받아 relationship 정의를 반환하는 function
-   * @returns 새 ViewBuilder instance
+   * @param fn - relationship factory를 받아 relationship 정의를 반환하는 function
+   * @returns new ViewBuilder instance
    *
    * @example
    * ```typescript
@@ -183,7 +183,7 @@ export class ViewBuilder<
 // ============================================
 
 /**
- * View builder Generate 팩토리 function
+ * View builder Generate factory function
  *
  * ViewBuilder를 생성하여 Fluent API로 View schema definition
  *
@@ -192,7 +192,7 @@ export class ViewBuilder<
  *
  * @example
  * ```typescript
- * // 기본 사용
+ * // Basic 사용
  * const ActiveUsers = View("ActiveUsers")
  *   .database("mydb")
  *   .query((db: MyDb) =>

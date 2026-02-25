@@ -120,15 +120,15 @@ export const least: ExpectedSql = {
 
 export const ifNullMultiple: ExpectedSql = {
   mysql: mysql`
-    SELECT COALESCE(\`T1\`.\`email\`, \`T1\`.\`name\`, '익명') AS \`firstValid\`
+    SELECT COALESCE(\`T1\`.\`email\`, \`T1\`.\`name\`, 'Anonymous') AS \`firstValid\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`
-    SELECT COALESCE([T1].[email], [T1].[name], N'익명') AS [firstValid]
+    SELECT COALESCE([T1].[email], [T1].[name], N'Anonymous') AS [firstValid]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT COALESCE("T1"."email", "T1"."name", '익명') AS "firstValid"
+    SELECT COALESCE("T1"."email", "T1"."name", 'Anonymous') AS "firstValid"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

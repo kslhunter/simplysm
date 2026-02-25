@@ -1,10 +1,10 @@
 /**
- * SELECT - JOIN 테스트 Expected SQL
+ * SELECT - JOIN test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 기본 JOIN ==========
+//#region ========== Basic JOIN ==========
 
 export const joinBasic: ExpectedSql = {
   mysql: mysql`

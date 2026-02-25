@@ -6,9 +6,9 @@ import { dialects } from "../setup/test-utils";
 import * as expected from "./group.expected";
 
 describe("SELECT - GROUP BY", () => {
-  //#region ========== 기본 GROUP BY ==========
+  //#region ========== Basic GROUP BY ==========
 
-  describe("단일 컬럼", () => {
+  describe("single column", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -38,7 +38,7 @@ describe("SELECT - GROUP BY", () => {
     });
   });
 
-  describe("다중 컬럼", () => {
+  describe("multiple columns", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -73,7 +73,7 @@ describe("SELECT - GROUP BY", () => {
     });
   });
 
-  describe("집계 함수들", () => {
+  describe("aggregate functions", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -117,7 +117,7 @@ describe("SELECT - GROUP BY", () => {
 describe("SELECT - HAVING", () => {
   //#region ========== HAVING ==========
 
-  describe("단일 조건", () => {
+  describe("single condition", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -155,7 +155,7 @@ describe("SELECT - HAVING", () => {
     });
   });
 
-  describe("다중 조건", () => {
+  describe("multiple conditions", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -200,7 +200,7 @@ describe("SELECT - HAVING", () => {
     });
   });
 
-  describe("GROUP BY + HAVING + ORDER BY 조합", () => {
+  describe("GROUP BY + HAVING + ORDER BY combination", () => {
     const db = createTestDb();
     const def = db
       .user()

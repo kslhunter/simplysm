@@ -68,11 +68,11 @@ import type {
 import type { SelectQueryDef } from "../../types/query-def";
 
 /**
- * Expr → SQL Render 추상 기본 class
+ * Expr → SQL Render 추상 Basic class
  *
- * Base 원칙:
- * - 100% 모든 dialect가 동일한 로직만 구현 (dispatch)
- * - 조금이라도 다르면 전부 abstract
+ * Base principles:
+ * - Implement only 100% identical logic across all dialects (dispatch)
+ * - If different at all, make it abstract
  * - Method명은 expr.type과 동일 (동적 dispatch 가능)
  */
 export abstract class ExprRendererBase {
@@ -81,14 +81,14 @@ export abstract class ExprRendererBase {
   //#region ========== Public Utilities ==========
 
   /**
-   * 식별자 감싸기 (테이블명, 컬럼명 등)
+   * 식별자 감싸기 (table명, column명 등)
    * MySQL: `name`, MSSQL: [name], PostgreSQL: "name"
    */
   abstract wrap(name: string): string;
 
   /**
    * SQL 문자열 리터럴용 escape
-   * 동적 SQL이나 시스템 query에서 문자열 값으로 사용될 때 호출
+   * 동적 SQL이나 System query에서 문자열 값으로 사용될 때 호출
    * 예: WHERE schema_name = 'escaped_value'
    */
   abstract escapeString(value: string): string;
@@ -100,7 +100,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Dispatch (100% 동일) ==========
+  //#region ========== Dispatch (100% identical) ==========
 
   render(expr: Expr | WhereExpr): string {
     const method = this[expr.type as keyof this];
@@ -150,7 +150,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 문자열 (null 처리 required) ==========
+  //#region ========== Abstract - 문자열 (null processing required) ==========
 
   protected abstract concat(expr: ExprConcat): string;
   protected abstract left(expr: ExprLeft): string;
@@ -167,7 +167,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 숫자 ==========
+  //#region ========== Abstract - Number ==========
 
   protected abstract abs(expr: ExprAbs): string;
   protected abstract round(expr: ExprRound): string;
@@ -176,7 +176,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 날짜 ==========
+  //#region ========== Abstract - Date ==========
 
   protected abstract year(expr: ExprYear): string;
   protected abstract month(expr: ExprMonth): string;
@@ -213,7 +213,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 기타 ==========
+  //#region ========== Abstract - Other ==========
 
   protected abstract greatest(expr: ExprGreatest): string;
   protected abstract least(expr: ExprLeast): string;
@@ -223,13 +223,13 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 윈도우 ==========
+  //#region ========== Abstract - Window ==========
 
   protected abstract window(expr: ExprWindow): string;
 
   //#endregion
 
-  //#region ========== Abstract - 시스템 ==========
+  //#region ========== Abstract - System ==========
 
   protected abstract subquery(expr: ExprSubquery): string;
 

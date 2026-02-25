@@ -9,4 +9,4 @@ export const GetUserById = Procedure("GetUserById")
     name: c.varchar(100),
     email: c.varchar(200).nullable(),
   }))
-  .body("-- DBMS별 맞는 쿼리 작성 --");
+  .body("-- DBMSwrite matching query --");

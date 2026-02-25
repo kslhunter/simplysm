@@ -1,10 +1,10 @@
 /**
- * SELECT - ORDER BY 테스트 Expected SQL
+ * SELECT - ORDER BY test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 기본 ORDER BY ==========
+//#region ========== Basic ORDER BY ==========
 
 export const orderAscDefault: ExpectedSql = {
   mysql: mysql`

@@ -1,39 +1,39 @@
 /**
- * 테스트 유틸리티
+ * Test utilities
  * - toMatchSql matcher
- * - dialects 상수
- * - ExpectedSql 타입
+ * - dialects constant
+ * - ExpectedSql type
  */
 import { expect } from "vitest";
 import type { Dialect, QueryBuildResult } from "../../src/types/db";
 
 // ============================================
-// Dialect 목록
+// Dialect list
 // ============================================
 
 export const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 
 // ============================================
-// Expected SQL 타입
+// Expected SQL type
 // ============================================
 
 export type ExpectedSql = Record<Dialect, string>;
 
 // ============================================
-// SQL 정규화 (공백/빈줄 무시, 동적 이름 정규화)
+// SQL normalization (ignore whitespace/empty lines, normalize dynamic names)
 // ============================================
 
 function normalizeSql(sql: string): string {
   return (
     sql
-      // 모든 공백(스페이스, 탭, 줄바꿈)을 완전히 제거
+      // Completely remove all whitespace (spaces, tabs, newlines)
       .replace(/\s+/g, "")
-      // 프로시저 이름 정규화 (SD + 32자리 hex) <-- 이제 PROC안씀 multistatement씀
+      // Procedure name normalization (SD + 32-char hex) <-- now using multistatement instead of PROC
       // .replace(/`SD[a-f0-9]{32}`/g, "`SD_PROC`")
       // .replace(/\[#SD[a-f0-9]{32}]/g, "[#SD_PROC]")
       // .replace(/\[SD[a-f0-9]{32}]/g, "[SD_PROC]")
       // .replace(/"SD[a-f0-9]{32}"/g, '"SD_PROC"')
-      // 임시테이블 이름 정규화 (SD_TEMP_ + 32자리 hex)
+      // Temporary table name normalization (SD_TEMP_ + 32-char hex)
       .replace(/`SD_TEMP_[a-f0-9]{32}`/g, "`SD_TEMP`")
       .replace(/\[SD_TEMP_[a-f0-9]{32}]/g, "[SD_TEMP]")
       .replace(/"SD_TEMP_[a-f0-9]{32}"/g, '"SD_TEMP"')
@@ -41,7 +41,7 @@ function normalizeSql(sql: string): string {
 }
 
 // ============================================
-// 커스텀 Matcher
+// Custom matcher
 // ============================================
 
 expect.extend({
@@ -56,12 +56,12 @@ expect.extend({
       pass,
       actual: normalizedReceived,
       expected: normalizedExpected,
-      message: () => (pass ? `SQL이 일치합니다` : `SQL이 일치하지 않습니다`),
+      message: () => (pass ? "SQL matches" : "SQL does not match"),
     };
   },
 });
 
-// 타입 선언
+// Type declaration
 declare module "vitest" {
   interface Assertion<T> {
     toMatchSql(expected: string): T;

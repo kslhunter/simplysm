@@ -50,7 +50,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
   //#region ========== 유틸리티 ==========
 
-  /** Table명 Render (PostgreSQL: database는 connection에서 처리, schema.table만 사용) */
+  /** Table명 Render (PostgreSQL: database는 connection에서 processing, schema.table만 사용) */
   protected tableName(obj: QueryDefObjectName): string {
     const schema = obj.schema ?? "public";
     return `${this.expr.wrap(schema)}.${this.expr.wrap(obj.name)}`;
@@ -248,7 +248,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `UPDATE ${table} AS ${alias} SET ${setParts.join(", ")}`;
 
-    // PostgreSQL: JOIN은 FROM 절로 처리
+    // PostgreSQL: JOIN은 FROM 절로 processing
     if (def.joins != null && def.joins.length > 0) {
       const joinTables = def.joins.map((j) => {
         const from = this.renderFrom(j.from);
@@ -292,7 +292,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `DELETE FROM ${table} AS ${alias}`;
 
-    // PostgreSQL: JOIN은 USING 절로 처리
+    // PostgreSQL: JOIN은 USING 절로 processing
     if (def.joins != null && def.joins.length > 0) {
       const joinTables = def.joins.map((j) => {
         const from = this.renderFrom(j.from);
@@ -335,12 +335,12 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const alias = this.expr.wrap(def.existsSelectQuery.as);
 
-    // UPDATE SET 부분
+    // UPDATE SET part
     const updateSetParts = Object.entries(def.updateRecord).map(
       ([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`,
     );
 
-    // INSERT 부분
+    // INSERT part
     const insertColumns = Object.keys(def.insertRecord);
     const insertColList = insertColumns.map((c) => this.expr.wrap(c)).join(", ");
     const insertValues = insertColumns.map((c) => this.expr.render(def.insertRecord[c])).join(", ");
@@ -351,7 +351,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         ? this.expr.renderWhere(def.existsSelectQuery.where)
         : "TRUE";
 
-    // OUTPUT 컬럼
+    // OUTPUT column
     const outputCols =
       def.output != null ? def.output.columns.map((c) => this.expr.wrap(c)).join(", ") : "*";
 
@@ -570,7 +570,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected createProc(def: CreateProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
 
-    // params 처리
+    // params processing
     const paramList =
       def.params
         ?.map((p) => {
@@ -582,7 +582,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         })
         .join(", ") ?? "";
 
-    // returns 처리
+    // returns processing
     let returnClause = "VOID";
     if (def.returns && def.returns.length > 0) {
       const returnFields = def.returns

@@ -352,7 +352,7 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
-  describe("AVG OVER: 이동 평균", () => {
+  describe("AVG OVER: moving average", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -389,7 +389,7 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
-  describe("COUNT OVER: 파티션 내 개수", () => {
+  describe("COUNT OVER: count within partition", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -479,7 +479,7 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
-  describe("여러 윈도우 함수 조합", () => {
+  describe("multiple window function combinations", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -542,7 +542,7 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
-  describe("MIN OVER: 부서별 최소 ID", () => {
+  describe("MIN OVER: min ID per department", () => {
     const db = createTestDb();
     const def = db
       .employee()
@@ -579,7 +579,7 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
-  describe("MAX OVER: 부서별 최대 ID", () => {
+  describe("MAX OVER: max ID per department", () => {
     const db = createTestDb();
     const def = db
       .employee()

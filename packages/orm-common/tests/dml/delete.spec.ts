@@ -127,7 +127,7 @@ describe("DELETE - Basic", () => {
     });
   });
 
-  describe("TOP으로 삭제 개수 제한", () => {
+  describe("Limit delete count with TOP", () => {
     const db = createTestDb();
 
     const def = db
