@@ -232,7 +232,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   setColWidth(colIndex: string, width: string): void {
     const colIndexNumber = numParseInt(colIndex);
     if (colIndexNumber == null) {
-      throw new Error(`잘못된 열 인덱스: ${colIndex}`);
+      throw new Error(`Invalid column index: ${colIndex}`);
     }
 
     const cols = this.data.worksheet.cols?.[0];

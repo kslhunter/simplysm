@@ -79,7 +79,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
         const errors = parseResult.error.issues
           .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
           .join(", ");
-        throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
+        throw new Error(`[${wsName}] Data validation failed: ${errors}`);
       }
 
       result.push(parseResult.data);

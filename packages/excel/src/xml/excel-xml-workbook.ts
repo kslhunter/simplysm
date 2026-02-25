@@ -99,7 +99,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   setWorksheetNameById(id: number, newName: string): void {
     const sheetData = this._getSheetDataById(id);
     if (sheetData == null) {
-      throw new Error(`워크시트 ID ${id}를 찾을 수 없습니다`);
+      throw new Error(`Cannot find worksheet ID ${id}`);
     }
     const replacedName = this._getReplacedName(newName);
     sheetData.$.name = replacedName;

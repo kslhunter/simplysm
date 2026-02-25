@@ -80,7 +80,7 @@ export class ExcelWorkbook {
 
   private _ensureNotClosed(): void {
     if (this._isClosed) {
-      throw new Error("ExcelWorkbook이 이미 닫혔습니다. close() 호출 후에는 사용할 수 없습니다.");
+      throw new Error("ExcelWorkbook is already closed. Cannot use after calling close().");
     }
   }
 
@@ -135,9 +135,9 @@ export class ExcelWorkbook {
 
     if (wsId === undefined) {
       if (typeof nameOrIndex === "string") {
-        throw new Error(`시트명이 '${nameOrIndex}'인 시트를 찾을 수 없습니다.`);
+        throw new Error(`Cannot find sheet with name '${nameOrIndex}'.`);
       } else {
-        throw new Error(`'${nameOrIndex}'번째 시트를 찾을 수 없습니다.`);
+        throw new Error(`Cannot find sheet at index '${nameOrIndex}'.`);
       }
     }
 
@@ -148,13 +148,13 @@ export class ExcelWorkbook {
     const relData = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
     const targetFilePath = relData.getTargetByRelId(wsId);
     if (targetFilePath == null) {
-      throw new Error(`시트 관계 정보를 찾을 수 없습니다: rId${wsId}`);
+      throw new Error(`Cannot find sheet relationship information: rId${wsId}`);
     }
 
     // Extract filename directly instead of path.basename (browser compatibility)
     const fileName = targetFilePath.split("/").pop();
     if (fileName == null) {
-      throw new Error(`시트 파일명을 추출할 수 없습니다: ${targetFilePath}`);
+      throw new Error(`Cannot extract sheet filename: ${targetFilePath}`);
     }
 
     const ws = new ExcelWorksheet(this.zipCache, wsId, fileName);

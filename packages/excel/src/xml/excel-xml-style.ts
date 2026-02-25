@@ -108,11 +108,11 @@ export class ExcelXmlStyle implements ExcelXml {
   addWithClone(id: string, style: ExcelStyle): string {
     const idNum = numParseInt(id);
     if (idNum == null) {
-      throw new Error(`잘못된 스타일 ID: ${id}`);
+      throw new Error(`Invalid style ID: ${id}`);
     }
     const xfArray = this.data.styleSheet.cellXfs[0].xf;
     if (idNum < 0 || idNum >= xfArray.length) {
-      throw new Error(`존재하지 않는 스타일 ID: ${id} (범위: 0-${xfArray.length - 1})`);
+      throw new Error(`Non-existent style ID: ${id} (Range: 0-${xfArray.length - 1})`);
     }
     const prevXf = xfArray[idNum];
     const cloneXf = objClone(prevXf);
@@ -187,7 +187,7 @@ export class ExcelXmlStyle implements ExcelXml {
   get(id: string): ExcelStyle {
     const idNum = numParseInt(id);
     if (idNum == null) {
-      throw new Error(`잘못된 스타일 ID: ${id}`);
+      throw new Error(`Invalid style ID: ${id}`);
     }
     const xf = this.data.styleSheet.cellXfs[0].xf[idNum] as ExcelXmlStyleDataXf | undefined;
 
@@ -214,7 +214,7 @@ export class ExcelXmlStyle implements ExcelXml {
       if (xf.$.borderId !== undefined) {
         const borderIdNum = numParseInt(xf.$.borderId);
         if (borderIdNum == null) {
-          throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
+          throw new Error(`Invalid border ID: ${xf.$.borderId}`);
         }
         const border = this.data.styleSheet.borders[0].border[borderIdNum] as
           | ExcelXmlStyleDataBorder

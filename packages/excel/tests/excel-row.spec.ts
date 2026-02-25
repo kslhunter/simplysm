@@ -3,7 +3,7 @@ import { ExcelWorkbook } from "../src/excel-workbook";
 
 describe("ExcelRow", () => {
   describe("cell()", () => {
-    it("열 인덱스에 해당하는 셀을 반환한다", async () => {
+    it("returns cell corresponding to column index", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -14,7 +14,7 @@ describe("ExcelRow", () => {
       expect(await cell.getVal()).toBe("Hello");
     });
 
-    it("동일 인덱스에 대해 같은 인스턴스를 반환한다 (캐싱)", async () => {
+    it("returns same instance for same index (caching)", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -25,7 +25,7 @@ describe("ExcelRow", () => {
       expect(cell1).toBe(cell2);
     });
 
-    it("다른 인덱스에 대해 다른 인스턴스를 반환한다", async () => {
+    it("returns different instances for different indices", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -38,11 +38,11 @@ describe("ExcelRow", () => {
   });
 
   describe("getCells()", () => {
-    it("범위 내 모든 셀을 반환한다", async () => {
+    it("returns all cells within range", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 데이터 설정으로 범위 지정
+      // Set range by configuring data
       await ws.cell(0, 0).setVal("A1");
       await ws.cell(0, 1).setVal("B1");
       await ws.cell(0, 2).setVal("C1");
@@ -56,14 +56,14 @@ describe("ExcelRow", () => {
       expect(await cells[2].getVal()).toBe("C1");
     });
 
-    it("빈 워크시트에서 기본 범위(0,0)에 해당하는 셀을 반환한다", async () => {
+    it("returns cell corresponding to default range (0,0) in empty worksheet", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
       const row = ws.row(0);
       const cells = await row.getCells();
 
-      // 빈 워크시트의 기본 범위는 (0,0)-(0,0)이므로 하나의 셀 반환
+      // Empty worksheet default range is (0,0)-(0,0) so returns one cell
       expect(cells.length).toBe(1);
       expect(await cells[0].getVal()).toBeUndefined();
     });

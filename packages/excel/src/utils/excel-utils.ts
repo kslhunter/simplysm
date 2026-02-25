@@ -21,7 +21,7 @@ export class ExcelUtils {
   /** Convert column index (0-based) to column address string (e.g. 0 -> "A", 26 -> "AA") */
   static stringifyColAddr(c: number): string {
     if (c < 0 || c > 16383) {
-      throw new Error(`열 인덱스는 0~16383 범위여야 합니다: ${c}`);
+      throw new Error(`Column index must be in range 0~16383: ${c}`);
     }
 
     let remained = c;
@@ -39,7 +39,7 @@ export class ExcelUtils {
     const rowAddrCode = /\d*$/.exec(addrCode)?.[0] ?? "";
     const parsed = numParseInt(rowAddrCode);
     if (parsed == null) {
-      throw new Error(`잘못된 행 주소 코드: ${addrCode}`);
+      throw new Error(`Invalid row address code: ${addrCode}`);
     }
     return parsed - 1;
   }
@@ -134,7 +134,7 @@ export class ExcelUtils {
     } else if ((numFmtCode.split("]").at(-1) ?? "").includes("#,0")) {
       return "number";
     } else {
-      throw new Error(`[numFmtCode: ${numFmtCode}]에 대한 형식을 알 수 없습니다.`);
+      throw new Error(`Unknown format for [numFmtCode: ${numFmtCode}].`);
     }
   }
 
@@ -179,7 +179,7 @@ export class ExcelUtils {
     else if (numFmtId === 49) {
       return "string";
     } else {
-      throw new Error(`[numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
+      throw new Error(`Unknown format for [numFmtId: ${numFmtId}].`);
     }
   }
 

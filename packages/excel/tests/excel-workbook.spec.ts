@@ -3,8 +3,8 @@ import { ExcelWorkbook } from "../src/excel-workbook";
 import type { Bytes } from "@simplysm/core-common";
 
 describe("ExcelWorkbook", () => {
-  describe("빈 워크북 생성", () => {
-    it("워크시트를 생성할 수 있다", async () => {
+  describe("Creating empty workbook", () => {
+    it("Can create a worksheet", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("TestSheet");
 
@@ -13,7 +13,7 @@ describe("ExcelWorkbook", () => {
       expect(name).toBe("TestSheet");
     });
 
-    it("여러 워크시트를 생성할 수 있다", async () => {
+    it("Can create multiple worksheets", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("Sheet1");
       await wb.createWorksheet("Sheet2");
@@ -24,8 +24,8 @@ describe("ExcelWorkbook", () => {
     });
   });
 
-  describe("워크시트 접근", () => {
-    it("인덱스로 워크시트를 가져올 수 있다", async () => {
+  describe("Accessing worksheets", () => {
+    it("Can get worksheet by index", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("First");
       await wb.createWorksheet("Second");
@@ -35,7 +35,7 @@ describe("ExcelWorkbook", () => {
       expect(name).toBe("Second");
     });
 
-    it("이름으로 워크시트를 가져올 수 있다", async () => {
+    it("Can get worksheet by name", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("MySheet");
 
@@ -44,7 +44,7 @@ describe("ExcelWorkbook", () => {
       expect(name).toBe("MySheet");
     });
 
-    it("존재하지 않는 시트 접근 시 에러", async () => {
+    it("Error when accessing non-existent sheet", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("Sheet1");
 
@@ -53,8 +53,8 @@ describe("ExcelWorkbook", () => {
     });
   });
 
-  describe("Bytes/Blob 출력", () => {
-    it("Bytes로 출력할 수 있다", async () => {
+  describe("Bytes/Blob export", () => {
+    it("Can export as Bytes", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
       await ws.cell(0, 0).setVal("Hello");
@@ -64,7 +64,7 @@ describe("ExcelWorkbook", () => {
       expect(bytes.length).toBeGreaterThan(0);
     });
 
-    it("Blob으로 출력할 수 있다", async () => {
+    it("Can export as Blob", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
       await ws.cell(0, 0).setVal("Hello");
@@ -76,21 +76,21 @@ describe("ExcelWorkbook", () => {
     });
   });
 
-  describe("워크북 읽기/쓰기 라운드트립", () => {
-    it("Blob으로 워크북을 생성할 수 있다", async () => {
-      // 먼저 Bytes로 워크북 생성
+  describe("Workbook read/write round-trip", () => {
+    it("Can create workbook from Blob", async () => {
+      // First create workbook with Bytes
       const wb1 = new ExcelWorkbook();
       const ws1 = await wb1.createWorksheet("Test");
       await ws1.cell(0, 0).setVal("BlobTest");
       const bytes = await wb1.getBytes();
       await wb1.close();
 
-      // Blob으로 변환
+      // Convert to Blob
       const blob = new Blob([new Uint8Array(bytes)], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      // Blob으로 워크북 읽기
+      // Read workbook from Blob
       const wb2 = new ExcelWorkbook(blob);
       const ws2 = await wb2.getWorksheet(0);
       const val = await ws2.cell(0, 0).getVal();
@@ -99,18 +99,18 @@ describe("ExcelWorkbook", () => {
       await wb2.close();
     });
 
-    it("생성한 워크북을 Bytes로 저장 후 다시 읽을 수 있다", async () => {
-      // 생성
+    it("Can save created workbook as Bytes and read again", async () => {
+      // Create
       const wb1 = new ExcelWorkbook();
       const ws1 = await wb1.createWorksheet("RoundTrip");
       await ws1.cell(0, 0).setVal("TestValue");
       await ws1.cell(0, 1).setVal(12345);
 
-      // 저장
+      // Save
       const bytes = await wb1.getBytes();
       await wb1.close();
 
-      // 다시 읽기
+      // Read again
       const wb2 = new ExcelWorkbook(bytes);
       const names = await wb2.getWorksheetNames();
       expect(names).toContain("RoundTrip");
@@ -126,8 +126,8 @@ describe("ExcelWorkbook", () => {
     });
   });
 
-  describe("리소스 해제 후 에러", () => {
-    it("close() 후 getWorksheetNames() 호출 시 에러", async () => {
+  describe("Error after resource cleanup", () => {
+    it("Error when calling getWorksheetNames() after close()", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("Test");
       await wb.close();
@@ -135,14 +135,14 @@ describe("ExcelWorkbook", () => {
       await expect(wb.getWorksheetNames()).rejects.toThrow();
     });
 
-    it("close() 후 createWorksheet() 호출 시 에러", async () => {
+    it("Error when calling createWorksheet() after close()", async () => {
       const wb = new ExcelWorkbook();
       await wb.close();
 
       await expect(wb.createWorksheet("New")).rejects.toThrow();
     });
 
-    it("close() 후 getWorksheet() 호출 시 에러", async () => {
+    it("Error when calling getWorksheet() after close()", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("Test");
       await wb.close();
@@ -150,7 +150,7 @@ describe("ExcelWorkbook", () => {
       await expect(wb.getWorksheet(0)).rejects.toThrow();
     });
 
-    it("close() 후 getBytes() 호출 시 에러", async () => {
+    it("Error when calling getBytes() after close()", async () => {
       const wb = new ExcelWorkbook();
       await wb.close();
 

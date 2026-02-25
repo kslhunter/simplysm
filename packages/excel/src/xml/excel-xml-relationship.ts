@@ -82,7 +82,7 @@ export class ExcelXmlRelationship implements ExcelXml {
   private _getRelId(rel: ExcelRelationshipData): number {
     const match = /[0-9]+$/.exec(rel.$.Id);
     if (match == null) {
-      throw new Error(`잘못된 관계 ID 형식입니다: ${rel.$.Id}`);
+      throw new Error(`Invalid relationship ID format: ${rel.$.Id}`);
     }
     return numParseInt(match[0])!;
   }

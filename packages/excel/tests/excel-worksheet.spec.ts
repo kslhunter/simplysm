@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 
 describe("ExcelWorksheet", () => {
-  describe("시트 이름", () => {
-    it("시트 이름을 가져올 수 있다", async () => {
+  describe("Sheet name", () => {
+    it("should get sheet name", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("MySheet");
 
@@ -11,7 +11,7 @@ describe("ExcelWorksheet", () => {
       expect(name).toBe("MySheet");
     });
 
-    it("시트 이름을 변경할 수 있다", async () => {
+    it("should change sheet name", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("OldName");
 
@@ -20,7 +20,7 @@ describe("ExcelWorksheet", () => {
       expect(name).toBe("NewName");
     });
 
-    it("변경한 시트 이름이 라운드트립 후에도 유지된다", async () => {
+    it("should preserve changed sheet name after roundtrip", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("OldName");
       await ws.setName("NewName");
@@ -38,17 +38,17 @@ describe("ExcelWorksheet", () => {
     });
   });
 
-  describe("행/열 복사", () => {
-    it("행을 복사할 수 있다", async () => {
+  describe("Row/Column copy", () => {
+    it("should copy row", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 원본 행 설정
+      // Set source row
       await ws.cell(0, 0).setVal("A");
       await ws.cell(0, 1).setVal("B");
       await ws.cell(0, 2).setVal("C");
 
-      // 행 복사
+      // Copy row
       await ws.copyRow(0, 2);
 
       expect(await ws.cell(2, 0).getVal()).toBe("A");
@@ -56,7 +56,7 @@ describe("ExcelWorksheet", () => {
       expect(await ws.cell(2, 2).getVal()).toBe("C");
     });
 
-    it("셀을 복사할 수 있다", async () => {
+    it("should copy cell", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -66,30 +66,30 @@ describe("ExcelWorksheet", () => {
       expect(await ws.cell(1, 1).getVal()).toBe("Original");
     });
 
-    it("행 스타일만 복사할 수 있다", async () => {
+    it("should copy only row style", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 스타일 설정
+      // Set styles
       await ws.cell(0, 0).setVal("Styled");
       await ws.cell(0, 0).setStyle({ background: "00FF0000" });
       await ws.cell(0, 1).setVal("Also Styled");
       await ws.cell(0, 1).setStyle({ background: "0000FF00" });
 
-      // 스타일만 복사
+      // Copy only styles
       await ws.copyRowStyle(0, 2);
 
-      // 값은 복사되지 않음
+      // Values should not be copied
       expect(await ws.cell(2, 0).getVal()).toBeUndefined();
       expect(await ws.cell(2, 1).getVal()).toBeUndefined();
 
-      // 스타일은 복사됨
+      // Styles should be copied
       const styleId0 = await ws.cell(0, 0).getStyleId();
       const styleId2 = await ws.cell(2, 0).getStyleId();
       expect(styleId2).toBe(styleId0);
     });
 
-    it("행 삽입 복사를 할 수 있다 (srcR < targetR)", async () => {
+    it("should insert copy row when srcR < targetR", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -97,16 +97,16 @@ describe("ExcelWorksheet", () => {
       await ws.cell(1, 0).setVal("Row1");
       await ws.cell(2, 0).setVal("Row2");
 
-      // 0행을 1행 위치에 삽입 복사 (기존 행들이 밀림)
+      // Insert copy row 0 at position 1 (existing rows are shifted)
       await ws.insertCopyRow(0, 1);
 
       expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row0"); // 복사됨
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // 밀림
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // 밀림
+      expect(await ws.cell(1, 0).getVal()).toBe("Row0"); // copied
+      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted
+      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted
     });
 
-    it("행 삽입 복사를 할 수 있다 (srcR > targetR)", async () => {
+    it("should insert copy row when srcR > targetR", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -115,17 +115,17 @@ describe("ExcelWorksheet", () => {
       await ws.cell(2, 0).setVal("Row2");
       await ws.cell(3, 0).setVal("Row3");
 
-      // 2행을 1행 위치에 삽입 복사 (기존 행들이 밀림)
+      // Insert copy row 2 at position 1 (existing rows are shifted)
       await ws.insertCopyRow(2, 1);
 
       expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row2"); // 원래 Row2 복사됨
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // 밀림
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // 밀림 (원래 Row2)
-      expect(await ws.cell(4, 0).getVal()).toBe("Row3"); // 밀림
+      expect(await ws.cell(1, 0).getVal()).toBe("Row2"); // copied
+      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted
+      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted (original Row2)
+      expect(await ws.cell(4, 0).getVal()).toBe("Row3"); // shifted
     });
 
-    it("행 삽입 복사를 할 수 있다 (srcR == targetR)", async () => {
+    it("should insert copy row when srcR == targetR", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -133,18 +133,18 @@ describe("ExcelWorksheet", () => {
       await ws.cell(1, 0).setVal("Row1");
       await ws.cell(2, 0).setVal("Row2");
 
-      // 1행을 1행 위치에 삽입 복사 (자기 자신을 복사)
+      // Insert copy row 1 at position 1 (copy itself)
       await ws.insertCopyRow(1, 1);
 
       expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row1"); // 원래 Row1 복사됨
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // 밀림 (원래 Row1)
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // 밀림
+      expect(await ws.cell(1, 0).getVal()).toBe("Row1"); // copied
+      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted (original Row1)
+      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted
     });
   });
 
-  describe("범위 및 셀 접근", () => {
-    it("데이터 범위를 가져올 수 있다", async () => {
+  describe("Range and cell access", () => {
+    it("should get data range", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -158,7 +158,7 @@ describe("ExcelWorksheet", () => {
       expect(range.e.c).toBe(3);
     });
 
-    it("모든 셀을 가져올 수 있다", async () => {
+    it("should get all cells", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -173,15 +173,15 @@ describe("ExcelWorksheet", () => {
     });
   });
 
-  describe("데이터 테이블", () => {
-    it("데이터 테이블을 가져올 수 있다", async () => {
+  describe("Data table", () => {
+    it("should get data table", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 헤더
+      // Headers
       await ws.cell(0, 0).setVal("Name");
       await ws.cell(0, 1).setVal("Age");
-      // 데이터
+      // Data
       await ws.cell(1, 0).setVal("Alice");
       await ws.cell(1, 1).setVal(30);
       await ws.cell(2, 0).setVal("Bob");
@@ -195,7 +195,7 @@ describe("ExcelWorksheet", () => {
       expect(data[1]["Age"]).toBe(25);
     });
 
-    it("특정 헤더만 필터링하여 가져올 수 있다", async () => {
+    it("should filter specific headers only", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -215,7 +215,7 @@ describe("ExcelWorksheet", () => {
       expect(data[0]["Ignore"]).toBeUndefined();
     });
 
-    it("데이터 매트릭스를 설정할 수 있다", async () => {
+    it("should set data matrix", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -232,7 +232,7 @@ describe("ExcelWorksheet", () => {
       expect(await ws.cell(2, 2).getVal()).toBe(6);
     });
 
-    it("레코드 배열을 설정할 수 있다", async () => {
+    it("should set records array", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -243,47 +243,47 @@ describe("ExcelWorksheet", () => {
 
       await ws.setRecords(records);
 
-      // 헤더 확인
+      // Check headers
       const headers = [await ws.cell(0, 0).getVal(), await ws.cell(0, 1).getVal()];
       expect(headers).toContain("Name");
       expect(headers).toContain("Age");
 
-      // 데이터 확인 (순서는 다를 수 있음)
+      // Check data (order may vary)
       const data = await ws.getDataTable();
       expect(data.length).toBe(2);
     });
   });
 
-  describe("뷰 설정", () => {
-    it("줌 레벨을 설정할 수 있다", async () => {
+  describe("View settings", () => {
+    it("should set zoom level", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
       await ws.setZoom(85);
-      // 에러 없이 설정되면 성공
+      // Success if set without error
     });
 
-    it("틀 고정을 설정할 수 있다", async () => {
+    it("should set pane freeze", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      await ws.setFix({ r: 1 }); // 1행 고정
-      await ws.setFix({ c: 2 }); // 2열 고정
-      await ws.setFix({ r: 1, c: 1 }); // 1행 1열 고정
-      // 에러 없이 설정되면 성공
+      await ws.setFix({ r: 1 }); // Freeze 1 row
+      await ws.setFix({ c: 2 }); // Freeze 2 columns
+      await ws.setFix({ r: 1, c: 1 }); // Freeze 1 row and 1 column
+      // Success if set without error
     });
   });
 
-  describe("열 너비", () => {
-    it("열 너비를 설정할 수 있다", async () => {
+  describe("Column width", () => {
+    it("should set column width", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
       await ws.col(0).setWidth(20);
-      // 에러 없이 설정되면 성공
+      // Success if set without error
     });
 
-    it("설정한 열 너비가 라운드트립 후에도 유지된다", async () => {
+    it("should preserve column width after roundtrip", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -296,24 +296,24 @@ describe("ExcelWorksheet", () => {
       const wb2 = new ExcelWorkbook(bytes);
       await wb2.getWorksheet("Test");
 
-      // XML 구조에서 cols 데이터 확인
+      // Check cols data in XML structure
       const wsData = await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml");
       const cols = wsData.data.worksheet.cols?.[0]?.col ?? [];
 
-      // 열 A (인덱스 0, 1-based=1)의 너비 확인
+      // Check width of column A (index 0, 1-based=1)
       const colA = cols.find((c: any) => c.$.min === "1" && c.$.max === "1");
       expect(colA).toBeDefined();
       expect(colA.$.width).toBe("25");
 
-      // 열 C (인덱스 2, 1-based=3)의 너비 확인
+      // Check width of column C (index 2, 1-based=3)
       const colC = cols.find((c: any) => c.$.min === "3" && c.$.max === "3");
       expect(colC).toBeDefined();
       expect(colC.$.width).toBe("30");
     });
   });
 
-  describe("열 접근", () => {
-    it("열의 모든 셀을 가져올 수 있다", async () => {
+  describe("Column access", () => {
+    it("should get all cells in column", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -329,15 +329,15 @@ describe("ExcelWorksheet", () => {
     });
   });
 
-  describe("데이터 테이블 엣지 케이스", () => {
-    it("빈 시트에서 getDataTable 호출 시 빈 배열 반환", async () => {
+  describe("Data table edge cases", () => {
+    it("should return empty array when calling getDataTable on empty sheet", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Empty");
       const data = await ws.getDataTable();
       expect(data).toEqual([]);
     });
 
-    it("헤더만 있고 데이터가 없는 경우 빈 배열 반환", async () => {
+    it("should return empty array when only headers exist without data", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
       await ws.cell(0, 0).setVal("Header1");
@@ -347,17 +347,17 @@ describe("ExcelWorksheet", () => {
     });
   });
 
-  describe("데이터 테이블 옵션", () => {
-    it("headerRowIndex로 헤더 행을 지정할 수 있다", async () => {
+  describe("Data table options", () => {
+    it("should specify header row with headerRowIndex", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-      // 0행은 제목
+      // Row 0 is title
       await ws.cell(0, 0).setVal("Title");
-      // 1행이 헤더
+      // Row 1 is header
       await ws.cell(1, 0).setVal("Name");
       await ws.cell(1, 1).setVal("Age");
-      // 2행부터 데이터
+      // Data starts from row 2
       await ws.cell(2, 0).setVal("Alice");
       await ws.cell(2, 1).setVal(30);
 
@@ -367,7 +367,7 @@ describe("ExcelWorksheet", () => {
       expect(data[0]["Age"]).toBe(30);
     });
 
-    it("checkEndColIndex로 데이터 끝을 감지할 수 있다", async () => {
+    it("should detect data end with checkEndColIndex", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -377,7 +377,7 @@ describe("ExcelWorksheet", () => {
       await ws.cell(1, 1).setVal(30);
       await ws.cell(2, 0).setVal("Bob");
       await ws.cell(2, 1).setVal(25);
-      // 3행은 Name 열이 비어있음 → 데이터 끝
+      // Row 3 has empty Name column -> data end
       await ws.cell(3, 1).setVal(999);
 
       const data = await ws.getDataTable({ checkEndColIndex: 0 });

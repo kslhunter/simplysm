@@ -12,7 +12,7 @@ describe("ExcelWrapper", () => {
   });
 
   describe("write", () => {
-    it("레코드를 Excel로 변환할 수 있다", async () => {
+    it("can convert records to Excel", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const records = [
@@ -23,13 +23,13 @@ describe("ExcelWrapper", () => {
       const wb = await wrapper.write("Users", records);
       const ws = await wb.getWorksheet("Users");
 
-      // 헤더 확인
+      // Check headers
       expect(await ws.cell(0, 0).getVal()).toBe("이름");
       expect(await ws.cell(0, 1).getVal()).toBe("나이");
       expect(await ws.cell(0, 2).getVal()).toBe("이메일");
       expect(await ws.cell(0, 3).getVal()).toBe("활성화");
 
-      // 데이터 확인
+      // Check data
       expect(await ws.cell(1, 0).getVal()).toBe("홍길동");
       expect(await ws.cell(1, 1).getVal()).toBe(30);
       expect(await ws.cell(2, 0).getVal()).toBe("김철수");
@@ -38,12 +38,12 @@ describe("ExcelWrapper", () => {
       await wb.close();
     });
 
-    it("필수 필드에 노란색 배경이 적용된다", async () => {
+    it("applies yellow background to required fields", async () => {
       const wrapper = new ExcelWrapper(testSchema);
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
       const ws = await wb.getWorksheet("Test");
 
-      // 필수 필드 (name, age)는 스타일이 적용됨
+      // Required fields (name, age) have style applied
       const nameStyleId = await ws.cell(0, 0).getStyleId();
       const ageStyleId = await ws.cell(0, 1).getStyleId();
 
@@ -55,10 +55,10 @@ describe("ExcelWrapper", () => {
   });
 
   describe("read", () => {
-    it("Excel에서 레코드를 읽을 수 있다", async () => {
+    it("can read records from Excel", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
-      // 먼저 Excel 생성
+      // Create Excel first
       const records = [
         { name: "홍길동", age: 30, email: "hong@test.com", active: true },
         { name: "김철수", age: 25, active: false },
@@ -68,7 +68,7 @@ describe("ExcelWrapper", () => {
       const buffer = await wb.getBytes();
       await wb.close();
 
-      // Excel에서 읽기
+      // Read from Excel
       const readRecords = await wrapper.read(buffer, "Users");
 
       expect(readRecords.length).toBe(2);
@@ -80,7 +80,7 @@ describe("ExcelWrapper", () => {
       expect(readRecords[1].age).toBe(25);
     });
 
-    it("인덱스로 워크시트를 지정할 수 있다", async () => {
+    it("can specify worksheet by index", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const records = [{ name: "Test", age: 20 }];
@@ -94,11 +94,11 @@ describe("ExcelWrapper", () => {
     });
   });
 
-  describe("타입 변환", () => {
-    it("문자열을 숫자로 변환할 수 있다", async () => {
+  describe("Type conversion", () => {
+    it("can convert strings to numbers", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
-      // 수동으로 문자열로 저장된 Excel 시뮬레이션
+      // Simulate Excel with values stored as strings manually
       const wb = await wrapper.write("Test", [{ name: "Test", age: 25 }]);
       const buffer = await wb.getBytes();
       await wb.close();
@@ -108,26 +108,26 @@ describe("ExcelWrapper", () => {
       expect(records[0].age).toBe(25);
     });
 
-    it("기본값이 적용된다", async () => {
+    it("applies default values", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
-      // active 필드 없이 저장
+      // Save without active field
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
       const buffer = await wb.getBytes();
       await wb.close();
 
       const records = await wrapper.read(buffer);
-      expect(records[0].active).toBe(false); // 기본값
+      expect(records[0].active).toBe(false); // Default value
     });
   });
 
-  describe("날짜 타입 지원", () => {
+  describe("Date type support", () => {
     const dateSchema = z.object({
       title: z.string().describe("제목"),
       date: z.instanceof(DateOnly).optional().describe("날짜"),
     });
 
-    it("DateOnly 타입을 읽고 쓸 수 있다", async () => {
+    it("can read and write DateOnly type", async () => {
       const wrapper = new ExcelWrapper(dateSchema);
 
       const records = [{ title: "Event 1", date: new DateOnly(2024, 6, 15) }, { title: "Event 2" }];
@@ -146,7 +146,7 @@ describe("ExcelWrapper", () => {
       expect(readRecords[1].date).toBeUndefined();
     });
 
-    it("DateTime 타입을 읽고 쓸 수 있다", async () => {
+    it("can read and write DateTime type", async () => {
       const dateTimeSchema = z.object({
         title: z.string().describe("제목"),
         datetime: z.instanceof(DateTime).optional().describe("일시"),
@@ -170,7 +170,7 @@ describe("ExcelWrapper", () => {
       expect(readRecords[0].datetime!.minute).toBe(30);
     });
 
-    it("Time 타입을 읽고 쓸 수 있다", async () => {
+    it("can read and write Time type", async () => {
       const timeSchema = z.object({
         title: z.string().describe("제목"),
         time: z.instanceof(Time).optional().describe("시간"),
@@ -192,11 +192,11 @@ describe("ExcelWrapper", () => {
     });
   });
 
-  describe("에러 처리", () => {
-    it("빈 데이터에서 읽으면 에러 발생", async () => {
+  describe("Error handling", () => {
+    it("throws error when reading empty data", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
-      // 헤더만 있는 빈 Excel 생성
+      // Create empty Excel with only headers
       const wb = await wrapper.write("Empty", []);
       const buffer = await wb.getBytes();
       await wb.close();
@@ -206,7 +206,7 @@ describe("ExcelWrapper", () => {
       );
     });
 
-    it("존재하지 않는 워크시트 이름으로 읽으면 에러 발생", async () => {
+    it("throws error when reading with non-existent worksheet name", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
@@ -216,7 +216,7 @@ describe("ExcelWrapper", () => {
       await expect(wrapper.read(buffer, "NotExist")).rejects.toThrow();
     });
 
-    it("존재하지 않는 워크시트 인덱스로 읽으면 에러 발생", async () => {
+    it("throws error when reading with non-existent worksheet index", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
@@ -226,29 +226,29 @@ describe("ExcelWrapper", () => {
       await expect(wrapper.read(buffer, 99)).rejects.toThrow();
     });
 
-    it("스키마 검증 실패 시 워크시트 이름과 상세 오류가 포함된 에러 발생", async () => {
+    it("throws error with worksheet name and detailed error when schema validation fails", async () => {
       const strictSchema = z.object({
-        name: z.string().min(5).describe("이름"), // 최소 5자 이상
-        age: z.number().min(0).max(150).describe("나이"), // 0~150 사이
+        name: z.string().min(5).describe("이름"), // At least 5 characters
+        age: z.number().min(0).max(150).describe("나이"), // Between 0 and 150
       });
 
-      // 유효한 데이터로 Excel 생성
+      // Create Excel with valid data
       const wrapper = new ExcelWrapper(strictSchema);
       const wb = await wrapper.write("Validation", [{ name: "홍길동홍길동", age: 30 }]);
 
-      // 데이터를 직접 수정하여 검증 실패 유도
+      // Modify data directly to trigger validation failure
       const ws = await wb.getWorksheet("Validation");
-      await ws.cell(1, 0).setVal("AB"); // 최소 5자 미만으로 변경
+      await ws.cell(1, 0).setVal("AB"); // Change to less than 5 characters
 
       const buffer = await wb.getBytes();
       await wb.close();
 
-      // 검증 실패 에러가 발생해야 함
+      // Should throw validation error
       await expect(wrapper.read(buffer, "Validation")).rejects.toThrow();
     });
   });
 
-  describe("excludes 옵션", () => {
+  describe("excludes option", () => {
     const fullSchema = z.object({
       name: z.string().describe("이름"),
       age: z.number().describe("나이"),
@@ -256,35 +256,35 @@ describe("ExcelWrapper", () => {
       phone: z.string().optional().describe("전화번호"),
     });
 
-    it("write 시 excludes된 필드가 컬럼에서 제외된다", async () => {
+    it("excludes specified fields from columns on write", async () => {
       const wrapper = new ExcelWrapper(fullSchema);
 
       const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
       const wb = await wrapper.write("Test", records, { excludes: ["email", "phone"] });
       const ws = await wb.getWorksheet("Test");
 
-      // 헤더: 이름, 나이만 존재
+      // Headers: only name and age exist
       expect(await ws.cell(0, 0).getVal()).toBe("이름");
       expect(await ws.cell(0, 1).getVal()).toBe("나이");
       expect(await ws.cell(0, 2).getVal()).toBeUndefined();
 
-      // 데이터 확인
+      // Check data
       expect(await ws.cell(1, 0).getVal()).toBe("홍길동");
       expect(await ws.cell(1, 1).getVal()).toBe(30);
 
       await wb.close();
     });
 
-    it("read 시 excludes된 필드가 무시된다", async () => {
+    it("ignores excluded fields on read", async () => {
       const wrapper = new ExcelWrapper(fullSchema);
 
-      // 전체 필드로 Excel 생성
+      // Create Excel with all fields
       const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
       const wb = await wrapper.write("Test", records);
       const buffer = await wb.getBytes();
       await wb.close();
 
-      // excludes로 읽기
+      // Read with excludes
       const readRecords = await wrapper.read(buffer, "Test", { excludes: ["email", "phone"] });
 
       expect(readRecords[0].name).toBe("홍길동");

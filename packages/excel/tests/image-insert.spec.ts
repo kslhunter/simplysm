@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 
-// globalThis.window가 없으면 Node.js 환경
+// If globalThis.window doesn't exist, it's a Node.js environment
 declare const window: unknown;
-// Node.js 전용 타입 (browser 환경에서도 타입체크가 통과되도록)
+// Node.js only types (to pass type checking in browser environment as well)
 declare const require: (id: string) => unknown;
 
 /**
- * PNG 파일 로드 (Node/브라우저 환경 분기)
+ * Load PNG file (branching between Node/browser environments)
  */
 async function loadPngFile(): Promise<Uint8Array> {
   const url = new URL("./fixtures/logo.png", import.meta.url);
 
-  // Node 환경: fs 사용
+  // Node environment: use fs
   if (typeof window === "undefined") {
     const fs = require("fs") as { readFileSync: (path: string) => Uint8Array };
     const { fileURLToPath } = require("url") as { fileURLToPath: (url: URL) => string };
@@ -20,14 +20,14 @@ async function loadPngFile(): Promise<Uint8Array> {
     return new Uint8Array(fs.readFileSync(filePath));
   }
 
-  // 브라우저 환경: fetch 사용
+  // Browser environment: use fetch
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   return new Uint8Array(arrayBuffer);
 }
 
 /**
- * 통합 테스트: ExcelWorksheet.addImage 동작 검증
+ * Integration test: verify ExcelWorksheet.addImage behavior
  */
 
 describe("ExcelWorksheet.addImage integration", () => {
@@ -45,27 +45,27 @@ describe("ExcelWorksheet.addImage integration", () => {
       to: { r: 2, c: 2 },
     });
 
-    // --- 1) media 존재 및 내용 검사
+    // --- 1) Check media exists and its content
     const mediaPath = `xl/media/image1.png`;
     const mediaObj = await (ws as any)._zipCache.get(mediaPath);
     expect(mediaObj).toBeDefined();
     expect(mediaObj instanceof Uint8Array).toBe(true);
     expect(mediaObj).toEqual(bytes);
 
-    // --- 2) Content Types 에 media / drawing override 존재
+    // --- 2) Check Content Types has media / drawing override
     const types = await (ws as any)._zipCache.get("[Content_Types].xml");
     expect(types).toBeDefined();
-    // types는 ExcelXmlContentType 인스턴스일 가능성이 높음
+    // types is likely an ExcelXmlContentType instance
     const overrides = types.data?.Types?.Override ?? [];
     expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image1.png")).toBeTruthy();
     expect(overrides.some((o: any) => o.$.PartName === "/xl/drawings/drawing1.xml")).toBeTruthy();
 
-    // --- 3) drawing xml(객체) 존재 및 a:blip r:embed가 rId로 설정되어 있는지 확인
+    // --- 3) Check drawing xml exists and a:blip r:embed is set as rId
     const drawingPath = "xl/drawings/drawing1.xml";
     const drawingObj = await (ws as any)._zipCache.get(drawingPath);
     expect(drawingObj).toBeDefined();
 
-    // drawingObj는 객체(ExcelXmlDrawing)일 가능성이 높음 — 내부 구조 확인
+    // drawingObj is likely an ExcelXmlDrawing object — check internal structure
     const wsDr = drawingObj?.data?.wsDr;
     expect(wsDr).toBeDefined();
     const anchors = wsDr.twoCellAnchor ?? [];
@@ -77,13 +77,13 @@ describe("ExcelWorksheet.addImage integration", () => {
     const embedVal = aBlip?.$?.["r:embed"];
     expect(typeof embedVal === "string" && /^rId\d+$/.test(embedVal)).toBeTruthy();
 
-    // --- 4) drawing rels 존재 및 media target 참조
+    // --- 4) Check drawing rels exists and references media target
     const drawingRels = await (ws as any)._zipCache.get("xl/drawings/_rels/drawing1.xml.rels");
     expect(drawingRels).toBeDefined();
     const relsArr = drawingRels?.data?.Relationships?.Relationship ?? [];
     expect(relsArr.some((r: any) => r.$.Target === "../media/image1.png")).toBeTruthy();
 
-    // --- 5) worksheet rels에 drawing rel 추가 및 worksheet xml에 <drawing r:id="..."/> 존재
+    // --- 5) Check worksheet rels has drawing rel added and worksheet xml has <drawing r:id="..."/>
     const sheetFileName = (ws as any)._targetFileName; // e.g., "sheet1.xml"
     const sheetRelsPath = `xl/worksheets/_rels/${sheetFileName}.rels`;
     const sheetRels = await (ws as any)._zipCache.get(sheetRelsPath);
@@ -101,19 +101,19 @@ describe("ExcelWorksheet.addImage integration", () => {
     const drawingElems = wsXml.data.worksheet.drawing;
     expect(drawingElems.some((d: any) => d.$ != null && d.$["r:id"] != null)).toBeTruthy();
 
-    // Buffer 생성 검증
+    // Verify buffer creation
     const resultBuffer = await wb.getBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
 
-  it("같은 워크시트에 여러 이미지를 삽입할 수 있다", async () => {
+  it("can insert multiple images into the same worksheet", async () => {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet("Sheet1");
 
     const bytes = await loadPngFile();
 
-    // 첫 번째 이미지 삽입
+    // Insert first image
     await ws.addImage({
       bytes,
       ext: "png",
@@ -121,7 +121,7 @@ describe("ExcelWorksheet.addImage integration", () => {
       to: { r: 2, c: 2 },
     });
 
-    // 두 번째 이미지 삽입 (다른 위치)
+    // Insert second image (different location)
     await ws.addImage({
       bytes,
       ext: "png",
@@ -129,7 +129,7 @@ describe("ExcelWorksheet.addImage integration", () => {
       to: { r: 5, c: 2 },
     });
 
-    // --- 1) 두 개의 media 파일이 각각 생성되었는지 확인
+    // --- 1) Check that two media files were created
     const media1 = await (ws as any)._zipCache.get("xl/media/image1.png");
     const media2 = await (ws as any)._zipCache.get("xl/media/image2.png");
     expect(media1).toBeDefined();
@@ -137,45 +137,45 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(media1 instanceof Uint8Array).toBe(true);
     expect(media2 instanceof Uint8Array).toBe(true);
 
-    // --- 2) Content Types에 두 이미지가 모두 등록되었는지 확인
+    // --- 2) Check that both images are registered in Content Types
     const types = await (ws as any)._zipCache.get("[Content_Types].xml");
     const overrides = types.data?.Types?.Override ?? [];
     expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image1.png")).toBeTruthy();
     expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image2.png")).toBeTruthy();
 
-    // --- 3) drawing xml에 두 개의 anchor가 있는지 확인
+    // --- 3) Check that drawing xml has two anchors
     const drawingObj = await (ws as any)._zipCache.get("xl/drawings/drawing1.xml");
     const anchors = drawingObj?.data?.wsDr?.twoCellAnchor ?? [];
     expect(anchors.length).toBe(2);
 
-    // 첫 번째 이미지 anchor
+    // First image anchor
     const pic1 = anchors[0].pic?.[0];
     expect(pic1).toBeDefined();
     const embed1 = pic1?.blipFill?.[0]?.["a:blip"]?.[0]?.$?.["r:embed"];
     expect(embed1).toBeDefined();
 
-    // 두 번째 이미지 anchor
+    // Second image anchor
     const pic2 = anchors[1].pic?.[0];
     expect(pic2).toBeDefined();
     const embed2 = pic2?.blipFill?.[0]?.["a:blip"]?.[0]?.$?.["r:embed"];
     expect(embed2).toBeDefined();
 
-    // 서로 다른 rId인지 확인
+    // Check that rIds are different
     expect(embed1).not.toBe(embed2);
 
-    // --- 4) drawing rels에 두 이미지에 대한 관계가 있는지 확인
+    // --- 4) Check that drawing rels have relationships for both images
     const drawingRels = await (ws as any)._zipCache.get("xl/drawings/_rels/drawing1.xml.rels");
     const relsArr = drawingRels?.data?.Relationships?.Relationship ?? [];
     expect(relsArr.some((r: any) => r.$.Target === "../media/image1.png")).toBeTruthy();
     expect(relsArr.some((r: any) => r.$.Target === "../media/image2.png")).toBeTruthy();
 
-    // Buffer 생성 검증
+    // Verify buffer creation
     const resultBuffer = await wb.getBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
 
-  it("지원되지 않는 확장자는 에러 발생", async () => {
+  it("throws error for unsupported file extensions", async () => {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet("Sheet1");
 
@@ -185,6 +185,6 @@ describe("ExcelWorksheet.addImage integration", () => {
         ext: "xyz123",
         from: { r: 0, c: 0 },
       }),
-    ).rejects.toThrow("MIME 타입을 확인할 수 없습니다");
+    ).rejects.toThrow("Cannot determine MIME type");
   });
 });

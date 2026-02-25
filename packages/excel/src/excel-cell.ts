@@ -239,7 +239,7 @@ export class ExcelCell {
 
     if (opts.background != null) {
       if (!/^[0-9A-F]{8}$/i.test(opts.background)) {
-        throw new Error("색상 형식이 잘못되었습니다. (형식: 00000000: alpha(역)+rgb)");
+        throw new Error("Invalid color format. (Format: 00000000: alpha(reversed)+rgb)");
       }
       style.background = opts.background;
     }

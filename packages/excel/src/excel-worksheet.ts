@@ -34,7 +34,7 @@ export class ExcelWorksheet {
     const wbXmlData = await this._getWbData();
     const name = wbXmlData.getWorksheetNameById(this._relId);
     if (name == null) {
-      throw new Error(`워크시트 ID ${this._relId}에 해당하는 이름을 찾을 수 없습니다`);
+      throw new Error(`Cannot find name for worksheet ID ${this._relId}`);
     }
     return name;
   }
@@ -274,7 +274,7 @@ export class ExcelWorksheet {
   }): Promise<void> {
     const mimeType = mime.getType(opts.ext);
     if (mimeType == null) {
-      throw new Error(`확장자 '${opts.ext}'의 MIME 타입을 확인할 수 없습니다`);
+      throw new Error(`Cannot determine MIME type for extension '${opts.ext}'`);
     }
 
     // 1. Determine media filename and save

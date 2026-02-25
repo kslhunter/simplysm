@@ -3,7 +3,7 @@ import { ExcelWorkbook } from "../src/excel-workbook";
 
 describe("ExcelCol", () => {
   describe("cell()", () => {
-    it("행 인덱스에 해당하는 셀을 반환한다", async () => {
+    it("Returns cell corresponding to row index", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -14,7 +14,7 @@ describe("ExcelCol", () => {
       expect(await cell.getVal()).toBe("Hello");
     });
 
-    it("동일 인덱스에 대해 같은 인스턴스를 반환한다 (캐싱)", async () => {
+    it("Returns same instance for same index (caching)", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -25,7 +25,7 @@ describe("ExcelCol", () => {
       expect(cell1).toBe(cell2);
     });
 
-    it("다른 인덱스에 대해 다른 인스턴스를 반환한다", async () => {
+    it("Returns different instance for different index", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -38,7 +38,7 @@ describe("ExcelCol", () => {
   });
 
   describe("getCells()", () => {
-    it("범위 내 모든 셀을 반환한다", async () => {
+    it("Returns all cells within range", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -56,7 +56,7 @@ describe("ExcelCol", () => {
       expect(await cells[2].getVal()).toBe("A3");
     });
 
-    it("빈 워크시트에서 기본 범위(0,0)에 해당하는 셀을 반환한다", async () => {
+    it("Returns cell corresponding to default range (0,0) from empty worksheet", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -70,7 +70,7 @@ describe("ExcelCol", () => {
   });
 
   describe("setWidth()", () => {
-    it("열 너비를 설정할 수 있다", async () => {
+    it("Can set column width", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
@@ -87,7 +87,7 @@ describe("ExcelCol", () => {
       expect(await ws2.cell(0, 0).getVal()).toBe("Test");
     });
 
-    it("여러 열에 다른 너비를 설정할 수 있다", async () => {
+    it("Can set different widths for multiple columns", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 

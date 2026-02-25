@@ -1,8 +1,8 @@
 {
   "name": "@simplysm/excel",
   "version": "13.0.69",
-  "description": "Excel 파일 처리 라이브러리",
-  "author": "김석래",
+  "description": "Excel file processing library",
+  "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
