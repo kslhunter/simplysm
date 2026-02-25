@@ -2,7 +2,7 @@ import { consola } from "consola";
 import type { BuildResult } from "../infra/ResultCollector";
 
 /**
- * 빌드 경고/에러 메시지를 포맷팅한다.
+ * Format build warning/error messages
  */
 export function formatBuildMessages(name: string, label: string, messages: string[]): string {
   const lines: string[] = [`${name} (${label})`];
@@ -15,8 +15,8 @@ export function formatBuildMessages(name: string, label: string, messages: strin
 }
 
 /**
- * 에러만 출력한다.
- * @param results 패키지별 빌드 결과 상태
+ * Print only errors
+ * @param results Build result status per package
  */
 export function printErrors(results: Map<string, BuildResult>): void {
   for (const result of results.values()) {
@@ -32,34 +32,34 @@ export function printErrors(results: Map<string, BuildResult>): void {
 }
 
 /**
- * 서버 URL만 출력한다.
- * @param results 패키지별 빌드 결과 상태
- * @param serverClientsMap 서버별 연결된 클라이언트 목록
+ * Print server URLs only
+ * @param results Build result status per package
+ * @param serverClientsMap List of connected clients per server
  */
 export function printServers(
   results: Map<string, BuildResult>,
   serverClientsMap?: Map<string, string[]>,
 ): void {
-  // 서버 정보 수집
+  // Collect server info
   const servers = [...results.values()].filter((r) => r.status === "running" && r.port != null);
 
-  // 서버 정보 출력 (있으면 앞에 빈 줄 추가)
+  // Print server info (add blank line before if present)
   if (servers.length > 0) {
     process.stdout.write("\n");
     for (const server of servers) {
       if (server.target === "server") {
-        // 서버에 연결된 클라이언트가 있으면 클라이언트 URL만 출력
+        // If server has connected clients, print only client URLs
         const clients = serverClientsMap?.get(server.name) ?? [];
         if (clients.length > 0) {
           for (const clientName of clients) {
             consola.info(`[server] http://localhost:${server.port}/${clientName}/`);
           }
         } else {
-          // 연결된 클라이언트가 없으면 서버 루트 URL 출력
+          // If no connected clients, print server root URL
           consola.info(`[server] http://localhost:${server.port}/`);
         }
       } else {
-        // standalone client는 이름 포함해서 출력
+        // Standalone client: print with name included
         consola.info(`[server] http://localhost:${server.port}/${server.name}/`);
       }
     }
