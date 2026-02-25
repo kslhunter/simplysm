@@ -1,7 +1,6 @@
 ---
 name: sd-review
-description: Multi-perspective comprehensive code review
-disable-model-invocation: true
+description: "Comprehensive multi-perspective code review (explicit invocation only)"
 ---
 
 # sd-review
@@ -10,7 +9,7 @@ disable-model-invocation: true
 
 Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
+Analyzes code via the built-in Explore agent, then runs up to 4 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
 
 ## Usage
 
@@ -48,30 +47,29 @@ Run subagents in parallel via the Task tool:
 
 ## Workflow
 
-### Step 1: Code Analysis via sd-explore
+### Step 1: Code Analysis via Explore Agent
 
-Invoke the `sd-explore` skill via the Skill tool to analyze the target path:
+Invoke the built-in Explore agent via the Task tool to analyze the target path:
 
 ```
-Skill: sd-explore
-**Args:** <target-path>
+Task(subagent_type=Explore)
+Prompt: "very thorough" analysis of <target-path>:
+- Entry points, core files, module boundaries
+- Call chains, data transformations, state changes
+- Abstraction layers, design patterns, dependency graph
+- Error handling, public API surface
 ```
 
-This runs in a **separate context**, so it does not consume the main context window. The analysis covers:
-
-- Feature Discovery: entry points, core files, module boundaries
-- Code Flow Tracing: call chains, data transformations, state changes
-- Architecture Analysis: abstraction layers, design patterns, dependency graph
-- Implementation Details: error handling, public API surface, performance
+This runs in a **separate context**, so it does not consume the main context window.
 
 ### Step 2: Dispatch Analysis to Reviewers
 
-Run subagents **in parallel** via the Task tool. Include the sd-explore analysis results in each subagent's prompt:
+Run subagents **in parallel** via the Task tool. Include the Explore analysis results in each subagent's prompt:
 
 - **sd-code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
 - **sd-code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
 - **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
-- **sd-security-reviewer** _(conditional)_: If the sd-explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
+- **sd-security-reviewer** _(conditional)_: If the Explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
 
 ### Step 3: Verify Issues
 
@@ -90,7 +88,7 @@ Compile only **verified findings** into a comprehensive report.
 
 | Section                          | Priority | Source                                                          |
 | -------------------------------- | -------- | --------------------------------------------------------------- |
-| **Architecture Summary**         | —        | sd-explore analysis                                             |
+| **Architecture Summary**         | —        | Explore analysis                                                |
 | **Critical Issues**              | P0       | Bugs, security vulnerabilities                                  |
 | **Security Issues**              | P0       | SQL injection, input validation (when sd-security-reviewer ran) |
 | **Quality Issues**               | P1       | Logic errors, missing error handling, performance               |
