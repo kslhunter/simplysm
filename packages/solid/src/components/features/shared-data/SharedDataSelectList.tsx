@@ -12,45 +12,45 @@ import { textMuted } from "../../../styles/tokens.styles";
 
 /** SharedDataSelectList Props */
 export interface SharedDataSelectListProps<TItem> {
-  /** 공유 데이터 접근자 */
+  /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
 
-  /** 현재 선택된 값 */
+  /** Currently selected value */
   value?: TItem;
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: TItem | undefined) => void;
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
 
-  /** 항목 필터 함수 */
+  /** Item filter function */
   filterFn?: (item: TItem, index: number) => boolean;
-  /** 값 변경 가드 (false 반환 시 변경 차단) */
+  /** Value change guard (blocks change if returns false) */
   canChange?: (item: TItem | undefined) => boolean | Promise<boolean>;
-  /** 페이지 크기 (있으면 Pagination 자동 표시) */
+  /** Page size (shows Pagination if provided) */
   pageSize?: number;
-  /** 헤더 텍스트 */
+  /** Header text */
   header?: string;
-  /** 관리 모달 컴포넌트 팩토리 */
+  /** Management modal component factory */
   modal?: () => JSX.Element;
 
-  /** 아이템 렌더 함수 */
+  /** Item render function */
   children: (item: TItem, index: number) => JSX.Element;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
-// ─── 스타일 ──────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────
 
 const containerClass = clsx("flex-col gap-1");
 
 const headerClass = clsx("flex items-center gap-1 px-2 py-1 text-sm font-semibold");
 
-// ─── 컴포넌트 ───────────────────────────────────────────
+// ─── Component ───────────────────────────────────────────
 
 export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TItem>): JSX.Element {
   const [local, rest] = splitProps(props, [
@@ -71,16 +71,16 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
 
   const dialog = useDialog();
 
-  // ─── 페이지네이션 상태 ─────────────────────────────────
+  // ─── Pagination state ─────────────────────────────────
 
   const [page, setPage] = createSignal(1);
 
-  // ─── 필터링 파이프라인 ─────────────────────────────────
+  // ─── Filtering pipeline ─────────────────────────────────
 
   const filteredItems = createMemo(() => {
     let result = local.data.items();
 
-    // getIsHidden 필터
+    // getIsHidden filter
     const isHidden = local.data.getIsHidden;
     if (isHidden) {
       result = result.filter((item) => !isHidden(item));
@@ -95,20 +95,20 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
     return result;
   });
 
-  // ─── 페이지 계산 ───────────────────────────────────────
+  // ─── Page calculation ───────────────────────────────────────
 
   const totalPageCount = createMemo(() => {
     if (local.pageSize == null) return 1;
     return Math.max(1, Math.ceil(filteredItems().length / local.pageSize));
   });
 
-  // 필터 변경 시 페이지 리셋
+  // Reset page when filter changes
   createEffect(() => {
     void filteredItems();
     setPage(1);
   });
 
-  // 페이지 슬라이스
+  // Page slice
   const displayItems = createMemo(() => {
     const items = filteredItems();
     if (local.pageSize == null) return items;
@@ -118,18 +118,18 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
     return items.slice(start, end);
   });
 
-  // ─── 선택/토글 핸들러 ─────────────────────────────────
+  // ─── Select/toggle handler ─────────────────────────────
 
   const handleSelect = async (item: TItem | undefined) => {
     if (local.disabled) return;
 
-    // canChange 가드
+    // canChange guard
     if (local.canChange) {
       const allowed = await local.canChange(item);
       if (!allowed) return;
     }
 
-    // 토글: 이미 선택된 값을 다시 클릭하면 선택 해제 (required가 아닐 때만)
+    // Toggle: click already selected value to deselect (only if not required)
     if (item !== undefined && item === local.value && !local.required) {
       local.onValueChange?.(undefined);
     } else {
@@ -137,14 +137,14 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
     }
   };
 
-  // ─── modal 열기 ────────────────────────────────────────
+  // ─── Open modal ────────────────────────────────────────
 
   const handleOpenModal = async () => {
     if (!local.modal) return;
     await dialog.show(local.modal, {});
   };
 
-  // ─── 렌더링 ────────────────────────────────────────────
+  // ─── Render ────────────────────────────────────────────
 
   return (
     <div
@@ -177,18 +177,18 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
 
       {/* List */}
       <List inset>
-        {/* 미지정 항목 (required가 아닐 때) */}
+        {/* Unspecified item (when not required) */}
         <Show when={!local.required}>
           <List.Item
             selected={local.value === undefined}
             disabled={local.disabled}
             onClick={() => handleSelect(undefined)}
           >
-            <span class={textMuted}>미지정</span>
+            <span class={textMuted}>Unspecified</span>
           </List.Item>
         </Show>
 
-        {/* 아이템 목록 */}
+        {/* Item list */}
         <For each={displayItems()}>
           {(item, index) => (
             <List.Item
