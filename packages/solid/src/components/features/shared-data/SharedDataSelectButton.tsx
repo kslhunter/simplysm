@@ -8,27 +8,27 @@ import { type ComponentSize } from "../../../styles/tokens.styles";
 
 /** SharedDataSelectButton Props */
 export interface SharedDataSelectButtonProps<TItem> {
-  /** 공유 데이터 접근자 */
+  /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
 
-  /** 현재 선택된 키 (단일 또는 다중) */
+  /** Currently selected key(s) (single or multiple) */
   value?: DataSelectButtonProps<TItem>["value"];
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: DataSelectButtonProps<TItem>["onValueChange"];
-  /** 다중 선택 모드 */
+  /** Multiple selection mode */
   multiple?: boolean;
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
-  /** 트리거 크기 */
+  /** Trigger size */
   size?: ComponentSize;
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 선택 모달 컴포넌트 팩토리 */
+  /** Selection modal component factory */
   modal: () => JSX.Element;
-  /** 아이템 렌더링 함수 */
+  /** Item rendering function */
   children: (item: TItem) => JSX.Element;
 }
 
