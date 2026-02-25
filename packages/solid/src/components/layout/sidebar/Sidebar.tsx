@@ -66,10 +66,10 @@ const SidebarBase: ParentComponent<SidebarProps> = (props) => {
 
   const { toggle } = useSidebarContext();
 
-  // Tailwind sm: breakpoint 감지
+  // Detect Tailwind sm: breakpoint
   const isDesktop = createMediaQuery(SM_MEDIA_QUERY);
 
-  // 사이드바 열림 여부 계산
+  // Calculate sidebar open state
   const isOpen = createMemo(() => {
     if (isDesktop()) {
       return !toggle();
@@ -77,7 +77,7 @@ const SidebarBase: ParentComponent<SidebarProps> = (props) => {
     return toggle();
   });
 
-  // transform 계산: 닫힘 시 왼쪽으로 숨김
+  // Calculate transform: hide left when closed
   const getTransform = () => {
     return isOpen() ? "translateX(0)" : "translateX(-100%)";
   };

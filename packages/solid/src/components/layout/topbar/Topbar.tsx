@@ -15,24 +15,24 @@ export type { TopbarMenuItem, TopbarMenuProps } from "./TopbarMenu";
 export type { TopbarUserMenu, TopbarUserProps } from "./TopbarUser";
 
 const baseClass = clsx(
-  // 레이아웃
+  // Layout
   "flex",
   "flex-row",
   "gap-2",
   "items-center",
-  // 크기
+  // Size
   "min-h-12",
   "px-2",
-  // 배경/테두리
+  // Background/border
   "bg-white",
   "dark:bg-base-900",
   "border-b",
   "border-base-200",
   "dark:border-base-700",
-  // 스크롤
+  // Scroll
   "overflow-x-auto",
   "overflow-y-hidden",
-  // 기타
+  // Other
   "select-none",
 );
 
@@ -41,12 +41,12 @@ export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
 }
 
 /**
- * 상단바 본체 컴포넌트
+ * Topbar main component
  *
  * @remarks
- * - SidebarContext가 있을 경우 사이드바 토글 버튼 자동 표시
- * - SidebarContainer 내부에서 사용하면 토글 버튼이 나타남
- * - 단독 사용 시 토글 버튼 없이 순수 Topbar로 동작
+ * - Automatically shows sidebar toggle button if SidebarContext exists
+ * - Toggle button appears when used inside SidebarContainer
+ * - Acts as pure Topbar without toggle button when used standalone
  *
  * @example
  * ```tsx
@@ -68,7 +68,7 @@ interface TopbarComponent extends ParentComponent<TopbarProps> {
 const TopbarBase: ParentComponent<TopbarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
-  // SidebarContext 선택적 사용 (Context 없으면 토글 버튼 미표시)
+  // Optional use of SidebarContext (toggle button not shown if Context doesn't exist)
   const sidebarContext = useSidebarContextOptional();
 
   const handleToggle = () => {
