@@ -243,7 +243,7 @@ function sdScopeWatchPlugin(
 }
 
 /**
- * Vite 설정 생성 옵션
+ * Vite config generation options
  */
 export interface ViteConfigOptions {
   pkgDir: string;
@@ -252,16 +252,16 @@ export interface ViteConfigOptions {
   compilerOptions: Record<string, unknown>;
   env?: Record<string, string>;
   mode: "build" | "dev";
-  /** dev 모드일 때 서버 포트 (0이면 자동 할당) */
+  /** Server port in dev mode (0 for auto-assign) */
   serverPort?: number;
-  /** replaceDeps 패키지명 배열 (resolve 완료된 상태) */
+  /** Array of replaceDeps package names (resolved state) */
   replaceDeps?: string[];
-  /** replaceDeps 패키지 dist 변경 감지 시 콜백 */
+  /** Callback when replaceDeps package dist changes */
   onScopeRebuild?: () => void;
 }
 
 /**
- * Vite 설정 생성
+ * Create Vite config
  *
  * SolidJS + TailwindCSS 기반의 client 패키지 빌드/개발 서버용 설정입니다.
  * - build 모드: production 빌드 (logLevel: silent)
