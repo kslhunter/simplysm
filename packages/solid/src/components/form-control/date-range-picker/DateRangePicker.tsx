@@ -12,52 +12,52 @@ export type DateRangePeriodType = "day" | "month" | "range";
 const baseClass = clsx("inline-flex items-center", "gap-1");
 
 export interface DateRangePickerProps {
-  /** 기간 타입 */
+  /** Period type */
   periodType?: DateRangePeriodType;
 
-  /** 기간 타입 변경 콜백 */
+  /** Period type change callback */
   onPeriodTypeChange?: (value: DateRangePeriodType) => void;
 
-  /** 시작 날짜 */
+  /** Start date */
   from?: DateOnly;
 
-  /** 시작 날짜 변경 콜백 */
+  /** Start date change callback */
   onFromChange?: (value: DateOnly | undefined) => void;
 
-  /** 종료 날짜 */
+  /** End date */
   to?: DateOnly;
 
-  /** 종료 날짜 변경 콜백 */
+  /** End date change callback */
   onToChange?: (value: DateOnly | undefined) => void;
 
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
 
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
 
-  /** 사이즈 */
+  /** Size */
   size?: FieldSize;
 
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
 
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
 /**
- * 월의 마지막 날을 구한다.
+ * Get the last day of the month.
  */
 function getLastDayOfMonth(date: DateOnly): DateOnly {
   return date.addMonths(1).setDay(1).addDays(-1);
 }
 
 /**
- * DateRangePicker 컴포넌트
+ * DateRangePicker component
  *
- * 기간 타입(일/월/범위) 선택에 따라 날짜 범위를 입력한다.
- * periodType 변경 시 from/to를 자동으로 보정한다.
+ * Input date range based on selected period type (day/month/range).
+ * Automatically adjusts from/to when periodType changes.
  *
  * @example
  * ```tsx
@@ -91,7 +91,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     "style",
   ]);
 
-  // controlled/uncontrolled 패턴
+  // Controlled/uncontrolled pattern
   const [periodType, setPeriodType] = createControllableSignal({
     value: () => local.periodType ?? ("range" as DateRangePeriodType),
     onChange: () => local.onPeriodTypeChange,
@@ -107,7 +107,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     onChange: () => local.onToChange,
   });
 
-  // periodType 변경 핸들러
+  // Period type change handler
   const handlePeriodTypeChange = (newType: DateRangePeriodType | DateRangePeriodType[]) => {
     const type = Array.isArray(newType) ? newType[0] : newType;
     setPeriodType(type);
@@ -127,7 +127,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     }
   };
 
-  // from 변경 핸들러
+  // From date change handler
   const handleFromChange = (newFrom: DateOnly | undefined) => {
     setFrom(newFrom);
 
@@ -145,12 +145,12 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     }
   };
 
-  // to 변경 핸들러
+  // To date change handler
   const handleToChange = (newTo: DateOnly | undefined) => {
     setTo(newTo);
   };
 
-  // wrapper 클래스
+  // Wrapper class
   const getWrapperClass = () => twMerge(baseClass, local.class);
 
   return (
