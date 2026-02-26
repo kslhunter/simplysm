@@ -26,6 +26,7 @@ import {
   IconClearFormatting,
 } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 export interface EditorToolbarProps {
   editor: Editor;
@@ -62,6 +63,7 @@ const colorIndicatorClass = clsx("absolute inset-x-1 bottom-0.5", "h-0.5 rounded
 
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
+  const i18n = useI18nOptional();
 
   // Track active state reactively with createEditorTransaction
   const isBold = createEditorTransaction(e, (editor) => editor.isActive("bold"));
@@ -129,7 +131,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isH1)}
-        title="Heading 1"
+        title={i18n?.t("editorToolbar.heading1") ?? "Heading 1"}
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 1 }).run()}
       >
         <Icon icon={IconH1} size="1em" />
@@ -137,7 +139,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isH2)}
-        title="Heading 2"
+        title={i18n?.t("editorToolbar.heading2") ?? "Heading 2"}
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         <Icon icon={IconH2} size="1em" />
@@ -150,7 +152,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isBold)}
-        title="Bold"
+        title={i18n?.t("editorToolbar.bold") ?? "Bold"}
         onClick={() => props.editor.chain().focus().toggleBold().run()}
       >
         <Icon icon={IconBold} size="1em" />
@@ -158,7 +160,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isItalic)}
-        title="Italic"
+        title={i18n?.t("editorToolbar.italic") ?? "Italic"}
         onClick={() => props.editor.chain().focus().toggleItalic().run()}
       >
         <Icon icon={IconItalic} size="1em" />
@@ -166,7 +168,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isUnderline)}
-        title="Underline"
+        title={i18n?.t("editorToolbar.underline") ?? "Underline"}
         onClick={() => props.editor.chain().focus().toggleUnderline().run()}
       >
         <Icon icon={IconUnderline} size="1em" />
@@ -174,7 +176,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isStrike)}
-        title="Strikethrough"
+        title={i18n?.t("editorToolbar.strikethrough") ?? "Strikethrough"}
         onClick={() => props.editor.chain().focus().toggleStrike().run()}
       >
         <Icon icon={IconStrikethrough} size="1em" />
@@ -184,7 +186,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <div class={separatorClass} />
 
       {/* 5. Text color + background color (using input[type=color]) */}
-      <label class={colorLabelClass} title="Text color">
+      <label class={colorLabelClass} title={i18n?.t("editorToolbar.textColor") ?? "Text color"}>
         <span class={clsx("text-sm font-bold")}>A</span>
         <div class={colorIndicatorClass} style={{ "background-color": currentColor() }} />
         <input
@@ -194,7 +196,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
           onInput={(ev) => props.editor.chain().focus().setColor(ev.currentTarget.value).run()}
         />
       </label>
-      <label class={colorLabelClass} title="Background color">
+      <label class={colorLabelClass} title={i18n?.t("editorToolbar.bgColor") ?? "Background color"}>
         <span
           class={clsx("rounded px-0.5 text-sm font-bold")}
           style={{ "background-color": currentHighlight() }}
@@ -218,7 +220,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isBulletList)}
-        title="Bullet list"
+        title={i18n?.t("editorToolbar.bulletList") ?? "Bullet list"}
         onClick={() => props.editor.chain().focus().toggleBulletList().run()}
       >
         <Icon icon={IconList} size="1em" />
@@ -226,7 +228,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isOrderedList)}
-        title="Numbered list"
+        title={i18n?.t("editorToolbar.numberedList") ?? "Numbered list"}
         onClick={() => props.editor.chain().focus().toggleOrderedList().run()}
       >
         <Icon icon={IconListNumbers} size="1em" />
@@ -239,7 +241,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={toolbarBtnClass}
-        title="Increase indent"
+        title={i18n?.t("editorToolbar.increaseIndent") ?? "Increase indent"}
         onClick={() => props.editor.chain().focus().sinkListItem("listItem").run()}
       >
         <Icon icon={IconIndentIncrease} size="1em" />
@@ -247,7 +249,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={toolbarBtnClass}
-        title="Decrease indent"
+        title={i18n?.t("editorToolbar.decreaseIndent") ?? "Decrease indent"}
         onClick={() => props.editor.chain().focus().liftListItem("listItem").run()}
       >
         <Icon icon={IconIndentDecrease} size="1em" />
@@ -260,7 +262,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isBlockquote)}
-        title="Blockquote"
+        title={i18n?.t("editorToolbar.blockquote") ?? "Blockquote"}
         onClick={() => props.editor.chain().focus().toggleBlockquote().run()}
       >
         <Icon icon={IconQuote} size="1em" />
@@ -268,7 +270,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isCodeBlock)}
-        title="Code block"
+        title={i18n?.t("editorToolbar.codeBlock") ?? "Code block"}
         onClick={() => props.editor.chain().focus().toggleCodeBlock().run()}
       >
         <Icon icon={IconCode} size="1em" />
@@ -281,7 +283,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignLeft)}
-        title="Align left"
+        title={i18n?.t("editorToolbar.alignLeft") ?? "Align left"}
         onClick={() => props.editor.chain().focus().setTextAlign("left").run()}
       >
         <Icon icon={IconAlignLeft} size="1em" />
@@ -289,7 +291,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignCenter)}
-        title="Align center"
+        title={i18n?.t("editorToolbar.alignCenter") ?? "Align center"}
         onClick={() => props.editor.chain().focus().setTextAlign("center").run()}
       >
         <Icon icon={IconAlignCenter} size="1em" />
@@ -297,7 +299,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignRight)}
-        title="Align right"
+        title={i18n?.t("editorToolbar.alignRight") ?? "Align right"}
         onClick={() => props.editor.chain().focus().setTextAlign("right").run()}
       >
         <Icon icon={IconAlignRight} size="1em" />
@@ -305,7 +307,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isAlignJustify)}
-        title="Justify"
+        title={i18n?.t("editorToolbar.justify") ?? "Justify"}
         onClick={() => props.editor.chain().focus().setTextAlign("justify").run()}
       >
         <Icon icon={IconAlignJustified} size="1em" />
@@ -318,7 +320,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={toolbarBtnClass}
-        title="Insert table"
+        title={i18n?.t("editorToolbar.insertTable") ?? "Insert table"}
         onClick={() =>
           props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
@@ -327,7 +329,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       </button>
 
       {/* 16. Insert image */}
-      <button type="button" class={toolbarBtnClass} title="Insert image" onClick={handleImageInsert}>
+      <button type="button" class={toolbarBtnClass} title={i18n?.t("editorToolbar.insertImage") ?? "Insert image"} onClick={handleImageInsert}>
         <Icon icon={IconPhoto} size="1em" />
       </button>
 
@@ -338,7 +340,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={toolbarBtnClass}
-        title="Clear formatting"
+        title={i18n?.t("editorToolbar.clearFormatting") ?? "Clear formatting"}
         onClick={() => props.editor.chain().focus().clearNodes().unsetAllMarks().run()}
       >
         <Icon icon={IconClearFormatting} size="1em" />

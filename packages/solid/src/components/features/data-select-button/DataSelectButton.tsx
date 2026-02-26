@@ -15,6 +15,7 @@ import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import {
@@ -111,6 +112,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
     "dialogOptions",
   ]);
 
+  const i18n = useI18nOptional();
   const dialog = useDialog();
 
   // Always normalize value to array
@@ -254,7 +256,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
                 class={twMerge(actionButtonClass, "text-base-400 hover:text-danger-500")}
                 onClick={handleClear}
                 tabIndex={-1}
-                aria-label="Deselect"
+                aria-label={i18n?.t("dataSelectButton.deselect") ?? "Deselect"}
               >
                 <Icon icon={IconX} size="0.875em" />
               </button>
@@ -266,7 +268,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
                 class={twMerge(actionButtonClass, "text-base-400 hover:text-primary-500")}
                 onClick={() => void handleOpenModal()}
                 tabIndex={-1}
-                aria-label="Search"
+                aria-label={i18n?.t("dataSelectButton.search") ?? "Search"}
               >
                 <Icon icon={IconSearch} size="0.875em" />
               </button>
