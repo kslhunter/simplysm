@@ -4,6 +4,7 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 
 /** SharedDataSelect Props */
@@ -40,6 +41,7 @@ export interface SharedDataSelectProps<TItem> {
 export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JSX.Element {
   const [local, rest] = splitProps(props, ["data", "filterFn", "modal", "editModal", "children"]);
 
+  const i18n = useI18nOptional();
   const dialog = useDialog();
 
   // Items with filterFn applied
@@ -87,12 +89,12 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     <Select {...selectProps}>
       <Select.ItemTemplate>{local.children}</Select.ItemTemplate>
       {local.modal && (
-        <Select.Action onClick={() => void handleOpenModal()} aria-label="Search">
+        <Select.Action onClick={() => void handleOpenModal()} aria-label={i18n?.t("sharedDataSelect.search") ?? "Search"}>
           <Icon icon={IconSearch} size="1em" />
         </Select.Action>
       )}
       {local.editModal && (
-        <Select.Action onClick={() => void handleOpenEditModal()} aria-label="Edit">
+        <Select.Action onClick={() => void handleOpenEditModal()} aria-label={i18n?.t("sharedDataSelect.edit") ?? "Edit"}>
           <Icon icon={IconEdit} size="1em" />
         </Select.Action>
       )}

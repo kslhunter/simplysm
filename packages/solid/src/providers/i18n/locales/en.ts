@@ -33,6 +33,9 @@ export default {
   },
   select: {
     searchPlaceholder: "Search...",
+    selectAll: "Select all",
+    deselectAll: "Deselect all",
+    unset: "Unset",
   },
   topbar: {
     toggleSidebar: "Toggle sidebar",
@@ -112,6 +115,9 @@ export default {
   dataSelectButton: {
     deselect: "Deselect",
     search: "Search",
+  },
+  dialog: {
+    close: "Close dialog",
   },
   notification: {
     close: "Close notification",

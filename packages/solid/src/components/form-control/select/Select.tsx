@@ -31,6 +31,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 void ripple;
 
@@ -267,6 +268,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "getIsHidden",
   ]);
 
+  const i18n = useI18nOptional();
   const [open, setOpen] = createSignal(false);
 
   // Search text signal
@@ -539,7 +541,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                 type="text"
                 data-select-search
                 class={searchInputClass}
-                placeholder="Search..."
+                placeholder={i18n?.t("select.searchPlaceholder") ?? "Search..."}
                 value={searchText()}
                 onInput={(e) => setSearchText(e.currentTarget.value)}
               />
@@ -553,7 +555,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                   class={selectAllBtnClass}
                   onClick={handleSelectAll}
                 >
-                  Select all
+                  {i18n?.t("select.selectAll") ?? "Select all"}
                 </button>
                 <button
                   type="button"
@@ -561,7 +563,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                   class={selectAllBtnClass}
                   onClick={handleDeselectAll}
                 >
-                  Deselect all
+                  {i18n?.t("select.deselectAll") ?? "Deselect all"}
                 </button>
               </div>
             </Show>
@@ -570,7 +572,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                 {/* Unset item */}
                 <Show when={showUnsetItem()}>
                   <SelectItem value={undefined as T}>
-                    <span class={textMuted}>Unset</span>
+                    <span class={textMuted}>{i18n?.t("select.unset") ?? "Unset"}</span>
                   </SelectItem>
                 </Show>
                 {renderItems(visibleItems() ?? [], 0)}

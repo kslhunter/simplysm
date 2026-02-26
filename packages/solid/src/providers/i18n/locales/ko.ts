@@ -33,6 +33,9 @@ export default {
   },
   select: {
     searchPlaceholder: "검색...",
+    selectAll: "전체 선택",
+    deselectAll: "전체 선택 해제",
+    unset: "미설정",
   },
   topbar: {
     toggleSidebar: "사이드바 토글",
@@ -112,6 +115,9 @@ export default {
   dataSelectButton: {
     deselect: "선택 해제",
     search: "검색",
+  },
+  dialog: {
+    close: "대화상자 닫기",
   },
   notification: {
     close: "알림 닫기",

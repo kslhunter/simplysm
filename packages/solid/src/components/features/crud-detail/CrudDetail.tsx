@@ -19,6 +19,7 @@ import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarCo
 import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import clsx from "clsx";
 import {
   IconCheck,
@@ -60,6 +61,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   ]);
 
   const noti = useNotification();
+  const i18n = useI18nOptional();
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance<boolean>();
 
@@ -108,7 +110,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Refresh --
   async function handleRefresh() {
     if (hasChanges()) {
-      if (!confirm("Discard changes?")) return;
+      if (!confirm(i18n?.t("crudDetail.discardChanges") ?? "Discard changes?")) return;
     }
     await doLoad();
   }
