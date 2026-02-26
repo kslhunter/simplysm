@@ -112,6 +112,9 @@ export default {
     search: "검색",
     edit: "편집",
   },
+  sharedDataSelectList: {
+    searchPlaceholder: "검색...",
+  },
   dataSelectButton: {
     deselect: "선택 해제",
     search: "검색",

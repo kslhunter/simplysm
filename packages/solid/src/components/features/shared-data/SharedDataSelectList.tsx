@@ -7,8 +7,17 @@ import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
+import { TextInput } from "../../form-control/field/TextInput";
 import { useDialog } from "../../disclosure/DialogContext";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { textMuted } from "../../../styles/tokens.styles";
+import { createSlotSignal } from "../../../hooks/createSlotSignal";
+import {
+  SharedDataSelectListContext,
+  type SharedDataSelectListContextValue,
+  SharedDataSelectListItemTemplate,
+  SharedDataSelectListFilter,
+} from "./SharedDataSelectListContext";
 
 /** SharedDataSelectList Props */
 export interface SharedDataSelectListProps<TItem> {
@@ -35,8 +44,8 @@ export interface SharedDataSelectListProps<TItem> {
   /** Management modal component factory */
   modal?: () => JSX.Element;
 
-  /** Item render function */
-  children: (item: TItem, index: number) => JSX.Element;
+  /** Compound sub-components (ItemTemplate, Filter) */
+  children?: JSX.Element;
 
   /** Custom class */
   class?: string;
@@ -52,7 +61,15 @@ const headerClass = clsx("flex items-center gap-1 px-2 py-1 text-sm font-semibol
 
 // ─── Component ───────────────────────────────────────────
 
-export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TItem>): JSX.Element {
+export interface SharedDataSelectListComponent {
+  <TItem>(props: SharedDataSelectListProps<TItem>): JSX.Element;
+  ItemTemplate: typeof SharedDataSelectListItemTemplate;
+  Filter: typeof SharedDataSelectListFilter;
+}
+
+export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
+  props: SharedDataSelectListProps<TItem>,
+): JSX.Element => {
   const [local, rest] = splitProps(props, [
     "data",
     "children",
@@ -70,6 +87,32 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
   ]);
 
   const dialog = useDialog();
+  const i18n = useI18nOptional();
+
+  // ─── Slot signals ──────────────────────────────────────
+
+  const [filter, setFilter] = createSlotSignal();
+  const [itemTemplate, _setItemTemplate] = createSignal<
+    ((item: TItem, index: number) => JSX.Element) | undefined
+  >();
+  const setItemTemplate = (fn: ((...args: unknown[]) => JSX.Element) | undefined) =>
+    _setItemTemplate(() => fn as ((item: TItem, index: number) => JSX.Element) | undefined);
+
+  const contextValue: SharedDataSelectListContextValue = {
+    setItemTemplate,
+    setFilter,
+  };
+
+  // ─── Search state ──────────────────────────────────────
+
+  const [searchText, setSearchText] = createSignal("");
+
+  // Reset search text when filter slot changes
+  createEffect(() => {
+    if (filter()) {
+      setSearchText("");
+    }
+  });
 
   // ─── Pagination state ─────────────────────────────────
 
@@ -84,6 +127,18 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
     const isHidden = local.data.getIsHidden;
     if (isHidden) {
       result = result.filter((item) => !isHidden(item));
+    }
+
+    // Search filter (only when Filter compound is absent and getSearchText exists)
+    const getSearchText = local.data.getSearchText;
+    if (!filter() && getSearchText && searchText()) {
+      const terms = searchText().trim().split(" ").filter(Boolean);
+      if (terms.length > 0) {
+        result = result.filter((item) => {
+          const text = getSearchText(item).toLowerCase();
+          return terms.every((t) => text.includes(t.toLowerCase()));
+        });
+      }
     }
 
     // filterFn
@@ -147,60 +202,81 @@ export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TIt
   // ─── Render ────────────────────────────────────────────
 
   return (
-    <div
-      {...rest}
-      data-shared-data-select-list
-      class={twMerge(containerClass, local.class)}
-      style={local.style}
-    >
-      {/* Header */}
-      <Show when={local.header != null || local.modal != null}>
-        <div class={headerClass}>
-          <Show when={local.header != null}>{local.header}</Show>
-          <Show when={local.modal != null}>
-            <Button size="sm" onClick={() => void handleOpenModal()}>
-              <Icon icon={IconExternalLink} />
-            </Button>
-          </Show>
-        </div>
-      </Show>
-
-      {/* Pagination */}
-      <Show when={local.pageSize != null && totalPageCount() > 1}>
-        <Pagination
-          page={page()}
-          onPageChange={setPage}
-          totalPageCount={totalPageCount()}
-          size="sm"
-        />
-      </Show>
-
-      {/* List */}
-      <List inset>
-        {/* Unspecified item (when not required) */}
-        <Show when={!local.required}>
-          <List.Item
-            selected={local.value === undefined}
-            disabled={local.disabled}
-            onClick={() => handleSelect(undefined)}
-          >
-            <span class={textMuted}>Unspecified</span>
-          </List.Item>
+    <SharedDataSelectListContext.Provider value={contextValue}>
+      {/* Render children inside Provider so sub-components (ItemTemplate, Filter) can access context */}
+      {local.children}
+      <div
+        {...rest}
+        data-shared-data-select-list
+        class={twMerge(containerClass, local.class)}
+        style={local.style}
+      >
+        {/* Header */}
+        <Show when={local.header != null || local.modal != null}>
+          <div class={headerClass}>
+            <Show when={local.header != null}>{local.header}</Show>
+            <Show when={local.modal != null}>
+              <Button size="sm" onClick={() => void handleOpenModal()}>
+                <Icon icon={IconExternalLink} />
+              </Button>
+            </Show>
+          </div>
         </Show>
 
-        {/* Item list */}
-        <For each={displayItems()}>
-          {(item, index) => (
+        {/* Search input: when Filter compound is absent and getSearchText exists */}
+        <Show when={!filter() && local.data.getSearchText}>
+          <TextInput
+            value={searchText()}
+            onValueChange={setSearchText}
+            placeholder={i18n?.t("sharedDataSelectList.searchPlaceholder") ?? "Search..."}
+            size="sm"
+            inset
+          />
+        </Show>
+
+        {/* Custom Filter */}
+        <Show when={filter()}>{filter()!()}</Show>
+
+        {/* Pagination */}
+        <Show when={local.pageSize != null && totalPageCount() > 1}>
+          <Pagination
+            page={page()}
+            onPageChange={setPage}
+            totalPageCount={totalPageCount()}
+            size="sm"
+          />
+        </Show>
+
+        {/* List */}
+        <List inset>
+          {/* Unspecified item (when not required) */}
+          <Show when={!local.required}>
             <List.Item
-              selected={item === local.value}
+              selected={local.value === undefined}
               disabled={local.disabled}
-              onClick={() => handleSelect(item)}
+              onClick={() => handleSelect(undefined)}
             >
-              {local.children(item, index())}
+              <span class={textMuted}>Unspecified</span>
             </List.Item>
-          )}
-        </For>
-      </List>
-    </div>
+          </Show>
+
+          {/* Item list */}
+          <For each={displayItems()}>
+            {(item, index) => (
+              <List.Item
+                selected={item === local.value}
+                disabled={local.disabled}
+                onClick={() => handleSelect(item)}
+              >
+                {itemTemplate()?.(item, index())}
+              </List.Item>
+            )}
+          </For>
+        </List>
+      </div>
+    </SharedDataSelectListContext.Provider>
   );
-}
+}) as SharedDataSelectListComponent;
+
+SharedDataSelectList.ItemTemplate = SharedDataSelectListItemTemplate;
+SharedDataSelectList.Filter = SharedDataSelectListFilter;

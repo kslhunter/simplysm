@@ -9,6 +9,7 @@ function createMockAccessor<T>(
   items: T[],
   options?: {
     getIsHidden?: (item: T) => boolean;
+    getSearchText?: (item: T) => string;
   },
 ) {
   const [itemsSignal] = createSignal(items);
@@ -18,6 +19,7 @@ function createMockAccessor<T>(
     emit: vi.fn(),
     getKey: (item: T) => items.indexOf(item),
     getIsHidden: options?.getIsHidden,
+    getSearchText: options?.getSearchText,
   };
 }
 
@@ -39,7 +41,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -53,7 +55,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} required>
-          {(item, index) => <>{`${index}:${item}`}</>}
+          <SharedDataSelectList.ItemTemplate>{(item, index) => <>{`${index}:${item}`}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -71,7 +73,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} onValueChange={onChange} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -85,7 +87,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} value="Apple" onValueChange={onChange}>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -99,7 +101,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} value="Apple" onValueChange={onChange} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -113,7 +115,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} onValueChange={onChange} disabled required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -129,7 +131,9 @@ describe("SharedDataSelectList", () => {
       const accessor = createMockAccessor(["Apple"]);
 
       renderWithDialog(() => (
-        <SharedDataSelectList data={accessor}>{(item) => <>{item}</>}</SharedDataSelectList>
+        <SharedDataSelectList data={accessor}>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
       ));
 
       expect(screen.getByText("Unspecified")).toBeTruthy();
@@ -140,7 +144,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -153,7 +157,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} value="Apple" onValueChange={onChange}>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -176,7 +180,7 @@ describe("SharedDataSelectList", () => {
           canChange={() => false}
           required
         >
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -198,7 +202,7 @@ describe("SharedDataSelectList", () => {
           canChange={() => true}
           required
         >
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -219,7 +223,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} pageSize={3} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -234,7 +238,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} pageSize={3} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -251,7 +255,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} pageSize={5} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -269,7 +273,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -283,13 +287,146 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} filterFn={(item) => item.startsWith("B")} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
       expect(screen.getByText("Banana")).toBeTruthy();
       expect(screen.queryByText("Apple")).toBeNull();
       expect(screen.queryByText("Cherry")).toBeNull();
+    });
+  });
+
+  // ─── Search ────────────────────────────────────────────
+
+  describe("search", () => {
+    it("search input is shown when getSearchText is provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeTruthy();
+    });
+
+    it("search input is hidden when getSearchText is not provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"]);
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeNull();
+    });
+
+    it("typing in search input filters items by getSearchText", async () => {
+      const accessor = createMockAccessor(["Apple", "Banana", "Cherry"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "ban" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Banana")).toBeTruthy();
+        expect(screen.queryByText("Apple")).toBeNull();
+        expect(screen.queryByText("Cherry")).toBeNull();
+      });
+    });
+
+    it("search is case-insensitive", async () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "APPLE" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Apple")).toBeTruthy();
+        expect(screen.queryByText("Banana")).toBeNull();
+      });
+    });
+
+    it("multiple space-separated terms must all match", async () => {
+      const accessor = createMockAccessor(["Red Apple", "Green Apple", "Red Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "red apple" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Red Apple")).toBeTruthy();
+        expect(screen.queryByText("Green Apple")).toBeNull();
+        expect(screen.queryByText("Red Banana")).toBeNull();
+      });
+    });
+  });
+
+  // ─── Custom Filter ─────────────────────────────────────
+
+  describe("custom filter", () => {
+    it("search input is hidden when Filter compound is provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.Filter>
+            <div data-custom-filter>Custom</div>
+          </SharedDataSelectList.Filter>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      // Built-in search input should be hidden
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeNull();
+      // Custom filter should be visible
+      expect(screen.getByText("Custom")).toBeTruthy();
+    });
+
+    it("filterFn works with custom Filter compound", () => {
+      const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} filterFn={(item) => item !== "Banana"} required>
+          <SharedDataSelectList.Filter>
+            <div>My Filter</div>
+          </SharedDataSelectList.Filter>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(screen.getByText("Apple")).toBeTruthy();
+      expect(screen.queryByText("Banana")).toBeNull();
+      expect(screen.getByText("Cherry")).toBeTruthy();
     });
   });
 
@@ -301,7 +438,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} header="과일 목록" required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
@@ -313,7 +450,7 @@ describe("SharedDataSelectList", () => {
 
       renderWithDialog(() => (
         <SharedDataSelectList data={accessor} header="과일" modal={() => <div>Modal</div>} required>
-          {(item) => <>{item}</>}
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));
 
