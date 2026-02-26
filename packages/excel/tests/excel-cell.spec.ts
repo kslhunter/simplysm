@@ -1,6 +1,47 @@
 import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
+import { ExcelXmlWorksheet } from "../src/xml/excel-xml-worksheet";
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
+
+describe("ExcelXmlWorksheet.getCellVal - inline string", () => {
+  it("should read plain string inline text (no attributes)", () => {
+    const ws = new ExcelXmlWorksheet({
+      worksheet: {
+        $: { xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
+        sheetData: [{
+          row: [{
+            $: { r: "1" },
+            c: [{
+              $: { r: "A1", t: "inlineStr" },
+              is: [{ t: ["ID"] }],
+            }],
+          }],
+        }],
+      },
+    });
+
+    expect(ws.getCellVal({ r: 0, c: 0 })).toBe("ID");
+  });
+
+  it("should read object-form inline text (with attributes)", () => {
+    const ws = new ExcelXmlWorksheet({
+      worksheet: {
+        $: { xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main" },
+        sheetData: [{
+          row: [{
+            $: { r: "1" },
+            c: [{
+              $: { r: "A1", t: "inlineStr" },
+              is: [{ t: [{ _: "Hello" }] }],
+            }],
+          }],
+        }],
+      },
+    });
+
+    expect(ws.getCellVal({ r: 0, c: 0 })).toBe("Hello");
+  });
+});
 
 describe("ExcelCell", () => {
   describe("Cell Value Read/Write - Basic Types", () => {

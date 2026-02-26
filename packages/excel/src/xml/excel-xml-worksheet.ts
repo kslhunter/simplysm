@@ -99,7 +99,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
   getCellVal(addr: { r: number; c: number }): string | undefined {
     const cellData = this._getCellData(addr);
-    const val = cellData?.v?.[0] ?? cellData?.is?.[0]?.t?.[0]?._;
+    const tVal = cellData?.is?.[0]?.t?.[0];
+    const val = cellData?.v?.[0] ?? (typeof tVal === "string" ? tVal : tVal?._);
     return typeof val === "string" ? val : undefined;
   }
 

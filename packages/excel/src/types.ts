@@ -148,9 +148,7 @@ export interface ExcelCellData {
   v?: [string];
   f?: [string];
   is?: {
-    t?: {
-      _?: string;
-    }[];
+    t?: (string | { _?: string })[];
   }[];
 }
 
