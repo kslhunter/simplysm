@@ -19,6 +19,7 @@ import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationContext";
+import { useI18nOptional } from "../../providers/i18n/I18nContext";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
@@ -91,6 +92,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   ]);
 
   const noti = useNotification();
+  const i18n = useI18nOptional();
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance();
   const isModal = dialogInstance !== undefined;
@@ -158,7 +160,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, "Lookup failed");
+      noti.error(err, i18n?.t("crudSheet.lookupFailed") ?? "Lookup failed");
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -182,7 +184,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   function checkIgnoreChanges(): boolean {
     if (!local.inlineEdit) return true;
     if (getItemDiffs().length === 0) return true;
-    return confirm("You have unsaved changes. Discard them?");
+    return confirm(i18n?.t("crudSheet.discardChanges") ?? "You have unsaved changes. Discard them?");
   }
 
   // -- Filter --
@@ -233,18 +235,18 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     const diffs = getItemDiffs();
 
     if (diffs.length === 0) {
-      noti.info("Notice", "No changes to save.");
+      noti.info(i18n?.t("crudSheet.notice") ?? "Notice", i18n?.t("crudSheet.noChanges") ?? "No changes to save.");
       return;
     }
 
     setBusyCount((c) => c + 1);
     try {
       await local.inlineEdit.submit(diffs);
-      noti.success("Save completed", "Saved successfully.");
+      noti.success(i18n?.t("crudSheet.saveCompleted") ?? "Save completed", i18n?.t("crudSheet.saveSuccess") ?? "Saved successfully.");
       await refresh();
       local.onSubmitted?.();
     } catch (err) {
-      noti.error(err, "Save failed");
+      noti.error(err, i18n?.t("crudSheet.saveFailed") ?? "Save failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -264,7 +266,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, "Lookup failed");
+      noti.error(err, i18n?.t("crudSheet.lookupFailed") ?? "Lookup failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -277,9 +279,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success("Delete completed", "Deleted successfully.");
+      noti.success(i18n?.t("crudSheet.deleteCompleted") ?? "Delete completed", i18n?.t("crudSheet.deleteSuccess") ?? "Deleted successfully.");
     } catch (err) {
-      noti.error(err, "Delete failed");
+      noti.error(err, i18n?.t("crudSheet.deleteFailed") ?? "Delete failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -292,9 +294,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success("Restore completed", "Restored successfully.");
+      noti.success(i18n?.t("crudSheet.restoreCompleted") ?? "Restore completed", i18n?.t("crudSheet.restoreSuccess") ?? "Restored successfully.");
     } catch (err) {
-      noti.error(err, "Restore failed");
+      noti.error(err, i18n?.t("crudSheet.restoreFailed") ?? "Restore failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -308,7 +310,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       const result = await local.search(lastFilter(), undefined, sorts());
       await local.excel.download(result.items);
     } catch (err) {
-      noti.error(err, "Excel download failed");
+      noti.error(err, i18n?.t("crudSheet.excelDownloadFailed") ?? "Excel download failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -326,10 +328,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       setBusyCount((c) => c + 1);
       try {
         await local.excel!.upload!(file);
-        noti.success("Completed", "Excel upload completed successfully.");
+        noti.success(i18n?.t("crudSheet.excelCompleted") ?? "Completed", i18n?.t("crudSheet.excelUploadSuccess") ?? "Excel upload completed successfully.");
         await refresh();
       } catch (err) {
-        noti.error(err, "Excel upload failed");
+        noti.error(err, i18n?.t("crudSheet.excelUploadFailed") ?? "Excel upload failed");
       }
       setBusyCount((c) => c - 1);
     };
