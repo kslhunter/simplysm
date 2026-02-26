@@ -25,12 +25,12 @@ import {
   borderSubtle,
   type ComponentSize,
   textMuted,
-  textPlaceholder,
 } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
+import { TextInput } from "../field/TextInput";
 import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 void ripple;
@@ -39,16 +39,16 @@ void ripple;
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
 
-// Search input styles
+// Search input styles (override TextInput wrapper)
 const searchInputClass = clsx(
   "w-full",
-  "border-b",
+  "rounded-none",
+  "border-0 border-b",
   borderSubtle,
-  "bg-transparent",
-  "px-2 py-1.5",
+  "bg-transparent dark:bg-transparent",
+  "h-auto",
+  "py-1.5",
   "text-sm",
-  "outline-none",
-  textPlaceholder,
 );
 
 // Select all/deselect all button area styles
@@ -537,13 +537,11 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             <Show when={header()}>{header()!()}</Show>
             {/* Search input */}
             <Show when={local.getSearchText && local.items}>
-              <input
-                type="text"
-                data-select-search
-                class={searchInputClass}
-                placeholder={i18n?.t("select.searchPlaceholder") ?? "Search..."}
+              <TextInput
                 value={searchText()}
-                onInput={(e) => setSearchText(e.currentTarget.value)}
+                onValueChange={setSearchText}
+                placeholder={i18n?.t("select.searchPlaceholder") ?? "Search..."}
+                class={searchInputClass}
               />
             </Show>
             {/* Select all/deselect buttons */}

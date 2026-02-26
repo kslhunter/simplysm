@@ -242,7 +242,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResult(raw, meta)).rejects.toThrow("number 파싱 실패");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("Failed to parse number:");
     });
 
     it("DateTime throw if parsing fails", async () => {
@@ -262,7 +262,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResult(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("Invalid UUID format.");
     });
 
     it("Bytes throw if parsing fails", async () => {
@@ -272,7 +272,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResult(raw, meta)).rejects.toThrow("Bytes 파싱 실패");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("Failed to parse Bytes:");
     });
   });
 
@@ -347,7 +347,7 @@ describe("result-parser", () => {
       };
 
       await expect(parseQueryResult(raw, meta)).rejects.toThrow(
-        "isSingle 관계 'company'에 여러 개의 다른 결과가 존재합니다",
+        "isSingle relationship 'company' has multiple different results.",
       );
     });
 

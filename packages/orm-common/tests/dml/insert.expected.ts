@@ -9,47 +9,47 @@ import type { ExpectedSql } from "../setup/test-utils";
 export const insertSingle: ExpectedSql = {
   mysql: mysql`
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`managerId\`, \`departmentId\`)
-    VALUES ('Gildong Hong', NULL, 1)
+    VALUES ('Hong Gildong', NULL, 1)
   `,
   mssql: tsql`
     INSERT INTO [TestDb].[TestSchema].[Employee] ([name], [managerId], [departmentId])
-    VALUES (N'Gildong Hong', NULL, 1)
+    VALUES (N'Hong Gildong', NULL, 1)
   `,
   postgresql: pgsql`
     INSERT INTO "TestSchema"."Employee" ("name", "managerId", "departmentId")
-    VALUES ('Gildong Hong', NULL, 1)
+    VALUES ('Hong Gildong', NULL, 1)
   `,
 };
 
 export const insertBulk: ExpectedSql = {
   mysql: mysql`
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`departmentId\`)
-    VALUES ('Gildong Hong', 1), ('김철수', 1), ('이영희', 2)
+    VALUES ('Hong Gildong', 1), ('Kim Chulsu', 1), ('Lee Younghee', 2)
   `,
   mssql: tsql`
     INSERT INTO [TestDb].[TestSchema].[Employee] ([name], [departmentId])
-    VALUES (N'Gildong Hong', 1), (N'김철수', 1), (N'이영희', 2)
+    VALUES (N'Hong Gildong', 1), (N'Kim Chulsu', 1), (N'Lee Younghee', 2)
   `,
   postgresql: pgsql`
     INSERT INTO "TestSchema"."Employee" ("name", "departmentId")
-    VALUES ('Gildong Hong', 1), ('김철수', 1), ('이영희', 2)
+    VALUES ('Hong Gildong', 1), ('Kim Chulsu', 1), ('Lee Younghee', 2)
   `,
 };
 
 export const insertWithOutput: ExpectedSql = {
   mysql: mysql`
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`managerId\`, \`departmentId\`)
-    VALUES ('Gildong Hong', NULL, 1);
+    VALUES ('Hong Gildong', NULL, 1);
     SELECT \`id\`, \`name\` FROM \`TestDb\`.\`Employee\` WHERE \`id\` = LAST_INSERT_ID()
   `,
   mssql: tsql`
     INSERT INTO [TestDb].[TestSchema].[Employee] ([name], [managerId], [departmentId])
     OUTPUT INSERTED.[id], INSERTED.[name]
-    VALUES (N'Gildong Hong', NULL, 1)
+    VALUES (N'Hong Gildong', NULL, 1)
   `,
   postgresql: pgsql`
     INSERT INTO "TestSchema"."Employee" ("name", "managerId", "departmentId")
-    VALUES ('Gildong Hong', NULL, 1)
+    VALUES ('Hong Gildong', NULL, 1)
     RETURNING "id", "name"
   `,
 };
@@ -57,15 +57,15 @@ export const insertWithOutput: ExpectedSql = {
 export const insertNullable: ExpectedSql = {
   mysql: mysql`
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`)
-    VALUES ('Gildong Hong')
+    VALUES ('Hong Gildong')
   `,
   mssql: tsql`
     INSERT INTO [TestDb].[TestSchema].[Employee] ([name])
-    VALUES (N'Gildong Hong')
+    VALUES (N'Hong Gildong')
   `,
   postgresql: pgsql`
     INSERT INTO "TestSchema"."Employee" ("name")
-    VALUES ('Gildong Hong')
+    VALUES ('Hong Gildong')
   `,
 };
 

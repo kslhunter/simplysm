@@ -188,7 +188,7 @@ describe("createDbContext", () => {
 
     await db.connect(async () => {
       // Already in transact state via connect
-      await expect(db.trans(async () => {})).rejects.toThrow("이미 TRANSACTION 상태입니다.");
+      await expect(db.trans(async () => {})).rejects.toThrow("Already in TRANSACTION state.");
     });
   });
 

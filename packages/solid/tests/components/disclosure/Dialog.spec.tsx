@@ -1,18 +1,19 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { Dialog } from "../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../src/providers/ConfigContext";
 
 describe("Dialog 컴포넌트", () => {
   describe("basic rendering", () => {
     it("open=true일 때 다이얼로그가 렌더링된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div data-testid="content">다이얼로그 내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const content = document.querySelector('[data-testid="content"]');
@@ -22,12 +23,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("open=false일 때 다이얼로그가 DOM에 없다", () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={false}>
           <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div data-testid="content">다이얼로그 내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const content = document.querySelector('[data-testid="content"]');
       expect(content).toBeNull();
@@ -35,12 +36,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("data-modal 속성이 설정된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const modal = document.querySelector("[data-modal]");
@@ -50,12 +51,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("Dialog.Header 슬롯이 헤더에 렌더링된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>테스트 제목</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       await waitFor(() => {
@@ -68,11 +69,11 @@ describe("Dialog 컴포넌트", () => {
   describe("헤더 옵션", () => {
     it("Dialog.Header 미제공 시 헤더가 렌더링되지 않는다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <div data-testid="content">내용만</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       await waitFor(() => {
@@ -85,7 +86,7 @@ describe("Dialog 컴포넌트", () => {
 
     it("Dialog.Action 슬롯이 닫기 버튼 옆에 렌더링된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>제목</Dialog.Header>
           <Dialog.Action>
@@ -93,7 +94,7 @@ describe("Dialog 컴포넌트", () => {
           </Dialog.Action>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       await waitFor(() => {
@@ -103,12 +104,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("closable={false}일 때 닫기 버튼이 없다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} closable={false}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal]")).not.toBeNull();
@@ -122,12 +123,12 @@ describe("Dialog 컴포넌트", () => {
     it("닫기 버튼 클릭 시 onOpenChange(false)가 호출된다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal-close]")).not.toBeNull();
@@ -139,12 +140,12 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnBackdrop=true일 때 백드롭 클릭으로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} closeOnBackdrop onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal-backdrop]")).not.toBeNull();
@@ -156,12 +157,12 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnBackdrop 미설정 시 백드롭 클릭으로 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal-backdrop]")).not.toBeNull();
@@ -173,12 +174,12 @@ describe("Dialog 컴포넌트", () => {
     it("기본적으로 Escape 키로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal]")).not.toBeNull();
@@ -190,12 +191,12 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} closeOnEscape onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal]")).not.toBeNull();
@@ -207,12 +208,12 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnEscape=false일 때 Escape로 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} closeOnEscape={false} onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal]")).not.toBeNull();
@@ -224,12 +225,12 @@ describe("Dialog 컴포넌트", () => {
     it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} onOpenChange={handleOpenChange} canDeactivate={() => false}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal-close]")).not.toBeNull();
@@ -242,12 +243,12 @@ describe("Dialog 컴포넌트", () => {
   describe("accessibility", () => {
     it("role=dialog와 aria-modal 속성이 설정된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>접근성 테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
@@ -259,12 +260,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("aria-labelledby가 Dialog.Header 요소를 참조한다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>접근성 제목</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       await waitFor(() => {
@@ -278,11 +279,11 @@ describe("Dialog 컴포넌트", () => {
 
     it("Dialog.Header 미제공 시 aria-labelledby가 없다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <div>내용만</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       await waitFor(() => {
@@ -294,12 +295,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("float 모드에서는 aria-modal이 설정되지 않는다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} float>
           <Dialog.Header>플로팅 다이얼로그</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
@@ -313,12 +314,12 @@ describe("Dialog 컴포넌트", () => {
   describe("float 모드", () => {
     it("float=true일 때 백드롭이 없다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} float>
           <Dialog.Header>테스트</Dialog.Header>
           <div data-testid="content">내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector('[data-testid="content"]')).not.toBeNull();
@@ -331,12 +332,12 @@ describe("Dialog 컴포넌트", () => {
   describe("fill 모드", () => {
     it("fill=true일 때 다이얼로그에 fill 스타일이 적용된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} fill>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
@@ -350,12 +351,12 @@ describe("Dialog 컴포넌트", () => {
   describe("크기 제어", () => {
     it("width, height가 적용된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} width={400} height={300}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
@@ -367,12 +368,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("minWidth, minHeight가 적용된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} minWidth={300} minHeight={200}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
@@ -386,12 +387,12 @@ describe("Dialog 컴포넌트", () => {
   describe("리사이즈", () => {
     it("resizable=true일 때 리사이즈 바가 렌더링된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} resizable>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const bars = document.querySelectorAll("[data-resize-bar]");
@@ -401,12 +402,12 @@ describe("Dialog 컴포넌트", () => {
 
     it("resizable=false(기본)일 때 리사이즈 바가 없다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         expect(document.querySelector("[data-modal]")).not.toBeNull();
@@ -419,12 +420,12 @@ describe("Dialog 컴포넌트", () => {
   describe("애니메이션", () => {
     it("열림 시 transition 클래스가 적용된다", async () => {
       render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
         const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;

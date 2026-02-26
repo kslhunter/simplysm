@@ -8,7 +8,8 @@ import {
   changePermCheck,
 } from "../../../../src/components/features/permission-table/PermissionTable";
 import type { AppPerm } from "../../../../src/helpers/createAppStructure";
-import { I18nProvider } from "../../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // --- 테스트 데이터 ---
 
@@ -208,9 +209,9 @@ describe("PermissionTable 컴포넌트", () => {
     it("체크박스 클릭 시 onValueChange가 호출된다", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <PermissionTable items={sampleItems} value={{}} onValueChange={handleChange} />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const checkboxes = getAllByRole("checkbox");
@@ -225,9 +226,9 @@ describe("PermissionTable 컴포넌트", () => {
       });
 
       const { getAllByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <PermissionTable items={[sampleItems[1]]} value={value()} onValueChange={setValue} />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const checkboxes = getAllByRole("checkbox");
@@ -270,9 +271,9 @@ describe("PermissionTable 컴포넌트", () => {
     it("disabled prop이 true이면 체크박스 클릭이 무시된다", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <PermissionTable items={sampleItems} value={{}} onValueChange={handleChange} disabled />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const checkboxes = getAllByRole("checkbox");

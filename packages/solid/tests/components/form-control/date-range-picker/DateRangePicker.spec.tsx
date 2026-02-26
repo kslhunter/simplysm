@@ -1,16 +1,25 @@
 import { render } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { DateOnly } from "@simplysm/core-common";
 import { DateRangePicker } from "../../../../src/components/form-control/date-range-picker/DateRangePicker";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("DateRangePicker 컴포넌트", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   describe("basic rendering", () => {
     it("Select와 DatePicker가 렌더링된다", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const wrapper = container.querySelector("[data-date-range-picker]");
@@ -25,9 +34,9 @@ describe("DateRangePicker 컴포넌트", () => {
 
     it("기본 periodType은 'range'이다", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -40,9 +49,9 @@ describe("DateRangePicker 컴포넌트", () => {
   describe("'range' 모드 렌더링", () => {
     it("DatePicker 2개와 '~' 구분자가 렌더링된다", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="range" />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -57,9 +66,9 @@ describe("DateRangePicker 컴포넌트", () => {
   describe("'day' 모드 렌더링", () => {
     it("DatePicker 1개(type=date)가 렌더링되고 '~'가 없다", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="day" />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -75,9 +84,9 @@ describe("DateRangePicker 컴포넌트", () => {
   describe("'month' 모드 렌더링", () => {
     it("DatePicker 1개(type=month)가 렌더링되고 '~'가 없다", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="month" />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -99,7 +108,7 @@ describe("DateRangePicker 컴포넌트", () => {
       const onToChange = vi.fn();
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker
           periodType="day"
           from={new DateOnly(2025, 1, 1)}
@@ -107,7 +116,7 @@ describe("DateRangePicker 컴포넌트", () => {
           to={new DateOnly(2025, 1, 1)}
           onToChange={onToChange}
         />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const wrapper = container.querySelector("[data-date-range-picker]");
@@ -131,7 +140,7 @@ describe("DateRangePicker 컴포넌트", () => {
       const newFrom = new DateOnly(2025, 6, 15); // to보다 큰 값
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker
           periodType="range"
           from={new DateOnly(2025, 1, 1)}
@@ -139,7 +148,7 @@ describe("DateRangePicker 컴포넌트", () => {
           to={originalTo}
           onToChange={onToChange}
         />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const wrapper = container.querySelector("[data-date-range-picker]");
@@ -174,9 +183,9 @@ describe("DateRangePicker 컴포넌트", () => {
   describe("period type labels", () => {
     it("displays 'Range' label for default periodType 'range'", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker />
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const wrapper = container.querySelector("[data-date-range-picker]");

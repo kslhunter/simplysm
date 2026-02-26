@@ -127,10 +127,10 @@ describe("UPSERT - Basic", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
         },
         insertRecord: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
         },
         output: {
           columns: ["id", "name"],
@@ -225,10 +225,10 @@ describe("UPSERT - Basic", () => {
           ],
         },
         updateRecord: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
         },
         insertRecord: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
           departmentId: { type: "value", value: 1 },
         },
       });

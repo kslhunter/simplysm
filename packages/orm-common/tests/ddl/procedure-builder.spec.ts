@@ -29,7 +29,7 @@ describe("DDL - Procedure Builder", () => {
     it("should validate metadata", () => {
       expect(proc.meta).toEqual({
         name: "TestProc",
-        description: "테스트 프로시저",
+        description: "Test procedure",
         database: undefined,
         schema: undefined,
         params: undefined,

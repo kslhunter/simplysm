@@ -229,7 +229,7 @@ describe("Expr - Conditional functions", () => {
               .default(undefined),
           }))
           .getSelectQueryDef();
-      }).toThrow("switch의 case/default 중 적어도 하나는 non-null이어야 합니다.");
+      }).toThrow("At least one of switch's case/default must be non-null.");
     });
   });
 
@@ -242,7 +242,7 @@ describe("Expr - Conditional functions", () => {
             result: expr.if<string | undefined>(expr.gt(item.age, 20), undefined, undefined),
           }))
           .getSelectQueryDef();
-      }).toThrow("if의 then/else 중 적어도 하나는 non-null이어야 합니다.");
+      }).toThrow("At least one of if's then/else must be non-null.");
     });
   });
 

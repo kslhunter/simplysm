@@ -1,6 +1,6 @@
 ---
 name: sd-email-analyze
-description: "Email file (.eml/.msg) parsing (explicit invocation only)"
+description: "Use when the user's request involves .eml or .msg files. Triggers: email file analysis, email content extraction, attachment extraction, email summary."
 model: haiku
 ---
 

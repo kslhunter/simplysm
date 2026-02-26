@@ -14,7 +14,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "tests"
   ],
   "sideEffects": [
     "./dist/extensions/element-ext.js",

@@ -58,7 +58,7 @@ describe("UPDATE - Basic", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
           departmentId: { type: "value", value: 2 },
         },
         where: [
@@ -94,7 +94,7 @@ describe("UPDATE - Basic", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
           departmentId: { type: "value", value: 2 },
         },
         where: [
@@ -130,7 +130,7 @@ describe("UPDATE - Basic", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
           managerId: {
             type: "raw",
             sql: "$1 + 1",
@@ -211,7 +211,7 @@ describe("UPDATE - Basic", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
         },
         where: [
           {
@@ -251,7 +251,7 @@ describe("UPDATE - Basic", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         as: "T1",
         record: {
-          name: { type: "value", value: "new name" },
+          name: { type: "value", value: "New Name" },
         },
         top: 10,
         where: [

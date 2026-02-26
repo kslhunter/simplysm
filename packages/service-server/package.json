@@ -15,7 +15,7 @@
   "files": [
     "dist",
     "src",
-    "docs"
+    "tests"
   ],
   "sideEffects": false,
   "dependencies": {

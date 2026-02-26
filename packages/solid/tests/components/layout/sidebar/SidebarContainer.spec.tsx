@@ -17,6 +17,7 @@ vi.mock("@solidjs/router", () => ({
 
 import { Sidebar, useSidebarContext } from "../../../../src";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // ToggleCapture helper - Extract setToggle from Context for external control
 const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
@@ -28,20 +29,22 @@ const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void
 describe("SidebarContainer component", () => {
   beforeEach(() => {
     mockCreateMediaQuery.mockReturnValue(() => true); // Desktop mode
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem("test.i18n-locale");
   });
 
   describe("basic rendering", () => {
     it("displays children inside container", () => {
       const { getByText } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <span>Content</span>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByText("Content")).toBeTruthy();
@@ -53,11 +56,11 @@ describe("SidebarContainer component", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       // toggle=false (initial) → open on desktop
@@ -70,12 +73,12 @@ describe("SidebarContainer component", () => {
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       setToggle(true); // Switch to closed
@@ -87,11 +90,11 @@ describe("SidebarContainer component", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -105,12 +108,12 @@ describe("SidebarContainer component", () => {
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       setToggle(true); // Open on mobile
@@ -122,11 +125,11 @@ describe("SidebarContainer component", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       // toggle=false (initial) → closed on mobile
@@ -138,11 +141,11 @@ describe("SidebarContainer component", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const backdrop = container.querySelector('[role="button"][aria-label="Close sidebar"]');
@@ -157,7 +160,7 @@ describe("SidebarContainer component", () => {
       let toggleValue = false;
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <ToggleCapture
             onCapture={(fn) => {
@@ -167,7 +170,7 @@ describe("SidebarContainer component", () => {
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       setToggle(true); // Switch to open state
@@ -195,7 +198,7 @@ describe("SidebarContainer component", () => {
       let toggleValue = false;
 
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container>
           <ToggleCapture
             onCapture={(fn) => {
@@ -205,7 +208,7 @@ describe("SidebarContainer component", () => {
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       setToggle(true); // Switch to open state
@@ -230,12 +233,12 @@ describe("SidebarContainer component", () => {
   describe("style merging", () => {
     it("merges custom classes", () => {
       const { container } = render(() => (
-        <I18nProvider>
-          // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Sidebar.Container class="my-custom-class">
+        <ConfigProvider clientName="test"><I18nProvider>
+          {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
+          <Sidebar.Container class="my-custom-class">
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -244,11 +247,11 @@ describe("SidebarContainer component", () => {
 
     it("merges custom styles", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Sidebar.Container style={{ "background-color": "red" }}>
           <div>Content</div>
         </Sidebar.Container>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;

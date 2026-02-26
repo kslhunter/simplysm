@@ -5,7 +5,8 @@ import { DataSelectButton, type DataSelectModalResult } from "@simplysm/solid";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
 import { useDialogInstance } from "../../../../src/components/disclosure/DialogInstanceContext";
 import { Dialog } from "../../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // 테스트용 아이템 타입
 interface TestItem {
@@ -50,9 +51,9 @@ function TestModal(selectedKeys: number[]): () => JSX.Element {
 // DialogProvider 래핑 헬퍼
 function renderWithDialog(ui: () => JSX.Element) {
   return render(() => (
-    <I18nProvider>
+    <ConfigProvider clientName="test"><I18nProvider>
       <DialogProvider>{ui()}</DialogProvider>
-    </I18nProvider>
+    </I18nProvider></ConfigProvider>
   ));
 }
 

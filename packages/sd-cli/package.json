@@ -15,7 +15,8 @@
   "files": [
     "dist",
     "src",
-    "templates"
+    "templates",
+    "tests"
   ],
   "sideEffects": false,
   "publishConfig": {

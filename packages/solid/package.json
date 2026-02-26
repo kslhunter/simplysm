@@ -15,7 +15,7 @@
   "files": [
     "dist",
     "src",
-    "docs",
+    "tests",
     "tailwind.config.ts",
     "tailwind.css"
   ],

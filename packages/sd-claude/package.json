@@ -20,6 +20,7 @@
   "files": [
     "dist",
     "src",
+    "tests",
     "scripts",
     "claude"
   ],

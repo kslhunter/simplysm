@@ -30,7 +30,7 @@ export const complexProc: ExpectedSql = {
   mysql: mysql`
     CREATE PROCEDURE \`TestDb\`.\`GetUserById\`(IN \`userId\` BIGINT)
     BEGIN
-    -- DBMSwrite matching query --;
+    -- Write the correct query for each DBMS --;
     END
   `,
   mssql: tsql`
@@ -38,14 +38,14 @@ export const complexProc: ExpectedSql = {
     AS
     BEGIN
     SET NOCOUNT ON;
-    -- DBMSwrite matching query --
+    -- Write the correct query for each DBMS --
     END
   `,
   postgresql: pgsql`
     CREATE OR REPLACE FUNCTION "TestSchema"."GetUserById"("userId" BIGINT)
     RETURNS TABLE("id" BIGINT, "name" VARCHAR(100), "email" VARCHAR(200)) AS $$
     BEGIN
-    -- DBMSwrite matching query --;
+    -- Write the correct query for each DBMS --;
     END;
     $$ LANGUAGE plpgsql
   `,

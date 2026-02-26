@@ -18,22 +18,22 @@ SET FOREIGN_KEY_CHECKS = 1
 DECLARE @sql NVARCHAR(MAX);
 SET @sql = N'';
 
--- FK 제약조건 삭제
+-- FK constraint Delete
 SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_object_id)) + '.' + QUOTENAME(OBJECT_NAME(parent_object_id)) + N' DROP CONSTRAINT ' + QUOTENAME(name) + N';' + CHAR(13)
 FROM [TestDb].sys.foreign_keys
 WHERE OBJECT_SCHEMA_NAME(parent_object_id) = 'TestSchema';
 
--- table 삭제
+-- Drop table
 SELECT @sql = @sql + N'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM [TestDb].sys.tables
 WHERE SCHEMA_NAME(schema_id) = 'TestSchema';
 
--- 뷰 삭제
+-- Drop view
 SELECT @sql = @sql + N'DROP VIEW ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM [TestDb].sys.views
 WHERE schema_id = SCHEMA_ID('TestSchema');
 
--- 프로시저 삭제
+-- Procedure Delete
 SELECT @sql = @sql + N'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM [TestDb].sys.procedures
 WHERE SCHEMA_NAME(schema_id) = 'TestSchema';
@@ -45,7 +45,7 @@ DO $$
 DECLARE
   r RECORD;
 BEGIN
-  -- FK 제약조건 삭제
+  -- FK constraint Delete
   FOR r IN (SELECT conname, conrelid::regclass AS tablename
             FROM pg_constraint
             WHERE contype = 'f' AND connamespace = 'TestSchema'::regnamespace)
@@ -53,19 +53,19 @@ BEGIN
     EXECUTE 'ALTER TABLE ' || r.tablename || ' DROP CONSTRAINT ' || quote_ident(r.conname);
   END LOOP;
 
-  -- table 삭제
+  -- Drop table
   FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'TestSchema')
   LOOP
     EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
   END LOOP;
 
-  -- 뷰 삭제
+  -- Drop view
   FOR r IN (SELECT viewname FROM pg_views WHERE schemaname = 'TestSchema')
   LOOP
     EXECUTE 'DROP VIEW IF EXISTS ' || quote_ident(r.viewname) || ' CASCADE';
   END LOOP;
 
-  -- 함수 삭제
+  -- function Delete
   FOR r IN (SELECT proname, pg_get_function_identity_arguments(oid) AS args
             FROM pg_proc WHERE pronamespace = 'TestSchema'::regnamespace)
   LOOP

@@ -1,18 +1,27 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSignal } from "solid-js";
 import { Select } from "../../../../src/components/form-control/select/Select";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Select component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   describe("basic rendering", () => {
     it("renders trigger", () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByRole("combobox")).not.toBeNull();
@@ -20,11 +29,11 @@ describe("Select component", () => {
 
     it("displays placeholder", () => {
       const { getByText } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select placeholder="Please select" renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByText("Please select")).not.toBeNull();
@@ -34,11 +43,11 @@ describe("Select component", () => {
   describe("dropdown opening/closing", () => {
     it("트리거 클릭 시 드롭다운이 열린다", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -55,11 +64,11 @@ describe("Select component", () => {
     it("changes value and closes dropdown when item is selected", async () => {
       const [value, setValue] = createSignal<string | undefined>();
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select value={value()} onValueChange={setValue} renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -82,11 +91,11 @@ describe("Select component", () => {
     it("calls onValueChange when item is selected", async () => {
       const handleChange = vi.fn();
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select onValueChange={handleChange} renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -104,12 +113,12 @@ describe("Select component", () => {
       const [value, setValue] = createSignal<string | undefined>("apple");
 
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select value={value()} onValueChange={setValue} renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
           <Select.Item value="banana">바나나</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByRole("combobox").textContent).toContain("apple");
@@ -120,7 +129,7 @@ describe("Select component", () => {
     it("allows selecting multiple items in multiple mode", async () => {
       const [value, setValue] = createSignal<string[]>([]);
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select<string>
           multiple
           value={value()}
@@ -130,7 +139,7 @@ describe("Select component", () => {
           <Select.Item value="apple">사과</Select.Item>
           <Select.Item value="banana">바나나</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -149,11 +158,11 @@ describe("Select component", () => {
 
     it("does not close dropdown when item is selected in multiple mode", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select multiple renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -174,12 +183,12 @@ describe("Select component", () => {
     it("renders Select.Action", () => {
       const handleClick = vi.fn();
       const { getByText } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
           <Select.Action onClick={handleClick}>+</Select.Action>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByText("+")).not.toBeNull();
@@ -189,14 +198,14 @@ describe("Select component", () => {
 
     it("renders Select.Header at top of dropdown", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Header>
             <div data-testid="header">Header Area</div>
           </Select.Header>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -214,11 +223,11 @@ describe("Select component", () => {
   describe("disabled state", () => {
     it("does not respond to trigger click when disabled", () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select disabled renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -228,11 +237,11 @@ describe("Select component", () => {
 
     it("sets aria-disabled when disabled", () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select disabled renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
@@ -242,11 +251,11 @@ describe("Select component", () => {
   describe("accessibility", () => {
     it("sets role=combobox", () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       expect(getByRole("combobox")).not.toBeNull();
@@ -254,11 +263,11 @@ describe("Select component", () => {
 
     it("sets aria-expanded=true when open", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       const trigger = getByRole("combobox");
@@ -275,7 +284,7 @@ describe("Select component", () => {
   describe("search functionality", () => {
     it("displays search input when getSearchText is provided", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
           getSearchText={(item) => item}
@@ -283,20 +292,20 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
 
       await waitFor(() => {
-        const searchInput = document.querySelector("[data-select-search]");
+        const searchInput = document.querySelector("[data-dropdown] [data-text-field]");
         expect(searchInput).not.toBeNull();
       });
     });
 
     it("filters items when search text is entered", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
           getSearchText={(item) => item}
@@ -304,16 +313,16 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
 
       await waitFor(() => {
-        expect(document.querySelector("[data-select-search]")).not.toBeNull();
+        expect(document.querySelector("[data-dropdown] [data-text-field]")).not.toBeNull();
       });
 
-      const searchInput = document.querySelector("[data-select-search]") as HTMLInputElement;
+      const searchInput = document.querySelector("[data-dropdown] [data-text-field] input") as HTMLInputElement;
       fireEvent.input(searchInput, { target: { value: "ban" } });
 
       await waitFor(() => {
@@ -327,7 +336,7 @@ describe("Select component", () => {
 
     it("searches with space-separated AND matching", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["red apple", "green apple", "banana"]}
           getSearchText={(item) => item}
@@ -335,16 +344,16 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
 
       await waitFor(() => {
-        expect(document.querySelector("[data-select-search]")).not.toBeNull();
+        expect(document.querySelector("[data-dropdown] [data-text-field]")).not.toBeNull();
       });
 
-      const searchInput = document.querySelector("[data-select-search]") as HTMLInputElement;
+      const searchInput = document.querySelector("[data-dropdown] [data-text-field] input") as HTMLInputElement;
       fireEvent.input(searchInput, { target: { value: "red apple" } });
 
       await waitFor(() => {
@@ -358,11 +367,11 @@ describe("Select component", () => {
 
     it("does not display search input when getSearchText is not provided", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -371,18 +380,18 @@ describe("Select component", () => {
         expect(document.querySelector("[data-dropdown]")).not.toBeNull();
       });
 
-      expect(document.querySelector("[data-select-search]")).toBeNull();
+      expect(document.querySelector("[data-dropdown] [data-text-field]")).toBeNull();
     });
   });
 
   describe("unspecified item", () => {
     it("displays unspecified item for single selection without required", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -399,11 +408,11 @@ describe("Select component", () => {
 
     it("does not display unspecified item when required", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select items={["apple", "banana"]} required renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -419,11 +428,11 @@ describe("Select component", () => {
 
     it("does not display unspecified item in multiple selection", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select multiple items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -441,11 +450,11 @@ describe("Select component", () => {
   describe("select all/deselect all", () => {
     it("displays select all/deselect all button in multiple mode", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select multiple items={["apple", "banana", "cherry"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -459,7 +468,7 @@ describe("Select component", () => {
     it("selects all items when select all button is clicked", async () => {
       const [value, setValue] = createSignal<string[]>([]);
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select<string>
           multiple
           items={["apple", "banana", "cherry"]}
@@ -469,7 +478,7 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -487,7 +496,7 @@ describe("Select component", () => {
     it("deselects all items when deselect all button is clicked", async () => {
       const [value, setValue] = createSignal<string[]>(["apple", "banana"]);
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select<string>
           multiple
           items={["apple", "banana", "cherry"]}
@@ -497,7 +506,7 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -514,11 +523,11 @@ describe("Select component", () => {
 
     it("does not display select all/deselect all button when hideSelectAll is set", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select multiple hideSelectAll items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -533,11 +542,11 @@ describe("Select component", () => {
 
     it("does not display select all/deselect all button in single selection mode", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -553,7 +562,7 @@ describe("Select component", () => {
   describe("hiding handling", () => {
     it("hides items where getIsHidden is true", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
           getIsHidden={(item) => item === "banana"}
@@ -561,7 +570,7 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -581,7 +590,7 @@ describe("Select component", () => {
 
     it("displays hidden selected item with strikethrough", async () => {
       const { getByRole } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
           getIsHidden={(item) => item === "banana"}
@@ -590,7 +599,7 @@ describe("Select component", () => {
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
 
       fireEvent.click(getByRole("combobox"));
@@ -610,11 +619,11 @@ describe("Select component", () => {
   describe("validation", () => {
     it("sets error message when required and value is empty", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select required value={undefined} renderValue={(v) => <>{v}</>}>
           <Select.Item value="a">Option A</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("This is a required field");
@@ -622,11 +631,11 @@ describe("Select component", () => {
 
     it("is valid when required and value exists", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select required value="a" renderValue={(v) => <>{v}</>}>
           <Select.Item value="a">Option A</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
@@ -634,7 +643,7 @@ describe("Select component", () => {
 
     it("sets error message when validate function returns error", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           validate={(v) => (v === "invalid-val" ? "Value is not allowed" : undefined)}
           value="invalid-val"
@@ -642,7 +651,7 @@ describe("Select component", () => {
         >
           <Select.Item value="invalid-val">Invalid</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("Value is not allowed");
@@ -650,7 +659,7 @@ describe("Select component", () => {
 
     it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
-        <I18nProvider>
+        <ConfigProvider clientName="test"><I18nProvider>
           <Select
           validate={(v) => (v === "invalid-val" ? "Value is not allowed" : undefined)}
           value="valid-val"
@@ -658,7 +667,7 @@ describe("Select component", () => {
         >
           <Select.Item value="valid-val">Valid</Select.Item>
         </Select>
-        </I18nProvider>
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);

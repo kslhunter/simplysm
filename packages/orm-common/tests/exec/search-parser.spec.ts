@@ -20,7 +20,7 @@ describe("parseSearchQuery", () => {
 
     it("Multiple words (space separated) → OR condition", () => {
       expect(parseSearchQuery("사과 바나나")).toEqual({
-        or: ["%Apple%", "%Banana%"],
+        or: ["%사과%", "%바나나%"],
         must: [],
         not: [],
       });
@@ -35,7 +35,7 @@ describe("parseSearchQuery", () => {
     it("+ prefix → must (AND condition)", () => {
       expect(parseSearchQuery("+사과")).toEqual({
         or: [],
-        must: ["%Apple%"],
+        must: ["%사과%"],
         not: [],
       });
     });
@@ -44,29 +44,29 @@ describe("parseSearchQuery", () => {
       expect(parseSearchQuery("-바나나")).toEqual({
         or: [],
         must: [],
-        not: ["%Banana%"],
+        not: ["%바나나%"],
       });
     });
 
     it("Mixed prefixes", () => {
       expect(parseSearchQuery("사과 +딸기 -바나나")).toEqual({
-        or: ["%Apple%"],
+        or: ["%사과%"],
         must: ["%딸기%"],
-        not: ["%Banana%"],
+        not: ["%바나나%"],
       });
     });
 
     it("Multiple identical prefixes", () => {
       expect(parseSearchQuery("+사과 +바나나")).toEqual({
         or: [],
-        must: ["%Apple%", "%Banana%"],
+        must: ["%사과%", "%바나나%"],
         not: [],
       });
     });
 
     it("Ignore when only prefixes present", () => {
       expect(parseSearchQuery("+ - ")).toEqual({ or: [], must: [], not: [] });
-      expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%Apple%"], must: [], not: [] });
+      expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%사과%"], must: [], not: [] });
     });
 
     it("Consecutive prefixes", () => {
@@ -120,7 +120,7 @@ describe("parseSearchQuery", () => {
 
     it("Mix quotes and regular words", () => {
       expect(parseSearchQuery('사과 "Delicious Fruit" 바나나')).toEqual({
-        or: ["%Apple%", "%Banana%"],
+        or: ["%사과%", "%바나나%"],
         must: ["%Delicious Fruit%"],
         not: [],
       });
@@ -142,7 +142,7 @@ describe("parseSearchQuery", () => {
 
     it("* at end → search by prefix", () => {
       expect(parseSearchQuery("사과*")).toEqual({
-        or: ["Apple%"],
+        or: ["사과%"],
         must: [],
         not: [],
       });
@@ -150,7 +150,7 @@ describe("parseSearchQuery", () => {
 
     it("* on both sides → contains search (explicit)", () => {
       expect(parseSearchQuery("*사과*")).toEqual({
-        or: ["%Apple%"],
+        or: ["%사과%"],
         must: [],
         not: [],
       });
@@ -256,9 +256,9 @@ describe("parseSearchQuery", () => {
   describe("Complex search", () => {
     it("TSDoc example: normal + quote + exclude + required", () => {
       expect(parseSearchQuery('사과 "Delicious Fruit" -바나나 +딸기')).toEqual({
-        or: ["%Apple%"],
+        or: ["%사과%"],
         must: ["%Delicious Fruit%", "%딸기%"],
-        not: ["%Banana%"],
+        not: ["%바나나%"],
       });
     });
 

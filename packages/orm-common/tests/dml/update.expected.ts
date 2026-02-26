@@ -9,18 +9,18 @@ import type { ExpectedSql } from "../setup/test-utils";
 export const updateSimple: ExpectedSql = {
   mysql: mysql`
     UPDATE \`TestDb\`.\`Employee\` AS \`T1\`
-    SET \`T1\`.\`name\` = 'New Name'
+    SET \`T1\`.\`name\` = 'new name'
     WHERE \`T1\`.\`id\` <=> 1
   `,
   mssql: tsql`
     UPDATE [T1]
-    SET [T1].[name] = N'New Name'
+    SET [T1].[name] = N'new name'
     FROM [TestDb].[TestSchema].[Employee] AS [T1]
     WHERE (([T1].[id] IS NULL AND 1 IS NULL) OR [T1].[id] = 1)
   `,
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
-    SET "name" = 'New Name'
+    SET "name" = 'new name'
     WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };

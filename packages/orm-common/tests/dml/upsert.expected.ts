@@ -9,10 +9,10 @@ import type { ExpectedSql } from "../setup/test-utils";
 export const upsertSimple: ExpectedSql = {
   mysql: mysql`
     UPDATE \`TestDb\`.\`Employee\` AS \`T1\`
-    SET \`T1\`.\`name\` = 'New Name'
+    SET \`T1\`.\`name\` = 'new name'
     WHERE \`T1\`.\`id\` <=> 1;
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`departmentId\`)
-    SELECT 'New Name', 1
+    SELECT 'new name', 1
     WHERE NOT EXISTS (SELECT * FROM \`TestDb\`.\`Employee\` AS \`T1\` WHERE \`T1\`.\`id\` <=> 1)
   `,
   mssql: tsql`
@@ -20,9 +20,9 @@ export const upsertSimple: ExpectedSql = {
     USING (SELECT 1 AS [_]) AS [_src]
     ON (([T1].[id] IS NULL AND 1 IS NULL) OR [T1].[id] = 1)
     WHEN MATCHED THEN
-      UPDATE SET [name] = N'New Name'
+      UPDATE SET [name] = N'new name'
     WHEN NOT MATCHED THEN
-      INSERT ([name], [departmentId]) VALUES (N'New Name', 1);
+      INSERT ([name], [departmentId]) VALUES (N'new name', 1);
   `,
   postgresql: pgsql`
     WITH matched AS (
@@ -31,13 +31,13 @@ export const upsertSimple: ExpectedSql = {
     ),
     updated AS (
       UPDATE "TestSchema"."Employee" AS "T1"
-      SET "name" = 'New Name'
+      SET "name" = 'new name'
       WHERE "T1"."id" IS NOT DISTINCT FROM 1
       RETURNING *
     ),
     inserted AS (
       INSERT INTO "TestSchema"."Employee" ("name", "departmentId")
-      SELECT 'New Name', 1
+      SELECT 'new name', 1
       WHERE NOT EXISTS (SELECT 1 FROM matched)
       RETURNING *
     )

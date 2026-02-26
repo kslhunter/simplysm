@@ -19,11 +19,11 @@ import {
   isCrudDetailAfterDef,
 } from "../../../../src/components/features/crud-detail/CrudDetailAfter";
 import { CrudDetail } from "../../../../src/components/features/crud-detail/CrudDetail";
-import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
 import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/TopbarContext";
-import { I18nProvider } from "../../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 
 // Helper: extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
@@ -110,7 +110,7 @@ describe("CrudDetail sub-components", () => {
 describe("CrudDetail rendering", () => {
   it("basic rendering: children are displayed after load", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -123,7 +123,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div data-testid="name">{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -132,7 +132,7 @@ describe("CrudDetail rendering", () => {
 
   it("Save button is displayed in toolbar when submit is provided (page/control mode)", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -146,7 +146,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -155,7 +155,7 @@ describe("CrudDetail rendering", () => {
 
   it("Save button is absent when submit is not provided", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -168,7 +168,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -177,7 +177,7 @@ describe("CrudDetail rendering", () => {
 
   it("Delete button is displayed in toolbar when toggleDelete is provided", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -191,7 +191,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -200,7 +200,7 @@ describe("CrudDetail rendering", () => {
 
   it("Refresh button is always displayed in toolbar", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -213,7 +213,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -222,7 +222,7 @@ describe("CrudDetail rendering", () => {
 
   it("toolbar is not displayed when editable=false", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -237,7 +237,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -247,7 +247,7 @@ describe("CrudDetail rendering", () => {
 
   it("Delete button is not displayed even with toggleDelete when deletable=false", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -262,7 +262,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -272,7 +272,7 @@ describe("CrudDetail rendering", () => {
 
   it("Delete button is displayed when toggleDelete is provided and deletable is not set", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -286,7 +286,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -297,7 +297,7 @@ describe("CrudDetail rendering", () => {
     const { DateTime } = await import("@simplysm/core-common");
 
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -315,7 +315,7 @@ describe("CrudDetail rendering", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -327,7 +327,7 @@ describe("CrudDetail rendering", () => {
 describe("CrudDetail button layout by mode", () => {
   it("control mode: Save/Refresh/Delete are displayed in toolbar", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -342,7 +342,7 @@ describe("CrudDetail button layout by mode", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -353,7 +353,7 @@ describe("CrudDetail button layout by mode", () => {
 
   it("control mode + editable=false: only Refresh is displayed", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -369,7 +369,7 @@ describe("CrudDetail button layout by mode", () => {
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -382,7 +382,7 @@ describe("CrudDetail button layout by mode", () => {
     let actionsAccessor!: Accessor<JSX.Element | undefined>;
 
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <Topbar.Container>
           <ActionsReader onCapture={(a) => (actionsAccessor = a)} />
@@ -400,7 +400,7 @@ describe("CrudDetail button layout by mode", () => {
           </CrudDetail>
         </Topbar.Container>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -424,7 +424,7 @@ describe("CrudDetail button layout by mode", () => {
 
   it("page mode + Tools: only tools are displayed in toolbar", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <Topbar.Container>
           <CrudDetail<TestData>
@@ -447,7 +447,7 @@ describe("CrudDetail button layout by mode", () => {
           </CrudDetail>
         </Topbar.Container>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -456,7 +456,7 @@ describe("CrudDetail button layout by mode", () => {
 
   it("control mode + Tools: Save/Refresh and tools are both displayed in toolbar", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -477,7 +477,7 @@ describe("CrudDetail button layout by mode", () => {
           )}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -488,7 +488,7 @@ describe("CrudDetail button layout by mode", () => {
 
   it("control mode + editable=false + Tools: only Refresh and tools are displayed", async () => {
     const { container } = render(() => (
-      <I18nProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudDetail<TestData>
           load={() =>
@@ -510,7 +510,7 @@ describe("CrudDetail button layout by mode", () => {
           )}
         </CrudDetail>
       </TestWrapper>
-      </I18nProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));

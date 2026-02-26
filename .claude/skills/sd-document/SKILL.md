@@ -1,6 +1,6 @@
 ---
 name: sd-document
-description: "Use when reading, analyzing, or creating document files (.docx, .xlsx, .pptx, .pdf). Triggers: file analysis requests, client document review, mail-format DOCX generation, data XLSX export."
+description: "Use when the user's request involves .docx, .xlsx, .pptx, or .pdf files. Triggers: document reading/analysis, file content extraction, DOCX/XLSX creation, client document review, data export."
 ---
 
 # Document Processing

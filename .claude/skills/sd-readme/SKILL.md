@@ -7,59 +7,73 @@ model: sonnet
 
 # sd-readme
 
-Sync package README.md with current source code by comparing exports against documentation.
+Sync package README.md source index with current exports from `index.ts`.
 
 ## Purpose
 
-README.md is the **sole API documentation source for Claude Code**. When Claude Code works in a consumer app using `@simplysm/*` packages, it reads README.md from `node_modules/` to understand the library API. Claude Code does NOT read JSDoc from source files.
+`@simplysm/*` packages ship `.ts` source and test files. Claude Code reads source files directly from `node_modules/` for API details (props, types, signatures, usage patterns).
 
-**Therefore: every exported symbol must be documented in README.**
+**README.md is a source file index** — it tells Claude Code **which files to read**, not the API itself.
 
 ## Modes
 
 - **Single package** (`$ARGUMENTS` = package name or path): Update one package's README
 - **Batch** (`$ARGUMENTS` empty): Discover and update all packages in parallel
 
-## README Writing Rules
+## What Goes Where
 
-- Written in **English**
-- All code examples must include **import paths**: `import { ... } from "@simplysm/..."`
-- **Every export** from `index.ts` must be documented — including those with `@internal` JSDoc
-- No changelog, version history, or "recently updated" sections
-- Section organization follows `index.ts` `#region` structure
-- Heading levels: `##` for major sections, `###` for sub-sections
+| In README | NOT in README (read from source) |
+|-----------|----------------------------------|
+| Package description (one-line) | Prop tables |
+| Installation + peer dependencies | Code examples |
+| Setup/configuration (Provider tree, Tailwind preset) | Type/interface definitions |
+| **Source index table** | API signatures |
+| License | Behavioral descriptions |
 
-### Standard Structure
+## README Structure
 
 ```markdown
 # @simplysm/{package-name}
 
-{One-line description}
+{One-line description from package.json}
 
 ## Installation
 
-## Main Modules
+pnpm add @simplysm/{package-name}
+
+**Peer Dependencies:** (if any)
+
+## Configuration
+
+{Only for setup patterns — Provider wrapping, Tailwind preset, etc.}
+{Include brief code snippets for wiring, NOT per-component API}
+
+## Source Index
 
 ### {Category matching index.ts #region}
 
-- Description + code examples per export
+| Source | Exports | Description | Test |
+|--------|---------|-------------|------|
+| `src/path/to/File.tsx` | `ComponentA`, `ComponentB` | Brief one-line description | `File.test.tsx` |
+| `src/path/to/types.ts` | `TypeA`, `TypeB` | Type definitions for X | - |
 
-## Types
-
-## Dependencies (only when peer deps exist)
+## License
 ```
 
-### docs/ Subfolder Rules
+**Source index table rules:**
+- One row per `export *` statement in `index.ts`
+- Exports column: list all exported symbols from that file
+- Description column: brief one-line summary of what the file provides (enough for Claude Code to decide whether to read the source)
+- Test column: test file name if exists, `-` if not
+- Source paths relative to package root
 
-When README exceeds ~500 lines, split detailed documentation into `docs/`:
+## General Rules
 
-- README.md becomes an **overview/index** with links: `[functionName](docs/category.md#anchor)`
-- docs/ files contain detailed descriptions, full code examples, parameter tables
-- File organization follows index.ts `#region` (e.g., `docs/types.md`, `docs/utils.md`)
-
-When README is under ~500 lines, keep everything inline.
-
-**If docs/ already exists, maintain and update it. Do not remove an existing docs/ structure.**
+- Written in **English**
+- Sections follow `index.ts` `#region` structure
+- **Every `export *`** from `index.ts` must appear in source index
+- No changelog, version history, or "recently updated" sections
+- Configuration section: only setup/wiring patterns, NOT per-component API
 
 ## Single Package Mode
 
@@ -70,62 +84,66 @@ If not starting with `packages/`, prepend it.
 
 ### Step 2: Build Export Map (Source of Truth)
 
-1. Read `<pkg-path>/src/index.ts` — get all exports and their `#region` grouping
-2. For each exported module, read the source file to extract:
-   - Function signatures (params, return type, overloads)
-   - Class public API (constructor, methods, properties)
-   - Type/interface definitions
-   - Default values, options objects
+1. Read `<pkg-path>/src/index.ts` — get all `export *` statements and their `#region` grouping
+2. For each `export * from "./path/to/file"`:
+   - Resolve actual file path (`.ts`, `.tsx`)
+   - Read file to extract exported symbol names
+   - Write a brief one-line description of what the file provides
+   - Check if test file exists (e.g., `File.test.tsx`, `File.spec.ts`)
 
-### Step 3: Build Documentation Map
+### Step 3: Build Index Map
 
-Read `<pkg-path>/README.md` (if exists). If docs/ exists, read those files too.
-Map each documented item to its current documentation content.
+Read `<pkg-path>/README.md` (if exists).
+Extract existing source index table entries — map each source file to its row.
 
 ### Step 4: Diff and Report
 
-Compare export map (Step 2) against documentation map (Step 3):
+Compare export map (Step 2) against index map (Step 3):
 
-| Status      | Meaning                              |
-| ----------- | ------------------------------------ |
-| **ADDED**   | Exported in source but not in README |
-| **REMOVED** | In README but no longer exported     |
-| **CHANGED** | Both exist but API signature differs |
-| **OK**      | Documentation matches source         |
+| Status | Meaning |
+|--------|---------|
+| **ADDED** | `export *` in index.ts but source file not in README index |
+| **REMOVED** | In README index but no longer in index.ts |
+| **CHANGED** | Same file, but exported symbols changed |
+| **OK** | Index entry matches source |
 
 **Report to user before editing:**
 
 ```
-ADDED (3):
-  - strToCamelCase (from utils/str.ts)
-  - objGetChainValueByDepth (from utils/obj.ts)
-  - ZipArchiveProgress type (from zip/sd-zip.ts)
+ADDED (2):
+  - src/providers/i18n/I18nContext.tsx (useI18n, useI18nOptional, I18nProvider)
+  - src/providers/i18n/I18nContext.types.ts (I18nContextValue, I18nConfigureOptions, FlatDict)
 
 REMOVED (1):
-  - oldFunction (no longer exported)
+  - src/components/SelectList.tsx (no longer exported)
 
-CHANGED (2):
-  - objMerge: added `deep` parameter
-  - Set.toggle: added `addOrDel` optional parameter
+CHANGED (1):
+  - src/features/shared-data/SharedDataSelectList.tsx: exports changed
 
-OK: 45 items unchanged
+OK: 42 entries unchanged
 ```
 
 **Wait for user confirmation before proceeding to edit.**
 
 ### Step 5: Apply Updates
 
-- **ADDED**: Write documentation matching existing style. Place in the section matching the item's `#region` in index.ts. Include description + code example with import path.
-- **REMOVED**: Delete the documentation entry.
-- **CHANGED**: Update existing entry to match current API. Preserve code examples if still valid.
+- **ADDED**: Add row to source index table in the section matching the item's `#region` in index.ts.
+- **REMOVED**: Delete row from source index table.
+- **CHANGED**: Update exports column.
 - **OK**: Do not touch.
 
-**If README uses docs/ links**: update the corresponding docs/ file, not just README.
+### Step 6: Cleanup Check
 
-### Step 6: Size Check
+If `docs/` subfolder exists from old full-documentation approach, report it:
 
-After updates, if README exceeds ~500 lines and no docs/ exists:
-suggest splitting to the user (do not auto-split without confirmation).
+```
+NOTE: docs/ subfolder exists with old-style full documentation.
+  Source index approach makes docs/ redundant.
+  Files: docs/form-controls.md, docs/providers.md, ...
+  Remove docs/ folder? (requires user confirmation)
+```
+
+**Do not auto-delete docs/ — always ask user first.**
 
 ## Batch Mode
 
@@ -137,31 +155,33 @@ When `$ARGUMENTS` is empty:
 **Per-package subagent prompt template:**
 
 ```
-Update README.md for package {pkg-name} at {pkg-path}.
+Update README.md source index for package {pkg-name} at {pkg-path}.
 
-PURPOSE: README.md is the sole API documentation source for Claude Code.
-Every exported symbol must be documented. Claude Code does NOT read JSDoc.
+PURPOSE: README.md is a source file index. @simplysm/* packages ship .ts source + tests.
+Claude Code reads source files directly. README tells Claude WHICH files to read.
 
 STEPS:
-1. Read {pkg-path}/src/index.ts — get all exports and #region grouping.
-2. For each export, read the source file for signatures, classes, types.
-3. Read {pkg-path}/README.md (and docs/ if exists).
-4. Compare exports vs documentation:
-   - ADDED (in source, not in README): add documentation with description + code example.
-     Include import path: import { X } from "@simplysm/{pkg-name}"
-   - REMOVED (in README, not in source): delete documentation.
-   - CHANGED (both exist, API differs): update to match current API.
+1. Read {pkg-path}/src/index.ts — get all `export *` statements and #region grouping.
+2. For each export, resolve source file path and find test file.
+3. Read each source file to extract exported symbol names.
+4. Read {pkg-path}/README.md (if exists).
+5. Compare exports vs README source index:
+   - ADDED: add row to source index table.
+   - REMOVED: delete row.
+   - CHANGED: update exports/description column.
    - OK: don't touch.
-5. Section organization follows index.ts #region structure.
-6. Write in English. No changelog sections.
-7. If README doesn't exist, create with standard structure:
+6. Section organization follows index.ts #region structure.
+7. Write in English. No changelog sections.
+8. If README doesn't exist, create with structure:
    # @simplysm/{pkg-name}
    {description from package.json}
    ## Installation
-   ## Main Modules (sections per #region)
-   ## Types
-8. If docs/ subfolder exists, update those files too.
-9. Report: list of ADDED/REMOVED/CHANGED items.
+   ## Source Index (tables per #region)
+   ## License
+9. Do NOT write prop tables, code examples, or type definitions.
+   Source index table only: Source | Exports | Description | Test
+   Description: brief one-line summary of what the file provides.
+10. Report: list of ADDED/REMOVED/CHANGED items.
 ```
 
 **Project root subagent prompt:**
@@ -178,14 +198,14 @@ Report what was changed.
 
 ## Common Mistakes
 
-| Mistake                               | Fix                                                                 |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc               |
-| Rewriting OK sections                 | Only touch ADDED/REMOVED/CHANGED items                              |
-| Ignoring existing docs/ structure     | If docs/ exists, update those files too                             |
-| Arbitrary section reorganization      | Follow index.ts `#region` structure                                 |
-| Missing import paths in examples      | Always: `import { X } from "@simplysm/..."`                         |
-| Writing in Korean                     | README must be in English                                           |
-| Adding changelog sections             | Never add version history                                           |
-| Editing before reporting diff         | Always report ADDED/REMOVED/CHANGED and wait for confirmation       |
-| Destroying docs/ link format          | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |
+| Mistake | Fix |
+|---------|-----|
+| Writing prop tables or code examples | README is a source index — Claude reads source files for API details |
+| Missing or vague Description | Each row needs a brief description so Claude can decide whether to read the file |
+| Skipping exports from index.ts | Every `export *` must appear in the source index |
+| Putting per-component API in Configuration | Configuration = setup patterns only (Provider tree, Tailwind preset) |
+| Arbitrary section reorganization | Follow index.ts `#region` structure |
+| Writing in Korean | README must be in English |
+| Adding changelog sections | Never add version history |
+| Editing before reporting diff | Always report and wait for confirmation |
+| Auto-deleting docs/ folder | Report docs/ existence, ask user before removing |
