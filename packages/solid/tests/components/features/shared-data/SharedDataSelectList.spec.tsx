@@ -297,6 +297,98 @@ describe("SharedDataSelectList", () => {
     });
   });
 
+  // ─── Search ────────────────────────────────────────────
+
+  describe("search", () => {
+    it("search input is shown when getSearchText is provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeTruthy();
+    });
+
+    it("search input is hidden when getSearchText is not provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"]);
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeNull();
+    });
+
+    it("typing in search input filters items by getSearchText", async () => {
+      const accessor = createMockAccessor(["Apple", "Banana", "Cherry"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "ban" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Banana")).toBeTruthy();
+        expect(screen.queryByText("Apple")).toBeNull();
+        expect(screen.queryByText("Cherry")).toBeNull();
+      });
+    });
+
+    it("search is case-insensitive", async () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "APPLE" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Apple")).toBeTruthy();
+        expect(screen.queryByText("Banana")).toBeNull();
+      });
+    });
+
+    it("multiple space-separated terms must all match", async () => {
+      const accessor = createMockAccessor(["Red Apple", "Green Apple", "Red Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      const input = document.querySelector("[data-shared-data-select-list] input")!;
+      fireEvent.input(input, { target: { value: "red apple" } });
+
+      await vi.waitFor(() => {
+        expect(screen.getByText("Red Apple")).toBeTruthy();
+        expect(screen.queryByText("Green Apple")).toBeNull();
+        expect(screen.queryByText("Red Banana")).toBeNull();
+      });
+    });
+  });
+
   // ─── header / modal ────────────────────────────────────
 
   describe("header / modal", () => {
