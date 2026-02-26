@@ -389,6 +389,47 @@ describe("SharedDataSelectList", () => {
     });
   });
 
+  // ─── Custom Filter ─────────────────────────────────────
+
+  describe("custom filter", () => {
+    it("search input is hidden when Filter compound is provided", () => {
+      const accessor = createMockAccessor(["Apple", "Banana"], {
+        getSearchText: (item) => item,
+      });
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} required>
+          <SharedDataSelectList.Filter>
+            <div data-custom-filter>Custom</div>
+          </SharedDataSelectList.Filter>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      // Built-in search input should be hidden
+      expect(document.querySelector("[data-shared-data-select-list] input")).toBeNull();
+      // Custom filter should be visible
+      expect(screen.getByText("Custom")).toBeTruthy();
+    });
+
+    it("filterFn works with custom Filter compound", () => {
+      const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
+
+      renderWithDialog(() => (
+        <SharedDataSelectList data={accessor} filterFn={(item) => item !== "Banana"} required>
+          <SharedDataSelectList.Filter>
+            <div>My Filter</div>
+          </SharedDataSelectList.Filter>
+          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
+        </SharedDataSelectList>
+      ));
+
+      expect(screen.getByText("Apple")).toBeTruthy();
+      expect(screen.queryByText("Banana")).toBeNull();
+      expect(screen.getByText("Cherry")).toBeTruthy();
+    });
+  });
+
   // ─── header / modal ────────────────────────────────────
 
   describe("header / modal", () => {
