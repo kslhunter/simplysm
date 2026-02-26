@@ -19,7 +19,7 @@ import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationContext";
-import { useI18nOptional } from "../../providers/i18n/I18nContext";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
