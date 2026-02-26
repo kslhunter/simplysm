@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import { children, createEffect, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
 import { IconExternalLink } from "@tabler/icons-solidjs";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -103,9 +103,19 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     setFilter,
   };
 
+  // Resolve children to trigger slot registration (ItemTemplate, Filter return null)
+  children(() => local.children);
+
   // ─── Search state ──────────────────────────────────────
 
   const [searchText, setSearchText] = createSignal("");
+
+  // Reset search text when filter slot changes
+  createEffect(() => {
+    if (filter()) {
+      setSearchText("");
+    }
+  });
 
   // ─── Pagination state ─────────────────────────────────
 
@@ -196,9 +206,6 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
 
   return (
     <SharedDataSelectListContext.Provider value={contextValue}>
-      {/* Render children to register slots */}
-      <span class="hidden">{local.children}</span>
-
       <div
         {...rest}
         data-shared-data-select-list

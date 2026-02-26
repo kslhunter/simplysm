@@ -181,7 +181,6 @@ export * from "./components/features/address/AddressSearch";
 export * from "./components/features/shared-data/SharedDataSelect";
 export * from "./components/features/shared-data/SharedDataSelectButton";
 export * from "./components/features/shared-data/SharedDataSelectList";
-export * from "./components/features/shared-data/SharedDataSelectListContext";
 
 // DataSelectButton
 export * from "./components/features/data-select-button/DataSelectButton";
