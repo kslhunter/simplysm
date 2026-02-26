@@ -174,9 +174,15 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         size={local.size}
         inset
       >
-        <Select.Item value={"day" as DateRangePeriodType}>Day</Select.Item>
-        <Select.Item value={"month" as DateRangePeriodType}>Month</Select.Item>
-        <Select.Item value={"range" as DateRangePeriodType}>Range</Select.Item>
+        <Select.Item value={"day" as DateRangePeriodType}>
+          {i18n?.t("dateRangePicker.day") ?? "Day"}
+        </Select.Item>
+        <Select.Item value={"month" as DateRangePeriodType}>
+          {i18n?.t("dateRangePicker.month") ?? "Month"}
+        </Select.Item>
+        <Select.Item value={"range" as DateRangePeriodType}>
+          {i18n?.t("dateRangePicker.range") ?? "Range"}
+        </Select.Item>
       </Select>
 
       <Show
