@@ -9,6 +9,7 @@ import type { I18nContextValue, I18nConfigureOptions, FlatDict } from "./I18nCon
 import { flattenDict, mergeDict, interpolate } from "./i18nUtils";
 import enDict from "./locales/en";
 import koDict from "./locales/ko";
+import { useSyncConfig } from "../../hooks/useSyncConfig";
 
 /**
  * I18n Context
@@ -82,7 +83,7 @@ export const I18nProvider: ParentComponent = (props) => {
   };
 
   // State for active locale and loaded dictionaries
-  const [locale, setLocale] = createSignal<string>(detectLocaleFromNavigator());
+  const [locale, setLocale] = useSyncConfig<string>("i18n-locale", detectLocaleFromNavigator());
   const [dicts, setDicts] = createSignal<Record<string, FlatDict>>(builtInDicts);
 
   // Current dictionary (locale-specific)
