@@ -5,7 +5,7 @@ import type { SlotAccessor } from "../../../hooks/createSlotSignal";
 // ─── Context ──────────────────────────────────────────────
 
 export interface SharedDataSelectListContextValue {
-  setItemTemplate: (fn: ((item: unknown, index: number) => JSX.Element) | undefined) => void;
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
   setFilter: (content: SlotAccessor) => void;
 }
 
@@ -26,7 +26,8 @@ export const SharedDataSelectListItemTemplate = <TItem,>(props: {
   children: (item: TItem, index: number) => JSX.Element;
 }) => {
   const ctx = useSharedDataSelectListContext();
-  ctx.setItemTemplate(props.children as (item: unknown, index: number) => JSX.Element);
+  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
+  ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
 };
