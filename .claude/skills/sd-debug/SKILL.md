@@ -1,6 +1,6 @@
 ---
 name: sd-debug
-description: "Systematic root-cause debugging (explicit invocation only)"
+description: "Use when the user reports a bug, error, or unexpected behavior and asks to fix or debug it. Triggers: error messages, stack traces, test failures, build failures, 'why is this broken', 'fix this', 'debug this', unexpected behavior investigation."
 ---
 
 # Systematic Debugging
