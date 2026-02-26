@@ -22,6 +22,7 @@ import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { DialogInstanceContext } from "../../../../src/components/disclosure/DialogInstanceContext";
 import { Dialog } from "../../../../src/components/disclosure/Dialog";
+import { I18nProvider } from "../../../../../src/providers/i18n/I18nContext";
 
 interface TestItem {
   id?: number;
@@ -98,7 +99,8 @@ describe("CrudSheet rendering", () => {
       });
 
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, { searchText?: string }>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -113,6 +115,7 @@ describe("CrudSheet rendering", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     // Wait for async search
@@ -131,7 +134,8 @@ describe("CrudSheet rendering", () => {
     const searchFn = () => Promise.resolve({ items: [] as TestItem[] });
 
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -141,6 +145,7 @@ describe("CrudSheet rendering", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -160,7 +165,8 @@ describe("CrudSheet inline edit", () => {
 
   it("Add Row button is displayed when inlineEdit is provided", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -174,6 +180,7 @@ describe("CrudSheet inline edit", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -182,7 +189,8 @@ describe("CrudSheet inline edit", () => {
 
   it("Add Row button is not present when inlineEdit is not provided", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -192,6 +200,7 @@ describe("CrudSheet inline edit", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -200,7 +209,8 @@ describe("CrudSheet inline edit", () => {
 
   it("delete column is auto-generated when deleteProp is provided", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -216,6 +226,7 @@ describe("CrudSheet inline edit", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -237,7 +248,8 @@ describe("CrudSheet itemDeletable", () => {
       });
 
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -254,6 +266,7 @@ describe("CrudSheet itemDeletable", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -273,7 +286,8 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
       });
 
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
@@ -288,6 +302,7 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -298,7 +313,8 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
 describe("CrudSheet select mode", () => {
   it("toolbar is hidden when selectMode is set", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
@@ -314,6 +330,7 @@ describe("CrudSheet select mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -322,7 +339,8 @@ describe("CrudSheet select mode", () => {
 
   it("Confirm button is displayed when selectMode='multiple'", async () => {
     render(() => (
-      <DialogWrapper>
+      <I18nProvider>
+        <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
@@ -334,6 +352,7 @@ describe("CrudSheet select mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </DialogWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -346,7 +365,8 @@ describe("CrudSheet select mode", () => {
 describe("CrudSheet control mode", () => {
   it("Save/Refresh buttons are displayed when inlineEdit is provided without topbar/dialog", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [] })}
           getItemKey={(item) => item.id}
@@ -360,6 +380,7 @@ describe("CrudSheet control mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -369,7 +390,8 @@ describe("CrudSheet control mode", () => {
 
   it("Save button is absent and Refresh button is present when inlineEdit is not provided", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [] })}
           getItemKey={(item) => item.id}
@@ -379,6 +401,7 @@ describe("CrudSheet control mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -390,7 +413,8 @@ describe("CrudSheet control mode", () => {
 describe("CrudSheet modal mode", () => {
   it("bottom bar is displayed when selectMode='multiple' inside Dialog", async () => {
     render(() => (
-      <DialogWrapper>
+      <I18nProvider>
+        <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
@@ -402,6 +426,7 @@ describe("CrudSheet modal mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </DialogWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));
@@ -412,7 +437,8 @@ describe("CrudSheet modal mode", () => {
 
   it("bottom bar is not displayed when selectMode='multiple' without Dialog", async () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
@@ -424,6 +450,7 @@ describe("CrudSheet modal mode", () => {
           </CrudSheet.Column>
         </CrudSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     await new Promise((r) => setTimeout(r, 100));

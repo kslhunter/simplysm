@@ -9,6 +9,7 @@ import {
 import type { SortingDef } from "../../../../src/components/data/sheet/types";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import type { JSX } from "solid-js";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 
 function TestWrapper(props: { children: JSX.Element }) {
   return (
@@ -31,7 +32,8 @@ const testData: TestItem[] = [
 describe("DataSheet", () => {
   it("기본 렌더링: 컬럼 헤더와 데이터 행이 표시된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -44,6 +46,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const ths = container.querySelectorAll("thead th");
@@ -58,7 +61,8 @@ describe("DataSheet", () => {
 
   it("다단계 헤더: colspan과 rowspan이 올바르게 적용된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-multi">
           <DataSheet.Column<TestItem> key="name" header={["기본정보", "이름"]}>
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -71,6 +75,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const headerRows = container.querySelectorAll("thead tr");
@@ -91,7 +96,8 @@ describe("DataSheet", () => {
 
   it("합계 행: summary가 있으면 thead에 합계 행이 표시된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-summary">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -101,6 +107,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const theadRows = container.querySelectorAll("thead tr");
@@ -113,13 +120,15 @@ describe("DataSheet", () => {
 
   it("빈 데이터: tbody가 비어있다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={[] as TestItem[]} persistKey="test-empty">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const rows = container.querySelectorAll("tbody tr");
@@ -132,7 +141,8 @@ describe("DataSheet", () => {
 
   it("hidden 컬럼은 렌더링되지 않는다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-hidden">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -142,6 +152,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const ths = container.querySelectorAll("thead th");
@@ -152,7 +163,8 @@ describe("DataSheet", () => {
   it("정렬: 헤더 클릭 시 onSortsChange가 호출된다", () => {
     let capturedSorts: SortingDef[] = [];
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={testData}
           persistKey="test-sort"
@@ -169,6 +181,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     // "이름" 헤더 클릭
@@ -180,7 +193,8 @@ describe("DataSheet", () => {
   it("정렬: sortable={false} 컬럼은 클릭해도 정렬되지 않는다", () => {
     let capturedSorts: SortingDef[] = [];
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={testData}
           persistKey="test-no-sort"
@@ -194,6 +208,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const th = container.querySelector("thead th") as HTMLElement;
@@ -203,7 +218,8 @@ describe("DataSheet", () => {
 
   it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={testData}
           persistKey="test-auto-sort"
@@ -215,6 +231,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const cells = container.querySelectorAll("tbody [data-testid='name']");
@@ -224,13 +241,15 @@ describe("DataSheet", () => {
 
   it("페이지네이션: itemsPerPage로 데이터가 잘린다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-paging" itemsPerPage={2} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const rows = container.querySelectorAll("tbody tr");
@@ -239,13 +258,15 @@ describe("DataSheet", () => {
 
   it("페이지네이션: 2페이지 이상일 때 Pagination이 표시된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-paging-nav" itemsPerPage={2} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const pagination = container.querySelector("[data-pagination]");
@@ -254,13 +275,15 @@ describe("DataSheet", () => {
 
   it("페이지네이션: 1페이지면 Pagination이 표시되지 않는다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-no-paging" itemsPerPage={10} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const pagination = container.querySelector("[data-pagination]");
@@ -269,7 +292,8 @@ describe("DataSheet", () => {
 
   it("고정 컬럼: fixed 컬럼의 td에 sticky 클래스가 적용된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-fixed">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -279,6 +303,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const tds = container.querySelectorAll("tbody tr:first-child td");
@@ -288,7 +313,8 @@ describe("DataSheet", () => {
 
   it("고정 컬럼: 마지막 고정 컬럼에 경계 테두리 클래스가 적용된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-fixed-border">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -298,6 +324,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const tds = container.querySelectorAll("tbody tr:first-child td");
@@ -307,7 +334,8 @@ describe("DataSheet", () => {
 
   it("리사이저: resizable 컬럼에 리사이저 핸들이 있다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={testData} persistKey="test-resizer">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -317,6 +345,7 @@ describe("DataSheet", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const resizers = container.querySelectorAll(".cursor-ew-resize");
@@ -511,13 +540,15 @@ describe("DataSheet 트리 확장", () => {
 
   it("getChildren 설정 시 확장 기능 컬럼이 렌더링된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet items={treeData} persistKey="test-tree" getChildren={(item) => item.children}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     // colgroup에 확장 컬럼 col이 추가됨
@@ -531,7 +562,8 @@ describe("DataSheet 트리 확장", () => {
 
   it("접힌 상태에서는 루트 항목만 표시된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={treeData}
           persistKey="test-tree-collapsed"
@@ -543,6 +575,7 @@ describe("DataSheet 트리 확장", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const rows = container.querySelectorAll("tbody tr");
@@ -554,7 +587,8 @@ describe("DataSheet 트리 확장", () => {
 
   it("확장된 항목의 자식이 표시된다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={treeData}
           persistKey="test-tree-expanded"
@@ -566,6 +600,7 @@ describe("DataSheet 트리 확장", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const rows = container.querySelectorAll("tbody tr");
@@ -582,7 +617,8 @@ describe("DataSheet 트리 확장", () => {
 
   it("자식이 없는 항목은 확장 아이콘이 숨겨진다", () => {
     const { container } = render(() => (
-      <TestWrapper>
+      <I18nProvider>
+        <TestWrapper>
         <DataSheet
           items={treeData}
           persistKey="test-tree-no-children"
@@ -594,6 +630,7 @@ describe("DataSheet 트리 확장", () => {
           </DataSheet.Column>
         </DataSheet>
       </TestWrapper>
+      </I18nProvider>
     ));
 
     const tbodyRows = container.querySelectorAll("tbody tr");
