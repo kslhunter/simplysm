@@ -5,6 +5,7 @@ import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
 import { useSidebarContextOptional } from "../sidebar/SidebarContext";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { TopbarActions } from "./TopbarActions";
 import { TopbarContainer } from "./TopbarContainer";
 import { TopbarMenu } from "./TopbarMenu";
@@ -70,6 +71,7 @@ const TopbarBase: ParentComponent<TopbarProps> = (props) => {
 
   // Optional use of SidebarContext (toggle button not shown if Context doesn't exist)
   const sidebarContext = useSidebarContextOptional();
+  const i18n = useI18nOptional();
 
   const handleToggle = () => {
     sidebarContext?.setToggle((v) => !v);
@@ -80,7 +82,7 @@ const TopbarBase: ParentComponent<TopbarProps> = (props) => {
   return (
     <header {...rest} data-topbar class={getClassName()}>
       <Show when={sidebarContext}>
-        <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="Toggle sidebar">
+        <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label={i18n?.t("topbar.toggleSidebar") ?? "Toggle sidebar"}>
           <Icon icon={IconMenu2} size="1.5em" />
         </Button>
       </Show>
