@@ -131,6 +131,10 @@ export * from "./providers/shared-data/SharedDataChangeEvent";
 // SystemProvider
 export * from "./providers/SystemProvider";
 
+// I18n
+export * from "./providers/i18n/I18nContext";
+export * from "./providers/i18n/I18nContext.types";
+
 //#endregion
 
 //#region ========== Hooks ==========
