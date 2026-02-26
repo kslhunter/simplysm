@@ -1,5 +1,6 @@
 import { type ParentComponent } from "solid-js";
 import { ConfigProvider } from "./ConfigContext";
+import { I18nProvider } from "./i18n/I18nContext";
 import { SyncStorageProvider } from "./SyncStorageContext";
 import { LoggerProvider } from "./LoggerContext";
 import { NotificationProvider } from "../components/feedback/notification/NotificationProvider";
@@ -21,17 +22,18 @@ export const SystemProvider: ParentComponent<{
 }> = (props) => {
   return (
     <ConfigProvider clientName={props.clientName}>
-      <SyncStorageProvider>
-        <LoggerProvider>
-          <NotificationProvider>
-            <NotificationBanner />
-            <ErrorLoggerProvider>
-              <PwaUpdateProvider>
-                <ClipboardProvider>
-                  <ThemeProvider>
-                    <ServiceClientProvider>
-                      <SharedDataProvider>
-                        <BusyProvider variant={props.busyVariant}>{props.children}</BusyProvider>
+      <I18nProvider>
+        <SyncStorageProvider>
+          <LoggerProvider>
+            <NotificationProvider>
+              <NotificationBanner />
+              <ErrorLoggerProvider>
+                <PwaUpdateProvider>
+                  <ClipboardProvider>
+                    <ThemeProvider>
+                      <ServiceClientProvider>
+                        <SharedDataProvider>
+                          <BusyProvider variant={props.busyVariant}>{props.children}</BusyProvider>
                       </SharedDataProvider>
                     </ServiceClientProvider>
                   </ThemeProvider>
@@ -40,7 +42,8 @@ export const SystemProvider: ParentComponent<{
             </ErrorLoggerProvider>
           </NotificationProvider>
         </LoggerProvider>
-      </SyncStorageProvider>
+        </SyncStorageProvider>
+      </I18nProvider>
     </ConfigProvider>
   );
 };

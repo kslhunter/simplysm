@@ -12,7 +12,7 @@ export function flattenDict(obj: Record<string, unknown>, prefix = ""): Record<s
 
     if (typeof value === "string") {
       result[fullKey] = value;
-    } else if (value && typeof value === "object" && !Array.isArray(value)) {
+    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       Object.assign(result, flattenDict(value as Record<string, unknown>, fullKey));
     }
   }
@@ -34,5 +34,5 @@ export function mergeDict(a: Record<string, string>, b: Record<string, string>):
  */
 export function interpolate(template: string, params?: Record<string, string>): string {
   if (!params) return template;
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => params[key] ?? `{{${key}}}`);
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => params[key] || `{{${key}}}`);
 }
