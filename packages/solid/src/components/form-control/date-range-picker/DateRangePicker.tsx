@@ -6,6 +6,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { type FieldSize } from "../field/Field.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 export type DateRangePeriodType = "day" | "month" | "range";
 
@@ -77,6 +78,8 @@ function getLastDayOfMonth(date: DateOnly): DateOnly {
  * ```
  */
 export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
+  const i18n = useI18nOptional();
+
   const [local, rest] = splitProps(props, [
     "periodType",
     "onPeriodTypeChange",
@@ -158,9 +161,14 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       <Select
         value={periodType()}
         onValueChange={handlePeriodTypeChange}
-        renderValue={(v: DateRangePeriodType) => (
-          <>{{ day: "Day", month: "Month", range: "Range" }[v]}</>
-        )}
+        renderValue={(v: DateRangePeriodType) => {
+          const labels = {
+            day: i18n?.t("dateRangePicker.day") ?? "Day",
+            month: i18n?.t("dateRangePicker.month") ?? "Month",
+            range: i18n?.t("dateRangePicker.range") ?? "Range"
+          };
+          return <>{labels[v]}</>;
+        }}
         required
         disabled={local.disabled}
         size={local.size}

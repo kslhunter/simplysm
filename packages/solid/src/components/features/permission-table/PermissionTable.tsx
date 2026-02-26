@@ -15,6 +15,7 @@ import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { borderDefault } from "../../../styles/tokens.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 const titleCellClass = clsx("flex items-stretch", "px-2");
 const indentGuideWrapperClass = clsx("mr-1 flex w-3", "justify-center");
@@ -215,6 +216,8 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
     "style",
   ]);
 
+  const i18n = useI18nOptional();
+
   // Visible top-level items (preserve object reference)
   const visibleItems = createMemo(() => {
     const items = local.items ?? [];
@@ -266,7 +269,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
         onExpandedItemsChange={setExpandedItems}
         hideConfigBar
       >
-        <DataSheet.Column key="title" header="Permission Item" sortable={false} resizable={false}>
+        <DataSheet.Column key="title" header={i18n?.t("permissionTable.permissionItem") ?? "Permission Item"} sortable={false} resizable={false}>
           {(ctx) => {
             const item = ctx.item as AppPerm;
             return (

@@ -12,6 +12,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { SidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
 import { mergeStyles } from "../../../helpers/mergeStyles";
+import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 
 const backdropClass = clsx(
   "absolute",
@@ -61,6 +62,7 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
 export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
 
+  const i18n = useI18nOptional();
   const [toggle, setToggle] = createSignal(false);
 
   // Detect Tailwind sm: breakpoint
@@ -111,7 +113,7 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
             onClick={handleBackdropClick}
             onKeyDown={(e) => e.key === "Escape" && handleBackdropClick()}
             role="button"
-            aria-label="Close sidebar"
+            aria-label={i18n?.t("sidebar.closeSidebar") ?? "Close sidebar"}
             tabIndex={0}
           />
         </Show>
