@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Accessor, type JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import type {
@@ -108,6 +108,14 @@ describe("CrudDetail sub-components", () => {
 });
 
 describe("CrudDetail rendering", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("basic rendering: children are displayed after load", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -325,6 +333,14 @@ describe("CrudDetail rendering", () => {
 });
 
 describe("CrudDetail button layout by mode", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("control mode: Save/Refresh/Delete are displayed in toolbar", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>

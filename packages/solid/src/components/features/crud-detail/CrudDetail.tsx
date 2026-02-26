@@ -91,7 +91,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       originalData = objClone(result.data);
       setInfo(result.info);
     } catch (err) {
-      noti.error(err, "Lookup failed");
+      noti.error(err, i18n?.t("crudDetail.lookupFailed") ?? "Lookup failed");
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -122,7 +122,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
     const currentInfo = info();
     if (currentInfo && !currentInfo.isNew && !hasChanges()) {
-      noti.info("Notice", "No changes to save.");
+      noti.info(i18n?.t("crudDetail.notice") ?? "Notice", i18n?.t("crudDetail.noChanges") ?? "No changes to save.");
       return;
     }
 
@@ -130,7 +130,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.submit(objClone(unwrap(data)));
       if (result) {
-        noti.success("Save completed", "Saved successfully.");
+        noti.success(i18n?.t("crudDetail.saveCompleted") ?? "Save completed", i18n?.t("crudDetail.saveSuccess") ?? "Saved successfully.");
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -138,7 +138,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, "Save failed");
+      noti.error(err, i18n?.t("crudDetail.saveFailed") ?? "Save failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -162,7 +162,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.toggleDelete(del);
       if (result) {
-        noti.success(del ? "Delete completed" : "Restore completed", del ? "Deleted successfully." : "Restored successfully.");
+        noti.success(del ? (i18n?.t("crudDetail.deleteCompleted") ?? "Delete completed") : (i18n?.t("crudDetail.restoreCompleted") ?? "Restore completed"), del ? (i18n?.t("crudDetail.deleteSuccess") ?? "Deleted successfully.") : (i18n?.t("crudDetail.restoreSuccess") ?? "Restored successfully."));
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -170,7 +170,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, del ? "Delete failed" : "Restore failed");
+      noti.error(err, del ? (i18n?.t("crudDetail.deleteFailed") ?? "Delete failed") : (i18n?.t("crudDetail.restoreFailed") ?? "Restore failed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -200,7 +200,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            Save
+            {i18n?.t("crudDetail.save") ?? "Save"}
           </Button>
         </Show>
         <Show
@@ -216,13 +216,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               onClick={() => void handleToggleDelete()}
             >
               <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-              {info()!.isDeleted ? "Restore" : "Delete"}
+              {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
             </Button>
           )}
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={() => void handleRefresh()}>
           <Icon icon={IconRefresh} class="mr-1" />
-          Refresh
+          {i18n?.t("crudDetail.refresh") ?? "Refresh"}
         </Button>
       </>
     ));
@@ -287,7 +287,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                   onClick={() => formRef?.requestSubmit()}
                 >
                   <Icon icon={IconDeviceFloppy} class="mr-1" />
-                  Save
+                  {i18n?.t("crudDetail.save") ?? "Save"}
                 </Button>
               </Show>
               <Show
@@ -307,13 +307,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                     onClick={() => void handleToggleDelete()}
                   >
                     <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                    {info()!.isDeleted ? "Restore" : "Delete"}
+                    {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
                   </Button>
                 )}
               </Show>
               <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
                 <Icon icon={IconRefresh} class="mr-1" />
-                Refresh
+                {i18n?.t("crudDetail.refresh") ?? "Refresh"}
               </Button>
             </Show>
             <Show when={defs().tools}>{(toolsDef) => toolsDef().children}</Show>
@@ -332,7 +332,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={info()?.lastModifiedAt}>
           {(_) => (
             <div class="px-2 pb-1 text-xs text-base-400">
-              Last modified: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
+              {i18n?.t("crudDetail.lastModified") ?? "Last modified"}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
               <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
             </div>
           )}
@@ -351,7 +351,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               {(_) => (
                 <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
                   <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                  {info()!.isDeleted ? "Restore" : "Delete"}
+                  {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
                 </Button>
               )}
             </Show>
@@ -363,7 +363,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                 class={"gap-1"}
               >
                 <Icon icon={IconCheck} />
-                Confirm
+                {i18n?.t("crudDetail.confirm") ?? "Confirm"}
               </Button>
             </Show>
           </div>

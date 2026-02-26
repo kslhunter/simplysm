@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import {
@@ -154,6 +154,14 @@ describe("CrudSheet rendering", () => {
 });
 
 describe("CrudSheet inline edit", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   const searchFn = () =>
     Promise.resolve({
       items: [
@@ -311,6 +319,14 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
 });
 
 describe("CrudSheet select mode", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("toolbar is hidden when selectMode is set", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -363,6 +379,14 @@ describe("CrudSheet select mode", () => {
 });
 
 describe("CrudSheet control mode", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("Save/Refresh buttons are displayed when inlineEdit is provided without topbar/dialog", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -411,6 +435,14 @@ describe("CrudSheet control mode", () => {
 });
 
 describe("CrudSheet modal mode", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("bottom bar is displayed when selectMode='multiple' inside Dialog", async () => {
     render(() => (
       <ConfigProvider clientName="test"><I18nProvider>

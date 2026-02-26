@@ -427,12 +427,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            Save
+            {i18n?.t("crudSheet.save") ?? "Save"}
           </Button>
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={handleRefresh}>
           <Icon icon={IconRefresh} class="mr-1" />
-          Refresh
+          {i18n?.t("crudSheet.refresh") ?? "Refresh"}
         </Button>
       </>
     ));
@@ -493,12 +493,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 onClick={() => formRef?.requestSubmit()}
               >
                 <Icon icon={IconDeviceFloppy} class="mr-1" />
-                Save
+                {i18n?.t("crudSheet.save") ?? "Save"}
               </Button>
             </Show>
             <Button size="sm" theme="info" variant="ghost" onClick={handleRefresh}>
               <Icon icon={IconRefresh} class="mr-1" />
-              Refresh
+              {i18n?.t("crudSheet.refresh") ?? "Refresh"}
             </Button>
           </div>
         </Show>
@@ -514,7 +514,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 <FormGroup.Item>
                   <Button type="submit" theme="info" variant="solid">
                     <Icon icon={IconSearch} class="mr-1" />
-                    Search
+                    {i18n?.t("crudSheet.search") ?? "Search"}
                   </Button>
                 </FormGroup.Item>
                 {filterDef().children(filter, setFilter)}
@@ -530,7 +530,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               {/* Inline edit buttons */}
               <Show when={canEdit() && local.inlineEdit}>
                 <Button size="sm" theme="primary" variant="ghost" onClick={handleAddRow}>
-                  <Icon icon={IconPlus} class="mr-1" />Add Row
+                  <Icon icon={IconPlus} class="mr-1" />{i18n?.t("crudSheet.addRow") ?? "Add Row"}
                 </Button>
               </Show>
 
@@ -543,7 +543,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={() => void handleEditItem()}
                 >
                   <Icon icon={IconPlus} class="mr-1" />
-                  Register
+                  {i18n?.t("crudSheet.register") ?? "Register"}
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.deleteItems}>
@@ -562,7 +562,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrash} class="mr-1" />
-                  Delete Selected
+                  {i18n?.t("crudSheet.deleteSelected") ?? "Delete Selected"}
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.restoreItems}>
@@ -577,7 +577,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrashOff} class="mr-1" />
-                  Restore Selected
+                  {i18n?.t("crudSheet.restoreSelected") ?? "Restore Selected"}
                 </Button>
               </Show>
 
@@ -585,13 +585,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               <Show when={canEdit() && local.excel?.upload}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelUpload}>
                   <Icon icon={IconUpload} class="mr-1" />
-                  Excel Upload
+                  {i18n?.t("crudSheet.excelUpload") ?? "Excel Upload"}
                 </Button>
               </Show>
               <Show when={local.excel}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelDownload}>
                   <Icon icon={IconFileExcel} class="mr-1" />
-                  Excel Download
+                  {i18n?.t("crudSheet.excelDownload") ?? "Excel Download"}
                 </Button>
               </Show>
             </Show>
@@ -711,7 +711,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
             {/* Auto lastModified columns */}
             <Show when={local.lastModifiedAtProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header="Last Modified" hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header={i18n?.t("crudSheet.lastModified") ?? "Last Modified"} hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {(
@@ -725,7 +725,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             <Show when={local.lastModifiedByProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header="Modified By" hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n?.t("crudSheet.modifiedBy") ?? "Modified By"} hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
@@ -742,12 +742,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <div class="flex-1" />
             <Show when={selectedItems().length > 0}>
               <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-                Deselect {local.selectMode === "multiple" ? "All" : ""}
+                {local.selectMode === "multiple" ? (i18n?.t("crudSheet.deselectAll") ?? "Deselect All") : (i18n?.t("crudSheet.deselect") ?? "Deselect")}
               </Button>
             </Show>
             <Show when={local.selectMode === "multiple"}>
               <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
-                Confirm ({selectedItems().length})
+                {i18n?.t("crudSheet.confirm") ?? "Confirm"} ({selectedItems().length})
               </Button>
             </Show>
           </div>
