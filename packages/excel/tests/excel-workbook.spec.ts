@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 import type { Bytes } from "@simplysm/core-common";
 
@@ -155,6 +155,65 @@ describe("ExcelWorkbook", () => {
       await wb.close();
 
       await expect(wb.getBytes()).rejects.toThrow();
+    });
+  });
+
+  describe("Reading real xlsx file", () => {
+    let wb: ExcelWorkbook;
+
+    beforeAll(async () => {
+      const url = new URL("./fixtures/초기화.xlsx", import.meta.url);
+
+      if (typeof globalThis.window === "undefined") {
+        const fs = await import("node:fs");
+        const { fileURLToPath } = await import("node:url");
+        const buffer = fs.readFileSync(fileURLToPath(url));
+        wb = new ExcelWorkbook(new Uint8Array(buffer));
+      } else {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        wb = new ExcelWorkbook(new Uint8Array(arrayBuffer));
+      }
+    });
+
+    afterAll(async () => {
+      await wb.close();
+    });
+
+    it("Can read worksheet names", async () => {
+      const names = await wb.getWorksheetNames();
+      expect(names).toEqual(["권한그룹", "권한그룹권한", "직원"]);
+    });
+
+    it("Can read permission group sheet data", async () => {
+      const ws = await wb.getWorksheet("권한그룹");
+      const data = await ws.getDataTable();
+      expect(data).toEqual([
+        { "ID": 1, "명칭": "관리자" },
+      ]);
+    });
+
+    it("Can read permission group permission sheet data", async () => {
+      const ws = await wb.getWorksheet("권한그룹권한");
+      const data = await ws.getDataTable();
+      expect(data).toEqual([
+        { "권한그룹.ID": 1, "코드": "ALL", "값": true },
+      ]);
+    });
+
+    it("Can read employee sheet data", async () => {
+      const ws = await wb.getWorksheet("직원");
+      const data = await ws.getDataTable();
+      expect(data).toEqual([
+        {
+          "ID": 1,
+          "이름": "관리자",
+          "이메일": "admin@test.com",
+          "비밀번호": "1234",
+          "권한그룹.ID": 1,
+          "삭제": false,
+        },
+      ]);
     });
   });
 });

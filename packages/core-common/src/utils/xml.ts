@@ -27,6 +27,7 @@ export function xmlParse(str: string, options?: { stripTagPrefix?: boolean }): u
     parseAttributeValue: false,
     parseTagValue: false,
     textNodeName: "_",
+    htmlEntities: true,
     isArray: (_tagName: string, jPath: string, _isLeafNode: boolean, isAttribute: boolean) => {
       return !isAttribute && jPath.split(".").length > 1;
     },
