@@ -1,5 +1,6 @@
 import type { Component, ParentComponent } from "solid-js";
-import { type Accessor, createContext, createMemo, createRoot, useContext } from "solid-js";
+import { type Accessor, createMemo, createRoot, useContext } from "solid-js";
+import { createHmrSafeContext } from "./createHmrSafeContext";
 import type { IconProps } from "@tabler/icons-solidjs";
 
 // ── Input Types ──
@@ -497,7 +498,7 @@ export function createAppStructure<TModule, const TItems extends AppStructureIte
 } {
   type TRet = AppStructure<TModule> & { perms: InferPerms<TItems> };
 
-  const Ctx = createContext<TRet>();
+  const Ctx = createHmrSafeContext<TRet>("AppStructure");
 
   const AppStructureProvider: ParentComponent = (props) => {
     const structure = buildAppStructure(getOpts());

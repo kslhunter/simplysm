@@ -1,11 +1,11 @@
 import {
   type JSX,
   type ParentComponent,
-  createContext,
   createMemo,
   splitProps,
   useContext,
 } from "solid-js";
+import { createHmrSafeContext } from "../helpers/createHmrSafeContext";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "./createControllableSignal";
 import { Invalid } from "../components/form-control/Invalid";
@@ -106,7 +106,9 @@ export function createSelectionGroup(config: MultiGroupConfig | SingleGroupConfi
     Item: <TValue = unknown>(props: SelectionGroupItemProps<TValue>) => JSX.Element;
   };
 } {
-  const Context = createContext<MultiSelectContext | SingleSelectContext>();
+  const Context = createHmrSafeContext<MultiSelectContext | SingleSelectContext>(
+    `SelectionGroup_${config.contextName}`,
+  );
   const ItemComponent = config.ItemComponent;
 
   function ItemInner<TValue>(props: SelectionGroupItemProps<TValue>) {
