@@ -1,14 +1,10 @@
 import { createEffect, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
-import { IconExternalLink } from "@tabler/icons-solidjs";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
-import { Button } from "../../form-control/Button";
-import { Icon } from "../../display/Icon";
 import { TextInput } from "../../form-control/field/TextInput";
-import { useDialog } from "../../disclosure/DialogContext";
 import { useI18nOptional } from "../../../providers/i18n/I18nContext";
 import { textMuted } from "../../../styles/tokens.styles";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
@@ -39,10 +35,8 @@ export interface SharedDataSelectListProps<TItem> {
   canChange?: (item: TItem | undefined) => boolean | Promise<boolean>;
   /** Page size (shows Pagination if provided) */
   pageSize?: number;
-  /** Header text */
-  header?: string;
-  /** Management modal component factory */
-  modal?: () => JSX.Element;
+  /** Header content */
+  header?: JSX.Element;
 
   /** Compound sub-components (ItemTemplate, Filter) */
   children?: JSX.Element;
@@ -81,10 +75,8 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     "canChange",
     "pageSize",
     "header",
-    "modal",
   ]);
 
-  const dialog = useDialog();
   const i18n = useI18nOptional();
 
   // ─── Slot signals ──────────────────────────────────────
@@ -190,13 +182,6 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     }
   };
 
-  // ─── Open modal ────────────────────────────────────────
-
-  const handleOpenModal = async () => {
-    if (!local.modal) return;
-    await dialog.show(local.modal, {});
-  };
-
   // ─── Render ────────────────────────────────────────────
 
   return (
@@ -210,16 +195,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
         style={local.style}
       >
         {/* Header */}
-        <Show when={local.header != null || local.modal != null}>
-          <div class={clsx("flex items-center gap-1 px-2 py-1 text-sm font-bold text-base-400")}>
-            <Show when={local.header != null}>{local.header}</Show>
-            <Show when={local.modal != null}>
-              <Button size="sm" onClick={() => void handleOpenModal()}>
-                <Icon icon={IconExternalLink} />
-              </Button>
-            </Show>
-          </div>
-        </Show>
+        <Show when={local.header != null}>{local.header}</Show>
 
         {/* Search input: when Filter compound is absent and getSearchText exists */}
         <Show when={!filter() && local.data.getSearchText}>
