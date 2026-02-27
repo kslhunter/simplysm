@@ -12,9 +12,6 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "sd-mcp-playwright": "./dist/index.js"
-  },
   "files": [
     "dist",
     "src"
@@ -24,5 +21,10 @@
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/mcp": "^0.0.68",
     "playwright": "^1.58.2"
+  },
+  "publishConfig": {
+    "bin": {
+      "sd-mcp-playwright": "./dist/index.js"
+    }
   }
 }
