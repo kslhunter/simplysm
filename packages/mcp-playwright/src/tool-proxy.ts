@@ -27,8 +27,12 @@ export async function registerProxiedTools(
 ): Promise<void> {
   // Bootstrap: get tool list from @playwright/mcp (no browser launched)
   const bootstrapClient = await sessionManager.getOrCreate("__bootstrap__");
-  const { tools: playwrightTools } = await bootstrapClient.listTools();
-  await sessionManager.destroy("__bootstrap__");
+  let playwrightTools: Tool[];
+  try {
+    ({ tools: playwrightTools } = await bootstrapClient.listTools());
+  } finally {
+    await sessionManager.destroy("__bootstrap__");
+  }
 
   const proxiedTools = playwrightTools.map(injectSessionId);
   const allTools: Tool[] = [
@@ -72,7 +76,11 @@ export async function registerProxiedTools(
       };
     }
 
-    const { sessionId, ...toolArgs } = args as { sessionId: string; [key: string]: unknown };
+    const sessionId = (args as Record<string, unknown>)["sessionId"];
+    if (typeof sessionId !== "string" || sessionId === "") {
+      throw new Error("Missing required argument: sessionId");
+    }
+    const { sessionId: _, ...toolArgs } = args as { sessionId: string; [key: string]: unknown };
     const client = await sessionManager.getOrCreate(sessionId);
     try {
       return await client.callTool({ name, arguments: toolArgs });
