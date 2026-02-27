@@ -55,6 +55,7 @@ export default defineConfig({
             "packages/orm-node/tests/**/*.spec.{ts,tsx,js}",
             "packages/service-server/tests/**/*.spec.{ts,tsx,js}",
             "packages/storage/tests/**/*.spec.{ts,tsx,js}",
+            "packages/mcp-playwright/tests/**/*.spec.{ts,tsx,js}",
             // solid package is tested in a separate project
             "packages/solid/tests/**/*.spec.{ts,tsx,js}",
           ],
