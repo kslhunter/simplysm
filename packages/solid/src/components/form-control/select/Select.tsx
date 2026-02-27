@@ -44,11 +44,7 @@ const searchInputClass = clsx(
   "w-full",
   "rounded-none",
   "border-0 border-b",
-  borderSubtle,
-  "bg-transparent dark:bg-transparent",
-  "h-auto",
-  "py-1.5",
-  "text-sm",
+  borderSubtle
 );
 
 // Select all/deselect all button area styles

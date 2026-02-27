@@ -6,6 +6,49 @@ model: haiku
 
 # sd-worktree
 
+## CRITICAL SAFETY RULES — MERGE & STASH
+
+**These rules are ABSOLUTE. No exceptions. Applies to ALL modes (yolo, normal, plan, etc.).**
+
+1. **NEVER run `git stash drop`, `git stash pop`, or `git stash clear`.**
+   - If you stashed something, ONLY use `git stash apply` (which keeps the stash intact).
+   - If stash is no longer needed, ASK the user before dropping it.
+
+2. **If `merge` fails or produces conflicts → STOP IMMEDIATELY and show this message:**
+   ```
+   ⚠️ merge 중 문제가 발생했습니다.
+   직접 수동으로 merge를 진행해 주세요.
+   (에러 내용: <에러/충돌 정보 그대로 출력>)
+   ```
+   - Do NOT attempt to resolve conflicts yourself.
+   - Do NOT run `git merge --abort` without asking.
+   - Do NOT proceed to `clean` after a failed merge.
+   - Do NOT retry or work around the error.
+   - Just show the message above and STOP. Do nothing else.
+
+3. **If `rebase` fails or produces conflicts → STOP IMMEDIATELY and show this message:**
+   ```
+   ⚠️ rebase 중 문제가 발생했습니다.
+   직접 수동으로 rebase를 진행해 주세요.
+   (에러 내용: <에러/충돌 정보 그대로 출력>)
+   ```
+   - Same rules as merge. Do NOT auto-resolve. Just show the message and STOP.
+
+4. **NEVER run destructive git commands during worktree workflows:**
+   - `git reset --hard`, `git checkout -- .`, `git restore .`, `git clean -f`
+   - `git branch -D` (force delete) — only `-d` (safe delete) is allowed
+   - `git stash drop`, `git stash pop`, `git stash clear`
+
+5. **Before ANY merge/rebase, verify:**
+   - Both main and worktree have NO uncommitted changes (`git status --porcelain`)
+   - If uncommitted changes exist → ask the user (do NOT auto-stash)
+
+6. **After merge completes, verify success before proceeding:**
+   - Check `git status` — if merge conflicts exist, STOP and report
+   - Do NOT proceed to `clean` until merge is confirmed successful
+
+**Violation of these rules causes IRREVERSIBLE DATA LOSS.**
+
 ## Overview
 
 Create, merge, and clean up git worktrees under `.worktrees/`. Uses the current branch of the main working tree as the source branch.
@@ -44,6 +87,7 @@ node .claude/skills/sd-worktree/sd-worktree.mjs rebase [name]
 - Rebases the worktree branch onto the latest commit of the main branch
 - Errors if uncommitted changes exist → commit or stash first
 - Use when you want a clean history before merging
+- **If rebase fails or conflicts → STOP. Report to user. Do NOT auto-resolve.**
 
 ### merge — Merge into main branch
 
@@ -55,6 +99,13 @@ node .claude/skills/sd-worktree/sd-worktree.mjs merge [name]
 - Merges the worktree branch into the main working tree's current branch with `--no-ff`
 - Errors if uncommitted changes exist → commit or stash first
 - After merge, always `cd <project-root>` (required for subsequent clean)
+
+**MERGE SAFETY PROTOCOL:**
+1. Before merge: check BOTH main and worktree for uncommitted changes
+2. If the script exits with non-zero → show "직접 수동으로 merge해 주세요" message and STOP.
+3. After merge: run `git status` in main to confirm no conflicts
+4. If conflicts or errors → show "직접 수동으로 merge해 주세요" message and STOP.
+5. Only proceed to `clean` after confirming merge was fully successful
 
 ### clean — Remove worktree and delete branch
 

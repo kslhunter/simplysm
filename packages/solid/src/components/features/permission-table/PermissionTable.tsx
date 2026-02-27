@@ -10,7 +10,6 @@ import {
   splitProps,
 } from "solid-js";
 import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { borderDefault } from "../../../styles/tokens.styles";
@@ -261,51 +260,55 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
   };
 
   return (
-    <div data-permission-table class={twMerge(local.class)} style={local.style}>
-      <DataSheet
-        items={visibleItems()}
-        getChildren={getChildren}
-        expandedItems={expandedItems()}
-        onExpandedItemsChange={setExpandedItems}
-        hideConfigBar
+    <DataSheet
+      data-permission-table
+      items={visibleItems()}
+      getChildren={getChildren}
+      expandedItems={expandedItems()}
+      onExpandedItemsChange={setExpandedItems}
+      hideConfigBar
+    >
+      <DataSheet.Column
+        key="title"
+        header={i18n?.t("permissionTable.permissionItem") ?? "Permission Item"}
+        sortable={false}
+        resizable={false}
       >
-        <DataSheet.Column key="title" header={i18n?.t("permissionTable.permissionItem") ?? "Permission Item"} sortable={false} resizable={false}>
-          {(ctx) => {
-            const item = ctx.item as AppPerm;
-            return (
-              <div class={titleCellClass}>
-                <For each={Array.from({ length: ctx.depth })}>
-                  {() => (
-                    <div class={indentGuideWrapperClass}>
-                      <div class={indentGuideLineClass} />
-                    </div>
-                  )}
-                </For>
-                <span class="py-1">{item.title}</span>
-              </div>
-            );
-          }}
-        </DataSheet.Column>
-        <For each={allPerms()}>
-          {(perm) => (
-            <DataSheet.Column key={`perm-${perm}`} header={perm} sortable={false} resizable={false}>
-              {(ctx) => {
-                const item = ctx.item as AppPerm;
-                return (
-                  <Show when={hasPermInTree(item, perm)}>
-                    <Checkbox
-                      value={isGroupPermChecked(item, perm, currentValue())}
-                      onValueChange={(checked) => handlePermChange(item, perm, checked)}
-                      disabled={local.disabled || isPermDisabled(item, perm, currentValue())}
-                      inset
-                    />
-                  </Show>
-                );
-              }}
-            </DataSheet.Column>
-          )}
-        </For>
-      </DataSheet>
-    </div>
+        {(ctx) => {
+          const item = ctx.item as AppPerm;
+          return (
+            <div class={titleCellClass}>
+              <For each={Array.from({ length: ctx.depth })}>
+                {() => (
+                  <div class={indentGuideWrapperClass}>
+                    <div class={indentGuideLineClass} />
+                  </div>
+                )}
+              </For>
+              <span class="py-1">{item.title}</span>
+            </div>
+          );
+        }}
+      </DataSheet.Column>
+      <For each={allPerms()}>
+        {(perm) => (
+          <DataSheet.Column key={`perm-${perm}`} header={perm} sortable={false} resizable={false}>
+            {(ctx) => {
+              const item = ctx.item as AppPerm;
+              return (
+                <Show when={hasPermInTree(item, perm)}>
+                  <Checkbox
+                    value={isGroupPermChecked(item, perm, currentValue())}
+                    onValueChange={(checked) => handlePermChange(item, perm, checked)}
+                    disabled={local.disabled || isPermDisabled(item, perm, currentValue())}
+                    inset
+                  />
+                </Show>
+              );
+            }}
+          </DataSheet.Column>
+        )}
+      </For>
+    </DataSheet>
   );
 };

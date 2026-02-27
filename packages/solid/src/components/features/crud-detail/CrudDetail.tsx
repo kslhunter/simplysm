@@ -273,11 +273,11 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       <BusyContainer
         ready={ready()}
         busy={busyCount() > 0}
-        class={clsx("flex h-full flex-col", local.class)}
+        class={clsx("flex h-full flex-col gap-2", local.class)}
       >
         {/* Toolbar */}
         <Show when={(!isModal && !topbarCtx) || defs().tools}>
-          <div class="flex gap-2 p-2 pb-0">
+          <div class="flex gap-2 pb-0">
             <Show when={!topbarCtx && !isModal}>
               <Show when={canEdit() && local.submit}>
                 <Button
@@ -324,7 +324,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={defs().before}>{(beforeDef) => beforeDef().children}</Show>
 
         {/* Form */}
-        <form ref={formRef} class="flex-1 overflow-auto p-4" onSubmit={handleFormSubmit}>
+        <form ref={formRef} class="flex-1 overflow-auto" onSubmit={handleFormSubmit}>
           {formContent()}
         </form>
 

@@ -90,12 +90,12 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
       <Select.ItemTemplate>{local.children}</Select.ItemTemplate>
       {local.modal && (
         <Select.Action onClick={() => void handleOpenModal()} aria-label={i18n?.t("sharedDataSelect.search") ?? "Search"}>
-          <Icon icon={IconSearch} size="1em" />
+          <Icon icon={IconSearch} />
         </Select.Action>
       )}
       {local.editModal && (
         <Select.Action onClick={() => void handleOpenEditModal()} aria-label={i18n?.t("sharedDataSelect.edit") ?? "Edit"}>
-          <Icon icon={IconEdit} size="1em" />
+          <Icon icon={IconEdit} />
         </Select.Action>
       )}
     </Select>
