@@ -11,6 +11,7 @@
       "Bash(lsof:*)",
       "Bash(find:*)",
       "Bash(git add:*)",
+      "Bash(git commit:*)",
       "Bash(npm run vitest:*)",
       "Bash(npm run typecheck:*)",
       "Bash(npm run lint:*)",
@@ -29,8 +30,8 @@
       "mcp__playwright__browser_run_code",
       "mcp__playwright__browser_handle_dialog",
       "mcp__playwright__browser_network_requests",
-      "mcp__plugin_context7_context7__query-docs",
-      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "mcp__context7__resolve-library-id",
       "mcp__github__get_commit",
       "mcp__github__get_file_contents"
     ]
