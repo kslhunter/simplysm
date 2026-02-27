@@ -160,7 +160,7 @@ describe("UPDATE - Basic", () => {
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef((e) => ({
-        // managerId = managerId + 1 (예시)
+        // managerId = managerId + 1 (example)
         managerId: expr.raw("number")`${e.managerId} + 1`,
       }));
 

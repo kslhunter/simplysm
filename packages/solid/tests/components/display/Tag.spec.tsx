@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Tag } from "../../../src/components/display/Tag";
 
-describe("Tag 컴포넌트", () => {
+describe("Tag", () => {
   describe("basic rendering", () => {
-    it("children이 Tag 내부에 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => <Tag>New</Tag>);
       expect(getByText("New")).toBeTruthy();
     });
@@ -16,8 +16,8 @@ describe("Tag 컴포넌트", () => {
     });
   });
 
-  describe("theme 속성", () => {
-    it("theme prop에 따라 스타일이 달라진다", () => {
+  describe("theme prop", () => {
+    it("applies different styles per theme", () => {
       const { container: defaultContainer } = render(() => <Tag>Tag</Tag>);
       const { container: themedContainer } = render(() => <Tag theme="danger">Tag</Tag>);
 

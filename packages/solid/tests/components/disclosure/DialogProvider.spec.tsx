@@ -4,7 +4,7 @@ import { DialogProvider } from "../../../src/components/disclosure/DialogProvide
 import { useDialog } from "../../../src/components/disclosure/DialogContext";
 import { useDialogInstance } from "../../../src/components/disclosure/DialogInstanceContext";
 
-// 테스트용 다이얼로그 콘텐츠 컴포넌트
+// dialog content component for testing
 function TestContent() {
   const dialog = useDialogInstance<string>();
   return (
@@ -20,7 +20,7 @@ function TestContent() {
   );
 }
 
-// useDialog를 호출하는 테스트용 컴포넌트
+// test component that calls useDialog
 function TestApp() {
   const dialog = useDialog();
 
@@ -36,7 +36,7 @@ function TestApp() {
   );
 }
 
-// header 없이 열리는 테스트용 컴포넌트
+// test component that opens without a header
 function TestAppNoHeader() {
   const dialog = useDialog();
 
@@ -53,7 +53,7 @@ function TestAppNoHeader() {
 }
 
 describe("DialogProvider", () => {
-  it("show()로 다이얼로그가 표시된다", async () => {
+  it("displays dialog via show()", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -67,7 +67,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("useDialogInstance로 close를 호출하면 다이얼로그가 닫힌다", async () => {
+  it("closes dialog when close is called via useDialogInstance", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -82,13 +82,13 @@ describe("DialogProvider", () => {
 
     fireEvent.click(document.querySelector('[data-testid="close-btn"]')!);
 
-    // 닫힘 애니메이션 fallback timer(200ms) 후 다이얼로그 콘텐츠가 제거됨
+    // dialog content is removed after close animation fallback timer (200ms)
     await waitFor(() => {
       expect(document.querySelector('[data-testid="modal-content"]')).toBeNull();
     });
   });
 
-  it("close() 호출 시 다이얼로그가 닫힌다", async () => {
+  it("closes dialog when close() is called", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -108,7 +108,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("다이얼로그 header가 표시된다", async () => {
+  it("displays dialog header", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -124,7 +124,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("header 미제공 시 헤더가 렌더링되지 않는다", async () => {
+  it("does not render header when header is not provided", async () => {
     render(() => (
       <DialogProvider>
         <TestAppNoHeader />

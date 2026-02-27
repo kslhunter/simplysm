@@ -3,16 +3,16 @@ import { parseQueryResult } from "../../src/utils/result-parser";
 import type { ResultMeta } from "../../src/types/db";
 
 /**
- * 성능 벤치마크 테스트
+ * Performance benchmark tests
  *
- * 목적: objClone 제거 최적화 효과 측정
- * 측정 항목:
- * - 대용량 단순 레코드 processing 시간
- * - 대용량 JOIN 레코드 processing 시간
- * - 중첩 JOIN processing 시간
+ * Purpose: measure optimization effect of removing objClone
+ * Metrics:
+ * - processing time for large simple records
+ * - processing time for large JOIN records
+ * - processing time for nested JOIN records
  */
 describe("result-parser performance", () => {
-  // 테스트 데이터 생성 헬퍼
+  // test data generation helpers
   function generateSimpleRecords(count: number): Record<string, unknown>[] {
     return Array.from({ length: count }, (_, i) => ({
       id: String(i + 1),
@@ -63,7 +63,7 @@ describe("result-parser performance", () => {
   }
 
   describe("simple record processing", () => {
-    it("10,000개 레코드 processing - 500ms 이내", async () => {
+    it("10,000 records processing - within 500ms", async () => {
       const raw = generateSimpleRecords(10_000);
       const meta: ResultMeta = {
         columns: {
@@ -82,10 +82,10 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(10_000);
       expect(elapsed).toBeLessThan(500);
-      console.log(`  단순 10,000개: ${elapsed.toFixed(2)}ms`);
+      console.log(`  simple 10,000: ${elapsed.toFixed(2)}ms`);
     });
 
-    it("50,000개 레코드 processing - 3000ms 이내", async () => {
+    it("50,000 records processing - within 3000ms", async () => {
       const raw = generateSimpleRecords(50_000);
       const meta: ResultMeta = {
         columns: {
@@ -104,12 +104,12 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(50_000);
       expect(elapsed).toBeLessThan(3000);
-      console.log(`  단순 50,000개: ${elapsed.toFixed(2)}ms`);
+      console.log(`  simple 50,000: ${elapsed.toFixed(2)}ms`);
     });
   });
 
   describe("1-level JOIN processing", () => {
-    it("1,000 users × 10 posts = 10,000개 레코드 - 600ms 이내", async () => {
+    it("1,000 users × 10 posts = 10,000 records - within 600ms", async () => {
       const raw = generateJoinRecords(1_000, 10);
       const meta: ResultMeta = {
         columns: {
@@ -128,10 +128,10 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(1_000);
       expect(elapsed).toBeLessThan(600);
-      console.log(`  JOIN 10,000개 (1000×10): ${elapsed.toFixed(2)}ms`);
+      console.log(`  JOIN 10,000 (1000×10): ${elapsed.toFixed(2)}ms`);
     });
 
-    it("5,000 users × 10 posts = 50,000개 레코드 - 3000ms 이내", async () => {
+    it("5,000 users × 10 posts = 50,000 records - within 3000ms", async () => {
       const raw = generateJoinRecords(5_000, 10);
       const meta: ResultMeta = {
         columns: {
@@ -150,12 +150,12 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(5_000);
       expect(elapsed).toBeLessThan(3000);
-      console.log(`  JOIN 50,000개 (5000×10): ${elapsed.toFixed(2)}ms`);
+      console.log(`  JOIN 50,000 (5000×10): ${elapsed.toFixed(2)}ms`);
     });
   });
 
   describe("2-level nested JOIN processing", () => {
-    it("100 users × 10 posts × 5 comments = 5,000개 레코드 - 500ms 이내", async () => {
+    it("100 users × 10 posts × 5 comments = 5,000 records - within 500ms", async () => {
       const raw = generateNestedJoinRecords(100, 10, 5);
       const meta: ResultMeta = {
         columns: {
@@ -178,10 +178,10 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(100);
       expect(elapsed).toBeLessThan(500);
-      console.log(`  중첩 JOIN 5,000개 (100×10×5): ${elapsed.toFixed(2)}ms`);
+      console.log(`  nested JOIN 5,000 (100×10×5): ${elapsed.toFixed(2)}ms`);
     });
 
-    it("500 users × 10 posts × 5 comments = 25,000개 레코드 - 2000ms 이내", async () => {
+    it("500 users × 10 posts × 5 comments = 25,000 records - within 2000ms", async () => {
       const raw = generateNestedJoinRecords(500, 10, 5);
       const meta: ResultMeta = {
         columns: {
@@ -204,7 +204,7 @@ describe("result-parser performance", () => {
 
       expect(result).toHaveLength(500);
       expect(elapsed).toBeLessThan(2000);
-      console.log(`  중첩 JOIN 25,000개 (500×10×5): ${elapsed.toFixed(2)}ms`);
+      console.log(`  nested JOIN 25,000 (500×10×5): ${elapsed.toFixed(2)}ms`);
     });
   });
 });

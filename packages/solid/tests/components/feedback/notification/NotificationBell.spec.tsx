@@ -15,7 +15,7 @@ describe("NotificationBell", () => {
     vi.unstubAllGlobals();
   });
 
-  it("버튼이 렌더링된다", () => {
+  it("renders button", () => {
     const { container } = render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>
@@ -27,7 +27,7 @@ describe("NotificationBell", () => {
     expect(container.querySelector("[data-notification-bell]")).not.toBeNull();
   });
 
-  it("알림이 없으면 뱃지가 표시되지 않는다", () => {
+  it("does not show badge when there are no notifications", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>
@@ -40,7 +40,7 @@ describe("NotificationBell", () => {
     expect(badge).toBeNull();
   });
 
-  it("알림이 있으면 뱃지에 개수가 표시된다", async () => {
+  it("shows count on badge when notifications are present", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -64,7 +64,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("버튼 클릭 시 Dropdown이 열린다", async () => {
+  it("opens Dropdown on button click", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -90,7 +90,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("Dropdown에 알림 목록이 표시된다", async () => {
+  it("shows notification list in Dropdown", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -118,7 +118,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("aria-label에 알림 개수가 포함된다", async () => {
+  it("includes notification count in aria-label", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -141,7 +141,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("aria-haspopup과 aria-expanded가 올바르게 설정된다", async () => {
+  it("sets aria-haspopup and aria-expanded correctly", async () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
         <NotificationProvider>
@@ -161,7 +161,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("드롭다운 열면 모든 알림이 읽음 처리된다", async () => {
+  it("marks all notifications as read when dropdown opens", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -191,7 +191,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("전체 삭제 버튼 클릭 시 clear가 호출된다", async () => {
+  it("calls clear when clear-all button is clicked", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (

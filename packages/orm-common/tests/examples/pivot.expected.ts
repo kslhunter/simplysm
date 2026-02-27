@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== PIVOT - Basic 집계 함수 ==========
+//#region ========== PIVOT - Basic Aggregate Functions ==========
 
 export const pivotSum: ExpectedSql = {
   mysql: mysql`
@@ -125,7 +125,7 @@ GROUP BY "T1"."id", "T1"."category"
 
 //#endregion
 
-//#region ========== PIVOT - 다중 피벗 값 ==========
+//#region ========== PIVOT - Multiple Pivot Values ==========
 
 export const pivotMultipleYears: ExpectedSql = {
   mysql: mysql`

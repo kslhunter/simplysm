@@ -147,7 +147,7 @@ export const updateWithTop: ExpectedSql = {
 
 //#endregion
 
-//#region ========== FK 스위치 ==========
+//#region ========== FK Switch ==========
 
 export const fkOff: ExpectedSql = {
   mysql: mysql`

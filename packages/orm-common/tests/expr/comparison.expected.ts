@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-// DateTime 값 테스트용
+// For DateTime value tests
 export const testDateTime = new DateTime(2024, 1, 15, 10, 30, 0);
 export const testDateOnly = new DateOnly(2024, 1, 15);
 export const testTime = new Time(10, 30, 0);
@@ -237,7 +237,7 @@ export const inEmpty: ExpectedSql = {
   `,
 };
 
-//#region ========== DateTime/DateOnly/Time 값 테스트 ==========
+//#region ========== DateTime/DateOnly/Time Value Tests ==========
 
 export const eqDateTime: ExpectedSql = {
   mysql: mysql`
@@ -259,7 +259,7 @@ export const eqDateTime: ExpectedSql = {
 
 //#endregion
 
-//#region ========== inQuery 테스트 ==========
+//#region ========== inQuery Tests ==========
 
 export const inQuery: ExpectedSql = {
   mysql: mysql`

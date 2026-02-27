@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Link } from "../../../src/components/display/Link";
 
-describe("Link 컴포넌트", () => {
+describe("Link", () => {
   describe("basic rendering", () => {
-    it("children이 Link 내부에 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => <Link href="https://example.com">링크</Link>);
       expect(getByText("링크")).toBeTruthy();
     });
@@ -16,14 +16,14 @@ describe("Link 컴포넌트", () => {
     });
   });
 
-  describe("href 속성", () => {
-    it("href가 a 요소에 전달된다", () => {
+  describe("href prop", () => {
+    it("passes href to anchor element", () => {
       const { container } = render(() => <Link href="https://example.com">링크</Link>);
       const link = container.firstChild as HTMLAnchorElement;
       expect(link.getAttribute("href")).toBe("https://example.com");
     });
 
-    it("target 속성이 전달된다", () => {
+    it("passes target attribute", () => {
       const { container } = render(() => (
         <Link href="https://example.com" target="_blank">
           링크

@@ -4,65 +4,65 @@ import { createSignal } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
 import { DatePicker } from "../../../../src/components/form-control/field/DatePicker";
 
-describe("DatePicker 컴포넌트", () => {
+describe("DatePicker component", () => {
   describe("basic rendering", () => {
-    it("unit=year일 때 input type=number가 렌더링된다", () => {
+    it("renders input type=number when unit=year", () => {
       const { container } = render(() => <DatePicker unit="year" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("number");
     });
 
-    it("unit=month일 때 input unit=month가 렌더링된다", () => {
+    it("renders input type=month when unit=month", () => {
       const { container } = render(() => <DatePicker unit="month" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("month");
     });
 
-    it("unit=date일 때 input unit=date가 렌더링된다", () => {
+    it("renders input type=date when unit=date", () => {
       const { container } = render(() => <DatePicker unit="date" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("date");
     });
 
-    it("autocomplete 기본값은 one-time-code이다", () => {
+    it("defaults autocomplete to one-time-code", () => {
       const { container } = render(() => <DatePicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("one-time-code");
     });
 
-    it("기본 unit은 date이다", () => {
+    it("defaults unit to date", () => {
       const { container } = render(() => <DatePicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("date");
     });
   });
 
-  describe("값 변환", () => {
-    it("DateOnly 값이 year 타입에서 yyyy 형식으로 표시된다", () => {
+  describe("value conversion", () => {
+    it("displays DateOnly in yyyy format for year type", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
       const { container } = render(() => <DatePicker unit="year" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025");
     });
 
-    it("DateOnly 값이 month 타입에서 yyyy-MM 형식으로 표시된다", () => {
+    it("displays DateOnly in yyyy-MM format for month type", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
       const { container } = render(() => <DatePicker unit="month" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03");
     });
 
-    it("DateOnly 값이 date 타입에서 yyyy-MM-dd 형식으로 표시된다", () => {
+    it("displays DateOnly in yyyy-MM-dd format for date type", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
       const { container } = render(() => <DatePicker unit="date" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15");
     });
 
-    it("year 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
+    it("passes DateOnly converted from year input to onValueChange", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <DatePicker unit="year" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -76,7 +76,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(result.day).toBe(1);
     });
 
-    it("month 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
+    it("passes DateOnly converted from month input to onValueChange", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <DatePicker unit="month" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -90,7 +90,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(result.day).toBe(1);
     });
 
-    it("date 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
+    it("passes DateOnly converted from date input to onValueChange", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <DatePicker unit="date" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -104,7 +104,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(result.day).toBe(15);
     });
 
-    it("빈 값 입력 시 undefined가 onValueChange로 전달된다", () => {
+    it("passes undefined to onValueChange on empty input", () => {
       const handleChange = vi.fn();
       const dateOnly = new DateOnly(2025, 3, 15);
       const { container } = render(() => (
@@ -118,43 +118,43 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("min/max 속성", () => {
-    it("min 속성이 date 타입에서 문자열로 변환된다", () => {
+  describe("min/max props", () => {
+    it("converts min to string for date type", () => {
       const minDate = new DateOnly(2025, 1, 1);
       const { container } = render(() => <DatePicker unit="date" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01");
     });
 
-    it("max 속성이 date 타입에서 문자열로 변환된다", () => {
+    it("converts max to string for date type", () => {
       const maxDate = new DateOnly(2025, 12, 31);
       const { container } = render(() => <DatePicker unit="date" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12-31");
     });
 
-    it("min 속성이 month 타입에서 yyyy-MM 형식으로 변환된다", () => {
+    it("converts min to yyyy-MM format for month type", () => {
       const minDate = new DateOnly(2025, 1, 15);
       const { container } = render(() => <DatePicker unit="month" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01");
     });
 
-    it("max 속성이 month 타입에서 yyyy-MM 형식으로 변환된다", () => {
+    it("converts max to yyyy-MM format for month type", () => {
       const maxDate = new DateOnly(2025, 12, 15);
       const { container } = render(() => <DatePicker unit="month" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12");
     });
 
-    it("min 속성이 year 타입에서 숫자로 변환된다", () => {
+    it("converts min to number for year type", () => {
       const minDate = new DateOnly(2020, 1, 1);
       const { container } = render(() => <DatePicker unit="year" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2020");
     });
 
-    it("max 속성이 year 타입에서 숫자로 변환된다", () => {
+    it("converts max to number for year type", () => {
       const maxDate = new DateOnly(2030, 12, 31);
       const { container } = render(() => <DatePicker unit="year" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -162,8 +162,8 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("외부 상태 변경 시 input 값이 업데이트된다", () => {
+  describe("controlled pattern", () => {
+    it("updates input value when external state changes", () => {
       const [value, setValue] = createSignal<DateOnly | undefined>(new DateOnly(2025, 1, 1));
       const { container } = render(() => (
         <DatePicker unit="date" value={value()} onValueChange={setValue} />
@@ -177,8 +177,8 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("uncontrolled 패턴", () => {
-    it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
+  describe("uncontrolled pattern", () => {
+    it("manages value internally without onValueChange", () => {
       const { container } = render(() => (
         <DatePicker unit="date" value={new DateOnly(2025, 1, 1)} />
       ));
@@ -192,7 +192,7 @@ describe("DatePicker 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled=true일 때 div로 렌더링된다", () => {
+    it("renders as div when disabled=true", () => {
       const { container } = render(() => <DatePicker disabled value={new DateOnly(2025, 3, 15)} />);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-date-field");
@@ -201,22 +201,22 @@ describe("DatePicker 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("disabled 상태에서 value가 표시된다", () => {
+    it("displays value when disabled", () => {
       const { getByText } = render(() => (
         <DatePicker unit="date" disabled value={new DateOnly(2025, 3, 15)} />
       ));
       expect(getByText("2025-03-15")).toBeTruthy();
     });
 
-    it("disabled 스타일이 적용된다", () => {
+    it("applies disabled style", () => {
       const { container } = render(() => <DatePicker disabled value={new DateOnly(2025, 3, 15)} />);
       const div = container.querySelector("div.sd-date-field") as HTMLElement;
       expect(div.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
-  describe("readonly 상태", () => {
-    it("readonly=true일 때 div로 렌더링된다", () => {
+  describe("readonly state", () => {
+    it("renders as div when readonly=true", () => {
       const { container } = render(() => <DatePicker readonly value={new DateOnly(2025, 3, 15)} />);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-date-field");
@@ -225,7 +225,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("readonly 상태에서 value가 표시된다", () => {
+    it("displays value when readonly", () => {
       const { getByText } = render(() => (
         <DatePicker unit="date" readonly value={new DateOnly(2025, 3, 15)} />
       ));
@@ -233,22 +233,22 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("size 옵션", () => {
-    it("size=sm일 때 작은 padding이 적용된다", () => {
+  describe("size option", () => {
+    it("applies small padding when size=sm", () => {
       const { container } = render(() => <DatePicker size="sm" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-0.5")).toBe(true);
     });
 
-    it("size=lg일 때 큰 padding이 적용된다", () => {
+    it("applies large padding when size=lg", () => {
       const { container } = render(() => <DatePicker size="lg" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-2")).toBe(true);
     });
   });
 
-  describe("inset 스타일", () => {
-    it("inset=true일 때 outer div에는 relative만, content div에 inset 스타일이 적용된다", () => {
+  describe("inset style", () => {
+    it("applies relative to outer and inset style to content when inset=true", () => {
       const { container } = render(() => <DatePicker inset />);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -259,7 +259,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
     });
 
-    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+    it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => (
         <DatePicker inset readonly value={new DateOnly(2025, 3, 15)} />
       ));
@@ -273,7 +273,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(outer.querySelector("input:not([aria-hidden])")).toBeFalsy();
     });
 
-    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+    it("shows hidden content div and input when inset + editable", () => {
       const { container } = render(() => <DatePicker inset value={new DateOnly(2025, 3, 15)} />);
       const outer = container.firstChild as HTMLElement;
 
@@ -286,7 +286,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(input.value).toBe("2025-03-15");
     });
 
-    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+    it("shows NBSP in content div when inset + empty value", () => {
       const { container } = render(() => <DatePicker inset readonly />);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-date-field-content]") as HTMLElement;
@@ -294,14 +294,14 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("다크 모드 스타일", () => {
-    it("다크 모드 border 스타일이 적용된다", () => {
+  describe("dark mode style", () => {
+    it("applies dark mode border style", () => {
       const { container } = render(() => <DatePicker />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
     });
 
-    it("다크 모드 background 스타일이 적용된다", () => {
+    it("applies dark mode background style", () => {
       const { container } = render(() => <DatePicker />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
@@ -309,7 +309,7 @@ describe("DatePicker 컴포넌트", () => {
   });
 
   describe("class merging", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("merges custom class with existing styles", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <DatePicker class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
@@ -324,13 +324,13 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => <DatePicker required value={new DateOnly(2024, 1, 1)} />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("min 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when min is violated", () => {
       const { container } = render(() => (
         <DatePicker min={new DateOnly(2024, 6, 1)} value={new DateOnly(2024, 1, 1)} />
       ));
@@ -338,7 +338,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).not.toBe("");
     });
 
-    it("min 충족 시 유효하다", () => {
+    it("is valid when min is satisfied", () => {
       const { container } = render(() => (
         <DatePicker min={new DateOnly(2024, 1, 1)} value={new DateOnly(2024, 6, 1)} />
       ));
@@ -346,7 +346,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("max 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when max is violated", () => {
       const { container } = render(() => (
         <DatePicker max={new DateOnly(2024, 6, 1)} value={new DateOnly(2024, 12, 1)} />
       ));
@@ -354,7 +354,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).not.toBe("");
     });
 
-    it("max 충족 시 유효하다", () => {
+    it("is valid when max is satisfied", () => {
       const { container } = render(() => (
         <DatePicker max={new DateOnly(2024, 12, 31)} value={new DateOnly(2024, 6, 1)} />
       ));
@@ -362,7 +362,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("validate 함수가 에러를 반환하면 에러 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <DatePicker value={new DateOnly(2024, 1, 1)} validate={() => "커스텀 에러"} />
       ));
@@ -370,7 +370,7 @@ describe("DatePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("커스텀 에러");
     });
 
-    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+    it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
         <DatePicker value={new DateOnly(2024, 1, 1)} validate={() => undefined} />
       ));

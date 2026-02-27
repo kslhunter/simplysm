@@ -3,9 +3,9 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { Tabs } from "../../../src/components/disclosure/Tabs";
 
-describe("Tabs 컴포넌트", () => {
+describe("Tabs", () => {
   describe("basic rendering", () => {
-    it("tablist role로 렌더링된다", () => {
+    it("renders with tablist role", () => {
       const { getByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -14,7 +14,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getByRole("tablist")).toBeTruthy();
     });
 
-    it("Tabs.Tab이 tab role로 렌더링된다", () => {
+    it("renders Tabs.Tab with tab role", () => {
       const { getByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -23,7 +23,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getByRole("tab")).toBeTruthy();
     });
 
-    it("children이 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">탭 A</Tabs.Tab>
@@ -35,8 +35,8 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("선택 동작", () => {
-    it("클릭하면 aria-selected가 true가 된다", () => {
+  describe("selection behavior", () => {
+    it("sets aria-selected to true on click", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -50,7 +50,7 @@ describe("Tabs 컴포넌트", () => {
       expect(tabs[1].getAttribute("aria-selected")).toBe("false");
     });
 
-    it("다른 탭 클릭 시 선택이 변경된다", () => {
+    it("changes selection on different tab click", () => {
       const { getAllByRole } = render(() => (
         <Tabs value="a">
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -64,7 +64,7 @@ describe("Tabs 컴포넌트", () => {
       expect(tabs[0].getAttribute("aria-selected")).toBe("false");
     });
 
-    it("disabled 탭은 클릭해도 선택되지 않는다", () => {
+    it("does not select disabled tab on click", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
         <Tabs onValueChange={handleChange}>
@@ -80,8 +80,8 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("키보드 동작", () => {
-    it("Space 키로 선택된다", () => {
+  describe("keyboard behavior", () => {
+    it("selects tab with Space key", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -93,7 +93,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getAllByRole("tab")[0].getAttribute("aria-selected")).toBe("true");
     });
 
-    it("Enter 키로 선택된다", () => {
+    it("selects tab with Enter key", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -106,8 +106,8 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("value prop이 선택 상태로 반영된다", () => {
+  describe("controlled pattern", () => {
+    it("reflects value prop as selected state", () => {
       const { getAllByRole } = render(() => (
         <Tabs value="b">
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -119,7 +119,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getAllByRole("tab")[1].getAttribute("aria-selected")).toBe("true");
     });
 
-    it("onValueChange가 클릭 시 호출된다", () => {
+    it("calls onValueChange on click", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
         <Tabs value="a" onValueChange={handleChange}>
@@ -132,7 +132,7 @@ describe("Tabs 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("b");
     });
 
-    it("외부 상태 변경 시 업데이트된다", () => {
+    it("updates when external state changes", () => {
       const [value, setValue] = createSignal("a");
       const { getAllByRole } = render(() => (
         <Tabs value={value()} onValueChange={setValue}>
@@ -149,8 +149,8 @@ describe("Tabs 컴포넌트", () => {
     });
   });
 
-  describe("사이즈", () => {
-    it("size prop에 따라 스타일이 달라진다", () => {
+  describe("size", () => {
+    it("applies different styles per size prop", () => {
       const { getAllByRole: getDefault } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -167,7 +167,7 @@ describe("Tabs 컴포넌트", () => {
   });
 
   describe("accessibility", () => {
-    it("disabled 탭에 aria-disabled가 설정된다", () => {
+    it("sets aria-disabled on disabled tab", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -180,7 +180,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getAllByRole("tab")[1].getAttribute("aria-disabled")).toBe("true");
     });
 
-    it("disabled 탭의 tabIndex가 -1이다", () => {
+    it("sets tabIndex to -1 on disabled tab", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
@@ -195,7 +195,7 @@ describe("Tabs 컴포넌트", () => {
   });
 
   describe("class merging", () => {
-    it("Tabs에 사용자 정의 class가 병합된다", () => {
+    it("merges custom class on Tabs", () => {
       const { getByRole } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
         <Tabs class="my-tab-class">
@@ -205,7 +205,7 @@ describe("Tabs 컴포넌트", () => {
       expect(getByRole("tablist").classList.contains("my-tab-class")).toBe(true);
     });
 
-    it("Tabs.Tab에 사용자 정의 class가 병합된다", () => {
+    it("merges custom class on Tabs.Tab", () => {
       const { getByRole } = render(() => (
         <Tabs>
           {/* eslint-disable-next-line tailwindcss/no-custom-classname */}

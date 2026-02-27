@@ -3,24 +3,24 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { ColorPicker } from "../../../../src/components/form-control/color-picker/ColorPicker";
 
-describe("ColorPicker 컴포넌트", () => {
+describe("ColorPicker component", () => {
   describe("basic rendering", () => {
-    it("input type=color가 렌더링된다", () => {
+    it("renders input type=color", () => {
       const { container } = render(() => <ColorPicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("color");
     });
 
-    it("기본값은 #000000이다", () => {
+    it("defaults to #000000", () => {
       const { container } = render(() => <ColorPicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("#000000");
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("onValueChange가 색상 변경 시 호출된다", () => {
+  describe("controlled pattern", () => {
+    it("calls onValueChange on color change", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
         <ColorPicker value="#000000" onValueChange={handleChange} />
@@ -32,7 +32,7 @@ describe("ColorPicker 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("#ff5500");
     });
 
-    it("외부 상태 변경 시 input 값이 업데이트된다", () => {
+    it("updates input value when external state changes", () => {
       const [value, setValue] = createSignal("#ff0000");
       const { container } = render(() => <ColorPicker value={value()} onValueChange={setValue} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -45,13 +45,13 @@ describe("ColorPicker 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled=true일 때 input이 비활성화된다", () => {
+    it("disables input when disabled=true", () => {
       const { container } = render(() => <ColorPicker disabled />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.disabled).toBe(true);
     });
 
-    it("disabled 스타일이 적용된다", () => {
+    it("applies disabled style", () => {
       const { container } = render(() => <ColorPicker disabled />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.classList.contains("cursor-default")).toBe(true);
@@ -74,13 +74,13 @@ describe("ColorPicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => <ColorPicker required value="#ff0000" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <ColorPicker
           validate={(v) => (v === "#000000" ? "검정색은 사용할 수 없습니다" : undefined)}

@@ -1,10 +1,10 @@
 /**
- * SELECT - 서브쿼리/WRAP/UNION test expected SQL
+ * SELECT - Subquery/WRAP/UNION test expected SQL
  */
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== WRAP (서브쿼리) ==========
+//#region ========== WRAP (Subquery) ==========
 
 export const wrapBasic: ExpectedSql = {
   mysql: mysql`

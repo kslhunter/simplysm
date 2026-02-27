@@ -50,13 +50,13 @@ describe("MysqlExprRenderer.escapeString", () => {
     expect(result).toBe("''; DROP TABLE users; --");
   });
 
-  it("백슬래시와 따옴표 조합을 방어해야 함", () => {
+  it("should defend against backslash + quote combination", () => {
     const malicious = "\\'";
     const result = renderer.escapeString(malicious);
     expect(result).toBe("\\\\''");
   });
 
-  it("NULL 바이트와 SQL 주석 조합을 방어해야 함", () => {
+  it("should defend against NULL byte + SQL comment combination", () => {
     const malicious = "admin\0-- ";
     const result = renderer.escapeString(malicious);
     expect(result).toBe("admin\\0-- ");
@@ -68,32 +68,32 @@ describe("MysqlExprRenderer.escapeString", () => {
 describe("MysqlExprRenderer.escapeValue", () => {
   const renderer = new MysqlExprRenderer(() => "");
 
-  it("문자열을 escapeString()으로 이스케이프하고 따옴표로 감싸야 함", () => {
+  it("escapes string with escapeString() and wraps in quotes", () => {
     const result = renderer.escapeValue("O'Reilly");
     expect(result).toBe("'O''Reilly'");
   });
 
-  it("백슬래시가 포함된 문자열을 올바르게 이스케이프해야 함", () => {
+  it("correctly escapes string containing backslashes", () => {
     const result = renderer.escapeValue("C:\\path");
     expect(result).toBe("'C:\\\\path'");
   });
 
-  it("SQL 인젝션 시도를 방어해야 함", () => {
+  it("defends against SQL injection attempts", () => {
     const result = renderer.escapeValue("'; DROP TABLE users; --");
     expect(result).toBe("'''; DROP TABLE users; --'");
   });
 
-  it("NULL을 'NULL' 문자열로 반환해야 함", () => {
+  it("returns 'NULL' string for null", () => {
     const result = renderer.escapeValue(null);
     expect(result).toBe("NULL");
   });
 
-  it("Number를 문자열로 conversion해야 함", () => {
+  it("converts number to string", () => {
     const result = renderer.escapeValue(123);
     expect(result).toBe("123");
   });
 
-  it("불리언을 TRUE/FALSE로 conversion해야 함", () => {
+  it("converts boolean to TRUE/FALSE", () => {
     expect(renderer.escapeValue(true)).toBe("TRUE");
     expect(renderer.escapeValue(false)).toBe("FALSE");
   });

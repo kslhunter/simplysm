@@ -11,7 +11,7 @@ const { mockState, mockJitiImportFn } = vi.hoisted(() => ({
   mockJitiImportFn: vi.fn(),
 }));
 
-// 외부 의존성 모킹
+// Mock external dependencies
 
 vi.mock("eslint", () => {
   class MockESLint {
@@ -94,7 +94,7 @@ describe("runLint", () => {
     originalCwd = process.cwd;
     process.cwd = vi.fn().mockReturnValue("/project");
 
-    // 상태 초기화
+    // Reset state
     mockState.lintResults = [];
     mockState.lintedFiles = [];
     mockState.outputFixesCalled = false;
@@ -237,7 +237,7 @@ describe("runLint", () => {
 
     await runLint({ targets: [], fix: false, timing: false });
 
-    // ESLint가 호출되지 않으므로 lintedFiles는 빈 배열 유지
+    // ESLint is not called, so lintedFiles stays empty
     expect(mockState.lintedFiles).toHaveLength(0);
     expect(process.exitCode).toBeUndefined();
   });
@@ -293,7 +293,7 @@ describe("runLint", () => {
 
     await runLint({ targets: [], fix: false, timing: true });
 
-    // TIMING이 설정되었는지 확인 (함수 내에서 설정됨)
+    // Verify TIMING is set (set inside the function)
     expect(process.env["TIMING"]).toBe("1");
 
     // cleanup
@@ -350,12 +350,12 @@ describe("executeLint", () => {
     originalCwd = process.cwd;
     process.cwd = vi.fn().mockReturnValue("/project");
 
-    // 상태 초기화
+    // Reset state
     mockState.lintResults = [];
     mockState.lintedFiles = [];
     mockState.outputFixesCalled = false;
 
-    // 기본 ESLint 설정 mock
+    // Default ESLint config mock
     const cwd = "/project";
     vi.mocked(fsExists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));

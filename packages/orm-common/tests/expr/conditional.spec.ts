@@ -218,7 +218,7 @@ describe("Expr - Conditional functions", () => {
   });
 
   describe("switch - all case/default are undefined", () => {
-    it("에러를 발생시킨다", () => {
+    it("throws an error", () => {
       const db = createTestDb();
       expect(() => {
         db.user()
@@ -234,7 +234,7 @@ describe("Expr - Conditional functions", () => {
   });
 
   describe("if - both then and else are undefined", () => {
-    it("에러를 발생시킨다", () => {
+    it("throws an error", () => {
       const db = createTestDb();
       expect(() => {
         db.user()

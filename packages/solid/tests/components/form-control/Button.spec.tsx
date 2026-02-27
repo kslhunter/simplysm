@@ -2,23 +2,23 @@ import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { Button } from "../../../src/components/form-control/Button";
 
-describe("Button 컴포넌트", () => {
+describe("Button component", () => {
   describe("basic rendering", () => {
-    it("children이 버튼 내부에 표시된다", () => {
+    it("renders children inside the button", () => {
       const { getByRole } = render(() => <Button>Click Me</Button>);
       const button = getByRole("button");
 
       expect(button.textContent).toBe("Click Me");
     });
 
-    it("type 속성 기본값은 button이다", () => {
+    it("defaults type to button", () => {
       const { getByRole } = render(() => <Button>Click</Button>);
       const button = getByRole("button");
 
       expect(button.getAttribute("type")).toBe("button");
     });
 
-    it("type 속성을 submit으로 오버라이드할 수 있다", () => {
+    it("overrides type with submit", () => {
       const { getByRole } = render(() => <Button type="submit">Submit</Button>);
       const button = getByRole("button");
 
@@ -26,8 +26,8 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("theme 속성", () => {
-    it("theme prop에 따라 스타일이 달라진다", () => {
+  describe("theme prop", () => {
+    it("applies different styles per theme", () => {
       const { getByRole: getDefault } = render(() => <Button>Click</Button>);
       const { getByRole: getThemed } = render(() => <Button theme="danger">Click</Button>);
 
@@ -35,8 +35,8 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("variant 속성", () => {
-    it("variant prop에 따라 스타일이 달라진다", () => {
+  describe("variant prop", () => {
+    it("applies different styles per variant", () => {
       const { getByRole: getOutline } = render(() => <Button>Click</Button>);
       const { getByRole: getSolid } = render(() => <Button variant="solid">Click</Button>);
       const { getByRole: getGhost } = render(() => <Button variant="ghost">Click</Button>);
@@ -51,8 +51,8 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("size 속성", () => {
-    it("size prop에 따라 스타일이 달라진다", () => {
+  describe("size prop", () => {
+    it("applies different styles per size", () => {
       const { getByRole: getDefault } = render(() => <Button>Click</Button>);
       const { getByRole: getSm } = render(() => <Button size="sm">Click</Button>);
       const { getByRole: getLg } = render(() => <Button size="lg">Click</Button>);
@@ -67,8 +67,8 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("inset 속성", () => {
-    it("inset prop에 따라 스타일이 달라진다", () => {
+  describe("inset prop", () => {
+    it("applies different styles when inset", () => {
       const { getByRole: getDefault } = render(() => <Button>Click</Button>);
       const { getByRole: getInset } = render(() => <Button inset>Click</Button>);
 
@@ -76,23 +76,23 @@ describe("Button 컴포넌트", () => {
     });
   });
 
-  describe("disabled 속성", () => {
-    it("disabled prop에 따라 스타일이 달라진다", () => {
+  describe("disabled prop", () => {
+    it("applies different styles when disabled", () => {
       const { getByRole: getDefault } = render(() => <Button>Click</Button>);
       const { getByRole: getDisabled } = render(() => <Button disabled>Click</Button>);
 
       expect(getDefault("button").className).not.toBe(getDisabled("button").className);
     });
 
-    it("disabled=true일 때 HTML disabled 속성이 설정된다", () => {
+    it("sets HTML disabled attribute when disabled=true", () => {
       const { getByRole } = render(() => <Button disabled>Click</Button>);
 
       expect(getByRole("button").hasAttribute("disabled")).toBe(true);
     });
   });
 
-  describe("이벤트 핸들링", () => {
-    it("onClick handler가 버튼 클릭 시 호출된다", () => {
+  describe("event handling", () => {
+    it("calls onClick handler on click", () => {
       const handleClick = vi.fn();
       const { getByRole } = render(() => <Button onClick={handleClick}>Click</Button>);
 
@@ -101,7 +101,7 @@ describe("Button 컴포넌트", () => {
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
 
-    it("disabled 상태에서는 클릭이 차단된다", () => {
+    it("blocks click when disabled", () => {
       const { getByRole } = render(() => <Button disabled>Click</Button>);
 
       expect(getByRole("button").hasAttribute("disabled")).toBe(true);

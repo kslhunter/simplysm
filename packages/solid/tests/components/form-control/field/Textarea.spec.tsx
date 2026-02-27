@@ -3,35 +3,35 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { Textarea } from "../../../../src/components/form-control/field/Textarea";
 
-describe("Textarea 컴포넌트", () => {
+describe("Textarea component", () => {
   describe("basic rendering", () => {
-    it("textarea 요소가 렌더링된다", () => {
+    it("renders textarea element", () => {
       const { container } = render(() => <Textarea />);
       const textarea = container.querySelector("textarea");
       expect(textarea).toBeTruthy();
     });
 
-    it("placeholder가 textarea에 적용된다", () => {
+    it("applies placeholder to textarea", () => {
       const { container } = render(() => <Textarea placeholder="내용을 입력하세요" />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
       expect(textarea.placeholder).toBe("내용을 입력하세요");
     });
 
-    it("title이 textarea에 적용된다", () => {
+    it("applies title to textarea", () => {
       const { container } = render(() => <Textarea title="Textarea title" />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
       expect(textarea.title).toBe("Textarea title");
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("value prop이 textarea의 값으로 표시된다", () => {
+  describe("controlled pattern", () => {
+    it("displays value prop in textarea", () => {
       const { container } = render(() => <Textarea value="Hello" />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
       expect(textarea.value).toBe("Hello");
     });
 
-    it("onValueChange가 입력 시 호출된다", () => {
+    it("calls onValueChange on input", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <Textarea value="" onValueChange={handleChange} />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
@@ -41,7 +41,7 @@ describe("Textarea 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("Test");
     });
 
-    it("외부 상태 변경 시 textarea 값이 업데이트된다", () => {
+    it("updates textarea value when external state changes", () => {
       const [value, setValue] = createSignal("Initial");
       const { container } = render(() => <Textarea value={value()} onValueChange={setValue} />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
@@ -53,8 +53,8 @@ describe("Textarea 컴포넌트", () => {
     });
   });
 
-  describe("uncontrolled 패턴", () => {
-    it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
+  describe("uncontrolled pattern", () => {
+    it("manages value internally without onValueChange", () => {
       const { container } = render(() => <Textarea value="Initial" />);
       const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
 
@@ -66,53 +66,53 @@ describe("Textarea 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled=true일 때 textarea가 렌더링되지 않는다", () => {
+    it("does not render textarea when disabled=true", () => {
       const { container } = render(() => <Textarea disabled value="Disabled text" />);
       const textarea = container.querySelector("textarea");
       expect(textarea).toBeFalsy();
     });
 
-    it("disabled 상태에서 value가 표시된다", () => {
+    it("displays value when disabled", () => {
       const { getByText } = render(() => <Textarea disabled value="Disabled text" />);
       expect(getByText("Disabled text")).toBeTruthy();
     });
 
-    it("disabled 스타일이 적용된다", () => {
+    it("applies disabled style", () => {
       const { container } = render(() => <Textarea disabled value="Text" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
-  describe("readonly 상태", () => {
-    it("readonly=true일 때 textarea가 렌더링되지 않는다", () => {
+  describe("readonly state", () => {
+    it("does not render textarea when readonly=true", () => {
       const { container } = render(() => <Textarea readonly value="Readonly text" />);
       const textarea = container.querySelector("textarea");
       expect(textarea).toBeFalsy();
     });
 
-    it("readonly 상태에서 value가 표시된다", () => {
+    it("displays value when readonly", () => {
       const { getByText } = render(() => <Textarea readonly value="Readonly text" />);
       expect(getByText("Readonly text")).toBeTruthy();
     });
   });
 
-  describe("size 옵션", () => {
-    it("size=sm일 때 작은 padding이 적용된다", () => {
+  describe("size option", () => {
+    it("applies small padding when size=sm", () => {
       const { container } = render(() => <Textarea size="sm" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-0.5")).toBe(true);
     });
 
-    it("size=lg일 때 큰 padding이 적용된다", () => {
+    it("applies large padding when size=lg", () => {
       const { container } = render(() => <Textarea size="lg" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-2")).toBe(true);
     });
   });
 
-  describe("inset 스타일", () => {
-    it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
+  describe("inset style", () => {
+    it("removes border and applies inset background when inset=true", () => {
       const { container } = render(() => <Textarea inset />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("relative")).toBe(true);
@@ -121,7 +121,7 @@ describe("Textarea 컴포넌트", () => {
       expect(content.classList.contains("bg-primary-50")).toBe(true);
     });
 
-    it("inset + readonly일 때 content div가 보이고 textarea가 없다", () => {
+    it("shows content div and no textarea when inset + readonly", () => {
       const { container } = render(() => <Textarea inset readonly value="Hello" />);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -133,7 +133,7 @@ describe("Textarea 컴포넌트", () => {
       expect(outer.querySelector("textarea")).toBeFalsy();
     });
 
-    it("inset + editable일 때 content div(hidden)와 textarea가 모두 존재한다", () => {
+    it("shows hidden content div and textarea when inset + editable", () => {
       const { container } = render(() => <Textarea inset value="Hello" />);
       const outer = container.firstChild as HTMLElement;
 
@@ -146,7 +146,7 @@ describe("Textarea 컴포넌트", () => {
       expect(textarea.value).toBe("Hello");
     });
 
-    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+    it("shows NBSP in content div when inset + empty value", () => {
       const { container } = render(() => <Textarea inset readonly />);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
@@ -155,7 +155,7 @@ describe("Textarea 컴포넌트", () => {
   });
 
   describe("class merging", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("merges custom class with existing styles", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Textarea class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
@@ -163,8 +163,8 @@ describe("Textarea 컴포넌트", () => {
     });
   });
 
-  describe("자동 높이 조절", () => {
-    it("hidden div가 존재한다 (높이 측정용)", () => {
+  describe("auto height adjustment", () => {
+    it("renders hidden div for height measurement", () => {
       const { container } = render(() => <Textarea value="Test" />);
       const wrapper = container.firstChild as HTMLElement;
       const hiddenDiv = wrapper.querySelector("[data-hidden-content]") as HTMLElement;
@@ -174,31 +174,31 @@ describe("Textarea 컴포넌트", () => {
   });
 
   describe("validation", () => {
-    it("required일 때 빈 값이면 hidden input에 에러 메시지가 설정된다", () => {
+    it("sets error message in hidden input when required and empty", () => {
       const { container } = render(() => <Textarea required value="" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => <Textarea required value="hello" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("minLength 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when minLength is violated", () => {
       const { container } = render(() => <Textarea minLength={3} value="ab" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("Enter at least 3 characters");
     });
 
-    it("maxLength 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when maxLength is violated", () => {
       const { container } = render(() => <Textarea maxLength={5} value="abcdef" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("Enter up to 5 characters");
     });
 
-    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <Textarea
           validate={(v) => (v.includes("@") ? undefined : "이메일 형식이 아닙니다")}
@@ -209,7 +209,7 @@ describe("Textarea 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("이메일 형식이 아닙니다");
     });
 
-    it("기본 validator 통과 후 validate 함수가 실행된다", () => {
+    it("runs validate function after base validators pass", () => {
       const { container } = render(() => (
         <Textarea
           required

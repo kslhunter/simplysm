@@ -4,7 +4,7 @@ import { parseQueryResult } from "../../src/utils/result-parser";
 import type { ResultMeta } from "../../src/types/db";
 
 describe("result-parser", () => {
-  //#region ========== 타입 파싱 ==========
+  //#region ========== type parsing ==========
 
   describe("type parsing", () => {
     it("number conversion", async () => {
@@ -51,7 +51,7 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
-    it('boolean conversion - "0"/"1" 문자열', async () => {
+    it('boolean conversion - "0"/"1" strings', async () => {
       const raw = [{ active: "1", deleted: "0" }];
       const meta: ResultMeta = {
         columns: { active: "boolean", deleted: "boolean" },
@@ -107,7 +107,7 @@ describe("result-parser", () => {
       expect(result![0].startTime.second).toBe(0);
     });
 
-    it("Uuid conversion - 문자열", async () => {
+    it("Uuid conversion - string", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
       const raw = [{ id: uuidStr }];
       const meta: ResultMeta = {
@@ -136,7 +136,7 @@ describe("result-parser", () => {
       expect(result![0].id.toString()).toBe(uuidStr);
     });
 
-    it("Bytes conversion - Uint8Array 그대로", async () => {
+    it("Bytes conversion - Uint8Array passthrough", async () => {
       const bytes = new Uint8Array([0x01, 0x02, 0x03]);
       const raw = [{ data: bytes }];
       const meta: ResultMeta = {
@@ -150,8 +150,8 @@ describe("result-parser", () => {
       expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
     });
 
-    it("Bytes conversion - hex 문자열", async () => {
-      // [0x01, 0x02, 0x03]의 hex 표현
+    it("Bytes conversion - hex string", async () => {
+      // hex representation of [0x01, 0x02, 0x03]
       const hexStr = "010203";
       const raw = [{ data: hexStr }];
       const meta: ResultMeta = {
@@ -171,7 +171,7 @@ describe("result-parser", () => {
   //#region ========== null/undefined processing ==========
 
   describe("null/undefined processing", () => {
-    it("null 값은 키가 제거됨", async () => {
+    it("null value removes the key", async () => {
       const raw = [{ id: 1, name: null }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
@@ -183,7 +183,7 @@ describe("result-parser", () => {
       expect(result![0]).not.toHaveProperty("name");
     });
 
-    it("undefined 값은 키가 제거됨", async () => {
+    it("undefined value removes the key", async () => {
       const raw = [{ id: 1, name: undefined }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
@@ -195,7 +195,7 @@ describe("result-parser", () => {
       expect(result![0]).not.toHaveProperty("name");
     });
 
-    it("모든 값이 null인 레코드는 제외됨", async () => {
+    it("record with all null values is excluded", async () => {
       const raw = [{ id: null, name: null }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
@@ -206,7 +206,7 @@ describe("result-parser", () => {
       expect(result).toBeUndefined();
     });
 
-    it("빈 배열은 undefined 반환", async () => {
+    it("empty array returns undefined", async () => {
       const raw: Record<string, unknown>[] = [];
       const meta: ResultMeta = {
         columns: { id: "number" },
@@ -217,8 +217,8 @@ describe("result-parser", () => {
       expect(result).toBeUndefined();
     });
 
-    it("columns에 없는 column은 무시", async () => {
-      const raw = [{ id: 1, name: "Gildong Hong", extra: "무시됨" }];
+    it("columns not in meta are ignored", async () => {
+      const raw = [{ id: 1, name: "Gildong Hong", extra: "ignored" }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
         joins: {},
@@ -232,7 +232,7 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== 에러 processing ==========
+  //#region ========== error processing ==========
 
   describe("error processing", () => {
     it("number throw if parsing fails", async () => {
@@ -266,7 +266,7 @@ describe("result-parser", () => {
     });
 
     it("Bytes throw if parsing fails", async () => {
-      const raw = [{ data: 12345 }]; // Number는 Bytes로 conversion 불가
+      const raw = [{ data: 12345 }]; // Number cannot be converted to Bytes
       const meta: ResultMeta = {
         columns: { data: "Bytes" },
         joins: {},
@@ -278,10 +278,10 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== 1레벨 JOIN ==========
+  //#region ========== 1-level JOIN ==========
 
   describe("1-level JOIN", () => {
-    it("isSingle: true - 단일 객체", async () => {
+    it("isSingle: true - single object", async () => {
       const raw = [{ "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }];
       const meta: ResultMeta = {
         columns: {
@@ -303,7 +303,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("isSingle: false - 배열", async () => {
+    it("isSingle: false - array", async () => {
       const raw = [
         { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
         { "id": 1, "name": "User1", "posts.id": 11, "posts.title": "Post2" },
@@ -331,7 +331,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("isSingle: true - 여러 개의 다른 결과 시 throw", async () => {
+    it("isSingle: true - throws when multiple different results exist", async () => {
       const raw = [
         { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp1" },
         { "id": 1, "name": "User1", "company.id": 200, "company.name": "Corp2" },
@@ -351,7 +351,7 @@ describe("result-parser", () => {
       );
     });
 
-    it("빈 JOIN 결과는 키가 N/A", async () => {
+    it("empty JOIN result omits the key", async () => {
       const raw = [{ "id": 1, "name": "User1", "company.id": null, "company.name": null }];
       const meta: ResultMeta = {
         columns: {
@@ -368,7 +368,7 @@ describe("result-parser", () => {
       expect(result![0]).not.toHaveProperty("company");
     });
 
-    it("여러 루트 레코드와 JOIN", async () => {
+    it("multiple root records with JOIN", async () => {
       const raw = [
         { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
         { "id": 2, "name": "User2", "posts.id": 20, "posts.title": "Post2" },
@@ -405,10 +405,10 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== 다중 레벨 JOIN ==========
+  //#region ========== multi-level JOIN ==========
 
   describe("multi-level JOIN", () => {
-    it("2레벨 중첩", async () => {
+    it("2-level nesting", async () => {
       const raw = [
         {
           "id": 1,
@@ -461,7 +461,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("3레벨 중첩", async () => {
+    it("3-level nesting", async () => {
       const raw = [
         {
           "id": 1,
@@ -527,7 +527,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("여러 JOIN과 혼합 isSingle", async () => {
+    it("multiple JOINs with mixed isSingle", async () => {
       const raw = [
         {
           "id": 1,
@@ -575,7 +575,7 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("여러 JOIN 중 일부만 NULL - company는 있고 posts는 N/A", async () => {
+    it("partial NULL among multiple JOINs - company present, posts absent", async () => {
       const raw = [
         {
           "id": 1,
@@ -615,10 +615,10 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== 에지 케이스 ==========
+  //#region ========== edge cases ==========
 
   describe("edge cases", () => {
-    it("joins가 빈 객체인 경우", async () => {
+    it("joins is an empty object", async () => {
       const raw = [{ id: 1, name: "User1" }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
@@ -629,10 +629,10 @@ describe("result-parser", () => {
       expect(result).toEqual([{ id: 1, name: "User1" }]);
     });
 
-    it("중복 데이터 제거", async () => {
+    it("deduplicates duplicate data", async () => {
       const raw = [
         { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
-        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" }, // 중복
+        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" }, // duplicate
       ];
       const meta: ResultMeta = {
         columns: {
@@ -649,15 +649,15 @@ describe("result-parser", () => {
         {
           id: 1,
           name: "User1",
-          posts: [{ id: 10, title: "Post1" }], // 중복 제거됨
+          posts: [{ id: 10, title: "Post1" }], // deduplicated
         },
       ]);
     });
 
-    it("isSingle: true - 동일한 데이터는 에러 N/A", async () => {
+    it("isSingle: true - identical data does not throw", async () => {
       const raw = [
         { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" },
-        { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }, // 동일
+        { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }, // identical
       ];
       const meta: ResultMeta = {
         columns: {
@@ -679,8 +679,8 @@ describe("result-parser", () => {
       ]);
     });
 
-    it("대용량 데이터 yield processing", async () => {
-      // 250개 레코드 생성 (yield가 2회 발생: i=100, i=200)
+    it("large dataset yield processing", async () => {
+      // generates 250 records (yield fires twice: at i=100, i=200)
       const raw = Array.from({ length: 250 }, (_, i) => ({
         id: String(i + 1),
         name: `User${i + 1}`,

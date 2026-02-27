@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 데이터 타입 Basic 테스트 ==========
+//#region ========== Data Type Basic Tests ==========
 
 export const intType: ExpectedSql = {
   mysql: mysql`
@@ -215,7 +215,7 @@ export const uuidType: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 메서드 조합 테스트 ==========
+//#region ========== Method Combination Tests ==========
 
 export const nullableColumn: ExpectedSql = {
   mysql: mysql`

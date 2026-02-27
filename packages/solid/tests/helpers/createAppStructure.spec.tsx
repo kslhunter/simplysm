@@ -3,13 +3,13 @@ import { type Accessor, createRoot, createSignal } from "solid-js";
 import type { Component } from "solid-js";
 import { createAppStructure, type AppStructureItem } from "../../src/helpers/createAppStructure";
 
-// 테스트용 더미 컴포넌트
+// dummy components for tests
 const DummyA: Component = () => null;
 const DummyB: Component = () => null;
 const DummyC: Component = () => null;
 const DummyD: Component = () => null;
 
-// 공통 테스트 구조
+// common test structure
 function createTestItems(): AppStructureItem<string>[] {
   return [
     {
@@ -77,7 +77,7 @@ function buildTestStructure<const TItems extends AppStructureItem<string>[]>(opt
 }
 
 describe("createAppStructure", () => {
-  it("AppStructureProvider와 useAppStructure를 반환한다", () => {
+  it("returns AppStructureProvider and useAppStructure", () => {
     createRoot((dispose) => {
       const { AppStructureProvider, useAppStructure } = createAppStructure(() => ({
         items: [
@@ -104,7 +104,7 @@ describe("createAppStructure", () => {
   });
 
   describe("usableRoutes", () => {
-    it("모든 리프 아이템의 경로와 컴포넌트를 포함한다", () => {
+    it("includes paths and components for all leaf items", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
@@ -119,7 +119,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("component가 없는 아이템은 usableRoutes에 포함되지 않는다", () => {
+    it("excludes items without a component from usableRoutes", () => {
       createRoot((dispose) => {
         const items: AppStructureItem<string>[] = [
           {
@@ -136,7 +136,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("usableModules에 매칭되지 않는 모듈은 필터링된다", () => {
+    it("filters out modules not matching usableModules", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["erp"]);
 
@@ -145,8 +145,8 @@ describe("createAppStructure", () => {
           usableModules: modules,
         });
 
-        // sales 그룹은 modules: ["sales"] — "erp"만 있으면 필터링됨
-        // admin은 modules 없음 — 항상 포함
+        // sales group has modules: ["sales"] — filtered out when only "erp" is present
+        // admin has no modules — always included
         const routes = result.usableRoutes();
         expect(routes.map((r) => r.path)).toEqual(["/admin/users", "/admin/hidden"]);
 
@@ -154,7 +154,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("requiredModules가 모두 없으면 필터링된다", () => {
+    it("filters out items when all requiredModules are missing", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["sales"]);
 
@@ -163,8 +163,8 @@ describe("createAppStructure", () => {
           usableModules: modules,
         });
 
-        // order는 requiredModules: ["sales", "erp"] — "erp"가 없으므로 필터링됨
-        // invoice는 requiredModules 없음 — 포함
+        // order has requiredModules: ["sales", "erp"] — filtered because "erp" is missing
+        // invoice has no requiredModules — included
         const routes = result.usableRoutes();
         expect(routes.map((r) => r.path)).toEqual([
           "/sales/invoice",
@@ -176,7 +176,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("permRecord에서 use 권한이 없으면 필터링된다", () => {
+    it("filters out items without use permission in permRecord", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": false,
@@ -199,7 +199,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("module과 perm 모두 충족해야 포함된다", () => {
+    it("includes only items satisfying both module and perm requirements", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["sales", "erp"]);
         const [perms] = createSignal<Record<string, boolean>>({
@@ -224,7 +224,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("isNotMenu 아이템도 route에 포함된다", () => {
+    it("includes isNotMenu items in routes", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
@@ -237,18 +237,18 @@ describe("createAppStructure", () => {
   });
 
   describe("allFlatPerms", () => {
-    it("requiredModulesChain을 계층별로 수집한다", () => {
+    it("collects requiredModulesChain per hierarchy level", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
-        // order는 requiredModules: ["sales", "erp"]
-        // 부모 sales는 modules: ["sales"] (requiredModules 아님)
+        // order has requiredModules: ["sales", "erp"]
+        // parent sales has modules: ["sales"] (not requiredModules)
         const orderUsePerm = result.allFlatPerms.find((p) => p.code === "/home/sales/order/use");
         expect(orderUsePerm).toBeDefined();
         expect(orderUsePerm!.modulesChain).toEqual([["sales"]]);
         expect(orderUsePerm!.requiredModulesChain).toEqual([["sales", "erp"]]);
 
-        // invoice는 requiredModules 없음
+        // invoice has no requiredModules
         const invoiceUsePerm = result.allFlatPerms.find(
           (p) => p.code === "/home/sales/invoice/use",
         );
@@ -262,16 +262,16 @@ describe("createAppStructure", () => {
   });
 
   describe("usableMenus", () => {
-    it("permRecord가 없으면 perms가 있는 리프는 숨겨지고 perms가 없는 리프만 표시된다", () => {
-      // permRecord 기본값이 {}이므로, perms에 "use"가 있는 아이템은
-      // permRecord[href + "/use"]가 undefined(falsy)가 되어 필터링됨
+    it("hides leaves with perms and shows only perms-less leaves when permRecord is absent", () => {
+      // permRecord defaults to {}, so items with "use" in perms are
+      // filtered because permRecord[href + "/use"] is undefined (falsy)
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
         const menus = result.usableMenus();
 
-        // 영업 하위 아이템(송장, 주문)은 모두 perms에 "use"가 있어 숨겨짐
-        // → 영업 그룹 자체도 자식이 없으므로 숨겨짐
-        // 관리 하위 아이템: 사용자(perms 없음)만 표시, 숨김(isNotMenu)은 제외
+        // sales sub-items (invoice, order) both have "use" in perms → hidden
+        // → sales group itself is also hidden because no children remain
+        // admin sub-items: only 사용자 (no perms) shown, 숨김 (isNotMenu) excluded
         expect(menus).toHaveLength(1);
         expect(menus[0].title).toBe("관리");
         expect(menus[0].children).toHaveLength(1);
@@ -281,7 +281,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("모든 권한이 부여되면 isNotMenu를 제외한 모든 메뉴가 표시된다", () => {
+    it("displays all menus except isNotMenu when all permissions are granted", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": true,
@@ -309,7 +309,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("href가 올바른 전체 경로로 생성된다", () => {
+    it("generates href as the correct full path", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": true,
@@ -333,7 +333,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("modules OR 필터링: 모듈이 없으면 해당 그룹이 숨겨진다", () => {
+    it("modules OR filter: group is hidden when its module is not in usableModules", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["erp"]);
 
@@ -343,7 +343,7 @@ describe("createAppStructure", () => {
         });
 
         const menus = result.usableMenus();
-        // sales 그룹은 modules: ["sales"]인데 usableModules에 "sales"가 없으므로 숨겨짐
+        // sales group has modules: ["sales"] but "sales" is not in usableModules → hidden
         expect(menus).toHaveLength(1);
         expect(menus[0].title).toBe("관리");
 
@@ -351,7 +351,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("requiredModules AND 필터링: 모든 모듈이 있어야 표시된다", () => {
+    it("requiredModules AND filter: displayed only when all required modules are present", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["sales"]);
         const [perms] = createSignal<Record<string, boolean>>({
@@ -366,9 +366,9 @@ describe("createAppStructure", () => {
         });
 
         const menus = result.usableMenus();
-        // sales 그룹은 modules: ["sales"]에 매칭되어 표시됨
-        // order는 requiredModules: ["sales", "erp"]인데 "erp"가 없으므로 숨겨짐
-        // invoice는 requiredModules가 없으므로 표시됨
+        // sales group matches modules: ["sales"] → shown
+        // order has requiredModules: ["sales", "erp"] but "erp" is missing → hidden
+        // invoice has no requiredModules → shown
         expect(menus[0].children).toHaveLength(1);
         expect(menus[0].children![0].title).toBe("송장");
 
@@ -376,7 +376,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("permRecord 필터링: use 권한이 없으면 숨겨진다", () => {
+    it("permRecord filter: hidden when use permission is absent", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": false,
@@ -399,7 +399,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("perms가 없는 리프는 권한 체크 없이 항상 표시된다", () => {
+    it("leaves without perms are always shown without permission check", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({});
 
@@ -409,9 +409,9 @@ describe("createAppStructure", () => {
         });
 
         const menus = result.usableMenus();
-        // permRecord가 빈 객체이므로 perms: ["use"]가 있는 아이템은 모두 숨겨짐
-        // perms가 없는 사용자(DummyC)만 표시됨
-        // 관리 그룹만 남음 (인덱스 0)
+        // permRecord is empty → all items with perms: ["use"] are hidden
+        // only 사용자 (DummyC, no perms) is shown
+        // only 관리 group remains (index 0)
         expect(menus).toHaveLength(1);
         expect(menus[0].title).toBe("관리");
         expect(menus[0].children![0].title).toBe("사용자");
@@ -420,7 +420,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("자식이 모두 필터링되면 그룹도 숨겨진다", () => {
+    it("hides group when all children are filtered out", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": false,
@@ -436,7 +436,7 @@ describe("createAppStructure", () => {
         });
 
         const menus = result.usableMenus();
-        // 영업 하위 아이템이 모두 권한 없음으로 필터링 → 영업 그룹도 숨겨짐
+        // all sales sub-items filtered out by missing permissions → sales group is also hidden
         expect(menus).toHaveLength(1);
         expect(menus[0].title).toBe("관리");
 
@@ -444,7 +444,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("usableModules가 변경되면 메뉴가 재계산된다", () => {
+    it("menus are recalculated when usableModules changes", () => {
       createRoot((dispose) => {
         const [modules, setModules] = createSignal<string[] | undefined>(undefined);
         const [perms] = createSignal<Record<string, boolean>>({
@@ -458,10 +458,10 @@ describe("createAppStructure", () => {
           permRecord: perms,
         });
 
-        // usableModules가 undefined이면 모듈 필터링 없음 → 전부 표시
+        // usableModules is undefined → no module filtering → all shown
         expect(result.usableMenus()).toHaveLength(2);
 
-        // usableModules를 ["sales"]로 설정하면 order의 requiredModules 불충족
+        // setting usableModules to ["sales"] fails order's requiredModules
         setModules(["sales"]);
         expect(result.usableMenus()[0].title).toBe("영업");
         expect(result.usableMenus()[0].children).toHaveLength(1);
@@ -473,7 +473,7 @@ describe("createAppStructure", () => {
   });
 
   describe("usableFlatMenus", () => {
-    it("트리를 평탄화하여 titleChain과 href를 반환한다", () => {
+    it("flattens the tree and returns titleChain and href", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": true,
@@ -505,7 +505,7 @@ describe("createAppStructure", () => {
   });
 
   describe("getTitleChainByHref", () => {
-    it("href에서 title 체인을 반환한다", () => {
+    it("returns title chain from href", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
@@ -516,7 +516,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("isNotMenu 아이템도 찾는다", () => {
+    it("also finds isNotMenu items", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
@@ -526,7 +526,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("존재하지 않는 href는 빈 배열을 반환한다", () => {
+    it("returns empty array for nonexistent href", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({ items: createTestItems() });
 
@@ -539,7 +539,7 @@ describe("createAppStructure", () => {
   });
 
   describe("usablePerms", () => {
-    it("perms가 없는 leaf는 usablePerms에서 제외된다", () => {
+    it("excludes leaves without perms from usablePerms", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [
@@ -559,7 +559,7 @@ describe("createAppStructure", () => {
         });
 
         const perms = result.usablePerms();
-        // home 그룹의 children에 "메인"이 없어야 함
+        // home group's children should not include "메인"
         const homeGroup = perms[0];
         expect(homeGroup.children).toHaveLength(1);
         expect(homeGroup.children![0].title).toBe("사용자");
@@ -568,7 +568,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("perms가 빈 배열인 leaf도 제외된다", () => {
+    it("excludes leaves with empty perms array", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [
@@ -600,7 +600,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("children이 모두 필터링되면 그룹도 제외된다", () => {
+    it("excludes group when all children are filtered out", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [
@@ -634,7 +634,7 @@ describe("createAppStructure", () => {
   });
 
   describe("perms", () => {
-    it("permRecord에서 true인 perm은 true를 반환한다", () => {
+    it("returns true for perms that are true in permRecord", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": true,
@@ -671,7 +671,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("permRecord에 없는 perm은 false를 반환한다", () => {
+    it("returns false for perms absent from permRecord", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({});
 
@@ -698,7 +698,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("permRecord가 없으면 모든 perm이 false다", () => {
+    it("all perms are false when permRecord is absent", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [
@@ -722,7 +722,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("subPerms에도 동일하게 접근할 수 있다", () => {
+    it("subPerms are accessible in the same way", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/user/auth/use": true,
@@ -752,7 +752,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("permRecord 변경 시 perm 값이 반응적으로 업데이트된다", () => {
+    it("perm values update reactively when permRecord changes", () => {
       createRoot((dispose) => {
         const [perms, setPerms] = createSignal<Record<string, boolean>>({
           "/home/user/use": false,
@@ -784,7 +784,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("perms가 없는 leaf는 perms 트리에서 제외된다", () => {
+    it("excludes leaves without perms from the perms tree", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [
@@ -810,7 +810,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("하위에 perm이 없는 group은 perms 트리에서 제외된다", () => {
+    it("excludes groups without any perm from the perms tree", () => {
       createRoot((dispose) => {
         const result = buildTestStructure({
           items: [

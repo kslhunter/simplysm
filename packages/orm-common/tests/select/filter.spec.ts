@@ -6,7 +6,7 @@ import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./filter.expected";
 
-//#region ========== 비교 연산 ==========
+//#region ========== comparison operations ==========
 
 describe("SELECT - WHERE - comparison operations", () => {
   describe("eq (equal)", () => {
@@ -183,7 +183,7 @@ describe("SELECT - WHERE - comparison operations", () => {
 
 //#endregion
 
-//#region ========== NULL 체크 ==========
+//#region ========== NULL check ==========
 
 describe("SELECT - WHERE - NULL check", () => {
   describe("null", () => {
@@ -383,10 +383,10 @@ describe("SELECT - WHERE - LIKE", () => {
 
 //#endregion
 
-//#region ========== 논리 연산 ==========
+//#region ========== logical operations ==========
 
 describe("SELECT - WHERE - logical operations", () => {
-  describe("다중 조건 (AND)", () => {
+  describe("multiple conditions (AND)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -495,7 +495,7 @@ describe("SELECT - WHERE - logical operations", () => {
     });
   });
 
-  it("연속 where (AND 결합)", () => {
+  it("chained where (AND combination)", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -601,7 +601,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
     });
   });
 
-  it("not exists - QueryDef 검증", () => {
+  it("not exists - verifies QueryDef", () => {
     const db = createTestDb();
     const def = db
       .user()
@@ -683,7 +683,7 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
 //#region ========== SEARCH ==========
 
 describe("SELECT - SEARCH", () => {
-  it("단일 검색어 - 단일 column", () => {
+  it("single keyword - single column", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -717,7 +717,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("다중 검색어 (OR)", () => {
+  it("multiple keywords (OR)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -769,7 +769,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("구문 검색 (따옴표)", () => {
+  it("phrase search (quotes)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -803,7 +803,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("와일드카드 (*)", () => {
+  it("wildcard (*)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -837,7 +837,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("이스케이프 (\\*)", () => {
+  it("escape (\\*)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -871,7 +871,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("다중 column 검색 (OR)", () => {
+  it("multiple column search (OR)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -913,7 +913,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("제외 검색 (-)", () => {
+  it("exclusion search (-)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -963,7 +963,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("복합 검색 (포함, 제외, 구문)", () => {
+  it("complex search (include, exclude, phrase)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -1050,7 +1050,7 @@ describe("SELECT - SEARCH", () => {
     });
   });
 
-  it("빈 검색어", () => {
+  it("empty search term", () => {
     const db = createTestDb();
     const def = db
       .post()

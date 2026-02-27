@@ -2,7 +2,7 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
 
-describe("Combobox 컴포넌트", () => {
+describe("Combobox component", () => {
   const mockLoadItems = vi.fn(() => Promise.resolve([]));
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe("Combobox 컴포넌트", () => {
       expect(input?.getAttribute("placeholder")).toBe("검색하세요");
     });
 
-    it("input의 autocomplete 기본값은 one-time-code이다", () => {
+    it("defaults input autocomplete to one-time-code", () => {
       const { container } = render(() => (
         <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
       ));
@@ -37,7 +37,7 @@ describe("Combobox 컴포넌트", () => {
       expect(input.autocomplete).toBe("one-time-code");
     });
 
-    it("disabled일 때 aria-disabled가 설정된다", () => {
+    it("sets aria-disabled when disabled", () => {
       const { getByRole } = render(() => (
         <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />
       ));
@@ -46,7 +46,7 @@ describe("Combobox 컴포넌트", () => {
   });
 
   describe("dropdown opening/closing", () => {
-    it("입력 시 드롭다운이 열린다", async () => {
+    it("opens dropdown on input", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container } = render(() => (
         <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
@@ -60,7 +60,7 @@ describe("Combobox 컴포넌트", () => {
       });
     });
 
-    it("아이템 선택 시 드롭다운이 닫힌다", async () => {
+    it("closes dropdown when item is selected", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container, getByRole } = render(() => (
         <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
@@ -81,7 +81,7 @@ describe("Combobox 컴포넌트", () => {
       });
     });
 
-    it("Escape 키로 드롭다운이 닫힌다", async () => {
+    it("closes dropdown with Escape key", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container, getByRole } = render(() => (
         <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
@@ -102,8 +102,8 @@ describe("Combobox 컴포넌트", () => {
     });
   });
 
-  describe("값 선택", () => {
-    it("아이템 선택 시 onValueChange가 호출된다", async () => {
+  describe("value selection", () => {
+    it("calls onValueChange when item is selected", async () => {
       const handleChange = vi.fn();
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
 
@@ -129,8 +129,8 @@ describe("Combobox 컴포넌트", () => {
     });
   });
 
-  describe("디바운스", () => {
-    it("입력 후 디바운스 시간이 지나면 loadItems가 호출된다", async () => {
+  describe("debounce", () => {
+    it("calls loadItems after debounce delay", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "결과" }]));
 
       const { container } = render(() => (
@@ -144,7 +144,7 @@ describe("Combobox 컴포넌트", () => {
       const input = container.querySelector("input")!;
       fireEvent.input(input, { target: { value: "검색어" } });
 
-      // 디바운스 후 loadItems가 호출됨
+      // loadItems is called after debounce
       await waitFor(
         () => {
           expect(loadItems).toHaveBeenCalledWith("검색어");
@@ -155,7 +155,7 @@ describe("Combobox 컴포넌트", () => {
   });
 
   describe("allowCustomValue", () => {
-    it("allowCustomValue가 true일 때 Enter로 커스텀 값 입력 가능", () => {
+    it("allows entering custom value with Enter when allowCustomValue is true", () => {
       const handleChange = vi.fn();
       const loadItems = vi.fn(() => Promise.resolve([]));
 
@@ -175,7 +175,7 @@ describe("Combobox 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("새로운 값");
     });
 
-    it("parseCustomValue로 커스텀 값을 변환할 수 있다", () => {
+    it("transforms custom value using parseCustomValue", () => {
       const handleChange = vi.fn();
       const loadItems = vi.fn(() => Promise.resolve([]));
 
@@ -211,7 +211,7 @@ describe("Combobox 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => (
         <Combobox
           loadItems={mockLoadItems}
@@ -224,7 +224,7 @@ describe("Combobox 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <Combobox
           loadItems={mockLoadItems}
@@ -237,7 +237,7 @@ describe("Combobox 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("허용되지 않는 값입니다");
     });
 
-    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+    it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
         <Combobox
           loadItems={mockLoadItems}

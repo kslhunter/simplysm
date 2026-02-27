@@ -76,7 +76,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#endregion
 
-  //#region ========== 다중 정렬 ==========
+  //#region ========== multiple sorting ==========
 
   describe("multiple sorting", () => {
     const db = createTestDb();
@@ -106,7 +106,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#endregion
 
-  //#region ========== 표현식 정렬 ==========
+  //#region ========== expression sorting ==========
 
   describe("sort by expressions", () => {
     const db = createTestDb();
@@ -132,7 +132,7 @@ describe("SELECT - ORDER BY", () => {
 
   //#endregion
 
-  //#region ========== 조합 ==========
+  //#region ========== combinations ==========
 
   describe("SELECT + ORDER BY combination", () => {
     const db = createTestDb();

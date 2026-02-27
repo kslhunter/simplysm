@@ -4,9 +4,9 @@ import { Dialog } from "../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../src/providers/ConfigContext";
 
-describe("Dialog 컴포넌트", () => {
+describe("Dialog", () => {
   describe("basic rendering", () => {
-    it("open=true일 때 다이얼로그가 렌더링된다", async () => {
+    it("renders when open=true", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -21,7 +21,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("open=false일 때 다이얼로그가 DOM에 없다", () => {
+    it("is absent from DOM when open=false", () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={false}>
@@ -34,7 +34,7 @@ describe("Dialog 컴포넌트", () => {
       expect(content).toBeNull();
     });
 
-    it("data-modal 속성이 설정된다", async () => {
+    it("sets data-modal attribute", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -49,7 +49,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("Dialog.Header 슬롯이 헤더에 렌더링된다", async () => {
+    it("renders Dialog.Header slot in header", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -66,8 +66,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("헤더 옵션", () => {
-    it("Dialog.Header 미제공 시 헤더가 렌더링되지 않는다", async () => {
+  describe("header options", () => {
+    it("does not render header when Dialog.Header is absent", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -84,7 +84,7 @@ describe("Dialog 컴포넌트", () => {
       expect(header).toBeNull();
     });
 
-    it("Dialog.Action 슬롯이 닫기 버튼 옆에 렌더링된다", async () => {
+    it("renders Dialog.Action slot beside the close button", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -102,7 +102,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("closable={false}일 때 닫기 버튼이 없다", async () => {
+    it("hides close button when closable={false}", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} closable={false}>
@@ -119,8 +119,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("닫힘 동작", () => {
-    it("닫기 버튼 클릭 시 onOpenChange(false)가 호출된다", async () => {
+  describe("close behavior", () => {
+    it("calls onOpenChange(false) when close button is clicked", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -137,7 +137,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("closeOnBackdrop=true일 때 백드롭 클릭으로 닫힌다", async () => {
+    it("closes on backdrop click when closeOnBackdrop=true", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -154,7 +154,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("closeOnBackdrop 미설정 시 백드롭 클릭으로 닫히지 않는다", async () => {
+    it("does not close on backdrop click when closeOnBackdrop is not set", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -171,7 +171,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
-    it("기본적으로 Escape 키로 닫힌다", async () => {
+    it("closes on Escape key by default", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -188,7 +188,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
+    it("closes on Escape when closeOnEscape=true", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -205,7 +205,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("closeOnEscape=false일 때 Escape로 닫히지 않는다", async () => {
+    it("does not close on Escape when closeOnEscape=false", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -222,7 +222,7 @@ describe("Dialog 컴포넌트", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
-    it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
+    it("does not close when canDeactivate returns false", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -241,7 +241,7 @@ describe("Dialog 컴포넌트", () => {
   });
 
   describe("accessibility", () => {
-    it("role=dialog와 aria-modal 속성이 설정된다", async () => {
+    it("sets role=dialog and aria-modal attributes", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -258,7 +258,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("aria-labelledby가 Dialog.Header 요소를 참조한다", async () => {
+    it("aria-labelledby references the Dialog.Header element", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -277,7 +277,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("Dialog.Header 미제공 시 aria-labelledby가 없다", async () => {
+    it("omits aria-labelledby when Dialog.Header is absent", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -293,7 +293,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("float 모드에서는 aria-modal이 설정되지 않는다", async () => {
+    it("does not set aria-modal in float mode", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} float>
@@ -311,8 +311,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("float 모드", () => {
-    it("float=true일 때 백드롭이 없다", async () => {
+  describe("float mode", () => {
+    it("has no backdrop when float=true", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} float>
@@ -329,8 +329,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("fill 모드", () => {
-    it("fill=true일 때 다이얼로그에 fill 스타일이 적용된다", async () => {
+  describe("fill mode", () => {
+    it("applies fill style to dialog when fill=true", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} fill>
@@ -348,8 +348,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("크기 제어", () => {
-    it("width, height가 적용된다", async () => {
+  describe("size control", () => {
+    it("applies width and height", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} width={400} height={300}>
@@ -366,7 +366,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("minWidth, minHeight가 적용된다", async () => {
+    it("applies minWidth and minHeight", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} minWidth={300} minHeight={200}>
@@ -384,8 +384,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("리사이즈", () => {
-    it("resizable=true일 때 리사이즈 바가 렌더링된다", async () => {
+  describe("resize", () => {
+    it("renders resize bars when resizable=true", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true} resizable>
@@ -400,7 +400,7 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("resizable=false(기본)일 때 리사이즈 바가 없다", async () => {
+    it("has no resize bars when resizable=false (default)", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -417,8 +417,8 @@ describe("Dialog 컴포넌트", () => {
     });
   });
 
-  describe("애니메이션", () => {
-    it("열림 시 transition 클래스가 적용된다", async () => {
+  describe("animation", () => {
+    it("applies transition classes on open", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>

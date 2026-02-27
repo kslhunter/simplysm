@@ -3,28 +3,28 @@ import { describe, it, expect } from "vitest";
 import { createSignal } from "solid-js";
 import { Barcode } from "../../../src/components/display/Barcode";
 
-describe("Barcode 컴포넌트", () => {
+describe("Barcode", () => {
   describe("basic rendering", () => {
-    it("data-barcode 속성으로 렌더링된다", () => {
+    it("renders with data-barcode attribute", () => {
       const { container } = render(() => <Barcode type="qrcode" value="test" />);
       expect(container.querySelector("[data-barcode]")).toBeTruthy();
     });
 
-    it("value가 있으면 SVG가 렌더링된다", () => {
+    it("renders SVG when value is provided", () => {
       const { container } = render(() => <Barcode type="qrcode" value="hello" />);
       const el = container.querySelector("[data-barcode]")!;
       expect(el.querySelector("svg")).toBeTruthy();
     });
 
-    it("value가 없으면 내용이 비어있다", () => {
+    it("renders empty when value is absent", () => {
       const { container } = render(() => <Barcode type="qrcode" />);
       const el = container.querySelector("[data-barcode]")!;
       expect(el.innerHTML).toBe("");
     });
   });
 
-  describe("반응성", () => {
-    it("value 변경 시 SVG가 업데이트된다", () => {
+  describe("reactivity", () => {
+    it("updates SVG when value changes", () => {
       const [value, setValue] = createSignal("first");
       const { container } = render(() => <Barcode type="qrcode" value={value()} />);
       const el = container.querySelector("[data-barcode]")!;
@@ -38,7 +38,7 @@ describe("Barcode 컴포넌트", () => {
       expect(firstSvg).not.toBe(secondSvg);
     });
 
-    it("value가 빈 문자열로 변경되면 SVG가 제거된다", () => {
+    it("removes SVG when value changes to empty string", () => {
       const [value, setValue] = createSignal("hello");
       const { container } = render(() => <Barcode type="qrcode" value={value()} />);
       const el = container.querySelector("[data-barcode]")!;

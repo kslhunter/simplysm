@@ -4,12 +4,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// import.meta.url 기반으로 현재 파일 위치에서 경로 계산 (vitest globalSetup 호환)
+// Compute path from current file location based on import.meta.url (vitest globalSetup compatible)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = __dirname;
 
-// 테스트 포트
+// Test port
 export const TEST_PORT = 23100;
 
 // Server instance

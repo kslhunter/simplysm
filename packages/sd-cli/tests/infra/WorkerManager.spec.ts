@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { WorkerManager } from "../../src/infra/WorkerManager";
 
-// Worker 모킹
+// Mock Worker
 vi.mock("@simplysm/core-node", () => ({
   Worker: {
     create: vi.fn(() => ({

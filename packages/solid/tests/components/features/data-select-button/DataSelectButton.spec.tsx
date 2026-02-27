@@ -8,7 +8,7 @@ import { Dialog } from "../../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
-// 테스트용 아이템 타입
+// item type for tests
 interface TestItem {
   id: number;
   name: string;
@@ -20,7 +20,7 @@ const testItems: TestItem[] = [
   { id: 3, name: "Cherry" },
 ];
 
-// load 함수 (키로 아이템 조회)
+// load function (fetch items by key)
 function createTestLoad() {
   const loadFn = vi.fn((keys: number[]) => {
     return testItems.filter((item) => keys.includes(item.id));
@@ -28,7 +28,7 @@ function createTestLoad() {
   return loadFn;
 }
 
-// 테스트용 모달 컴포넌트 (특정 키를 반환)
+// modal component for tests (returns specific keys)
 function TestModal(selectedKeys: number[]): () => JSX.Element {
   return () => {
     const instance = useDialogInstance<DataSelectModalResult<number>>();
@@ -48,7 +48,7 @@ function TestModal(selectedKeys: number[]): () => JSX.Element {
   };
 }
 
-// DialogProvider 래핑 헬퍼
+// helper to wrap with DialogProvider
 function renderWithDialog(ui: () => JSX.Element) {
   return render(() => (
     <ConfigProvider clientName="test"><I18nProvider>
@@ -74,7 +74,7 @@ describe("DataSelectButton", () => {
 
     const trigger = container.querySelector("[data-data-select-button]");
     expect(trigger).not.toBeNull();
-    // load는 빈 키로 호출되지 않아야 함
+    // load should not be called with empty keys
     expect(load).not.toHaveBeenCalled();
   });
 
@@ -261,7 +261,7 @@ describe("DataSelectButton", () => {
     const searchBtn = container.querySelector("[data-search-button]") as HTMLButtonElement;
     searchBtn.click();
 
-    // 모달이 열리면 확인 버튼 찾아서 클릭
+    // once modal opens, find and click confirm button
     await vi.waitFor(() => {
       const confirmBtn = document.querySelector(
         "[data-testid='modal-confirm']",
@@ -328,7 +328,7 @@ describe("DataSelectButton", () => {
       cancelBtn.click();
     });
 
-    // 값이 변경되지 않아야 함
+    // value should not change
     await new Promise((r) => setTimeout(r, 100));
     expect(onValueChange).not.toHaveBeenCalled();
   });
@@ -344,7 +344,7 @@ describe("DataSelectButton", () => {
       />
     ));
 
-    // Invalid 컴포넌트가 hidden input에 setCustomValidity 설정
+    // Invalid component sets setCustomValidity on hidden input
     const hiddenInput = container.querySelector("input[type='text']") as HTMLInputElement;
     expect(hiddenInput).not.toBeNull();
     expect(hiddenInput.validationMessage).toBe("Required field");

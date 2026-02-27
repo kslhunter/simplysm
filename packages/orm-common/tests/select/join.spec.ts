@@ -213,7 +213,7 @@ describe("SELECT - JOIN", () => {
     });
   });
 
-  describe("다단계 join(Single)", () => {
+  describe("multi-level joinSingle", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -563,7 +563,7 @@ describe("SELECT - INCLUDE", () => {
       .include((item) => item.user.company)
       .getSelectQueryDef();
 
-    // 중복 include는 자동으로 제거됨 (user 1번, company 1번)
+    // duplicate includes are automatically deduplicated (user once, company once)
     expect(def).toEqual({
       type: "select",
       as: "T1",
@@ -707,7 +707,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   describe("3 depth include (FK -> FKT -> FK)", () => {
-    // Post → user(FK) → posts(FKT) → user(FK)
+    // Post -> user(FK) -> posts(FKT) -> user(FK)
     const db = createTestDb();
     const def = db
       .post()

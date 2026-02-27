@@ -4,63 +4,63 @@ import { createSignal } from "solid-js";
 import { DateTime } from "@simplysm/core-common";
 import { DateTimePicker } from "../../../../src/components/form-control/field/DateTimePicker";
 
-describe("DateTimePicker 컴포넌트", () => {
+describe("DateTimePicker component", () => {
   describe("basic rendering", () => {
-    it("unit=minute일 때 input type=datetime-local이 렌더링된다", () => {
+    it("renders input type=datetime-local when unit=minute", () => {
       const { container } = render(() => <DateTimePicker unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("datetime-local");
     });
 
-    it("unit=second일 때 input type=datetime-local이 렌더링된다", () => {
+    it("renders input type=datetime-local when unit=second", () => {
       const { container } = render(() => <DateTimePicker unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("datetime-local");
     });
 
-    it("기본 unit은 minute이다", () => {
+    it("defaults unit to minute", () => {
       const { container } = render(() => <DateTimePicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("datetime-local");
     });
 
-    it("autocomplete 기본값은 one-time-code이다", () => {
+    it("defaults autocomplete to one-time-code", () => {
       const { container } = render(() => <DateTimePicker />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("one-time-code");
     });
 
-    it("unit=second일 때 step=1이 설정된다", () => {
+    it("sets step=1 when unit=second", () => {
       const { container } = render(() => <DateTimePicker unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("1");
     });
 
-    it("unit=minute일 때 step이 설정되지 않는다", () => {
+    it("does not set step when unit=minute", () => {
       const { container } = render(() => <DateTimePicker unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("");
     });
   });
 
-  describe("값 변환", () => {
-    it("DateTime 값이 minute 단위에서 yyyy-MM-ddTHH:mm 형식으로 표시된다", () => {
+  describe("value conversion", () => {
+    it("displays DateTime in yyyy-MM-ddTHH:mm format for minute unit", () => {
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
       const { container } = render(() => <DateTimePicker unit="minute" value={dateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15T10:30");
     });
 
-    it("DateTime 값이 second 단위에서 yyyy-MM-ddTHH:mm:ss 형식으로 표시된다", () => {
+    it("displays DateTime in yyyy-MM-ddTHH:mm:ss format for second unit", () => {
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
       const { container } = render(() => <DateTimePicker unit="second" value={dateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15T10:30:45");
     });
 
-    it("minute 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
+    it("passes DateTime converted from minute input to onValueChange", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
         <DateTimePicker unit="minute" onValueChange={handleChange} />
@@ -79,7 +79,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(result.second).toBe(0);
     });
 
-    it("second 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
+    it("passes DateTime converted from second input to onValueChange", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
         <DateTimePicker unit="second" onValueChange={handleChange} />
@@ -98,7 +98,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(result.second).toBe(45);
     });
 
-    it("빈 값 입력 시 undefined가 onValueChange로 전달된다", () => {
+    it("passes undefined to onValueChange on empty input", () => {
       const handleChange = vi.fn();
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
       const { container } = render(() => (
@@ -112,29 +112,29 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("min/max 속성", () => {
-    it("min 속성이 minute 단위에서 문자열로 변환된다", () => {
+  describe("min/max props", () => {
+    it("converts min to string for minute unit", () => {
       const minDateTime = new DateTime(2025, 1, 1, 0, 0, 0);
       const { container } = render(() => <DateTimePicker unit="minute" min={minDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01T00:00");
     });
 
-    it("max 속성이 minute 단위에서 문자열로 변환된다", () => {
+    it("converts max to string for minute unit", () => {
       const maxDateTime = new DateTime(2025, 12, 31, 23, 59, 0);
       const { container } = render(() => <DateTimePicker unit="minute" max={maxDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12-31T23:59");
     });
 
-    it("min 속성이 second 단위에서 초 단위까지 포함된다", () => {
+    it("includes seconds in min for second unit", () => {
       const minDateTime = new DateTime(2025, 1, 1, 0, 0, 30);
       const { container } = render(() => <DateTimePicker unit="second" min={minDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01T00:00:30");
     });
 
-    it("max 속성이 second 단위에서 초 단위까지 포함된다", () => {
+    it("includes seconds in max for second unit", () => {
       const maxDateTime = new DateTime(2025, 12, 31, 23, 59, 59);
       const { container } = render(() => <DateTimePicker unit="second" max={maxDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -142,8 +142,8 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("외부 상태 변경 시 input 값이 업데이트된다", () => {
+  describe("controlled pattern", () => {
+    it("updates input value when external state changes", () => {
       const [value, setValue] = createSignal<DateTime | undefined>(
         new DateTime(2025, 1, 1, 10, 0, 0),
       );
@@ -159,8 +159,8 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("uncontrolled 패턴", () => {
-    it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
+  describe("uncontrolled pattern", () => {
+    it("manages value internally without onValueChange", () => {
       const { container } = render(() => (
         <DateTimePicker unit="minute" value={new DateTime(2025, 1, 1, 10, 0, 0)} />
       ));
@@ -174,7 +174,7 @@ describe("DateTimePicker 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled=true일 때 div로 렌더링된다", () => {
+    it("renders as div when disabled=true", () => {
       const { container } = render(() => (
         <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
@@ -185,14 +185,14 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("disabled 상태에서 value가 표시된다", () => {
+    it("displays value when disabled", () => {
       const { getByText } = render(() => (
         <DateTimePicker unit="minute" disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
       expect(getByText("2025-03-15T10:30")).toBeTruthy();
     });
 
-    it("disabled 스타일이 적용된다", () => {
+    it("applies disabled style", () => {
       const { container } = render(() => (
         <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
@@ -201,8 +201,8 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("readonly 상태", () => {
-    it("readonly=true일 때 div로 렌더링된다", () => {
+  describe("readonly state", () => {
+    it("renders as div when readonly=true", () => {
       const { container } = render(() => (
         <DateTimePicker readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
@@ -213,7 +213,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("readonly 상태에서 value가 표시된다", () => {
+    it("displays value when readonly", () => {
       const { getByText } = render(() => (
         <DateTimePicker unit="minute" readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
@@ -221,22 +221,22 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("size 옵션", () => {
-    it("size=sm일 때 작은 padding이 적용된다", () => {
+  describe("size option", () => {
+    it("applies small padding when size=sm", () => {
       const { container } = render(() => <DateTimePicker size="sm" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-0.5")).toBe(true);
     });
 
-    it("size=lg일 때 큰 padding이 적용된다", () => {
+    it("applies large padding when size=lg", () => {
       const { container } = render(() => <DateTimePicker size="lg" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-2")).toBe(true);
     });
   });
 
-  describe("inset 스타일", () => {
-    it("inset=true일 때 outer div에는 relative만, content div에 inset 스타일이 적용된다", () => {
+  describe("inset style", () => {
+    it("applies relative to outer and inset style to content when inset=true", () => {
       const { container } = render(() => <DateTimePicker inset />);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -247,7 +247,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
     });
 
-    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+    it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => (
         <DateTimePicker inset readonly value={new DateTime(2025, 3, 15, 14, 30, 0)} />
       ));
@@ -261,7 +261,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(outer.querySelector("input:not([aria-hidden])")).toBeFalsy();
     });
 
-    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+    it("shows hidden content div and input when inset + editable", () => {
       const { container } = render(() => (
         <DateTimePicker inset value={new DateTime(2025, 3, 15, 14, 30, 0)} />
       ));
@@ -274,7 +274,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(outer.querySelector("input")).toBeTruthy();
     });
 
-    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+    it("shows NBSP in content div when inset + empty value", () => {
       const { container } = render(() => <DateTimePicker inset readonly />);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-datetime-field-content]") as HTMLElement;
@@ -282,14 +282,14 @@ describe("DateTimePicker 컴포넌트", () => {
     });
   });
 
-  describe("다크 모드 스타일", () => {
-    it("다크 모드 border 스타일이 적용된다", () => {
+  describe("dark mode style", () => {
+    it("applies dark mode border style", () => {
       const { container } = render(() => <DateTimePicker />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
     });
 
-    it("다크 모드 background 스타일이 적용된다", () => {
+    it("applies dark mode background style", () => {
       const { container } = render(() => <DateTimePicker />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
@@ -297,7 +297,7 @@ describe("DateTimePicker 컴포넌트", () => {
   });
 
   describe("class merging", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("merges custom class with existing styles", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <DateTimePicker class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
@@ -312,7 +312,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("This field is required");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => (
         <DateTimePicker required value={new DateTime(2024, 1, 1, 0, 0, 0)} />
       ));
@@ -320,7 +320,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("min 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when min is violated", () => {
       const { container } = render(() => (
         <DateTimePicker
           min={new DateTime(2024, 6, 1, 0, 0, 0)}
@@ -331,7 +331,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).not.toBe("");
     });
 
-    it("min 충족 시 유효하다", () => {
+    it("is valid when min is satisfied", () => {
       const { container } = render(() => (
         <DateTimePicker
           min={new DateTime(2024, 1, 1, 0, 0, 0)}
@@ -342,7 +342,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("max 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when max is violated", () => {
       const { container } = render(() => (
         <DateTimePicker
           max={new DateTime(2024, 6, 1, 0, 0, 0)}
@@ -353,7 +353,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).not.toBe("");
     });
 
-    it("max 충족 시 유효하다", () => {
+    it("is valid when max is satisfied", () => {
       const { container } = render(() => (
         <DateTimePicker
           max={new DateTime(2024, 12, 31, 23, 59, 59)}
@@ -364,7 +364,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("validate 함수가 에러를 반환하면 에러 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <DateTimePicker value={new DateTime(2024, 1, 1, 0, 0, 0)} validate={() => "커스텀 에러"} />
       ));
@@ -372,7 +372,7 @@ describe("DateTimePicker 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("커스텀 에러");
     });
 
-    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+    it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
         <DateTimePicker value={new DateTime(2024, 1, 1, 0, 0, 0)} validate={() => undefined} />
       ));

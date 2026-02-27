@@ -19,7 +19,7 @@ describe("Queryable error cases", () => {
     it("Error when passing parameters to procedure without parameters", () => {
       const db = createTestDb();
       expect(() => {
-        // @ts-expect-error - 파라미터 없는 프로시저에 파라미터 전달 테스트
+        // @ts-expect-error - test passing parameters to a procedure that expects none
         db.getAllUsers().getExecProcQueryDef({ unexpectedParam: 1 });
       }).toThrow("has no parameters.");
     });

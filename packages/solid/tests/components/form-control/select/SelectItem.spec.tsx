@@ -7,12 +7,12 @@ import {
   type SelectContextValue,
 } from "../../../../src/components/form-control/select/SelectContext";
 
-// 테스트용 Provider
+// Test provider
 function TestProvider(props: { children: JSX.Element; value: SelectContextValue }) {
   return <SelectContext.Provider value={props.value}>{props.children}</SelectContext.Provider>;
 }
 
-describe("SelectItem 컴포넌트", () => {
+describe("SelectItem component", () => {
   describe("basic rendering", () => {
     it("renders children", () => {
       const mockContext: SelectContextValue = {
@@ -34,7 +34,7 @@ describe("SelectItem 컴포넌트", () => {
       expect(getByText("사과")).not.toBeNull();
     });
 
-    it("data-select-item 속성이 설정된다", () => {
+    it("sets data-select-item attribute", () => {
       const mockContext: SelectContextValue = {
         multiple: () => false,
         isSelected: () => false,
@@ -55,8 +55,8 @@ describe("SelectItem 컴포넌트", () => {
     });
   });
 
-  describe("선택 동작", () => {
-    it("클릭 시 toggleValue가 호출된다", () => {
+  describe("selection behavior", () => {
+    it("calls toggleValue on click", () => {
       const toggleValue = vi.fn();
       const mockContext: SelectContextValue = {
         multiple: () => false,
@@ -78,7 +78,7 @@ describe("SelectItem 컴포넌트", () => {
       expect(toggleValue).toHaveBeenCalledWith("apple");
     });
 
-    it("단일 선택 모드에서 클릭 시 closeDropdown이 호출된다", () => {
+    it("calls closeDropdown on click in single selection mode", () => {
       const closeDropdown = vi.fn();
       const mockContext: SelectContextValue = {
         multiple: () => false,
@@ -100,7 +100,7 @@ describe("SelectItem 컴포넌트", () => {
       expect(closeDropdown).toHaveBeenCalled();
     });
 
-    it("다중 선택 모드에서 클릭 시 closeDropdown이 호출되지 않는다", () => {
+    it("does not call closeDropdown on click in multiple selection mode", () => {
       const closeDropdown = vi.fn();
       const mockContext: SelectContextValue = {
         multiple: () => true,
@@ -123,8 +123,8 @@ describe("SelectItem 컴포넌트", () => {
     });
   });
 
-  describe("선택 상태", () => {
-    it("선택된 아이템에 aria-selected=true가 설정된다", () => {
+  describe("selected state", () => {
+    it("sets aria-selected=true on selected item", () => {
       const mockContext: SelectContextValue = {
         multiple: () => false,
         isSelected: (v) => v === "apple",
@@ -147,7 +147,7 @@ describe("SelectItem 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled일 때 클릭해도 toggleValue가 호출되지 않는다", () => {
+    it("does not call toggleValue on click when disabled", () => {
       const toggleValue = vi.fn();
       const mockContext: SelectContextValue = {
         multiple: () => false,

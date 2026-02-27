@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Alert } from "../../../src/components/display/Alert";
 
-describe("Alert 컴포넌트", () => {
+describe("Alert", () => {
   describe("basic rendering", () => {
-    it("children이 Alert 내부에 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => <Alert>This is a note</Alert>);
       expect(getByText("This is a note")).toBeTruthy();
     });
@@ -16,8 +16,8 @@ describe("Alert 컴포넌트", () => {
     });
   });
 
-  describe("theme 속성", () => {
-    it("theme prop에 따라 스타일이 달라진다", () => {
+  describe("theme prop", () => {
+    it("applies different styles per theme", () => {
       const { container: defaultContainer } = render(() => <Alert>Content</Alert>);
       const { container: themedContainer } = render(() => <Alert theme="danger">Content</Alert>);
 

@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Card } from "../../../src/components/display/Card";
 
-describe("Card 컴포넌트", () => {
+describe("Card", () => {
   describe("basic rendering", () => {
-    it("children이 Card 내부에 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => <Card>Card Content</Card>);
       expect(getByText("Card Content")).toBeTruthy();
     });
@@ -32,7 +32,7 @@ describe("Card 컴포넌트", () => {
       expect(card.getAttribute("data-testid")).toBe("test-card");
     });
 
-    it("id 속성이 전달된다", () => {
+    it("passes id attribute", () => {
       const { container } = render(() => <Card id="my-card">Content</Card>);
       const card = container.firstChild as HTMLElement;
       expect(card.id).toBe("my-card");

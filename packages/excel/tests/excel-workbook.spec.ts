@@ -164,9 +164,9 @@ describe("ExcelWorkbook", () => {
     beforeAll(async () => {
       const url = new URL("./fixtures/초기화.xlsx", import.meta.url);
 
-      if (typeof globalThis.window === "undefined") {
-        const fs = await import("node:fs");
-        const { fileURLToPath } = await import("node:url");
+      if (!("window" in globalThis)) {
+        const fs = await import("node:fs" as string);
+        const { fileURLToPath } = await import("node:url" as string);
         const buffer = fs.readFileSync(fileURLToPath(url));
         wb = new ExcelWorkbook(new Uint8Array(buffer));
       } else {

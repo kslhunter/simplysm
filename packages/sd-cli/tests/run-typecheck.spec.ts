@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import "@simplysm/core-common"; // Import to use Map.getOrCreate extension method
 
-// 외부 의존성 모킹
+// Mock external dependencies
 vi.mock("typescript", () => {
   const DiagnosticCategory = {
     Error: 1,
@@ -194,7 +194,7 @@ describe("runTypecheck", () => {
       options: [],
     });
 
-    // Worker를 통해 실행되므로 exitCode가 설정되지 않아야 함
+    // Runs via Worker, so exitCode should not be set
     expect(process.exitCode).toBeUndefined();
   });
 
@@ -393,7 +393,7 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    // Worker가 에러 결과를 반환하도록 모킹
+    // Mock Worker to return error results
     const { Worker } = await import("@simplysm/core-node");
     vi.mocked(Worker.create).mockReturnValue({
       build: vi.fn(() =>

@@ -11,7 +11,7 @@ import type { AppPerm } from "../../../../src/helpers/createAppStructure";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
-// --- 테스트 데이터 ---
+// --- test data ---
 
 const sampleItems: AppPerm[] = [
   {
@@ -32,11 +32,11 @@ const sampleItems: AppPerm[] = [
 ];
 
 // =====================
-// Part 1: 유틸리티 함수 테스트
+// Part 1: utility function tests
 // =====================
 
 describe("collectAllPerms", () => {
-  it("트리에서 모든 고유 perm 타입을 수집한다", () => {
+  it("collects all unique perm types from the tree", () => {
     const result = collectAllPerms(sampleItems);
     expect(result).toContain("use");
     expect(result).toContain("edit");
@@ -44,12 +44,12 @@ describe("collectAllPerms", () => {
     expect(result).toHaveLength(3);
   });
 
-  it("빈 배열은 빈 결과를 반환한다", () => {
+  it("returns empty result for empty array", () => {
     const result = collectAllPerms([]);
     expect(result).toEqual([]);
   });
 
-  it("중첩된 아이템의 perms도 수집한다", () => {
+  it("collects perms from nested items", () => {
     const items: AppPerm[] = [
       {
         title: "루트",
@@ -71,32 +71,32 @@ describe("collectAllPerms", () => {
 });
 
 describe("filterByModules", () => {
-  it("modules가 undefined이면 모든 아이템을 반환한다", () => {
+  it("returns all items when modules is undefined", () => {
     const result = filterByModules(sampleItems, undefined);
     expect(result).toBe(sampleItems);
   });
 
-  it("활성 모듈과 교차가 없는 아이템을 제외한다", () => {
+  it("excludes items with no intersection with active modules", () => {
     const result = filterByModules(sampleItems, ["other"]);
-    // "시스템"은 modules: ["admin"]이므로 "other"와 교차 없음 → 제외
+    // "시스템" has modules: ["admin"], no intersection with "other" → excluded
     const titles = result.map((i) => i.title);
     expect(titles).toContain("사용자 관리");
     expect(titles).not.toContain("시스템");
   });
 
-  it("modules가 없는 아이템은 항상 포함된다", () => {
+  it("always includes items with no modules set", () => {
     const result = filterByModules(sampleItems, ["admin"]);
-    // "사용자 관리"는 modules 미설정 → 항상 포함
+    // "사용자 관리" has no modules set → always included
     const titles = result.map((i) => i.title);
     expect(titles).toContain("사용자 관리");
     expect(titles).toContain("시스템");
   });
 
-  it("자식이 전부 필터링된 그룹 노드(perms 없음)도 제거된다", () => {
+  it("removes group node (no perms) when all children are filtered out", () => {
     const items: AppPerm[] = [
       {
         title: "그룹",
-        // perms 없음 → 그룹 노드
+        // no perms → group node
         children: [
           { title: "항목A", href: "/a", perms: ["use"], modules: ["admin"] },
           { title: "항목B", href: "/b", perms: ["use"], modules: ["admin"] },
@@ -109,19 +109,19 @@ describe("filterByModules", () => {
 });
 
 describe("changePermCheck", () => {
-  it("리프 아이템에 perm을 설정한다", () => {
+  it("sets perm on a leaf item", () => {
     const result = changePermCheck({}, sampleItems[1], "use", true);
     expect(result["/system/use"]).toBe(true);
   });
 
-  it("부모 체크 시 모든 자식이 체크된다 (cascading down)", () => {
+  it("checking parent checks all children (cascading down)", () => {
     const result = changePermCheck({}, sampleItems[0], "use", true);
     expect(result["/user/use"]).toBe(true);
     expect(result["/user/permission/use"]).toBe(true);
     expect(result["/user/list/use"]).toBe(true);
   });
 
-  it("부모 체크 해제 시 모든 자식이 해제된다 (cascading down)", () => {
+  it("unchecking parent unchecks all children (cascading down)", () => {
     const initial: Record<string, boolean> = {
       "/user/use": true,
       "/user/permission/use": true,
@@ -133,7 +133,7 @@ describe("changePermCheck", () => {
     expect(result["/user/list/use"]).toBe(false);
   });
 
-  it("기본 perm(perms[0]) 해제 시 나머지 perms도 해제된다", () => {
+  it("unchecking the base perm (perms[0]) unchecks all other perms", () => {
     const initial: Record<string, boolean> = {
       "/user/use": true,
       "/user/edit": true,
@@ -144,69 +144,69 @@ describe("changePermCheck", () => {
       "/user/list/edit": true,
     };
     const result = changePermCheck(initial, sampleItems[0], "use", false);
-    // 기본 perm "use" 해제 → "edit", "approve"도 해제
+    // unchecking base perm "use" → "edit", "approve" are also unchecked
     expect(result["/user/edit"]).toBe(false);
     expect(result["/user/permission/edit"]).toBe(false);
     expect(result["/user/permission/approve"]).toBe(false);
     expect(result["/user/list/edit"]).toBe(false);
   });
 
-  it("비기본 perm 체크 시 기본 perm이 꺼져있으면 해당 아이템은 건너뛰고 자식에 cascading된다", () => {
-    // 부모(/user)의 기본 perm "use"가 꺼져있으나, 자식들의 "use"는 켜져있음
+  it("checking non-base perm cascades to children, skipping items where base perm is off", () => {
+    // parent (/user) base perm "use" is off, but children's "use" is on
     const initial: Record<string, boolean> = {
       "/user/permission/use": true,
       "/user/list/use": true,
     };
     const result = changePermCheck(initial, sampleItems[0], "edit", true);
-    // 부모(/user): use가 꺼져있으므로 edit 설정 건너뜀
+    // parent (/user): use is off → skip setting edit
     expect(result["/user/edit"]).toBeUndefined();
-    // 자식: use가 켜져있으므로 edit 설정됨
+    // children: use is on → edit is set
     expect(result["/user/permission/edit"]).toBe(true);
     expect(result["/user/list/edit"]).toBe(true);
   });
 });
 
 // =====================
-// Part 2: 컴포넌트 렌더링 테스트
+// Part 2: component rendering tests
 // =====================
 
-describe("PermissionTable 컴포넌트", () => {
+describe("PermissionTable component", () => {
   describe("basic rendering", () => {
-    it("data-permission-table 속성이 있는 div로 렌더링된다", () => {
+    it("renders as DataSheet (div with data-sheet attribute)", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
-      const wrapper = container.querySelector("[data-permission-table]");
+      const wrapper = container.querySelector("[data-sheet]");
       expect(wrapper).toBeTruthy();
       expect(wrapper!.tagName).toBe("DIV");
     });
 
-    it("내부에 DataSheet(table)가 렌더링된다", () => {
+    it("renders a table inside DataSheet", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
       const table = container.querySelector("[data-sheet] table");
       expect(table).toBeTruthy();
     });
 
-    it("헤더에 perm 타입 컬럼이 표시된다", () => {
+    it("displays perm type columns in header", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
       expect(getByText("use")).toBeTruthy();
       expect(getByText("edit")).toBeTruthy();
       expect(getByText("approve")).toBeTruthy();
     });
 
-    it("아이템 타이틀이 표시된다", () => {
+    it("displays item titles", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
       expect(getByText("사용자 관리")).toBeTruthy();
       expect(getByText("시스템")).toBeTruthy();
     });
 
-    it("자식 아이템이 기본적으로 펼쳐져서 표시된다", () => {
+    it("child items are expanded by default", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
       expect(getByText("권한 설정")).toBeTruthy();
       expect(getByText("사용자 목록")).toBeTruthy();
     });
   });
 
-  describe("체크박스 인터랙션", () => {
-    it("체크박스 클릭 시 onValueChange가 호출된다", () => {
+  describe("checkbox interaction", () => {
+    it("clicking a checkbox calls onValueChange", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -215,12 +215,12 @@ describe("PermissionTable 컴포넌트", () => {
       ));
 
       const checkboxes = getAllByRole("checkbox");
-      // 첫 번째 체크박스를 클릭
+      // click the first checkbox
       fireEvent.click(checkboxes[0]);
       expect(handleChange).toHaveBeenCalled();
     });
 
-    it("controlled 패턴: value prop이 체크박스에 반영된다", () => {
+    it("controlled pattern: value prop is reflected in checkboxes", () => {
       const [value, setValue] = createSignal<Record<string, boolean>>({
         "/system/use": true,
       });
@@ -232,43 +232,43 @@ describe("PermissionTable 컴포넌트", () => {
       ));
 
       const checkboxes = getAllByRole("checkbox");
-      // "시스템"의 "use" 체크박스가 체크되어 있어야 함
+      // "시스템"'s "use" checkbox should be checked
       const checkedBox = checkboxes.find((cb) => cb.getAttribute("aria-checked") === "true");
       expect(checkedBox).toBeTruthy();
     });
   });
 
-  describe("접기/펼치기", () => {
-    it("자식이 있는 아이템의 행에 펼치기/접기 토글이 존재한다", () => {
+  describe("expand/collapse", () => {
+    it("rows with children have an expand/collapse toggle", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
-      // "사용자 관리"가 있는 행(tr)을 찾고, 그 행에 expand toggle button이 있는지 확인
+      // find the row containing "사용자 관리" and check for expand toggle button
       const titleEl = getByText("사용자 관리");
       const row = titleEl.closest("tr")!;
       const expandButton = row.querySelector("button");
       expect(expandButton).toBeTruthy();
     });
 
-    it("접기 버튼 클릭 시 자식이 DOM에서 제거된다", () => {
+    it("clicking collapse button removes children from the DOM", () => {
       const { getByText, queryByText } = render(() => <PermissionTable items={sampleItems} />);
 
-      // 초기: 자식 표시 (기본적으로 모두 펼침)
+      // initially: children are visible (all expanded by default)
       expect(getByText("권한 설정")).toBeTruthy();
       expect(getByText("사용자 목록")).toBeTruthy();
 
-      // 접기 버튼 클릭 (사용자 관리 행의 expand toggle)
+      // click collapse button (expand toggle on "사용자 관리" row)
       const titleEl = getByText("사용자 관리");
       const row = titleEl.closest("tr")!;
       const expandButton = row.querySelector("button")!;
       fireEvent.click(expandButton);
 
-      // 자식이 DOM에서 제거됨 (Sheet는 접힌 항목을 렌더링하지 않음)
+      // children are removed from the DOM (Sheet does not render collapsed items)
       expect(queryByText("권한 설정")).toBeNull();
       expect(queryByText("사용자 목록")).toBeNull();
     });
   });
 
-  describe("비활성화", () => {
-    it("disabled prop이 true이면 체크박스 클릭이 무시된다", () => {
+  describe("disabled state", () => {
+    it("checkbox clicks are ignored when disabled prop is true", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>

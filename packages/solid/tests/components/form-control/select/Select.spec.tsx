@@ -41,7 +41,7 @@ describe("Select component", () => {
   });
 
   describe("dropdown opening/closing", () => {
-    it("트리거 클릭 시 드롭다운이 열린다", async () => {
+    it("opens dropdown on trigger click", async () => {
       const { getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Select renderValue={(v) => <>{v}</>}>
@@ -82,7 +82,7 @@ describe("Select component", () => {
 
       // Value changed
       expect(value()).toBe("apple");
-      // aria-expanded가 false가 됨 (닫힘 트리거됨)
+      // aria-expanded becomes false (close triggered)
       expect(getByRole("combobox").getAttribute("aria-expanded")).toBe("false");
     });
   });
@@ -174,7 +174,7 @@ describe("Select component", () => {
       const selectItem = document.querySelector("[data-select-item]") as HTMLElement;
       fireEvent.click(selectItem);
 
-      // 드롭다운이 여전히 열려 있음
+      // dropdown remains open
       expect(document.querySelector("[data-dropdown]")).not.toBeNull();
     });
   });
@@ -327,7 +327,7 @@ describe("Select component", () => {
 
       await waitFor(() => {
         const items = document.querySelectorAll("[data-select-item]");
-        // 미지정 + banana = 2
+        // unset + banana = 2
         expect(items.length).toBe(2);
         expect(items[0].textContent).toContain("Unset");
         expect(items[1].textContent).toContain("banana");
@@ -358,7 +358,7 @@ describe("Select component", () => {
 
       await waitFor(() => {
         const items = document.querySelectorAll("[data-select-item]");
-        // 미지정 + red apple = 2
+        // unset + red apple = 2
         expect(items.length).toBe(2);
         expect(items[0].textContent).toContain("Unset");
         expect(items[1].textContent).toContain("red apple");
@@ -401,7 +401,7 @@ describe("Select component", () => {
       });
 
       const items = document.querySelectorAll("[data-select-item]");
-      // 미지정 + apple + banana = 3
+      // unset + apple + banana = 3
       expect(items.length).toBe(3);
       expect(items[0].textContent).toContain("Unset");
     });
@@ -422,7 +422,7 @@ describe("Select component", () => {
       });
 
       const items = document.querySelectorAll("[data-select-item]");
-      // apple + banana = 2 (미지정 없음)
+      // apple + banana = 2 (no unset)
       expect(items.length).toBe(2);
     });
 
@@ -442,7 +442,7 @@ describe("Select component", () => {
       });
 
       const items = document.querySelectorAll("[data-select-item]");
-      // apple + banana = 2 (미지정 없음)
+      // apple + banana = 2 (no unset)
       expect(items.length).toBe(2);
     });
   });
@@ -581,7 +581,7 @@ describe("Select component", () => {
 
       const items = document.querySelectorAll("[data-select-item]");
       const texts = Array.from(items).map((el) => el.textContent);
-      // 미지정 + apple + cherry (banana 숨김)
+      // unset + apple + cherry (banana hidden)
       expect(texts).toContain("Unset");
       expect(texts.some((t) => t.includes("apple"))).toBe(true);
       expect(texts.some((t) => t.includes("cherry"))).toBe(true);

@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Table } from "../../../src/components/data/Table";
 
-describe("Table 컴포넌트", () => {
+describe("Table component", () => {
   describe("basic rendering", () => {
-    it("children이 Table 내부에 표시된다", () => {
+    it("renders children inside Table", () => {
       const { container } = render(() => (
         <Table>
           <tbody>
@@ -24,8 +24,8 @@ describe("Table 컴포넌트", () => {
     });
   });
 
-  describe("inset 속성", () => {
-    it("inset prop에 따라 스타일이 달라진다", () => {
+  describe("inset prop", () => {
+    it("applies different styles based on inset prop", () => {
       const { container: defaultContainer } = render(() => <Table>Content</Table>);
       const { container: insetContainer } = render(() => <Table inset>Content</Table>);
 

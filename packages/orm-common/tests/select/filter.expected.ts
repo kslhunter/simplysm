@@ -4,7 +4,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 비교 연산 ==========
+//#region ========== Comparison Operators ==========
 
 export const whereEq: ExpectedSql = {
   mysql: mysql`
@@ -116,7 +116,7 @@ export const whereLte: ExpectedSql = {
 
 //#endregion
 
-//#region ========== NULL 체크 ==========
+//#region ========== NULL Check ==========
 
 export const whereNull: ExpectedSql = {
   mysql: mysql`
@@ -236,7 +236,7 @@ export const whereNotLike: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 논리 연산 ==========
+//#region ========== Logical Operators ==========
 
 export const whereMultipleAnd: ExpectedSql = {
   mysql: mysql`

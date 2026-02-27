@@ -62,7 +62,7 @@ export const orderDesc: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 다중 정렬 ==========
+//#region ========== Multiple Sort ==========
 
 export const orderMultiple: ExpectedSql = {
   mysql: mysql`
@@ -84,7 +84,7 @@ export const orderMultiple: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 표현식 정렬 ==========
+//#region ========== Expression Sort ==========
 
 export const orderExpression: ExpectedSql = {
   mysql: mysql`
@@ -106,7 +106,7 @@ export const orderExpression: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 조합 ==========
+//#region ========== Combination ==========
 
 export const orderSelectCombo: ExpectedSql = {
   mysql: mysql`

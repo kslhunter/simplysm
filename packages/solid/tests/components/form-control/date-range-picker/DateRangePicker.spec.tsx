@@ -5,7 +5,7 @@ import { DateRangePicker } from "../../../../src/components/form-control/date-ra
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
-describe("DateRangePicker 컴포넌트", () => {
+describe("DateRangePicker component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
@@ -15,7 +15,7 @@ describe("DateRangePicker 컴포넌트", () => {
   });
 
   describe("basic rendering", () => {
-    it("Select와 DatePicker가 렌더링된다", () => {
+    it("renders Select and DatePicker", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker />
@@ -32,7 +32,7 @@ describe("DateRangePicker 컴포넌트", () => {
       expect(inputs?.length).toBeGreaterThan(0);
     });
 
-    it("기본 periodType은 'range'이다", () => {
+    it("defaults periodType to 'range'", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker />
@@ -40,14 +40,14 @@ describe("DateRangePicker 컴포넌트", () => {
       ));
       const wrapper = container.querySelector("[data-date-range-picker]");
 
-      // 범위 모드에서는 DatePicker 2개가 렌더링됨
+      // range mode renders 2 DatePickers
       const inputs = wrapper?.querySelectorAll("input[type='date']");
       expect(inputs?.length).toBe(2);
     });
   });
 
-  describe("'range' 모드 렌더링", () => {
-    it("DatePicker 2개와 '~' 구분자가 렌더링된다", () => {
+  describe("'range' mode rendering", () => {
+    it("renders 2 DatePickers and a '~' separator", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="range" />
@@ -58,13 +58,13 @@ describe("DateRangePicker 컴포넌트", () => {
       const inputs = wrapper?.querySelectorAll("input[type='date']");
       expect(inputs?.length).toBe(2);
 
-      // "~" 구분자 확인
+      // verify "~" separator
       expect(wrapper?.textContent).toContain("~");
     });
   });
 
-  describe("'day' 모드 렌더링", () => {
-    it("DatePicker 1개(type=date)가 렌더링되고 '~'가 없다", () => {
+  describe("'day' mode rendering", () => {
+    it("renders 1 DatePicker (type=date) with no '~'", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="day" />
@@ -75,14 +75,14 @@ describe("DateRangePicker 컴포넌트", () => {
       const dateInputs = wrapper?.querySelectorAll("input[type='date']");
       expect(dateInputs?.length).toBe(1);
 
-      // "~" 구분자가 없어야 함
+      // "~" separator must not be present
       const textNodes = wrapper?.textContent ?? "";
       expect(textNodes).not.toContain("~");
     });
   });
 
-  describe("'month' 모드 렌더링", () => {
-    it("DatePicker 1개(type=month)가 렌더링되고 '~'가 없다", () => {
+  describe("'month' mode rendering", () => {
+    it("renders 1 DatePicker (type=month) with no '~'", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <DateRangePicker periodType="month" />
@@ -93,17 +93,17 @@ describe("DateRangePicker 컴포넌트", () => {
       const monthInputs = wrapper?.querySelectorAll("input[type='month']");
       expect(monthInputs?.length).toBe(1);
 
-      // date 타입 input이 없어야 함
+      // no date-type inputs
       const dateInputs = wrapper?.querySelectorAll("input[type='date']");
       expect(dateInputs?.length).toBe(0);
 
-      // "~" 구분자가 없어야 함
+      // "~" separator must not be present
       expect(wrapper?.textContent).not.toContain("~");
     });
   });
 
-  describe("from 변경 - 'day' 모드", () => {
-    it("from 변경 시 onToChange도 같은 값으로 호출된다", () => {
+  describe("from change - 'day' mode", () => {
+    it("calls onToChange with the same value when from changes", () => {
       const onFromChange = vi.fn();
       const onToChange = vi.fn();
 
@@ -122,22 +122,22 @@ describe("DateRangePicker 컴포넌트", () => {
       const wrapper = container.querySelector("[data-date-range-picker]");
       const input = wrapper?.querySelector("input[type='date']") as HTMLInputElement;
 
-      // input에 새 값을 입력하여 from 변경 트리거
+      // trigger from change by inputting a new value
       input.value = "2025-06-15";
       input.dispatchEvent(new Event("change", { bubbles: true }));
 
-      // "day" 모드에서는 from 변경 시 to도 같은 값으로 설정됨
+      // in "day" mode, to is set to the same value as from
       const expectedDate = new DateOnly(2025, 6, 15);
       expect(onToChange).toHaveBeenCalledWith(expectedDate);
     });
   });
 
-  describe("from 변경 - 'range' 모드", () => {
-    it("from > to이면 onToChange(from)이 호출된다", () => {
+  describe("from change - 'range' mode", () => {
+    it("calls onToChange(from) when from > to", () => {
       const onFromChange = vi.fn();
       const onToChange = vi.fn();
       const originalTo = new DateOnly(2025, 3, 1);
-      const newFrom = new DateOnly(2025, 6, 15); // to보다 큰 값
+      const newFrom = new DateOnly(2025, 6, 15); // greater than to
 
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -155,18 +155,18 @@ describe("DateRangePicker 컴포넌트", () => {
       const inputs = wrapper?.querySelectorAll("input[type='date']");
       const fromInput = inputs?.[0] as HTMLInputElement;
 
-      // from input에 to보다 큰 날짜 입력
+      // enter a date greater than to into from input
       expect(fromInput).toBeDefined();
       fromInput.value = "2025-06-15";
       fromInput.dispatchEvent(new Event("change", { bubbles: true }));
 
-      // from > to이므로 to도 from 값으로 변경되어야 함
+      // since from > to, to must be updated to match from
       expect(onToChange).toHaveBeenCalledWith(newFrom);
     });
   });
 
   describe("disabled state", () => {
-    it("Select에 aria-disabled가 적용된다", () => {
+    it("applies aria-disabled to Select", () => {
       const { container } = render(() => <DateRangePicker disabled />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 

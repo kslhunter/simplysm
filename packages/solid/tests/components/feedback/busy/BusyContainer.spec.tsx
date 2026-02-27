@@ -5,7 +5,7 @@ import { BusyContainer } from "../../../../src/components/feedback/busy/BusyCont
 
 describe("BusyContainer", () => {
   describe("basic rendering", () => {
-    it("children이 표시된다", () => {
+    it("renders children", () => {
       const { getByText } = render(() => (
         <BusyContainer>
           <span>Content</span>
@@ -14,7 +14,7 @@ describe("BusyContainer", () => {
       expect(getByText("Content")).toBeTruthy();
     });
 
-    it("busy가 false이면 오버레이가 표시되지 않는다", () => {
+    it("does not show overlay when busy is false", () => {
       const { container } = render(() => (
         <BusyContainer busy={false}>
           <span>Content</span>
@@ -26,7 +26,7 @@ describe("BusyContainer", () => {
   });
 
   describe("ready prop", () => {
-    it("ready가 false이면 children이 DOM에서 제거된다", () => {
+    it("removes children from DOM when ready is false", () => {
       const { queryByText } = render(() => (
         <BusyContainer ready={false}>
           <span>Content</span>
@@ -35,7 +35,7 @@ describe("BusyContainer", () => {
       expect(queryByText("Content")).toBeNull();
     });
 
-    it("ready가 true이면 children이 표시된다", () => {
+    it("shows children when ready is true", () => {
       const { getByText } = render(() => (
         <BusyContainer ready={true}>
           <span>Content</span>
@@ -44,7 +44,7 @@ describe("BusyContainer", () => {
       expect(getByText("Content")).toBeTruthy();
     });
 
-    it("ready가 undefined이면 children이 표시된다", () => {
+    it("shows children when ready is undefined", () => {
       const { getByText } = render(() => (
         <BusyContainer>
           <span>Content</span>
@@ -53,7 +53,7 @@ describe("BusyContainer", () => {
       expect(getByText("Content")).toBeTruthy();
     });
 
-    it("ready가 false이면 오버레이가 마운트된다", async () => {
+    it("mounts overlay when ready is false", async () => {
       const { container } = render(() => (
         <BusyContainer ready={false}>
           <span>Content</span>
@@ -65,7 +65,7 @@ describe("BusyContainer", () => {
       expect(overlay).toBeTruthy();
     });
 
-    it("ready가 false에서 true로 변경되면 children이 다시 표시된다", () => {
+    it("shows children again when ready changes from false to true", () => {
       const [ready, setReady] = createSignal(false);
       const { queryByText } = render(() => (
         <BusyContainer ready={ready()}>

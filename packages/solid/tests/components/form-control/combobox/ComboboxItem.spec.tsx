@@ -16,8 +16,8 @@ const createMockContext = (
   ...overrides,
 });
 
-describe("ComboboxItem 컴포넌트", () => {
-  it("아이템이 렌더링된다", () => {
+describe("ComboboxItem component", () => {
+  it("renders the item", () => {
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext()}>
         <ComboboxItem value="apple">사과</ComboboxItem>
@@ -28,7 +28,7 @@ describe("ComboboxItem 컴포넌트", () => {
     expect(getByRole("option").textContent).toContain("사과");
   });
 
-  it("클릭 시 selectValue가 호출된다", () => {
+  it("calls selectValue on click", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ selectValue })}>
@@ -40,7 +40,7 @@ describe("ComboboxItem 컴포넌트", () => {
     expect(selectValue).toHaveBeenCalledWith("apple");
   });
 
-  it("선택된 상태일 때 aria-selected가 true", () => {
+  it("sets aria-selected=true when selected", () => {
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ isSelected: () => true })}>
         <ComboboxItem value="apple">사과</ComboboxItem>
@@ -50,7 +50,7 @@ describe("ComboboxItem 컴포넌트", () => {
     expect(getByRole("option").getAttribute("aria-selected")).toBe("true");
   });
 
-  it("disabled일 때 클릭이 동작하지 않는다", () => {
+  it("does not respond to click when disabled", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ selectValue })}>
@@ -64,7 +64,7 @@ describe("ComboboxItem 컴포넌트", () => {
     expect(selectValue).not.toHaveBeenCalled();
   });
 
-  it("클릭 시 closeDropdown이 호출된다", () => {
+  it("calls closeDropdown on click", () => {
     const closeDropdown = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ closeDropdown })}>
@@ -76,7 +76,7 @@ describe("ComboboxItem 컴포넌트", () => {
     expect(closeDropdown).toHaveBeenCalled();
   });
 
-  it("data-combobox-item 속성이 설정된다", () => {
+  it("sets data-combobox-item attribute", () => {
     render(() => (
       <ComboboxContext.Provider value={createMockContext()}>
         <ComboboxItem value="apple">사과</ComboboxItem>

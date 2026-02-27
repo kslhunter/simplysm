@@ -2,7 +2,7 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { Print } from "../../../../src/components/feedback/print/Print";
 
-describe("Print 컴포넌트", () => {
+describe("Print", () => {
   describe("basic rendering", () => {
     it("renders children", () => {
       const { getByText } = render(() => <Print>테스트 내용</Print>);
@@ -11,7 +11,7 @@ describe("Print 컴포넌트", () => {
   });
 
   describe("Print.Page", () => {
-    it("data-print-page 속성이 렌더링된다", () => {
+    it("renders with data-print-page attribute", () => {
       const { container } = render(() => (
         <Print>
           <Print.Page>페이지 1</Print.Page>
@@ -21,7 +21,7 @@ describe("Print 컴포넌트", () => {
       expect(page).toBeTruthy();
     });
 
-    it("여러 Print.Page가 각각 data-print-page를 가진다", () => {
+    it("each Print.Page has data-print-page attribute", () => {
       const { container } = render(() => (
         <Print>
           <Print.Page>페이지 1</Print.Page>
@@ -33,7 +33,7 @@ describe("Print 컴포넌트", () => {
       expect(pages.length).toBe(3);
     });
 
-    it("Print.Page children이 렌더링된다", () => {
+    it("renders Print.Page children", () => {
       const { getByText } = render(() => (
         <Print>
           <Print.Page>페이지 내용</Print.Page>

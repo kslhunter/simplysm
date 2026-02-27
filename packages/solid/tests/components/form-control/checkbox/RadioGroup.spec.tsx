@@ -3,9 +3,9 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { RadioGroup } from "../../../../src/components/form-control/checkbox/RadioGroup";
 
-describe("RadioGroup 컴포넌트", () => {
+describe("RadioGroup component", () => {
   describe("basic rendering", () => {
-    it("컨테이너가 렌더링된다", () => {
+    it("renders the container", () => {
       const { container } = render(() => (
         <RadioGroup>
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -14,7 +14,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(container.querySelector("div")).toBeTruthy();
     });
 
-    it("아이템이 radio로 렌더링된다", () => {
+    it("renders items as radios", () => {
       const { getAllByRole } = render(() => (
         <RadioGroup>
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -25,8 +25,8 @@ describe("RadioGroup 컴포넌트", () => {
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("value prop이 선택 상태로 반영된다", () => {
+  describe("controlled pattern", () => {
+    it("reflects value prop as selected state", () => {
       const { getAllByRole } = render(() => (
         <RadioGroup value="a">
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -38,7 +38,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(radios[1].getAttribute("aria-checked")).toBe("false");
     });
 
-    it("onValueChange가 선택 시 호출된다", () => {
+    it("calls onValueChange on selection", () => {
       const handleChange = vi.fn();
       const { getAllByRole } = render(() => (
         <RadioGroup value={undefined} onValueChange={handleChange}>
@@ -49,7 +49,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("a");
     });
 
-    it("외부 상태 변경 시 업데이트된다", () => {
+    it("updates when external state changes", () => {
       const [value, setValue] = createSignal<string | undefined>(undefined);
       const { getAllByRole } = render(() => (
         <RadioGroup value={value()} onValueChange={setValue}>
@@ -63,13 +63,13 @@ describe("RadioGroup 컴포넌트", () => {
   });
 
   describe("validation", () => {
-    // 그룹의 Invalid hidden input은 자식 Radio들의 hidden input들보다 뒤에 위치한다
+    // The group's hidden input is positioned after the children's hidden inputs
     const getGroupHiddenInput = (container: HTMLElement) => {
       const inputs = container.querySelectorAll("input[aria-hidden='true']");
       return inputs[inputs.length - 1] as HTMLInputElement;
     };
 
-    it("required일 때 선택 항목이 없으면 에러 메시지가 설정된다", () => {
+    it("sets error message when required and no item selected", () => {
       const { container } = render(() => (
         <RadioGroup required value={undefined}>
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -78,7 +78,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(getGroupHiddenInput(container).validationMessage).toBe("Please select an item");
     });
 
-    it("required일 때 선택 항목이 있으면 유효하다", () => {
+    it("is valid when required and item is selected", () => {
       const { container } = render(() => (
         <RadioGroup required value="a">
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -87,7 +87,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(getGroupHiddenInput(container).validity.valid).toBe(true);
     });
 
-    it("validate 함수가 에러 메시지를 반환하면 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <RadioGroup value="a" validate={() => "커스텀 에러"}>
           <RadioGroup.Item value="a">A</RadioGroup.Item>
@@ -96,7 +96,7 @@ describe("RadioGroup 컴포넌트", () => {
       expect(getGroupHiddenInput(container).validationMessage).toBe("커스텀 에러");
     });
 
-    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+    it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
         <RadioGroup value="a" validate={() => undefined}>
           <RadioGroup.Item value="a">A</RadioGroup.Item>

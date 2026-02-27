@@ -4,9 +4,9 @@ import { createSignal } from "solid-js";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { List } from "../../../src/components/data/list/List";
 
-describe("List 컴포넌트", () => {
+describe("List component", () => {
   describe("basic rendering", () => {
-    it("children이 List 내부에 표시된다", () => {
+    it("renders children inside List", () => {
       const { getByText } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -16,7 +16,7 @@ describe("List 컴포넌트", () => {
       expect(getByText("Item 1")).toBeTruthy();
     });
 
-    it("role=tree 속성이 적용된다", () => {
+    it("applies role=tree", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -26,7 +26,7 @@ describe("List 컴포넌트", () => {
       expect(getByRole("tree")).toBeTruthy();
     });
 
-    it("data-list 속성이 적용된다", () => {
+    it("applies data-list attribute", () => {
       const { container } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -37,8 +37,8 @@ describe("List 컴포넌트", () => {
     });
   });
 
-  describe("inset 속성", () => {
-    it("inset prop에 따라 스타일이 달라진다", () => {
+  describe("inset prop", () => {
+    it("applies different styles based on inset prop", () => {
       const { container: defaultContainer } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -57,8 +57,8 @@ describe("List 컴포넌트", () => {
     });
   });
 
-  describe("키보드 네비게이션", () => {
-    it("ArrowDown 키로 다음 항목으로 포커스 이동", () => {
+  describe("keyboard navigation", () => {
+    it("ArrowDown moves focus to next item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -75,7 +75,7 @@ describe("List 컴포넌트", () => {
       expect(document.activeElement).toBe(items[1]);
     });
 
-    it("ArrowUp 키로 이전 항목으로 포커스 이동", () => {
+    it("ArrowUp moves focus to previous item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -92,7 +92,7 @@ describe("List 컴포넌트", () => {
       expect(document.activeElement).toBe(items[0]);
     });
 
-    it("Home 키로 첫 번째 항목으로 포커스 이동", () => {
+    it("Home moves focus to first item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -109,7 +109,7 @@ describe("List 컴포넌트", () => {
       expect(document.activeElement).toBe(items[0]);
     });
 
-    it("End 키로 마지막 항목으로 포커스 이동", () => {
+    it("End moves focus to last item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -126,7 +126,7 @@ describe("List 컴포넌트", () => {
       expect(document.activeElement).toBe(items[2]);
     });
 
-    it("Space 키로 항목 토글", () => {
+    it("Space toggles item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>
@@ -148,7 +148,7 @@ describe("List 컴포넌트", () => {
       expect(items[0].getAttribute("aria-expanded")).toBe("true");
     });
 
-    it("Enter 키로 항목 토글", () => {
+    it("Enter toggles item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>
@@ -168,7 +168,7 @@ describe("List 컴포넌트", () => {
       expect(items[0].getAttribute("aria-expanded")).toBe("true");
     });
 
-    it("ArrowRight 키로 닫힌 항목 열기", () => {
+    it("ArrowRight opens a closed item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>
@@ -190,7 +190,7 @@ describe("List 컴포넌트", () => {
       expect(items[0].getAttribute("aria-expanded")).toBe("true");
     });
 
-    it("ArrowRight 키로 열린 항목에서 첫 자식으로 포커스 이동", () => {
+    it("ArrowRight moves focus to first child when item is open", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item open>
@@ -210,7 +210,7 @@ describe("List 컴포넌트", () => {
       expect(document.activeElement).toBe(items[1]);
     });
 
-    it("ArrowLeft 키로 열린 항목 닫기", () => {
+    it("ArrowLeft closes an open item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item open>
@@ -232,7 +232,7 @@ describe("List 컴포넌트", () => {
       expect(items[0].getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("ArrowLeft 키로 닫힌 항목에서 부모로 포커스 이동", () => {
+    it("ArrowLeft moves focus to parent from a closed item", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item open>
@@ -254,9 +254,9 @@ describe("List 컴포넌트", () => {
   });
 });
 
-describe("List.Item 컴포넌트", () => {
+describe("List.Item component", () => {
   describe("basic rendering", () => {
-    it("children이 List.Item 내부에 표시된다", () => {
+    it("renders children inside List.Item", () => {
       const { getByText } = render(() => (
         <List>
           <List.Item>Test Item</List.Item>
@@ -266,7 +266,7 @@ describe("List.Item 컴포넌트", () => {
       expect(getByText("Test Item")).toBeTruthy();
     });
 
-    it("role=treeitem 속성이 적용된다", () => {
+    it("applies role=treeitem", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -276,7 +276,7 @@ describe("List.Item 컴포넌트", () => {
       expect(getByRole("treeitem")).toBeTruthy();
     });
 
-    it("data-list-item 속성이 적용된다", () => {
+    it("applies data-list-item attribute", () => {
       const { container } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -287,8 +287,8 @@ describe("List.Item 컴포넌트", () => {
     });
   });
 
-  describe("중첩 리스트", () => {
-    it("List.Item.Children이 있을 때 클릭 시 collapse 토글", () => {
+  describe("nested list", () => {
+    it("toggles collapse on click when List.Item.Children is present", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item>
@@ -313,7 +313,7 @@ describe("List.Item 컴포넌트", () => {
       expect(item.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("List.Item.Children이 있을 때 chevron 아이콘이 표시된다", () => {
+    it("shows chevron icon when List.Item.Children is present", () => {
       const { container } = render(() => (
         <List>
           <List.Item>
@@ -329,7 +329,7 @@ describe("List.Item 컴포넌트", () => {
       expect(svg).toBeTruthy();
     });
 
-    it("List.Item.Children이 없을 때 chevron 아이콘이 숨겨진다", () => {
+    it("hides chevron icon when List.Item.Children is absent", () => {
       const { container } = render(() => (
         <List>
           <List.Item>Simple Item</List.Item>
@@ -341,7 +341,7 @@ describe("List.Item 컴포넌트", () => {
       expect(svg).toBeFalsy();
     });
 
-    it("aria-expanded가 없으면 List.Item.Children이 없는 것으로 간주", () => {
+    it("no aria-expanded means no List.Item.Children", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item>Simple Item</List.Item>
@@ -352,7 +352,7 @@ describe("List.Item 컴포넌트", () => {
       expect(item.hasAttribute("aria-expanded")).toBe(false);
     });
 
-    it("List.Item.Children 내부에 role=group이 적용된다", () => {
+    it("applies role=group inside List.Item.Children", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item open>
@@ -368,8 +368,8 @@ describe("List.Item 컴포넌트", () => {
     });
   });
 
-  describe("selected 상태", () => {
-    it("selected prop에 따라 스타일이 달라진다", () => {
+  describe("selected state", () => {
+    it("applies different styles based on selected prop", () => {
       const { container: defaultContainer } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -389,7 +389,7 @@ describe("List.Item 컴포넌트", () => {
       expect(defaultClass).not.toBe(selectedClass);
     });
 
-    it("aria-selected가 설정된다", () => {
+    it("sets aria-selected", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item selected>Selected Item</List.Item>
@@ -401,8 +401,8 @@ describe("List.Item 컴포넌트", () => {
     });
   });
 
-  describe("readonly 상태", () => {
-    it("readonly=true일 때 클릭해도 onClick이 호출되지 않음", () => {
+  describe("readonly state", () => {
+    it("does not call onClick when readonly=true", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -418,7 +418,7 @@ describe("List.Item 컴포넌트", () => {
       expect(onClick).not.toHaveBeenCalled();
     });
 
-    it("readonly prop에 따라 스타일이 달라진다", () => {
+    it("applies different styles based on readonly prop", () => {
       const { container: defaultContainer } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -440,7 +440,7 @@ describe("List.Item 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled prop에 따라 스타일이 달라진다", () => {
+    it("applies different styles based on disabled prop", () => {
       const { container: defaultContainer } = render(() => (
         <List>
           <List.Item>Item</List.Item>
@@ -460,7 +460,7 @@ describe("List.Item 컴포넌트", () => {
       expect(defaultClass).not.toBe(disabledClass);
     });
 
-    it("disabled=true일 때 클릭 불가", () => {
+    it("not clickable when disabled=true", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -476,7 +476,7 @@ describe("List.Item 컴포넌트", () => {
       expect(onClick).not.toHaveBeenCalled();
     });
 
-    it("disabled=true일 때 tabindex=-1이 적용된다", () => {
+    it("applies tabindex=-1 when disabled=true", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item disabled>Disabled Item</List.Item>
@@ -487,7 +487,7 @@ describe("List.Item 컴포넌트", () => {
       expect(item.getAttribute("tabindex")).toBe("-1");
     });
 
-    it("aria-disabled가 설정된다", () => {
+    it("sets aria-disabled", () => {
       const { getByRole } = render(() => (
         <List>
           <List.Item disabled>Disabled Item</List.Item>
@@ -500,7 +500,7 @@ describe("List.Item 컴포넌트", () => {
   });
 
   describe("selectedIcon", () => {
-    it("selectedIcon이 제공되고 List.Item.Children이 없을 때 아이콘이 표시된다", () => {
+    it("shows icon when selectedIcon is provided and no List.Item.Children", () => {
       const { container } = render(() => (
         <List>
           <List.Item selectedIcon={IconCheck}>Item</List.Item>
@@ -511,7 +511,7 @@ describe("List.Item 컴포넌트", () => {
       expect(svg).toBeTruthy();
     });
 
-    it("selectedIcon과 selected 상태에 따라 아이콘 스타일이 달라진다", () => {
+    it("applies different icon styles based on selectedIcon and selected state", () => {
       const { container: unselectedContainer } = render(() => (
         <List>
           <List.Item selectedIcon={IconCheck}>Item</List.Item>
@@ -531,7 +531,7 @@ describe("List.Item 컴포넌트", () => {
       expect(unselectedSvg?.className).not.toBe(selectedSvg?.className);
     });
 
-    it("selectedIcon이 제공되고 List.Item.Children이 있을 때 아이콘이 숨겨진다", () => {
+    it("hides selectedIcon when List.Item.Children is present", () => {
       const { container } = render(() => (
         <List>
           <List.Item selectedIcon={IconCheck}>
@@ -546,13 +546,13 @@ describe("List.Item 컴포넌트", () => {
       const button = container.querySelector("[data-list-item]") as HTMLElement;
       const svgs = button.querySelectorAll("svg");
 
-      // chevron만 있어야 함 (selectedIcon은 숨겨짐)
+      // only chevron should be present (selectedIcon is hidden)
       expect(svgs.length).toBe(1);
     });
   });
 
   describe("onClick", () => {
-    it("List.Item.Children이 없고 onClick이 제공될 때 클릭 시 호출된다", () => {
+    it("calls onClick on click when no List.Item.Children", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -566,7 +566,7 @@ describe("List.Item 컴포넌트", () => {
       expect(onClick).toHaveBeenCalledTimes(1);
     });
 
-    it("List.Item.Children이 있을 때는 onClick 대신 collapse 토글이 발생한다", () => {
+    it("toggles collapse instead of onClick when List.Item.Children is present", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -587,8 +587,8 @@ describe("List.Item 컴포넌트", () => {
     });
   });
 
-  describe("controlled 모드", () => {
-    it("open과 onOpenChange가 제공되면 controlled 모드로 동작", () => {
+  describe("controlled mode", () => {
+    it("operates in controlled mode when open and onOpenChange are provided", () => {
       const onOpenChange = vi.fn();
 
       const { getByRole } = render(() => (
@@ -606,11 +606,11 @@ describe("List.Item 컴포넌트", () => {
       fireEvent.click(item);
 
       expect(onOpenChange).toHaveBeenCalledWith(true);
-      // controlled 모드이므로 실제 상태는 변경되지 않음
+      // controlled mode: actual state does not change
       expect(item.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("open prop 변경 시 상태가 반영된다", () => {
+    it("reflects state change when open prop changes", () => {
       const [open, setOpen] = createSignal(false);
 
       const { getByRole } = render(() => (
@@ -635,7 +635,7 @@ describe("List.Item 컴포넌트", () => {
   });
 
   describe("aria-level", () => {
-    it("aria-level이 중첩 수준에 따라 설정된다", () => {
+    it("sets aria-level based on nesting depth", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item open>
@@ -661,7 +661,7 @@ describe("List.Item 컴포넌트", () => {
   });
 
   describe("Roving tabindex", () => {
-    it("포커스 시 현재 항목만 tabindex=0이 된다", () => {
+    it("only focused item gets tabindex=0", () => {
       const { getAllByRole } = render(() => (
         <List>
           <List.Item>Item 1</List.Item>
@@ -672,15 +672,15 @@ describe("List.Item 컴포넌트", () => {
 
       const items = getAllByRole("treeitem");
 
-      // 초기 상태: 모든 항목이 tabindex=0
+      // initial state: all items have tabindex=0
       items.forEach((item) => {
         expect(item.getAttribute("tabindex")).toBe("0");
       });
 
-      // 두 번째 항목 포커스
+      // focus second item
       fireEvent.focus(items[1]);
 
-      // 포커스된 항목만 tabindex=0, 나머지는 -1
+      // only focused item has tabindex=0, others are -1
       expect(items[0].getAttribute("tabindex")).toBe("-1");
       expect(items[1].getAttribute("tabindex")).toBe("0");
       expect(items[2].getAttribute("tabindex")).toBe("-1");

@@ -30,7 +30,7 @@ const testData: TestItem[] = [
 ];
 
 describe("DataSheet", () => {
-  it("기본 렌더링: 컬럼 헤더와 데이터 행이 표시된다", () => {
+  it("basic rendering: column headers and data rows are displayed", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -59,7 +59,7 @@ describe("DataSheet", () => {
     expect(rows.length).toBe(3);
   });
 
-  it("다단계 헤더: colspan과 rowspan이 올바르게 적용된다", () => {
+  it("multi-level header: colspan and rowspan are applied correctly", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -79,22 +79,22 @@ describe("DataSheet", () => {
     ));
 
     const headerRows = container.querySelectorAll("thead tr");
-    // 2행: 첫 행에 "기본정보"(colspan=2) + "이메일"(rowspan=2), 둘째 행에 "이름" + "나이"
+    // 2 rows: first row has "기본정보"(colspan=2) + "이메일"(rowspan=2), second row has "이름" + "나이"
     expect(headerRows.length).toBeGreaterThanOrEqual(2);
 
     const firstRowThs = headerRows[0].querySelectorAll("th");
-    // "기본정보" th는 colspan=2
+    // "기본정보" th has colspan=2
     const groupTh = Array.from(firstRowThs).find((th) => th.textContent.includes("기본정보"));
     expect(groupTh).toBeTruthy();
     expect(groupTh!.getAttribute("colspan")).toBe("2");
 
-    // "이메일" th는 rowspan=2
+    // "이메일" th has rowspan=2
     const emailTh = Array.from(firstRowThs).find((th) => th.textContent.includes("이메일"));
     expect(emailTh).toBeTruthy();
     expect(emailTh!.getAttribute("rowspan")).toBe("2");
   });
 
-  it("합계 행: summary가 있으면 thead에 합계 행이 표시된다", () => {
+  it("summary row: summary column displays a summary row in thead", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -111,14 +111,14 @@ describe("DataSheet", () => {
     ));
 
     const theadRows = container.querySelectorAll("thead tr");
-    // 헤더 1행 + 합계 1행 = 2행
+    // 1 header row + 1 summary row = 2 rows
     expect(theadRows.length).toBe(2);
 
     const summaryRow = theadRows[theadRows.length - 1];
     expect(summaryRow.textContent).toContain("합계: 83");
   });
 
-  it("빈 데이터: tbody가 비어있다", () => {
+  it("empty data: tbody is empty", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -134,12 +134,12 @@ describe("DataSheet", () => {
     const rows = container.querySelectorAll("tbody tr");
     expect(rows.length).toBe(0);
 
-    // 헤더는 여전히 표시
+    // header is still displayed
     const ths = container.querySelectorAll("thead th");
     expect(ths.length).toBe(1);
   });
 
-  it("hidden 컬럼은 렌더링되지 않는다", () => {
+  it("hidden columns are not rendered", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -160,7 +160,7 @@ describe("DataSheet", () => {
     expect(ths[0].textContent).toContain("이름");
   });
 
-  it("정렬: 헤더 클릭 시 onSortsChange가 호출된다", () => {
+  it("sort: clicking header calls onSortsChange", () => {
     let capturedSorts: SortingDef[] = [];
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -184,13 +184,13 @@ describe("DataSheet", () => {
       </I18nProvider></ConfigProvider>
     ));
 
-    // "이름" 헤더 클릭
+    // click "이름" header
     const ths = container.querySelectorAll("thead th");
     (ths[0] as HTMLElement).click();
     expect(capturedSorts).toEqual([{ key: "name", desc: false }]);
   });
 
-  it("정렬: sortable={false} 컬럼은 클릭해도 정렬되지 않는다", () => {
+  it("sort: sortable={false} column does not sort on click", () => {
     let capturedSorts: SortingDef[] = [];
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -216,7 +216,7 @@ describe("DataSheet", () => {
     expect(capturedSorts).toEqual([]);
   });
 
-  it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
+  it("auto sort: data is sorted when autoSort is true", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -239,7 +239,7 @@ describe("DataSheet", () => {
     expect(names).toEqual(["김철수", "이영희", "홍길동"]);
   });
 
-  it("페이지네이션: itemsPerPage로 데이터가 잘린다", () => {
+  it("pagination: data is sliced by itemsPerPage", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -256,7 +256,7 @@ describe("DataSheet", () => {
     expect(rows.length).toBe(2);
   });
 
-  it("페이지네이션: 2페이지 이상일 때 Pagination이 표시된다", () => {
+  it("pagination: Pagination is displayed when there are 2 or more pages", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -273,7 +273,7 @@ describe("DataSheet", () => {
     expect(pagination).toBeTruthy();
   });
 
-  it("페이지네이션: 1페이지면 Pagination이 표시되지 않는다", () => {
+  it("pagination: Pagination is not displayed when there is only 1 page", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -290,7 +290,7 @@ describe("DataSheet", () => {
     expect(pagination).toBeFalsy();
   });
 
-  it("고정 컬럼: fixed 컬럼의 td에 sticky 클래스가 적용된다", () => {
+  it("fixed column: sticky class is applied to td of fixed column", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -311,7 +311,7 @@ describe("DataSheet", () => {
     expect(tds[1].classList.contains("sticky")).toBe(false);
   });
 
-  it("고정 컬럼: 마지막 고정 컬럼에 경계 테두리 클래스가 적용된다", () => {
+  it("fixed column: border class is applied to the last fixed column", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -328,11 +328,11 @@ describe("DataSheet", () => {
     ));
 
     const tds = container.querySelectorAll("tbody tr:first-child td");
-    // fixedLastClass에 포함된 클래스 확인
+    // verify class included in fixedLastClass
     expect(tds[0].classList.contains("border-r")).toBe(true);
   });
 
-  it("리사이저: resizable 컬럼에 리사이저 핸들이 있다", () => {
+  it("resizer: resizable column has a resizer handle", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -349,7 +349,7 @@ describe("DataSheet", () => {
     ));
 
     const resizers = container.querySelectorAll(".cursor-ew-resize");
-    // 첫 번째 컬럼에만 리사이저가 있어야 함
+    // only the first column should have a resizer
     expect(resizers.length).toBe(1);
   });
 });
@@ -366,22 +366,22 @@ describe("applySorting", () => {
     { name: "나", age: 28 },
   ];
 
-  it("빈 sorts면 원본 순서 유지", () => {
+  it("preserves original order when sorts is empty", () => {
     const result = applySorting(items, []);
     expect(result.map((i) => i.name)).toEqual(["다", "가", "나"]);
   });
 
-  it("단일 오름차순 정렬", () => {
+  it("single ascending sort", () => {
     const result = applySorting(items, [{ key: "name", desc: false }]);
     expect(result.map((i) => i.name)).toEqual(["가", "나", "다"]);
   });
 
-  it("단일 내림차순 정렬", () => {
+  it("single descending sort", () => {
     const result = applySorting(items, [{ key: "age", desc: true }]);
     expect(result.map((i) => i.age)).toEqual([30, 28, 25]);
   });
 
-  it("다중 정렬: 첫 번째 키 우선, 동일 값은 두 번째 키로", () => {
+  it("multi-sort: first key takes priority, ties broken by second key", () => {
     const data: Item[] = [
       { name: "가", age: 30 },
       { name: "나", age: 25 },
@@ -398,7 +398,7 @@ describe("applySorting", () => {
     ]);
   });
 
-  it("원본 배열을 변경하지 않는다", () => {
+  it("does not mutate the original array", () => {
     const original = [...items];
     applySorting(items, [{ key: "name", desc: false }]);
     expect(items).toEqual(original);
@@ -421,21 +421,21 @@ describe("flattenTree", () => {
     { id: "b" },
   ];
 
-  it("getChildren이 없으면 flat 리스트를 반환한다", () => {
+  it("returns flat list when getChildren is not provided", () => {
     const result = flattenTree(tree, []);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
     expect(result.every((r) => r.depth === 0)).toBe(true);
     expect(result.every((r) => !r.hasChildren)).toBe(true);
   });
 
-  it("모두 접힌 상태면 루트만 반환한다", () => {
+  it("returns only roots when all are collapsed", () => {
     const result = flattenTree(tree, [], getChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
     expect(result[0].hasChildren).toBe(true);
     expect(result[1].hasChildren).toBe(false);
   });
 
-  it("루트 확장 시 1단계 자식이 포함된다", () => {
+  it("includes 1-level children when root is expanded", () => {
     const result = flattenTree(tree, [tree[0]], getChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "b"]);
     expect(result[1].depth).toBe(1);
@@ -443,7 +443,7 @@ describe("flattenTree", () => {
     expect(result[2].hasChildren).toBe(true);
   });
 
-  it("중첩 확장 시 2단계 자식까지 포함된다", () => {
+  it("includes up to 2-level children when nested expanded", () => {
     const a2 = tree[0].children![1];
     const result = flattenTree(tree, [tree[0], a2], getChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "a2x", "b"]);
@@ -451,24 +451,24 @@ describe("flattenTree", () => {
     expect(result[3].parent).toBe(a2);
   });
 
-  it("접힌 노드의 자식은 포함되지 않는다", () => {
-    // a2만 확장하고 a는 접힘 → a2 자체가 보이지 않으므로 a2의 자식도 안 보임
+  it("children of collapsed nodes are not included", () => {
+    // only a2 is expanded but a is collapsed → a2 itself is not visible, so its children are also hidden
     const a2 = tree[0].children![1];
     const result = flattenTree(tree, [a2], getChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
   });
 
-  it("빈 배열이면 빈 결과를 반환한다", () => {
+  it("returns empty result for empty array", () => {
     const result = flattenTree([], [], getChildren);
     expect(result).toEqual([]);
   });
 
-  it("row는 순서대로 증가한다", () => {
+  it("row increments in order", () => {
     const result = flattenTree(tree, [tree[0]], getChildren);
     expect(result.map((r) => r.row)).toEqual([0, 1, 2, 3]);
   });
 
-  it("index는 포함 배열 내 위치를 반환한다", () => {
+  it("index returns position within containing array", () => {
     const result = flattenTree(tree, [tree[0]], getChildren);
     // tree[0]="a" → index 0 (root items[0])
     // tree[0].children[0]="a1" → index 0 (children[0])
@@ -477,7 +477,7 @@ describe("flattenTree", () => {
     expect(result.map((r) => r.index)).toEqual([0, 0, 1, 1]);
   });
 
-  it("getOriginalIndex가 주어지면 root의 index에 원본 인덱스를 사용한다", () => {
+  it("uses original index for root when getOriginalIndex is provided", () => {
     const items = [tree[1], tree[0]]; // reversed
     const originalMap = new Map<TreeNode, number>();
     tree.forEach((item, i) => originalMap.set(item, i));
@@ -505,7 +505,7 @@ describe("collectAllExpandable", () => {
 
   const getChildren = (item: TreeNode) => item.children;
 
-  it("자식이 있는 모든 노드를 재귀적으로 수집한다", () => {
+  it("recursively collects all nodes that have children", () => {
     const tree: TreeNode[] = [
       {
         id: "a",
@@ -517,14 +517,14 @@ describe("collectAllExpandable", () => {
     expect(result.map((r) => r.id)).toEqual(["a", "a2"]);
   });
 
-  it("자식이 없는 트리면 빈 배열을 반환한다", () => {
+  it("returns empty array when no nodes have children", () => {
     const tree: TreeNode[] = [{ id: "a" }, { id: "b" }];
     const result = collectAllExpandable(tree, getChildren);
     expect(result).toEqual([]);
   });
 });
 
-describe("DataSheet 트리 확장", () => {
+describe("DataSheet tree expansion", () => {
   interface TreeItem {
     name: string;
     children?: TreeItem[];
@@ -538,7 +538,7 @@ describe("DataSheet 트리 확장", () => {
     { name: "폴더B" },
   ];
 
-  it("getChildren 설정 시 확장 기능 컬럼이 렌더링된다", () => {
+  it("renders expand column when getChildren is set", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -551,16 +551,16 @@ describe("DataSheet 트리 확장", () => {
       </I18nProvider></ConfigProvider>
     ));
 
-    // colgroup에 확장 컬럼 col이 추가됨
+    // expand column col is added to colgroup
     const cols = container.querySelectorAll("colgroup col");
-    expect(cols.length).toBe(2); // 확장 컬럼 + name 컬럼
+    expect(cols.length).toBe(2); // expand column + name column
 
-    // 헤더에 확장 토글 버튼이 존재
+    // expand toggle button exists in header
     const expandBtn = container.querySelector("thead button");
     expect(expandBtn).toBeTruthy();
   });
 
-  it("접힌 상태에서는 루트 항목만 표시된다", () => {
+  it("displays only root items in collapsed state", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -585,7 +585,7 @@ describe("DataSheet 트리 확장", () => {
     expect(Array.from(names).map((n) => n.textContent)).toEqual(["폴더A", "폴더B"]);
   });
 
-  it("확장된 항목의 자식이 표시된다", () => {
+  it("displays children of expanded items", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -604,7 +604,7 @@ describe("DataSheet 트리 확장", () => {
     ));
 
     const rows = container.querySelectorAll("tbody tr");
-    expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B
+    expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B (test data kept as-is)
 
     const names = container.querySelectorAll("tbody [data-testid='name']");
     expect(Array.from(names).map((n) => n.textContent)).toEqual([
@@ -615,7 +615,7 @@ describe("DataSheet 트리 확장", () => {
     ]);
   });
 
-  it("자식이 없는 항목은 확장 아이콘이 숨겨진다", () => {
+  it("hides expand icon for items with no children", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
@@ -634,11 +634,11 @@ describe("DataSheet 트리 확장", () => {
     ));
 
     const tbodyRows = container.querySelectorAll("tbody tr");
-    // 폴더B(인덱스 1)에는 자식이 없으므로 확장 버튼이 없어야 함
+    // 폴더B (index 1) has no children → no expand button
     const secondRowBtns = tbodyRows[1].querySelectorAll("button");
     expect(secondRowBtns.length).toBe(0);
 
-    // 폴더A(인덱스 0)에는 자식이 있으므로 확장 버튼이 있어야 함
+    // 폴더A (index 0) has children → expand button exists
     const firstRowBtns = tbodyRows[0].querySelectorAll("button");
     expect(firstRowBtns.length).toBe(1);
   });

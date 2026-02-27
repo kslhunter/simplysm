@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { consola, LogLevels } from "consola";
 
-// runLint, runTypecheck, runWatch, runCheck를 모킹
+// Mock runLint, runTypecheck, runWatch, runCheck
 vi.mock("../src/commands/lint", () => ({
   runLint: vi.fn(),
 }));

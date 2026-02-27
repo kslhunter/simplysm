@@ -80,7 +80,7 @@ export const viewSelectOrderByLimit: ExpectedSql = {
 
 //#endregion
 
-//#region ========== View - SELECT가 있는 뷰 ==========
+//#region ========== View - View With SELECT ==========
 
 export const userSummarySelect: ExpectedSql = {
   mysql: mysql`SELECT * FROM \`TestDb\`.\`UserSummary\` AS \`T1\``,

@@ -5,13 +5,13 @@ import { Numpad } from "../../../../src/components/form-control/numpad/Numpad";
 
 describe("Numpad", () => {
   describe("basic rendering", () => {
-    it("data-numpad 속성이 있는 루트 요소를 렌더링한다", () => {
+    it("renders root element with data-numpad attribute", () => {
       const { container } = render(() => <Numpad />);
       const root = container.querySelector("[data-numpad]");
       expect(root).toBeTruthy();
     });
 
-    it("숫자 버튼 0-9가 렌더링된다", () => {
+    it("renders digit buttons 0-9", () => {
       render(() => <Numpad />);
 
       for (let i = 0; i <= 9; i++) {
@@ -19,18 +19,18 @@ describe("Numpad", () => {
       }
     });
 
-    it("소수점 버튼이 렌더링된다", () => {
+    it("renders decimal point button", () => {
       render(() => <Numpad />);
       expect(screen.getByText(".")).toBeInTheDocument();
     });
 
-    it("NumberInput(input)가 렌더링된다", () => {
+    it("renders NumberInput (input)", () => {
       render(() => <Numpad />);
       const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
     });
 
-    it("C 버튼이 text-danger-500 클래스로 렌더링된다", () => {
+    it("renders C button with text-danger-500 class", () => {
       render(() => <Numpad />);
       const cButton = screen
         .getAllByRole("button")
@@ -38,7 +38,7 @@ describe("Numpad", () => {
       expect(cButton).toBeTruthy();
     });
 
-    it("BS 버튼이 text-warning-500 클래스로 렌더링된다", () => {
+    it("renders BS button with text-warning-500 class", () => {
       render(() => <Numpad />);
       const bsButton = screen
         .getAllByRole("button")
@@ -46,21 +46,21 @@ describe("Numpad", () => {
       expect(bsButton).toBeTruthy();
     });
 
-    it("ENT 버튼은 기본적으로 렌더링되지 않는다", () => {
+    it("does not render ENT button by default", () => {
       render(() => <Numpad />);
       expect(screen.queryByText("ENT")).not.toBeInTheDocument();
     });
 
-    it("- 버튼은 기본적으로 렌더링되지 않는다", () => {
+    it("does not render minus button by default", () => {
       render(() => <Numpad />);
-      // useMinusButton이 없으면 "-" 텍스트를 가진 버튼이 없어야 한다
+      // without useMinusButton, there should be no button with "-" text
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeFalsy();
     });
   });
 
-  describe("숫자 입력", () => {
-    it("숫자 버튼 클릭 시 값이 업데이트된다", () => {
+  describe("digit input", () => {
+    it("updates value on digit button click", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
@@ -71,7 +71,7 @@ describe("Numpad", () => {
       expect(handleChange).toHaveBeenLastCalledWith(123);
     });
 
-    it("소수점 버튼 클릭 시 소수점이 추가된다", () => {
+    it("appends decimal point on decimal button click", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
@@ -82,19 +82,19 @@ describe("Numpad", () => {
       expect(handleChange).toHaveBeenLastCalledWith(1.5);
     });
 
-    it("소수점 중복 입력은 무시된다", () => {
+    it("ignores duplicate decimal point", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("."));
-      fireEvent.click(screen.getByText(".")); // 중복 소수점
+      fireEvent.click(screen.getByText(".")); // duplicate decimal
       fireEvent.click(screen.getByText("5"));
 
       expect(handleChange).toHaveBeenLastCalledWith(1.5);
     });
 
-    it("0 버튼을 여러 번 클릭할 수 있다", () => {
+    it("allows clicking 0 multiple times", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
@@ -106,16 +106,16 @@ describe("Numpad", () => {
     });
   });
 
-  describe("기능 버튼", () => {
-    it("C 버튼 클릭 시 값이 초기화된다", () => {
+  describe("function buttons", () => {
+    it("clears value on C button click", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
-      // 값 입력
+      // enter value
       fireEvent.click(screen.getByText("5"));
       fireEvent.click(screen.getByText("6"));
 
-      // C 버튼 클릭
+      // click C button
       const cButton = screen
         .getAllByRole("button")
         .find((btn) => btn.className.includes("text-danger-500"))!;
@@ -124,16 +124,16 @@ describe("Numpad", () => {
       expect(handleChange).toHaveBeenLastCalledWith(undefined);
     });
 
-    it("BS 버튼 클릭 시 마지막 문자가 제거된다", () => {
+    it("removes last character on BS button click", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
-      // 123 입력
+      // enter 123
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("2"));
       fireEvent.click(screen.getByText("3"));
 
-      // BS 버튼 클릭
+      // click BS button
       const bsButton = screen
         .getAllByRole("button")
         .find((btn) => btn.className.includes("text-warning-500"))!;
@@ -142,14 +142,14 @@ describe("Numpad", () => {
       expect(handleChange).toHaveBeenLastCalledWith(12);
     });
 
-    it("BS 버튼으로 모든 문자를 제거하면 undefined가 된다", () => {
+    it("returns undefined when all characters are removed with BS", () => {
       const handleChange = vi.fn();
       render(() => <Numpad onValueChange={handleChange} />);
 
-      // 1 입력
+      // enter 1
       fireEvent.click(screen.getByText("1"));
 
-      // BS 버튼 클릭
+      // click BS button
       const bsButton = screen
         .getAllByRole("button")
         .find((btn) => btn.className.includes("text-warning-500"))!;
@@ -159,13 +159,13 @@ describe("Numpad", () => {
     });
   });
 
-  describe("ENT 버튼", () => {
-    it("useEnterButton=true일 때 ENT 버튼이 렌더링된다", () => {
+  describe("ENT button", () => {
+    it("renders ENT button when useEnterButton=true", () => {
       render(() => <Numpad useEnterButton />);
       expect(screen.getByText("ENT")).toBeInTheDocument();
     });
 
-    it("ENT 버튼 클릭 시 onEnterButtonClick이 호출된다", () => {
+    it("calls onEnterButtonClick on ENT button click", () => {
       const handleEnter = vi.fn();
       render(() => <Numpad useEnterButton onEnterButtonClick={handleEnter} />);
 
@@ -173,14 +173,14 @@ describe("Numpad", () => {
       expect(handleEnter).toHaveBeenCalledTimes(1);
     });
 
-    it("required이고 값이 없을 때 ENT 버튼이 비활성화된다", () => {
+    it("disables ENT button when required and no value", () => {
       render(() => <Numpad useEnterButton required />);
 
       const entButton = screen.getByText("ENT").closest("button")!;
       expect(entButton.disabled).toBe(true);
     });
 
-    it("required이고 값이 있을 때 ENT 버튼이 활성화된다", () => {
+    it("enables ENT button when required and value exists", () => {
       render(() => <Numpad useEnterButton required value={123} />);
 
       const entButton = screen.getByText("ENT").closest("button")!;
@@ -188,33 +188,33 @@ describe("Numpad", () => {
     });
   });
 
-  describe("Minus 버튼", () => {
-    it("useMinusButton=true일 때 - 버튼이 렌더링된다", () => {
+  describe("minus button", () => {
+    it("renders minus button when useMinusButton=true", () => {
       render(() => <Numpad useMinusButton />);
 
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeTruthy();
     });
 
-    it("- 버튼 클릭 시 부호가 토글된다 (양수 -> 음수)", () => {
+    it("toggles sign on minus button click (positive to negative)", () => {
       const handleChange = vi.fn();
       render(() => <Numpad useMinusButton onValueChange={handleChange} />);
 
-      // 5 입력
+      // enter 5
       fireEvent.click(screen.getByText("5"));
 
-      // - 버튼 클릭
+      // click minus button
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
       fireEvent.click(minusButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(-5);
     });
 
-    it("- 버튼 클릭 시 부호가 토글된다 (음수 -> 양수)", () => {
+    it("toggles sign on minus button click (negative to positive)", () => {
       const handleChange = vi.fn();
       render(() => <Numpad useMinusButton value={-5} onValueChange={handleChange} />);
 
-      // - 버튼 클릭
+      // click minus button
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
       fireEvent.click(minusButton);
 
@@ -222,8 +222,8 @@ describe("Numpad", () => {
     });
   });
 
-  describe("controlled 모드", () => {
-    it("외부 값 변경이 반영된다", () => {
+  describe("controlled mode", () => {
+    it("reflects external value changes", () => {
       const [value, setValue] = createSignal<number | undefined>(100);
       render(() => <Numpad value={value()} onValueChange={setValue} />);
 
@@ -234,7 +234,7 @@ describe("Numpad", () => {
       expect(input).toHaveValue("200");
     });
 
-    it("외부에서 undefined로 설정하면 입력이 비워진다", () => {
+    it("clears input when set to undefined externally", () => {
       const [value, setValue] = createSignal<number | undefined>(100);
       render(() => <Numpad value={value()} onValueChange={setValue} />);
 

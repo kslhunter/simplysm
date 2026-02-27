@@ -203,7 +203,7 @@ export const selectGreatest: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 옵션 ==========
+//#region ========== Options ==========
 
 export const selectDistinct: ExpectedSql = {
   mysql: mysql`
@@ -256,7 +256,7 @@ export const selectDistinctLock: ExpectedSql = {
 
 //#endregion
 
-//#region ========== 제한 ==========
+//#region ========== Limit ==========
 
 export const selectTop: ExpectedSql = {
   mysql: mysql`
@@ -317,6 +317,6 @@ export const selectLimitOffset: ExpectedSql = {
   `,
 };
 
-// 랜덤 샘플링은 examples/sampling.spec.ts 참고
+// See examples/sampling.spec.ts for random sampling
 
 //#endregion

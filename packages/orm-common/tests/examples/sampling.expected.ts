@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== 랜덤 샘플링 ==========
+//#region ========== Random Sampling ==========
 
 export const samplingBasic: ExpectedSql = {
   mysql: mysql`

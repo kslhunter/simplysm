@@ -1,9 +1,10 @@
 /**
- * 랜덤 샘플링 예제
+ * Random sampling example
  *
- * sample() 메서드 대신 expr.random()과 orderBy/top을 조합하여 랜덤 샘플링 구현
+ * Implements random sampling using expr.random() combined with orderBy/top
+ * instead of a dedicated sample() method.
  *
- * 사용법: db.user().orderBy(() => expr.random()).top(5)
+ * Usage: db.user().orderBy(() => expr.random()).top(5)
  */
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "../setup/TestDbContext";

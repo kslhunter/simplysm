@@ -3,65 +3,65 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { TextInput } from "../../../../src/components/form-control/field/TextInput";
 
-describe("TextInput 컴포넌트", () => {
+describe("TextInput component", () => {
   describe("basic rendering", () => {
-    it("input 요소가 렌더링된다", () => {
+    it("renders input element", () => {
       const { container } = render(() => <TextInput />);
       const input = container.querySelector("input");
       expect(input).toBeTruthy();
     });
 
-    it("기본 type은 text이다", () => {
+    it("defaults type to text", () => {
       const { container } = render(() => <TextInput />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("text");
     });
 
-    it("type=password일 때 password input이 렌더링된다", () => {
+    it("renders password input when type=password", () => {
       const { container } = render(() => <TextInput type="password" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("password");
     });
 
-    it("type=email일 때 email input이 렌더링된다", () => {
+    it("renders email input when type=email", () => {
       const { container } = render(() => <TextInput type="email" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("email");
     });
 
-    it("placeholder가 input에 적용된다", () => {
+    it("applies placeholder to input", () => {
       const { container } = render(() => <TextInput placeholder="Enter text" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.placeholder).toBe("Enter text");
     });
 
-    it("title이 input에 적용된다", () => {
+    it("applies title to input", () => {
       const { container } = render(() => <TextInput title="Input title" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.title).toBe("Input title");
     });
 
-    it("autocomplete 기본값은 one-time-code이다", () => {
+    it("defaults autocomplete to one-time-code", () => {
       const { container } = render(() => <TextInput />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("one-time-code");
     });
 
-    it("autocomplete를 명시적으로 지정하면 해당 값이 적용된다", () => {
+    it("applies explicitly specified autocomplete value", () => {
       const { container } = render(() => <TextInput autocomplete="email" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("email");
     });
   });
 
-  describe("controlled 패턴", () => {
-    it("value prop이 input의 값으로 표시된다", () => {
+  describe("controlled pattern", () => {
+    it("displays value prop in input", () => {
       const { container } = render(() => <TextInput value="Hello" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("Hello");
     });
 
-    it("onValueChange가 입력 시 호출된다", () => {
+    it("calls onValueChange on input", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <TextInput value="" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -71,7 +71,7 @@ describe("TextInput 컴포넌트", () => {
       expect(handleChange).toHaveBeenCalledWith("Test");
     });
 
-    it("외부 상태 변경 시 input 값이 업데이트된다", () => {
+    it("updates input value when external state changes", () => {
       const [value, setValue] = createSignal("Initial");
       const { container } = render(() => <TextInput value={value()} onValueChange={setValue} />);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -83,8 +83,8 @@ describe("TextInput 컴포넌트", () => {
     });
   });
 
-  describe("uncontrolled 패턴", () => {
-    it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
+  describe("uncontrolled pattern", () => {
+    it("manages value internally without onValueChange", () => {
       const { container } = render(() => <TextInput value="Initial" />);
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -96,7 +96,7 @@ describe("TextInput 컴포넌트", () => {
   });
 
   describe("disabled state", () => {
-    it("disabled=true일 때 div로 렌더링된다", () => {
+    it("renders as div when disabled=true", () => {
       const { container } = render(() => <TextInput disabled value="Disabled text" />);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-text-field");
@@ -105,20 +105,20 @@ describe("TextInput 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("disabled 상태에서 value가 표시된다", () => {
+    it("displays value when disabled", () => {
       const { getByText } = render(() => <TextInput disabled value="Disabled text" />);
       expect(getByText("Disabled text")).toBeTruthy();
     });
 
-    it("disabled 스타일이 적용된다", () => {
+    it("applies disabled style", () => {
       const { container } = render(() => <TextInput disabled value="Text" />);
       const div = container.querySelector("div.sd-text-field") as HTMLElement;
       expect(div.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
-  describe("readonly 상태", () => {
-    it("readonly=true일 때 div로 렌더링된다", () => {
+  describe("readonly state", () => {
+    it("renders as div when readonly=true", () => {
       const { container } = render(() => <TextInput readonly value="Readonly text" />);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-text-field");
@@ -127,20 +127,20 @@ describe("TextInput 컴포넌트", () => {
       expect(div).toBeTruthy();
     });
 
-    it("readonly 상태에서 value가 표시된다", () => {
+    it("displays value when readonly", () => {
       const { getByText } = render(() => <TextInput readonly value="Readonly text" />);
       expect(getByText("Readonly text")).toBeTruthy();
     });
   });
 
-  describe("format 옵션", () => {
-    it("format이 적용되어 표시된다", () => {
+  describe("format option", () => {
+    it("displays value with format applied", () => {
       const { container } = render(() => <TextInput format="XXX-XXXX-XXXX" value="01012345678" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("010-1234-5678");
     });
 
-    it("format이 적용된 상태에서 입력 시 원본 값이 onValueChange로 전달된다", () => {
+    it("passes raw value to onValueChange when format is applied", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
         <TextInput format="XXX-XXXX-XXXX" value="" onValueChange={handleChange} />
@@ -149,27 +149,27 @@ describe("TextInput 컴포넌트", () => {
 
       fireEvent.input(input, { target: { value: "010-1234-5678" } });
 
-      // 포맷 문자('-')가 제거된 원본 값이 전달됨
+      // raw value with format characters ('-') stripped is passed
       expect(handleChange).toHaveBeenCalledWith("01012345678");
     });
   });
 
-  describe("size 옵션", () => {
-    it("size=sm일 때 작은 padding이 적용된다", () => {
+  describe("size option", () => {
+    it("applies small padding when size=sm", () => {
       const { container } = render(() => <TextInput size="sm" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-0.5")).toBe(true);
     });
 
-    it("size=lg일 때 큰 padding이 적용된다", () => {
+    it("applies large padding when size=lg", () => {
       const { container } = render(() => <TextInput size="lg" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("py-2")).toBe(true);
     });
   });
 
-  describe("inset 스타일", () => {
-    it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
+  describe("inset style", () => {
+    it("removes border and applies inset background when inset=true", () => {
       const { container } = render(() => <TextInput inset />);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
@@ -177,7 +177,7 @@ describe("TextInput 컴포넌트", () => {
       expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
     });
 
-    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+    it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => <TextInput inset readonly value="Hello" />);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -190,7 +190,7 @@ describe("TextInput 컴포넌트", () => {
       expect(input).toBeFalsy();
     });
 
-    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+    it("shows hidden content div and input when inset + editable", () => {
       const { container } = render(() => <TextInput inset value="Hello" />);
       const outer = container.firstChild as HTMLElement;
 
@@ -203,14 +203,14 @@ describe("TextInput 컴포넌트", () => {
       expect(input.value).toBe("Hello");
     });
 
-    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+    it("shows NBSP in content div when inset + empty value", () => {
       const { container } = render(() => <TextInput inset readonly />);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");
     });
 
-    it("inset + readonly ↔ editable 전환 시 content div가 항상 DOM에 존재한다", () => {
+    it("content div is always in DOM when toggling inset + readonly/editable", () => {
       const [readonly, setReadonly] = createSignal(true);
       const { container } = render(() => <TextInput inset readonly={readonly()} value="Test" />);
       const outer = container.firstChild as HTMLElement;
@@ -227,7 +227,7 @@ describe("TextInput 컴포넌트", () => {
   });
 
   describe("class merging", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("merges custom class with existing styles", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <TextInput class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
@@ -235,21 +235,21 @@ describe("TextInput 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일", () => {
-    it("기본 border 스타일이 적용된다", () => {
+  describe("default style", () => {
+    it("applies default border style", () => {
       const { container } = render(() => <TextInput />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("border")).toBe(true);
       expect(wrapper.classList.contains("border-base-200")).toBe(true);
     });
 
-    it("focus 시 border 색상이 변경된다", () => {
+    it("changes border color on focus", () => {
       const { container } = render(() => <TextInput />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("focus-within:border-primary-500")).toBe(true);
     });
 
-    it("다크 모드 스타일이 적용된다", () => {
+    it("applies dark mode style", () => {
       const { container } = render(() => <TextInput />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
@@ -258,37 +258,37 @@ describe("TextInput 컴포넌트", () => {
   });
 
   describe("validation", () => {
-    it("required일 때 빈 값이면 hidden input에 에러 메시지가 설정된다", () => {
+    it("sets error message in hidden input when required and empty", () => {
       const { container } = render(() => <TextInput required value="" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
-    it("required일 때 값이 있으면 유효하다", () => {
+    it("is valid when required and value exists", () => {
       const { container } = render(() => <TextInput required value="hello" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
-    it("minLength 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when minLength is violated", () => {
       const { container } = render(() => <TextInput minLength={3} value="ab" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("Enter at least 3 characters");
     });
 
-    it("maxLength 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when maxLength is violated", () => {
       const { container } = render(() => <TextInput maxLength={5} value="abcdef" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("Enter up to 5 characters");
     });
 
-    it("pattern 위반 시 에러 메시지가 설정된다", () => {
+    it("sets error message when pattern is violated", () => {
       const { container } = render(() => <TextInput pattern="^[0-9]+$" value="abc" />);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("The input format is invalid");
     });
 
-    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+    it("sets error message returned by validate function", () => {
       const { container } = render(() => (
         <TextInput
           validate={(v) => (v.includes("@") ? undefined : "이메일 형식이 아닙니다")}
@@ -299,7 +299,7 @@ describe("TextInput 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("이메일 형식이 아닙니다");
     });
 
-    it("기본 validator 통과 후 validate 함수가 실행된다", () => {
+    it("runs validate function after base validators pass", () => {
       const { container } = render(() => (
         <TextInput
           required
@@ -312,8 +312,8 @@ describe("TextInput 컴포넌트", () => {
     });
   });
 
-  describe("Prefix 슬롯", () => {
-    it("TextInput.Prefix 슬롯이 렌더링된다", () => {
+  describe("Prefix slot", () => {
+    it("renders TextInput.Prefix slot", () => {
       render(() => (
         <TextInput>
           <TextInput.Prefix>
@@ -325,7 +325,7 @@ describe("TextInput 컴포넌트", () => {
       expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
     });
 
-    it("Prefix 슬롯 사용 시 gap 클래스가 적용된다", () => {
+    it("applies gap class when Prefix slot is used", () => {
       const { container } = render(() => (
         <TextInput>
           <TextInput.Prefix>

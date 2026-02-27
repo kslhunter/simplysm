@@ -17,33 +17,33 @@ describe("Collapse", () => {
   });
 
   describe("rendering", () => {
-    it("open={false}일 때 콘텐츠가 visibility:hidden", () => {
+    it("sets visibility:hidden when open={false}", () => {
       const { container } = render(() => <Collapse open={false}>Content</Collapse>);
       const contentDiv = container.querySelector("[data-collapse]")
         ?.firstElementChild as HTMLElement;
       expect(contentDiv.style.visibility).toBe("hidden");
     });
 
-    it("open={true}일 때 콘텐츠가 visible", () => {
+    it("sets content visible when open={true}", () => {
       const { container } = render(() => <Collapse open={true}>Content</Collapse>);
       const contentDiv = container.querySelector("[data-collapse]")
         ?.firstElementChild as HTMLElement;
       expect(contentDiv.style.visibility).not.toBe("hidden");
     });
 
-    it("open이 undefined일 때 false로 처리 (visibility:hidden)", () => {
+    it("treats undefined open as false (visibility:hidden)", () => {
       const { container } = render(() => <Collapse>Content</Collapse>);
       const contentDiv = container.querySelector("[data-collapse]")
         ?.firstElementChild as HTMLElement;
       expect(contentDiv.style.visibility).toBe("hidden");
     });
 
-    it("콘텐츠가 비어있어도 정상 렌더링", () => {
+    it("renders correctly with no children", () => {
       const { container } = render(() => <Collapse open={false} />);
       expect(container.firstChild).toBeTruthy();
     });
 
-    it("추가 class가 병합됨", () => {
+    it("merges custom classes", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
         <Collapse open={true} class="my-test-class">
@@ -51,14 +51,14 @@ describe("Collapse", () => {
         </Collapse>
       ));
       expect(container.querySelector(".my-test-class")).toBeTruthy();
-      // overflow: hidden은 inline style로 적용됨
+      // overflow: hidden is applied as inline style
       const rootDiv = container.querySelector("[data-collapse]") as HTMLElement;
       expect(rootDiv.style.overflow).toBe("hidden");
     });
   });
 
-  describe("margin-top 계산", () => {
-    it("open={false}일 때 margin-top이 콘텐츠 높이의 음수값", async () => {
+  describe("margin-top calculation", () => {
+    it("sets margin-top to negative content height when open={false}", async () => {
       const { container } = render(() => (
         <Collapse open={false}>
           <div style={{ height: "100px" }}>Content</div>
@@ -68,16 +68,16 @@ describe("Collapse", () => {
         ?.firstElementChild as HTMLElement;
       expect(contentDiv).toBeTruthy();
 
-      // ResizeObserver가 측정을 완료할 때까지 대기
+      // wait for ResizeObserver to finish measuring
       await waitFor(() => {
         const marginTop = contentDiv.style.marginTop;
-        // margin-top이 음수값인지 확인 (실제 높이 측정됨)
+        // verify margin-top is negative (actual height measured)
         expect(marginTop).toMatch(/^-\d+px$/);
         expect(parseInt(marginTop)).toBeLessThan(0);
       });
     });
 
-    it("open={true}일 때 margin-top이 없음", () => {
+    it("clears margin-top when open={true}", () => {
       const { container } = render(() => (
         <Collapse open={true}>
           <div style={{ height: "100px" }}>Content</div>
@@ -89,14 +89,14 @@ describe("Collapse", () => {
     });
   });
 
-  describe("초기 렌더링 및 transition", () => {
-    it("마운트 후 transition 클래스가 적용됨", () => {
+  describe("initial render and transition", () => {
+    it("applies transition class after mount", () => {
       const { container } = render(() => <Collapse open={false}>Content</Collapse>);
       const contentDiv = container.querySelector("[data-collapse]")?.firstElementChild;
       expect(contentDiv?.classList.contains("transition-[margin-top]")).toBeTruthy();
     });
 
-    it("open 상태 변경 시 transition class 유지되며 margin-top 변경", async () => {
+    it("retains transition class and updates margin-top on open state change", async () => {
       const [open, setOpen] = createSignal(false);
       const { container } = render(() => (
         <Collapse open={open()}>
@@ -107,17 +107,17 @@ describe("Collapse", () => {
       const contentDiv = container.querySelector("[data-collapse]")
         ?.firstElementChild as HTMLElement;
 
-      // 초기 상태: 닫힘, margin-top 음수
+      // initial state: closed, negative margin-top
       await waitFor(() => {
         expect(parseInt(contentDiv.style.marginTop)).toBeLessThan(0);
       });
       expect(contentDiv.classList.contains("transition-[margin-top]")).toBeTruthy();
       expect(contentDiv.classList.contains("duration-200")).toBeTruthy();
 
-      // 열림 상태로 변경
+      // change to open state
       setOpen(true);
 
-      // transition class 유지, margin-top 변경
+      // transition class retained, margin-top updated
       await waitFor(() => {
         const marginTop = contentDiv.style.marginTop;
         expect(!marginTop || marginTop === "").toBeTruthy();
@@ -126,8 +126,8 @@ describe("Collapse", () => {
     });
   });
 
-  describe("동적 상태 변경", () => {
-    it("open 상태 변경 시 visibility 업데이트", () => {
+  describe("dynamic state changes", () => {
+    it("updates visibility when open state changes", () => {
       const [open, setOpen] = createSignal(false);
       const { container } = render(() => <Collapse open={open()}>Content</Collapse>);
 
@@ -139,7 +139,7 @@ describe("Collapse", () => {
       expect(contentDiv.style.visibility).not.toBe("hidden");
     });
 
-    it("콘텐츠 높이 변경 시 margin-top 재계산", async () => {
+    it("recalculates margin-top when content height changes", async () => {
       const [showExtra, setShowExtra] = createSignal(false);
       const { container } = render(() => (
         <Collapse open={false}>
@@ -151,7 +151,7 @@ describe("Collapse", () => {
       const contentDiv = container.querySelector("[data-collapse]")
         ?.firstElementChild as HTMLElement;
 
-      // 초기 높이 측정 대기
+      // wait for initial height measurement
       await waitFor(() => {
         const initialMarginTop = parseInt(contentDiv.style.marginTop);
         expect(initialMarginTop).toBeLessThan(0);
@@ -159,13 +159,13 @@ describe("Collapse", () => {
 
       const initialMarginTop = parseInt(contentDiv.style.marginTop);
 
-      // 콘텐츠 추가로 높이 변경
+      // add content to change height
       setShowExtra(true);
 
-      // ResizeObserver가 새 높이를 감지하고 margin-top 재계산 대기
+      // wait for ResizeObserver to detect new height and recalculate margin-top
       await waitFor(() => {
         const newMarginTop = parseInt(contentDiv.style.marginTop);
-        // 새 margin-top이 초기값보다 더 작아야 함 (더 큰 음수)
+        // new margin-top should be more negative than initial (larger content)
         expect(newMarginTop).toBeLessThan(initialMarginTop);
       });
     });

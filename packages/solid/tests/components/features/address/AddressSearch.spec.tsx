@@ -22,7 +22,7 @@ function TestApp() {
 }
 
 describe("AddressSearchContent", () => {
-  it("마운트 시 Daum Postcode 위젯이 content 영역에 렌더된다", async () => {
+  it("mounts and renders Daum Postcode widget inside content area", async () => {
     const { getByTestId } = render(() => (
       <DialogProvider>
         <TestApp />
@@ -31,12 +31,12 @@ describe("AddressSearchContent", () => {
 
     getByTestId("open-btn").click();
 
-    // Daum Postcode 스크립트 로드 + 위젯 embed 대기
+    // wait for Daum Postcode script load + widget embed
     await waitFor(
       () => {
         const content = document.querySelector("[data-address-content]");
         expect(content).not.toBeNull();
-        // Daum Postcode 위젯이 embed되면 content 내부에 자식 요소가 생긴다
+        // once the Daum Postcode widget is embedded, content has child elements
         expect(content!.children.length).toBeGreaterThan(0);
       },
       { timeout: 10000 },

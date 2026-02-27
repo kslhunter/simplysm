@@ -340,7 +340,7 @@ describe("Expr - Comparison operators (null-safe)", () => {
     });
   });
 
-  //#region ========== DateTime 값 테스트 ==========
+  //#region ========== DateTime value tests ==========
 
   describe("eq - DateTime value comparison", () => {
     const db = createTestDb();
@@ -358,7 +358,7 @@ describe("Expr - Comparison operators (null-safe)", () => {
 
   //#endregion
 
-  //#region ========== inQuery 테스트 ==========
+  //#region ========== inQuery tests ==========
 
   describe("inQuery - subquery IN condition", () => {
     const db = createTestDb();

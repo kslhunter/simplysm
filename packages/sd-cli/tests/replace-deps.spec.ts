@@ -258,12 +258,12 @@ describe("watchReplaceDeps", () => {
   beforeEach(async () => {
     tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-watch-replace-"));
 
-    // 소스 패키지 (simplysm/packages/solid)
+    // Source package (simplysm/packages/solid)
     const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
     await fs.promises.mkdir(sourceDir, { recursive: true });
     await fs.promises.writeFile(path.join(sourceDir, "index.js"), "export default 1;");
 
-    // 대상 프로젝트 (.pnpm 스토어 방식)
+    // Target project (.pnpm store style)
     const appRoot = path.join(tmpDir, "app");
     const pnpmStoreTarget = path.join(
       appRoot,

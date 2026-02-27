@@ -82,7 +82,7 @@ describe("Dropdown", () => {
   });
 
   describe("controlled mode", () => {
-    it("open prop으로 제어된다", async () => {
+    it("is controlled by open prop", async () => {
       const [open, setOpen] = createSignal(false);
 
       render(() => (
@@ -106,8 +106,8 @@ describe("Dropdown", () => {
     });
   });
 
-  describe("Context menu (Trigger 없음)", () => {
-    it("position prop으로 위치가 설정된다", async () => {
+  describe("Context menu (no Trigger)", () => {
+    it("sets position via position prop", async () => {
       render(() => (
         <Dropdown position={{ x: 300, y: 200 }} open={true}>
           <Dropdown.Content>
@@ -150,7 +150,7 @@ describe("Dropdown", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("Escape 키로 닫힌다", async () => {
+    it("closes on Escape key", async () => {
       const handleOpenChange = vi.fn();
 
       render(() => (

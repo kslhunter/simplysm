@@ -4,7 +4,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-//#region ========== Basic 재귀 CTE ==========
+//#region ========== Basic Recursive CTE ==========
 
 export const basicSubordinates: ExpectedSql = {
   mysql: mysql`
@@ -143,7 +143,7 @@ export const upwardManagers: ExpectedSql = {
 
 //#endregion
 
-//#region ========== CTE + 후processing ==========
+//#region ========== CTE + Post Processing ==========
 
 export const cteWithOrderBy: ExpectedSql = {
   mysql: mysql`
