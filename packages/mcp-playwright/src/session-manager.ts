@@ -9,6 +9,7 @@ interface Session {
 
 export class SessionManager {
   readonly #sessions = new Map<string, Session>();
+  readonly #pending = new Map<string, Promise<Session>>();
   readonly #cleanupInterval: ReturnType<typeof setInterval>;
 
   constructor(
@@ -23,8 +24,16 @@ export class SessionManager {
   async getOrCreate(sessionId: string): Promise<Client> {
     let session = this.#sessions.get(sessionId);
     if (session == null) {
-      session = await this.#createSession();
-      this.#sessions.set(sessionId, session);
+      let pending = this.#pending.get(sessionId);
+      if (pending == null) {
+        pending = this.#createSession().then((s) => {
+          this.#sessions.set(sessionId, s);
+          this.#pending.delete(sessionId);
+          return s;
+        });
+        this.#pending.set(sessionId, pending);
+      }
+      session = await pending;
     }
     session.lastUsed = Date.now();
     return session.client;

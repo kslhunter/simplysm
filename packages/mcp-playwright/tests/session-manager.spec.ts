@@ -83,11 +83,13 @@ describe("SessionManager", () => {
   it("cleanup removes sessions past timeout", async () => {
     vi.useFakeTimers();
     const manager2 = new SessionManager({}, 100); // 100ms timeout
-    await manager2.getOrCreate("session-a");
-
-    await vi.advanceTimersByTimeAsync(31_000); // triggers 30s cleanup interval, past 100ms timeout
-
-    expect(manager2.list()).toEqual([]);
-    vi.useRealTimers();
+    try {
+      await manager2.getOrCreate("session-a");
+      await vi.advanceTimersByTimeAsync(31_000); // triggers 30s cleanup interval, past 100ms timeout
+      expect(manager2.list()).toEqual([]);
+    } finally {
+      await manager2.disposeAll();
+      vi.useRealTimers();
+    }
   });
 });
