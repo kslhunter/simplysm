@@ -580,6 +580,9 @@ importers:
       solid-tiptap:
         specifier: ^0.8.0
         version: 0.8.0(@tiptap/core@3.20.0(@tiptap/pm@3.20.0))(@tiptap/pm@3.20.0)(solid-js@1.9.11)
+      tabbable:
+        specifier: ^6.4.0
+        version: 6.4.0
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
