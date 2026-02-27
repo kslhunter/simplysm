@@ -57,8 +57,6 @@ export interface SharedDataSelectListProps<TItem> {
 
 const containerClass = clsx("flex-col gap-1");
 
-const headerClass = clsx("flex items-center gap-1 px-2 py-1 text-sm font-semibold");
-
 // ─── Component ───────────────────────────────────────────
 
 export interface SharedDataSelectListComponent {
@@ -213,7 +211,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
       >
         {/* Header */}
         <Show when={local.header != null || local.modal != null}>
-          <div class={headerClass}>
+          <div class={clsx("flex items-center gap-1 px-2 py-1 text-sm font-bold text-base-400")}>
             <Show when={local.header != null}>{local.header}</Show>
             <Show when={local.modal != null}>
               <Button size="sm" onClick={() => void handleOpenModal()}>
@@ -225,13 +223,14 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
 
         {/* Search input: when Filter compound is absent and getSearchText exists */}
         <Show when={!filter() && local.data.getSearchText}>
-          <TextInput
-            value={searchText()}
-            onValueChange={setSearchText}
-            placeholder={i18n?.t("sharedDataSelectList.searchPlaceholder") ?? "Search..."}
-            size="sm"
-            inset
-          />
+          <div class={"p-1"}>
+            <TextInput
+              value={searchText()}
+              onValueChange={setSearchText}
+              placeholder={i18n?.t("sharedDataSelectList.searchPlaceholder") ?? "Search..."}
+              class={"w-full"}
+            />
+          </div>
         </Show>
 
         {/* Custom Filter */}

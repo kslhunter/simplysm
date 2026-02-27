@@ -28,6 +28,10 @@ When working on this monorepo, read the relevant reference before starting:
 | Working on solid package | `docs/references/solid-guide.md` |
 | Writing/running tests | `docs/references/testing.md` |
 
+## Code Language
+
+All source code must be written in **English**. This includes variable names, function names, class names, comments, error messages, and string literals intended for developers (e.g., log messages). Only user-facing strings (UI labels, i18n resources) may use other languages.
+
 ## Workflow
 
 After writing code: verify with `/sd-check`.
