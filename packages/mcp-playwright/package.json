@@ -1,0 +1,28 @@
+{
+  "name": "@simplysm/mcp-playwright",
+  "version": "13.0.70",
+  "description": "Simplysm MCP server — multi-session Playwright proxy",
+  "author": "simplysm",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/mcp-playwright"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "sd-mcp-playwright": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@playwright/mcp": "^0.0.68",
+    "playwright": "^1.58.2"
+  }
+}
