@@ -58,7 +58,7 @@ export async function registerProxiedTools(
     },
   ];
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: allTools }));
+  server.setRequestHandler(ListToolsRequestSchema, () => ({ tools: allTools }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
@@ -76,7 +76,7 @@ export async function registerProxiedTools(
       };
     }
 
-    const sessionId = (args as Record<string, unknown>)["sessionId"];
+    const sessionId = args["sessionId"];
     if (typeof sessionId !== "string" || sessionId === "") {
       throw new Error("Missing required argument: sessionId");
     }
