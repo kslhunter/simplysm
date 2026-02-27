@@ -55,8 +55,12 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   }
 
   async function removeListener(key: string): Promise<void> {
-    await transport.send({ name: "evt:remove", body: { key } });
     listenerMap.delete(key);
+    try {
+      await transport.send({ name: "evt:remove", body: { key } });
+    } catch {
+      // Server auto-cleans event listeners on disconnect; safe to ignore
+    }
   }
 
   async function emitToServer<TInfo, TData>(

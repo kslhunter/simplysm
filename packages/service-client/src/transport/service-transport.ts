@@ -61,6 +61,9 @@ export function createServiceTransport(
       pendingRequests.set(uuid, { resolve, reject, progress });
     });
 
+    // Prevent unhandled rejection when the promise is orphaned (e.g., during HMR cleanup)
+    responsePromise.catch(() => {});
+
     // Send request
     try {
       const { chunks, totalSize } = await protocol.encode(uuid, message);
