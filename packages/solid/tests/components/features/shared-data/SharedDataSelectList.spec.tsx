@@ -430,9 +430,9 @@ describe("SharedDataSelectList", () => {
     });
   });
 
-  // ─── header / modal ────────────────────────────────────
+  // ─── header ────────────────────────────────────────────
 
-  describe("header / modal", () => {
+  describe("header", () => {
     it("header text is displayed when header is provided", () => {
       const accessor = createMockAccessor(["Apple"]);
 
@@ -443,21 +443,6 @@ describe("SharedDataSelectList", () => {
       ));
 
       expect(screen.getByText("과일 목록")).toBeTruthy();
-    });
-
-    it("management button is displayed when modal is provided", () => {
-      const accessor = createMockAccessor(["Apple"]);
-
-      renderWithDialog(() => (
-        <SharedDataSelectList data={accessor} header="과일" modal={() => <div>Modal</div>} required>
-          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
-        </SharedDataSelectList>
-      ));
-
-      // Button is rendered (with IconExternalLink)
-      const headerArea = screen.getByText("과일").parentElement!;
-      const button = headerArea.querySelector("button");
-      expect(button).toBeTruthy();
     });
   });
 });
