@@ -28,8 +28,9 @@ export class SessionManager {
       if (pending == null) {
         pending = this.#createSession().then((s) => {
           this.#sessions.set(sessionId, s);
-          this.#pending.delete(sessionId);
           return s;
+        }).finally(() => {
+          this.#pending.delete(sessionId);
         });
         this.#pending.set(sessionId, pending);
       }
