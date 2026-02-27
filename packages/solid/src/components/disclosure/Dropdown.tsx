@@ -358,13 +358,13 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
 
     const dir = direction();
     const allTabbable = tabbable(popup);
-    const current = (document.activeElement as HTMLElement) ?? (e.target as HTMLElement);
+    const current = (document.activeElement ?? e.target) as HTMLElement;
     const currentIdx = allTabbable.indexOf(current);
 
     if (e.key === "ArrowUp") {
       if (currentIdx > 0) {
         e.preventDefault();
-        allTabbable[currentIdx - 1]!.focus();
+        allTabbable[currentIdx - 1].focus();
       } else if (dir === "down") {
         e.preventDefault();
         triggerRef.focus();
@@ -372,7 +372,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     } else if (e.key === "ArrowDown") {
       if (currentIdx >= 0 && currentIdx < allTabbable.length - 1) {
         e.preventDefault();
-        allTabbable[currentIdx + 1]!.focus();
+        allTabbable[currentIdx + 1].focus();
       } else if (dir === "up") {
         e.preventDefault();
         triggerRef.focus();
