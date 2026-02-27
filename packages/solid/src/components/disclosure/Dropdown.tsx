@@ -18,6 +18,7 @@ import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { borderSubtle } from "../../styles/tokens.styles";
+import { tabbable } from "tabbable";
 
 // --- DropdownContext (internal) ---
 
@@ -70,13 +71,15 @@ export interface DropdownProps {
    * Enable keyboard navigation (used in Select, etc)
    *
    * When direction=down:
-   * - ArrowDown from trigger -> focus first focusable item
-   * - ArrowUp from first item -> focus trigger
+   * - ArrowDown from trigger -> focus first tabbable item in popup
+   * - ArrowUp/ArrowDown within popup -> navigate between tabbable items
+   * - ArrowUp from first tabbable -> focus trigger
    * - ArrowUp from trigger -> close
    *
    * When direction=up:
-   * - ArrowUp from trigger -> focus last focusable item
-   * - ArrowDown from last item -> focus trigger
+   * - ArrowUp from trigger -> focus last tabbable item in popup
+   * - ArrowUp/ArrowDown within popup -> navigate between tabbable items
+   * - ArrowDown from last tabbable -> focus trigger
    * - ArrowDown from trigger -> close
    */
   keyboardNav?: boolean;
@@ -319,11 +322,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     if (!popup) return;
 
     const dir = direction();
-    const focusables = [
-      ...popup.querySelectorAll<HTMLElement>(
-        '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
-      ),
-    ];
+    const focusables = tabbable(popup);
 
     if (dir === "down") {
       if (e.key === "ArrowDown" && focusables.length > 0) {
@@ -354,16 +353,30 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
 
     if (!triggerRef) return;
 
-    const dir = direction();
+    const popup = popupRef();
+    if (!popup) return;
 
-    // If ArrowUp/ArrowDown not handled in popup (first/last item)
-    // Move focus to trigger
-    if (dir === "down" && e.key === "ArrowUp") {
-      e.preventDefault();
-      triggerRef.focus();
-    } else if (dir === "up" && e.key === "ArrowDown") {
-      e.preventDefault();
-      triggerRef.focus();
+    const dir = direction();
+    const allTabbable = tabbable(popup);
+    const current = (document.activeElement as HTMLElement) ?? (e.target as HTMLElement);
+    const currentIdx = allTabbable.indexOf(current);
+
+    if (e.key === "ArrowUp") {
+      if (currentIdx > 0) {
+        e.preventDefault();
+        allTabbable[currentIdx - 1]!.focus();
+      } else if (dir === "down") {
+        e.preventDefault();
+        triggerRef.focus();
+      }
+    } else if (e.key === "ArrowDown") {
+      if (currentIdx >= 0 && currentIdx < allTabbable.length - 1) {
+        e.preventDefault();
+        allTabbable[currentIdx + 1]!.focus();
+      } else if (dir === "up") {
+        e.preventDefault();
+        triggerRef.focus();
+      }
     }
   };
 
@@ -432,6 +445,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
           ref={(el) => {
             triggerRef = el;
           }}
+          tabIndex={-1}
           data-dropdown-trigger
           onClick={toggle}
           onKeyDown={handleTriggerKeyDown}
