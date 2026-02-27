@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSignal } from "solid-js";
 import { Dropdown } from "../../../src/components/disclosure/Dropdown";
 
-describe("Dropdown 컴포넌트", () => {
+describe("Dropdown", () => {
   beforeEach(() => {
     vi.stubGlobal("innerWidth", 1024);
     vi.stubGlobal("innerHeight", 768);
@@ -15,8 +15,8 @@ describe("Dropdown 컴포넌트", () => {
     vi.unstubAllGlobals();
   });
 
-  describe("Trigger/Content 구조", () => {
-    it("Trigger 클릭 시 Content가 렌더링된다", async () => {
+  describe("Trigger/Content structure", () => {
+    it("renders Content on Trigger click", async () => {
       render(() => (
         <Dropdown>
           <Dropdown.Trigger>
@@ -38,7 +38,7 @@ describe("Dropdown 컴포넌트", () => {
       });
     });
 
-    it("Trigger 재클릭 시 닫힌다", () => {
+    it("closes on second Trigger click", () => {
       const [open, setOpen] = createSignal(false);
       const handleOpenChange = vi.fn((v: boolean) => setOpen(v));
 
@@ -61,7 +61,7 @@ describe("Dropdown 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("disabled 시 Trigger 클릭이 무시된다", () => {
+    it("ignores Trigger click when disabled", () => {
       const [open, setOpen] = createSignal(false);
       const handleOpenChange = vi.fn((v: boolean) => setOpen(v));
 
@@ -81,7 +81,7 @@ describe("Dropdown 컴포넌트", () => {
     });
   });
 
-  describe("Controlled 모드", () => {
+  describe("controlled mode", () => {
     it("open prop으로 제어된다", async () => {
       const [open, setOpen] = createSignal(false);
 
@@ -124,8 +124,8 @@ describe("Dropdown 컴포넌트", () => {
     });
   });
 
-  describe("닫힘 감지", () => {
-    it("외부 pointerdown 시 닫힌다", async () => {
+  describe("close detection", () => {
+    it("closes on outside pointerdown", async () => {
       const handleOpenChange = vi.fn();
 
       render(() => (
@@ -174,7 +174,7 @@ describe("Dropdown 컴포넌트", () => {
   });
 
   describe("maxHeight", () => {
-    it("기본값 300px", async () => {
+    it("defaults to 300px", async () => {
       render(() => (
         <Dropdown open={true}>
           <Dropdown.Trigger>
@@ -192,7 +192,7 @@ describe("Dropdown 컴포넌트", () => {
       });
     });
 
-    it("커스텀 값 적용", async () => {
+    it("applies custom value", async () => {
       render(() => (
         <Dropdown open={true} maxHeight={500}>
           <Dropdown.Trigger>
@@ -208,6 +208,126 @@ describe("Dropdown 컴포넌트", () => {
         const dropdown = document.querySelector("[data-dropdown]") as HTMLElement;
         expect(dropdown.style.maxHeight).toBe("500px");
       });
+    });
+  });
+
+  describe("keyboardNav tabbable navigation", () => {
+    it("ArrowDown from trigger focuses first tabbable in popup (input, not list item)", async () => {
+      const [open, setOpen] = createSignal(true);
+
+      render(() => (
+        <Dropdown open={open()} onOpenChange={setOpen} keyboardNav>
+          <Dropdown.Trigger>
+            <button data-testid="trigger">trigger</button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <input data-testid="search" />
+            <button data-testid="action-btn" type="button">action</button>
+            <button data-list-item data-testid="item1" type="button">item1</button>
+          </Dropdown.Content>
+        </Dropdown>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const triggerWrapper = document.querySelector("[data-dropdown-trigger]") as HTMLElement;
+      triggerWrapper.focus();
+
+      fireEvent.keyDown(triggerWrapper, { key: "ArrowDown" });
+
+      const search = document.querySelector('[data-testid="search"]') as HTMLElement;
+      expect(document.activeElement).toBe(search);
+    });
+
+    it("ArrowDown from input focuses next tabbable (button)", async () => {
+      const [open, setOpen] = createSignal(true);
+
+      render(() => (
+        <Dropdown open={open()} onOpenChange={setOpen} keyboardNav>
+          <Dropdown.Trigger>
+            <button data-testid="trigger">trigger</button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <input data-testid="search" />
+            <button data-testid="action-btn" type="button">action</button>
+            <button data-list-item data-testid="item1" type="button">item1</button>
+          </Dropdown.Content>
+        </Dropdown>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const search = document.querySelector('[data-testid="search"]') as HTMLElement;
+      search.focus();
+
+      const popup = document.querySelector("[data-dropdown]") as HTMLElement;
+      fireEvent.keyDown(popup, { key: "ArrowDown" });
+
+      const actionBtn = document.querySelector('[data-testid="action-btn"]') as HTMLElement;
+      expect(document.activeElement).toBe(actionBtn);
+    });
+
+    it("ArrowUp from input focuses trigger (no prev tabbable, dir=down)", async () => {
+      const [open, setOpen] = createSignal(true);
+
+      render(() => (
+        <Dropdown open={open()} onOpenChange={setOpen} keyboardNav>
+          <Dropdown.Trigger>
+            <button data-testid="trigger">trigger</button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <input data-testid="search" />
+            <button data-list-item data-testid="item1" type="button">item1</button>
+          </Dropdown.Content>
+        </Dropdown>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const search = document.querySelector('[data-testid="search"]') as HTMLElement;
+      search.focus();
+
+      const popup = document.querySelector("[data-dropdown]") as HTMLElement;
+      fireEvent.keyDown(popup, { key: "ArrowUp" });
+
+      const triggerWrapper = document.querySelector("[data-dropdown-trigger]") as HTMLElement;
+      expect(document.activeElement).toBe(triggerWrapper);
+    });
+
+    it("ArrowUp from action button focuses prev tabbable (input)", async () => {
+      const [open, setOpen] = createSignal(true);
+
+      render(() => (
+        <Dropdown open={open()} onOpenChange={setOpen} keyboardNav>
+          <Dropdown.Trigger>
+            <button data-testid="trigger">trigger</button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <input data-testid="search" />
+            <button data-testid="action-btn" type="button">action</button>
+            <button data-list-item data-testid="item1" type="button">item1</button>
+          </Dropdown.Content>
+        </Dropdown>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const actionBtn = document.querySelector('[data-testid="action-btn"]') as HTMLElement;
+      actionBtn.focus();
+
+      const popup = document.querySelector("[data-dropdown]") as HTMLElement;
+      fireEvent.keyDown(popup, { key: "ArrowUp" });
+
+      const search = document.querySelector('[data-testid="search"]') as HTMLElement;
+      expect(document.activeElement).toBe(search);
     });
   });
 });
