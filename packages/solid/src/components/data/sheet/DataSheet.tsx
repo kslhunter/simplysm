@@ -1008,7 +1008,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                                 toggleSort(key, e.shiftKey || e.ctrlKey);
                               }}
                             >
-                              <div class={clsx("flex items-center", thContentClass)}>
+                              <div class={clsx("flex items-center gap-2", thContentClass)}>
                                 <div class="flex-1">{c().headerContent?.() ?? c().text}</div>
                                 <Show when={isSortable() && colKey()}>
                                   {(key) => {
@@ -1017,15 +1017,14 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                                     return (
                                       <div class={sortIconClass}>
                                         <Show when={sortDef()?.desc === false}>
-                                          <Icon icon={IconSortAscending} size="1em" />
+                                          <Icon icon={IconSortAscending} />
                                         </Show>
                                         <Show when={sortDef()?.desc === true}>
-                                          <Icon icon={IconSortDescending} size="1em" />
+                                          <Icon icon={IconSortDescending} />
                                         </Show>
                                         <Show when={sortDef() == null}>
                                           <Icon
                                             icon={IconArrowsSort}
-                                            size="1em"
                                             class="opacity-30"
                                           />
                                         </Show>

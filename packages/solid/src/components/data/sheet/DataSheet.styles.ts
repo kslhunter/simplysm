@@ -48,7 +48,7 @@ export const defaultContainerClass = clsx("border", borderDefault, "rounded");
 export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 
 // Sort icon area
-export const sortIconClass = clsx("px-1 py-0.5", "bg-base-100 dark:bg-base-900");
+export const sortIconClass = clsx("bg-base-100 dark:bg-base-900");
 
 // Top toolbar (settings button + pagination)
 export const toolbarClass = clsx("flex items-center gap-2", "px-2 py-1", "border-b", borderDefault);

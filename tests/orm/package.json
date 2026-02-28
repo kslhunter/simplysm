@@ -20,8 +20,8 @@
   "dependencies": {
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",
-    "mysql2": "^3.18.0",
-    "pg": "^8.18.0",
+    "mysql2": "^3.18.2",
+    "pg": "^8.19.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.1"
   }

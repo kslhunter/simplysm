@@ -26,8 +26,8 @@
   "devDependencies": {
     "@types/pg": "^8.16.0",
     "@types/pg-copy-streams": "^1.2.5",
-    "mysql2": "^3.18.0",
-    "pg": "^8.18.0",
+    "mysql2": "^3.18.2",
+    "pg": "^8.19.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.1"
   },
