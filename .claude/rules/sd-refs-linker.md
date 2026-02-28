@@ -19,6 +19,7 @@ Determine the major version by the `version` field in `package.json`.
 | Debugging, problem-solving, or planning approach | `.claude/refs/sd-workflow.md`         |
 | Using `@simplysm/service-*` packages            | `.claude/refs/sd-service.md`          |
 | Migrating/porting code from another codebase     | `.claude/refs/sd-migration.md`        |
+| Debugging in a project that uses `@simplysm/*` as an external dependency (not the simplysm monorepo itself) | `.claude/refs/sd-library-issue.md` |
 
 ## v12 only (< 13)
 
