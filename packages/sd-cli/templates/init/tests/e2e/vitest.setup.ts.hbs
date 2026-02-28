@@ -1,0 +1,220 @@
+import { type ChildProcess, spawn, execSync } from "child_process";
+import path from "path";
+import { fileURLToPath } from "url";
+import { createDbConn, createOrm } from "@simplysm/orm-node";
+import { MainDbContext } from "@{{projectName}}/db-main";
+import bcrypt from "bcrypt";
+import { chromium } from "playwright";
+import type { TestProject } from "vitest/node";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(__dirname, "../..");
+
+const DB_CONFIG = {
+  dialect: "postgresql" as const,
+  host: "localhost",
+  port: 5432,
+  username: "postgres",
+  password: "1234",
+  database: "{{projectName}}-test",
+};
+
+const TEST_USER = {
+  name: "테스트",
+  email: "admin@test.com",
+  password: "test1234",
+};
+
+let devServerProcess: ChildProcess | undefined;
+
+function killProcessTree(proc: ChildProcess): void {
+  if (proc.pid == null) return;
+  try {
+    if (process.platform === "win32") {
+      execSync(`taskkill /T /F /PID ${proc.pid}`, { stdio: "ignore" });
+    } else {
+      process.kill(-proc.pid, "SIGTERM");
+    }
+  } catch {
+    /* 무시 */
+  }
+}
+
+function stripAnsi(str: string): string {
+  return str.replace(/\x1B\[[0-9;]*m/g, "");
+}
+
+function waitForServerUrl(process: ChildProcess, timeout: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let output = "";
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        reject(
+          new Error(`dev 서버 URL 대기 시간 초과 (${timeout}ms)\n출력:\n${output.slice(-2000)}`),
+        );
+      }
+    }, timeout);
+
+    function onData(data: Buffer) {
+      const text = stripAnsi(data.toString());
+      console.log(text);
+      output += text;
+
+      const urlMatch = text.match(/http:\/\/localhost:\d+\/client-admin\/?/);
+      if (urlMatch && !settled) {
+        settled = true;
+        clearTimeout(timer);
+        resolve(urlMatch[0].endsWith("/") ? urlMatch[0].slice(0, -1) : urlMatch[0]);
+      }
+    }
+
+    process.stdout?.on("data", onData);
+    process.stderr?.on("data", onData);
+
+    process.on("exit", (code) => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(
+          new Error(`dev 서버가 비정상 종료됨 (code: ${code})\n출력:\n${output.slice(-2000)}`),
+        );
+      }
+    });
+  });
+}
+
+async function warmup(baseUrl: string, timeout: number): Promise<void> {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(baseUrl, { timeout });
+
+    const result = await Promise.race([
+      page
+        .locator(".app-loading")
+        .waitFor({ state: "detached", timeout })
+        .then(() => "ready" as const),
+      page
+        .locator("vite-error-overlay")
+        .waitFor({ state: "attached", timeout })
+        .then(async () => {
+          const errorText = await page
+            .locator("vite-error-overlay")
+            .evaluate((el) => el.shadowRoot?.textContent ?? "");
+          return `error:${errorText}` as const;
+        }),
+    ]);
+
+    if (result.startsWith("error:")) {
+      throw new Error(`Vite 빌드 에러:\n${result.slice(6).slice(0, 2000)}`);
+    }
+  } finally {
+    await browser.close();
+  }
+}
+
+export async function setup(project: TestProject) {
+  // 1. 테스트 DB 생성 (없으면)
+  console.log("[e2e] 테스트 DB 확인...");
+  const adminConn = await createDbConn({ ...DB_CONFIG, database: "postgres" });
+  await adminConn.connect();
+  try {
+    const result = await adminConn.executeParametrized(
+      `SELECT 1 FROM pg_database WHERE datname = $1`,
+      [DB_CONFIG.database],
+    );
+    if (result[0].length === 0) {
+      await adminConn.execute([`CREATE DATABASE "${DB_CONFIG.database}"`]);
+      console.log(`[e2e] DB "${DB_CONFIG.database}" 생성됨.`);
+    } else {
+      console.log(`[e2e] DB "${DB_CONFIG.database}" 이미 존재.`);
+    }
+  } finally {
+    await adminConn.close();
+  }
+
+  // 2. DB 초기화 및 시딩
+  const orm = createOrm(MainDbContext, DB_CONFIG);
+  await orm.connectWithoutTransaction(async (db) => {
+    await db.initialize({ force: true });
+
+    // 권한그룹 생성
+    await db.role().insert([{ name: "관리자" }]);
+    const role = (await db.role().first())!;
+
+    // 전체 권한 부여
+    await db.rolePermission().insert([
+      { roleId: role.id, code: "/home/base/employee/use", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/edit", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/auth/use", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/auth/edit", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/personal/use", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/personal/edit", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/payroll/use", valueJson: "true" },
+      { roleId: role.id, code: "/home/base/employee/payroll/edit", valueJson: "true" },
+    ]);
+
+    // 테스트 유저 생성 (roleId 포함)
+    const encryptedPassword = await bcrypt.hash(TEST_USER.password, 10);
+    await db.employee().insert([
+      {
+        name: TEST_USER.name,
+        email: TEST_USER.email,
+        encryptedPassword,
+        roleId: role.id,
+        isDeleted: false,
+      },
+    ]);
+  });
+  console.log("[e2e] DB 초기화 및 시딩 완료.");
+
+  // 3. dev 서버 시작
+  console.log("[e2e] dev 서버 시작...");
+  devServerProcess = spawn("node", ["node_modules/@simplysm/sd-cli/dist/sd-cli.js", "dev"], {
+    cwd: rootDir,
+    stdio: "pipe",
+    ...(process.platform !== "win32" ? { detached: true } : {}),
+    env: {
+      ...process.env,
+      DB_DATABASE: DB_CONFIG.database,
+      DB_PORT: String(DB_CONFIG.port),
+      NODE_ENV: undefined, // consola가 콘솔을 강제로 warn이상으로 설정하지 못하도록 하기 위함
+      TEST: undefined, // consola가 콘솔을 강제로 warn이상으로 설정하지 못하도록 하기 위함
+    },
+  });
+
+  let baseUrl: string;
+  try {
+    // 4. stdout에서 URL 파싱 (90초 타임아웃)
+    baseUrl = await waitForServerUrl(devServerProcess, 90_000);
+    console.log(`[e2e] dev 서버 URL 감지: ${baseUrl}`);
+
+    // 5. Playwright warmup — Vite 빌드 트리거 및 에러 감지 (60초 타임아웃)
+    console.log("[e2e] Vite 빌드 warmup...");
+    await warmup(baseUrl, 60_000);
+    console.log("[e2e] warmup 완료. 테스트 시작 준비됨.");
+
+    project.provide("baseUrl", baseUrl);
+  } catch (err) {
+    killProcessTree(devServerProcess);
+    devServerProcess = undefined;
+    throw err;
+  }
+}
+
+export function teardown() {
+  if (devServerProcess != null) {
+    console.log("[e2e] dev 서버 종료...");
+    killProcessTree(devServerProcess);
+    devServerProcess = undefined;
+  }
+}
+
+declare module "vitest" {
+  export interface ProvidedContext {
+    baseUrl: string;
+  }
+}
