@@ -2,12 +2,15 @@ import {
   children,
   createMemo,
   createSignal,
+  createUniqueId,
   type JSX,
+  onCleanup,
   onMount,
   Show,
   splitProps,
   useContext,
 } from "solid-js";
+import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
 import { reconcile, unwrap } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
 import { objClone, objEqual } from "@simplysm/core-common";
@@ -82,6 +85,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
   let formRef: HTMLFormElement | undefined;
 
+  const crudId = createUniqueId();
+
   // -- Load --
   async function doLoad() {
     setBusyCount((c) => c + 1);
@@ -98,8 +103,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   }
 
   onMount(() => {
+    registerCrud(crudId, formRef!);
     void doLoad();
   });
+  onCleanup(() => unregisterCrud(crudId));
+
+  createEventListener(() => formRef, "pointerdown", () => activateCrud(crudId));
+  createEventListener(() => formRef, "focusin", () => activateCrud(crudId));
 
   // -- Change Detection --
   function hasChanges(): boolean {
@@ -177,13 +187,15 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
   // -- Keyboard Shortcuts --
   createEventListener(document, "keydown", (e: KeyboardEvent) => {
-    if (!formRef?.contains(document.activeElement)) return;
+    if (!isActiveCrud(crudId)) return;
     if (e.ctrlKey && e.key === "s") {
       e.preventDefault();
-      formRef.requestSubmit();
+      e.stopImmediatePropagation();
+      formRef!.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
+      e.stopImmediatePropagation();
       void handleRefresh();
     }
   });
