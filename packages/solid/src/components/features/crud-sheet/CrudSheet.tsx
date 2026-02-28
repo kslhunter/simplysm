@@ -3,8 +3,11 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  createUniqueId,
   For,
   type JSX,
+  onCleanup,
+  onMount,
   Show,
   splitProps,
   useContext,
@@ -41,6 +44,7 @@ import {
   IconTrashOff,
   IconUpload,
 } from "@tabler/icons-solidjs";
+import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
 import { CrudSheetColumn, isCrudSheetColumnDef } from "./CrudSheetColumn";
 import { CrudSheetFilter, isCrudSheetFilterDef } from "./CrudSheetFilter";
 import { CrudSheetTools, isCrudSheetToolsDef } from "./CrudSheetTools";
@@ -133,6 +137,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string | number>>(new Set());
 
   let formRef: HTMLFormElement | undefined;
+
+  const crudId = createUniqueId();
+  onMount(() => registerCrud(crudId, formRef!));
+  onCleanup(() => unregisterCrud(crudId));
+  createEventListener(() => formRef, "pointerdown", () => activateCrud(crudId));
+  createEventListener(() => formRef, "focusin", () => activateCrud(crudId));
 
   createEffect(() => {
     void doRefresh();
@@ -389,13 +399,15 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Keyboard Shortcuts --
   createEventListener(document, "keydown", async (e: KeyboardEvent) => {
-    if (!formRef?.contains(document.activeElement)) return;
+    if (!isActiveCrud(crudId)) return;
     if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
       e.preventDefault();
-      formRef.requestSubmit();
+      e.stopImmediatePropagation();
+      formRef!.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
+      e.stopImmediatePropagation();
       if (!checkIgnoreChanges()) return;
       await doRefresh();
     }
