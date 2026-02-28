@@ -1,0 +1,30 @@
+{
+  "name": "{{projectName}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "sd-cli dev",
+    "build": "sd-cli build",
+    "pub": "sd-cli publish",
+    "pub:no-build": "sd-cli publish --no-build",
+    "---": "",
+    "typecheck": "sd-cli typecheck",
+    "lint": "sd-cli lint",
+    "lint:fix": "sd-cli lint --fix",
+    "check": "sd-cli check",
+    "vitest": "vitest"
+  },
+  "devDependencies": {
+    "@simplysm/lint": "~13.0.71",
+    "@simplysm/sd-cli": "~13.0.71",
+    "@types/node": "^20.19.35",
+    "eslint": "^9.39.3",
+    "prettier": "^3.8.1",
+    "stylelint": "^16.26.1",
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.18"
+  }
+}

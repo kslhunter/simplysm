@@ -1,0 +1,36 @@
+import type { SdConfigFn } from "@simplysm/sd-cli";
+
+const dbPort = Number(process.env["DB_PORT"] ?? 5432);
+const dbDatabase = process.env["DB_DATABASE"] ?? "{{projectName}}";
+
+const config: SdConfigFn = () => ({
+  packages: {
+    "db-main": { target: "neutral" },
+    "client-admin": {
+      target: "client",
+      server: "server",
+    },
+    "server": {
+      target: "server",
+      packageManager: "volta",
+      pm2: {},
+      configs: {
+        orm: {
+          default: {
+            dialect: "postgresql",
+            host: "localhost",
+            port: dbPort,
+            username: "postgres",
+            password: "1234",
+            database: dbDatabase,
+          },
+        },
+        auth: {
+          jwtSecret: "{{jwtSecret}}",
+        },
+      },
+    },
+  },
+});
+
+export default config;
