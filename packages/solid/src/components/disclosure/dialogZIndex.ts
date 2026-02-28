@@ -46,3 +46,8 @@ function reindex(): void {
 export function isTopmost(el: HTMLElement): boolean {
   return stack.length > 0 && stack[stack.length - 1] === el;
 }
+
+/** Get the topmost (front-most) Dialog element, or null if none are open */
+export function getTopmostDialog(): HTMLElement | null {
+  return stack.length > 0 ? stack[stack.length - 1] : null;
+}
