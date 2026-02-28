@@ -58,7 +58,7 @@ export const AuthProvider: ParentComponent = (props) => {
   };
 
   return (
-    <AuthContext.Provider value={{ authInfo, login, logout, tryReloadAuth }}>
+    <AuthContext.Provider value=\{{ authInfo, login, logout, tryReloadAuth }}>
       {props.children}
     </AuthContext.Provider>
   );
@@ -66,6 +66,6 @@ export const AuthProvider: ParentComponent = (props) => {
 
 export function useAuth(): IAuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("AuthProvider가 필요합니다.");
+  if (!ctx) throw new Error("AuthProvider is required.");
   return ctx;
 }

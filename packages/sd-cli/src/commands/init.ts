@@ -74,7 +74,7 @@ export async function runInit(_options: InitOptions): Promise<void> {
   // 4. Prompt for port
   const portInput = await prompt("Server port (default: 40080): ");
   const port = portInput !== "" ? Number(portInput) : 40080;
-  if (Number.isNaN(port) || port < 1 || port > 65535) {
+  if (Number.isNaN(port) || !Number.isInteger(port) || port < 1 || port > 65535) {
     consola.error("Invalid port number.");
     process.exitCode = 1;
     return;

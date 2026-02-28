@@ -98,6 +98,6 @@ export const AppServiceProvider: ParentComponent = (props) => {
 
 export function useAppService(): IAppServiceClient {
   const ctx = useContext(AppServiceContext);
-  if (!ctx) throw new Error("AppServiceProvider가 필요합니다.");
+  if (!ctx) throw new Error("AppServiceProvider is required.");
   return ctx;
 }

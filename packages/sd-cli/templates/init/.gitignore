@@ -10,7 +10,7 @@ packages/*/dist
 *.~*
 ~*.*
 
-# TypeScript 컴파일 결과물 (소스 디렉토리에서 제외)
+# TypeScript compile outputs (excluded from source directories)
 packages/*/src/**/*.js
 packages/*/src/**/*.js.map
 packages/*/src/**/*.d.ts
