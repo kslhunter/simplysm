@@ -50,7 +50,7 @@ type(scope): short description
 | ------------- | ---------------------------------------------------------------------------- |
 | `type`        | `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf` |
 | `scope`       | package name or area (e.g., `solid`, `core-common`, `orm-node`)              |
-| `description` | imperative, lowercase, no period at end                                      |
+| `description` | written in the system's configured language, imperative, lowercase, no period at end |
 
 Examples:
 
