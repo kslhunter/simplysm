@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""XLSX 파일에서 데이터와 이미지를 셀 위치와 함께 추출한다."""
+"""Extract data and images from XLSX files with cell positions."""
 
 import sys
 import io
@@ -17,7 +17,7 @@ def ensure_packages():
         try:
             __import__(import_name)
         except ImportError:
-            print(f"패키지 설치 중: {pip_name}...", file=sys.stderr)
+            print(f"Installing package: {pip_name}...", file=sys.stderr)
             subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name],
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -37,10 +37,10 @@ def extract(file_path):
         ws = wb[sheet_name]
         print(f"## Sheet: {sheet_name}\n")
 
-        # 데이터 추출
+        # Data extraction
         rows = list(ws.iter_rows(values_only=False))
         if not rows:
-            print("(빈 시트)\n")
+            print("(empty sheet)\n")
             continue
 
         for row in rows:
@@ -53,7 +53,7 @@ def extract(file_path):
                     cells.append(str(val).strip())
             print(f"[{row[0].coordinate.split('1')[0]}{row[0].row}] " + " | ".join(cells))
 
-        # 이미지 추출
+        # Image extraction
         if ws._images:
             for img in ws._images:
                 img_idx += 1
@@ -70,9 +70,9 @@ def extract(file_path):
         print()
 
     if img_idx > 0:
-        print(f"---\n이미지 {img_idx}개 저장: {out_dir}")
+        print(f"---\n{img_idx} image(s) saved: {out_dir}")
     else:
-        print("---\n이미지 없음")
+        print("---\nNo images")
 
 
 if __name__ == "__main__":

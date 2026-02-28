@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PDF 파일에서 텍스트, 표, 이미지를 페이지별로 추출한다."""
+"""Extract text, tables, and images from PDF files page by page."""
 
 import sys
 import io
@@ -16,7 +16,7 @@ def ensure_packages():
         try:
             __import__(import_name)
         except ImportError:
-            print(f"패키지 설치 중: {pip_name}...", file=sys.stderr)
+            print(f"Installing package: {pip_name}...", file=sys.stderr)
             subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name],
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -32,7 +32,7 @@ def extract(file_path):
 
     print(f"# {Path(file_path).name}\n")
 
-    # 텍스트 + 표 추출 (pdfplumber)
+    # Text + table extraction (pdfplumber)
     with pdfplumber.open(file_path) as pdf:
         for page_num, page in enumerate(pdf.pages, 1):
             print(f"## Page {page_num}\n")
@@ -52,7 +52,7 @@ def extract(file_path):
                         print("| " + " | ".join(cells) + " |")
                     print()
 
-    # 이미지 추출 (pypdf)
+    # Image extraction (pypdf)
     reader = PdfReader(file_path)
     for page_num, page in enumerate(reader.pages, 1):
         if "/XObject" not in (page.get("/Resources") or {}):
@@ -79,19 +79,19 @@ def extract(file_path):
                     img_path.write_bytes(obj._data if hasattr(obj, "_data") else b"")
                 print(f"[IMG] (page={page_num}) {img_path}")
 
-    # OCR 안내
+    # OCR notice
     if total_text_len == 0:
-        print("\n⚠ 텍스트가 추출되지 않았습니다 (스캔 PDF일 수 있음).")
-        print("OCR이 필요합니다:")
-        print("  1. Tesseract OCR 설치: https://github.com/tesseract-ocr/tesseract")
+        print("\n⚠ No text was extracted (may be a scanned PDF).")
+        print("OCR is required:")
+        print("  1. Install Tesseract OCR: https://github.com/tesseract-ocr/tesseract")
         print("  2. pip install pytesseract pdf2image")
-        print("  3. pytesseract.image_to_string() 으로 추출")
+        print("  3. Extract with pytesseract.image_to_string()")
 
     print()
     if img_idx > 0:
-        print(f"---\n이미지 {img_idx}개 저장: {out_dir}")
+        print(f"---\n{img_idx} image(s) saved: {out_dir}")
     else:
-        print("---\n이미지 없음")
+        print("---\nNo images")
 
 
 if __name__ == "__main__":

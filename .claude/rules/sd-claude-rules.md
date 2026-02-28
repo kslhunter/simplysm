@@ -21,9 +21,9 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 
 ### Questions vs. Code Requests — CRITICAL
 
-- **If the user asks a question** (e.g., "이건 왜 이래?", "이거 뭐야?", "어떻게 동작해?") → **answer with text only**. Do NOT edit, write, or create any files.
+- **If the user asks a question** (e.g., "Why is this like this?", "What is this?", "How does this work?") → **answer with text only**. Do NOT edit, write, or create any files.
 - **If the user discusses, explains, or shares opinions** → **respond with text only**. Do NOT touch any files.
-- **Only edit/write/create files when the user explicitly requests code changes** (e.g., "수정해줘", "만들어줘", "변경해줘", "추가해줘", "고쳐줘").
+- **Only edit/write/create files when the user explicitly requests code changes** (e.g., "Fix this", "Create this", "Change this", "Add this").
 - Reading files to answer a question is fine. **Modifying files to answer a question is prohibited.**
 
 ### General Rules
