@@ -2,15 +2,21 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { type createConnection } from "@playwright/mcp";
 import { SessionManager } from "./session-manager.js";
 import { registerProxiedTools } from "./tool-proxy.js";
 
-const headless = process.env["HEADLESS"] !== "false";
-const config = { browser: { launchOptions: { headless } } };
+const config: NonNullable<Parameters<typeof createConnection>[0]> = {
+  browser: { isolated: true, launchOptions: { headless: true } },
+  outputDir: ".tmp/playwright",
+};
 
 const server = new Server(
   { name: "mcp-playwright", version: "1.0.0" },
-  { capabilities: { tools: {} } },
+  {
+    capabilities: { tools: {} },
+    instructions: "Multi-session Playwright MCP server. Each tool requires a 'sessionId' for browser isolation.\nOutput directory: .tmp/playwright",
+  },
 );
 
 const sessionManager = new SessionManager(config);
