@@ -103,7 +103,6 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   }
 
   onMount(() => {
-    registerCrud(crudId, formRef!);
     void doLoad();
   });
   onCleanup(() => unregisterCrud(crudId));
@@ -191,7 +190,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     if (e.ctrlKey && e.key === "s") {
       e.preventDefault();
       e.stopImmediatePropagation();
-      formRef!.requestSubmit();
+      formRef?.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
@@ -336,7 +335,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={defs().before}>{(beforeDef) => beforeDef().children}</Show>
 
         {/* Form */}
-        <form ref={formRef} class="flex-1 overflow-auto" onSubmit={handleFormSubmit}>
+        <form ref={(el) => { formRef = el; registerCrud(crudId, el); }} class="flex-1 overflow-auto" onSubmit={handleFormSubmit}>
           {formContent()}
         </form>
 

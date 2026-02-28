@@ -7,7 +7,6 @@ import {
   For,
   type JSX,
   onCleanup,
-  onMount,
   Show,
   splitProps,
   useContext,
@@ -139,7 +138,6 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   let formRef: HTMLFormElement | undefined;
 
   const crudId = createUniqueId();
-  onMount(() => registerCrud(crudId, formRef!));
   onCleanup(() => unregisterCrud(crudId));
   createEventListener(() => formRef, "pointerdown", () => activateCrud(crudId));
   createEventListener(() => formRef, "focusin", () => activateCrud(crudId));
@@ -403,7 +401,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      formRef!.requestSubmit();
+      formRef?.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
@@ -614,7 +612,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </Show>
 
         {/* DataSheet */}
-        <form ref={formRef} class="flex-1 overflow-hidden p-2 pt-1" onSubmit={handleFormSubmit}>
+        <form ref={(el) => { formRef = el; registerCrud(crudId, el); }} class="flex-1 overflow-hidden p-2 pt-1" onSubmit={handleFormSubmit}>
           <DataSheet
             class="h-full"
             items={items}
