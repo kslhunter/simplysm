@@ -55,6 +55,7 @@ pnpm add @simplysm/service-server
 |--------|---------|-------------|------|
 | `src/services/orm-service.ts` | `OrmService`, `OrmServiceType` | Built-in service exposing ORM database operations over WebSocket | `orm-service.spec.ts` |
 | `src/services/auto-update-service.ts` | `AutoUpdateService`, `AutoUpdateServiceType` | Built-in service for serving the latest app update package by platform | - |
+| `src/services/smtp-client-service.ts` | `SmtpClientService`, `SmtpClientServiceType` | Built-in service for sending emails via SMTP using nodemailer | - |
 
 ### Utils
 

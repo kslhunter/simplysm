@@ -24,7 +24,8 @@
     "vitest": "vitest",
     "----": "",
     "sd-cli": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
-    "sd-claude": "cross-env tsx packages/sd-claude/src/sd-claude.ts",
+    "sd-claude": "tsx packages/sd-claude/src/sd-claude.ts",
+    "ca": "tsx packages/sd-claude/src/sd-claude.ts auth",
     "reinstall": "pnpm install --force",
     "postinstall": "playwright install"
   },

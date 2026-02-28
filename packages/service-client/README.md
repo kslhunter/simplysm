@@ -42,7 +42,7 @@ pnpm add @simplysm/service-client
 
 | Source | Exports | Description | Test |
 |--------|---------|-------------|------|
-| `src/service-client.ts` | `ServiceClient`, `RemoteService`, `createServiceClient` | Top-level client that composes socket, transport, events, and file features | - |
+| `src/service-client.ts` | `ServiceClient`, `RemoteService`, `createServiceClient` | Top-level client that composes socket, transport, events, and file features | `tests/service/src/service-client.spec.ts` |
 
 ## License
 

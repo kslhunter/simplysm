@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PPTX 파일에서 텍스트와 이미지를 슬라이드별 좌표와 함께 추출한다."""
+"""Extract text and images from PPTX files with per-slide coordinates."""
 
 import sys
 import io
@@ -16,13 +16,13 @@ def ensure_packages():
         try:
             __import__(import_name)
         except ImportError:
-            print(f"패키지 설치 중: {pip_name}...", file=sys.stderr)
+            print(f"Installing package: {pip_name}...", file=sys.stderr)
             subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name],
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def emu_to_inches(emu):
-    """EMU를 인치로 변환 (소수점 1자리)."""
+    """Convert EMU to inches (1 decimal place)."""
     if emu is None:
         return "?"
     return f"{emu / 914400:.1f}"
@@ -64,9 +64,9 @@ def extract(file_path):
         print()
 
     if img_idx > 0:
-        print(f"---\n이미지 {img_idx}개 저장: {out_dir}")
+        print(f"---\n{img_idx} image(s) saved: {out_dir}")
     else:
-        print("---\n이미지 없음")
+        print("---\nNo images")
 
 
 if __name__ == "__main__":

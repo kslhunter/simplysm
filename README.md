@@ -49,6 +49,7 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 | [`@simplysm/lint`](packages/lint/README.md)           | node | Lint config (ESLint + Stylelint) |
 | [`@simplysm/excel`](packages/excel/README.md)         | neutral | Excel (.xlsx) read/write |
 | [`@simplysm/storage`](packages/storage/README.md)     | node | FTP/SFTP client |
+| [`@simplysm/mcp-playwright`](packages/mcp-playwright/README.md) | node | MCP server — multi-session Playwright proxy (`sd-mcp-playwright`) |
 
 ### Capacitor Plugins
 

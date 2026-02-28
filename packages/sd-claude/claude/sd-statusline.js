@@ -241,7 +241,7 @@ async function main() {
   const cwd = input.cwd ?? process.cwd();
   const folderName = path.basename(cwd);
 
-  // 출력
+  // Output
   const dailyStr = dailyResetTime ? `${dailyPercent}%(${dailyResetTime})` : `${dailyPercent}%`;
   const weekStr = weekResetDay ? `${weekPercent}%(${weekResetDay})` : `${weekPercent}%`;
   const parts = [folderName, modelName, `${contextPercent}%`, dailyStr, weekStr];

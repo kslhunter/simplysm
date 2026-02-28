@@ -13,7 +13,7 @@ function getOutput(command) {
   return execSync(command, { encoding: "utf-8" }).trim();
 }
 
-// 메인 working tree 경로 (worktree 안에서 실행해도 정확)
+// Main working tree path (accurate even when run inside a worktree)
 const mainWorktree = getOutput("git worktree list --porcelain")
   .split("\n")[0]
   .replace("worktree ", "");
@@ -71,7 +71,7 @@ switch (cmd) {
       console.error("Usage: sd-worktree.mjs merge [name]  (or run inside .worktrees/<name>)");
       process.exit(1);
     }
-    // uncommitted 변경 확인
+    // Check for uncommitted changes
     const worktreePath_m = resolve(mainWorktree, ".worktrees", name);
     if (existsSync(worktreePath_m)) {
       const status = getOutput(`git -C "${worktreePath_m}" status --porcelain`);
@@ -99,7 +99,7 @@ switch (cmd) {
       console.error(`Error: worktree '${name}' does not exist.`);
       process.exit(1);
     }
-    // uncommitted 변경 확인
+    // Check for uncommitted changes
     const statusR = getOutput(`git -C "${worktreePath_r}" status --porcelain`);
     if (statusR) {
       console.error(`Error: worktree '${name}' has uncommitted changes:\n${statusR}`);
@@ -119,7 +119,7 @@ switch (cmd) {
       console.error("Usage: sd-worktree.mjs clean [name]  (or run inside .worktrees/<name>)");
       process.exit(1);
     }
-    // worktree 안에서 실행 시 차단
+    // Block execution from inside the worktree
     const worktreePath = resolve(mainWorktree, ".worktrees", name);
     const cwd = process.cwd();
     if (cwd === worktreePath || cwd.startsWith(worktreePath + "/")) {
@@ -134,7 +134,7 @@ switch (cmd) {
       try {
         run(`git worktree remove --force "${worktreePath}"`, { cwd: mainWorktree });
       } catch {
-        // node_modules 등으로 git worktree remove 실패 시 수동 정리
+        // Manual cleanup when git worktree remove fails (e.g., due to node_modules)
         console.log("git worktree remove failed, cleaning up manually...");
         rmSync(worktreePath, { recursive: true, force: true });
         run("git worktree prune", { cwd: mainWorktree });

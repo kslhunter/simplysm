@@ -13,7 +13,7 @@ pnpm add @simplysm/excel
 | Source | Exports | Description | Test |
 |--------|---------|-------------|------|
 | `src/types.ts` | `ExcelXmlContentTypeData`, `ExcelXmlRelationshipData`, `ExcelRelationshipData`, `ExcelXmlWorkbookData`, `ExcelXmlWorksheetData`, `ExcelRowData`, `ExcelCellData`, `ExcelXmlDrawingData`, `ExcelXmlSharedStringData`, `ExcelXmlSharedStringDataSi`, `ExcelXmlSharedStringDataText`, `ExcelXmlStyleData`, `ExcelXmlStyleDataXf`, `ExcelXmlStyleDataFill`, `ExcelXmlStyleDataBorder`, `ExcelValueType`, `ExcelNumberFormat`, `ExcelCellType`, `ExcelAddressPoint`, `ExcelAddressRangePoint`, `ExcelXml`, `ExcelBorderPosition`, `ExcelHorizontalAlign`, `ExcelVerticalAlign`, `ExcelStyleOptions` | All shared XML data types, value types, address types, and style option interfaces | - |
-| `src/utils/excel-utils.ts` | `ExcelUtils` | Utility functions for address conversion, date/number format mapping | `excel-utils.spec.ts` |
+| `src/utils/excel-utils.ts` | `ExcelUtils` | Utility functions for address conversion, date/number format mapping | `utils/excel-utils.spec.ts` |
 
 ### Core classes
 

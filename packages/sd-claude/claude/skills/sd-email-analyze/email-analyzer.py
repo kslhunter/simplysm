@@ -12,13 +12,13 @@ import base64
 from email.policy import default as default_policy
 from pathlib import Path
 
-# stdout UTF-8 강제 (Windows 호환)
+# Force stdout UTF-8 (Windows compatibility)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 
 def ensure_packages():
-    """필요한 패키지 자동 설치."""
+    """Auto-install required packages."""
     packages = {"extract-msg": "extract_msg"}
     missing = []
     for pip_name, import_name in packages.items():
@@ -27,7 +27,7 @@ def ensure_packages():
         except ImportError:
             missing.append(pip_name)
     if missing:
-        print(f"패키지 설치 중: {', '.join(missing)}...", file=sys.stderr)
+        print(f"Installing packages: {', '.join(missing)}...", file=sys.stderr)
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-q", *missing],
             stdout=subprocess.DEVNULL,
@@ -326,45 +326,45 @@ def build_report(filepath):
         saved_attachments = save_files(attachments, out_dir)
 
     out = []
-    out.append("# 이메일 분석서\n")
-    out.append(f"**원본 파일**: `{os.path.basename(filepath)}`\n")
+    out.append("# Email Analysis Report\n")
+    out.append(f"**Source file**: `{os.path.basename(filepath)}`\n")
 
-    # ── 메일 정보
-    out.append("## 메일 정보\n")
-    out.append("| 항목 | 내용 |")
-    out.append("|------|------|")
-    out.append(f"| **제목** | {headers['subject']} |")
-    out.append(f"| **보낸 사람** | {headers['from']} |")
-    out.append(f"| **받는 사람** | {headers['to']} |")
+    # ── Email info
+    out.append("## Email Info\n")
+    out.append("| Field | Value |")
+    out.append("|-------|-------|")
+    out.append(f"| **Subject** | {headers['subject']} |")
+    out.append(f"| **From** | {headers['from']} |")
+    out.append(f"| **To** | {headers['to']} |")
     if headers["cc"]:
-        out.append(f"| **참조** | {headers['cc']} |")
-    out.append(f"| **날짜** | {headers['date']} |")
-    out.append(f"| **첨부파일** | {len(saved_attachments)}개 |")
+        out.append(f"| **CC** | {headers['cc']} |")
+    out.append(f"| **Date** | {headers['date']} |")
+    out.append(f"| **Attachments** | {len(saved_attachments)} |")
     if all_inline:
-        out.append(f"| **본문 이미지** | {len(all_inline)}개 |")
+        out.append(f"| **Inline images** | {len(all_inline)} |")
     out.append("")
 
-    # ── 본문
-    out.append("## 본문 내용\n")
+    # ── Body
+    out.append("## Body\n")
     body = body_plain
     if not body and body_html:
         body = strip_html(body_html)
-    out.append(body.strip() if body else "_(본문 없음)_")
+    out.append(body.strip() if body else "_(No body)_")
     out.append("")
 
-    # ── 본문 삽입 이미지
+    # ── Inline images
     if all_inline:
-        out.append("## 본문 삽입 이미지\n")
-        out.append("| # | 파일명 | 크기 | 저장 경로 |")
+        out.append("## Inline Images\n")
+        out.append("| # | Filename | Size | Saved path |")
         out.append("|---|--------|------|-----------|")
         for i, img in enumerate(all_inline, 1):
             out.append(f"| {i} | {img['filename']} | {fmt_size(img['size'])} | `{img['saved_path']}` |")
         out.append("")
 
-    # ── 첨부파일
+    # ── Attachments
     if saved_attachments:
-        out.append("## 첨부파일\n")
-        out.append("| # | 파일명 | 크기 | 저장 경로 |")
+        out.append("## Attachments\n")
+        out.append("| # | Filename | Size | Saved path |")
         out.append("|---|--------|------|-----------|")
         for i, a in enumerate(saved_attachments, 1):
             out.append(f"| {i} | {a['filename']} | {fmt_size(a['size'])} | `{a['saved_path']}` |")
@@ -382,12 +382,12 @@ if __name__ == "__main__":
 
     path = sys.argv[1]
     if not os.path.isfile(path):
-        print(f"파일을 찾을 수 없습니다: {path}", file=sys.stderr)
+        print(f"File not found: {path}", file=sys.stderr)
         sys.exit(1)
 
     ext = Path(path).suffix.lower()
     if ext not in (".eml", ".msg"):
-        print(f"지원하지 않는 형식: {ext} (.eml 또는 .msg만 지원)", file=sys.stderr)
+        print(f"Unsupported format: {ext} (only .eml and .msg are supported)", file=sys.stderr)
         sys.exit(1)
 
     print(build_report(path))

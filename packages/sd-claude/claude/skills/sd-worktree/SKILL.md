@@ -16,10 +16,11 @@ model: haiku
 
 2. **If `merge` fails or produces conflicts → STOP IMMEDIATELY and show this message:**
    ```
-   ⚠️ merge 중 문제가 발생했습니다.
-   직접 수동으로 merge를 진행해 주세요.
-   (에러 내용: <에러/충돌 정보 그대로 출력>)
+   ⚠️ A problem occurred during merge.
+   Please proceed with the merge manually.
+   (Error details: <print error/conflict info as-is>)
    ```
+   - Show this message in the system's configured language.
    - Do NOT attempt to resolve conflicts yourself.
    - Do NOT run `git merge --abort` without asking.
    - Do NOT proceed to `clean` after a failed merge.
@@ -28,10 +29,11 @@ model: haiku
 
 3. **If `rebase` fails or produces conflicts → STOP IMMEDIATELY and show this message:**
    ```
-   ⚠️ rebase 중 문제가 발생했습니다.
-   직접 수동으로 rebase를 진행해 주세요.
-   (에러 내용: <에러/충돌 정보 그대로 출력>)
+   ⚠️ A problem occurred during rebase.
+   Please proceed with the rebase manually.
+   (Error details: <print error/conflict info as-is>)
    ```
+   - Show this message in the system's configured language.
    - Same rules as merge. Do NOT auto-resolve. Just show the message and STOP.
 
 4. **NEVER run destructive git commands during worktree workflows:**
@@ -102,9 +104,9 @@ node .claude/skills/sd-worktree/sd-worktree.mjs merge [name]
 
 **MERGE SAFETY PROTOCOL:**
 1. Before merge: check BOTH main and worktree for uncommitted changes
-2. If the script exits with non-zero → show "직접 수동으로 merge해 주세요" message and STOP.
+2. If the script exits with non-zero → show "Please proceed with the merge manually." message (in system language) and STOP.
 3. After merge: run `git status` in main to confirm no conflicts
-4. If conflicts or errors → show "직접 수동으로 merge해 주세요" message and STOP.
+4. If conflicts or errors → show "Please proceed with the merge manually." message (in system language) and STOP.
 5. Only proceed to `clean` after confirming merge was fully successful
 
 ### clean — Remove worktree and delete branch

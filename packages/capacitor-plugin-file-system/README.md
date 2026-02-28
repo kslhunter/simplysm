@@ -19,4 +19,4 @@ pnpm add @simplysm/capacitor-plugin-file-system
 
 ## License
 
-Apache-2.0
+MIT

@@ -21,6 +21,7 @@ pnpm add @simplysm/service-common
 |--------|---------|-------------|------|
 | `src/service-types/orm-service.types.ts` | `OrmService`, `DbConnOptions` | Service interface for ORM database connection and query execution | - |
 | `src/service-types/auto-update-service.types.ts` | `AutoUpdateService` | Service interface for retrieving the latest client application version | - |
+| `src/service-types/smtp-client-service.types.ts` | `SmtpClientSendAttachment`, `SmtpClientSendByDefaultOption`, `SmtpClientSendOption`, `SmtpClientDefaultConfig` | Type definitions for SMTP client send options and attachment configuration | - |
 
 ### Types
 
