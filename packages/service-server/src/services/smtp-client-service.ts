@@ -45,7 +45,7 @@ export interface SmtpClientDefaultConfig {
 
 export const SmtpClientService = defineService("SmtpClient", (ctx) => ({
   async send(options: SmtpClientSendOption): Promise<string> {
-    return await new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       const transport = nodemailer.createTransport({
         host: options.host,
         port: options.port,
@@ -81,7 +81,7 @@ export const SmtpClientService = defineService("SmtpClient", (ctx) => ({
       throw new Error(`SMTP config not found: ${configName}`);
     }
 
-    return await this.send({
+    return this.send({
       user: config.user,
       pass: config.pass,
       host: config.host,
