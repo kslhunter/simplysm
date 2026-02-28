@@ -1,0 +1,171 @@
+import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
+import { createOrm, type DbConnConfig } from "@simplysm/orm-node";
+import { expr } from "@simplysm/orm-common";
+import { MainDbContext, type MainDbContext as MainDbContextType } from "@{{projectName}}/db-main";
+import bcrypt from "bcrypt";
+
+export interface IAuthData {
+  employeeId: number;
+  employeeName: string;
+  email: string;
+  permissions: Record<string, boolean>;
+}
+
+export interface IAuthResult extends IAuthData {
+  token: string;
+}
+
+export const AuthService = defineService("AuthService", (ctx) => {
+  async function getOrm() {
+    const ormConfig = await ctx.getConfig<{ default: DbConnConfig }>("orm");
+
+    return createOrm(MainDbContext, ormConfig.default);
+  }
+
+  async function getPermissions(
+    db: MainDbContextType,
+    roleId: number | undefined,
+  ): Promise<Record<string, boolean>> {
+    const permissions: Record<string, boolean> = {};
+
+    if (roleId != null) {
+      const rolePermissions = await db
+        .rolePermission()
+        .where((c) => [expr.eq(c.roleId, roleId)])
+        .result();
+
+      for (const rp of rolePermissions) {
+        permissions[rp.code] = JSON.parse(rp.valueJson);
+      }
+    }
+
+    return permissions;
+  }
+
+  async function buildAuthResult(
+    employee: { id: number; name: string; email: string | undefined },
+    permissions: Record<string, boolean>,
+  ): Promise<IAuthResult> {
+    const authData: IAuthData = {
+      employeeId: employee.id,
+      employeeName: employee.name,
+      email: employee.email ?? "",
+      permissions,
+    };
+
+    const token = await ctx.server.generateAuthToken({
+      roles: [],
+      data: authData,
+    });
+
+    return { token, ...authData };
+  }
+
+  function validateLoginInput(email: string, password: string): void {
+    if (email.length === 0 || email.length > 200) {
+      throw new Error("이메일은 1~200자의 문자열이어야 합니다.");
+    }
+    if (password.length === 0 || password.length > 500) {
+      throw new Error("비밀번호는 1~500자의 문자열이어야 합니다.");
+    }
+  }
+
+  return {
+    login: async (email: string, password: string): Promise<IAuthResult> => {
+      const orm = await getOrm();
+      validateLoginInput(email, password);
+
+      return orm.connect(async (db) => {
+        const employee = await db
+          .employee()
+          .where((c) => [expr.eq(c.email, email), expr.eq(c.isDeleted, false)])
+          .single();
+
+        if (!employee) {
+          throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        if (employee.encryptedPassword == null || employee.encryptedPassword === "") {
+          throw new Error("비밀번호가 설정되지 않은 계정입니다.");
+        }
+
+        const isValid = await bcrypt.compare(password, employee.encryptedPassword);
+        if (!isValid) {
+          throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        const permissions = await getPermissions(db, employee.roleId);
+
+        return buildAuthResult(employee, permissions);
+      });
+    },
+
+    refresh: auth(async (): Promise<IAuthResult> => {
+      const currentAuth = ctx.authInfo as IAuthData | undefined;
+      if (!currentAuth) {
+        throw new Error("인증 정보가 없습니다.");
+      }
+
+      const orm = await getOrm();
+
+      return orm.connect(async (db) => {
+        const employee = await db
+          .employee()
+          .where((c) => [expr.eq(c.id, currentAuth.employeeId), expr.eq(c.isDeleted, false)])
+          .single();
+
+        if (!employee) {
+          throw new Error("유효하지 않은 직원입니다.");
+        }
+
+        const permissions = await getPermissions(db, employee.roleId);
+
+        return buildAuthResult(employee, permissions);
+      });
+    }),
+
+    changePassword: auth(async (currentPassword: string, newPassword: string): Promise<void> => {
+      const currentAuth = ctx.authInfo as IAuthData | undefined;
+      if (!currentAuth) {
+        throw new Error("인증 정보가 없습니다.");
+      }
+
+      validateLoginInput(currentAuth.email, currentPassword);
+      validateLoginInput(currentAuth.email, newPassword);
+
+      if (newPassword.length < 8) {
+        throw new Error("새 비밀번호는 최소 8자 이상이어야 합니다.");
+      }
+
+      const orm = await getOrm();
+
+      await orm.connect(async (db) => {
+        const employee = await db
+          .employee()
+          .where((c) => [expr.eq(c.id, currentAuth.employeeId), expr.eq(c.isDeleted, false)])
+          .single();
+
+        if (!employee) {
+          throw new Error("유효하지 않은 직원입니다.");
+        }
+
+        if (employee.encryptedPassword == null || employee.encryptedPassword === "") {
+          throw new Error("비밀번호가 설정되지 않은 계정입니다.");
+        }
+
+        const isCurrentValid = await bcrypt.compare(currentPassword, employee.encryptedPassword);
+        if (!isCurrentValid) {
+          throw new Error("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        const encryptedPassword = await bcrypt.hash(newPassword, 10);
+        await db
+          .employee()
+          .where((c) => [expr.eq(c.id, employee.id)])
+          .update(() => ({ encryptedPassword: expr.val("string", encryptedPassword) }));
+      });
+    }),
+  };
+});
+
+export type AuthServiceMethods = ServiceMethods<typeof AuthService>;

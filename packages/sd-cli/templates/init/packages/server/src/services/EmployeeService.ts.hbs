@@ -1,0 +1,122 @@
+import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
+import { createOrm, type DbConnConfig } from "@simplysm/orm-node";
+import { expr } from "@simplysm/orm-common";
+import { MainDbContext } from "@{{projectName}}/db-main";
+import { DateOnly, strIsNullOrEmpty } from "@simplysm/core-common";
+import bcrypt from "bcrypt";
+import type { IAuthData } from "./AuthService";
+
+export const EmployeeService = defineService("EmployeeService", (ctx) => {
+  async function getOrm() {
+    const ormConfig = await ctx.getConfig<{ default: DbConnConfig }>("orm");
+    return createOrm(MainDbContext, ormConfig.default);
+  }
+
+  return {
+    save: auth(
+      async (
+        items: {
+          id?: number;
+          name?: string;
+          email?: string;
+          phoneNumber?: string;
+          birthDate?: DateOnly;
+          enteringDate?: DateOnly;
+          leavingDate?: DateOnly;
+          socialSecurityNumber?: string;
+          payrollAccountBank?: string;
+          payrollAccountNumber?: string;
+          password?: string;
+          isDeleted: boolean;
+        }[],
+      ): Promise<number[]> => {
+        const authData = ctx.authInfo as IAuthData | undefined;
+        if (authData?.permissions["/home/base/employee/edit"] !== true) {
+          throw new Error("저장 권한이 없습니다.");
+        }
+
+        const ids: number[] = [];
+        const orm = await getOrm();
+        await orm.connect(async (db) => {
+          for (const item of items) {
+            if (
+              !item.isDeleted &&
+              !strIsNullOrEmpty(item.name) &&
+              (await db
+                .employee()
+                .where((c) => [
+                  expr.not(expr.eq(c.id, item.id)),
+                  expr.eq(c.isDeleted, false),
+                  expr.eq(c.name, item.name),
+                ])
+                .exists())
+            ) {
+              throw new Error(`동일한 이름이 이미 등록되어 있습니다: ${item.name}`);
+            }
+
+            if (
+              !item.isDeleted &&
+              !strIsNullOrEmpty(item.email) &&
+              (await db
+                .employee()
+                .where((c) => [
+                  expr.not(expr.eq(c.id, item.id)),
+                  expr.eq(c.isDeleted, false),
+                  expr.eq(c.email, item.email),
+                ])
+                .exists())
+            ) {
+              throw new Error(`동일한 이메일이 이미 등록되어 있습니다: ${item.email}`);
+            }
+
+            const passwordObj =
+              authData.permissions["/home/base/employee/auth/edit"] &&
+              !strIsNullOrEmpty(item.password)
+                ? { encryptedPassword: await bcrypt.hash(item.password, 10) }
+                : {};
+
+            const upsertedId = (
+              await db
+                .employee()
+                .where((c) => [expr.eq(c.id, item.id)])
+                .upsert(
+                  () => ({
+                    name: item.name,
+                    email: item.email,
+                    phoneNumber: item.phoneNumber,
+                    birthDate: item.birthDate,
+                    enteringDate: item.enteringDate,
+                    leavingDate: item.leavingDate,
+                    isDeleted: item.isDeleted,
+                    ...(authData.permissions["/home/base/employee/personal/edit"]
+                      ? { socialSecurityNumber: item.socialSecurityNumber }
+                      : {}),
+                    ...(authData.permissions["/home/base/employee/payroll/edit"]
+                      ? {
+                          payrollAccountBank: item.payrollAccountBank,
+                          payrollAccountNumber: item.payrollAccountNumber,
+                        }
+                      : {}),
+                    ...passwordObj,
+                  }),
+                  ["id"],
+                )
+            ).single()?.id;
+
+            if (upsertedId != null) {
+              ids.push(upsertedId);
+              await db.employee().insertDataLog({
+                action: item.id == null ? "등록" : "수정",
+                itemId: upsertedId,
+                employeeId: authData.employeeId,
+              });
+            }
+          }
+        });
+        return ids;
+      },
+    ),
+  };
+});
+
+export type EmployeeServiceMethods = ServiceMethods<typeof EmployeeService>;

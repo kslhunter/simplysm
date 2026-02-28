@@ -1,0 +1,59 @@
+import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
+import { createOrm, type DbConnConfig } from "@simplysm/orm-node";
+import { expr } from "@simplysm/orm-common";
+import { MainDbContext } from "@{{projectName}}/db-main";
+import { strIsNullOrEmpty } from "@simplysm/core-common";
+import type { IAuthData } from "./AuthService";
+
+export const RoleService = defineService("RoleService", (ctx) => {
+  async function getOrm() {
+    const ormConfig = await ctx.getConfig<{ default: DbConnConfig }>("orm");
+    return createOrm(MainDbContext, ormConfig.default);
+  }
+
+  return {
+    save: auth(
+      async (
+        items: {
+          id?: number;
+          name?: string;
+        }[],
+      ): Promise<void> => {
+        const authData = ctx.authInfo as IAuthData | undefined;
+        if (authData?.permissions["/home/base/role-permission/edit"] !== true) {
+          throw new Error("저장 권한이 없습니다.");
+        }
+
+        const orm = await getOrm();
+        await orm.connect(async (db) => {
+          for (const item of items) {
+            if (
+              !strIsNullOrEmpty(item.name) &&
+              (await db
+                .role()
+                .where((c) => [
+                  expr.not(expr.eq(c.id, item.id)),
+                  expr.eq(c.name, item.name),
+                ])
+                .exists())
+            ) {
+              throw new Error(`이미 존재하는 권한그룹 이름입니다: ${item.name}`);
+            }
+
+            await db
+              .role()
+              .where((c) => [expr.eq(c.id, item.id)])
+              .upsert(
+                () => ({
+                  name: item.name ?? "",
+                }),
+                ["id"],
+              );
+          }
+        });
+      },
+    ),
+  };
+});
+
+export type RoleServiceMethods = ServiceMethods<typeof RoleService>;

@@ -1,0 +1,94 @@
+import { defineService, type ServiceMethods } from "@simplysm/service-server";
+import { createOrm, type DbConnConfig } from "@simplysm/orm-node";
+import { MainDbContext } from "@{{projectName}}/db-main";
+import { ExcelWorkbook } from "@simplysm/excel";
+import bcrypt from "bcrypt";
+import fs from "fs";
+import path from "path";
+
+export const DevService = defineService("DevService", (ctx) => {
+  async function getOrm() {
+    const ormConfig = await ctx.getConfig<{ default: DbConnConfig }>("orm");
+    return createOrm(MainDbContext, ormConfig.default);
+  }
+
+  return {
+    initDb: async (permCodes: string[]) => {
+      const orm = await getOrm();
+
+      await orm.connectWithoutTransaction(async (db) => {
+        await db.initialize({ force: true });
+
+        const excelPath = path.resolve(ctx.server.options.rootPath, "dev/초기화.xlsx");
+        if (!fs.existsSync(excelPath)) {
+          throw new Error(`초기화 파일을 찾을 수 없습니다: ${excelPath}`);
+        }
+
+        const buffer = fs.readFileSync(excelPath);
+        const wb = new ExcelWorkbook(buffer);
+        const wsNames = await wb.getWorksheetNames();
+
+        // Role
+        if (wsNames.includes("권한그룹")) {
+          const ws = await wb.getWorksheet("권한그룹");
+          const rows = await ws.getDataTable();
+          const filtered = rows.filter((r: Record<string, any>) => r["ID"] != null);
+          if (filtered.length > 0) {
+            await db.role().insert(
+              filtered.map((r: Record<string, any>) => ({
+                id: Number(r["ID"]),
+                name: String(r["명칭"]),
+              })),
+            );
+          }
+        }
+
+        // RolePermission
+        if (wsNames.includes("권한그룹권한")) {
+          const ws = await wb.getWorksheet("권한그룹권한");
+          const rows = await ws.getDataTable();
+          const filtered = rows.filter((r: Record<string, any>) => r["권한그룹.ID"] != null);
+          if (filtered.length > 0) {
+            const permRows = filtered.flatMap((r: Record<string, any>) => {
+              const roleId = Number(r["권한그룹.ID"]);
+              const code = String(r["코드"]);
+              const valueJson = String(r["값"]);
+
+              if (code === "ALL") {
+                return permCodes.map((pc) => ({ roleId, code: pc, valueJson }));
+              }
+              return [{ roleId, code, valueJson }];
+            });
+
+            await db.rolePermission().insert(permRows);
+          }
+        }
+
+        // Employee (bcrypt hash passwords)
+        if (wsNames.includes("직원")) {
+          const ws = await wb.getWorksheet("직원");
+          const rows = await ws.getDataTable();
+          const filtered = rows.filter((r: Record<string, any>) => r["ID"] != null);
+          if (filtered.length > 0) {
+            const employees = [];
+            for (const r of filtered) {
+              const pw = r["비밀번호"];
+              employees.push({
+                id: Number(r["ID"]),
+                name: String(r["이름"]),
+                email: r["이메일"] != null ? String(r["이메일"]) : undefined,
+                encryptedPassword:
+                  pw != null && String(pw) !== "" ? await bcrypt.hash(String(pw), 10) : undefined,
+                roleId: r["권한그룹.ID"] != null ? Number(r["권한그룹.ID"]) : undefined,
+                isDeleted: Boolean(r["삭제"]),
+              });
+            }
+            await db.employee().insert(employees);
+          }
+        }
+      });
+    },
+  };
+});
+
+export type DevServiceMethods = ServiceMethods<typeof DevService>;

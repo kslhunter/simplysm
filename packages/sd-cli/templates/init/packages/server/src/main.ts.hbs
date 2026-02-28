@@ -1,0 +1,34 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import { env } from "@simplysm/core-common";
+import { createServiceServer, getConfig, OrmService } from "@simplysm/service-server";
+import { AuthService } from "./services/AuthService";
+import { DevService } from "./services/DevService";
+import { EmployeeService } from "./services/EmployeeService";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const config = await getConfig<Record<string, { jwtSecret: string }>>(
+  path.resolve(__dirname, ".config.json"),
+);
+
+if (config?.["auth"]?.jwtSecret == null || config["auth"].jwtSecret === "") {
+  throw new Error(
+    "Missing 'auth.jwtSecret' in .config.json. Server cannot start without JWT secret.",
+  );
+}
+
+export const server = createServiceServer({
+  rootPath: __dirname,
+  port: {{port}},
+  auth: config["auth"],
+  services: env.DEV
+    ? [OrmService, AuthService, DevService, EmployeeService]
+    : [OrmService, AuthService, EmployeeService],
+});
+
+// 프로덕션 모드: 정적 파일 서빙 포함하여 직접 listen
+// Watch 모드 (env.DEV): Server Runtime Worker가 proxy 설정 후 listen 호출
+if (!env.DEV) {
+  await server.listen();
+}
