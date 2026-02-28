@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-usb-storage",
-  "version": "13.0.70",
+  "version": "13.0.71",
   "description": "Simplysm Package - Capacitor USB Storage Plugin",
   "author": "simplysm",
   "license": "MIT",

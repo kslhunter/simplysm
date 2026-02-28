@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/mcp-playwright",
-  "version": "13.0.70",
+  "version": "13.0.71",
   "description": "Simplysm MCP server — multi-session Playwright proxy",
   "author": "simplysm",
   "license": "Apache-2.0",
