@@ -1,0 +1,103 @@
+import {
+  createContext,
+  createSignal,
+  onMount,
+  Show,
+  useContext,
+  type ParentComponent,
+} from "solid-js";
+import { useServiceClient } from "@simplysm/solid";
+import {
+  createOrmClientConnector,
+  type RemoteService,
+  type ServiceClient,
+} from "@simplysm/service-client";
+import type {
+  AuthServiceMethods,
+  DevServiceMethods,
+  EmployeeServiceMethods,
+} from "@{{projectName}}/server";
+import { MainDbContext, type MainDbContext as MainDbContextType } from "@{{projectName}}/db-main";
+
+export interface IAppServiceClient {
+  auth: RemoteService<AuthServiceMethods>;
+  dev: RemoteService<DevServiceMethods>;
+  employee: RemoteService<EmployeeServiceMethods>;
+  sc: ServiceClient;
+  orm: {
+    connect: <R>(
+      fn: (db: MainDbContextType) => Promise<R> | R,
+      connOpt?: { configName?: string },
+    ) => Promise<R>;
+    connectWithoutTransaction: <R>(
+      fn: (db: MainDbContextType) => Promise<R> | R,
+      connOpt?: { configName?: string },
+    ) => Promise<R>;
+  };
+}
+
+const AppServiceContext = createContext<IAppServiceClient>();
+
+export const AppServiceProvider: ParentComponent = (props) => {
+  const sc = useServiceClient();
+  const [ready, setReady] = createSignal(false);
+
+  let value: IAppServiceClient;
+
+  onMount(async () => {
+    await sc.connect();
+    document.querySelector(".app-loading")?.remove();
+
+    const client = sc.get();
+    const connector = createOrmClientConnector(client);
+
+    const ormHelper = {
+      connect: async <R,>(
+        fn: (db: MainDbContextType) => Promise<R> | R,
+        connOpt?: { configName?: string },
+      ) => {
+        return connector.connect(
+          {
+            dbContextDef: MainDbContext,
+            connOpt: { configName: connOpt?.configName ?? "default" },
+          },
+          fn,
+        );
+      },
+      connectWithoutTransaction: async <R,>(
+        fn: (db: MainDbContextType) => Promise<R> | R,
+        connOpt?: { configName?: string },
+      ) => {
+        return connector.connectWithoutTransaction(
+          {
+            dbContextDef: MainDbContext,
+            connOpt: { configName: connOpt?.configName ?? "default" },
+          },
+          fn,
+        );
+      },
+    };
+
+    value = {
+      auth: client.getService<AuthServiceMethods>("AuthService"),
+      dev: client.getService<DevServiceMethods>("DevService"),
+      employee: client.getService<EmployeeServiceMethods>("EmployeeService"),
+      sc: client,
+      orm: ormHelper,
+    };
+
+    setReady(true);
+  });
+
+  return (
+    <Show when={ready()}>
+      <AppServiceContext.Provider value={value!}>{props.children}</AppServiceContext.Provider>
+    </Show>
+  );
+};
+
+export function useAppService(): IAppServiceClient {
+  const ctx = useContext(AppServiceContext);
+  if (!ctx) throw new Error("AppServiceProvider가 필요합니다.");
+  return ctx;
+}

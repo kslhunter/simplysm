@@ -1,0 +1,125 @@
+import {
+  Checkbox,
+  CrudSheet,
+  type ModalEditConfig,
+  type SortingDef,
+  TextInput,
+  useDialog,
+} from "@simplysm/solid";
+import { FormGroup } from "@simplysm/solid";
+import { expr } from "@{{projectName}}/db-main";
+import { type ExprUnit } from "@simplysm/orm-common";
+import { objGetChainValue } from "@simplysm/core-common";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+import { useAppStructure } from "../../../../providers/AppStructureProvider";
+import { RoleDetail } from "./RoleDetail";
+
+type SheetItem = {
+  id?: number;
+  name?: string;
+  isDeleted: boolean;
+};
+
+type Filter = {
+  searchText?: string;
+  isIncludeDeleted: boolean;
+};
+
+const ITEMS_PER_PAGE = 50;
+
+export function RoleSheet() {
+  const appService = useAppService();
+  const appStructure = useAppStructure();
+  const dialog = useDialog();
+
+  const rolePerms = appStructure.perms.home.base["role-permission"];
+
+  const modalEdit: ModalEditConfig<SheetItem> = {
+    editItem: (item) =>
+      dialog.show(() => <RoleDetail itemId={item?.id} />, {
+        header: item ? "권한그룹 수정" : "권한그룹 등록",
+      }),
+  };
+
+  async function search(filter: Filter, page: number | undefined, sorts: SortingDef[]) {
+    return appService.orm.connect(async (db) => {
+      let qr = db.role();
+
+      const searchText = filter.searchText?.trim();
+      if (searchText != null && searchText.length > 0) {
+        qr = qr.search((c) => [c.name], searchText);
+      }
+
+      if (!filter.isIncludeDeleted) {
+        qr = qr.where((c) => [expr.eq(c.isDeleted, false)]);
+      }
+
+      const pageCount = page != null ? Math.ceil((await qr.count()) / ITEMS_PER_PAGE) : undefined;
+
+      let qr2 = qr.select((c) => ({
+        id: c.id,
+        name: c.name,
+        isDeleted: c.isDeleted,
+      }));
+
+      for (const sort of sorts) {
+        qr2 = qr2.orderBy(
+          (c) => objGetChainValue(c, sort.key) as ExprUnit<any>,
+          sort.desc ? "DESC" : "ASC",
+        );
+      }
+      if (!sorts.some((s) => s.key === "id")) {
+        qr2 = qr2.orderBy((c) => c.id, "DESC");
+      }
+
+      if (page != null) {
+        qr2 = qr2.limit((page - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+      }
+
+      const items = (await qr2.result()) as SheetItem[];
+      return { items, pageCount };
+    });
+  }
+
+  return (
+    <CrudSheet<SheetItem, Filter>
+      search={search}
+      getItemKey={(item) => item.id}
+      itemDeleted={(item) => item.isDeleted}
+      isItemSelectable={(item) => item.id != null}
+      persistKey="role-sheet-page"
+      editable={rolePerms.edit}
+      filterInitial={{ isIncludeDeleted: false } as Filter}
+      modalEdit={modalEdit}
+    >
+      <CrudSheet.Filter<Filter>>
+        {(filter, setFilter) => (
+          <>
+            <FormGroup.Item label="검색어">
+              <TextInput
+                value={filter.searchText}
+                onValueChange={(v) => setFilter("searchText", v)}
+              />
+            </FormGroup.Item>
+            <FormGroup.Item>
+              <Checkbox
+                value={filter.isIncludeDeleted}
+                onValueChange={(v) => setFilter("isIncludeDeleted", v)}
+              >
+                삭제항목 포함
+              </Checkbox>
+            </FormGroup.Item>
+          </>
+        )}
+      </CrudSheet.Filter>
+
+      <CrudSheet.Column<SheetItem> key="id" header="#" editTrigger>
+        {({ item }) => <div class="px-2 py-1 text-right">{item.id}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="name" header="이름">
+        {({ item }) => <div class="px-2 py-1">{item.name}</div>}
+      </CrudSheet.Column>
+    </CrudSheet>
+  );
+}

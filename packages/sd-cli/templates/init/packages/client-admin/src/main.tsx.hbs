@@ -1,0 +1,146 @@
+import { render } from "solid-js/web";
+import { HashRouter, Navigate, Route } from "@solidjs/router";
+import { For } from "solid-js";
+import {
+  DialogProvider,
+  PrintProvider,
+  SystemProvider,
+  useLogger,
+  useSyncStorage,
+} from "@simplysm/solid";
+import { DateTime, env, jsonStringify } from "@simplysm/core-common";
+import { expr } from "@{{projectName}}/db-main";
+import { App } from "./App";
+
+import { NotFoundView } from "./views/not-found/NotFoundView";
+import { AppStructureProvider, useAppStructure } from "./providers/AppStructureProvider";
+import { AppServiceProvider, useAppService } from "./providers/AppServiceProvider";
+import { AuthProvider, useAuth } from "./providers/AuthProvider";
+import { configureSharedData } from "./providers/configureSharedData";
+import "./main.css";
+import { LoginView } from "./views/auth/LoginView";
+import { HomeView } from "./views/home/HomeView";
+
+function AppRoot() {
+  const appService = useAppService();
+  const auth = useAuth();
+  const appStructure = useAppStructure();
+
+  // SyncStorage
+  useSyncStorage()!.configure((origin) => ({
+    async getItem(key) {
+      const info = auth.authInfo();
+      if (!info) return origin.getItem(key);
+
+      return appService.orm.connectWithoutTransaction(async (db) => {
+        const row = await db
+          .employeeConfig()
+          .where((c) => [expr.eq(c.employeeId, info.employeeId), expr.eq(c.code, key)])
+          .first();
+        return row?.valueJson ?? null;
+      });
+    },
+
+    async setItem(key, value) {
+      const info = auth.authInfo();
+      if (!info) {
+        await origin.setItem(key, value);
+        return;
+      }
+
+      await appService.orm.connect(async (db) => {
+        await db
+          .employeeConfig()
+          .where((c) => [expr.eq(c.employeeId, info.employeeId), expr.eq(c.code, key)])
+          .upsert(() => ({
+            employeeId: expr.val("number", info.employeeId),
+            code: expr.val("string", key),
+            valueJson: expr.val("string", value),
+          }));
+      });
+    },
+
+    async removeItem(key) {
+      const info = auth.authInfo();
+      if (!info) {
+        await origin.removeItem(key);
+        return;
+      }
+
+      await appService.orm.connect(async (db) => {
+        await db
+          .employeeConfig()
+          .where((c) => [expr.eq(c.employeeId, info.employeeId), expr.eq(c.code, key)])
+          .delete();
+      });
+    },
+  }));
+
+  // Logger
+  useLogger().configure((origin) => ({
+    async write(severity, ...data) {
+      if (env.DEV) {
+        await origin.write(severity, ...data);
+        return;
+      }
+
+      try {
+        const message = data.map((d) => (typeof d === "string" ? d : jsonStringify(d))).join(" ");
+
+        await appService.orm.connect(async (db) => {
+          await db._log().insert([
+            {
+              clientName: "client-admin",
+              dateTime: new DateTime(),
+              severity,
+              message,
+              employeeId: auth.authInfo()?.employeeId,
+            },
+          ]);
+        });
+      } catch (err) {
+        await origin.write(severity, ...data);
+        await origin.write("error", "로그 저장 실패:", err);
+      }
+    },
+  }));
+
+  // SharedData
+  configureSharedData();
+
+  return (
+    <HashRouter>
+      <Route path="/" component={App}>
+        <Route path="/" component={() => <Navigate href="/login" />} />
+        <Route path="/login" component={LoginView} />
+        <Route path="/home" component={HomeView}>
+          <Route path="/" component={() => <Navigate href="/home/main" />} />
+          <For each={appStructure.usableRoutes()}>
+            {(r) => <Route path={r.path} component={r.component} />}
+          </For>
+          <Route path="*" component={NotFoundView} />
+        </Route>
+        <Route path="*" component={NotFoundView} />
+      </Route>
+    </HashRouter>
+  );
+}
+
+render(
+  () => (
+    <SystemProvider clientName="client-admin">
+      <AppServiceProvider>
+        <AuthProvider>
+          <AppStructureProvider>
+            <PrintProvider>
+              <DialogProvider>
+                <AppRoot />
+              </DialogProvider>
+            </PrintProvider>
+          </AppStructureProvider>
+        </AuthProvider>
+      </AppServiceProvider>
+    </SystemProvider>
+  ),
+  document.getElementById("root")!,
+);

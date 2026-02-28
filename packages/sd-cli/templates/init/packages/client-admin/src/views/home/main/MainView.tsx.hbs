@@ -1,0 +1,13 @@
+import { useAuth } from "../../../providers/AuthProvider";
+
+export function MainView() {
+  const auth = useAuth();
+
+  return (
+    <div class="flex h-full items-center justify-center">
+      <h1 class="text-2xl font-bold text-base-700 dark:text-base-200">
+        {{projectName}} ({auth.authInfo()?.employeeName})
+      </h1>
+    </div>
+  );
+}

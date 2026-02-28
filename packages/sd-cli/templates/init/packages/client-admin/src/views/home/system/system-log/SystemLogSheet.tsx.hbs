@@ -1,0 +1,169 @@
+import {
+  CrudSheet,
+  DateRangePicker,
+  type ExcelConfig,
+  FormGroup,
+  type SortingDef,
+  TextInput,
+} from "@simplysm/solid";
+import { DateOnly, type DateTime, objGetChainValue, strIsNullOrEmpty } from "@simplysm/core-common";
+import { expr } from "@{{projectName}}/db-main";
+import { type ExprUnit } from "@simplysm/orm-common";
+import { ExcelWrapper } from "@simplysm/excel";
+import { downloadBlob } from "@simplysm/core-browser";
+import { z } from "zod";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+
+type SheetItem = {
+  id: number;
+  clientName?: string;
+  dateTime?: DateTime;
+  severity?: string;
+  message?: string;
+  employeeName?: string;
+};
+
+type Filter = {
+  fromDate?: DateOnly;
+  toDate?: DateOnly;
+  searchText?: string;
+};
+
+const ITEMS_PER_PAGE = 50;
+
+const excelWrapper = new ExcelWrapper(
+  z.object({
+    id: z.number().describe("ID"),
+    dateTime: z.custom<DateTime>().optional().describe("일시"),
+    severity: z.string().optional().describe("심각도"),
+    employeeName: z.string().optional().describe("사용자명"),
+    clientName: z.string().optional().describe("클라이언트"),
+    message: z.string().optional().describe("메시지"),
+  }),
+);
+
+export function SystemLogSheet() {
+  const appService = useAppService();
+
+  const excel: ExcelConfig<SheetItem> = {
+    download: async (items) => {
+      await using wb = await excelWrapper.write("시스템로그", items);
+      const blob = await wb.getBlob();
+      downloadBlob(blob, "시스템로그.xlsx");
+    },
+  };
+
+  async function search(filter: Filter, page: number | undefined, sorts: SortingDef[]) {
+    return appService.orm.connect(async (db) => {
+      let qr = db._log();
+
+      // 조회기간 필터
+      if (filter.fromDate != null || filter.toDate != null) {
+        qr = qr.where((c) => [
+          expr.between(expr.cast(c.dateTime, { type: "date" }), filter.fromDate, filter.toDate),
+        ]);
+      }
+
+      // 검색어 필터
+      const searchText = filter.searchText?.trim();
+      if (!strIsNullOrEmpty(searchText)) {
+        qr = qr.search((c) => [c.clientName, c.severity, c.employee!.name], searchText);
+      }
+
+      // 페이지 수
+      const pageCount = page != null ? Math.ceil((await qr.count()) / ITEMS_PER_PAGE) : undefined;
+
+      // select + include
+      let qr2 = qr.include((c) => c.employee).select((c) => ({
+        id: c.id,
+        clientName: c.clientName,
+        dateTime: c.dateTime,
+        severity: c.severity,
+        message: c.message,
+        employeeName: c.employee?.name,
+      }));
+
+      // 정렬
+      for (const sort of sorts) {
+        qr2 = qr2.orderBy(
+          (c) => objGetChainValue(c, sort.key) as ExprUnit<any>,
+          sort.desc ? "DESC" : "ASC",
+        );
+      }
+      if (!sorts.some((s) => s.key === "id")) {
+        qr2 = qr2.orderBy((c) => c.id, "DESC");
+      }
+
+      // 페이지네이션
+      if (page != null) {
+        qr2 = qr2.limit((page - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+      }
+
+      const items = (await qr2.result()) as SheetItem[];
+      return { items, pageCount };
+    });
+  }
+
+  return (
+    <CrudSheet<SheetItem, Filter>
+      search={search}
+      getItemKey={(item) => item.id}
+      persistKey="system-log"
+      editable={false}
+      excel={excel}
+    >
+      <CrudSheet.Filter<Filter>>
+        {(filter, setFilter) => (
+          <>
+            <FormGroup.Item label="조회기간">
+              <DateRangePicker
+                from={filter.fromDate}
+                onFromChange={(v) => setFilter("fromDate", v)}
+                to={filter.toDate}
+                onToChange={(v) => setFilter("toDate", v)}
+              />
+            </FormGroup.Item>
+            <FormGroup.Item label="검색어">
+              <TextInput
+                value={filter.searchText}
+                onValueChange={(v) => setFilter("searchText", v)}
+              />
+            </FormGroup.Item>
+          </>
+        )}
+      </CrudSheet.Filter>
+
+      <CrudSheet.Column<SheetItem> key="id" header="#" fixed>
+        {({ item }) => <div class="px-2 py-1 text-right">{item.id}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="dateTime" header="일시">
+        {({ item }) => (
+          <div class="px-2 py-1">
+            {item.dateTime?.toFormatString("yyyy-MM-dd HH:mm") ?? ""}
+          </div>
+        )}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="severity" header="심각도">
+        {({ item }) => <div class="px-2 py-1">{item.severity}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="employeeName" header="사용자명">
+        {({ item }) => <div class="px-2 py-1">{item.employeeName}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="clientName" header="클라이언트">
+        {({ item }) => <div class="px-2 py-1">{item.clientName}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="message" header="메시지">
+        {({ item }) => (
+          <div class="px-2 py-1">
+            <pre class="whitespace-pre-wrap">{item.message}</pre>
+          </div>
+        )}
+      </CrudSheet.Column>
+    </CrudSheet>
+  );
+}

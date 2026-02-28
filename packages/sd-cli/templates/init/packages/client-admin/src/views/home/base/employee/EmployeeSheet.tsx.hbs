@@ -1,0 +1,271 @@
+import { Show } from "solid-js";
+import {
+  Checkbox,
+  CrudSheet,
+  type ExcelConfig,
+  FormGroup,
+  type ModalEditConfig,
+  type SortingDef,
+  TextInput,
+  useDialog,
+  useSharedData,
+} from "@simplysm/solid";
+import { DateOnly, type DateTime, objGetChainValue, strIsNullOrEmpty } from "@simplysm/core-common";
+import { expr } from "@{{projectName}}/db-main";
+import { type ExprUnit } from "@simplysm/orm-common";
+import { ExcelWrapper } from "@simplysm/excel";
+import { downloadBlob } from "@simplysm/core-browser";
+import { z } from "zod";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+import { useAppStructure } from "../../../../providers/AppStructureProvider";
+import { EmployeeDetail } from "./EmployeeDetail";
+import type { AppSharedData } from "../../../../providers/configureSharedData";
+
+type SheetItem = {
+  id?: number;
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  birthDate?: DateOnly;
+  enteringDate?: DateOnly;
+  leavingDate?: DateOnly;
+  socialSecurityNumber?: string;
+  payrollAccountBank?: string;
+  payrollAccountNumber?: string;
+  isDeleted: boolean;
+  lastDataLog?: {
+    action: string;
+    dateTime: DateTime;
+    employeeName?: string;
+  };
+};
+
+type Filter = {
+  searchText?: string;
+  isIncludeLeft: boolean;
+  isIncludeDeleted: boolean;
+};
+
+const ITEMS_PER_PAGE = 50;
+
+const excelWrapper = new ExcelWrapper(
+  z.object({
+    id: z.number().optional().describe("ID"),
+    name: z.string().describe("이름"),
+    email: z.string().optional().describe("이메일"),
+    phoneNumber: z.string().optional().describe("전화번호"),
+    birthDate: z.custom<DateOnly>().optional().describe("생년월일"),
+    enteringDate: z.custom<DateOnly>().optional().describe("입사일자"),
+    leavingDate: z.custom<DateOnly>().optional().describe("퇴사일자"),
+    isDeleted: z.boolean().describe("삭제여부"),
+    socialSecurityNumber: z.string().optional().describe("주민번호"),
+    payrollAccountBank: z.string().optional().describe("급여계좌은행"),
+    payrollAccountNumber: z.string().optional().describe("급여계좌번호"),
+    password: z.string().optional().describe("비밀번호"),
+  }),
+);
+
+export function EmployeeSheet() {
+  const appService = useAppService();
+  const dialog = useDialog();
+  const sharedData = useSharedData<AppSharedData>();
+
+  const { perms } = useAppStructure();
+  const employeePerms = perms.home.base.employee;
+
+  const modalEdit: ModalEditConfig<SheetItem> = {
+    editItem: (item) =>
+      dialog.show(() => <EmployeeDetail itemId={item?.id} />, {
+        header: item ? "직원 수정" : "직원 등록",
+      }),
+  };
+
+  const excel: ExcelConfig<SheetItem> = {
+    download: async (items) => {
+      await using wb = await excelWrapper.write("직원", items, {
+        excludes: [
+          ...(!employeePerms.personal.use ? (["socialSecurityNumber"] as const) : []),
+          ...(!employeePerms.payroll.use
+            ? (["payrollAccountBank", "payrollAccountNumber"] as const)
+            : []),
+          ...(!employeePerms.auth.edit ? (["password"] as const) : []),
+        ],
+      });
+      const blob = await wb.getBlob();
+      downloadBlob(blob, "직원.xlsx");
+    },
+    upload: async (file) => {
+      const excelItems = await excelWrapper.read(file);
+      const ids = await appService.employee.save(excelItems);
+      await sharedData.employee.emit(ids);
+    },
+  };
+
+  async function search(filter: Filter, page: number | undefined, sorts: SortingDef[]) {
+    return appService.orm.connect(async (db) => {
+      let qr = db.employee();
+
+      const searchText = filter.searchText?.trim();
+      if (!strIsNullOrEmpty(searchText)) {
+        qr = qr.search((c) => [c.name, c.email, c.phoneNumber], searchText);
+      }
+
+      if (!filter.isIncludeLeft) {
+        qr = qr.where((c) => [
+          expr.or([expr.null(c.leavingDate), expr.gt(c.leavingDate, new DateOnly())]),
+        ]);
+      }
+
+      if (!filter.isIncludeDeleted) {
+        qr = qr.where((c) => [expr.eq(c.isDeleted, false)]);
+      }
+
+      const pageCount = page != null ? Math.ceil((await qr.count()) / ITEMS_PER_PAGE) : undefined;
+
+      let qr2 = qr.joinLastDataLog().select((c) => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        phoneNumber: c.phoneNumber,
+        birthDate: c.birthDate,
+        enteringDate: c.enteringDate,
+        leavingDate: c.leavingDate,
+        ...(employeePerms.personal.use ? { socialSecurityNumber: c.socialSecurityNumber } : {}),
+        ...(employeePerms.payroll.use
+          ? {
+              payrollAccountBank: c.payrollAccountBank,
+              payrollAccountNumber: c.payrollAccountNumber,
+            }
+          : {}),
+        isDeleted: c.isDeleted,
+        lastDataLog: c.lastDataLog,
+      }));
+
+      for (const sort of sorts) {
+        qr2 = qr2.orderBy(
+          (c) => objGetChainValue(c, sort.key) as ExprUnit<any>,
+          sort.desc ? "DESC" : "ASC",
+        );
+      }
+      if (!sorts.some((s) => s.key === "id")) {
+        qr2 = qr2.orderBy((c) => c.id, "DESC");
+      }
+
+      if (page != null) {
+        qr2 = qr2.limit((page - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+      }
+
+      const items = (await qr2.result()) as SheetItem[];
+      return { items, pageCount };
+    });
+  }
+
+  return (
+    <CrudSheet<SheetItem, Filter>
+      search={search}
+      getItemKey={(item) => item.id}
+      itemDeleted={(item) => item.isDeleted}
+      isItemSelectable={(item) => item.id != null}
+      persistKey="employee-page"
+      editable={employeePerms.edit}
+      filterInitial={{ isIncludeLeft: false, isIncludeDeleted: false } as Filter}
+      modalEdit={modalEdit}
+      excel={excel}
+      lastModifiedAtProp="lastDataLog.dateTime"
+      lastModifiedByProp="lastDataLog.employeeName"
+    >
+      <CrudSheet.Filter<Filter>>
+        {(filter, setFilter) => (
+          <>
+            <FormGroup.Item label="검색어">
+              <TextInput
+                value={filter.searchText}
+                onValueChange={(v) => setFilter("searchText", v)}
+              />
+            </FormGroup.Item>
+            <FormGroup.Item>
+              <Checkbox
+                value={filter.isIncludeLeft}
+                onValueChange={(v) => setFilter("isIncludeLeft", v)}
+              >
+                퇴사자 포함
+              </Checkbox>
+            </FormGroup.Item>
+            <FormGroup.Item>
+              <Checkbox
+                value={filter.isIncludeDeleted}
+                onValueChange={(v) => setFilter("isIncludeDeleted", v)}
+              >
+                삭제항목 포함
+              </Checkbox>
+            </FormGroup.Item>
+          </>
+        )}
+      </CrudSheet.Filter>
+
+      <CrudSheet.Column<SheetItem> key="id" header="#" editTrigger>
+        {({ item }) => <div class="px-2 py-1 text-right">{item.id}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="name" header="이름">
+        {({ item }) => <div class="px-2 py-1">{item.name}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="email" header="이메일">
+        {({ item }) => <div class="px-2 py-1">{item.email}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="phoneNumber" header="전화번호">
+        {({ item }) => <div class="px-2 py-1">{item.phoneNumber}</div>}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="birthDate" header="생년월일">
+        {({ item }) => (
+          <div class="px-2 py-1">{item.birthDate?.toFormatString("yyyy-MM-dd") ?? ""}</div>
+        )}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="enteringDate" header="입사일자">
+        {({ item }) => (
+          <div class="px-2 py-1">{item.enteringDate?.toFormatString("yyyy-MM-dd") ?? ""}</div>
+        )}
+      </CrudSheet.Column>
+
+      <CrudSheet.Column<SheetItem> key="leavingDate" header="퇴사일자">
+        {({ item }) => (
+          <div class={`px-2 py-1${item.leavingDate != null ? " text-warning-600" : ""}`}>
+            {item.leavingDate?.toFormatString("yyyy-MM-dd") ?? ""}
+          </div>
+        )}
+      </CrudSheet.Column>
+
+      <Show when={employeePerms.auth.use}>
+        <CrudSheet.Column<SheetItem>
+          key="password"
+          header={["인증정보", "비밀번호"]}
+          sortable={false}
+        >
+          {() => <div class="px-2 py-1">****</div>}
+        </CrudSheet.Column>
+      </Show>
+
+      <Show when={employeePerms.personal.use}>
+        <CrudSheet.Column<SheetItem> key="socialSecurityNumber" header={["개인정보", "주민번호"]}>
+          {({ item }) => <div class="px-2 py-1">{item.socialSecurityNumber}</div>}
+        </CrudSheet.Column>
+      </Show>
+
+      <Show when={employeePerms.payroll.use}>
+        <CrudSheet.Column<SheetItem> key="payrollAccountBank" header={["급여정보", "계좌은행"]}>
+          {({ item }) => <div class="px-2 py-1">{item.payrollAccountBank}</div>}
+        </CrudSheet.Column>
+      </Show>
+
+      <Show when={employeePerms.payroll.use}>
+        <CrudSheet.Column<SheetItem> key="payrollAccountNumber" header={["급여정보", "계좌번호"]}>
+          {({ item }) => <div class="px-2 py-1">{item.payrollAccountNumber}</div>}
+        </CrudSheet.Column>
+      </Show>
+    </CrudSheet>
+  );
+}

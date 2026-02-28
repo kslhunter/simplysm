@@ -1,0 +1,67 @@
+import { useSharedData } from "@simplysm/solid";
+import { expr } from "@{{projectName}}/db-main";
+import { useAppService } from "./AppServiceProvider";
+
+export type EmployeeSharedItem = {
+  id: number;
+  name: string;
+  email: string | undefined;
+  isDeleted: boolean;
+};
+
+export type RoleSharedItem = {
+  id: number;
+  name: string;
+  isDeleted: boolean;
+};
+
+export type AppSharedData = {
+  employee: EmployeeSharedItem;
+  role: RoleSharedItem;
+};
+
+export function configureSharedData() {
+  const appService = useAppService();
+
+  useSharedData<AppSharedData>().configure((_origin) => ({
+    employee: {
+      fetch: async (changeKeys) => {
+        return appService.orm.connect(async (db) => {
+          let qr = db.employee().select((item) => ({
+            id: item.id,
+            name: item.name,
+            email: item.email,
+            isDeleted: item.isDeleted,
+          }));
+          if (changeKeys) {
+            qr = qr.where((item) => [expr.in(item.id, changeKeys)]);
+          }
+          return qr.result();
+        });
+      },
+      orderBy: [[(item) => item.name, "asc"]],
+      getKey: (item) => item.id,
+      getSearchText: (item) => item.name,
+      getIsHidden: (item) => item.isDeleted,
+    },
+    role: {
+      fetch: async (changeKeys) => {
+        return appService.orm.connect(async (db) => {
+          let qr = db.role().select((item) => ({
+            id: item.id,
+            name: item.name,
+            isDeleted: item.isDeleted,
+          }));
+          if (changeKeys) {
+            qr = qr.where((item) => [expr.in(item.id, changeKeys)]);
+          }
+          return qr.result();
+        });
+      },
+      orderBy: [[(item) => item.name, "asc"]],
+      getKey: (item) => item.id,
+      getSearchText: (item) => item.name,
+      getIsHidden: (item) => item.isDeleted,
+    },
+  }));
+}

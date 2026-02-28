@@ -1,0 +1,262 @@
+import { createMemo, Show } from "solid-js";
+import { CrudDetail, DatePicker, FormTable, TextInput, useSharedData } from "@simplysm/solid";
+import type { DateOnly } from "@simplysm/core-common";
+import { expr, type IDataLogJoinResult } from "@{{projectName}}/db-main";
+import { useAuth } from "../../../../providers/AuthProvider";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+import type { AppSharedData } from "../../../../providers/configureSharedData";
+
+type DetailData = {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  birthDate?: DateOnly;
+  enteringDate?: DateOnly;
+  leavingDate?: DateOnly;
+  socialSecurityNumber?: string;
+  payrollAccountBank?: string;
+  payrollAccountNumber?: string;
+  password?: string;
+  isDeleted: boolean;
+};
+
+export function EmployeeDetail(props: { itemId?: number }) {
+  const auth = useAuth();
+  const appService = useAppService();
+  const sharedData = useSharedData<AppSharedData>();
+
+  const perms = createMemo(() => {
+    const p = auth.authInfo()?.permissions ?? {};
+    return {
+      edit: Boolean(p["/home/base/employee/edit"]),
+      authUse: Boolean(p["/home/base/employee/auth/use"]),
+      authEdit: Boolean(p["/home/base/employee/auth/edit"]),
+      personalUse: Boolean(p["/home/base/employee/personal/use"]),
+      personalEdit: Boolean(p["/home/base/employee/personal/edit"]),
+      payrollUse: Boolean(p["/home/base/employee/payroll/use"]),
+      payrollEdit: Boolean(p["/home/base/employee/payroll/edit"]),
+    };
+  });
+
+  // toggleDelete에서 현재 데이터 접근용
+  let dataRef: DetailData = { isDeleted: false };
+
+  async function handleLoad() {
+    if (props.itemId == null) {
+      return {
+        data: { isDeleted: false } as DetailData,
+        info: { isNew: true, isDeleted: false },
+      };
+    }
+
+    return appService.orm.connect(async (db) => {
+      const emp = await db
+        .employee()
+        .joinLastDataLog()
+        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+        .where((c) => [expr.eq(c.id, props.itemId)])
+        .select((c) => ({
+          name: c.name,
+          email: c.email,
+          phoneNumber: c.phoneNumber,
+          birthDate: c.birthDate,
+          enteringDate: c.enteringDate,
+          leavingDate: c.leavingDate,
+          socialSecurityNumber: c.socialSecurityNumber,
+          payrollAccountBank: c.payrollAccountBank,
+          payrollAccountNumber: c.payrollAccountNumber,
+          isDeleted: c.isDeleted,
+          lastDataLog: c.lastDataLog,
+        }))
+        .single();
+
+      if (!emp) throw new Error("직원를 찾을 수 없습니다.");
+
+      const lastDataLog = emp.lastDataLog as IDataLogJoinResult | undefined;
+
+      return {
+        data: {
+          name: emp.name,
+          email: emp.email,
+          phoneNumber: emp.phoneNumber,
+          birthDate: emp.birthDate,
+          enteringDate: emp.enteringDate,
+          leavingDate: emp.leavingDate,
+          socialSecurityNumber: emp.socialSecurityNumber,
+          payrollAccountBank: emp.payrollAccountBank,
+          payrollAccountNumber: emp.payrollAccountNumber,
+          isDeleted: emp.isDeleted,
+        } as DetailData,
+        info: {
+          isNew: false,
+          isDeleted: emp.isDeleted,
+          lastModifiedAt: lastDataLog?.dateTime,
+          lastModifiedBy: lastDataLog?.employeeName,
+        },
+      };
+    });
+  }
+
+  async function handleSubmit(data: DetailData) {
+    const ids = await appService.employee.save([{ id: props.itemId, ...data }]);
+    await sharedData.employee.emit(ids);
+    return true;
+  }
+
+  async function handleToggleDelete(del: boolean) {
+    const ids = await appService.employee.save([{ id: props.itemId!, ...dataRef, isDeleted: del }]);
+    await sharedData.employee.emit(ids);
+    return true;
+  }
+
+  return (
+    <CrudDetail<DetailData>
+      editable={perms().edit}
+      deletable={props.itemId != null && props.itemId !== auth.authInfo()?.employeeId}
+      load={handleLoad}
+      submit={handleSubmit}
+      toggleDelete={handleToggleDelete}
+    >
+      {(ctx) => {
+        dataRef = ctx.data;
+        return (
+          <div class="flex flex-col gap-8">
+            <section class={"flex flex-col gap-2"}>
+              <h3 class="font-bold text-base-400">직원정보</h3>
+              <FormTable>
+                <tbody>
+                  <tr>
+                    <th>이름</th>
+                    <td>
+                      <TextInput
+                        required
+                        disabled={!perms().edit}
+                        value={ctx.data.name ?? ""}
+                        onValueChange={(v) => ctx.setData("name", v)}
+                      />
+                    </td>
+                    <th>이메일</th>
+                    <td>
+                      <TextInput
+                        type="email"
+                        disabled={!perms().edit}
+                        value={ctx.data.email ?? ""}
+                        onValueChange={(v) => ctx.setData("email", v)}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>전화번호</th>
+                    <td>
+                      <TextInput
+                        disabled={!perms().edit}
+                        value={ctx.data.phoneNumber ?? ""}
+                        onValueChange={(v) => ctx.setData("phoneNumber", v)}
+                      />
+                    </td>
+                    <th>생년월일</th>
+                    <td>
+                      <DatePicker
+                        disabled={!perms().edit}
+                        value={ctx.data.birthDate}
+                        onValueChange={(v) => ctx.setData("birthDate", v)}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>입사일자</th>
+                    <td>
+                      <DatePicker
+                        disabled={!perms().edit}
+                        value={ctx.data.enteringDate}
+                        onValueChange={(v) => ctx.setData("enteringDate", v)}
+                      />
+                    </td>
+                    <th>퇴사일자</th>
+                    <td>
+                      <DatePicker
+                        disabled={!perms().edit}
+                        value={ctx.data.leavingDate}
+                        onValueChange={(v) => ctx.setData("leavingDate", v)}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </FormTable>
+            </section>
+
+            <Show when={perms().authUse}>
+              <section class={"flex flex-col gap-2"}>
+                <h3 class="font-bold text-base-400">인증정보</h3>
+                <FormTable>
+                  <tbody>
+                    <tr>
+                      <th>비밀번호</th>
+                      <td colSpan={3}>
+                        <TextInput
+                          type="password"
+                          disabled={!perms().authEdit}
+                          value={ctx.data.password ?? ""}
+                          onValueChange={(v) => ctx.setData("password", v)}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </FormTable>
+              </section>
+            </Show>
+
+            <Show when={perms().personalUse}>
+              <section class={"flex flex-col gap-2"}>
+                <h3 class="font-bold text-base-400">개인정보</h3>
+                <FormTable>
+                  <tbody>
+                    <tr>
+                      <th>주민번호</th>
+                      <td colSpan={3}>
+                        <TextInput
+                          format="XXXXXX-XXXXXXX"
+                          disabled={!perms().personalEdit}
+                          value={ctx.data.socialSecurityNumber ?? ""}
+                          onValueChange={(v) => ctx.setData("socialSecurityNumber", v)}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </FormTable>
+              </section>
+            </Show>
+
+            <Show when={perms().payrollUse}>
+              <section class={"flex flex-col gap-2"}>
+                <h3 class="font-bold text-base-400">급여정보</h3>
+                <FormTable>
+                  <tbody>
+                    <tr>
+                      <th>계좌은행</th>
+                      <td>
+                        <TextInput
+                          disabled={!perms().payrollEdit}
+                          value={ctx.data.payrollAccountBank ?? ""}
+                          onValueChange={(v) => ctx.setData("payrollAccountBank", v)}
+                        />
+                      </td>
+                      <th>계좌번호</th>
+                      <td>
+                        <TextInput
+                          disabled={!perms().payrollEdit}
+                          value={ctx.data.payrollAccountNumber ?? ""}
+                          onValueChange={(v) => ctx.setData("payrollAccountNumber", v)}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </FormTable>
+              </section>
+            </Show>
+          </div>
+        );
+      }}
+    </CrudDetail>
+  );
+}

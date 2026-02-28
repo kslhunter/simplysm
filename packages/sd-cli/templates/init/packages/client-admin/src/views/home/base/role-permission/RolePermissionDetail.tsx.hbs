@@ -1,0 +1,123 @@
+import { createMemo, createSignal } from "solid-js";
+import { reconcile } from "solid-js/store";
+import {
+  type AppPerm,
+  Button,
+  CrudDetail,
+  PermissionTable,
+  SharedDataSelect,
+  useSharedData,
+} from "@simplysm/solid";
+import { expr } from "@{{projectName}}/db-main";
+import type { AppSharedData, RoleSharedItem } from "../../../../providers/configureSharedData";
+import { useAuth } from "../../../../providers/AuthProvider";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+import { useAppStructure } from "../../../../providers/AppStructureProvider";
+
+export function RolePermissionDetail(props: { roleId: number }) {
+  const auth = useAuth();
+  const appService = useAppService();
+  const appStructure = useAppStructure();
+  const sharedData = useSharedData<AppSharedData>();
+
+  const perms = createMemo(() => {
+    const p = auth.authInfo()?.permissions ?? {};
+    return {
+      edit: Boolean(p["/home/base/role-permission/edit"]),
+    };
+  });
+
+  const [copySourceRoleId, setCopySourceRoleId] = createSignal<number>();
+
+  async function loadPermissionsByRoleId(roleId: number): Promise<Record<string, boolean>> {
+    return appService.orm.connectWithoutTransaction(async (db) => {
+      const rows = await db
+        .rolePermission()
+        .where((c) => [expr.eq(c.roleId, roleId)])
+        .select((c) => ({
+          code: c.code,
+          valueJson: c.valueJson,
+        }))
+        .result();
+
+      const record: Record<string, boolean> = {};
+      for (const row of rows) {
+        record[row.code] = JSON.parse(row.valueJson);
+      }
+      return record;
+    });
+  }
+
+  async function handleLoad() {
+    const data = await loadPermissionsByRoleId(props.roleId);
+    return {
+      data,
+      info: { isNew: false, isDeleted: false },
+    };
+  }
+
+  async function handleSubmit(data: Record<string, boolean>) {
+    // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+    await appService.orm.connect(async (db) => {
+      await db
+        .rolePermission()
+        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+        .where((c) => [expr.eq(c.roleId, props.roleId)])
+        .delete();
+
+      const entries = Object.entries(data).filter(([, v]) => v);
+      if (entries.length > 0) {
+        await db.rolePermission().insert(
+          entries.map(([code, value]) => ({
+            roleId: props.roleId,
+            code,
+            valueJson: JSON.stringify(value),
+          })),
+        );
+      }
+    });
+    return true;
+  }
+
+  return (
+    <CrudDetail<Record<string, boolean>>
+      class={"p-2"}
+      editable={perms().edit}
+      load={handleLoad}
+      submit={handleSubmit}
+    >
+      {(ctx) => {
+        async function onImportClick() {
+          const sourceId = copySourceRoleId();
+          if (sourceId == null) return;
+          const data = await loadPermissionsByRoleId(sourceId);
+          ctx.setData(reconcile(data));
+        }
+
+        return (
+          <>
+            <CrudDetail.Tools>
+              <SharedDataSelect
+                data={sharedData.role}
+                value={copySourceRoleId()}
+                onValueChange={(v) => setCopySourceRoleId(v as number | undefined)}
+              >
+                {(item: RoleSharedItem) => <>{item.name}</>}
+              </SharedDataSelect>
+              <Button onClick={onImportClick} disabled={copySourceRoleId() == null}>
+                가져오기
+              </Button>
+            </CrudDetail.Tools>
+
+            <PermissionTable
+              items={appStructure.usablePerms().flatMap((p) => p.children ?? []) as AppPerm<string>[]}
+              value={ctx.data}
+              onValueChange={(v) => ctx.setData(reconcile(v))}
+              disabled={!perms().edit}
+            />
+          </>
+        );
+      }}
+    </CrudDetail>
+  );
+}

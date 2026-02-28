@@ -1,0 +1,154 @@
+import { createMemo } from "solid-js";
+import { CrudDetail, FormTable, TextInput, useSharedData } from "@simplysm/solid";
+import { expr } from "@{{projectName}}/db-main";
+import { useAuth } from "../../../../providers/AuthProvider";
+import { useAppService } from "../../../../providers/AppServiceProvider";
+import type { AppSharedData } from "../../../../providers/configureSharedData";
+
+type DetailData = {
+  name?: string;
+  isDeleted: boolean;
+};
+
+export function RoleDetail(props: { itemId?: number }) {
+  const auth = useAuth();
+  const appService = useAppService();
+  const sharedData = useSharedData<AppSharedData>();
+
+  const perms = createMemo(() => {
+    const p = auth.authInfo()?.permissions ?? {};
+    return {
+      edit: Boolean(p["/home/base/role-permission/edit"]),
+    };
+  });
+
+  async function handleLoad() {
+    if (props.itemId == null) {
+      return {
+        data: { isDeleted: false } as DetailData,
+        info: { isNew: true, isDeleted: false },
+      };
+    }
+
+    return appService.orm.connectWithoutTransaction(async (db) => {
+      const role = await db
+        .role()
+        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+        .where((c) => [expr.eq(c.id, props.itemId)])
+        .select((c) => ({
+          name: c.name,
+          isDeleted: c.isDeleted,
+        }))
+        .single();
+
+      if (!role) throw new Error("권한그룹을 찾을 수 없습니다.");
+
+      return {
+        data: {
+          name: role.name,
+          isDeleted: role.isDeleted,
+        } as DetailData,
+        info: {
+          isNew: false,
+          isDeleted: role.isDeleted,
+        },
+      };
+    });
+  }
+
+  async function handleSubmit(data: DetailData) {
+    // 이름 중복 검증
+    await appService.orm.connect(async (db) => {
+      const count = await db
+        .role()
+        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+        .where((c) => [
+          expr.eq(c.name, data.name ?? ""),
+
+          props.itemId == null
+            ? expr.eq(c.id, -1) // 신규: 절대 매칭 안 되게
+            : expr.not(expr.eq(c.id, props.itemId)),
+          expr.eq(c.isDeleted, false),
+        ])
+        .count();
+
+      if (count > 0) {
+        throw new Error("이미 존재하는 권한그룹 이름입니다.");
+      }
+    });
+
+    // 저장
+    // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+    const savedId = await appService.orm.connect(async (db) => {
+      if (props.itemId == null) {
+        const [inserted] = await db.role().insert(
+          [
+            {
+              id: undefined,
+              name: data.name ?? "",
+              isDeleted: false,
+            },
+          ],
+          ["id"],
+        );
+        return inserted.id;
+      } else {
+        await db
+          .role()
+          // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+          .where((_c) => [expr.eq(_c.id, props.itemId)])
+          .update((_c) => ({
+            name: data.name ?? "",
+          }));
+        return props.itemId;
+      }
+    });
+
+    await sharedData.role.emit([savedId]);
+    return true;
+  }
+
+  async function handleToggleDelete(del: boolean) {
+    await appService.orm.connect(async (db) => {
+      await db
+        .role()
+        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
+        .where((_c) => [expr.eq(_c.id, props.itemId!)])
+        .update((_c) => ({
+          isDeleted: del,
+        }));
+    });
+    await sharedData.role.emit([props.itemId!]);
+    return true;
+  }
+
+  return (
+    <CrudDetail<DetailData>
+      editable={perms().edit}
+      deletable={props.itemId != null}
+      load={handleLoad}
+      submit={handleSubmit}
+      toggleDelete={handleToggleDelete}
+    >
+      {(ctx) => (
+        <div class="p-2">
+          <FormTable>
+            <tbody>
+            <tr>
+              <th>이름</th>
+              <td>
+                <TextInput
+                  required
+                  disabled={!perms().edit}
+                  value={ctx.data.name ?? ""}
+                  onValueChange={(v) => ctx.setData("name", v)}
+                />
+              </td>
+            </tr>
+            </tbody>
+          </FormTable>
+        </div>
+      )}
+    </CrudDetail>
+  );
+}

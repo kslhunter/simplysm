@@ -1,0 +1,248 @@
+import { createMemo } from "solid-js";
+import { CrudDetail, FormTable, Icon, Select, TextInput } from "@simplysm/solid";
+import { useAuth } from "../../../providers/AuthProvider";
+import { useAppService } from "../../../providers/AppServiceProvider";
+import { useAppStructure } from "../../../providers/AppStructureProvider";
+import { expr } from "@{{projectName}}/db-main";
+import { IconX } from "@tabler/icons-solidjs";
+import { jsonParse } from "@simplysm/core-common";
+
+type DetailData = {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  firstRouterLink?: string;
+};
+
+export function MyInfoDetail() {
+  const auth = useAuth();
+  const appService = useAppService();
+  const appStructure = useAppStructure();
+
+  const routeMap = createMemo(() => {
+    const menus = appStructure.usableMenus();
+    const map = new Map<string, string>();
+
+    const flatten = (items: typeof menus, prefix = ""): void => {
+      for (const item of items) {
+        const label = prefix !== "" ? `${prefix} > ${item.title}` : item.title;
+        if (item.href !== undefined) {
+          map.set(item.href, label);
+        }
+        if (item.children !== undefined) {
+          flatten(item.children, label);
+        }
+      }
+    };
+
+    flatten(menus);
+    return map;
+  });
+
+  const routeOptions = createMemo(() => Array.from(routeMap().keys()));
+
+  async function handleLoad() {
+    const authData = auth.authInfo();
+    if (!authData) throw new Error("직원 정보를 불러올 수 없습니다.");
+
+    return appService.orm.connect(async (db) => {
+      const employee = await db
+        .employee()
+        .where((c: any) => [expr.eq(c.id, authData.employeeId)])
+        .single();
+
+      const config = await db
+        .employeeConfig()
+        .where((c: any) => [
+          expr.eq(c.employeeId, authData.employeeId),
+          expr.eq(c.code, "firstRouterLink"),
+        ])
+        .first();
+
+      let firstRouterLink: string | undefined;
+      if (config?.valueJson !== undefined && config.valueJson !== "") {
+        try {
+          firstRouterLink = jsonParse(config.valueJson);
+        } catch {
+          // JSON 파싱 실패 시 기본값 유지
+        }
+      }
+
+      return {
+        data: {
+          email: employee?.email ?? "",
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+          firstRouterLink,
+        } as DetailData,
+        info: { isNew: false, isDeleted: false },
+      };
+    });
+  }
+
+  async function handleSubmit(data: DetailData) {
+    const authData = auth.authInfo();
+    if (!authData) throw new Error("직원 정보를 불러올 수 없습니다.");
+
+    const isPasswordChanging =
+      data.currentPassword.trim() !== "" ||
+      data.newPassword.trim() !== "" ||
+      data.confirmPassword.trim() !== "";
+
+    if (isPasswordChanging) {
+      await appService.auth.changePassword(data.currentPassword.trim(), data.newPassword.trim());
+    }
+
+    await appService.orm.connect(async (db) => {
+      await db
+        .employee()
+        .where((c: any) => [expr.eq(c.id, authData.employeeId)])
+        .update(() => ({
+          email: expr.val("string", data.email.trim()),
+        }));
+
+      const existingConfig = await db
+        .employeeConfig()
+        .where((c: any) => [
+          expr.eq(c.employeeId, authData.employeeId),
+          expr.eq(c.code, "firstRouterLink"),
+        ])
+        .first();
+
+      const valueJson =
+        data.firstRouterLink !== undefined
+          ? JSON.stringify(data.firstRouterLink)
+          : JSON.stringify(null);
+
+      if (existingConfig) {
+        await db
+          .employeeConfig()
+          .where((c: any) => [
+            expr.eq(c.employeeId, authData.employeeId),
+            expr.eq(c.code, "firstRouterLink"),
+          ])
+          .update(() => ({
+            valueJson: expr.val("string", valueJson),
+          }));
+      } else {
+        await db.employeeConfig().insert([
+          {
+            employeeId: authData.employeeId,
+            code: "firstRouterLink",
+            valueJson,
+          },
+        ]);
+      }
+    });
+
+    await auth.tryReloadAuth();
+    return true;
+  }
+
+  return (
+    <CrudDetail<DetailData> class={"px-2 py-4"} load={handleLoad} submit={handleSubmit}>
+      {(ctx) => (
+        <div class="flex flex-col gap-8">
+          <section>
+            <h3 class="mb-4 border-l-4 border-base-500 pl-3 font-bold text-base-500">인증정보</h3>
+            <FormTable>
+              <tr>
+                <th>이메일</th>
+                <td>
+                  <TextInput
+                    type="email"
+                    required
+                    value={ctx.data.email}
+                    onValueChange={(v) => ctx.setData("email", v)}
+                    autocomplete="off"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>현재 비밀번호</th>
+                <td>
+                  <TextInput
+                    required={Boolean(ctx.data.newPassword || ctx.data.confirmPassword)}
+                    class="w-56"
+                    type="password"
+                    autocomplete="off"
+                    value={ctx.data.currentPassword}
+                    onValueChange={(v) => ctx.setData("currentPassword", v)}
+                    placeholder="비밀번호 변경 시에만 입력"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>새 비밀번호</th>
+                <td>
+                  <TextInput
+                    required={Boolean(ctx.data.currentPassword || ctx.data.confirmPassword)}
+                    minLength={8}
+                    class="w-56"
+                    type="password"
+                    autocomplete="off"
+                    value={ctx.data.newPassword}
+                    onValueChange={(v) => ctx.setData("newPassword", v)}
+                    placeholder="비밀번호 변경 시에만 입력"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>새 비밀번호 확인</th>
+                <td>
+                  <TextInput
+                    required={Boolean(ctx.data.currentPassword || ctx.data.newPassword)}
+                    minLength={8}
+                    validate={() =>
+                      ctx.data.newPassword !== ctx.data.confirmPassword
+                        ? "비밀번호가 일치하지 않습니다"
+                        : ""
+                    }
+                    class="w-56"
+                    type="password"
+                    autocomplete="off"
+                    value={ctx.data.confirmPassword}
+                    onValueChange={(v) => ctx.setData("confirmPassword", v)}
+                    placeholder="비밀번호 변경 시에만 입력"
+                  />
+                </td>
+              </tr>
+            </FormTable>
+          </section>
+
+          <section>
+            <h3 class="mb-4 border-l-4 border-base-500 pl-3 font-bold text-base-500">시스템설정</h3>
+            <FormTable>
+              <tbody>
+                <tr>
+                  <th>로그인 시 화면</th>
+                  <td>
+                    <Select
+                      class="w-full"
+                      value={ctx.data.firstRouterLink}
+                      onValueChange={(v) => ctx.setData("firstRouterLink", v)}
+                      items={routeOptions()}
+                      renderValue={(v) => <>{routeMap().get(v) ?? v}</>}
+                      placeholder="선택 안함"
+                    >
+                      <Select.ItemTemplate>
+                        {(href: string) => <>{routeMap().get(href) ?? href}</>}
+                      </Select.ItemTemplate>
+                      <Select.Action
+                        onClick={() => ctx.setData("firstRouterLink", undefined as any)}
+                      >
+                        <Icon icon={IconX} class={"text-danger-500"} />
+                      </Select.Action>
+                    </Select>
+                  </td>
+                </tr>
+              </tbody>
+            </FormTable>
+          </section>
+        </div>
+      )}
+    </CrudDetail>
+  );
+}

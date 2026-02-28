@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" />
+    <title>{{projectName}}</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem("client-admin.theme");
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body,
+      #root {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .app-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        gap: 24px;
+        background: #f9fafb;
+        padding-bottom: 128px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .dark .app-loading {
+        background: #18181b;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .app-loading {
+          background: #18181b;
+        }
+
+        .app-loading-spinner::before {
+          border-top-color: #3b82f6;
+          border-right-color: #2563eb;
+        }
+
+        .app-loading-spinner::after {
+          border-bottom-color: #60a5fa;
+          border-left-color: #3b82f6;
+        }
+      }
+
+      .app-loading img {
+        width: auto;
+        position: relative;
+        z-index: 1;
+        margin-bottom: 32px;
+      }
+
+      .app-loading-spinner {
+        width: 48px;
+        height: 48px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .app-loading-spinner::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        border-top-color: #60a5fa;
+        border-right-color: #3b82f6;
+        animation: spinClockwise 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+      }
+
+      .dark .app-loading-spinner::before {
+        border-top-color: #3b82f6;
+        border-right-color: #2563eb;
+      }
+
+      .app-loading-spinner::after {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        border-bottom-color: #93c5fd;
+        border-left-color: #60a5fa;
+        animation: spinCounterClockwise 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+      }
+
+      .dark .app-loading-spinner::after {
+        border-bottom-color: #60a5fa;
+        border-left-color: #3b82f6;
+      }
+
+      @keyframes spinClockwise {
+        0% {
+          transform: rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: rotate(360deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes spinCounterClockwise {
+        0% {
+          transform: rotate(0deg);
+          opacity: 0.8;
+        }
+        100% {
+          transform: rotate(-360deg);
+          opacity: 0.8;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="app-loading">
+        <img src="assets/logo-landscape.png" alt="logo" />
+        <div class="app-loading-spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="src/main.tsx"></script>
+  </body>
+</html>

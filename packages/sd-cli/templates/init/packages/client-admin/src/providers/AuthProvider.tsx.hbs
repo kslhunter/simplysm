@@ -1,0 +1,71 @@
+import { createContext, useContext, type Accessor, type ParentComponent } from "solid-js";
+import { createSignal } from "solid-js";
+import { useLocalStorage } from "@simplysm/solid";
+import { useAppService } from "./AppServiceProvider";
+import type { IAuthData } from "@{{projectName}}/server";
+
+interface IAuthContextValue {
+  authInfo: Accessor<IAuthData | undefined>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  tryReloadAuth: () => Promise<boolean>;
+}
+
+const AuthContext = createContext<IAuthContextValue>();
+
+export const AuthProvider: ParentComponent = (props) => {
+  const appService = useAppService();
+  const [authInfo, setAuthInfo] = createSignal<IAuthData>();
+  const [token, setToken] = useLocalStorage<string | undefined>("auth-token");
+
+  const login = async (email: string, password: string) => {
+    const result = await appService.auth.login(email, password);
+
+    const { token: newToken, ...authData } = result;
+    setToken(newToken);
+    await appService.sc.auth(newToken);
+
+    setAuthInfo(authData);
+  };
+
+  const logout = () => {
+    setToken(undefined);
+    setAuthInfo(undefined);
+  };
+
+  const tryReloadAuth = async (): Promise<boolean> => {
+    const currentToken = token();
+    if (currentToken == null || currentToken === "") return false;
+
+    try {
+      await appService.sc.auth(currentToken);
+
+      const result = await appService.auth.refresh();
+
+      const { token: newToken, ...authData } = result;
+      setToken(newToken);
+      await appService.sc.auth(newToken);
+
+      setAuthInfo(authData);
+
+      return true;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Failed to reload auth:", err);
+      setToken(undefined);
+      return false;
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ authInfo, login, logout, tryReloadAuth }}>
+      {props.children}
+    </AuthContext.Provider>
+  );
+};
+
+export function useAuth(): IAuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("AuthProvider가 필요합니다.");
+  return ctx;
+}
