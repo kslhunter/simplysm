@@ -1,0 +1,10 @@
+export { Role } from "./tables/Role";
+export { Employee } from "./tables/Employee";
+export { RolePermission } from "./tables/RolePermission";
+export { EmployeeConfig } from "./tables/EmployeeConfig";
+export { _Log } from "./tables/_Log";
+export { _DataLog } from "./tables/_DataLog";
+export { MainDbContext } from "./MainDbContext";
+export { expr } from "@simplysm/orm-common";
+import "./dataLogExt";
+export type { IDataLogJoinOptions, IDataLogJoinResult, IInsertDataLogParam } from "./dataLogExt";
