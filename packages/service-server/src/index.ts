@@ -24,6 +24,7 @@ export * from "./protocol/protocol-wrapper";
 // Services
 export * from "./services/orm-service";
 export * from "./services/auto-update-service";
+export * from "./services/smtp-client-service";
 
 // Utils
 export * from "./utils/config-manager";
