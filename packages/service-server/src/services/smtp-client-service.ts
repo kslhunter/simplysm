@@ -1,47 +1,10 @@
 import nodemailer from "nodemailer";
 import { defineService, type ServiceMethods } from "../core/define-service";
-
-export interface SmtpClientSendAttachment {
-  filename: string;
-  content?: Buffer;
-  path?: any;
-  contentType?: string;
-}
-
-export interface SmtpClientSendByDefaultOption {
-  to: string;
-  cc?: string;
-  bcc?: string;
-  subject: string;
-  html: string;
-  attachments?: SmtpClientSendAttachment[];
-}
-
-export interface SmtpClientSendOption {
-  host: string;
-  port?: number;
-  secure?: boolean;
-  user?: string;
-  pass?: string;
-
-  from: string;
-  to: string;
-  cc?: string;
-  bcc?: string;
-  subject: string;
-  html: string;
-  attachments?: SmtpClientSendAttachment[];
-}
-
-export interface SmtpClientDefaultConfig {
-  senderName: string;
-  senderEmail?: string;
-  user?: string;
-  pass?: string;
-  host: string;
-  port?: number;
-  secure?: boolean;
-}
+import type {
+  SmtpClientDefaultConfig,
+  SmtpClientSendByDefaultOption,
+  SmtpClientSendOption,
+} from "@simplysm/service-common";
 
 export const SmtpClientService = defineService("SmtpClient", (ctx) => ({
   async send(options: SmtpClientSendOption): Promise<string> {
@@ -62,7 +25,7 @@ export const SmtpClientService = defineService("SmtpClient", (ctx) => ({
         },
       });
 
-      transport.sendMail(options, (err, info) => {
+      transport.sendMail(options as nodemailer.SendMailOptions, (err, info) => {
         if (err) {
           reject(err);
           return;
