@@ -259,30 +259,6 @@ export function createCliParser(argv: string[]): Argv {
         await runInit({});
       },
     )
-    .command("add", "Add package to project", (cmd) =>
-      cmd
-        .version(false)
-        .hide("help")
-        .command(
-          "client",
-          "Add client package",
-          (subCmd) => subCmd.version(false).hide("help"),
-          async () => {
-            const { runAddClient } = await import("./commands/add-client.js");
-            await runAddClient({});
-          },
-        )
-        .command(
-          "server",
-          "Add server package",
-          (subCmd) => subCmd.version(false).hide("help"),
-          async () => {
-            const { runAddServer } = await import("./commands/add-server.js");
-            await runAddServer({});
-          },
-        )
-        .demandCommand(1, "Please specify package type. (client, server)"),
-    )
     .command(
       "publish [targets..]",
       "Publish packages",
