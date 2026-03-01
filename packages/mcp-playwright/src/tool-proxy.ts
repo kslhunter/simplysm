@@ -85,8 +85,20 @@ export async function registerProxiedTools(
     try {
       return await client.callTool({ name, arguments: toolArgs });
     } catch (err) {
-      await sessionManager.destroy(sessionId);
-      throw err;
+      const message = err instanceof Error ? err.message : String(err);
+
+      // Check if the underlying connection is still alive
+      try {
+        await client.listTools();
+      } catch {
+        // Connection is broken — destroy the session
+        await sessionManager.destroy(sessionId);
+      }
+
+      return {
+        content: [{ type: "text" as const, text: `### Error\n${message}` }],
+        isError: true,
+      };
     }
   });
 }

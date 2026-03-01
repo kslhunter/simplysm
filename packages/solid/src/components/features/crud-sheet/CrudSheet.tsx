@@ -100,7 +100,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const dialogInstance = useDialogInstance();
   const isModal = dialogInstance !== undefined;
   const isSelectMode = () => local.selectMode != null;
-  const canEdit = () => (isSelectMode() ? false : (local.editable ?? true));
+  const canEdit = () => (isModal && isSelectMode() ? false : (local.editable ?? true));
 
   // -- Children Resolution --
   const resolved = children(() => local.children);
@@ -534,7 +534,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </Show>
 
         {/* Toolbar */}
-        <Show when={!isSelectMode()}>
+        <Show when={!(isModal && isSelectMode())}>
           <div class="flex gap-2 p-2 pb-0">
             <Show when={!local.hideAutoTools}>
               {/* Inline edit buttons */}
