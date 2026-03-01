@@ -1,10 +1,17 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
-// Mock @playwright/mcp
-vi.mock("@playwright/mcp", () => ({
-  createConnection: vi.fn().mockResolvedValue({
-    connect: vi.fn().mockResolvedValue(undefined),
-  }),
+// Mock node:module's createRequire to intercept CJS require of @playwright/mcp
+vi.mock("node:module", () => ({
+  createRequire: () => (id: string) => {
+    if (id === "@playwright/mcp") {
+      return {
+        createConnection: vi.fn().mockResolvedValue({
+          connect: vi.fn().mockResolvedValue(undefined),
+        }),
+      };
+    }
+    throw new Error(`Unexpected require: ${id}`);
+  },
 }));
 
 // Mock InMemoryTransport

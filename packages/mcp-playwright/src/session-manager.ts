@@ -1,6 +1,10 @@
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { createConnection } from "@playwright/mcp";
+import { createRequire } from "node:module";
+import type { createConnection as CreateConnectionFn } from "@playwright/mcp";
+
+const _require = createRequire(import.meta.url);
+const { createConnection } = _require("@playwright/mcp") as { createConnection: typeof CreateConnectionFn };
 
 interface Session {
   client: Client;

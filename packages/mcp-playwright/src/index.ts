@@ -2,7 +2,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { type createConnection } from "@playwright/mcp";
+import type { createConnection } from "@playwright/mcp";
 import { SessionManager } from "./session-manager.js";
 import { registerProxiedTools } from "./tool-proxy.js";
 
