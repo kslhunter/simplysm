@@ -63,9 +63,9 @@ await yargs(hideBin(process.argv))
         "list",
         "Displays the list of saved accounts",
         (sub) => sub,
-        () => {
+        async () => {
           try {
-            runAuthList();
+            await runAuthList();
           } catch (err) {
             // eslint-disable-next-line no-console
             console.error((err as Error).message);

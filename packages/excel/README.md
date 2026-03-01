@@ -1,36 +1,61 @@
 # @simplysm/excel
 
-Excel file processing library
+Excel file processing library for reading, writing, and manipulating `.xlsx` files.
 
 ## Installation
 
+```bash
 pnpm add @simplysm/excel
+```
 
-## Source Index
+## Quick Example
 
-### Types and utilities
+```typescript
+import { ExcelWorkbook } from "@simplysm/excel";
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/types.ts` | `ExcelXmlContentTypeData`, `ExcelXmlRelationshipData`, `ExcelRelationshipData`, `ExcelXmlWorkbookData`, `ExcelXmlWorksheetData`, `ExcelRowData`, `ExcelCellData`, `ExcelXmlDrawingData`, `ExcelXmlSharedStringData`, `ExcelXmlSharedStringDataSi`, `ExcelXmlSharedStringDataText`, `ExcelXmlStyleData`, `ExcelXmlStyleDataXf`, `ExcelXmlStyleDataFill`, `ExcelXmlStyleDataBorder`, `ExcelValueType`, `ExcelNumberFormat`, `ExcelCellType`, `ExcelAddressPoint`, `ExcelAddressRangePoint`, `ExcelXml`, `ExcelBorderPosition`, `ExcelHorizontalAlign`, `ExcelVerticalAlign`, `ExcelStyleOptions` | All shared XML data types, value types, address types, and style option interfaces | - |
-| `src/utils/excel-utils.ts` | `ExcelUtils` | Utility functions for address conversion, date/number format mapping | `utils/excel-utils.spec.ts` |
+// Read an existing file
+const bytes: Uint8Array = /* file bytes */;
+await using wb = new ExcelWorkbook(bytes);
+const ws = await wb.getWorksheet(0);
+const table = await ws.getDataTable(); // [{ Name: "Alice", Age: 30 }, ...]
 
-### Core classes
+// Create a new file
+await using wb2 = new ExcelWorkbook();
+const ws2 = await wb2.createWorksheet("Sheet1");
+await ws2.setRecords([{ Name: "Alice", Age: 30 }]);
+const output = await wb2.getBytes();
+```
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/excel-cell.ts` | `ExcelCell` | Single cell with value, formula, style, and merge operations | `excel-cell.spec.ts` |
-| `src/excel-row.ts` | `ExcelRow` | Row container providing cell access by column index | `excel-row.spec.ts` |
-| `src/excel-col.ts` | `ExcelCol` | Column container providing cell access and column width setting | `excel-col.spec.ts` |
-| `src/excel-worksheet.ts` | `ExcelWorksheet` | Worksheet with cell/row/col access, copy, data table, and image support | `excel-worksheet.spec.ts` |
-| `src/excel-workbook.ts` | `ExcelWorkbook` | Workbook with lazy-loading ZIP, worksheet management, and export | `excel-workbook.spec.ts` |
+### Type-safe read/write with Zod (ExcelWrapper)
 
-### Wrapper classes
+```typescript
+import { ExcelWrapper } from "@simplysm/excel";
+import { z } from "zod";
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/excel-wrapper.ts` | `ExcelWrapper` | Zod schema-based type-safe Excel read/write wrapper | `excel-wrapper.spec.ts` |
+const schema = z.object({
+  name: z.string().describe("Name"),
+  age: z.number().describe("Age"),
+});
 
-## License
+const wrapper = new ExcelWrapper(schema);
 
-Apache-2.0
+// Read
+const records = await wrapper.read(fileBytes);
+
+// Write
+await using wb = await wrapper.write("Members", records);
+const output = await wb.getBytes();
+```
+
+## Modules
+
+| Module | Description | Details |
+|--------|-------------|---------|
+| `ExcelWorkbook` | Top-level workbook handle; open/create/export `.xlsx` files | [docs/workbook.md](docs/workbook.md) |
+| `ExcelWorksheet` | Single worksheet; cell access, copy, data import/export, images | [docs/workbook.md](docs/workbook.md) |
+| `ExcelRow` | Row handle; access cells in a row | [docs/workbook.md](docs/workbook.md) |
+| `ExcelCol` | Column handle; access cells, set width | [docs/workbook.md](docs/workbook.md) |
+| `ExcelCell` | Single cell; read/write values, formulas, styles, merge | [docs/workbook.md](docs/workbook.md) |
+| `ExcelUtils` | Static helpers for address conversion and date/format conversion | [docs/utils.md](docs/utils.md) |
+| `ExcelWrapper` | Zod schema-based type-safe read/write | [docs/wrapper.md](docs/wrapper.md) |
+| Types | Value, address, style, and XML data type definitions | [docs/types.md](docs/types.md) |

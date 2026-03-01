@@ -1,80 +1,122 @@
 # @simplysm/orm-common
 
-Simplysm Package - ORM Module (common)
+Shared ORM infrastructure for the Simplysm framework. Provides schema builders, a type-safe query builder (`Queryable`), a dialect-independent expression DSL (`expr`), a multi-dialect SQL generator, and supporting utilities. Used by both server-side (`orm-node`) and client-side ORM packages.
 
 ## Installation
 
+```bash
 pnpm add @simplysm/orm-common
+```
 
-**Peer Dependencies:** `@simplysm/core-common`
+---
 
-## Source Index
+## Table of Contents
 
-### Core
+- [Core](#core)
+- [Queryable / Executable](#queryable--executable)
+- [Expressions](#expressions)
+- [Schema Builders](#schema-builders)
+- [Query Builder](#query-builder)
+- [Types](#types)
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/define-db-context.ts` | `defineDbContext` | Define a database context with tables, views, and migrations | `tests/db-context/define-db-context.spec.ts` |
-| `src/create-db-context.ts` | `createDbContext` | Create a database context instance from a definition | `tests/db-context/create-db-context.spec.ts` |
-| `src/types/db-context-def.ts` | `DbContextBase`, `DbContextStatus`, `DbContextDef`, `DbContextInstance`, `DbContextConnectionMethods`, `DbContextDdlMethods` | Database context type definitions and connection interfaces | `-` |
-| `src/errors/db-transaction-error.ts` | `DbErrorCode`, `DbTransactionError` | Transaction error codes and error class for DB operations | `-` |
+---
 
-### Queryable / Executable
+## Core
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/exec/queryable.ts` | `Queryable`, `getMatchedPrimaryKeys`, `QueryableRecord`, `QueryableWriteRecord`, `NullableQueryableRecord`, `UnwrapQueryableRecord`, `PathProxy`, `queryable` | Core queryable builder for SELECT, JOIN, WHERE, and aggregation | `tests/select/`, `tests/dml/`, `tests/errors/` |
-| `src/exec/executable.ts` | `Executable`, `executable` | Executable builder for INSERT, UPDATE, DELETE, and DDL operations | `tests/executable/basic.spec.ts` |
-| `src/exec/search-parser.ts` | `ParsedSearchQuery`, `parseSearchQuery` | Parse search query strings into structured filter objects | `tests/exec/search-parser.spec.ts` |
+Define and instantiate database contexts. [`docs/core.md`](docs/core.md)
 
-### Expression
+| Symbol | Description |
+|---|---|
+| [`defineDbContext(config)`](docs/core.md#definedbcontextconfig) | Create a `DbContextDef` blueprint from tables, views, procedures, and migrations |
+| [`createDbContext(def, executor, opt)`](docs/core.md#createdbcontextdef-executor-opt) | Instantiate a fully operational `DbContextInstance` |
+| [`_Migration`](docs/core.md#_migration) | Built-in system table for tracking applied migrations |
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/expr/expr.ts` | `SwitchExprBuilder`, `expr`, `toExpr` | Expression builder with switch/case and conversion helpers | `tests/expr/` |
-| `src/expr/expr-unit.ts` | `ExprUnit`, `WhereExprUnit`, `ExprInput` | Expression unit types for building type-safe query expressions | `-` |
+---
 
-### Schema Builders
+## Queryable / Executable
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/schema/table-builder.ts` | `TableBuilder`, `Table` | Table schema builder with columns, indexes, and relations | `tests/ddl/table-builder.spec.ts` |
-| `src/schema/view-builder.ts` | `ViewBuilder`, `View` | View schema builder for defining SQL views | `tests/ddl/view-builder.spec.ts` |
-| `src/schema/procedure-builder.ts` | `ProcedureBuilder`, `Procedure` | Procedure schema builder for stored procedures | `tests/ddl/procedure-builder.spec.ts` |
-| `src/schema/factory/column-builder.ts` | `ColumnBuilder`, `createColumnFactory`, `ColumnBuilderRecord`, `InferColumns`, `InferColumnExprs`, `RequiredInsertKeys`, `OptionalInsertKeys`, `InferInsertColumns`, `InferUpdateColumns`, `DataToColumnBuilderRecord` | Column definition builder with data types and constraints | `tests/ddl/column-builder.spec.ts` |
-| `src/schema/factory/index-builder.ts` | `IndexBuilder`, `createIndexFactory` | Index definition builder for table indexes | `tests/ddl/index-builder.spec.ts` |
-| `src/schema/factory/relation-builder.ts` | `ForeignKeyBuilder`, `ForeignKeyTargetBuilder`, `RelationKeyBuilder`, `RelationKeyTargetBuilder`, `createRelationFactory`, `RelationBuilderRecord`, `ExtractRelationTarget`, `ExtractRelationTargetResult`, `InferDeepRelations` | Foreign key and relation builder for table relationships | `tests/ddl/relation-builder.spec.ts` |
+Type-safe query and procedure execution. [`docs/queryable.md`](docs/queryable.md)
 
-### Models
+| Symbol | Description |
+|---|---|
+| [`Queryable<TData, TFrom>`](docs/queryable.md#queryabletdata-tfrom) | Fluent SELECT / INSERT / UPDATE / DELETE / UPSERT builder |
+| [`queryable(db, tableOrView, alias?)`](docs/queryable.md#queryabledb-tableorview-alias) | Factory returning a `() => Queryable` accessor |
+| [`Executable<TParams, TReturns>`](docs/queryable.md#executabletparams-treturns) | Stored procedure execution wrapper |
+| [`executable(db, builder)`](docs/queryable.md#executabledb-builder) | Factory returning a `() => Executable` accessor |
+| [`parseSearchQuery(searchText)`](docs/queryable.md#parsesearchquerysearchtext) | Parse a user search string into SQL LIKE pattern groups |
+| [`parseQueryResult(rawResults, meta)`](docs/queryable.md#parsequeryresultrawresults-meta) | Transform flat DB rows into nested TypeScript objects |
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/models/system-migration.ts` | `_Migration` | Built-in migration tracking table model | `-` |
+---
 
-### Query Builder
+## Expressions
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/query-builder/query-builder.ts` | `createQueryBuilder` | Factory to create dialect-specific query builders | `-` |
-| `src/query-builder/base/query-builder-base.ts` | `QueryBuilderBase` | Abstract base class for SQL query generation | `-` |
-| `src/query-builder/base/expr-renderer-base.ts` | `ExprRendererBase` | Abstract base class for SQL expression rendering | `-` |
-| `src/query-builder/mysql/mysql-query-builder.ts` | `MysqlQueryBuilder` | MySQL-specific SQL query builder | `-` |
-| `src/query-builder/mysql/mysql-expr-renderer.ts` | `MysqlExprRenderer` | MySQL-specific expression renderer | `-` |
-| `src/query-builder/mssql/mssql-query-builder.ts` | `MssqlQueryBuilder` | MSSQL-specific SQL query builder | `-` |
-| `src/query-builder/mssql/mssql-expr-renderer.ts` | `MssqlExprRenderer` | MSSQL-specific expression renderer | `-` |
-| `src/query-builder/postgresql/postgresql-query-builder.ts` | `PostgresqlQueryBuilder` | PostgreSQL-specific SQL query builder | `-` |
-| `src/query-builder/postgresql/postgresql-expr-renderer.ts` | `PostgresqlExprRenderer` | PostgreSQL-specific expression renderer | `-` |
+Dialect-independent SQL expression DSL. [`docs/expressions.md`](docs/expressions.md)
 
-### Types
+| Symbol | Description |
+|---|---|
+| [`expr`](docs/expressions.md#expr) | Expression builder — comparisons, string/number/date functions, aggregates, window functions |
+| [`ExprUnit<TPrimitive>`](docs/expressions.md#exprunittprimitive) | Type-safe AST wrapper for a SQL expression |
+| [`WhereExprUnit`](docs/expressions.md#whereexprunit) | AST wrapper for WHERE/HAVING boolean expressions |
+| [`ExprInput<TPrimitive>`](docs/expressions.md#exprinputtprimitive) | `ExprUnit<T> | T` — accepts raw values alongside expression nodes |
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/types/db.ts` | `Dialect`, `dialects`, `QueryBuildResult`, `IsolationLevel`, `DataRecord`, `DbContextExecutor`, `ResultMeta`, `Migration` | Core database types (Dialect, IsolationLevel, QueryBuildResult, Migration) | `-` |
-| `src/utils/result-parser.ts` | `parseQueryResult` | Parse raw DB query results into typed JavaScript objects | `tests/utils/result-parser.spec.ts` |
-| `src/types/column.ts` | `DataType`, `ColumnPrimitiveMap`, `ColumnPrimitiveStr`, `ColumnPrimitive`, `dataTypeStrToColumnPrimitiveStr`, `InferColumnPrimitiveFromDataType`, `inferColumnPrimitiveStr`, `ColumnMeta` | Column data type definitions and primitive type mapping | `-` |
-| `src/types/expr.ts` | `DateSeparator`, `ExprColumn`, `ExprValue`, `ExprRaw`, `ExprEq`, `ExprGt`, `ExprLt`, `ExprGte`, `ExprLte`, `ExprBetween`, `ExprIsNull`, `ExprLike`, `ExprRegexp`, `ExprIn`, `ExprInQuery`, `ExprExists`, `ExprNot`, `ExprAnd`, `ExprOr`, `ExprConcat`, `ExprLeft`, `ExprRight`, `ExprTrim`, `ExprPadStart`, `ExprReplace`, `ExprUpper`, `ExprLower`, `ExprLength`, `ExprByteLength`, `ExprSubstring`, `ExprIndexOf`, `ExprAbs`, `ExprRound`, `ExprCeil`, `ExprFloor`, `ExprYear`, `ExprMonth`, `ExprDay`, `ExprHour`, `ExprMinute`, `ExprSecond`, `ExprIsoWeek`, `ExprIsoWeekStartDate`, `ExprIsoYearMonth`, `ExprDateDiff`, `ExprDateAdd`, `ExprFormatDate`, `ExprIfNull`, `ExprNullIf`, `ExprIs`, `ExprSwitch`, `ExprIf`, `ExprCount`, `ExprSum`, `ExprAvg`, `ExprMax`, `ExprMin`, `ExprGreatest`, `ExprLeast`, `ExprRowNum`, `ExprRandom`, `ExprCast`, `WinFnRowNumber`, `WinFnRank`, `WinFnDenseRank`, `WinFnNtile`, `WinFnLag`, `WinFnLead`, `WinFnFirstValue`, `WinFnLastValue`, `WinFnSum`, `WinFnAvg`, `WinFnCount`, `WinFnMin`, `WinFnMax`, `WinFn`, `WinSpec`, `ExprWindow`, `ExprSubquery`, `WhereExpr`, `Expr` | All expression AST node types for the query builder | `-` |
-| `src/types/query-def.ts` | `QueryDefObjectName`, `CudOutputDef`, `SelectQueryDef`, `SelectQueryDefJoin`, `InsertQueryDef`, `InsertIfNotExistsQueryDef`, `InsertIntoQueryDef`, `UpdateQueryDef`, `DeleteQueryDef`, `UpsertQueryDef`, `SwitchFkQueryDef`, `ClearSchemaQueryDef`, `CreateTableQueryDef`, `DropTableQueryDef`, `RenameTableQueryDef`, `TruncateQueryDef`, `AddColumnQueryDef`, `DropColumnQueryDef`, `ModifyColumnQueryDef`, `RenameColumnQueryDef`, `DropPkQueryDef`, `AddPkQueryDef`, `AddFkQueryDef`, `DropFkQueryDef`, `AddIdxQueryDef`, `DropIdxQueryDef`, `CreateViewQueryDef`, `DropViewQueryDef`, `CreateProcQueryDef`, `DropProcQueryDef`, `ExecProcQueryDef`, `SchemaExistsQueryDef`, `DDL_TYPES`, `DdlType`, `QueryDef` | Query definition types for all SQL statement kinds (SELECT, INSERT, DDL, etc.) | `-` |
+---
 
-## License
+## Schema Builders
 
-Apache-2.0
+Fluent builders for tables, views, procedures, columns, indexes, and relationships. [`docs/schema.md`](docs/schema.md)
+
+| Symbol | Description |
+|---|---|
+| [`Table(name)`](docs/schema.md#tablename) | Create a `TableBuilder` |
+| [`TableBuilder`](docs/schema.md#tablebuildertcolumns-trelations) | Immutable table schema definition with type-inference properties |
+| [`View(name)`](docs/schema.md#viewname) | Create a `ViewBuilder` |
+| [`ViewBuilder`](docs/schema.md#viewbuilder) | Immutable view schema definition |
+| [`Procedure(name)`](docs/schema.md#procedurename) | Create a `ProcedureBuilder` |
+| [`ProcedureBuilder`](docs/schema.md#procedurebuildertparams-treturns) | Immutable stored procedure schema definition |
+| [`ColumnBuilder`](docs/schema.md#columnbuildertvalue-tmeta) | Column definition with `nullable()`, `default()`, `autoIncrement()` |
+| [`createColumnFactory()`](docs/schema.md#createcolumnfactory) | Returns column factory (`c.int()`, `c.varchar()`, `c.datetime()`, …) |
+| [`IndexBuilder`](docs/schema.md#indexbuilder) | Index definition with `unique()`, `orderBy()` |
+| [`createIndexFactory()`](docs/schema.md#createindexfactory) | Returns index factory used in `indexes()` callbacks |
+| [`ForeignKeyBuilder`](docs/schema.md#foreignkeybuildertowner-ttargetfn) | N:1 FK relationship (creates DB constraint) |
+| [`ForeignKeyTargetBuilder`](docs/schema.md#foreignkeytargetbuilder) | 1:N FK back-reference |
+| [`RelationKeyBuilder`](docs/schema.md#relationkeybuildertowner-ttargetfn) | N:1 logical relationship (no DB constraint) |
+| [`RelationKeyTargetBuilder`](docs/schema.md#relationkeytargetbuilder) | 1:N logical back-reference |
+| [`createRelationFactory()`](docs/schema.md#createrelationfactorytowner-tcolumnkeyownerfn) | Returns relation factory used in `relations()` callbacks |
+
+---
+
+## Query Builder
+
+Multi-dialect SQL generator from `QueryDef` AST nodes. [`docs/query-builder.md`](docs/query-builder.md)
+
+| Symbol | Description |
+|---|---|
+| [`createQueryBuilder(dialect)`](docs/query-builder.md#createquerybuilderdialect) | Create a dialect-specific `QueryBuilderBase` |
+| [`QueryBuilderBase`](docs/query-builder.md#querybuilderbase) | Abstract base — `build(def): QueryBuildResult` |
+| [`ExprRendererBase`](docs/query-builder.md#exprrendererbase) | Abstract base for expression-to-SQL rendering |
+| [`MysqlQueryBuilder`](docs/query-builder.md#mysqlquerybuilder) | MySQL implementation |
+| [`MysqlExprRenderer`](docs/query-builder.md#mysqlexprrenderer) | MySQL expression renderer |
+| [`MssqlQueryBuilder`](docs/query-builder.md#mssqlquerybuilder) | MSSQL implementation |
+| [`MssqlExprRenderer`](docs/query-builder.md#mssqlexprrenderer) | MSSQL expression renderer |
+| [`PostgresqlQueryBuilder`](docs/query-builder.md#postgresqlquerybuilder) | PostgreSQL implementation |
+| [`PostgresqlExprRenderer`](docs/query-builder.md#postgresqlexprrenderer) | PostgreSQL expression renderer |
+
+---
+
+## Types
+
+All type definitions, error types, and utility types. [`docs/types.md`](docs/types.md)
+
+**Database types**: [`Dialect`](docs/types.md#dialect), [`dialects`](docs/types.md#dialects), [`QueryBuildResult`](docs/types.md#querybuildresult), [`IsolationLevel`](docs/types.md#isolationlevel), [`DataRecord`](docs/types.md#datarecord), [`DbContextExecutor`](docs/types.md#dbcontextexecutor), [`ResultMeta`](docs/types.md#resultmeta), [`Migration`](docs/types.md#migration)
+
+**Column types**: [`DataType`](docs/types.md#datatype), [`ColumnPrimitive`](docs/types.md#columnprimitive), [`ColumnPrimitiveStr`](docs/types.md#columnprimitivestr), [`ColumnPrimitiveMap`](docs/types.md#columnprimitivemap), [`ColumnMeta`](docs/types.md#columnmeta), [`ColumnBuilderRecord`](docs/types.md#columnbuilderrecord), [`InferColumns`](docs/types.md#infercolumns), [`InferInsertColumns`](docs/types.md#inferinsertcolumns), [`InferUpdateColumns`](docs/types.md#inferupdatecolumns), [`dataTypeStrToColumnPrimitiveStr`](docs/types.md#datatypestrtoColumnprimitivestr), [`inferColumnPrimitiveStr`](docs/types.md#infercolumnprimitivestr), [`InferColumnPrimitiveFromDataType`](docs/types.md#infercolumnprimitivefromdatatype)
+
+**Expression types**: [`Expr`](docs/types.md#expression-types), [`WhereExpr`](docs/types.md#expression-types), [`WinFn`](docs/types.md#expression-types), [`WinSpec`](docs/types.md#expression-types), [`DateSeparator`](docs/types.md#expression-types), and all individual `Expr*` / `WinFn*` node types
+
+**QueryDef types**: [`QueryDef`](docs/types.md#querydef-types), [`SelectQueryDef`](docs/types.md#querydef-types), [`InsertQueryDef`](docs/types.md#querydef-types), and all DDL/DML query definition types, [`DDL_TYPES`](docs/types.md#querydef-types), [`DdlType`](docs/types.md#querydef-types)
+
+**Relation types**: [`RelationBuilderRecord`](docs/types.md#relationbuilderrecord), [`ExtractRelationTarget`](docs/types.md#extractrelationtarget), [`ExtractRelationTargetResult`](docs/types.md#extractrelationtargetresult), [`InferDeepRelations`](docs/types.md#inferdeeprelations)
+
+**DbContext types**: [`DbContextBase`](docs/types.md#dbcontextbase), [`DbContextStatus`](docs/types.md#dbcontextstatus), [`DbContextDef`](docs/types.md#dbcontextdef), [`DbContextInstance`](docs/types.md#dbcontextinstance), [`DbContextConnectionMethods`](docs/types.md#dbcontextconnectionmethods), [`DbContextDdlMethods`](docs/types.md#dbcontextddlmethods)
+
+**Error types**: [`DbTransactionError`](docs/types.md#dbtransactionerror), [`DbErrorCode`](docs/types.md#dberrorcode)

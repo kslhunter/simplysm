@@ -111,6 +111,15 @@ export default defineConfig({
           },
         },
       },
+      // Integration tests - Bank (requires network)
+      {
+        extends: true,
+        test: {
+          name: "bank",
+          include: ["tests/bank/**/*.spec.ts"],
+          testTimeout: 30000,
+        },
+      },
     ],
   },
 });

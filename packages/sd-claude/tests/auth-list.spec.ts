@@ -4,6 +4,15 @@ import fs from "fs";
 import os from "os";
 import { runAuthList } from "../src/commands/auth-list";
 
+// Mock global fetch to prevent real API calls
+vi.stubGlobal(
+  "fetch",
+  vi.fn().mockResolvedValue({
+    ok: false,
+    json: () => Promise.resolve({}),
+  }),
+);
+
 describe("runAuthList", () => {
   let tmpDir: string;
 
@@ -16,15 +25,15 @@ describe("runAuthList", () => {
     vi.restoreAllMocks();
   });
 
-  test("outputs 'No saved profiles.' when no profiles exist", () => {
+  test("outputs 'No saved profiles.' when no profiles exist", async () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
     expect(spy).toHaveBeenCalledWith("No saved profiles.");
   });
 
-  test("outputs profiles sorted alphabetically with active marker", () => {
+  test("outputs profiles sorted alphabetically with active marker", async () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     // Create profile "beta"
@@ -62,16 +71,22 @@ describe("runAuthList", () => {
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
     expect(spy).toHaveBeenCalledTimes(2);
-    // alpha comes first (alphabetical), and is active
-    expect(spy).toHaveBeenNthCalledWith(1, "* alpha (alpha@example.com) expires: 2025-06-25");
+    // alpha comes first (alphabetical), and is active; usage shows ? when fetch fails
+    expect(spy).toHaveBeenNthCalledWith(
+      1,
+      "* alpha (alpha@example.com) expires: 2025-06-25 │ 5h: ? │ 7d: ?",
+    );
     // beta is not active
-    expect(spy).toHaveBeenNthCalledWith(2, "  beta (beta@example.com) expires: 2025-06-20");
+    expect(spy).toHaveBeenNthCalledWith(
+      2,
+      "  beta (beta@example.com) expires: 2025-06-20 │ 5h: ? │ 7d: ?",
+    );
   });
 
-  test("shows email even when organizationName is missing", () => {
+  test("shows email even when organizationName is missing", async () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     const profileDir = path.join(authDir, "personal");
@@ -90,12 +105,14 @@ describe("runAuthList", () => {
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  personal (user@gmail.com) expires: 2025-07-01");
+    expect(spy).toHaveBeenCalledWith(
+      "  personal (user@gmail.com) expires: 2025-07-01 │ 5h: ? │ 7d: ?",
+    );
   });
 
-  test("shows 'unknown' when expiresAt is missing", () => {
+  test("shows 'unknown' when expiresAt is missing", async () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     const profileDir = path.join(authDir, "noexpiry");
@@ -111,12 +128,14 @@ describe("runAuthList", () => {
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  noexpiry (noexp@example.com) expires: unknown");
+    expect(spy).toHaveBeenCalledWith(
+      "  noexpiry (noexp@example.com) expires: unknown │ 5h: ? │ 7d: ?",
+    );
   });
 
-  test("marks active profile with * when userID matches", () => {
+  test("marks active profile with * when userID matches", async () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     const profileDir = path.join(authDir, "work");
@@ -138,12 +157,14 @@ describe("runAuthList", () => {
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("* work (work@company.com) expires: 2025-12-31");
+    expect(spy).toHaveBeenCalledWith(
+      "* work (work@company.com) expires: 2025-12-31 │ 5h: ? │ 7d: ?",
+    );
   });
 
-  test("non-active profile has space prefix instead of *", () => {
+  test("non-active profile has space prefix instead of *", async () => {
     const authDir = path.join(tmpDir, ".sd-claude", "auth");
 
     const profileDir = path.join(authDir, "other");
@@ -168,8 +189,10 @@ describe("runAuthList", () => {
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    runAuthList(tmpDir);
+    await runAuthList(tmpDir);
 
-    expect(spy).toHaveBeenCalledWith("  other (other@example.com) expires: 2025-08-15");
+    expect(spy).toHaveBeenCalledWith(
+      "  other (other@example.com) expires: 2025-08-15 │ 5h: ? │ 7d: ?",
+    );
   });
 });

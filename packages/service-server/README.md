@@ -2,79 +2,61 @@
 
 Simplysm package - service module (server)
 
+Provides a full-featured HTTP/WebSocket server built on Fastify for hosting Simplysm services. Includes JWT-based authentication, ORM integration, file upload/static serving, SMTP email, and auto-update capabilities.
+
 ## Installation
 
+```bash
 pnpm add @simplysm/service-server
+```
 
-## Source Index
+## Architecture Overview
 
-### Types
+The package is organized into four areas:
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/types/server-options.ts` | `ServiceServerOptions` | Configuration interface for the service server (port, SSL, auth, services) | - |
+- **Auth** — JWT token signing, verification, and decoding (`signJwt`, `verifyJwt`, `decodeJwt`, `AuthTokenPayload`).
+- **Services** — Service definition API (`defineService`, `auth`, `ServiceContext`, `runServiceMethod`) and three ready-to-use built-in services (`OrmService`, `AutoUpdateService`, `SmtpClientService`).
+- **Transport** — WebSocket connection management (`WebSocketHandler`, `ServiceSocket`), HTTP route handlers (`handleHttpRequest`, `handleUpload`, `handleStaticFile`), and the binary protocol layer (`ProtocolWrapper`). Also includes the legacy v1 compatibility handler.
+- **Server** — The `ServiceServer` class and `createServiceServer` factory that wire everything together, plus the `getConfig` utility for reading `.config.json`.
 
-### Auth
+## Quick Start
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/auth/auth-token-payload.ts` | `AuthTokenPayload` | JWT payload interface extending JWTPayload with roles and auth data | - |
-| `src/auth/jwt-manager.ts` | `signJwt`, `verifyJwt`, `decodeJwt` | Sign, verify, and decode HS256 JWT tokens using the jose library | - |
+```typescript
+import { createServiceServer, defineService, OrmService } from "@simplysm/service-server";
 
-### Core
+const GreetService = defineService("Greet", (ctx) => ({
+  hello: (name: string) => `Hello, ${name}!`,
+}));
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/core/define-service.ts` | `ServiceContext`, `createServiceContext`, `getServiceAuthPermissions`, `auth`, `ServiceDefinition`, `defineService`, `ServiceMethods` | Define services with typed context, auth wrappers, and method type extraction | `define-service.spec.ts` |
-| `src/core/service-executor.ts` | `runServiceMethod` | Resolve a service method call and enforce auth permission checks | `service-executor.spec.ts` |
+const server = createServiceServer({
+  rootPath: "./dist",
+  port: 3000,
+  auth: { jwtSecret: "my-secret" },
+  services: [GreetService, OrmService],
+});
 
-### Transport - Socket
+await server.listen();
+```
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/transport/socket/websocket-handler.ts` | `WebSocketHandler`, `createWebSocketHandler` | Manage multiple WebSocket connections, route messages, and broadcast events | - |
-| `src/transport/socket/service-socket.ts` | `ServiceSocket`, `createServiceSocket` | Manage a single WebSocket connection with protocol encoding and keep-alive | - |
+## Exported Types
 
-### Transport - HTTP
+| Type | Description |
+|---|---|
+| `ServiceServerOptions` | Options object for `ServiceServer` / `createServiceServer` |
+| `AuthTokenPayload<TAuthInfo>` | JWT payload with `roles` and typed `data` |
+| `ServiceContext<TAuthInfo>` | Context injected into every service factory |
+| `ServiceDefinition<TMethods>` | Return type of `defineService` |
+| `ServiceMethods<TDefinition>` | Extracts method map type from a `ServiceDefinition` |
+| `WebSocketHandler` | Manages all active WebSocket connections |
+| `ServiceSocket` | Represents a single active WebSocket connection |
+| `ProtocolWrapper` | Encode/decode service messages with optional worker offload |
+| `OrmServiceType` | Method map type for `OrmService` |
+| `AutoUpdateServiceType` | Method map type for `AutoUpdateService` |
+| `SmtpClientServiceType` | Method map type for `SmtpClientService` |
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/transport/http/http-request-handler.ts` | `handleHttpRequest` | Handle HTTP GET/POST API requests with JWT auth and parameter parsing | - |
-| `src/transport/http/upload-handler.ts` | `handleUpload` | Handle multipart file uploads with JWT auth and UUID-based storage | - |
-| `src/transport/http/static-file-handler.ts` | `handleStaticFile` | Serve static files from the www directory with path traversal protection | - |
+## Detailed Documentation
 
-### Protocol
-
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/protocol/protocol-wrapper.ts` | `ProtocolWrapper`, `createProtocolWrapper` | Encode/decode service messages with automatic worker thread offloading | - |
-
-### Services
-
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/services/orm-service.ts` | `OrmService`, `OrmServiceType` | Built-in service exposing ORM database operations over WebSocket | `orm-service.spec.ts` |
-| `src/services/auto-update-service.ts` | `AutoUpdateService`, `AutoUpdateServiceType` | Built-in service for serving the latest app update package by platform | - |
-| `src/services/smtp-client-service.ts` | `SmtpClientService`, `SmtpClientServiceType` | Built-in service for sending emails via SMTP using nodemailer | - |
-
-### Utils
-
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/utils/config-manager.ts` | `getConfig` | Load and cache JSON config files with live-reload via file watcher | - |
-
-### Legacy
-
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/legacy/v1-auto-update-handler.ts` | `handleV1Connection` | Handle V1 legacy WebSocket clients for auto-update only | - |
-
-### Main
-
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/service-server.ts` | `ServiceServer`, `createServiceServer` | Main Fastify-based HTTP/WebSocket server with routing and graceful shutdown | - |
-
-## License
-
-Apache-2.0
+- [docs/auth.md](docs/auth.md) — `AuthTokenPayload`, `signJwt`, `verifyJwt`, `decodeJwt`
+- [docs/services.md](docs/services.md) — `defineService`, `auth`, `ServiceContext`, `runServiceMethod`, `OrmService`, `AutoUpdateService`, `SmtpClientService`
+- [docs/transport.md](docs/transport.md) — `WebSocketHandler`, `ServiceSocket`, `handleHttpRequest`, `handleUpload`, `handleStaticFile`, `ProtocolWrapper`, legacy handler
+- [docs/server.md](docs/server.md) — `ServiceServerOptions`, `ServiceServer`, `createServiceServer`, `getConfig`

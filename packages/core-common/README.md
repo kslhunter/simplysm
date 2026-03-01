@@ -1,77 +1,127 @@
 # @simplysm/core-common
 
-Simplysm package - Core module (common)
+Common utility package providing environment variables, array extensions, error classes, date/time types, async features, and a wide range of utility functions. Works in both browser and Node.js environments.
 
 ## Installation
 
+```bash
 pnpm add @simplysm/core-common
+```
 
-## Source Index
+## Table of Contents
 
-### (top-level)
+- [Array Extensions](#array-extensions)
+- [Types](#types)
+- [Utils](#utils)
+- [Features](#features)
+- [Errors](#errors)
+- [Zip](#zip)
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/env.ts` | `env` | Runtime environment configuration object | - |
-| `src/extensions/arr-ext.ts` | `ArrayDiffsResult`, `ArrayDiffs2Result`, `TreeArray`, `ComparableType` | Array diff, tree, and comparison utilities via prototype augmentation | `array-extension.spec.ts` |
+---
 
-### errors
+## Array Extensions
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/errors/sd-error.ts` | `SdError` | Base error class with name-based error chain support | `errors.spec.ts` |
-| `src/errors/argument-error.ts` | `ArgumentError` | Error thrown when a function receives an invalid argument | `errors.spec.ts` |
-| `src/errors/not-implemented-error.ts` | `NotImplementedError` | Error indicating an unimplemented method or feature | `errors.spec.ts` |
-| `src/errors/timeout-error.ts` | `TimeoutError` | Error thrown when an operation exceeds its time limit | `errors.spec.ts` |
+Prototype extensions added to `Array` and `ReadonlyArray` as a side effect of importing from this package. Covers querying, grouping, diffing, sorting, and async iteration.
 
-### types
+[Full documentation](docs/array-extensions.md)
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/types/uuid.ts` | `Uuid` | UUID v4 generation and validation utility class | `uuid.spec.ts` |
-| `src/types/lazy-gc-map.ts` | `LazyGcMap` | Map with lazy initialization and automatic garbage collection of unused entries | `lazy-gc-map.spec.ts` |
-| `src/types/date-time.ts` | `DateTime` | Immutable date-time class with formatting, arithmetic, and comparison | `date-time.spec.ts` |
-| `src/types/date-only.ts` | `DateOnly` | Immutable date-only class (year, month, day) without time component | `date-only.spec.ts` |
-| `src/types/time.ts` | `Time` | Immutable time-of-day class (hour, minute, second) | `time.spec.ts` |
+| Symbol | Description |
+|--------|-------------|
+| [`single`](docs/array-extensions.md#readonly-array-methods) | Returns the sole matching element (throws on multiple matches) |
+| [`first`](docs/array-extensions.md#readonly-array-methods) | First matching element |
+| [`last`](docs/array-extensions.md#readonly-array-methods) | Last matching element |
+| [`filterExists`](docs/array-extensions.md#readonly-array-methods) | Removes `null`/`undefined` entries |
+| [`groupBy`](docs/array-extensions.md#readonly-array-methods) | Groups elements by key |
+| [`toMap`](docs/array-extensions.md#readonly-array-methods) | Converts to `Map` |
+| [`toTree`](docs/array-extensions.md#readonly-array-methods) | Builds a tree from a flat list |
+| [`distinct`](docs/array-extensions.md#readonly-array-methods) | Returns unique elements |
+| [`orderBy`](docs/array-extensions.md#readonly-array-methods) / [`orderByDesc`](docs/array-extensions.md#readonly-array-methods) | Sorted copy (ascending/descending) |
+| [`diffs`](docs/array-extensions.md#readonly-array-methods) / [`oneWayDiffs`](docs/array-extensions.md#readonly-array-methods) | Array diff comparison |
+| [`insert`](docs/array-extensions.md#mutable-array-methods) / [`remove`](docs/array-extensions.md#mutable-array-methods) / [`toggle`](docs/array-extensions.md#mutable-array-methods) | In-place mutation helpers |
+| [`ArrayDiffsResult`](docs/array-extensions.md#related-types) / [`TreeArray`](docs/array-extensions.md#related-types) | Related TypeScript types |
 
-### features
+---
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/features/debounce-queue.ts` | `DebounceQueue` | Queue that debounces rapid calls into a single delayed execution | `debounce-queue.spec.ts` |
-| `src/features/serial-queue.ts` | `SerialQueue` | Queue that serializes async operations to run one at a time | `serial-queue.spec.ts` |
-| `src/features/event-emitter.ts` | `EventEmitter` | Type-safe event emitter with on/off/emit pattern | `sd-event-emitter.spec.ts` |
+## Types
 
-### utils
+Immutable value types and utility type aliases. All support parsing, formatting, and arithmetic.
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/utils/date-format.ts` | `DtNormalizedMonth`, `normalizeMonth`, `convert12To24`, `formatDate` | Date formatting and month normalization utilities | `date-format.spec.ts` |
-| `src/utils/bytes.ts` | `bytesConcat`, `bytesToHex`, `bytesFromHex`, `bytesToBase64`, `bytesFromBase64` | Binary conversion utilities (hex, base64, concat) | `bytes-utils.spec.ts` |
-| `src/utils/json.ts` | `jsonStringify`, `jsonParse` | JSON stringify/parse with custom type support (DateTime, DateOnly, etc.) | `json.spec.ts` |
-| `src/utils/num.ts` | `numParseInt`, `numParseRoundedInt`, `numParseFloat`, `numIsNullOrEmpty`, `numFormat` | Number parsing and formatting utilities | `number.spec.ts` |
-| `src/utils/obj.ts` | `objClone`, `EqualOptions`, `objEqual`, `ObjMergeOptions`, `objMerge`, `ObjMerge3KeyOptions`, `objMerge3`, `objOmit`, `objOmitByFilter`, `objPick`, `objGetChainValue`, `objGetChainValueByDepth`, `objSetChainValue`, `objDeleteChainValue`, `objClearUndefined`, `objClear`, `objNullToUndefined`, `objUnflatten`, `ObjUndefToOptional`, `ObjOptionalToUndef`, `objKeys`, `objEntries`, `objFromEntries`, `objMap` | Deep object utilities (clone, equal, merge, pick, omit, chain access) | `object.spec.ts` |
-| `src/utils/primitive.ts` | `getPrimitiveTypeStr` | Primitive type string detection utility | `primitive.spec.ts` |
-| `src/utils/str.ts` | `koreanGetSuffix`, `strReplaceFullWidth`, `strToPascalCase`, `strToCamelCase`, `strToKebabCase`, `strToSnakeCase`, `strIsNullOrEmpty`, `strInsert` | String utilities (case conversion, Korean suffix, full-width replacement) | `string.spec.ts` |
-| `src/utils/template-strings.ts` | `js`, `ts`, `html`, `tsql`, `mysql`, `pgsql` | Tagged template literals for JS, TS, HTML, SQL syntax highlighting | `template-strings.spec.ts` |
-| `src/utils/transferable.ts` | `transferableEncode`, `transferableDecode` | Encode/decode objects with Transferable types for structured clone | `transferable.spec.ts` |
-| `src/utils/wait.ts` | `waitUntil`, `waitTime` | Async wait utilities (until condition, timed delay) | `wait.spec.ts` |
-| `src/utils/xml.ts` | `xmlParse`, `xmlStringify` | XML parse and stringify utilities | `xml.spec.ts` |
-| `src/utils/path.ts` | `pathJoin`, `pathBasename`, `pathExtname` | Platform-independent path join, basename, and extension utilities | `path.spec.ts` |
-| `src/utils/error.ts` | `errorMessage` | Extract error message string from unknown error values | - |
+[Full documentation](docs/types.md)
 
-### zip
+| Symbol | Description |
+|--------|-------------|
+| [`Uuid`](docs/types.md#uuid) | UUID v4 using `crypto.getRandomValues` |
+| [`LazyGcMap`](docs/types.md#lazygcmaptkey-tvalue) | `Map` with automatic expiry-based garbage collection |
+| [`DateTime`](docs/types.md#datetime) | Immutable date-time (millisecond precision, local timezone) |
+| [`DateOnly`](docs/types.md#dateonly) | Immutable date without time; includes week-sequence helpers |
+| [`Time`](docs/types.md#time) | Immutable time without date; 24-hour wrap normalization |
+| [`Bytes`](docs/types.md#primitive-types) / [`PrimitiveType`](docs/types.md#primitive-types) | Primitive type aliases |
+| [`DeepPartial`](docs/types.md#utility-types) / [`ObjUndefToOptional`](docs/types.md#utility-types) | TypeScript utility types |
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/zip/sd-zip.ts` | `ZipArchiveProgress`, `ZipArchive` | ZIP archive creation and extraction with progress callback | `sd-zip.spec.ts` |
+---
 
-### type utilities
+## Utils
 
-| Source | Exports | Description | Test |
-|--------|---------|-------------|------|
-| `src/common.types.ts` | `Bytes`, `PrimitiveTypeMap`, `PrimitiveTypeStr`, `PrimitiveType`, `DeepPartial`, `Type` | Common type utilities (Bytes, PrimitiveType, DeepPartial, Type) | - |
+Pure utility functions for common tasks: formatting, parsing, transformation, and I/O encoding.
 
-## License
+[Full documentation](docs/utils.md)
 
-Apache-2.0
+| Symbol | Description |
+|--------|-------------|
+| [`env`](docs/utils.md#env) | Global environment object from `process.env` |
+| [`formatDate`](docs/utils.md#formatedateformatstring-args) | C#-style date/time format string renderer |
+| [`bytesConcat`](docs/utils.md#bytes-utilities) / [`bytesToHex`](docs/utils.md#bytes-utilities) / [`bytesFromBase64`](docs/utils.md#bytes-utilities) | Binary encoding helpers |
+| [`jsonStringify`](docs/utils.md#json-utilities) / [`jsonParse`](docs/utils.md#json-utilities) | JSON with support for `DateTime`, `Uuid`, `Set`, `Map`, etc. |
+| [`numFormat`](docs/utils.md#number-utilities) / [`numParseInt`](docs/utils.md#number-utilities) | Number formatting and parsing |
+| [`objClone`](docs/utils.md#object-utilities) / [`objEqual`](docs/utils.md#object-utilities) / [`objMerge`](docs/utils.md#object-utilities) | Deep clone, equality, and merge |
+| [`objGetChainValue`](docs/utils.md#object-utilities) / [`objSetChainValue`](docs/utils.md#object-utilities) | Dot-path chain access |
+| [`strToPascalCase`](docs/utils.md#string-utilities) / [`strToKebabCase`](docs/utils.md#string-utilities) | String case conversion |
+| [`koreanGetSuffix`](docs/utils.md#string-utilities) | Korean grammatical particle helper |
+| [`js`](docs/utils.md#template-string-tags) / [`ts`](docs/utils.md#template-string-tags) / [`tsql`](docs/utils.md#template-string-tags) | Template literal syntax-highlighting tags |
+| [`transferableEncode`](docs/utils.md#transferable-utilities) / [`transferableDecode`](docs/utils.md#transferable-utilities) | Web Worker transfer helpers |
+| [`waitUntil`](docs/utils.md#wait-utilities) / [`waitTime`](docs/utils.md#wait-utilities) | Async wait primitives |
+| [`xmlParse`](docs/utils.md#xml-utilities) / [`xmlStringify`](docs/utils.md#xml-utilities) | XML serialization |
+| [`pathJoin`](docs/utils.md#path-utilities) / [`pathBasename`](docs/utils.md#path-utilities) | POSIX path helpers (browser/Capacitor) |
+| [`errorMessage`](docs/utils.md#error-utility) | Safe error-to-string conversion |
+
+---
+
+## Features
+
+Async coordination primitives for debouncing, sequential execution, and typed event handling.
+
+[Full documentation](docs/features.md)
+
+| Symbol | Description |
+|--------|-------------|
+| [`DebounceQueue`](docs/features.md#debouncequeue) | Executes only the last of rapid-fire calls after a delay |
+| [`SerialQueue`](docs/features.md#serialqueue) | Runs async tasks one at a time in submission order |
+| [`EventEmitter`](docs/features.md#eventemittertevents) | Type-safe event emitter backed by `EventTarget` |
+
+---
+
+## Errors
+
+Error classes with structured cause chaining and descriptive formatting.
+
+[Full documentation](docs/errors.md)
+
+| Symbol | Description |
+|--------|-------------|
+| [`SdError`](docs/errors.md#sderror) | Base error with tree-structured cause chaining |
+| [`ArgumentError`](docs/errors.md#argumenterror) | Invalid argument with YAML-formatted values |
+| [`NotImplementedError`](docs/errors.md#notimplementederror) | Placeholder for unimplemented code paths |
+| [`TimeoutError`](docs/errors.md#timeouterror) | Thrown when a wait loop exceeds its attempt limit |
+
+---
+
+## Zip
+
+ZIP archive reading, writing, and compression via `@zip.js/zip.js`.
+
+[Full documentation](docs/zip.md)
+
+| Symbol | Description |
+|--------|-------------|
+| [`ZipArchive`](docs/zip.md#ziparchive) | Read, write, and compress ZIP archives with `await using` support |
+| [`ZipArchiveProgress`](docs/zip.md#ziparchive) | Progress callback interface for `extractAll` |

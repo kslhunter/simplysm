@@ -15,57 +15,57 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 
 | Package | Target | Description |
 |---------|--------|-------------|
-| [`@simplysm/core-common`](packages/core-common/README.md) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`, `LazyGcMap`), error classes |
-| [`@simplysm/core-browser`](packages/core-browser/README.md) | browser | Browser-specific extensions |
-| [`@simplysm/core-node`](packages/core-node/README.md) | node | Node.js utilities (filesystem, worker threads) |
+| [`@simplysm/core-common`](packages/core-common) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`, `LazyGcMap`), error classes |
+| [`@simplysm/core-browser`](packages/core-browser) | browser | Browser-specific extensions |
+| [`@simplysm/core-node`](packages/core-node) | node | Node.js utilities (filesystem, worker threads) |
 
 ### ORM
 
 | Package | Target | Description |
 |---------|--------|-------------|
-| [`@simplysm/orm-common`](packages/orm-common/README.md) | neutral | ORM query builder, table schema definitions |
-| [`@simplysm/orm-node`](packages/orm-node/README.md) | node | DB connectors (MySQL, MSSQL, PostgreSQL) |
+| [`@simplysm/orm-common`](packages/orm-common) | neutral | ORM query builder, table schema definitions |
+| [`@simplysm/orm-node`](packages/orm-node) | node | DB connectors (MySQL, MSSQL, PostgreSQL) |
 
 ### Service
 
 | Package | Target | Description |
 |---------|--------|-------------|
-| [`@simplysm/service-common`](packages/service-common/README.md) | neutral | Service protocol, type definitions |
-| [`@simplysm/service-client`](packages/service-client/README.md) | neutral | WebSocket client |
-| [`@simplysm/service-server`](packages/service-server/README.md) | node | Fastify-based HTTP/WebSocket server |
+| [`@simplysm/service-common`](packages/service-common) | neutral | Service protocol, type definitions |
+| [`@simplysm/service-client`](packages/service-client) | neutral | WebSocket client |
+| [`@simplysm/service-server`](packages/service-server) | node | Fastify-based HTTP/WebSocket server |
 
 ### UI
 
 | Package | Target | Description |
 |---------|--------|-------------|
-| [`@simplysm/solid`](packages/solid/README.md) | browser | SolidJS UI components + Tailwind CSS |
+| [`@simplysm/solid`](packages/solid) | browser | SolidJS UI components + Tailwind CSS |
 
 ### Tools
 
 | Package                                               | Target | Description |
 |-------------------------------------------------------|--------|-------------|
-| [`@simplysm/sd-cli`](packages/sd-cli/README.md)       | node | Build, lint, typecheck CLI tool |
-| [`@simplysm/sd-claude`](packages/sd-claude/README.md) | - | Claude Code CLI — asset installer and cross-platform npx wrapper (auto-installs via postinstall) |
-| [`@simplysm/lint`](packages/lint/README.md)           | node | Lint config (ESLint + Stylelint) |
-| [`@simplysm/excel`](packages/excel/README.md)         | neutral | Excel (.xlsx) read/write |
-| [`@simplysm/storage`](packages/storage/README.md)     | node | FTP/SFTP client |
-| [`@simplysm/mcp-playwright`](packages/mcp-playwright/README.md) | node | MCP server — multi-session Playwright proxy (`sd-mcp-playwright`) |
+| [`@simplysm/sd-cli`](packages/sd-cli)                 | node   | Build, lint, typecheck CLI tool |
+| [`@simplysm/sd-claude`](packages/sd-claude)           | node   | Claude Code CLI — asset installer and cross-platform npx wrapper (auto-installs via postinstall) |
+| [`@simplysm/lint`](packages/lint)                     | node   | Lint config (ESLint + Stylelint) |
+| [`@simplysm/excel`](packages/excel)                   | neutral | Excel (.xlsx) read/write |
+| [`@simplysm/storage`](packages/storage)               | node   | FTP/SFTP client |
+| [`@simplysm/mcp-playwright`](packages/mcp-playwright) | node   | MCP server — multi-session Playwright proxy (`sd-mcp-playwright`) |
 
 ### Capacitor Plugins
 
 | Package | Description |
 |---------|-------------|
-| [`@simplysm/capacitor-plugin-auto-update`](packages/capacitor-plugin-auto-update/README.md) | Auto update |
-| [`@simplysm/capacitor-plugin-broadcast`](packages/capacitor-plugin-broadcast/README.md) | Broadcast |
-| [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system/README.md) | File system |
-| [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage/README.md) | USB storage |
+| [`@simplysm/capacitor-plugin-auto-update`](packages/capacitor-plugin-auto-update) | Auto update |
+| [`@simplysm/capacitor-plugin-broadcast`](packages/capacitor-plugin-broadcast) | Broadcast |
+| [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system) | File system |
+| [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage) | USB storage |
 
 ### Demo Apps (private, not published)
 
 | Package | Description |
 |---------|-------------|
-| [`solid-demo`](packages/solid-demo/README.md) | SolidJS component demo app (Vite client, `pnpm dev`) |
-| [`solid-demo-server`](packages/solid-demo-server/README.md) | Server-side companion for the SolidJS demo app |
+| [`solid-demo`](packages/solid-demo) | SolidJS component demo app (Vite client, `pnpm dev`) |
+| [`solid-demo-server`](packages/solid-demo-server) | Server-side companion for the SolidJS demo app |
 
 ## Getting Started
 
@@ -119,6 +119,7 @@ pnpm vitest --project=browser   # browser environment
 pnpm vitest --project=solid     # SolidJS components
 pnpm vitest --project=orm       # ORM integration tests (requires Docker DB)
 pnpm vitest --project=service   # Service integration tests
+pnpm vitest --project=bank      # Bank integration tests (requires network)
 pnpm vitest packages/core-common                                              # package tests
 pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node       # single file
 pnpm vitest -t "DateTime" --project=node                                      # filter by test name
