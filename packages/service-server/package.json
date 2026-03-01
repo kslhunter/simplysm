@@ -42,7 +42,7 @@
     "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "^6.4.23",
     "@types/semver": "^7.7.1",
     "@types/ws": "^8.18.1"
   }

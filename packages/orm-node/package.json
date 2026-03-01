@@ -24,7 +24,7 @@
     "generic-pool": "^3.9.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.16.0",
+    "@types/pg": "^8.18.0",
     "@types/pg-copy-streams": "^1.2.5",
     "mysql2": "^3.18.2",
     "pg": "^8.19.0",
