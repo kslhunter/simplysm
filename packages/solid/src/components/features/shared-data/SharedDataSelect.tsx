@@ -1,20 +1,75 @@
-import { createMemo, type JSX, mergeProps, splitProps } from "solid-js";
-import { IconEdit, IconSearch } from "@tabler/icons-solidjs";
+import {
+  children as resolveChildren,
+  createMemo,
+  type JSX,
+  mergeProps,
+  type ParentComponent,
+  splitProps,
+} from "solid-js";
+import { IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
+import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
+import {
+  type DataSelectModalResult,
+  type ModalConfig,
+} from "../data-select-button/DataSelectButton";
+
+// -- Slot detection --
+const ITEM_TEMPLATE_BRAND = Symbol("SharedDataSelect.ItemTemplate");
+const ACTION_BRAND = Symbol("SharedDataSelect.Action");
+
+interface ItemTemplateDef {
+  __brand: typeof ITEM_TEMPLATE_BRAND;
+  children: (item: any, index: number, depth: number) => JSX.Element;
+}
+
+interface ActionDef {
+  __brand: typeof ACTION_BRAND;
+  children: JSX.Element;
+  onClick?: (e: MouseEvent) => void;
+}
+
+function isItemTemplateDef(v: unknown): v is ItemTemplateDef {
+  return v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ITEM_TEMPLATE_BRAND;
+}
+
+function isActionDef(v: unknown): v is ActionDef {
+  return v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ACTION_BRAND;
+}
+
+// -- Compound components --
+const ItemTemplate: ParentComponent<{
+  children: (item: any, index: number, depth: number) => JSX.Element;
+}> = (props) => {
+  return (() => ({
+    __brand: ITEM_TEMPLATE_BRAND,
+    children: props.children,
+  })) as unknown as JSX.Element;
+};
+
+const Action: ParentComponent<{
+  onClick?: (e: MouseEvent) => void;
+}> = (props) => {
+  return (() => ({
+    __brand: ACTION_BRAND,
+    children: props.children,
+    onClick: props.onClick,
+  })) as unknown as JSX.Element;
+};
 
 /** SharedDataSelect Props */
 export interface SharedDataSelectProps<TItem> {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
 
-  /** Currently selected value */
+  /** Currently selected key value (translated to item internally) */
   value?: unknown;
-  /** Value change callback */
+  /** Value change callback (receives key, not item) */
   onValueChange?: (value: unknown) => void;
   /** Multiple selection mode */
   multiple?: boolean;
@@ -29,20 +84,36 @@ export interface SharedDataSelectProps<TItem> {
 
   /** Item filter function */
   filterFn?: (item: TItem, index: number) => boolean;
-  /** Selection modal component factory */
-  modal?: () => JSX.Element;
-  /** Edit modal component factory */
-  editModal?: () => JSX.Element;
+  /** Selection modal configuration */
+  modal?: ModalConfig;
 
-  /** Item rendering function */
-  children: (item: TItem, index: number, depth: number) => JSX.Element;
+  /** Compound children: ItemTemplate, Action */
+  children: JSX.Element;
 }
 
-export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JSX.Element {
-  const [local, rest] = splitProps(props, ["data", "filterFn", "modal", "editModal", "children"]);
+interface SharedDataSelectComponent {
+  <TItem>(props: SharedDataSelectProps<TItem>): JSX.Element;
+  ItemTemplate: typeof ItemTemplate;
+  Action: typeof Action;
+}
+
+const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.Element => {
+  const [local, rest] = splitProps(props, [
+    "data", "filterFn", "modal", "children",
+  ]);
 
   const i18n = useI18n();
   const dialog = useDialog();
+
+  // Resolve compound children
+  const resolved = resolveChildren(() => local.children);
+  const defs = createMemo(() => {
+    const arr = resolved.toArray();
+    return {
+      itemTemplate: arr.find(isItemTemplateDef) as ItemTemplateDef | undefined,
+      actions: arr.filter(isActionDef) as ActionDef[],
+    };
+  });
 
   // Items with filterFn applied
   const items = createMemo(() => {
@@ -51,21 +122,76 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     return allItems.filter(local.filterFn);
   });
 
-  // Open modal
+  // Normalize value to keys array
+  const normalizeKeys = (value: unknown): (string | number)[] => {
+    if (value === undefined || value === null) return [];
+    if (Array.isArray(value)) return value;
+    return [value as string | number];
+  };
+
+  // Translate key(s) to item(s) for Select's value prop
+  const keyToItem = (key: string | number): TItem | undefined => {
+    return local.data.get(key);
+  };
+
+  const valueAsItem = createMemo((): TItem | TItem[] | undefined => {
+    const key = rest.value;
+    if (key === undefined || key === null) return undefined;
+    if (Array.isArray(key)) {
+      return key.map((k) => keyToItem(k as string | number)).filter((v): v is TItem => v !== undefined);
+    }
+    return keyToItem(key as string | number);
+  });
+
+  // Translate item back to key for onValueChange callback
+  const itemToKey = (item: TItem | TItem[] | undefined): unknown => {
+    if (item === undefined || item === null) return undefined;
+    if (Array.isArray(item)) return item.map((i) => local.data.getKey(i));
+    return local.data.getKey(item);
+  };
+
+  // Open modal and handle selection result
   const handleOpenModal = async () => {
     if (!local.modal) return;
-    await dialog.show(local.modal, {});
+
+    const modalConfig = local.modal;
+    const result = await dialog.show<DataSelectModalResult<string | number>>(
+      () => {
+        const instance = useDialogInstance<DataSelectModalResult<string | number>>();
+        return (
+          <modalConfig.component
+            {...(modalConfig.props ?? {})}
+            selectMode={rest.multiple ? "multiple" : "single"}
+            selectedKeys={normalizeKeys(rest.value)}
+            onSelect={(r: { keys: (string | number)[] }) =>
+              instance?.close({ selectedKeys: r.keys })
+            }
+          />
+        );
+      },
+      modalConfig.option ?? {},
+    );
+
+    if (result) {
+      const newKeys = result.selectedKeys;
+      if (rest.multiple) {
+        rest.onValueChange?.(newKeys);
+      } else {
+        rest.onValueChange?.(newKeys.length > 0 ? newKeys[0] : undefined);
+      }
+    }
   };
 
-  // Open edit modal
-  const handleOpenEditModal = async () => {
-    if (!local.editModal) return;
-    await dialog.show(local.editModal, {});
-  };
-
-  // Use mergeProps + as for Select's discriminated union (multiple: true | false?) and TItem → unknown conversion
-  // Wrap with getter to satisfy SolidJS reactivity lint rules
   const selectProps = mergeProps(rest, {
+    get value() {
+      return valueAsItem();
+    },
+    get onValueChange() {
+      if (!rest.onValueChange) return undefined;
+      return (item: TItem | TItem[] | undefined) => {
+        rest.onValueChange!(itemToKey(item));
+      };
+    },
     get items() {
       return items();
     },
@@ -87,17 +213,23 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
 
   return (
     <Select {...selectProps}>
-      <Select.ItemTemplate>{local.children}</Select.ItemTemplate>
+      {defs().itemTemplate && (
+        <Select.ItemTemplate>{defs().itemTemplate!.children}</Select.ItemTemplate>
+      )}
       {local.modal && (
         <Select.Action onClick={() => void handleOpenModal()} aria-label={i18n.t("sharedDataSelect.search")}>
           <Icon icon={IconSearch} />
         </Select.Action>
       )}
-      {local.editModal && (
-        <Select.Action onClick={() => void handleOpenEditModal()} aria-label={i18n.t("sharedDataSelect.edit")}>
-          <Icon icon={IconEdit} />
+      {defs().actions.map((action) => (
+        <Select.Action onClick={action.onClick}>
+          {action.children}
         </Select.Action>
-      )}
+      ))}
     </Select>
   );
-}
+};
+
+export const SharedDataSelect: SharedDataSelectComponent = SharedDataSelectBase as any;
+SharedDataSelect.ItemTemplate = ItemTemplate;
+SharedDataSelect.Action = Action;
