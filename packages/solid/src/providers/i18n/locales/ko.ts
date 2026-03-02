@@ -144,6 +144,7 @@ export default {
   },
   sharedDataSelectList: {
     searchPlaceholder: "검색...",
+    unspecified: "미지정",
   },
   dataSelectButton: {
     deselect: "선택 해제",
@@ -157,5 +158,42 @@ export default {
   },
   topbarMenu: {
     menu: "메뉴",
+  },
+  notificationBell: {
+    notifications: "알림",
+    clearAll: "모두 지우기",
+    noNotifications: "알림 없음",
+    unreadCount: "{{count}}개의 알림",
+  },
+  notificationProvider: {
+    prefix: "알림:",
+  },
+  themeToggle: {
+    light: "라이트 모드",
+    system: "시스템 설정",
+    dark: "다크 모드",
+  },
+  combobox: {
+    searching: "검색 중...",
+    noResults: "결과 없음",
+  },
+  numpad: {
+    enter: "입력",
+  },
+  sidebarMenu: {
+    menu: "메뉴",
+  },
+  validation: {
+    required: "필수 입력 항목입니다",
+    requiredField: "필수 항목",
+    requiredSelection: "필수 선택 항목입니다",
+    selectItem: "항목을 선택해 주세요",
+    minLength: "{{min}}자 이상 입력해 주세요",
+    maxLength: "{{max}}자 이하로 입력해 주세요",
+    invalidFormat: "입력 형식이 올바르지 않습니다",
+    minValue: "최솟값은 {{min}}입니다",
+    maxValue: "최댓값은 {{max}}입니다",
+    minDate: "{{min}} 이상이어야 합니다",
+    maxDate: "{{max}} 이하이어야 합니다",
   },
 };

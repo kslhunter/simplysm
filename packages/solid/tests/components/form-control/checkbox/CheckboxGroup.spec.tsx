@@ -1,11 +1,14 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { CheckboxGroup } from "../../../../src/components/form-control/checkbox/CheckboxGroup";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("CheckboxGroup component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
   describe("basic rendering", () => {
     it("renders the container", () => {
       const { container } = render(() => (

@@ -144,6 +144,7 @@ export default {
   },
   sharedDataSelectList: {
     searchPlaceholder: "Search...",
+    unspecified: "Unspecified",
   },
   dataSelectButton: {
     deselect: "Deselect",
@@ -157,5 +158,42 @@ export default {
   },
   topbarMenu: {
     menu: "Menu",
+  },
+  notificationBell: {
+    notifications: "Notifications",
+    clearAll: "Clear All",
+    noNotifications: "No notifications",
+    unreadCount: "{{count}} notifications",
+  },
+  notificationProvider: {
+    prefix: "Notification:",
+  },
+  themeToggle: {
+    light: "Light mode",
+    system: "System settings",
+    dark: "Dark mode",
+  },
+  combobox: {
+    searching: "Searching...",
+    noResults: "No results found",
+  },
+  numpad: {
+    enter: "ENT",
+  },
+  sidebarMenu: {
+    menu: "MENU",
+  },
+  validation: {
+    required: "This is a required field",
+    requiredField: "Required field",
+    requiredSelection: "This is a required selection",
+    selectItem: "Please select an item",
+    minLength: "Enter at least {{min}} characters",
+    maxLength: "Enter up to {{max}} characters",
+    invalidFormat: "The input format is invalid",
+    minValue: "Minimum value is {{min}}",
+    maxValue: "Maximum value is {{max}}",
+    minDate: "Must be greater than or equal to {{min}}",
+    maxDate: "Must be less than or equal to {{max}}",
   },
 };
