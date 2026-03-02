@@ -31,7 +31,7 @@ import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { TextInput } from "../field/TextInput";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 void ripple;
 
@@ -264,7 +264,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "getIsHidden",
   ]);
 
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
   const [open, setOpen] = createSignal(false);
 
   // Search text signal
@@ -349,7 +349,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   const errorMsg = createMemo(() => {
     const v = value();
     if (local.required && (v === undefined || v === null || v === ""))
-      return "This is a required field";
+      return i18n.t("validation.required");
     return local.validate?.(v);
   });
 
@@ -536,7 +536,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
               <TextInput
                 value={searchText()}
                 onValueChange={setSearchText}
-                placeholder={i18n?.t("select.searchPlaceholder") ?? "Search..."}
+                placeholder={i18n.t("select.searchPlaceholder")}
                 class={searchInputClass}
               />
             </Show>
@@ -549,7 +549,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                   class={selectAllBtnClass}
                   onClick={handleSelectAll}
                 >
-                  {i18n?.t("select.selectAll") ?? "Select all"}
+                  {i18n.t("select.selectAll")}
                 </button>
                 <button
                   type="button"
@@ -557,7 +557,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                   class={selectAllBtnClass}
                   onClick={handleDeselectAll}
                 >
-                  {i18n?.t("select.deselectAll") ?? "Deselect all"}
+                  {i18n.t("select.deselectAll")}
                 </button>
               </div>
             </Show>
@@ -566,7 +566,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
                 {/* Unset item */}
                 <Show when={showUnsetItem()}>
                   <SelectItem value={undefined as T}>
-                    <span class={textMuted}>{i18n?.t("select.unset") ?? "Unset"}</span>
+                    <span class={textMuted}>{i18n.t("select.unset")}</span>
                   </SelectItem>
                 </Show>
                 {renderItems(visibleItems() ?? [], 0)}

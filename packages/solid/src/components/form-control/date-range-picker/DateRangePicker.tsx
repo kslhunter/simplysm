@@ -6,7 +6,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { type FieldSize } from "../field/Field.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export type DateRangePeriodType = "day" | "month" | "range";
 
@@ -78,7 +78,7 @@ function getLastDayOfMonth(date: DateOnly): DateOnly {
  * ```
  */
 export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   const [local, rest] = splitProps(props, [
     "periodType",
@@ -163,9 +163,9 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         onValueChange={handlePeriodTypeChange}
         renderValue={(v: DateRangePeriodType) => {
           const labels = {
-            day: i18n?.t("dateRangePicker.day") ?? "Day",
-            month: i18n?.t("dateRangePicker.month") ?? "Month",
-            range: i18n?.t("dateRangePicker.range") ?? "Range"
+            day: i18n.t("dateRangePicker.day"),
+            month: i18n.t("dateRangePicker.month"),
+            range: i18n.t("dateRangePicker.range"),
           };
           return <>{labels[v]}</>;
         }}
@@ -175,13 +175,13 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         inset
       >
         <Select.Item value={"day" as DateRangePeriodType}>
-          {i18n?.t("dateRangePicker.day") ?? "Day"}
+          {i18n.t("dateRangePicker.day")}
         </Select.Item>
         <Select.Item value={"month" as DateRangePeriodType}>
-          {i18n?.t("dateRangePicker.month") ?? "Month"}
+          {i18n.t("dateRangePicker.month")}
         </Select.Item>
         <Select.Item value={"range" as DateRangePeriodType}>
-          {i18n?.t("dateRangePicker.range") ?? "Range"}
+          {i18n.t("dateRangePicker.range")}
         </Select.Item>
       </Select>
 

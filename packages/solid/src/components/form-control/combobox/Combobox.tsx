@@ -12,6 +12,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 void ripple;
 
@@ -149,6 +150,8 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     "touchMode",
   ]);
 
+  const i18n = useI18n();
+
   // State
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
@@ -259,7 +262,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   const errorMsg = createMemo(() => {
     const v = getValue();
     if (local.required && (v === undefined || v === null || v === ""))
-      return "This field is required";
+      return i18n.t("validation.required");
     return local.validate?.(v);
   });
 
@@ -310,12 +313,12 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
     // Loading
     if (busyCount() > 0) {
-      return <div class={noResultsClass}>Searching...</div>;
+      return <div class={noResultsClass}>{i18n.t("combobox.searching")}</div>;
     }
 
     // Items empty
     if (items().length === 0) {
-      return <div class={noResultsClass}>No results found</div>;
+      return <div class={noResultsClass}>{i18n.t("combobox.noResults")}</div>;
     }
 
     // ItemTemplate approach

@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
 import clsx from "clsx";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import {
   type CheckboxSize,
   checkboxBaseClass,
@@ -52,6 +53,8 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     "children",
   ]);
 
+  const i18n = useI18n();
+
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? false,
     onChange: () => local.onValueChange,
@@ -85,7 +88,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = local.value ?? false;
-    if (local.required && !v) return "This is a required selection";
+    if (local.required && !v) return i18n.t("validation.requiredSelection");
     return local.validate?.(v);
   });
 

@@ -7,6 +7,7 @@ import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
 import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
 import type { ComponentSize } from "../../../styles/tokens.styles";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface NumpadProps {
   /** Input value */
@@ -54,6 +55,7 @@ function valueToInputStr(value: number | undefined): string {
 }
 
 export const Numpad: Component<NumpadProps> = (props) => {
+  const i18n = useI18n();
   // Controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => props.value,
@@ -151,7 +153,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
           disabled={props.required && value() == null}
           onClick={handleEnter}
         >
-          ENT
+          {i18n.t("numpad.enter")}
         </Button>
       </Show>
 

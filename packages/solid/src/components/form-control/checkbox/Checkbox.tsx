@@ -4,6 +4,7 @@ import { IconCheck } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
 import { Icon } from "../../display/Icon";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import {
   type CheckboxSize,
   checkboxBaseClass,
@@ -51,6 +52,8 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
     "children",
   ]);
 
+  const i18n = useI18n();
+
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? false,
     onChange: () => local.onValueChange,
@@ -84,7 +87,7 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = local.value ?? false;
-    if (local.required && !v) return "This is a required selection";
+    if (local.required && !v) return i18n.t("validation.requiredSelection");
     return local.validate?.(v);
   });
 

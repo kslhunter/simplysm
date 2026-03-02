@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Invalid } from "../Invalid";
 import { type ComponentSize } from "../../../styles/tokens.styles";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 // Base style
 const baseClass = clsx(
@@ -94,6 +95,8 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     "style",
   ]);
 
+  const i18n = useI18n();
+
   const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
@@ -113,7 +116,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && (v === undefined || v === "")) return "This field is required";
+    if (local.required && (v === undefined || v === "")) return i18n.t("validation.required");
     return local.validate?.(v);
   });
 
