@@ -68,7 +68,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance<boolean>();
 
-  const isModal = dialogInstance !== undefined;
+  const isInDialog = dialogInstance !== undefined;
 
   const canEdit = () => local.editable ?? true;
 
@@ -272,8 +272,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Render --
   return (
     <>
-      {/* Modal mode: Dialog.Action (refresh button in header) */}
-      <Show when={isModal}>
+      {/* Dialog mode: Dialog.Action (refresh button in header) */}
+      <Show when={isInDialog}>
         <Dialog.Action>
           <Button size={"sm"} variant={"ghost"} onClick={() => void handleRefresh()}>
             <Icon icon={IconRefresh} />
@@ -287,9 +287,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         class={clsx("flex h-full flex-col gap-2", local.class)}
       >
         {/* Toolbar */}
-        <Show when={(!isModal && !topbarCtx) || defs().tools}>
+        <Show when={(!isInDialog && !topbarCtx) || defs().tools}>
           <div class="flex gap-2 pb-0">
-            <Show when={!topbarCtx && !isModal}>
+            <Show when={!topbarCtx && !isInDialog}>
               <Show when={canEdit() && local.submit}>
                 <Button
                   size="sm"
@@ -352,8 +352,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         {/* After (outside form) */}
         <Show when={defs().after}>{(afterDef) => afterDef().children}</Show>
 
-        {/* Modal mode: bottom bar */}
-        <Show when={isModal && canEdit()}>
+        {/* Dialog mode: bottom bar */}
+        <Show when={isInDialog && canEdit()}>
           <div class="flex gap-2 border-t border-base-200 px-3 py-1.5">
             <div class="flex-1" />
             <Show
