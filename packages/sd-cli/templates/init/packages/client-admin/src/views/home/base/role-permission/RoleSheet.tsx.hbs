@@ -1,7 +1,7 @@
 import {
   Checkbox,
   CrudSheet,
-  type ModalEditConfig,
+  type DialogEditConfig,
   type SortingDef,
   TextInput,
   useDialog,
@@ -34,7 +34,7 @@ export function RoleSheet() {
 
   const rolePerms = appStructure.perms.home.base["role-permission"];
 
-  const modalEdit: ModalEditConfig<SheetItem> = {
+  const dialogEdit: DialogEditConfig<SheetItem> = {
     editItem: (item) =>
       dialog.show(() => <RoleDetail itemId={item?.id} />, {
         header: item ? "권한그룹 수정" : "권한그룹 등록",
@@ -90,7 +90,7 @@ export function RoleSheet() {
       persistKey="role-sheet-page"
       editable={rolePerms.edit}
       filterInitial=\{{ isIncludeDeleted: false } as Filter}
-      modalEdit={modalEdit}
+      dialogEdit={dialogEdit}
     >
       <CrudSheet.Filter<Filter>>
         {(filter, setFilter) => (

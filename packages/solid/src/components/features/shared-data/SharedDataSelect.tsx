@@ -16,8 +16,8 @@ import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 import {
-  type DataSelectModalResult,
-  type ModalConfig,
+  type DataSelectDialogResult,
+  type DialogConfig,
 } from "../data-select-button/DataSelectButton";
 
 // -- Slot detection --
@@ -88,8 +88,8 @@ export interface SharedDataSelectProps<TItem> {
 
   /** Item filter function */
   filterFn?: (item: TItem, index: number) => boolean;
-  /** Selection modal configuration */
-  modal?: ModalConfig;
+  /** Selection dialog configuration */
+  dialog?: DialogConfig;
 
   /** Compound children: ItemTemplate, Action */
   children: JSX.Element;
@@ -103,7 +103,7 @@ interface SharedDataSelectComponent {
 
 const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.Element => {
   const [local, rest] = splitProps(props, [
-    "data", "filterFn", "modal", "children",
+    "data", "filterFn", "dialog", "children",
   ]);
 
   const i18n = useI18n();
@@ -154,17 +154,17 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
     return local.data.getKey(item);
   };
 
-  // Open modal and handle selection result
-  const handleOpenModal = async () => {
-    if (!local.modal) return;
+  // Open dialog and handle selection result
+  const handleOpenDialog = async () => {
+    if (!local.dialog) return;
 
-    const modalConfig = local.modal;
-    const result = await dialog.show<DataSelectModalResult<string | number>>(
+    const dialogConfig = local.dialog;
+    const result = await dialog.show<DataSelectDialogResult<string | number>>(
       () => {
-        const instance = useDialogInstance<DataSelectModalResult<string | number>>();
+        const instance = useDialogInstance<DataSelectDialogResult<string | number>>();
         return (
-          <modalConfig.component
-            {...(modalConfig.props ?? {})}
+          <dialogConfig.component
+            {...(dialogConfig.props ?? {})}
             selectMode={rest.multiple ? "multiple" : "single"}
             selectedKeys={normalizeKeys(rest.value)}
             onSelect={(r: { keys: (string | number)[] }) =>
@@ -173,7 +173,7 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
           />
         );
       },
-      modalConfig.option ?? {},
+      dialogConfig.option ?? {},
     );
 
     if (result) {
@@ -221,8 +221,8 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
       {defs().itemTemplate && (
         <Select.ItemTemplate>{defs().itemTemplate!.children}</Select.ItemTemplate>
       )}
-      {local.modal && (
-        <Select.Action onClick={() => void handleOpenModal()} aria-label={i18n.t("sharedDataSelect.search")}>
+      {local.dialog && (
+        <Select.Action onClick={() => void handleOpenDialog()} aria-label={i18n.t("sharedDataSelect.search")}>
           <Icon icon={IconSearch} />
         </Select.Action>
       )}

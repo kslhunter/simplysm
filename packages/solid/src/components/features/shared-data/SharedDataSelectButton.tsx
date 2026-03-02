@@ -3,7 +3,7 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import {
   DataSelectButton,
   type DataSelectButtonProps,
-  type ModalConfig,
+  type DialogConfig,
 } from "../data-select-button/DataSelectButton";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 
@@ -27,8 +27,8 @@ export interface SharedDataSelectButtonProps<TItem> {
   /** Borderless style */
   inset?: boolean;
 
-  /** Selection modal configuration */
-  modal: ModalConfig;
+  /** Selection dialog configuration */
+  dialog: DialogConfig;
   /** Item rendering function */
   children: (item: TItem) => JSX.Element;
 }

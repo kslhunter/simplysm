@@ -10,7 +10,7 @@ export function employeeCrudTests(ctx: { page: Page; baseUrl: string }) {
     }
 
     function dialogLocator() {
-      return ctx.page.locator("[data-modal-dialog]").last();
+      return ctx.page.locator("[data-dialog-panel]").last();
     }
 
     async function waitForSheetLoaded() {
@@ -25,8 +25,8 @@ export function employeeCrudTests(ctx: { page: Page; baseUrl: string }) {
     async function waitForDialogClosed() {
       await ctx.page.waitForFunction(
         () =>
-          document.querySelectorAll("[data-modal-dialog]").length === 0 &&
-          document.querySelectorAll("[data-modal-backdrop]").length === 0,
+          document.querySelectorAll("[data-dialog-panel]").length === 0 &&
+          document.querySelectorAll("[data-dialog-backdrop]").length === 0,
       );
     }
 

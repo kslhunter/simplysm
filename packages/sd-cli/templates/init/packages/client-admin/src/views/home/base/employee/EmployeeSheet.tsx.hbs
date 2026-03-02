@@ -4,7 +4,7 @@ import {
   CrudSheet,
   type ExcelConfig,
   FormGroup,
-  type ModalEditConfig,
+  type DialogEditConfig,
   type SortingDef,
   TextInput,
   useDialog,
@@ -73,7 +73,7 @@ export function EmployeeSheet() {
   const { perms } = useAppStructure();
   const employeePerms = perms.home.base.employee;
 
-  const modalEdit: ModalEditConfig<SheetItem> = {
+  const dialogEdit: DialogEditConfig<SheetItem> = {
     editItem: (item) =>
       dialog.show(() => <EmployeeDetail itemId={item?.id} />, {
         header: item ? "직원 수정" : "직원 등록",
@@ -169,7 +169,7 @@ export function EmployeeSheet() {
       persistKey="employee-page"
       editable={employeePerms.edit}
       filterInitial=\{{ isIncludeLeft: false, isIncludeDeleted: false } as Filter}
-      modalEdit={modalEdit}
+      dialogEdit={dialogEdit}
       excel={excel}
       lastModifiedAtProp="lastDataLog.dateTime"
       lastModifiedByProp="lastDataLog.employeeName"
