@@ -1,11 +1,15 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { Textarea } from "../../../../src/components/form-control/field/Textarea";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Textarea component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   describe("basic rendering", () => {
     it("renders textarea element", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea /></I18nProvider></ConfigProvider>);

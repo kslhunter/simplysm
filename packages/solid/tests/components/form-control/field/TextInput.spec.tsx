@@ -1,11 +1,15 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { TextInput } from "../../../../src/components/form-control/field/TextInput";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("TextInput component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   describe("basic rendering", () => {
     it("renders input element", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput /></I18nProvider></ConfigProvider>);

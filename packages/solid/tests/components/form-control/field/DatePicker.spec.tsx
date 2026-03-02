@@ -1,5 +1,5 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
 import { DatePicker } from "../../../../src/components/form-control/field/DatePicker";
@@ -7,6 +7,10 @@ import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("DatePicker component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   describe("basic rendering", () => {
     it("renders input type=number when unit=year", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="year" /></I18nProvider></ConfigProvider>);
@@ -323,7 +327,7 @@ describe("DatePicker component", () => {
     it("sets error message when required and value is empty", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker required value={undefined} /></I18nProvider></ConfigProvider>);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("This field is required");
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
     it("is valid when required and value exists", () => {
