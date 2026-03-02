@@ -1,4 +1,5 @@
 import {
+  type Component,
   createEffect,
   createMemo,
   createResource,
@@ -28,6 +29,26 @@ import {
 /** Result interface returned from modal */
 export interface DataSelectModalResult<TKey> {
   selectedKeys: TKey[];
+}
+
+/** Props automatically injected into modal component by DataSelectButton/SharedDataSelect */
+export interface InjectedSelectProps {
+  /** Selection mode */
+  selectMode: "single" | "multiple";
+  /** Currently selected keys */
+  selectedKeys: (string | number)[];
+  /** Selection callback — automatically closes dialog with result */
+  onSelect: (result: { keys: (string | number)[] }) => void;
+}
+
+/** Declarative modal configuration */
+export interface ModalConfig<TUserProps = Record<string, any>> {
+  /** Modal component (must accept InjectedSelectProps) */
+  component: Component<TUserProps & InjectedSelectProps>;
+  /** User-defined props for the component */
+  props?: TUserProps;
+  /** Dialog options (header, size, etc.) */
+  option?: DialogShowOptions;
 }
 
 /** DataSelectButton Props */
