@@ -167,10 +167,10 @@ import { SharedDataChangeEvent } from "@simplysm/solid";
 
 ## `I18nContext`
 
-Internationalization context with built-in English and Korean dictionaries.
+Internationalization context with built-in English and Korean dictionaries. **`I18nProvider` is required** — all components using `useI18n()` will throw an error if rendered outside of `I18nProvider`.
 
 ```tsx
-import { I18nProvider, useI18n, useI18nOptional } from "@simplysm/solid";
+import { I18nProvider, useI18n } from "@simplysm/solid";
 
 <I18nProvider>
   <App />
@@ -179,13 +179,23 @@ import { I18nProvider, useI18n, useI18nOptional } from "@simplysm/solid";
 const i18n = useI18n();
 i18n.setLocale("ko");
 const label = i18n.t("someKey");
+
+// Override/extend dictionaries (e.g., add Japanese):
+i18n.configure({
+  locale: "ja",
+  dict: {
+    ja: { "calendar.weeks.sun": "日" },
+  },
+});
 ```
+
+**`useI18n()`** — Returns the `I18nContextValue`. Throws if called outside `I18nProvider`.
 
 **`I18nContextValue`**
 
 | Member | Description |
 |--------|-------------|
-| `t(key, params?)` | Translate a key |
+| `t(key, params?)` | Translate a key; falls back to `en` dict, then key itself |
 | `locale()` | Reactive current locale accessor |
 | `setLocale(locale)` | Change active locale |
 | `configure(options)` | Configure dictionary and/or locale |
