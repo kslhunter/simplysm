@@ -2,6 +2,7 @@ import {
   children as resolveChildren,
   type Component,
   createMemo,
+  For,
   type JSX,
   mergeProps,
   splitProps,
@@ -46,6 +47,7 @@ function isActionDef(v: unknown): v is ActionDef {
 const ItemTemplate: Component<{
   children: (item: any, index: number, depth: number) => JSX.Element;
 }> = (props) => {
+  // eslint-disable-next-line solid/reactivity -- factory function, not reactive JSX
   return (() => ({
     __brand: ITEM_TEMPLATE_BRAND,
     children: props.children,
@@ -56,6 +58,7 @@ const Action: Component<{
   children?: JSX.Element;
   onClick?: (e: MouseEvent) => void;
 }> = (props) => {
+  // eslint-disable-next-line solid/reactivity -- factory function, not reactive JSX
   return (() => ({
     __brand: ACTION_BRAND,
     children: props.children,
@@ -189,6 +192,7 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
     },
     get onValueChange() {
       if (!rest.onValueChange) return undefined;
+      // eslint-disable-next-line solid/reactivity -- inside getter, tracked scope
       return (item: TItem | TItem[] | undefined) => {
         rest.onValueChange!(itemToKey(item));
       };
@@ -222,11 +226,13 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
           <Icon icon={IconSearch} />
         </Select.Action>
       )}
-      {defs().actions.map((action) => (
-        <Select.Action onClick={action.onClick}>
-          {action.children}
-        </Select.Action>
-      ))}
+      <For each={defs().actions}>
+        {(action) => (
+          <Select.Action onClick={action.onClick}>
+            {action.children}
+          </Select.Action>
+        )}
+      </For>
     </Select>
   );
 };

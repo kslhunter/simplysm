@@ -43,7 +43,6 @@ export interface InjectedSelectProps {
 }
 
 /** Declarative modal configuration */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ModalConfig<TUserProps = any> {
   /** Modal component (must accept InjectedSelectProps) */
   component: Component<TUserProps & InjectedSelectProps>;
