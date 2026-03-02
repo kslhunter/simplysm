@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
 import { DataSelectButton, type DataSelectModalResult } from "@simplysm/solid";
@@ -58,6 +58,10 @@ function renderWithDialog(ui: () => JSX.Element) {
 }
 
 describe("DataSelectButton", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   afterEach(() => {
     cleanup();
   });

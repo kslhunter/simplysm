@@ -1,38 +1,48 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Kanban } from "../../../../src/components/data/kanban/Kanban";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Kanban selection system", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   function renderKanban(options?: {
     selectedValues?: unknown[];
     onSelectedValuesChange?: (v: unknown[]) => void;
     selectable?: boolean;
   }) {
     return render(() => (
-      <Kanban
-        selectedValues={options?.selectedValues}
-        onSelectedValuesChange={options?.onSelectedValuesChange}
-        class="h-[400px]"
-      >
-        <Kanban.Lane value="lane-1">
-          <Kanban.LaneTitle>Lane 1</Kanban.LaneTitle>
-          <Kanban.Card value={1} selectable={options?.selectable ?? true} contentClass="p-2">
-            Card 1
-          </Kanban.Card>
-          <Kanban.Card value={2} selectable={options?.selectable ?? true} contentClass="p-2">
-            Card 2
-          </Kanban.Card>
-          <Kanban.Card value={3} selectable={false} contentClass="p-2">
-            Card 3 (not selectable)
-          </Kanban.Card>
-        </Kanban.Lane>
-        <Kanban.Lane value="lane-2">
-          <Kanban.LaneTitle>Lane 2</Kanban.LaneTitle>
-          <Kanban.Card value={4} selectable contentClass="p-2">
-            Card 4
-          </Kanban.Card>
-        </Kanban.Lane>
-      </Kanban>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <Kanban
+            selectedValues={options?.selectedValues}
+            onSelectedValuesChange={options?.onSelectedValuesChange}
+            class="h-[400px]"
+          >
+            <Kanban.Lane value="lane-1">
+              <Kanban.LaneTitle>Lane 1</Kanban.LaneTitle>
+              <Kanban.Card value={1} selectable={options?.selectable ?? true} contentClass="p-2">
+                Card 1
+              </Kanban.Card>
+              <Kanban.Card value={2} selectable={options?.selectable ?? true} contentClass="p-2">
+                Card 2
+              </Kanban.Card>
+              <Kanban.Card value={3} selectable={false} contentClass="p-2">
+                Card 3 (not selectable)
+              </Kanban.Card>
+            </Kanban.Lane>
+            <Kanban.Lane value="lane-2">
+              <Kanban.LaneTitle>Lane 2</Kanban.LaneTitle>
+              <Kanban.Card value={4} selectable contentClass="p-2">
+                Card 4
+              </Kanban.Card>
+            </Kanban.Lane>
+          </Kanban>
+        </I18nProvider>
+      </ConfigProvider>
     ));
   }
 

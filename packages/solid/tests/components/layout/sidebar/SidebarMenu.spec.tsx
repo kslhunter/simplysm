@@ -29,6 +29,7 @@ const mockWindowOpen = vi.fn();
 
 describe("SidebarMenu", () => {
   beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
     vi.clearAllMocks();
     setMockPathname("/"); // Initialize pathname
     vi.spyOn(window, "open").mockImplementation(mockWindowOpen);

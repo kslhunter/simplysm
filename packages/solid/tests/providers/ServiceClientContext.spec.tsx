@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createRoot } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import {
@@ -8,8 +8,13 @@ import {
 import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider";
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/providers/ConfigContext";
+import { I18nProvider } from "../../src/providers/i18n/I18nContext";
 
 describe("ServiceClientContext", () => {
+  beforeEach(() => {
+    localStorage.setItem("testApp.i18n-locale", JSON.stringify("en"));
+  });
+
   describe("useServiceClient", () => {
     it("throws error when used without Provider", () => {
       createRoot((dispose) => {
@@ -23,19 +28,25 @@ describe("ServiceClientContext", () => {
 });
 
 describe("ServiceClientProvider", () => {
+  beforeEach(() => {
+    localStorage.setItem("testApp.i18n-locale", JSON.stringify("en"));
+  });
+
   it("useServiceClient works correctly inside Provider", () => {
     let serviceClient: ServiceClientContextValue;
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <ServiceClientProvider>
-            {(() => {
-              serviceClient = useServiceClient();
-              return null;
-            })()}
-          </ServiceClientProvider>
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <ServiceClientProvider>
+              {(() => {
+                serviceClient = useServiceClient();
+                return null;
+              })()}
+            </ServiceClientProvider>
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -51,14 +62,16 @@ describe("ServiceClientProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <ServiceClientProvider>
-            {(() => {
-              serviceClient = useServiceClient();
-              return null;
-            })()}
-          </ServiceClientProvider>
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <ServiceClientProvider>
+              {(() => {
+                serviceClient = useServiceClient();
+                return null;
+              })()}
+            </ServiceClientProvider>
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -72,14 +85,16 @@ describe("ServiceClientProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <ServiceClientProvider>
-            {(() => {
-              serviceClient = useServiceClient();
-              return null;
-            })()}
-          </ServiceClientProvider>
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <ServiceClientProvider>
+              {(() => {
+                serviceClient = useServiceClient();
+                return null;
+              })()}
+            </ServiceClientProvider>
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 

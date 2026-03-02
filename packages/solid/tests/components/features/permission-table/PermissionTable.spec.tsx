@@ -177,33 +177,33 @@ describe("PermissionTable component", () => {
 
   describe("basic rendering", () => {
     it("renders as DataSheet (div with data-sheet attribute)", () => {
-      const { container } = render(() => <PermissionTable items={sampleItems} />);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       const wrapper = container.querySelector("[data-sheet]");
       expect(wrapper).toBeTruthy();
       expect(wrapper!.tagName).toBe("DIV");
     });
 
     it("renders a table inside DataSheet", () => {
-      const { container } = render(() => <PermissionTable items={sampleItems} />);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       const table = container.querySelector("[data-sheet] table");
       expect(table).toBeTruthy();
     });
 
     it("displays perm type columns in header", () => {
-      const { getByText } = render(() => <PermissionTable items={sampleItems} />);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       expect(getByText("use")).toBeTruthy();
       expect(getByText("edit")).toBeTruthy();
       expect(getByText("approve")).toBeTruthy();
     });
 
     it("displays item titles", () => {
-      const { getByText } = render(() => <PermissionTable items={sampleItems} />);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       expect(getByText("사용자 관리")).toBeTruthy();
       expect(getByText("시스템")).toBeTruthy();
     });
 
     it("child items are expanded by default", () => {
-      const { getByText } = render(() => <PermissionTable items={sampleItems} />);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       expect(getByText("권한 설정")).toBeTruthy();
       expect(getByText("사용자 목록")).toBeTruthy();
     });
@@ -244,7 +244,7 @@ describe("PermissionTable component", () => {
 
   describe("expand/collapse", () => {
     it("rows with children have an expand/collapse toggle", () => {
-      const { getByText } = render(() => <PermissionTable items={sampleItems} />);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       // find the row containing "사용자 관리" and check for expand toggle button
       const titleEl = getByText("사용자 관리");
       const row = titleEl.closest("tr")!;
@@ -253,7 +253,7 @@ describe("PermissionTable component", () => {
     });
 
     it("clicking collapse button removes children from the DOM", () => {
-      const { getByText, queryByText } = render(() => <PermissionTable items={sampleItems} />);
+      const { getByText, queryByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
 
       // initially: children are visible (all expanded by default)
       expect(getByText("권한 설정")).toBeTruthy();

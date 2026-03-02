@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
@@ -7,6 +7,9 @@ import { NotificationBanner } from "../../../../src/components/feedback/notifica
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationBanner", () => {
+  beforeEach(() => {
+    localStorage.setItem("testApp.i18n-locale", JSON.stringify("en"));
+  });
   it("does not display banner when no notification", () => {
     const { container } = render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>

@@ -16,6 +16,8 @@ vi.mock("@solidjs/router", () => ({
 }));
 
 import { Sidebar, useSidebarContext } from "../../../../src";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // ToggleCapture helper - Extract setToggle from Context for external control
 const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
@@ -26,6 +28,7 @@ const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void
 
 describe("Sidebar component", () => {
   beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
     mockCreateMediaQuery.mockReturnValue(() => true); // Desktop mode
   });
 
@@ -36,11 +39,15 @@ describe("Sidebar component", () => {
   describe("basic rendering", () => {
     it("displays children inside sidebar", () => {
       const { getByText } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>
-            <span>Sidebar content</span>
-          </Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>
+                <span>Sidebar content</span>
+              </Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       expect(getByText("Sidebar content")).toBeTruthy();
@@ -48,9 +55,13 @@ describe("Sidebar component", () => {
 
     it("renders as aside element", () => {
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       expect(container.querySelector("aside")).toBeTruthy();
@@ -62,9 +73,13 @@ describe("Sidebar component", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       // toggle=false (initial) → open on desktop
@@ -77,10 +92,14 @@ describe("Sidebar component", () => {
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       setToggle(true); // Switch to closed
@@ -92,9 +111,13 @@ describe("Sidebar component", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       // toggle=false (initial) → closed on mobile
@@ -107,10 +130,14 @@ describe("Sidebar component", () => {
       let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       setToggle(true); // Switch to open
@@ -124,9 +151,13 @@ describe("Sidebar component", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       // toggle=false (initial) → open on desktop
@@ -138,9 +169,13 @@ describe("Sidebar component", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       // toggle=false (initial) → closed on mobile
@@ -152,9 +187,13 @@ describe("Sidebar component", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // Mobile
 
       const { container } = render(() => (
-        <Sidebar.Container>
-          <Sidebar>Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              <Sidebar>Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       // toggle=false (initial) → closed on mobile
@@ -166,10 +205,14 @@ describe("Sidebar component", () => {
   describe("style merging", () => {
     it("merges custom classes", () => {
       const { container } = render(() => (
-        <Sidebar.Container>
-          {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-          <Sidebar class="my-custom-class">Content</Sidebar>
-        </Sidebar.Container>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Sidebar.Container>
+              {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
+              <Sidebar class="my-custom-class">Content</Sidebar>
+            </Sidebar.Container>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       const sidebar = container.querySelector("aside");

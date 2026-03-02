@@ -91,6 +91,14 @@ describe("CrudSheet types", () => {
 });
 
 describe("CrudSheet rendering", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("basic rendering: column, filter, and BusyContainer are displayed", async () => {
     const searchFn = () =>
       Promise.resolve({
@@ -245,6 +253,14 @@ describe("CrudSheet inline edit", () => {
 });
 
 describe("CrudSheet itemDeletable", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("inline delete button is disabled for items where itemDeletable=false", async () => {
     const searchFn = () =>
       Promise.resolve({
@@ -286,6 +302,14 @@ describe("CrudSheet itemDeletable", () => {
 });
 
 describe("CrudSheet editable (renamed from canEdit)", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
   it("inline edit buttons are hidden when editable=false", async () => {
     const searchFn = () =>
       Promise.resolve({

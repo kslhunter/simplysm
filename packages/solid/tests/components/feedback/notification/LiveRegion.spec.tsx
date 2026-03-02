@@ -1,14 +1,21 @@
 import { render, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("Notification Live Region", () => {
+  beforeEach(() => {
+    localStorage.setItem("testApp.i18n-locale", JSON.stringify("en"));
+  });
+
   it("Provider has live region with role=status", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>content</NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>content</NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -21,12 +28,14 @@ describe("Notification Live Region", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -42,7 +51,9 @@ describe("Notification Live Region", () => {
   it("live region is visually hidden (sr-only)", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>content</NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>content</NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
