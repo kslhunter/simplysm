@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createServiceProtocol, type ServiceProtocol } from "../../src/protocol/service-protocol";
+import { createServiceProtocol, type ServiceProtocol } from "../../src/protocol/create-service-protocol";
 import type { ServiceMessage } from "../../src/protocol/protocol.types";
 import { Uuid } from "@simplysm/core-common";
 

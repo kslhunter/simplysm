@@ -39,6 +39,11 @@ async function readFileAsync() { ... } // Async suffix prohibited
 - Not enforced — omit when code is self-explanatory
 - When written, use Korean
 
+## Re-export Restriction
+
+- Re-export (`export * from`, `export { } from`) is **only allowed in `src/index.ts`**
+- All other files must not re-export — duplicated re-exports make code harder to find and maintain
+
 ## index.ts Export Pattern
 
 - Large packages: `#region`/`#endregion` for sections + `//` for sub-groups

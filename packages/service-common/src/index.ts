@@ -1,6 +1,6 @@
 // Protocol
 export * from "./protocol/protocol.types";
-export * from "./protocol/service-protocol";
+export * from "./protocol/create-service-protocol";
 
 // Service Types
 export * from "./service-types/orm-service.types";

@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { onMount } from "solid-js";
 import { BusyProvider } from "../../src/components/feedback/busy/BusyProvider";
 import { PrintProvider } from "../../src/components/feedback/print/PrintProvider";
-import { usePrint } from "../../src/hooks/usePrint";
+import { usePrint } from "../../src/components/feedback/print/PrintContext";
 import { Print } from "../../src/components/feedback/print/Print";
 import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
 
