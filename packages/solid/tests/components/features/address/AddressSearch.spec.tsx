@@ -1,8 +1,10 @@
 import { render, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
 import { useDialog } from "../../../../src/components/disclosure/DialogContext";
 import { AddressSearchContent } from "../../../../src/components/features/address/AddressSearch";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 function TestApp() {
   const dialog = useDialog();
@@ -22,11 +24,17 @@ function TestApp() {
 }
 
 describe("AddressSearchContent", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   it("mounts and renders Daum Postcode widget inside content area", async () => {
     const { getByTestId } = render(() => (
-      <DialogProvider>
-        <TestApp />
-      </DialogProvider>
+      <ConfigProvider clientName="test"><I18nProvider>
+        <DialogProvider>
+          <TestApp />
+        </DialogProvider>
+      </I18nProvider></ConfigProvider>
     ));
 
     getByTestId("open-btn").click();

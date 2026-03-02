@@ -167,7 +167,7 @@ describe("DateRangePicker component", () => {
 
   describe("disabled state", () => {
     it("applies aria-disabled to Select", () => {
-      const { container } = render(() => <DateRangePicker disabled />);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateRangePicker disabled /></I18nProvider></ConfigProvider>);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
       const select = wrapper?.querySelector("[data-select]");
@@ -198,7 +198,7 @@ describe("DateRangePicker component", () => {
   describe("class merging", () => {
     it("applies custom class to wrapper", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <DateRangePicker class="my-custom-class" />);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateRangePicker class="my-custom-class" /></I18nProvider></ConfigProvider>);
       const wrapper = container.querySelector("[data-date-range-picker]") as HTMLElement;
 
       expect(wrapper).toBeTruthy();
