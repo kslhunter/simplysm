@@ -37,8 +37,7 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
     "error",
     {
       name: "Buffer",
-      message:
-        "Use Uint8Array. For complex operations, use BytesUtils from @simplysm/core-common.",
+      message: "Use Uint8Array. For complex operations, use BytesUtils from @simplysm/core-common.",
     },
   ],
   "no-restricted-imports": [
@@ -222,6 +221,8 @@ export default defineConfig([
             "**/stylelint.config.ts",
             "**/simplysm.ts",
             "**/vitest.config.ts",
+            "**/vitest-e2e.config.ts",
+            "**/vitest.setup.ts",
             "**/vitest.setup.ts",
           ],
         },
@@ -230,7 +231,12 @@ export default defineConfig([
   },
   // Test folders: allow root devDependencies (vitest, etc.)
   {
-    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
+    files: [
+      "**/tests/**/*.ts",
+      "**/tests/**/*.tsx",
+      "**/tests-e2e/**/*.ts",
+      "**/tests-e2e/**/*.tsx",
+    ],
     rules: {
       "no-console": "off",
       "import/no-extraneous-dependencies": "off",
@@ -285,7 +291,7 @@ export default defineConfig([
   },
   // Test folders: disable solid/reactivity
   {
-    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
+    files: ["**/tests-e2e/**/*.ts", "**/tests-e2e/**/*.tsx"],
     rules: {
       // In tests, signal access within async callbacks like waitFor is intended behavior
       "solid/reactivity": "off",

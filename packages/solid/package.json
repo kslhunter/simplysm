@@ -32,7 +32,7 @@
     "@solid-primitives/resize-observer": "^2.1.5",
     "@solid-primitives/storage": "^4.3.4",
     "@solidjs/router": "^0.15.4",
-    "@tabler/icons-solidjs": "^3.37.1",
+    "@tabler/icons-solidjs": "^3.38.0",
     "@tiptap/core": "^3.20.0",
     "@tiptap/extension-color": "^3.20.0",
     "@tiptap/extension-highlight": "^3.20.0",

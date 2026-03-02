@@ -38,7 +38,7 @@
     "eslint-plugin-solid": "^0.14.5",
     "eslint-plugin-tailwindcss": "^3.18.2",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.3.0",
+    "globals": "^17.4.0",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^39.0.1",
     "stylelint-config-tailwindcss": "^1.0.1",
