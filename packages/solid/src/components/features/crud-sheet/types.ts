@@ -19,7 +19,7 @@ export interface InlineEditConfig<TItem> {
   diffsExcludes?: string[];
 }
 
-export interface ModalEditConfig<TItem> {
+export interface DialogEditConfig<TItem> {
   editItem: (item?: TItem) => Promise<boolean | undefined>;
   deleteItems?: (items: TItem[]) => Promise<boolean>;
   restoreItems?: (items: TItem[]) => Promise<boolean>;
@@ -70,9 +70,9 @@ export type CrudSheetProps<TItem, TFilter extends Record<string, any>> = CrudShe
   TFilter
 > &
   (
-    | { inlineEdit: InlineEditConfig<TItem>; modalEdit?: never }
-    | { modalEdit: ModalEditConfig<TItem>; inlineEdit?: never }
-    | { inlineEdit?: never; modalEdit?: never }
+    | { inlineEdit: InlineEditConfig<TItem>; dialogEdit?: never }
+    | { dialogEdit: DialogEditConfig<TItem>; inlineEdit?: never }
+    | { inlineEdit?: never; dialogEdit?: never }
   );
 
 interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {

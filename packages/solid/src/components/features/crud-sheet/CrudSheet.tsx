@@ -85,7 +85,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "items",
     "onItemsChange",
     "inlineEdit",
-    "modalEdit",
+    "dialogEdit",
     "excel",
     "selectMode",
     "onSelect",
@@ -98,9 +98,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance();
-  const isModal = dialogInstance !== undefined;
+  const isInDialog = dialogInstance !== undefined;
   const isSelectMode = () => local.selectMode != null;
-  const canEdit = () => (isModal && isSelectMode() ? false : (local.editable ?? true));
+  const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
 
   // -- Children Resolution --
   const resolved = children(() => local.children);
@@ -264,10 +264,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     await handleSave();
   }
 
-  // -- Modal Edit --
+  // -- Dialog Edit --
   async function handleEditItem(item?: TItem) {
-    if (!local.modalEdit) return;
-    const result = await local.modalEdit.editItem(item);
+    if (!local.dialogEdit) return;
+    const result = await local.dialogEdit.editItem(item);
     if (!result) return;
 
     setBusyCount((c) => c + 1);
@@ -280,8 +280,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   async function handleDeleteItems() {
-    if (!local.modalEdit?.deleteItems) return;
-    const result = await local.modalEdit.deleteItems(selectedItems());
+    if (!local.dialogEdit?.deleteItems) return;
+    const result = await local.dialogEdit.deleteItems(selectedItems());
     if (!result) return;
 
     setBusyCount((c) => c + 1);
@@ -295,8 +295,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   async function handleRestoreItems() {
-    if (!local.modalEdit?.restoreItems) return;
-    const result = await local.modalEdit.restoreItems(selectedItems());
+    if (!local.dialogEdit?.restoreItems) return;
+    const result = await local.dialogEdit.restoreItems(selectedItems());
     if (!result) return;
 
     setBusyCount((c) => c + 1);
@@ -413,7 +413,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Route Leave Guard --
   // eslint-disable-next-line solid/reactivity -- inlineEdit is used only for initial value
-  if (!isModal && local.inlineEdit) {
+  if (!isInDialog && local.inlineEdit) {
     try {
       useBeforeLeave((e) => {
         if (!checkIgnoreChanges()) {
@@ -475,8 +475,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   return (
     <>
-      {/* Modal mode: Dialog.Action (refresh button in header) */}
-      <Show when={isModal}>
+      {/* Dialog mode: Dialog.Action (refresh button in header) */}
+      <Show when={isInDialog}>
         <Dialog.Action>
           <button
             class="flex items-center px-2 text-base-400 hover:text-base-600"
@@ -493,7 +493,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         class={clsx("flex h-full flex-col", local.class)}
       >
         {/* Control mode: inline save/refresh bar */}
-        <Show when={!isModal && !topbarCtx}>
+        <Show when={!isInDialog && !topbarCtx}>
           <div class="flex gap-2 p-2 pb-0">
             <Show when={canEdit() && local.inlineEdit}>
               <Button
@@ -534,7 +534,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </Show>
 
         {/* Toolbar */}
-        <Show when={!(isModal && isSelectMode())}>
+        <Show when={!(isInDialog && isSelectMode())}>
           <div class="flex gap-2 p-2 pb-0">
             <Show when={!local.hideAutoTools}>
               {/* Inline edit buttons */}
@@ -544,8 +544,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 </Button>
               </Show>
 
-              {/* Modal edit buttons */}
-              <Show when={canEdit() && local.modalEdit}>
+              {/* Dialog edit buttons */}
+              <Show when={canEdit() && local.dialogEdit}>
                 <Button
                   size="sm"
                   theme="primary"
@@ -556,7 +556,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   {i18n.t("crudSheet.register")}
                 </Button>
               </Show>
-              <Show when={canEdit() && local.modalEdit?.deleteItems}>
+              <Show when={canEdit() && local.dialogEdit?.deleteItems}>
                 <Button
                   size="sm"
                   theme="danger"
@@ -575,7 +575,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   {i18n.t("crudSheet.deleteSelected")}
                 </Button>
               </Show>
-              <Show when={canEdit() && local.modalEdit?.restoreItems}>
+              <Show when={canEdit() && local.dialogEdit?.restoreItems}>
                 <Button
                   size="sm"
                   theme="warning"
@@ -626,7 +626,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             selectMode={
               isSelectMode()
                 ? local.selectMode
-                : local.modalEdit?.deleteItems != null || local.modalEdit?.restoreItems != null
+                : local.dialogEdit?.deleteItems != null || local.dialogEdit?.restoreItems != null
                   ? "multiple"
                   : undefined
             }
@@ -689,9 +689,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                       },
                     };
 
-                    // modalEdit editable column -- wrap with edit link
+                    // dialogEdit editable column -- wrap with edit link
                     if (
-                      local.modalEdit &&
+                      local.dialogEdit &&
                       col.editTrigger &&
                       canEdit() &&
                       (local.itemEditable?.(dsCtx.item) ?? true)
@@ -747,7 +747,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </form>
 
         {/* Select mode bottom bar */}
-        <Show when={isModal && isSelectMode()}>
+        <Show when={isInDialog && isSelectMode()}>
           <div class="flex gap-2 border-t p-2">
             <div class="flex-1" />
             <Show when={selectedItems().length > 0}>
