@@ -10,6 +10,7 @@ import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "./createControllableSignal";
 import { Invalid } from "../components/form-control/Invalid";
 import type { CheckboxSize } from "../components/form-control/checkbox/Checkbox.styles";
+import { useI18n } from "../providers/i18n/I18nContext";
 
 interface SelectionItemComponentProps {
   value: boolean;
@@ -42,14 +43,14 @@ interface MultiGroupConfig {
   mode: "multiple";
   contextName: string;
   ItemComponent: (props: SelectionItemComponentProps) => JSX.Element;
-  emptyErrorMsg: string;
+  emptyErrorMsgKey: string;
 }
 
 interface SingleGroupConfig {
   mode: "single";
   contextName: string;
   ItemComponent: (props: SelectionItemComponentProps) => JSX.Element;
-  emptyErrorMsg: string;
+  emptyErrorMsgKey: string;
 }
 
 interface SelectionGroupItemProps<TValue> {
@@ -148,6 +149,9 @@ export function createSelectionGroup(config: MultiGroupConfig | SingleGroupConfi
   }
 
   const GroupInner: ParentComponent<MultiGroupProps<unknown>> = (props) => {
+    const i18n = useI18n();
+    const resolvedErrorMsg = () => i18n.t(config.emptyErrorMsgKey);
+
     const [local, rest] = splitProps(props, [
       "value",
       "onValueChange",
@@ -205,11 +209,11 @@ export function createSelectionGroup(config: MultiGroupConfig | SingleGroupConfi
     const errorMsg = createMemo(() => {
       if (config.mode === "multiple") {
         const v = local.value ?? [];
-        if (local.required && v.length === 0) return config.emptyErrorMsg;
+        if (local.required && v.length === 0) return resolvedErrorMsg();
         return (local.validate as ((v: unknown[]) => string | undefined) | undefined)?.(v);
       } else {
         const v = local.value as unknown | undefined;
-        if (local.required && (v === undefined || v === null)) return config.emptyErrorMsg;
+        if (local.required && (v === undefined || v === null)) return resolvedErrorMsg();
         return (local.validate as ((v: unknown | undefined) => string | undefined) | undefined)?.(
           v,
         );

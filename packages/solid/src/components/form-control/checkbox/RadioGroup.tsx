@@ -31,7 +31,7 @@ const { Group } = createSelectionGroup({
   mode: "single",
   contextName: "RadioGroup",
   ItemComponent: Radio,
-  emptyErrorMsg: "Please select an item",
+  emptyErrorMsgKey: "validation.selectItem",
 });
 
 export const RadioGroup = Group as unknown as RadioGroupComponent;
