@@ -6,6 +6,7 @@ import { Topbar, createTopbarActions, useTopbarActionsAccessor } from "../../../
 // Helper: Extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
+   
   props.onCapture(actions);
   return null;
 }

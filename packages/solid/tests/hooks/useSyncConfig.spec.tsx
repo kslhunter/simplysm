@@ -10,6 +10,7 @@ import {
 
 /** Helper to configure adapter within SyncStorageProvider and render children */
 function ConfigureStorage(props: { storage: StorageAdapter; children: any }) {
+   
   useSyncStorage()!.configure(() => props.storage);
   return <>{props.children}</>;
 }

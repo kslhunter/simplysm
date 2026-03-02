@@ -22,6 +22,7 @@ import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 // ToggleCapture helper - Extract setToggle from Context for external control
 const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
   const { setToggle } = useSidebarContext();
+   
   props.onCapture(setToggle);
   return null;
 };

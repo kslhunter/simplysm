@@ -33,12 +33,14 @@ describe("useRouterLink", () => {
     onHandlerCreated?: (handler: (e: MouseEvent) => void) => void;
   }) => {
     const navigate = useRouterLink();
+     
     const handler = navigate({
       href: props.href,
       state: props.state,
       window: props.windowOptions,
     });
     props.onHandlerCreated?.(handler);
+     
 
     return (
       <button data-testid="test-button" onClick={handler}>

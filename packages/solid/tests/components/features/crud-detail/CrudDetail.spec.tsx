@@ -28,6 +28,7 @@ import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 // Helper: extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
+   
   props.onCapture(actions);
   return null;
 }

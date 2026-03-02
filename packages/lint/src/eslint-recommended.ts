@@ -291,7 +291,12 @@ export default defineConfig([
   },
   // Test folders: disable solid/reactivity
   {
-    files: ["**/tests-e2e/**/*.ts", "**/tests-e2e/**/*.tsx"],
+    files: [
+      "**/tests/**/*.ts",
+      "**/tests/**/*.tsx",
+      "**/tests-e2e/**/*.ts",
+      "**/tests-e2e/**/*.tsx",
+    ],
     rules: {
       // In tests, signal access within async callbacks like waitFor is intended behavior
       "solid/reactivity": "off",

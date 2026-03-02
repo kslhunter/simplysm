@@ -71,12 +71,14 @@ function ConfigureSharedData(props: {
   children: any;
 }) {
   const shared = useTestSharedData();
+   
   shared.configure(() => props.definitions);
   return <>{props.children}</>;
 }
 
 function TestConsumer(props: { onData?: (shared: any) => void }) {
   const shared = useTestSharedData();
+   
   props.onData?.(shared);
 
   return (

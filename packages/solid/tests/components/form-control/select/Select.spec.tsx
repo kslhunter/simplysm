@@ -81,6 +81,7 @@ describe("Select component", () => {
       fireEvent.click(selectItem);
 
       // Value changed
+       
       expect(value()).toBe("apple");
       // aria-expanded becomes false (close triggered)
       expect(getByRole("combobox").getAttribute("aria-expanded")).toBe("false");
@@ -150,9 +151,11 @@ describe("Select component", () => {
 
       const selectItems = document.querySelectorAll("[data-select-item]");
       fireEvent.click(selectItems[0]);
+       
       expect(value()).toEqual(["apple"]);
 
       fireEvent.click(selectItems[1]);
+       
       expect(value()).toEqual(["apple", "banana"]);
     });
 
@@ -490,6 +493,7 @@ describe("Select component", () => {
       const selectAllBtn = document.querySelector("[data-select-all]") as HTMLElement;
       fireEvent.click(selectAllBtn);
 
+       
       expect(value()).toEqual(["apple", "banana", "cherry"]);
     });
 
@@ -518,6 +522,7 @@ describe("Select component", () => {
       const deselectAllBtn = document.querySelector("[data-deselect-all]") as HTMLElement;
       fireEvent.click(deselectAllBtn);
 
+       
       expect(value()).toEqual([]);
     });
 
