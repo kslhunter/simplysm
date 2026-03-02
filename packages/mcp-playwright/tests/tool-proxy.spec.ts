@@ -39,7 +39,7 @@ describe("injectSessionId", () => {
     expect(result.inputSchema.required).toContain("url");
   });
 
-  it("does not duplicate sessionId if already present", () => {
+  it("overrides existing sessionId property with injected definition", () => {
     const toolWithSession: Tool = {
       ...sampleTool,
       inputSchema: {
@@ -54,6 +54,11 @@ describe("injectSessionId", () => {
     const result = injectSessionId(toolWithSession);
     const required = result.inputSchema.required as string[];
     expect(required.filter((r) => r === "sessionId")).toHaveLength(1);
+    // Injected definition should win — has description
+    expect((result.inputSchema.properties as Record<string, unknown>)["sessionId"]).toEqual({
+      type: "string",
+      description: "Session ID for browser isolation",
+    });
   });
 
   it("preserves tool name and description", () => {

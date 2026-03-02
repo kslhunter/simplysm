@@ -6,6 +6,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { type SessionManager } from "./session-manager.js";
 
+const BOOTSTRAP_SESSION_ID = "__bootstrap__";
+
 export function injectSessionId(tool: Tool): Tool {
   const existing = tool.inputSchema.required as string[] | undefined;
   return {
@@ -13,8 +15,8 @@ export function injectSessionId(tool: Tool): Tool {
     inputSchema: {
       ...tool.inputSchema,
       properties: {
-        sessionId: { type: "string", description: "Session ID for browser isolation" },
         ...(tool.inputSchema.properties ?? {}),
+        sessionId: { type: "string", description: "Session ID for browser isolation" },
       },
       required: ["sessionId", ...(existing?.filter((r) => r !== "sessionId") ?? [])],
     },
@@ -26,12 +28,12 @@ export async function registerProxiedTools(
   sessionManager: SessionManager,
 ): Promise<void> {
   // Bootstrap: get tool list from @playwright/mcp (no browser launched)
-  const bootstrapClient = await sessionManager.getOrCreate("__bootstrap__");
+  const bootstrapClient = await sessionManager.getOrCreate(BOOTSTRAP_SESSION_ID);
   let playwrightTools: Tool[];
   try {
     ({ tools: playwrightTools } = await bootstrapClient.listTools());
   } finally {
-    await sessionManager.destroy("__bootstrap__");
+    await sessionManager.destroy(BOOTSTRAP_SESSION_ID);
   }
 
   const proxiedTools = playwrightTools.map(injectSessionId);
@@ -64,7 +66,10 @@ export async function registerProxiedTools(
     const { name, arguments: args = {} } = request.params;
 
     if (name === "session_close") {
-      const { sessionId } = args as { sessionId: string };
+      const sessionId = (args as Record<string, unknown>)["sessionId"];
+      if (typeof sessionId !== "string" || sessionId === "") {
+        throw new Error("Missing required argument: sessionId");
+      }
       await sessionManager.destroy(sessionId);
       return { content: [{ type: "text" as const, text: `Session '${sessionId}' closed.` }] };
     }
@@ -93,6 +98,10 @@ export async function registerProxiedTools(
       } catch {
         // Connection is broken — destroy the session
         await sessionManager.destroy(sessionId);
+        return {
+          content: [{ type: "text" as const, text: `### Error\n${message}\n\nSession '${sessionId}' was destroyed due to a broken connection.` }],
+          isError: true,
+        };
       }
 
       return {
