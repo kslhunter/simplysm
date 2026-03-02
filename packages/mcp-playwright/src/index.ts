@@ -8,7 +8,7 @@ import { SessionManager } from "./session-manager.js";
 import { registerProxiedTools } from "./tool-proxy.js";
 
 const _require = createRequire(import.meta.url);
-const { version } = _require("./package.json") as { version: string };
+const { version } = _require("../package.json") as { version: string };
 
 const config: NonNullable<Parameters<typeof createConnection>[0]> = {
   browser: { isolated: true, launchOptions: { headless: true } },
@@ -23,7 +23,7 @@ const server = new Server(
   },
 );
 
-const sessionManager = new SessionManager(config);
+const sessionManager = new SessionManager(config, undefined, version);
 
 await registerProxiedTools(server, sessionManager);
 

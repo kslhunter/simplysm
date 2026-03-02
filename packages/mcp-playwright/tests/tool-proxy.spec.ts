@@ -6,7 +6,7 @@ vi.mock("node:module", () => ({
     if (id === "@playwright/mcp") {
       return { createConnection: vi.fn() };
     }
-    if (id === "./package.json") {
+    if (id === "../package.json") {
       return { version: "0.0.0-test" };
     }
     throw new Error(`Unexpected require: ${id}`);
