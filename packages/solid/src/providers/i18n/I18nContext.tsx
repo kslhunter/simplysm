@@ -39,13 +39,6 @@ export function useI18n(): I18nContextValue {
 }
 
 /**
- * Get i18n context value (optional, returns undefined if not in provider)
- */
-export function useI18nOptional(): I18nContextValue | undefined {
-  return useContext(I18nContext);
-}
-
-/**
  * I18n Provider component
  *
  * @remarks
