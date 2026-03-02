@@ -36,13 +36,28 @@ Do NOT report:
 - `else` after `return`
 - Comment style or JSDoc presence/absence
 - Import ordering or formatting preferences
+- Magic numbers that are well-explained by adjacent comments
+- Small interface duplication (< 10 fields) where extracting a base adds indirection without real benefit
+- Type placement across packages unless it causes concrete import/dependency issues
+- Issues in code OUTSIDE the target path (e.g., how other packages implement or consume these types)
+
+## Step 4: Self-verify before reporting
+
+Before including ANY finding:
+
+1. **Impact test**: Would a developer actually struggle with this? Or is it just "could be slightly cleaner"?
+2. **Scope check**: Is the issue IN the target code, or in how other code uses it?
+3. **Overlap check**: Is this already in the code reviewer's or API reviewer's domain? If yes, skip it.
+
+**Quality over quantity: 3 verified findings > 10 maybe-findings.**
 
 ## Constraints
 
 - Analysis only. Do NOT modify any files.
 - Do NOT provide corrected code blocks. Describe issues and suggestions in words only.
 - Only report issues with real evidence from the code.
-- Focus on substance: structural issues that affect understanding, not minor style.
+- Focus on substance: structural issues that genuinely make the code hard to understand or modify.
+- Do NOT report findings that belong to other reviewers' scope.
 
 ## Output Format
 

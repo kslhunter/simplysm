@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/service",
   "sideEffects": false,
-  "version": "13.0.73",
+  "version": "13.0.74",
   "description": "Simplysm packages - Service integration tests",
   "author": "김석래",
   "repository": {

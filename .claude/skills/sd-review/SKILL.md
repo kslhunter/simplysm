@@ -60,9 +60,15 @@ Run selected reviewers **in parallel** (multiple Agent calls in a single message
 
 ### Step 2: Verify Findings
 
-After collecting results from all reviewers, verify each finding against the actual code:
+After collecting results from all reviewers, **Read the actual code** for each finding and verify:
 
-- **Valid**: the issue is real → include in the report
+- **Valid**: the issue is real AND within scope → include in the report
+- **Invalid — self-contradicted**: the reviewer's own analysis shows the issue is mitigated (e.g., "exploitability is limited because..."). Drop it.
+- **Invalid — type-only**: reports a type definition as a runtime issue without showing actual runtime code that triggers it. Drop it.
+- **Invalid — out of scope**: the issue is about code outside the target path (e.g., how other packages use this code). Drop it.
+- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain (bugs→Code, API→API, structure→Simplifier).
+- **Invalid — bikeshedding**: minor style preference on stable, well-commented code (magic numbers with clear comments, small interface field duplication, naming when used consistently). Drop it.
+- **Invalid — severity inflated**: downgrade or drop findings where the stated severity doesn't match the actual impact.
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
 - **Invalid — intentional pattern**: by-design architectural decision
 - **Invalid — misread**: the reviewer misinterpreted the code
