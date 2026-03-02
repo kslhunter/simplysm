@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { Router } from "@solidjs/router";
 import { Sidebar, type AppMenu } from "../../../../src";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // Mock pathname signal
 import { createSignal } from "solid-js";
@@ -43,14 +45,18 @@ describe("SidebarMenu", () => {
 
   const renderWithRouter = (menus: AppMenu[]) => {
     return render(() => (
-      <Router base="" root={(props) => props.children}>
-        {[
-          {
-            path: "*",
-            component: () => <Sidebar.Menu menus={menus} />,
-          },
-        ]}
-      </Router>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <Router base="" root={(props) => props.children}>
+            {[
+              {
+                path: "*",
+                component: () => <Sidebar.Menu menus={menus} />,
+              },
+            ]}
+          </Router>
+        </I18nProvider>
+      </ConfigProvider>
     ));
   };
 
@@ -202,15 +208,19 @@ describe("SidebarMenu", () => {
       const menus: AppMenu[] = [{ title: "Home", href: "/" }];
 
       const { container } = render(() => (
-        <Router base="" root={(props) => props.children}>
-          {[
-            {
-              path: "*",
-              // eslint-disable-next-line tailwindcss/no-custom-classname
-              component: () => <Sidebar.Menu menus={menus} class="my-custom-class" />,
-            },
-          ]}
-        </Router>
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Router base="" root={(props) => props.children}>
+              {[
+                {
+                  path: "*",
+                  // eslint-disable-next-line tailwindcss/no-custom-classname
+                  component: () => <Sidebar.Menu menus={menus} class="my-custom-class" />,
+                },
+              ]}
+            </Router>
+          </I18nProvider>
+        </ConfigProvider>
       ));
 
       expect(container.querySelector(".my-custom-class")).toBeTruthy();

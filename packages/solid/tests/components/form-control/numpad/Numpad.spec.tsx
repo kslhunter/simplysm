@@ -2,17 +2,31 @@ import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Numpad } from "../../../../src/components/form-control/numpad/Numpad";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Numpad", () => {
   describe("basic rendering", () => {
     it("renders root element with data-numpad attribute", () => {
-      const { container } = render(() => <Numpad />);
+      const { container } = render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       const root = container.querySelector("[data-numpad]");
       expect(root).toBeTruthy();
     });
 
     it("renders digit buttons 0-9", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       for (let i = 0; i <= 9; i++) {
         expect(screen.getByText(String(i))).toBeInTheDocument();
@@ -20,18 +34,36 @@ describe("Numpad", () => {
     });
 
     it("renders decimal point button", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       expect(screen.getByText(".")).toBeInTheDocument();
     });
 
     it("renders NumberInput (input)", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
     });
 
     it("renders C button with text-danger-500 class", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       const cButton = screen
         .getAllByRole("button")
         .find((btn) => btn.className.includes("text-danger-500"));
@@ -39,7 +71,13 @@ describe("Numpad", () => {
     });
 
     it("renders BS button with text-warning-500 class", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       const bsButton = screen
         .getAllByRole("button")
         .find((btn) => btn.className.includes("text-warning-500"));
@@ -47,12 +85,24 @@ describe("Numpad", () => {
     });
 
     it("does not render ENT button by default", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       expect(screen.queryByText("ENT")).not.toBeInTheDocument();
     });
 
     it("does not render minus button by default", () => {
-      render(() => <Numpad />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       // without useMinusButton, there should be no button with "-" text
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeFalsy();
@@ -62,7 +112,13 @@ describe("Numpad", () => {
   describe("digit input", () => {
     it("updates value on digit button click", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("2"));
@@ -73,7 +129,13 @@ describe("Numpad", () => {
 
     it("appends decimal point on decimal button click", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("."));
@@ -84,7 +146,13 @@ describe("Numpad", () => {
 
     it("ignores duplicate decimal point", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("."));
@@ -96,7 +164,13 @@ describe("Numpad", () => {
 
     it("allows clicking 0 multiple times", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       fireEvent.click(screen.getByText("1"));
       fireEvent.click(screen.getByText("0"));
@@ -109,7 +183,13 @@ describe("Numpad", () => {
   describe("function buttons", () => {
     it("clears value on C button click", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       // enter value
       fireEvent.click(screen.getByText("5"));
@@ -126,7 +206,13 @@ describe("Numpad", () => {
 
     it("removes last character on BS button click", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       // enter 123
       fireEvent.click(screen.getByText("1"));
@@ -144,7 +230,13 @@ describe("Numpad", () => {
 
     it("returns undefined when all characters are removed with BS", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       // enter 1
       fireEvent.click(screen.getByText("1"));
@@ -161,27 +253,51 @@ describe("Numpad", () => {
 
   describe("ENT button", () => {
     it("renders ENT button when useEnterButton=true", () => {
-      render(() => <Numpad useEnterButton />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useEnterButton />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
       expect(screen.getByText("ENT")).toBeInTheDocument();
     });
 
     it("calls onEnterButtonClick on ENT button click", () => {
       const handleEnter = vi.fn();
-      render(() => <Numpad useEnterButton onEnterButtonClick={handleEnter} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useEnterButton onEnterButtonClick={handleEnter} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       fireEvent.click(screen.getByText("ENT"));
       expect(handleEnter).toHaveBeenCalledTimes(1);
     });
 
     it("disables ENT button when required and no value", () => {
-      render(() => <Numpad useEnterButton required />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useEnterButton required />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       const entButton = screen.getByText("ENT").closest("button")!;
       expect(entButton.disabled).toBe(true);
     });
 
     it("enables ENT button when required and value exists", () => {
-      render(() => <Numpad useEnterButton required value={123} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useEnterButton required value={123} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       const entButton = screen.getByText("ENT").closest("button")!;
       expect(entButton.disabled).toBe(false);
@@ -190,7 +306,13 @@ describe("Numpad", () => {
 
   describe("minus button", () => {
     it("renders minus button when useMinusButton=true", () => {
-      render(() => <Numpad useMinusButton />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useMinusButton />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeTruthy();
@@ -198,7 +320,13 @@ describe("Numpad", () => {
 
     it("toggles sign on minus button click (positive to negative)", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad useMinusButton onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useMinusButton onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       // enter 5
       fireEvent.click(screen.getByText("5"));
@@ -212,7 +340,13 @@ describe("Numpad", () => {
 
     it("toggles sign on minus button click (negative to positive)", () => {
       const handleChange = vi.fn();
-      render(() => <Numpad useMinusButton value={-5} onValueChange={handleChange} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad useMinusButton value={-5} onValueChange={handleChange} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       // click minus button
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
@@ -225,7 +359,13 @@ describe("Numpad", () => {
   describe("controlled mode", () => {
     it("reflects external value changes", () => {
       const [value, setValue] = createSignal<number | undefined>(100);
-      render(() => <Numpad value={value()} onValueChange={setValue} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad value={value()} onValueChange={setValue} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("100");
@@ -236,7 +376,13 @@ describe("Numpad", () => {
 
     it("clears input when set to undefined externally", () => {
       const [value, setValue] = createSignal<number | undefined>(100);
-      render(() => <Numpad value={value()} onValueChange={setValue} />);
+      render(() => (
+        <ConfigProvider clientName="test">
+          <I18nProvider>
+            <Numpad value={value()} onValueChange={setValue} />
+          </I18nProvider>
+        </ConfigProvider>
+      ));
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("100");

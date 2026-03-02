@@ -3,6 +3,8 @@ import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { SharedDataSelectList } from "@simplysm/solid";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // SharedDataAccessor mock factory
 function createMockAccessor<T>(
@@ -25,7 +27,13 @@ function createMockAccessor<T>(
 
 // DialogProvider wrapper
 function renderWithDialog(ui: () => import("solid-js").JSX.Element) {
-  return render(() => <DialogProvider>{ui()}</DialogProvider>);
+  return render(() => (
+    <ConfigProvider clientName="test">
+      <I18nProvider>
+        <DialogProvider>{ui()}</DialogProvider>
+      </I18nProvider>
+    </ConfigProvider>
+  ));
 }
 
 describe("SharedDataSelectList", () => {

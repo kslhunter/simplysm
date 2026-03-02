@@ -2,6 +2,7 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { NotificationBanner } from "../../../../src/components/feedback/notification/NotificationBanner";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
@@ -9,9 +10,11 @@ describe("NotificationBanner", () => {
   it("does not display banner when no notification", () => {
     const { container } = render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -23,13 +26,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -48,13 +53,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -79,13 +86,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -102,13 +111,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -126,13 +137,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -160,13 +173,15 @@ describe("NotificationBanner", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBanner />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBanner />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 

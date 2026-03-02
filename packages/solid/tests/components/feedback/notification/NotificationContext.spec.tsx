@@ -3,6 +3,7 @@ import { createRoot } from "solid-js";
 import { render, waitFor } from "@solidjs/testing-library";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import {
   useNotification,
   type NotificationContextValue,
@@ -27,12 +28,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -45,12 +48,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -70,12 +75,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -96,12 +103,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -125,12 +134,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -153,12 +164,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -179,12 +192,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -201,12 +216,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -232,12 +249,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -254,12 +273,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -279,12 +300,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -308,12 +331,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -337,12 +362,14 @@ describe("NotificationProvider", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 

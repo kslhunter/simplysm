@@ -2,6 +2,7 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { NotificationBell } from "../../../../src/components/feedback/notification/NotificationBell";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
@@ -18,9 +19,11 @@ describe("NotificationBell", () => {
   it("renders button", () => {
     const { container } = render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -30,9 +33,11 @@ describe("NotificationBell", () => {
   it("does not show badge when there are no notifications", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -45,13 +50,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -69,13 +76,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -95,13 +104,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -123,13 +134,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -144,9 +157,11 @@ describe("NotificationBell", () => {
   it("sets aria-haspopup and aria-expanded correctly", async () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -166,13 +181,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
@@ -196,13 +213,15 @@ describe("NotificationBell", () => {
 
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <NotificationProvider>
-          {(() => {
-            notification = useNotification();
-            return null;
-          })()}
-          <NotificationBell />
-        </NotificationProvider>
+        <I18nProvider>
+          <NotificationProvider>
+            {(() => {
+              notification = useNotification();
+              return null;
+            })()}
+            <NotificationBell />
+          </NotificationProvider>
+        </I18nProvider>
       </ConfigContext.Provider>
     ));
 
