@@ -34,11 +34,27 @@ Do NOT report:
 - Naming consistency, API design, type quality (including `any` types)
 - Code complexity, duplication, readability improvements
 - Style preferences unless they cause actual bugs
+- Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
+- Speculative future risks — "if config were changed to X, this would break" is not a finding
+- Issues in code OUTSIDE the target path (e.g., how other packages consume these types)
+
+## Step 4: Self-verify before reporting
+
+Before including ANY finding, ask yourself:
+
+1. **Is there runtime code here that actually triggers this?** (Not just a type definition)
+2. **Does the evidence contradict my conclusion?** (If you find a bound/limit that prevents the issue, drop it)
+3. **Is this within the target scope?** (Not about how other packages use this code)
+
+If you write "in practice this is unlikely because..." or "exploitability is limited because..." — that means it's NOT a real finding. Drop it.
+
+**Quality over quantity: 3 verified findings > 10 maybe-findings.**
 
 ## Constraints
 
 - Analysis only. Do NOT modify any files.
-- Only report issues with real evidence from the code.
+- Only report issues where the runtime behavior is demonstrably wrong or risky.
+- If your own analysis shows the issue is mitigated, do NOT report it.
 
 ## Output Format
 

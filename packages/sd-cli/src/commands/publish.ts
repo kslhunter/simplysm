@@ -600,7 +600,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
             "--dangerously-skip-permissions",
             "--model",
             "haiku",
-          ]);
+          ], { stdio: "inherit" });
         } catch (e) {
           throw new Error(
             "Auto-commit failed. Please commit manually and try again.\n" +
