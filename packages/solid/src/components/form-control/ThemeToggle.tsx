@@ -5,6 +5,7 @@ import { useTheme, type ThemeMode } from "../../providers/ThemeContext";
 import { Icon } from "../display/Icon";
 import { ripple } from "../../directives/ripple";
 import { iconButtonBase } from "../../styles/patterns.styles";
+import { useI18n } from "../../providers/i18n/I18nContext";
 
 void ripple;
 
@@ -18,10 +19,10 @@ const iconSizes: Record<"sm" | "lg", string> = {
   lg: "1.5em",
 };
 
-const modeLabels: Record<ThemeMode, string> = {
-  light: "Light mode",
-  system: "System settings",
-  dark: "Dark mode",
+const modeLabelKeys: Record<ThemeMode, string> = {
+  light: "themeToggle.light",
+  system: "themeToggle.system",
+  dark: "themeToggle.dark",
 };
 
 export interface ThemeToggleProps extends Omit<
@@ -54,6 +55,9 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
   const [local, rest] = splitProps(props, ["class", "size"]);
 
   const { mode, cycleMode } = useTheme();
+  const i18n = useI18n();
+
+  const modeLabel = () => i18n.t(modeLabelKeys[mode()]);
 
   const getClassName = () =>
     twMerge(iconButtonBase, "p-1.5", local.size && sizeClasses[local.size], local.class);
@@ -68,8 +72,8 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
       type="button"
       class={getClassName()}
       onClick={cycleMode}
-      title={modeLabels[mode()]}
-      aria-label={modeLabels[mode()]}
+      title={modeLabel()}
+      aria-label={modeLabel()}
     >
       <Switch>
         <Match when={mode() === "light"}>

@@ -8,6 +8,7 @@ import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationContext";
 import { Icon } from "../../display/Icon";
 import { textPlaceholder } from "../../../styles/tokens.styles";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import type { ComponentSize } from "../../../styles/tokens.styles";
 import { iconButtonBase } from "../../../styles/patterns.styles";
 
@@ -116,6 +117,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   ]);
 
   const notification = useNotification();
+  const i18n = useI18n();
 
   // presetKey is an identifier set only once at mount, evaluate immediately to capture
   /* eslint-disable solid/reactivity */
@@ -147,7 +149,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     }
 
     if (presets().some((p) => p.name === name)) {
-      notification.warning("Duplicate name", "A preset with this name already exists.");
+      notification.warning(i18n.t("statePreset.duplicateName"), i18n.t("statePreset.duplicateMessage"));
       return;
     }
 
@@ -156,7 +158,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
       state: objClone(local.value),
     };
     setPresets([...presets(), newPreset]);
-    notification.info("Preset saved", `Preset "${name}" has been saved.`);
+    notification.info(i18n.t("statePreset.saved"), i18n.t("statePreset.savedMessage", { name }));
     setAdding(false);
     setInputValue("");
   }
@@ -177,11 +179,11 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     setPresets(updated);
 
     const notiId = notification.info(
-      "Preset overwritten",
-      `Preset "${presetName}" has been updated with the current state.`,
+      i18n.t("statePreset.overwritten"),
+      i18n.t("statePreset.overwrittenMessage", { name: presetName }),
       {
         action: {
-          label: "Undo",
+          label: i18n.t("statePreset.undo"),
           onClick: () => {
             setPresets(snapshot);
             notification.remove(notiId);
@@ -198,9 +200,9 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     const updated = snapshot.filter((_, i) => i !== index);
     setPresets(updated);
 
-    const notiId = notification.info("Preset deleted", `Preset "${presetName}" has been deleted.`, {
+    const notiId = notification.info(i18n.t("statePreset.deleted"), i18n.t("statePreset.deletedMessage", { name: presetName }), {
       action: {
-        label: "Undo",
+        label: i18n.t("statePreset.undo"),
         onClick: () => {
           setPresets(snapshot);
           notification.remove(notiId);
@@ -242,7 +244,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
         type="button"
         class={resolvedStarBtnClass()}
         onClick={handleStartAdd}
-        title="Add preset"
+        title={i18n.t("statePreset.addPreset")}
       >
         <Icon icon={IconStar} size={iconSize} />
       </button>
@@ -255,7 +257,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={chipNameBtnClass}
               onClick={() => handleRestore(preset)}
-              title={`Apply preset "${preset.name}"`}
+              title={preset.name}
             >
               {preset.name}
             </button>
@@ -263,7 +265,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={resolvedIconBtnClass()}
               onClick={() => handleOverwrite(index())}
-              title="Overwrite with current state"
+              title={i18n.t("statePreset.overwrite")}
             >
               <Icon icon={IconDeviceFloppy} size={iconSize} />
             </button>
@@ -271,7 +273,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={resolvedIconBtnClass()}
               onClick={() => handleDelete(index())}
-              title="Delete preset"
+              title={i18n.t("statePreset.deletePreset")}
             >
               <Icon icon={IconX} size={iconSize} />
             </button>
@@ -288,7 +290,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
           }}
           type="text"
           class={resolvedInputClass()}
-          placeholder="Name..."
+          placeholder={i18n.t("statePreset.namePlaceholder")}
           autocomplete="one-time-code"
           value={inputValue()}
           onInput={(e) => setInputValue(e.currentTarget.value)}
