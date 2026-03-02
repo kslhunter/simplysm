@@ -60,7 +60,7 @@ Sub-components: `Dropdown.Trigger`, `Dropdown.Content`
 
 ## `Dialog`
 
-Modal dialog with header, actions slot, resize/move support, and animation.
+Dialog with header, actions slot, resize/move support, and animation.
 
 ```tsx
 import { Dialog } from "@simplysm/solid";

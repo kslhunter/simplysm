@@ -121,7 +121,7 @@ See [docs/disclosure.md](docs/disclosure.md) for full details.
 |-----------|-------------|
 | [`Collapse`](docs/disclosure.md#collapse) | Animated height-collapse panel |
 | [`Dropdown`](docs/disclosure.md#dropdown) | Popup dropdown with trigger/content slots |
-| [`Dialog`](docs/disclosure.md#dialog) | Modal dialog with header, actions, resize/move support |
+| [`Dialog`](docs/disclosure.md#dialog) | Dialog with header, actions, resize/move support |
 | [`DialogContext`](docs/disclosure.md#dialogcontext) | Hook for programmatic dialog management |
 | [`DialogProvider`](docs/disclosure.md#dialogprovider) | Provider enabling `useDialog()` |
 | [`DialogInstanceContext`](docs/disclosure.md#dialoginstancecontext) | Context for dialog result communication |
@@ -217,8 +217,8 @@ See [docs/features.md](docs/features.md) for full details.
 | [`SharedDataSelect`](docs/features.md#shareddataselect) | Select pre-wired to a SharedDataAccessor |
 | [`SharedDataSelectButton`](docs/features.md#shareddataselectbutton) | DataSelectButton pre-wired to a SharedDataAccessor |
 | [`SharedDataSelectList`](docs/features.md#shareddataselectlist) | Searchable list with pagination for SharedDataAccessor |
-| [`DataSelectButton`](docs/features.md#dataselectbutton) | Generic trigger button opening a selection modal |
-| [`CrudSheet`](docs/features.md#crudsheet) | Full CRUD data grid with inline/modal edit and Excel support |
+| [`DataSelectButton`](docs/features.md#dataselectbutton) | Generic trigger button opening a selection dialog |
+| [`CrudSheet`](docs/features.md#crudsheet) | Full CRUD data grid with inline/dialog edit and Excel support |
 | [`CrudDetail`](docs/features.md#cruddetail) | Detail form with load/save/delete lifecycle |
 | [`PermissionTable`](docs/features.md#permissiontable) | Permission editor grid with cascading checkbox logic |
 | [`createAppStructure`](docs/features.md#createappstructure) | Typed app structure builder (routes, menus, permissions) |

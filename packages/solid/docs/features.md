@@ -28,7 +28,7 @@ const result = await dialog.show<AddressSearchResult>(() => <AddressSearchConten
 
 ## `SharedDataSelect`
 
-`Select` component pre-wired to a `SharedDataAccessor`. Supports optional search and edit modal actions.
+`Select` component pre-wired to a `SharedDataAccessor`. Supports optional search and edit dialog actions.
 
 ```tsx
 import { SharedDataSelect } from "@simplysm/solid";
@@ -51,8 +51,8 @@ import { SharedDataSelect } from "@simplysm/solid";
 | `size` | `ComponentSize` | Trigger size |
 | `inset` | `boolean` | Borderless inset style |
 | `filterFn` | `(item, index) => boolean` | Item filter |
-| `modal` | `() => JSX.Element` | Search modal factory |
-| `editModal` | `() => JSX.Element` | Edit modal factory |
+| `dialog` | `() => JSX.Element` | Search dialog factory |
+| `editDialog` | `() => JSX.Element` | Edit dialog factory |
 | `children` | `(item, index, depth) => JSX.Element` | Item renderer (required) |
 
 ---
@@ -68,7 +68,7 @@ import { SharedDataSelectButton } from "@simplysm/solid";
   data={shared.users}
   value={selectedId}
   onValueChange={setSelectedId}
-  modal={() => <UserSelectModal />}
+  dialog={() => <UserSelectModal />}
 >
   {(user) => <span>{user.name}</span>}
 </SharedDataSelectButton>
@@ -86,7 +86,7 @@ import { SharedDataSelectButton } from "@simplysm/solid";
 | `disabled` | `boolean` | Disabled state |
 | `size` | `ComponentSize` | Trigger size |
 | `inset` | `boolean` | Borderless inset style |
-| `modal` | `() => JSX.Element` | Selection modal factory (required) |
+| `dialog` | `() => JSX.Element` | Selection dialog factory (required) |
 | `children` | `(item: TItem) => JSX.Element` | Item renderer (required) |
 
 ---
@@ -127,7 +127,7 @@ Sub-components: `SharedDataSelectList.ItemTemplate`, `SharedDataSelectList.Filte
 
 ## `DataSelectButton`
 
-Generic trigger button that opens a selection modal dialog and displays the selected items.
+Generic trigger button that opens a selection dialog and displays the selected items.
 
 ```tsx
 import { DataSelectButton } from "@simplysm/solid";
@@ -136,7 +136,7 @@ import { DataSelectButton } from "@simplysm/solid";
   value={selectedKey}
   onValueChange={setSelectedKey}
   load={(keys) => fetchItemsByKey(keys)}
-  modal={() => <MySelectionModal />}
+  dialog={() => <MySelectionModal />}
   renderItem={(item) => <span>{item.name}</span>}
 />
 ```
@@ -148,7 +148,7 @@ import { DataSelectButton } from "@simplysm/solid";
 | `value` | `TKey \| TKey[]` | Selected key(s) |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `load` | `(keys: TKey[]) => TItem[] \| Promise<TItem[]>` | Load items by keys (required) |
-| `modal` | `() => JSX.Element` | Selection modal factory (required) |
+| `dialog` | `() => JSX.Element` | Selection dialog factory (required) |
 | `renderItem` | `(item: TItem) => JSX.Element` | Item display renderer (required) |
 | `multiple` | `boolean` | Multiple selection |
 | `required` | `boolean` | Required validation |
@@ -159,13 +159,13 @@ import { DataSelectButton } from "@simplysm/solid";
 | `touchMode` | `boolean` | Show error only after blur |
 | `dialogOptions` | `DialogShowOptions` | Options forwarded to `dialog.show()` |
 
-The modal must close with a `DataSelectModalResult<TKey>` value: `{ selectedKeys: TKey[] }`.
+The dialog must close with a `DataSelectDialogResult<TKey>` value: `{ selectedKeys: TKey[] }`.
 
 ---
 
 ## `CrudSheet`
 
-Full-featured CRUD data grid integrating `DataSheet` with filter, toolbar, inline editing, modal editing, Excel import/export, row selection, and keyboard shortcuts (`Ctrl+S` save, `Ctrl+Alt+L` refresh).
+Full-featured CRUD data grid integrating `DataSheet` with filter, toolbar, inline editing, dialog editing, Excel import/export, row selection, and keyboard shortcuts (`Ctrl+S` save, `Ctrl+Alt+L` refresh).
 
 ```tsx
 import { CrudSheet } from "@simplysm/solid";
@@ -194,7 +194,7 @@ import { CrudSheet } from "@simplysm/solid";
 </CrudSheet>
 ```
 
-**`CrudSheetProps<TItem, TFilter>`** — either `inlineEdit` or `modalEdit` (mutually exclusive):
+**`CrudSheetProps<TItem, TFilter>`** — either `inlineEdit` or `dialogEdit` (mutually exclusive):
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -212,7 +212,7 @@ import { CrudSheet } from "@simplysm/solid";
 | `items` | `TItem[]` | Controlled items (optional) |
 | `onItemsChange` | `(items) => void` | Controlled items change callback |
 | `inlineEdit` | `InlineEditConfig<TItem>` | Inline editing config |
-| `modalEdit` | `ModalEditConfig<TItem>` | Modal editing config |
+| `dialogEdit` | `DialogEditConfig<TItem>` | Dialog editing config |
 | `excel` | `ExcelConfig<TItem>` | Excel import/export config |
 | `selectMode` | `"single" \| "multiple"` | Selection mode |
 | `onSelect` | `(result: SelectResult<TItem>) => void` | Selection result callback |
@@ -231,11 +231,11 @@ Sub-components: `CrudSheet.Column`, `CrudSheet.Filter`, `CrudSheet.Tools`, `Crud
 | `deleteProp?` | Property name used to soft-delete rows |
 | `diffsExcludes?` | Property paths to exclude from diff calculation |
 
-**`ModalEditConfig<TItem>`**
+**`DialogEditConfig<TItem>`**
 
 | Property | Description |
 |----------|-------------|
-| `editItem(item?)` | Opens edit modal; `undefined` item = new record |
+| `editItem(item?)` | Opens edit dialog; `undefined` item = new record |
 | `deleteItems?(items)` | Deletes selected items |
 | `restoreItems?(items)` | Restores deleted selected items |
 
@@ -507,7 +507,7 @@ import type {
   // CRUD
   SearchResult,
   InlineEditConfig,
-  ModalEditConfig,
+  DialogEditConfig,
   ExcelConfig,
   SelectResult,
   CrudSheetContext,
@@ -516,7 +516,7 @@ import type {
   CrudDetailContext,
 
   // Data select
-  DataSelectModalResult,
+  DataSelectDialogResult,
 
   // Shared data
   SharedDataDefinition,
