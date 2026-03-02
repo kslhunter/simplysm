@@ -27,12 +27,12 @@ import {
   triggerSizeClasses,
 } from "../../form-control/DropdownTrigger.styles";
 
-/** Result interface returned from modal */
-export interface DataSelectModalResult<TKey> {
+/** Result interface returned from dialog */
+export interface DataSelectDialogResult<TKey> {
   selectedKeys: TKey[];
 }
 
-/** Props automatically injected into modal component by DataSelectButton/SharedDataSelect */
+/** Props automatically injected into dialog component by DataSelectButton/SharedDataSelect */
 export interface InjectedSelectProps {
   /** Selection mode */
   selectMode: "single" | "multiple";
@@ -42,9 +42,9 @@ export interface InjectedSelectProps {
   onSelect: (result: { keys: (string | number)[] }) => void;
 }
 
-/** Declarative modal configuration */
-export interface ModalConfig<TUserProps = any> {
-  /** Modal component (must accept InjectedSelectProps) */
+/** Declarative dialog configuration */
+export interface DialogConfig<TUserProps = any> {
+  /** Dialog component (must accept InjectedSelectProps) */
   component: Component<TUserProps & InjectedSelectProps>;
   /** User-defined props for the component */
   props?: TUserProps;
@@ -61,8 +61,8 @@ export interface DataSelectButtonProps<TItem, TKey = string | number> {
 
   /** Function to load items by key */
   load: (keys: TKey[]) => TItem[] | Promise<TItem[]>;
-  /** Selection modal configuration */
-  modal: ModalConfig;
+  /** Selection dialog configuration */
+  dialog: DialogConfig;
   /** Item rendering function */
   renderItem: (item: TItem) => JSX.Element;
 
@@ -119,7 +119,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
     "value",
     "onValueChange",
     "load",
-    "modal",
+    "dialog",
     "renderItem",
     "multiple",
     "required",
@@ -187,16 +187,16 @@ export function DataSelectButton<TItem, TKey = string | number>(
     return local.validate?.(v);
   });
 
-  // Open modal
-  const handleOpenModal = async () => {
+  // Open dialog
+  const handleOpenDialog = async () => {
     if (local.disabled) return;
 
-    const result = await dialog.show<DataSelectModalResult<TKey>>(
+    const result = await dialog.show<DataSelectDialogResult<TKey>>(
       () => {
-        const instance = useDialogInstance<DataSelectModalResult<TKey>>();
+        const instance = useDialogInstance<DataSelectDialogResult<TKey>>();
         return (
-          <local.modal.component
-            {...(local.modal.props ?? {})}
+          <local.dialog.component
+            {...(local.dialog.props ?? {})}
             selectMode={local.multiple ? "multiple" : "single"}
             selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
             onSelect={(r: { keys: (string | number)[] }) =>
@@ -205,7 +205,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
           />
         );
       },
-      local.modal.option ?? {},
+      local.dialog.option ?? {},
     );
 
     if (result) {
@@ -273,7 +273,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
             if (local.disabled) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              void handleOpenModal();
+              void handleOpenDialog();
             }
           }}
         >
@@ -296,7 +296,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
                 type="button"
                 data-search-button
                 class={twMerge(actionButtonClass, "text-base-400 hover:text-primary-500")}
-                onClick={() => void handleOpenModal()}
+                onClick={() => void handleOpenDialog()}
                 tabIndex={-1}
                 aria-label={i18n.t("dataSelectButton.search")}
               >
