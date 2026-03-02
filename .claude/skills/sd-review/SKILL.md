@@ -14,7 +14,7 @@ Dispatches up to 3 reviewer agents in parallel using prompt templates. Each agen
 ## Usage
 
 - `/sd-review packages/solid` — full review (all 3 perspectives)
-- `/sd-review packages/solid 버그 위주로` — selective review based on request
+- `/sd-review packages/solid focus on bugs` — selective review based on request
 - `/sd-review` — if no argument, ask the user for the target path
 
 ## Target Selection
@@ -38,10 +38,10 @@ By default, run **all 3 reviewers**. If the user specifies a focus in natural la
 
 | User says | Run |
 |-----------|-----|
-| "버그", "보안", "security", "bugs" | Code Reviewer only |
-| "API", "네이밍", "타입", "DX" | API Reviewer only |
-| "복잡도", "중복", "구조", "유지보수" | Code Simplifier only |
-| "버그랑 API" | Code Reviewer + API Reviewer |
+| "bugs", "security", "safety" | Code Reviewer only |
+| "API", "naming", "types", "DX" | API Reviewer only |
+| "complexity", "duplication", "structure", "maintainability" | Code Simplifier only |
+| "bugs and API" | Code Reviewer + API Reviewer |
 | (no specific focus) | All 3 |
 
 Use judgment for ambiguous requests. When in doubt, run all 3.
