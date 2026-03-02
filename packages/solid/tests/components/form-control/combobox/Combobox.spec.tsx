@@ -1,6 +1,8 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Combobox component", () => {
   const mockLoadItems = vi.fn(() => Promise.resolve([]));
@@ -12,18 +14,22 @@ describe("Combobox component", () => {
   describe("basic rendering", () => {
     it("renders trigger", () => {
       const { getByRole } = render(() => (
-        <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
+        </I18nProvider></ConfigProvider>
       ));
       expect(getByRole("combobox")).not.toBeNull();
     });
 
     it("displays placeholder", () => {
       const { container } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          placeholder="검색하세요"
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={mockLoadItems}
+            placeholder="검색하세요"
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
       const input = container.querySelector("input");
       expect(input?.getAttribute("placeholder")).toBe("검색하세요");
@@ -31,7 +37,9 @@ describe("Combobox component", () => {
 
     it("defaults input autocomplete to one-time-code", () => {
       const { container } = render(() => (
-        <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
+        </I18nProvider></ConfigProvider>
       ));
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("one-time-code");
@@ -39,7 +47,9 @@ describe("Combobox component", () => {
 
     it("sets aria-disabled when disabled", () => {
       const { getByRole } = render(() => (
-        <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />
+        </I18nProvider></ConfigProvider>
       ));
       expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
     });
@@ -49,7 +59,9 @@ describe("Combobox component", () => {
     it("opens dropdown on input", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container } = render(() => (
-        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -63,7 +75,9 @@ describe("Combobox component", () => {
     it("closes dropdown when item is selected", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container, getByRole } = render(() => (
-        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -84,7 +98,9 @@ describe("Combobox component", () => {
     it("closes dropdown with Escape key", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
       const { container, getByRole } = render(() => (
-        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -108,11 +124,13 @@ describe("Combobox component", () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
 
       const { container } = render(() => (
-        <Combobox
-          loadItems={loadItems}
-          onValueChange={handleChange}
-          renderValue={(v: { name: string }) => <>{v.name}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={loadItems}
+            onValueChange={handleChange}
+            renderValue={(v: { name: string }) => <>{v.name}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -134,11 +152,13 @@ describe("Combobox component", () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "결과" }]));
 
       const { container } = render(() => (
-        <Combobox
-          loadItems={loadItems}
-          debounceMs={50}
-          renderValue={(v: { name: string }) => <>{v.name}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={loadItems}
+            debounceMs={50}
+            renderValue={(v: { name: string }) => <>{v.name}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -160,12 +180,14 @@ describe("Combobox component", () => {
       const loadItems = vi.fn(() => Promise.resolve([]));
 
       const { container, getByRole } = render(() => (
-        <Combobox
-          loadItems={loadItems}
-          onValueChange={handleChange}
-          allowCustomValue
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={loadItems}
+            onValueChange={handleChange}
+            allowCustomValue
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -180,13 +202,15 @@ describe("Combobox component", () => {
       const loadItems = vi.fn(() => Promise.resolve([]));
 
       const { container, getByRole } = render(() => (
-        <Combobox
-          loadItems={loadItems}
-          onValueChange={handleChange}
-          allowCustomValue
-          parseCustomValue={(text) => ({ name: text, custom: true })}
-          renderValue={(v: { name: string }) => <>{v.name}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={loadItems}
+            onValueChange={handleChange}
+            allowCustomValue
+            parseCustomValue={(text) => ({ name: text, custom: true })}
+            renderValue={(v: { name: string }) => <>{v.name}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
 
       const input = container.querySelector("input")!;
@@ -200,12 +224,14 @@ describe("Combobox component", () => {
   describe("validation", () => {
     it("sets error message when required and value is empty", () => {
       const { container } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          required
-          value={undefined}
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={mockLoadItems}
+            required
+            value={undefined}
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("This field is required");
@@ -213,12 +239,14 @@ describe("Combobox component", () => {
 
     it("is valid when required and value exists", () => {
       const { container } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          required
-          value="선택된 값"
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={mockLoadItems}
+            required
+            value="선택된 값"
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
@@ -226,12 +254,14 @@ describe("Combobox component", () => {
 
     it("sets error message returned by validate function", () => {
       const { container } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
-          value="invalid-val"
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={mockLoadItems}
+            validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
+            value="invalid-val"
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("허용되지 않는 값입니다");
@@ -239,12 +269,14 @@ describe("Combobox component", () => {
 
     it("is valid when validate function returns undefined", () => {
       const { container } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
-          value="valid-val"
-          renderValue={(v) => <>{v}</>}
-        />
+        <ConfigProvider clientName="test"><I18nProvider>
+          <Combobox
+            loadItems={mockLoadItems}
+            validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
+            value="valid-val"
+            renderValue={(v) => <>{v}</>}
+          />
+        </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
