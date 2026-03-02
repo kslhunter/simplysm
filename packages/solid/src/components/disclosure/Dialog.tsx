@@ -39,7 +39,7 @@ const DialogHeader = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setHea
 const DialogAction = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setAction);
 
 export interface DialogProps {
-  /** Modal open state */
+  /** Dialog open state */
   open?: boolean;
   /** Callback when open state changes */
   onOpenChange?: (open: boolean) => void;
@@ -479,10 +479,10 @@ export const Dialog: DialogComponent = (props) => {
     <Show when={mounted()}>
       <Portal>
         <DialogSlotsContext.Provider value={{ setHeader, setAction }}>
-          <div ref={setWrapperRef} data-modal class={wrapperClass()}>
+          <div ref={setWrapperRef} data-dialog class={wrapperClass()}>
             {/* Backdrop */}
             <Show when={!local.float}>
-              <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />
+              <div data-dialog-backdrop class={backdropClass()} onClick={handleBackdropClick} />
             </Show>
 
             {/* Dialog */}
@@ -490,7 +490,7 @@ export const Dialog: DialogComponent = (props) => {
               ref={(el) => {
                 dialogRef = el;
               }}
-              data-modal-dialog
+              data-dialog-panel
               role="dialog"
               aria-modal={local.float ? undefined : true}
               aria-labelledby={hasHeader() ? headerId : undefined}
@@ -503,7 +503,7 @@ export const Dialog: DialogComponent = (props) => {
               {/* Header */}
               <Show when={hasHeader()}>
                 <div
-                  data-modal-header
+                  data-dialog-header
                   class={clsx(headerClass(), "touch-none")}
                   style={
                     typeof local.headerStyle === "string"
@@ -518,7 +518,7 @@ export const Dialog: DialogComponent = (props) => {
                   <Show when={action()}>{action()!()}</Show>
                   <Show when={local.closable ?? true}>
                     <Button
-                      data-modal-close
+                      data-dialog-close
                       size={"sm"}
                       variant={"ghost"}
                       aria-label={i18n.t("dialog.close")}
@@ -531,7 +531,7 @@ export const Dialog: DialogComponent = (props) => {
               </Show>
 
               {/* Content */}
-              <div data-modal-content class={dialogContentClass}>
+              <div data-dialog-content class={dialogContentClass}>
                 {local.children}
               </div>
 
