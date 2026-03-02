@@ -49,3 +49,9 @@ async function readFileAsync() { ... } // Async suffix prohibited
 - Large packages: `#region`/`#endregion` for sections + `//` for sub-groups
 - Small packages (≤10 exports): `//` comments only
 - Always `export *` (wildcard), never explicit `export type { ... } from "..."`
+
+## Type Safety for Public APIs
+
+- API changes must be detectable via **typecheck alone** — all affected usage sites must show compile errors
+- Public component props must support **IDE intellisense** (autocomplete, type hints)
+- Avoid `any` in public-facing types; use generics or specific union types instead
