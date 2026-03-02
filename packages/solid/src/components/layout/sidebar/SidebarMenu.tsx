@@ -19,6 +19,7 @@ import type { AppMenu } from "../../../helpers/createAppStructure";
 import { Icon } from "../../display/Icon";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const headerClass = clsx(
   "px-4",
@@ -72,6 +73,7 @@ const MenuContext = createContext<MenuContextValue>();
  */
 export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   const [local, rest] = splitProps(props, ["menus", "class"]);
+  const i18n = useI18n();
 
   const location = useLocation();
 
@@ -107,7 +109,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   return (
     <MenuContext.Provider value={{ initialOpenItems }}>
       <div {...rest} data-sidebar-menu class={getClassName()}>
-        <div class={headerClass}>MENU</div>
+        <div class={headerClass}>{i18n.t("sidebarMenu.menu")}</div>
         <List inset>
           <For each={local.menus}>{(menu) => <MenuItem menu={menu} size="lg" />}</For>
         </List>

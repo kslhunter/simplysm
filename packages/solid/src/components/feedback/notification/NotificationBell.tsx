@@ -7,6 +7,7 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
 import { NotificationBanner } from "./NotificationBanner";
 import { iconButtonBase } from "../../../styles/patterns.styles";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface NotificationBellProps {
   showBanner?: boolean;
@@ -52,6 +53,7 @@ const itemTimeClass = clsx("mt-1 text-xs", "text-base-400");
 
 export const NotificationBell: Component<NotificationBellProps> = (props) => {
   const notification = useNotification();
+  const i18n = useI18n();
   const [open, setOpen] = createSignal(false);
 
   const handleClear = () => {
@@ -78,7 +80,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
             type="button"
             data-notification-bell
             class={buttonClass}
-            aria-label={`${notification.unreadCount()} notifications`}
+            aria-label={i18n.t("notificationBell.unreadCount", { count: String(notification.unreadCount()) })}
             aria-haspopup="true"
             aria-expanded={open()}
           >
@@ -93,7 +95,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         <Dropdown.Content>
           <div class="w-80 p-2">
             <div class={dropdownHeaderClass}>
-              <span class="font-bold">Notifications</span>
+              <span class="font-bold">{i18n.t("notificationBell.notifications")}</span>
               <Show when={notification.items().length > 0}>
                 <button
                   type="button"
@@ -101,14 +103,14 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                   class={clearButtonClass}
                   onClick={handleClear}
                 >
-                  Clear All
+                  {i18n.t("notificationBell.clearAll")}
                 </button>
               </Show>
             </div>
 
             <Show
               when={notification.items().length > 0}
-              fallback={<div class={emptyClass}>No notifications</div>}
+              fallback={<div class={emptyClass}>{i18n.t("notificationBell.noNotifications")}</div>}
             >
               <div class={listClass}>
                 <For each={[...notification.items()].reverse()}>

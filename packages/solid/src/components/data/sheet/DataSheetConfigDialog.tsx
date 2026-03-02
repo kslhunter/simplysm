@@ -13,6 +13,7 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { TextInput } from "../../form-control/field/TextInput";
 import { Button } from "../../form-control/Button";
 import { borderSubtle } from "../../../styles/tokens.styles";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const containerClass = clsx("flex flex-col", "gap-2", "p-2");
 const sheetWrapperClass = clsx("rounded border", borderSubtle);
@@ -34,6 +35,7 @@ export interface DataSheetConfigDialogProps {
 
 export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (props) => {
   const dialog = useDialogInstance<DataSheetConfig>();
+  const i18n = useI18n();
 
   /* eslint-disable solid/reactivity -- modal props are static values only used once at mount time */
   const initialItems: EditColumnItem[] = props.columnInfos
@@ -105,7 +107,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
   }
 
   function handleReset(): void {
-    if (!confirm("Are you sure you want to reset all sheet settings?")) return;
+    if (!confirm(i18n.t("dataSheetConfigDialog.resetConfirm"))) return;
     dialog?.close({ columnRecord: {} });
   }
 
@@ -115,13 +117,13 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
         <DataSheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
           <DataSheet.Column<EditColumnItem>
             key="header"
-            header="Column"
+            header={i18n.t("dataSheetConfigDialog.column")}
             class="px-2 py-1"
             sortable={false}
           >
             {(ctx) => ctx.item.headerText}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="fixed" header="Fixed" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="fixed" header={i18n.t("dataSheetConfigDialog.fixed")} sortable={false}>
             {(ctx) => (
               <Checkbox
                 inset
@@ -130,7 +132,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
               />
             )}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="hidden" header="Hidden" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="hidden" header={i18n.t("dataSheetConfigDialog.hidden")} sortable={false}>
             {(ctx) => (
               <Checkbox
                 inset
@@ -139,13 +141,13 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
               />
             )}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="width" header="Width" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="width" header={i18n.t("dataSheetConfigDialog.width")} sortable={false}>
             {(ctx) => (
               <TextInput
                 value={ctx.item.width}
                 onValueChange={(v) => updateItem(ctx.item.key, "width", v)}
                 inset
-                placeholder="auto"
+                placeholder={i18n.t("dataSheetConfigDialog.autoPlaceholder")}
               />
             )}
           </DataSheet.Column>
@@ -154,12 +156,12 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
 
       <div class={footerClass}>
         <Button onClick={handleReset} theme="warning" variant="solid">
-          Reset
+          {i18n.t("dataSheetConfigDialog.reset")}
         </Button>
         <div class={footerActionsClass}>
-          <Button onClick={() => dialog?.close(undefined)}>Cancel</Button>
+          <Button onClick={() => dialog?.close(undefined)}>{i18n.t("dataSheetConfigDialog.cancel")}</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
-            Confirm
+            {i18n.t("dataSheetConfigDialog.confirm")}
           </Button>
         </div>
       </div>

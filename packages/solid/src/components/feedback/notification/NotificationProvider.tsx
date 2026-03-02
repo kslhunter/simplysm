@@ -8,6 +8,7 @@ import {
   type NotificationUpdateOptions,
 } from "./NotificationContext";
 import { useLogger } from "../../../hooks/useLogger";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const MAX_ITEMS = 50;
 
@@ -22,6 +23,7 @@ const MAX_ITEMS = 50;
  */
 export const NotificationProvider: ParentComponent = (props) => {
   const logger = useLogger();
+  const i18n = useI18n();
   const [items, setItems] = createSignal<NotificationItem[]>([]);
   const [dismissedBannerId, setDismissedBannerId] = createSignal<string | null>(null);
 
@@ -158,7 +160,7 @@ export const NotificationProvider: ParentComponent = (props) => {
       {/* Screen reader Live Region */}
       <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
         <Show when={latestUnread()}>
-          {(item) => `Notification: ${item().title} ${item().message ?? ""}`}
+          {(item) => `${i18n.t("notificationProvider.prefix")} ${item().title} ${item().message ?? ""}`}
         </Show>
       </div>
       {props.children}

@@ -16,7 +16,7 @@ import { Button } from "../../form-control/Button";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const desktopNavBaseClass = clsx("hidden sm:flex", "flex-row gap-1", "items-center");
 const mobileWrapperClass = clsx("flex sm:hidden");
@@ -64,7 +64,7 @@ export interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "
 export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   const [local, rest] = splitProps(props, ["menus", "class"]);
   const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   return (
     <>
@@ -79,7 +79,7 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
           <Dropdown.Trigger>
             <Button
               variant="ghost"
-              aria-label={i18n?.t("topbarMenu.menu") ?? "Menu"}
+              aria-label={i18n.t("topbarMenu.menu")}
               aria-haspopup="menu"
               aria-expanded={mobileMenuOpen()}
             >

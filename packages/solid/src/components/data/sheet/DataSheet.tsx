@@ -39,7 +39,7 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { DialogContext } from "../../disclosure/DialogContext";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import "./DataSheet.css";
 import {
   configButtonClass,
@@ -112,7 +112,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   ]);
 
   const modal = useContext(DialogContext);
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   // #region Column Collection
   const resolved = children(() => local.children);
@@ -845,8 +845,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                           class={expandToggleClass}
                           onClick={toggleExpandAll}
                           title={isAllExpanded()
-                            ? (i18n?.t("dataSheet.collapseAll") ?? "Collapse all")
-                            : (i18n?.t("dataSheet.expandAll") ?? "Expand all")}
+                            ? i18n.t("dataSheet.collapseAll")
+                            : i18n.t("dataSheet.expandAll")}
                         >
                           <Icon
                             icon={IconChevronDown}

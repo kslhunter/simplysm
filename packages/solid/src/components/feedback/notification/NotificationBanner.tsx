@@ -3,7 +3,7 @@ import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { IconX } from "@tabler/icons-solidjs";
 import { useNotification } from "./NotificationContext";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import { Icon } from "../../display/Icon";
 import { themeTokens } from "../../../styles/tokens.styles";
 
@@ -39,7 +39,7 @@ const dismissButtonClass = clsx("rounded", "p-1", "hover:bg-white/20");
 
 export const NotificationBanner: Component = () => {
   const notification = useNotification();
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   const handleDismiss = () => {
     notification.dismissBanner();
@@ -74,7 +74,7 @@ export const NotificationBanner: Component = () => {
               </Show>
               <button
                 type="button"
-                aria-label={i18n?.t("notification.close") ?? "Close notification"}
+                aria-label={i18n.t("notification.close")}
                 class={dismissButtonClass}
                 onClick={handleDismiss}
               >

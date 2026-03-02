@@ -21,7 +21,7 @@ import { createMountTransition } from "../../hooks/createMountTransition";
 import { startPointerDrag } from "../../helpers/startPointerDrag";
 import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { mergeStyles } from "../../helpers/mergeStyles";
-import { useI18nOptional } from "../../providers/i18n/I18nContext";
+import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
@@ -146,7 +146,7 @@ interface DialogComponent extends ParentComponent<DialogProps> {
 
 export const Dialog: DialogComponent = (props) => {
   const dialogDefaults = useContext(DialogDefaultsContext);
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   const [local] = splitProps(props, [
     "open",
@@ -521,7 +521,7 @@ export const Dialog: DialogComponent = (props) => {
                       data-modal-close
                       size={"sm"}
                       variant={"ghost"}
-                      aria-label={i18n?.t("dialog.close") ?? "Close dialog"}
+                      aria-label={i18n.t("dialog.close")}
                       onClick={handleCloseClick}
                     >
                       <Icon icon={IconX} />

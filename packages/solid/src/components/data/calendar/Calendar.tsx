@@ -3,7 +3,7 @@ import { DateOnly } from "@simplysm/core-common";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface CalendarProps<TValue> extends Omit<
   JSX.HTMLAttributes<HTMLTableElement>,
@@ -62,15 +62,14 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
     onChange: () => local.onYearMonthChange,
   });
 
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
   const weekNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
   const weekHeaders = createMemo(() => {
     const start = weekStartDay();
     return Array.from({ length: 7 }, (_, i) => {
       const key = weekNames[(start + i) % 7];
-      return i18n?.t(`calendar.weeks.${key}`) ??
-              { sun: "Sun", mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat" }[key];
+      return i18n.t(`calendar.weeks.${key}`);
     });
   });
 
