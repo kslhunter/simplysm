@@ -37,7 +37,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
   const dialog = useDialogInstance<DataSheetConfig>();
   const i18n = useI18n();
 
-  /* eslint-disable solid/reactivity -- modal props are static values only used once at mount time */
+  /* eslint-disable solid/reactivity -- dialog props are static values only used once at mount time */
   const initialItems: EditColumnItem[] = props.columnInfos
     .filter((info) => !info.collapse)
     .map((info) => {

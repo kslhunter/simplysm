@@ -111,7 +111,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     "children",
   ]);
 
-  const modal = useContext(DialogContext);
+  const dialog = useContext(DialogContext);
   const i18n = useI18n();
 
   // #region Column Collection
@@ -163,8 +163,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     setConfig({ ...prev, columnRecord: record });
   }
 
-  async function openConfigModal(): Promise<void> {
-    if (!modal) return;
+  async function openConfigDialog(): Promise<void> {
+    if (!dialog) return;
 
     const { DataSheetConfigDialog } = await import("./DataSheetConfigDialog");
 
@@ -185,7 +185,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
     const currentConfig = config();
 
-    const result = await modal.show<DataSheetConfig>(
+    const result = await dialog.show<DataSheetConfig>(
       () => <DataSheetConfigDialog columnInfos={columnInfos} currentConfig={currentConfig} />,
       {
         header: "Sheet Settings",
@@ -770,7 +770,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
         local.class,
       )}
     >
-      <Show when={!local.hideConfigBar && (modal != null || effectivePageCount() > 1)}>
+      <Show when={!local.hideConfigBar && (dialog != null || effectivePageCount() > 1)}>
         <div class={toolbarClass}>
           <Show when={effectivePageCount() > 1}>
             <Pagination
@@ -782,10 +782,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
             />
           </Show>
           <div class="flex-1" />
-          <Show when={modal != null}>
+          <Show when={dialog != null}>
             <button
               class={configButtonClass}
-              onClick={openConfigModal}
+              onClick={openConfigDialog}
               title="Sheet Settings"
               type="button"
             >

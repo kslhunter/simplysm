@@ -138,7 +138,7 @@ export interface DataSheetReorderEvent<TItem> {
   position: DataSheetDragPosition;
 }
 
-// Column information passed to config modal
+// Column information passed to config dialog
 export interface DataSheetConfigColumnInfo {
   key: string;
   header: string[];

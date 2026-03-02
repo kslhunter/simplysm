@@ -2,7 +2,7 @@
  * Dialog z-index registry
  *
  * Manages z-index of open Dialogs to prevent infinite increase.
- * Base starting value is 2000 (same as tailwind z-modal), uses only as many as there are open Dialogs.
+ * Base starting value is 2000 (same as tailwind z-dialog), uses only as many as there are open Dialogs.
  */
 
 const BASE_Z = 2000;
