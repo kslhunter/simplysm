@@ -8,6 +8,7 @@ describe("Combobox component", () => {
   const mockLoadItems = vi.fn(() => Promise.resolve([]));
 
   beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
     mockLoadItems.mockClear();
   });
 
@@ -234,7 +235,7 @@ describe("Combobox component", () => {
         </I18nProvider></ConfigProvider>
       ));
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
-      expect(hiddenInput.validationMessage).toBe("This field is required");
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
     });
 
     it("is valid when required and value exists", () => {

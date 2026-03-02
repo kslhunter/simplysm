@@ -1,8 +1,10 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { DialogProvider } from "../../../src/components/disclosure/DialogProvider";
 import { useDialog } from "../../../src/components/disclosure/DialogContext";
 import { useDialogInstance } from "../../../src/components/disclosure/DialogInstanceContext";
+import { I18nProvider } from "../../../src/providers/i18n/I18nContext";
+import { ConfigProvider } from "../../../src/providers/ConfigContext";
 
 // dialog content component for testing
 function TestContent() {
@@ -53,11 +55,19 @@ function TestAppNoHeader() {
 }
 
 describe("DialogProvider", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   it("displays dialog via show()", async () => {
     render(() => (
-      <DialogProvider>
-        <TestApp />
-      </DialogProvider>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <DialogProvider>
+            <TestApp />
+          </DialogProvider>
+        </I18nProvider>
+      </ConfigProvider>
     ));
 
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
@@ -69,9 +79,13 @@ describe("DialogProvider", () => {
 
   it("closes dialog when close is called via useDialogInstance", async () => {
     render(() => (
-      <DialogProvider>
-        <TestApp />
-      </DialogProvider>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <DialogProvider>
+            <TestApp />
+          </DialogProvider>
+        </I18nProvider>
+      </ConfigProvider>
     ));
 
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
@@ -90,9 +104,13 @@ describe("DialogProvider", () => {
 
   it("closes dialog when close() is called", async () => {
     render(() => (
-      <DialogProvider>
-        <TestApp />
-      </DialogProvider>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <DialogProvider>
+            <TestApp />
+          </DialogProvider>
+        </I18nProvider>
+      </ConfigProvider>
     ));
 
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
@@ -110,9 +128,13 @@ describe("DialogProvider", () => {
 
   it("displays dialog header", async () => {
     render(() => (
-      <DialogProvider>
-        <TestApp />
-      </DialogProvider>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <DialogProvider>
+            <TestApp />
+          </DialogProvider>
+        </I18nProvider>
+      </ConfigProvider>
     ));
 
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
@@ -126,9 +148,13 @@ describe("DialogProvider", () => {
 
   it("does not render header when header is not provided", async () => {
     render(() => (
-      <DialogProvider>
-        <TestAppNoHeader />
-      </DialogProvider>
+      <ConfigProvider clientName="test">
+        <I18nProvider>
+          <DialogProvider>
+            <TestAppNoHeader />
+          </DialogProvider>
+        </I18nProvider>
+      </ConfigProvider>
     ));
 
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);

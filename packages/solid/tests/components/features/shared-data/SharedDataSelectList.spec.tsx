@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { SharedDataSelectList } from "@simplysm/solid";
@@ -37,6 +37,10 @@ function renderWithDialog(ui: () => import("solid-js").JSX.Element) {
 }
 
 describe("SharedDataSelectList", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   afterEach(() => {
     cleanup();
   });

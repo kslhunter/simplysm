@@ -1,5 +1,5 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import {
   PermissionTable,
@@ -171,6 +171,10 @@ describe("changePermCheck", () => {
 // =====================
 
 describe("PermissionTable component", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
   describe("basic rendering", () => {
     it("renders as DataSheet (div with data-sheet attribute)", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
