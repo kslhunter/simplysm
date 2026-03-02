@@ -66,7 +66,7 @@ export async function registerProxiedTools(
     const { name, arguments: args = {} } = request.params;
 
     if (name === "session_close") {
-      const sessionId = (args as Record<string, unknown>)["sessionId"];
+      const sessionId = args["sessionId"];
       if (typeof sessionId !== "string" || sessionId === "") {
         throw new Error("Missing required argument: sessionId");
       }
