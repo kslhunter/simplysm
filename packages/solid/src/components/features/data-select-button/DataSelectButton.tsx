@@ -16,6 +16,7 @@ import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
+import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
@@ -60,8 +61,8 @@ export interface DataSelectButtonProps<TItem, TKey = string | number> {
 
   /** Function to load items by key */
   load: (keys: TKey[]) => TItem[] | Promise<TItem[]>;
-  /** Selection modal component factory */
-  modal: () => JSX.Element;
+  /** Selection modal configuration */
+  modal: ModalConfig;
   /** Item rendering function */
   renderItem: (item: TItem) => JSX.Element;
 
@@ -80,9 +81,6 @@ export interface DataSelectButtonProps<TItem, TKey = string | number> {
   validate?: (value: unknown) => string | undefined;
   /** touchMode: show error only after focus is lost */
   touchMode?: boolean;
-
-  /** Dialog options */
-  dialogOptions?: DialogShowOptions;
 }
 
 // Styles
@@ -130,7 +128,6 @@ export function DataSelectButton<TItem, TKey = string | number>(
     "inset",
     "validate",
     "touchMode",
-    "dialogOptions",
   ]);
 
   const i18n = useI18n();
@@ -195,8 +192,20 @@ export function DataSelectButton<TItem, TKey = string | number>(
     if (local.disabled) return;
 
     const result = await dialog.show<DataSelectModalResult<TKey>>(
-      local.modal,
-      local.dialogOptions ?? {},
+      () => {
+        const instance = useDialogInstance<DataSelectModalResult<TKey>>();
+        return (
+          <local.modal.component
+            {...(local.modal.props ?? {})}
+            selectMode={local.multiple ? "multiple" : "single"}
+            selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
+            onSelect={(r: { keys: (string | number)[] }) =>
+              instance?.close({ selectedKeys: r.keys as TKey[] })
+            }
+          />
+        );
+      },
+      local.modal.option ?? {},
     );
 
     if (result) {
