@@ -31,13 +31,13 @@ function createMockAccessor(itemsSignal: Accessor<TestItem[]>): SharedDataAccess
   };
 }
 
-function TestModalComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
+function TestDialogComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
   return (
-    <div data-testid="modal-content">
+    <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectMode}</div>
       <div data-testid="selected-keys">{JSON.stringify([...props.selectedKeys])}</div>
       <button
-        data-testid="modal-confirm"
+        data-testid="dialog-confirm"
         onClick={() => props.onSelect({ keys: props.confirmKeys })}
       >
         confirm
@@ -99,7 +99,7 @@ describe("SharedDataSelect", () => {
     expect(actionBtn).not.toBeNull();
   });
 
-  it("opens modal and applies selection result", async () => {
+  it("opens dialog and applies selection result", async () => {
     const [items] = createSignal(testItems);
     const accessor = createMockAccessor(items);
     const onValueChange = vi.fn();
@@ -109,8 +109,8 @@ describe("SharedDataSelect", () => {
         data={accessor}
         value={1}
         onValueChange={onValueChange}
-        modal={{
-          component: TestModalComponent,
+        dialog={{
+          component: TestDialogComponent,
           props: { confirmKeys: [2] },
           option: { header: "Select Item" },
         }}
@@ -121,14 +121,14 @@ describe("SharedDataSelect", () => {
       </SharedDataSelect>
     ));
 
-    // Click search action button to open modal
+    // Click search action button to open dialog
     const searchBtn = container.querySelector("[data-select-action]") as HTMLButtonElement;
     expect(searchBtn).not.toBeNull();
     searchBtn.click();
 
-    // Confirm in modal
+    // Confirm in dialog
     await vi.waitFor(() => {
-      const confirmBtn = document.querySelector("[data-testid='modal-confirm']") as HTMLButtonElement;
+      const confirmBtn = document.querySelector("[data-testid='dialog-confirm']") as HTMLButtonElement;
       expect(confirmBtn).not.toBeNull();
       confirmBtn.click();
     });
@@ -138,7 +138,7 @@ describe("SharedDataSelect", () => {
     });
   });
 
-  it("passes selectedKeys to modal component", async () => {
+  it("passes selectedKeys to dialog component", async () => {
     const [items] = createSignal(testItems);
     const accessor = createMockAccessor(items);
 
@@ -147,8 +147,8 @@ describe("SharedDataSelect", () => {
         data={accessor}
         value={3}
         onValueChange={() => {}}
-        modal={{
-          component: TestModalComponent,
+        dialog={{
+          component: TestDialogComponent,
           props: { confirmKeys: [] },
         }}
       >

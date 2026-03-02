@@ -34,7 +34,7 @@ describe("Dialog", () => {
       expect(content).toBeNull();
     });
 
-    it("sets data-modal attribute", async () => {
+    it("sets data-dialog attribute", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Dialog open={true}>
@@ -44,7 +44,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const modal = document.querySelector("[data-modal]");
+        const modal = document.querySelector("[data-dialog]");
         expect(modal).not.toBeNull();
       });
     });
@@ -60,7 +60,7 @@ describe("Dialog", () => {
       ));
 
       await waitFor(() => {
-        const header = document.querySelector("[data-modal-header]");
+        const header = document.querySelector("[data-dialog-header]");
         expect(header?.textContent).toContain("테스트 제목");
       });
     });
@@ -80,7 +80,7 @@ describe("Dialog", () => {
         const content = document.querySelector('[data-testid="content"]');
         expect(content).not.toBeNull();
       });
-      const header = document.querySelector("[data-modal-header]");
+      const header = document.querySelector("[data-dialog-header]");
       expect(header).toBeNull();
     });
 
@@ -112,9 +112,9 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog]")).not.toBeNull();
       });
-      const closeBtn = document.querySelector("[data-modal-close]");
+      const closeBtn = document.querySelector("[data-dialog-close]");
       expect(closeBtn).toBeNull();
     });
   });
@@ -131,9 +131,9 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal-close]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog-close]")).not.toBeNull();
       });
-      fireEvent.click(document.querySelector("[data-modal-close]")!);
+      fireEvent.click(document.querySelector("[data-dialog-close]")!);
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
@@ -148,9 +148,9 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal-backdrop]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog-backdrop]")).not.toBeNull();
       });
-      fireEvent.click(document.querySelector("[data-modal-backdrop]")!);
+      fireEvent.click(document.querySelector("[data-dialog-backdrop]")!);
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
@@ -165,9 +165,9 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal-backdrop]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog-backdrop]")).not.toBeNull();
       });
-      fireEvent.click(document.querySelector("[data-modal-backdrop]")!);
+      fireEvent.click(document.querySelector("[data-dialog-backdrop]")!);
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
@@ -182,7 +182,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog]")).not.toBeNull();
       });
       fireEvent.keyDown(document, { key: "Escape" });
       expect(handleOpenChange).toHaveBeenCalledWith(false);
@@ -199,7 +199,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog]")).not.toBeNull();
       });
       fireEvent.keyDown(document, { key: "Escape" });
       expect(handleOpenChange).toHaveBeenCalledWith(false);
@@ -216,7 +216,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog]")).not.toBeNull();
       });
       fireEvent.keyDown(document, { key: "Escape" });
       expect(handleOpenChange).not.toHaveBeenCalled();
@@ -233,9 +233,9 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal-close]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog-close]")).not.toBeNull();
       });
-      fireEvent.click(document.querySelector("[data-modal-close]")!);
+      fireEvent.click(document.querySelector("[data-dialog-close]")!);
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
   });
@@ -251,7 +251,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.getAttribute("role")).toBe("dialog");
         expect(dialog.getAttribute("aria-modal")).toBe("true");
@@ -269,7 +269,7 @@ describe("Dialog", () => {
       ));
 
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         const headerId = dialog.getAttribute("aria-labelledby");
         expect(headerId).toBeTruthy();
         const header = document.getElementById(headerId!);
@@ -287,7 +287,7 @@ describe("Dialog", () => {
       ));
 
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.hasAttribute("aria-labelledby")).toBe(false);
       });
@@ -303,7 +303,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.getAttribute("role")).toBe("dialog");
         expect(dialog.hasAttribute("aria-modal")).toBe(false);
@@ -324,7 +324,7 @@ describe("Dialog", () => {
       await waitFor(() => {
         expect(document.querySelector('[data-testid="content"]')).not.toBeNull();
       });
-      const backdrop = document.querySelector("[data-modal-backdrop]");
+      const backdrop = document.querySelector("[data-dialog-backdrop]");
       expect(backdrop).toBeNull();
     });
   });
@@ -340,7 +340,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.style.width).toBe("100%");
         expect(dialog.style.height).toBe("100%");
@@ -359,7 +359,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.style.width).toBe("400px");
         expect(dialog.style.height).toBe("300px");
@@ -376,7 +376,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.style.minWidth).toBe("300px");
         expect(dialog.style.minHeight).toBe("200px");
@@ -410,7 +410,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        expect(document.querySelector("[data-modal]")).not.toBeNull();
+        expect(document.querySelector("[data-dialog]")).not.toBeNull();
       });
       const bars = document.querySelectorAll("[data-resize-bar]");
       expect(bars.length).toBe(0);
@@ -428,7 +428,7 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
         expect(dialog).not.toBeNull();
         expect(dialog.classList.contains("transition-[opacity,transform]")).toBe(true);
         expect(dialog.classList.contains("duration-200")).toBe(true);

@@ -351,10 +351,10 @@ describe("CrudSheet select mode", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  it("toolbar is hidden when selectMode is set", async () => {
+  it("toolbar is hidden when selectMode is set inside Dialog", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
-        <TestWrapper>
+        <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
@@ -369,7 +369,7 @@ describe("CrudSheet select mode", () => {
             {(ctx) => <div>{ctx.item.name}</div>}
           </CrudSheet.Column>
         </CrudSheet>
-      </TestWrapper>
+      </DialogWrapper>
       </I18nProvider></ConfigProvider>
     ));
 
@@ -397,7 +397,7 @@ describe("CrudSheet select mode", () => {
 
     await new Promise((r) => setTimeout(r, 100));
     // Dialog renders via Portal so content is in document.body
-    const dialogContent = document.querySelector("[data-modal-content]");
+    const dialogContent = document.querySelector("[data-dialog-content]");
     expect(dialogContent?.textContent).toContain("Confirm");
   });
 });
@@ -458,7 +458,7 @@ describe("CrudSheet control mode", () => {
   });
 });
 
-describe("CrudSheet modal mode", () => {
+describe("CrudSheet dialog mode", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
@@ -487,7 +487,7 @@ describe("CrudSheet modal mode", () => {
 
     await new Promise((r) => setTimeout(r, 100));
     // Dialog renders via Portal so content is in document.body
-    const dialogContent = document.querySelector("[data-modal-content]");
+    const dialogContent = document.querySelector("[data-dialog-content]");
     expect(dialogContent?.textContent).toContain("Confirm");
   });
 

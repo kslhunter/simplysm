@@ -11,7 +11,7 @@ function TestContent() {
   const dialog = useDialogInstance<string>();
   return (
     <div>
-      <span data-testid="modal-content">다이얼로그 내용</span>
+      <span data-testid="dialog-content">다이얼로그 내용</span>
       <button data-testid="close-btn" onClick={() => dialog?.close("result")}>
         닫기
       </button>
@@ -73,7 +73,7 @@ describe("DialogProvider", () => {
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
 
     await waitFor(() => {
-      expect(document.querySelector('[data-testid="modal-content"]')).not.toBeNull();
+      expect(document.querySelector('[data-testid="dialog-content"]')).not.toBeNull();
     });
   });
 
@@ -98,7 +98,7 @@ describe("DialogProvider", () => {
 
     // dialog content is removed after close animation fallback timer (200ms)
     await waitFor(() => {
-      expect(document.querySelector('[data-testid="modal-content"]')).toBeNull();
+      expect(document.querySelector('[data-testid="dialog-content"]')).toBeNull();
     });
   });
 
@@ -122,7 +122,7 @@ describe("DialogProvider", () => {
     fireEvent.click(document.querySelector('[data-testid="close-no-result"]')!);
 
     await waitFor(() => {
-      expect(document.querySelector('[data-testid="modal-content"]')).toBeNull();
+      expect(document.querySelector('[data-testid="dialog-content"]')).toBeNull();
     });
   });
 
@@ -140,9 +140,9 @@ describe("DialogProvider", () => {
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
 
     await waitFor(() => {
-      const modal = document.querySelector("[data-modal]");
-      expect(modal).not.toBeNull();
-      expect(modal!.textContent).toContain("테스트 다이얼로그");
+      const dialog = document.querySelector("[data-dialog]");
+      expect(dialog).not.toBeNull();
+      expect(dialog!.textContent).toContain("테스트 다이얼로그");
     });
   });
 
@@ -160,9 +160,9 @@ describe("DialogProvider", () => {
     fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
 
     await waitFor(() => {
-      expect(document.querySelector('[data-testid="modal-content"]')).not.toBeNull();
+      expect(document.querySelector('[data-testid="dialog-content"]')).not.toBeNull();
     });
-    const header = document.querySelector("[data-modal-header]");
+    const header = document.querySelector("[data-dialog-header]");
     expect(header).toBeNull();
   });
 });

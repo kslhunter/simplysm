@@ -26,13 +26,13 @@ function createTestLoad() {
   return loadFn;
 }
 
-// Modal component for tests — receives InjectedSelectProps automatically
-function TestModalComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
+// Dialog component for tests — receives InjectedSelectProps automatically
+function TestDialogComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
   return (
-    <div data-testid="modal-content">
+    <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectMode}</div>
       <div data-testid="selected-keys">{JSON.stringify([...props.selectedKeys])}</div>
-      <button data-testid="modal-confirm" onClick={() => props.onSelect({ keys: props.confirmKeys })}>
+      <button data-testid="dialog-confirm" onClick={() => props.onSelect({ keys: props.confirmKeys })}>
         confirm
       </button>
     </div>
@@ -62,7 +62,7 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -79,7 +79,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -96,7 +96,7 @@ describe("DataSelectButton", () => {
         value={[1, 3]}
         multiple
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -117,7 +117,7 @@ describe("DataSelectButton", () => {
         value={value()}
         onValueChange={setValue}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -137,7 +137,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -154,7 +154,7 @@ describe("DataSelectButton", () => {
         value={1}
         required
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -173,7 +173,7 @@ describe("DataSelectButton", () => {
         value={1}
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -197,7 +197,7 @@ describe("DataSelectButton", () => {
         multiple
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -217,7 +217,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         disabled
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -231,7 +231,7 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -240,7 +240,7 @@ describe("DataSelectButton", () => {
     expect(searchBtn).not.toBeNull();
   });
 
-  it("opens modal on search button click and applies result for single select", async () => {
+  it("opens dialog on search button click and applies result for single select", async () => {
     const load = createTestLoad();
     const onValueChange = vi.fn();
 
@@ -248,7 +248,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [2] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [2] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -256,10 +256,10 @@ describe("DataSelectButton", () => {
     const searchBtn = container.querySelector("[data-search-button]") as HTMLButtonElement;
     searchBtn.click();
 
-    // once modal opens, find and click confirm button
+    // once dialog opens, find and click confirm button
     await vi.waitFor(() => {
       const confirmBtn = document.querySelector(
-        "[data-testid='modal-confirm']",
+        "[data-testid='dialog-confirm']",
       ) as HTMLButtonElement;
       expect(confirmBtn).not.toBeNull();
       confirmBtn.click();
@@ -270,7 +270,7 @@ describe("DataSelectButton", () => {
     });
   });
 
-  it("opens modal and applies result for multiple select", async () => {
+  it("opens dialog and applies result for multiple select", async () => {
     const load = createTestLoad();
     const onValueChange = vi.fn();
 
@@ -279,7 +279,7 @@ describe("DataSelectButton", () => {
         multiple
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [1, 3] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [1, 3] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -289,7 +289,7 @@ describe("DataSelectButton", () => {
 
     await vi.waitFor(() => {
       const confirmBtn = document.querySelector(
-        "[data-testid='modal-confirm']",
+        "[data-testid='dialog-confirm']",
       ) as HTMLButtonElement;
       expect(confirmBtn).not.toBeNull();
       confirmBtn.click();
@@ -300,7 +300,7 @@ describe("DataSelectButton", () => {
     });
   });
 
-  it("does not change value when modal is cancelled", async () => {
+  it("does not change value when dialog is cancelled", async () => {
     const load = createTestLoad();
     const onValueChange = vi.fn();
 
@@ -309,7 +309,7 @@ describe("DataSelectButton", () => {
         value={1}
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [2] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [2] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -318,8 +318,8 @@ describe("DataSelectButton", () => {
     searchBtn.click();
 
     await vi.waitFor(() => {
-      const modalContent = document.querySelector("[data-testid='modal-content']");
-      expect(modalContent).not.toBeNull();
+      const dialogContent = document.querySelector("[data-testid='dialog-content']");
+      expect(dialogContent).not.toBeNull();
     });
 
     // Close via ESC key
@@ -335,7 +335,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         required
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -352,7 +352,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
         validate={(v) => (v === 1 ? "1은 선택할 수 없습니다" : undefined)}
       />
@@ -371,7 +371,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         disabled
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -387,7 +387,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         required
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -396,7 +396,7 @@ describe("DataSelectButton", () => {
     expect(trigger.getAttribute("aria-required")).toBe("true");
   });
 
-  it("opens modal on Enter key press", async () => {
+  it("opens dialog on Enter key press", async () => {
     const load = createTestLoad();
     const onValueChange = vi.fn();
 
@@ -404,7 +404,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         onValueChange={onValueChange}
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [3] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [3] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -414,7 +414,7 @@ describe("DataSelectButton", () => {
 
     await vi.waitFor(() => {
       const confirmBtn = document.querySelector(
-        "[data-testid='modal-confirm']",
+        "[data-testid='dialog-confirm']",
       ) as HTMLButtonElement;
       expect(confirmBtn).not.toBeNull();
       confirmBtn.click();
@@ -435,7 +435,7 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={2}
         load={asyncLoad}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -450,7 +450,7 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -466,7 +466,7 @@ describe("DataSelectButton", () => {
         value={1}
         disabled
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -476,7 +476,7 @@ describe("DataSelectButton", () => {
     expect(clearBtn).toBeNull();
   });
 
-  it("injects selectMode and selectedKeys into modal component", async () => {
+  it("injects selectMode and selectedKeys into dialog component", async () => {
     const load = createTestLoad();
 
     const { container } = renderWithDialog(() => (
@@ -484,7 +484,7 @@ describe("DataSelectButton", () => {
         value={1}
         multiple
         load={load}
-        modal={{ component: TestModalComponent, props: { confirmKeys: [] } }}
+        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
