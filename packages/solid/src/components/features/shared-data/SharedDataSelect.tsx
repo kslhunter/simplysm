@@ -1,9 +1,9 @@
 import {
   children as resolveChildren,
+  type Component,
   createMemo,
   type JSX,
   mergeProps,
-  type ParentComponent,
   splitProps,
 } from "solid-js";
 import { IconSearch } from "@tabler/icons-solidjs";
@@ -43,7 +43,7 @@ function isActionDef(v: unknown): v is ActionDef {
 }
 
 // -- Compound components --
-const ItemTemplate: ParentComponent<{
+const ItemTemplate: Component<{
   children: (item: any, index: number, depth: number) => JSX.Element;
 }> = (props) => {
   return (() => ({
@@ -52,7 +52,8 @@ const ItemTemplate: ParentComponent<{
   })) as unknown as JSX.Element;
 };
 
-const Action: ParentComponent<{
+const Action: Component<{
+  children?: JSX.Element;
   onClick?: (e: MouseEvent) => void;
 }> = (props) => {
   return (() => ({
@@ -110,8 +111,8 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
   const defs = createMemo(() => {
     const arr = resolved.toArray();
     return {
-      itemTemplate: arr.find(isItemTemplateDef) as ItemTemplateDef | undefined,
-      actions: arr.filter(isActionDef) as ActionDef[],
+      itemTemplate: arr.find(isItemTemplateDef) as unknown as ItemTemplateDef | undefined,
+      actions: arr.filter(isActionDef) as unknown as ActionDef[],
     };
   });
 
