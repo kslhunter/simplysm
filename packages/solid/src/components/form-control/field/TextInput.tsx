@@ -13,6 +13,7 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 interface TextInputSlotsContextValue {
   setPrefix: (content: SlotAccessor) => void;
@@ -178,6 +179,8 @@ const TextInputInner = (props: TextInputProps) => {
     "children",
   ]);
 
+  const i18n = useI18n();
+
   // Support controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
@@ -253,14 +256,14 @@ const TextInputInner = (props: TextInputProps) => {
   // Validation error message (check in order, return first failure message)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && !v) return "This is a required field";
+    if (local.required && !v) return i18n.t("validation.required");
     if (v) {
       if (local.minLength != null && v.length < local.minLength)
-        return `Enter at least ${local.minLength} characters`;
+        return i18n.t("validation.minLength", { min: String(local.minLength) });
       if (local.maxLength != null && v.length > local.maxLength)
-        return `Enter up to ${local.maxLength} characters`;
+        return i18n.t("validation.maxLength", { max: String(local.maxLength) });
       if (local.pattern != null && !new RegExp(local.pattern).test(v))
-        return "The input format is invalid";
+        return i18n.t("validation.invalidFormat");
     }
     return local.validate?.(v);
   });

@@ -20,6 +20,7 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 // NumberInput-specific input style (right-aligned + spinner hidden)
 const numberInputClass = clsx(
@@ -216,6 +217,8 @@ export const NumberInput: NumberInputComponent = (props) => {
     "children",
   ]);
 
+  const i18n = useI18n();
+
   // Internal string state to track editing state
   const [inputStr, setInputStr] = createSignal<string>("");
   const [isEditing, setIsEditing] = createSignal(false);
@@ -298,10 +301,10 @@ export const NumberInput: NumberInputComponent = (props) => {
   // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "This field is required";
+    if (local.required && v === undefined) return i18n.t("validation.required");
     if (v !== undefined) {
-      if (local.min !== undefined && v < local.min) return `Minimum value is ${local.min}`;
-      if (local.max !== undefined && v > local.max) return `Maximum value is ${local.max}`;
+      if (local.min !== undefined && v < local.min) return i18n.t("validation.minValue", { min: String(local.min) });
+      if (local.max !== undefined && v > local.max) return i18n.t("validation.maxValue", { max: String(local.max) });
     }
     return local.validate?.(v);
   });

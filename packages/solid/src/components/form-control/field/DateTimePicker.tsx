@@ -5,6 +5,7 @@ import { DateTime } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type FieldSize, fieldInputClass, getFieldWrapperClass } from "./Field.styles";
 import { Invalid } from "../../form-control/Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 type DateTimePickerUnit = "minute" | "second";
 
@@ -150,6 +151,8 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
     "touchMode",
   ]);
 
+  const i18n = useI18n();
+
   // Default unit is minute
   const fieldType = () => local.unit ?? "minute";
 
@@ -188,12 +191,12 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
   // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "This field is required";
+    if (local.required && v === undefined) return i18n.t("validation.required");
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
-        return `Must be greater than or equal to ${local.min.toFormatString("yyyy-MM-dd HH:mm:ss")}`;
+        return i18n.t("validation.minDate", { min: local.min.toFormatString("yyyy-MM-dd HH:mm:ss") });
       if (local.max !== undefined && v.tick > local.max.tick)
-        return `Must be less than or equal to ${local.max.toFormatString("yyyy-MM-dd HH:mm:ss")}`;
+        return i18n.t("validation.maxDate", { max: local.max.toFormatString("yyyy-MM-dd HH:mm:ss") });
     }
     return local.validate?.(v);
   });

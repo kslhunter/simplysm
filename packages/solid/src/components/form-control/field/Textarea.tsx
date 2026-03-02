@@ -6,6 +6,7 @@ import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface TextareaProps {
   /** Input value */
@@ -98,6 +99,8 @@ export const Textarea: Component<TextareaProps> = (props) => {
     "style",
   ]);
 
+  const i18n = useI18n();
+
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
     onChange: () => local.onValueChange,
@@ -174,12 +177,12 @@ export const Textarea: Component<TextareaProps> = (props) => {
   // Validation error message (check in order, return first failure message)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && !v) return "This is a required field";
+    if (local.required && !v) return i18n.t("validation.required");
     if (v) {
       if (local.minLength != null && v.length < local.minLength)
-        return `Enter at least ${local.minLength} characters`;
+        return i18n.t("validation.minLength", { min: String(local.minLength) });
       if (local.maxLength != null && v.length > local.maxLength)
-        return `Enter up to ${local.maxLength} characters`;
+        return i18n.t("validation.maxLength", { max: String(local.maxLength) });
     }
     return local.validate?.(v);
   });

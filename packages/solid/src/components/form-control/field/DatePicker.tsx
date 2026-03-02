@@ -5,6 +5,7 @@ import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { fieldInputClass, type FieldSize, getFieldWrapperClass } from "./Field.styles";
 import { Invalid } from "../../form-control/Invalid";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 
 type DatePickerUnit = "year" | "month" | "date";
 
@@ -155,6 +156,8 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "touchMode",
   ]);
 
+  const i18n = useI18n();
+
   // Default unit is date
   const fieldType = () => local.unit ?? "date";
 
@@ -190,12 +193,12 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
   // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && v === undefined) return "This field is required";
+    if (local.required && v === undefined) return i18n.t("validation.required");
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
-        return `Must be greater than or equal to ${local.min}`;
+        return i18n.t("validation.minDate", { min: String(local.min) });
       if (local.max !== undefined && v.tick > local.max.tick)
-        return `Must be less than or equal to ${local.max}`;
+        return i18n.t("validation.maxDate", { max: String(local.max) });
     }
     return local.validate?.(v);
   });
