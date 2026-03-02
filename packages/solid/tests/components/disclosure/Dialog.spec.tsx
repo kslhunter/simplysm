@@ -44,8 +44,8 @@ describe("Dialog", () => {
         </I18nProvider></ConfigProvider>
       ));
       await waitFor(() => {
-        const modal = document.querySelector("[data-dialog]");
-        expect(modal).not.toBeNull();
+        const dialog = document.querySelector("[data-dialog]");
+        expect(dialog).not.toBeNull();
       });
     });
 

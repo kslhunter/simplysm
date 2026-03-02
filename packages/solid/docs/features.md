@@ -68,7 +68,7 @@ import { SharedDataSelectButton } from "@simplysm/solid";
   data={shared.users}
   value={selectedId}
   onValueChange={setSelectedId}
-  dialog={() => <UserSelectModal />}
+  dialog={() => <UserSelectDialog />}
 >
   {(user) => <span>{user.name}</span>}
 </SharedDataSelectButton>
@@ -136,7 +136,7 @@ import { DataSelectButton } from "@simplysm/solid";
   value={selectedKey}
   onValueChange={setSelectedKey}
   load={(keys) => fetchItemsByKey(keys)}
-  dialog={() => <MySelectionModal />}
+  dialog={() => <MySelectionDialog />}
   renderItem={(item) => <span>{item.name}</span>}
 />
 ```
