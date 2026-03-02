@@ -7,6 +7,7 @@ import type { createConnection as CreateConnectionFn } from "@playwright/mcp";
 // @playwright/mcp ships CJS only — use createRequire for ESM compatibility
 const _require = createRequire(import.meta.url);
 const { createConnection } = _require("@playwright/mcp") as { createConnection: typeof CreateConnectionFn };
+const { version: pkgVersion } = _require("./package.json") as { version: string };
 
 interface Session {
   client: Client;
@@ -71,7 +72,7 @@ export class SessionManager {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const innerServer = await createConnection(this.config);
     await innerServer.connect(serverTransport);
-    const client = new Client({ name: "mcp-playwright-proxy", version: "1.0.0" });
+    const client = new Client({ name: "mcp-playwright-proxy", version: pkgVersion });
     try {
       await client.connect(clientTransport);
     } catch (err) {

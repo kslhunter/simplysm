@@ -17,6 +17,9 @@ vi.mock("node:module", () => ({
         }),
       };
     }
+    if (id === "./package.json") {
+      return { version: "0.0.0-test" };
+    }
     throw new Error(`Unexpected require: ${id}`);
   },
 }));

@@ -3,8 +3,12 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { createConnection } from "@playwright/mcp";
+import { createRequire } from "node:module";
 import { SessionManager } from "./session-manager.js";
 import { registerProxiedTools } from "./tool-proxy.js";
+
+const _require = createRequire(import.meta.url);
+const { version } = _require("./package.json") as { version: string };
 
 const config: NonNullable<Parameters<typeof createConnection>[0]> = {
   browser: { isolated: true, launchOptions: { headless: true } },
@@ -12,7 +16,7 @@ const config: NonNullable<Parameters<typeof createConnection>[0]> = {
 };
 
 const server = new Server(
-  { name: "mcp-playwright", version: "1.0.0" },
+  { name: "mcp-playwright", version },
   {
     capabilities: { tools: {} },
     instructions: "Multi-session Playwright MCP server. Each tool requires a 'sessionId' for browser isolation.\nOutput directory: .tmp/playwright",
@@ -28,6 +32,7 @@ await server.connect(transport);
 
 async function shutdown(): Promise<void> {
   await sessionManager.disposeAll();
+  await server.close();
   process.exit(0);
 }
 

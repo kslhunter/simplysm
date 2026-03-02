@@ -1,4 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect } from "vitest";
+
+// session-manager.ts (imported transitively) calls createRequire at module level
+vi.mock("node:module", () => ({
+  createRequire: () => (id: string) => {
+    if (id === "@playwright/mcp") {
+      return { createConnection: vi.fn() };
+    }
+    if (id === "./package.json") {
+      return { version: "0.0.0-test" };
+    }
+    throw new Error(`Unexpected require: ${id}`);
+  },
+}));
+
 import { injectSessionId } from "../src/tool-proxy.js";
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
