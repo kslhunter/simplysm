@@ -14,6 +14,12 @@ fi
 CHECK_PATH="$1"
 TEST_PATTERN="$2"
 
+# Detect package manager: pnpm -> yarn -> npm (default)
+if [ -f "pnpm-lock.yaml" ]; then PM="pnpm"
+elif [ -f "yarn.lock" ]; then PM="yarn"
+else PM="npm"
+fi
+
 # Find all test files matching pattern
 readarray -t TEST_FILES < <(find . -path "$TEST_PATTERN" -type f)
 
@@ -37,7 +43,7 @@ for test_file in "${TEST_FILES[@]}"; do
     echo "Testing: $test_file"
 
     # Run the test
-    npm test "$test_file" > /dev/null 2>&1 || true
+    $PM test "$test_file" > /dev/null 2>&1 || true
 
     # Check if pollution appeared
     if [ -e "$CHECK_PATH" ]; then
@@ -48,7 +54,7 @@ for test_file in "${TEST_FILES[@]}"; do
         ls -la "$CHECK_PATH" 2>/dev/null || echo "(path exists but can't stat)"
         echo ""
         echo "Investigate with:"
-        echo "  npm test '$test_file' -- --reporter=verbose"
+        echo "  $PM test '$test_file' -- --reporter=verbose"
         echo "  git diff"
         exit 0
     fi

@@ -49,6 +49,15 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ---
 ```
 
+## Package Manager Detection
+
+When writing run commands in the plan, detect the package manager:
+- If `pnpm-lock.yaml` exists in project root → use `pnpm`
+- If `yarn.lock` exists in project root → use `yarn`
+- Otherwise → use `npm`
+
+`$PM` in the task template below refers to the detected package manager.
+
 ## Task Structure
 
 ```markdown
@@ -70,7 +79,7 @@ test("specific behavior", () => {
 
 **Step 2: Run test to verify it fails**
 
-Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
+Run: `$PM run vitest exact/path/to/tests/file.spec.ts --run`
 Expected: FAIL with "functionUnderTest is not defined"
 
 **Step 3: Write minimal implementation**
@@ -83,7 +92,7 @@ function functionUnderTest(input: InputType): OutputType {
 
 **Step 4: Run test to verify it passes**
 
-Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
+Run: `$PM run vitest exact/path/to/tests/file.spec.ts --run`
 Expected: PASS
 
 **Step 5: Commit**

@@ -93,10 +93,10 @@ async function gitInit(directory: string) {
 
 **Critical:** Use `console.error()` in tests (not logger - may not show)
 
-**Run and capture:**
+**Run and capture** (detect PM: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, otherwise → npm):
 
 ```bash
-npm test 2>&1 | grep 'DEBUG git init'
+$PM test 2>&1 | grep 'DEBUG git init'
 ```
 
 **Analyze stack traces:**

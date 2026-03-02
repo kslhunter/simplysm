@@ -37,9 +37,9 @@ Individual tasks already passed spec and quality reviews. Focus on cross-task in
 
 ### Verification
 
-Run and report results:
-- `npm run typecheck [affected packages]`
-- `npm run lint [affected packages]`
+Detect the package manager (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, otherwise → npm), then run and report results:
+- `$PM run typecheck [affected packages]`
+- `$PM run lint [affected packages]`
 
 ### Report
 

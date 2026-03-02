@@ -221,11 +221,13 @@ Done!
 
 ## Batch Integration Check
 
-Between batches, run targeted verification on affected packages before starting the next batch:
+Between batches, run targeted verification on affected packages before starting the next batch.
+
+Detect the package manager first (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, otherwise → npm):
 
 ```bash
-npm run typecheck [affected packages]
-npm run lint [affected packages]
+$PM run typecheck [affected packages]
+$PM run lint [affected packages]
 ```
 
 This catches cross-task integration issues early — especially when the next batch depends on the current batch's output. Do NOT skip this even if individual task reviews passed.
