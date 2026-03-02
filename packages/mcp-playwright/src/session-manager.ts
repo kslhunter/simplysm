@@ -1,13 +1,16 @@
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { Server as McpServer } from "@modelcontextprotocol/sdk/server/index.js";
 import { createRequire } from "node:module";
 import type { createConnection as CreateConnectionFn } from "@playwright/mcp";
 
+// @playwright/mcp ships CJS only — use createRequire for ESM compatibility
 const _require = createRequire(import.meta.url);
 const { createConnection } = _require("@playwright/mcp") as { createConnection: typeof CreateConnectionFn };
 
 interface Session {
   client: Client;
+  innerServer: McpServer;
   lastUsed: number;
 }
 
@@ -15,9 +18,10 @@ export class SessionManager {
   private readonly _sessions = new Map<string, Session>();
   private readonly _pending = new Map<string, Promise<Session>>();
   private readonly _cleanupInterval: ReturnType<typeof setInterval>;
+  private _cleanupRunning = false;
 
   constructor(
-    private readonly config: Record<string, unknown>,
+    private readonly config: NonNullable<Parameters<typeof CreateConnectionFn>[0]>,
     private readonly timeoutMs = 5 * 60 * 1000,
   ) {
     this._cleanupInterval = setInterval(() => {
@@ -49,6 +53,7 @@ export class SessionManager {
     if (session != null) {
       this._sessions.delete(sessionId);
       await session.client.close();
+      await session.innerServer.close();
     }
   }
 
@@ -64,19 +69,31 @@ export class SessionManager {
 
   private async _createSession(): Promise<Session> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const innerServer = await createConnection(this.config as never);
+    const innerServer = await createConnection(this.config);
     await innerServer.connect(serverTransport);
     const client = new Client({ name: "mcp-playwright-proxy", version: "1.0.0" });
-    await client.connect(clientTransport);
-    return { client, lastUsed: Date.now() };
+    try {
+      await client.connect(clientTransport);
+    } catch (err) {
+      await innerServer.close();
+      throw err;
+    }
+    return { client, innerServer, lastUsed: Date.now() };
   }
 
   private async _cleanup(): Promise<void> {
-    const now = Date.now();
-    for (const [id, session] of this._sessions) {
-      if (now - session.lastUsed > this.timeoutMs) {
+    if (this._cleanupRunning) return;
+    this._cleanupRunning = true;
+    try {
+      const now = Date.now();
+      const expired = [...this._sessions.entries()]
+        .filter(([, s]) => now - s.lastUsed > this.timeoutMs)
+        .map(([id]) => id);
+      for (const id of expired) {
         await this.destroy(id);
       }
+    } finally {
+      this._cleanupRunning = false;
     }
   }
 }

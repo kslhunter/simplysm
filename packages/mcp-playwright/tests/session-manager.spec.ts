@@ -1,5 +1,11 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
+// Use vi.hoisted so these are available inside vi.mock factories (which are hoisted)
+const { mockInnerServerClose, mockClientClose } = vi.hoisted(() => ({
+  mockInnerServerClose: vi.fn().mockResolvedValue(undefined),
+  mockClientClose: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock node:module's createRequire to intercept CJS require of @playwright/mcp
 vi.mock("node:module", () => ({
   createRequire: () => (id: string) => {
@@ -7,6 +13,7 @@ vi.mock("node:module", () => ({
       return {
         createConnection: vi.fn().mockResolvedValue({
           connect: vi.fn().mockResolvedValue(undefined),
+          close: mockInnerServerClose,
         }),
       };
     }
@@ -22,7 +29,6 @@ vi.mock("@modelcontextprotocol/sdk/inMemory.js", () => ({
 }));
 
 // Mock MCP Client
-const mockClientClose = vi.fn().mockResolvedValue(undefined);
 vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
   Client: vi.fn().mockImplementation(function () {
     return {
@@ -34,6 +40,11 @@ vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
   }),
 }));
 
+// Mock MCP Server (only used for typing; actual instance comes from createConnection mock)
+vi.mock("@modelcontextprotocol/sdk/server/index.js", () => ({
+  Server: vi.fn(),
+}));
+
 import { SessionManager } from "../src/session-manager.js";
 
 describe("SessionManager", () => {
@@ -41,7 +52,7 @@ describe("SessionManager", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    manager = new SessionManager({}, 1000); // 1s timeout for fast tests
+    manager = new SessionManager({} as never, 1000); // 1s timeout for fast tests
   });
 
   afterEach(async () => {
@@ -89,7 +100,7 @@ describe("SessionManager", () => {
 
   it("cleanup removes sessions past timeout", async () => {
     vi.useFakeTimers();
-    const manager2 = new SessionManager({}, 100); // 100ms timeout
+    const manager2 = new SessionManager({} as never, 100); // 100ms timeout
     try {
       await manager2.getOrCreate("session-a");
       await vi.advanceTimersByTimeAsync(31_000); // triggers 30s cleanup interval, past 100ms timeout
@@ -98,5 +109,20 @@ describe("SessionManager", () => {
       await manager2.disposeAll();
       vi.useRealTimers();
     }
+  });
+
+  it("destroy closes innerServer", async () => {
+    await manager.getOrCreate("session-a");
+    mockInnerServerClose.mockClear();
+    await manager.destroy("session-a");
+    expect(mockInnerServerClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("disposeAll closes all innerServers", async () => {
+    await manager.getOrCreate("session-a");
+    await manager.getOrCreate("session-b");
+    mockInnerServerClose.mockClear();
+    await manager.disposeAll();
+    expect(mockInnerServerClose).toHaveBeenCalledTimes(2);
   });
 });
