@@ -5,7 +5,7 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import { textMuted } from "../../../styles/tokens.styles";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import {
@@ -77,7 +77,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     "header",
   ]);
 
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
 
   // ─── Slot signals ──────────────────────────────────────
 
@@ -203,7 +203,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
             <TextInput
               value={searchText()}
               onValueChange={setSearchText}
-              placeholder={i18n?.t("sharedDataSelectList.searchPlaceholder") ?? "Search..."}
+              placeholder={i18n.t("sharedDataSelectList.searchPlaceholder")}
               class={"w-full"}
             />
           </div>
@@ -231,7 +231,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
               disabled={local.disabled}
               onClick={() => handleSelect(undefined)}
             >
-              <span class={textMuted}>Unspecified</span>
+              <span class={textMuted}>{i18n.t("sharedDataSelectList.unspecified")}</span>
             </List.Item>
           </Show>
 

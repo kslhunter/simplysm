@@ -22,7 +22,7 @@ import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarCo
 import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import clsx from "clsx";
 import {
   IconCheck,
@@ -64,7 +64,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   ]);
 
   const noti = useNotification();
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance<boolean>();
 
@@ -96,7 +96,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       originalData = objClone(result.data);
       setInfo(result.info);
     } catch (err) {
-      noti.error(err, i18n?.t("crudDetail.lookupFailed") ?? "Lookup failed");
+      noti.error(err, i18n.t("crudDetail.lookupFailed"));
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -119,7 +119,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Refresh --
   async function handleRefresh() {
     if (hasChanges()) {
-      if (!confirm(i18n?.t("crudDetail.discardChanges") ?? "Discard changes?")) return;
+      if (!confirm(i18n.t("crudDetail.discardChanges"))) return;
     }
     await doLoad();
   }
@@ -131,7 +131,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
     const currentInfo = info();
     if (currentInfo && !currentInfo.isNew && !hasChanges()) {
-      noti.info(i18n?.t("crudDetail.notice") ?? "Notice", i18n?.t("crudDetail.noChanges") ?? "No changes to save.");
+      noti.info(i18n.t("crudDetail.notice"), i18n.t("crudDetail.noChanges"));
       return;
     }
 
@@ -139,7 +139,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.submit(objClone(unwrap(data)));
       if (result) {
-        noti.success(i18n?.t("crudDetail.saveCompleted") ?? "Save completed", i18n?.t("crudDetail.saveSuccess") ?? "Saved successfully.");
+        noti.success(i18n.t("crudDetail.saveCompleted"), i18n.t("crudDetail.saveSuccess"));
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -147,7 +147,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, i18n?.t("crudDetail.saveFailed") ?? "Save failed");
+      noti.error(err, i18n.t("crudDetail.saveFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -171,7 +171,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.toggleDelete(del);
       if (result) {
-        noti.success(del ? (i18n?.t("crudDetail.deleteCompleted") ?? "Delete completed") : (i18n?.t("crudDetail.restoreCompleted") ?? "Restore completed"), del ? (i18n?.t("crudDetail.deleteSuccess") ?? "Deleted successfully.") : (i18n?.t("crudDetail.restoreSuccess") ?? "Restored successfully."));
+        noti.success(del ? i18n.t("crudDetail.deleteCompleted") : i18n.t("crudDetail.restoreCompleted"), del ? i18n.t("crudDetail.deleteSuccess") : i18n.t("crudDetail.restoreSuccess"));
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -179,7 +179,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, del ? (i18n?.t("crudDetail.deleteFailed") ?? "Delete failed") : (i18n?.t("crudDetail.restoreFailed") ?? "Restore failed"));
+      noti.error(err, del ? i18n.t("crudDetail.deleteFailed") : i18n.t("crudDetail.restoreFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -211,7 +211,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            {i18n?.t("crudDetail.save") ?? "Save"}
+            {i18n.t("crudDetail.save")}
           </Button>
         </Show>
         <Show
@@ -227,13 +227,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               onClick={() => void handleToggleDelete()}
             >
               <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-              {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
+              {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
             </Button>
           )}
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={() => void handleRefresh()}>
           <Icon icon={IconRefresh} class="mr-1" />
-          {i18n?.t("crudDetail.refresh") ?? "Refresh"}
+          {i18n.t("crudDetail.refresh")}
         </Button>
       </>
     ));
@@ -298,7 +298,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                   onClick={() => formRef?.requestSubmit()}
                 >
                   <Icon icon={IconDeviceFloppy} class="mr-1" />
-                  {i18n?.t("crudDetail.save") ?? "Save"}
+                  {i18n.t("crudDetail.save")}
                 </Button>
               </Show>
               <Show
@@ -318,13 +318,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                     onClick={() => void handleToggleDelete()}
                   >
                     <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                    {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
+                    {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
                   </Button>
                 )}
               </Show>
               <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
                 <Icon icon={IconRefresh} class="mr-1" />
-                {i18n?.t("crudDetail.refresh") ?? "Refresh"}
+                {i18n.t("crudDetail.refresh")}
               </Button>
             </Show>
             <Show when={defs().tools}>{(toolsDef) => toolsDef().children}</Show>
@@ -343,7 +343,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={info()?.lastModifiedAt}>
           {(_) => (
             <div class="px-2 pb-1 text-xs text-base-400">
-              {i18n?.t("crudDetail.lastModified") ?? "Last modified"}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
+              {i18n.t("crudDetail.lastModified")}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
               <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
             </div>
           )}
@@ -362,7 +362,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               {(_) => (
                 <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
                   <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                  {info()!.isDeleted ? (i18n?.t("crudDetail.restore") ?? "Restore") : (i18n?.t("crudDetail.delete") ?? "Delete")}
+                  {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
                 </Button>
               )}
             </Show>
@@ -374,7 +374,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                 class={"gap-1"}
               >
                 <Icon icon={IconCheck} />
-                {i18n?.t("crudDetail.confirm") ?? "Confirm"}
+                {i18n.t("crudDetail.confirm")}
               </Button>
             </Show>
           </div>

@@ -21,7 +21,7 @@ import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationContext";
-import { useI18nOptional } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nContext";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
@@ -95,7 +95,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   ]);
 
   const noti = useNotification();
-  const i18n = useI18nOptional();
+  const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
   const dialogInstance = useDialogInstance();
   const isModal = dialogInstance !== undefined;
@@ -168,7 +168,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.lookupFailed") ?? "Lookup failed");
+      noti.error(err, i18n.t("crudSheet.lookupFailed"));
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -192,7 +192,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   function checkIgnoreChanges(): boolean {
     if (!local.inlineEdit) return true;
     if (getItemDiffs().length === 0) return true;
-    return confirm(i18n?.t("crudSheet.discardChanges") ?? "You have unsaved changes. Discard them?");
+    return confirm(i18n.t("crudSheet.discardChanges"));
   }
 
   // -- Filter --
@@ -243,18 +243,18 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     const diffs = getItemDiffs();
 
     if (diffs.length === 0) {
-      noti.info(i18n?.t("crudSheet.notice") ?? "Notice", i18n?.t("crudSheet.noChanges") ?? "No changes to save.");
+      noti.info(i18n.t("crudSheet.notice"), i18n.t("crudSheet.noChanges"));
       return;
     }
 
     setBusyCount((c) => c + 1);
     try {
       await local.inlineEdit.submit(diffs);
-      noti.success(i18n?.t("crudSheet.saveCompleted") ?? "Save completed", i18n?.t("crudSheet.saveSuccess") ?? "Saved successfully.");
+      noti.success(i18n.t("crudSheet.saveCompleted"), i18n.t("crudSheet.saveSuccess"));
       await refresh();
       local.onSubmitted?.();
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.saveFailed") ?? "Save failed");
+      noti.error(err, i18n.t("crudSheet.saveFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -274,7 +274,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.lookupFailed") ?? "Lookup failed");
+      noti.error(err, i18n.t("crudSheet.lookupFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -287,9 +287,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success(i18n?.t("crudSheet.deleteCompleted") ?? "Delete completed", i18n?.t("crudSheet.deleteSuccess") ?? "Deleted successfully.");
+      noti.success(i18n.t("crudSheet.deleteCompleted"), i18n.t("crudSheet.deleteSuccess"));
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.deleteFailed") ?? "Delete failed");
+      noti.error(err, i18n.t("crudSheet.deleteFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -302,9 +302,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success(i18n?.t("crudSheet.restoreCompleted") ?? "Restore completed", i18n?.t("crudSheet.restoreSuccess") ?? "Restored successfully.");
+      noti.success(i18n.t("crudSheet.restoreCompleted"), i18n.t("crudSheet.restoreSuccess"));
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.restoreFailed") ?? "Restore failed");
+      noti.error(err, i18n.t("crudSheet.restoreFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -318,7 +318,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       const result = await local.search(lastFilter(), undefined, sorts());
       await local.excel.download(result.items);
     } catch (err) {
-      noti.error(err, i18n?.t("crudSheet.excelDownloadFailed") ?? "Excel download failed");
+      noti.error(err, i18n.t("crudSheet.excelDownloadFailed"));
     }
     setBusyCount((c) => c - 1);
   }
@@ -336,10 +336,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       setBusyCount((c) => c + 1);
       try {
         await local.excel!.upload!(file);
-        noti.success(i18n?.t("crudSheet.excelCompleted") ?? "Completed", i18n?.t("crudSheet.excelUploadSuccess") ?? "Excel upload completed successfully.");
+        noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
         await refresh();
       } catch (err) {
-        noti.error(err, i18n?.t("crudSheet.excelUploadFailed") ?? "Excel upload failed");
+        noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
       }
       setBusyCount((c) => c - 1);
     };
@@ -437,12 +437,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            {i18n?.t("crudSheet.save") ?? "Save"}
+            {i18n.t("crudSheet.save")}
           </Button>
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={handleRefresh}>
           <Icon icon={IconRefresh} class="mr-1" />
-          {i18n?.t("crudSheet.refresh") ?? "Refresh"}
+          {i18n.t("crudSheet.refresh")}
         </Button>
       </>
     ));
@@ -503,12 +503,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 onClick={() => formRef?.requestSubmit()}
               >
                 <Icon icon={IconDeviceFloppy} class="mr-1" />
-                {i18n?.t("crudSheet.save") ?? "Save"}
+                {i18n.t("crudSheet.save")}
               </Button>
             </Show>
             <Button size="sm" theme="info" variant="ghost" onClick={handleRefresh}>
               <Icon icon={IconRefresh} class="mr-1" />
-              {i18n?.t("crudSheet.refresh") ?? "Refresh"}
+              {i18n.t("crudSheet.refresh")}
             </Button>
           </div>
         </Show>
@@ -524,7 +524,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 <FormGroup.Item>
                   <Button type="submit" theme="info" variant="solid">
                     <Icon icon={IconSearch} class="mr-1" />
-                    {i18n?.t("crudSheet.search") ?? "Search"}
+                    {i18n.t("crudSheet.search")}
                   </Button>
                 </FormGroup.Item>
                 {filterDef().children(filter, setFilter)}
@@ -540,7 +540,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               {/* Inline edit buttons */}
               <Show when={canEdit() && local.inlineEdit}>
                 <Button size="sm" theme="primary" variant="ghost" onClick={handleAddRow}>
-                  <Icon icon={IconPlus} class="mr-1" />{i18n?.t("crudSheet.addRow") ?? "Add Row"}
+                  <Icon icon={IconPlus} class="mr-1" />{i18n.t("crudSheet.addRow")}
                 </Button>
               </Show>
 
@@ -553,7 +553,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={() => void handleEditItem()}
                 >
                   <Icon icon={IconPlus} class="mr-1" />
-                  {i18n?.t("crudSheet.register") ?? "Register"}
+                  {i18n.t("crudSheet.register")}
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.deleteItems}>
@@ -572,7 +572,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrash} class="mr-1" />
-                  {i18n?.t("crudSheet.deleteSelected") ?? "Delete Selected"}
+                  {i18n.t("crudSheet.deleteSelected")}
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.restoreItems}>
@@ -587,7 +587,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrashOff} class="mr-1" />
-                  {i18n?.t("crudSheet.restoreSelected") ?? "Restore Selected"}
+                  {i18n.t("crudSheet.restoreSelected")}
                 </Button>
               </Show>
 
@@ -595,13 +595,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               <Show when={canEdit() && local.excel?.upload}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelUpload}>
                   <Icon icon={IconUpload} class="mr-1" />
-                  {i18n?.t("crudSheet.excelUpload") ?? "Excel Upload"}
+                  {i18n.t("crudSheet.excelUpload")}
                 </Button>
               </Show>
               <Show when={local.excel}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelDownload}>
                   <Icon icon={IconFileExcel} class="mr-1" />
-                  {i18n?.t("crudSheet.excelDownload") ?? "Excel Download"}
+                  {i18n.t("crudSheet.excelDownload")}
                 </Button>
               </Show>
             </Show>
@@ -721,7 +721,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
             {/* Auto lastModified columns */}
             <Show when={local.lastModifiedAtProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header={i18n?.t("crudSheet.lastModified") ?? "Last Modified"} hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header={i18n.t("crudSheet.lastModified")} hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {(
@@ -735,7 +735,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             <Show when={local.lastModifiedByProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n?.t("crudSheet.modifiedBy") ?? "Modified By"} hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n.t("crudSheet.modifiedBy")} hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
@@ -752,12 +752,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <div class="flex-1" />
             <Show when={selectedItems().length > 0}>
               <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-                {local.selectMode === "multiple" ? (i18n?.t("crudSheet.deselectAll") ?? "Deselect All") : (i18n?.t("crudSheet.deselect") ?? "Deselect")}
+                {local.selectMode === "multiple" ? i18n.t("crudSheet.deselectAll") : i18n.t("crudSheet.deselect")}
               </Button>
             </Show>
             <Show when={local.selectMode === "multiple"}>
               <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
-                {i18n?.t("crudSheet.confirm") ?? "Confirm"} ({selectedItems().length})
+                {i18n.t("crudSheet.confirm")} ({selectedItems().length})
               </Button>
             </Show>
           </div>
