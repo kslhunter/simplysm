@@ -1,5 +1,5 @@
 import { render, cleanup } from "@solidjs/testing-library";
-import { useI18n, useI18nOptional, I18nProvider } from "../../../src/providers/i18n/I18nContext";
+import { useI18n, I18nProvider } from "../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../src/providers/ConfigContext";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
@@ -103,8 +103,7 @@ describe("I18nProvider", () => {
     expect(result).toBe("日");
   });
 
-  it("should work without provider (optional hook)", () => {
-    const i18n = useI18nOptional();
-    expect(i18n).toBeUndefined();
+  it("should throw when used without provider", () => {
+    expect(() => useI18n()).toThrow("useI18n can only be used inside I18nProvider");
   });
 });
