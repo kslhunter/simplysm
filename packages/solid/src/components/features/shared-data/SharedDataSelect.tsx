@@ -159,13 +159,13 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
 
     const dialogConfig = local.dialog;
     const result = await dialog.show(
-      (props: { close?: (result?: DataSelectDialogResult<string | number>) => void }) => (
+      (dlgProps: { close?: (result?: DataSelectDialogResult<string | number>) => void }) => (
         <dialogConfig.component
           {...(dialogConfig.props ?? {})}
           selectMode={rest.multiple ? "multiple" : "single"}
           selectedKeys={normalizeKeys(rest.value)}
           onSelect={(r: { keys: (string | number)[] }) =>
-            props.close?.({ selectedKeys: r.keys })
+            dlgProps.close?.({ selectedKeys: r.keys })
           }
         />
       ),

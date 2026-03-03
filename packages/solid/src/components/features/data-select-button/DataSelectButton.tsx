@@ -191,13 +191,13 @@ export function DataSelectButton<TItem, TKey = string | number>(
     if (local.disabled) return;
 
     const result = await dialog.show(
-      (props: { close?: (result?: DataSelectDialogResult<TKey>) => void }) => (
+      (dlgProps: { close?: (result?: DataSelectDialogResult<TKey>) => void }) => (
         <local.dialog.component
           {...(local.dialog.props ?? {})}
           selectMode={local.multiple ? "multiple" : "single"}
           selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
           onSelect={(r: { keys: (string | number)[] }) =>
-            props.close?.({ selectedKeys: r.keys as TKey[] })
+            dlgProps.close?.({ selectedKeys: r.keys as TKey[] })
           }
         />
       ),

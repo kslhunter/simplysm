@@ -52,7 +52,7 @@ export type ExtractCloseResult<P> =
 /** Programmatic dialog Context value */
 export interface DialogContextValue {
   /** Open dialog and wait until closing, returns result */
-  show<P>(
+  show<P extends Record<string, any>>(
     component: Component<P>,
     props: "close" extends keyof P ? Omit<P, "close"> : never,
     options?: DialogShowOptions,

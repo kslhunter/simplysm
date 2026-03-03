@@ -66,6 +66,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   const noti = useNotification();
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
+  // eslint-disable-next-line solid/reactivity -- local.close is stable (injected once by DialogProvider)
   const isInDialog = local.close !== undefined;
 
   const canEdit = () => local.editable ?? true;

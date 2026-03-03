@@ -13,7 +13,7 @@ function TestApp() {
     <button
       data-testid="open-btn"
       onClick={() => {
-        void dialog.show(() => <AddressSearchContent />, {
+        void dialog.show(AddressSearchContent, {}, {
           header: "주소 검색",
         });
       }}

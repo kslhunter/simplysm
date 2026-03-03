@@ -185,8 +185,9 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
     const currentConfig = config();
 
-    const result = await dialog.show<DataSheetConfig>(
-      () => <DataSheetConfigDialog columnInfos={columnInfos} currentConfig={currentConfig} />,
+    const result = await dialog.show(
+      DataSheetConfigDialog,
+      { columnInfos, currentConfig },
       {
         header: "Sheet Settings",
         closeOnBackdrop: true,

@@ -6,7 +6,6 @@ import {
   For,
   Show,
   splitProps,
-  type JSX,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
@@ -56,7 +55,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
 
-  const show = <P,>(
+  const show = <P extends Record<string, any>,>(
     component: Component<P>,
     componentProps: Record<string, any>,
     options?: DialogShowOptions,
