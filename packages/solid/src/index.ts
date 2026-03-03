@@ -89,7 +89,7 @@ export * from "./components/disclosure/Tabs";
 //#region ========== Feedback ==========
 
 // Notification
-export * from "./components/feedback/notification/NotificationContext";
+export * from "./components/feedback/notification/NotificationProvider";
 export * from "./components/feedback/notification/NotificationBell";
 export * from "./components/feedback/notification/NotificationBanner";
 
@@ -121,7 +121,7 @@ export * from "./providers/LoggerContext";
 export * from "./providers/ThemeContext";
 
 // ServiceClient
-export * from "./providers/ServiceClientContext";
+export * from "./providers/ServiceClientProvider";
 
 // SharedData
 export * from "./providers/shared-data/SharedDataContext";
