@@ -4,7 +4,6 @@ import { createSignal, type Accessor } from "solid-js";
 import {
   SharedDataSelect,
   type SelectDialogBaseProps,
-  type DataSelectDialogResult,
 } from "@simplysm/solid";
 import { type SharedDataAccessor } from "../../../../src/providers/shared-data/SharedDataContext";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
@@ -32,7 +31,7 @@ function createMockAccessor(itemsSignal: Accessor<TestItem[]>): SharedDataAccess
   };
 }
 
-function TestDialogComponent(props: SelectDialogBaseProps<number> & { confirmKeys: number[] }) {
+function TestDialogComponent(props: SelectDialogBaseProps & { confirmKeys: number[] }) {
   return (
     <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectMode}</div>

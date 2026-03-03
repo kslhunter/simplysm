@@ -132,7 +132,7 @@ export function DataSelectButton<
     "inset",
     "validate",
     "touchMode",
-  ]);
+  ]) as unknown as [typeof props];
 
   const i18n = useI18n();
   const dialog = useDialog();
