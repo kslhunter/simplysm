@@ -68,5 +68,8 @@ const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
   );
 };
 
-export const FormGroup = FormGroupBase as FormGroupComponent;
-FormGroup.Item = FormGroupItem;
+//#region Export
+export const FormGroup = Object.assign(FormGroupBase, {
+  Item: FormGroupItem,
+});
+//#endregion
