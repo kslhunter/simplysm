@@ -1,20 +1,53 @@
-import { createMemo, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
+import { createContext, createMemo, createSignal, For, type JSX, onCleanup, Show, splitProps, useContext, type ParentComponent } from "solid-js";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
 import { DebounceQueue } from "@simplysm/core-common";
 import { Icon } from "../../display/Icon";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
-import { ComboboxContext, type ComboboxContextValue, useComboboxContext } from "./ComboboxContext";
-import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
+import {
+  listItemBaseClass,
+  listItemSelectedClass,
+  listItemDisabledClass,
+  listItemContentClass,
+} from "../../data/list/ListItem.styles";
 
 void ripple;
+
+//#region ========== Context ==========
+
+export interface ComboboxContextValue<TValue = unknown> {
+  /** Check if value is selected */
+  isSelected: (value: TValue) => boolean;
+
+  /** Select value */
+  selectValue: (value: TValue) => void;
+
+  /** Close dropdown */
+  closeDropdown: () => void;
+
+  /** Register item template */
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
+}
+
+const ComboboxContext = createContext<ComboboxContextValue>();
+
+function useComboboxContext<TValue = unknown>(): ComboboxContextValue<TValue> {
+  const context = useContext(ComboboxContext);
+  if (!context) {
+    throw new Error("useComboboxContext can only be used inside the Combobox component");
+  }
+  return context as ComboboxContextValue<TValue>;
+}
+
+//#endregion
 
 // Combobox-specific styles
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden");
@@ -38,6 +71,67 @@ const ComboboxItemTemplate = <TArgs extends unknown[]>(props: {
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
 };
+
+//#region ========== ComboboxItem ==========
+
+export interface ComboboxItemProps<TValue = unknown> extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "value" | "onClick"
+> {
+  /** Item value */
+  value: TValue;
+
+  /** Disabled */
+  disabled?: boolean;
+}
+
+/**
+ * Selectable item in Combobox dropdown
+ */
+const ComboboxItem: ParentComponent<ComboboxItemProps> = <T,>(
+  props: ComboboxItemProps<T> & { children?: JSX.Element },
+) => {
+  const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
+
+  const context = useComboboxContext<T>();
+
+  const isSelected = () => context.isSelected(local.value);
+  const useRipple = () => !local.disabled;
+
+  const handleClick = () => {
+    if (local.disabled) return;
+    context.selectValue(local.value);
+    context.closeDropdown();
+  };
+
+  const getClassName = () =>
+    twMerge(
+      listItemBaseClass,
+      isSelected() && listItemSelectedClass,
+      local.disabled && listItemDisabledClass,
+      local.class,
+    );
+
+  return (
+    <button
+      {...rest}
+      type="button"
+      use:ripple={useRipple()}
+      class={getClassName()}
+      data-combobox-item
+      data-list-item
+      role="option"
+      aria-selected={isSelected() || undefined}
+      aria-disabled={local.disabled || undefined}
+      tabIndex={local.disabled ? -1 : 0}
+      onClick={handleClick}
+    >
+      <span class={listItemContentClass}>{local.children}</span>
+    </button>
+  );
+};
+
+//#endregion
 
 // Props definition
 export interface ComboboxProps<TValue = unknown> {
@@ -93,12 +187,6 @@ export interface ComboboxProps<TValue = unknown> {
   children?: JSX.Element;
 }
 
-interface ComboboxComponent {
-  <TValue = unknown>(props: ComboboxProps<TValue>): JSX.Element;
-  Item: typeof ComboboxItem;
-  ItemTemplate: typeof ComboboxItemTemplate;
-}
-
 /**
  * Combobox component
  *
@@ -129,7 +217,7 @@ interface ComboboxComponent {
  * </Combobox>
  * ```
  */
-export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
+const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
   const [local, rest] = splitProps(props as ComboboxProps<T> & { children?: JSX.Element }, [
     "children",
     "class",
@@ -383,5 +471,9 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   );
 };
 
-Combobox.Item = ComboboxItem;
-Combobox.ItemTemplate = ComboboxItemTemplate;
+//#region Export
+export const Combobox = Object.assign(ComboboxInner, {
+  Item: ComboboxItem,
+  ItemTemplate: ComboboxItemTemplate,
+});
+//#endregion
