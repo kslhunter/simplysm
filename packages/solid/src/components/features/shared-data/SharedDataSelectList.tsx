@@ -1,7 +1,7 @@
 import { createContext, createEffect, createMemo, createSignal, For, onCleanup, type JSX, Show, splitProps, useContext, type ParentComponent } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
+import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataProvider";
 import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
@@ -147,7 +147,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     // getIsHidden filter
     const isHidden = local.data.getIsHidden;
     if (isHidden) {
-      result = result.filter((item) => !isHidden(item));
+      result = result.filter((item: TItem) => !isHidden(item));
     }
 
     // Search filter (only when Filter compound is absent and getSearchText exists)
@@ -155,7 +155,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     if (!filter() && getSearchText && searchText()) {
       const terms = searchText().trim().split(" ").filter(Boolean);
       if (terms.length > 0) {
-        result = result.filter((item) => {
+        result = result.filter((item: TItem) => {
           const text = getSearchText(item).toLowerCase();
           return terms.every((t) => text.includes(t.toLowerCase()));
         });
@@ -165,7 +165,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     // filterFn
     if (local.filterFn) {
       const fn = local.filterFn;
-      result = result.filter((item, index) => fn(item, index));
+      result = result.filter((item: TItem, index: number) => fn(item, index));
     }
 
     return result;

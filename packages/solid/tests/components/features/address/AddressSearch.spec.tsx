@@ -1,7 +1,6 @@
 import { render, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, beforeEach } from "vitest";
-import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
-import { useDialog } from "../../../../src/components/disclosure/DialogContext";
+import { DialogProvider, useDialog } from "../../../../src/components/disclosure/Dialog";
 import { AddressSearchContent } from "../../../../src/components/features/address/AddressSearch";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";

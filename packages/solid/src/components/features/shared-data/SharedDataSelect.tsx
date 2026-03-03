@@ -8,7 +8,7 @@ import {
   splitProps,
 } from "solid-js";
 import { IconSearch } from "@tabler/icons-solidjs";
-import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
+import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataProvider";
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { type DialogShowOptions, useDialog } from "../../disclosure/Dialog";
@@ -225,7 +225,7 @@ const SharedDataSelectBase = <
       // eslint-disable-next-line solid/reactivity -- return function is called within Select's internal JSX tracked scope
       return (item: TItem) => {
         const key = local.data.getKey(item);
-        return items().filter((child) => local.data.getParentKey!(child) === key);
+        return items().filter((child: TItem) => local.data.getParentKey!(child) === key);
       };
     },
     get getSearchText() {

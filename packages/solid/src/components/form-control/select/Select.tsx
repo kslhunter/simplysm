@@ -70,7 +70,8 @@ export interface SelectContextValue<TValue = unknown> {
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
 
-const SelectCtx = createContext<SelectContextValue>();
+export const SelectContext = createContext<SelectContextValue>();
+const SelectCtx = SelectContext;
 
 function useSelectContext<TValue = unknown>(): SelectContextValue<TValue> {
   const context = useContext(SelectCtx);

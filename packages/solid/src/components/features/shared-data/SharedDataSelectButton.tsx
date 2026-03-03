@@ -1,5 +1,5 @@
 import { type Component, type JSX, splitProps } from "solid-js";
-import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
+import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataProvider";
 import {
   DataSelectButton,
   type DataSelectButtonProps,
@@ -51,7 +51,7 @@ export function SharedDataSelectButton<
 
   return (
     <DataSelectButton
-      load={(keys) => local.data.items().filter((item) => keys.includes(local.data.getKey(item)))}
+      load={(keys) => local.data.items().filter((item: TItem) => keys.includes(local.data.getKey(item)))}
       renderItem={local.children}
       {...(rest as any)}
     />

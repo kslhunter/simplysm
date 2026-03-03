@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { SharedDataSelectList } from "@simplysm/solid";
-import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
+import { DialogProvider } from "../../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
@@ -298,7 +298,7 @@ describe("SharedDataSelectList", () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
 
       renderWithDialog(() => (
-        <SharedDataSelectList data={accessor} filterFn={(item) => item.startsWith("B")} required>
+        <SharedDataSelectList data={accessor} filterFn={(item: string) => item.startsWith("B")} required>
           <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
         </SharedDataSelectList>
       ));

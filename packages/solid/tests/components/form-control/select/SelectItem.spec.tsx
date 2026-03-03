@@ -1,11 +1,11 @@
 import type { JSX } from "solid-js";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { SelectItem } from "../../../../src/components/form-control/select/SelectItem";
 import {
+  Select,
   SelectContext,
   type SelectContextValue,
-} from "../../../../src/components/form-control/select/SelectContext";
+} from "../../../../src/components/form-control/select/Select";
 
 // Test provider
 function TestProvider(props: { children: JSX.Element; value: SelectContextValue }) {
@@ -28,7 +28,7 @@ describe("SelectItem component", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -48,7 +48,7 @@ describe("SelectItem component", () => {
 
       render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -71,7 +71,7 @@ describe("SelectItem component", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -93,7 +93,7 @@ describe("SelectItem component", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -115,7 +115,7 @@ describe("SelectItem component", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -128,7 +128,7 @@ describe("SelectItem component", () => {
     it("sets aria-selected=true on selected item", () => {
       const mockContext: SelectContextValue = {
         multiple: () => false,
-        isSelected: (v) => v === "apple",
+        isSelected: (v: unknown) => v === "apple",
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
         setHeader: vi.fn(),
@@ -138,7 +138,7 @@ describe("SelectItem component", () => {
 
       render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple">사과</SelectItem>
+          <Select.Item value="apple">사과</Select.Item>
         </TestProvider>
       ));
 
@@ -162,9 +162,9 @@ describe("SelectItem component", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple" disabled>
+          <Select.Item value="apple" disabled>
             사과
-          </SelectItem>
+          </Select.Item>
         </TestProvider>
       ));
 
