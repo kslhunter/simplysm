@@ -11,8 +11,7 @@ import { ClipboardProvider } from "./ClipboardProvider";
 import { ThemeProvider } from "./ThemeContext";
 import { ServiceClientProvider } from "./ServiceClientProvider";
 import { SharedDataProvider } from "./shared-data/SharedDataProvider";
-import { BusyProvider } from "../components/feedback/busy/BusyProvider";
-import type { BusyVariant } from "../components/feedback/busy/BusyContext";
+import { BusyProvider, type BusyVariant } from "../components/feedback/busy/BusyProvider";
 
 export type { BusyVariant };
 

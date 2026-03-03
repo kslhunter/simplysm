@@ -81,7 +81,40 @@ function useSelectContext<TValue = unknown>(): SelectContextValue<TValue> {
 }
 
 const SelectHeader = createSlotComponent(SelectCtx, (ctx) => ctx.setHeader);
-const SelectAction = createSlotComponent(SelectCtx, (ctx) => ctx.setAction);
+
+interface SelectActionProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+  children?: JSX.Element;
+}
+
+const SelectAction = (props: SelectActionProps) => {
+  const ctx = useSelectContext();
+  const [local, rest] = splitProps(props, ["children", "class"]);
+
+  const handleClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> = (e) => {
+    if (typeof rest.onClick === "function") {
+      rest.onClick(e);
+    } else if (rest.onClick && typeof rest.onClick === "object") {
+      rest.onClick[0](rest.onClick[1], e);
+    }
+  };
+
+  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
+  ctx.setAction(() => (
+    <button
+      {...rest}
+      type="button"
+      onClick={handleClick}
+      class={twMerge("p-2", "hover:bg-base-100 dark:hover:bg-base-700", local.class)}
+      data-select-action
+    >
+      {local.children}
+    </button>
+  ));
+
+  onCleanup(() => ctx.setAction(undefined));
+
+  return null;
+};
 
 //#endregion
 
@@ -352,7 +385,7 @@ interface SelectComponent {
  * </Select>
  * ```
  */
-const SelectInnerComponent: SelectComponent = <T,>(props: SelectProps<T>) => {
+const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   const [local, rest] = splitProps(props as SelectProps<T> & { children?: JSX.Element }, [
     "children",
     "class",
@@ -418,7 +451,7 @@ const SelectInnerComponent: SelectComponent = <T,>(props: SelectProps<T>) => {
         setValue([...current, itemValue] as T[]);
       }
     } else {
-      setValue(itemValue);
+      setValue(itemValue as any);
     }
   };
 
@@ -716,5 +749,5 @@ export const Select = Object.assign(SelectInnerComponent, {
   Header: SelectHeader,
   Action: SelectAction,
   ItemTemplate: SelectItemTemplate,
-});
+}) as SelectComponent;
 //#endregion

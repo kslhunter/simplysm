@@ -180,7 +180,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
   // Select value
   const selectValue = (value: T) => {
-    setInternalValue(value);
+    setInternalValue(value as any);
     setQuery("");
     setOpen(false);
   };

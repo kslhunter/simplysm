@@ -2,7 +2,7 @@ import { createContext, useContext, type ParentComponent, createSignal, Show, ty
 import { Portal } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
-import { useBusy } from "../busy/BusyContext";
+import { useBusy } from "../busy/BusyProvider";
 
 // --- Context types ---
 

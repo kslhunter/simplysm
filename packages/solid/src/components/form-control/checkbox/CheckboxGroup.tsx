@@ -4,16 +4,16 @@ import type { CheckboxSize } from "./Checkbox.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { SelectionGroupBase } from "./SelectionGroupBase";
 
-interface CheckboxGroupContext {
-  value: () => unknown[];
-  toggle: (item: unknown) => void;
+interface CheckboxGroupContext<TValue = unknown> {
+  value: () => readonly TValue[];
+  toggle: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
   inline: () => boolean;
   inset: () => boolean;
 }
 
-const CheckboxGroupCtx = createContext<CheckboxGroupContext>();
+const CheckboxGroupCtx = createContext<CheckboxGroupContext<any>>();
 
 interface CheckboxGroupProps<TValue> {
   value?: TValue[];
@@ -32,18 +32,18 @@ interface CheckboxGroupProps<TValue> {
 
 function CheckboxGroupInner<TValue = unknown>(props: CheckboxGroupProps<TValue>): JSX.Element {
   const [value, setValue] = createControllableSignal({
-    value: () => props.value,
+    value: () => props.value ?? [],
     onChange: () => props.onValueChange,
   });
 
-  const toggle = (item: unknown) => {
+  const toggle = (item: TValue) => {
     setValue((prev) => {
       if (prev.includes(item)) return prev.filter((v) => v !== item);
       return [...prev, item];
     });
   };
 
-  const contextValue: CheckboxGroupContext = {
+  const contextValue: CheckboxGroupContext<TValue> = {
     value,
     toggle,
     disabled: () => props.disabled ?? false,
@@ -75,7 +75,7 @@ function CheckboxGroupItem<TValue = unknown>(props: {
   disabled?: boolean;
   children?: JSX.Element;
 }): JSX.Element {
-  const ctx = useContext(CheckboxGroupCtx);
+  const ctx = useContext(CheckboxGroupCtx) as CheckboxGroupContext<TValue> | undefined;
   if (!ctx) throw new Error("CheckboxGroup.Item can only be used inside CheckboxGroup");
 
   const isSelected = () => ctx.value().includes(props.value);
