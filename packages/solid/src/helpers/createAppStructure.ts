@@ -1,6 +1,5 @@
 import type { Component, ParentComponent } from "solid-js";
-import { type Accessor, createMemo, createRoot, useContext } from "solid-js";
-import { createHmrSafeContext } from "./createHmrSafeContext";
+import { type Accessor, createContext, createMemo, createRoot, useContext } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 
 // ── Input Types ──
@@ -486,6 +485,8 @@ function buildAppStructure<TModule, const TItems extends AppStructureItem<TModul
   };
 }
 
+const AppStructureCtx = createContext<AppStructure<any>>();
+
 export function createAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(
   getOpts: () => {
     items: TItems;
@@ -498,11 +499,9 @@ export function createAppStructure<TModule, const TItems extends AppStructureIte
 } {
   type TRet = AppStructure<TModule> & { perms: InferPerms<TItems> };
 
-  const Ctx = createHmrSafeContext<TRet>("AppStructure");
-
   const AppStructureProvider: ParentComponent = (props) => {
     const structure = buildAppStructure(getOpts());
-    return Ctx.Provider({
+    return AppStructureCtx.Provider({
       value: structure as TRet,
       get children() {
         return props.children;
@@ -511,9 +510,9 @@ export function createAppStructure<TModule, const TItems extends AppStructureIte
   };
 
   const useAppStructure = (): TRet => {
-    const ctx = useContext(Ctx);
+    const ctx = useContext(AppStructureCtx);
     if (!ctx) throw new Error("AppStructureProvider is required.");
-    return ctx;
+    return ctx as TRet;
   };
 
   return { AppStructureProvider, useAppStructure };
