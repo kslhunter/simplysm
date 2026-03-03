@@ -48,6 +48,7 @@ All sub-components via dot notation only (`Parent.Child`).
 - Default `rem`, use `em` for text-relative sizing (e.g., Icon)
 - Use `clsx()` with semantic grouping + `twMerge()` for conflict resolution
 - Before modifying styles: Read existing class patterns of the same component
+- **Class strings inline**: Do not extract class strings into separate variables — write them directly in the JSX return
 
 ## Application View Naming (`client-*`)
 

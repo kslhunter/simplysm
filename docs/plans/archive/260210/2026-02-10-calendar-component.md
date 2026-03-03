@@ -333,7 +333,7 @@ Modify: `packages/solid-demo/src/main.tsx`
 
 Modify: `packages/solid-demo/src/pages/Home.tsx`
 
-Data 섹션의 `{ title: "Kanban", href: "/home/data/kanban" }` 뒤에 추가:
+Data 섹션의 `{ title: "KanbanBoard", href: "/home/data/kanban" }` 뒤에 추가:
 
 ```typescript
 { title: "Calendar", href: "/home/data/calendar" },

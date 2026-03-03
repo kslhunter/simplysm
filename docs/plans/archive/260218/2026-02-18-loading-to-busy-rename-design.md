@@ -54,7 +54,7 @@
 7. `providers/ConfigContext.ts` — `loadingVariant` → `busyVariant`
 8. `providers/InitializeProvider.tsx` — `LoadingProvider` → `BusyProvider`, `loadingVariant` → `busyVariant`
 9. `hooks/usePrint.ts` — `useLoading` → `useBusy`
-10. `components/data/kanban/Kanban.tsx` — `LoadingContainer` → `BusyContainer`
+10. `components/data/kanban/KanbanBoard.tsx` — `LoadingContainer` → `BusyContainer`
 
 ### solid-demo package
 11. `pages/feedback/LoadingPage.tsx` → `BusyPage.tsx` (rename + full update)

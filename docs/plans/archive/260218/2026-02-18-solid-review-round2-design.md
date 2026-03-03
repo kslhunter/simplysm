@@ -10,7 +10,7 @@ Address 11 issues from the comprehensive `packages/solid` code review. Excludes 
 |---|----------|----------|-------|
 | 1 | P0 | Bug | useSyncConfig race condition — save effect overwrites stored value for async storage |
 | 2 | P0 | Bug | Uncontrolled mode validation uses `local.value` (props) instead of `value()` (signal) |
-| 4 | P1 | Type | Kanban missing generic types — all values typed as `unknown` |
+| 4 | P1 | Type | KanbanBoard missing generic types — all values typed as `unknown` |
 | 6 | P2 | Type | Combobox `loadItems` forces `Promise` return, no sync support |
 | 7 | P2 | DX | useSyncConfig `ready` signal not used by callers (ThemeContext, DataSheet) |
 | 8 | P3 | Refactor | Inset mode dual-element pattern duplicated across 6 field components |
@@ -77,14 +77,14 @@ const errorMsg = createMemo(() => {
 
 ## Section 2: Type Improvements (#4, #6, #7, #13)
 
-### #4. Kanban Generic Types
+### #4. KanbanBoard Generic Types
 
-**Files:** `KanbanContext.ts`, `Kanban.tsx`, `KanbanLane.tsx`, `KanbanCard.tsx`
+**Files:** `KanbanBoardContext.ts`, `KanbanBoard.tsx`, `KanbanLane.tsx`, `KanbanCard.tsx`
 
 Add generic type parameters with `= unknown` defaults for backward compatibility:
 
 ```typescript
-// KanbanContext.ts
+// KanbanBoardContext.ts
 export interface KanbanDropInfo<TCardValue = unknown, TLaneValue = unknown> {
   sourceValue: TCardValue;
   targetLaneValue: TLaneValue;
@@ -92,7 +92,7 @@ export interface KanbanDropInfo<TCardValue = unknown, TLaneValue = unknown> {
   position: "before" | "after" | undefined;
 }
 
-// Kanban.tsx
+// KanbanBoard.tsx
 export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> {
   selectedValues?: TCardValue[];
   onSelectedValuesChange?: (values: TCardValue[]) => void;
@@ -351,8 +351,8 @@ Same consolidation for DateTimePicker's DateTime-based variants.
 | `form-control/combobox/Combobox.tsx` | Use createItemTemplate; accept sync loadItems |
 | `form-control/checkbox/CheckboxGroup.tsx` | Use createSelectionGroup |
 | `form-control/checkbox/RadioGroup.tsx` | Use createSelectionGroup |
-| `data/kanban/KanbanContext.ts` | Add generic types |
-| `data/kanban/Kanban.tsx` | Add generic types |
+| `data/kanban/KanbanBoardContext.ts` | Add generic types |
+| `data/kanban/KanbanBoard.tsx` | Add generic types |
 | `data/kanban/KanbanLane.tsx` | Add generic types |
 | `data/kanban/KanbanCard.tsx` | Add generic types |
 | `data/sheet/DataSheet.tsx` | Use createPointerDrag; use ready signal |
@@ -366,7 +366,7 @@ Same consolidation for DateTimePicker's DateTime-based variants.
 ## Testing Strategy
 
 - Run existing tests: `pnpm vitest --project=solid`
-- All changes are internal refactoring — public API is preserved (except Kanban gets generic types with `= unknown` defaults)
+- All changes are internal refactoring — public API is preserved (except KanbanBoard gets generic types with `= unknown` defaults)
 - FieldWrapper: existing field component tests cover the rendering paths
 - createPointerDrag: existing Dialog drag/resize tests validate behavior
 - Validation fix: may need new test cases for uncontrolled mode validation

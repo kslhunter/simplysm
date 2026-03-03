@@ -12,7 +12,7 @@
 | 3   | **Tab**           | 탭 헤더(버튼 바)만 제공. 콘텐츠 전환은 `<Show>` 사용 | [x]  |
 | 4   | **StatePreset**   | 필터/정렬 등 상태 저장/불러오기                      | [x]  |
 | 5   | **Numpad**        | 숫자 입력 패드                                       | [x]  |
-| 6   | **Kanban**        | 칸반 보드 (Board + Lane)                             | [ ]  |
+| 6   | **KanbanBoard**        | 칸반 보드 (Board + Lane)                             | [ ]  |
 | 7   | **Barcode**       | 바코드 렌더링                                        | [x]  |
 | 8   | **Calendar**      | 캘린더 (고도화 필요)                                 | [x]  |
 | 9   | **Progress**      | 프로그레스 바                                        | [x]  |

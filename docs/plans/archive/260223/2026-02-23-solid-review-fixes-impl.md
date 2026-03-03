@@ -62,8 +62,8 @@ Run: `pnpm check packages/solid --type typecheck`
 - Modify: `packages/solid/src/components/form-control/select/SelectContext.ts`
 - Modify: `packages/solid/src/components/form-control/select/SelectItem.tsx`
 - Modify: `packages/solid/src/components/data/list/ListItem.tsx`
-- Modify: `packages/solid/src/components/data/kanban/KanbanContext.ts`
-- Modify: `packages/solid/src/components/data/kanban/Kanban.tsx`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoardContext.ts`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoard.tsx`
 
 각 파일에서:
 1. `type SlotAccessor = (() => JSX.Element) | undefined;` 로컬 정의 삭제
@@ -123,11 +123,11 @@ Run: `pnpm check packages/solid --type typecheck`
 - 교체 (line 169-170):
   - `const [childrenSlot, _setChildrenSlot] = ... const setChildrenSlot = ...` → `const [childrenSlot, setChildrenSlot] = createSlotSignal();`
 
-**KanbanContext.ts** (line 53):
+**KanbanBoardContext.ts** (line 53):
 - 삭제: `type SlotAccessor` (line 53)
 - import 추가: `import type { SlotAccessor } from "../../../hooks/createSlotSignal";`
 
-**Kanban.tsx** (line 389, 390-393):
+**KanbanBoard.tsx** (line 389, 390-393):
 - 삭제: `type SlotAccessor` (line 389)
 - import 추가: `import { createSlotSignal } from "../../../hooks/createSlotSignal";`
 - 교체 (line 390-393):

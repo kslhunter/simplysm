@@ -1,10 +1,10 @@
-# Kanban Phase 1 (UI 기본) 구현 계획
+# KanbanBoard Phase 1 (UI 기본) 구현 계획
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Kanban 컴파운드 컴포넌트의 UI 기본 구조(Board/Lane/Card/슬롯)를 Phase 1 스펙에 맞춰 재작성한다.
+**Goal:** KanbanBoard 컴파운드 컴포넌트의 UI 기본 구조(Board/Lane/Card/슬롯)를 Phase 1 스펙에 맞춰 재작성한다.
 
-**Architecture:** 기존 `Kanban.tsx`와 `KanbanContext.ts`를 삭제하고 처음부터 작성한다. Phase 1에서는 DnD, 선택, 접기/펼치기, Busy 등을 **모두 제외**하고 순수 렌더링과 레이아웃만 구현한다. Context는 이후 Phase를 위한 최소 껍데기만 제공한다.
+**Architecture:** 기존 `KanbanBoard.tsx`와 `KanbanBoardContext.ts`를 삭제하고 처음부터 작성한다. Phase 1에서는 DnD, 선택, 접기/펼치기, Busy 등을 **모두 제외**하고 순수 렌더링과 레이아웃만 구현한다. Context는 이후 Phase를 위한 최소 껍데기만 제공한다.
 
 **Tech Stack:** SolidJS, Tailwind CSS, `clsx`/`twMerge`, `splitSlots` 유틸리티, 기존 `Card` 컴포넌트 래핑
 
@@ -12,11 +12,11 @@
 
 ---
 
-## Task 1: KanbanContext.ts 재작성
+## Task 1: KanbanBoardContext.ts 재작성
 
 **Files:**
 
-- Rewrite: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
+- Rewrite: `packages/solid/src/components/layout/kanban/KanbanBoardContext.ts`
 
 **Step 1: Context 파일 작성**
 
@@ -30,12 +30,12 @@ import { createContext, useContext, type Accessor } from "solid-js";
 
 export interface KanbanContextValue {}
 
-export const KanbanContext = createContext<KanbanContextValue>();
+export const KanbanBoardContext = createContext<KanbanContextValue>();
 
 export function useKanbanContext(): KanbanContextValue {
-  const context = useContext(KanbanContext);
+  const context = useContext(KanbanBoardContext);
   if (!context) {
-    throw new Error("useKanbanContext must be used within Kanban");
+    throw new Error("useKanbanContext must be used within KanbanBoard");
   }
   return context;
 }
@@ -51,7 +51,7 @@ export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
 export function useKanbanLaneContext(): KanbanLaneContextValue {
   const context = useContext(KanbanLaneContext);
   if (!context) {
-    throw new Error("useKanbanLaneContext must be used within Kanban.Lane");
+    throw new Error("useKanbanLaneContext must be used within KanbanBoard.Lane");
   }
   return context;
 }
@@ -59,32 +59,32 @@ export function useKanbanLaneContext(): KanbanLaneContextValue {
 
 **Step 2: 린트/타입 검사**
 
-Run: `pnpm lint packages/solid/src/components/layout/kanban/KanbanContext.ts`
+Run: `pnpm lint packages/solid/src/components/layout/kanban/KanbanBoardContext.ts`
 Run: `pnpm typecheck packages/solid`
 
 **Step 3: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/KanbanContext.ts
-git commit -m "feat(solid): Kanban Phase 1 — KanbanContext 재작성 (최소 껍데기)"
+git add packages/solid/src/components/layout/kanban/KanbanBoardContext.ts
+git commit -m "feat(solid): KanbanBoard Phase 1 — KanbanBoardContext 재작성 (최소 껍데기)"
 ```
 
 ---
 
-## Task 2: Kanban.tsx 재작성 — 슬롯 컴포넌트 + Card
+## Task 2: KanbanBoard.tsx 재작성 — 슬롯 컴포넌트 + Card
 
 **Files:**
 
-- Rewrite: `packages/solid/src/components/layout/kanban/Kanban.tsx`
+- Rewrite: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 
-**Step 1: Kanban.tsx 작성 — 슬롯 + Card + Lane + Board**
+**Step 1: KanbanBoard.tsx 작성 — 슬롯 + Card + Lane + Board**
 
 전체 파일을 한 번에 작성한다. 핵심 포인트:
 
 - **KanbanLaneTitle / KanbanLaneTools**: `data-*` 마커 슬롯 컴포넌트
 - **KanbanCard**: 기존 `Card` 컴포넌트 래핑, `value`/`contentClass` props, `select-none whitespace-normal`
 - **KanbanLane**: 세로 `flex-col`, 배경색, `splitSlots`로 헤더 분리, 콘텐츠 영역
-- **Kanban (Board)**: `inline-flex flex-nowrap h-full gap-4`, KanbanContext Provider
+- **KanbanBoard (Board)**: `inline-flex flex-nowrap h-full gap-4`, KanbanBoardContext Provider
 
 ```typescript
 import {
@@ -99,11 +99,11 @@ import { twMerge } from "tailwind-merge";
 import { Card } from "../../display/Card";
 import { splitSlots } from "../../../utils/splitSlots";
 import {
-  KanbanContext,
+  KanbanBoardContext,
   KanbanLaneContext,
   type KanbanContextValue,
   type KanbanLaneContextValue,
-} from "./KanbanContext";
+} from "./KanbanBoardContext";
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
@@ -227,7 +227,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   );
 };
 
-// ─── Kanban (Board) ──────────────────────────────────────────────
+// ─── KanbanBoard (Board) ──────────────────────────────────────────────
 
 export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   children?: JSX.Element;
@@ -256,7 +256,7 @@ const KanbanBase = (props: KanbanProps) => {
   const contextValue: KanbanContextValue = {};
 
   return (
-    <KanbanContext.Provider value={contextValue}>
+    <KanbanBoardContext.Provider value={contextValue}>
       <div
         {...rest}
         data-kanban
@@ -264,27 +264,27 @@ const KanbanBase = (props: KanbanProps) => {
       >
         {local.children}
       </div>
-    </KanbanContext.Provider>
+    </KanbanBoardContext.Provider>
   );
 };
 
-export const Kanban = KanbanBase as KanbanComponent;
-Kanban.Lane = KanbanLane;
-Kanban.Card = KanbanCard;
-Kanban.LaneTitle = KanbanLaneTitle;
-Kanban.LaneTools = KanbanLaneTools;
+export const KanbanBoard = KanbanBase as KanbanComponent;
+KanbanBoard.Lane = KanbanLane;
+KanbanBoard.Card = KanbanCard;
+KanbanBoard.LaneTitle = KanbanLaneTitle;
+KanbanBoard.LaneTools = KanbanLaneTools;
 ```
 
 **Step 2: 린트/타입 검사**
 
-Run: `pnpm lint packages/solid/src/components/layout/kanban/Kanban.tsx`
+Run: `pnpm lint packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 Run: `pnpm typecheck packages/solid`
 
 **Step 3: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban Phase 1 — Board/Lane/Card/슬롯 재작성"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard Phase 1 — Board/Lane/Card/슬롯 재작성"
 ```
 
 ---
@@ -301,7 +301,7 @@ Phase 1에서는 DnD/선택/접기가 없으므로, 기본 렌더링과 `content
 
 ```typescript
 import { For } from "solid-js";
-import { Kanban, Topbar } from "@simplysm/solid";
+import { KanbanBoard, Topbar } from "@simplysm/solid";
 
 interface Card {
   id: number;
@@ -347,7 +347,7 @@ export default function KanbanPage() {
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">Kanban</h1>
+        <h1 class="m-0 text-base">KanbanBoard</h1>
       </Topbar>
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
@@ -358,35 +358,35 @@ export default function KanbanPage() {
               Board에 여러 Lane이 가로 배치되고, Lane 안에 Card가 세로로 나열됩니다.
             </p>
             <div class="h-[500px]">
-              <Kanban>
+              <KanbanBoard>
                 <For each={sampleLanes}>
                   {(lane) => (
-                    <Kanban.Lane value={lane.id}>
-                      <Kanban.LaneTitle>{lane.title} ({lane.cards.length})</Kanban.LaneTitle>
-                      <Kanban.LaneTools>
+                    <KanbanBoard.Lane value={lane.id}>
+                      <KanbanBoard.LaneTitle>{lane.title} ({lane.cards.length})</KanbanBoard.LaneTitle>
+                      <KanbanBoard.LaneTools>
                         <button
                           type="button"
                           class="text-sm text-primary-500 hover:text-primary-700"
                         >
                           + 추가
                         </button>
-                      </Kanban.LaneTools>
+                      </KanbanBoard.LaneTools>
                       <For each={lane.cards}>
                         {(card) => (
-                          <Kanban.Card value={card.id} contentClass="p-3">
+                          <KanbanBoard.Card value={card.id} contentClass="p-3">
                             <div class="font-medium">{card.title}</div>
                             {card.description && (
                               <div class="mt-1 text-sm text-base-500 dark:text-base-400">
                                 {card.description}
                               </div>
                             )}
-                          </Kanban.Card>
+                          </KanbanBoard.Card>
                         )}
                       </For>
-                    </Kanban.Lane>
+                    </KanbanBoard.Lane>
                   )}
                 </For>
-              </Kanban>
+              </KanbanBoard>
             </div>
           </section>
 
@@ -397,17 +397,17 @@ export default function KanbanPage() {
               카드가 없는 빈 Lane도 올바르게 렌더링됩니다.
             </p>
             <div class="h-[300px]">
-              <Kanban>
-                <Kanban.Lane value="empty">
-                  <Kanban.LaneTitle>빈 레인</Kanban.LaneTitle>
-                </Kanban.Lane>
-                <Kanban.Lane value="with-cards">
-                  <Kanban.LaneTitle>카드 있음</Kanban.LaneTitle>
-                  <Kanban.Card value={1} contentClass="p-3">
+              <KanbanBoard>
+                <KanbanBoard.Lane value="empty">
+                  <KanbanBoard.LaneTitle>빈 레인</KanbanBoard.LaneTitle>
+                </KanbanBoard.Lane>
+                <KanbanBoard.Lane value="with-cards">
+                  <KanbanBoard.LaneTitle>카드 있음</KanbanBoard.LaneTitle>
+                  <KanbanBoard.Card value={1} contentClass="p-3">
                     카드 1
-                  </Kanban.Card>
-                </Kanban.Lane>
-              </Kanban>
+                  </KanbanBoard.Card>
+                </KanbanBoard.Lane>
+              </KanbanBoard>
             </div>
           </section>
         </div>
@@ -425,7 +425,7 @@ Run: `pnpm lint packages/solid-demo/src/pages/data/KanbanPage.tsx`
 
 ```bash
 git add packages/solid-demo/src/pages/data/KanbanPage.tsx
-git commit -m "feat(solid-demo): Kanban Phase 1 데모 페이지 재작성"
+git commit -m "feat(solid-demo): KanbanBoard Phase 1 데모 페이지 재작성"
 ```
 
 ---
@@ -436,7 +436,7 @@ git commit -m "feat(solid-demo): Kanban Phase 1 데모 페이지 재작성"
 
 Run: `pnpm dev` (worktree 안에서)
 
-브라우저에서 Kanban 데모 페이지로 이동하여 확인:
+브라우저에서 KanbanBoard 데모 페이지로 이동하여 확인:
 
 - Board에 3개 Lane이 가로로 배치되는가
 - Lane 안에 Card가 세로로 나열되는가

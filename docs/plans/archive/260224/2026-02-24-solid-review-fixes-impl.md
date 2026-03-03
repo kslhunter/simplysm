@@ -501,8 +501,8 @@ const DialogHeader = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setHea
 | `Dialog.tsx` | DialogAction | DialogSlotsContext | setAction |
 | `Dropdown.tsx` | DropdownTrigger | DropdownContext | setTrigger |
 | `Dropdown.tsx` | DropdownContent | DropdownContext | setContent |
-| `Kanban.tsx` | KanbanLaneTitle | KanbanLaneContext | setTitle |
-| `Kanban.tsx` | KanbanLaneTools | KanbanLaneContext | setTools |
+| `KanbanBoard.tsx` | KanbanLaneTitle | KanbanLaneContext | setTitle |
+| `KanbanBoard.tsx` | KanbanLaneTools | KanbanLaneContext | setTools |
 | `ListItem.tsx` | ListItemChildren | ListItemSlotsContext | setChildren |
 | `NumberInput.tsx` | NumberInputPrefix | NumberInputSlotsContext | setPrefix |
 | `TextInput.tsx` | TextInputPrefix | TextInputSlotsContext | setPrefix |

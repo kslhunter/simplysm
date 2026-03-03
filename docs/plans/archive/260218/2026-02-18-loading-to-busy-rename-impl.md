@@ -103,7 +103,7 @@ export * from "./components/feedback/busy/BusyProvider";
 - Modify: `packages/solid/src/providers/ConfigContext.ts:49` — `loadingVariant` → `busyVariant`
 - Modify: `packages/solid/src/providers/InitializeProvider.tsx:8,73` — imports + usage
 - Modify: `packages/solid/src/hooks/usePrint.ts:5,132` — `useLoading` → `useBusy`
-- Modify: `packages/solid/src/components/data/kanban/Kanban.tsx:19,417,449` — `LoadingContainer` → `BusyContainer`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoard.tsx:19,417,449` — `LoadingContainer` → `BusyContainer`
 
 **Step 1: Update ConfigContext.ts**
 
@@ -131,7 +131,7 @@ Line 5: `import { useLoading } from "../components/feedback/loading/LoadingConte
 Line 132: `const busy = useLoading();`
 → `const busy = useBusy();`
 
-**Step 4: Update Kanban.tsx**
+**Step 4: Update KanbanBoard.tsx**
 
 Line 19: `import { LoadingContainer } from "../../feedback/loading/LoadingContainer";`
 → `import { BusyContainer } from "../../feedback/busy/BusyContainer";`

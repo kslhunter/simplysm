@@ -1,4 +1,4 @@
-# Kanban Phase 2: DnD 구현 설계
+# KanbanBoard Phase 2: DnD 구현 설계
 
 > 작성일: 2026-02-10
 > 기반: `2026-02-10-kanban-redesign.md` Phase 2 (기능 1~9)
@@ -16,7 +16,7 @@
 
 ## 1. Context 타입
 
-### KanbanContext.ts
+### KanbanBoardContext.ts
 
 ```typescript
 // 드래그 중인 카드의 참조 정보
@@ -62,7 +62,7 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 
 ## 2. 역할 분담
 
-### Board (Kanban)
+### Board (KanbanBoard)
 
 | 역할                 | 구현                                           |
 | -------------------- | ---------------------------------------------- |
@@ -70,7 +70,7 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 | `onDropTo` 콜백      | `props.onDrop` 호출 + dragCard 초기화          |
 | 드래그 종료 정리     | `document:dragend` → `setDragCard(undefined)`  |
 
-### Lane (Kanban.Lane)
+### Lane (KanbanBoard.Lane)
 
 | 역할                   | 구현                                                        |
 | ---------------------- | ----------------------------------------------------------- |
@@ -81,7 +81,7 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 | Lane 이탈 감지         | `dragenter`/`dragleave` 카운터 패턴                         |
 | dragCard 리셋 시 정리  | `createEffect`로 dragCard가 undefined되면 dropTarget 초기화 |
 
-### Card (Kanban.Card)
+### Card (KanbanBoard.Card)
 
 | 역할             | 구현                                                                           |
 | ---------------- | ------------------------------------------------------------------------------ |
@@ -211,7 +211,7 @@ createEffect(() => {
 
 ## 6. Props 확장
 
-### Kanban (Board)
+### KanbanBoard (Board)
 
 ```typescript
 export interface KanbanProps<L = unknown, T = unknown> extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -219,7 +219,7 @@ export interface KanbanProps<L = unknown, T = unknown> extends JSX.HTMLAttribute
 }
 ```
 
-### Kanban.Card
+### KanbanBoard.Card
 
 ```typescript
 export interface KanbanCardProps<T = unknown> extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
@@ -230,7 +230,7 @@ export interface KanbanCardProps<T = unknown> extends Omit<JSX.HTMLAttributes<HT
 }
 ```
 
-### Kanban.Lane — 변경 없음
+### KanbanBoard.Lane — 변경 없음
 
 ---
 
@@ -271,15 +271,15 @@ dragover만 처리하면 됨 (dragleave 무시).
 
 | 파일                    | 변경 내용                                                                                                                                      |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `KanbanContext.ts`      | `KanbanCardRef`, `KanbanDropInfo`, `KanbanDropTarget` 타입 추가. Context 인터페이스 확장.                                                      |
-| `Kanban.tsx`            | Board: dragCard 시그널, onDropTo, document:dragend. Lane: dropTarget, placeholder, 카운터. Card: dragstart, dragover, drop, draggable, hidden. |
+| `KanbanBoardContext.ts`      | `KanbanCardRef`, `KanbanDropInfo`, `KanbanDropTarget` 타입 추가. Context 인터페이스 확장.                                                      |
+| `KanbanBoard.tsx`            | Board: dragCard 시그널, onDropTo, document:dragend. Lane: dropTarget, placeholder, 카운터. Card: dragstart, dragover, drop, draggable, hidden. |
 | `KanbanPage.tsx` (데모) | onDrop 핸들러 추가, DnD 동작 검증용 데이터 이동 로직.                                                                                          |
 
 ---
 
 ## 10. 구현 순서
 
-1. **Context 타입 확장** — KanbanContext.ts에 새 타입/인터페이스 추가
+1. **Context 타입 확장** — KanbanBoardContext.ts에 새 타입/인터페이스 추가
 2. **Board 확장** — dragCard 시그널, onDropTo, document:dragend, Props 확장
 3. **Lane 확장** — dropTarget 시그널, placeholder div, insertBefore 로직, 카운터 패턴
 4. **Card 확장** — dragstart, dragover, drop 핸들러, draggable prop, hidden 처리

@@ -75,7 +75,7 @@
 | ------------------- | --------------------------------------------------------- | -------------------------------------------------------------------- |
 | `DialogContext.ts`  | "useDialog must be used within a DialogProvider"          | "useDialog는 DialogProvider 내부에서만 사용할 수 있습니다"           |
 | `SidebarContext.ts` | "useSidebarContext must be used within SidebarContainer"  | "useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다" |
-| `KanbanContext.ts`  | "useKanbanContext must be used within Kanban" 등          | 한국어로 변경                                                        |
+| `KanbanBoardContext.ts`  | "useKanbanContext must be used within KanbanBoard" 등          | 한국어로 변경                                                        |
 | `SelectContext.ts`  | "useSelectContext must be used within a Select component" | "useSelectContext는 Select 컴포넌트 내부에서만 사용할 수 있습니다"   |
 
 - **변경 범위**: 4개 파일

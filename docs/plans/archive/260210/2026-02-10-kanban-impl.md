@@ -1,24 +1,24 @@
-# Kanban 컴포넌트 구현 계획
+# KanbanBoard 컴포넌트 구현 계획
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Angular 레거시의 Kanban Board/Lane/Card를 SolidJS 컴파운드 컴포넌트로 마이그레이션
+**Goal:** Angular 레거시의 KanbanBoard Board/Lane/Card를 SolidJS 컴파운드 컴포넌트로 마이그레이션
 
-**Architecture:** Kanban(Board) → Kanban.Lane → Kanban.Card 구조. KanbanContext로 드래그/선택 상태 공유, KanbanLaneContext로 레인 정보 전달. HTML Drag API 직접 사용. splitSlots로 LaneTitle/LaneTools 슬롯 분리.
+**Architecture:** KanbanBoard(Board) → KanbanBoard.Lane → KanbanBoard.Card 구조. KanbanContext로 드래그/선택 상태 공유, KanbanLaneContext로 레인 정보 전달. HTML Drag API 직접 사용. splitSlots로 LaneTitle/LaneTools 슬롯 분리.
 
 **Tech Stack:** SolidJS, Tailwind CSS, clsx, tailwind-merge, splitSlots
 
 ---
 
-### Task 1: KanbanContext 생성
+### Task 1: KanbanBoardContext 생성
 
 **Files:**
 
-- Create: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
+- Create: `packages/solid/src/components/layout/kanban/KanbanBoardContext.ts`
 
 **참조:** `packages/solid/src/components/layout/sidebar/SidebarContext.ts` 패턴
 
-**Step 1: KanbanContext 파일 작성**
+**Step 1: KanbanBoardContext 파일 작성**
 
 ```typescript
 import { createContext, useContext, type Accessor, type Setter } from "solid-js";
@@ -37,12 +37,12 @@ export interface KanbanContextValue<L = unknown, T = unknown> {
   onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined) => void;
 }
 
-export const KanbanContext = createContext<KanbanContextValue>();
+export const KanbanBoardContext = createContext<KanbanContextValue>();
 
 export function useKanbanContext(): KanbanContextValue {
-  const context = useContext(KanbanContext);
+  const context = useContext(KanbanBoardContext);
   if (!context) {
-    throw new Error("useKanbanContext must be used within Kanban");
+    throw new Error("useKanbanContext must be used within KanbanBoard");
   }
   return context;
 }
@@ -56,7 +56,7 @@ export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
 export function useKanbanLaneContext(): KanbanLaneContextValue {
   const context = useContext(KanbanLaneContext);
   if (!context) {
-    throw new Error("useKanbanLaneContext must be used within Kanban.Lane");
+    throw new Error("useKanbanLaneContext must be used within KanbanBoard.Lane");
   }
   return context;
 }
@@ -70,17 +70,17 @@ Expected: PASS
 **Step 3: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/KanbanContext.ts
-git commit -m "feat(solid): KanbanContext, KanbanLaneContext 추가"
+git add packages/solid/src/components/layout/kanban/KanbanBoardContext.ts
+git commit -m "feat(solid): KanbanBoardContext, KanbanLaneContext 추가"
 ```
 
 ---
 
-### Task 2: Kanban (Board) 컴포넌트
+### Task 2: KanbanBoard (Board) 컴포넌트
 
 **Files:**
 
-- Create: `packages/solid/src/components/layout/kanban/Kanban.tsx`
+- Create: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 
 **참조 패턴:**
 
@@ -88,20 +88,20 @@ git commit -m "feat(solid): KanbanContext, KanbanLaneContext 추가"
 - `packages/solid/src/components/display/Card.tsx` — 기본 스타일 패턴
 - `.legacy-packages/sd-angular/src/ui/layout/kanban/sd-kanban-board.control.ts` — 로직
 
-**Step 1: Kanban.tsx 기본 구조 작성**
+**Step 1: KanbanBoard.tsx 기본 구조 작성**
 
-Kanban 컴포넌트(Board 루트)를 작성한다. 이 단계에서는 Board만 구현하고, Lane/Card는 placeholder로 둔다.
+KanbanBoard 컴포넌트(Board 루트)를 작성한다. 이 단계에서는 Board만 구현하고, Lane/Card는 placeholder로 둔다.
 
 핵심 구현 사항:
 
-- `KanbanContext.Provider`로 드래그/선택 상태 공유
+- `KanbanBoardContext.Provider`로 드래그/선택 상태 공유
 - `document:dragend` 이벤트에서 드래그 상태 초기화
 - `onCleanup`으로 이벤트 리스너 정리
 - `interface KanbanComponent` 정의 (Lane, Card, LaneTitle, LaneTools)
 - 스타일: `inline-flex flex-nowrap h-full gap-4`
 
 ```typescript
-// Kanban 컴포넌트 핵심 로직
+// KanbanBoard 컴포넌트 핵심 로직
 const [dragValue, setDragValue] = createSignal<T>();
 
 const contextValue: KanbanContextValue<L, T> = {
@@ -134,17 +134,17 @@ Expected: PASS
 **Step 3: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban Board 컴포넌트 추가"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard Board 컴포넌트 추가"
 ```
 
 ---
 
-### Task 3: Kanban.Card 구현
+### Task 3: KanbanBoard.Card 구현
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx`
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 
 **참조:**
 
@@ -200,7 +200,7 @@ onDragOver={(e) => {
 **Step 2: Kanban에 Card 서브컴포넌트 할당**
 
 ```typescript
-Kanban.Card = KanbanCard;
+KanbanBoard.Card = KanbanCard;
 ```
 
 **Step 3: 타입체크 실행**
@@ -211,17 +211,17 @@ Expected: PASS
 **Step 4: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban.Card 컴포넌트 구현 (DnD + 선택)"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard.Card 컴포넌트 구현 (DnD + 선택)"
 ```
 
 ---
 
-### Task 4: Kanban.Lane 구현
+### Task 4: KanbanBoard.Lane 구현
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx`
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 
 **참조:**
 
@@ -288,9 +288,9 @@ const laneContentClass = clsx(
 **Step 3: Kanban에 Lane 서브컴포넌트 할당**
 
 ```typescript
-Kanban.Lane = KanbanLane;
-Kanban.LaneTitle = KanbanLaneTitle;
-Kanban.LaneTools = KanbanLaneTools;
+KanbanBoard.Lane = KanbanLane;
+KanbanBoard.LaneTitle = KanbanLaneTitle;
+KanbanBoard.LaneTools = KanbanLaneTools;
 ```
 
 **Step 4: 타입체크 실행**
@@ -301,8 +301,8 @@ Expected: PASS
 **Step 5: 커밋**
 
 ```bash
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban.Lane 컴포넌트 구현 (접기/busy/DnD)"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard.Lane 컴포넌트 구현 (접기/busy/DnD)"
 ```
 
 ---
@@ -318,8 +318,8 @@ git commit -m "feat(solid): Kanban.Lane 컴포넌트 구현 (접기/busy/DnD)"
 `// layout` 섹션에 추가:
 
 ```typescript
-export * from "./components/layout/kanban/Kanban";
-export * from "./components/layout/kanban/KanbanContext";
+export * from "./components/layout/kanban/KanbanBoard";
+export * from "./components/layout/kanban/KanbanBoardContext";
 ```
 
 **Step 2: 타입체크 실행**
@@ -331,7 +331,7 @@ Expected: PASS
 
 ```bash
 git add packages/solid/src/index.ts
-git commit -m "feat(solid): Kanban export 추가"
+git commit -m "feat(solid): KanbanBoard export 추가"
 ```
 
 ---
@@ -350,7 +350,7 @@ git commit -m "feat(solid): Kanban export 추가"
 
 데모 페이지에 다음 섹션을 포함:
 
-1. **기본 Kanban** — 3개 레인 + 카드 DnD
+1. **기본 KanbanBoard** — 3개 레인 + 카드 DnD
 2. **접기/펼치기** — collapsible 레인 데모
 3. **Shift+Click 선택** — 선택 상태 표시
 
@@ -368,24 +368,24 @@ export default function KanbanPage() {
 
   return (
     <Topbar.Container>
-      <Topbar><h1>Kanban</h1></Topbar>
+      <Topbar><h1>KanbanBoard</h1></Topbar>
       <div class="flex-1 overflow-auto p-6">
-        <Kanban onDrop={handleDrop}>
+        <KanbanBoard onDrop={handleDrop}>
           <For each={lanes()}>
             {(lane) => (
-              <Kanban.Lane value={lane.id} collapsible>
-                <Kanban.LaneTitle>{lane.name} ({lane.cards.length})</Kanban.LaneTitle>
+              <KanbanBoard.Lane value={lane.id} collapsible>
+                <KanbanBoard.LaneTitle>{lane.name} ({lane.cards.length})</KanbanBoard.LaneTitle>
                 <For each={lane.cards}>
                   {(card) => (
-                    <Kanban.Card value={card.id}>
+                    <KanbanBoard.Card value={card.id}>
                       {card.title}
-                    </Kanban.Card>
+                    </KanbanBoard.Card>
                   )}
                 </For>
-              </Kanban.Lane>
+              </KanbanBoard.Lane>
             )}
           </For>
-        </Kanban>
+        </KanbanBoard>
       </div>
     </Topbar.Container>
   );
@@ -400,7 +400,7 @@ export default function KanbanPage() {
 
 **Step 3: Home.tsx에 메뉴 추가**
 
-Data 섹션에 `{ title: "Kanban", href: "/home/data/kanban" }` 추가
+Data 섹션에 `{ title: "KanbanBoard", href: "/home/data/kanban" }` 추가
 
 **Step 4: 타입체크 실행**
 
@@ -411,7 +411,7 @@ Expected: PASS
 
 ```bash
 git add packages/solid-demo/src/pages/data/KanbanPage.tsx packages/solid-demo/src/main.tsx packages/solid-demo/src/pages/Home.tsx
-git commit -m "feat(solid-demo): Kanban 데모 페이지 추가"
+git commit -m "feat(solid-demo): KanbanBoard 데모 페이지 추가"
 ```
 
 ---
@@ -449,7 +449,7 @@ Run: `pnpm dev`
 
 **Step 2: 브라우저에서 확인**
 
-- Kanban 데모 페이지 접속
+- KanbanBoard 데모 페이지 접속
 - 카드 DnD 동작 확인
 - 레인 접기/펼치기 확인
 - Shift+Click 선택 확인

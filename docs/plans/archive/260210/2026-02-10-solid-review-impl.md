@@ -72,7 +72,7 @@ export { createControllableSignal } from "./utils/createControllableSignal";
 - `packages/solid/src/components/data/sheet/DataSheet.tsx`
 - `packages/solid/src/components/disclosure/Dialog.tsx`
 - `packages/solid/src/components/disclosure/Dropdown.tsx`
-- `packages/solid/src/components/layout/kanban/Kanban.tsx`
+- `packages/solid/src/components/layout/kanban/KanbanBoard.tsx`
 - `packages/solid/src/components/navigation/Tabs.tsx`
 
 각 파일에서:
@@ -938,7 +938,7 @@ git commit -m "fix(solid): ServiceClientProvider onCleanup에서 async 제거하
 
 - Modify: `packages/solid/src/components/disclosure/DialogContext.ts:41`
 - Modify: `packages/solid/src/components/layout/sidebar/SidebarContext.ts:27`
-- Modify: `packages/solid/src/components/layout/kanban/KanbanContext.ts:46,68`
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoardContext.ts:46,68`
 - Modify: `packages/solid/src/components/form-control/select/SelectContext.ts:22`
 - Modify: `packages/solid/src/contexts/ThemeContext.tsx:56`
 - Modify: `packages/solid/src/contexts/ServiceClientContext.ts:16`
@@ -965,22 +965,22 @@ throw new Error("useSidebarContext must be used within SidebarContainer");
 throw new Error("useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다");
 ```
 
-`KanbanContext.ts:46`:
+`KanbanBoardContext.ts:46`:
 
 ```typescript
 // 기존
-throw new Error("useKanbanContext must be used within Kanban");
+throw new Error("useKanbanContext must be used within KanbanBoard");
 // 변경
-throw new Error("useKanbanContext는 Kanban 내부에서만 사용할 수 있습니다");
+throw new Error("useKanbanContext는 KanbanBoard 내부에서만 사용할 수 있습니다");
 ```
 
-`KanbanContext.ts:68`:
+`KanbanBoardContext.ts:68`:
 
 ```typescript
 // 기존
-throw new Error("useKanbanLaneContext must be used within Kanban.Lane");
+throw new Error("useKanbanLaneContext must be used within KanbanBoard.Lane");
 // 변경
-throw new Error("useKanbanLaneContext는 Kanban.Lane 내부에서만 사용할 수 있습니다");
+throw new Error("useKanbanLaneContext는 KanbanBoard.Lane 내부에서만 사용할 수 있습니다");
 ```
 
 `SelectContext.ts:22`:

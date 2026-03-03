@@ -452,12 +452,12 @@ Task 7(Select)의 ItemTemplate 패턴과 동일.
 
 ---
 
-### Task 9: Kanban.Lane — 기존 Context 확장
+### Task 9: KanbanBoard.Lane — 기존 Context 확장
 
 **Files:**
-- Modify: `packages/solid/src/components/data/kanban/Kanban.tsx`
-- Modify: `packages/solid/src/components/data/kanban/KanbanContext.ts`
-- Test: `packages/solid/tests/components/data/kanban/Kanban.selection.spec.tsx`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoard.tsx`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoardContext.ts`
+- Test: `packages/solid/tests/components/data/kanban/KanbanBoard.selection.spec.tsx`
 
 **Step 1:** 기존 테스트 확인
 
@@ -479,7 +479,7 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 }
 ```
 
-**Step 3: Kanban.tsx 수정**
+**Step 3: KanbanBoard.tsx 수정**
 
 1. KanbanLaneTitle, KanbanLaneTools → Context 등록 패턴
 2. LaneInner에서 splitSlots 제거, Context signal 읽기

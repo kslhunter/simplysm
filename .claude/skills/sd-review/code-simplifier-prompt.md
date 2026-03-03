@@ -16,6 +16,11 @@ Use Glob to list all .ts files under the target path (exclude node_modules, dist
 
 ## Step 2: Understand the structure
 
+Read the following reference files for project conventions:
+- `CLAUDE.md` — project overview and conventions
+- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
+
+Then:
 - Map module dependencies and abstraction layers
 - Compare whether similar-role files use consistent patterns
 - Identify complexity hotspots: deep nesting, long functions, complex conditionals

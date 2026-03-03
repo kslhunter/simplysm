@@ -12,7 +12,7 @@ import {
   getFieldWrapperClass,
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { Invalid } from "../../form-control/Invalid";
+import { Invalid } from "../Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 interface TextInputSlotsContextValue {
@@ -20,8 +20,6 @@ interface TextInputSlotsContextValue {
 }
 
 const TextInputSlotsContext = createContext<TextInputSlotsContextValue>();
-
-type TextInputType = "text" | "password" | "email";
 
 const TextInputPrefix = createSlotComponent(TextInputSlotsContext, (ctx) => ctx.setPrefix);
 
@@ -33,7 +31,7 @@ export interface TextInputProps {
   onValueChange?: (value: string) => void;
 
   /** Input type */
-  type?: TextInputType;
+  type?: "text" | "password" | "email";
 
   /** Placeholder */
   placeholder?: string;
@@ -68,8 +66,8 @@ export interface TextInputProps {
   /** Maximum length */
   maxLength?: number;
 
-  /** Input pattern (regex string) */
-  pattern?: string;
+  /** Input pattern (regex string or RegExp) */
+  pattern?: string | RegExp;
 
   /** Custom validation function */
   validate?: (value: string) => string | undefined;
@@ -262,7 +260,7 @@ const TextInputInner = (props: TextInputProps) => {
         return i18n.t("validation.minLength", { min: String(local.minLength) });
       if (local.maxLength != null && v.length > local.maxLength)
         return i18n.t("validation.maxLength", { max: String(local.maxLength) });
-      if (local.pattern != null && !new RegExp(local.pattern).test(v))
+      if (local.pattern != null && !(local.pattern instanceof RegExp ? local.pattern : new RegExp(local.pattern)).test(v))
         return i18n.t("validation.invalidFormat");
     }
     return local.validate?.(v);

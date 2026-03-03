@@ -95,7 +95,7 @@
 - `packages/solid/tests/components/data/Pagination.spec.tsx`
 - `packages/solid/tests/components/data/Table.spec.tsx`
 - `packages/solid/tests/components/data/sheet/DataSheet.spec.tsx`
-- `packages/solid/tests/components/data/kanban/Kanban.selection.spec.tsx`
+- `packages/solid/tests/components/data/kanban/KanbanBoard.selection.spec.tsx`
 - `packages/solid/tests/hooks/createIMEHandler.spec.ts`
 - `packages/solid/tests/helpers/createAppStructure.spec.tsx`
 - `packages/solid/tests/helpers/mergeStyles.spec.ts`

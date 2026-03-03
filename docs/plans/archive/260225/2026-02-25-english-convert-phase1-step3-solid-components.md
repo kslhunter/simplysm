@@ -47,9 +47,9 @@ Calendar
 - [ ] `data/calendar/CalendarContext.ts`
 - [ ] `data/calendar/CalendarProvider.tsx`
 
-Kanban
-- [ ] `data/kanban/Kanban.tsx`
-- [ ] `data/kanban/KanbanContext.ts`
+KanbanBoard
+- [ ] `data/kanban/KanbanBoard.tsx`
+- [ ] `data/kanban/KanbanBoardContext.ts`
 - [ ] `data/kanban/KanbanItem.tsx`
 - [ ] `data/kanban/KanbanSelection.tsx`
 - [ ] `data/kanban/KanbanDragDropTypes.ts`
@@ -244,7 +244,7 @@ git commit -m "refactor: convert Korean comments to English in solid components"
 
 1. **Calendar component**: Has Korean day names in constants. Keep `["일", "월", ...]` constants, but translate surrounding comments. (Will revisit in Phase 5)
 
-2. **Kanban is complex**: This is a large, feature-rich component with many interactions. Take time to understand the logic. Multiple files related to selection, drag-drop, etc.
+2. **KanbanBoard is complex**: This is a large, feature-rich component with many interactions. Take time to understand the logic. Multiple files related to selection, drag-drop, etc.
 
 3. **Consistency**: UI term translations should match across all components (e.g., always "selection" not "select", "dialog" not "modal" unless that's the actual component name).
 

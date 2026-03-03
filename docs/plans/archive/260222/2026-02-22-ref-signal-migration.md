@@ -13,7 +13,7 @@
 | `TopbarMenu.tsx:66` | `mobileButtonRef` | `HTMLButtonElement` |
 | `TopbarMenu.tsx:114` | `buttonRef` | `HTMLButtonElement` |
 | `NotificationBell.tsx:56` | `buttonRef` | `HTMLButtonElement` |
-| `Kanban.tsx:401` | `bodyRef` | `HTMLDivElement` |
+| `KanbanBoard.tsx:401` | `bodyRef` | `HTMLDivElement` |
 
 참고: `Dialog.tsx`의 `wrapperRef`는 이미 변경 완료됨.
 

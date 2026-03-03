@@ -50,4 +50,4 @@ Future-proof against concurrent search operations.
 
 - `BusyProvider`, `SharedDataProvider` — already use busyCount
 - solid-demo — no direct usage of affected APIs
-- `Echarts`, `Kanban` busy props — UI toggle props, not internal state management
+- `Echarts`, `KanbanBoard` busy props — UI toggle props, not internal state management

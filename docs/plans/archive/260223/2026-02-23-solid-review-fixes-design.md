@@ -44,7 +44,7 @@
 
 ### P3-2: SlotAccessor → createSlotSignal 유틸리티
 
-- **파일:** Dialog, Dropdown, TextInput, NumberInput, Select, Kanban 등 7개+
+- **파일:** Dialog, Dropdown, TextInput, NumberInput, Select, KanbanBoard 등 7개+
 - **문제:** `SlotAccessor` 타입과 시그널 wrapper 패턴 반복.
 - **수정:** `createSlotSignal()` 유틸리티 추출.
 

@@ -17,7 +17,11 @@ This is your review scope — every file in this list must be examined.
 
 ## Step 2: Understand the codebase
 
-Read the project's CLAUDE.md for conventions. Then:
+Read the following reference files for project conventions:
+- `CLAUDE.md` — project overview and conventions
+- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
+
+Then:
 - Read index.ts to map the module structure
 - Read each source file to understand logic flows, data transformations, error paths
 

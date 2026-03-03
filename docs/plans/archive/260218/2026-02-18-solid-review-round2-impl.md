@@ -4,7 +4,7 @@
 
 **Goal:** Fix 2 bugs, improve 4 type definitions, and extract 4 shared utilities in the `packages/solid` package.
 
-**Architecture:** All changes are internal to `packages/solid`. New utility files (`createPointerDrag`, `createItemTemplate`, `createSelectionGroup`, `FieldWrapper`) are internal and NOT exported from `index.ts`. Public API preserved except Kanban gains generic type params with `= unknown` defaults.
+**Architecture:** All changes are internal to `packages/solid`. New utility files (`createPointerDrag`, `createItemTemplate`, `createSelectionGroup`, `FieldWrapper`) are internal and NOT exported from `index.ts`. Public API preserved except KanbanBoard gains generic type params with `= unknown` defaults.
 
 **Tech Stack:** SolidJS, TypeScript, Tailwind CSS, Vitest
 
@@ -144,17 +144,17 @@ git commit -m "fix(solid): use value() signal instead of local.value in field va
 
 ---
 
-### Task 3: Add Kanban generic type parameters (#4)
+### Task 3: Add KanbanBoard generic type parameters (#4)
 
 **Files:**
-- Modify: `packages/solid/src/components/data/kanban/Kanban.tsx:50-54,229-236,485-503,505,557,575`
+- Modify: `packages/solid/src/components/data/kanban/KanbanBoard.tsx:50-54,229-236,485-503,505,557,575`
 
-KanbanContext.ts already has generic defaults (`<L = unknown, T = unknown>`). The issue is that `Kanban.tsx` component props don't propagate these generics.
+KanbanBoardContext.ts already has generic defaults (`<L = unknown, T = unknown>`). The issue is that `KanbanBoard.tsx` component props don't propagate these generics.
 
 **Step 1: Add generics to KanbanCardProps**
 
 ```typescript
-// Kanban.tsx line 50-59 — replace:
+// KanbanBoard.tsx line 50-59 — replace:
 export interface KanbanCardProps<TCardValue = unknown> extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   "children" | "draggable"
@@ -170,7 +170,7 @@ export interface KanbanCardProps<TCardValue = unknown> extends Omit<
 **Step 2: Add generics to KanbanLaneProps**
 
 ```typescript
-// Kanban.tsx line 229-236 — replace:
+// KanbanBoard.tsx line 229-236 — replace:
 export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: TLaneValue;
   busy?: boolean;
@@ -184,7 +184,7 @@ export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<JSX.HTMLAttr
 **Step 3: Add generics to KanbanProps**
 
 ```typescript
-// Kanban.tsx line 485-493 — replace:
+// KanbanBoard.tsx line 485-493 — replace:
 export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   "children" | "onDrop"
@@ -199,7 +199,7 @@ export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends
 **Step 4: Update KanbanComponent interface**
 
 ```typescript
-// Kanban.tsx line 497-503 — replace:
+// KanbanBoard.tsx line 497-503 — replace:
 interface KanbanComponent {
   <TCardValue = unknown, TLaneValue = unknown>(props: KanbanProps<TCardValue, TLaneValue>): JSX.Element;
   Lane: typeof KanbanLane;
@@ -219,8 +219,8 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add packages/solid/src/components/data/kanban/Kanban.tsx
-git commit -m "feat(solid): add generic type parameters to Kanban component props"
+git add packages/solid/src/components/data/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): add generic type parameters to KanbanBoard component props"
 ```
 
 ---
@@ -1245,7 +1245,7 @@ If any failures, diagnose and fix before proceeding.
 Batch 1 (all independent — no file overlaps):
   Task 1: useSyncConfig race condition    → useSyncConfig.ts
   Task 2: Validation bug fix              → 6 field components
-  Task 3: Kanban generic types            → KanbanContext.ts, Kanban.tsx
+  Task 3: KanbanBoard generic types            → KanbanBoardContext.ts, KanbanBoard.tsx
   Task 4: Combobox loadItems sync         → Combobox.tsx
   Task 5: Size type consolidation         → tokens.styles.ts, Pagination, Progress, ColorPicker
   Task 7: createPointerDrag               → createPointerDrag.ts (new), Dialog.tsx, DataSheet.tsx

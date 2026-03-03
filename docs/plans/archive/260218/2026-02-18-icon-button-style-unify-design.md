@@ -2,7 +2,7 @@
 
 ## Problem
 
-Icon button-style controls across the `solid` package use inconsistent hover backgrounds, text colors, and focus ring styles. Components like `NotificationBell`, `ThemeToggle`, `EditorToolbar`, `SidebarUser`, `Kanban`, and `StatePreset` each define their own ad-hoc styles for similar UI patterns.
+Icon button-style controls across the `solid` package use inconsistent hover backgrounds, text colors, and focus ring styles. Components like `NotificationBell`, `ThemeToggle`, `EditorToolbar`, `SidebarUser`, `KanbanBoard`, and `StatePreset` each define their own ad-hoc styles for similar UI patterns.
 
 ## Decision
 
@@ -41,7 +41,7 @@ export const iconButtonBase = clsx(
 | ThemeToggle | `form-control/ThemeToggle.tsx` | `hover:bg-base-200`, `text-base-500/400`, `ring-2` | `p-1.5`, size variants |
 | EditorToolbar | `form-control/editor/EditorToolbar.tsx` | `hover:bg-base-100 dark:bg-base-800` | Per-button layout |
 | SidebarUser | `layout/sidebar/SidebarUser.tsx` | `hover:bg-base-500/10 dark:bg-base-800` | Sidebar-specific layout |
-| Kanban | `data/kanban/Kanban.tsx` | `hover:bg-base-200 dark:bg-base-800` | Card button context |
+| KanbanBoard | `data/kanban/KanbanBoard.tsx` | `hover:bg-base-200 dark:bg-base-800` | Card button context |
 | StatePreset | `form-control/state-preset/StatePreset.tsx` | `hover:bg-base-300 dark:bg-base-600` | Form control context |
 
 Each component uses `twMerge(iconButtonBase, ...)` to apply component-specific overrides (shape, padding, size) on top of the shared base.

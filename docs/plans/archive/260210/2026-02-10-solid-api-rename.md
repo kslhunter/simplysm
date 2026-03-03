@@ -185,7 +185,7 @@ export * from "./components/form-control/field/Textarea";
 - Rename: `packages/solid/src/components/form-control/checkbox/CheckBoxGroup.tsx` → `CheckboxGroup.tsx`
 - Modify: `packages/solid/src/index.ts` (줄 13-14, 16)
 - Rename: `packages/solid/tests/components/form-control/checkbox/CheckBox.spec.tsx` → `Checkbox.spec.tsx`
-- Modify: 다수의 내부 소비자 (Sheet.tsx, PermissionTable.tsx, Kanban.tsx, SheetConfigModal.tsx, RadioGroup.tsx)
+- Modify: 다수의 내부 소비자 (Sheet.tsx, PermissionTable.tsx, KanbanBoard.tsx, SheetConfigModal.tsx, RadioGroup.tsx)
 - Modify: 데모 파일 3개
 
 **Step 1: 파일 이름 변경**
@@ -241,7 +241,7 @@ export * from "./components/form-control/checkbox/CheckboxGroup";
 - `Sheet.tsx` (줄 28): `import { CheckBox }` → `import { Checkbox }`, JSX `<CheckBox` → `<Checkbox`
 - `SheetConfigModal.tsx` (줄 7): 동일
 - `PermissionTable.tsx` (줄 6): 동일
-- `Kanban.tsx` (줄 17): 동일
+- `KanbanBoard.tsx` (줄 17): 동일
 
 **Step 8: 테스트 및 데모 파일 수정**
 
@@ -331,7 +331,7 @@ export * from "./components/navigation/Tabs";
 - Rename: `BusyContainer.css` → `LoadingContainer.css`
 - Modify: `packages/solid/src/index.ts` (줄 69-71)
 - Modify: `packages/solid/src/contexts/usePrint.ts` (useBusy import)
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (BusyContainer import)
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx` (BusyContainer import)
 - Modify: `packages/solid-demo/src/pages/feedback/BusyPage.tsx`
 - Modify: `packages/solid-demo/src/pages/feedback/PrintPage.tsx`
 - Modify: `packages/solid/tests/print/usePrint.spec.tsx` (BusyProvider import)
@@ -384,7 +384,7 @@ export * from "./components/feedback/loading/LoadingContainer";
 **Step 7: 내부 소비자 수정**
 
 - `usePrint.ts`: `import { useBusy }` → `import { useLoading }`, 사용처 `useBusy()` → `useLoading()`
-- `Kanban.tsx`: `import { BusyContainer }` → `import { LoadingContainer }`, JSX `<BusyContainer` → `<LoadingContainer`
+- `KanbanBoard.tsx`: `import { BusyContainer }` → `import { LoadingContainer }`, JSX `<BusyContainer` → `<LoadingContainer`
 
 **Step 8: 테스트 및 데모 수정**
 

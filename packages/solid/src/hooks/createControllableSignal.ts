@@ -1,13 +1,4 @@
-import { createSignal, createEffect } from "solid-js";
-
-/**
- * Utility type that restricts function types.
- * If a function type is passed, it is converted to never, causing a compile-time error.
- *
- * @remarks
- * To store a function, wrap it in an object: `createControllableSignal<{ fn: () => void }>(...)`
- */
-type NotFunction<TValue> = TValue extends (...args: unknown[]) => unknown ? never : TValue;
+import { type Accessor, createEffect, createSignal, type Signal } from "solid-js";
 
 /**
  * Signal hook that supports the controlled/uncontrolled pattern.
@@ -36,8 +27,8 @@ type NotFunction<TValue> = TValue extends (...args: unknown[]) => unknown ? neve
  * ```
  */
 export function createControllableSignal<TValue>(options: {
-  value: () => TValue & NotFunction<TValue>;
-  onChange: () => ((value: TValue) => void) | undefined;
+  value: Accessor<TValue>;
+  onChange: Accessor<((value: TValue) => void) | undefined>;
 }) {
   const [internalValue, setInternalValue] = createSignal<TValue>(options.value());
 
@@ -47,18 +38,19 @@ export function createControllableSignal<TValue>(options: {
     setInternalValue(() => propValue);
   });
 
-  const isControlled = () => options.onChange() !== undefined;
+  const isControlled = () => options.onChange() != null;
   const value = () => (isControlled() ? options.value() : internalValue());
-  const setValue = (newValue: TValue | ((prev: TValue) => TValue)) => {
-    const resolved =
-      typeof newValue === "function" ? (newValue as (prev: TValue) => TValue)(value()) : newValue;
+  const setValue = (newValue: any) => {
+    const resolved = newValue instanceof Function ? newValue(value()) : newValue;
 
     if (isControlled()) {
       options.onChange()?.(resolved);
     } else {
       setInternalValue(() => resolved);
     }
+
+    return resolved;
   };
 
-  return [value, setValue] as const;
+  return [value, setValue] as Signal<TValue>;
 }

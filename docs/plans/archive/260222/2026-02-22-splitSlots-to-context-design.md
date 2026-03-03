@@ -51,7 +51,7 @@ const DialogHeader: ParentComponent = (props) => {
 | Combobox | `itemTemplate` | 기존 ComboboxContext에 추가 |
 | TextInput | `prefix` | 새 TextInputContext 생성 |
 | NumberInput | `prefix` | 새 NumberInputContext 생성 |
-| Kanban.Lane | `title`, `tools` | 기존 KanbanLaneContext에 추가 |
+| KanbanBoard.Lane | `title`, `tools` | 기존 KanbanLaneContext에 추가 |
 | ListItem | `children` | 기존 ListContext에 추가 또는 자체 Context |
 
 ## 삭제 대상
@@ -66,7 +66,7 @@ const DialogHeader: ParentComponent = (props) => {
 1. TextInput, NumberInput (슬롯 1개, Context 없음 — 가장 단순)
 2. Dialog (슬롯 2개, Context 없음)
 3. ListItem, SelectItem (구조적 children)
-4. Dropdown, Select, Combobox, Kanban.Lane (기존 Context 확장)
+4. Dropdown, Select, Combobox, KanbanBoard.Lane (기존 Context 확장)
 5. `splitSlots` 헬퍼 및 테스트 삭제
 
 ## 테스트

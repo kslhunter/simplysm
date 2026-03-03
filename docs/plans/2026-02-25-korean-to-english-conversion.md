@@ -527,7 +527,7 @@ Large package. Work through: src → tests (by directory) → css → md → con
 - Modify: `packages/solid/tests/components/disclosure/DialogProvider.spec.tsx`
 - Modify: `packages/solid/tests/components/disclosure/Collapse.spec.tsx`
 - Modify: `packages/solid/tests/components/data/sheet/DataSheet.spec.tsx`
-- Modify: `packages/solid/tests/components/data/kanban/Kanban.selection.spec.tsx`
+- Modify: `packages/solid/tests/components/data/kanban/KanbanBoard.selection.spec.tsx`
 - Modify: `packages/solid/tests/components/data/Table.spec.tsx`
 - Modify: `packages/solid/tests/components/data/List.spec.tsx`
 - Modify: `packages/solid/tests/components/data/Pagination.spec.tsx`

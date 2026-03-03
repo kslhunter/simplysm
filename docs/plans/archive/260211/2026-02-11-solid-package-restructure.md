@@ -4,7 +4,7 @@
 
 **Goal:** solid 패키지의 디렉토리 구조를 명확한 역할 기반으로 재편성
 
-**Architecture:** `contexts/` → `providers/`, `utils/` → `hooks/` + `helpers/`, 컴포넌트 카테고리 재배치 (ThemeToggle, Progress, Tabs, Kanban, Print), solid-demo 1:1 동기화
+**Architecture:** `contexts/` → `providers/`, `utils/` → `hooks/` + `helpers/`, 컴포넌트 카테고리 재배치 (ThemeToggle, Progress, Tabs, KanbanBoard, Print), solid-demo 1:1 동기화
 
 **Tech Stack:** TypeScript, SolidJS, git mv
 
@@ -154,7 +154,7 @@ rmdir packages/solid/src/utils
 - `components/data/calendar/Calendar.tsx:5`
 - `components/data/sheet/DataSheet.tsx:26`
 - `components/data/list/ListItem.tsx:8`
-- `components/layout/kanban/Kanban.tsx:20`
+- `components/layout/kanban/KanbanBoard.tsx:20`
 - `components/form-control/editor/RichTextEditor.tsx:16`
 - `components/form-control/checkbox/CheckboxGroup.tsx:3`
 - `components/form-control/checkbox/Radio.tsx:3`
@@ -190,7 +190,7 @@ rmdir packages/solid/src/utils
 `../../../utils/splitSlots` → `../../../helpers/splitSlots`:
 
 - `components/data/list/ListItem.tsx:11`
-- `components/layout/kanban/Kanban.tsx:21`
+- `components/layout/kanban/KanbanBoard.tsx:21`
 
 `../../../contexts/usePersisted` → `../../../hooks/usePersisted`:
 
@@ -266,7 +266,7 @@ git mv packages/solid/src/components/display/ThemeToggle.tsx packages/solid/src/
 # Progress: display/ → feedback/
 git mv packages/solid/src/components/display/Progress.tsx packages/solid/src/components/feedback/
 
-# Kanban: layout/kanban/ → data/kanban/
+# KanbanBoard: layout/kanban/ → data/kanban/
 git mv packages/solid/src/components/layout/kanban packages/solid/src/components/data/
 
 # Tabs: navigation/ → disclosure/
@@ -297,7 +297,7 @@ rmdir packages/solid/src/components/print
 
 - `"../../styles/tokens.styles"` → 경로 변경 없음 (feedback도 깊이 2)
 
-`components/data/kanban/Kanban.tsx`:
+`components/data/kanban/KanbanBoard.tsx`:
 
 - `"../../display/Card"` → 경로 변경 없음 (data와 layout 모두 깊이 2)
 - `"../../form-control/checkbox/Checkbox"` → 경로 변경 없음
@@ -346,7 +346,7 @@ export * from "./hooks/usePrint";
 // export * from "./components/print/usePrint";
 ```
 
-참고: Kanban은 index.ts에서 기존에 layout/kanban이 아닌 layout/sidebar처럼 export 안 되어 있을 수 있으니 현재 index.ts 확인 필요. (현재 index.ts에 Kanban export 없음 → 없으면 data/ 위치로 새로 추가)
+참고: Kanban은 index.ts에서 기존에 layout/kanban이 아닌 layout/sidebar처럼 export 안 되어 있을 수 있으니 현재 index.ts 확인 필요. (현재 index.ts에 KanbanBoard export 없음 → 없으면 data/ 위치로 새로 추가)
 
 **Step 4: 검증**
 
@@ -361,7 +361,7 @@ Expected: 에러 없음
 
 ```bash
 git add -A
-git commit -m "refactor(solid): 컴포넌트 카테고리 재배치 (ThemeToggle, Progress, Tabs, Kanban, Print)"
+git commit -m "refactor(solid): 컴포넌트 카테고리 재배치 (ThemeToggle, Progress, Tabs, KanbanBoard, Print)"
 ```
 
 ---
@@ -543,5 +543,5 @@ pnpm dev
 - ThemeToggle → Form Control 섹션
 - Progress → Feedback 섹션
 - Tabs → Disclosure 섹션
-- Kanban → Data 섹션
+- KanbanBoard → Data 섹션
 - 각 페이지 정상 렌더링

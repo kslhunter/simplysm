@@ -1,8 +1,8 @@
-# Kanban Phase 4: 선택 시스템 구현 계획
+# KanbanBoard Phase 4: 선택 시스템 구현 계획
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Kanban 컴포넌트에 Shift+Click 개별 선택, ring 피드백, 레인별 전체 선택 체크박스를 추가한다.
+**Goal:** KanbanBoard 컴포넌트에 Shift+Click 개별 선택, ring 피드백, 레인별 전체 선택 체크박스를 추가한다.
 
 **Architecture:** Board Context에 `selectedValues`/`toggleSelection`/`setSelectedValues`를 추가하고, Lane Context에 `registerCard`/`unregisterCard`를 추가한다. Card는 mount/unmount 시 Lane에 등록하며, Shift+Click 시 Board의 selection을 토글한다. Lane은 등록된 카드 목록으로 전체 선택 상태를 계산하여 CheckBox를 렌더링한다.
 
@@ -17,15 +17,15 @@
 
 ---
 
-## Task 1: KanbanContext 타입 확장
+## Task 1: KanbanBoardContext 타입 확장
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoardContext.ts`
 
 **Step 1: KanbanContextValue에 selection 필드 추가**
 
-`KanbanContext.ts`를 열고, `KanbanContextValue` 인터페이스에 3개 필드를 추가한다:
+`KanbanBoardContext.ts`를 열고, `KanbanContextValue` 인터페이스에 3개 필드를 추가한다:
 
 ```typescript
 export interface KanbanContextValue<L = unknown, T = unknown> {
@@ -63,23 +63,23 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 **Step 3: 타입체크 실행**
 
 Run: `cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign && pnpm typecheck packages/solid`
-Expected: 타입 에러 발생 (Kanban.tsx에서 Context 값 생성 시 새 필드 미구현). 이건 정상 — Task 2~4에서 해결.
+Expected: 타입 에러 발생 (KanbanBoard.tsx에서 Context 값 생성 시 새 필드 미구현). 이건 정상 — Task 2~4에서 해결.
 
 **Step 4: 커밋**
 
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
-git add packages/solid/src/components/layout/kanban/KanbanContext.ts
+git add packages/solid/src/components/layout/kanban/KanbanBoardContext.ts
 git commit -m "feat(solid): KanbanContext에 selection/card-registration 타입 추가"
 ```
 
 ---
 
-## Task 2: Board(Kanban)에 selection 상태 추가
+## Task 2: Board(KanbanBoard)에 selection 상태 추가
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanProps, KanbanBase 함수)
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx` (KanbanProps, KanbanBase 함수)
 
 **Step 1: KanbanProps 확장**
 
@@ -145,8 +145,8 @@ Expected: Lane과 Card에서 아직 에러 (Lane Context에 registerCard/unregis
 
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban Board에 selectedValues/toggleSelection 상태 추가"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard Board에 selectedValues/toggleSelection 상태 추가"
 ```
 
 ---
@@ -155,7 +155,7 @@ git commit -m "feat(solid): Kanban Board에 selectedValues/toggleSelection 상�
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanLane 함수, import)
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx` (KanbanLane 함수, import)
 
 **Step 1: import 추가**
 
@@ -301,8 +301,8 @@ Expected: Card에서 아직 타입 에러 가능 (selectable prop 미추가). Ta
 
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban Lane에 카드 등록 저장소 및 전체 선택 체크박스 추가"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard Lane에 카드 등록 저장소 및 전체 선택 체크박스 추가"
 ```
 
 ---
@@ -311,7 +311,7 @@ git commit -m "feat(solid): Kanban Lane에 카드 등록 저장소 및 전체 �
 
 **Files:**
 
-- Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanCardProps, KanbanCard 함수)
+- Modify: `packages/solid/src/components/layout/kanban/KanbanBoard.tsx` (KanbanCardProps, KanbanCard 함수)
 
 **Step 1: KanbanCardProps에 selectable 추가**
 
@@ -408,8 +408,8 @@ Expected: PASS (모든 타입 에러 해결)
 
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
-git add packages/solid/src/components/layout/kanban/Kanban.tsx
-git commit -m "feat(solid): Kanban Card에 selectable prop, Shift+Click 선택, ring 피드백 추가"
+git add packages/solid/src/components/layout/kanban/KanbanBoard.tsx
+git commit -m "feat(solid): KanbanBoard Card에 selectable prop, Shift+Click 선택, ring 피드백 추가"
 ```
 
 ---
@@ -418,7 +418,7 @@ git commit -m "feat(solid): Kanban Card에 selectable prop, Shift+Click 선택, 
 
 **Files:**
 
-- Create: `packages/solid/tests/components/layout/kanban/Kanban.selection.spec.tsx`
+- Create: `packages/solid/tests/components/layout/kanban/KanbanBoard.selection.spec.tsx`
 
 **Step 1: 테스트 파일 작성**
 
@@ -428,40 +428,40 @@ git commit -m "feat(solid): Kanban Card에 selectable prop, Shift+Click 선택, 
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal, For } from "solid-js";
-import { Kanban } from "../../../../src/components/layout/kanban/Kanban";
+import { KanbanBoard } from "../../../../src/components/layout/kanban/KanbanBoard";
 
-describe("Kanban 선택 시스템", () => {
-  // 테스트 헬퍼: 기본 Kanban 렌더링
+describe("KanbanBoard 선택 시스템", () => {
+  // 테스트 헬퍼: 기본 KanbanBoard 렌더링
   function renderKanban(options?: {
     selectedValues?: unknown[];
     onSelectedValuesChange?: (v: unknown[]) => void;
     selectable?: boolean;
   }) {
     return render(() => (
-      <Kanban
+      <KanbanBoard
         selectedValues={options?.selectedValues}
         onSelectedValuesChange={options?.onSelectedValuesChange}
         class="h-[400px]"
       >
-        <Kanban.Lane value="lane-1">
-          <Kanban.LaneTitle>Lane 1</Kanban.LaneTitle>
-          <Kanban.Card value={1} selectable={options?.selectable ?? true} contentClass="p-2">
+        <KanbanBoard.Lane value="lane-1">
+          <KanbanBoard.LaneTitle>Lane 1</KanbanBoard.LaneTitle>
+          <KanbanBoard.Card value={1} selectable={options?.selectable ?? true} contentClass="p-2">
             Card 1
-          </Kanban.Card>
-          <Kanban.Card value={2} selectable={options?.selectable ?? true} contentClass="p-2">
+          </KanbanBoard.Card>
+          <KanbanBoard.Card value={2} selectable={options?.selectable ?? true} contentClass="p-2">
             Card 2
-          </Kanban.Card>
-          <Kanban.Card value={3} selectable={false} contentClass="p-2">
+          </KanbanBoard.Card>
+          <KanbanBoard.Card value={3} selectable={false} contentClass="p-2">
             Card 3 (not selectable)
-          </Kanban.Card>
-        </Kanban.Lane>
-        <Kanban.Lane value="lane-2">
-          <Kanban.LaneTitle>Lane 2</Kanban.LaneTitle>
-          <Kanban.Card value={4} selectable contentClass="p-2">
+          </KanbanBoard.Card>
+        </KanbanBoard.Lane>
+        <KanbanBoard.Lane value="lane-2">
+          <KanbanBoard.LaneTitle>Lane 2</KanbanBoard.LaneTitle>
+          <KanbanBoard.Card value={4} selectable contentClass="p-2">
             Card 4
-          </Kanban.Card>
-        </Kanban.Lane>
-      </Kanban>
+          </KanbanBoard.Card>
+        </KanbanBoard.Lane>
+      </KanbanBoard>
     ));
   }
 
@@ -610,7 +610,7 @@ describe("Kanban 선택 시스템", () => {
 
 **Step 2: 테스트 실행**
 
-Run: `cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign && pnpm vitest packages/solid/tests/components/layout/kanban/Kanban.selection.spec.tsx --project=solid --run`
+Run: `cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign && pnpm vitest packages/solid/tests/components/layout/kanban/KanbanBoard.selection.spec.tsx --project=solid --run`
 Expected: 모든 테스트 PASS
 
 **Step 3: 실패하는 테스트가 있으면 수정**
@@ -621,8 +621,8 @@ Expected: 모든 테스트 PASS
 
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
-git add packages/solid/tests/components/layout/kanban/Kanban.selection.spec.tsx
-git commit -m "test(solid): Kanban 선택 시스템 단위 테스트 추가"
+git add packages/solid/tests/components/layout/kanban/KanbanBoard.selection.spec.tsx
+git commit -m "test(solid): KanbanBoard 선택 시스템 단위 테스트 추가"
 ```
 
 ---
@@ -651,29 +651,29 @@ const [selected, setSelected] = createSignal<number[]>([]);
   <p class="mb-2 text-sm text-base-500">Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.</p>
   <div class="mb-2 text-sm">선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}</div>
   <div class="h-[500px]">
-    <Kanban selectedValues={selected()} onSelectedValuesChange={setSelected} onDrop={handleDrop}>
+    <KanbanBoard selectedValues={selected()} onSelectedValuesChange={setSelected} onDrop={handleDrop}>
       <For each={lanes()}>
         {(lane) => (
-          <Kanban.Lane value={lane.id}>
-            <Kanban.LaneTitle>
+          <KanbanBoard.Lane value={lane.id}>
+            <KanbanBoard.LaneTitle>
               {lane.title} ({lane.cards.length})
-            </Kanban.LaneTitle>
-            <Kanban.LaneTools>
+            </KanbanBoard.LaneTitle>
+            <KanbanBoard.LaneTools>
               <Button size="sm" theme="primary" variant="ghost" class="size-8">
                 <Icon icon={IconPlus} />
               </Button>
-            </Kanban.LaneTools>
+            </KanbanBoard.LaneTools>
             <For each={lane.cards}>
               {(card) => (
-                <Kanban.Card value={card.id} selectable draggable contentClass="p-2">
+                <KanbanBoard.Card value={card.id} selectable draggable contentClass="p-2">
                   {card.title}
-                </Kanban.Card>
+                </KanbanBoard.Card>
               )}
             </For>
-          </Kanban.Lane>
+          </KanbanBoard.Lane>
         )}
       </For>
-    </Kanban>
+    </KanbanBoard>
   </div>
 </section>
 ```
@@ -688,7 +688,7 @@ Expected: PASS
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
 git add packages/solid-demo/src/pages/data/KanbanPage.tsx
-git commit -m "feat(solid-demo): Kanban 선택 데모 섹션 추가"
+git commit -m "feat(solid-demo): KanbanBoard 선택 데모 섹션 추가"
 ```
 
 ---
@@ -702,7 +702,7 @@ Run (background): `cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesi
 
 **Step 2: Playwright로 데모 페이지 열기**
 
-`browser_navigate`로 Kanban 데모 페이지를 연다. URL 패턴은 `http://localhost:{포트}/data/kanban`.
+`browser_navigate`로 KanbanBoard 데모 페이지를 연다. URL 패턴은 `http://localhost:{포트}/data/kanban`.
 
 **Step 3: 선택 섹션으로 스크롤**
 
@@ -746,5 +746,5 @@ Expected: PASS
 ```bash
 cd /home/kslhunter/projects/simplysm/.worktrees/kanban-redesign
 git add -A
-git commit -m "fix(solid): Kanban Phase 4 최종 검증 수정"
+git commit -m "fix(solid): KanbanBoard Phase 4 최종 검증 수정"
 ```

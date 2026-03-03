@@ -1,5 +1,5 @@
-import { type Context, type ParentComponent, onCleanup, useContext } from "solid-js";
 import type { JSX } from "solid-js";
+import { type Context, onCleanup, type ParentComponent, useContext } from "solid-js";
 
 type SlotSetter = (value: (() => JSX.Element) | undefined) => void;
 

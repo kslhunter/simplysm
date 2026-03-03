@@ -1,4 +1,4 @@
-# Kanban Phase 4: 선택 시스템 설계
+# KanbanBoard Phase 4: 선택 시스템 설계
 
 > 작성일: 2026-02-10
 > 기반: `2026-02-10-kanban-redesign.md` Phase 4 명세
@@ -7,7 +7,7 @@
 
 ## 1. 개요
 
-Kanban 컴포넌트에 카드 선택 기능을 추가한다:
+KanbanBoard 컴포넌트에 카드 선택 기능을 추가한다:
 
 - Shift+Click으로 개별 카드 선택/해제 토글
 - Board 레벨에서 `selectedValues` controlled 패턴 관리
@@ -18,7 +18,7 @@ Kanban 컴포넌트에 카드 선택 기능을 추가한다:
 
 ## 2. Context 변경
 
-### 2.1 KanbanContext (Board 레벨)
+### 2.1 KanbanBoardContext (Board 레벨)
 
 ```typescript
 export interface KanbanContextValue<L = unknown, T = unknown> {
@@ -264,8 +264,8 @@ const contextValue: KanbanContextValue = {
 
 | 파일                 | 변경 내용                                                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `KanbanContext.ts`   | `selectedValues`, `setSelectedValues`, `toggleSelection` (Board Context). `registerCard`, `unregisterCard` (Lane Context) |
-| `Kanban.tsx` — Board | `selectedValues`/`onSelectedValuesChange` props, `createPropSignal`, Context 확장                                         |
-| `Kanban.tsx` — Lane  | 카드 등록 저장소, 전체 선택 체크박스, `isAllSelected` 계산                                                                |
-| `Kanban.tsx` — Card  | `selectable` prop, `onClick` Shift 핸들러, ring 피드백, `registerCard`/`unregisterCard`                                   |
+| `KanbanBoardContext.ts`   | `selectedValues`, `setSelectedValues`, `toggleSelection` (Board Context). `registerCard`, `unregisterCard` (Lane Context) |
+| `KanbanBoard.tsx` — Board | `selectedValues`/`onSelectedValuesChange` props, `createPropSignal`, Context 확장                                         |
+| `KanbanBoard.tsx` — Lane  | 카드 등록 저장소, 전체 선택 체크박스, `isAllSelected` 계산                                                                |
+| `KanbanBoard.tsx` — Card  | `selectable` prop, `onClick` Shift 핸들러, ring 피드백, `registerCard`/`unregisterCard`                                   |
 | `KanbanPage.tsx`     | 선택 데모 섹션 추가                                                                                                       |

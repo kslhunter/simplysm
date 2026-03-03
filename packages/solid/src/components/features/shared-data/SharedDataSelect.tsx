@@ -11,12 +11,12 @@ import { IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
-import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
+import { type DialogShowOptions, useDialog } from "../../disclosure/DialogContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 import {
-  type SelectDialogBaseProps,
   type DialogPropsField,
+  type SelectDialogBaseProps,
 } from "../data-select-button/DataSelectButton";
 
 // -- Slot detection --
@@ -35,11 +35,18 @@ interface ActionDef {
 }
 
 function isItemTemplateDef(v: unknown): v is ItemTemplateDef {
-  return v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ITEM_TEMPLATE_BRAND;
+  return (
+    v != null &&
+    typeof v === "object" &&
+    "__brand" in v &&
+    (v as any).__brand === ITEM_TEMPLATE_BRAND
+  );
 }
 
 function isActionDef(v: unknown): v is ActionDef {
-  return v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ACTION_BRAND;
+  return (
+    v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ACTION_BRAND
+  );
 }
 
 // -- Compound components --
@@ -104,12 +111,26 @@ interface SharedDataSelectComponent {
   Action: typeof Action;
 }
 
-const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps>(
+const SharedDataSelectBase = <
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+>(
   props: SharedDataSelectProps<TItem, TDialogProps>,
 ): JSX.Element => {
   const [local, rest] = splitProps(props as any, [
-    "data", "filterFn", "dialog", "dialogProps", "dialogOptions", "children",
-  ]) as unknown as [typeof props, Omit<typeof props, "data" | "filterFn" | "dialog" | "dialogProps" | "dialogOptions" | "children">];
+    "data",
+    "filterFn",
+    "dialog",
+    "dialogProps",
+    "dialogOptions",
+    "children",
+  ]) as unknown as [
+    typeof props,
+    Omit<
+      typeof props,
+      "data" | "filterFn" | "dialog" | "dialogProps" | "dialogOptions" | "children"
+    >,
+  ];
 
   const i18n = useI18n();
   const dialog = useDialog();
@@ -147,7 +168,9 @@ const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps 
     const key = rest.value;
     if (key === undefined || key === null) return undefined;
     if (Array.isArray(key)) {
-      return key.map((k) => keyToItem(k as string | number)).filter((v): v is TItem => v !== undefined);
+      return key
+        .map((k) => keyToItem(k as string | number))
+        .filter((v): v is TItem => v !== undefined);
     }
     return keyToItem(key as string | number);
   });
@@ -163,7 +186,7 @@ const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps 
   const handleOpenDialog = async () => {
     if (!local.dialog) return;
 
-    const result = await dialog.show(
+    const result = (await dialog.show(
       local.dialog as any,
       {
         ...((local as any).dialogProps ?? {}),
@@ -171,7 +194,7 @@ const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps 
         selectedKeys: normalizeKeys(rest.value),
       },
       local.dialogOptions,
-    ) as { selectedKeys: (string | number)[] } | undefined;
+    )) as { selectedKeys: (string | number)[] } | undefined;
 
     if (result) {
       const newKeys = result.selectedKeys;
@@ -219,16 +242,15 @@ const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps 
         <Select.ItemTemplate>{defs().itemTemplate!.children}</Select.ItemTemplate>
       )}
       {local.dialog && (
-        <Select.Action onClick={() => void handleOpenDialog()} aria-label={i18n.t("sharedDataSelect.search")}>
+        <Select.Action
+          onClick={() => void handleOpenDialog()}
+          aria-label={i18n.t("sharedDataSelect.search")}
+        >
           <Icon icon={IconSearch} />
         </Select.Action>
       )}
       <For each={defs().actions}>
-        {(action) => (
-          <Select.Action onClick={action.onClick}>
-            {action.children}
-          </Select.Action>
-        )}
+        {(action) => <Select.Action onClick={action.onClick}>{action.children}</Select.Action>}
       </For>
     </Select>
   );

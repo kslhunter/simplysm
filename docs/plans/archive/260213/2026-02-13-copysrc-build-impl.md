@@ -341,7 +341,7 @@ Expected: `packages/solid/dist/` 내에 다음 CSS 파일들이 존재:
 - `components/display/Card.css`
 - `components/feedback/loading/LoadingContainer.css`
 - `components/data/sheet/DataSheet.css`
-- `components/data/kanban/Kanban.css`
+- `components/data/kanban/KanbanBoard.css`
 - `components/form-control/editor/editor.css`
 
 **Step 4: Commit**

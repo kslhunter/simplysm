@@ -647,7 +647,7 @@ export const appStructure = createAppStructure({
             { code: "pagination", title: "Pagination", component: lazy(() => import("./pages/data/PaginationPage")) },
             { code: "sheet", title: "Sheet", component: lazy(() => import("./pages/data/SheetPage")) },
             { code: "sheet-full", title: "Sheet (Full)", component: lazy(() => import("./pages/data/SheetFullPage")) },
-            { code: "kanban", title: "Kanban", component: lazy(() => import("./pages/data/KanbanPage")) },
+            { code: "kanban", title: "KanbanBoard", component: lazy(() => import("./pages/data/KanbanPage")) },
             { code: "calendar", title: "Calendar", component: lazy(() => import("./pages/data/CalendarPage")) },
           ],
         },
