@@ -203,7 +203,7 @@ export function DataSelectButton<
         selectedKeys: normalizeKeys(getValue()) as (string | number)[],
       },
       local.dialogOptions,
-    );
+    ) as DataSelectDialogResult<TKey> | undefined;
 
     if (result) {
       const newKeys = result.selectedKeys;
