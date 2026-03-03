@@ -1,6 +1,5 @@
 import { type Component, createSignal, onMount } from "solid-js";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 
 export interface AddressSearchResult {
   postNumber: string | undefined;
@@ -8,9 +7,9 @@ export interface AddressSearchResult {
   buildingName: string | undefined;
 }
 
-export const AddressSearchContent: Component = () => {
-  const dialogInstance = useDialogInstance<AddressSearchResult>();
-
+export const AddressSearchContent: Component<{
+  close?: (result?: AddressSearchResult) => void;
+}> = (props) => {
   const [initialized, setInitialized] = createSignal(false);
   let contentEl!: HTMLDivElement;
 
@@ -51,7 +50,7 @@ export const AddressSearchContent: Component = () => {
           }
         }
 
-        dialogInstance?.close({
+        props.close?.({
           postNumber: data.zonecode,
           address: addr + extraAddr,
           buildingName: data.buildingName,
