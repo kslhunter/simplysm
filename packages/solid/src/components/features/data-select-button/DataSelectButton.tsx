@@ -16,7 +16,6 @@ import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
@@ -191,20 +190,18 @@ export function DataSelectButton<TItem, TKey = string | number>(
   const handleOpenDialog = async () => {
     if (local.disabled) return;
 
-    const result = await dialog.show<DataSelectDialogResult<TKey>>(
-      () => {
-        const instance = useDialogInstance<DataSelectDialogResult<TKey>>();
-        return (
-          <local.dialog.component
-            {...(local.dialog.props ?? {})}
-            selectMode={local.multiple ? "multiple" : "single"}
-            selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
-            onSelect={(r: { keys: (string | number)[] }) =>
-              instance?.close({ selectedKeys: r.keys as TKey[] })
-            }
-          />
-        );
-      },
+    const result = await dialog.show(
+      (props: { close?: (result?: DataSelectDialogResult<TKey>) => void }) => (
+        <local.dialog.component
+          {...(local.dialog.props ?? {})}
+          selectMode={local.multiple ? "multiple" : "single"}
+          selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
+          onSelect={(r: { keys: (string | number)[] }) =>
+            props.close?.({ selectedKeys: r.keys as TKey[] })
+          }
+        />
+      ),
+      {},
       local.dialog.option ?? {},
     );
 

@@ -12,7 +12,6 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 import {
@@ -159,20 +158,18 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
     if (!local.dialog) return;
 
     const dialogConfig = local.dialog;
-    const result = await dialog.show<DataSelectDialogResult<string | number>>(
-      () => {
-        const instance = useDialogInstance<DataSelectDialogResult<string | number>>();
-        return (
-          <dialogConfig.component
-            {...(dialogConfig.props ?? {})}
-            selectMode={rest.multiple ? "multiple" : "single"}
-            selectedKeys={normalizeKeys(rest.value)}
-            onSelect={(r: { keys: (string | number)[] }) =>
-              instance?.close({ selectedKeys: r.keys })
-            }
-          />
-        );
-      },
+    const result = await dialog.show(
+      (props: { close?: (result?: DataSelectDialogResult<string | number>) => void }) => (
+        <dialogConfig.component
+          {...(dialogConfig.props ?? {})}
+          selectMode={rest.multiple ? "multiple" : "single"}
+          selectedKeys={normalizeKeys(rest.value)}
+          onSelect={(r: { keys: (string | number)[] }) =>
+            props.close?.({ selectedKeys: r.keys })
+          }
+        />
+      ),
+      {},
       dialogConfig.option ?? {},
     );
 
