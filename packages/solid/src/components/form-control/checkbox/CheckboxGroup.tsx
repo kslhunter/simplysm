@@ -32,7 +32,7 @@ interface CheckboxGroupProps<TValue> {
 
 function CheckboxGroupInner<TValue = unknown>(props: CheckboxGroupProps<TValue>): JSX.Element {
   const [value, setValue] = createControllableSignal<unknown[]>({
-    value: () => (props.value as unknown[]) ?? [],
+    value: () => (props.value ?? []) as unknown[],
     onChange: () => props.onValueChange as ((v: unknown[]) => void) | undefined,
   });
 
