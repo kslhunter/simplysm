@@ -46,11 +46,15 @@ export function SharedDataSelectButton<
 ): JSX.Element {
   const [local, rest] = splitProps(props as any, ["data", "children"]);
 
-  return (
-    <DataSelectButton
-      load={(keys) => local.data.items().filter((item) => keys.includes(local.data.getKey(item)))}
-      renderItem={local.children}
-      {...rest}
-    />
-  );
+  const dataSelectProps = {
+    ...rest,
+    load: (keys: (string | number)[]) =>
+      (local as any).data.items().filter((item: TItem) => keys.includes((local as any).data.getKey(item))),
+    renderItem: (local as any).children,
+  } as unknown as DataSelectButtonProps<TItem, string | number, TDialogProps>;
+
+  // DataSelectButton is called as a function to avoid JSX failing to resolve
+  // the conditional type DialogPropsField<TDialogProps> when TDialogProps is generic.
+  // eslint-disable-next-line new-cap
+  return DataSelectButton(dataSelectProps);
 }
