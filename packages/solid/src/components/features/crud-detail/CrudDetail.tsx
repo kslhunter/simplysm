@@ -19,7 +19,6 @@ import { useNotification } from "../../feedback/notification/NotificationContext
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
 import { useI18n } from "../../../providers/i18n/I18nContext";
@@ -60,15 +59,14 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     "deletable",
     "data",
     "onDataChange",
+    "close",
     "class",
   ]);
 
   const noti = useNotification();
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
-  const dialogInstance = useDialogInstance<boolean>();
-
-  const isInDialog = dialogInstance !== undefined;
+  const isInDialog = local.close !== undefined;
 
   const canEdit = () => local.editable ?? true;
 
@@ -140,8 +138,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       const result = await local.submit(objClone(unwrap(data)));
       if (result) {
         noti.success(i18n.t("crudDetail.saveCompleted"), i18n.t("crudDetail.saveSuccess"));
-        if (dialogInstance) {
-          dialogInstance.close(true);
+        if (local.close) {
+          local.close(true);
         } else {
           await doLoad();
         }
@@ -172,8 +170,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       const result = await local.toggleDelete(del);
       if (result) {
         noti.success(del ? i18n.t("crudDetail.deleteCompleted") : i18n.t("crudDetail.restoreCompleted"), del ? i18n.t("crudDetail.deleteSuccess") : i18n.t("crudDetail.restoreSuccess"));
-        if (dialogInstance) {
-          dialogInstance.close(true);
+        if (local.close) {
+          local.close(true);
         } else {
           await doLoad();
         }

@@ -98,6 +98,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   onSelect?: (result: SelectResult<TItem>) => void;
   onSubmitted?: () => void;
   hideAutoTools?: boolean;
+  close?: () => void;
   class?: string;
   children: JSX.Element;
 }

@@ -37,6 +37,9 @@ export interface CrudDetailProps<TData extends object> {
   data?: TData;
   onDataChange?: (data: TData) => void;
 
+  /** Close dialog with result (injected by DialogProvider when in dialog mode) */
+  close?: (result?: boolean) => void;
+
   class?: string;
 }
 

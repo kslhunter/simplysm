@@ -26,7 +26,6 @@ import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
 import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { Link } from "../../display/Link";
 import { createEventListener } from "@solid-primitives/event-listener";
@@ -90,6 +89,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "selectMode",
     "onSelect",
     "hideAutoTools",
+    "close",
     "class",
     "children",
   ]);
@@ -97,8 +97,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const noti = useNotification();
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
-  const dialogInstance = useDialogInstance();
-  const isInDialog = dialogInstance !== undefined;
+  const isInDialog = local.close !== undefined;
   const isSelectMode = () => local.selectMode != null;
   const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
 
