@@ -41,7 +41,6 @@ export * from "./components/form-control/Invalid";
 export * from "./components/layout/FormGroup";
 export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
-export * from "./components/layout/sidebar/SidebarContext";
 export * from "./components/layout/topbar/Topbar";
 export * from "./components/layout/topbar/TopbarContext";
 
@@ -79,8 +78,6 @@ export * from "./components/display/Alert";
 export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
-export * from "./components/disclosure/DialogContext";
-export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
 //#endregion

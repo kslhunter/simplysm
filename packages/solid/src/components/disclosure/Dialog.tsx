@@ -10,8 +10,10 @@ import {
   Show,
   splitProps,
   useContext,
+  type Accessor,
+  type Component,
 } from "solid-js";
-import { Portal } from "solid-js/web";
+import { Portal, Dynamic } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
@@ -24,9 +26,85 @@ import { mergeStyles } from "../../helpers/mergeStyles";
 import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
-import { DialogDefaultsContext } from "./DialogContext";
 import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
+
+//#region Dialog Context Types & Utilities
+
+/** Dialog default configuration */
+export interface DialogDefaults {
+  /** Allow closing via ESC key */
+  closeOnEscape?: boolean;
+  /** Allow closing via backdrop click */
+  closeOnBackdrop?: boolean;
+}
+
+/** Dialog default configuration Context */
+export const DialogDefaultsContext = createContext<Accessor<DialogDefaults>>();
+
+/** Programmatic dialog options */
+export interface DialogShowOptions {
+  /** Dialog header */
+  header?: JSX.Element;
+  /** Show close button */
+  closable?: boolean;
+  /** Close on backdrop click */
+  closeOnBackdrop?: boolean;
+  /** Close on ESC key */
+  closeOnEscape?: boolean;
+  /** Resizable */
+  resizable?: boolean;
+  /** Draggable */
+  movable?: boolean;
+  /** Floating mode (fixed to bottom-right) */
+  float?: boolean;
+  /** Fill full screen */
+  fill?: boolean;
+  /** Initial width (px) */
+  width?: number;
+  /** Initial height (px) */
+  height?: number;
+  /** Minimum width (px) */
+  minWidth?: number;
+  /** Minimum height (px) */
+  minHeight?: number;
+  /** Floating position */
+  position?: "bottom-right" | "top-right";
+  /** Custom header style */
+  headerStyle?: JSX.CSSProperties | string;
+  /** Confirmation function before closing (return false to cancel) */
+  canDeactivate?: () => boolean;
+}
+
+/** Extract result type from component's close prop */
+export type ExtractCloseResult<P> =
+  P extends { close?: (result?: infer T) => void } ? T : undefined;
+
+/** Programmatic dialog Context value */
+export interface DialogContextValue {
+  /** Open dialog and wait until closing, returns result */
+  show<P extends Record<string, any>>(
+    component: Component<P>,
+    props: "close" extends keyof P ? Omit<P, "close"> : never,
+    options?: DialogShowOptions,
+  ): Promise<ExtractCloseResult<P> | undefined>;
+}
+
+/** Programmatic dialog Context */
+export const DialogContext = createContext<DialogContextValue>();
+
+/**
+ * Hook to access programmatic dialogs
+ *
+ * @throws Throws error if DialogProvider is not present
+ */
+export function useDialog(): DialogContextValue {
+  const ctx = useContext(DialogContext);
+  if (!ctx) throw new Error("useDialog can only be used inside DialogProvider");
+  return ctx;
+}
+
+//#endregion
 
 interface DialogSlotsContextValue {
   setHeader: (content: SlotAccessor) => void;
@@ -139,12 +217,7 @@ const resizePositionMap: Record<ResizeDirection, string> = {
  * </Dialog>
  * ```
  */
-interface DialogComponent extends ParentComponent<DialogProps> {
-  Header: typeof DialogHeader;
-  Action: typeof DialogAction;
-}
-
-export const Dialog: DialogComponent = (props) => {
+const DialogInner: ParentComponent<DialogProps> = (props) => {
   const dialogDefaults = useContext(DialogDefaultsContext);
   const i18n = useI18n();
 
@@ -560,5 +633,141 @@ export const Dialog: DialogComponent = (props) => {
   );
 };
 
-Dialog.Header = DialogHeader;
-Dialog.Action = DialogAction;
+//#region Export
+export const Dialog = Object.assign(DialogInner, {
+  Header: DialogHeader,
+  Action: DialogAction,
+});
+//#endregion
+
+//#region DialogProvider
+
+interface DialogEntry {
+  id: string;
+  component: Component<any>;
+  props: Record<string, any>;
+  options: DialogShowOptions;
+  resolve: (result: unknown) => void;
+  open: Accessor<boolean>;
+  setOpen: (value: boolean) => void;
+  pendingResult?: unknown;
+}
+
+let nextId = 0;
+
+/**
+ * Programmatic dialog Provider
+ *
+ * Open dialogs with `useDialog().show(component, props, options)`,
+ * and close them with `props.close(result)` to resolve the Promise.
+ *
+ * @example
+ * ```tsx
+ * <DialogProvider>
+ *   <App />
+ * </DialogProvider>
+ * ```
+ */
+export interface DialogProviderProps extends DialogDefaults {}
+
+export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
+  const [local, _rest] = splitProps(props, ["closeOnEscape", "closeOnBackdrop", "children"]);
+
+  const defaults = () => ({
+    closeOnEscape: local.closeOnEscape,
+    closeOnBackdrop: local.closeOnBackdrop,
+  });
+
+  const [entries, setEntries] = createSignal<DialogEntry[]>([]);
+
+  const show = <P extends Record<string, any>,>(
+    component: Component<P>,
+    componentProps: Record<string, any>,
+    options?: DialogShowOptions,
+  ): Promise<any> => {
+    return new Promise((resolve) => {
+      const id = String(nextId++);
+      const [open, setOpen] = createSignal(true);
+      const entry: DialogEntry = {
+        id,
+        component,
+        props: componentProps,
+        options: options ?? {},
+        resolve,
+        open,
+        setOpen,
+      };
+      setEntries((prev) => [...prev, entry]);
+    });
+  };
+
+  // Start close animation (set open to false)
+  const requestClose = (id: string, result?: unknown) => {
+    const entry = entries().find((e) => e.id === id);
+    if (entry) {
+      entry.pendingResult = result;
+      entry.setOpen(false);
+    }
+  };
+
+  // Actually remove after animation completes
+  const removeEntry = (id: string) => {
+    setEntries((prev) => {
+      const entry = prev.find((e) => e.id === id);
+      if (entry) {
+        entry.resolve(entry.pendingResult);
+      }
+      return prev.filter((e) => e.id !== id);
+    });
+  };
+
+  const contextValue: DialogContextValue = {
+    show,
+  };
+
+  return (
+    <DialogDefaultsContext.Provider value={defaults}>
+      <DialogContext.Provider value={contextValue}>
+        {local.children}
+        <For each={entries()}>
+          {(entry) => (
+            <Dialog
+              open={entry.open()}
+              onOpenChange={(open) => {
+                if (!open && entry.pendingResult === undefined) {
+                  requestClose(entry.id);
+                }
+              }}
+              onCloseComplete={() => removeEntry(entry.id)}
+              closable={entry.options.closable}
+              closeOnBackdrop={entry.options.closeOnBackdrop}
+              closeOnEscape={entry.options.closeOnEscape}
+              resizable={entry.options.resizable}
+              movable={entry.options.movable}
+              float={entry.options.float}
+              fill={entry.options.fill}
+              width={entry.options.width}
+              height={entry.options.height}
+              minWidth={entry.options.minWidth}
+              minHeight={entry.options.minHeight}
+              position={entry.options.position}
+              headerStyle={entry.options.headerStyle}
+              canDeactivate={entry.options.canDeactivate}
+            >
+              <Show when={entry.options.header !== undefined}>
+                <Dialog.Header>{entry.options.header}</Dialog.Header>
+              </Show>
+              <Dynamic
+                component={entry.component}
+                {...entry.props}
+                close={(result?: unknown) => requestClose(entry.id, result)}
+              />
+            </Dialog>
+          )}
+        </For>
+      </DialogContext.Provider>
+    </DialogDefaultsContext.Provider>
+  );
+};
+
+//#endregion
