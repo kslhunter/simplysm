@@ -1,17 +1,21 @@
-import { type JSX, splitProps } from "solid-js";
+import { type Component, type JSX, splitProps } from "solid-js";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import {
   DataSelectButton,
   type DataSelectButtonProps,
-  type DialogConfig,
+  type SelectDialogBaseProps,
+  type DialogPropsField,
 } from "../data-select-button/DataSelectButton";
+import { type DialogShowOptions } from "../../disclosure/DialogContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 
 /** SharedDataSelectButton Props */
-export interface SharedDataSelectButtonProps<TItem> {
+export type SharedDataSelectButtonProps<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> = {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
-
   /** Currently selected key(s) (single or multiple) */
   value?: DataSelectButtonProps<TItem>["value"];
   /** Value change callback */
@@ -26,17 +30,21 @@ export interface SharedDataSelectButtonProps<TItem> {
   size?: ComponentSize;
   /** Borderless style */
   inset?: boolean;
-
-  /** Selection dialog configuration */
-  dialog: DialogConfig;
+  /** Selection dialog component */
+  dialog: Component<TDialogProps>;
+  /** Dialog options (header, size, etc.) */
+  dialogOptions?: DialogShowOptions;
   /** Item rendering function */
   children: (item: TItem) => JSX.Element;
-}
+} & DialogPropsField<TDialogProps>;
 
-export function SharedDataSelectButton<TItem>(
-  props: SharedDataSelectButtonProps<TItem>,
+export function SharedDataSelectButton<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+>(
+  props: SharedDataSelectButtonProps<TItem, TDialogProps>,
 ): JSX.Element {
-  const [local, rest] = splitProps(props, ["data", "children"]);
+  const [local, rest] = splitProps(props as any, ["data", "children"]);
 
   return (
     <DataSelectButton
