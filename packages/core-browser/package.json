@@ -26,6 +26,6 @@
     "tabbable": "^6.4.0"
   },
   "devDependencies": {
-    "happy-dom": "^20.7.0"
+    "happy-dom": "^20.8.3"
   }
 }
