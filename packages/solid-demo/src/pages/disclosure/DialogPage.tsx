@@ -1,16 +1,15 @@
 import { createSignal } from "solid-js";
-import { Button, Dialog, useDialog, useDialogInstance } from "@simplysm/solid";
+import { Button, Dialog, useDialog } from "@simplysm/solid";
 
-function SampleDialogContent() {
-  const dialog = useDialogInstance<string>();
+function SampleDialogContent(props: { close?: (result?: string) => void }) {
   return (
     <div class="space-y-4 p-4">
       <p class="text-sm">This dialog was opened programmatically.</p>
       <div class="flex gap-2">
-        <Button theme="primary" variant="solid" onClick={() => dialog?.close("OK")}>
+        <Button theme="primary" variant="solid" onClick={() => props.close?.("OK")}>
           OK
         </Button>
-        <Button onClick={() => dialog?.close()}>Cancel</Button>
+        <Button onClick={() => props.close?.()}>Cancel</Button>
       </div>
     </div>
   );
@@ -38,7 +37,7 @@ export default function ModalPage() {
   const [resizableOpen, setResizableOpen] = createSignal(false);
 
   const handleProgrammaticOpen = async () => {
-    const result = await dialog.show<string>(() => <SampleDialogContent />, {
+    const result = await dialog.show(SampleDialogContent, {}, {
       header: "Programmatic Dialog",
       closeOnBackdrop: true,
       closeOnEscape: true,
