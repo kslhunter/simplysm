@@ -484,9 +484,6 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
 
 //#endregion
 
-export type { SidebarContainerProps };
-export type { SidebarMenuProps };
-export type { SidebarUserMenu, SidebarUserProps };
 
 //#region ========== Sidebar ==========
 

@@ -18,7 +18,7 @@ import clsx from "clsx";
 import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
-import { useSidebarContextOptional } from "../sidebar/SidebarContext";
+import { useSidebarContextOptional } from "../sidebar/Sidebar";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { Dropdown } from "../../disclosure/Dropdown";

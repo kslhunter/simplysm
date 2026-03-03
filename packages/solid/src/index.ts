@@ -41,7 +41,6 @@ export * from "./components/form-control/Invalid";
 export * from "./components/layout/FormGroup";
 export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
-export * from "./components/layout/sidebar/SidebarContext";
 export * from "./components/layout/topbar/Topbar";
 
 //#endregion
