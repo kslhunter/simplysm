@@ -2,20 +2,18 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, beforeEach } from "vitest";
 import { DialogProvider } from "../../../src/components/disclosure/DialogProvider";
 import { useDialog } from "../../../src/components/disclosure/DialogContext";
-import { useDialogInstance } from "../../../src/components/disclosure/DialogInstanceContext";
 import { I18nProvider } from "../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../src/providers/ConfigContext";
 
 // dialog content component for testing
-function TestContent() {
-  const dialog = useDialogInstance<string>();
+function TestContent(props: { close?: (result?: string) => void }) {
   return (
     <div>
       <span data-testid="dialog-content">다이얼로그 내용</span>
-      <button data-testid="close-btn" onClick={() => dialog?.close("result")}>
+      <button data-testid="close-btn" onClick={() => props.close?.("result")}>
         닫기
       </button>
-      <button data-testid="close-no-result" onClick={() => dialog?.close()}>
+      <button data-testid="close-no-result" onClick={() => props.close?.()}>
         취소
       </button>
     </div>
@@ -30,7 +28,7 @@ function TestApp() {
     <button
       data-testid="open-btn"
       onClick={() => {
-        void dialog.show<string>(() => <TestContent />, { header: "테스트 다이얼로그" });
+        void dialog.show(TestContent, {}, { header: "테스트 다이얼로그" });
       }}
     >
       다이얼로그 열기
@@ -46,7 +44,7 @@ function TestAppNoHeader() {
     <button
       data-testid="open-btn"
       onClick={() => {
-        void dialog.show<string>(() => <TestContent />, {});
+        void dialog.show(TestContent, {}, {});
       }}
     >
       다이얼로그 열기
@@ -77,7 +75,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("closes dialog when close is called via useDialogInstance", async () => {
+  it("closes dialog when close is called via props", async () => {
     render(() => (
       <ConfigProvider clientName="test">
         <I18nProvider>
@@ -102,7 +100,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("closes dialog when close() is called", async () => {
+  it("closes dialog when close() is called without result", async () => {
     render(() => (
       <ConfigProvider clientName="test">
         <I18nProvider>

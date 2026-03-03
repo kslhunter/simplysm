@@ -3,12 +3,12 @@ import {
   type Component,
   type ParentComponent,
   createSignal,
-  Dynamic,
   For,
   Show,
   splitProps,
   type JSX,
 } from "solid-js";
+import { Dynamic } from "solid-js/web";
 import {
   DialogContext,
   DialogDefaultsContext,
