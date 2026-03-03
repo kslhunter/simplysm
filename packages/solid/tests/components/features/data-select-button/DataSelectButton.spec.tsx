@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
-import { DataSelectButton, type InjectedSelectProps } from "@simplysm/solid";
+import { DataSelectButton, type SelectDialogBaseProps, type DataSelectDialogResult } from "@simplysm/solid";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
@@ -26,13 +26,13 @@ function createTestLoad() {
   return loadFn;
 }
 
-// Dialog component for tests — receives InjectedSelectProps automatically
-function TestDialogComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
+// Dialog component for tests — uses close prop directly
+function TestDialogComponent(props: SelectDialogBaseProps<number> & { confirmKeys: number[] }) {
   return (
     <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectMode}</div>
       <div data-testid="selected-keys">{JSON.stringify([...props.selectedKeys])}</div>
-      <button data-testid="dialog-confirm" onClick={() => props.onSelect({ keys: props.confirmKeys })}>
+      <button data-testid="dialog-confirm" onClick={() => props.close?.({ selectedKeys: props.confirmKeys })}>
         confirm
       </button>
     </div>
@@ -62,7 +62,8 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -79,7 +80,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -96,7 +98,8 @@ describe("DataSelectButton", () => {
         value={[1, 3]}
         multiple
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -117,7 +120,8 @@ describe("DataSelectButton", () => {
         value={value()}
         onValueChange={setValue}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -137,7 +141,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -154,7 +159,8 @@ describe("DataSelectButton", () => {
         value={1}
         required
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -173,7 +179,8 @@ describe("DataSelectButton", () => {
         value={1}
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -197,7 +204,8 @@ describe("DataSelectButton", () => {
         multiple
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -217,7 +225,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         disabled
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -231,7 +240,8 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -248,7 +258,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [2] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [2] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -279,7 +290,8 @@ describe("DataSelectButton", () => {
         multiple
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [1, 3] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [1, 3] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -309,7 +321,8 @@ describe("DataSelectButton", () => {
         value={1}
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [2] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [2] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -335,7 +348,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         required
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -352,7 +366,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={1}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
         validate={(v) => (v === 1 ? "1은 선택할 수 없습니다" : undefined)}
       />
@@ -371,7 +386,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         disabled
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -387,7 +403,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         required
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -404,7 +421,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         onValueChange={onValueChange}
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [3] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [3] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -435,7 +453,8 @@ describe("DataSelectButton", () => {
       <DataSelectButton
         value={2}
         load={asyncLoad}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -450,7 +469,8 @@ describe("DataSelectButton", () => {
     const { container } = renderWithDialog(() => (
       <DataSelectButton
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -466,7 +486,8 @@ describe("DataSelectButton", () => {
         value={1}
         disabled
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
@@ -484,7 +505,8 @@ describe("DataSelectButton", () => {
         value={1}
         multiple
         load={load}
-        dialog={{ component: TestDialogComponent, props: { confirmKeys: [] } }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
         renderItem={(item: TestItem) => <span>{item.name}</span>}
       />
     ));
