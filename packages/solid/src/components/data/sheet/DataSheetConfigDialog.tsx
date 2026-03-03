@@ -1,7 +1,6 @@
 import { type Component } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import clsx from "clsx";
-import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import type {
   DataSheetConfig,
   DataSheetConfigColumn,
@@ -31,10 +30,10 @@ interface EditColumnItem {
 export interface DataSheetConfigDialogProps {
   columnInfos: DataSheetConfigColumnInfo[];
   currentConfig: DataSheetConfig;
+  close?: (result?: DataSheetConfig) => void;
 }
 
 export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (props) => {
-  const dialog = useDialogInstance<DataSheetConfig>();
   const i18n = useI18n();
 
   /* eslint-disable solid/reactivity -- dialog props are static values only used once at mount time */
@@ -103,12 +102,12 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
       }
     }
 
-    dialog?.close({ columnRecord });
+    props.close?.({ columnRecord });
   }
 
   function handleReset(): void {
     if (!confirm(i18n.t("dataSheetConfigDialog.resetConfirm"))) return;
-    dialog?.close({ columnRecord: {} });
+    props.close?.({ columnRecord: {} });
   }
 
   return (
@@ -159,7 +158,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
           {i18n.t("dataSheetConfigDialog.reset")}
         </Button>
         <div class={footerActionsClass}>
-          <Button onClick={() => dialog?.close(undefined)}>{i18n.t("dataSheetConfigDialog.cancel")}</Button>
+          <Button onClick={() => props.close?.(undefined)}>{i18n.t("dataSheetConfigDialog.cancel")}</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
             {i18n.t("dataSheetConfigDialog.confirm")}
           </Button>
