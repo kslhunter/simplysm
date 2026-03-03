@@ -89,14 +89,12 @@ export * from "./components/feedback/notification/NotificationBell";
 export * from "./components/feedback/notification/NotificationBanner";
 
 // Busy
-export * from "./components/feedback/busy/BusyContext";
+export * from "./components/feedback/busy/BusyProvider";
 export * from "./components/feedback/busy/BusyContainer";
 
 // Print
-export * from "./components/feedback/print/PrintContext";
 export * from "./components/feedback/print/PrintProvider";
 export * from "./components/feedback/print/Print";
-export * from "./components/feedback/print/PrintInstanceContext";
 export * from "./components/feedback/Progress";
 
 //#endregion
@@ -119,7 +117,7 @@ export * from "./providers/ThemeContext";
 export * from "./providers/ServiceClientContext";
 
 // SharedData
-export * from "./providers/shared-data/SharedDataContext";
+export * from "./providers/shared-data/SharedDataProvider";
 export * from "./providers/shared-data/SharedDataChangeEvent";
 
 // SystemProvider
