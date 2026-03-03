@@ -31,40 +31,40 @@ export interface DataSelectDialogResult<TKey> {
   selectedKeys: TKey[];
 }
 
-/** Props automatically injected into dialog component by DataSelectButton/SharedDataSelect */
-export interface InjectedSelectProps {
-  /** Selection mode */
+/** Base props for select dialog components (injected by DataSelectButton/SharedDataSelect + DialogProvider) */
+export interface SelectDialogBaseProps<TKey = string | number> {
+  close?: (result?: DataSelectDialogResult<TKey>) => void;
   selectMode: "single" | "multiple";
-  /** Currently selected keys */
-  selectedKeys: (string | number)[];
-  /** Selection callback — automatically closes dialog with result */
-  onSelect: (result: { keys: (string | number)[] }) => void;
+  selectedKeys: TKey[];
 }
 
-/** Declarative dialog configuration */
-export interface DialogConfig<TUserProps = any> {
-  /** Dialog component (must accept InjectedSelectProps) */
-  component: Component<TUserProps & InjectedSelectProps>;
-  /** User-defined props for the component */
-  props?: TUserProps;
-  /** Dialog options (header, size, etc.) */
-  option?: DialogShowOptions;
-}
+/** Extract user-specific props from dialog component (exclude injected base props) */
+type UserDialogProps<P, TKey = string | number> = Omit<P, keyof SelectDialogBaseProps<TKey>>;
+
+/** dialogProps: required when user props have required keys, optional otherwise */
+export type DialogPropsField<P, TKey = string | number> =
+  {} extends UserDialogProps<P, TKey>
+    ? { dialogProps?: UserDialogProps<P, TKey> }
+    : { dialogProps: UserDialogProps<P, TKey> };
 
 /** DataSelectButton Props */
-export interface DataSelectButtonProps<TItem, TKey = string | number> {
+export type DataSelectButtonProps<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
+> = {
   /** Currently selected key(s) (single or multiple) */
   value?: TKey | TKey[];
   /** Value change callback */
   onValueChange?: (value: TKey | TKey[] | undefined) => void;
-
   /** Function to load items by key */
   load: (keys: TKey[]) => TItem[] | Promise<TItem[]>;
-  /** Selection dialog configuration */
-  dialog: DialogConfig;
   /** Item rendering function */
   renderItem: (item: TItem) => JSX.Element;
-
+  /** Selection dialog component */
+  dialog: Component<TDialogProps>;
+  /** Dialog options (header, size, etc.) */
+  dialogOptions?: DialogShowOptions;
   /** Multiple selection mode */
   multiple?: boolean;
   /** Required input */
@@ -75,12 +75,11 @@ export interface DataSelectButtonProps<TItem, TKey = string | number> {
   size?: ComponentSize;
   /** Borderless style */
   inset?: boolean;
-
   /** Custom validation function */
   validate?: (value: unknown) => string | undefined;
   /** touchMode: show error only after focus is lost */
   touchMode?: boolean;
-}
+} & DialogPropsField<TDialogProps, TKey>;
 
 // Styles
 const containerClass = clsx("inline-flex items-center", "group");
@@ -111,14 +110,20 @@ function getTriggerContainerClass(options: {
   );
 }
 
-export function DataSelectButton<TItem, TKey = string | number>(
-  props: DataSelectButtonProps<TItem, TKey>,
+export function DataSelectButton<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
+>(
+  props: DataSelectButtonProps<TItem, TKey, TDialogProps>,
 ): JSX.Element {
-  const [local] = splitProps(props, [
+  const [local] = splitProps(props as any, [
     "value",
     "onValueChange",
     "load",
     "dialog",
+    "dialogProps",
+    "dialogOptions",
     "renderItem",
     "multiple",
     "required",
@@ -191,18 +196,13 @@ export function DataSelectButton<TItem, TKey = string | number>(
     if (local.disabled) return;
 
     const result = await dialog.show(
-      (dlgProps: { close?: (result?: DataSelectDialogResult<TKey>) => void }) => (
-        <local.dialog.component
-          {...(local.dialog.props ?? {})}
-          selectMode={local.multiple ? "multiple" : "single"}
-          selectedKeys={normalizeKeys(getValue()) as (string | number)[]}
-          onSelect={(r: { keys: (string | number)[] }) =>
-            dlgProps.close?.({ selectedKeys: r.keys as TKey[] })
-          }
-        />
-      ),
-      {},
-      local.dialog.option ?? {},
+      local.dialog,
+      {
+        ...((local as any).dialogProps ?? {}),
+        selectMode: local.multiple ? "multiple" : "single",
+        selectedKeys: normalizeKeys(getValue()) as (string | number)[],
+      },
+      local.dialogOptions,
     );
 
     if (result) {
