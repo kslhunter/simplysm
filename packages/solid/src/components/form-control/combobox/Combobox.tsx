@@ -37,7 +37,7 @@ export interface ComboboxContextValue<TValue = unknown> {
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
 
-const ComboboxContext = createContext<ComboboxContextValue>();
+export const ComboboxContext = createContext<ComboboxContextValue>();
 
 function useComboboxContext<TValue = unknown>(): ComboboxContextValue<TValue> {
   const context = useContext(ComboboxContext);

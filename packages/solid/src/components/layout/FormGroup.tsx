@@ -44,10 +44,6 @@ const FormGroupItem: ParentComponent<FormGroupItemProps> = (props) => {
   );
 };
 
-interface FormGroupComponent extends ParentComponent<FormGroupProps> {
-  Item: typeof FormGroupItem;
-}
-
 const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inline"]);
 

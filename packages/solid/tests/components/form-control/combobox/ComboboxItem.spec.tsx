@@ -1,17 +1,10 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
-import { createContext, type JSX } from "solid-js";
-
-// Create a context to test ComboboxItem in isolation
-export interface ComboboxContextValue {
-  isSelected: () => boolean;
-  selectValue: (value: unknown) => void;
-  closeDropdown: () => void;
-  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
-}
-
-const ComboboxContext = createContext<ComboboxContextValue>();
+import {
+  Combobox,
+  ComboboxContext,
+  type ComboboxContextValue,
+} from "../../../../src/components/form-control/combobox/Combobox";
 
 const createMockContext = (
   overrides: Partial<ComboboxContextValue> = {},

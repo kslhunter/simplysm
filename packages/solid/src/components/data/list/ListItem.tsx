@@ -112,10 +112,6 @@ export interface ListItemProps extends Omit<
  * </List.Item>
  * ```
  */
-interface ListItemComponent extends ParentComponent<ListItemProps> {
-  Children: typeof ListItemChildren;
-}
-
 const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "children",

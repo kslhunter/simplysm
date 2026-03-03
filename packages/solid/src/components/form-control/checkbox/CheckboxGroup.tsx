@@ -38,8 +38,8 @@ function CheckboxGroupInner<TValue = unknown>(props: CheckboxGroupProps<TValue>)
 
   const toggle = (item: TValue) => {
     setValue((prev) => {
-      if (prev.includes(item as TValue)) return prev.filter((v) => v !== item);
-      return [...prev, item as TValue];
+      if (prev.includes(item)) return prev.filter((v) => v !== item);
+      return [...prev, item];
     });
   };
 

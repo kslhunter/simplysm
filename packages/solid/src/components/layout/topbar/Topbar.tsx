@@ -137,13 +137,6 @@ export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
  * </Topbar>
  * ```
  */
-interface TopbarComponent extends ParentComponent<TopbarProps> {
-  Actions: typeof TopbarActions;
-  Container: typeof TopbarContainer;
-  Menu: typeof TopbarMenu;
-  User: typeof TopbarUser;
-}
-
 const TopbarInner: ParentComponent<TopbarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 

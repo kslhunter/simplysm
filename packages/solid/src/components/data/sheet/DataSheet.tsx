@@ -168,7 +168,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   async function openConfigDialog(): Promise<void> {
     if (!dialog) return;
 
-    const { DataSheetConfigDialog } = await import("./DataSheetConfigDialog");
+    const { DataSheetConfigDialog: ConfigDialog } = await import("./DataSheetConfigDialog");
 
     const allCols = resolved
       .toArray()
@@ -188,7 +188,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     const currentConfig = config();
 
     const result = await dialog.show(
-      DataSheetConfigDialog,
+      ConfigDialog,
       { columnInfos, currentConfig },
       {
         header: "Sheet Settings",

@@ -22,7 +22,6 @@ import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import { ripple } from "../../../directives/ripple";
 import {
-  borderDefault,
   borderSubtle,
   type ComponentSize,
   textMuted,
@@ -99,7 +98,6 @@ const SelectAction = (props: SelectActionProps) => {
     }
   };
 
-  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
   ctx.setAction(() => (
     <button
       {...rest}
