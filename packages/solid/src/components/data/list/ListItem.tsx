@@ -116,7 +116,7 @@ interface ListItemComponent extends ParentComponent<ListItemProps> {
   Children: typeof ListItemChildren;
 }
 
-export const ListItem: ListItemComponent = (props) => {
+const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "children",
     "class",
@@ -214,4 +214,8 @@ export const ListItem: ListItemComponent = (props) => {
   );
 };
 
-ListItem.Children = ListItemChildren;
+//#region Export
+export const ListItem = Object.assign(ListItemInner, {
+  Children: ListItemChildren,
+});
+//#endregion
