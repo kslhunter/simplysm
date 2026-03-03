@@ -11,12 +11,12 @@ import { IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
-import { useDialog } from "../../disclosure/DialogContext";
+import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 import {
-  type DataSelectDialogResult,
-  type DialogConfig,
+  type SelectDialogBaseProps,
+  type DialogPropsField,
 } from "../data-select-button/DataSelectButton";
 
 // -- Slot detection --
@@ -66,10 +66,12 @@ const Action: Component<{
 };
 
 /** SharedDataSelect Props */
-export interface SharedDataSelectProps<TItem> {
+export type SharedDataSelectProps<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> = {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
-
   /** Currently selected key value (translated to item internally) */
   value?: unknown;
   /** Value change callback (receives key, not item) */
@@ -84,26 +86,30 @@ export interface SharedDataSelectProps<TItem> {
   size?: ComponentSize;
   /** Borderless style */
   inset?: boolean;
-
   /** Item filter function */
   filterFn?: (item: TItem, index: number) => boolean;
-  /** Selection dialog configuration */
-  dialog?: DialogConfig;
-
+  /** Selection dialog component */
+  dialog?: Component<TDialogProps>;
+  /** Dialog options (header, size, etc.) */
+  dialogOptions?: DialogShowOptions;
   /** Compound children: ItemTemplate, Action */
   children: JSX.Element;
-}
+} & DialogPropsField<TDialogProps>;
 
 interface SharedDataSelectComponent {
-  <TItem>(props: SharedDataSelectProps<TItem>): JSX.Element;
+  <TItem, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps>(
+    props: SharedDataSelectProps<TItem, TDialogProps>,
+  ): JSX.Element;
   ItemTemplate: typeof ItemTemplate;
   Action: typeof Action;
 }
 
-const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.Element => {
-  const [local, rest] = splitProps(props, [
-    "data", "filterFn", "dialog", "children",
-  ]);
+const SharedDataSelectBase = <TItem, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps>(
+  props: SharedDataSelectProps<TItem, TDialogProps>,
+): JSX.Element => {
+  const [local, rest] = splitProps(props as any, [
+    "data", "filterFn", "dialog", "dialogProps", "dialogOptions", "children",
+  ]) as unknown as [typeof props, Omit<typeof props, "data" | "filterFn" | "dialog" | "dialogProps" | "dialogOptions" | "children">];
 
   const i18n = useI18n();
   const dialog = useDialog();
@@ -157,21 +163,15 @@ const SharedDataSelectBase = <TItem,>(props: SharedDataSelectProps<TItem>): JSX.
   const handleOpenDialog = async () => {
     if (!local.dialog) return;
 
-    const dialogConfig = local.dialog;
     const result = await dialog.show(
-      (dlgProps: { close?: (result?: DataSelectDialogResult<string | number>) => void }) => (
-        <dialogConfig.component
-          {...(dialogConfig.props ?? {})}
-          selectMode={rest.multiple ? "multiple" : "single"}
-          selectedKeys={normalizeKeys(rest.value)}
-          onSelect={(r: { keys: (string | number)[] }) =>
-            dlgProps.close?.({ selectedKeys: r.keys })
-          }
-        />
-      ),
-      {},
-      dialogConfig.option ?? {},
-    );
+      local.dialog as any,
+      {
+        ...((local as any).dialogProps ?? {}),
+        selectMode: rest.multiple ? "multiple" : "single",
+        selectedKeys: normalizeKeys(rest.value),
+      },
+      local.dialogOptions,
+    ) as { selectedKeys: (string | number)[] } | undefined;
 
     if (result) {
       const newKeys = result.selectedKeys;
