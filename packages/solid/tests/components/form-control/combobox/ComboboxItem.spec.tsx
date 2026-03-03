@@ -1,7 +1,7 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
-import { createContext, useContext, type JSX } from "solid-js";
+import { createContext, type JSX } from "solid-js";
 
 // Create a context to test ComboboxItem in isolation
 export interface ComboboxContextValue {
@@ -12,14 +12,6 @@ export interface ComboboxContextValue {
 }
 
 const ComboboxContext = createContext<ComboboxContextValue>();
-
-function useComboboxContext(): ComboboxContextValue {
-  const context = useContext(ComboboxContext);
-  if (!context) {
-    throw new Error("useComboboxContext can only be used inside Combobox");
-  }
-  return context;
-}
 
 const createMockContext = (
   overrides: Partial<ComboboxContextValue> = {},
