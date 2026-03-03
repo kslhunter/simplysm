@@ -41,9 +41,7 @@ export * from "./components/form-control/Invalid";
 export * from "./components/layout/FormGroup";
 export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
-export * from "./components/layout/sidebar/SidebarContext";
 export * from "./components/layout/topbar/Topbar";
-export * from "./components/layout/topbar/TopbarContext";
 
 //#endregion
 
@@ -59,7 +57,6 @@ export * from "./components/data/sheet/DataSheet.styles";
 export * from "./components/data/sheet/types";
 export * from "./components/data/calendar/Calendar";
 export * from "./components/data/kanban/Kanban";
-export * from "./components/data/kanban/KanbanContext";
 
 //#endregion
 
@@ -80,8 +77,6 @@ export * from "./components/display/Alert";
 export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
-export * from "./components/disclosure/DialogContext";
-export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
 //#endregion
@@ -94,14 +89,12 @@ export * from "./components/feedback/notification/NotificationBell";
 export * from "./components/feedback/notification/NotificationBanner";
 
 // Busy
-export * from "./components/feedback/busy/BusyContext";
+export * from "./components/feedback/busy/BusyProvider";
 export * from "./components/feedback/busy/BusyContainer";
 
 // Print
-export * from "./components/feedback/print/PrintContext";
 export * from "./components/feedback/print/PrintProvider";
 export * from "./components/feedback/print/Print";
-export * from "./components/feedback/print/PrintInstanceContext";
 export * from "./components/feedback/Progress";
 
 //#endregion
@@ -124,7 +117,7 @@ export * from "./providers/ThemeContext";
 export * from "./providers/ServiceClientProvider";
 
 // SharedData
-export * from "./providers/shared-data/SharedDataContext";
+export * from "./providers/shared-data/SharedDataProvider";
 export * from "./providers/shared-data/SharedDataChangeEvent";
 
 // SystemProvider

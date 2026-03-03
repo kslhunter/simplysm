@@ -31,6 +31,7 @@ import type {
   SortingDef,
 } from "./types";
 import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
+import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { startPointerDrag } from "../../../helpers/startPointerDrag";
@@ -79,9 +80,10 @@ import {
 interface DataSheetComponent {
   <T>(props: DataSheetProps<T>): JSX.Element;
   Column: typeof DataSheetColumn;
+  ConfigDialog: typeof DataSheetConfigDialog;
 }
 
-export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
+const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const [local] = splitProps(props, [
     "items",
     "persistKey",
@@ -1287,4 +1289,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   );
 };
 
-DataSheet.Column = DataSheetColumn;
+//#region Export
+export const DataSheet = Object.assign(DataSheetInner, {
+  Column: DataSheetColumn,
+  ConfigDialog: DataSheetConfigDialog,
+}) as unknown as DataSheetComponent;
+export { DataSheetConfigDialog };
+//#endregion

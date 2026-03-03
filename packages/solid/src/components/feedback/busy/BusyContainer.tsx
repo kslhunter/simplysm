@@ -5,11 +5,10 @@ import {
   createEffect,
   onCleanup,
   Show,
-  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { BusyContext, type BusyVariant } from "./BusyContext";
+import { useBusy, type BusyVariant } from "./BusyProvider";
 import { createMountTransition } from "../../../hooks/createMountTransition";
 import "./BusyContainer.css";
 
@@ -68,7 +67,12 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     "children",
   ]);
 
-  const busyCtx = useContext(BusyContext);
+  let busyCtx: ReturnType<typeof useBusy> | undefined;
+  try {
+    busyCtx = useBusy();
+  } catch {
+    // Not inside BusyProvider
+  }
   const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
 
   // Animation state (mount transition)

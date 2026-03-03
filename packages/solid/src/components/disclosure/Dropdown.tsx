@@ -132,7 +132,7 @@ interface DropdownComponent extends ParentComponent<DropdownProps> {
  * </Dropdown>
  * ```
  */
-export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
+const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => {
   const [local, rest] = splitProps(props, [
     "position",
     "open",
@@ -487,7 +487,11 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
       </Show>
     </DropdownContext.Provider>
   );
-}) as DropdownComponent;
+};
 
-Dropdown.Trigger = DropdownTrigger;
-Dropdown.Content = DropdownContent;
+//#region Export
+export const Dropdown = Object.assign(DropdownInner, {
+  Trigger: DropdownTrigger,
+  Content: DropdownContent,
+}) as unknown as DropdownComponent;
+//#endregion

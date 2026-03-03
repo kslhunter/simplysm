@@ -210,7 +210,7 @@ export function DataSelectButton<
       if (local.multiple) {
         setValue(newKeys);
       } else {
-        setValue(newKeys.length > 0 ? newKeys[0] : undefined);
+        setValue((newKeys.length > 0 ? newKeys[0] : undefined) as any);
       }
     }
   };

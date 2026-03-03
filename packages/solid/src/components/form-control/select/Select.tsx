@@ -1,24 +1,25 @@
 import {
   children,
+  createContext,
   createEffect,
   createMemo,
   createSignal,
   For,
+  type Accessor,
   type JSX,
   type ParentComponent,
   onCleanup,
   Show,
   splitProps,
+  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconChevronDown } from "@tabler/icons-solidjs";
+import { IconChevronDown, IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
-import { SelectContext, type SelectContextValue } from "./SelectContext";
-import { useSelectContext } from "./SelectContext";
-import { SelectItem } from "./SelectItem";
+import { Collapse } from "../../disclosure/Collapse";
 import { ripple } from "../../../directives/ripple";
 import {
   borderDefault,
@@ -27,13 +28,95 @@ import {
   textMuted,
 } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotSignal } from "../../../hooks/createSlotSignal";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { TextInput } from "../field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
+import {
+  listItemBaseClass,
+  listItemSelectedClass,
+  listItemDisabledClass,
+  listItemIndentGuideClass,
+  listItemContentClass,
+  getListItemSelectedIconClass,
+} from "../../data/list/ListItem.styles";
 
 void ripple;
+
+//#region SelectContext
+
+export interface SelectContextValue<TValue = unknown> {
+  /** Whether multiple select mode is enabled */
+  multiple: Accessor<boolean>;
+
+  /** Check if value is selected */
+  isSelected: (value: TValue) => boolean;
+
+  /** Toggle value selection/deselection */
+  toggleValue: (value: TValue) => void;
+
+  /** Close dropdown */
+  closeDropdown: () => void;
+
+  /** Register header slot */
+  setHeader: (content: SlotAccessor) => void;
+
+  /** Register action slot */
+  setAction: (content: SlotAccessor) => void;
+
+  /** Register item template */
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
+}
+
+const SelectCtx = createContext<SelectContextValue>();
+
+function useSelectContext<TValue = unknown>(): SelectContextValue<TValue> {
+  const context = useContext(SelectCtx);
+  if (!context) {
+    throw new Error("useSelectContext can only be used inside Select component");
+  }
+  return context as SelectContextValue<TValue>;
+}
+
+const SelectHeader = createSlotComponent(SelectCtx, (ctx) => ctx.setHeader);
+
+interface SelectActionProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+  children?: JSX.Element;
+}
+
+const SelectAction = (props: SelectActionProps) => {
+  const ctx = useSelectContext();
+  const [local, rest] = splitProps(props, ["children", "class"]);
+
+  const handleClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> = (e) => {
+    if (typeof rest.onClick === "function") {
+      rest.onClick(e);
+    } else if (rest.onClick && typeof rest.onClick === "object") {
+      rest.onClick[0](rest.onClick[1], e);
+    }
+  };
+
+  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
+  ctx.setAction(() => (
+    <button
+      {...rest}
+      type="button"
+      onClick={handleClick}
+      class={twMerge("p-2", "hover:bg-base-100 dark:hover:bg-base-700", local.class)}
+      data-select-action
+    >
+      {local.children}
+    </button>
+  ));
+
+  onCleanup(() => ctx.setAction(undefined));
+
+  return null;
+};
+
+//#endregion
 
 // Select-specific styles
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
@@ -57,56 +140,6 @@ const selectAllBtnClass = clsx(
   "cursor-pointer",
 );
 
-/**
- * Select right-side action sub-component
- */
-interface SelectActionProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {}
-
-const SelectAction: ParentComponent<SelectActionProps> = (props) => {
-  const [local, rest] = splitProps(props, ["children", "class"]);
-  const ctx = useSelectContext();
-
-  ctx.setAction(() => (
-    <button
-      {...rest}
-      type="button"
-      data-select-action
-      use:ripple
-      class={twMerge(
-        clsx(
-          "border",
-          borderDefault,
-          "px-1.5",
-          "font-bold text-primary-500",
-          "hover:bg-base-100 dark:hover:bg-base-700",
-          "group-focus-within:border-y-primary-400",
-          "last:group-focus-within:border-r-primary-400",
-          "dark:group-focus-within:border-y-primary-400",
-          "dark:last:group-focus-within:border-r-primary-400",
-          "focus:relative focus:z-10 focus:border-primary-400",
-          "dark:focus:border-primary-400",
-        ),
-        local.class,
-      )}
-    >
-      {local.children}
-    </button>
-  ));
-  onCleanup(() => ctx.setAction(undefined));
-  return null;
-};
-
-/**
- * Dropdown top custom area sub-component
- */
-const SelectHeader: ParentComponent = (props) => {
-  const ctx = useSelectContext();
-  // eslint-disable-next-line solid/reactivity -- Save as slot accessor, called from JSX tracked scope
-  ctx.setHeader(() => props.children);
-  onCleanup(() => ctx.setHeader(undefined));
-  return null;
-};
-
 const SelectItemTemplate = <TArgs extends unknown[]>(props: {
   children: (...args: TArgs) => JSX.Element;
 }) => {
@@ -116,6 +149,118 @@ const SelectItemTemplate = <TArgs extends unknown[]>(props: {
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
 };
+
+//#region SelectItem
+
+interface SelectItemSlotsContextValue {
+  setChildren: (content: SlotAccessor) => void;
+}
+
+const SelectItemSlotsContext = createContext<SelectItemSlotsContextValue>();
+
+const SelectItemChildren = createSlotComponent(SelectItemSlotsContext, (ctx) => ctx.setChildren);
+
+export interface SelectItemProps<TValue = unknown> extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "value" | "onClick"
+> {
+  /** Item value */
+  value: TValue;
+
+  /** Disabled state */
+  disabled?: boolean;
+}
+
+interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectItemProps<TValue>> {
+  Children: typeof SelectItemChildren;
+}
+
+/**
+ * Selectable item within Select dropdown
+ *
+ * @example
+ * ```tsx
+ * <Select.Item value={item}>{item.name}</Select.Item>
+ *
+ * // Nested items
+ * <Select.Item value={parent}>
+ *   {parent.name}
+ *   <Select.Item.Children>
+ *     <Select.Item value={child}>{child.name}</Select.Item>
+ *   </Select.Item.Children>
+ * </Select.Item>
+ * ```
+ */
+const SelectItem: SelectItemComponent = <T,>(
+  props: SelectItemProps<T> & { children?: JSX.Element },
+) => {
+  const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
+
+  const context = useSelectContext<T>();
+
+  const [childrenSlot, setChildrenSlot] = createSlotSignal();
+  const hasChildren = () => childrenSlot() !== undefined;
+  const isSelected = () => context.isSelected(local.value);
+  const useRipple = () => !local.disabled;
+
+  const handleClick = () => {
+    if (local.disabled) return;
+
+    context.toggleValue(local.value);
+
+    // Close dropdown only in single select mode
+    if (!context.multiple()) {
+      context.closeDropdown();
+    }
+  };
+
+  const getClassName = () =>
+    twMerge(
+      listItemBaseClass,
+      isSelected() && listItemSelectedClass,
+      local.disabled && listItemDisabledClass,
+      local.class,
+    );
+
+  const getCheckIconClass = () => getListItemSelectedIconClass(isSelected());
+
+  return (
+    <SelectItemSlotsContext.Provider value={{ setChildren: setChildrenSlot }}>
+      <button
+        {...rest}
+        type="button"
+        use:ripple={useRipple()}
+        class={getClassName()}
+        data-select-item
+        data-list-item
+        role="option"
+        aria-selected={isSelected() || undefined}
+        aria-disabled={local.disabled || undefined}
+        tabIndex={local.disabled ? -1 : 0}
+        onClick={handleClick}
+      >
+        <Show when={context.multiple() && !hasChildren()}>
+          <Icon icon={IconCheck} class={getCheckIconClass()} />
+        </Show>
+        <span class={listItemContentClass}>{local.children}</span>
+      </button>
+      <Show when={hasChildren()}>
+        <Collapse open={true}>
+          <div class="flex">
+            <div class={listItemIndentGuideClass} />
+            <List inset class="flex-1">
+              {childrenSlot()!()}
+            </List>
+          </div>
+        </Collapse>
+      </Show>
+    </SelectItemSlotsContext.Provider>
+  );
+};
+
+SelectItem.Children = SelectItemChildren;
+
+//#endregion
 
 // Props definition
 
@@ -240,7 +385,7 @@ interface SelectComponent {
  * </Select>
  * ```
  */
-export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
+const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   const [local, rest] = splitProps(props as SelectProps<T> & { children?: JSX.Element }, [
     "children",
     "class",
@@ -306,7 +451,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         setValue([...current, itemValue]);
       }
     } else {
-      setValue(itemValue);
+      setValue(itemValue as any);
     }
   };
 
@@ -414,7 +559,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   };
 
   // Inner component: resolve children inside Provider to trigger slot registration
-  const SelectInner: ParentComponent = (innerProps) => {
+  const SelectInnerRender: ParentComponent = (innerProps) => {
     // Resolve children() to trigger sub-component registration (Header, Action, ItemTemplate return null)
     const resolved = children(() => innerProps.children);
 
@@ -591,14 +736,18 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <SelectContext.Provider value={contextValue as SelectContextValue}>
-        <SelectInner>{local.children}</SelectInner>
-      </SelectContext.Provider>
+      <SelectCtx.Provider value={contextValue as SelectContextValue}>
+        <SelectInnerRender>{local.children}</SelectInnerRender>
+      </SelectCtx.Provider>
     </Invalid>
   );
 };
 
-Select.Item = SelectItem;
-Select.Action = SelectAction;
-Select.Header = SelectHeader;
-Select.ItemTemplate = SelectItemTemplate;
+//#region Export
+export const Select = Object.assign(SelectInnerComponent, {
+  Item: SelectItem,
+  Header: SelectHeader,
+  Action: SelectAction,
+  ItemTemplate: SelectItemTemplate,
+}) as SelectComponent;
+//#endregion

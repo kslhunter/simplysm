@@ -147,5 +147,8 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
   );
 };
 
-export const Tabs = TabsInner as unknown as TabsComponent;
-Tabs.Tab = TabsTabInner;
+//#region Export
+export const Tabs = Object.assign(TabsInner, {
+  Tab: TabsTabInner,
+}) as unknown as TabsComponent;
+//#endregion

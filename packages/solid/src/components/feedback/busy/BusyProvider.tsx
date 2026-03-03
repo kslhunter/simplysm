@@ -1,8 +1,44 @@
-import { type ParentComponent, createSignal } from "solid-js";
+import { type ParentComponent, createSignal, createContext, useContext, type Accessor } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
-import { BusyContext, type BusyContextValue, type BusyVariant } from "./BusyContext";
 import { BusyContainer } from "./BusyContainer";
+
+/**
+ * Busy overlay display type
+ * - `spinner`: Full-screen spinner
+ * - `bar`: Top progress bar
+ */
+export type BusyVariant = "spinner" | "bar";
+
+/**
+ * Busy overlay Context value
+ */
+export interface BusyContextValue {
+  /** Current display type */
+  variant: Accessor<BusyVariant>;
+  /** Show overlay (nestable calls, requires matching hide calls) */
+  show: (message?: string) => void;
+  /** Hide overlay (actually hides after all show calls have corresponding hide calls) */
+  hide: () => void;
+  /** Set progress bar progress (0-100, undefined for indeterminate) */
+  setProgress: (percent: number | undefined) => void;
+}
+
+/** Busy overlay Context */
+const BusyCtx = createContext<BusyContextValue>();
+
+/**
+ * Hook to access Busy overlay
+ *
+ * @throws Error if BusyProvider is not present
+ */
+export function useBusy(): BusyContextValue {
+  const context = useContext(BusyCtx);
+  if (!context) {
+    throw new Error("useBusy can only be used inside BusyProvider");
+  }
+  return context;
+}
 
 const overlayClass = clsx("fixed left-0 top-0", "h-screen w-screen", "overflow-hidden");
 
@@ -51,7 +87,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
   };
 
   return (
-    <BusyContext.Provider value={contextValue}>
+    <BusyCtx.Provider value={contextValue}>
       {props.children}
       <Portal>
         <BusyContainer
@@ -63,6 +99,6 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
           style={{ "pointer-events": busyCount() > 0 ? "auto" : "none" }}
         />
       </Portal>
-    </BusyContext.Provider>
+    </BusyCtx.Provider>
   );
 };
