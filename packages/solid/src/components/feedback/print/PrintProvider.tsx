@@ -1,10 +1,41 @@
-import { type ParentComponent, createSignal, Show, type JSX } from "solid-js";
+import { createContext, useContext, type ParentComponent, createSignal, Show, type JSX } from "solid-js";
 import { Portal } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { useBusy } from "../busy/BusyContext";
-import { PrintContext, type PrintContextValue, type PrintOptions } from "./PrintContext";
-import { PrintInstanceContext, type PrintInstance } from "./PrintInstanceContext";
+
+// --- Context types ---
+
+export interface PrintOptions {
+  size?: string;
+  margin?: string;
+}
+
+export interface PrintContextValue {
+  toPrinter: (factory: () => JSX.Element, options?: PrintOptions) => Promise<void>;
+  toPdf: (factory: () => JSX.Element, options?: PrintOptions) => Promise<Uint8Array>;
+}
+
+export interface PrintInstance {
+  ready: () => void;
+}
+
+// --- Contexts ---
+
+const PrintContext = createContext<PrintContextValue>();
+const PrintInstanceContext = createContext<PrintInstance>();
+
+// --- Hooks ---
+
+export function usePrint(): PrintContextValue {
+  const ctx = useContext(PrintContext);
+  if (!ctx) throw new Error("usePrint can only be used inside PrintProvider");
+  return ctx;
+}
+
+export function usePrintInstance(): PrintInstance | undefined {
+  return useContext(PrintInstanceContext);
+}
 
 // --- Paper size constants (pt) ---
 

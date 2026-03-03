@@ -2,10 +2,8 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { onMount } from "solid-js";
 import { BusyProvider } from "../../src/components/feedback/busy/BusyProvider";
-import { PrintProvider } from "../../src/components/feedback/print/PrintProvider";
-import { usePrint } from "../../src/components/feedback/print/PrintContext";
+import { PrintProvider, usePrint, usePrintInstance } from "../../src/components/feedback/print/PrintProvider";
 import { Print } from "../../src/components/feedback/print/Print";
-import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
 
 // Mock window.print
 vi.stubGlobal("print", vi.fn());
