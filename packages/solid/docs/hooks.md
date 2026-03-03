@@ -165,15 +165,23 @@ createSlotSignal(): [SlotAccessor, (content: SlotAccessor) => void]
 
 ## `useRouterLink`
 
-Returns a click handler that performs SolidJS Router navigation, including support for Ctrl+click to open in new tab.
+Returns a click handler that performs SolidJS Router navigation, including support for Ctrl+click (new tab) and Shift+click (new window).
 
 ```tsx
 import { useRouterLink } from "@simplysm/solid";
 
 const navigate = useRouterLink();
-const handleClick = navigate({ href: "/dashboard", replace: false });
+const handleClick = navigate({ href: "/dashboard" });
 ```
 
 ```
-useRouterLink(): (options: RouterLinkOptions) => (e: MouseEvent) => void
+useRouterLink(): (options: RouterLinkOptions) => (e: MouseEvent | KeyboardEvent) => void
 ```
+
+**`RouterLinkOptions`**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `href` | `string` | Navigation path (complete URL, e.g., `"/home/dashboard?tab=1"`) |
+| `state?` | `Record<string, unknown>` | Data to pass during navigation (not exposed in URL) |
+| `window?` | `{ width?: number; height?: number }` | New window size on Shift+click (default: 800x800) |

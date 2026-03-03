@@ -9,104 +9,100 @@ description: "Comprehensive multi-perspective code review (explicit invocation o
 
 Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Analyzes code via the built-in Explore agent, then runs up to 4 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
+Dispatches up to 3 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
 
 ## Usage
 
-- `/sd-review packages/solid` — review source code at the given path
+- `/sd-review packages/solid` — full review (all 3 perspectives)
+- `/sd-review packages/solid focus on bugs` — selective review based on request
 - `/sd-review` — if no argument, ask the user for the target path
-
-## When to Use
-
-- Before merging major features or after significant refactoring
-- When assessing overall code quality of a package
-- When onboarding to unfamiliar code and want a quality overview
-
-**When NOT to use:**
-
-- Single-file or trivial changes (typo, config tweak)
-- When you need code modifications (sd-review is analysis-only)
 
 ## Target Selection
 
-- With argument: `/sd-review packages/solid` — review source code at the given path
+- With argument: review source code at the given path
 - Without argument: ask the user for the target path
 
 **Important:** Review ALL source files under the target path. Do not use git status or git diff to limit scope.
 
-## Reviewer Agents
+## Reviewer Perspectives
 
-Run subagents in parallel via the Task tool:
+| Reviewer | Prompt Template | Perspective |
+|----------|----------------|-------------|
+| **Code Reviewer** | `code-reviewer-prompt.md` | Correctness & Safety — bugs, security, logic errors |
+| **API Reviewer** | `api-reviewer-prompt.md` | Usability & DX — naming, types, consistency |
+| **Code Simplifier** | `code-simplifier-prompt.md` | Maintainability — complexity, duplication, structure |
 
-| Agent Type             | Role                                                | Condition                                                  |
-| ---------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| `sd-code-reviewer`     | Bugs, security, logic errors, convention issues     | Always                                                     |
-| `sd-code-simplifier`   | Complexity, duplication, readability issues         | Always                                                     |
-| `sd-api-reviewer`      | DX/usability, naming, type hints                    | Always                                                     |
-| `sd-security-reviewer` | ORM SQL injection, input validation vulnerabilities | When target path contains ORM queries or service endpoints |
+## Reviewer Selection
+
+By default, run **all 3 reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
+
+| User says | Run |
+|-----------|-----|
+| "bugs", "security", "safety" | Code Reviewer only |
+| "API", "naming", "types", "DX" | API Reviewer only |
+| "complexity", "duplication", "structure", "maintainability" | Code Simplifier only |
+| "bugs and API" | Code Reviewer + API Reviewer |
+| (no specific focus) | All 3 |
+
+Use judgment for ambiguous requests. When in doubt, run all 3.
 
 ## Workflow
 
-### Step 1: Code Analysis via Explore Agent
+### Step 1: Dispatch Reviewers
 
-Invoke the built-in Explore agent via the Task tool to analyze the target path:
+Read the prompt template files from this skill's directory. Replace `[TARGET_PATH]` with the actual target path. Then dispatch using `Agent(general-purpose)`:
 
 ```
-Task(subagent_type=Explore)
-Prompt: "very thorough" analysis of <target-path>:
-- Entry points, core files, module boundaries
-- Call chains, data transformations, state changes
-- Abstraction layers, design patterns, dependency graph
-- Error handling, public API surface
+Agent(subagent_type=general-purpose, prompt=<filled template>)
 ```
 
-This runs in a **separate context**, so it does not consume the main context window.
+Run selected reviewers **in parallel** (multiple Agent calls in a single message).
 
-### Step 2: Dispatch Analysis to Reviewers
+### Step 2: Verify Findings
 
-Run subagents **in parallel** via the Task tool. Include the Explore analysis results in each subagent's prompt:
+After collecting results from all reviewers, **Read the actual code** for each finding and verify:
 
-- **sd-code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
-- **sd-code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
-- **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
-- **sd-security-reviewer** _(conditional)_: If the Explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
-
-### Step 3: Verify Issues
-
-After collecting results from all 3 subagents, verify each issue against the actual code:
-
-- **Valid**: the issue is real → include in the report
+- **Valid**: the issue is real AND within scope → include in the report
+- **Invalid — self-contradicted**: the reviewer's own analysis shows the issue is mitigated (e.g., "exploitability is limited because..."). Drop it.
+- **Invalid — type-only**: reports a type definition as a runtime issue without showing actual runtime code that triggers it. Drop it.
+- **Invalid — out of scope**: the issue is about code outside the target path (e.g., how other packages use this code). Drop it.
+- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain (bugs→Code, API→API, structure→Simplifier).
+- **Invalid — bikeshedding**: minor style preference on stable, well-commented code (magic numbers with clear comments, small interface field duplication, naming when used consistently). Drop it.
+- **Invalid — severity inflated**: downgrade or drop findings where the stated severity doesn't match the actual impact.
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
 - **Invalid — intentional pattern**: by-design architectural decision
 - **Invalid — misread**: the reviewer misinterpreted the code
 
-### Step 4: Final Report
+### Step 3: Final Report
 
-Compile only **verified findings** into a comprehensive report.
+Compile only **verified findings** grouped by severity (not by reviewer):
 
-### Report Structure
+```
+## Review Report: <target-path>
 
-| Section                          | Priority | Source                                                          |
-| -------------------------------- | -------- | --------------------------------------------------------------- |
-| **Architecture Summary**         | —        | Explore analysis                                                |
-| **Critical Issues**              | P0       | Bugs, security vulnerabilities                                  |
-| **Security Issues**              | P0       | SQL injection, input validation (when sd-security-reviewer ran) |
-| **Quality Issues**               | P1       | Logic errors, missing error handling, performance               |
-| **DX/Usability Issues**          | P2       | API intuitiveness, naming, type hints                           |
-| **Simplification Opportunities** | P3       | Complexity removal, duplicate code, abstractions                |
-| **Convention Issues**            | P4       | Project convention mismatches                                   |
+### CRITICAL
+[verified critical findings from all reviewers]
 
-Each issue includes **file:line**, **description**, and **suggestion**.
+### WARNING
+[verified warning findings from all reviewers]
 
-Optionally include an **Invalid Findings Summary** appendix showing which findings were filtered out and why.
+### INFO
+[verified info findings from all reviewers]
+
+### Invalid Findings Summary (optional)
+[findings filtered out and why]
+```
+
+Each finding includes: **source reviewer**, **file:line**, **evidence**, **issue**, and **suggestion**.
 
 ## Common Mistakes
 
-| Mistake                              | Fix                                                 |
-| ------------------------------------ | --------------------------------------------------- |
-| Using git diff to limit review scope | Review ALL source files under target path           |
-| Skipping verification step           | Always verify subagent findings against actual code |
-| Reporting unverified issues          | Only include verified findings in final report      |
+| Mistake | Fix |
+|---------|-----|
+| Using git diff to limit review scope | Review ALL source files under target path |
+| Skipping verification step | Always verify reviewer findings against actual code |
+| Reporting unverified issues | Only include verified findings in final report |
+| Running all reviewers for focused requests | Match reviewer selection to user's request |
 
 ## Completion Criteria
 

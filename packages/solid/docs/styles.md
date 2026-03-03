@@ -38,12 +38,12 @@ import {
 | `textPlaceholder` | `string` | Placeholder text color class |
 | `disabledOpacity` | `string` | Disabled opacity class |
 | `ComponentSize` | `type` | `"xs" \| "sm" \| "lg" \| "xl"` (default `"lg"`) |
-| `ComponentSizeCompact` | `type` | `"xs" \| "sm"` |
+| `ComponentSizeCompact` | `type` | `"sm" \| "lg"` |
 | `paddingXs` | `string` | XS padding class |
 | `paddingSm` | `string` | SM padding class |
 | `paddingLg` | `string` | LG padding class |
 | `paddingXl` | `string` | XL padding class |
-| `SemanticTheme` | `type` | `"primary" \| "info" \| "success" \| "warning" \| "danger"` |
+| `SemanticTheme` | `type` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` |
 | `themeTokens` | `Record<SemanticTheme, ThemeTokens>` | Per-theme Tailwind class sets |
 
 ---
@@ -82,11 +82,11 @@ SolidJS directive that adds a Material-style ripple click effect to an element.
 import { ripple } from "@simplysm/solid";
 
 // In JSX (directive usage requires importing the identifier):
-<button use:ripple={{}}>Click me</button>
+<button use:ripple={!props.disabled}>Click me</button>
 ```
 
 ```
-ripple(el: HTMLElement, accessor: Accessor<{}>): void
+ripple(el: HTMLElement, accessor: Accessor<boolean>): void
 ```
 
 ---

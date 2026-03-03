@@ -1,17 +1,26 @@
 ---
 name: sd-check
 description: "Typecheck, lint, test verification (explicit invocation only)"
-allowed-tools: Bash(npm run check), Bash(npm run typecheck), Bash(npm run lint --fix), Bash(npm run vitest)
+allowed-tools: Bash(npm run check:*), Bash(pnpm run check:*), Bash(yarn run check:*), Bash(npm run typecheck:*), Bash(pnpm run typecheck:*), Bash(yarn run typecheck:*), Bash(npm run lint:*), Bash(pnpm run lint:*), Bash(yarn run lint:*), Bash(npm run vitest:*), Bash(pnpm run vitest:*), Bash(yarn run vitest:*)
 ---
 
 # sd-check
 
-Run `npm run check`, fix errors, repeat until clean.
+Run `$PM run check`, fix errors, repeat until clean.
+
+## Package Manager Detection
+
+Before running any commands, detect the package manager:
+- If `pnpm-lock.yaml` exists in project root → use `pnpm`
+- If `yarn.lock` exists in project root → use `yarn`
+- Otherwise → use `npm`
+
+`$PM` in all commands below refers to the detected package manager.
 
 ## Usage
 
 ```
-npm run check [path] [--type typecheck|lint|test]
+$PM run check [path] [--type typecheck|lint|test]
 ```
 
 | Example                               | Effect                    |
@@ -25,11 +34,11 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 
 ## Workflow
 
-1. **Run** `npm run check [path] [--type type]` (timeout: 600000)
+1. **Run** `$PM run check [path] [--type type]` (timeout: 600000)
 2. **All passed?** Report with actual output numbers → done
 3. **Errors?** Fix in priority order: typecheck → lint → test (fixes cascade)
-   - Test failures: run `git diff` to decide — update test or fix source
-   - **E2E test failures** (browser/solid/service project): use Playwright MCP to investigate before fixing
+   - Test failures: **MUST** run `git log` to decide — update test or fix source
+   - **E2E test failures**: use Playwright MCP to investigate before fixing
      1. `browser_navigate` to the target URL
      2. `browser_snapshot` / `browser_take_screenshot` (save to `.tmp/playwright/`) to see page state
      3. `browser_console_messages` for JS errors

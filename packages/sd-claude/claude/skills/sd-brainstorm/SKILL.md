@@ -1,6 +1,6 @@
 ---
 name: sd-brainstorm
-description: "Design exploration before implementation (explicit invocation only)"
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
 ---
 
 # Brainstorming Ideas Into Designs

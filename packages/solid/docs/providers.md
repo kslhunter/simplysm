@@ -12,7 +12,7 @@ Application-wide configuration context.
 import { ConfigProvider, useConfig } from "@simplysm/solid";
 
 // Wrap app:
-<ConfigProvider config={{ apiBaseUrl: "/api" }}>
+<ConfigProvider clientName="myApp">
   <App />
 </ConfigProvider>
 
@@ -24,7 +24,7 @@ const config = useConfig();
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `apiBaseUrl` | `string` | Base URL for API requests |
+| `clientName` | `string` | Client identifier (used as storage key prefix) |
 
 ---
 

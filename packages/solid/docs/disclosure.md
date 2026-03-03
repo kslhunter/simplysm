@@ -87,14 +87,15 @@ import { Dialog } from "@simplysm/solid";
 | `movable` | `boolean` | Allow drag to move |
 | `float` | `boolean` | Floating (no backdrop) |
 | `fill` | `boolean` | Fill viewport |
-| `width` | `string` | Dialog width |
-| `height` | `string` | Dialog height |
-| `minWidth` | `string` | Minimum width |
-| `minHeight` | `string` | Minimum height |
-| `position` | `{ top?: string; left?: string; ... }` | Initial position |
-| `headerStyle` | `JSX.CSSProperties` | Header style |
-| `canDeactivate` | `() => boolean \| Promise<boolean>` | Guard function before close |
+| `width` | `number` | Dialog width (px) |
+| `height` | `number` | Dialog height (px) |
+| `minWidth` | `number` | Minimum width (px) |
+| `minHeight` | `number` | Minimum height (px) |
+| `position` | `"bottom-right" \| "top-right"` | Fixed position |
+| `headerStyle` | `JSX.CSSProperties \| string` | Header style |
+| `canDeactivate` | `() => boolean` | Guard function before close |
 | `onCloseComplete` | `() => void` | Callback after close animation |
+| `class` | `string` | Additional CSS class |
 
 Sub-components: `Dialog.Header`, `Dialog.Action`
 
@@ -105,17 +106,50 @@ Sub-components: `Dialog.Header`, `Dialog.Action`
 Context and hook for programmatic dialog management.
 
 ```tsx
-import { DialogContext, useDialog } from "@simplysm/solid";
+import { useDialog } from "@simplysm/solid";
 
 const dialog = useDialog();
-const result = await dialog.show(() => <MyDialog />, { title: "Confirm" });
+const result = await dialog.show<MyResult>(() => <MyDialog />, { header: "Confirm" });
 ```
+
+**`DialogDefaults`**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `closeOnEscape?` | `boolean` | Allow closing via ESC key |
+| `closeOnBackdrop?` | `boolean` | Allow closing via backdrop click |
+
+**`DialogDefaultsContext`** — Context holding `Accessor<DialogDefaults>`, used internally by `DialogProvider`.
+
+```tsx
+import { DialogDefaultsContext } from "@simplysm/solid";
+```
+
+**`DialogShowOptions`**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `header?` | `JSX.Element` | Dialog header |
+| `closable?` | `boolean` | Show close button |
+| `closeOnBackdrop?` | `boolean` | Close on backdrop click |
+| `closeOnEscape?` | `boolean` | Close on ESC key |
+| `resizable?` | `boolean` | Resizable |
+| `movable?` | `boolean` | Draggable |
+| `float?` | `boolean` | Floating mode (no backdrop) |
+| `fill?` | `boolean` | Fill full screen |
+| `width?` | `number` | Initial width (px) |
+| `height?` | `number` | Initial height (px) |
+| `minWidth?` | `number` | Minimum width (px) |
+| `minHeight?` | `number` | Minimum height (px) |
+| `position?` | `"bottom-right" \| "top-right"` | Floating position |
+| `headerStyle?` | `JSX.CSSProperties \| string` | Custom header style |
+| `canDeactivate?` | `() => boolean` | Guard function before close |
 
 **`DialogContextValue`**
 
 | Member | Type | Description |
 |--------|------|-------------|
-| `show<TResult>` | `(factory, options?) => Promise<TResult \| undefined>` | Opens a dialog and awaits its result |
+| `show<TResult>` | `(factory, options) => Promise<TResult \| undefined>` | Opens a dialog and awaits its result |
 
 ---
 
@@ -126,10 +160,17 @@ Provider that enables programmatic dialog creation via `useDialog()`.
 ```tsx
 import { DialogProvider } from "@simplysm/solid";
 
-<DialogProvider>
+<DialogProvider closeOnEscape closeOnBackdrop>
   <App />
 </DialogProvider>
 ```
+
+**`DialogProviderProps`** extends `DialogDefaults`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `closeOnEscape?` | `boolean` | Default ESC close behavior for all dialogs |
+| `closeOnBackdrop?` | `boolean` | Default backdrop close behavior for all dialogs |
 
 ---
 

@@ -39,8 +39,19 @@ async function readFileAsync() { ... } // Async suffix prohibited
 - Not enforced — omit when code is self-explanatory
 - When written, use Korean
 
+## Re-export Restriction
+
+- Re-export (`export * from`, `export { } from`) is **only allowed in `src/index.ts`**
+- All other files must not re-export — duplicated re-exports make code harder to find and maintain
+
 ## index.ts Export Pattern
 
 - Large packages: `#region`/`#endregion` for sections + `//` for sub-groups
 - Small packages (≤10 exports): `//` comments only
 - Always `export *` (wildcard), never explicit `export type { ... } from "..."`
+
+## Type Safety for Public APIs
+
+- API changes must be detectable via **typecheck alone** — all affected usage sites must show compile errors
+- Public component props must support **IDE intellisense** (autocomplete, type hints)
+- Avoid `any` in public-facing types; use generics or specific union types instead

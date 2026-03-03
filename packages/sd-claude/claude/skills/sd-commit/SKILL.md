@@ -58,6 +58,8 @@ Examples:
 - `fix(orm-node): handle null values in bulk insert`
 - `docs: update README with new API examples`
 
+> **Note:** The examples above are in English for reference only. The actual description MUST be written in the system's configured language.
+
 Use a HEREDOC for multi-line messages when needed.
 
 ## Execution

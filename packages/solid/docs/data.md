@@ -134,24 +134,28 @@ Sub-components: `DataSheet.Column`
 |------|------|-------------|
 | `items` | `TItem[]` | Data rows |
 | `persistKey` | `string` | Key for persisting column config |
+| `hideConfigBar` | `boolean` | Hides the settings toolbar |
+| `inset` | `boolean` | Borderless inset style |
+| `contentStyle` | `JSX.CSSProperties \| string` | Custom content style |
+| `sorts` | `SortingDef[]` | Active sort definitions |
+| `onSortsChange` | `(sorts) => void` | Sort change callback |
+| `autoSort` | `boolean` | Enable automatic client-side sorting |
 | `page` | `number` | Current page |
 | `onPageChange` | `(page) => void` | Page change callback |
 | `totalPageCount` | `number` | Total pages |
-| `sorts` | `SortingDef[]` | Active sort definitions |
-| `onSortsChange` | `(sorts) => void` | Sort change callback |
-| `getChildren` | `(item) => TItem[] \| undefined` | Tree children resolver |
-| `expandedItems` | `TItem[]` | Expanded tree items |
-| `onExpandedItemsChange` | `(items) => void` | Expand change callback |
+| `itemsPerPage` | `number` | Items per page |
+| `displayPageCount` | `number` | Number of page buttons shown |
 | `selectMode` | `"single" \| "multiple"` | Selection mode |
 | `selectedItems` | `TItem[]` | Selected items |
 | `onSelectedItemsChange` | `(items) => void` | Selection change callback |
+| `autoSelect` | `"click"` | Auto-select trigger on row click |
 | `isItemSelectable` | `(item) => boolean \| string` | Item selectability |
-| `autoSelect` | `"click" \| "dblclick"` | Auto-select trigger |
-| `onItemDblClick` | `(item) => void` | Double-click callback |
-| `cellClass` | `(item) => string \| undefined` | Per-row cell class |
-| `reorderable` | `boolean` | Enable drag-to-reorder |
-| `onReorder` | `(event) => void` | Reorder callback |
-| `hideConfigBar` | `boolean` | Hides the settings toolbar |
+| `expandedItems` | `TItem[]` | Expanded tree items |
+| `onExpandedItemsChange` | `(items) => void` | Expand change callback |
+| `getChildren` | `(item, index) => TItem[] \| undefined` | Tree children resolver |
+| `cellClass` | `(item, colKey) => string \| undefined` | Per-cell class |
+| `cellStyle` | `(item, colKey) => string \| undefined` | Per-cell style |
+| `onItemsReorder` | `(event: DataSheetReorderEvent<TItem>) => void` | Reorder callback |
 | `class` | `string` | Custom class |
 
 **`DataSheetColumnProps<TItem>`**
