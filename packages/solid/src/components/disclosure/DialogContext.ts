@@ -1,4 +1,4 @@
-import { createContext, useContext, type Accessor, type JSX } from "solid-js";
+import { createContext, useContext, type Accessor, type Component, type JSX } from "solid-js";
 
 /** Dialog default configuration */
 export interface DialogDefaults {
@@ -45,13 +45,18 @@ export interface DialogShowOptions {
   canDeactivate?: () => boolean;
 }
 
+/** Extract result type from component's close prop */
+export type ExtractCloseResult<P> =
+  P extends { close?: (result?: infer T) => void } ? T : undefined;
+
 /** Programmatic dialog Context value */
 export interface DialogContextValue {
   /** Open dialog and wait until closing, returns result */
-  show<T = undefined>(
-    factory: () => JSX.Element,
-    options: DialogShowOptions,
-  ): Promise<T | undefined>;
+  show<P>(
+    component: Component<P>,
+    props: "close" extends keyof P ? Omit<P, "close"> : never,
+    options?: DialogShowOptions,
+  ): Promise<ExtractCloseResult<P> | undefined>;
 }
 
 /** Programmatic dialog Context */
