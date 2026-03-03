@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { IconDeviceFloppy, IconStar, IconX } from "@tabler/icons-solidjs";
 import { objClone, objEqual } from "@simplysm/core-common";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
-import { useNotification } from "../../feedback/notification/NotificationContext";
+import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Icon } from "../../display/Icon";
 import { textPlaceholder } from "../../../styles/tokens.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";

@@ -1,5 +1,5 @@
 import { onCleanup, type ParentComponent } from "solid-js";
-import { useNotification } from "../components/feedback/notification/NotificationContext";
+import { useNotification } from "../components/feedback/notification/NotificationProvider";
 
 const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes
 

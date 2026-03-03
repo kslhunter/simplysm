@@ -81,7 +81,7 @@ export interface NotificationContextValue {
 }
 
 /** Notification system Context */
-const NotificationContext = createContext<NotificationContextValue>();
+export const NotificationContext = createContext<NotificationContextValue>();
 
 /**
  * Hook to access the notification system

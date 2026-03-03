@@ -7,7 +7,7 @@ import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import {
   useNotification,
   type NotificationContextValue,
-} from "../../../../src/components/feedback/notification/NotificationContext";
+} from "../../../../src/components/feedback/notification/NotificationProvider";
 
 describe("NotificationContext", () => {
   describe("useNotification", () => {

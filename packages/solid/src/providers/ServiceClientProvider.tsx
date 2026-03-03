@@ -5,7 +5,7 @@ import {
   type ServiceConnectionConfig,
 } from "@simplysm/service-client";
 import { useConfig } from "./ConfigContext";
-import { useNotification } from "../components/feedback/notification/NotificationContext";
+import { useNotification } from "../components/feedback/notification/NotificationProvider";
 
 /**
  * WebSocket service client context value.
@@ -22,7 +22,7 @@ export interface ServiceClientContextValue {
 }
 
 /** WebSocket service client Context */
-const ServiceClientContext = createContext<ServiceClientContextValue>();
+export const ServiceClientContext = createContext<ServiceClientContextValue>();
 
 /**
  * Hook to access the WebSocket service client.

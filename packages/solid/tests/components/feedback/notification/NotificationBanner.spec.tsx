@@ -4,7 +4,7 @@ import { NotificationProvider } from "../../../../src/components/feedback/notifi
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { NotificationBanner } from "../../../../src/components/feedback/notification/NotificationBanner";
-import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
+import { useNotification } from "../../../../src/components/feedback/notification/NotificationProvider";
 
 describe("NotificationBanner", () => {
   beforeEach(() => {

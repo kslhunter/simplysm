@@ -4,7 +4,7 @@ import { render } from "@solidjs/testing-library";
 import {
   useServiceClient,
   type ServiceClientContextValue,
-} from "../../src/providers/ServiceClientContext";
+} from "../../src/providers/ServiceClientProvider";
 import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider";
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/providers/ConfigContext";

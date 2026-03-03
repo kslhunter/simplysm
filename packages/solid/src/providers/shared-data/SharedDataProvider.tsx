@@ -7,8 +7,8 @@ import {
   type SharedDataValue,
 } from "./SharedDataContext";
 import { SharedDataChangeEvent } from "./SharedDataChangeEvent";
-import { useServiceClient } from "../ServiceClientContext";
-import { useNotification } from "../../components/feedback/notification/NotificationContext";
+import { useServiceClient } from "../ServiceClientProvider";
+import { useNotification } from "../../components/feedback/notification/NotificationProvider";
 import { useLogger } from "../../hooks/useLogger";
 
 /**

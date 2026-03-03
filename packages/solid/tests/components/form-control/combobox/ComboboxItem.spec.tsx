@@ -1,10 +1,25 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import {
-  ComboboxContext,
-  type ComboboxContextValue,
-} from "../../../../src/components/form-control/combobox/ComboboxContext";
-import { ComboboxItem } from "../../../../src/components/form-control/combobox/ComboboxItem";
+import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
+import { createContext, useContext, type JSX } from "solid-js";
+
+// Create a context to test ComboboxItem in isolation
+export interface ComboboxContextValue {
+  isSelected: () => boolean;
+  selectValue: (value: unknown) => void;
+  closeDropdown: () => void;
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
+}
+
+const ComboboxContext = createContext<ComboboxContextValue>();
+
+function useComboboxContext(): ComboboxContextValue {
+  const context = useContext(ComboboxContext);
+  if (!context) {
+    throw new Error("useComboboxContext can only be used inside Combobox");
+  }
+  return context;
+}
 
 const createMockContext = (
   overrides: Partial<ComboboxContextValue> = {},
@@ -20,7 +35,7 @@ describe("ComboboxItem component", () => {
   it("renders the item", () => {
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext()}>
-        <ComboboxItem value="apple">사과</ComboboxItem>
+        <Combobox.Item value="apple">사과</Combobox.Item>
       </ComboboxContext.Provider>
     ));
 
@@ -32,7 +47,7 @@ describe("ComboboxItem component", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ selectValue })}>
-        <ComboboxItem value="apple">사과</ComboboxItem>
+        <Combobox.Item value="apple">사과</Combobox.Item>
       </ComboboxContext.Provider>
     ));
 
@@ -43,7 +58,7 @@ describe("ComboboxItem component", () => {
   it("sets aria-selected=true when selected", () => {
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ isSelected: () => true })}>
-        <ComboboxItem value="apple">사과</ComboboxItem>
+        <Combobox.Item value="apple">사과</Combobox.Item>
       </ComboboxContext.Provider>
     ));
 
@@ -54,9 +69,9 @@ describe("ComboboxItem component", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ selectValue })}>
-        <ComboboxItem value="apple" disabled>
+        <Combobox.Item value="apple" disabled>
           사과
-        </ComboboxItem>
+        </Combobox.Item>
       </ComboboxContext.Provider>
     ));
 
@@ -68,7 +83,7 @@ describe("ComboboxItem component", () => {
     const closeDropdown = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ closeDropdown })}>
-        <ComboboxItem value="apple">사과</ComboboxItem>
+        <Combobox.Item value="apple">사과</Combobox.Item>
       </ComboboxContext.Provider>
     ));
 
@@ -79,7 +94,7 @@ describe("ComboboxItem component", () => {
   it("sets data-combobox-item attribute", () => {
     render(() => (
       <ComboboxContext.Provider value={createMockContext()}>
-        <ComboboxItem value="apple">사과</ComboboxItem>
+        <Combobox.Item value="apple">사과</Combobox.Item>
       </ComboboxContext.Provider>
     ));
 

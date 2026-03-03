@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
-import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
+import { useNotification } from "../../../../src/components/feedback/notification/NotificationProvider";
 
 describe("Notification Live Region", () => {
   beforeEach(() => {

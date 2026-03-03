@@ -2,7 +2,7 @@ import { type Component, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { IconX } from "@tabler/icons-solidjs";
-import { useNotification } from "./NotificationContext";
+import { useNotification } from "./NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { Icon } from "../../display/Icon";
 import { themeTokens } from "../../../styles/tokens.styles";

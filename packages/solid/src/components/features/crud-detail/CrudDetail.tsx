@@ -15,7 +15,7 @@ import { reconcile, unwrap } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
 import { objClone, objEqual } from "@simplysm/core-common";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
-import { useNotification } from "../../feedback/notification/NotificationContext";
+import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";

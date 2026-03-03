@@ -4,11 +4,11 @@ import "@simplysm/core-common";
 import {
   useSharedData,
   type SharedDataDefinition,
-  ServiceClientContext,
   type ServiceClientContextValue,
-  NotificationContext,
   type NotificationContextValue,
 } from "../../../src";
+import { ServiceClientContext } from "../../../src/providers/ServiceClientProvider";
+import { NotificationContext } from "../../../src/components/feedback/notification/NotificationProvider";
 import { SharedDataProvider } from "../../../src/providers/shared-data/SharedDataProvider";
 
 interface TestUser {
