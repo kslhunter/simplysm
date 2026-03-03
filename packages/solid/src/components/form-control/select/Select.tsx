@@ -301,9 +301,9 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       const current = (value() as T[] | undefined) ?? [];
       const idx = current.indexOf(itemValue);
       if (idx >= 0) {
-        setValue([...current.slice(0, idx), ...current.slice(idx + 1)] as T[]);
+        setValue([...current.slice(0, idx), ...current.slice(idx + 1)]);
       } else {
-        setValue([...current, itemValue] as T[]);
+        setValue([...current, itemValue]);
       }
     } else {
       setValue(itemValue);

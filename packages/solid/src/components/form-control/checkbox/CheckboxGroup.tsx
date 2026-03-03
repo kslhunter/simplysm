@@ -32,14 +32,14 @@ interface CheckboxGroupProps<TValue> {
 
 function CheckboxGroupInner<TValue = unknown>(props: CheckboxGroupProps<TValue>): JSX.Element {
   const [value, setValue] = createControllableSignal({
-    value: () => props.value,
+    value: () => props.value ?? ([] as TValue[]),
     onChange: () => props.onValueChange,
   });
 
   const toggle = (item: unknown) => {
     setValue((prev) => {
-      if (prev.includes(item)) return prev.filter((v) => v !== item);
-      return [...prev, item];
+      if (prev.includes(item as TValue)) return prev.filter((v) => v !== item);
+      return [...prev, item as TValue];
     });
   };
 

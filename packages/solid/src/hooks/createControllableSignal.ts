@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, createSignal, type Signal } from "solid-js";
+import { type Accessor, createEffect, createSignal } from "solid-js";
 
 /**
  * Signal hook that supports the controlled/uncontrolled pattern.
@@ -29,7 +29,7 @@ import { type Accessor, createEffect, createSignal, type Signal } from "solid-js
 export function createControllableSignal<TValue>(options: {
   value: Accessor<TValue>;
   onChange: Accessor<((value: TValue) => void) | undefined>;
-}) {
+}): [Accessor<TValue>, (newValue: TValue | ((prev: TValue) => TValue)) => TValue] {
   const [internalValue, setInternalValue] = createSignal<TValue>(options.value());
 
   // Sync internal state when props change (props take precedence)
@@ -40,8 +40,8 @@ export function createControllableSignal<TValue>(options: {
 
   const isControlled = () => options.onChange() != null;
   const value = () => (isControlled() ? options.value() : internalValue());
-  const setValue = (newValue: any) => {
-    const resolved = newValue instanceof Function ? newValue(value()) : newValue;
+  const setValue = (newValue: TValue | ((prev: TValue) => TValue)): TValue => {
+    const resolved = newValue instanceof Function ? (newValue as (prev: TValue) => TValue)(value()) : newValue;
 
     if (isControlled()) {
       options.onChange()?.(resolved);
@@ -52,5 +52,5 @@ export function createControllableSignal<TValue>(options: {
     return resolved;
   };
 
-  return [value, setValue] as Signal<TValue>;
+  return [value, setValue];
 }
