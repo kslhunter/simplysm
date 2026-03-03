@@ -767,8 +767,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   );
 };
 
-export const CrudSheet = CrudSheetBase as unknown as CrudSheetComponent;
-CrudSheet.Column = CrudSheetColumn;
-CrudSheet.Filter = CrudSheetFilter;
-CrudSheet.Tools = CrudSheetTools;
-CrudSheet.Header = CrudSheetHeader;
+//#region Export
+export const CrudSheet = Object.assign(CrudSheetBase as unknown as CrudSheetComponent, {
+  Column: CrudSheetColumn,
+  Filter: CrudSheetFilter,
+  Tools: CrudSheetTools,
+  Header: CrudSheetHeader,
+});
+//#endregion
