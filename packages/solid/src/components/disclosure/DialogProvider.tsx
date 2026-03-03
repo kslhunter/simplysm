@@ -1,7 +1,9 @@
 import {
   type Accessor,
+  type Component,
   type ParentComponent,
   createSignal,
+  Dynamic,
   For,
   Show,
   splitProps,
@@ -14,12 +16,12 @@ import {
   type DialogDefaults,
   type DialogShowOptions,
 } from "./DialogContext";
-import { DialogInstanceContext, type DialogInstance } from "./DialogInstanceContext";
 import { Dialog } from "./Dialog";
 
 interface DialogEntry {
   id: string;
-  factory: () => JSX.Element;
+  component: Component<any>;
+  props: Record<string, any>;
   options: DialogShowOptions;
   resolve: (result: unknown) => void;
   open: Accessor<boolean>;
@@ -32,8 +34,8 @@ let nextId = 0;
 /**
  * Programmatic dialog Provider
  *
- * Open dialogs with `useDialog().show(content, options)`,
- * and close them with `close(result)` to resolve the Promise.
+ * Open dialogs with `useDialog().show(component, props, options)`,
+ * and close them with `props.close(result)` to resolve the Promise.
  *
  * @example
  * ```tsx
@@ -54,18 +56,20 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
 
-  const show = <T,>(
-    factory: () => JSX.Element,
-    options: DialogShowOptions,
-  ): Promise<T | undefined> => {
-    return new Promise<T | undefined>((resolve) => {
+  const show = <P,>(
+    component: Component<P>,
+    componentProps: Record<string, any>,
+    options?: DialogShowOptions,
+  ): Promise<any> => {
+    return new Promise((resolve) => {
       const id = String(nextId++);
       const [open, setOpen] = createSignal(true);
       const entry: DialogEntry = {
         id,
-        factory,
-        options,
-        resolve: resolve as (result: unknown) => void,
+        component,
+        props: componentProps,
+        options: options ?? {},
+        resolve,
         open,
         setOpen,
       };
@@ -102,44 +106,40 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
       <DialogContext.Provider value={contextValue}>
         {local.children}
         <For each={entries()}>
-          {(entry) => {
-            const instance: DialogInstance<unknown> = {
-              close: (result?: unknown) => requestClose(entry.id, result),
-            };
-
-            return (
-              <Dialog
-                open={entry.open()}
-                onOpenChange={(open) => {
-                  if (!open && entry.pendingResult === undefined) {
-                    requestClose(entry.id);
-                  }
-                }}
-                onCloseComplete={() => removeEntry(entry.id)}
-                closable={entry.options.closable}
-                closeOnBackdrop={entry.options.closeOnBackdrop}
-                closeOnEscape={entry.options.closeOnEscape}
-                resizable={entry.options.resizable}
-                movable={entry.options.movable}
-                float={entry.options.float}
-                fill={entry.options.fill}
-                width={entry.options.width}
-                height={entry.options.height}
-                minWidth={entry.options.minWidth}
-                minHeight={entry.options.minHeight}
-                position={entry.options.position}
-                headerStyle={entry.options.headerStyle}
-                canDeactivate={entry.options.canDeactivate}
-              >
-                <Show when={entry.options.header !== undefined}>
-                  <Dialog.Header>{entry.options.header}</Dialog.Header>
-                </Show>
-                <DialogInstanceContext.Provider value={instance}>
-                  {entry.factory()}
-                </DialogInstanceContext.Provider>
-              </Dialog>
-            );
-          }}
+          {(entry) => (
+            <Dialog
+              open={entry.open()}
+              onOpenChange={(open) => {
+                if (!open && entry.pendingResult === undefined) {
+                  requestClose(entry.id);
+                }
+              }}
+              onCloseComplete={() => removeEntry(entry.id)}
+              closable={entry.options.closable}
+              closeOnBackdrop={entry.options.closeOnBackdrop}
+              closeOnEscape={entry.options.closeOnEscape}
+              resizable={entry.options.resizable}
+              movable={entry.options.movable}
+              float={entry.options.float}
+              fill={entry.options.fill}
+              width={entry.options.width}
+              height={entry.options.height}
+              minWidth={entry.options.minWidth}
+              minHeight={entry.options.minHeight}
+              position={entry.options.position}
+              headerStyle={entry.options.headerStyle}
+              canDeactivate={entry.options.canDeactivate}
+            >
+              <Show when={entry.options.header !== undefined}>
+                <Dialog.Header>{entry.options.header}</Dialog.Header>
+              </Show>
+              <Dynamic
+                component={entry.component}
+                {...entry.props}
+                close={(result?: unknown) => requestClose(entry.id, result)}
+              />
+            </Dialog>
+          )}
         </For>
       </DialogContext.Provider>
     </DialogDefaultsContext.Provider>
