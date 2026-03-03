@@ -20,7 +20,6 @@ import {
 import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
-import { DialogInstanceContext } from "../../../../src/components/disclosure/DialogInstanceContext";
 import { Dialog } from "../../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 
@@ -44,9 +43,7 @@ function DialogWrapper(props: { children: JSX.Element }) {
       <NotificationProvider>
         <Dialog open fill>
           <Dialog.Header>Test Dialog</Dialog.Header>
-          <DialogInstanceContext.Provider value={{ close: () => {} }}>
-            {props.children}
-          </DialogInstanceContext.Provider>
+          {props.children}
         </Dialog>
       </NotificationProvider>
     </ConfigContext.Provider>
@@ -360,6 +357,7 @@ describe("CrudSheet select mode", () => {
           getItemKey={(item) => item.id}
           selectMode="single"
           onSelect={() => {}}
+          close={() => {}}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),
@@ -386,6 +384,7 @@ describe("CrudSheet select mode", () => {
           getItemKey={(item) => item.id}
           selectMode="multiple"
           onSelect={() => {}}
+          close={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -476,6 +475,7 @@ describe("CrudSheet dialog mode", () => {
           getItemKey={(item) => item.id}
           selectMode="multiple"
           onSelect={() => {}}
+          close={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}

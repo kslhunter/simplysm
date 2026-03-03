@@ -81,7 +81,6 @@ export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
-export * from "./components/disclosure/DialogInstanceContext";
 export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
