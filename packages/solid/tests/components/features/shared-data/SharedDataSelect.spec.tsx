@@ -3,7 +3,8 @@ import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal, type Accessor } from "solid-js";
 import {
   SharedDataSelect,
-  type InjectedSelectProps,
+  type SelectDialogBaseProps,
+  type DataSelectDialogResult,
 } from "@simplysm/solid";
 import { type SharedDataAccessor } from "../../../../src/providers/shared-data/SharedDataContext";
 import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
@@ -31,14 +32,14 @@ function createMockAccessor(itemsSignal: Accessor<TestItem[]>): SharedDataAccess
   };
 }
 
-function TestDialogComponent(props: { confirmKeys: number[] } & InjectedSelectProps) {
+function TestDialogComponent(props: SelectDialogBaseProps<number> & { confirmKeys: number[] }) {
   return (
     <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectMode}</div>
       <div data-testid="selected-keys">{JSON.stringify([...props.selectedKeys])}</div>
       <button
         data-testid="dialog-confirm"
-        onClick={() => props.onSelect({ keys: props.confirmKeys })}
+        onClick={() => props.close?.({ selectedKeys: props.confirmKeys })}
       >
         confirm
       </button>
@@ -109,11 +110,9 @@ describe("SharedDataSelect", () => {
         data={accessor}
         value={1}
         onValueChange={onValueChange}
-        dialog={{
-          component: TestDialogComponent,
-          props: { confirmKeys: [2] },
-          option: { header: "Select Item" },
-        }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [2] }}
+        dialogOptions={{ header: "Select Item" }}
       >
         <SharedDataSelect.ItemTemplate>
           {(item: TestItem) => <span>{item.name}</span>}
@@ -147,10 +146,8 @@ describe("SharedDataSelect", () => {
         data={accessor}
         value={3}
         onValueChange={() => {}}
-        dialog={{
-          component: TestDialogComponent,
-          props: { confirmKeys: [] },
-        }}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
       >
         <SharedDataSelect.ItemTemplate>
           {(item: TestItem) => <span>{item.name}</span>}
