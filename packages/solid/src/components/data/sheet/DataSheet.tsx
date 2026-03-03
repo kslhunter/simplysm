@@ -39,7 +39,7 @@ import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
-import { DialogContext } from "../../disclosure/DialogContext";
+import { DialogContext } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import "./DataSheet.css";
 import {

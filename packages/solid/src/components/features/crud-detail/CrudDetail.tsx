@@ -18,7 +18,7 @@ import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
-import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";
+import { createTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
 import { useI18n } from "../../../providers/i18n/I18nContext";

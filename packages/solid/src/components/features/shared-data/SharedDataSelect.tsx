@@ -11,7 +11,7 @@ import { IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
-import { type DialogShowOptions, useDialog } from "../../disclosure/DialogContext";
+import { type DialogShowOptions, useDialog } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
 import {

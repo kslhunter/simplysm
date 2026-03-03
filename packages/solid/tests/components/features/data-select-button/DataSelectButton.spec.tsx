@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
 import { DataSelectButton, type SelectDialogBaseProps } from "@simplysm/solid";
-import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
+import { DialogProvider } from "../../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 

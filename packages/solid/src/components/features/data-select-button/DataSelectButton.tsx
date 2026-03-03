@@ -15,7 +15,7 @@ import { twMerge } from "tailwind-merge";
 import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
-import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
+import { useDialog, type DialogShowOptions } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";

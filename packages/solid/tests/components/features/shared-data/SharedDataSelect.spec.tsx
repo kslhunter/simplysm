@@ -6,7 +6,7 @@ import {
   type SelectDialogBaseProps,
 } from "@simplysm/solid";
 import { type SharedDataAccessor } from "../../../../src/providers/shared-data/SharedDataContext";
-import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
+import { DialogProvider } from "../../../../src/components/disclosure/Dialog";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 

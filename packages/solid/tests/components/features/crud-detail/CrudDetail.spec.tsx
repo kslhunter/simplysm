@@ -22,7 +22,7 @@ import { CrudDetail } from "../../../../src/components/features/crud-detail/Crud
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
-import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/TopbarContext";
+import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/Topbar";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 
 // Helper: extract actions accessor from TopbarContext
