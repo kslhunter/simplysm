@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, For, onCleanup, type JSX, Show, splitProps, useContext, type ParentComponent } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
@@ -7,13 +7,44 @@ import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { textMuted } from "../../../styles/tokens.styles";
-import { createSlotSignal } from "../../../hooks/createSlotSignal";
-import {
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
+
+// ─── Context ──────────────────────────────────────────────
+
+export interface SharedDataSelectListContextValue {
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
+  setFilter: (content: SlotAccessor) => void;
+}
+
+const SharedDataSelectListContext = createContext<SharedDataSelectListContextValue>();
+
+function useSharedDataSelectListContext(): SharedDataSelectListContextValue {
+  const context = useContext(SharedDataSelectListContext);
+  if (!context) {
+    throw new Error("useSharedDataSelectListContext can only be used inside SharedDataSelectList");
+  }
+  return context;
+}
+
+// ─── Sub-components ───────────────────────────────────────
+
+/** ItemTemplate sub-component — registers item render function */
+const SharedDataSelectListItemTemplate = <TItem,>(props: {
+  children: (item: TItem, index: number) => JSX.Element;
+}) => {
+  const ctx = useSharedDataSelectListContext();
+  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
+  ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
+  onCleanup(() => ctx.setItemTemplate(undefined));
+  return null;
+};
+
+/** Filter sub-component — registers custom filter UI slot */
+const SharedDataSelectListFilter: ParentComponent = createSlotComponent(
   SharedDataSelectListContext,
-  type SharedDataSelectListContextValue,
-  SharedDataSelectListItemTemplate,
-  SharedDataSelectListFilter,
-} from "./SharedDataSelectListContext";
+  (ctx) => ctx.setFilter,
+);
 
 /** SharedDataSelectList Props */
 export interface SharedDataSelectListProps<TItem> {
