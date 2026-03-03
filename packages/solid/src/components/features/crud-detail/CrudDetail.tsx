@@ -383,7 +383,10 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   );
 };
 
-export const CrudDetail = CrudDetailBase as unknown as CrudDetailComponent;
-CrudDetail.Tools = CrudDetailTools;
-CrudDetail.Before = CrudDetailBefore;
-CrudDetail.After = CrudDetailAfter;
+//#region Export
+export const CrudDetail = Object.assign(CrudDetailBase, {
+  Tools: CrudDetailTools,
+  Before: CrudDetailBefore,
+  After: CrudDetailAfter,
+}) as unknown as CrudDetailComponent;
+//#endregion
