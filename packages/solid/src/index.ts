@@ -59,7 +59,6 @@ export * from "./components/data/sheet/DataSheet.styles";
 export * from "./components/data/sheet/types";
 export * from "./components/data/calendar/Calendar";
 export * from "./components/data/kanban/Kanban";
-export * from "./components/data/kanban/KanbanContext";
 
 //#endregion
 
