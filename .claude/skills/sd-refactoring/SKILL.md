@@ -1,9 +1,9 @@
 ---
-name: sd-refactor
+name: sd-refactoring
 description: "Use when the user requests refactoring analysis, structural improvement, complexity reduction, duplication removal, or asks how to restructure code. Triggers: 'refactor this', 'simplify this', 'reduce complexity', 'clean up structure', 'improve maintainability', 'reorganize code'."
 ---
 
-# sd-refactor
+# sd-refactoring
 
 ## Overview
 
@@ -26,9 +26,9 @@ This is distinct from review (finding defects) and lint (enforcing conventions).
 
 ## Usage
 
-- `/sd-refactor packages/core-common` — full refactoring analysis
-- `/sd-refactor packages/solid/src/components focus on duplication` — selective analysis
-- `/sd-refactor` — if no argument, ask the user for the target path
+- `/sd-refactoring packages/core-common` — full refactoring analysis
+- `/sd-refactoring packages/solid/src/components focus on duplication` — selective analysis
+- `/sd-refactoring` — if no argument, ask the user for the target path
 
 ## Target Selection
 

@@ -11,7 +11,7 @@ Perform a code review focused on **defects and correctness**, producing a compre
 
 Dispatches up to 2 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
 
-**Note:** For structural improvement (complexity, duplication, organization), use `/sd-refactor` instead.
+**Note:** For structural improvement (complexity, duplication, organization), use `/sd-refactoring` instead.
 
 ## Principles
 
@@ -47,7 +47,7 @@ By default, run **both reviewers**. If the user specifies a focus in natural lan
 | "API", "naming", "types", "DX" | API Reviewer only |
 | (no specific focus) | Both |
 
-**Redirects:** If the user asks about "complexity", "duplication", "structure", or "maintainability", redirect them to `/sd-refactor` instead.
+**Redirects:** If the user asks about "complexity", "duplication", "structure", or "maintainability", redirect them to `/sd-refactoring` instead.
 
 Use judgment for ambiguous requests. When in doubt, run both.
 

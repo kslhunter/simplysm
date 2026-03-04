@@ -26,7 +26,7 @@ Analyze user request from ARGUMENTS, select the best matching skill, explain why
 | `sd-plan`            | Multi-step task with spec/requirements — **planning before code**                                                                               |
 | `sd-plan-dev`        | Already have a plan — **executing implementation plan**                                                                                         |
 | `sd-review`          | Code review focused on **defects and correctness** — bugs, security, architectural violations, API design problems                              |
-| `sd-refactor`        | Refactoring analysis — complexity reduction, duplication removal, structural improvement, responsibility separation                              |
+| `sd-refactoring`        | Refactoring analysis — complexity reduction, duplication removal, structural improvement, responsibility separation                              |
 | `sd-check`           | Verify code — typecheck, lint, tests                                                                                                            |
 | `sd-commit`          | Create a git commit                                                                                                                             |
 | `sd-readme`          | Update a package README.md                                                                                                                      |
@@ -42,7 +42,7 @@ Analyze user request from ARGUMENTS, select the best matching skill, explain why
 
 1. **Explicit skill name** — If user mentions a specific skill name (e.g., "sd-explore로...", "sd-plan 만들어줘"), route to that skill directly
 2. Select **exactly one** skill — the most specific match wins
-3. **Review vs Refactor**: "find bugs", "review" → `sd-review`. "refactor", "improve structure", "remove duplication" → `sd-refactor`
+3. **Review vs Refactor**: "find bugs", "review" → `sd-review`. "refactor", "improve structure", "remove duplication" → `sd-refactoring`
 4. **Sequential requests** (e.g., "brainstorm하고 plan 만들어줘"): Route to the **first** skill only. After completion, user can invoke the next
 5. If nothing matches, use **default LLM behavior** and handle the request directly
 6. Pass ARGUMENTS through as the skill's input

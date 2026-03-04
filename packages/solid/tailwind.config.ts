@@ -7,8 +7,6 @@ const sp = defaultTheme.spacing;
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
-// export const tailwindContent = [`${__dirname}**/*.tsx`];
-
 const fieldSizes = {
   "field": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
   "field-xs": `calc(${lh}rem + 2px)`,

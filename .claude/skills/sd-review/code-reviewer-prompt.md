@@ -37,8 +37,8 @@ Look for:
 
 Do NOT report:
 - Naming consistency, API design, type quality (including `any` types)
-- Code complexity, duplication, readability improvements → use sd-refactor
-- Structural improvement suggestions (better responsibility separation, abstraction levels) → use sd-refactor
+- Code complexity, duplication, readability improvements → use sd-refactoring
+- Structural improvement suggestions (better responsibility separation, abstraction levels) → use sd-refactoring
 - Style preferences unless they cause actual bugs
 - Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
 - Speculative future risks — "if config were changed to X, this would break" is not a finding
