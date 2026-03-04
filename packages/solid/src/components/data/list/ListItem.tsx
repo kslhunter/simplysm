@@ -1,6 +1,5 @@
 import {
   type Component,
-  createContext,
   type JSX,
   type ParentComponent,
   Show,
@@ -13,8 +12,7 @@ import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlot } from "../../../helpers/createSlot";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 import {
@@ -31,13 +29,7 @@ import type { ComponentSize } from "../../../styles/control.styles";
 
 void ripple;
 
-interface ListItemSlotsContextValue {
-  setChildren: (content: SlotAccessor) => void;
-}
-
-const ListItemSlotsContext = createContext<ListItemSlotsContextValue>();
-
-const ListItemChildren = createSlotComponent(ListItemSlotsContext, (ctx) => ctx.setChildren);
+const [ListItemChildren, createChildrenSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 export interface ListItemProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -133,7 +125,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
     onChange: () => local.onOpenChange,
   });
 
-  const [childrenSlot, setChildrenSlot] = createSlotSignal();
+  const [childrenSlot, ChildrenProvider] = createChildrenSlotAccessor();
   const hasChildren = () => childrenSlot() !== undefined;
 
   const useRipple = () => !(local.readonly || local.disabled);
@@ -163,7 +155,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const getSelectedIconClassName = () => getListItemSelectedIconClass(local.selected ?? false);
 
   return (
-    <ListItemSlotsContext.Provider value={{ setChildren: setChildrenSlot }}>
+    <ChildrenProvider>
       <button
         {...rest}
         type="button"
@@ -199,12 +191,12 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
           <div class="flex">
             <div class={listItemIndentGuideClass} />
             <List inset class="flex-1">
-              {childrenSlot()!()}
+              {childrenSlot()!.children}
             </List>
           </div>
         </Collapse>
       </Show>
-    </ListItemSlotsContext.Provider>
+    </ChildrenProvider>
   );
 };
 

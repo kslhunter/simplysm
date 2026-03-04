@@ -1,9 +1,8 @@
 import clsx from "clsx";
-import { createContext, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
+import { createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlot } from "../../../helpers/createSlot";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
   fieldGapClasses,
@@ -15,13 +14,8 @@ import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
-interface TextInputSlotsContextValue {
-  setPrefix: (content: SlotAccessor) => void;
-}
-
-const TextInputSlotsContext = createContext<TextInputSlotsContextValue>();
-
-const TextInputPrefix = createSlotComponent(TextInputSlotsContext, (ctx) => ctx.setPrefix);
+const [TextInputPrefixSlot, createTextInputPrefixAccessor] = createSlot<{ children: JSX.Element }>();
+export const TextInputPrefix = TextInputPrefixSlot;
 
 export interface TextInputProps {
   /** Input value */
@@ -227,8 +221,7 @@ const TextInputInner = (props: TextInputProps) => {
     ime.handleCompositionEnd(extractValue(e.currentTarget));
   };
 
-  // Register Prefix slot Context
-  const [prefix, setPrefix] = createSlotSignal();
+  const [prefix, PrefixProvider] = createTextInputPrefixAccessor();
   const prefixEl = () => prefix() !== undefined;
 
   // Wrapper class (exclude local.class when includeCustomClass=false — only apply to outer in inset)
@@ -267,7 +260,7 @@ const TextInputInner = (props: TextInputProps) => {
   });
 
   return (
-    <TextInputSlotsContext.Provider value={{ setPrefix }}>
+    <PrefixProvider>
       {local.children}
       <Invalid
         message={errorMsg()}
@@ -289,7 +282,7 @@ const TextInputInner = (props: TextInputProps) => {
                   title={local.title}
                 >
                   <Show when={prefix()}>
-                    <span class="shrink-0">{prefix()!()}</span>
+                    <span class="shrink-0">{prefix()!.children}</span>
                   </Show>
                   <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
                 </div>
@@ -297,7 +290,7 @@ const TextInputInner = (props: TextInputProps) => {
             >
               <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
                 <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!()}</span>
+                  <span class="shrink-0">{prefix()!.children}</span>
                 </Show>
                 <input
                   type={local.type ?? "text"}
@@ -328,7 +321,7 @@ const TextInputInner = (props: TextInputProps) => {
               title={local.title}
             >
               <Show when={prefix()}>
-                <span class="shrink-0">{prefix()!()}</span>
+                <span class="shrink-0">{prefix()!.children}</span>
               </Show>
               <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
             </div>
@@ -336,7 +329,7 @@ const TextInputInner = (props: TextInputProps) => {
             <Show when={isEditable()}>
               <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
                 <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!()}</span>
+                  <span class="shrink-0">{prefix()!.children}</span>
                 </Show>
                 <input
                   type={local.type ?? "text"}
@@ -354,7 +347,7 @@ const TextInputInner = (props: TextInputProps) => {
           </div>
         </Show>
       </Invalid>
-    </TextInputSlotsContext.Provider>
+    </PrefixProvider>
   );
 };
 

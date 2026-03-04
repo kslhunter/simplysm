@@ -23,9 +23,7 @@ import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { bg, text } from "../../../styles/base.styles";
 import { gap, pad } from "../../../styles/control.styles";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
-import { createSlotSignal } from "../../../hooks/createSlotSignal";
-import type { SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlot } from "../../../helpers/createSlot";
 import "./Kanban.animate.css";
 import { Button } from "../../form-control/Button";
 
@@ -87,10 +85,6 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   // Card registration (Phase 4)
   registerCard: (id: string, info: { value: T | undefined; selectable: boolean }) => void;
   unregisterCard: (id: string) => void;
-
-  // Slot registration
-  setTitle: (content: SlotAccessor) => void;
-  setTools: (content: SlotAccessor) => void;
 }
 
 export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
@@ -105,11 +99,11 @@ export function useKanbanLaneContext(): KanbanLaneContextValue {
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-const KanbanLaneTitle = createSlotComponent(KanbanLaneContext, (ctx) => ctx.setTitle);
+const [KanbanLaneTitle, createTitleSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-const KanbanLaneTools = createSlotComponent(KanbanLaneContext, (ctx) => ctx.setTools);
+const [KanbanLaneTools, createToolsSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
@@ -406,9 +400,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
   };
 
-  // Slot signals
-  const [title, setTitle] = createSlotSignal();
-  const [tools, setTools] = createSlotSignal();
+  const [title, TitleProvider] = createTitleSlotAccessor();
+  const [tools, ToolsProvider] = createToolsSlotAccessor();
 
   const laneContextValue: KanbanLaneContextValue = {
     value: () => local.value,
@@ -416,8 +409,6 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     setDropTarget,
     registerCard,
     unregisterCard,
-    setTitle,
-    setTools,
   };
 
   const hasHeader = () =>
@@ -462,6 +453,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   });
 
   return (
+    <TitleProvider>
+      <ToolsProvider>
     <KanbanLaneContext.Provider value={laneContextValue}>
       <BusyContainer busy={local.busy} variant="bar">
         <div
@@ -493,10 +486,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
                 <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline />
               </Show>
               <div class="flex-1">
-                <Show when={title()}>{title()!()}</Show>
+                <Show when={title()}>{title()!.children}</Show>
               </div>
               <Show when={tools()}>
-                <div class={clsx("flex items-center", gap.default)}>{tools()!()}</div>
+                <div class={clsx("flex items-center", gap.default)}>{tools()!.children}</div>
               </Show>
             </div>
           </Show>
@@ -510,6 +503,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
         </div>
       </BusyContainer>
     </KanbanLaneContext.Provider>
+      </ToolsProvider>
+    </TitleProvider>
   );
 };
 

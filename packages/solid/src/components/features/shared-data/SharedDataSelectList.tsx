@@ -1,4 +1,4 @@
-import { createContext, createEffect, createMemo, createSignal, For, onCleanup, type JSX, Show, splitProps, useContext, type ParentComponent } from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, For, onCleanup, type JSX, Show, splitProps, useContext } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataProvider";
@@ -8,14 +8,12 @@ import { TextInput } from "../../form-control/field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { text } from "../../../styles/base.styles";
 import { gap } from "../../../styles/control.styles";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
+import { createSlot } from "../../../helpers/createSlot";
 
 // ─── Context ──────────────────────────────────────────────
 
 export interface SharedDataSelectListContextValue {
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
-  setFilter: (content: SlotAccessor) => void;
 }
 
 const SharedDataSelectListContext = createContext<SharedDataSelectListContextValue>();
@@ -41,10 +39,7 @@ const SharedDataSelectListItemTemplate = <TItem,>(props: {
 };
 
 /** Filter sub-component — registers custom filter UI slot */
-const SharedDataSelectListFilter: ParentComponent = createSlotComponent(
-  SharedDataSelectListContext,
-  (ctx) => ctx.setFilter,
-);
+const [SharedDataSelectListFilter, createFilterSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 /** SharedDataSelectList Props */
 export interface SharedDataSelectListProps<TItem> {
@@ -108,7 +103,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
 
   // ─── Slot signals ──────────────────────────────────────
 
-  const [filter, setFilter] = createSlotSignal();
+  const [filter, FilterProvider] = createFilterSlotAccessor();
   const [itemTemplate, _setItemTemplate] = createSignal<
     ((item: TItem, index: number) => JSX.Element) | undefined
   >();
@@ -117,7 +112,6 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
 
   const contextValue: SharedDataSelectListContextValue = {
     setItemTemplate,
-    setFilter,
   };
 
   // ─── Search state ──────────────────────────────────────
@@ -212,6 +206,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
   // ─── Render ────────────────────────────────────────────
 
   return (
+    <FilterProvider>
     <SharedDataSelectListContext.Provider value={contextValue}>
       {/* Render children inside Provider so sub-components (ItemTemplate, Filter) can access context */}
       {local.children}
@@ -237,7 +232,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
         </Show>
 
         {/* Custom Filter */}
-        <Show when={filter()}>{filter()!()}</Show>
+        <Show when={filter()}>{filter()!.children}</Show>
 
         {/* Pagination */}
         <Show when={local.pageSize != null && totalPageCount() > 1}>
@@ -277,6 +272,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
         </List>
       </div>
     </SharedDataSelectListContext.Provider>
+    </FilterProvider>
   );
 }) as SharedDataSelectListComponent;
 
