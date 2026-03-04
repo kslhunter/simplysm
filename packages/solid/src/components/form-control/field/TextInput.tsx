@@ -1,6 +1,4 @@
-import clsx from "clsx";
 import { createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
-import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlot } from "../../../helpers/createSlot";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
@@ -11,7 +9,7 @@ import {
   getFieldWrapperClass,
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { Invalid } from "../Invalid";
+import { FieldShell } from "./FieldShell";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const [TextInputPrefixSlot, createTextInputPrefixAccessor] = createSlot<{ children: JSX.Element }>();
@@ -262,91 +260,44 @@ const TextInputInner = (props: TextInputProps) => {
   return (
     <PrefixProvider>
       {local.children}
-      <Invalid
-        message={errorMsg()}
-        variant={local.inset ? "dot" : "border"}
+      <FieldShell
+        errorMsg={errorMsg()}
+        invalidVariant={local.inset ? "dot" : "border"}
         touchMode={local.touchMode}
+        inset={local.inset}
+        isEditable={isEditable()}
+        wrapperClass={getWrapperClass}
+        dataAttr="data-text-field"
+        readonlyExtraClass="sd-text-field"
+        insetExtraClass="[text-decoration:inherit]"
+        style={local.style}
+        title={local.title}
+        class={local.class}
+        rest={rest}
+        displayContent={
+          <>
+            <Show when={prefix()}>
+              <span class="shrink-0">{prefix()!.children}</span>
+            </Show>
+            <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
+          </>
+        }
       >
-        <Show
-          when={local.inset}
-          fallback={
-            // standalone mode: maintain existing Show pattern
-            <Show
-              when={isEditable()}
-              fallback={
-                <div
-                  {...rest}
-                  data-text-field
-                  class={twMerge(getWrapperClass(true), "sd-text-field")}
-                  style={local.style}
-                  title={local.title}
-                >
-                  <Show when={prefix()}>
-                    <span class="shrink-0">{prefix()!.children}</span>
-                  </Show>
-                  <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
-                </div>
-              }
-            >
-              <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
-                <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!.children}</span>
-                </Show>
-                <input
-                  type={local.type ?? "text"}
-                  class={fieldInputClass}
-                  value={inputValue()}
-                  placeholder={local.placeholder}
-                  title={local.title}
-                  autocomplete={local.autocomplete ?? "one-time-code"}
-                  onInput={handleInput}
-                  onCompositionStart={handleCompositionStart}
-                  onCompositionEnd={handleCompositionEnd}
-                />
-              </div>
-            </Show>
-          }
-        >
-          {/* inset mode: dual-element overlay pattern */}
-          <div
-            {...rest}
-            data-text-field
-            class={clsx("relative", "[text-decoration:inherit]", local.class)}
-            style={local.style}
-          >
-            <div
-              data-text-field-content
-              class={getWrapperClass(false)}
-              style={{ visibility: isEditable() ? "hidden" : undefined }}
-              title={local.title}
-            >
-              <Show when={prefix()}>
-                <span class="shrink-0">{prefix()!.children}</span>
-              </Show>
-              <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
-            </div>
-
-            <Show when={isEditable()}>
-              <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-                <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!.children}</span>
-                </Show>
-                <input
-                  type={local.type ?? "text"}
-                  class={fieldInputClass}
-                  value={inputValue()}
-                  placeholder={local.placeholder}
-                  title={local.title}
-                  autocomplete={local.autocomplete ?? "one-time-code"}
-                  onInput={handleInput}
-                  onCompositionStart={handleCompositionStart}
-                  onCompositionEnd={handleCompositionEnd}
-                />
-              </div>
-            </Show>
-          </div>
+        <Show when={prefix()}>
+          <span class="shrink-0">{prefix()!.children}</span>
         </Show>
-      </Invalid>
+        <input
+          type={local.type ?? "text"}
+          class={fieldInputClass}
+          value={inputValue()}
+          placeholder={local.placeholder}
+          title={local.title}
+          autocomplete={local.autocomplete ?? "one-time-code"}
+          onInput={handleInput}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+        />
+      </FieldShell>
     </PrefixProvider>
   );
 };
