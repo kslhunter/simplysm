@@ -3,40 +3,25 @@ import {
   type ParentComponent,
   createSignal,
   createEffect,
-  createContext,
   onCleanup,
   Show,
   splitProps,
 } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
-import { createSlotSignal, type SlotAccessor } from "../../hooks/createSlotSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
-import { createSlotComponent } from "../../helpers/createSlotComponent";
+import { createSlot } from "../../helpers/createSlot";
 import { bg, border } from "../../styles/base.styles";
 import { tabbable } from "tabbable";
 
-// --- DropdownContext (internal) ---
+// --- DropdownTrigger / DropdownContent slots ---
 
-interface DropdownContextValue {
-  toggle: () => void;
-  setTrigger: (content: SlotAccessor) => void;
-  setContent: (content: SlotAccessor) => void;
-}
-
-const DropdownContext = createContext<DropdownContextValue>();
-
-// --- DropdownTrigger ---
-
-const DropdownTrigger = createSlotComponent(DropdownContext, (ctx) => ctx.setTrigger);
-
-// --- DropdownContent ---
-
-const DropdownContent = createSlotComponent(DropdownContext, (ctx) => ctx.setContent);
+const [DropdownTrigger, createTriggerSlotAccessor] = createSlot<{ children: JSX.Element }>();
+const [DropdownContent, createContentSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 // --- Dropdown ---
 
@@ -156,9 +141,9 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
     setOpen(!open());
   };
 
-  // Slot registration signals
-  const [triggerSlot, setTrigger] = createSlotSignal();
-  const [contentSlot, setContent] = createSlotSignal();
+  // Slot accessors
+  const [trigger, TriggerProvider] = createTriggerSlotAccessor();
+  const [content, ContentProvider] = createContentSlotAccessor();
 
   // Trigger wrapper ref (needed for position calculation)
   let triggerRef: HTMLDivElement | undefined;
@@ -436,56 +421,58 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
   };
 
   return (
-    <DropdownContext.Provider value={{ toggle, setTrigger, setContent }}>
-      {local.children}
+    <TriggerProvider>
+      <ContentProvider>
+        {local.children}
 
-      {/* Render trigger slot (attach click/keyboard handlers to wrapper div) */}
-      <Show when={triggerSlot()}>
-        <div
-          ref={(el) => {
-            triggerRef = el;
-          }}
-          tabIndex={-1}
-          data-dropdown-trigger
-          onClick={toggle}
-          onKeyDown={handleTriggerKeyDown}
-        >
-          {triggerSlot()!()}
-        </div>
-      </Show>
-
-      {/* Content slot: Portal + popup */}
-      <Show when={mounted()}>
-        <Portal>
+        {/* Render trigger slot (attach click/keyboard handlers to wrapper div) */}
+        <Show when={trigger()}>
           <div
-            {...rest}
-            ref={setPopupRef}
-            data-dropdown
-            class={twMerge(
-              clsx(
-                "fixed",
-                "z-dropdown",
-                bg.surface,
-                "border",
-                border.subtle,
-                "shadow-lg dark:shadow-black/30",
-                "rounded-md",
-                "overflow-y-auto",
-                animationClass(),
-              ),
-              local.class,
-            )}
-            style={mergeStyles(computedStyle(), local.style, {
-              "max-height": `${maxHeight()}px`,
-            })}
-            onTransitionEnd={handleTransitionEnd}
-            onKeyDown={handlePopupKeyDown}
+            ref={(el) => {
+              triggerRef = el;
+            }}
+            tabIndex={-1}
+            data-dropdown-trigger
+            onClick={toggle}
+            onKeyDown={handleTriggerKeyDown}
           >
-            <Show when={contentSlot()}>{contentSlot()!()}</Show>
+            {trigger()!.children}
           </div>
-        </Portal>
-      </Show>
-    </DropdownContext.Provider>
+        </Show>
+
+        {/* Content slot: Portal + popup */}
+        <Show when={mounted()}>
+          <Portal>
+            <div
+              {...rest}
+              ref={setPopupRef}
+              data-dropdown
+              class={twMerge(
+                clsx(
+                  "fixed",
+                  "z-dropdown",
+                  bg.surface,
+                  "border",
+                  border.subtle,
+                  "shadow-lg dark:shadow-black/30",
+                  "rounded-md",
+                  "overflow-y-auto",
+                  animationClass(),
+                ),
+                local.class,
+              )}
+              style={mergeStyles(computedStyle(), local.style, {
+                "max-height": `${maxHeight()}px`,
+              })}
+              onTransitionEnd={handleTransitionEnd}
+              onKeyDown={handlePopupKeyDown}
+            >
+              <Show when={content()}>{content()!.children}</Show>
+            </div>
+          </Portal>
+        </Show>
+      </ContentProvider>
+    </TriggerProvider>
   );
 };
 

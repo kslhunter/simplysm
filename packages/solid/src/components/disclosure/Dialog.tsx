@@ -18,10 +18,9 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
-import { createSlotSignal, type SlotAccessor } from "../../hooks/createSlotSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { startPointerDrag } from "../../helpers/startPointerDrag";
-import { createSlotComponent } from "../../helpers/createSlotComponent";
+import { createSlot } from "../../helpers/createSlot";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
@@ -106,15 +105,8 @@ export function useDialog(): DialogContextValue {
 
 //#endregion
 
-interface DialogSlotsContextValue {
-  setHeader: (content: SlotAccessor) => void;
-  setAction: (content: SlotAccessor) => void;
-}
-
-const DialogSlotsContext = createContext<DialogSlotsContextValue>();
-
-const DialogHeader = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setHeader);
-const DialogAction = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setAction);
+const [DialogHeader, createHeaderSlotAccessor] = createSlot<{ children: JSX.Element }>();
+const [DialogAction, createActionSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
 export interface DialogProps {
   /** Dialog open state */
@@ -243,8 +235,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
 
   const headerId = "dialog-header-" + createUniqueId();
 
-  const [header, setHeader] = createSlotSignal();
-  const [action, setAction] = createSlotSignal();
+  const [header, HeaderProvider] = createHeaderSlotAccessor();
+  const [action, ActionProvider] = createActionSlotAccessor();
   const hasHeader = () => header() !== undefined;
 
   const [open, setOpen] = createControllableSignal({
@@ -549,7 +541,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
   return (
     <Show when={mounted()}>
       <Portal>
-        <DialogSlotsContext.Provider value={{ setHeader, setAction }}>
+        <HeaderProvider>
+          <ActionProvider>
           <div ref={setWrapperRef} data-dialog class={wrapperClass()}>
             {/* Backdrop */}
             <Show when={!local.float}>
@@ -584,9 +577,9 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
                   onPointerDown={handleHeaderPointerDown}
                 >
                   <h5 id={headerId} class={clsx("flex-1 font-bold")}>
-                    {header()!()}
+                    {header()!.children}
                   </h5>
-                  <Show when={action()}>{action()!()}</Show>
+                  <Show when={action()}>{action()!.children}</Show>
                   <Show when={local.closable ?? true}>
                     <Button
                       data-dialog-close
@@ -625,7 +618,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
               </Show>
             </div>
           </div>
-        </DialogSlotsContext.Provider>
+          </ActionProvider>
+        </HeaderProvider>
       </Portal>
     </Show>
   );
