@@ -82,7 +82,8 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
 
     for (let i = 0; i < editItems.length; i++) {
       const item = editItems[i];
-      const info = props.columnInfos.find((c) => c.key === item.key)!;
+      const info = props.columnInfos.find((c) => c.key === item.key);
+      if (!info) continue;
 
       const entry: DataSheetConfigColumn = {};
 
