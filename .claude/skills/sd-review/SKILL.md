@@ -9,11 +9,15 @@ description: "Comprehensive multi-perspective code review (explicit invocation o
 
 Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Dispatches up to 3 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
+Dispatches up to 4 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
+
+## Principles
+
+- **Breaking changes are irrelevant**: Reviewers must NOT dismiss, soften, or deprioritize findings because the suggested fix would cause a breaking change. Correctness, safety, usability, architecture, and maintainability always take priority over API stability. If something is wrong, report it — regardless of breaking change impact.
 
 ## Usage
 
-- `/sd-review packages/solid` — full review (all 3 perspectives)
+- `/sd-review packages/solid` — full review (all 4 perspectives)
 - `/sd-review packages/solid focus on bugs` — selective review based on request
 - `/sd-review` — if no argument, ask the user for the target path
 
@@ -31,20 +35,22 @@ Dispatches up to 3 reviewer agents in parallel using prompt templates. Each agen
 | **Code Reviewer** | `code-reviewer-prompt.md` | Correctness & Safety — bugs, security, logic errors |
 | **API Reviewer** | `api-reviewer-prompt.md` | Usability & DX — naming, types, consistency |
 | **Code Simplifier** | `code-simplifier-prompt.md` | Maintainability — complexity, duplication, structure |
+| **Architecture Reviewer** | `architecture-reviewer-prompt.md` | Architecture — package boundaries, dependencies, layer separation |
 
 ## Reviewer Selection
 
-By default, run **all 3 reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
+By default, run **all 4 reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
 
 | User says | Run |
 |-----------|-----|
 | "bugs", "security", "safety" | Code Reviewer only |
 | "API", "naming", "types", "DX" | API Reviewer only |
 | "complexity", "duplication", "structure", "maintainability" | Code Simplifier only |
+| "architecture", "dependencies", "boundaries", "layers" | Architecture Reviewer only |
 | "bugs and API" | Code Reviewer + API Reviewer |
-| (no specific focus) | All 3 |
+| (no specific focus) | All 4 |
 
-Use judgment for ambiguous requests. When in doubt, run all 3.
+Use judgment for ambiguous requests. When in doubt, run all 4.
 
 ## Workflow
 
