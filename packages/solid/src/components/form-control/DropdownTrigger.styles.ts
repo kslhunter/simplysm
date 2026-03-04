@@ -1,14 +1,7 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import {
-  borderDefault,
-  type ComponentSize,
-  paddingLg,
-  paddingSm,
-  paddingXl,
-  paddingXs,
-} from "../../styles/tokens.styles";
-import { insetBase, insetFocusOutlineSelf } from "../../styles/patterns.styles";
+import { borderDefault } from "../../styles/base.styles";
+import { type ComponentSize, gap, padding } from "../../styles/control.styles";
 
 export const triggerBaseClass = clsx(
   "inline-flex items-center gap-2",
@@ -27,13 +20,20 @@ export const triggerDisabledClass = clsx(
   "cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500",
 );
 
-export const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOutlineSelf);
+export const triggerInsetClass = clsx(
+  "w-full rounded-none border-none",
+  "bg-transparent",
+  "focus:[outline-style:solid]",
+  "focus:outline-1 focus:-outline-offset-1",
+  "focus:outline-primary-400 dark:focus:outline-primary-400",
+);
 
 export const triggerSizeClasses: Record<ComponentSize, string> = {
-  xs: clsx("gap-0.5", paddingXs),
-  sm: clsx("gap-1.5", paddingSm),
-  lg: clsx("gap-3", paddingLg),
-  xl: clsx("gap-3.5", paddingXl),
+  default: clsx(gap.default, padding.default),
+  xs: clsx(gap.xs, padding.xs),
+  sm: clsx(gap.sm, padding.sm),
+  lg: clsx(gap.lg, padding.lg),
+  xl: clsx(gap.xl, padding.xl),
 };
 
 export const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
@@ -47,8 +47,7 @@ export function getTriggerClass(options: {
 }): string {
   return twMerge(
     triggerBaseClass,
-    "px-2 py-1",
-    options.size && triggerSizeClasses[options.size],
+    triggerSizeClasses[options.size ?? "default"],
     options.disabled && triggerDisabledClass,
     options.inset && triggerInsetClass,
     options.class,

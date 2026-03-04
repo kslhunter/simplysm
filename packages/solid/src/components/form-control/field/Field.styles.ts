@@ -1,78 +1,85 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import {
-  type ComponentSize,
-  paddingLg,
-  paddingSm,
-  paddingXl,
-  paddingXs,
-} from "../../../styles/tokens.styles";
-import {
-  fieldSurface,
-  insetBase,
-  insetFocusOutline,
-  inputBase,
-} from "../../../styles/patterns.styles";
+import { type ComponentSize, gap, padding } from "../../../styles/control.styles";
+import { borderDefault, textDefault, textPlaceholder } from "../../../styles/base.styles";
 
 export type FieldSize = ComponentSize;
+
+// ── Form Field Common Surface (background + text + border + focus) ──
+export const fieldSurface = clsx(
+  "bg-primary-50 dark:bg-primary-950/30",
+  textDefault,
+  "border",
+  borderDefault,
+  "rounded",
+  "focus-within:border-primary-500 dark:focus-within:border-primary-400",
+);
 
 // Base wrapper styles
 export const fieldBaseClass = clsx(
   "inline-flex items-center",
   fieldSurface,
-  "px-2 py-1",
-  "h-field",
   "[text-decoration:inherit]",
 );
 
 // Size-specific styles
 export const fieldSizeClasses: Record<FieldSize, string> = {
-  xs: clsx("h-field-xs", paddingXs),
-  sm: clsx("h-field-sm", paddingSm),
-  lg: clsx("h-field-lg", paddingLg),
-  xl: clsx("h-field-xl", paddingXl),
+  default: clsx("h-field", padding.default),
+  xs: clsx("h-field-xs", padding.xs),
+  sm: clsx("h-field-sm", padding.sm),
+  lg: clsx("h-field-lg", padding.lg),
+  xl: clsx("h-field-xl", padding.xl),
 };
 
 // Inset styles
 export const fieldInsetClass = clsx(
-  insetBase,
+  "w-full rounded-none border-none",
   "bg-primary-50 dark:bg-primary-950/30",
-  insetFocusOutline,
+  "focus-within:[outline-style:solid]",
+  "focus-within:outline-1 focus-within:-outline-offset-1",
+  "focus-within:outline-primary-400 dark:focus-within:outline-primary-400",
 );
 
 // Inset heights (excluding 2px border)
-export const fieldInsetHeightClass = "h-field-inset";
 export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
-  xs: "h-field-inset-xs",
-  sm: "h-field-inset-sm",
-  lg: "h-field-inset-lg",
-  xl: "h-field-inset-xl",
+  default: clsx`h-field-inset`,
+  xs: clsx`h-field-inset-xs`,
+  sm: clsx`h-field-inset-sm`,
+  lg: clsx`h-field-inset-lg`,
+  xl: clsx`h-field-inset-xl`,
 };
 
 // Disabled styles
 export const fieldDisabledClass = clsx("bg-base-100 text-base-500 dark:bg-base-800");
 
 // Textarea wrapper styles (h-field removed)
-export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface, "px-2 py-1");
+export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface);
 
 // Textarea size-specific styles (h-field-* removed)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
-  xs: paddingXs,
-  sm: paddingSm,
-  lg: paddingLg,
-  xl: paddingXl,
+  default: padding.default,
+  xs: padding.xs,
+  sm: padding.sm,
+  lg: padding.lg,
+  xl: padding.xl,
 };
 
 // Input styles
-export const fieldInputClass = inputBase;
+export const fieldInputClass = clsx(
+  "min-w-0 flex-1",
+  "bg-transparent",
+  "outline-none",
+  "[text-decoration:inherit]",
+  textPlaceholder,
+);
 
 // Prefix icon gap classes (replaces nested ternary)
-export const fieldGapClasses: Record<FieldSize | "default", string> = {
-  xs: "gap-0.5",
-  sm: "gap-1.5",
-  default: "gap-2",
-  lg: "gap-3",
-  xl: "gap-4",
+export const fieldGapClasses: Record<FieldSize, string> = {
+  default: gap.default,
+  xs: gap.xs,
+  sm: gap.sm,
+  lg: gap.lg,
+  xl: gap.xl,
 };
 
 // Shared wrapper class generation function
@@ -86,11 +93,10 @@ export function getFieldWrapperClass(options: {
   return twMerge(
     fieldBaseClass,
     options.extra,
-    options.size && fieldSizeClasses[options.size],
+    fieldSizeClasses[options.size ?? "default"],
     options.disabled && fieldDisabledClass,
     options.inset && fieldInsetClass,
-    options.inset &&
-      (options.size ? fieldInsetSizeHeightClasses[options.size] : fieldInsetHeightClass),
+    options.inset && fieldInsetSizeHeightClasses[options.size ?? "default"],
     options.includeCustomClass,
   );
 }
@@ -104,7 +110,7 @@ export function getTextareaWrapperClass(options: {
 }): string {
   return twMerge(
     textAreaBaseClass,
-    options.size && textAreaSizeClasses[options.size],
+    textAreaSizeClasses[options.size ?? "default"],
     options.disabled && fieldDisabledClass,
     options.inset && fieldInsetClass,
     options.includeCustomClass,

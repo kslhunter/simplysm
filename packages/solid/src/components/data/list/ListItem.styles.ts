@@ -1,13 +1,12 @@
 import clsx from "clsx";
-import { borderDefault, type ComponentSize } from "../../../styles/tokens.styles";
+import { borderDefault } from "../../../styles/base.styles";
+import { type ComponentSize, padding } from "../../../styles/control.styles";
 
 // Base item style
 export const listItemBaseClass = clsx(
   "flex",
   "items-center",
   "gap-2",
-  "py-1",
-  "px-1.5",
   "m-px",
   "cursor-pointer",
   "rounded-md",
@@ -19,10 +18,11 @@ export const listItemBaseClass = clsx(
 
 // Size-based styles
 export const listItemSizeClasses: Record<ComponentSize, string> = {
-  xs: clsx("px-0.5 py-0"),
-  sm: clsx("px-1 py-0.5"),
-  lg: clsx("px-2 py-1.5"),
-  xl: clsx("px-3 py-2"),
+  default: padding.default,
+  xs: padding.xs,
+  sm: padding.sm,
+  lg: padding.lg,
+  xl: padding.xl,
 };
 
 // Selected state
