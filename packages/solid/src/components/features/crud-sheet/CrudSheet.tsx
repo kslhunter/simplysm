@@ -49,6 +49,7 @@ import { CrudSheetFilter, createCrudSheetFilterSlotAccessor } from "./CrudSheetF
 import { CrudSheetTools, createCrudSheetToolsSlotAccessor } from "./CrudSheetTools";
 import { CrudSheetHeader, createCrudSheetHeaderSlotAccessor } from "./CrudSheetHeader";
 import type {
+  CrudSheetCellContext,
   CrudSheetContext,
   CrudSheetProps,
   SearchResult,
@@ -676,9 +677,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   resizable={col.resizable ?? true}
                 >
                   {(dsCtx) => {
-                    const crudCtx = {
+                    const crudCtx: CrudSheetCellContext<any> = {
                       ...dsCtx,
-                      setItem: <TKey extends keyof TItem>(key: TKey, value: TItem[TKey]) => {
+                      setItem: (key, value) => {
                         setItems(dsCtx.index as any, key as any, value as any);
                       },
                     };
