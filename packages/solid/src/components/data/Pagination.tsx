@@ -9,24 +9,26 @@ import {
 } from "@tabler/icons-solidjs";
 import { Button } from "../form-control/Button";
 import { Icon } from "../display/Icon";
-import { type ComponentSizeCompact } from "../../styles/tokens.styles";
+import { type ComponentSize, gap } from "../../styles/control.styles";
 
 export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
   page: number;
   onPageChange?: (page: number) => void;
   totalPageCount: number;
   displayPageCount?: number;
-  size?: ComponentSizeCompact;
+  size?: ComponentSize;
 }
 
 const baseClass = clsx("inline-flex items-center");
 
 const btnClass = clsx("border-none font-normal");
 
-const gapClasses: Record<ComponentSizeCompact | "default", string> = {
-  default: "gap-1",
-  sm: "gap-0.5",
-  lg: "gap-1.5",
+const gapClasses: Record<ComponentSize, string> = {
+  default: gap.default,
+  xs: gap.xs,
+  sm: gap.sm,
+  lg: gap.lg,
+  xl: gap.xl,
 };
 
 export const Pagination: Component<PaginationProps> = (props) => {

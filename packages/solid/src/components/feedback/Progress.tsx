@@ -1,11 +1,8 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import {
-  type ComponentSizeCompact,
-  type SemanticTheme,
-  themeTokens,
-} from "../../styles/tokens.styles";
+import { type ComponentSize, padding } from "../../styles/control.styles";
+import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";
 
 export type ProgressTheme = SemanticTheme;
 
@@ -13,7 +10,7 @@ export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /** Progress value (range 0-1, 0 = 0%, 1 = 100%) */
   value: number;
   theme?: ProgressTheme;
-  size?: ComponentSizeCompact;
+  size?: ComponentSize;
   inset?: boolean;
 }
 
@@ -25,10 +22,12 @@ const baseClass = clsx(
   "border border-base-200 dark:border-base-700",
 );
 
-const sizeClasses: Record<"default" | ComponentSizeCompact, string> = {
-  default: "py-1 px-2",
-  sm: "py-0.5 px-2",
-  lg: "py-2 px-3",
+const sizeClasses: Record<ComponentSize, string> = {
+  default: padding.default,
+  xs: padding.xs,
+  sm: padding.sm,
+  lg: padding.lg,
+  xl: padding.xl,
 };
 
 const insetClass = clsx("rounded-none", "border-0", "bg-transparent");
