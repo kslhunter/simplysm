@@ -11,6 +11,7 @@ import { twMerge } from "tailwind-merge";
 import { bg, text } from "../../../styles/base.styles";
 import { useBusy, type BusyVariant } from "./BusyProvider";
 import { createMountTransition } from "../../../hooks/createMountTransition";
+import "./BusyContainer.animate.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   /** Show loading overlay (children are preserved) */
@@ -128,51 +129,24 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
               <div class={spinnerClass} />
             </Show>
             <Show when={currVariant() === "bar" && (local.ready === false || local.busy)}>
-              <div data-busy-bar class={barIndicatorClass}>
+              <div class={barIndicatorClass}>
                 <div
-                  ref={(el: HTMLElement) => {
-                    // Defer to next microtask so the element is inserted into the document first.
-                    // el.animate() on a detached element uses a null timeline and won't appear in getAnimations().
-                    let anim: Animation;
-                    queueMicrotask(() => {
-                      // sd-busy-bar-before: scaleX(0) → scaleX(1), 60%에서 완료
-                      anim = el.animate(
-                        [
-                          { transform: "scaleX(0)", offset: 0 },
-                          { transform: "scaleX(1)", offset: 0.6 },
-                          { transform: "scaleX(1)", offset: 1 },
-                        ],
-                        { duration: 2000, iterations: Infinity, easing: "ease-in" },
-                      );
-                    });
-                    onCleanup(() => anim?.cancel());
-                  }}
                   class={clsx(
                     "absolute left-0 top-0 h-1 w-full origin-left",
                     "bg-primary-500 dark:bg-primary-400",
                   )}
+                  style={{
+                    animation: "sd-busy-bar-before 2s infinite ease-in",
+                  }}
                 />
                 <div
-                  ref={(el: HTMLElement) => {
-                    // Defer to next microtask so the element is inserted into the document first.
-                    let anim: Animation;
-                    queueMicrotask(() => {
-                      // sd-busy-bar-after: scaleX(0) → scaleX(1), 50%에서 시작
-                      anim = el.animate(
-                        [
-                          { transform: "scaleX(0)", offset: 0 },
-                          { transform: "scaleX(0)", offset: 0.5 },
-                          { transform: "scaleX(1)", offset: 1 },
-                        ],
-                        { duration: 2000, iterations: Infinity, easing: "ease-out" },
-                      );
-                    });
-                    onCleanup(() => anim?.cancel());
-                  }}
                   class={clsx(
                     "absolute left-0 top-0 h-1 w-full origin-left",
                     bg.surface,
                   )}
+                  style={{
+                    animation: "sd-busy-bar-after 2s infinite ease-out",
+                  }}
                 />
               </div>
             </Show>

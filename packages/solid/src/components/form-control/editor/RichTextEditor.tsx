@@ -9,7 +9,7 @@ import {
   untrack,
 } from "solid-js";
 import clsx from "clsx";
-import "./editor.css";
+import "./RichTextEditor.tiptap.css";
 import { twMerge } from "tailwind-merge";
 import { createTiptapEditor } from "solid-tiptap";
 import StarterKit from "@tiptap/starter-kit";
@@ -24,7 +24,8 @@ import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import type { FieldSize } from "../field/Field.styles";
-import { padding } from "../../../styles/control.styles";
+import { bg, border, text } from "../../../styles/base.styles";
+import { pad } from "../../../styles/control.styles";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface RichTextEditorProps {
@@ -51,25 +52,26 @@ export interface RichTextEditorProps {
 const editorWrapperClass = clsx(
   "flex flex-col",
   "bg-primary-50 dark:bg-primary-950/30",
-  "text-base-900 dark:text-base-100",
-  "border border-base-300 dark:border-base-700",
+  text.default,
+  "border",
+  border.default,
   "rounded",
   "focus-within:border-primary-500",
 );
 
 // Editor disabled style
-const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
+const editorDisabledClass = clsx(bg.muted, text.muted);
 
 // Editor content area style
 const editorContentClass = clsx("outline-none", "prose prose-sm max-w-none", "dark:prose-invert");
 
 // Editor content size-based style
 const editorContentSizeClasses: Record<FieldSize, string> = {
-  default: clsx(padding.xl, "min-h-32"),
-  xs: clsx(padding.xs, "min-h-12"),
-  sm: clsx(padding.sm, "min-h-24"),
-  lg: clsx(padding.lg, "min-h-48"),
-  xl: clsx(padding.xl, "min-h-64"),
+  default: clsx(pad.xl, "min-h-32"),
+  xs: clsx(pad.xs, "min-h-12"),
+  sm: clsx(pad.sm, "min-h-24"),
+  lg: clsx(pad.lg, "min-h-48"),
+  xl: clsx(pad.xl, "min-h-64"),
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {

@@ -26,6 +26,7 @@ import { gap, pad } from "../../../styles/control.styles";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import type { SlotAccessor } from "../../../hooks/createSlotSignal";
+import "./Kanban.animate.css";
 import { Button } from "../../form-control/Button";
 
 // ── Types ──────────────────────────────────────────────────────
@@ -332,6 +333,7 @@ const placeholderBaseClass = clsx(
   "rounded-lg",
   "bg-primary-100/60 dark:bg-primary-900/30",
   "origin-top",
+  "animate-[kanban-ph-in_200ms_ease-out]",
 );
 
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
@@ -464,8 +466,6 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const placeholderEl = document.createElement("div");
   placeholderEl.className = placeholderBaseClass;
 
-  let placeholderAnim: Animation | undefined;
-
   createEffect(() => {
     const target = dropTarget();
     const dc = boardCtx.dragCard();
@@ -490,22 +490,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
 
     bodyRef.insertBefore(placeholderEl, referenceNode);
-    // kanban-ph-in: opacity 0 + height 0 → opacity 1 + auto height
-    placeholderAnim?.cancel();
-    queueMicrotask(() => {
-      placeholderAnim = placeholderEl.animate(
-        [
-          { opacity: 0, height: "0px" },
-          { opacity: 1, height: `${dc.heightOnDrag}px` },
-        ],
-        { duration: 200, easing: "ease-out", fill: "forwards" },
-      );
-    });
   });
 
   // placeholder cleanup
   onCleanup(() => {
-    placeholderAnim?.cancel();
     if (placeholderEl.parentNode) {
       placeholderEl.remove();
     }

@@ -183,15 +183,15 @@ export const configButtonClass = clsx(
 export const trRowClass = clsx(
   "relative",
   // ::after base positioning (content is set per-state so it only renders when needed)
-  "after:absolute after:inset-0 after:pointer-events-none after:z-10",
+  "after:pointer-events-none after:absolute after:inset-0 after:z-10",
   // hover overlay
-  "hover:after:content-[''] hover:after:bg-black/[0.03]",
+  "hover:after:bg-black/[0.03] hover:after:content-['']",
   "dark:hover:after:bg-white/[0.04]",
   // selected row overlay
-  "[&[data-selected]]:after:content-[''] [&[data-selected]]:after:bg-black/[0.05]",
+  "[&[data-selected]]:after:bg-black/[0.05] [&[data-selected]]:after:content-['']",
   "dark:[&[data-selected]]:after:bg-white/[0.06]",
   // dragging row
   "[&[data-dragging]>td]:opacity-50",
   // drop target (inside) overlay
-  "[&[data-drag-over=inside]]:after:content-[''] [&[data-drag-over=inside]]:after:bg-blue-500/10",
+  "[&[data-drag-over=inside]]:after:bg-blue-500/10 [&[data-drag-over=inside]]:after:content-['']",
 );
