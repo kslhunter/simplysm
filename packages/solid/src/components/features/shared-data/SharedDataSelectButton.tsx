@@ -7,7 +7,7 @@ import {
   type DialogPropsField,
 } from "../data-select-button/DataSelectButton";
 import { type DialogShowOptions } from "../../disclosure/Dialog";
-import { type ComponentSize } from "../../../styles/tokens.styles";
+import { type ComponentSize } from "../../../styles/control.styles";
 
 /** SharedDataSelectButton Props */
 export type SharedDataSelectButtonProps<

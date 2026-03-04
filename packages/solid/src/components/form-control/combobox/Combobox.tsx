@@ -1,4 +1,15 @@
-import { createContext, createMemo, createSignal, For, type JSX, onCleanup, Show, splitProps, useContext, type ParentComponent } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  For,
+  type JSX,
+  onCleanup,
+  Show,
+  splitProps,
+  useContext,
+  type ParentComponent,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
@@ -8,7 +19,8 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import { textMuted } from "../../../styles/base.styles";
+import { type ComponentSize, padding } from "../../../styles/control.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
@@ -57,7 +69,7 @@ const inputClass = clsx(
   "placeholder:text-base-400 dark:placeholder:text-base-500",
 );
 
-const noResultsClass = clsx("px-3 py-2", textMuted);
+const noResultsClass = clsx(padding.lg, textMuted);
 
 /**
  * Item template sub-component

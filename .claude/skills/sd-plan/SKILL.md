@@ -109,6 +109,12 @@ git commit -m "feat: add specific feature"
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 
+## Related Skills
+
+- **sd-brainstorm** — prerequisite: creates the design this skill plans from
+- **sd-explore** — for deeper codebase exploration when gathering context
+- **sd-plan-dev** — executes the plan this skill creates
+
 ## Execution Handoff
 
 After saving the plan, **commit the plan document to git** before proceeding.

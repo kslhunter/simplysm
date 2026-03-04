@@ -1,0 +1,23 @@
+import clsx from "clsx";
+
+// ── disabled ──
+export const disabledOpacity = clsx`pointer-events-none cursor-default opacity-30`;
+
+// ── Size ──
+export type ComponentSize = "default" | "xs" | "sm" | "lg" | "xl";
+
+export const padding = {
+  default: clsx`px-2 py-1`,
+  xs: clsx`px-1 py-0`,
+  sm: clsx`px-1.5 py-0.5`,
+  lg: clsx`px-3 py-2`,
+  xl: clsx`px-4 py-3`,
+};
+
+export const gap = {
+  default: clsx`gap-1`,
+  xs: clsx`gap-0`,
+  sm: clsx`gap-0.5`,
+  lg: clsx`gap-1.5`,
+  xl: clsx`gap-2`,
+};

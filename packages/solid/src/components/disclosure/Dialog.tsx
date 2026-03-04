@@ -25,7 +25,7 @@ import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
-import { borderSubtle } from "../../styles/tokens.styles";
+import { borderSubtle } from "../../styles/base.styles";
 import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
 

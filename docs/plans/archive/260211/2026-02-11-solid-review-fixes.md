@@ -910,7 +910,7 @@ git commit -m "refactor(solid): Select/Combobox 트리거 클래스 함수를 ge
 
 - Modify: `packages/solid/src/components/disclosure/Tabs.tsx:11,84-87`
 
-**문제:** `size` prop이 인라인 `"sm" | "lg"`로 정의되어 있으나, `tokens.styles.ts`에 `ComponentSize` 타입이 존재.
+**문제:** `size` prop이 인라인 `"sm" | "lg"`로 정의되어 있으나, `styles.ts`에 `ComponentSize` 타입이 존재.
 
 **Step 1: ComponentSize import 및 적용**
 

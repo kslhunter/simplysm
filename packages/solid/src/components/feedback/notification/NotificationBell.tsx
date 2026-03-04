@@ -6,14 +6,14 @@ import { useNotification } from "./NotificationProvider";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
 import { NotificationBanner } from "./NotificationBanner";
-import { iconButtonBase } from "../../../styles/patterns.styles";
+import { Button } from "../../form-control/Button";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface NotificationBellProps {
   showBanner?: boolean;
 }
 
-const buttonClass = twMerge(iconButtonBase, "relative", "p-2", "rounded-full");
+const buttonExtraClass = twMerge("relative", "p-2", "rounded-full");
 
 const badgeClass = clsx(
   "absolute",
@@ -76,10 +76,11 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
 
       <Dropdown open={open()} onOpenChange={handleOpenChange} maxHeight={400}>
         <Dropdown.Trigger>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="xs"
             data-notification-bell
-            class={buttonClass}
+            class={buttonExtraClass}
             aria-label={i18n.t("notificationBell.unreadCount", { count: String(notification.unreadCount()) })}
             aria-haspopup="true"
             aria-expanded={open()}
@@ -90,7 +91,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                 {notification.unreadCount()}
               </span>
             </Show>
-          </button>
+          </Button>
         </Dropdown.Trigger>
         <Dropdown.Content>
           <div class="w-80 p-2">

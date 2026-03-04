@@ -12,7 +12,7 @@ import {
 import clsx from "clsx";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
-import { borderDefault } from "../../../styles/tokens.styles";
+import { borderDefault } from "../../../styles/base.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 

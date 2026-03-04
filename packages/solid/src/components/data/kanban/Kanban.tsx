@@ -21,11 +21,12 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { padding } from "../../../styles/control.styles";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import type { SlotAccessor } from "../../../hooks/createSlotSignal";
 import "./Kanban.css";
-import { iconButtonBase } from "../../../styles/patterns.styles";
+import { Button } from "../../form-control/Button";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -315,13 +316,13 @@ const laneDragOverClass = clsx("bg-primary-50 dark:bg-primary-950");
 
 const laneHeaderBaseClass = clsx(
   "flex items-center gap-2",
-  "px-3 py-2",
+  padding.lg,
   "font-bold",
   "text-base-700 dark:text-base-200",
   "select-none",
 );
 
-const collapseButtonClass = twMerge(iconButtonBase, "size-6", "hover:text-primary-500");
+const collapseButtonClass = "size-6 hover:text-primary-500";
 
 const laneToolsClass = clsx("flex items-center", "gap-1");
 
@@ -512,13 +513,14 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
           <Show when={hasHeader()}>
             <div class={laneHeaderBaseClass}>
               <Show when={local.collapsible}>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="xs"
                   class={collapseButtonClass}
                   onClick={() => setCollapsed((prev) => !prev)}
                 >
                   <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
-                </button>
+                </Button>
               </Show>
               <Show when={hasSelectableCards()}>
                 <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline />

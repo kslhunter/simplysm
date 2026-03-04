@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type SemanticTheme, themeTokens } from "../../styles/tokens.styles";
+import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";
 
 export type TagTheme = SemanticTheme;
 

@@ -5,7 +5,7 @@ import { IconX } from "@tabler/icons-solidjs";
 import { useNotification } from "./NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { Icon } from "../../display/Icon";
-import { themeTokens } from "../../../styles/tokens.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 
 const baseClass = clsx(
   "fixed",

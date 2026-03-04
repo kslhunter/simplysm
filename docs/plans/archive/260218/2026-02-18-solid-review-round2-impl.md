@@ -274,15 +274,15 @@ git commit -m "feat(solid): allow sync return from Combobox loadItems"
 ### Task 5: Consolidate size type aliases (#13)
 
 **Files:**
-- Modify: `packages/solid/src/styles/tokens.styles.ts:17`
+- Modify: `packages/solid/src/styles/styles.ts:17`
 - Modify: `packages/solid/src/components/data/Pagination.tsx:13`
 - Modify: `packages/solid/src/components/feedback/Progress.tsx:7`
 - Modify: `packages/solid/src/components/form-control/color-picker/ColorPicker.tsx:7`
 
-**Step 1: Add ComponentSizeCompact to tokens.styles.ts**
+**Step 1: Add ComponentSizeCompact to styles.ts**
 
 ```typescript
-// tokens.styles.ts — after line 17 (after ComponentSize)
+// styles.ts — after line 17 (after ComponentSize)
 export type ComponentSize = "sm" | "lg" | "xl";
 export type ComponentSizeCompact = "sm" | "lg";
 ```
@@ -331,7 +331,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add packages/solid/src/styles/tokens.styles.ts \
+git add packages/solid/src/styles/styles.ts \
        packages/solid/src/components/data/Pagination.tsx \
        packages/solid/src/components/feedback/Progress.tsx \
        packages/solid/src/components/form-control/color-picker/ColorPicker.tsx
@@ -1247,7 +1247,7 @@ Batch 1 (all independent — no file overlaps):
   Task 2: Validation bug fix              → 6 field components
   Task 3: KanbanBoard generic types            → KanbanBoardContext.ts, KanbanBoard.tsx
   Task 4: Combobox loadItems sync         → Combobox.tsx
-  Task 5: Size type consolidation         → tokens.styles.ts, Pagination, Progress, ColorPicker
+  Task 5: Size type consolidation         → styles.ts, Pagination, Progress, ColorPicker
   Task 7: createPointerDrag               → createPointerDrag.ts (new), Dialog.tsx, DataSheet.tsx
   Task 9: createSelectionGroup            → createSelectionGroup.ts (new), CheckboxGroup.tsx, RadioGroup.tsx
 

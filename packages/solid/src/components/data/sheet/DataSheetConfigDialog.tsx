@@ -11,7 +11,7 @@ import { DataSheet } from "./DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { TextInput } from "../../form-control/field/TextInput";
 import { Button } from "../../form-control/Button";
-import { borderSubtle } from "../../../styles/tokens.styles";
+import { borderSubtle } from "../../../styles/base.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const containerClass = clsx("flex flex-col", "gap-2", "p-2");

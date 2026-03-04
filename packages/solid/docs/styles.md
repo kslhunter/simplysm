@@ -54,7 +54,6 @@ Reusable Tailwind class patterns for common UI patterns.
 
 ```tsx
 import {
-  iconButtonBase,
   insetFocusOutline,
   insetFocusOutlineSelf,
   insetBase,
@@ -65,7 +64,6 @@ import {
 
 | Export | Description |
 |--------|-------------|
-| `iconButtonBase` | Base class for icon-only buttons |
 | `insetFocusOutline` | Focus ring for inset (borderless) elements |
 | `insetFocusOutlineSelf` | Self-applied focus ring variant |
 | `insetBase` | Base class for inset-styled components |

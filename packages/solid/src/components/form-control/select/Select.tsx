@@ -21,11 +21,8 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import { ripple } from "../../../directives/ripple";
-import {
-  borderSubtle,
-  type ComponentSize,
-  textMuted,
-} from "../../../styles/tokens.styles";
+import { borderSubtle, textMuted } from "../../../styles/base.styles";
+import { type ComponentSize, padding } from "../../../styles/control.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
@@ -122,15 +119,10 @@ const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
 
 // Search input styles (override TextInput wrapper)
-const searchInputClass = clsx(
-  "w-full",
-  "rounded-none",
-  "border-0 border-b",
-  borderSubtle
-);
+const searchInputClass = clsx("w-full", "rounded-none", "border-0 border-b", borderSubtle);
 
 // Select all/deselect all button area styles
-const selectAllBarClass = clsx("flex gap-2", "border-b", borderSubtle, "px-2 py-1", "text-xs");
+const selectAllBarClass = clsx("flex gap-2", "border-b", borderSubtle, padding.default, "text-xs");
 
 // Select all/deselect all button styles
 const selectAllBtnClass = clsx(

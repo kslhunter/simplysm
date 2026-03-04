@@ -138,7 +138,7 @@ DataSheet: Destructure `ready` for completeness. Since `{ columnRecord: {} }` is
 
 ### #13. Size Type Consolidation
 
-**File:** `packages/solid/src/styles/tokens.styles.ts`
+**File:** `packages/solid/src/styles/styles.ts`
 
 Export shared size types:
 
@@ -358,7 +358,7 @@ Same consolidation for DateTimePicker's DateTime-based variants.
 | `data/sheet/DataSheet.tsx` | Use createPointerDrag; use ready signal |
 | `disclosure/Dialog.tsx` | Use createPointerDrag |
 | `providers/ThemeContext.tsx` | Use ready signal |
-| `styles/tokens.styles.ts` | Add ComponentSizeCompact type |
+| `styles/styles.ts` | Add ComponentSizeCompact type |
 | `data/Pagination.tsx` | Use ComponentSizeCompact |
 | `feedback/Progress.tsx` | Use ComponentSizeCompact |
 | Various checkbox/color-picker files | Use ComponentSizeCompact |

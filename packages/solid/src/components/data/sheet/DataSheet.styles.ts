@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import { borderDefault, borderSubtle } from "../../../styles/tokens.styles";
+import { borderDefault, borderSubtle } from "../../../styles/base.styles";
+import { padding } from "../../../styles/control.styles";
 
 export const dataSheetContainerClass = clsx(
   "relative",
@@ -20,7 +21,7 @@ export const thClass = clsx(
   "align-middle",
 );
 
-export const thContentClass = clsx("px-2 py-1");
+export const thContentClass = clsx(padding.default);
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-950",
@@ -51,10 +52,15 @@ export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 export const sortIconClass = clsx("bg-base-100 dark:bg-base-900");
 
 // Top toolbar (settings button + pagination)
-export const toolbarClass = clsx("flex items-center gap-2", "px-2 py-1", "border-b", borderDefault);
+export const toolbarClass = clsx(
+  "flex items-center gap-2",
+  padding.default,
+  "border-b",
+  borderDefault,
+);
 
 // Fixed column base (sticky)
-export const fixedClass = "sticky";
+export const fixedClass = clsx`sticky`;
 
 // Visual effect for fixed/unfixed boundary — applied to last cell of fixed column
 export const fixedLastClass = clsx("border-r border-r-base-400", "dark:border-r-base-600");

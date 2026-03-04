@@ -6,7 +6,7 @@ import { Button } from "../Button";
 import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
 import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
-import type { ComponentSize } from "../../../styles/tokens.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface NumpadProps {

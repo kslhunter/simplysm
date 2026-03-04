@@ -4,13 +4,14 @@ import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type FieldSize } from "../field/Field.styles";
+import { gap } from "../../../styles/control.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export type DateRangePeriodType = "day" | "month" | "range";
 
-const baseClass = clsx("inline-flex items-center", "gap-1");
+const baseClass = clsx("inline-flex items-center", gap.default);
 
 export interface DateRangePickerProps {
   /** Period type */

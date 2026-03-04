@@ -19,7 +19,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { IconUser } from "@tabler/icons-solidjs";
-import type { ComponentSize } from "../../../styles/tokens.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import type { AppMenu } from "../../../helpers/createAppStructure";
 import { mergeStyles } from "../../../helpers/mergeStyles";
 import { ripple } from "../../../directives/ripple";

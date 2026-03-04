@@ -6,7 +6,7 @@ import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
-import { textMuted } from "../../../styles/tokens.styles";
+import { textMuted } from "../../../styles/base.styles";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 

@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { Editor } from "@tiptap/core";
 import { createEditorTransaction } from "solid-tiptap";
-import { iconButtonBase } from "../../../styles/patterns.styles";
+import { Button } from "../Button";
 import {
   IconBold,
   IconItalic,
@@ -26,6 +26,7 @@ import {
   IconClearFormatting,
 } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
+import { padding } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface EditorToolbarProps {
@@ -37,11 +38,11 @@ export interface EditorToolbarProps {
 const toolbarClass = clsx(
   "flex flex-wrap items-center gap-0.5",
   "border-b border-base-300 dark:border-base-700",
-  "px-2 py-1",
+  padding.default,
 );
 
-// Toolbar button base style
-const toolbarBtnClass = twMerge(iconButtonBase, "size-7");
+// Toolbar button extra class
+const toolbarBtnExtra = "size-7";
 
 // Toolbar button active style
 const toolbarBtnActiveClass = clsx(
@@ -53,7 +54,16 @@ const toolbarBtnActiveClass = clsx(
 const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
 
 // Color picker label style
-const colorLabelClass = twMerge(iconButtonBase, "relative", "size-7");
+const colorLabelClass = clsx(
+  "inline-flex items-center justify-center",
+  "cursor-pointer",
+  "rounded",
+  "transition-colors",
+  "text-base-600 dark:text-base-300",
+  "hover:bg-base-200 dark:hover:bg-base-700",
+  "relative",
+  "size-7",
+);
 
 // Color input hide style
 const colorInputClass = clsx("absolute opacity-0", "size-0");
@@ -102,7 +112,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   );
 
   const btnClass = (active: () => boolean) =>
-    twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
+    twMerge(toolbarBtnExtra, active() && toolbarBtnActiveClass);
 
   // Image insert handler
   const handleImageInsert = () => {
@@ -128,59 +138,65 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   return (
     <div class={twMerge(toolbarClass, props.class)}>
       {/* 1. Header (H1, H2) */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isH1)}
         title={i18n.t("editorToolbar.heading1")}
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 1 }).run()}
       >
         <Icon icon={IconH1} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isH2)}
         title={i18n.t("editorToolbar.heading2")}
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         <Icon icon={IconH2} size="1em" />
-      </button>
+      </Button>
 
       {/* 2. Separator */}
       <div class={separatorClass} />
 
       {/* 3. Text format (Bold, Italic, Underline, Strike) */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isBold)}
         title={i18n.t("editorToolbar.bold")}
         onClick={() => props.editor.chain().focus().toggleBold().run()}
       >
         <Icon icon={IconBold} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isItalic)}
         title={i18n.t("editorToolbar.italic")}
         onClick={() => props.editor.chain().focus().toggleItalic().run()}
       >
         <Icon icon={IconItalic} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isUnderline)}
         title={i18n.t("editorToolbar.underline")}
         onClick={() => props.editor.chain().focus().toggleUnderline().run()}
       >
         <Icon icon={IconUnderline} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isStrike)}
         title={i18n.t("editorToolbar.strikethrough")}
         onClick={() => props.editor.chain().focus().toggleStrike().run()}
       >
         <Icon icon={IconStrikethrough} size="1em" />
-      </button>
+      </Button>
 
       {/* 4. Separator */}
       <div class={separatorClass} />
@@ -217,134 +233,152 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <div class={separatorClass} />
 
       {/* 7. List (Bullet, Ordered) */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isBulletList)}
         title={i18n.t("editorToolbar.bulletList")}
         onClick={() => props.editor.chain().focus().toggleBulletList().run()}
       >
         <Icon icon={IconList} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isOrderedList)}
         title={i18n.t("editorToolbar.numberedList")}
         onClick={() => props.editor.chain().focus().toggleOrderedList().run()}
       >
         <Icon icon={IconListNumbers} size="1em" />
-      </button>
+      </Button>
 
       {/* 8. Separator */}
       <div class={separatorClass} />
 
       {/* 9. Indentation (Increase, Decrease) */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
+      <Button
+        variant="ghost"
+        size="xs"
+        class={toolbarBtnExtra}
         title={i18n.t("editorToolbar.increaseIndent")}
         onClick={() => props.editor.chain().focus().sinkListItem("listItem").run()}
       >
         <Icon icon={IconIndentIncrease} size="1em" />
-      </button>
-      <button
-        type="button"
-        class={toolbarBtnClass}
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
+        class={toolbarBtnExtra}
         title={i18n.t("editorToolbar.decreaseIndent")}
         onClick={() => props.editor.chain().focus().liftListItem("listItem").run()}
       >
         <Icon icon={IconIndentDecrease} size="1em" />
-      </button>
+      </Button>
 
       {/* 10. Separator */}
       <div class={separatorClass} />
 
       {/* 11. Block (Blockquote, CodeBlock) */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isBlockquote)}
         title={i18n.t("editorToolbar.blockquote")}
         onClick={() => props.editor.chain().focus().toggleBlockquote().run()}
       >
         <Icon icon={IconQuote} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isCodeBlock)}
         title={i18n.t("editorToolbar.codeBlock")}
         onClick={() => props.editor.chain().focus().toggleCodeBlock().run()}
       >
         <Icon icon={IconCode} size="1em" />
-      </button>
+      </Button>
 
       {/* 12. Separator */}
       <div class={separatorClass} />
 
       {/* 13. Alignment (Left, Center, Right, Justify) */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isAlignLeft)}
         title={i18n.t("editorToolbar.alignLeft")}
         onClick={() => props.editor.chain().focus().setTextAlign("left").run()}
       >
         <Icon icon={IconAlignLeft} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isAlignCenter)}
         title={i18n.t("editorToolbar.alignCenter")}
         onClick={() => props.editor.chain().focus().setTextAlign("center").run()}
       >
         <Icon icon={IconAlignCenter} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isAlignRight)}
         title={i18n.t("editorToolbar.alignRight")}
         onClick={() => props.editor.chain().focus().setTextAlign("right").run()}
       >
         <Icon icon={IconAlignRight} size="1em" />
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
         class={btnClass(isAlignJustify)}
         title={i18n.t("editorToolbar.justify")}
         onClick={() => props.editor.chain().focus().setTextAlign("justify").run()}
       >
         <Icon icon={IconAlignJustified} size="1em" />
-      </button>
+      </Button>
 
       {/* 14. Separator */}
       <div class={separatorClass} />
 
       {/* 15. Insert table */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
+      <Button
+        variant="ghost"
+        size="xs"
+        class={toolbarBtnExtra}
         title={i18n.t("editorToolbar.insertTable")}
         onClick={() =>
           props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
       >
         <Icon icon={IconTablePlus} size="1em" />
-      </button>
+      </Button>
 
       {/* 16. Insert image */}
-      <button type="button" class={toolbarBtnClass} title={i18n.t("editorToolbar.insertImage")} onClick={handleImageInsert}>
+      <Button
+        variant="ghost"
+        size="xs"
+        class={toolbarBtnExtra}
+        title={i18n.t("editorToolbar.insertImage")}
+        onClick={handleImageInsert}
+      >
         <Icon icon={IconPhoto} size="1em" />
-      </button>
+      </Button>
 
       {/* 17. Separator */}
       <div class={separatorClass} />
 
       {/* 18. Clear formatting */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
+      <Button
+        variant="ghost"
+        size="xs"
+        class={toolbarBtnExtra}
         title={i18n.t("editorToolbar.clearFormatting")}
         onClick={() => props.editor.chain().focus().clearNodes().unsetAllMarks().run()}
       >
         <Icon icon={IconClearFormatting} size="1em" />
-      </button>
+      </Button>
     </div>
   );
 };

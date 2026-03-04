@@ -17,7 +17,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { createSlotComponent } from "../../helpers/createSlotComponent";
-import { borderSubtle } from "../../styles/tokens.styles";
+import { borderSubtle } from "../../styles/base.styles";
 import { tabbable } from "tabbable";
 
 // --- DropdownContext (internal) ---
