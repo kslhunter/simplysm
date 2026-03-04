@@ -24,6 +24,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import type { FieldSize } from "../field/Field.styles";
+import { padding } from "../../../styles/control.styles";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface RichTextEditorProps {
@@ -60,20 +61,15 @@ const editorWrapperClass = clsx(
 const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
 
 // Editor content area style
-const editorContentClass = clsx(
-  "px-4 py-3",
-  "min-h-32",
-  "outline-none",
-  "prose prose-sm max-w-none",
-  "dark:prose-invert",
-);
+const editorContentClass = clsx("outline-none", "prose prose-sm max-w-none", "dark:prose-invert");
 
 // Editor content size-based style
 const editorContentSizeClasses: Record<FieldSize, string> = {
-  xs: clsx("px-1.5 py-1", "min-h-12"),
-  sm: clsx("px-3 py-2", "min-h-24"),
-  lg: clsx("px-5 py-4", "min-h-48"),
-  xl: clsx("px-6 py-5", "min-h-64"),
+  default: clsx(padding.xl, "min-h-32"),
+  xs: clsx(padding.xs, "min-h-12"),
+  sm: clsx(padding.sm, "min-h-24"),
+  lg: clsx(padding.lg, "min-h-48"),
+  xl: clsx(padding.xl, "min-h-64"),
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
@@ -169,7 +165,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     twMerge(editorWrapperClass, local.disabled && editorDisabledClass, local.class);
 
   const getContentClass = () =>
-    twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
+    twMerge(editorContentClass, editorContentSizeClasses[local.size ?? "default"]);
 
   return (
     <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>

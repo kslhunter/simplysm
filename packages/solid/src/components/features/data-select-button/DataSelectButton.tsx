@@ -18,7 +18,8 @@ import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import { textMuted } from "../../../styles/base.styles";
+import { type ComponentSize } from "../../../styles/control.styles";
 import {
   triggerBaseClass,
   triggerDisabledClass,
@@ -102,8 +103,7 @@ function getTriggerContainerClass(options: {
 }): string {
   return twMerge(
     triggerBaseClass,
-    "px-2 py-1",
-    options.size && triggerSizeClasses[options.size],
+    triggerSizeClasses[options.size ?? "default"],
     options.disabled && triggerDisabledClass,
     options.inset && triggerInsetClass,
     options.class,
@@ -114,9 +114,7 @@ export function DataSelectButton<
   TItem,
   TKey = string | number,
   TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
->(
-  props: DataSelectButtonProps<TItem, TKey, TDialogProps>,
-): JSX.Element {
+>(props: DataSelectButtonProps<TItem, TKey, TDialogProps>): JSX.Element {
   const [local] = splitProps(props as any, [
     "value",
     "onValueChange",
@@ -195,7 +193,7 @@ export function DataSelectButton<
   const handleOpenDialog = async () => {
     if (local.disabled) return;
 
-    const result = await dialog.show(
+    const result = (await dialog.show(
       local.dialog,
       {
         ...((local as any).dialogProps ?? {}),
@@ -203,7 +201,7 @@ export function DataSelectButton<
         selectedKeys: normalizeKeys(getValue()) as (string | number)[],
       },
       local.dialogOptions,
-    ) as DataSelectDialogResult<TKey> | undefined;
+    )) as DataSelectDialogResult<TKey> | undefined;
 
     if (result) {
       const newKeys = result.selectedKeys;

@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Invalid } from "../Invalid";
-import { type ComponentSize } from "../../../styles/tokens.styles";
+import { type ComponentSize } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 // Base style
@@ -22,6 +22,7 @@ const baseClass = clsx(
 
 // Size-specific styles
 const sizeClasses: Record<ComponentSize, string> = {
+  default: clsx`size-field`,
   xs: "size-field-xs",
   sm: "size-field-sm",
   lg: "size-field-lg",
@@ -109,7 +110,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
   const getClassName = () =>
     twMerge(
       baseClass,
-      local.size && sizeClasses[local.size],
+      sizeClasses[local.size ?? "default"],
       local.disabled && disabledClass,
       local.class,
     );

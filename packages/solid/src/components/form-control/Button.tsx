@@ -2,12 +2,8 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../directives/ripple";
-import {
-  themeTokens,
-  type SemanticTheme,
-  type ComponentSize,
-  disabledOpacity,
-} from "../../styles/tokens.styles";
+import { type ComponentSize, disabledOpacity, padding } from "../../styles/control.styles";
+import { themeTokens, type SemanticTheme } from "../../styles/theme.styles";
 
 // Directive usage declaration (for TypeScript)
 void ripple;
@@ -18,7 +14,6 @@ type ButtonSize = ComponentSize;
 
 const baseClass = clsx(
   "inline-flex items-center",
-  "px-2 py-1",
   "font-bold",
   "justify-center",
   "text-center",
@@ -28,7 +23,6 @@ const baseClass = clsx(
   "focus:outline-none",
   "focus-visible:ring-2",
   "border border-transparent",
-  "min-w-8",
 );
 
 const themeClasses = Object.fromEntries(
@@ -43,10 +37,11 @@ const themeClasses = Object.fromEntries(
 ) as Record<ButtonTheme, Record<ButtonVariant, string>>;
 
 const sizeClasses: Record<ButtonSize, string> = {
-  xs: clsx("min-w-4 px-0.5 py-0"),
-  sm: clsx("min-w-6 px-1 py-0.5"),
-  lg: clsx("min-w-9 px-3 py-1.5"),
-  xl: clsx("min-w-10 px-4 py-2 text-lg"),
+  default: clsx("min-w-8", padding.default),
+  xs: clsx("min-w-4", padding.xs),
+  sm: clsx("min-w-6", padding.sm),
+  lg: clsx("min-w-9", padding.lg),
+  xl: clsx("min-w-10", padding.xl, "text-lg"),
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -75,7 +70,7 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
     return twMerge(
       baseClass,
       themeClasses[theme][variant],
-      local.size && sizeClasses[local.size],
+      sizeClasses[local.size ?? "default"],
       local.inset && "rounded-none border-none",
       local.disabled && disabledOpacity,
       local.class,
