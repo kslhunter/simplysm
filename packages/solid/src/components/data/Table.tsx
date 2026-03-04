@@ -61,8 +61,8 @@ const TableBase: ParentComponent<TableProps> = (props) => {
       <table
         data-table
         class={twMerge(
-          clsx("w-auto border-separate border-spacing-0 border-b border-r", border.default, "rounded overflow-hidden"),
-          local.inset && clsx("border-b-0 border-r-0", "[&>*:first-child>tr:first-child>*]:border-t-0", "rounded-none overflow-auto"),
+          clsx("w-auto border-separate border-spacing-0 border-b border-r", border.default, "overflow-hidden rounded"),
+          local.inset && clsx("border-b-0 border-r-0", "[&>*:first-child>tr:first-child>*]:border-t-0", "overflow-auto rounded-none"),
           local.class,
         )}
         {...rest}

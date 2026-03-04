@@ -127,7 +127,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { selectColLeft, expandColWidth } = useDataSheetFixedColumns(
+        const { selectColLeft, expandColWidth: _expandColWidth } = useDataSheetFixedColumns(
           {
             getChildren: () => undefined,
             selectMode: "single",
@@ -460,9 +460,9 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { columnRefs, registerColumnRef } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { columnRefs: _columnRefs, registerColumnRef } = useDataSheetFixedColumns({}, effectiveColumns);
 
-        const mockElement = {
+        const _mockElement = {
           offsetWidth: 100,
         } as HTMLElement;
 

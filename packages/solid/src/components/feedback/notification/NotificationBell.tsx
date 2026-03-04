@@ -1,7 +1,6 @@
 import { type Component, createSignal, For, Show } from "solid-js";
 import { IconBell } from "@tabler/icons-solidjs";
 import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import { useNotification } from "./NotificationProvider";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
@@ -51,14 +50,14 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
             variant="ghost"
             size="xs"
             data-notification-bell
-            class="relative p-2 rounded-full"
+            class="relative rounded-full p-2"
             aria-label={i18n.t("notificationBell.unreadCount", { count: String(notification.unreadCount()) })}
             aria-haspopup="true"
             aria-expanded={open()}
           >
             <Icon icon={IconBell} />
             <Show when={notification.unreadCount() > 0}>
-              <span data-notification-badge aria-hidden="true" class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 px-1 text-xs font-bold text-white bg-danger-500 rounded-full">
+              <span data-notification-badge aria-hidden="true" class="absolute right-0 top-0 flex size-5 items-center justify-center rounded-full bg-danger-500 px-1 text-xs font-bold text-white">
                 {notification.unreadCount()}
               </span>
             </Show>

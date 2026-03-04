@@ -128,7 +128,7 @@ const TopbarInner: ParentComponent<TopbarProps> = (props) => {
     sidebarContext?.setToggle((v) => !v);
   };
 
-  const getClassName = () => twMerge(clsx("flex flex-row gap-2 items-center min-h-12 px-2", bg.surface, "border-b", border.default, "overflow-x-auto overflow-y-hidden select-none"), local.class);
+  const getClassName = () => twMerge(clsx("flex min-h-12 flex-row items-center gap-2 px-2", bg.surface, "border-b", border.default, "select-none overflow-x-auto overflow-y-hidden"), local.class);
 
   return (
     <header {...rest} data-topbar class={getClassName()}>
@@ -215,7 +215,7 @@ const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <>
       {/* Desktop menu (shown only on 640px and above) */}
-      <nav {...rest} data-topbar-menu class={twMerge(clsx("hidden sm:flex flex-row", gap.default, "items-center"), local.class)}>
+      <nav {...rest} data-topbar-menu class={twMerge(clsx("hidden flex-row sm:flex", gap.default, "items-center"), local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 

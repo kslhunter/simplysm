@@ -13,7 +13,7 @@ export const Card: ParentComponent<CardProps> = (props) => {
     <div
       data-card
       class={twMerge(
-        clsx("block", bg.surface, "rounded-lg shadow focus-within:shadow-md hover:shadow-md dark:shadow-black/20 dark:focus-within:shadow-black/30 dark:hover:shadow-black/30 transition-shadow duration-300 animate-[fade-in_0.6s_ease-out_both]"),
+        clsx("block", bg.surface, "animate-[fade-in_0.6s_ease-out_both] rounded-lg shadow transition-shadow duration-300 focus-within:shadow-md hover:shadow-md dark:shadow-black/20 dark:focus-within:shadow-black/30 dark:hover:shadow-black/30"),
         local.class,
       )}
       {...rest}

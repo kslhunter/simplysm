@@ -1,5 +1,4 @@
 import { type Component, createEffect, splitProps, type JSX } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import bwipjs from "bwip-js/browser";
 

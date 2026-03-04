@@ -1,5 +1,4 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { state } from "../../styles/control.styles";
 import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";

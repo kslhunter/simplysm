@@ -461,7 +461,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
           {...rest}
           data-kanban-lane
           class={twMerge(
-            clsx("flex flex-col w-72 min-w-72", bg.muted, "rounded-lg overflow-hidden transition-[background-color,box-shadow] duration-200"),
+            clsx("flex w-72 min-w-72 flex-col", bg.muted, "overflow-hidden rounded-lg transition-[background-color,box-shadow] duration-200"),
             isDragOverLane() && "bg-primary-50 dark:bg-primary-950",
             local.class,
           )}
@@ -495,7 +495,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
           </Show>
           <div
             ref={bodyRef}
-            class={clsx("flex-1 flex flex-col", gap.xl, "p-2 overflow-y-auto")}
+            class={clsx("flex flex-1 flex-col", gap.xl, "overflow-y-auto p-2")}
             style={{ display: collapsed() ? "none" : undefined }}
           >
             {local.children}

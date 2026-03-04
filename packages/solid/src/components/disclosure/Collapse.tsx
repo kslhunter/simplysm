@@ -7,7 +7,6 @@ import {
   onCleanup,
 } from "solid-js";
 import { createElementSize } from "@solid-primitives/resize-observer";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
 

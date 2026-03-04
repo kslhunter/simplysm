@@ -160,7 +160,7 @@ const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
         {local.children}
         <Show when={!isDesktop() && isOpen()}>
           <div
-            class="absolute top-0 left-0 right-0 bottom-0 z-sidebar-backdrop bg-black/50 sm:hidden"
+            class="absolute inset-0 z-sidebar-backdrop bg-black/50 sm:hidden"
             onClick={handleBackdropClick}
             onKeyDown={(e) => e.key === "Escape" && handleBackdropClick()}
             role="button"
@@ -398,11 +398,11 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
   };
 
   const getHeaderClassName = () => twMerge(
-    clsx("flex items-center p-2 m-1 rounded-md text-left cursor-pointer transition-colors", themeTokens.base.hoverBg),
+    clsx("m-1 flex cursor-pointer items-center rounded-md p-2 text-left transition-colors", themeTokens.base.hoverBg),
     !hasMenus() && "cursor-default hover:bg-transparent dark:hover:bg-transparent",
   );
 
-  const getContainerClassName = () => twMerge(userContainerClass, local.class);
+  const getContainerClassName = () => twMerge("m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-900", local.class);
 
   return (
     <div {...rest} data-sidebar-user class={getContainerClassName()}>
@@ -414,7 +414,7 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
         aria-expanded={hasMenus() ? open() : undefined}
       >
         <div class="relative flex flex-1 items-center gap-3">
-          <div class={userAvatarClass}>
+          <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
             <Icon icon={local.icon ?? IconUser} class="size-6" />
           </div>
           <Show when={local.description} fallback={<span class="font-bold">{local.name}</span>}>
@@ -496,7 +496,7 @@ const SidebarInner: ParentComponent<SidebarProps> = (props) => {
   };
 
   const getClassName = () =>
-    twMerge(clsx("absolute top-0 left-0 bottom-0 w-64 z-sidebar flex flex-col", bg.muted, "border-r", border.default, "transition-transform duration-300 sm:duration-100"), !isDesktop() && isOpen() && "shadow-xl", local.class);
+    twMerge(clsx("absolute inset-y-0 left-0 z-sidebar flex w-64 flex-col", bg.muted, "border-r", border.default, "transition-transform duration-300 sm:duration-100"), !isDesktop() && isOpen() && "shadow-xl", local.class);
 
   return (
     <aside

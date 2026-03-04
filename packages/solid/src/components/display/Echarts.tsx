@@ -8,7 +8,6 @@ import {
 } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import type * as echartsType from "echarts";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {

@@ -251,7 +251,7 @@ export function DataSelectButton<
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <div data-data-select-button class="inline-flex items-center group">
+      <div data-data-select-button class="group inline-flex items-center">
         <div
           role="combobox"
           aria-haspopup="dialog"
@@ -268,7 +268,7 @@ export function DataSelectButton<
             }
           }}
         >
-          <div class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{renderSelectedDisplay()}</div>
+          <div class="flex-1 truncate">{renderSelectedDisplay()}</div>
           <div class={clsx("flex items-center", gap.sm)}>
             <Show when={clearable()}>
               <button

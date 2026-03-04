@@ -1,5 +1,4 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
@@ -27,7 +26,7 @@ const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
   return (
     <>
       <Show when={local.label}>
-        <th class="pb-1 pr-1.5 align-middle w-0 whitespace-nowrap pl-1 text-right">{local.label}</th>
+        <th class="w-0 whitespace-nowrap pb-1 pl-1 pr-1.5 text-right align-middle">{local.label}</th>
       </Show>
       <td class={twMerge("pb-1 pr-1.5 align-middle", local.class)} colspan={effectiveColspan()} {...rest}>
         {local.children}

@@ -270,9 +270,9 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     registerColumnRef,
   } = useDataSheetFixedColumns<T>(
     {
-      getChildren: local.getChildren,
-      selectMode: local.selectMode,
-      onItemsReorder: local.onItemsReorder,
+      get getChildren() { return local.getChildren; },
+      get selectMode() { return local.selectMode; },
+      get onItemsReorder() { return local.onItemsReorder; },
     },
     effectiveColumns,
   );
@@ -366,9 +366,9 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const { expandedItems, flatItems, toggleExpand, isAllExpanded, toggleExpandAll } =
     useDataSheetExpansion<T>(
       {
-        expandedItems: local.expandedItems,
-        onExpandedItemsChange: local.onExpandedItemsChange,
-        getChildren: local.getChildren,
+        get expandedItems() { return local.expandedItems; },
+        get onExpandedItemsChange() { return local.onExpandedItemsChange; },
+        get getChildren() { return local.getChildren; },
       },
       pagedItems,
       originalIndexMap,
@@ -389,10 +389,10 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     setLastClickedRow,
   } = useDataSheetSelection<T>(
     {
-      selectMode: local.selectMode,
-      selectedItems: local.selectedItems,
-      onSelectedItemsChange: local.onSelectedItemsChange,
-      isItemSelectable: local.isItemSelectable,
+      get selectMode() { return local.selectMode; },
+      get selectedItems() { return local.selectedItems; },
+      get onSelectedItemsChange() { return local.onSelectedItemsChange; },
+      get isItemSelectable() { return local.isItemSelectable; },
     },
     displayItems,
   );
@@ -412,8 +412,8 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   // #region Reorder
   const { dragState, onReorderPointerDown } = useDataSheetReorder<T>(
     {
-      onItemsReorder: local.onItemsReorder,
-      getChildren: local.getChildren,
+      get onItemsReorder() { return local.onItemsReorder; },
+      get getChildren() { return local.getChildren; },
     },
     displayItems,
   );

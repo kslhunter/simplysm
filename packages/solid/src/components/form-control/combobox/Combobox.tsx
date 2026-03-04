@@ -449,7 +449,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
                 style={local.style}
                 onKeyDown={handleTriggerKeyDown}
               >
-                <div class="flex-1 whitespace-nowrap overflow-hidden">{renderDisplayContent()}</div>
+                <div class="flex-1 overflow-hidden whitespace-nowrap">{renderDisplayContent()}</div>
                 <div class={chevronWrapperClass}>
                   <Show
                     when={busyCount() > 0}

@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
 import { useDataSheetReorder } from "../../../../../src/components/data/sheet/hooks/useDataSheetReorder";
-import type { FlatItem } from "../../../../../src/components/data/sheet/types";
 
 interface TestItem {
   id: number;
@@ -13,8 +12,8 @@ describe("useDataSheetReorder", () => {
   describe("isDescendant", () => {
     it("should return false for non-descendant items", () => {
       createRoot(() => {
-        const item1: TestItem = { id: 1, name: "Item 1" };
-        const item2: TestItem = { id: 2, name: "Item 2" };
+        const _item1: TestItem = { id: 1, name: "Item 1" };
+        const _item2: TestItem = { id: 2, name: "Item 2" };
 
         const displayItems = () => [];
 
@@ -33,7 +32,7 @@ describe("useDataSheetReorder", () => {
     it("should return true when child is a direct descendant", () => {
       createRoot(() => {
         const child: TestItem = { id: 2, name: "Child" };
-        const parent: TestItem = { id: 1, name: "Parent", children: [child] };
+        const _parent: TestItem = { id: 1, name: "Parent", children: [child] };
 
         const displayItems = () => [];
 
@@ -53,7 +52,7 @@ describe("useDataSheetReorder", () => {
       createRoot(() => {
         const grandChild: TestItem = { id: 3, name: "GrandChild" };
         const child: TestItem = { id: 2, name: "Child", children: [grandChild] };
-        const parent: TestItem = { id: 1, name: "Parent", children: [child] };
+        const _parent: TestItem = { id: 1, name: "Parent", children: [child] };
 
         const displayItems = () => [];
 
@@ -94,8 +93,8 @@ describe("useDataSheetReorder", () => {
 
     it("should return false when getChildren is not provided", () => {
       createRoot(() => {
-        const item1: TestItem = { id: 1, name: "Item 1" };
-        const item2: TestItem = { id: 2, name: "Item 2" };
+        const _item1: TestItem = { id: 1, name: "Item 1" };
+        const _item2: TestItem = { id: 2, name: "Item 2" };
 
         const displayItems = () => [];
 
@@ -202,14 +201,14 @@ describe("useDataSheetReorder", () => {
   describe("onItemsReorder callback", () => {
     it("should call onItemsReorder when dragState changes with valid target", () => {
       createRoot(() => {
-        const item1: TestItem = { id: 1, name: "Item 1" };
-        const item2: TestItem = { id: 2, name: "Item 2" };
+        const _item1: TestItem = { id: 1, name: "Item 1" };
+        const _item2: TestItem = { id: 2, name: "Item 2" };
 
         const onReorder = vi.fn();
 
         const displayItems = () => [];
 
-        const { setDragState } = useDataSheetReorder(
+        const { setDragState: _setDragState } = useDataSheetReorder(
           {
             onItemsReorder: onReorder,
           },

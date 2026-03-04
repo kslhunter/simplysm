@@ -203,12 +203,12 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   const resolvedStarBtnClass = () =>
     twMerge(
-      clsx("inline-flex items-center justify-center rounded-full cursor-pointer transition-colors focus:outline-none text-warning-500", themeTokens.warning.hoverBg),
+      clsx("inline-flex cursor-pointer items-center justify-center rounded-full text-warning-500 transition-colors focus:outline-none", themeTokens.warning.hoverBg),
       starBtnSizeClasses[local.size ?? "default"],
     );
 
   const resolvedInputClass = () => twMerge(
-    clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:ring-1 focus:ring-primary-400 focus:outline-none", text.placeholder),
+    clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
     inputSizeClasses[local.size ?? "default"],
   );
 

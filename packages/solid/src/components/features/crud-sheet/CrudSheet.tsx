@@ -680,7 +680,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     const crudCtx: CrudSheetCellContext<any> = {
                       ...dsCtx,
                       setItem: (key, value) => {
-                        setItems(dsCtx.index as any, key as any, value as any);
+                        setItems(dsCtx.index as any, key as any, value);
                       },
                     };
 

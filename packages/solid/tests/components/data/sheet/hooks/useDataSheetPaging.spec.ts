@@ -304,7 +304,7 @@ describe("useDataSheetPaging", () => {
 
   it("can change page using setCurrentPage", () => {
     createRoot(() => {
-      const [page, setPage] = createSignal<number | undefined>(1);
+      const [page, _setPage] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
       const [itemsPerPage] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);

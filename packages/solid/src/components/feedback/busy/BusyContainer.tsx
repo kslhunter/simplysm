@@ -72,10 +72,10 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     );
   });
 
-  // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset is only supported in Chrome 87+
+   
   const screenClass = () =>
     clsx(
-      "absolute bottom-0 left-0 right-0 top-0 z-busy bg-white/70 dark:bg-base-900/70 transition-opacity duration-150",
+      "absolute inset-0 z-busy bg-white/70 transition-opacity duration-150 dark:bg-base-900/70",
       animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
     );
 
@@ -94,7 +94,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
         <div class={screenClass()} onTransitionEnd={handleTransitionEnd}>
           <div class={rectClass()}>
             <Show when={currVariant() === "spinner"}>
-              <div class="size-8 border-[6px] border-base-200 border-b-primary-500 dark:border-base-700 dark:border-b-primary-400 rounded-full animate-spin shadow-md mx-auto mt-5" />
+              <div class="mx-auto mt-5 size-8 animate-spin rounded-full border-[6px] border-base-200 border-b-primary-500 shadow-md dark:border-base-700 dark:border-b-primary-400" />
             </Show>
             <Show when={currVariant() === "bar" && (local.ready === false || local.busy)}>
               <div class={clsx("absolute left-0 top-0 h-1 w-full", bg.surface)}>
@@ -127,7 +127,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
           <Show when={local.progressPercent != null}>
             <div class={clsx("absolute left-0 top-0 h-1 w-full", bg.surface)}>
               <div
-                class="h-1 w-full bg-primary-500 dark:bg-primary-400 transition-transform duration-100 ease-in origin-left"
+                class="h-1 w-full origin-left bg-primary-500 transition-transform duration-100 ease-in dark:bg-primary-400"
                 style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }}
               />
             </div>

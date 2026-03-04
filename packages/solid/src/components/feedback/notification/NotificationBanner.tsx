@@ -37,14 +37,14 @@ export const NotificationBanner: Component = () => {
             data-theme={item().theme}
             role="alert"
             class={clsx(
-              "fixed top-8 right-4 z-notification flex items-start gap-4 px-3 py-2 text-white shadow-lg dark:shadow-black/30 rounded-lg max-w-[calc(100vw-2rem)]",
+              "fixed right-4 top-8 z-notification flex max-w-[calc(100vw-2rem)] items-start gap-4 rounded-lg px-3 py-2 text-white shadow-lg dark:shadow-black/30",
               themeClasses[item().theme],
             )}
           >
             <div class={clsx("flex flex-col", gap.sm, "min-w-0")}>
               <span class="font-bold">{item().title}</span>
               <Show when={item().message}>
-                <pre class="opacity-90 overflow-auto">{item().message}</pre>
+                <pre class="overflow-auto opacity-90">{item().message}</pre>
               </Show>
             </div>
             <div class={clsx("flex items-center", gap.xl, "shrink-0")}>

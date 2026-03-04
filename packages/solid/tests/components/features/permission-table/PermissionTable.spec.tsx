@@ -233,13 +233,14 @@ describe("PermissionTable component", () => {
       expect(getByText("권한 설정")).toBeTruthy();
       expect(getByText("사용자 목록")).toBeTruthy();
 
-      // click collapse button (expand toggle on "사용자 관리" row)
+      // find the expand toggle in the expand feature column (first td) of "사용자 관리" row
       const titleEl = getByText("사용자 관리");
       const row = titleEl.closest("tr")!;
-      const expandButton = row.querySelector("button")!;
+      const expandTd = row.querySelector("td")!;
+      const expandButton = expandTd.querySelector("button")!;
       fireEvent.click(expandButton);
 
-      // children are removed from the DOM (Sheet does not render collapsed items)
+      // collapsed children are removed from the DOM (flattenTree excludes them)
       expect(queryByText("권한 설정")).toBeNull();
       expect(queryByText("사용자 목록")).toBeNull();
     });

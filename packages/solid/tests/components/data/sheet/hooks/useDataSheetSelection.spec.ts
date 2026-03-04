@@ -70,7 +70,7 @@ describe("useDataSheetSelection", () => {
 
   it("getItemSelectable should return reason string when item is disabled", () => {
     createRoot(() => {
-      const isItemSelectable = (item: TestItem) => item.disabledReason || true;
+      const isItemSelectable = (item: TestItem) => item.disabledReason != null && item.disabledReason !== "" ? item.disabledReason : true;
       const result = useDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),

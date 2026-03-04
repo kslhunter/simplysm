@@ -86,10 +86,10 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   const getClassName = () =>
     twMerge(
-      // eslint-disable-next-line tailwindcss/enforces-shorthand
+       
       "size-field rounded border border-black/10 dark:border-white/10 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-none [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-none",
       sizeClasses[local.size ?? "default"],
-      // eslint-disable-next-line tailwindcss/enforces-shorthand
+       
       local.disabled && "cursor-default relative before:absolute before:bottom-0 before:left-0 before:right-0 before:top-0 before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
       local.class,
     );

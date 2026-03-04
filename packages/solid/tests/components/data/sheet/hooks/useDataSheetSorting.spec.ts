@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createRoot, createSignal, type Accessor } from "solid-js";
+import { createRoot, createSignal } from "solid-js";
 import { useDataSheetSorting } from "../../../../../src/components/data/sheet/hooks/useDataSheetSorting";
 import type { SortingDef } from "../../../../../src/components/data/sheet/types";
 
@@ -18,8 +18,8 @@ const testData: TestItem[] = [
 describe("useDataSheetSorting", () => {
   it("initializes with empty sorts", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[] | undefined>(undefined);
-      const [onSortsChange, setOnSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(
+      const [sorts, _setSorts] = createSignal<SortingDef[] | undefined>(undefined);
+      const [onSortsChange, _setOnSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(
         undefined,
       );
       const [items] = createSignal<TestItem[] | undefined>(testData);
@@ -38,7 +38,7 @@ describe("useDataSheetSorting", () => {
 
   it("toggleSort adds ascending sort when no sort exists", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[] | undefined>(undefined);
+      const [sorts, _setSorts] = createSignal<SortingDef[] | undefined>(undefined);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -58,7 +58,7 @@ describe("useDataSheetSorting", () => {
 
   it("toggleSort cycles asc -> desc -> remove", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -86,7 +86,7 @@ describe("useDataSheetSorting", () => {
 
   it("toggleSort in multiple mode preserves other sorts", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([{ key: "id", desc: false }]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([{ key: "id", desc: false }]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -120,7 +120,7 @@ describe("useDataSheetSorting", () => {
 
   it("sortIndex returns undefined for single sort", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([{ key: "name", desc: false }]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([{ key: "name", desc: false }]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -138,7 +138,7 @@ describe("useDataSheetSorting", () => {
 
   it("sortIndex returns 1-based index for multi sort", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([
         { key: "id", desc: false },
         { key: "name", desc: false },
         { key: "age", desc: false },
@@ -163,7 +163,7 @@ describe("useDataSheetSorting", () => {
 
   it("sortedItems applies sorting when autoSort is true", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: false }]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: false }]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -185,7 +185,7 @@ describe("useDataSheetSorting", () => {
 
   it("sortedItems returns original items when autoSort is false", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: false }]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: false }]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(false);
@@ -205,7 +205,7 @@ describe("useDataSheetSorting", () => {
 
   it("sortedItems applies descending sort", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: true }]);
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([{ key: "age", desc: true }]);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
@@ -233,7 +233,7 @@ describe("useDataSheetSorting", () => {
         { id: 3, name: "Alice", age: 25 },
       ];
 
-      const [sorts, setSorts] = createSignal<SortingDef[]>([
+      const [sorts, _setSorts] = createSignal<SortingDef[]>([
         { key: "name", desc: false },
         { key: "age", desc: false },
       ]);
@@ -261,7 +261,7 @@ describe("useDataSheetSorting", () => {
 
   it("handles undefined items", () => {
     createRoot(() => {
-      const [sorts, setSorts] = createSignal<SortingDef[] | undefined>(undefined);
+      const [sorts, _setSorts] = createSignal<SortingDef[] | undefined>(undefined);
       const [onSortsChange] = createSignal<((sorts: SortingDef[]) => void) | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(undefined);
       const [autoSort] = createSignal<boolean | undefined>(true);
