@@ -3,20 +3,24 @@ import { twMerge } from "tailwind-merge";
 import { IconSun, IconMoon, IconDeviceDesktop } from "@tabler/icons-solidjs";
 import { useTheme, type ThemeMode } from "../../providers/ThemeContext";
 import { Icon } from "../display/Icon";
-import { ripple } from "../../directives/ripple";
-import { iconButtonBase } from "../../styles/patterns.styles";
+import { Button } from "./Button";
 import { useI18n } from "../../providers/i18n/I18nContext";
+import { type ComponentSize } from "../../styles/control.styles";
 
-void ripple;
-
-const sizeClasses: Record<"sm" | "lg", string> = {
+const sizeClasses: Record<ComponentSize, string> = {
+  default: "p-1.5",
+  xs: "p-0.5",
   sm: "p-1",
   lg: "p-2",
+  xl: "p-2.5",
 };
 
-const iconSizes: Record<"sm" | "lg", string> = {
+const iconSizes: Record<ComponentSize, string> = {
+  default: "1.25em",
+  xs: "0.75em",
   sm: "1em",
   lg: "1.5em",
+  xl: "2em",
 };
 
 const modeLabelKeys: Record<ThemeMode, string> = {
@@ -30,7 +34,7 @@ export interface ThemeToggleProps extends Omit<
   "children"
 > {
   /** Button size */
-  size?: "sm" | "lg";
+  size?: ComponentSize;
 }
 
 /**
@@ -59,17 +63,16 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
 
   const modeLabel = () => i18n.t(modeLabelKeys[mode()]);
 
-  const getClassName = () =>
-    twMerge(iconButtonBase, "p-1.5", local.size && sizeClasses[local.size], local.class);
+  const getClassName = () => twMerge(sizeClasses[local.size ?? "default"], local.class);
 
-  const iconSize = () => (local.size ? iconSizes[local.size] : "1.25em");
+  const iconSize = () => iconSizes[local.size ?? "default"];
 
   return (
-    <button
+    <Button
       {...rest}
+      variant="ghost"
+      size="xs"
       data-theme-toggle
-      use:ripple
-      type="button"
       class={getClassName()}
       onClick={cycleMode}
       title={modeLabel()}
@@ -86,6 +89,6 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
           <Icon icon={IconMoon} size={iconSize()} />
         </Match>
       </Switch>
-    </button>
+    </Button>
   );
 };
