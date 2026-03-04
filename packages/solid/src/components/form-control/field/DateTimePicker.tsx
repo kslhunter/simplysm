@@ -1,11 +1,9 @@
-import clsx from "clsx";
-import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js";
-import { twMerge } from "tailwind-merge";
+import { type Component, createMemo, type JSX, splitProps } from "solid-js";
 import { DateTime } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type FieldSize, fieldInputClass, getFieldWrapperClass } from "./Field.styles";
-import { Invalid } from "../../form-control/Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
+import { FieldShell } from "./FieldShell";
 
 type DateTimePickerUnit = "minute" | "second";
 
@@ -202,78 +200,32 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
   });
 
   return (
-    <Invalid
-      message={errorMsg()}
-      variant={local.inset ? "dot" : "border"}
+    <FieldShell
+      errorMsg={errorMsg()}
+      invalidVariant={local.inset ? "dot" : "border"}
       touchMode={local.touchMode}
+      inset={local.inset}
+      isEditable={isEditable()}
+      wrapperClass={getWrapperClass}
+      dataAttr="data-datetime-field"
+      readonlyExtraClass="sd-datetime-field"
+      style={local.style}
+      title={local.title}
+      class={local.class}
+      rest={rest}
+      displayContent={displayValue() || "\u00A0"}
     >
-      <Show
-        when={local.inset}
-        fallback={
-          // standalone mode
-          <Show
-            when={isEditable()}
-            fallback={
-              <div
-                {...rest}
-                data-datetime-field
-                class={twMerge(getWrapperClass(true), "sd-datetime-field")}
-                style={local.style}
-                title={local.title}
-              >
-                {displayValue() || "\u00A0"}
-              </div>
-            }
-          >
-            <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
-              <input
-                type="datetime-local"
-                class={fieldInputClass}
-                value={displayValue()}
-                title={local.title}
-                min={formatDateTimeValue(local.min, fieldType())}
-                max={formatDateTimeValue(local.max, fieldType())}
-                step={getStep()}
-                autocomplete="one-time-code"
-                onChange={handleChange}
-              />
-            </div>
-          </Show>
-        }
-      >
-        {/* inset mode: dual-element overlay pattern */}
-        <div
-          {...rest}
-          data-datetime-field
-          class={clsx("relative", local.class)}
-          style={local.style}
-        >
-          <div
-            data-datetime-field-content
-            class={getWrapperClass(false)}
-            style={{ visibility: isEditable() ? "hidden" : undefined }}
-            title={local.title}
-          >
-            {displayValue() || "\u00A0"}
-          </div>
-
-          <Show when={isEditable()}>
-            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-              <input
-                type="datetime-local"
-                class={fieldInputClass}
-                value={displayValue()}
-                title={local.title}
-                min={formatDateTimeValue(local.min, fieldType())}
-                max={formatDateTimeValue(local.max, fieldType())}
-                step={getStep()}
-                autocomplete="one-time-code"
-                onChange={handleChange}
-              />
-            </div>
-          </Show>
-        </div>
-      </Show>
-    </Invalid>
+      <input
+        type="datetime-local"
+        class={fieldInputClass}
+        value={displayValue()}
+        title={local.title}
+        min={formatDateTimeValue(local.min, fieldType())}
+        max={formatDateTimeValue(local.max, fieldType())}
+        step={getStep()}
+        autocomplete="one-time-code"
+        onChange={handleChange}
+      />
+    </FieldShell>
   );
 };
