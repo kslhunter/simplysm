@@ -37,7 +37,7 @@ All execution uses `Task(general-purpose)` for parallel execution.
 
 Independent tasks run as **parallel Task calls in a single message**. After implementers complete, spec and quality reviews run as **parallel Task calls**.
 
-**CRITICAL: Do NOT use `run_in_background: true`** — achieve parallelism by making multiple Task calls in a single message (foreground parallel). This ensures the orchestrator waits for all tasks to complete before proceeding to the next batch, and prevents Stop hooks from firing prematurely.
+**CRITICAL: Always launch parallel tasks as multiple Task calls in a single message (foreground parallel).** Never set `run_in_background: true` — it causes Stop hooks to fire prematurely. This rule applies regardless of permission mode (yolo, plan, etc.).
 
 ## The Process
 

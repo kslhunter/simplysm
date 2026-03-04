@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
 import type { CrudDetailToolsDef } from "./types";
+import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudDetailToolsDef(value: unknown): value is CrudDetailToolsDef {
   return (
@@ -9,9 +10,9 @@ export function isCrudDetailToolsDef(value: unknown): value is CrudDetailToolsDe
   );
 }
 
-export function CrudDetailTools(props: { children: JSX.Element }): JSX.Element {
-  return {
+export const CrudDetailTools = createDefComponent<CrudDetailToolsDef>(
+  (props: { children: JSX.Element }) => ({
     __type: "crud-detail-tools",
     children: props.children,
-  } as unknown as JSX.Element;
-}
+  }),
+);

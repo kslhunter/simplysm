@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
 import type { CrudDetailAfterDef } from "./types";
+import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudDetailAfterDef(value: unknown): value is CrudDetailAfterDef {
   return (
@@ -9,9 +10,9 @@ export function isCrudDetailAfterDef(value: unknown): value is CrudDetailAfterDe
   );
 }
 
-export function CrudDetailAfter(props: { children: JSX.Element }): JSX.Element {
-  return {
+export const CrudDetailAfter = createDefComponent<CrudDetailAfterDef>(
+  (props: { children: JSX.Element }) => ({
     __type: "crud-detail-after",
     children: props.children,
-  } as unknown as JSX.Element;
-}
+  }),
+);

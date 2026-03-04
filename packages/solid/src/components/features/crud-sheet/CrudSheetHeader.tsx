@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
 import type { CrudSheetHeaderDef } from "./types";
+import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudSheetHeaderDef(value: unknown): value is CrudSheetHeaderDef {
   return (
@@ -9,9 +10,9 @@ export function isCrudSheetHeaderDef(value: unknown): value is CrudSheetHeaderDe
   );
 }
 
-export function CrudSheetHeader(props: { children: JSX.Element }): JSX.Element {
-  return {
+export const CrudSheetHeader = createDefComponent<CrudSheetHeaderDef>(
+  (props: { children: JSX.Element }) => ({
     __type: "crud-sheet-header",
     children: props.children,
-  } as unknown as JSX.Element;
-}
+  }),
+);

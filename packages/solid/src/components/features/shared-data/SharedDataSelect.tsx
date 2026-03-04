@@ -18,6 +18,7 @@ import {
   type DialogPropsField,
   type SelectDialogBaseProps,
 } from "../data-select-button/DataSelectButton";
+import { createDefComponent } from "../../../helpers/createDefComponent";
 
 // -- Slot detection --
 const ITEM_TEMPLATE_BRAND = Symbol("SharedDataSelect.ItemTemplate");
@@ -52,23 +53,23 @@ function isActionDef(v: unknown): v is ActionDef {
 // -- Compound components --
 const ItemTemplate: Component<{
   children: (item: any, index: number, depth: number) => JSX.Element;
-}> = (props) => {
-  return (() => ({
+}> = createDefComponent<ItemTemplateDef>(
+  (props: { children: (item: any, index: number, depth: number) => JSX.Element }) => ({
     __brand: ITEM_TEMPLATE_BRAND,
     children: props.children,
-  })) as unknown as JSX.Element;
-};
+  }),
+);
 
 const Action: Component<{
   children?: JSX.Element;
   onClick?: (e: MouseEvent) => void;
-}> = (props) => {
-  return (() => ({
+}> = createDefComponent<ActionDef>(
+  (props: { children?: JSX.Element; onClick?: (e: MouseEvent) => void }) => ({
     __brand: ACTION_BRAND,
     children: props.children,
     onClick: props.onClick,
-  })) as unknown as JSX.Element;
-};
+  }),
+);
 
 /** SharedDataSelect Props */
 export type SharedDataSelectProps<

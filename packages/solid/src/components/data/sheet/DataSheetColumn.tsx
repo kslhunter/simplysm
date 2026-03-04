@@ -1,6 +1,7 @@
 import type { JSX } from "solid-js";
 import type { DataSheetColumnDef, DataSheetColumnProps } from "./types";
 import { normalizeHeader } from "./sheetUtils";
+import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isDataSheetColumnDef(value: unknown): value is DataSheetColumnDef<unknown> {
   return (
@@ -10,8 +11,8 @@ export function isDataSheetColumnDef(value: unknown): value is DataSheetColumnDe
   );
 }
 
-export function DataSheetColumn<TItem>(props: DataSheetColumnProps<TItem>): JSX.Element {
-  return {
+export const DataSheetColumn = createDefComponent<DataSheetColumnDef<any>>(
+  (props: DataSheetColumnProps<any>) => ({
     __type: "sheet-column",
     key: props.key,
     header: normalizeHeader(props.header),
@@ -27,5 +28,5 @@ export function DataSheetColumn<TItem>(props: DataSheetColumnProps<TItem>): JSX.
     width: props.width,
     sortable: props.sortable ?? true,
     resizable: props.resizable ?? true,
-  } as unknown as JSX.Element;
-}
+  }),
+);
