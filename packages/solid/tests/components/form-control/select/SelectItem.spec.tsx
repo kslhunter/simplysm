@@ -9,7 +9,7 @@ import {
 
 // Test provider
 function TestProvider(props: { children: JSX.Element; value: SelectContextValue }) {
-   
+
   return <SelectContext.Provider value={props.value}>{props.children}</SelectContext.Provider>;
 }
 
@@ -22,8 +22,6 @@ describe("SelectItem component", () => {
         isSelected: () => false,
         toggleValue,
         closeDropdown: vi.fn(),
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
         setItemTemplate: vi.fn(),
       };
 
@@ -44,8 +42,6 @@ describe("SelectItem component", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown,
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
         setItemTemplate: vi.fn(),
       };
 
@@ -66,8 +62,6 @@ describe("SelectItem component", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown,
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
         setItemTemplate: vi.fn(),
       };
 
@@ -89,8 +83,6 @@ describe("SelectItem component", () => {
         isSelected: (v: unknown) => v === "apple",
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
         setItemTemplate: vi.fn(),
       };
 
@@ -113,8 +105,6 @@ describe("SelectItem component", () => {
         isSelected: () => false,
         toggleValue,
         closeDropdown: vi.fn(),
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
         setItemTemplate: vi.fn(),
       };
 
