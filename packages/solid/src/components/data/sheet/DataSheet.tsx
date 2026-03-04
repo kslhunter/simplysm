@@ -41,7 +41,6 @@ import { Pagination } from "../Pagination";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { DialogContext } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
-import "./DataSheet.css";
 import {
   configButtonClass,
   defaultContainerClass,
@@ -75,6 +74,7 @@ import {
   thClass,
   thContentClass,
   toolbarClass,
+  trRowClass,
 } from "./DataSheet.styles";
 
 interface DataSheetComponent {
@@ -1109,7 +1109,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                       selectItem(flat.item);
                     }
                   }}
-                  class={local.autoSelect === "click" ? "cursor-pointer" : undefined}
+                  class={clsx(trRowClass, local.autoSelect === "click" && "cursor-pointer")}
                 >
                   {/* Expand feature column body cell */}
                   <Show when={hasExpandFeature()}>

@@ -332,6 +332,24 @@ describe("DataSheet", () => {
     expect(tds[0].classList.contains("border-r")).toBe(true);
   });
 
+  it("body rows have hover/selected overlay classes", () => {
+    const { container } = render(() => (
+      <ConfigProvider clientName="test"><I18nProvider>
+        <TestWrapper>
+        <DataSheet items={testData} persistKey="test">
+          <DataSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </DataSheet.Column>
+        </DataSheet>
+      </TestWrapper>
+      </I18nProvider></ConfigProvider>
+    ));
+    const row = container.querySelector("tbody tr");
+    expect(row).toBeTruthy();
+    // tr should have the relative class for ::after positioning
+    expect(row!.className).toContain("relative");
+  });
+
   it("resizer: resizable column has a resizer handle", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
