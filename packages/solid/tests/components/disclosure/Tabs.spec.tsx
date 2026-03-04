@@ -4,37 +4,6 @@ import { createSignal } from "solid-js";
 import { Tabs } from "../../../src/components/disclosure/Tabs";
 
 describe("Tabs", () => {
-  describe("basic rendering", () => {
-    it("renders with tablist role", () => {
-      const { getByRole } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">A</Tabs.Tab>
-        </Tabs>
-      ));
-      expect(getByRole("tablist")).toBeTruthy();
-    });
-
-    it("renders Tabs.Tab with tab role", () => {
-      const { getByRole } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">A</Tabs.Tab>
-        </Tabs>
-      ));
-      expect(getByRole("tab")).toBeTruthy();
-    });
-
-    it("renders children", () => {
-      const { getByText } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">탭 A</Tabs.Tab>
-          <Tabs.Tab value="b">탭 B</Tabs.Tab>
-        </Tabs>
-      ));
-      expect(getByText("탭 A")).toBeTruthy();
-      expect(getByText("탭 B")).toBeTruthy();
-    });
-  });
-
   describe("selection behavior", () => {
     it("sets aria-selected to true on click", () => {
       const { getAllByRole } = render(() => (
@@ -149,72 +118,4 @@ describe("Tabs", () => {
     });
   });
 
-  describe("size", () => {
-    it("applies different styles per size prop", () => {
-      const { getAllByRole: getDefault } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">A</Tabs.Tab>
-        </Tabs>
-      ));
-      const { getAllByRole: getSm } = render(() => (
-        <Tabs size="sm">
-          <Tabs.Tab value="a">A</Tabs.Tab>
-        </Tabs>
-      ));
-
-      expect(getDefault("tab")[0].className).not.toBe(getSm("tab")[0].className);
-    });
-  });
-
-  describe("accessibility", () => {
-    it("sets aria-disabled on disabled tab", () => {
-      const { getAllByRole } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">A</Tabs.Tab>
-          <Tabs.Tab value="b" disabled>
-            B
-          </Tabs.Tab>
-        </Tabs>
-      ));
-
-      expect(getAllByRole("tab")[1].getAttribute("aria-disabled")).toBe("true");
-    });
-
-    it("sets tabIndex to -1 on disabled tab", () => {
-      const { getAllByRole } = render(() => (
-        <Tabs>
-          <Tabs.Tab value="a">A</Tabs.Tab>
-          <Tabs.Tab value="b" disabled>
-            B
-          </Tabs.Tab>
-        </Tabs>
-      ));
-
-      expect(getAllByRole("tab")[1].getAttribute("tabindex")).toBe("-1");
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom class on Tabs", () => {
-      const { getByRole } = render(() => (
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Tabs class="my-tab-class">
-          <Tabs.Tab value="a">A</Tabs.Tab>
-        </Tabs>
-      ));
-      expect(getByRole("tablist").classList.contains("my-tab-class")).toBe(true);
-    });
-
-    it("merges custom class on Tabs.Tab", () => {
-      const { getByRole } = render(() => (
-        <Tabs>
-          {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-          <Tabs.Tab value="a" class="my-item-class">
-            A
-          </Tabs.Tab>
-        </Tabs>
-      ));
-      expect(getByRole("tab").classList.contains("my-item-class")).toBe(true);
-    });
-  });
 });

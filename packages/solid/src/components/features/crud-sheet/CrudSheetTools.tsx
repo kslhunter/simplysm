@@ -9,7 +9,6 @@ export function isCrudSheetToolsDef(value: unknown): value is CrudSheetToolsDef<
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudSheetTools<_TItem>(props: {
   children: (ctx: any) => JSX.Element;
 }): JSX.Element {
@@ -18,4 +17,3 @@ export function CrudSheetTools<_TItem>(props: {
     children: props.children,
   } as unknown as JSX.Element;
 }
-/* eslint-enable solid/reactivity */

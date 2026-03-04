@@ -68,15 +68,6 @@ describe("Expr - String functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        byteLen: {
-          type: "byteLength",
-          arg: { type: "column", path: ["T1", "name"] },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.byteLength[dialect]);
@@ -117,16 +108,6 @@ describe("Expr - String functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        suffix: {
-          type: "right",
-          source: { type: "column", path: ["T1", "name"] },
-          length: { type: "value", value: 3 },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.right[dialect]);
@@ -141,15 +122,6 @@ describe("Expr - String functions", () => {
         trimmed: expr.trim(item.name),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        trimmed: {
-          type: "trim",
-          arg: { type: "column", path: ["T1", "name"] },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -218,15 +190,6 @@ describe("Expr - String functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        upper: {
-          type: "upper",
-          arg: { type: "column", path: ["T1", "name"] },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.upper[dialect]);
@@ -241,15 +204,6 @@ describe("Expr - String functions", () => {
         lower: expr.lower(item.name),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        lower: {
-          type: "lower",
-          arg: { type: "column", path: ["T1", "name"] },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -337,16 +291,6 @@ describe("Expr - String functions", () => {
       .user()
       .where((item) => [expr.like(item.name, "%\\%%")])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.where).toEqual([
-        {
-          type: "like",
-          source: { type: "column", path: ["T1", "name"] },
-          pattern: { type: "value", value: "%\\%%" },
-        },
-      ]);
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

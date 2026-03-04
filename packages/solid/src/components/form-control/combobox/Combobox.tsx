@@ -61,14 +61,6 @@ function useComboboxContext<TValue = unknown>(): ComboboxContextValue<TValue> {
 
 //#endregion
 
-// Combobox-specific styles
-const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden");
-const inputClass = clsx(
-  "min-w-0 flex-1",
-  "bg-transparent outline-none",
-  "placeholder:text-base-400 dark:placeholder:text-base-500",
-);
-
 const noResultsClass = clsx(pad.lg, text.muted);
 
 /**
@@ -78,7 +70,6 @@ const ComboboxItemTemplate = <TArgs extends unknown[]>(props: {
   children: (...args: TArgs) => JSX.Element;
 }) => {
   const ctx = useComboboxContext();
-  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
   ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
@@ -265,7 +256,6 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
   } as Parameters<typeof createControllableSignal<T | undefined>>[0]);
 
   // Debounce queue (created once on mount, debounceMs only used as initial value)
-  // eslint-disable-next-line solid/reactivity -- Debounce queue created once with debounceMs from mount time
   const debounceQueue = new DebounceQueue(local.debounceMs ?? 300);
 
   onCleanup(() => {
@@ -393,7 +383,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
             }
           }}
           type="text"
-          class={inputClass}
+          class={clsx("min-w-0 flex-1 bg-transparent outline-none", text.placeholder)}
           value={query()}
           placeholder={currentValue === undefined ? local.placeholder : undefined}
           disabled={local.disabled}
@@ -459,7 +449,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
                 style={local.style}
                 onKeyDown={handleTriggerKeyDown}
               >
-                <div class={selectedValueClass}>{renderDisplayContent()}</div>
+                <div class="flex-1 whitespace-nowrap overflow-hidden">{renderDisplayContent()}</div>
                 <div class={chevronWrapperClass}>
                   <Show
                     when={busyCount() > 0}

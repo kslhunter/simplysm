@@ -10,7 +10,6 @@ export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object return pattern, reactive context not needed */
 export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.Element {
   return {
     __type: "crud-sheet-column",
@@ -31,4 +30,3 @@ export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.
     editTrigger: props.editTrigger ?? false,
   } as unknown as JSX.Element;
 }
-/* eslint-enable solid/reactivity */

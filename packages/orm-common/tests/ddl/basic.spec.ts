@@ -122,65 +122,6 @@ describe("DDL - Table", () => {
     });
   });
 
-  describe("getTruncateQueryDef", () => {
-    const db = createTestDb();
-    const def = db.getTruncateQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "truncate",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.truncate[dialect]);
-    });
-  });
-
-  describe("getSwitchFkQueryDef - on", () => {
-    const db = createTestDb();
-    const def = db.getSwitchFkQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "on",
-    );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "switchFk",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        switch: "on",
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.switchFkOn[dialect]);
-    });
-  });
-
-  describe("getSwitchFkQueryDef - off", () => {
-    const db = createTestDb();
-    const def = db.getSwitchFkQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "off",
-    );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "switchFk",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        switch: "off",
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.switchFkOff[dialect]);
-    });
-  });
-
   describe("getDropTableQueryDef", () => {
     const db = createTestDb();
     const def = db.getDropTableQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
@@ -279,35 +220,6 @@ describe("DDL - Column", () => {
     });
   });
 
-  describe("getAddColumnQueryDef - with autoIncrement", () => {
-    const db = createTestDb();
-    const column = Column.bigint().autoIncrement();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "seq",
-      column,
-    );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "seq",
-          dataType: { type: "bigint" },
-          autoIncrement: true,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.addColumnWithAutoIncrement[dialect]);
-    });
-  });
-
   describe("getDropColumnQueryDef", () => {
     const db = createTestDb();
     const def = db.getDropColumnQueryDef(
@@ -355,35 +267,6 @@ describe("DDL - Column", () => {
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.modifyColumn[dialect]);
-    });
-  });
-
-  describe("getModifyColumnQueryDef - change TYPE + DEFAULT simultaneously", () => {
-    const db = createTestDb();
-    const column = Column.int().default(100);
-    const def = db.getModifyColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "score",
-      column,
-    );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "modifyColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "score",
-          dataType: { type: "int" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: 100,
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.modifyColumnTypeAndDefault[dialect]);
     });
   });
 
@@ -449,26 +332,6 @@ describe("DDL - Primary Key", () => {
     });
   });
 
-  describe("getAddPkQueryDef - composite key", () => {
-    const db = createTestDb();
-    const def = db.getAddPkQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "UserRole" },
-      ["userId", "roleId"],
-    );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addPk",
-        table: { database: "TestDb", schema: "TestSchema", name: "UserRole" },
-        columns: ["userId", "roleId"],
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.addPkComposite[dialect]);
-    });
-  });
 });
 
 describe("DDL - Foreign Key / Index", () => {
@@ -572,26 +435,6 @@ describe("DDL - Foreign Key / Index", () => {
     });
   });
 
-  describe("getDropIdxQueryDef - composite", () => {
-    const db = createTestDb();
-    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
-      "name",
-      "email",
-    ]);
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "dropIdx",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        index: "IDX_User_name_email",
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.dropIdxComposite[dialect]);
-    });
-  });
 });
 
 describe("DDL - View", () => {

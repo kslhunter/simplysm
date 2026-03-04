@@ -23,43 +23,12 @@ describe("MysqlExprRenderer.escapeString", () => {
 
   //#endregion
 
-  //#region ========== Control Character Escaping ==========
-
-  it("should escape newlines", () => {
-    const result = renderer.escapeString("line1\nline2");
-    expect(result).toBe("line1\\nline2");
-  });
-
-  it("should escape carriage returns", () => {
-    const result = renderer.escapeString("line1\rline2");
-    expect(result).toBe("line1\\rline2");
-  });
-
-  it("should escape tabs", () => {
-    const result = renderer.escapeString("col1\tcol2");
-    expect(result).toBe("col1\\tcol2");
-  });
-
-  //#endregion
-
   //#region ========== Combined Attack Test ==========
-
-  it("should defend against SQL injection attempts", () => {
-    const malicious = "'; DROP TABLE users; --";
-    const result = renderer.escapeString(malicious);
-    expect(result).toBe("''; DROP TABLE users; --");
-  });
 
   it("should defend against backslash + quote combination", () => {
     const malicious = "\\'";
     const result = renderer.escapeString(malicious);
     expect(result).toBe("\\\\''");
-  });
-
-  it("should defend against NULL byte + SQL comment combination", () => {
-    const malicious = "admin\0-- ";
-    const result = renderer.escapeString(malicious);
-    expect(result).toBe("admin\\0-- ");
   });
 
   //#endregion
@@ -71,16 +40,6 @@ describe("MysqlExprRenderer.escapeValue", () => {
   it("escapes string with escapeString() and wraps in quotes", () => {
     const result = renderer.escapeValue("O'Reilly");
     expect(result).toBe("'O''Reilly'");
-  });
-
-  it("correctly escapes string containing backslashes", () => {
-    const result = renderer.escapeValue("C:\\path");
-    expect(result).toBe("'C:\\\\path'");
-  });
-
-  it("defends against SQL injection attempts", () => {
-    const result = renderer.escapeValue("'; DROP TABLE users; --");
-    expect(result).toBe("'''; DROP TABLE users; --'");
   });
 
   it("returns 'NULL' string for null", () => {

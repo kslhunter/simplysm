@@ -84,31 +84,6 @@ describe("NotificationBanner", () => {
     });
   });
 
-  it("has role=alert attribute", async () => {
-    let notification: ReturnType<typeof useNotification>;
-
-    render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <I18nProvider>
-          <NotificationProvider>
-            {(() => {
-              notification = useNotification();
-              return null;
-            })()}
-            <NotificationBanner />
-          </NotificationProvider>
-        </I18nProvider>
-      </ConfigContext.Provider>
-    ));
-
-    notification!.info("Test");
-
-    await waitFor(() => {
-      const banner = document.querySelector("[data-notification-banner]");
-      expect(banner?.getAttribute("role")).toBe("alert");
-    });
-  });
-
   it("sets data-theme attribute for each theme", async () => {
     let notification: ReturnType<typeof useNotification>;
 

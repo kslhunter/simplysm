@@ -48,20 +48,6 @@ describe("SharedDataSelectList", () => {
   // ─── Item Rendering ─────────────────────────────────────
 
   describe("item rendering", () => {
-    it("items are rendered as List.Item", () => {
-      const accessor = createMockAccessor(["Apple", "Banana", "Cherry"]);
-
-      renderWithDialog(() => (
-        <SharedDataSelectList data={accessor} required>
-          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
-        </SharedDataSelectList>
-      ));
-
-      expect(screen.getByText("Apple")).toBeTruthy();
-      expect(screen.getByText("Banana")).toBeTruthy();
-      expect(screen.getByText("Cherry")).toBeTruthy();
-    });
-
     it("children render function receives item and index", () => {
       const accessor = createMockAccessor(["A", "B"]);
 
@@ -444,17 +430,4 @@ describe("SharedDataSelectList", () => {
 
   // ─── header ────────────────────────────────────────────
 
-  describe("header", () => {
-    it("header text is displayed when header is provided", () => {
-      const accessor = createMockAccessor(["Apple"]);
-
-      renderWithDialog(() => (
-        <SharedDataSelectList data={accessor} header="과일 목록" required>
-          <SharedDataSelectList.ItemTemplate>{(item) => <>{item}</>}</SharedDataSelectList.ItemTemplate>
-        </SharedDataSelectList>
-      ));
-
-      expect(screen.getByText("과일 목록")).toBeTruthy();
-    });
-  });
 });

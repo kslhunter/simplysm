@@ -119,41 +119,6 @@ describe("SerialQueue", () => {
       expect(timestamps[1] - timestamps[0]).toBe(0);
     });
 
-    it("Default gap is 0", async () => {
-      const queue = new SerialQueue();
-      const timestamps: number[] = [];
-
-      queue.run(() => {
-        timestamps.push(Date.now());
-      });
-      queue.run(() => {
-        timestamps.push(Date.now());
-      });
-
-      await vi.advanceTimersByTimeAsync(50);
-
-      expect(timestamps).toHaveLength(2);
-      expect(timestamps[1] - timestamps[0]).toBe(0);
-    });
-
-    it("Does not wait gap after the last task", async () => {
-      const queue = new SerialQueue(100);
-      const timestamps: number[] = [];
-
-      queue.run(() => {
-        timestamps.push(Date.now());
-      });
-      queue.run(() => {
-        timestamps.push(Date.now());
-      });
-
-      // Wait long enough (task1 + gap100 + task2)
-      await vi.advanceTimersByTimeAsync(200);
-
-      // Verify gap was applied (exactly 100ms)
-      expect(timestamps).toHaveLength(2);
-      expect(timestamps[1] - timestamps[0]).toBe(100);
-    });
   });
 
   //#endregion
@@ -291,15 +256,6 @@ describe("SerialQueue", () => {
       expect(calls).toContain(2);
     });
 
-    it("Safe to call multiple times", () => {
-      const queue = new SerialQueue();
-
-      // Multiple calls without error
-      queue.dispose();
-      queue.dispose();
-      queue.dispose();
-    });
-
     it("Automatically disposes with using statement", async () => {
       const calls: number[] = [];
       {
@@ -324,22 +280,6 @@ describe("SerialQueue", () => {
   //#region Synchronous function support
 
   describe("Synchronous function support", () => {
-    it("Can execute synchronous functions", async () => {
-      const queue = new SerialQueue();
-      const calls: number[] = [];
-
-      queue.run(() => {
-        calls.push(1);
-      });
-      queue.run(() => {
-        calls.push(2);
-      });
-
-      await vi.advanceTimersByTimeAsync(50);
-
-      expect(calls).toEqual([1, 2]);
-    });
-
     it("Can mix synchronous and asynchronous functions", async () => {
       const queue = new SerialQueue();
       const calls: number[] = [];

@@ -31,6 +31,8 @@ import { Link } from "../../display/Link";
 import { createEventListener } from "@solid-primitives/event-listener";
 import { useBeforeLeave } from "@solidjs/router";
 import clsx from "clsx";
+import { text } from "../../../styles/base.styles";
+import { gap, pad } from "../../../styles/control.styles";
 import {
   IconDeviceFloppy,
   IconExternalLink,
@@ -97,7 +99,6 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const noti = useNotification();
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
-  // eslint-disable-next-line solid/reactivity -- local.close is stable (injected once by DialogProvider)
   const isInDialog = local.close !== undefined;
   const isSelectMode = () => local.selectMode != null;
   const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
@@ -121,7 +122,6 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
   let originalItems: TItem[] = [];
 
-  // eslint-disable-next-line solid/reactivity -- filterInitial is used only for initial value
   const [filter, setFilter] = createStore<TFilter>((local.filterInitial ?? {}) as TFilter);
   const [lastFilter, setLastFilter] = createSignal<TFilter>(objClone(filter));
 
@@ -181,13 +181,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setTotalPageCount(result.pageCount ?? 0);
   }
 
-  /* eslint-disable solid/reactivity -- called only in event handlers, immediate store read */
   function getItemDiffs() {
     return items.oneWayDiffs(originalItems, (item) => local.getItemKey(item), {
       excludes: local.inlineEdit?.diffsExcludes,
     });
   }
-  /* eslint-enable solid/reactivity */
 
   function checkIgnoreChanges(): boolean {
     if (!local.inlineEdit) return true;
@@ -412,7 +410,6 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
 
   // -- Route Leave Guard --
-  // eslint-disable-next-line solid/reactivity -- inlineEdit is used only for initial value
   if (!isInDialog && local.inlineEdit) {
     try {
       useBeforeLeave((e) => {
@@ -479,7 +476,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       <Show when={isInDialog}>
         <Dialog.Action>
           <button
-            class="flex items-center px-2 text-base-400 hover:text-base-600"
+            class={clsx("flex items-center px-2 hover:text-base-600", text.muted)}
             onClick={handleRefresh}
           >
             <Icon icon={IconRefresh} />
@@ -698,7 +695,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     ) {
                       return (
                         <Link
-                          class={clsx("flex", "gap-1")}
+                          class={clsx("flex", gap.default)}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -723,7 +720,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <Show when={local.lastModifiedAtProp}>
               <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header={i18n.t("crudSheet.lastModified")} hidden>
                 {(dsCtx) => (
-                  <div class="px-2 py-1 text-center">
+                  <div class={clsx(pad.default, "text-center")}>
                     {(
                       objGetChainValue(dsCtx.item, local.lastModifiedAtProp!, true) as
                         | DateTime
@@ -737,7 +734,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <Show when={local.lastModifiedByProp}>
               <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n.t("crudSheet.modifiedBy")} hidden>
                 {(dsCtx) => (
-                  <div class="px-2 py-1 text-center">
+                  <div class={clsx(pad.default, "text-center")}>
                     {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
                   </div>
                 )}

@@ -14,14 +14,6 @@ describe("Wait", () => {
       expect(elapsed).toBeGreaterThanOrEqual(95);
       expect(elapsed).toBeLessThan(250);
     });
-
-    it("Works normally with 0ms wait", async () => {
-      const start = Date.now();
-      await time(0);
-      const elapsed = Date.now() - start;
-
-      expect(elapsed).toBeLessThan(50);
-    });
   });
 
   //#endregion
@@ -125,20 +117,6 @@ describe("Wait", () => {
       expect(count).toBe(1);
     });
 
-    it("Success if condition true within maxCount", async () => {
-      let count = 0;
-
-      await until(
-        () => {
-          count++;
-          return count >= 3;
-        },
-        10,
-        5,
-      );
-
-      expect(count).toBe(3);
-    });
   });
 
   //#endregion

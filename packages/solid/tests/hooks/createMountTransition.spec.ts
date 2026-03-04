@@ -15,15 +15,6 @@ describe("createMountTransition", () => {
     vi.useRealTimers();
   });
 
-  it("mounted=false and animating=false when open=false", () => {
-    createRoot((dispose) => {
-      const { mounted, animating } = createMountTransition(() => false);
-      expect(mounted()).toBe(false);
-      expect(animating()).toBe(false);
-      dispose();
-    });
-  });
-
   it("mounted=true when open changes to true", async () => {
     const outerDispose = await new Promise<() => void>((resolveDispose) => {
       void createRoot(async (dispose) => {

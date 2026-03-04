@@ -1,8 +1,8 @@
 # @simplysm/lint
 
-Simplysm package - Lint configuration (ESLint + Stylelint)
+Simplysm package - Lint configuration (ESLint)
 
-Provides a shared ESLint flat config, a custom ESLint plugin with Simplysm-specific rules, and a shared Stylelint config for use across Simplysm projects.
+Provides a shared ESLint flat config and a custom ESLint plugin with Simplysm-specific rules for use across Simplysm projects.
 
 ## Installation
 
@@ -12,13 +12,12 @@ pnpm add -D @simplysm/lint
 
 ## Entry Points
 
-This package exposes three separate entry points:
+This package exposes two separate entry points:
 
 | Entry point | Description |
 |---|---|
 | `@simplysm/lint/eslint-plugin` | Custom ESLint plugin (Simplysm rules only) |
 | `@simplysm/lint/eslint-recommended` | Full recommended ESLint flat config |
-| `@simplysm/lint/stylelint-recommended` | Recommended Stylelint config |
 
 ---
 
@@ -50,7 +49,7 @@ export default sdRecommended;
 | `**/*.js`, `**/*.jsx` | Common rules, import, unused-imports, `@simplysm` rules |
 | `**/*.ts`, `**/*.tsx` | All of the above + typescript-eslint rules |
 | `**/*.ts`, `**/*.tsx` | SolidJS reactivity + Tailwind CSS rules |
-| `**/tests/**/*.ts`, `**/tests/**/*.tsx` | Relaxed rules (no-console off, import/no-extraneous-dependencies off, solid/reactivity off) |
+| `**/tests/**/*.ts`, `**/tests/**/*.tsx` | Relaxed rules (no-console off, import/no-extraneous-dependencies off) |
 
 ### Global ignores
 
@@ -107,7 +106,7 @@ The following paths are ignored by default:
 
 | Rule | Severity | Notes |
 |---|---|---|
-| `solid/reactivity` | error | Reactivity loss detection |
+| `solid/reactivity` | off | Disabled (too many false positives) |
 | `solid/no-destructure` | error | Props destructuring guard |
 | `solid/components-return-once` | error | Early return guard |
 | `solid/jsx-no-duplicate-props` | error | |
@@ -237,35 +236,3 @@ throw new NotImplementedError();
 throw new NotImplementedError("TODO: finish this");
 ```
 
----
-
-## `@simplysm/lint/stylelint-recommended`
-
-A Stylelint config object extending `stylelint-config-standard` and `stylelint-config-tailwindcss` with additional browser compatibility and module resolution rules.
-
-### Usage
-
-```javascript
-// stylelint.config.js
-import sdStylelint from "@simplysm/lint/stylelint-recommended";
-
-export default sdStylelint;
-```
-
-### Extended configs
-
-- `stylelint-config-standard`
-- `stylelint-config-tailwindcss`
-
-### Plugins
-
-- `stylelint-no-unsupported-browser-features`
-- `stylelint-no-unresolved-module`
-
-### Rules
-
-| Rule | Setting | Notes |
-|---|---|---|
-| `plugin/no-unsupported-browser-features` | error | Chrome >= 84; ignores `css-cascade-layers`, `css-nesting`, `css-overflow` |
-| `declaration-block-no-redundant-longhand-properties` | true | Ignores `inset` shorthand (requires Chrome 87+) |
-| `plugin/no-unresolved-module` | true | Checks file existence in `@import` and `url()` |

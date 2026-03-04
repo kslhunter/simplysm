@@ -47,7 +47,6 @@ export function SelectionGroupBase<TContextValue>(props: SelectionGroupBaseProps
 
   return (
     <Invalid message={errorMsg()} variant="dot" touchMode={local.touchMode}>
-      {/* eslint-disable-next-line solid/reactivity -- context is a static Context object, contextValue is tracked via accessor functions inside it */}
       <local.context.Provider value={local.contextValue}>
         <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
           {local.children}

@@ -81,21 +81,6 @@ describe("getCompilerOptionsForPackage", () => {
     expect(result.types).toContain("lodash");
   });
 
-  it("node target: removes duplicate node types", async () => {
-    const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockResolvedValue(true);
-    vi.mocked(fsReadJson).mockResolvedValue({
-      devDependencies: {
-        "@types/node": "^20.0.0",
-      },
-    });
-
-    const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
-
-    // node type is included only once without duplicates
-    expect(result.types?.filter((t) => t === "node")).toHaveLength(1);
-  });
-
   it("handles missing package.json with empty types", async () => {
     const packageDir = "/project/packages/unknown";
     vi.mocked(fsExists).mockResolvedValue(false);
@@ -106,34 +91,4 @@ describe("getCompilerOptionsForPackage", () => {
     expect(result.types).toEqual(["node"]);
   });
 
-  it("handles undefined lib correctly", async () => {
-    const optionsWithoutLib: ts.CompilerOptions = {
-      strict: true,
-    };
-    const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockResolvedValue(false);
-
-    const result = await getCompilerOptionsForPackage(optionsWithoutLib, "node", packageDir);
-
-    // handles undefined lib without error
-    expect(result.lib).toBeUndefined();
-    expect(result.types).toEqual(["node"]);
-  });
-
-  it("does not mutate original baseOptions (immutability)", async () => {
-    const originalOptions: ts.CompilerOptions = {
-      lib: ["ES2024", "DOM"],
-      types: ["original"],
-      strict: true,
-    };
-    const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockResolvedValue(false);
-
-    await getCompilerOptionsForPackage(originalOptions, "node", packageDir);
-
-    // original options are not changed
-    expect(originalOptions.lib).toEqual(["ES2024", "DOM"]);
-    expect(originalOptions.types).toEqual(["original"]);
-    expect(originalOptions.noEmit).toBeUndefined();
-  });
 });

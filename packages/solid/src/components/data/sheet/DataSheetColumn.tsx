@@ -10,7 +10,6 @@ export function isDataSheetColumnDef(value: unknown): value is DataSheetColumnDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function DataSheetColumn<TItem>(props: DataSheetColumnProps<TItem>): JSX.Element {
   return {
     __type: "sheet-column",
@@ -30,4 +29,3 @@ export function DataSheetColumn<TItem>(props: DataSheetColumnProps<TItem>): JSX.
     resizable: props.resizable ?? true,
   } as unknown as JSX.Element;
 }
-/* eslint-enable solid/reactivity */

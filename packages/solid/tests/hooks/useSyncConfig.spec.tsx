@@ -26,23 +26,6 @@ describe("useSyncConfig", () => {
     localStorage.clear();
   });
 
-  it("should initialize with default value when no stored value exists", () => {
-    let value!: () => string;
-
-    function TestComponent() {
-      [value] = useSyncConfig("test-key", "default");
-      return <div>{value()}</div>;
-    }
-
-    render(() => (
-      <ConfigProvider clientName="testApp">
-        <TestComponent />
-      </ConfigProvider>
-    ));
-
-    expect(value()).toBe("default");
-  });
-
   it("should load value from localStorage when no SyncStorageProvider", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 

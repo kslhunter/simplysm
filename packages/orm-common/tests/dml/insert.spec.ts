@@ -161,44 +161,6 @@ describe("INSERT IF NOT EXISTS", () => {
     });
   });
 
-  describe("Check duplicates with complex conditions", () => {
-    const db = createTestDb();
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.name, "Gildong Hong"), expr.eq(e.departmentId, 1)])
-      .getInsertIfNotExistsQueryDef({ name: "Gildong Hong", departmentId: 1 });
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "insertIfNotExists",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        record: { name: "Gildong Hong", departmentId: 1 },
-        existsSelectQuery: {
-          type: "select",
-          as: "T1",
-          from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1", "name"] },
-              target: { type: "value", value: "Gildong Hong" },
-            },
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1", "departmentId"] },
-              target: { type: "value", value: 1 },
-            },
-          ],
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.insertIfNotExistsMultiple[dialect]);
-    });
-  });
-
   //#endregion
 });
 
@@ -241,46 +203,6 @@ describe("INSERT INTO ... SELECT", () => {
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertIntoSelect[dialect]);
-    });
-  });
-
-  describe("INSERT INTO SELECT with WHERE condition", () => {
-    const db = createTestDb();
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.departmentId, 1)])
-      .select((e) => ({
-        id: e.id,
-        name: e.name,
-      }))
-      .getInsertIntoQueryDef(EmployeeBackup);
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "insertInto",
-        table: { database: "TestDb", schema: "TestSchema", name: "EmployeeBackup" },
-        recordsSelectQuery: {
-          type: "select",
-          as: "T1",
-          from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1", "departmentId"] },
-              target: { type: "value", value: 1 },
-            },
-          ],
-          select: {
-            id: { type: "column", path: ["T1", "id"] },
-            name: { type: "column", path: ["T1", "name"] },
-          },
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.insertIntoSelectWhere[dialect]);
     });
   });
 

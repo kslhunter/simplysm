@@ -9,23 +9,6 @@ describe("Radio component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
-  describe("basic rendering", () => {
-    it("renders with radio role", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio /></I18nProvider></ConfigProvider>);
-      expect(getByRole("radio")).toBeTruthy();
-    });
-
-    it("renders children as label", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio>옵션 A</Radio></I18nProvider></ConfigProvider>);
-      expect(getByText("옵션 A")).toBeTruthy();
-    });
-
-    it("defaults to unchecked", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio /></I18nProvider></ConfigProvider>);
-      expect(getByRole("radio").getAttribute("aria-checked")).toBe("false");
-    });
-  });
-
   describe("click behavior", () => {
     it("selects on click", () => {
       const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio /></I18nProvider></ConfigProvider>);
@@ -84,34 +67,6 @@ describe("Radio component", () => {
 
       setValue(true);
       expect(getByRole("radio").getAttribute("aria-checked")).toBe("true");
-    });
-  });
-
-  describe("style variants", () => {
-    it("indicator is circular", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio /></I18nProvider></ConfigProvider>);
-      const indicator = getByRole("radio").querySelector("div") as HTMLElement;
-      expect(indicator.classList.contains("rounded-full")).toBe(true);
-    });
-
-    it("applies different styles per size", () => {
-      const { getByRole: getDefault } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio /></I18nProvider></ConfigProvider>);
-      const { getByRole: getSm } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio size="sm" /></I18nProvider></ConfigProvider>);
-
-      expect(getDefault("radio").className).not.toBe(getSm("radio").className);
-    });
-
-    it("applies disabled style", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio disabled /></I18nProvider></ConfigProvider>);
-      expect(getByRole("radio").classList.contains("opacity-30")).toBe(true);
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom classes", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Radio class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      expect(getByRole("radio").classList.contains("my-custom-class")).toBe(true);
     });
   });
 

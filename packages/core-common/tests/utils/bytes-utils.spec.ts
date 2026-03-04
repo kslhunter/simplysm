@@ -29,14 +29,6 @@ describe("BytesUtils", () => {
       expect(result.length).toBe(0);
     });
 
-    it("Handles single array", () => {
-      const arr = new Uint8Array([1, 2, 3]);
-
-      const result = concat([arr]);
-
-      expect(result).toEqual(new Uint8Array([1, 2, 3]));
-    });
-
     it("Handles empty Uint8Array in array", () => {
       const arr1 = new Uint8Array([1, 2]);
       const arr2 = new Uint8Array([]);
@@ -106,15 +98,6 @@ describe("BytesUtils", () => {
   });
 
   describe("toHex/fromHex round-trip conversion", () => {
-    it("Round-trip conversion matches", () => {
-      const original = new Uint8Array([0, 127, 128, 255, 1, 2, 3]);
-
-      const hex = toHex(original);
-      const restored = fromHex(hex);
-
-      expect(restored).toEqual(original);
-    });
-
     it("Round-trip conversion matches all byte values (0-255)", () => {
       const original = new Uint8Array(256);
       for (let i = 0; i < 256; i++) {
@@ -190,15 +173,6 @@ describe("BytesUtils", () => {
   });
 
   describe("toBase64/fromBase64 round-trip conversion", () => {
-    it("Round-trip conversion matches", () => {
-      const original = new Uint8Array([0, 127, 128, 255, 1, 2, 3]);
-
-      const base64 = toBase64(original);
-      const restored = fromBase64(base64);
-
-      expect(restored).toEqual(original);
-    });
-
     it("Round-trip conversion matches all byte values (0-255)", () => {
       const original = new Uint8Array(256);
       for (let i = 0; i < 256; i++) {

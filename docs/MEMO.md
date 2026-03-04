@@ -1,1 +1,0 @@
-solid/reactivity 를 임의로 끈 부분들 처리

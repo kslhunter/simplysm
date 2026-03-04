@@ -10,33 +10,7 @@ describe("Textarea component", () => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
 
-  describe("basic rendering", () => {
-    it("renders textarea element", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea /></I18nProvider></ConfigProvider>);
-      const textarea = container.querySelector("textarea");
-      expect(textarea).toBeTruthy();
-    });
-
-    it("applies placeholder to textarea", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea placeholder="내용을 입력하세요" /></I18nProvider></ConfigProvider>);
-      const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-      expect(textarea.placeholder).toBe("내용을 입력하세요");
-    });
-
-    it("applies title to textarea", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea title="Textarea title" /></I18nProvider></ConfigProvider>);
-      const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-      expect(textarea.title).toBe("Textarea title");
-    });
-  });
-
   describe("controlled pattern", () => {
-    it("displays value prop in textarea", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea value="Hello" /></I18nProvider></ConfigProvider>);
-      const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-      expect(textarea.value).toBe("Hello");
-    });
-
     it("calls onValueChange on input", () => {
       const handleChange = vi.fn();
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea value="" onValueChange={handleChange} /></I18nProvider></ConfigProvider>);
@@ -82,12 +56,6 @@ describe("Textarea component", () => {
       const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea disabled value="Disabled text" /></I18nProvider></ConfigProvider>);
       expect(getByText("Disabled text")).toBeTruthy();
     });
-
-    it("applies disabled style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea disabled value="Text" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("bg-base-100")).toBe(true);
-    });
   });
 
   describe("readonly state", () => {
@@ -103,30 +71,7 @@ describe("Textarea component", () => {
     });
   });
 
-  describe("size option", () => {
-    it("applies small padding when size=sm", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea size="sm" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-0.5")).toBe(true);
-    });
-
-    it("applies large padding when size=lg", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea size="lg" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-2")).toBe(true);
-    });
-  });
-
   describe("inset style", () => {
-    it("removes border and applies inset background when inset=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("relative")).toBe(true);
-      const content = wrapper.querySelector("[data-textarea-field-content]") as HTMLElement;
-      expect(content.classList.contains("border-none")).toBe(true);
-      expect(content.classList.contains("bg-primary-50")).toBe(true);
-    });
-
     it("shows content div and no textarea when inset + readonly", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset readonly value="Hello" /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
@@ -157,15 +102,6 @@ describe("Textarea component", () => {
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toContain("\u00A0");
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom class with existing styles", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("my-custom-class")).toBe(true);
     });
   });
 

@@ -23,6 +23,7 @@ import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import clsx from "clsx";
+import { border, text } from "../../../styles/base.styles";
 import {
   IconCheck,
   IconDeviceFloppy,
@@ -66,7 +67,6 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   const noti = useNotification();
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
-  // eslint-disable-next-line solid/reactivity -- local.close is stable (injected once by DialogProvider)
   const isInDialog = local.close !== undefined;
 
   const canEdit = () => local.editable ?? true;
@@ -341,7 +341,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         {/* Last modified info */}
         <Show when={info()?.lastModifiedAt}>
           {(_) => (
-            <div class="px-2 pb-1 text-xs text-base-400">
+            <div class={clsx("px-2 pb-1 text-xs", text.muted)}>
               {i18n.t("crudDetail.lastModified")}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
               <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
             </div>
@@ -353,7 +353,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
         {/* Dialog mode: bottom bar */}
         <Show when={isInDialog && canEdit()}>
-          <div class="flex gap-2 border-t border-base-200 px-3 py-1.5">
+          <div class={clsx("flex gap-2 border-t px-3 py-1.5", border.default)}>
             <div class="flex-1" />
             <Show
               when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}

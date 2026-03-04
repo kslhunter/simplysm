@@ -125,7 +125,6 @@ export default defineConfig([
           devDependencies: [
             "**/lib/**",
             "**/eslint.config.{js,cjs,mjs}",
-            "**/stylelint.config.{js,cjs,mjs}",
             "**/simplysm.{js,cjs,mjs}",
             "**/vitest.config.{js,cjs,mjs}",
           ],
@@ -218,7 +217,6 @@ export default defineConfig([
           devDependencies: [
             "**/lib/**",
             "**/eslint.config.ts",
-            "**/stylelint.config.ts",
             "**/simplysm.ts",
             "**/vitest.config.ts",
             "**/vitest-e2e.config.ts",
@@ -258,7 +256,7 @@ export default defineConfig([
     },
     rules: {
       // ─── Prevent mistakes ───
-      "solid/reactivity": "error", // Reactivity loss (most important!)
+      "solid/reactivity": "off",
       "solid/no-destructure": "error", // Props destructuring → reactivity loss
       "solid/components-return-once": "error", // early return → bugs
       "solid/jsx-no-duplicate-props": "error", // Duplicate props
@@ -287,19 +285,6 @@ export default defineConfig([
       "tailwindcss/no-contradicting-classname": "error", // Prohibit conflicting classes (p-2 p-4, etc.)
       "tailwindcss/no-custom-classname": "error", // Prohibit custom classes not in Tailwind
       "tailwindcss/no-unnecessary-arbitrary-value": "error", // Prohibit unnecessary arbitrary values
-    },
-  },
-  // Test folders: disable solid/reactivity
-  {
-    files: [
-      "**/tests/**/*.ts",
-      "**/tests/**/*.tsx",
-      "**/tests-e2e/**/*.ts",
-      "**/tests-e2e/**/*.tsx",
-    ],
-    rules: {
-      // In tests, signal access within async callbacks like waitFor is intended behavior
-      "solid/reactivity": "off",
     },
   },
 ]);

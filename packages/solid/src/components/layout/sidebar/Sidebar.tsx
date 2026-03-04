@@ -19,7 +19,9 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { IconUser } from "@tabler/icons-solidjs";
+import { bg, border, text } from "../../../styles/base.styles";
 import type { ComponentSize } from "../../../styles/control.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 import type { AppMenu } from "../../../helpers/createAppStructure";
 import { mergeStyles } from "../../../helpers/mergeStyles";
 import { ripple } from "../../../directives/ripple";
@@ -75,19 +77,6 @@ export function useSidebarContextOptional(): SidebarContextValue | undefined {
 //#endregion
 
 //#region ========== SidebarContainer ==========
-
-const containerBackdropClass = clsx(
-  "absolute",
-  "top-0",
-  "left-0",
-  "right-0",
-  "bottom-0",
-  "z-sidebar-backdrop",
-  "bg-black/50",
-  "sm:hidden",
-);
-
-const containerClass = clsx("relative h-full transition-[padding-left] duration-100");
 
 export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;
@@ -158,7 +147,7 @@ const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
     return undefined;
   };
 
-  const getClassName = () => twMerge(containerClass, local.class);
+  const getClassName = () => twMerge("relative h-full transition-[padding-left] duration-100", local.class);
 
   return (
     <SidebarContext.Provider value={{ toggle, setToggle }}>
@@ -171,7 +160,7 @@ const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
         {local.children}
         <Show when={!isDesktop() && isOpen()}>
           <div
-            class={containerBackdropClass}
+            class="absolute top-0 left-0 right-0 bottom-0 z-sidebar-backdrop bg-black/50 sm:hidden"
             onClick={handleBackdropClick}
             onKeyDown={(e) => e.key === "Escape" && handleBackdropClick()}
             role="button"
@@ -187,17 +176,6 @@ const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
 //#endregion
 
 //#region ========== SidebarMenu ==========
-
-const menuHeaderClass = clsx(
-  "px-4",
-  "py-2",
-  "text-xs",
-  "font-bold",
-  "text-base-500",
-  "dark:text-base-400",
-  "uppercase",
-  "tracking-wider",
-);
 
 export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   /**
@@ -276,7 +254,7 @@ const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   return (
     <MenuContext.Provider value={{ initialOpenItems }}>
       <div {...rest} data-sidebar-menu class={getClassName()}>
-        <div class={menuHeaderClass}>{i18n.t("sidebarMenu.menu")}</div>
+        <div class={clsx("px-4 py-2 text-xs font-bold", text.muted, "uppercase tracking-wider")}>{i18n.t("sidebarMenu.menu")}</div>
         <List inset>
           <For each={local.menus}>{(menu) => <MenuItem menu={menu} size="lg" />}</For>
         </List>
@@ -352,28 +330,6 @@ const MenuItem: Component<MenuItemProps> = (props) => {
 
 //#region ========== SidebarUser ==========
 
-const userContainerClass = clsx("m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-900");
-
-const userHeaderClass = clsx(
-  "flex",
-  "items-center",
-  "p-2",
-  "m-1",
-  "rounded-md",
-  "text-left",
-  "cursor-pointer",
-  "transition-colors",
-  "hover:bg-base-500/10",
-  "dark:hover:bg-base-800",
-);
-
-const userHeaderReadonlyClass = clsx("cursor-default hover:bg-transparent dark:hover:bg-transparent");
-
-const userAvatarClass = clsx(
-  "flex size-10 items-center justify-center rounded-full",
-  "bg-primary-500 text-white",
-);
-
 export interface SidebarUserMenu {
   title: string;
   onClick: () => void;
@@ -441,7 +397,10 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getHeaderClassName = () => twMerge(userHeaderClass, !hasMenus() && userHeaderReadonlyClass);
+  const getHeaderClassName = () => twMerge(
+    clsx("flex items-center p-2 m-1 rounded-md text-left cursor-pointer transition-colors", themeTokens.base.hoverBg),
+    !hasMenus() && "cursor-default hover:bg-transparent dark:hover:bg-transparent",
+  );
 
   const getContainerClassName = () => twMerge(userContainerClass, local.class);
 
@@ -461,7 +420,7 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
           <Show when={local.description} fallback={<span class="font-bold">{local.name}</span>}>
             <div class="flex flex-col">
               <span class="font-bold">{local.name}</span>
-              <span class={clsx("text-sm", "text-base-500 dark:text-base-400")}>
+              <span class={clsx("text-sm", text.muted)}>
                 {local.description}
               </span>
             </div>
@@ -470,7 +429,7 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
       </button>
       <Show when={hasMenus()}>
         <Collapse open={open()}>
-          <hr class={clsx("border-base-100 dark:border-base-800")} />
+          <hr class={border.default} />
           <List inset>
             <For each={local.menus}>
               {(menu) => <ListItem onClick={() => handleMenuClick(menu)}>{menu.title}</ListItem>}
@@ -486,27 +445,6 @@ const SidebarUser: Component<SidebarUserProps> = (props) => {
 
 
 //#region ========== Sidebar ==========
-
-const baseClass = clsx(
-  "absolute",
-  "top-0",
-  "left-0",
-  "bottom-0",
-  "w-64",
-  "z-sidebar",
-  "flex",
-  "flex-col",
-  "bg-base-100",
-  "dark:bg-base-800",
-  "border-r",
-  "border-base-200",
-  "dark:border-base-700",
-  "transition-transform",
-  "duration-300",
-  "sm:duration-100",
-);
-
-const mobileOpenClass = clsx("shadow-xl");
 
 export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;
@@ -558,7 +496,7 @@ const SidebarInner: ParentComponent<SidebarProps> = (props) => {
   };
 
   const getClassName = () =>
-    twMerge(baseClass, !isDesktop() && isOpen() && mobileOpenClass, local.class);
+    twMerge(clsx("absolute top-0 left-0 bottom-0 w-64 z-sidebar flex flex-col", bg.muted, "border-r", border.default, "transition-transform duration-300 sm:duration-100"), !isDesktop() && isOpen() && "shadow-xl", local.class);
 
   return (
     <aside

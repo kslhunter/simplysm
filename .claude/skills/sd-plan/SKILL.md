@@ -18,7 +18,7 @@ Write comprehensive implementation plans assuming the engineer has zero context 
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-When a task uses a codebase-specific utility (hook, helper, style token), add a one-line explanation of what it does and the source file path. Example: "`createMountTransition(open)` — manages mount/unmount with CSS transitions (`packages/solid/src/hooks/createMountTransition.ts`)".
+When a task uses a codebase-specific utility (hook, helper, style token) or test pattern, add a one-line explanation of what it does and the source file path. Example: "`createMountTransition(open)` — manages mount/unmount with CSS transitions (`packages/solid/src/hooks/createMountTransition.ts`)". This applies to test utilities and patterns too — if a test uses a framework-specific pattern (e.g., SolidJS `createRoot` for reactive context), explain why that pattern is needed.
 
 **Announce at start:** "I'm using the sd-plan skill to create the implementation plan."
 
@@ -34,6 +34,8 @@ When a task uses a codebase-specific utility (hook, helper, style token), add a 
 - "Commit" - step
 
 **Step size limit:** If a single step produces more than ~30 lines of code, it is too large. Split it into multiple steps (e.g., "Define types and interfaces" → "Create context and hook" → "Implement provider component").
+
+**TDD means YAGNI per step:** Step 3 ("Write minimal implementation") must implement ONLY what's needed to pass Step 1's test — nothing more. If the component needs additional behavior (e.g., FIFO eviction, remove), that behavior goes in a SUBSEQUENT task with its own failing test first. Do NOT implement the full component in one task and then test it after the fact.
 
 ## Task Ordering
 
@@ -119,14 +121,16 @@ git commit -m "feat: add specific feature"
 
 **Every task that creates or modifies logic MUST include a test.** No exceptions.
 
-- If the logic is testable with unit tests (pure functions, state management) → write a vitest test file
-- If the logic is UI-only (JSX rendering, Portal, animation) → include a manual verification step with exact instructions ("Open the browser, click X, expect Y")
+- If the logic is testable with unit tests → write a vitest test file. This includes: pure functions, state management, timers/lifecycle logic (use `vi.useFakeTimers()`), event handlers, and state transitions.
+- If the logic is UI-only (visual rendering, Portal placement, CSS animation) → include a manual verification step with exact instructions ("Open the browser, click X, expect Y")
 - The **Files:** section must list the test file: `Test: exact/path/to/tests/file.spec.ts`
 - If you find yourself writing a task with no test step → **STOP and add one**
 
 ## Remember
 - Exact file paths always
+- Cross-check the design document's file structure — every file listed in the design MUST appear in the plan (create or modify)
 - Complete code in plan (not "add validation")
+- When modifying an existing file, show ALL necessary import additions/changes — not just the appended code
 - Code must compile cleanly — no unused imports or variables
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits

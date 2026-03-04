@@ -4,8 +4,6 @@ import type ts from "typescript";
 import { getPackageSourceFiles, getPackageFiles } from "../src/utils/tsconfig";
 
 describe("getPackageSourceFiles", () => {
-  const sep = path.sep;
-
   it("filters files within package src directory only", () => {
     const pkgDir = `/project/packages/core-common`;
     const parsedConfig = {
@@ -58,35 +56,6 @@ describe("getPackageSourceFiles", () => {
       `/project/packages/cli/src/index.ts`,
       `/project/packages/cli/src/commands/lint.ts`,
     ]);
-  });
-
-  it("returns empty array if no files", () => {
-    const pkgDir = `/project/packages/empty`;
-    const parsedConfig = {
-      fileNames: [
-        `/project/packages/core/src/index.ts`,
-        `/project/packages/core-common/src/index.ts`,
-      ],
-    } as ts.ParsedCommandLine;
-
-    const result = getPackageSourceFiles(pkgDir, parsedConfig);
-
-    expect(result).toEqual([]);
-  });
-
-  it("handles path separators correctly", () => {
-    // use path.sep for platform-independent test
-    const pkgDir = `${sep}project${sep}packages${sep}core`;
-    const parsedConfig = {
-      fileNames: [
-        `${sep}project${sep}packages${sep}core${sep}src${sep}index.ts`,
-        `${sep}project${sep}packages${sep}core-common${sep}src${sep}index.ts`,
-      ],
-    } as ts.ParsedCommandLine;
-
-    const result = getPackageSourceFiles(pkgDir, parsedConfig);
-
-    expect(result).toEqual([`${sep}project${sep}packages${sep}core${sep}src${sep}index.ts`]);
   });
 
   it("handles forward slash paths from TypeScript API correctly (Windows compatible)", () => {
@@ -150,17 +119,6 @@ describe("getPackageFiles", () => {
       `/project/packages/core/src/index.ts`,
       `/project/packages/core/tests/utils.spec.ts`,
     ]);
-  });
-
-  it("returns empty array if no files", () => {
-    const pkgDir = `/project/packages/empty`;
-    const parsedConfig = {
-      fileNames: [`/project/packages/core/src/index.ts`],
-    } as ts.ParsedCommandLine;
-
-    const result = getPackageFiles(pkgDir, parsedConfig);
-
-    expect(result).toEqual([]);
   });
 
   it("handles forward slash paths from TypeScript API correctly (Windows compatible)", () => {

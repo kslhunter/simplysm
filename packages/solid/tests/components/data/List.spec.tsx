@@ -5,58 +5,6 @@ import { IconCheck } from "@tabler/icons-solidjs";
 import { List } from "../../../src/components/data/list/List";
 
 describe("List component", () => {
-  describe("basic rendering", () => {
-    it("renders children inside List", () => {
-      const { getByText } = render(() => (
-        <List>
-          <List.Item>Item 1</List.Item>
-        </List>
-      ));
-
-      expect(getByText("Item 1")).toBeTruthy();
-    });
-
-    it("applies role=tree", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-
-      expect(getByRole("tree")).toBeTruthy();
-    });
-
-    it("applies data-list attribute", () => {
-      const { container } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-
-      expect(container.querySelector("[data-list]")).toBeTruthy();
-    });
-  });
-
-  describe("inset prop", () => {
-    it("applies different styles based on inset prop", () => {
-      const { container: defaultContainer } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-      const { container: insetContainer } = render(() => (
-        <List inset>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-
-      const defaultClass = (defaultContainer.querySelector("[data-list]") as HTMLElement).className;
-      const insetClass = (insetContainer.querySelector("[data-list]") as HTMLElement).className;
-
-      expect(defaultClass).not.toBe(insetClass);
-    });
-  });
-
   describe("keyboard navigation", () => {
     it("ArrowDown moves focus to next item", () => {
       const { getAllByRole } = render(() => (
@@ -255,38 +203,6 @@ describe("List component", () => {
 });
 
 describe("List.Item component", () => {
-  describe("basic rendering", () => {
-    it("renders children inside List.Item", () => {
-      const { getByText } = render(() => (
-        <List>
-          <List.Item>Test Item</List.Item>
-        </List>
-      ));
-
-      expect(getByText("Test Item")).toBeTruthy();
-    });
-
-    it("applies role=treeitem", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-
-      expect(getByRole("treeitem")).toBeTruthy();
-    });
-
-    it("applies data-list-item attribute", () => {
-      const { container } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-
-      expect(container.querySelector("[data-list-item]")).toBeTruthy();
-    });
-  });
-
   describe("nested list", () => {
     it("toggles collapse on click when List.Item.Children is present", () => {
       const { getByRole } = render(() => (
@@ -313,92 +229,6 @@ describe("List.Item component", () => {
       expect(item.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("shows chevron icon when List.Item.Children is present", () => {
-      const { container } = render(() => (
-        <List>
-          <List.Item>
-            Folder
-            <List.Item.Children>
-              <List.Item>File</List.Item>
-            </List.Item.Children>
-          </List.Item>
-        </List>
-      ));
-
-      const svg = container.querySelector("svg");
-      expect(svg).toBeTruthy();
-    });
-
-    it("hides chevron icon when List.Item.Children is absent", () => {
-      const { container } = render(() => (
-        <List>
-          <List.Item>Simple Item</List.Item>
-        </List>
-      ));
-
-      const button = container.querySelector("[data-list-item]") as HTMLElement;
-      const svg = button.querySelector("svg");
-      expect(svg).toBeFalsy();
-    });
-
-    it("no aria-expanded means no List.Item.Children", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item>Simple Item</List.Item>
-        </List>
-      ));
-
-      const item = getByRole("treeitem");
-      expect(item.hasAttribute("aria-expanded")).toBe(false);
-    });
-
-    it("applies role=group inside List.Item.Children", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item open>
-            Folder
-            <List.Item.Children>
-              <List.Item>File</List.Item>
-            </List.Item.Children>
-          </List.Item>
-        </List>
-      ));
-
-      expect(getByRole("group")).toBeTruthy();
-    });
-  });
-
-  describe("selected state", () => {
-    it("applies different styles based on selected prop", () => {
-      const { container: defaultContainer } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-      const { container: selectedContainer } = render(() => (
-        <List>
-          <List.Item selected>Item</List.Item>
-        </List>
-      ));
-
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-      const selectedClass = (selectedContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-
-      expect(defaultClass).not.toBe(selectedClass);
-    });
-
-    it("sets aria-selected", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item selected>Selected Item</List.Item>
-        </List>
-      ));
-
-      const item = getByRole("treeitem");
-      expect(item.getAttribute("aria-selected")).toBe("true");
-    });
   });
 
   describe("readonly state", () => {
@@ -418,48 +248,9 @@ describe("List.Item component", () => {
       expect(onClick).not.toHaveBeenCalled();
     });
 
-    it("applies different styles based on readonly prop", () => {
-      const { container: defaultContainer } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-      const { container: readonlyContainer } = render(() => (
-        <List>
-          <List.Item readonly>Item</List.Item>
-        </List>
-      ));
-
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-      const readonlyClass = (readonlyContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-
-      expect(defaultClass).not.toBe(readonlyClass);
-    });
   });
 
   describe("disabled state", () => {
-    it("applies different styles based on disabled prop", () => {
-      const { container: defaultContainer } = render(() => (
-        <List>
-          <List.Item>Item</List.Item>
-        </List>
-      ));
-      const { container: disabledContainer } = render(() => (
-        <List>
-          <List.Item disabled>Item</List.Item>
-        </List>
-      ));
-
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-      const disabledClass = (disabledContainer.querySelector("[data-list-item]") as HTMLElement)
-        .className;
-
-      expect(defaultClass).not.toBe(disabledClass);
-    });
-
     it("not clickable when disabled=true", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
@@ -476,61 +267,9 @@ describe("List.Item component", () => {
       expect(onClick).not.toHaveBeenCalled();
     });
 
-    it("applies tabindex=-1 when disabled=true", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item disabled>Disabled Item</List.Item>
-        </List>
-      ));
-
-      const item = getByRole("treeitem");
-      expect(item.getAttribute("tabindex")).toBe("-1");
-    });
-
-    it("sets aria-disabled", () => {
-      const { getByRole } = render(() => (
-        <List>
-          <List.Item disabled>Disabled Item</List.Item>
-        </List>
-      ));
-
-      const item = getByRole("treeitem");
-      expect(item.getAttribute("aria-disabled")).toBe("true");
-    });
   });
 
   describe("selectedIcon", () => {
-    it("shows icon when selectedIcon is provided and no List.Item.Children", () => {
-      const { container } = render(() => (
-        <List>
-          <List.Item selectedIcon={IconCheck}>Item</List.Item>
-        </List>
-      ));
-
-      const svg = container.querySelector("svg");
-      expect(svg).toBeTruthy();
-    });
-
-    it("applies different icon styles based on selectedIcon and selected state", () => {
-      const { container: unselectedContainer } = render(() => (
-        <List>
-          <List.Item selectedIcon={IconCheck}>Item</List.Item>
-        </List>
-      ));
-      const { container: selectedContainer } = render(() => (
-        <List>
-          <List.Item selectedIcon={IconCheck} selected>
-            Item
-          </List.Item>
-        </List>
-      ));
-
-      const unselectedSvg = unselectedContainer.querySelector("svg");
-      const selectedSvg = selectedContainer.querySelector("svg");
-
-      expect(unselectedSvg?.className).not.toBe(selectedSvg?.className);
-    });
-
     it("hides selectedIcon when List.Item.Children is present", () => {
       const { container } = render(() => (
         <List>

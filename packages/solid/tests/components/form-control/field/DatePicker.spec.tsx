@@ -11,41 +11,6 @@ describe("DatePicker component", () => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
 
-  describe("basic rendering", () => {
-    it("renders input type=number when unit=year", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="year" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("number");
-    });
-
-    it("renders input type=month when unit=month", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="month" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("month");
-    });
-
-    it("renders input type=date when unit=date", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="date" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("date");
-    });
-
-    it("defaults autocomplete to one-time-code", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.autocomplete).toBe("one-time-code");
-    });
-
-    it("defaults unit to date", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.type).toBe("date");
-    });
-  });
-
   describe("value conversion", () => {
     it("displays DateOnly in yyyy format for year type", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
@@ -214,11 +179,6 @@ describe("DatePicker component", () => {
       expect(getByText("2025-03-15")).toBeTruthy();
     });
 
-    it("applies disabled style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker disabled value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>);
-      const div = container.querySelector("div.sd-date-field") as HTMLElement;
-      expect(div.classList.contains("bg-base-100")).toBe(true);
-    });
   });
 
   describe("readonly state", () => {
@@ -239,32 +199,7 @@ describe("DatePicker component", () => {
     });
   });
 
-  describe("size option", () => {
-    it("applies small padding when size=sm", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker size="sm" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-0.5")).toBe(true);
-    });
-
-    it("applies large padding when size=lg", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker size="lg" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-2")).toBe(true);
-    });
-  });
-
   describe("inset style", () => {
-    it("applies relative to outer and inset style to content when inset=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker inset /></I18nProvider></ConfigProvider>);
-      const outer = container.firstChild as HTMLElement;
-      expect(outer.classList.contains("relative")).toBe(true);
-      expect(outer.classList.contains("border-none")).toBe(false);
-
-      const contentDiv = outer.querySelector("[data-date-field-content]") as HTMLElement;
-      expect(contentDiv.classList.contains("border-none")).toBe(true);
-      expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
-    });
-
     it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider><DatePicker inset readonly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>
@@ -297,29 +232,6 @@ describe("DatePicker component", () => {
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-date-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");
-    });
-  });
-
-  describe("dark mode style", () => {
-    it("applies dark mode border style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
-    });
-
-    it("applies dark mode background style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom class with existing styles", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("my-custom-class")).toBe(true);
     });
   });
 

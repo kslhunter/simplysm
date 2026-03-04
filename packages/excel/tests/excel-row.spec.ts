@@ -25,16 +25,6 @@ describe("ExcelRow", () => {
       expect(cell1).toBe(cell2);
     });
 
-    it("returns different instances for different indices", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      const row = ws.row(0);
-      const cell1 = row.cell(0);
-      const cell2 = row.cell(1);
-
-      expect(cell1).not.toBe(cell2);
-    });
   });
 
   describe("getCells()", () => {

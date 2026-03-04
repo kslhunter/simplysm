@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/lint",
   "version": "13.0.75",
-  "description": "Simplysm package - Lint configuration (ESLint + Stylelint)",
+  "description": "Simplysm package - Lint configuration (ESLint)",
   "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
@@ -24,10 +24,6 @@
     "./eslint-recommended": {
       "types": "./dist/eslint-recommended.d.ts",
       "default": "./dist/eslint-recommended.js"
-    },
-    "./stylelint-recommended": {
-      "types": "./dist/stylelint-recommended.d.ts",
-      "default": "./dist/stylelint-recommended.js"
     }
   },
   "dependencies": {
@@ -39,11 +35,6 @@
     "eslint-plugin-tailwindcss": "^3.18.2",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.4.0",
-    "stylelint": "^16.26.1",
-    "stylelint-config-standard": "^39.0.1",
-    "stylelint-config-tailwindcss": "^1.0.1",
-    "stylelint-no-unresolved-module": "^2.5.2",
-    "stylelint-no-unsupported-browser-features": "^8.1.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
   },

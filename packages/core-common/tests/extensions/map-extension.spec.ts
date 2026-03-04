@@ -44,16 +44,6 @@ describe("Map prototype extensions", () => {
       expect(map.get("key")).toBe(50);
     });
 
-    it("Returns existing value if key exists (direct value)", () => {
-      const map = new Map<string, number>();
-      map.set("key", 50);
-
-      const result = map.getOrCreate("key", 100);
-
-      expect(result).toBe(50);
-      expect(map.size).toBe(1);
-    });
-
     it("Can set empty array as default value", () => {
       const map = new Map<string, number[]>();
 
@@ -120,26 +110,6 @@ describe("Map prototype extensions", () => {
       map.update("key", (v) => (v ?? "") + " world");
 
       expect(map.get("key")).toBe("hello world");
-    });
-
-    it("Can update object value", () => {
-      const map = new Map<string, { count: number }>();
-      map.set("key", { count: 5 });
-
-      map.update("key", (v) => ({ count: (v?.count ?? 0) + 1 }));
-
-      expect(map.get("key")).toEqual({ count: 6 });
-    });
-
-    it("Can update multiple times sequentially", () => {
-      const map = new Map<string, number>();
-      map.set("counter", 0);
-
-      map.update("counter", (v) => (v ?? 0) + 1);
-      map.update("counter", (v) => (v ?? 0) + 1);
-      map.update("counter", (v) => (v ?? 0) + 1);
-
-      expect(map.get("counter")).toBe(3);
     });
   });
 

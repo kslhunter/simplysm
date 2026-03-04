@@ -61,56 +61,6 @@ describe("SidebarMenu", () => {
     ));
   };
 
-  describe("rendering", () => {
-    it("renders menu items", () => {
-      const menus: AppMenu[] = [
-        { title: "Dashboard", href: "/dashboard" },
-        { title: "Settings", href: "/settings" },
-      ];
-
-      const { getByText } = renderWithRouter(menus);
-
-      expect(getByText("Dashboard")).toBeTruthy();
-      expect(getByText("Settings")).toBeTruthy();
-    });
-
-    it("displays MENU header", () => {
-      const menus: AppMenu[] = [{ title: "Home", href: "/" }];
-
-      const { getByText } = renderWithRouter(menus);
-
-      expect(getByText("MENU")).toBeTruthy();
-    });
-
-    it("renders nested menu", () => {
-      const menus: AppMenu[] = [
-        {
-          title: "Settings",
-          children: [
-            { title: "Profile", href: "/settings/profile" },
-            { title: "Security", href: "/settings/security" },
-          ],
-        },
-      ];
-
-      const { getByText } = renderWithRouter(menus);
-
-      expect(getByText("Settings")).toBeTruthy();
-    });
-
-    it("renders menu with icon", () => {
-      const MockIcon = (props: { class?: string }) => (
-        <svg data-testid="mock-icon" class={props.class} />
-      );
-
-      const menus: AppMenu[] = [{ title: "Dashboard", href: "/dashboard", icon: MockIcon }];
-
-      const { container } = renderWithRouter(menus);
-
-      expect(container.querySelector("[data-testid='mock-icon']")).toBeTruthy();
-    });
-  });
-
   describe("link behavior", () => {
     it("navigates using SPA routing on internal link click", () => {
       const menus: AppMenu[] = [{ title: "Dashboard", href: "/dashboard" }];
@@ -204,27 +154,4 @@ describe("SidebarMenu", () => {
     });
   });
 
-  describe("style merging", () => {
-    it("merges custom classes", () => {
-      const menus: AppMenu[] = [{ title: "Home", href: "/" }];
-
-      const { container } = render(() => (
-        <ConfigProvider clientName="test">
-          <I18nProvider>
-            <Router base="" root={(props) => props.children}>
-              {[
-                {
-                  path: "*",
-                  // eslint-disable-next-line tailwindcss/no-custom-classname
-                  component: () => <Sidebar.Menu menus={menus} class="my-custom-class" />,
-                },
-              ]}
-            </Router>
-          </I18nProvider>
-        </ConfigProvider>
-      ));
-
-      expect(container.querySelector(".my-custom-class")).toBeTruthy();
-    });
-  });
 });

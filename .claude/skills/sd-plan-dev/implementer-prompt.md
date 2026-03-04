@@ -20,6 +20,13 @@ You are implementing Task [N]: [task name]
 
 If anything is unclear about requirements or approach, return your questions under a `## Questions` heading and STOP. Do not guess — do not implement.
 
+## Plan Deviations
+
+Plans may contain minor inaccuracies (wrong file paths, outdated API signatures, incorrect line numbers). Handle deviations by severity:
+
+- **Minor** (file path renamed, import path different, line numbers shifted): Adapt to the actual codebase and note the deviation in your report.
+- **Major** (API doesn't exist, approach fundamentally different, missing dependency): Return your questions under `## Questions` and STOP.
+
 ## While You Work
 
 If you encounter something unexpected mid-implementation (missing APIs, unexpected patterns, ambiguous behavior), **ask questions rather than guess**. Return your questions under `## Questions` and STOP. It's always OK to pause and clarify.
@@ -46,6 +53,7 @@ Work from: [directory path]
 When done, provide:
 - Commit SHA (from step 6)
 - Files created/modified (with brief description of changes)
+- Plan deviations (if any — what the plan said vs. what you did and why)
 - Test results
 - Self-review findings (if any were fixed)
 - Open concerns (if any)

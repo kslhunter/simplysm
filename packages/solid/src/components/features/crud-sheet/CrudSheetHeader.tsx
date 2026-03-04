@@ -9,11 +9,9 @@ export function isCrudSheetHeaderDef(value: unknown): value is CrudSheetHeaderDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudSheetHeader(props: { children: JSX.Element }): JSX.Element {
   return {
     __type: "crud-sheet-header",
     children: props.children,
   } as unknown as JSX.Element;
 }
-/* eslint-enable solid/reactivity */

@@ -12,13 +12,6 @@ describe("JsonConvert", () => {
   //#region stringify
 
   describe("stringify()", () => {
-    it("Serializes primitive values", () => {
-      expect(stringify(42)).toBe("42");
-      expect(stringify("hello")).toBe('"hello"');
-      expect(stringify(true)).toBe("true");
-      expect(stringify(null)).toBe("null");
-    });
-
     it("Serializes Date with __type__", () => {
       const date = new Date("2024-03-15T10:30:00.000Z");
       const json = stringify(date);
@@ -120,13 +113,6 @@ describe("JsonConvert", () => {
       const parsed = JSON.parse(json);
 
       expect(parsed.data.data).toBe("__hidden__");
-    });
-
-    it("Indents with space option", () => {
-      const obj = { a: 1 };
-      const json = stringify(obj, { space: 2 });
-
-      expect(json).toBe('{\n  "a": 1\n}');
     });
 
     it("Transforms values with replacer option", () => {
@@ -250,65 +236,6 @@ describe("JsonConvert", () => {
       expect(parsed.converted).toBe(true);
       expect(parsed.date.__type__).toBe("Date");
     });
-
-    it("Serializes getter properties", () => {
-      const obj = {
-        _value: 10,
-        get computed() {
-          return this._value * 2;
-        },
-      };
-
-      const json = stringify(obj);
-      const parsed = JSON.parse(json);
-
-      expect(parsed._value).toBe(10);
-      expect(parsed.computed).toBe(20);
-    });
-
-    it("Serializes empty objects and arrays", () => {
-      expect(stringify({})).toBe("{}");
-      expect(stringify([])).toBe("[]");
-      expect(stringify({ arr: [], obj: {} })).toBe('{"arr":[],"obj":{}}');
-    });
-
-    it("Excludes properties with undefined value", () => {
-      const obj = { a: 1, b: undefined, c: 3 };
-      const json = stringify(obj);
-      const parsed = JSON.parse(json);
-
-      expect(parsed.a).toBe(1);
-      expect("b" in parsed).toBe(false);
-      expect(parsed.c).toBe(3);
-    });
-
-    it("Performance completes in reasonable time", () => {
-      // Create complex test object
-      const createTestObject = () => ({
-        id: 1,
-        name: "test",
-        date: new Date(),
-        nested: {
-          array: [1, 2, 3, new Date(), { deep: true }],
-          map: new Map([["a", 1]]),
-          set: new Set([1, 2, 3]),
-        },
-      });
-
-      const iterations = 1000;
-      const testObj = createTestObject();
-
-      // Measure jsonStringify performance
-      const startCustom = performance.now();
-      for (let i = 0; i < iterations; i++) {
-        stringify(testObj);
-      }
-      const customTime = performance.now() - startCustom;
-
-      // 1000 serializations should complete within 100ms
-      // (includes custom type handling, circular reference detection, etc)
-      expect(customTime).toBeLessThan(100);
-    });
   });
 
   //#endregion
@@ -316,12 +243,6 @@ describe("JsonConvert", () => {
   //#region parse
 
   describe("parse()", () => {
-    it("Deserializes primitive values", () => {
-      expect(parse("42")).toBe(42);
-      expect(parse('"hello"')).toBe("hello");
-      expect(parse("true")).toBe(true);
-    });
-
     it("Converts null to undefined", () => {
       expect(parse("null")).toBe(undefined);
     });

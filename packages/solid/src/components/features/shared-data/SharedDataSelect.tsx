@@ -53,7 +53,6 @@ function isActionDef(v: unknown): v is ActionDef {
 const ItemTemplate: Component<{
   children: (item: any, index: number, depth: number) => JSX.Element;
 }> = (props) => {
-  // eslint-disable-next-line solid/reactivity -- factory function, not reactive JSX
   return (() => ({
     __brand: ITEM_TEMPLATE_BRAND,
     children: props.children,
@@ -64,7 +63,6 @@ const Action: Component<{
   children?: JSX.Element;
   onClick?: (e: MouseEvent) => void;
 }> = (props) => {
-  // eslint-disable-next-line solid/reactivity -- factory function, not reactive JSX
   return (() => ({
     __brand: ACTION_BRAND,
     children: props.children,
@@ -212,7 +210,6 @@ const SharedDataSelectBase = <
     },
     get onValueChange() {
       if (!rest.onValueChange) return undefined;
-      // eslint-disable-next-line solid/reactivity -- inside getter, tracked scope
       return (item: TItem | TItem[] | undefined) => {
         rest.onValueChange!(itemToKey(item));
       };
@@ -222,7 +219,6 @@ const SharedDataSelectBase = <
     },
     get getChildren() {
       if (!local.data.getParentKey) return undefined;
-      // eslint-disable-next-line solid/reactivity -- return function is called within Select's internal JSX tracked scope
       return (item: TItem) => {
         const key = local.data.getKey(item);
         return items().filter((child: TItem) => local.data.getParentKey!(child) === key);

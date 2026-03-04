@@ -135,26 +135,12 @@ describe("ExcelWorkbook", () => {
       await expect(wb.getWorksheetNames()).rejects.toThrow();
     });
 
-    it("Error when calling createWorksheet() after close()", async () => {
-      const wb = new ExcelWorkbook();
-      await wb.close();
-
-      await expect(wb.createWorksheet("New")).rejects.toThrow();
-    });
-
     it("Error when calling getWorksheet() after close()", async () => {
       const wb = new ExcelWorkbook();
       await wb.createWorksheet("Test");
       await wb.close();
 
       await expect(wb.getWorksheet(0)).rejects.toThrow();
-    });
-
-    it("Error when calling getBytes() after close()", async () => {
-      const wb = new ExcelWorkbook();
-      await wb.close();
-
-      await expect(wb.getBytes()).rejects.toThrow();
     });
   });
 

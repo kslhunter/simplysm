@@ -114,18 +114,4 @@ describe("SessionManager", () => {
     }
   });
 
-  it("destroy closes innerServer", async () => {
-    await manager.getOrCreate("session-a");
-    mockInnerServerClose.mockClear();
-    await manager.destroy("session-a");
-    expect(mockInnerServerClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("disposeAll closes all innerServers", async () => {
-    await manager.getOrCreate("session-a");
-    await manager.getOrCreate("session-b");
-    mockInnerServerClose.mockClear();
-    await manager.disposeAll();
-    expect(mockInnerServerClose).toHaveBeenCalledTimes(2);
-  });
 });

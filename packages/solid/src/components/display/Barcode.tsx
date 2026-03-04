@@ -120,8 +120,6 @@ export interface BarcodeProps extends JSX.HTMLAttributes<HTMLDivElement> {
   value?: string;
 }
 
-const baseClass = clsx("inline-block");
-
 export const Barcode: Component<BarcodeProps> = (props) => {
   const [local, rest] = splitProps(props, ["type", "value", "class"]);
   let containerRef!: HTMLDivElement;
@@ -154,5 +152,5 @@ export const Barcode: Component<BarcodeProps> = (props) => {
     }
   });
 
-  return <div data-barcode ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
+  return <div data-barcode ref={containerRef} class={twMerge("inline-block", local.class)} {...rest} />;
 };

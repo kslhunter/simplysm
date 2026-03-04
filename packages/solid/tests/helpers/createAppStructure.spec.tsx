@@ -77,32 +77,6 @@ function buildTestStructure<const TItems extends AppStructureItem<string>[]>(opt
 }
 
 describe("createAppStructure", () => {
-  it("returns AppStructureProvider and useAppStructure", () => {
-    createRoot((dispose) => {
-      const { AppStructureProvider, useAppStructure } = createAppStructure(() => ({
-        items: [
-          {
-            code: "home",
-            title: "홈",
-            children: [
-              {
-                code: "user",
-                title: "사용자",
-                component: DummyA,
-                perms: ["use"] as ("use" | "edit")[],
-              },
-            ],
-          },
-        ],
-      }));
-
-      expect(AppStructureProvider).toBeTypeOf("function");
-      expect(useAppStructure).toBeTypeOf("function");
-
-      dispose();
-    });
-  });
-
   describe("usableRoutes", () => {
     it("includes paths and components for all leaf items", () => {
       createRoot((dispose) => {

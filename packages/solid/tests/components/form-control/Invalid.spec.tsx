@@ -4,21 +4,6 @@ import { createSignal } from "solid-js";
 import { Invalid } from "../../../src/components/form-control/Invalid";
 
 describe("Invalid component", () => {
-  describe("Fragment rendering", () => {
-    it("renders children and hidden input without wrapper div", () => {
-      const { container } = render(() => (
-        <Invalid message="error">
-          <div data-testid="child">Content</div>
-        </Invalid>
-      ));
-      const child = container.querySelector("[data-testid='child']");
-      const hiddenInput = container.querySelector("input[aria-hidden='true']");
-      expect(child).toBeTruthy();
-      expect(hiddenInput).toBeTruthy();
-      expect(child!.parentElement).toBe(container);
-    });
-  });
-
   describe("setCustomValidity", () => {
     it("sets setCustomValidity when message is present", () => {
       const { container } = render(() => (

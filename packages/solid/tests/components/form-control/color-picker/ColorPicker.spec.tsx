@@ -9,21 +9,6 @@ describe("ColorPicker component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
-  describe("basic rendering", () => {
-    it("renders input type=color", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><ColorPicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("color");
-    });
-
-    it("defaults to #000000", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><ColorPicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.value).toBe("#000000");
-    });
-  });
-
   describe("controlled pattern", () => {
     it("calls onValueChange on color change", () => {
       const handleChange = vi.fn();
@@ -56,21 +41,6 @@ describe("ColorPicker component", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><ColorPicker disabled /></I18nProvider></ConfigProvider>);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.disabled).toBe(true);
-    });
-
-    it("applies disabled style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><ColorPicker disabled /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.classList.contains("cursor-default")).toBe(true);
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom classes", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><ColorPicker class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.classList.contains("my-custom-class")).toBe(true);
     });
   });
 

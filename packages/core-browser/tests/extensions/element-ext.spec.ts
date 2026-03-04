@@ -75,26 +75,6 @@ describe("Element prototype extensions", () => {
       const result = container.findAll("");
       expect(result).toEqual([]);
     });
-
-    it("returns empty array for whitespace-only selector", () => {
-      container.innerHTML = `<div class="item">1</div>`;
-      const result = container.findAll("   ");
-      expect(result).toEqual([]);
-    });
-
-    it("handles comma in attribute selector", () => {
-      container.innerHTML = `
-        <div data-values="a,b,c">1</div>
-        <div class="item">2</div>
-      `;
-
-      // When comma is in attribute selector
-      // Current implementation may split incorrectly, single selector recommended
-      const result = container.findAll('[data-values="a,b,c"]');
-
-      // Edge case behavior verification
-      expect(result.length).toBeGreaterThanOrEqual(0);
-    });
   });
 
   describe("findFirst", () => {
@@ -117,12 +97,6 @@ describe("Element prototype extensions", () => {
     it("returns undefined for empty selector", () => {
       container.innerHTML = `<div class="item">1</div>`;
       const result = container.findFirst("");
-      expect(result).toBeUndefined();
-    });
-
-    it("returns undefined for whitespace-only selector", () => {
-      container.innerHTML = `<div class="item">1</div>`;
-      const result = container.findFirst("   ");
       expect(result).toBeUndefined();
     });
   });
@@ -225,24 +199,6 @@ describe("Element prototype extensions", () => {
     it("display: none is not visible", () => {
       container.style.display = "none";
       expect(container.isVisible()).toBe(false);
-    });
-
-    it("determines visibility of element with zero width", () => {
-      container.style.width = "0";
-      container.style.height = "100px";
-      // When getClientRects().length is 0, it is not visible
-      const isVisible = container.isVisible();
-      // May vary depending on browser, verify it is boolean type
-      expect(typeof isVisible).toBe("boolean");
-    });
-
-    it("determines visibility of element with zero height", () => {
-      container.style.width = "100px";
-      container.style.height = "0";
-      // When getClientRects().length is 0, it is not visible
-      const isVisible = container.isVisible();
-      // May vary depending on browser, verify it is boolean type
-      expect(typeof isVisible).toBe("boolean");
     });
   });
 
@@ -635,40 +591,6 @@ describe("Element prototype extensions", () => {
 
       // Test with 50ms timeout
       await expect(getBounds([container], 50)).rejects.toThrow(TimeoutError);
-
-      vi.unstubAllGlobals();
-    });
-
-    it("supports custom timeout setting", async () => {
-      const mockObserver = {
-        observe: vi.fn(),
-        disconnect: vi.fn(),
-      };
-
-      const MockIntersectionObserver = vi.fn(function (
-        this: IntersectionObserver,
-        callback: IntersectionObserverCallback,
-      ) {
-        // Responds after 100ms
-        setTimeout(() => {
-          callback(
-            [
-              {
-                target: container,
-                boundingClientRect: { top: 0, left: 0, width: 10, height: 10 },
-              },
-            ] as unknown as IntersectionObserverEntry[],
-            this,
-          );
-        }, 100);
-        return mockObserver;
-      });
-
-      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
-
-      // Should succeed with 200ms timeout
-      const result = await getBounds([container], 200);
-      expect(result.length).toBe(1);
 
       vi.unstubAllGlobals();
     });

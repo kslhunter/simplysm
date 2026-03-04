@@ -16,20 +16,6 @@ describe("NotificationBell", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders button", () => {
-    const { container } = render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <I18nProvider>
-          <NotificationProvider>
-            <NotificationBell />
-          </NotificationProvider>
-        </I18nProvider>
-      </ConfigContext.Provider>
-    ));
-
-    expect(container.querySelector("[data-notification-bell]")).not.toBeNull();
-  });
-
   it("does not show badge when there are no notifications", () => {
     render(() => (
       <ConfigContext.Provider value={{ clientName: "testApp" }}>

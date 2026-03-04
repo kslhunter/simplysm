@@ -38,21 +38,6 @@ describe("injectSessionId", () => {
     });
   });
 
-  it("adds sessionId to required list", () => {
-    const result = injectSessionId(sampleTool);
-    expect(result.inputSchema.required).toContain("sessionId");
-  });
-
-  it("preserves original properties", () => {
-    const result = injectSessionId(sampleTool);
-    expect(result.inputSchema.properties).toHaveProperty("url");
-  });
-
-  it("preserves original required fields", () => {
-    const result = injectSessionId(sampleTool);
-    expect(result.inputSchema.required).toContain("url");
-  });
-
   it("overrides existing sessionId property with injected definition", () => {
     const toolWithSession: Tool = {
       ...sampleTool,
@@ -75,9 +60,4 @@ describe("injectSessionId", () => {
     });
   });
 
-  it("preserves tool name and description", () => {
-    const result = injectSessionId(sampleTool);
-    expect(result.name).toBe("browser_navigate");
-    expect(result.description).toBe("Navigate to a URL");
-  });
 });

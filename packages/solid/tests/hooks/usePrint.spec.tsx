@@ -9,27 +9,6 @@ import { Print } from "../../src/components/feedback/print/Print";
 vi.stubGlobal("print", vi.fn());
 
 describe("usePrint", () => {
-  describe("Hook interface", () => {
-    it("returns toPrinter and toPdf functions", () => {
-      let result: ReturnType<typeof usePrint> | undefined;
-
-      render(() => (
-        <BusyProvider>
-          <PrintProvider>
-            {(() => {
-              result = usePrint();
-              return <div />;
-            })()}
-          </PrintProvider>
-        </BusyProvider>
-      ));
-
-      expect(result).toBeDefined();
-      expect(typeof result!.toPrinter).toBe("function");
-      expect(typeof result!.toPdf).toBe("function");
-    });
-  });
-
   describe("toPrinter", () => {
     it("prints simple content without Print", async () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;

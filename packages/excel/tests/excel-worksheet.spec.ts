@@ -3,14 +3,6 @@ import { ExcelWorkbook } from "../src/excel-workbook";
 
 describe("ExcelWorksheet", () => {
   describe("Sheet name", () => {
-    it("should get sheet name", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("MySheet");
-
-      const name = await ws.getName();
-      expect(name).toBe("MySheet");
-    });
-
     it("should change sheet name", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("OldName");
@@ -254,35 +246,7 @@ describe("ExcelWorksheet", () => {
     });
   });
 
-  describe("View settings", () => {
-    it("should set zoom level", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.setZoom(85);
-      // Success if set without error
-    });
-
-    it("should set pane freeze", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.setFix({ r: 1 }); // Freeze 1 row
-      await ws.setFix({ c: 2 }); // Freeze 2 columns
-      await ws.setFix({ r: 1, c: 1 }); // Freeze 1 row and 1 column
-      // Success if set without error
-    });
-  });
-
   describe("Column width", () => {
-    it("should set column width", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.col(0).setWidth(20);
-      // Success if set without error
-    });
-
     it("should preserve column width after roundtrip", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");

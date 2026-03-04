@@ -264,16 +264,8 @@ describe("string utils", () => {
       expect(strInsert("world", 0, "hello ")).toBe("hello world");
     });
 
-    it("inserts in middle of string", () => {
-      expect(strInsert("helloworld", 5, " ")).toBe("hello world");
-    });
-
     it("inserts at end of string", () => {
       expect(strInsert("hello", 5, " world")).toBe("hello world");
-    });
-
-    it("inserts into empty string", () => {
-      expect(strInsert("", 0, "hello")).toBe("hello");
     });
   });
 

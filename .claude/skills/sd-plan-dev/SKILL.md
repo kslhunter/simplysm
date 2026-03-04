@@ -219,6 +219,10 @@ Final reviewer: All requirements met, ready to merge
 Done!
 ```
 
+## Verification-Only Tasks
+
+If a task is purely verification (no code changes — just running tests, typecheck, or manual checks), merge its checks into the batch integration check or final review rather than dispatching an implementer. These tasks exist in the plan for documentation purposes but don't need the full implementer → reviewer cycle.
+
 ## Batch Integration Check
 
 Between batches, run targeted verification on affected packages before starting the next batch.

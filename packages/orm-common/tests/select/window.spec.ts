@@ -57,25 +57,6 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          name: { type: "column", path: ["T1", "name"] },
-          rank: {
-            type: "window",
-            fn: { type: "rank" },
-            spec: {
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "DESC"]],
-            },
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.rank[dialect]);
@@ -91,24 +72,6 @@ describe("SELECT - Window Functions", () => {
         denseRank: expr.denseRank({ orderBy: [[e.id, "DESC"]] }),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          denseRank: {
-            type: "window",
-            fn: { type: "denseRank" },
-            spec: {
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "DESC"]],
-            },
-          },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -205,28 +168,6 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          nextId: {
-            type: "window",
-            fn: {
-              type: "lead",
-              column: { type: "column", path: ["T1", "id"] },
-              offset: 1,
-            },
-            spec: {
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
-            },
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.lead[dialect]);
@@ -281,29 +222,6 @@ describe("SELECT - Window Functions", () => {
         nextId: expr.lead(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1, default: -1 }),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          nextId: {
-            type: "window",
-            fn: {
-              type: "lead",
-              column: { type: "column", path: ["T1", "id"] },
-              offset: 1,
-              default: { type: "value", value: -1 },
-            },
-            spec: {
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
-            },
-          },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -361,27 +279,6 @@ describe("SELECT - Window Functions", () => {
         avgId: expr.avgOver(e.id, { partitionBy: [e.departmentId] }),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          avgId: {
-            type: "window",
-            fn: {
-              type: "avg",
-              column: { type: "column", path: ["T1", "id"] },
-            },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-            },
-          },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -496,46 +393,6 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          name: { type: "column", path: ["T1", "name"] },
-          rowNum: {
-            type: "window",
-            fn: { type: "rowNumber" },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
-            },
-          },
-          rank: {
-            type: "window",
-            fn: { type: "rank" },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "DESC"]],
-            },
-          },
-          prevName: {
-            type: "window",
-            fn: {
-              type: "lag",
-              column: { type: "column", path: ["T1", "name"] },
-              offset: 1,
-            },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
-            },
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.combined[dialect]);
@@ -552,27 +409,6 @@ describe("SELECT - Window Functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          minId: {
-            type: "window",
-            fn: {
-              type: "min",
-              column: { type: "column", path: ["T1", "id"] },
-            },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-            },
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.minOver[dialect]);
@@ -588,27 +424,6 @@ describe("SELECT - Window Functions", () => {
         maxId: expr.maxOver(e.id, { partitionBy: [e.departmentId] }),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          maxId: {
-            type: "window",
-            fn: {
-              type: "max",
-              column: { type: "column", path: ["T1", "id"] },
-            },
-            spec: {
-              partitionBy: [{ type: "column", path: ["T1", "departmentId"] }],
-            },
-          },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

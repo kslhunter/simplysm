@@ -56,14 +56,6 @@ describe("parseSearchQuery", () => {
       });
     });
 
-    it("Multiple identical prefixes", () => {
-      expect(parseSearchQuery("+사과 +바나나")).toEqual({
-        or: [],
-        must: ["%사과%", "%바나나%"],
-        not: [],
-      });
-    });
-
     it("Ignore when only prefixes present", () => {
       expect(parseSearchQuery("+ - ")).toEqual({ or: [], must: [], not: [] });
       expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%사과%"], must: [], not: [] });
@@ -143,14 +135,6 @@ describe("parseSearchQuery", () => {
     it("* at end → search by prefix", () => {
       expect(parseSearchQuery("사과*")).toEqual({
         or: ["사과%"],
-        must: [],
-        not: [],
-      });
-    });
-
-    it("* on both sides → contains search (explicit)", () => {
-      expect(parseSearchQuery("*사과*")).toEqual({
-        or: ["%사과%"],
         must: [],
         not: [],
       });

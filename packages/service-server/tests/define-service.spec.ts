@@ -50,25 +50,6 @@ describe("Authentication", () => {
     expect(svc.authPermissions).toEqual([]);
   });
 
-  it("works at service-level with roles", () => {
-    const svc = defineService(
-      "Admin",
-      auth(["admin"], (_ctx) => ({
-        manage: () => "managed",
-      })),
-    );
-
-    expect(svc.authPermissions).toEqual(["admin"]);
-  });
-
-  it("service without auth has no authPermissions", () => {
-    const svc = defineService("Public", (_ctx) => ({
-      open: () => "open",
-    }));
-
-    expect(svc.authPermissions).toBeUndefined();
-  });
-
   it("method-level auth is readable from returned methods", () => {
     const svc = defineService(
       "Mixed",

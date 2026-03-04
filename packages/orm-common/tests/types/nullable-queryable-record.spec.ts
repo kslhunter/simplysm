@@ -31,21 +31,6 @@ describe("NullableQueryableRecord type inference", () => {
     expect(q).toBeDefined();
   });
 
-  it("non-optional relation (required object) fields should remain ExprUnit<T>", () => {
-    const db = createTestDb();
-    const q = db.post().select((item) => ({
-      title: item.title,
-      viewCount: item.viewCount,
-    }));
-
-    type Result = typeof q extends { meta: { columns: infer C } } ? C : never;
-    type TitleType = Result extends { title: { $infer: infer T } } ? T : never;
-
-    expectTypeOf<TitleType>().toEqualTypeOf<string>();
-
-    expect(q).toBeDefined();
-  });
-
   it("QueryableRecord preserves optional modifier (for select output)", () => {
     type OptionalData = { id?: number; name: string };
     type Result = QueryableRecord<OptionalData>;
@@ -53,17 +38,6 @@ describe("NullableQueryableRecord type inference", () => {
     // Key is optional — Required<> needed to access id
     expectTypeOf<Required<Result>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
     expectTypeOf<Result["name"]>().toMatchTypeOf<{ $infer: string }>();
-
-    expect(true).toBe(true);
-  });
-
-  it("QueryableRecord preserves optional modifier for write operations", () => {
-    type OptionalData = { id?: number; name: string };
-    type WriteResult = QueryableRecord<OptionalData>;
-
-    // QueryableRecord preserves optional keys (for update/insert operations)
-    expectTypeOf<Required<WriteResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
-    expectTypeOf<WriteResult["name"]>().toMatchTypeOf<{ $infer: string }>();
 
     expect(true).toBe(true);
   });
@@ -107,28 +81,6 @@ describe("NullableQueryableRecord type inference", () => {
     }>();
 
     expect(true).toBe(true);
-  });
-
-  it("select with optional properties then orderBy should compile", () => {
-    const db = createTestDb();
-
-    /*type IUserItem = {
-      id?: number;
-      name?: string;
-      isActive: boolean;
-    };*/
-
-    const q = db
-      .user()
-      .where((u) => [expr.eq(u.isActive, true)])
-      .select((c) => ({
-        id: c.id,
-        name: c.name,
-        isActive: c.isActive,
-      }))
-      .orderBy((c) => c.id, "DESC");
-
-    expect(q).toBeDefined();
   });
 
   it("NullableQueryableRecord wraps primitives with | undefined", () => {

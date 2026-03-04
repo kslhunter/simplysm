@@ -1,15 +1,17 @@
 ---
 name: sd-review
-description: "Comprehensive multi-perspective code review (explicit invocation only)"
+description: "Use when the user explicitly requests a code review focused on defects, correctness, and safety. Finds bugs, security issues, architectural violations, and API design problems. Explicit invocation only."
 ---
 
 # sd-review
 
 ## Overview
 
-Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
+Perform a code review focused on **defects and correctness**, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Dispatches up to 4 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
+Dispatches up to 2 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
+
+**Note:** For structural improvement (complexity, duplication, organization), use `/sd-refactor` instead.
 
 ## Principles
 
@@ -17,7 +19,7 @@ Dispatches up to 4 reviewer agents in parallel using prompt templates. Each agen
 
 ## Usage
 
-- `/sd-review packages/solid` — full review (all 4 perspectives)
+- `/sd-review packages/solid` — full review (both perspectives)
 - `/sd-review packages/solid focus on bugs` — selective review based on request
 - `/sd-review` — if no argument, ask the user for the target path
 
@@ -32,25 +34,22 @@ Dispatches up to 4 reviewer agents in parallel using prompt templates. Each agen
 
 | Reviewer | Prompt Template | Perspective |
 |----------|----------------|-------------|
-| **Code Reviewer** | `code-reviewer-prompt.md` | Correctness & Safety — bugs, security, logic errors |
+| **Code Reviewer** | `code-reviewer-prompt.md` | Correctness & Safety — bugs, security, logic errors, architectural defects (circular deps, boundary violations) |
 | **API Reviewer** | `api-reviewer-prompt.md` | Usability & DX — naming, types, consistency |
-| **Code Simplifier** | `code-simplifier-prompt.md` | Maintainability — complexity, duplication, structure |
-| **Architecture Reviewer** | `architecture-reviewer-prompt.md` | Architecture — package boundaries, dependencies, layer separation |
 
 ## Reviewer Selection
 
-By default, run **all 4 reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
+By default, run **both reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
 
 | User says | Run |
 |-----------|-----|
-| "bugs", "security", "safety" | Code Reviewer only |
+| "bugs", "security", "safety", "architecture", "dependencies", "boundaries" | Code Reviewer only |
 | "API", "naming", "types", "DX" | API Reviewer only |
-| "complexity", "duplication", "structure", "maintainability" | Code Simplifier only |
-| "architecture", "dependencies", "boundaries", "layers" | Architecture Reviewer only |
-| "bugs and API" | Code Reviewer + API Reviewer |
-| (no specific focus) | All 4 |
+| (no specific focus) | Both |
 
-Use judgment for ambiguous requests. When in doubt, run all 4.
+**Redirects:** If the user asks about "complexity", "duplication", "structure", or "maintainability", redirect them to `/sd-refactor` instead.
+
+Use judgment for ambiguous requests. When in doubt, run both.
 
 ## Workflow
 
@@ -72,7 +71,7 @@ After collecting results from all reviewers, **Read the actual code** for each f
 - **Invalid — self-contradicted**: the reviewer's own analysis shows the issue is mitigated (e.g., "exploitability is limited because..."). Drop it.
 - **Invalid — type-only**: reports a type definition as a runtime issue without showing actual runtime code that triggers it. Drop it.
 - **Invalid — out of scope**: the issue is about code outside the target path (e.g., how other packages use this code). Drop it.
-- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain (bugs→Code, API→API, structure→Simplifier).
+- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain (bugs→Code, API→API).
 - **Invalid — bikeshedding**: minor style preference on stable, well-commented code (magic numbers with clear comments, small interface field duplication, naming when used consistently). Drop it.
 - **Invalid — severity inflated**: downgrade or drop findings where the stated severity doesn't match the actual impact.
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)

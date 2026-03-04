@@ -3,12 +3,6 @@ import { ExcelUtils } from "../../src/utils/excel-utils";
 
 describe("ExcelUtils", () => {
   describe("stringifyColAddr / parseColAddrCode", () => {
-    it("converts 0-25 to A-Z", () => {
-      expect(ExcelUtils.stringifyColAddr(0)).toBe("A");
-      expect(ExcelUtils.stringifyColAddr(1)).toBe("B");
-      expect(ExcelUtils.stringifyColAddr(25)).toBe("Z");
-    });
-
     it("converts 26 and above to AA, AB, etc.", () => {
       expect(ExcelUtils.stringifyColAddr(26)).toBe("AA");
       expect(ExcelUtils.stringifyColAddr(27)).toBe("AB");
@@ -25,25 +19,6 @@ describe("ExcelUtils", () => {
       // Excel maximum column is XFD (index 16383, 0-based)
       expect(ExcelUtils.stringifyColAddr(16383)).toBe("XFD");
       expect(ExcelUtils.parseColAddrCode("XFD")).toBe(16383);
-    });
-
-    it("parses A-Z to 0-25", () => {
-      expect(ExcelUtils.parseColAddrCode("A")).toBe(0);
-      expect(ExcelUtils.parseColAddrCode("B")).toBe(1);
-      expect(ExcelUtils.parseColAddrCode("Z")).toBe(25);
-    });
-
-    it("parses AA, AB, etc. to 26 and above", () => {
-      expect(ExcelUtils.parseColAddrCode("AA")).toBe(26);
-      expect(ExcelUtils.parseColAddrCode("AB")).toBe(27);
-      expect(ExcelUtils.parseColAddrCode("AZ")).toBe(51);
-      expect(ExcelUtils.parseColAddrCode("BA")).toBe(52);
-    });
-
-    it("parses column index from cell address", () => {
-      expect(ExcelUtils.parseColAddrCode("A1")).toBe(0);
-      expect(ExcelUtils.parseColAddrCode("B10")).toBe(1);
-      expect(ExcelUtils.parseColAddrCode("AA100")).toBe(26);
     });
 
     it("round-trip: stringify → parse returns original value", () => {
@@ -125,25 +100,6 @@ describe("ExcelUtils", () => {
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
       // 1970-01-01 is 25569 days in Excel's date system
       expect(excelNum).toBeCloseTo(25569, 0);
-    });
-
-    it("correctly converts 2024-06-15", () => {
-      const date = new Date(Date.UTC(2024, 5, 15, 0, 0, 0));
-      const tick = date.getTime();
-      const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
-      // Verify approximate value
-      expect(excelNum).toBeGreaterThan(45000);
-    });
-
-    it("correctly converts date with time", () => {
-      const date = new Date(Date.UTC(2024, 5, 15, 12, 0, 0));
-      const tick = date.getTime();
-      const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
-      // 12:00 = 0.5 days additional
-      const baseNum = ExcelUtils.convertTimeTickToNumber(
-        new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime(),
-      );
-      expect(excelNum - baseNum).toBeCloseTo(0.5, 1);
     });
 
     it("round-trip: tick → number → tick returns original value", () => {

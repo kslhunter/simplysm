@@ -25,7 +25,7 @@ import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
-import { border } from "../../styles/base.styles";
+import { bg, border } from "../../styles/base.styles";
 import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
 
@@ -186,8 +186,6 @@ const resizeCursorMap: Record<ResizeDirection, string> = {
   "bottom-left": "cursor-nesw-resize",
   "bottom-right": "cursor-nwse-resize",
 };
-
-const dialogContentClass = clsx("flex-1", "overflow-auto");
 
 const resizePositionMap: Record<ResizeDirection, string> = {
   "left": clsx("left-0 top-0", "h-full w-1.5"),
@@ -532,7 +530,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
       "relative",
       "mx-auto",
       "w-fit min-w-[200px]",
-      "bg-white dark:bg-base-800",
+      bg.surface,
       local.float
         ? clsx("shadow-md dark:shadow-black/30", "border", border.subtle)
         : "shadow-2xl dark:shadow-black/40",
@@ -604,7 +602,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
               </Show>
 
               {/* Content */}
-              <div data-dialog-content class={dialogContentClass}>
+              <div data-dialog-content class="flex-1 overflow-auto">
                 {local.children}
               </div>
 

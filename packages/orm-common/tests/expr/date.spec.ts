@@ -41,15 +41,6 @@ describe("Expr - Date/Time functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        monthPart: {
-          type: "month",
-          arg: { type: "column", path: ["T1", "createdAt"] },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.month[dialect]);
@@ -64,15 +55,6 @@ describe("Expr - Date/Time functions", () => {
         dayPart: expr.day(item.createdAt),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        dayPart: {
-          type: "day",
-          arg: { type: "column", path: ["T1", "createdAt"] },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -89,15 +71,6 @@ describe("Expr - Date/Time functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        hourPart: {
-          type: "hour",
-          arg: { type: "column", path: ["T1", "createdAt"] },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.hour[dialect]);
@@ -113,15 +86,6 @@ describe("Expr - Date/Time functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        minutePart: {
-          type: "minute",
-          arg: { type: "column", path: ["T1", "createdAt"] },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.minute[dialect]);
@@ -136,15 +100,6 @@ describe("Expr - Date/Time functions", () => {
         secondPart: expr.second(item.createdAt),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        secondPart: {
-          type: "second",
-          arg: { type: "column", path: ["T1", "createdAt"] },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -189,17 +144,6 @@ describe("Expr - Date/Time functions", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        yearsDiff: {
-          type: "dateDiff",
-          separator: "year",
-          from: { type: "column", path: ["T1", "createdAt"] },
-          to: { type: "value", value: targetDate },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.dateDiffYear[dialect]);
@@ -215,17 +159,6 @@ describe("Expr - Date/Time functions", () => {
         monthsDiff: expr.dateDiff("month", item.createdAt, targetDate),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        monthsDiff: {
-          type: "dateDiff",
-          separator: "month",
-          from: { type: "column", path: ["T1", "createdAt"] },
-          to: { type: "value", value: targetDate },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

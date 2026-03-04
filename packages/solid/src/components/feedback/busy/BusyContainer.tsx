@@ -24,39 +24,6 @@ export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivEleme
   children?: JSX.Element;
 }
 
-const baseClass = clsx("relative", "size-full", "min-h-[70px] min-w-[70px]", "overflow-auto");
-
-// eslint-disable-next-line tailwindcss/enforces-shorthand -- inset is only supported in Chrome 87+
-const screenBaseClass = clsx(
-  "absolute bottom-0 left-0 right-0 top-0",
-  "z-busy",
-  "bg-white/70 dark:bg-base-900/70",
-  "transition-opacity duration-150",
-);
-
-const spinnerClass = clsx(
-  "size-8",
-  "border-[6px] border-base-200 border-b-primary-500",
-  "dark:border-base-700 dark:border-b-primary-400",
-  "rounded-full",
-  "animate-spin",
-  "shadow-md",
-  "mx-auto mt-5",
-);
-
-const messageClass = clsx("w-full", "text-center font-bold", text.default);
-
-const progressTrackClass = clsx("absolute left-0 top-0", "h-1 w-full", bg.surface);
-
-const progressBarClass = clsx(
-  "h-1 w-full",
-  "bg-primary-500 dark:bg-primary-400",
-  "transition-transform duration-100 ease-in",
-  "origin-left",
-);
-
-const barIndicatorClass = clsx("absolute left-0 top-0", "h-1 w-full", bg.surface);
-
 export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "busy",
@@ -105,9 +72,10 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     );
   });
 
+  // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset is only supported in Chrome 87+
   const screenClass = () =>
     clsx(
-      screenBaseClass,
+      "absolute bottom-0 left-0 right-0 top-0 z-busy bg-white/70 dark:bg-base-900/70 transition-opacity duration-150",
       animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
     );
 
@@ -121,15 +89,15 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   };
 
   return (
-    <div ref={containerRef} class={twMerge(baseClass, local.class)} {...rest}>
+    <div ref={containerRef} class={twMerge("relative size-full min-h-[70px] min-w-[70px] overflow-auto", local.class)} {...rest}>
       <Show when={mounted()}>
         <div class={screenClass()} onTransitionEnd={handleTransitionEnd}>
           <div class={rectClass()}>
             <Show when={currVariant() === "spinner"}>
-              <div class={spinnerClass} />
+              <div class="size-8 border-[6px] border-base-200 border-b-primary-500 dark:border-base-700 dark:border-b-primary-400 rounded-full animate-spin shadow-md mx-auto mt-5" />
             </Show>
             <Show when={currVariant() === "bar" && (local.ready === false || local.busy)}>
-              <div class={barIndicatorClass}>
+              <div class={clsx("absolute left-0 top-0 h-1 w-full", bg.surface)}>
                 <div
                   class={clsx(
                     "absolute left-0 top-0 h-1 w-full origin-left",
@@ -151,15 +119,15 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
               </div>
             </Show>
             <Show when={local.message}>
-              <div class={messageClass}>
+              <div class={clsx("w-full text-center font-bold", text.default)}>
                 <pre class="m-0">{local.message}</pre>
               </div>
             </Show>
           </div>
           <Show when={local.progressPercent != null}>
-            <div class={progressTrackClass}>
+            <div class={clsx("absolute left-0 top-0 h-1 w-full", bg.surface)}>
               <div
-                class={progressBarClass}
+                class="h-1 w-full bg-primary-500 dark:bg-primary-400 transition-transform duration-100 ease-in origin-left"
                 style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }}
               />
             </div>

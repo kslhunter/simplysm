@@ -19,10 +19,6 @@ describe("path utils", () => {
       expect(pathJoin("a", "", "b")).toBe("a/b");
     });
 
-    it("Returns single segment", () => {
-      expect(pathJoin("a")).toBe("a");
-    });
-
     it("Empty input returns empty string", () => {
       expect(pathJoin()).toBe("");
     });
@@ -43,10 +39,6 @@ describe("path utils", () => {
 
     it("Handles filename without path", () => {
       expect(pathBasename("file.txt")).toBe("file.txt");
-    });
-
-    it("Empty string returns empty string", () => {
-      expect(pathBasename("")).toBe("");
     });
   });
 

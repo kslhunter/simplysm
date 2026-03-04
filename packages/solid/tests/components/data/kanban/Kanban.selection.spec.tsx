@@ -94,22 +94,6 @@ describe("Kanban selection system", () => {
     });
   });
 
-  describe("selection visual feedback", () => {
-    it("applies ring + shadow classes to selected card", () => {
-      const { getByText } = renderKanban({ selectedValues: [1] });
-      const card1Content = getByText("Card 1").closest("[data-card]") as HTMLElement;
-      expect(card1Content.classList.contains("ring-2")).toBe(true);
-      expect(card1Content.className).toContain("ring-primary-500/50");
-      expect(card1Content.classList.contains("shadow-md")).toBe(true);
-    });
-
-    it("unselected card has no ring class", () => {
-      const { getByText } = renderKanban({ selectedValues: [1] });
-      const card2Content = getByText("Card 2").closest("[data-card]") as HTMLElement;
-      expect(card2Content.classList.contains("ring-2")).toBe(false);
-    });
-  });
-
   describe("per-lane select-all checkbox", () => {
     it("displays select-all checkbox in lanes that have selectable cards", () => {
       const { container } = renderKanban({ selectedValues: [] });

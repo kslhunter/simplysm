@@ -16,8 +16,6 @@ export interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
   busy?: boolean;
 }
 
-const baseClass = clsx("block", "size-full");
-
 export const Echarts: Component<EchartsProps> = (props) => {
   const [local, rest] = splitProps(props, ["option", "busy", "class"]);
   let containerRef!: HTMLDivElement;
@@ -55,5 +53,5 @@ export const Echarts: Component<EchartsProps> = (props) => {
     chart?.resize();
   });
 
-  return <div data-echarts ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
+  return <div data-echarts ref={containerRef} class={twMerge("block size-full", local.class)} {...rest} />;
 };

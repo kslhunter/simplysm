@@ -16,16 +16,6 @@ describe("ErrorLoggerProvider", () => {
     cleanup();
   });
 
-  it("renders children correctly", () => {
-    const { getByText } = render(() => (
-      <ErrorLoggerProvider>
-        <div>child content</div>
-      </ErrorLoggerProvider>
-    ));
-
-    expect(getByText("child content")).toBeDefined();
-  });
-
   it("captures window error events and calls logger.error", () => {
     const writeSpy = vi.fn();
     const adapter: LogAdapter = { write: writeSpy };

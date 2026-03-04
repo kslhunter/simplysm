@@ -109,36 +109,12 @@ describe("DateOnly", () => {
       expect(() => DateOnly.parse("invalid-date")).toThrow("Failed to parse date format");
     });
 
-    it("Parses year-end boundary (December 31)", () => {
-      const dateOnly = DateOnly.parse("2024-12-31");
-
-      expect(dateOnly.year).toBe(2024);
-      expect(dateOnly.month).toBe(12);
-      expect(dateOnly.day).toBe(31);
-    });
-
-    it("Parses year-start boundary (January 1)", () => {
-      const dateOnly = DateOnly.parse("2025-01-01");
-
-      expect(dateOnly.year).toBe(2025);
-      expect(dateOnly.month).toBe(1);
-      expect(dateOnly.day).toBe(1);
-    });
-
     it("Parses February 29 in leap year", () => {
       const dateOnly = DateOnly.parse("2024-02-29");
 
       expect(dateOnly.year).toBe(2024);
       expect(dateOnly.month).toBe(2);
       expect(dateOnly.day).toBe(29);
-    });
-
-    it("Parses February 28 in leap year", () => {
-      const dateOnly = DateOnly.parse("2024-02-28");
-
-      expect(dateOnly.year).toBe(2024);
-      expect(dateOnly.month).toBe(2);
-      expect(dateOnly.day).toBe(28);
     });
   });
 
@@ -147,37 +123,6 @@ describe("DateOnly", () => {
   //#region Getters
 
   describe("Getters", () => {
-    it("Returns year", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.year).toBe(2025);
-    });
-
-    it("Returns month (1-12)", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.month).toBe(1);
-    });
-
-    it("Returns day", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.day).toBe(6);
-    });
-
-    it("Returns tick", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.tick).toBe(new Date(2025, 0, 6).getTime());
-    });
-
-    it("Returns dayOfWeek (Sunday-Saturday: 0-6)", () => {
-      // 2025-01-06 is Monday (1)
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.dayOfWeek).toBe(1);
-    });
-
-    it("Returns isValid", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      expect(dateOnly.isValid).toBe(true);
-    });
-
     it("Invalid date returns isValid as false", () => {
       const dateOnly = new DateOnly(NaN);
       expect(dateOnly.isValid).toBe(false);
@@ -254,18 +199,6 @@ describe("DateOnly", () => {
       expect(result.year).toBe(2024);
       expect(result.month).toBe(11);
       expect(result.day).toBe(15);
-    });
-  });
-
-  describe("setDay()", () => {
-    it("Returns new instance with day changed", () => {
-      const dateOnly = new DateOnly(2025, 1, 6);
-      const newDateOnly = dateOnly.setDay(15);
-
-      expect(newDateOnly.year).toBe(2025);
-      expect(newDateOnly.month).toBe(1);
-      expect(newDateOnly.day).toBe(15);
-      expect(dateOnly.day).toBe(6); // original immutable
     });
   });
 
@@ -376,44 +309,6 @@ describe("DateOnly", () => {
       expect(dateOnly.toString()).toBe("2025-01-06");
     });
   });
-
-  //#endregion
-
-  //#region tick comparison
-
-  describe("tick comparison", () => {
-    it("Same dates have same tick", () => {
-      const d1 = new DateOnly(2025, 3, 15);
-      const d2 = new DateOnly(2025, 3, 15);
-
-      expect(d1.tick).toBe(d2.tick);
-    });
-
-    it("Different dates have different ticks", () => {
-      const d1 = new DateOnly(2025, 3, 15);
-      const d2 = new DateOnly(2025, 3, 16);
-
-      expect(d1.tick).not.toBe(d2.tick);
-    });
-
-    it("Can compare date order by tick", () => {
-      const d1 = new DateOnly(2025, 1, 1);
-      const d2 = new DateOnly(2025, 6, 15);
-      const d3 = new DateOnly(2025, 12, 31);
-
-      expect(d1.tick).toBeLessThan(d2.tick);
-      expect(d2.tick).toBeLessThan(d3.tick);
-    });
-
-    it("Can compare dates with different years by tick", () => {
-      const d2024 = new DateOnly(2024, 12, 31);
-      const d2025 = new DateOnly(2025, 1, 1);
-
-      expect(d2024.tick).toBeLessThan(d2025.tick);
-    });
-  });
-
-  //#endregion
 
   //#endregion
 

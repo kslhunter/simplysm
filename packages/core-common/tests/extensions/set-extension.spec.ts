@@ -22,13 +22,6 @@ describe("Set prototype extensions", () => {
 
       expect(set.size).toBe(4); // 1, 2, 3, 4
     });
-
-    it("Adds multiple items to empty Set", () => {
-      const set = new Set<number>();
-      set.adds(1, 2, 3);
-
-      expect(set.size).toBe(3);
-    });
   });
 
   //#endregion

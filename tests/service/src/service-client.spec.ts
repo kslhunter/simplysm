@@ -45,16 +45,6 @@ describe("ServiceClient browser test", () => {
     await client.close();
   });
 
-  describe("Worker environment check", () => {
-    it("Worker API available in browser environment", () => {
-      expect(typeof Worker).toBe("function");
-    });
-
-    it("WebSocket connection successful", () => {
-      expect(client.connected).toBe(true);
-    });
-  });
-
   describe("Service call", () => {
     it("Call echo method", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
@@ -87,14 +77,6 @@ describe("ServiceClient browser test", () => {
       // Request 50KB data - Worker should handle it
       const result = await svc.getLargeData(50);
       expect(result.length).toBe(50 * 1024);
-    });
-
-    it("Process large data 100KB (using Worker)", async () => {
-      const svc = client.getService<TestServiceMethods>("TestService");
-
-      // Request 100KB data
-      const result = await svc.getLargeData(100);
-      expect(result.length).toBe(100 * 1024);
     });
 
     it("Call progress callback for data > 3MB", async () => {

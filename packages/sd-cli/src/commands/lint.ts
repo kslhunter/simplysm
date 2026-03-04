@@ -5,7 +5,6 @@ import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
 import { consola } from "consola";
-import stylelint from "stylelint";
 
 //#region Types
 
@@ -27,9 +26,9 @@ export interface LintOptions {
 export interface LintResult {
   /** true if there are no lint errors */
   success: boolean;
-  /** Total error count from ESLint + Stylelint */
+  /** Total error count from ESLint */
   errorCount: number;
-  /** Total warning count from ESLint + Stylelint */
+  /** Total warning count from ESLint */
   warningCount: number;
   /** Formatter output string (content to write to stdout) */
   formattedOutput: string;
@@ -45,16 +44,6 @@ const ESLINT_CONFIG_FILES = [
   "eslint.config.mts",
   "eslint.config.js",
   "eslint.config.mjs",
-] as const;
-
-/** Stylelint config file search order */
-const STYLELINT_CONFIG_FILES = [
-  "stylelint.config.ts",
-  "stylelint.config.mts",
-  "stylelint.config.js",
-  "stylelint.config.mjs",
-  ".stylelintrc.json",
-  ".stylelintrc.yml",
 ] as const;
 
 /**
@@ -113,16 +102,6 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   }
 
   return configs.filter(isGlobalIgnoresConfig).flatMap((item) => item.ignores);
-}
-
-/**
- * Check if Stylelint config file exists.
- */
-async function hasStylelintConfig(cwd: string): Promise<boolean> {
-  for (const f of STYLELINT_CONFIG_FILES) {
-    if (await fsExists(path.join(cwd, f))) return true;
-  }
-  return false;
 }
 
 //#endregion
@@ -192,59 +171,6 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
     }
   }
 
-  // Stylelint
-  const hasStylelintCfg = await hasStylelintConfig(cwd);
-  let stylelintResult: stylelint.LinterResult | undefined;
-  if (hasStylelintCfg) {
-    logger.start("collecting CSS files");
-    let cssFiles = await fsGlob("**/*.css", {
-      cwd,
-      ignore: ignorePatterns,
-      nodir: true,
-      absolute: true,
-    });
-    cssFiles = pathFilterByTargets(cssFiles, targets, cwd);
-    logger.success(`collected CSS files (${cssFiles.length} files)`);
-
-    if (cssFiles.length > 0) {
-      logger.start(`running Stylelint... (${cssFiles.length} files)`);
-      let configFile: string | undefined;
-      for (const f of STYLELINT_CONFIG_FILES) {
-        const configPath = path.join(cwd, f);
-        if (await fsExists(configPath)) {
-          configFile = configPath;
-          break;
-        }
-      }
-
-      // Support TypeScript config files: load with jiti, pass as config object
-      let stylelintOptions: stylelint.LinterOptions;
-      if (configFile != null && /\.ts$/.test(configFile)) {
-        const jiti = createJiti(import.meta.url);
-        const configModule = await jiti.import<{ default: stylelint.Config }>(configFile);
-        const config = configModule.default;
-        stylelintOptions = {
-          files: cssFiles,
-          config,
-          configBasedir: cwd,
-          fix,
-          cache: true,
-          cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
-        };
-      } else {
-        stylelintOptions = {
-          files: cssFiles,
-          configFile,
-          fix,
-          cache: true,
-          cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
-        };
-      }
-      stylelintResult = await stylelint.lint(stylelintOptions);
-      logger.success("Stylelint execution complete");
-    }
-  }
-
   // Return success result if no files or lint was not executed
   if (files.length === 0 || eslintResults == null || eslint == null) {
     logger.info("no files to lint");
@@ -269,43 +195,6 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
   const resultText = await formatter.format(eslintResults);
   if (resultText) {
     formattedOutput += resultText;
-  }
-
-  // Collect Stylelint results
-  if (stylelintResult != null && stylelintResult.results.length > 0) {
-    const stylelintErrorCount = stylelintResult.results.sum(
-      (r) => r.warnings.filter((w) => w.severity === "error").length,
-    );
-    const stylelintWarningCount = stylelintResult.results.sum(
-      (r) => r.warnings.filter((w) => w.severity === "warning").length,
-    );
-
-    errorCount += stylelintErrorCount;
-    warningCount += stylelintWarningCount;
-
-    if (stylelintErrorCount > 0) {
-      logger.error("Stylelint errors occurred", {
-        errorCount: stylelintErrorCount,
-        warningCount: stylelintWarningCount,
-      });
-    } else if (stylelintWarningCount > 0) {
-      logger.info("Stylelint complete (warnings present)", {
-        errorCount: stylelintErrorCount,
-        warningCount: stylelintWarningCount,
-      });
-    } else {
-      logger.info("Stylelint complete", {
-        errorCount: stylelintErrorCount,
-        warningCount: stylelintWarningCount,
-      });
-    }
-
-    // Stylelint formatter output
-    const stylelintFormatter = await stylelint.formatters.string;
-    const stylelintOutput = stylelintFormatter(stylelintResult.results, stylelintResult);
-    if (stylelintOutput) {
-      formattedOutput += stylelintOutput;
-    }
   }
 
   return {

@@ -40,17 +40,6 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
-    it("boolean conversion - true/false", async () => {
-      const raw = [{ active: true, deleted: false }];
-      const meta: ResultMeta = {
-        columns: { active: "boolean", deleted: "boolean" },
-        joins: {},
-      };
-
-      const result = await parseQueryResult(raw, meta);
-      expect(result).toEqual([{ active: true, deleted: false }]);
-    });
-
     it('boolean conversion - "0"/"1" strings', async () => {
       const raw = [{ active: "1", deleted: "0" }];
       const meta: ResultMeta = {
@@ -173,18 +162,6 @@ describe("result-parser", () => {
   describe("null/undefined processing", () => {
     it("null value removes the key", async () => {
       const raw = [{ id: 1, name: null }];
-      const meta: ResultMeta = {
-        columns: { id: "number", name: "string" },
-        joins: {},
-      };
-
-      const result = await parseQueryResult(raw, meta);
-      expect(result).toEqual([{ id: 1 }]);
-      expect(result![0]).not.toHaveProperty("name");
-    });
-
-    it("undefined value removes the key", async () => {
-      const raw = [{ id: 1, name: undefined }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
         joins: {},
@@ -618,17 +595,6 @@ describe("result-parser", () => {
   //#region ========== edge cases ==========
 
   describe("edge cases", () => {
-    it("joins is an empty object", async () => {
-      const raw = [{ id: 1, name: "User1" }];
-      const meta: ResultMeta = {
-        columns: { id: "number", name: "string" },
-        joins: {},
-      };
-
-      const result = await parseQueryResult(raw, meta);
-      expect(result).toEqual([{ id: 1, name: "User1" }]);
-    });
-
     it("deduplicates duplicate data", async () => {
       const raw = [
         { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },

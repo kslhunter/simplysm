@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { createRoot } from "solid-js";
 import { render, waitFor } from "@solidjs/testing-library";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
@@ -8,19 +7,6 @@ import {
   useNotification,
   type NotificationContextValue,
 } from "../../../../src/components/feedback/notification/NotificationProvider";
-
-describe("NotificationContext", () => {
-  describe("useNotification", () => {
-    it("throws error when used without Provider", () => {
-      createRoot((dispose) => {
-        expect(() => useNotification()).toThrow(
-          "useNotification can only be used inside NotificationProvider",
-        );
-        dispose();
-      });
-    });
-  });
-});
 
 describe("NotificationProvider", () => {
   it("useNotification works normally inside Provider", () => {

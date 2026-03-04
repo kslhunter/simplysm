@@ -48,23 +48,6 @@ export interface RichTextEditorProps {
   style?: JSX.CSSProperties;
 }
 
-// Editor wrapper style
-const editorWrapperClass = clsx(
-  "flex flex-col",
-  "bg-primary-50 dark:bg-primary-950/30",
-  text.default,
-  "border",
-  border.default,
-  "rounded",
-  "focus-within:border-primary-500",
-);
-
-// Editor disabled style
-const editorDisabledClass = clsx(bg.muted, text.muted);
-
-// Editor content area style
-const editorContentClass = clsx("outline-none", "prose prose-sm max-w-none", "dark:prose-invert");
-
 // Editor content size-based style
 const editorContentSizeClasses: Record<FieldSize, string> = {
   default: clsx(pad.xl, "min-h-32"),
@@ -164,10 +147,14 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
   });
 
   const getWrapperClass = () =>
-    twMerge(editorWrapperClass, local.disabled && editorDisabledClass, local.class);
+    twMerge(
+      clsx("flex flex-col bg-primary-50 dark:bg-primary-950/30", text.default, "border", border.default, "rounded focus-within:border-primary-500"),
+      local.disabled && clsx(bg.muted, text.muted),
+      local.class,
+    );
 
   const getContentClass = () =>
-    twMerge(editorContentClass, editorContentSizeClasses[local.size ?? "default"]);
+    twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "default"]);
 
   return (
     <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>

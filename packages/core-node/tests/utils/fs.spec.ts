@@ -61,9 +61,6 @@ describe("fs functions", () => {
       expect(fsExistsSync(filePath)).toBe(false);
     });
 
-    it("returns true for existing directory", () => {
-      expect(fsExistsSync(testDir)).toBe(true);
-    });
   });
 
   describe("fsExists", () => {
@@ -79,9 +76,6 @@ describe("fs functions", () => {
       expect(await fsExists(filePath)).toBe(false);
     });
 
-    it("returns true for existing directory", async () => {
-      expect(await fsExists(testDir)).toBe(true);
-    });
   });
 
   //#endregion
@@ -172,14 +166,6 @@ describe("fs functions", () => {
       expect(content).toBe("Hello, World!");
     });
 
-    it("reads Korean content", () => {
-      const filePath = path.join(testDir, "korean.txt");
-      fs.writeFileSync(filePath, "안녕하세요");
-
-      const content = fsReadSync(filePath);
-
-      expect(content).toBe("안녕하세요");
-    });
   });
 
   describe("fsRead", () => {
@@ -419,20 +405,6 @@ describe("fs functions", () => {
       expect(fs.readFileSync(target, "utf-8")).toBe("async source content");
     });
 
-    it("copies directory asynchronously (recursive)", async () => {
-      const sourceDir = path.join(testDir, "asyncSourceDir");
-      const targetDir = path.join(testDir, "asyncTargetDir");
-      fs.mkdirSync(sourceDir);
-      fs.writeFileSync(path.join(sourceDir, "file.txt"), "content");
-      fs.mkdirSync(path.join(sourceDir, "sub"));
-      fs.writeFileSync(path.join(sourceDir, "sub/nested.txt"), "nested");
-
-      await fsCopy(sourceDir, targetDir);
-
-      expect(fs.existsSync(path.join(targetDir, "file.txt"))).toBe(true);
-      expect(fs.existsSync(path.join(targetDir, "sub/nested.txt"))).toBe(true);
-    });
-
     it("selectively copies with filter option asynchronously", async () => {
       const sourceDir = path.join(testDir, "asyncFilterSource");
       const targetDir = path.join(testDir, "asyncFilterTarget");
@@ -492,10 +464,6 @@ describe("fs functions", () => {
       expect(result.size).toBeGreaterThan(0);
     });
 
-    it("gets directory information", () => {
-      const result = fsStatSync(testDir);
-      expect(result.isDirectory()).toBe(true);
-    });
   });
 
   describe("fsStat", () => {
@@ -511,15 +479,6 @@ describe("fs functions", () => {
   });
 
   describe("fsLstatSync", () => {
-    it("gets regular file information", () => {
-      const filePath = path.join(testDir, "lstatfile.txt");
-      fs.writeFileSync(filePath, "content");
-
-      const stat = fsLstatSync(filePath);
-
-      expect(stat.isFile()).toBe(true);
-    });
-
     it("returns symbolic link information for symbolic links", () => {
       const targetPath = path.join(testDir, "target.txt");
       const linkPath = path.join(testDir, "link.txt");
@@ -540,15 +499,6 @@ describe("fs functions", () => {
   });
 
   describe("fsLstat", () => {
-    it("gets file information asynchronously", async () => {
-      const filePath = path.join(testDir, "asynclstatfile.txt");
-      fs.writeFileSync(filePath, "async content");
-
-      const stat = await fsLstat(filePath);
-
-      expect(stat.isFile()).toBe(true);
-    });
-
     it("returns symbolic link information asynchronously", async () => {
       const targetPath = path.join(testDir, "async-target.txt");
       const linkPath = path.join(testDir, "async-link.txt");

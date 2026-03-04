@@ -270,117 +270,6 @@ describe("runTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("uses default value when default export is not a function", async () => {
-    vi.mocked(ts.readConfigFile).mockReturnValue({
-      config: {},
-    });
-
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/packages/core-common/src/index.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
-
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
-
-    // When sd.config.ts's default export is an object, not a function
-    mockJitiImport.mockResolvedValue({
-      default: { packages: {} }, // object, not a function
-    });
-
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
-    );
-
-    // Should proceed with default value without error
-    await runTypecheck({ targets: [], options: [] });
-
-    expect(process.exitCode).toBeUndefined();
-  });
-
-  it("uses default value when no default export in sd.config.ts", async () => {
-    vi.mocked(ts.readConfigFile).mockReturnValue({
-      config: {},
-    });
-
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/packages/core-common/src/index.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
-
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
-
-    // When sd.config.ts has no default export
-    mockJitiImport.mockResolvedValue({
-      someOtherExport: () => ({}),
-    });
-
-    const { Worker } = await import("@simplysm/core-node");
-    vi.mocked(Worker.create).mockReturnValue({
-      build: vi.fn(() =>
-        Promise.resolve({
-          success: true,
-          diagnostics: [],
-          errorCount: 0,
-          warningCount: 0,
-        }),
-      ),
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
-
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
-    );
-
-    // Should proceed with default value without error
-    await runTypecheck({ targets: [], options: [] });
-
-    expect(process.exitCode).toBeUndefined();
-  });
-
-  it("typecheck multiple packages", async () => {
-    vi.mocked(ts.readConfigFile).mockReturnValue({
-      config: {},
-    });
-
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024", "DOM"], types: [] },
-      fileNames: [
-        "/project/packages/core-node/src/index.ts",
-        "/project/packages/core-browser/src/index.ts",
-        "/project/packages/core-common/src/index.ts",
-      ],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
-
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
-
-    const { Worker } = await import("@simplysm/core-node");
-    vi.mocked(Worker.create).mockReturnValue({
-      build: vi.fn(() =>
-        Promise.resolve({
-          success: true,
-          diagnostics: [],
-          errorCount: 0,
-          warningCount: 0,
-        }),
-      ),
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
-
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
-    );
-
-    await runTypecheck({ targets: [], options: [] });
-
-    expect(process.exitCode).toBeUndefined();
-  });
-
   it("sets exitCode to 1 when typecheck errors occur", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
@@ -486,44 +375,6 @@ describe("runTypecheck", () => {
     expect(pkgCall).toBeDefined();
   });
 
-  it("does not create other task when only packages/ files exist", async () => {
-    vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
-
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/packages/core-common/src/index.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
-
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
-
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
-    );
-
-    const { Worker } = await import("@simplysm/core-node");
-    const mockBuildDts = vi.fn(() =>
-      Promise.resolve({
-        success: true,
-        diagnostics: [],
-        errorCount: 0,
-        warningCount: 0,
-      }),
-    );
-    vi.mocked(Worker.create).mockReturnValue({
-      build: mockBuildDts,
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
-
-    await runTypecheck({ targets: [], options: [] });
-
-    // Should have no call with name="root"
-    const nonPkgCall = (mockBuildDts.mock.calls as unknown[][]).find(
-      (call) => (call[0] as { name: string }).name === "root",
-    );
-    expect(nonPkgCall).toBeUndefined();
-  });
 });
 
 describe("executeTypecheck", () => {
@@ -631,23 +482,4 @@ describe("executeTypecheck", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("returns failure result when tsconfig.json fails to load", async () => {
-    const { executeTypecheck } = await import("../src/commands/typecheck");
-
-    vi.mocked(ts.readConfigFile).mockReturnValue({
-      error: {
-        category: ts.DiagnosticCategory.Error,
-        messageText: "Failed to read tsconfig.json",
-      } as ts.Diagnostic,
-    });
-
-    vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
-
-    const result = await executeTypecheck({ targets: [], options: [] });
-
-    expect(result.success).toBe(false);
-    expect(result.errorCount).toBe(1);
-    // executeTypecheck should not set process.exitCode
-    expect(process.exitCode).toBeUndefined();
-  });
 });

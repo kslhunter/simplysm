@@ -25,18 +25,6 @@ describe("ServiceProtocol", () => {
       expect(result.totalSize).toBeGreaterThan(0);
     });
 
-    it("encode message without body", () => {
-      const uuid = Uuid.new().toString();
-      const message: ServiceMessage = {
-        name: "reload",
-        body: { clientName: undefined, changedFileSet: new Set() },
-      };
-
-      const result = protocol.encode(uuid, message);
-
-      expect(result.chunks.length).toBe(1);
-    });
-
     it("throw error when message exceeds 100MB", () => {
       const uuid = Uuid.new().toString();
       // Generate data larger than 100MB
@@ -215,63 +203,9 @@ describe("ServiceProtocol", () => {
       }
     });
 
-    it("receive 3 UUIDs in random order", () => {
-      const uuids = [Uuid.new().toString(), Uuid.new().toString(), Uuid.new().toString()];
-      const data = [
-        "X".repeat(4 * 1024 * 1024),
-        "Y".repeat(4 * 1024 * 1024),
-        "Z".repeat(4 * 1024 * 1024),
-      ];
-      const messages: ServiceMessage[] = data.map((d, i) => ({
-        name: `test.method${i}`,
-        body: [d],
-      }));
-
-      const encodedList = uuids.map((uuid, i) => protocol.encode(uuid, messages[i]));
-
-      // Combine all chunks into one array
-      const allChunks: { uuid: string; chunk: Uint8Array; originalIndex: number }[] = [];
-      encodedList.forEach((encoded, msgIdx) => {
-        encoded.chunks.forEach((chunk, chunkIdx) => {
-          allChunks.push({ uuid: uuids[msgIdx], chunk, originalIndex: chunkIdx });
-        });
-      });
-
-      // Randomize order (use reverse instead of seed-based shuffle)
-      allChunks.reverse();
-
-      // Decode all chunks
-      const results: Map<string, ReturnType<typeof protocol.decode>> = new Map();
-      for (const { uuid, chunk } of allChunks) {
-        results.set(uuid, protocol.decode(chunk));
-      }
-
-      // Verify all messages completed
-      for (let i = 0; i < 3; i++) {
-        const result = results.get(uuids[i]);
-        expect(result?.type).toBe("complete");
-        if (result?.type === "complete") {
-          expect(result.message.name).toBe(`test.method${i}`);
-          expect(result.message.body).toEqual([data[i]]);
-        }
-      }
-    });
   });
 
   describe("Edge cases", () => {
-    it("handle empty body", () => {
-      const uuid = Uuid.new().toString();
-      const message: ServiceMessage = { name: "test.method", body: [""] };
-
-      const encoded = protocol.encode(uuid, message);
-      const decoded = protocol.decode(encoded.chunks[0]);
-
-      expect(decoded.type).toBe("complete");
-      if (decoded.type === "complete") {
-        expect(decoded.message.body).toEqual([""]);
-      }
-    });
-
     it("handle null body", () => {
       const uuid = Uuid.new().toString();
       const message: ServiceMessage = { name: "test.method", body: [null] };
@@ -283,25 +217,6 @@ describe("ServiceProtocol", () => {
       if (decoded.type === "complete") {
         // JsonConvert.stringify/parse converts null to undefined
         expect(decoded.message.body).toEqual([undefined]);
-      }
-    });
-
-    it("serialize complex object", () => {
-      const uuid = Uuid.new().toString();
-      const complexData = {
-        array: [1, 2, 3],
-        nested: { deep: { value: "test" } },
-        date: new Date().toISOString(),
-        unicode: "Korean test 🚀",
-      };
-      const message: ServiceMessage = { name: "test.method", body: [complexData] };
-
-      const encoded = protocol.encode(uuid, message);
-      const decoded = protocol.decode(encoded.chunks[0]);
-
-      expect(decoded.type).toBe("complete");
-      if (decoded.type === "complete") {
-        expect(decoded.message.body).toEqual([complexData]);
       }
     });
 

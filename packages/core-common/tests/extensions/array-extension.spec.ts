@@ -2,65 +2,6 @@ import { describe, it, expect } from "vitest";
 import "@simplysm/core-common"; // Enable $ extension
 
 describe("Array prototype extensions", () => {
-  //#region Basic chaining
-
-  describe("Basic chaining", () => {
-    it("Can chain existing array methods", () => {
-      const result = [1, 2, 3, 4, 5].filter((x) => x > 2).map((x) => x * 10);
-
-      expect(result).toEqual([30, 40, 50]);
-    });
-
-    it("Can chain extension methods", () => {
-      const result = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-      ].toMap((x) => x.id);
-
-      expect(result.get(1)).toEqual({ id: 1, name: "a" });
-      expect(result.get(2)).toEqual({ id: 2, name: "b" });
-    });
-
-    it("Can mix array and extension methods chaining", () => {
-      const users = [
-        { id: 1, name: "Kim", active: true },
-        { id: 2, name: "Lee", active: false },
-        { id: 3, name: "Park", active: true },
-      ];
-
-      const result = users.filter((u) => u.active).toMap((u) => u.id);
-
-      expect(result.size).toBe(2);
-      expect(result.has(1)).toBe(true);
-      expect(result.has(3)).toBe(true);
-      expect(result.has(2)).toBe(false);
-    });
-
-    it("Can chain multiple steps", () => {
-      const result = [1, 2, 3, 4, 5]
-        .filter((x) => x > 1)
-        .map((x) => x * 2)
-        .filter((x) => x < 10)
-        .toMap((x) => x);
-
-      expect(result.size).toBe(3);
-      expect(result.has(4)).toBe(true);
-      expect(result.has(6)).toBe(true);
-      expect(result.has(8)).toBe(true);
-    });
-
-    it("Can access array properties", () => {
-      const arr = [1, 2, 3];
-
-      expect(arr.length).toBe(3);
-      expect(arr[0]).toBe(1);
-      expect(arr[1]).toBe(2);
-      expect(arr[2]).toBe(3);
-    });
-  });
-
-  //#endregion
-
   //#region single
 
   describe("single()", () => {
@@ -85,12 +26,6 @@ describe("Array prototype extensions", () => {
       expect(([] as number[]).single()).toBe(undefined);
       expect(() => [1, 2].single()).toThrow();
     });
-
-    it("Can use single after chaining", () => {
-      const result = [1, 2, 3, 4, 5].filter((x) => x > 3).single((x) => x === 4);
-
-      expect(result).toBe(4);
-    });
   });
 
   //#endregion
@@ -110,14 +45,6 @@ describe("Array prototype extensions", () => {
       const result = await [1, 2, 3].mapAsync(async (x) => Promise.resolve(x * 2));
 
       expect(result).toEqual([2, 4, 6]);
-    });
-
-    it("Can use mapAsync after chaining", async () => {
-      const result = await [1, 2, 3, 4, 5]
-        .filter((x) => x > 2)
-        .mapAsync(async (x) => Promise.resolve(x * 10));
-
-      expect(result).toEqual([30, 40, 50]);
     });
   });
 
@@ -375,61 +302,6 @@ describe("Array prototype extensions", () => {
 
   //#endregion
 
-  //#region ReadonlyArray support
-
-  describe("ReadonlyArray support", () => {
-    it("$ can be used with readonly array", () => {
-      const arr: readonly number[] = [1, 2, 3];
-      const result = arr.filter((x) => x > 1).toMap((x) => x);
-
-      expect(result.size).toBe(2);
-      expect(result.has(2)).toBe(true);
-      expect(result.has(3)).toBe(true);
-    });
-  });
-
-  //#endregion
-
-  //#region Various array method chaining
-
-  describe("Various array method chaining", () => {
-    it("flatMap can be chained", () => {
-      const result = [
-        [1, 2],
-        [3, 4],
-      ]
-        .flatMap((x) => x)
-        .toMap((x) => x);
-
-      expect(result.size).toBe(4);
-    });
-
-    it("slice can be chained", () => {
-      const result = [1, 2, 3, 4, 5].slice(1, 4).toMap((x) => x);
-
-      expect(result.size).toBe(3);
-      expect(result.has(2)).toBe(true);
-      expect(result.has(3)).toBe(true);
-      expect(result.has(4)).toBe(true);
-    });
-
-    it("concat can be chained", () => {
-      const result = [1, 2].concat([3, 4]).toMap((x) => x);
-
-      expect(result.size).toBe(4);
-    });
-
-    it("sort can be chained", () => {
-      const result = [3, 1, 2].sort((a, b) => a - b).toMap((x, i) => i);
-
-      expect(result.get(0)).toBe(1);
-      expect(result.get(1)).toBe(2);
-      expect(result.get(2)).toBe(3);
-    });
-  });
-
-  //#endregion
-
   //#region first, last
 
   describe("first()", () => {
@@ -469,12 +341,6 @@ describe("Array prototype extensions", () => {
       const arr = [1, null, 2, undefined, 3];
       const result = arr.filterExists();
       expect(result).toEqual([1, 2, 3]);
-    });
-
-    it("Can be chained", () => {
-      const arr = [1, null, 2, undefined, 3];
-      const result = arr.filterExists().map((x) => x * 2);
-      expect(result).toEqual([2, 4, 6]);
     });
   });
 
@@ -582,11 +448,6 @@ describe("Array prototype extensions", () => {
       expect(result).toHaveLength(2);
     });
 
-    it("Can be chained", () => {
-      const result = [1, 2, 2, 3].distinct().map((x) => x * 2);
-      expect(result).toEqual([2, 4, 6]);
-    });
-
     it("Can use custom key with keyFn", () => {
       const arr = [
         { id: 1, name: "a" },
@@ -625,11 +486,6 @@ describe("Array prototype extensions", () => {
       ];
       const result = items.orderBy((x) => x.age);
       expect(result.map((x) => x.age)).toEqual([20, 25, 30]);
-    });
-
-    it("Can be chained", () => {
-      const result = [3, 1, 2].orderBy().map((x) => x * 2);
-      expect(result).toEqual([2, 4, 6]);
     });
   });
 

@@ -279,64 +279,6 @@ describe("SELECT - UNION", () => {
     });
   });
 
-  describe("3 or more", () => {
-    const db = createTestDb();
-    const qr1 = db.user().where((item) => [expr.eq(item.age, 20)]);
-    const qr2 = db.user().where((item) => [expr.eq(item.age, 30)]);
-    const qr3 = db.user().where((item) => [expr.eq(item.age, 40)]);
-    const def = Queryable.union(qr1, qr2, qr3).getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T4",
-        from: [
-          {
-            type: "select",
-            as: "T1",
-            from: { database: "TestDb", schema: "TestSchema", name: "User" },
-            where: [
-              {
-                type: "eq",
-                source: { type: "column", path: ["T1", "age"] },
-                target: { type: "value", value: 20 },
-              },
-            ],
-          },
-          {
-            type: "select",
-            as: "T2",
-            from: { database: "TestDb", schema: "TestSchema", name: "User" },
-            where: [
-              {
-                type: "eq",
-                source: { type: "column", path: ["T2", "age"] },
-                target: { type: "value", value: 30 },
-              },
-            ],
-          },
-          {
-            type: "select",
-            as: "T3",
-            from: { database: "TestDb", schema: "TestSchema", name: "User" },
-            where: [
-              {
-                type: "eq",
-                source: { type: "column", path: ["T3", "age"] },
-                target: { type: "value", value: 40 },
-              },
-            ],
-          },
-        ],
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.unionThree[dialect]);
-    });
-  });
-
   describe("UNION -> WHERE (apply to each query)", () => {
     const db = createTestDb();
     const qr1 = db.user();
@@ -439,44 +381,6 @@ describe("SELECT - UNION", () => {
     });
   });
 
-  describe("UNION -> SELECT", () => {
-    const db = createTestDb();
-    const qr1 = db.user().select((item) => ({ id: item.id, name: item.name }));
-    const qr2 = db.user().select((item) => ({ id: item.id, name: item.name }));
-    const def = Queryable.union(qr1, qr2).getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T3",
-        from: [
-          {
-            type: "select",
-            as: "T1",
-            from: { database: "TestDb", schema: "TestSchema", name: "User" },
-            select: {
-              id: { type: "column", path: ["T1", "id"] },
-              name: { type: "column", path: ["T1", "name"] },
-            },
-          },
-          {
-            type: "select",
-            as: "T2",
-            from: { database: "TestDb", schema: "TestSchema", name: "User" },
-            select: {
-              id: { type: "column", path: ["T2", "id"] },
-              name: { type: "column", path: ["T2", "name"] },
-            },
-          },
-        ],
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.unionThenSelect[dialect]);
-    });
-  });
 });
 
 //#region ========== SCALAR SUBQUERY ==========

@@ -154,21 +154,6 @@ describe("SdWorker", () => {
 
   //#endregion
 
-  //#region stdout/stderr
-
-  describe("stdout/stderr", () => {
-    it("forwards worker console.log output to main process", async () => {
-      worker = Worker.create<typeof TestWorkerModule>(workerPath);
-
-      const result = await worker.logMessage("test message");
-
-      // If method returns normally, stdout piping is working
-      expect(result).toBe("logged");
-    });
-  });
-
-  //#endregion
-
   //#region env option
 
   describe("env option", () => {

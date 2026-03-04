@@ -1,43 +1,76 @@
-import { type JSX, type ParentComponent, splitProps } from "solid-js";
+import { createContext, type JSX, type ParentComponent, splitProps, useContext } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import { bg, border } from "../../styles/base.styles";
+import { pad } from "../../styles/control.styles";
 
 export interface TableProps extends JSX.HTMLAttributes<HTMLTableElement> {
   inset?: boolean;
 }
 
-const baseClass = clsx(
-  "w-auto",
-  "border-separate border-spacing-0",
-  "border-b border-r border-base-300 dark:border-base-600",
-  "rounded",
-  "overflow-hidden",
-  // th
-  "[&_th]:border-l [&_th]:border-t [&_th]:border-base-300 [&_th]:dark:border-base-600",
-  "[&_th]:px-2 [&_th]:py-1",
-  "[&_th]:bg-base-100 [&_th]:text-left [&_th]:font-bold",
-  "[&_th]:dark:bg-base-800",
-  // td
-  "[&_td]:border-l [&_td]:border-t [&_td]:border-base-300 [&_td]:dark:border-base-600",
-  "[&_td]:px-2 [&_td]:py-1",
-);
+const TableContext = createContext<{ inset: boolean }>({ inset: false });
 
-const insetClass = clsx(
-  "border-b-0 border-r-0",
-  "[&>*>tr>*:first-child]:border-l-0",
-  "[&>*:first-child>tr:first-child>*]:border-t-0",
-  "rounded-none",
-  "overflow-auto",
-);
+// -- Sub-components --
 
-export const Table: ParentComponent<TableProps> = (props) => {
-  const [local, rest] = splitProps(props, ["children", "class", "inset"]);
+const TableTr: ParentComponent<JSX.HTMLAttributes<HTMLTableRowElement>> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class"]);
+  return <tr class={twMerge(local.class)} {...rest}>{local.children}</tr>;
+};
 
-  const getClassName = () => twMerge(baseClass, local.inset && insetClass, local.class);
-
+const TableTh: ParentComponent<JSX.ThHTMLAttributes<HTMLTableCellElement>> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class"]);
+  const ctx = useContext(TableContext);
   return (
-    <table data-table class={getClassName()} {...rest}>
+    <th
+      class={twMerge(
+        clsx("border-l border-t", border.default, pad.default, bg.muted, "text-left font-bold"),
+        ctx.inset && "first:border-l-0",
+        local.class,
+      )}
+      {...rest}
+    >
       {local.children}
-    </table>
+    </th>
   );
 };
+
+const TableTd: ParentComponent<JSX.TdHTMLAttributes<HTMLTableCellElement>> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class"]);
+  const ctx = useContext(TableContext);
+  return (
+    <td
+      class={twMerge(
+        clsx("border-l border-t", border.default, pad.default),
+        ctx.inset && "first:border-l-0",
+        local.class,
+      )}
+      {...rest}
+    >
+      {local.children}
+    </td>
+  );
+};
+
+// -- Main component --
+
+const TableBase: ParentComponent<TableProps> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class", "inset"]);
+
+  return (
+    <TableContext.Provider value={{ get inset() { return !!local.inset; } }}>
+      <table
+        data-table
+        class={twMerge(
+          clsx("w-auto border-separate border-spacing-0 border-b border-r", border.default, "rounded overflow-hidden"),
+          local.inset && clsx("border-b-0 border-r-0", "[&>*:first-child>tr:first-child>*]:border-t-0", "rounded-none overflow-auto"),
+          local.class,
+        )}
+        {...rest}
+      >
+        {local.children}
+      </table>
+    </TableContext.Provider>
+  );
+};
+
+export const Table = Object.assign(TableBase, { Tr: TableTr, Th: TableTh, Td: TableTd });

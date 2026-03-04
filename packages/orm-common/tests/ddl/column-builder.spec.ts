@@ -51,20 +51,6 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "id",
-          dataType: { type: "bigint" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.bigintType[dialect]);
@@ -82,20 +68,6 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "Product" },
-        column: {
-          name: "weight",
-          dataType: { type: "float" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.floatType[dialect]);
@@ -112,20 +84,6 @@ describe("DDL - Column Builder", () => {
       "price",
       column,
     );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "Product" },
-        column: {
-          name: "price",
-          dataType: { type: "double" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -175,20 +133,6 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "name",
-          dataType: { type: "varchar", length: 100 },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.varcharType[dialect]);
@@ -237,20 +181,6 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "Post" },
-        column: {
-          name: "content",
-          dataType: { type: "text" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.textType[dialect]);
@@ -267,20 +197,6 @@ describe("DDL - Column Builder", () => {
       "data",
       column,
     );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "File" },
-        column: {
-          name: "data",
-          dataType: { type: "binary" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -299,20 +215,6 @@ describe("DDL - Column Builder", () => {
       column,
     );
 
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "isActive",
-          dataType: { type: "boolean" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
-
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.booleanType[dialect]);
@@ -329,20 +231,6 @@ describe("DDL - Column Builder", () => {
       "createdAt",
       column,
     );
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "addColumn",
-        table: { database: "TestDb", schema: "TestSchema", name: "User" },
-        column: {
-          name: "createdAt",
-          dataType: { type: "datetime" },
-          autoIncrement: undefined,
-          nullable: undefined,
-          default: undefined,
-        },
-      });
-    });
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

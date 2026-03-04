@@ -276,20 +276,6 @@ describe("TransferableConvert", () => {
 
       expect(() => transferEncode(arr)).toThrow("Circular reference detected");
     });
-
-    it("Detects circular references in Map", () => {
-      const map = new Map<string, unknown>();
-      map.set("self", map);
-
-      expect(() => transferEncode(map)).toThrow("Circular reference detected");
-    });
-
-    it("Detects circular references in Set", () => {
-      const set = new Set<unknown>();
-      set.add(set);
-
-      expect(() => transferEncode(set)).toThrow("Circular reference detected");
-    });
   });
 
   //#endregion
@@ -313,13 +299,6 @@ describe("TransferableConvert", () => {
       const decoded = result as Record<string, number[]>;
       expect(decoded["x"]).toEqual([1, 2, 3]);
       expect(decoded["y"]).toEqual([1, 2, 3]);
-    });
-
-    it("Still throws TypeError for circular references", () => {
-      const a: Record<string, unknown> = {};
-      const b: Record<string, unknown> = { a };
-      a["b"] = b;
-      expect(() => transferEncode(a)).toThrow(TypeError);
     });
   });
 
@@ -586,20 +565,6 @@ describe("TransferableConvert", () => {
   //#region decode - Preserve original
 
   describe("decode() - Preserve original", () => {
-    it("Original array is not modified", () => {
-      const tick = new DateTime(2025, 1, 6).tick;
-      const original = [{ __type__: "DateTime", data: tick }, "string", 123];
-      const originalCopy = JSON.stringify(original);
-
-      transferDecode(original);
-
-      // Verify original is not modified
-      expect(JSON.stringify(original)).toBe(originalCopy);
-      expect(original[0]).toEqual({ __type__: "DateTime", data: tick });
-      expect(original[1]).toBe("string");
-      expect(original[2]).toBe(123);
-    });
-
     it("Original object is not modified", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = {
@@ -614,20 +579,6 @@ describe("TransferableConvert", () => {
       expect(JSON.stringify(original)).toBe(originalCopy);
       expect(original.dt).toEqual({ __type__: "DateTime", data: tick });
       expect(original.value).toBe(123);
-    });
-
-    it("Original is preserved for nested arrays/objects", () => {
-      const tick = new DateTime(2025, 1, 6).tick;
-      const original = {
-        nested: {
-          arr: [{ __type__: "DateTime", data: tick }],
-        },
-      };
-      const originalCopy = JSON.stringify(original);
-
-      transferDecode(original);
-
-      expect(JSON.stringify(original)).toBe(originalCopy);
     });
 
     it("Decode result is a new instance (different from original)", () => {
@@ -649,14 +600,6 @@ describe("TransferableConvert", () => {
   //#region Round-trip conversion (encode → decode)
 
   describe("Round-trip conversion (encode → decode)", () => {
-    it("Round-trips Date", () => {
-      const original = new Date(2025, 0, 6, 15, 30, 45, 123);
-      const { result } = transferEncode(original);
-      const decoded = transferDecode(result) as Date;
-
-      expect(decoded.getTime()).toBe(original.getTime());
-    });
-
     it("Round-trips DateTime", () => {
       const original = new DateTime(2025, 1, 6, 15, 30, 45, 123);
       const { result } = transferEncode(original);

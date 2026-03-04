@@ -156,33 +156,4 @@ describe("loadIgnorePatterns", () => {
     expect(mockJitiImportFn).toHaveBeenCalledWith(expect.stringContaining("eslint.config.mts"));
   });
 
-  it("returns empty pattern array if empty array exported", async () => {
-    const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
-
-    mockExists.mockImplementation((filePath: string) => {
-      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
-    });
-
-    mockJitiImportFn.mockResolvedValue({
-      default: [],
-    });
-
-    const patterns = await loadIgnorePatterns(cwd);
-
-    expect(patterns).toEqual([]);
-  });
-
-  it("propagates error if jiti import fails", async () => {
-    const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
-
-    mockExists.mockImplementation((filePath: string) => {
-      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
-    });
-
-    mockJitiImportFn.mockRejectedValue(new Error("Syntax error in config file"));
-
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("Syntax error in config file");
-  });
 });

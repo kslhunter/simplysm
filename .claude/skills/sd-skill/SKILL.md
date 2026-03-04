@@ -176,6 +176,8 @@ Edit skill without testing? Same violation.
 - Don't "adapt" while running tests
 - Delete means delete
 
+**Only exemption — pure mechanical edits:** Typo fixes, tool/variable renames where the behavioral guidance is identical (e.g., `TodoWrite` → `TaskCreate`). If you're changing what the skill *teaches*, it's not mechanical — test it.
+
 **REQUIRED BACKGROUND:** The sd-tdd skill explains why this matters. Same principles apply to documentation.
 
 ## Testing All Skill Types
@@ -253,6 +255,8 @@ Example: Testing a "condition-based-waiting" skill
 | "Academic review is enough"            | Reading ≠ using. Test application scenarios.                                                                    |
 | "No time to test"                      | Deploying untested skill wastes more time fixing it later.                                                      |
 | "I already know the baseline failures" | You know what YOU think the failures are. Run a subagent to see what ACTUALLY happens. Knowledge ≠ observation. |
+| "This is process theater" | If the process catches even one issue you missed, it paid for itself. "Theater" is what you call process before it saves you. |
+| "It applies the wrong test methodology" | Different skill types need different tests (pressure vs retrieval), but ALL types need testing. No type is exempt. |
 
 **All of these mean: Test before deploying. No exceptions.**
 
@@ -263,6 +267,10 @@ Skills that enforce discipline need to resist rationalization. **See writing-gui
 ## RED-GREEN-REFACTOR for Skills
 
 Follow the TDD cycle:
+
+### Subagent Rules
+
+**NEVER use `isolation: "worktree"` when launching subagents.** Worktrees break lint/build tooling. Always run subagents in the default (non-isolated) mode.
 
 ### RED: Write Failing Test (Baseline)
 

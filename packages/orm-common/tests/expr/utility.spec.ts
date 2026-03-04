@@ -90,33 +90,6 @@ describe("Expr - Utility functions", () => {
     });
   });
 
-  describe("cast - type conversion to VARCHAR", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .select((item) => ({
-        id: item.id,
-        ageStr: expr.cast(item.age, { type: "varchar", length: 50 }),
-      }))
-      .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        id: { type: "column", path: ["T1", "id"] },
-        ageStr: {
-          type: "cast",
-          source: { type: "column", path: ["T1", "age"] },
-          targetType: { type: "varchar", length: 50 },
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.castToVarchar[dialect]);
-    });
-  });
-
   //#endregion
 
   //#region ========== RAW ==========

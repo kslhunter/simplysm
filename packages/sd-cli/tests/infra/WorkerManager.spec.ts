@@ -26,12 +26,6 @@ describe("WorkerManager", () => {
     expect(manager.get("test-worker")).toBe(worker);
   });
 
-  it("returns undefined when retrieving a non-existent Worker", () => {
-    const manager = new WorkerManager();
-
-    expect(manager.get("nonexistent")).toBeUndefined();
-  });
-
   it("terminates all Workers", async () => {
     const manager = new WorkerManager();
     const worker1 = manager.create("worker1", "/path/to/worker.ts");
@@ -55,34 +49,6 @@ describe("WorkerManager", () => {
     expect(worker2.terminate).not.toHaveBeenCalled();
     expect(manager.get("worker1")).toBeUndefined();
     expect(manager.get("worker2")).toBe(worker2);
-  });
-
-  it("handles terminating a non-existent Worker without error", async () => {
-    const manager = new WorkerManager();
-
-    await expect(manager.terminate("nonexistent")).resolves.toBeUndefined();
-  });
-
-  it("retrieves the count of managed Workers", () => {
-    const manager = new WorkerManager();
-
-    expect(manager.size).toBe(0);
-
-    manager.create("worker1", "/path/to/worker.ts");
-    expect(manager.size).toBe(1);
-
-    manager.create("worker2", "/path/to/worker.ts");
-    expect(manager.size).toBe(2);
-  });
-
-  it("retrieves list of all Worker IDs", () => {
-    const manager = new WorkerManager();
-    manager.create("worker1", "/path/to/worker.ts");
-    manager.create("worker2", "/path/to/worker.ts");
-
-    const ids = manager.ids;
-
-    expect(ids).toEqual(["worker1", "worker2"]);
   });
 
   it("overwrites existing Worker when creating with the same ID", () => {

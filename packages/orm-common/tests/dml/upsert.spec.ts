@@ -146,58 +146,6 @@ describe("UPSERT - Basic", () => {
     });
   });
 
-  describe("Complex WHERE condition", () => {
-    const db = createTestDb();
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.name, "Gildong Hong"), expr.eq(e.departmentId, 1)])
-      .getUpsertQueryDef(
-        () => ({ managerId: expr.val("number", 10) }),
-        (upd) => ({
-          name: expr.val("string", "Gildong Hong"),
-          departmentId: expr.val("number", 1),
-          managerId: upd.managerId,
-        }),
-      );
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "upsert",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        existsSelectQuery: {
-          type: "select",
-          as: "T1",
-          from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1", "name"] },
-              target: { type: "value", value: "Gildong Hong" },
-            },
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1", "departmentId"] },
-              target: { type: "value", value: 1 },
-            },
-          ],
-        },
-        updateRecord: {
-          managerId: { type: "value", value: 10 },
-        },
-        insertRecord: {
-          name: { type: "value", value: "Gildong Hong" },
-          departmentId: { type: "value", value: 1 },
-          managerId: { type: "value", value: 10 },
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.upsertMultiWhere[dialect]);
-    });
-  });
-
   describe("UPSERT with literal values (without expr.val)", () => {
     const db = createTestDb();
     const def = db

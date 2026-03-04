@@ -4,21 +4,19 @@ description: "Route requests to sd-* skills/agents (explicit invocation only)"
 model: haiku
 ---
 
-# sd-use - Auto Skill/Agent Router
+# sd-use - Auto Skill Router
 
-Analyze user request from ARGUMENTS, select the best matching sd-\* skill or agent, explain why,
-then execute it.
+Analyze user request from ARGUMENTS, select the best matching skill, explain why, then execute it.
 
 ## Execution Flow
 
 1. Read ARGUMENTS
-2. Match against catalog below
-3. Report selection with reason
-4. Execute immediately
+2. If user names a specific skill (e.g., "sd-explore로..."), route to that skill directly
+3. Otherwise, match against catalog below
+4. Report selection with reason
+5. Execute immediately
 
-## Catalog
-
-### Skills (execute via `Skill` tool)
+## Catalog (execute via `Skill` tool)
 
 | Skill                | When to select                                                                                                                                  |
 |----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -27,41 +25,36 @@ then execute it.
 | `sd-tdd`             | Implementing a feature or fixing a bug — **before writing code**                                                                                |
 | `sd-plan`            | Multi-step task with spec/requirements — **planning before code**                                                                               |
 | `sd-plan-dev`        | Already have a plan — **executing implementation plan**                                                                                         |
-| `sd-review`          | **Large-scale** comprehensive review of an entire package or broad path — use only when user explicitly requests full/deep/comprehensive review |
+| `sd-review`          | Code review focused on **defects and correctness** — bugs, security, architectural violations, API design problems                              |
+| `sd-refactor`        | Refactoring analysis — complexity reduction, duplication removal, structural improvement, responsibility separation                              |
 | `sd-check`           | Verify code — typecheck, lint, tests                                                                                                            |
 | `sd-commit`          | Create a git commit                                                                                                                             |
 | `sd-readme`          | Update a package README.md                                                                                                                      |
-| `sd-discuss`         | Evaluate code design decisions against industry standards and project conventions                                                               |
+| `sd-discuss`         | Evaluate code design decisions against industry standards and project conventions                                                                |
 | `sd-api-name-review` | Review public API naming consistency                                                                                                            |
 | `sd-worktree`        | Start new work in branch isolation                                                                                                              |
 | `sd-skill`           | Create or edit skills                                                                                                                           |
 | `sd-email-analyze`   | Analyze, read, or summarize email files (`.eml` or `.msg`) — parsing and attachment extraction                                                  |
-
-### Agents (execute via `Task` tool with matching `subagent_type`)
-
-| Agent                  | When to select                                                                                                                     |
-|------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `sd-code-reviewer`     | Quick/focused review — specific files, recent changes, bugs, security, quality issues. **Default choice for most review requests** |
-| `sd-code-simplifier`   | Simplify, clean up, improve code readability                                                                                       |
-| `sd-api-reviewer`      | Review library public API for DX quality                                                                                           |
-| `sd-security-reviewer` | ORM SQL injection and input validation vulnerability review                                                                        |
+| `sd-document`        | Read or write document files (`.docx`, `.xlsx`, `.pptx`, `.pdf`) — content extraction, creation, data export                                    |
+| `sd-explore`         | Explore, analyze, trace, or understand code structure, architecture, or implementation flow                                                     |
 
 ## Selection Rules
 
-1. Select **exactly one** skill or agent — the most specific match wins
-2. **Review requests**: Default to `sd-code-reviewer` agent. Only use `sd-review` skill when the
-   user explicitly asks for a full/comprehensive/deep review of an entire package
-3. If nothing matches, use **default LLM behavior** and handle the request directly
-4. Pass ARGUMENTS through as the skill/agent's input
+1. **Explicit skill name** — If user mentions a specific skill name (e.g., "sd-explore로...", "sd-plan 만들어줘"), route to that skill directly
+2. Select **exactly one** skill — the most specific match wins
+3. **Review vs Refactor**: "find bugs", "review" → `sd-review`. "refactor", "improve structure", "remove duplication" → `sd-refactor`
+4. **Sequential requests** (e.g., "brainstorm하고 plan 만들어줘"): Route to the **first** skill only. After completion, user can invoke the next
+5. If nothing matches, use **default LLM behavior** and handle the request directly
+6. Pass ARGUMENTS through as the skill's input
 
 ## Report Format
 
 Before executing, output:
 
 ```
-**Selected**: `sd-{name}` (or agent name)
+**Selected**: `{skill-name}`
 **Reason**: {one-line explanation}
-**Tip**: Next time you can call `/sd-{name} {request}` directly.
+**Tip**: Next time you can call `/{skill-name} {request}` directly.
 ```
 
 Then execute immediately.

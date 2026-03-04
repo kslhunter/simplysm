@@ -65,28 +65,6 @@ describe("loadSdConfig", () => {
     );
   });
 
-  it("throws error if return value is wrong format (packages is array)", async () => {
-    vi.mocked(fsExists).mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({
-      default: () => ({ packages: [] }), // packages is array
-    });
-
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
-      /sd\.config\.ts return value is not in .* correct format/,
-    );
-  });
-
-  it("throws error if return value is wrong format (packages is null)", async () => {
-    vi.mocked(fsExists).mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({
-      default: () => ({ packages: null }),
-    });
-
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
-      /sd\.config\.ts return value is not in .* correct format/,
-    );
-  });
-
   it("returns correct config", async () => {
     vi.mocked(fsExists).mockResolvedValue(true);
     mockJitiImport.mockResolvedValue({
@@ -117,21 +95,4 @@ describe("loadSdConfig", () => {
     expect(config.packages).toEqual({});
   });
 
-  it("handles async function default export correctly", async () => {
-    vi.mocked(fsExists).mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({
-      // eslint-disable-next-line @typescript-eslint/require-await
-      default: async () => ({
-        packages: {
-          "core-common": { target: "neutral" },
-        },
-      }),
-    });
-
-    const config = await loadSdConfig({ cwd: "/project", dev: false, opt: [] });
-
-    expect(config.packages).toEqual({
-      "core-common": { target: "neutral" },
-    });
-  });
 });

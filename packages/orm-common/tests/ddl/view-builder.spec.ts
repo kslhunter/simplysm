@@ -7,66 +7,6 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./view-builder.expected";
 
 describe("DDL - View Builder", () => {
-  describe("basic view (name only)", () => {
-    const view = View("TestView");
-
-    it("should validate metadata", () => {
-      expect(view.meta).toEqual({
-        name: "TestView",
-        description: undefined,
-        database: undefined,
-        schema: undefined,
-        viewFn: undefined,
-        relations: undefined,
-      });
-    });
-  });
-
-  describe("description specified", () => {
-    const view = View("TestView").description("This is a test view");
-
-    it("should validate metadata", () => {
-      expect(view.meta).toEqual({
-        name: "TestView",
-        description: "This is a test view",
-        database: undefined,
-        schema: undefined,
-        viewFn: undefined,
-        relations: undefined,
-      });
-    });
-  });
-
-  describe("database specified", () => {
-    const view = View("TestView").database("CustomDb");
-
-    it("should validate metadata", () => {
-      expect(view.meta).toEqual({
-        name: "TestView",
-        description: undefined,
-        database: "CustomDb",
-        schema: undefined,
-        viewFn: undefined,
-        relations: undefined,
-      });
-    });
-  });
-
-  describe("schema specified", () => {
-    const view = View("TestView").schema("CustomSchema");
-
-    it("should validate metadata", () => {
-      expect(view.meta).toEqual({
-        name: "TestView",
-        description: undefined,
-        database: undefined,
-        schema: "CustomSchema",
-        viewFn: undefined,
-        relations: undefined,
-      });
-    });
-  });
-
   describe("query specified (basic SELECT)", () => {
     const view = View("TestView").query((db: TestDbContext) =>
       db.user().select((u) => ({

@@ -4,14 +4,13 @@ import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type FieldSize } from "../field/Field.styles";
+import { text } from "../../../styles/base.styles";
 import { gap } from "../../../styles/control.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export type DateRangePeriodType = "day" | "month" | "range";
-
-const baseClass = clsx("inline-flex items-center", gap.default);
 
 export interface DateRangePickerProps {
   /** Period type */
@@ -155,7 +154,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   };
 
   // Wrapper CSS class
-  const getWrapperClass = () => twMerge(baseClass, local.class);
+  const getWrapperClass = () => twMerge(clsx("inline-flex items-center", gap.default), local.class);
 
   return (
     <div {...rest} data-date-range-picker class={getWrapperClass()} style={local.style}>
@@ -205,7 +204,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
           disabled={local.disabled}
           size={local.size}
         />
-        <span class="text-base-400">~</span>
+        <span class={text.muted}>~</span>
         <DatePicker
           unit="date"
           value={to()}

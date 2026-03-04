@@ -37,8 +37,6 @@ interface ListItemSlotsContextValue {
 
 const ListItemSlotsContext = createContext<ListItemSlotsContextValue>();
 
-const chevronClass = clsx("transition-transform duration-200 motion-reduce:transition-none");
-
 const ListItemChildren = createSlotComponent(ListItemSlotsContext, (ctx) => ctx.setChildren);
 
 export interface ListItemProps extends Omit<
@@ -160,7 +158,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
       local.class,
     );
 
-  const getChevronClassName = () => twMerge(chevronClass, openState() ? "rotate-0" : "rotate-90");
+  const getChevronClassName = () => twMerge("transition-transform duration-200 motion-reduce:transition-none", openState() ? "rotate-0" : "rotate-90");
 
   const getSelectedIconClassName = () => getListItemSelectedIconClass(local.selected ?? false);
 

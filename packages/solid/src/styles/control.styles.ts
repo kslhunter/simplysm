@@ -1,12 +1,14 @@
 import clsx from "clsx";
 
-// ── disabled ──
-export const disabledOpacity = clsx`pointer-events-none cursor-default opacity-30`;
+// ── State ──
+export const state = {
+  disabled: clsx`pointer-events-none cursor-default opacity-30`,
+};
 
 // ── Size ──
 export type ComponentSize = "default" | "xs" | "sm" | "lg" | "xl";
 
-export const padding = {
+export const pad = {
   default: clsx`px-2 py-1`,
   xs: clsx`px-1 py-0`,
   sm: clsx`px-1.5 py-0.5`,

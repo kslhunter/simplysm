@@ -15,7 +15,6 @@ export function createSlotComponent<TCtx>(
 ): ParentComponent {
   return (props) => {
     const ctx = useContext(context)!;
-    // eslint-disable-next-line solid/reactivity -- Slot registration runs only once on initial mount
     getSetter(ctx)(() => props.children);
     onCleanup(() => getSetter(ctx)(undefined));
     return null;

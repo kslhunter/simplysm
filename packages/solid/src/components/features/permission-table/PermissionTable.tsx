@@ -16,10 +16,6 @@ import { border } from "../../../styles/base.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
-const titleCellClass = clsx("flex items-stretch", "px-2");
-const indentGuideWrapperClass = clsx("mr-1 flex w-3", "justify-center");
-const indentGuideLineClass = clsx("w-0 self-stretch", "border-r", border.default);
-
 // --- Types ---
 
 export interface PermissionTableProps<TModule = string> {
@@ -277,11 +273,11 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
         {(ctx) => {
           const item = ctx.item as AppPerm;
           return (
-            <div class={titleCellClass}>
+            <div class="flex items-stretch px-2">
               <For each={Array.from({ length: ctx.depth })}>
                 {() => (
-                  <div class={indentGuideWrapperClass}>
-                    <div class={indentGuideLineClass} />
+                  <div class="mr-1 flex w-3 justify-center">
+                    <div class={clsx("w-0 self-stretch border-r", border.default)} />
                   </div>
                 )}
               </For>

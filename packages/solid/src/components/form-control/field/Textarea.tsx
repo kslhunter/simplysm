@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { type Component, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
+import { text } from "../../../styles/base.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
@@ -63,7 +64,7 @@ const textareaBaseClass = clsx(
   "size-full",
   "resize-none overflow-hidden",
   "bg-transparent",
-  "placeholder:text-base-400 dark:placeholder:text-base-500",
+  text.placeholder,
 );
 
 /**

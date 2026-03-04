@@ -30,13 +30,6 @@ export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
 }
 
-const transitionClass = clsx(
-  "transition-[margin-top]",
-  "duration-200",
-  "ease-out",
-  "motion-reduce:transition-none",
-);
-
 export const Collapse: ParentComponent<CollapseProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style", "open"]);
 
@@ -69,7 +62,7 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
     >
       <div
         ref={setContentRef}
-        class={mounted() ? transitionClass : ""}
+        class={mounted() ? "transition-[margin-top] duration-200 ease-out motion-reduce:transition-none" : ""}
         style={{
           "margin-top": marginTop(),
           // When closed, prevent access to focusable elements and prevent FOUC

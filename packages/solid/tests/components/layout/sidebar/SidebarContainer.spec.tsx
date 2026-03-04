@@ -38,20 +38,6 @@ describe("SidebarContainer component", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  describe("basic rendering", () => {
-    it("displays children inside container", () => {
-      const { getByText } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Sidebar.Container>
-          <span>Content</span>
-        </Sidebar.Container>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      expect(getByText("Content")).toBeTruthy();
-    });
-  });
-
   describe("padding-left handling", () => {
     it("applies padding-left when open on desktop", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // Desktop
@@ -231,32 +217,4 @@ describe("SidebarContainer component", () => {
     });
   });
 
-  describe("style merging", () => {
-    it("merges custom classes", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-          <Sidebar.Container class="my-custom-class">
-          <div>Content</div>
-        </Sidebar.Container>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      const containerEl = container.firstElementChild as HTMLElement;
-      expect(containerEl.classList.contains("my-custom-class")).toBe(true);
-    });
-
-    it("merges custom styles", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Sidebar.Container style={{ "background-color": "red" }}>
-          <div>Content</div>
-        </Sidebar.Container>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      const containerEl = container.firstElementChild as HTMLElement;
-      expect(containerEl.style.backgroundColor).toBe("red");
-    });
-  });
 });

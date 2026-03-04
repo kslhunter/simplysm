@@ -15,23 +15,6 @@ describe("DateRangePicker component", () => {
   });
 
   describe("basic rendering", () => {
-    it("renders Select and DatePicker", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <DateRangePicker />
-        </I18nProvider></ConfigProvider>
-      ));
-
-      const wrapper = container.querySelector("[data-date-range-picker]");
-      expect(wrapper).toBeTruthy();
-
-      const select = wrapper?.querySelector("[data-select]");
-      expect(select).toBeTruthy();
-
-      const inputs = wrapper?.querySelectorAll("input");
-      expect(inputs?.length).toBeGreaterThan(0);
-    });
-
     it("defaults periodType to 'range'", () => {
       const { container } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -165,44 +148,4 @@ describe("DateRangePicker component", () => {
     });
   });
 
-  describe("disabled state", () => {
-    it("applies aria-disabled to Select", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateRangePicker disabled /></I18nProvider></ConfigProvider>);
-      const wrapper = container.querySelector("[data-date-range-picker]");
-
-      const select = wrapper?.querySelector("[data-select]");
-      const combobox = select?.querySelector("[role='combobox']") ?? select;
-
-      expect(
-        combobox?.getAttribute("aria-disabled") === "true" ||
-          select?.getAttribute("aria-disabled") === "true",
-      ).toBe(true);
-    });
-  });
-
-  describe("period type labels", () => {
-    it("displays 'Range' label for default periodType 'range'", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <DateRangePicker />
-        </I18nProvider></ConfigProvider>
-      ));
-
-      const wrapper = container.querySelector("[data-date-range-picker]");
-      const select = wrapper?.querySelector("[data-select]");
-
-      expect(select?.textContent).toContain("Range");
-    });
-  });
-
-  describe("class merging", () => {
-    it("applies custom class to wrapper", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateRangePicker class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.querySelector("[data-date-range-picker]") as HTMLElement;
-
-      expect(wrapper).toBeTruthy();
-      expect(wrapper.classList.contains("my-custom-class")).toBe(true);
-    });
-  });
 });

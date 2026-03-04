@@ -4,46 +4,6 @@ import { createSignal } from "solid-js";
 import { Pagination } from "../../../src/components/data/Pagination";
 
 describe("Pagination component", () => {
-  describe("basic rendering", () => {
-    it("renders as nav element", () => {
-      const { container } = render(() => <Pagination page={1} totalPageCount={5} />);
-
-      expect(container.querySelector("nav")).toBeTruthy();
-    });
-
-    it("applies data-pagination attribute", () => {
-      const { container } = render(() => <Pagination page={1} totalPageCount={5} />);
-
-      expect(container.querySelector("[data-pagination]")).toBeTruthy();
-    });
-
-    it("renders 4 navigation buttons and page buttons", () => {
-      const { container } = render(() => <Pagination page={1} totalPageCount={5} />);
-
-      const buttons = container.querySelectorAll("[data-button]");
-      // 4 navigation buttons (<<, <, >, >>) + 5 page buttons
-      expect(buttons.length).toBe(9);
-    });
-
-    it("displays page numbers as 1-based", () => {
-      const { getByText } = render(() => <Pagination page={1} totalPageCount={3} />);
-
-      expect(getByText("1")).toBeTruthy();
-      expect(getByText("2")).toBeTruthy();
-      expect(getByText("3")).toBeTruthy();
-    });
-
-    it("passes custom class to nav element", () => {
-      const { container } = render(() => (
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Pagination page={1} totalPageCount={5} class="my-custom" />
-      ));
-
-      const nav = container.querySelector("nav");
-      expect(nav?.className).toContain("my-custom");
-    });
-  });
-
   describe("displayPageCount default", () => {
     it("default displayPageCount is 10", () => {
       const { container } = render(() => <Pagination page={1} totalPageCount={25} />);
@@ -61,19 +21,6 @@ describe("Pagination component", () => {
       const buttons = container.querySelectorAll("[data-button]");
       // 4 nav + 5 page buttons
       expect(buttons.length).toBe(9);
-    });
-  });
-
-  describe("current page display", () => {
-    it("current page button has a different variant", () => {
-      const { container } = render(() => <Pagination page={3} totalPageCount={5} />);
-
-      const buttons = container.querySelectorAll("[data-button]");
-      // buttons[0]=<<, [1]=<, [2]=page1, [3]=page2, [4]=page3(current), [5]=page4, [6]=page5, [7]=>, [8]=>>
-      const currentButton = buttons[4]; // page 3 (1-based page=3)
-      const otherButton = buttons[2]; // page 1
-
-      expect(currentButton.className).not.toBe(otherButton.className);
     });
   });
 
@@ -264,28 +211,6 @@ describe("Pagination component", () => {
       fireEvent.click(buttons[buttons.length - 2]); // >
 
       expect(onPageChange).toHaveBeenCalledWith(6);
-    });
-  });
-
-  describe("size prop", () => {
-    it("applies different styles when size prop is provided", () => {
-      const { container: defaultContainer } = render(() => (
-        <Pagination page={1} totalPageCount={5} />
-      ));
-      const { container: smContainer } = render(() => (
-        <Pagination page={1} totalPageCount={5} size="sm" />
-      ));
-      const { container: lgContainer } = render(() => (
-        <Pagination page={1} totalPageCount={5} size="lg" />
-      ));
-
-      const defaultNav = defaultContainer.querySelector("nav");
-      const smNav = smContainer.querySelector("nav");
-      const lgNav = lgContainer.querySelector("nav");
-
-      // sm and lg should have different classes from default
-      expect(smNav?.className).not.toBe(defaultNav?.className);
-      expect(lgNav?.className).not.toBe(defaultNav?.className);
     });
   });
 

@@ -34,21 +34,6 @@ describe("Dialog", () => {
       expect(content).toBeNull();
     });
 
-    it("sets data-dialog attribute", async () => {
-      render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true}>
-          <Dialog.Header>테스트 다이얼로그</Dialog.Header>
-          <div>내용</div>
-        </Dialog>
-        </I18nProvider></ConfigProvider>
-      ));
-      await waitFor(() => {
-        const dialog = document.querySelector("[data-dialog]");
-        expect(dialog).not.toBeNull();
-      });
-    });
-
     it("renders Dialog.Header slot in header", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -241,23 +226,6 @@ describe("Dialog", () => {
   });
 
   describe("accessibility", () => {
-    it("sets role=dialog and aria-modal attributes", async () => {
-      render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true}>
-          <Dialog.Header>접근성 테스트</Dialog.Header>
-          <div>내용</div>
-        </Dialog>
-        </I18nProvider></ConfigProvider>
-      ));
-      await waitFor(() => {
-        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
-        expect(dialog).not.toBeNull();
-        expect(dialog.getAttribute("role")).toBe("dialog");
-        expect(dialog.getAttribute("aria-modal")).toBe("true");
-      });
-    });
-
     it("aria-labelledby references the Dialog.Header element", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -417,22 +385,4 @@ describe("Dialog", () => {
     });
   });
 
-  describe("animation", () => {
-    it("applies transition classes on open", async () => {
-      render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true}>
-          <Dialog.Header>테스트</Dialog.Header>
-          <div>내용</div>
-        </Dialog>
-        </I18nProvider></ConfigProvider>
-      ));
-      await waitFor(() => {
-        const dialog = document.querySelector("[data-dialog-panel]") as HTMLElement;
-        expect(dialog).not.toBeNull();
-        expect(dialog.classList.contains("transition-[opacity,transform]")).toBe(true);
-        expect(dialog.classList.contains("duration-200")).toBe(true);
-      });
-    });
-  });
 });

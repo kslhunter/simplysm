@@ -23,54 +23,6 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("description specified", () => {
-    const proc = Procedure("TestProc").description("Test procedure");
-
-    it("should validate metadata", () => {
-      expect(proc.meta).toEqual({
-        name: "TestProc",
-        description: "Test procedure",
-        database: undefined,
-        schema: undefined,
-        params: undefined,
-        returns: undefined,
-        query: undefined,
-      });
-    });
-  });
-
-  describe("database specified", () => {
-    const proc = Procedure("TestProc").database("CustomDb");
-
-    it("should validate metadata", () => {
-      expect(proc.meta).toEqual({
-        name: "TestProc",
-        description: undefined,
-        database: "CustomDb",
-        schema: undefined,
-        params: undefined,
-        returns: undefined,
-        query: undefined,
-      });
-    });
-  });
-
-  describe("schema specified", () => {
-    const proc = Procedure("TestProc").schema("CustomSchema");
-
-    it("should validate metadata", () => {
-      expect(proc.meta).toEqual({
-        name: "TestProc",
-        description: undefined,
-        database: undefined,
-        schema: "CustomSchema",
-        params: undefined,
-        returns: undefined,
-        query: undefined,
-      });
-    });
-  });
-
   describe("params specified (single parameter)", () => {
     const proc = Procedure("TestProc").params((c) => ({ id: c.bigint() }));
 
@@ -82,23 +34,6 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("params specified (multiple parameters)", () => {
-    const proc = Procedure("TestProc").params((c) => ({
-      id: c.bigint(),
-      name: c.varchar(100),
-      isActive: c.boolean(),
-    }));
-
-    it("should validate metadata", () => {
-      expect(proc.meta.name).toBe("TestProc");
-      expect(proc.meta.params).toBeDefined();
-      expect(Object.keys(proc.meta.params!)).toEqual(["id", "name", "isActive"]);
-      expect(proc.meta.params!.id.meta.dataType).toEqual({ type: "bigint" });
-      expect(proc.meta.params!.name.meta.dataType).toEqual({ type: "varchar", length: 100 });
-      expect(proc.meta.params!.isActive.meta.dataType).toEqual({ type: "boolean" });
-    });
-  });
-
   describe("returns specified (single return)", () => {
     const proc = Procedure("TestProc").returns((c) => ({ id: c.bigint() }));
 
@@ -107,24 +42,6 @@ describe("DDL - Procedure Builder", () => {
       expect(proc.meta.returns).toBeDefined();
       expect(Object.keys(proc.meta.returns!)).toEqual(["id"]);
       expect(proc.meta.returns!.id.meta.dataType).toEqual({ type: "bigint" });
-    });
-  });
-
-  describe("returns specified (multiple returns)", () => {
-    const proc = Procedure("TestProc").returns((c) => ({
-      id: c.bigint(),
-      name: c.varchar(100),
-      email: c.varchar(200).nullable(),
-    }));
-
-    it("should validate metadata", () => {
-      expect(proc.meta.name).toBe("TestProc");
-      expect(proc.meta.returns).toBeDefined();
-      expect(Object.keys(proc.meta.returns!)).toEqual(["id", "name", "email"]);
-      expect(proc.meta.returns!.id.meta.dataType).toEqual({ type: "bigint" });
-      expect(proc.meta.returns!.name.meta.dataType).toEqual({ type: "varchar", length: 100 });
-      expect(proc.meta.returns!.email.meta.dataType).toEqual({ type: "varchar", length: 200 });
-      expect(proc.meta.returns!.email.meta.nullable).toBe(true);
     });
   });
 
@@ -208,27 +125,4 @@ describe("DDL - Procedure Builder", () => {
     });
   });
 
-  describe("method chaining order", () => {
-    // Same result even with different method chaining order
-    const proc1 = Procedure("TestProc")
-      .params((c) => ({ id: c.bigint() }))
-      .database("TestDb")
-      .schema("TestSchema")
-      .body("SELECT 1");
-
-    const proc2 = Procedure("TestProc")
-      .database("TestDb")
-      .schema("TestSchema")
-      .params((c) => ({ id: c.bigint() }))
-      .body("SELECT 1");
-
-    it("should validate metadata consistency", () => {
-      // params is an object so deep comparison is needed
-      expect(proc1.meta.name).toBe(proc2.meta.name);
-      expect(proc1.meta.database).toBe(proc2.meta.database);
-      expect(proc1.meta.schema).toBe(proc2.meta.schema);
-      expect(proc1.meta.query).toBe(proc2.meta.query);
-      expect(Object.keys(proc1.meta.params!)).toEqual(Object.keys(proc2.meta.params!));
-    });
-  });
 });

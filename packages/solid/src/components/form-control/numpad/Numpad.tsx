@@ -6,7 +6,7 @@ import { Button } from "../Button";
 import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
 import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
-import type { ComponentSize } from "../../../styles/control.styles";
+import { gap, type ComponentSize } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface NumpadProps {
@@ -34,7 +34,6 @@ export interface NumpadProps {
   style?: JSX.CSSProperties;
 }
 
-const baseClass = clsx("grid grid-cols-3", "gap-0.5", "w-auto");
 
 /**
  * Parse inputStr and convert to number.
@@ -131,7 +130,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
   const buttonSize = () => props.size ?? "lg";
 
   return (
-    <div data-numpad class={twMerge(baseClass, props.class)} style={props.style}>
+    <div data-numpad class={twMerge(clsx("grid grid-cols-3", gap.sm, "w-auto"), props.class)} style={props.style}>
       {/* Row 1: NumberInput + optional ENT */}
       <div class={clsx("flex", props.useEnterButton ? "col-span-2" : "col-span-3")}>
         <NumberInput

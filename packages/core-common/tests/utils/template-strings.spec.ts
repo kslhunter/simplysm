@@ -39,19 +39,10 @@ describe("template-strings", () => {
       expect(js`x = ${value}`).toBe("x = ");
     });
 
-    it("Handles number value", () => {
-      expect(js`x = ${42}`).toBe("x = 42");
-    });
-
     it("Interpolates multiple values", () => {
       const a = 1;
       const b = 2;
       expect(js`${a} + ${b} = ${a + b}`).toBe("1 + 2 = 3");
-    });
-
-    it("Handles object value", () => {
-      const obj = { toString: () => "custom" };
-      expect(js`value = ${obj}`).toBe("value = custom");
     });
   });
 });

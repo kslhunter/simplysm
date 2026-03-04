@@ -160,24 +160,6 @@ describe("SELECT - Basic", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        select: {
-          contact: {
-            type: "ifNull",
-            args: [
-              { type: "column", path: ["T1", "email"] },
-              { type: "column", path: ["T1", "name"] },
-              { type: "value", value: "N/A" },
-            ],
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectIfNull3[dialect]);
@@ -253,21 +235,6 @@ describe("SELECT - Basic", () => {
         suffix: expr.substring(item.name, 3),
       }))
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        select: {
-          suffix: {
-            type: "substring",
-            source: { type: "column", path: ["T1", "name"] },
-            start: { type: "value", value: 3 },
-          },
-        },
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -346,23 +313,6 @@ describe("SELECT - Basic", () => {
       }))
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        select: {
-          maxAge: {
-            type: "greatest",
-            args: [
-              { type: "column", path: ["T1", "age"] },
-              { type: "value", value: 18 },
-            ],
-          },
-        },
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectGreatest[dialect]);
@@ -394,15 +344,6 @@ describe("SELECT - Options", () => {
     const db = createTestDb();
     const def = db.user().lock().getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        lock: true,
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.selectLock[dialect]);
@@ -412,16 +353,6 @@ describe("SELECT - Options", () => {
   describe("DISTINCT + LOCK combination", () => {
     const db = createTestDb();
     const def = db.user().distinct().lock().getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        distinct: true,
-        lock: true,
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

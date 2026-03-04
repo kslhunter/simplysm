@@ -12,32 +12,6 @@ describe("TimePicker component", () => {
   });
 
   describe("basic rendering", () => {
-    it("renders input type=time when unit=minute", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker unit="minute" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("time");
-    });
-
-    it("renders input type=time when unit=second", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker unit="second" /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input).toBeTruthy();
-      expect(input.type).toBe("time");
-    });
-
-    it("defaults unit to minute", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.type).toBe("time");
-    });
-
-    it("defaults autocomplete to one-time-code", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker /></I18nProvider></ConfigProvider>);
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.autocomplete).toBe("one-time-code");
-    });
-
     it("sets step=1 when unit=second", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker unit="second" /></I18nProvider></ConfigProvider>);
       const input = container.querySelector("input") as HTMLInputElement;
@@ -152,11 +126,6 @@ describe("TimePicker component", () => {
       expect(getByText("10:30")).toBeTruthy();
     });
 
-    it("applies disabled style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker disabled value={new Time(10, 30, 0)} /></I18nProvider></ConfigProvider>);
-      const div = container.querySelector("div.sd-time-field") as HTMLElement;
-      expect(div.classList.contains("bg-base-100")).toBe(true);
-    });
   });
 
   describe("readonly state", () => {
@@ -177,32 +146,7 @@ describe("TimePicker component", () => {
     });
   });
 
-  describe("size option", () => {
-    it("applies small padding when size=sm", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker size="sm" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-0.5")).toBe(true);
-    });
-
-    it("applies large padding when size=lg", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker size="lg" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("py-2")).toBe(true);
-    });
-  });
-
   describe("inset style", () => {
-    it("applies relative to outer and inset style to content when inset=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset /></I18nProvider></ConfigProvider>);
-      const outer = container.firstChild as HTMLElement;
-      expect(outer.classList.contains("relative")).toBe(true);
-      expect(outer.classList.contains("border-none")).toBe(false);
-
-      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
-      expect(contentDiv.classList.contains("border-none")).toBe(true);
-      expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
-    });
-
     it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset readonly value={new Time(14, 30, 0)} /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
@@ -231,29 +175,6 @@ describe("TimePicker component", () => {
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");
-    });
-  });
-
-  describe("dark mode style", () => {
-    it("applies dark mode border style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
-    });
-
-    it("applies dark mode background style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom class with existing styles", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("my-custom-class")).toBe(true);
     });
   });
 

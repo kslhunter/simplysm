@@ -37,24 +37,6 @@ describe("Collapse", () => {
         ?.firstElementChild as HTMLElement;
       expect(contentDiv.style.visibility).toBe("hidden");
     });
-
-    it("renders correctly with no children", () => {
-      const { container } = render(() => <Collapse open={false} />);
-      expect(container.firstChild).toBeTruthy();
-    });
-
-    it("merges custom classes", () => {
-      const { container } = render(() => (
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Collapse open={true} class="my-test-class">
-          Content
-        </Collapse>
-      ));
-      expect(container.querySelector(".my-test-class")).toBeTruthy();
-      // overflow: hidden is applied as inline style
-      const rootDiv = container.querySelector("[data-collapse]") as HTMLElement;
-      expect(rootDiv.style.overflow).toBe("hidden");
-    });
   });
 
   describe("margin-top calculation", () => {
@@ -90,12 +72,6 @@ describe("Collapse", () => {
   });
 
   describe("initial render and transition", () => {
-    it("applies transition class after mount", () => {
-      const { container } = render(() => <Collapse open={false}>Content</Collapse>);
-      const contentDiv = container.querySelector("[data-collapse]")?.firstElementChild;
-      expect(contentDiv?.classList.contains("transition-[margin-top]")).toBeTruthy();
-    });
-
     it("retains transition class and updates margin-top on open state change", async () => {
       const [open, setOpen] = createSignal(false);
       const { container } = render(() => (

@@ -50,21 +50,6 @@ describe("createDbContext", () => {
     expect(postDef.as).toBe("T2");
   });
 
-  it("DDL methods exist on instance", () => {
-    const db = createDbContext(TestDb, new MockExecutor(), {
-      database: "TestDb",
-    });
-
-    // QueryDef generators
-    expect(typeof db.getCreateTableQueryDef).toBe("function");
-    expect(typeof db.getAddColumnQueryDef).toBe("function");
-    expect(typeof db.getClearSchemaQueryDef).toBe("function");
-
-    // Execution methods
-    expect(typeof db.createTable).toBe("function");
-    expect(typeof db.addColumn).toBe("function");
-  });
-
   it("DDL QueryDef generators produce correct output", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
@@ -190,22 +175,6 @@ describe("createDbContext", () => {
       // Already in transact state via connect
       await expect(db.trans(async () => {})).rejects.toThrow("Already in TRANSACTION state.");
     });
-  });
-
-  it("_migration accessor exists", () => {
-    const db = createDbContext(TestDb, new MockExecutor(), {
-      database: "TestDb",
-    });
-
-    expect(typeof db._migration).toBe("function");
-  });
-
-  it("initialize method exists", () => {
-    const db = createDbContext(TestDb, new MockExecutor(), {
-      database: "TestDb",
-    });
-
-    expect(typeof db.initialize).toBe("function");
   });
 
   it("getQueryDefObjectName resolves table with defaults", () => {

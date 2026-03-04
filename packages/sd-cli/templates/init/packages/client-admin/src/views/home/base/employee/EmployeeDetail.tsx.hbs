@@ -53,7 +53,6 @@ export function EmployeeDetail(props: { itemId?: number }) {
       const emp = await db
         .employee()
         .joinLastDataLog()
-        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
         .where((c) => [expr.eq(c.id, props.itemId)])
         .select((c) => ({
           name: c.name,

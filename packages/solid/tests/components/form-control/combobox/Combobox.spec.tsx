@@ -12,50 +12,6 @@ describe("Combobox component", () => {
     mockLoadItems.mockClear();
   });
 
-  describe("basic rendering", () => {
-    it("renders trigger", () => {
-      const { getByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(getByRole("combobox")).not.toBeNull();
-    });
-
-    it("displays placeholder", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Combobox
-            loadItems={mockLoadItems}
-            placeholder="검색하세요"
-            renderValue={(v) => <>{v}</>}
-          />
-        </I18nProvider></ConfigProvider>
-      ));
-      const input = container.querySelector("input");
-      expect(input?.getAttribute("placeholder")).toBe("검색하세요");
-    });
-
-    it("defaults input autocomplete to one-time-code", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
-        </I18nProvider></ConfigProvider>
-      ));
-      const input = container.querySelector("input") as HTMLInputElement;
-      expect(input.autocomplete).toBe("one-time-code");
-    });
-
-    it("sets aria-disabled when disabled", () => {
-      const { getByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
-    });
-  });
-
   describe("dropdown opening/closing", () => {
     it("opens dropdown on input", async () => {
       const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));

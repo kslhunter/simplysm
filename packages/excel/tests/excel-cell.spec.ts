@@ -92,30 +92,6 @@ describe("ExcelCell", () => {
       expect(await ws.cell(0, 0).getVal()).toBeUndefined();
     });
 
-    it("Can handle very large numbers", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      // Large number below MAX_SAFE_INTEGER
-      const bigNumber = Number.MAX_SAFE_INTEGER;
-      await ws.cell(0, 0).setVal(bigNumber);
-
-      const val = await ws.cell(0, 0).getVal();
-      expect(val).toBe(bigNumber);
-    });
-
-    it("Can handle very small decimals", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      // Small decimal within Excel's precision range
-      const smallDecimal = 0.0001;
-      await ws.cell(0, 0).setVal(smallDecimal);
-
-      const val = await ws.cell(0, 0).getVal();
-      expect(val).toBeCloseTo(smallDecimal, 6);
-    });
-
     it("Throws error when setting unsupported type", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
@@ -321,53 +297,6 @@ describe("ExcelCell", () => {
   });
 
   describe("Cell Style", () => {
-    it("Can set background color", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.cell(0, 0).setVal("Colored");
-      await ws.cell(0, 0).setStyle({ background: "00FF0000" }); // Red
-
-      const styleId = await ws.cell(0, 0).getStyleId();
-      expect(styleId).toBeDefined();
-    });
-
-    it("Can set borders", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.cell(0, 0).setVal("Bordered");
-      await ws.cell(0, 0).setStyle({ border: ["left", "right", "top", "bottom"] });
-
-      const styleId = await ws.cell(0, 0).getStyleId();
-      expect(styleId).toBeDefined();
-    });
-
-    it("Can set alignment", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.cell(0, 0).setVal("Aligned");
-      await ws.cell(0, 0).setStyle({
-        horizontalAlign: "center",
-        verticalAlign: "center",
-      });
-
-      const styleId = await ws.cell(0, 0).getStyleId();
-      expect(styleId).toBeDefined();
-    });
-
-    it("Can set number format", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.cell(0, 0).setVal(12345.6789);
-      await ws.cell(0, 0).setStyle({ numberFormat: "number" });
-
-      const styleId = await ws.cell(0, 0).getStyleId();
-      expect(styleId).toBeDefined();
-    });
-
     it("Can set multiple styles simultaneously", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");

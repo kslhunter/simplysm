@@ -6,23 +6,7 @@ import { useNotification } from "./NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { Icon } from "../../display/Icon";
 import { themeTokens } from "../../../styles/theme.styles";
-
-const baseClass = clsx(
-  "fixed",
-  "top-8",
-  "right-4",
-  "z-notification",
-  "flex",
-  "items-start",
-  "gap-4",
-  "px-3",
-  "py-2",
-  "text-white",
-  "shadow-lg",
-  "dark:shadow-black/30",
-  "rounded-lg",
-  "max-w-[calc(100vw-2rem)]",
-);
+import { gap } from "../../../styles/control.styles";
 
 const themeClasses: Record<string, string> = {
   info: themeTokens.info.solid,
@@ -30,12 +14,6 @@ const themeClasses: Record<string, string> = {
   warning: themeTokens.warning.solid,
   danger: themeTokens.danger.solid,
 };
-
-const contentClass = clsx("flex flex-col", "gap-0.5", "min-w-0");
-const messageClass = clsx("opacity-90", "overflow-auto");
-const actionsClass = clsx("flex items-center", "gap-2", "shrink-0");
-const actionButtonClass = clsx("rounded", "bg-white/20", "px-3 py-1", "hover:bg-white/30");
-const dismissButtonClass = clsx("rounded", "p-1", "hover:bg-white/20");
 
 export const NotificationBanner: Component = () => {
   const notification = useNotification();
@@ -58,24 +36,27 @@ export const NotificationBanner: Component = () => {
             data-notification-banner
             data-theme={item().theme}
             role="alert"
-            class={clsx(baseClass, themeClasses[item().theme])}
+            class={clsx(
+              "fixed top-8 right-4 z-notification flex items-start gap-4 px-3 py-2 text-white shadow-lg dark:shadow-black/30 rounded-lg max-w-[calc(100vw-2rem)]",
+              themeClasses[item().theme],
+            )}
           >
-            <div class={contentClass}>
+            <div class={clsx("flex flex-col", gap.sm, "min-w-0")}>
               <span class="font-bold">{item().title}</span>
               <Show when={item().message}>
-                <pre class={messageClass}>{item().message}</pre>
+                <pre class="opacity-90 overflow-auto">{item().message}</pre>
               </Show>
             </div>
-            <div class={actionsClass}>
+            <div class={clsx("flex items-center", gap.xl, "shrink-0")}>
               <Show when={item().action}>
-                <button type="button" class={actionButtonClass} onClick={handleAction}>
+                <button type="button" class="rounded bg-white/20 px-3 py-1 hover:bg-white/30" onClick={handleAction}>
                   {item().action!.label}
                 </button>
               </Show>
               <button
                 type="button"
                 aria-label={i18n.t("notification.close")}
-                class={dismissButtonClass}
+                class="rounded p-1 hover:bg-white/20"
                 onClick={handleDismiss}
               >
                 <Icon icon={IconX} size="1.25em" />

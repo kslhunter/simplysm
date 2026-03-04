@@ -1,7 +1,8 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type ComponentSize, padding } from "../../styles/control.styles";
+import { bg, border } from "../../styles/base.styles";
+import { type ComponentSize, pad } from "../../styles/control.styles";
 import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";
 
 export type ProgressTheme = SemanticTheme;
@@ -14,23 +15,13 @@ export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
   inset?: boolean;
 }
 
-const baseClass = clsx(
-  "relative block w-full",
-  "overflow-hidden",
-  "rounded",
-  "bg-base-200 dark:bg-base-700",
-  "border border-base-200 dark:border-base-700",
-);
-
 const sizeClasses: Record<ComponentSize, string> = {
-  default: padding.default,
-  xs: padding.xs,
-  sm: padding.sm,
-  lg: padding.lg,
-  xl: padding.xl,
+  default: pad.default,
+  xs: pad.xs,
+  sm: pad.sm,
+  lg: pad.lg,
+  xl: pad.xl,
 };
-
-const insetClass = clsx("rounded-none", "border-0", "bg-transparent");
 
 const barThemeClasses: Record<ProgressTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.solid]),
@@ -41,7 +32,12 @@ export const Progress: ParentComponent<ProgressProps> = (props) => {
 
   const getClassName = () => {
     const size = local.size ?? "default";
-    return twMerge(baseClass, sizeClasses[size], local.inset ? insetClass : undefined, local.class);
+    return twMerge(
+      clsx("relative block w-full overflow-hidden rounded", bg.subtle, "border", border.default),
+      sizeClasses[size],
+      local.inset ? "rounded-none border-0 bg-transparent" : undefined,
+      local.class,
+    );
   };
 
   const getBarClassName = () => {

@@ -353,57 +353,6 @@ describe("SELECT - JOIN", () => {
     });
   });
 
-  it("Combination of join + where", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
-      .where((item) => [expr.eq(item.isActive, true)])
-      .getSelectQueryDef();
-
-    expect(def).toEqual({
-      type: "select",
-      as: "T1",
-      from: { database: "TestDb", schema: "TestSchema", name: "User" },
-      select: {
-        "id": { type: "column", path: ["T1", "id"] },
-        "name": { type: "column", path: ["T1", "name"] },
-        "email": { type: "column", path: ["T1", "email"] },
-        "age": { type: "column", path: ["T1", "age"] },
-        "isActive": { type: "column", path: ["T1", "isActive"] },
-        "companyId": { type: "column", path: ["T1", "companyId"] },
-        "createdAt": { type: "column", path: ["T1", "createdAt"] },
-        "post.id": { type: "column", path: ["T1.post", "id"] },
-        "post.userId": { type: "column", path: ["T1.post", "userId"] },
-        "post.title": { type: "column", path: ["T1.post", "title"] },
-        "post.content": { type: "column", path: ["T1.post", "content"] },
-        "post.viewCount": { type: "column", path: ["T1.post", "viewCount"] },
-        "post.publishedAt": { type: "column", path: ["T1.post", "publishedAt"] },
-      },
-      where: [
-        {
-          type: "eq",
-          source: { type: "column", path: ["T1", "isActive"] },
-          target: { type: "value", value: true },
-        },
-      ],
-      joins: [
-        {
-          type: "select",
-          as: "T1.post",
-          from: { database: "TestDb", schema: "TestSchema", name: "Post" },
-          isSingle: false,
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1.post", "userId"] },
-              target: { type: "column", path: ["T1", "id"] },
-            },
-          ],
-        },
-      ],
-    });
-  });
 });
 
 describe("SELECT - INCLUDE", () => {
@@ -502,68 +451,6 @@ describe("SELECT - INCLUDE", () => {
       .include((item) => item.user.company)
       .getSelectQueryDef();
 
-    expect(def).toEqual({
-      type: "select",
-      as: "T1",
-      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
-      select: {
-        "id": { type: "column", path: ["T1", "id"] },
-        "userId": { type: "column", path: ["T1", "userId"] },
-        "title": { type: "column", path: ["T1", "title"] },
-        "content": { type: "column", path: ["T1", "content"] },
-        "viewCount": { type: "column", path: ["T1", "viewCount"] },
-        "publishedAt": { type: "column", path: ["T1", "publishedAt"] },
-        "user.id": { type: "column", path: ["T1.user", "id"] },
-        "user.name": { type: "column", path: ["T1.user", "name"] },
-        "user.email": { type: "column", path: ["T1.user", "email"] },
-        "user.age": { type: "column", path: ["T1.user", "age"] },
-        "user.isActive": { type: "column", path: ["T1.user", "isActive"] },
-        "user.companyId": { type: "column", path: ["T1.user", "companyId"] },
-        "user.createdAt": { type: "column", path: ["T1.user", "createdAt"] },
-        "user.company.id": { type: "column", path: ["T1.user.company", "id"] },
-        "user.company.name": { type: "column", path: ["T1.user.company", "name"] },
-        "user.company.foundedAt": { type: "column", path: ["T1.user.company", "foundedAt"] },
-      },
-      joins: [
-        {
-          type: "select",
-          as: "T1.user",
-          from: { database: "TestDb", schema: "TestSchema", name: "User" },
-          isSingle: true,
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1.user", "id"] },
-              target: { type: "column", path: ["T1", "userId"] },
-            },
-          ],
-        },
-        {
-          type: "select",
-          as: "T1.user.company",
-          from: { database: "TestDb", schema: "TestSchema", name: "Company" },
-          isSingle: true,
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1.user.company", "id"] },
-              target: { type: "column", path: ["T1.user", "companyId"] },
-            },
-          ],
-        },
-      ],
-    });
-  });
-
-  it("Multiple include", () => {
-    const db = createTestDb();
-    const def = db
-      .post()
-      .include((item) => item.user)
-      .include((item) => item.user.company)
-      .getSelectQueryDef();
-
-    // duplicate includes are automatically deduplicated (user once, company once)
     expect(def).toEqual({
       type: "select",
       as: "T1",

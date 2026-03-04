@@ -24,15 +24,6 @@ describe("path functions", () => {
       expect(result).toBe("C:/Users/test/file.txt");
     });
 
-    it("keeps already POSIX-style path as is", () => {
-      const result = pathPosix("/usr/local/bin");
-      expect(result).toBe("/usr/local/bin");
-    });
-
-    it("handles mixed path separators", () => {
-      const result = pathPosix("C:/Users\\test/file.txt");
-      expect(result).toBe("C:/Users/test/file.txt");
-    });
   });
 
   //#endregion
@@ -51,10 +42,6 @@ describe("path functions", () => {
       expect(result).toBe(path.resolve(basePath, "sub", "file.txt"));
     });
 
-    it("converts relative path to absolute path", () => {
-      const result = pathNorm("relative/path");
-      expect(path.isAbsolute(result)).toBe(true);
-    });
   });
 
   //#endregion

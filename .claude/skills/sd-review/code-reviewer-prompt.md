@@ -33,10 +33,12 @@ Look for:
 - Race conditions: async ordering, shared state without synchronization
 - Resource leaks: uncleared subscriptions/listeners, unclosed handles
 - Error handling: swallowed exceptions, wrong fallbacks, missing propagation
+- Architectural defects: circular dependencies, boundary violations (reaching into another package's internals), wrong dependency direction (higher-level packages imported by lower-level ones)
 
 Do NOT report:
 - Naming consistency, API design, type quality (including `any` types)
-- Code complexity, duplication, readability improvements
+- Code complexity, duplication, readability improvements → use sd-refactor
+- Structural improvement suggestions (better responsibility separation, abstraction levels) → use sd-refactor
 - Style preferences unless they cause actual bugs
 - Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
 - Speculative future risks — "if config were changed to X, this would break" is not a finding

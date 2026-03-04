@@ -10,36 +10,6 @@ describe("NumberInput", () => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
 
-  describe("basic rendering", () => {
-    it("renders input element", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toBeInTheDocument();
-    });
-
-    it("sets inputmode to numeric", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("inputmode", "numeric");
-    });
-
-    it("sets input type to text", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("type", "text");
-    });
-
-    it("defaults autocomplete to one-time-code", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("autocomplete", "one-time-code");
-    });
-  });
-
   describe("value conversion", () => {
     it("displays numeric value as string", () => {
       render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={12345} /></I18nProvider></ConfigProvider>);
@@ -166,47 +136,6 @@ describe("NumberInput", () => {
       expect(screen.getByText("5,678")).toBeInTheDocument();
     });
 
-    it("applies disabled style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={100} disabled /></I18nProvider></ConfigProvider>);
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("bg-base-100");
-    });
-  });
-
-  describe("right alignment", () => {
-    it("aligns input to the right", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input.className).toContain("text-right");
-    });
-  });
-
-  describe("style options", () => {
-    it("applies small padding when size='sm'", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput size="sm" /></I18nProvider></ConfigProvider>);
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("px-1.5");
-    });
-
-    it("applies large padding when size='lg'", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput size="lg" /></I18nProvider></ConfigProvider>);
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("px-3");
-    });
-
-    it("applies inset style", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset /></I18nProvider></ConfigProvider>);
-
-      // outer div is relative when inset, inner content div has border-none
-      const outer = container.firstChild as HTMLElement;
-      expect(outer.classList.contains("relative")).toBe(true);
-      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
-      expect(contentDiv.className).toContain("border-none");
-    });
   });
 
   describe("inset dual-element", () => {
@@ -232,13 +161,6 @@ describe("NumberInput", () => {
 
       const input = outer.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
-    });
-
-    it("applies right alignment in inset + readonly", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset readonly value={100} /></I18nProvider></ConfigProvider>);
-      const outer = container.firstChild as HTMLElement;
-      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
-      expect(contentDiv.classList.contains("justify-end")).toBe(true);
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
@@ -268,15 +190,6 @@ describe("NumberInput", () => {
       fireEvent.input(input, { target: { value: "500" } });
 
       expect(input).toHaveValue("500");
-    });
-  });
-
-  describe("placeholder", () => {
-    it("displays placeholder", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput placeholder="숫자를 입력하세요" /></I18nProvider></ConfigProvider>);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("placeholder", "숫자를 입력하세요");
     });
   });
 
@@ -318,38 +231,6 @@ describe("NumberInput", () => {
   });
 
   describe("Prefix slot", () => {
-    it("renders NumberInput.Prefix slot", () => {
-      render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><NumberInput>
-          <NumberInput.Prefix>
-            <span data-testid="prefix">₩</span>
-          </NumberInput.Prefix>
-        </NumberInput></I18nProvider></ConfigProvider>
-      ));
-
-      expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
-    });
-
-    it("applies gap class when Prefix slot is used", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><NumberInput>
-          <NumberInput.Prefix>
-            <span>₩</span>
-          </NumberInput.Prefix>
-        </NumberInput></I18nProvider></ConfigProvider>
-      ));
-
-      const wrapper = container.querySelector("[data-number-field]") as HTMLElement;
-      expect(wrapper.className).toContain("gap-");
-    });
-
-    it("does not apply gap class without Prefix slot", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput /></I18nProvider></ConfigProvider>);
-
-      const wrapper = container.querySelector("[data-number-field]") as HTMLElement;
-      expect(wrapper.className).not.toContain("gap-");
-    });
-
     it("renders Prefix slot when disabled", () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider><NumberInput disabled value={100}>

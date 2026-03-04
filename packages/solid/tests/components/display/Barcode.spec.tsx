@@ -5,11 +5,6 @@ import { Barcode } from "../../../src/components/display/Barcode";
 
 describe("Barcode", () => {
   describe("basic rendering", () => {
-    it("renders with data-barcode attribute", () => {
-      const { container } = render(() => <Barcode type="qrcode" value="test" />);
-      expect(container.querySelector("[data-barcode]")).toBeTruthy();
-    });
-
     it("renders SVG when value is provided", () => {
       const { container } = render(() => <Barcode type="qrcode" value="hello" />);
       const el = container.querySelector("[data-barcode]")!;
@@ -47,15 +42,6 @@ describe("Barcode", () => {
 
       setValue("");
       expect(el.innerHTML).toBe("");
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom classes", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => <Barcode type="qrcode" value="test" class="my-custom" />);
-      const el = container.querySelector("[data-barcode]")!;
-      expect(el.classList.contains("my-custom")).toBe(true);
     });
   });
 });

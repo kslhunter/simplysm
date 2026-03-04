@@ -10,10 +10,6 @@ describe("number utils", () => {
   //#region numParseInt
 
   describe("numParseInt()", () => {
-    it("Parses numeric string to integer", () => {
-      expect(parseInt("123")).toBe(123);
-    });
-
     it("Parses negative string", () => {
       expect(parseInt("-123")).toBe(-123);
     });
@@ -62,10 +58,6 @@ describe("number utils", () => {
       expect(parseRoundedInt("123.4")).toBe(123);
     });
 
-    it("Integer string returned as-is", () => {
-      expect(parseRoundedInt("123")).toBe(123);
-    });
-
     it("Rounds number type", () => {
       expect(parseRoundedInt(123.7)).toBe(124);
     });
@@ -80,14 +72,6 @@ describe("number utils", () => {
   //#region numParseFloat
 
   describe("numParseFloat()", () => {
-    it("Parses floating string", () => {
-      expect(parseFloat("123.45")).toBe(123.45);
-    });
-
-    it("Parses integer string as float", () => {
-      expect(parseFloat("123")).toBe(123);
-    });
-
     it("Parses negative floating string", () => {
       expect(parseFloat("-123.45")).toBe(-123.45);
     });

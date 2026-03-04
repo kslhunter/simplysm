@@ -28,22 +28,6 @@ describe("SdFsWatcher", () => {
       expect(watcher).toBeDefined();
     });
 
-    it("starts watching files with options", async () => {
-      watcher = await FsWatcher.watch([path.join(testDir, "**/*")], {
-        ignoreInitial: false,
-      });
-      expect(watcher).toBeDefined();
-    });
-
-    it("logs errors when error events occur", async () => {
-      // chokidar starts watching non-existent paths without issue
-      // Error events only occur on actual filesystem errors
-      const nonExistentPath = path.join(testDir, "non-existent-dir-" + Date.now());
-      watcher = await FsWatcher.watch([nonExistentPath]);
-
-      // Error handler is registered so it doesn't crash even if an error occurs
-      expect(watcher).toBeDefined();
-    });
   });
 
   //#endregion
@@ -74,43 +58,6 @@ describe("SdFsWatcher", () => {
       const result = watcher.onChange({ delay: 100 }, fn);
 
       expect(result).toBe(watcher);
-    });
-
-    it("can specify delay option with various values", async () => {
-      watcher = await FsWatcher.watch([path.join(testDir, "**/*")]);
-
-      const fn = vi.fn();
-      // delay option should be specifiable with various values
-      expect(() => watcher!.onChange({ delay: 0 }, fn)).not.toThrow();
-      expect(() => watcher!.onChange({ delay: 500 }, fn)).not.toThrow();
-      expect(() => watcher!.onChange({ delay: 1000 }, fn)).not.toThrow();
-    });
-  });
-
-  //#endregion
-
-  //#region Types
-
-  describe("Types", () => {
-    it("verifies FsWatcherEvent type definition", () => {
-      // Verify that event types are correctly defined
-      const validEvents = ["add", "addDir", "change", "unlink", "unlinkDir"];
-      expect(validEvents).toContain("add");
-      expect(validEvents).toContain("addDir");
-      expect(validEvents).toContain("change");
-      expect(validEvents).toContain("unlink");
-      expect(validEvents).toContain("unlinkDir");
-    });
-
-    it("verifies FsWatcherChangeInfo structure", () => {
-      // Type check to verify interface structure
-      const mockChangeInfo = {
-        event: "add" as const,
-        path: "/test/path",
-      };
-
-      expect(mockChangeInfo.event).toBe("add");
-      expect(mockChangeInfo.path).toBe("/test/path");
     });
   });
 

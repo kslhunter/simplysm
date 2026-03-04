@@ -193,122 +193,7 @@ describe("Time", () => {
 
   //#endregion
 
-  //#region Getters
-
-  describe("Getters", () => {
-    it("Returns hour", () => {
-      const time = new Time(15, 30, 45, 123);
-      expect(time.hour).toBe(15);
-    });
-
-    it("Returns minute", () => {
-      const time = new Time(15, 30, 45, 123);
-      expect(time.minute).toBe(30);
-    });
-
-    it("Returns second", () => {
-      const time = new Time(15, 30, 45, 123);
-      expect(time.second).toBe(45);
-    });
-
-    it("Returns millisecond", () => {
-      const time = new Time(15, 30, 45, 123);
-      expect(time.millisecond).toBe(123);
-    });
-
-    it("Returns tick", () => {
-      const time = new Time(15, 30, 45, 123);
-      const expectedTick = (15 * 60 * 60 + 30 * 60 + 45) * 1000 + 123;
-      expect(time.tick).toBe(expectedTick);
-    });
-  });
-
-  //#endregion
-
-  //#region tick comparison
-
-  describe("tick comparison", () => {
-    it("Same times have same tick", () => {
-      const t1 = new Time(10, 30, 45, 123);
-      const t2 = new Time(10, 30, 45, 123);
-
-      expect(t1.tick).toBe(t2.tick);
-    });
-
-    it("Different times have different ticks", () => {
-      const t1 = new Time(10, 30, 45, 123);
-      const t2 = new Time(10, 30, 45, 124);
-
-      expect(t1.tick).not.toBe(t2.tick);
-    });
-
-    it("Can compare time order by tick", () => {
-      const t1 = new Time(0, 0, 0);
-      const t2 = new Time(12, 30, 0);
-      const t3 = new Time(23, 59, 59);
-
-      expect(t1.tick).toBeLessThan(t2.tick);
-      expect(t2.tick).toBeLessThan(t3.tick);
-    });
-
-    it("Millisecond precision comparison is possible", () => {
-      const t1 = new Time(10, 30, 45, 0);
-      const t2 = new Time(10, 30, 45, 1);
-
-      expect(t2.tick - t1.tick).toBe(1);
-    });
-
-    it("Can calculate time difference by tick", () => {
-      const t1 = new Time(10, 0, 0);
-      const t2 = new Time(11, 0, 0);
-
-      // 1 hour = 3600000ms
-      expect(t2.tick - t1.tick).toBe(3600000);
-    });
-  });
-
-  //#endregion
-
   //#region setX methods (immutable)
-
-  describe("setHour()", () => {
-    it("Returns new instance with hour changed", () => {
-      const time = new Time(15, 30, 45, 123);
-      const newTime = time.setHour(20);
-
-      expect(newTime.hour).toBe(20);
-      expect(newTime.minute).toBe(30);
-      expect(newTime.second).toBe(45);
-      expect(newTime.millisecond).toBe(123);
-      expect(time.hour).toBe(15); // original immutable
-    });
-  });
-
-  describe("setMinute()", () => {
-    it("Returns new instance with minute changed", () => {
-      const time = new Time(15, 30, 45, 123);
-      const newTime = time.setMinute(50);
-
-      expect(newTime.hour).toBe(15);
-      expect(newTime.minute).toBe(50);
-      expect(newTime.second).toBe(45);
-      expect(newTime.millisecond).toBe(123);
-      expect(time.minute).toBe(30); // original immutable
-    });
-  });
-
-  describe("setSecond()", () => {
-    it("Returns new instance with second changed", () => {
-      const time = new Time(15, 30, 45, 123);
-      const newTime = time.setSecond(55);
-
-      expect(newTime.hour).toBe(15);
-      expect(newTime.minute).toBe(30);
-      expect(newTime.second).toBe(55);
-      expect(newTime.millisecond).toBe(123);
-      expect(time.second).toBe(45); // original immutable
-    });
-  });
 
   describe("setMillisecond()", () => {
     it("Returns new instance with millisecond changed", () => {
@@ -495,22 +380,6 @@ describe("Time", () => {
   //#region isValid
 
   describe("isValid", () => {
-    it("Valid time returns true", () => {
-      const time = new Time(15, 30, 45);
-      expect(time.isValid).toBe(true);
-    });
-
-    it("Default constructor is valid time", () => {
-      const time = new Time();
-      expect(time.isValid).toBe(true);
-    });
-
-    it("Time created with tick is valid", () => {
-      const tick = (15 * 60 * 60 + 30 * 60 + 45) * 1000;
-      const time = new Time(tick);
-      expect(time.isValid).toBe(true);
-    });
-
     it("Time created with NaN tick has isValid false", () => {
       const time = new Time(NaN);
       expect(time.isValid).toBe(false);

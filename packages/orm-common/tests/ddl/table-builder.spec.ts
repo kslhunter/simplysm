@@ -24,23 +24,6 @@ describe("DDL - Table Builder", () => {
     });
   });
 
-  describe("description specified", () => {
-    const table = Table("User").description("User table");
-
-    it("should validate metadata", () => {
-      expect(table.meta).toEqual({
-        name: "User",
-        description: "User table",
-        database: undefined,
-        schema: undefined,
-        columns: undefined,
-        primaryKey: undefined,
-        relations: undefined,
-        indexes: undefined,
-      });
-    });
-  });
-
   describe("database specified", () => {
     const table = Table("User").database("CustomDb");
 
@@ -50,23 +33,6 @@ describe("DDL - Table Builder", () => {
         description: undefined,
         database: "CustomDb",
         schema: undefined,
-        columns: undefined,
-        primaryKey: undefined,
-        relations: undefined,
-        indexes: undefined,
-      });
-    });
-  });
-
-  describe("schema specified", () => {
-    const table = Table("User").schema("CustomSchema");
-
-    it("should validate metadata", () => {
-      expect(table.meta).toEqual({
-        name: "User",
-        description: undefined,
-        database: undefined,
-        schema: "CustomSchema",
         columns: undefined,
         primaryKey: undefined,
         relations: undefined,

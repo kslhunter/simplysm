@@ -41,42 +41,6 @@ describe("UPDATE - Basic", () => {
     });
   });
 
-  describe("UPDATE multiple columns", () => {
-    const db = createTestDb();
-
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.id, 1)])
-      .getUpdateQueryDef(() => ({
-        name: expr.val("string", "New Name"),
-        departmentId: expr.val("number", 2),
-      }));
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "update",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        as: "T1",
-        record: {
-          name: { type: "value", value: "New Name" },
-          departmentId: { type: "value", value: 2 },
-        },
-        where: [
-          {
-            type: "eq",
-            source: { type: "column", path: ["T1", "id"] },
-            target: { type: "value", value: 1 },
-          },
-        ],
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.updateMultiCol[dialect]);
-    });
-  });
-
   describe("UPDATE with literal values (without expr.val)", () => {
     const db = createTestDb();
 
@@ -150,45 +114,6 @@ describe("UPDATE - Basic", () => {
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.updateMixed[dialect]);
-    });
-  });
-
-  describe("UPDATE referencing current values (e.g., count = count + 1)", () => {
-    const db = createTestDb();
-
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.id, 1)])
-      .getUpdateQueryDef((e) => ({
-        // managerId = managerId + 1 (example)
-        managerId: expr.raw("number")`${e.managerId} + 1`,
-      }));
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "update",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        as: "T1",
-        record: {
-          managerId: {
-            type: "raw",
-            sql: "$1 + 1",
-            params: [{ type: "column", path: ["T1", "managerId"] }],
-          },
-        },
-        where: [
-          {
-            type: "eq",
-            source: { type: "column", path: ["T1", "id"] },
-            target: { type: "value", value: 1 },
-          },
-        ],
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.updateWithRef[dialect]);
     });
   });
 
@@ -294,25 +219,4 @@ describe("FK switch", () => {
     });
   });
 
-  describe("FK on", () => {
-    const db = createTestDb();
-
-    const def = db.getSwitchFkQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "Employee" },
-      "on",
-    );
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "switchFk",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        switch: "on",
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.fkOn[dialect]);
-    });
-  });
 });

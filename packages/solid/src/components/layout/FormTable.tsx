@@ -8,26 +8,12 @@ export interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellEl
   label?: JSX.Element;
 }
 
-const baseClass = clsx("border-separate border-spacing-0 border-0");
-
 // -- Sub-components --
-
-const rowClass = clsx(
-  "[&>*:last-child]:pr-0",
-  "last:[&>*]:pb-0",
-);
 
 const FormTableRow: ParentComponent<JSX.HTMLAttributes<HTMLTableRowElement>> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
-  return <tr class={twMerge(rowClass, local.class)} {...rest}>{local.children}</tr>;
+  return <tr class={twMerge("[&>*:last-child]:pr-0 last:[&>*]:pb-0", local.class)} {...rest}>{local.children}</tr>;
 };
-
-const thClass = clsx(
-  "align-middle pr-1.5 pb-1",
-  "w-0 whitespace-nowrap pl-1 text-right",
-);
-
-const tdClass = clsx("align-middle pr-1.5 pb-1");
 
 const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "label", "colspan"]);
@@ -41,9 +27,9 @@ const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
   return (
     <>
       <Show when={local.label}>
-        <th class={thClass}>{local.label}</th>
+        <th class="pb-1 pr-1.5 align-middle w-0 whitespace-nowrap pl-1 text-right">{local.label}</th>
       </Show>
-      <td class={twMerge(tdClass, local.class)} colspan={effectiveColspan()} {...rest}>
+      <td class={twMerge("pb-1 pr-1.5 align-middle", local.class)} colspan={effectiveColspan()} {...rest}>
         {local.children}
       </td>
     </>
@@ -56,7 +42,7 @@ const FormTableBase: ParentComponent<FormTableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   return (
-    <table data-form-table class={twMerge(baseClass, local.class)} {...rest}>
+    <table data-form-table class={twMerge("border-separate border-spacing-0 border-0", local.class)} {...rest}>
       <tbody>{local.children}</tbody>
     </table>
   );

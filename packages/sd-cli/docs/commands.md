@@ -24,7 +24,6 @@ sd-cli lint --timing
 | `--timing` | `boolean` | `false` | Print execution time per ESLint rule. |
 
 - Reads `eslint.config.ts` (or `.js`/`.mts`/`.mjs`) from the project root.
-- Reads `stylelint.config.ts` (or similar) if present.
 - ESLint cache is stored in `.cache/eslint.cache`.
 - Sets `process.exitCode = 1` on errors.
 

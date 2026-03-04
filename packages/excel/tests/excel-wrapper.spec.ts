@@ -95,19 +95,6 @@ describe("ExcelWrapper", () => {
   });
 
   describe("Type conversion", () => {
-    it("can convert strings to numbers", async () => {
-      const wrapper = new ExcelWrapper(testSchema);
-
-      // Simulate Excel with values stored as strings manually
-      const wb = await wrapper.write("Test", [{ name: "Test", age: 25 }]);
-      const buffer = await wb.getBytes();
-      await wb.close();
-
-      const records = await wrapper.read(buffer);
-      expect(typeof records[0].age).toBe("number");
-      expect(records[0].age).toBe(25);
-    });
-
     it("applies default values", async () => {
       const wrapper = new ExcelWrapper(testSchema);
 
@@ -214,16 +201,6 @@ describe("ExcelWrapper", () => {
       await wb.close();
 
       await expect(wrapper.read(buffer, "NotExist")).rejects.toThrow();
-    });
-
-    it("throws error when reading with non-existent worksheet index", async () => {
-      const wrapper = new ExcelWrapper(testSchema);
-
-      const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
-      const buffer = await wb.getBytes();
-      await wb.close();
-
-      await expect(wrapper.read(buffer, 99)).rejects.toThrow();
     });
 
     it("throws error with worksheet name and detailed error when schema validation fails", async () => {

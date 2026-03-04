@@ -122,16 +122,6 @@ describe("recommended config", () => {
     }
   });
 
-  it("should set parserOptions.project to true in TS config", () => {
-    const tsConfig = recommended.find(
-      (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("*.ts")),
-    ) as ConfigItem & {
-      languageOptions?: { parserOptions?: { project?: unknown } };
-    };
-    expect(tsConfig).toBeDefined();
-    expect(tsConfig.languageOptions?.parserOptions?.project).toBe(true);
-  });
-
   it("should apply solid plugin to TSX files", () => {
     // Find config that includes solid plugin and handles .tsx files
     // (in current implementation, **/*.ts and **/*.tsx are handled together)

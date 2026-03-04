@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { disabledOpacity } from "../../styles/control.styles";
+import { state } from "../../styles/control.styles";
 import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";
 
 export type LinkTheme = SemanticTheme;
@@ -10,8 +10,6 @@ export interface LinkProps extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
   theme?: LinkTheme;
   disabled?: boolean;
 }
-
-const baseClass = clsx("hover:underline", "cursor-pointer");
 
 const themeClasses: Record<LinkTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.text]),
@@ -22,7 +20,7 @@ export const Link: ParentComponent<LinkProps> = (props) => {
 
   const getClassName = () => {
     const theme = local.theme ?? "primary";
-    return twMerge(baseClass, themeClasses[theme], local.disabled && disabledOpacity, local.class);
+    return twMerge("hover:underline cursor-pointer", themeClasses[theme], local.disabled && state.disabled, local.class);
   };
 
   return (

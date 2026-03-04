@@ -17,20 +17,20 @@ export default function TablePage() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Table</h2>
         <Table>
           <thead>
-            <tr>
-              <th>Key</th>
-              <th>Value</th>
-            </tr>
+            <Table.Tr>
+              <Table.Th>Key</Table.Th>
+              <Table.Th>Value</Table.Th>
+            </Table.Tr>
           </thead>
           <tbody>
-            <tr>
-              <td>A</td>
-              <td>100</td>
-            </tr>
-            <tr>
-              <td>B</td>
-              <td>200</td>
-            </tr>
+            <Table.Tr>
+              <Table.Td>A</Table.Td>
+              <Table.Td>100</Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td>B</Table.Td>
+              <Table.Td>200</Table.Td>
+            </Table.Tr>
           </tbody>
         </Table>
       </section>
@@ -40,23 +40,23 @@ export default function TablePage() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Full Width Table</h2>
         <Table class="w-full">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-            </tr>
+            <Table.Tr>
+              <Table.Th>ID</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Role</Table.Th>
+              <Table.Th>Status</Table.Th>
+            </Table.Tr>
           </thead>
           <tbody>
             <For each={sampleData}>
               {(row) => (
-                <tr class="hover:bg-base-50 dark:hover:bg-base-800/50">
-                  <td>{row.id}</td>
-                  <td>{row.name}</td>
-                  <td>{row.email}</td>
-                  <td>{row.role}</td>
-                  <td>
+                <Table.Tr class="hover:bg-base-50 dark:hover:bg-base-800/50">
+                  <Table.Td>{row.id}</Table.Td>
+                  <Table.Td>{row.name}</Table.Td>
+                  <Table.Td>{row.email}</Table.Td>
+                  <Table.Td>{row.role}</Table.Td>
+                  <Table.Td>
                     <Tag
                       theme={
                         row.status === "Active"
@@ -68,8 +68,8 @@ export default function TablePage() {
                     >
                       {row.status}
                     </Tag>
-                  </td>
-                </tr>
+                  </Table.Td>
+                </Table.Tr>
               )}
             </For>
           </tbody>
@@ -85,24 +85,24 @@ export default function TablePage() {
 
         <Table inset class="w-full">
           <thead>
-            <tr>
-              <th>Item</th>
-              <th>Value</th>
-            </tr>
+            <Table.Tr>
+              <Table.Th>Item</Table.Th>
+              <Table.Th>Value</Table.Th>
+            </Table.Tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Server</td>
-              <td>production-01</td>
-            </tr>
-            <tr>
-              <td>Status</td>
-              <td>Healthy</td>
-            </tr>
-            <tr>
-              <td>Uptime</td>
-              <td>99.9%</td>
-            </tr>
+            <Table.Tr>
+              <Table.Td>Server</Table.Td>
+              <Table.Td>production-01</Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td>Status</Table.Td>
+              <Table.Td>Healthy</Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td>Uptime</Table.Td>
+              <Table.Td>99.9%</Table.Td>
+            </Table.Tr>
           </tbody>
         </Table>
       </section>

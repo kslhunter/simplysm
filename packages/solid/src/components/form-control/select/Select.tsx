@@ -21,8 +21,9 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import { ripple } from "../../../directives/ripple";
-import { border, text } from "../../../styles/base.styles";
+import { bg, border, text } from "../../../styles/base.styles";
 import { type ComponentSize, pad } from "../../../styles/control.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
@@ -100,7 +101,7 @@ const SelectAction = (props: SelectActionProps) => {
       {...rest}
       type="button"
       onClick={handleClick}
-      class={twMerge("p-2", "hover:bg-base-100 dark:hover:bg-base-700", local.class)}
+      class={twMerge("p-2", themeTokens.base.hoverBg, local.class)}
       data-select-action
     >
       {local.children}
@@ -114,17 +115,6 @@ const SelectAction = (props: SelectActionProps) => {
 
 //#endregion
 
-// Select-specific styles
-const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
-const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
-
-// Search input styles (override TextInput wrapper)
-const searchInputClass = clsx("w-full", "rounded-none", "border-0 border-b", border.subtle);
-
-// Select all/deselect all button area styles
-const selectAllBarClass = clsx("flex gap-2", "border-b", border.subtle, pad.default, "text-xs");
-
-// Select all/deselect all button styles
 const selectAllBtnClass = clsx(
   "text-primary-500",
   "hover:text-primary-600 dark:hover:text-primary-400",
@@ -135,7 +125,6 @@ const SelectItemTemplate = <TArgs extends unknown[]>(props: {
   children: (...args: TArgs) => JSX.Element;
 }) => {
   const ctx = useSelectContext();
-  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
   ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
@@ -621,7 +610,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
         const direction = local.multiDisplayDirection ?? "horizontal";
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
-            <For each={current}>{(v) => <span class={multiTagClass}>{renderValue(v)}</span>}</For>
+            <For each={current}>{(v) => <span class={clsx("rounded px-1", bg.subtle)}>{renderValue(v)}</span>}</For>
           </div>
         );
       }
@@ -659,7 +648,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
               style={local.style}
               onKeyDown={handleTriggerKeyDown}
             >
-              <div class={selectedValueClass}>{renderSelectedValue()}</div>
+              <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
               <div class={chevronWrapperClass}>
                 <Icon icon={IconChevronDown} size="1em" />
               </div>
@@ -673,12 +662,12 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
                 value={searchText()}
                 onValueChange={setSearchText}
                 placeholder={i18n.t("select.searchPlaceholder")}
-                class={searchInputClass}
+                class={clsx("w-full rounded-none border-0 border-b", border.subtle)}
               />
             </Show>
             {/* Select all/deselect buttons */}
             <Show when={showSelectAllBar()}>
-              <div class={selectAllBarClass}>
+              <div class={clsx("flex gap-2 border-b", border.subtle, pad.default, "text-xs")}>
                 <button
                   type="button"
                   data-select-all

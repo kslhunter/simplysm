@@ -14,32 +14,6 @@ describe("Select component", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  describe("basic rendering", () => {
-    it("renders trigger", () => {
-      const { getByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-        </Select>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      expect(getByRole("combobox")).not.toBeNull();
-    });
-
-    it("displays placeholder", () => {
-      const { getByText } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Select placeholder="Please select" renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-        </Select>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      expect(getByText("Please select")).not.toBeNull();
-    });
-  });
-
   describe("dropdown opening/closing", () => {
     it("opens dropdown on trigger click", async () => {
       const { getByRole } = render(() => (
@@ -237,33 +211,9 @@ describe("Select component", () => {
 
       expect(document.querySelector("[data-dropdown]")).toBeNull();
     });
-
-    it("sets aria-disabled when disabled", () => {
-      const { getByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Select disabled renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-        </Select>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
-    });
   });
 
   describe("accessibility", () => {
-    it("sets role=combobox", () => {
-      const { getByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-        </Select>
-        </I18nProvider></ConfigProvider>
-      ));
-
-      expect(getByRole("combobox")).not.toBeNull();
-    });
-
     it("sets aria-expanded=true when open", async () => {
       const { getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>

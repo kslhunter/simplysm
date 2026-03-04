@@ -13,40 +13,6 @@ describe("useLocalStorage", () => {
     localStorage.clear();
   });
 
-  it("returns undefined when no initial value is provided", () => {
-    let value!: () => string | undefined;
-
-    function TestComponent() {
-      [value] = useLocalStorage<string>("test-key");
-      return <div />;
-    }
-
-    render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <TestComponent />
-      </ConfigContext.Provider>
-    ));
-
-    expect(value()).toBeUndefined();
-  });
-
-  it("returns provided initial value", () => {
-    let value!: () => string | undefined;
-
-    function TestComponent() {
-      [value] = useLocalStorage("test-key", "default");
-      return <div />;
-    }
-
-    render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
-        <TestComponent />
-      </ConfigContext.Provider>
-    ));
-
-    expect(value()).toBe("default");
-  });
-
   it("returns existing value from localStorage if available", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 

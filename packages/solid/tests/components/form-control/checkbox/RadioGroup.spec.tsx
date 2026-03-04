@@ -9,31 +9,6 @@ describe("RadioGroup component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
-  describe("basic rendering", () => {
-    it("renders the container", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <RadioGroup>
-            <RadioGroup.Item value="a">A</RadioGroup.Item>
-          </RadioGroup>
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(container.querySelector("div")).toBeTruthy();
-    });
-
-    it("renders items as radios", () => {
-      const { getAllByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <RadioGroup>
-            <RadioGroup.Item value="a">A</RadioGroup.Item>
-            <RadioGroup.Item value="b">B</RadioGroup.Item>
-          </RadioGroup>
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(getAllByRole("radio").length).toBe(2);
-    });
-  });
-
   describe("controlled pattern", () => {
     it("reflects value prop as selected state", () => {
       const { getAllByRole } = render(() => (

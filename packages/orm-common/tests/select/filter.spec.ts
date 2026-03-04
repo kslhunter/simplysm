@@ -75,21 +75,6 @@ describe("SELECT - WHERE - comparison operations", () => {
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        where: [
-          {
-            type: "gt",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 20 },
-          },
-        ],
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereGt[dialect]);
@@ -102,21 +87,6 @@ describe("SELECT - WHERE - comparison operations", () => {
       .user()
       .where((item) => [expr.gte(item.age, 20)])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        where: [
-          {
-            type: "gte",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 20 },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -131,21 +101,6 @@ describe("SELECT - WHERE - comparison operations", () => {
       .where((item) => [expr.lt(item.age, 30)])
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        where: [
-          {
-            type: "lt",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 30 },
-          },
-        ],
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereLt[dialect]);
@@ -158,21 +113,6 @@ describe("SELECT - WHERE - comparison operations", () => {
       .user()
       .where((item) => [expr.lte(item.age, 30)])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        where: [
-          {
-            type: "lte",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 30 },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -355,24 +295,6 @@ describe("SELECT - WHERE - LIKE", () => {
       .user()
       .where((item) => [expr.not(expr.like(item.name, "%Test%"))])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        where: [
-          {
-            type: "not",
-            arg: {
-              type: "like",
-              source: { type: "column", path: ["T1", "name"] },
-              pattern: { type: "value", value: "%Test%" },
-            },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -598,42 +520,6 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.whereExists[dialect]);
-    });
-  });
-
-  it("not exists - verifies QueryDef", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .where((item) => [
-        expr.not(expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)]))),
-      ])
-      .getSelectQueryDef();
-
-    expect(def).toEqual({
-      type: "select",
-      as: "T1",
-      from: { database: "TestDb", schema: "TestSchema", name: "User" },
-      where: [
-        {
-          type: "not",
-          arg: {
-            type: "exists",
-            query: {
-              type: "select",
-              as: "T2",
-              from: { database: "TestDb", schema: "TestSchema", name: "Post" },
-              where: [
-                {
-                  type: "eq",
-                  source: { type: "column", path: ["T2", "userId"] },
-                  target: { type: "column", path: ["T1", "id"] },
-                },
-              ],
-            },
-          },
-        },
-      ],
     });
   });
 

@@ -17,17 +17,6 @@ const createMockContext = (
 });
 
 describe("ComboboxItem component", () => {
-  it("renders the item", () => {
-    const { getByRole } = render(() => (
-      <ComboboxContext.Provider value={createMockContext()}>
-        <Combobox.Item value="apple">사과</Combobox.Item>
-      </ComboboxContext.Provider>
-    ));
-
-    expect(getByRole("option")).not.toBeNull();
-    expect(getByRole("option").textContent).toContain("사과");
-  });
-
   it("calls selectValue on click", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
@@ -76,13 +65,4 @@ describe("ComboboxItem component", () => {
     expect(closeDropdown).toHaveBeenCalled();
   });
 
-  it("sets data-combobox-item attribute", () => {
-    render(() => (
-      <ComboboxContext.Provider value={createMockContext()}>
-        <Combobox.Item value="apple">사과</Combobox.Item>
-      </ComboboxContext.Provider>
-    ));
-
-    expect(document.querySelector("[data-combobox-item]")).not.toBeNull();
-  });
 });

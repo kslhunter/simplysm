@@ -25,16 +25,6 @@ describe("ExcelCol", () => {
       expect(cell1).toBe(cell2);
     });
 
-    it("Returns different instance for different index", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      const col = ws.col(0);
-      const cell1 = col.cell(0);
-      const cell2 = col.cell(1);
-
-      expect(cell1).not.toBe(cell2);
-    });
   });
 
   describe("getCells()", () => {
@@ -87,26 +77,5 @@ describe("ExcelCol", () => {
       expect(await ws2.cell(0, 0).getVal()).toBe("Test");
     });
 
-    it("Can set different widths for multiple columns", async () => {
-      const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-
-      await ws.cell(0, 0).setVal("A");
-      await ws.cell(0, 1).setVal("B");
-      await ws.cell(0, 2).setVal("C");
-
-      await ws.col(0).setWidth(10);
-      await ws.col(1).setWidth(20);
-      await ws.col(2).setWidth(30);
-
-      // Can round-trip without error
-      const bytes = await wb.getBytes();
-      const wb2 = new ExcelWorkbook(bytes);
-      const ws2 = await wb2.getWorksheet(0);
-
-      expect(await ws2.cell(0, 0).getVal()).toBe("A");
-      expect(await ws2.cell(0, 1).getVal()).toBe("B");
-      expect(await ws2.cell(0, 2).getVal()).toBe("C");
-    });
   });
 });

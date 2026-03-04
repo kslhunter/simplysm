@@ -12,12 +12,8 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { TextInput } from "../../form-control/field/TextInput";
 import { Button } from "../../form-control/Button";
 import { border } from "../../../styles/base.styles";
+import { pad } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
-
-const containerClass = clsx("flex flex-col", "gap-2", "p-2");
-const sheetWrapperClass = clsx("rounded border", border.subtle);
-const footerClass = clsx("flex justify-between", "gap-2");
-const footerActionsClass = clsx("flex gap-2");
 
 interface EditColumnItem {
   key: string;
@@ -36,7 +32,6 @@ export interface DataSheetConfigDialogProps {
 export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (props) => {
   const i18n = useI18n();
 
-  /* eslint-disable solid/reactivity -- dialog props are static values only used once at mount time */
   const initialItems: EditColumnItem[] = props.columnInfos
     .filter((info) => !info.collapse)
     .map((info) => {
@@ -54,7 +49,6 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
       const orderB = props.currentConfig.columnRecord?.[b.key]?.displayOrder ?? Infinity;
       return orderA - orderB;
     });
-  /* eslint-enable solid/reactivity */
 
   const [editItems, setEditItems] = createStore<EditColumnItem[]>(initialItems);
 
@@ -111,13 +105,13 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
   }
 
   return (
-    <div class={containerClass}>
-      <div class={sheetWrapperClass}>
+    <div class="flex flex-col gap-2 p-2">
+      <div class={clsx("rounded border", border.subtle)}>
         <DataSheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
           <DataSheet.Column<EditColumnItem>
             key="header"
             header={i18n.t("dataSheetConfigDialog.column")}
-            class="px-2 py-1"
+            class={pad.default}
             sortable={false}
           >
             {(ctx) => ctx.item.headerText}
@@ -153,11 +147,11 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
         </DataSheet>
       </div>
 
-      <div class={footerClass}>
+      <div class="flex justify-between gap-2">
         <Button onClick={handleReset} theme="warning" variant="solid">
           {i18n.t("dataSheetConfigDialog.reset")}
         </Button>
-        <div class={footerActionsClass}>
+        <div class="flex gap-2">
           <Button onClick={() => props.close?.(undefined)}>{i18n.t("dataSheetConfigDialog.cancel")}</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
             {i18n.t("dataSheetConfigDialog.confirm")}

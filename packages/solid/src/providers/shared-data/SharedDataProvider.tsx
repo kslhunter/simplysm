@@ -194,7 +194,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
   }
 
   async function wait(): Promise<void> {
-    // eslint-disable-next-line solid/reactivity -- waitUntil is polling-based, so tracked scope is unnecessary
     await waitUntil(() => busyCount() <= 0);
   }
 
@@ -213,7 +212,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
     for (const [name, def] of Object.entries(definitions)) {
       const [items, setItems] = createSignal<unknown[]>([]);
-      // eslint-disable-next-line solid/reactivity -- Storing signal references in a Map is not a reactive access
       signalMap.set(name, [items, setItems]);
 
       const itemMap = createMemo(() => {
@@ -223,7 +221,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         }
         return map;
       });
-      // eslint-disable-next-line solid/reactivity -- Storing memo references in a Map is not a reactive access
       memoMap.set(name, itemMap);
 
       const client = serviceClient.get(def.serviceKey ?? "default");

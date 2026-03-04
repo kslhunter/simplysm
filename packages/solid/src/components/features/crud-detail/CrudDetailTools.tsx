@@ -9,11 +9,9 @@ export function isCrudDetailToolsDef(value: unknown): value is CrudDetailToolsDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudDetailTools(props: { children: JSX.Element }): JSX.Element {
   return {
     __type: "crud-detail-tools",
     children: props.children,
   } as unknown as JSX.Element;
 }
-/* eslint-enable solid/reactivity */

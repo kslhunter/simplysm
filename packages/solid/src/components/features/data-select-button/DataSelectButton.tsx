@@ -19,7 +19,8 @@ import { useDialog, type DialogShowOptions } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { text } from "../../../styles/base.styles";
-import { type ComponentSize } from "../../../styles/control.styles";
+import { gap, type ComponentSize } from "../../../styles/control.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 import {
   triggerBaseClass,
   triggerDisabledClass,
@@ -82,16 +83,13 @@ export type DataSelectButtonProps<
   touchMode?: boolean;
 } & DialogPropsField<TDialogProps, TKey>;
 
-// Styles
-const containerClass = clsx("inline-flex items-center", "group");
-const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden", "text-ellipsis");
 const actionButtonClass = clsx(
   "flex-shrink-0",
   "p-0.5",
   "rounded",
   "cursor-pointer",
   "transition-colors",
-  "hover:bg-base-200 dark:hover:bg-base-700",
+  themeTokens.base.hoverBg,
   "focus:outline-none",
 );
 
@@ -150,7 +148,6 @@ export function DataSelectButton<
   } as Parameters<typeof createControllableSignal<ValueType>>[0]);
 
   // Track keys for loading
-  // eslint-disable-next-line solid/reactivity -- initial value read once at mount time
   const [loadKeys, setLoadKeys] = createSignal<TKey[]>(normalizeKeys(local.value));
 
   // Update loadKeys when value changes
@@ -164,7 +161,6 @@ export function DataSelectButton<
   );
 
   // Call load via createResource
-  // eslint-disable-next-line solid/reactivity -- createResource fetcher is called when source changes
   const [selectedItems] = createResource(loadKeys, async (keys) => {
     if (keys.length === 0) return [];
     return Promise.resolve(local.load(keys));
@@ -255,7 +251,7 @@ export function DataSelectButton<
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <div data-data-select-button class={containerClass}>
+      <div data-data-select-button class="inline-flex items-center group">
         <div
           role="combobox"
           aria-haspopup="dialog"
@@ -272,13 +268,13 @@ export function DataSelectButton<
             }
           }}
         >
-          <div class={selectedValueClass}>{renderSelectedDisplay()}</div>
-          <div class="flex items-center gap-0.5">
+          <div class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{renderSelectedDisplay()}</div>
+          <div class={clsx("flex items-center", gap.sm)}>
             <Show when={clearable()}>
               <button
                 type="button"
                 data-clear-button
-                class={twMerge(actionButtonClass, "text-base-400 hover:text-danger-500")}
+                class={twMerge(actionButtonClass, text.muted, "hover:text-danger-500")}
                 onClick={handleClear}
                 tabIndex={-1}
                 aria-label={i18n.t("dataSelectButton.deselect")}
@@ -290,7 +286,7 @@ export function DataSelectButton<
               <button
                 type="button"
                 data-search-button
-                class={twMerge(actionButtonClass, "text-base-400 hover:text-primary-500")}
+                class={twMerge(actionButtonClass, text.muted, "hover:text-primary-500")}
                 onClick={() => void handleOpenDialog()}
                 tabIndex={-1}
                 aria-label={i18n.t("dataSelectButton.search")}

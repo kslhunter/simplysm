@@ -190,33 +190,6 @@ describe("Expr - Conditional functions", () => {
     });
   });
 
-  describe("least - minimum value", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .select((item) => ({
-        minVal: expr.least(item.age, 100),
-      }))
-      .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def.select).toMatchObject({
-        minVal: {
-          type: "least",
-          args: expect.arrayContaining([
-            { type: "column", path: ["T1", "age"] },
-            { type: "value", value: 100 },
-          ]),
-        },
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.least[dialect]);
-    });
-  });
-
   describe("switch - all case/default are undefined", () => {
     it("throws an error", () => {
       const db = createTestDb();

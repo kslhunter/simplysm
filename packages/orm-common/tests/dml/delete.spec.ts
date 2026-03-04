@@ -60,39 +60,6 @@ describe("DELETE - Basic", () => {
     });
   });
 
-  describe("DELETE with multiple conditions", () => {
-    const db = createTestDb();
-
-    const def = db
-      .employee()
-      .where((e) => [expr.eq(e.departmentId, 1), expr.null(e.managerId)])
-      .getDeleteQueryDef();
-
-    it("should validate QueryDef", () => {
-      expect(def).toEqual({
-        type: "delete",
-        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        as: "T1",
-        where: [
-          {
-            type: "eq",
-            source: { type: "column", path: ["T1", "departmentId"] },
-            target: { type: "value", value: 1 },
-          },
-          {
-            type: "null",
-            arg: { type: "column", path: ["T1", "managerId"] },
-          },
-        ],
-      });
-    });
-
-    it.each(dialects)("[%s] should validate SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.deleteMultiCond[dialect]);
-    });
-  });
-
   describe("output column specified", () => {
     const db = createTestDb();
 

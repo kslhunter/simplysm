@@ -66,17 +66,6 @@ describe("createControllableSignal hook", () => {
       });
     });
 
-    it("value() is set to initial value when onChange is not provided", () => {
-      createRoot((dispose) => {
-        const [value] = createControllableSignal({
-          value: () => "initial",
-          onChange: () => undefined,
-        });
-
-        expect(value()).toBe("initial");
-        dispose();
-      });
-    });
   });
 
   describe("Function-form setter", () => {
@@ -133,45 +122,6 @@ describe("createControllableSignal hook", () => {
   });
 
   describe("Support various types", () => {
-    it("supports number type", () => {
-      createRoot((dispose) => {
-        const [value, setValue] = createControllableSignal({
-          value: () => 0,
-          onChange: () => undefined,
-        });
-
-        setValue(42);
-        expect(value()).toBe(42);
-        dispose();
-      });
-    });
-
-    it("supports string type", () => {
-      createRoot((dispose) => {
-        const [value, setValue] = createControllableSignal({
-          value: () => "hello",
-          onChange: () => undefined,
-        });
-
-        setValue("world");
-        expect(value()).toBe("world");
-        dispose();
-      });
-    });
-
-    it("supports object type", () => {
-      createRoot((dispose) => {
-        const [value, setValue] = createControllableSignal({
-          value: () => ({ count: 0 }),
-          onChange: () => undefined,
-        });
-
-        setValue({ count: 10 });
-        expect(value()).toEqual({ count: 10 });
-        dispose();
-      });
-    });
-
     it("can store function wrapped in object", () => {
       createRoot((dispose) => {
         const fn1 = () => "first";

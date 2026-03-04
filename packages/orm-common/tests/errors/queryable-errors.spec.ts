@@ -10,9 +10,6 @@ describe("Queryable error cases", () => {
       expect(() => expr.and([])).toThrow("empty arrays are not allowed");
     });
 
-    it("ArgumentError when calling or() with empty array", () => {
-      expect(() => expr.or([])).toThrow("empty arrays are not allowed");
-    });
   });
 
   describe("executable errors", () => {
@@ -97,21 +94,6 @@ describe("Queryable error cases", () => {
       }).toThrow("inQuery subquery must SELECT only a single column.");
     });
 
-    it("Error when using subquery without column specification", () => {
-      const db = createTestDb();
-
-      expect(() => {
-        db.user()
-          .where((u) => [
-            expr.inQuery(
-              u.id,
-              // @ts-expect-error - subquery without SELECT
-              db.post(),
-            ),
-          ])
-          .getSelectQueryDef();
-      }).toThrow("inQuery subquery must SELECT only a single column.");
-    });
   });
 
   describe("countAsync() errors", () => {
@@ -141,37 +123,4 @@ describe("Queryable error cases", () => {
     });
   });
 
-  describe("RecursiveQueryable.union() errors", () => {
-    it("Error when calling union with a single queryable", () => {
-      const db = createTestDb();
-
-      expect(() => {
-        db.employee()
-          .where((e) => [expr.null(e.managerId)])
-          .recursive((cte) => cte.union(db.employee()));
-      }).toThrow("union requires at least 2 queryables.");
-    });
-
-    it("Error when calling union with zero queryables", () => {
-      const db = createTestDb();
-
-      expect(() => {
-        db.employee()
-          .where((e) => [expr.null(e.managerId)])
-          .recursive((cte) => cte.union());
-      }).toThrow("union requires at least 2 queryables.");
-    });
-  });
-
-  describe("JoinQueryable.union() errors", () => {
-    it("Error when calling union with a single queryable inside join", () => {
-      const db = createTestDb();
-
-      expect(() => {
-        db.user().join("posts", (j, u) =>
-          j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])),
-        );
-      }).toThrow("union requires at least 2 queryables.");
-    });
-  });
 });

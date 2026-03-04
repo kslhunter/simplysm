@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Accessor, type JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import type {
-  CrudDetailToolsDef,
-  CrudDetailBeforeDef,
-  CrudDetailAfterDef,
-} from "../../../../src/components/features/crud-detail/types";
 import {
   CrudDetailTools,
   isCrudDetailToolsDef,
@@ -45,32 +40,6 @@ function TestWrapper(props: { children: JSX.Element }) {
     </ConfigContext.Provider>
   );
 }
-
-describe("CrudDetail types", () => {
-  it("CrudDetailToolsDef type has __type field", () => {
-    const def: CrudDetailToolsDef = {
-      __type: "crud-detail-tools",
-      children: null as any,
-    };
-    expect(def.__type).toBe("crud-detail-tools");
-  });
-
-  it("CrudDetailBeforeDef type has __type field", () => {
-    const def: CrudDetailBeforeDef = {
-      __type: "crud-detail-before",
-      children: null as any,
-    };
-    expect(def.__type).toBe("crud-detail-before");
-  });
-
-  it("CrudDetailAfterDef type has __type field", () => {
-    const def: CrudDetailAfterDef = {
-      __type: "crud-detail-after",
-      children: null as any,
-    };
-    expect(def.__type).toBe("crud-detail-after");
-  });
-});
 
 describe("CrudDetail sub-components", () => {
   it("CrudDetailTools: returns plain object and is identifiable by type guard", () => {

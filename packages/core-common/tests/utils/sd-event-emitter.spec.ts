@@ -38,26 +38,6 @@ describe("SdEventEmitter", () => {
       expect(listener).toHaveBeenNthCalledWith(3, 3);
     });
 
-    it("Passes object data", () => {
-      const emitter = new EventEmitter<TestEvents>();
-      const listener = vi.fn();
-
-      emitter.on("data", listener);
-      emitter.emit("data", { id: 1, name: "test" });
-
-      expect(listener).toHaveBeenCalledWith({ id: 1, name: "test" });
-    });
-
-    it("Handles void event", () => {
-      const emitter = new EventEmitter<TestEvents>();
-      const listener = vi.fn();
-
-      emitter.on("empty", listener);
-      emitter.emit("empty");
-
-      expect(listener).toHaveBeenCalledTimes(1);
-    });
-
     it("Can register multiple listeners for same event", () => {
       const emitter = new EventEmitter<TestEvents>();
       const listener1 = vi.fn();
@@ -139,13 +119,6 @@ describe("SdEventEmitter", () => {
 
       emitter.off("message", listener);
       expect(emitter.listenerCount("message")).toBe(0);
-    });
-
-    it("Unregistered event type has 0 count", () => {
-      const emitter = new EventEmitter<TestEvents>();
-
-      expect(emitter.listenerCount("message")).toBe(0);
-      expect(emitter.listenerCount("count")).toBe(0);
     });
 
     it("Different event types have independent counts", () => {

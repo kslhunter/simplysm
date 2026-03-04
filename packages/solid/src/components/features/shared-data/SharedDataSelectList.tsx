@@ -7,6 +7,7 @@ import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { text } from "../../../styles/base.styles";
+import { gap } from "../../../styles/control.styles";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 
@@ -34,7 +35,6 @@ const SharedDataSelectListItemTemplate = <TItem,>(props: {
   children: (item: TItem, index: number) => JSX.Element;
 }) => {
   const ctx = useSharedDataSelectListContext();
-  // eslint-disable-next-line solid/reactivity -- Store render function in signal, called from JSX tracked scope
   ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
   onCleanup(() => ctx.setItemTemplate(undefined));
   return null;
@@ -77,10 +77,6 @@ export interface SharedDataSelectListProps<TItem> {
   /** Custom style */
   style?: JSX.CSSProperties;
 }
-
-// ─── Styles ──────────────────────────────────────────────
-
-const containerClass = clsx("flex-col gap-1");
 
 // ─── Component ───────────────────────────────────────────
 
@@ -222,7 +218,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
       <div
         {...rest}
         data-shared-data-select-list
-        class={twMerge(containerClass, local.class)}
+        class={twMerge(clsx("flex-col", gap.default), local.class)}
         style={local.style}
       >
         {/* Header */}

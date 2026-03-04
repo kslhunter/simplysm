@@ -3,6 +3,8 @@ import { DateOnly } from "@simplysm/core-common";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { bg, border, text } from "../../../styles/base.styles";
+import { gap, pad } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface CalendarProps<TValue> extends Omit<
@@ -17,30 +19,6 @@ export interface CalendarProps<TValue> extends Omit<
   weekStartDay?: number;
   minDaysInFirstWeek?: number;
 }
-
-const baseClass = clsx(
-  "w-full",
-  "border-separate border-spacing-0",
-  "border-b border-r border-base-300",
-  "dark:border-base-600",
-  "overflow-hidden rounded",
-  // th
-  "[&_th]:border-l [&_th]:border-t [&_th]:border-base-300 [&_th]:dark:border-base-600",
-  "[&_th]:px-2 [&_th]:py-1",
-  "[&_th]:bg-base-100 [&_th]:text-center [&_th]:text-sm [&_th]:font-bold",
-  "[&_th]:dark:bg-base-800",
-  // td
-  "[&_td]:border-l [&_td]:border-t [&_td]:border-base-300 [&_td]:dark:border-base-600",
-  "[&_td]:p-1 [&_td]:align-top",
-);
-
-const notCurrentClass = clsx("[&.not-current]:bg-base-50", "[&.not-current]:dark:bg-base-900");
-
-const dayClass = clsx("mb-1 text-sm text-base-500", "dark:text-base-400");
-
-const notCurrentDayClass = clsx("text-base-300", "dark:text-base-600");
-
-const contentClass = clsx("flex flex-col gap-1");
 
 function CalendarBase<TValue>(props: CalendarProps<TValue>) {
   const [local, rest] = splitProps(props, [
@@ -109,13 +87,36 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
     return result;
   });
 
-  const getClassName = () => twMerge(baseClass, local.class);
-
   return (
-    <table data-calendar class={getClassName()} {...rest}>
+    <table
+      data-calendar
+      class={twMerge(
+        clsx(
+          "w-full border-separate border-spacing-0 border-b border-r",
+          border.default,
+          "overflow-hidden rounded",
+        ),
+        local.class,
+      )}
+      {...rest}
+    >
       <thead>
         <tr>
-          <For each={weekHeaders()}>{(header) => <th>{header}</th>}</For>
+          <For each={weekHeaders()}>
+            {(header) => (
+              <th
+                class={clsx(
+                  "border-l border-t",
+                  border.default,
+                  pad.default,
+                  bg.muted,
+                  "text-center text-sm font-bold",
+                )}
+              >
+                {header}
+              </th>
+            )}
+          </For>
         </tr>
       </thead>
       <tbody>
@@ -126,20 +127,21 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
                 {(cell) => (
                   <td
                     class={twMerge(
-                      notCurrentClass,
+                      clsx("border-l border-t", border.default, "p-1 align-top"),
+                      "[&.not-current]:bg-base-50 [&.not-current]:dark:bg-base-900",
                       cell.date.month !== yearMonth().month && "not-current",
                     )}
                   >
                     <div
-                      class={
-                        cell.date.month !== yearMonth().month
-                          ? twMerge(dayClass, notCurrentDayClass)
-                          : dayClass
-                      }
+                      class={twMerge(
+                        "mb-1 text-sm",
+                        text.muted,
+                        cell.date.month !== yearMonth().month && "text-base-300 dark:text-base-600",
+                      )}
                     >
                       {cell.date.day}
                     </div>
-                    <div class={contentClass}>
+                    <div class={clsx("flex flex-col", gap.default)}>
                       <For each={cell.items}>
                         {(entry) => local.renderItem(entry.item, entry.index)}
                       </For>

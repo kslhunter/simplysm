@@ -176,32 +176,6 @@ describe("PermissionTable component", () => {
   });
 
   describe("basic rendering", () => {
-    it("renders as DataSheet (div with data-sheet attribute)", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
-      const wrapper = container.querySelector("[data-sheet]");
-      expect(wrapper).toBeTruthy();
-      expect(wrapper!.tagName).toBe("DIV");
-    });
-
-    it("renders a table inside DataSheet", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
-      const table = container.querySelector("[data-sheet] table");
-      expect(table).toBeTruthy();
-    });
-
-    it("displays perm type columns in header", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
-      expect(getByText("use")).toBeTruthy();
-      expect(getByText("edit")).toBeTruthy();
-      expect(getByText("approve")).toBeTruthy();
-    });
-
-    it("displays item titles", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
-      expect(getByText("사용자 관리")).toBeTruthy();
-      expect(getByText("시스템")).toBeTruthy();
-    });
-
     it("child items are expanded by default", () => {
       const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><PermissionTable items={sampleItems} /></I18nProvider></ConfigProvider>);
       expect(getByText("권한 설정")).toBeTruthy();

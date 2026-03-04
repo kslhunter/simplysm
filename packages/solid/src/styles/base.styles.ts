@@ -9,6 +9,8 @@ export const border = {
 // ── Background ──
 export const bg = {
   surface: clsx`bg-white dark:bg-base-900`,
+  muted: clsx`bg-base-100 dark:bg-base-800`,
+  subtle: clsx`bg-base-200 dark:bg-base-700`,
 };
 
 // ── Text ──

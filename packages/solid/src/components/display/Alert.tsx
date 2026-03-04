@@ -9,8 +9,6 @@ export interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: AlertTheme;
 }
 
-const baseClass = clsx("block", "p-3", "rounded");
-
 const themeClasses = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.light]),
 ) as Record<AlertTheme, string>;
@@ -20,7 +18,7 @@ export const Alert: ParentComponent<AlertProps> = (props) => {
 
   const getClassName = () => {
     const theme = local.theme ?? "base";
-    return twMerge(baseClass, themeClasses[theme], local.class);
+    return twMerge("block p-3 rounded", themeClasses[theme], local.class);
   };
 
   return (

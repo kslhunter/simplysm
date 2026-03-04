@@ -228,14 +228,6 @@ describe("formatDateTime", () => {
       it("outputs +00:00 with zzz format", () => {
         expect(formatDate("zzz", { timezoneOffsetMinutes: 0 })).toBe("+00:00");
       });
-
-      it("outputs +00 with zz format", () => {
-        expect(formatDate("zz", { timezoneOffsetMinutes: 0 })).toBe("+00");
-      });
-
-      it("outputs +0 with z format", () => {
-        expect(formatDate("z", { timezoneOffsetMinutes: 0 })).toBe("+0");
-      });
     });
   });
 
@@ -308,16 +300,8 @@ describe("normalizeMonth", () => {
       expect(normalizeMonth(2025, 13, 15)).toEqual({ year: 2026, month: 1, day: 15 });
     });
 
-    it("month 14 becomes February next year", () => {
-      expect(normalizeMonth(2025, 14, 15)).toEqual({ year: 2026, month: 2, day: 15 });
-    });
-
     it("month 25 becomes January 2 years later", () => {
       expect(normalizeMonth(2025, 25, 15)).toEqual({ year: 2027, month: 1, day: 15 });
-    });
-
-    it("month 24 becomes December next year", () => {
-      expect(normalizeMonth(2025, 24, 15)).toEqual({ year: 2026, month: 12, day: 15 });
     });
   });
 
@@ -332,14 +316,6 @@ describe("normalizeMonth", () => {
 
     it("month -1 becomes November previous year", () => {
       expect(normalizeMonth(2025, -1, 15)).toEqual({ year: 2024, month: 11, day: 15 });
-    });
-
-    it("month -11 becomes January previous year", () => {
-      expect(normalizeMonth(2025, -11, 15)).toEqual({ year: 2024, month: 1, day: 15 });
-    });
-
-    it("month -12 becomes December 2 years ago", () => {
-      expect(normalizeMonth(2025, -12, 15)).toEqual({ year: 2023, month: 12, day: 15 });
     });
 
     it("month -13 becomes November 2 years ago", () => {

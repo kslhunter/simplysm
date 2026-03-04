@@ -40,8 +40,6 @@ export function useBusy(): BusyContextValue {
   return context;
 }
 
-const overlayClass = clsx("fixed left-0 top-0", "h-screen w-screen", "overflow-hidden");
-
 /** BusyProvider configuration */
 export interface BusyProviderProps {
   /** Display style (default: `"spinner"`) */
@@ -95,7 +93,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
           variant={variant()}
           message={message()}
           progressPercent={progress()}
-          class={overlayClass}
+          class="fixed left-0 top-0 h-screen w-screen overflow-hidden"
           style={{ "pointer-events": busyCount() > 0 ? "auto" : "none" }}
         />
       </Portal>

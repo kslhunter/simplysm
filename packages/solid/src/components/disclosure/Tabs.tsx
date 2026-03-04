@@ -2,7 +2,9 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
-import { type ComponentSize } from "../../styles/control.styles";
+import { border, text } from "../../styles/base.styles";
+import { type ComponentSize, gap, pad } from "../../styles/control.styles";
+import { themeTokens } from "../../styles/theme.styles";
 
 // --- Context ---
 
@@ -31,7 +33,7 @@ function TabsTabInner(props: TabsTabProps) {
 
   const tabSizeClasses: Record<ComponentSize, string> = {
     default: "px-3 py-1.5 text-sm",
-    xs: "px-1.5 py-0.5 text-xs",
+    xs: clsx(pad.sm, "text-xs"),
     sm: "px-2.5 py-1 text-sm",
     lg: "px-4 py-2.5 text-base",
     xl: "px-5 py-3 text-lg",
@@ -39,25 +41,18 @@ function TabsTabInner(props: TabsTabProps) {
 
   const sizeClasses = () => tabSizeClasses[ctx.size() ?? "default"];
 
-  const baseClass = clsx(
-    "relative cursor-pointer select-none font-medium",
-    "transition-colors",
-    "-mb-px",
-  );
-
   const stateClass = () =>
     isSelected()
       ? clsx(
-          "border-b-2 border-primary-500 text-primary-600",
-          "dark:border-primary-400 dark:text-primary-400",
+          "border-b-2 border-primary-500 dark:border-primary-400",
+          themeTokens.primary.text,
         )
       : clsx(
           "border-b-2 border-transparent",
-          "text-base-500 hover:border-base-300 hover:text-base-700",
-          "dark:text-base-400 dark:hover:border-base-600 dark:hover:text-base-200",
+          text.muted,
+          "hover:border-base-300 hover:text-base-700",
+          "dark:hover:border-base-600 dark:hover:text-base-200",
         );
-
-  const disabledClass = "opacity-50 pointer-events-none";
 
   return (
     <button
@@ -67,10 +62,10 @@ function TabsTabInner(props: TabsTabProps) {
       aria-disabled={props.disabled ?? false}
       tabIndex={props.disabled ? -1 : 0}
       class={twMerge(
-        baseClass,
+        "relative cursor-pointer select-none font-medium transition-colors -mb-px",
         sizeClasses(),
         stateClass(),
-        props.disabled && disabledClass,
+        props.disabled && "opacity-50 pointer-events-none",
         props.class,
       )}
       onClick={() => {
@@ -131,15 +126,9 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
     size: () => local.size,
   };
 
-  const baseClass = clsx(
-    "inline-flex items-center gap-1",
-    "border-b border-base-200",
-    "dark:border-base-700",
-  );
-
   return (
     <TabsContext.Provider value={contextValue}>
-      <div {...rest} role="tablist" class={twMerge(baseClass, local.class)} style={local.style}>
+      <div {...rest} role="tablist" class={twMerge(clsx("inline-flex items-center", gap.default, "border-b", border.default), local.class)} style={local.style}>
         {local.children}
       </div>
     </TabsContext.Provider>

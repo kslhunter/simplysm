@@ -6,6 +6,8 @@ import { useNotification } from "./NotificationProvider";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
 import { NotificationBanner } from "./NotificationBanner";
+import { text } from "../../../styles/base.styles";
+import { gap } from "../../../styles/control.styles";
 import { Button } from "../../form-control/Button";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
@@ -13,43 +15,12 @@ export interface NotificationBellProps {
   showBanner?: boolean;
 }
 
-const buttonExtraClass = twMerge("relative", "p-2", "rounded-full");
-
-const badgeClass = clsx(
-  "absolute",
-  "top-0",
-  "right-0",
-  "flex",
-  "items-center",
-  "justify-center",
-  "w-5",
-  "h-5",
-  "px-1",
-  "text-xs",
-  "font-bold",
-  "text-white",
-  "bg-danger-500",
-  "rounded-full",
-);
-
 const themeStyles: Record<string, string> = {
   info: clsx("border-l-info-500", "bg-info-50", "dark:bg-info-900/10"),
   success: clsx("border-l-success-500", "bg-success-50", "dark:bg-success-900/10"),
   warning: clsx("border-l-warning-500", "bg-warning-50", "dark:bg-warning-900/10"),
   danger: clsx("border-l-danger-500", "bg-danger-50", "dark:bg-danger-900/10"),
 };
-
-const dropdownHeaderClass = clsx("mb-2 flex items-center", "justify-between", "px-2");
-const clearButtonClass = clsx(
-  "text-sm",
-  "text-base-500 hover:text-base-700",
-  "dark:text-base-400 dark:hover:text-base-300",
-);
-const emptyClass = clsx("py-8 text-center", "text-base-500 dark:text-base-400");
-const listClass = clsx("flex flex-col", "gap-2");
-const itemBaseClass = clsx("rounded-lg", "border-l-4", "p-2");
-const itemMessageClass = clsx("text-sm", "text-base-600 dark:text-base-400");
-const itemTimeClass = clsx("mt-1 text-xs", "text-base-400");
 
 export const NotificationBell: Component<NotificationBellProps> = (props) => {
   const notification = useNotification();
@@ -80,14 +51,14 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
             variant="ghost"
             size="xs"
             data-notification-bell
-            class={buttonExtraClass}
+            class="relative p-2 rounded-full"
             aria-label={i18n.t("notificationBell.unreadCount", { count: String(notification.unreadCount()) })}
             aria-haspopup="true"
             aria-expanded={open()}
           >
             <Icon icon={IconBell} />
             <Show when={notification.unreadCount() > 0}>
-              <span data-notification-badge aria-hidden="true" class={badgeClass}>
+              <span data-notification-badge aria-hidden="true" class="absolute top-0 right-0 flex items-center justify-center w-5 h-5 px-1 text-xs font-bold text-white bg-danger-500 rounded-full">
                 {notification.unreadCount()}
               </span>
             </Show>
@@ -95,13 +66,13 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         </Dropdown.Trigger>
         <Dropdown.Content>
           <div class="w-80 p-2">
-            <div class={dropdownHeaderClass}>
+            <div class="mb-2 flex items-center justify-between px-2">
               <span class="font-bold">{i18n.t("notificationBell.notifications")}</span>
               <Show when={notification.items().length > 0}>
                 <button
                   type="button"
                   data-notification-clear
-                  class={clearButtonClass}
+                  class={clsx("text-sm", text.muted, "hover:text-base-700 dark:hover:text-base-300")}
                   onClick={handleClear}
                 >
                   {i18n.t("notificationBell.clearAll")}
@@ -111,17 +82,17 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
 
             <Show
               when={notification.items().length > 0}
-              fallback={<div class={emptyClass}>{i18n.t("notificationBell.noNotifications")}</div>}
+              fallback={<div class={clsx("py-8 text-center", text.muted)}>{i18n.t("notificationBell.noNotifications")}</div>}
             >
-              <div class={listClass}>
+              <div class={clsx("flex flex-col", gap.xl)}>
                 <For each={[...notification.items()].reverse()}>
                   {(item) => (
-                    <div class={clsx(itemBaseClass, themeStyles[item.theme])}>
+                    <div class={clsx("rounded-lg border-l-4 p-2", themeStyles[item.theme])}>
                       <div class="font-medium">{item.title}</div>
                       <Show when={item.message}>
-                        <pre class={itemMessageClass}>{item.message}</pre>
+                        <pre class={clsx("text-sm", text.muted)}>{item.message}</pre>
                       </Show>
-                      <div class={itemTimeClass}>{item.createdAt.toLocaleTimeString()}</div>
+                      <div class={clsx("mt-1 text-xs", text.muted)}>{item.createdAt.toLocaleTimeString()}</div>
                     </div>
                   )}
                 </For>

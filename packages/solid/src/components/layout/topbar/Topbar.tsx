@@ -24,6 +24,8 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
+import { bg, border } from "../../../styles/base.styles";
+import { gap } from "../../../styles/control.styles";
 
 //#region Context
 export interface TopbarContextValue {
@@ -93,28 +95,6 @@ export interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 //#endregion
 
 //#region Topbar (Base)
-const baseClass = clsx(
-  // Layout
-  "flex",
-  "flex-row",
-  "gap-2",
-  "items-center",
-  // Size
-  "min-h-12",
-  "px-2",
-  // Background/border
-  "bg-white",
-  "dark:bg-base-900",
-  "border-b",
-  "border-base-200",
-  "dark:border-base-700",
-  // Scroll
-  "overflow-x-auto",
-  "overflow-y-hidden",
-  // Other
-  "select-none",
-);
-
 export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;
 }
@@ -148,7 +128,7 @@ const TopbarInner: ParentComponent<TopbarProps> = (props) => {
     sidebarContext?.setToggle((v) => !v);
   };
 
-  const getClassName = () => twMerge(baseClass, local.class);
+  const getClassName = () => twMerge(clsx("flex flex-row gap-2 items-center min-h-12 px-2", bg.surface, "border-b", border.default, "overflow-x-auto overflow-y-hidden select-none"), local.class);
 
   return (
     <header {...rest} data-topbar class={getClassName()}>
@@ -164,7 +144,6 @@ const TopbarInner: ParentComponent<TopbarProps> = (props) => {
 //#endregion
 
 //#region TopbarContainer
-const containerClass = clsx("flex h-full flex-col");
 
 /**
  * Layout container wrapping Topbar and content area
@@ -189,7 +168,7 @@ const TopbarContainer: ParentComponent<TopbarContainerProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
   const [actions, setActions] = createSignal<JSX.Element | undefined>(undefined);
 
-  const getClassName = () => twMerge(containerClass, local.class);
+  const getClassName = () => twMerge("flex h-full flex-col", local.class);
 
   return (
     <TopbarContext.Provider value={{ actions, setActions }}>
@@ -202,9 +181,6 @@ const TopbarContainer: ParentComponent<TopbarContainerProps> = (props) => {
 //#endregion
 
 //#region TopbarMenu
-const desktopNavBaseClass = clsx("hidden sm:flex", "flex-row gap-1", "items-center");
-const mobileWrapperClass = clsx("flex sm:hidden");
-const menuButtonContentClass = clsx("flex items-center", "gap-1");
 
 /**
  * Topbar dropdown menu component
@@ -239,12 +215,12 @@ const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <>
       {/* Desktop menu (shown only on 640px and above) */}
-      <nav {...rest} data-topbar-menu class={twMerge(desktopNavBaseClass, local.class)}>
+      <nav {...rest} data-topbar-menu class={twMerge(clsx("hidden sm:flex flex-row", gap.default, "items-center"), local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 
       {/* Mobile hamburger (shown only below 640px) */}
-      <div class={mobileWrapperClass}>
+      <div class="flex sm:hidden">
         <Dropdown open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
           <Dropdown.Trigger>
             <Button
@@ -315,7 +291,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
     <Button
       variant={isSelected() ? "solid" : "ghost"}
       theme={isSelected() ? "primary" : "base"}
-      class={menuButtonContentClass}
+      class={clsx("flex items-center", gap.default)}
       aria-haspopup={hasChildren() ? "menu" : undefined}
       aria-expanded={hasChildren() ? open() : undefined}
       onClick={hasChildren() ? undefined : handleNavigate}
@@ -398,8 +374,6 @@ const TopbarMenuDropdownItem: Component<TopbarMenuDropdownItemProps> = (props) =
 //#endregion
 
 //#region TopbarUser
-const wrapperBaseClass = clsx("flex items-center");
-const userButtonContentClass = clsx("flex items-center", "gap-1");
 
 /**
  * Topbar user information component
@@ -431,12 +405,12 @@ const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getClassName = () => twMerge(wrapperBaseClass, local.class);
+  const getClassName = () => twMerge("flex items-center", local.class);
 
   const buttonContent = () => (
     <Button
       variant="ghost"
-      class={userButtonContentClass}
+      class={clsx("flex items-center", gap.default)}
       aria-haspopup={hasMenus() ? "menu" : undefined}
       aria-expanded={hasMenus() ? open() : undefined}
     >

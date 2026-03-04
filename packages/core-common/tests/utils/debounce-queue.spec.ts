@@ -204,15 +204,6 @@ describe("DebounceQueue", () => {
       expect(calls).toEqual([]);
     });
 
-    it("Safe to call multiple times", () => {
-      const queue = new DebounceQueue(50);
-
-      // Multiple calls without error
-      queue.dispose();
-      queue.dispose();
-      queue.dispose();
-    });
-
     it("Auto-disposed with using statement", async () => {
       const calls: number[] = [];
       {
@@ -230,43 +221,4 @@ describe("DebounceQueue", () => {
 
   //#endregion
 
-  //#region Synchronous function support
-
-  describe("Synchronous function support", () => {
-    it("Can execute synchronous function", async () => {
-      const queue = new DebounceQueue(10);
-      const calls: number[] = [];
-
-      queue.run(() => {
-        calls.push(1);
-      });
-
-      await time(50);
-
-      expect(calls).toEqual([1]);
-    });
-
-    it("Can mix synchronous and asynchronous functions", async () => {
-      const queue = new DebounceQueue(10);
-      const calls: number[] = [];
-
-      queue.run(() => {
-        calls.push(1);
-      });
-      queue.run(async () => {
-        await time(10);
-        calls.push(2);
-      });
-      queue.run(() => {
-        calls.push(3);
-      });
-
-      await time(100);
-
-      // Only last request executed
-      expect(calls).toEqual([3]);
-    });
-  });
-
-  //#endregion
 });

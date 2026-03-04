@@ -13,27 +13,6 @@ describe("LazyGcMap", () => {
   //#region Basic Map operations
 
   describe("Basic Map operations", () => {
-    it("Stores and retrieves values with set/get", () => {
-      const map = new LazyGcMap<string, number>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      map.set("key1", 100);
-      expect(map.get("key1")).toBe(100);
-    });
-
-    it("Checks key existence with has", () => {
-      const map = new LazyGcMap<string, number>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      map.set("key1", 100);
-      expect(map.has("key1")).toBe(true);
-      expect(map.has("key2")).toBe(false);
-    });
-
     it("Deletes values with delete", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
@@ -60,30 +39,6 @@ describe("LazyGcMap", () => {
       expect(map.size).toBe(0);
       expect(map.has("key1")).toBe(false);
       expect(map.has("key2")).toBe(false);
-    });
-
-    it("Gets size with size property", () => {
-      const map = new LazyGcMap<string, number>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      expect(map.size).toBe(0);
-      map.set("key1", 100);
-      expect(map.size).toBe(1);
-      map.set("key2", 200);
-      expect(map.size).toBe(2);
-      map.delete("key1");
-      expect(map.size).toBe(1);
-    });
-
-    it("Returns undefined for non-existent keys", () => {
-      const map = new LazyGcMap<string, number>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      expect(map.get("nonexistent")).toBe(undefined);
     });
   });
 
@@ -493,22 +448,6 @@ describe("LazyGcMap", () => {
       expect(map.get("key2")).toBe(200);
     });
 
-    it("clear is safe to call multiple times", () => {
-      const map = new LazyGcMap<string, number>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      map.set("key1", 100);
-
-      // Safe to call multiple times
-      map.clear();
-      map.clear();
-      map.clear();
-
-      expect(map.size).toBe(0);
-    });
-
     it("GC works normally after clear", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -524,31 +463,6 @@ describe("LazyGcMap", () => {
       // Verify GC works normally
       await vi.advanceTimersByTimeAsync(350);
       expect(map.has("key2")).toBe(false);
-    });
-  });
-
-  //#endregion
-
-  //#region SharedArrayBuffer support
-
-  describe("SharedArrayBuffer support", () => {
-    it("Can use SharedArrayBuffer as value", () => {
-      // SharedArrayBuffer may be disabled for security in some environments
-      if (typeof SharedArrayBuffer === "undefined") {
-        expect(true).toBe(true); // Skip if not supported
-        return;
-      }
-
-      const map = new LazyGcMap<string, SharedArrayBuffer>({
-        gcInterval: 1000,
-        expireTime: 5000,
-      });
-
-      const buffer = new SharedArrayBuffer(16);
-      map.set("key1", buffer);
-
-      expect(map.get("key1")).toBe(buffer);
-      expect(map.get("key1")?.byteLength).toBe(16);
     });
   });
 

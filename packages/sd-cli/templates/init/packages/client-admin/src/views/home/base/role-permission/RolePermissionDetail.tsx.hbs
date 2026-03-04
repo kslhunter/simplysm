@@ -57,11 +57,9 @@ export function RolePermissionDetail(props: { roleId: number }) {
   }
 
   async function handleSubmit(data: Record<string, boolean>) {
-    // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
     await appService.orm.connect(async (db) => {
       await db
         .rolePermission()
-        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
         .where((c) => [expr.eq(c.roleId, props.roleId)])
         .delete();
 

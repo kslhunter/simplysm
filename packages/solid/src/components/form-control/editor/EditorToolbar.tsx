@@ -26,7 +26,9 @@ import {
   IconClearFormatting,
 } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
-import { padding } from "../../../styles/control.styles";
+import { border, text } from "../../../styles/base.styles";
+import { gap, pad } from "../../../styles/control.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface EditorToolbarProps {
@@ -34,21 +36,11 @@ export interface EditorToolbarProps {
   class?: string;
 }
 
-// Toolbar container style
-const toolbarClass = clsx(
-  "flex flex-wrap items-center gap-0.5",
-  "border-b border-base-300 dark:border-base-700",
-  padding.default,
-);
-
 // Toolbar button extra class
 const toolbarBtnExtra = "size-7";
 
 // Toolbar button active style
-const toolbarBtnActiveClass = clsx(
-  "bg-primary-100 text-primary-700",
-  "dark:bg-primary-900/40 dark:text-primary-300",
-);
+const toolbarBtnActiveClass = themeTokens.primary.light;
 
 // Separator style
 const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
@@ -59,17 +51,14 @@ const colorLabelClass = clsx(
   "cursor-pointer",
   "rounded",
   "transition-colors",
-  "text-base-600 dark:text-base-300",
-  "hover:bg-base-200 dark:hover:bg-base-700",
+  text.muted,
+  themeTokens.base.hoverBg,
   "relative",
   "size-7",
 );
 
 // Color input hide style
 const colorInputClass = clsx("absolute opacity-0", "size-0");
-
-// Color indicator style
-const colorIndicatorClass = clsx("absolute inset-x-1 bottom-0.5", "h-0.5 rounded-full");
 
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
@@ -136,7 +125,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   };
 
   return (
-    <div class={twMerge(toolbarClass, props.class)}>
+    <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.default), props.class)}>
       {/* 1. Header (H1, H2) */}
       <Button
         variant="ghost"
@@ -204,7 +193,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 5. Text color + background color (using input[type=color]) */}
       <label class={colorLabelClass} title={i18n.t("editorToolbar.textColor")}>
         <span class={clsx("text-sm font-bold")}>A</span>
-        <div class={colorIndicatorClass} style={{ "background-color": currentColor() }} />
+        <div class="absolute inset-x-1 bottom-0.5 h-0.5 rounded-full" style={{ "background-color": currentColor() }} />
         <input
           type="color"
           class={colorInputClass}

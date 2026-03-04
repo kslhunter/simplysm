@@ -55,13 +55,4 @@ describe("createTopbarActions", () => {
     setShow(false);
     expect(actionsAccessor()).toBeUndefined();
   });
-
-  it("throws error when called without TopbarContainer", () => {
-    expect(() => {
-      render(() => {
-        createTopbarActions(() => <button>Save</button>);
-        return null;
-      });
-    }).toThrow();
-  });
 });

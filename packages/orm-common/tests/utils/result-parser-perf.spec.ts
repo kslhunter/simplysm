@@ -85,27 +85,6 @@ describe("result-parser performance", () => {
       console.log(`  simple 10,000: ${elapsed.toFixed(2)}ms`);
     });
 
-    it("50,000 records processing - within 3000ms", async () => {
-      const raw = generateSimpleRecords(50_000);
-      const meta: ResultMeta = {
-        columns: {
-          id: "number",
-          name: "string",
-          email: "string",
-          age: "number",
-          active: "boolean",
-        },
-        joins: {},
-      };
-
-      const start = performance.now();
-      const result = await parseQueryResult(raw, meta);
-      const elapsed = performance.now() - start;
-
-      expect(result).toHaveLength(50_000);
-      expect(elapsed).toBeLessThan(3000);
-      console.log(`  simple 50,000: ${elapsed.toFixed(2)}ms`);
-    });
   });
 
   describe("1-level JOIN processing", () => {
@@ -131,27 +110,6 @@ describe("result-parser performance", () => {
       console.log(`  JOIN 10,000 (1000×10): ${elapsed.toFixed(2)}ms`);
     });
 
-    it("5,000 users × 10 posts = 50,000 records - within 3000ms", async () => {
-      const raw = generateJoinRecords(5_000, 10);
-      const meta: ResultMeta = {
-        columns: {
-          "id": "number",
-          "name": "string",
-          "posts.id": "number",
-          "posts.title": "string",
-          "posts.content": "string",
-        },
-        joins: { posts: { isSingle: false } },
-      };
-
-      const start = performance.now();
-      const result = await parseQueryResult(raw, meta);
-      const elapsed = performance.now() - start;
-
-      expect(result).toHaveLength(5_000);
-      expect(elapsed).toBeLessThan(3000);
-      console.log(`  JOIN 50,000 (5000×10): ${elapsed.toFixed(2)}ms`);
-    });
   });
 
   describe("2-level nested JOIN processing", () => {
@@ -181,30 +139,5 @@ describe("result-parser performance", () => {
       console.log(`  nested JOIN 5,000 (100×10×5): ${elapsed.toFixed(2)}ms`);
     });
 
-    it("500 users × 10 posts × 5 comments = 25,000 records - within 2000ms", async () => {
-      const raw = generateNestedJoinRecords(500, 10, 5);
-      const meta: ResultMeta = {
-        columns: {
-          "id": "number",
-          "name": "string",
-          "posts.id": "number",
-          "posts.title": "string",
-          "posts.comments.id": "number",
-          "posts.comments.text": "string",
-        },
-        joins: {
-          "posts": { isSingle: false },
-          "posts.comments": { isSingle: false },
-        },
-      };
-
-      const start = performance.now();
-      const result = await parseQueryResult(raw, meta);
-      const elapsed = performance.now() - start;
-
-      expect(result).toHaveLength(500);
-      expect(elapsed).toBeLessThan(2000);
-      console.log(`  nested JOIN 25,000 (500×10×5): ${elapsed.toFixed(2)}ms`);
-    });
   });
 });

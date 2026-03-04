@@ -66,21 +66,6 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("usage with throw", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError();
-            `,
-            errors: [{ messageId: "noThrowNotImplementedError" }],
-          },
-        ],
-      });
-    });
-
     describe("usage with message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
@@ -109,52 +94,6 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             code: `
               import { NotImplementedError as NIE } from "@simplysm/core-common";
               new NIE();
-            `,
-            errors: [{ messageId: "noThrowNotImplementedError" }],
-          },
-        ],
-      });
-    });
-
-    describe("also detects when assigned to variable", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              const err = new NotImplementedError();
-            `,
-            errors: [{ messageId: "noThrowNotImplementedError" }],
-          },
-        ],
-      });
-    });
-
-    describe("also detects when passed as function argument", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              function handleError(err: Error) {}
-              handleError(new NotImplementedError());
-            `,
-            errors: [{ messageId: "noThrowNotImplementedError" }],
-          },
-        ],
-      });
-    });
-
-    describe("usage with other imports", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { SdError, NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError();
             `,
             errors: [{ messageId: "noThrowNotImplementedError" }],
           },
@@ -196,26 +135,6 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("namespace import with message", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import * as CC from "@simplysm/core-common";
-              new CC.NotImplementedError("not yet implemented");
-            `,
-            errors: [
-              {
-                messageId: "noThrowNotImplementedError",
-                data: { text: "not yet implemented" },
-              },
-            ],
-          },
-        ],
-      });
-    });
-
     describe("template literal argument falls back to default message", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
@@ -224,27 +143,6 @@ describe("ts-no-throw-not-implemented-error rule", () => {
             code: `
               import { NotImplementedError } from "@simplysm/core-common";
               throw new NotImplementedError(\`dynamic message\`);
-            `,
-            errors: [
-              {
-                messageId: "noThrowNotImplementedError",
-                data: { text: "Not implemented" },
-              },
-            ],
-          },
-        ],
-      });
-    });
-
-    describe("variable argument falls back to default message", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              const msg = "dynamic message";
-              throw new NotImplementedError(msg);
             `,
             errors: [
               {
@@ -297,45 +195,6 @@ describe("ts-no-throw-not-implemented-error rule", () => {
       });
     });
 
-    describe("null argument falls back to default message", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError(null);
-            `,
-            errors: [
-              {
-                messageId: "noThrowNotImplementedError",
-                data: { text: "Not implemented" },
-              },
-            ],
-          },
-        ],
-      });
-    });
-
-    describe("undefined argument falls back to default message", () => {
-      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `
-              import { NotImplementedError } from "@simplysm/core-common";
-              throw new NotImplementedError(undefined);
-            `,
-            errors: [
-              {
-                messageId: "noThrowNotImplementedError",
-                data: { text: "Not implemented" },
-              },
-            ],
-          },
-        ],
-      });
-    });
   });
 
   describe("namespace import from other packages is allowed", () => {

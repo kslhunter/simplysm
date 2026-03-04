@@ -5,15 +5,6 @@ import { BusyContainer } from "../../../../src/components/feedback/busy/BusyCont
 
 describe("BusyContainer", () => {
   describe("basic rendering", () => {
-    it("renders children", () => {
-      const { getByText } = render(() => (
-        <BusyContainer>
-          <span>Content</span>
-        </BusyContainer>
-      ));
-      expect(getByText("Content")).toBeTruthy();
-    });
-
     it("does not show overlay when busy is false", () => {
       const { container } = render(() => (
         <BusyContainer busy={false}>

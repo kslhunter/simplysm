@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createRoot } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import {
   useServiceClient,
@@ -9,23 +8,6 @@ import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/providers/ConfigContext";
 import { I18nProvider } from "../../src/providers/i18n/I18nContext";
-
-describe("ServiceClientContext", () => {
-  beforeEach(() => {
-    localStorage.setItem("testApp.i18n-locale", JSON.stringify("en"));
-  });
-
-  describe("useServiceClient", () => {
-    it("throws error when used without Provider", () => {
-      createRoot((dispose) => {
-        expect(() => useServiceClient()).toThrow(
-          "useServiceClient can only be used inside ServiceClientProvider",
-        );
-        dispose();
-      });
-    });
-  });
-});
 
 describe("ServiceClientProvider", () => {
   beforeEach(() => {

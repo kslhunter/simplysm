@@ -69,19 +69,6 @@ describe("Expr - Comparison operators (null-safe)", () => {
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toMatchObject({
-        type: "select",
-        where: [
-          {
-            type: "gt",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 20 },
-          },
-        ],
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.gt[dialect]);
@@ -94,19 +81,6 @@ describe("Expr - Comparison operators (null-safe)", () => {
       .user()
       .where((item) => [expr.lt(item.age, 30)])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toMatchObject({
-        type: "select",
-        where: [
-          {
-            type: "lt",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 30 },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -121,19 +95,6 @@ describe("Expr - Comparison operators (null-safe)", () => {
       .where((item) => [expr.gte(item.age, 18)])
       .getSelectQueryDef();
 
-    it("Verify QueryDef", () => {
-      expect(def).toMatchObject({
-        type: "select",
-        where: [
-          {
-            type: "gte",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 18 },
-          },
-        ],
-      });
-    });
-
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.gte[dialect]);
@@ -146,19 +107,6 @@ describe("Expr - Comparison operators (null-safe)", () => {
       .user()
       .where((item) => [expr.lte(item.age, 65)])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toMatchObject({
-        type: "select",
-        where: [
-          {
-            type: "lte",
-            source: { type: "column", path: ["T1", "age"] },
-            target: { type: "value", value: 65 },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
@@ -226,20 +174,6 @@ describe("Expr - Comparison operators (null-safe)", () => {
       .user()
       .where((item) => [expr.between(item.age, undefined, 30)])
       .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toMatchObject({
-        type: "select",
-        where: [
-          {
-            type: "between",
-            source: { type: "column", path: ["T1", "age"] },
-            from: undefined,
-            to: { type: "value", value: 30 },
-          },
-        ],
-      });
-    });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);

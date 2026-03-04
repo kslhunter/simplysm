@@ -7,8 +7,9 @@ import { objClone, objEqual } from "@simplysm/core-common";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Icon } from "../../display/Icon";
-import { text } from "../../../styles/base.styles";
-import { type ComponentSize, pad } from "../../../styles/control.styles";
+import { bg, text } from "../../../styles/base.styles";
+import { type ComponentSize, gap, pad } from "../../../styles/control.styles";
+import { themeTokens } from "../../../styles/theme.styles";
 import { Button } from "../Button";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
@@ -32,16 +33,6 @@ export interface StatePresetProps<TValue> {
 
 // ── Style constants ──
 
-const baseClass = clsx("inline-flex items-center gap-1.5", "flex-wrap");
-
-const chipClass = clsx(
-  "inline-flex items-center gap-1",
-  "rounded-full",
-  "bg-base-200 dark:bg-base-700",
-  "text-base-800 dark:text-base-200",
-  "cursor-default",
-);
-
 const chipSizeClasses: Record<StatePresetSize, string> = {
   default: pad.default,
   xs: clsx(pad.xs, "text-sm"),
@@ -49,10 +40,6 @@ const chipSizeClasses: Record<StatePresetSize, string> = {
   lg: pad.lg,
   xl: clsx(pad.xl, "text-lg"),
 };
-
-const chipNameBtnClass = clsx("cursor-pointer", "hover:underline", "focus:outline-none");
-
-const iconBtnExtraClass = "rounded-full";
 
 const iconBtnSizeClasses: Record<StatePresetSize, string> = {
   default: "p-0.5",
@@ -62,16 +49,6 @@ const iconBtnSizeClasses: Record<StatePresetSize, string> = {
   xl: "p-1.5",
 };
 
-const starBtnClass = clsx(
-  "inline-flex items-center justify-center",
-  "rounded-full",
-  "cursor-pointer",
-  "transition-colors",
-  "focus:outline-none",
-  "text-warning-500",
-  "hover:bg-warning-100 dark:hover:bg-warning-900/40",
-);
-
 const starBtnSizeClasses: Record<StatePresetSize, string> = {
   default: "p-1",
   xs: "p-0",
@@ -79,16 +56,6 @@ const starBtnSizeClasses: Record<StatePresetSize, string> = {
   lg: "p-1.5",
   xl: "p-2",
 };
-
-const inputClass = clsx(
-  "rounded-full",
-  "bg-base-200 dark:bg-base-700",
-  "text-base-800 dark:text-base-200",
-  "border border-transparent",
-  "focus:ring-1 focus:ring-primary-400",
-  "focus:outline-none",
-  text.placeholder,
-);
 
 const inputSizeClasses: Record<StatePresetSize, string> = {
   default: clsx(pad.default, "w-24"),
@@ -116,12 +83,10 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   const i18n = useI18n();
 
   // presetKey is an identifier set only once at mount, evaluate immediately to capture
-  /* eslint-disable solid/reactivity */
   const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(
     `state-preset.${local.presetKey}`,
     [],
   );
-  /* eslint-enable solid/reactivity */
   const [adding, setAdding] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
 
@@ -226,17 +191,26 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   // ── Render ──
 
-  const containerClass = () => twMerge(baseClass, local.class);
+  const containerClass = () => twMerge(clsx("inline-flex items-center", gap.lg, "flex-wrap"), local.class);
 
-  const resolvedChipClass = () => twMerge(chipClass, chipSizeClasses[local.size ?? "default"]);
+  const resolvedChipClass = () => twMerge(
+    clsx("inline-flex items-center", gap.default, "rounded-full", bg.subtle, text.default, "cursor-default"),
+    chipSizeClasses[local.size ?? "default"],
+  );
 
   const resolvedIconBtnClass = () =>
-    twMerge(iconBtnExtraClass, iconBtnSizeClasses[local.size ?? "default"]);
+    twMerge("rounded-full", iconBtnSizeClasses[local.size ?? "default"]);
 
   const resolvedStarBtnClass = () =>
-    twMerge(starBtnClass, starBtnSizeClasses[local.size ?? "default"]);
+    twMerge(
+      clsx("inline-flex items-center justify-center rounded-full cursor-pointer transition-colors focus:outline-none text-warning-500", themeTokens.warning.hoverBg),
+      starBtnSizeClasses[local.size ?? "default"],
+    );
 
-  const resolvedInputClass = () => twMerge(inputClass, inputSizeClasses[local.size ?? "default"]);
+  const resolvedInputClass = () => twMerge(
+    clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:ring-1 focus:ring-primary-400 focus:outline-none", text.placeholder),
+    inputSizeClasses[local.size ?? "default"],
+  );
 
   return (
     <div class={containerClass()} style={local.style}>
@@ -256,7 +230,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
           <span class={resolvedChipClass()}>
             <button
               type="button"
-              class={chipNameBtnClass}
+              class="cursor-pointer hover:underline focus:outline-none"
               onClick={() => handleRestore(preset)}
               title={preset.name}
             >

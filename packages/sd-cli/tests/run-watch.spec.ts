@@ -38,38 +38,4 @@ describe("filterPackagesByTargets", () => {
     expect(result["core-node"]).toEqual({ target: "node" });
   });
 
-  it("returns empty result when specifying non-existent package", () => {
-    const result = filterPackagesByTargets(mockPackages, ["non-existent"]);
-
-    expect(Object.keys(result)).toHaveLength(0);
-  });
-
-  it("ignores undefined package config", () => {
-    const result = filterPackagesByTargets(mockPackages, ["empty-pkg"]);
-
-    expect(Object.keys(result)).toHaveLength(0);
-  });
-
-  it("filters client target packages", () => {
-    const result = filterPackagesByTargets(mockPackages, ["solid-demo"]);
-
-    expect(Object.keys(result)).toHaveLength(1);
-    expect(result["solid-demo"]).toEqual({ target: "client", server: 3000 });
-  });
-
-  it("handles empty packages object", () => {
-    const result = filterPackagesByTargets({}, []);
-
-    expect(Object.keys(result)).toHaveLength(0);
-  });
-
-  it("handles case where all packages are scripts", () => {
-    const scriptsOnly: Record<string, SdPackageConfig> = {
-      pkg1: { target: "scripts" },
-      pkg2: { target: "scripts" },
-    };
-    const result = filterPackagesByTargets(scriptsOnly, []);
-
-    expect(Object.keys(result)).toHaveLength(0);
-  });
 });

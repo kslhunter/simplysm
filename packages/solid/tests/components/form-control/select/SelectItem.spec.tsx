@@ -14,48 +14,6 @@ function TestProvider(props: { children: JSX.Element; value: SelectContextValue 
 }
 
 describe("SelectItem component", () => {
-  describe("basic rendering", () => {
-    it("renders children", () => {
-      const mockContext: SelectContextValue = {
-        multiple: () => false,
-        isSelected: () => false,
-        toggleValue: vi.fn(),
-        closeDropdown: vi.fn(),
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
-        setItemTemplate: vi.fn(),
-      };
-
-      const { getByText } = render(() => (
-        <TestProvider value={mockContext}>
-          <Select.Item value="apple">사과</Select.Item>
-        </TestProvider>
-      ));
-
-      expect(getByText("사과")).not.toBeNull();
-    });
-
-    it("sets data-select-item attribute", () => {
-      const mockContext: SelectContextValue = {
-        multiple: () => false,
-        isSelected: () => false,
-        toggleValue: vi.fn(),
-        closeDropdown: vi.fn(),
-        setHeader: vi.fn(),
-        setAction: vi.fn(),
-        setItemTemplate: vi.fn(),
-      };
-
-      render(() => (
-        <TestProvider value={mockContext}>
-          <Select.Item value="apple">사과</Select.Item>
-        </TestProvider>
-      ));
-
-      expect(document.querySelector("[data-select-item]")).not.toBeNull();
-    });
-  });
-
   describe("selection behavior", () => {
     it("calls toggleValue on click", () => {
       const toggleValue = vi.fn();

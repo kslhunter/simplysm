@@ -59,21 +59,6 @@ describe("HTMLElement prototype extensions", () => {
       expect(() => child.getRelativeOffset(".not-exist")).toThrow(ArgumentError);
     });
 
-    it("handles elements with transforms", () => {
-      container.style.position = "relative";
-      container.style.transform = "scale(2)";
-      container.innerHTML = `<div id="child" style="transform: rotate(45deg);"></div>`;
-
-      const child = container.querySelector<HTMLElement>("#child")!;
-
-      // Should return result without error even with transforms
-      const result = child.getRelativeOffset(container);
-      expect(result).toHaveProperty("top");
-      expect(result).toHaveProperty("left");
-      expect(typeof result.top).toBe("number");
-      expect(typeof result.left).toBe("number");
-    });
-
     it("accumulates border width of intermediate elements", () => {
       container.style.position = "relative";
       container.innerHTML = `

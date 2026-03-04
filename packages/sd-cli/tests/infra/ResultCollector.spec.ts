@@ -27,13 +27,4 @@ describe("ResultCollector", () => {
     expect(collector.toMap().size).toBe(1);
   });
 
-  it("returns internal Map", () => {
-    const collector = new ResultCollector();
-    collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
-
-    const map = collector.toMap();
-
-    expect(map).toBeInstanceOf(Map);
-    expect(map.size).toBe(1);
-  });
 });

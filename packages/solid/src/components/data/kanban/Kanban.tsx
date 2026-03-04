@@ -124,16 +124,6 @@ export interface KanbanCardProps<TCardValue = unknown> extends Omit<
   children?: JSX.Element;
 }
 
-const cardHostClass = clsx("relative block", "transition-opacity duration-200");
-
-const cardContentClass = clsx(
-  "select-none whitespace-normal",
-  "animate-none",
-  "transition-shadow duration-200",
-);
-
-const cardSelectedClass = clsx("ring-2 ring-primary-500/50", "shadow-md dark:shadow-black/30");
-
 const LONG_PRESS_MS = 500;
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
@@ -268,7 +258,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       data-kanban-card
       draggable={isDraggable()}
       class={twMerge(
-        cardHostClass,
+        "relative block transition-opacity duration-200",
         isDraggable() && "cursor-grab",
         isDragSource() && "opacity-30",
         local.class,
@@ -282,7 +272,11 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       onClick={handleClick}
     >
       <Card
-        class={twMerge(cardContentClass, isSelected() && cardSelectedClass, local.contentClass)}
+        class={twMerge(
+          "select-none whitespace-normal animate-none transition-shadow duration-200",
+          isSelected() && "ring-2 ring-primary-500/50 shadow-md dark:shadow-black/30",
+          local.contentClass,
+        )}
       >
         {local.children}
       </Card>
@@ -303,38 +297,6 @@ export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<
   onCollapsedChange?: (collapsed: boolean) => void;
   children?: JSX.Element;
 }
-
-const laneBaseClass = clsx(
-  "flex flex-col",
-  "w-72 min-w-72",
-  bg.muted,
-  "rounded-lg",
-  "overflow-hidden",
-  "transition-[background-color,box-shadow] duration-200",
-);
-
-const laneDragOverClass = clsx("bg-primary-50 dark:bg-primary-950");
-
-const laneHeaderBaseClass = clsx(
-  "flex items-center", gap.xl,
-  pad.lg,
-  "font-bold",
-  text.default,
-  "select-none",
-);
-
-const collapseButtonClass = "size-6 hover:text-primary-500";
-
-const laneToolsClass = clsx("flex items-center", gap.default);
-
-const laneBodyBaseClass = clsx("flex-1", "flex flex-col", gap.xl, "p-2", "overflow-y-auto");
-
-const placeholderBaseClass = clsx(
-  "rounded-lg",
-  "bg-primary-100/60 dark:bg-primary-900/30",
-  "origin-top",
-  "animate-[kanban-ph-in_200ms_ease-out]",
-);
 
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -464,7 +426,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   // Placeholder div (owned by Lane, direct DOM control)
   let bodyRef: HTMLDivElement | undefined;
   const placeholderEl = document.createElement("div");
-  placeholderEl.className = placeholderBaseClass;
+  placeholderEl.className = clsx("rounded-lg", "bg-primary-100/60 dark:bg-primary-900/30", "origin-top", "animate-[kanban-ph-in_200ms_ease-out]");
 
   createEffect(() => {
     const target = dropTarget();
@@ -505,19 +467,23 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
         <div
           {...rest}
           data-kanban-lane
-          class={twMerge(laneBaseClass, isDragOverLane() && laneDragOverClass, local.class)}
+          class={twMerge(
+            clsx("flex flex-col w-72 min-w-72", bg.muted, "rounded-lg overflow-hidden transition-[background-color,box-shadow] duration-200"),
+            isDragOverLane() && "bg-primary-50 dark:bg-primary-950",
+            local.class,
+          )}
           onDragEnter={handleLaneDragEnter}
           onDragLeave={handleLaneDragLeave}
           onDragOver={handleLaneDragOver}
           onDrop={handleLaneDrop}
         >
           <Show when={hasHeader()}>
-            <div class={laneHeaderBaseClass}>
+            <div class={clsx("flex items-center", gap.xl, pad.lg, "font-bold", text.default, "select-none")}>
               <Show when={local.collapsible}>
                 <Button
                   variant="ghost"
                   size="xs"
-                  class={collapseButtonClass}
+                  class="size-6 hover:text-primary-500"
                   onClick={() => setCollapsed((prev) => !prev)}
                 >
                   <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
@@ -530,13 +496,13 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
                 <Show when={title()}>{title()!()}</Show>
               </div>
               <Show when={tools()}>
-                <div class={laneToolsClass}>{tools()!()}</div>
+                <div class={clsx("flex items-center", gap.default)}>{tools()!()}</div>
               </Show>
             </div>
           </Show>
           <div
             ref={bodyRef}
-            class={laneBodyBaseClass}
+            class={clsx("flex-1 flex flex-col", gap.xl, "p-2 overflow-y-auto")}
             style={{ display: collapsed() ? "none" : undefined }}
           >
             {local.children}
@@ -559,7 +525,6 @@ export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends
   children?: JSX.Element;
 }
 
-const boardBaseClass = clsx("inline-flex flex-nowrap", "h-full", "gap-4");
 
 interface KanbanComponent {
   <TCardValue = unknown, TLaneValue = unknown>(
@@ -634,7 +599,7 @@ const KanbanInner = (props: KanbanProps) => {
 
   return (
     <KanbanContext.Provider value={contextValue}>
-      <div {...rest} data-kanban class={twMerge(boardBaseClass, local.class)}>
+      <div {...rest} data-kanban class={twMerge("inline-flex flex-nowrap h-full gap-4", local.class)}>
         {local.children}
       </div>
     </KanbanContext.Provider>

@@ -9,8 +9,6 @@ export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   theme?: TagTheme;
 }
 
-const baseClass = clsx("inline-block", "text-white", "px-1.5", "rounded-md");
-
 const themeClasses: Record<TagTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.solid]),
 ) as Record<TagTheme, string>;
@@ -20,7 +18,7 @@ export const Tag: ParentComponent<TagProps> = (props) => {
 
   const getClassName = () => {
     const theme = local.theme ?? "base";
-    return twMerge(baseClass, themeClasses[theme], local.class);
+    return twMerge("inline-block text-white px-1.5 rounded-md", themeClasses[theme], local.class);
   };
 
   return (

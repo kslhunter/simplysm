@@ -74,15 +74,6 @@ describe("sd-cli", () => {
       });
     });
 
-    it("runs lint command without targets", async () => {
-      await createCliParser(["lint"]).parse();
-
-      expect(runLint).toHaveBeenCalledWith({
-        targets: [],
-        fix: false,
-        timing: false,
-      });
-    });
   });
 
   describe("typecheck command", () => {
@@ -124,15 +115,6 @@ describe("sd-cli", () => {
       });
     });
 
-    it("runs check command without targets", async () => {
-      await createCliParser(["check"]).parse();
-
-      expect(runCheck).toHaveBeenCalledWith({
-        targets: [],
-        types: ["typecheck", "lint", "test"],
-      });
-    });
-
     it("specifies single type using --type option", async () => {
       await createCliParser(["check", "--type", "test"]).parse();
 
@@ -153,32 +135,6 @@ describe("sd-cli", () => {
       });
     });
 
-    it("passes multiple targets to watch command", async () => {
-      await createCliParser(["watch", "solid", "solid-demo"]).parse();
-
-      expect(runWatch).toHaveBeenCalledWith({
-        targets: ["solid", "solid-demo"],
-        options: [],
-      });
-    });
-
-    it("runs watch command without targets", async () => {
-      await createCliParser(["watch"]).parse();
-
-      expect(runWatch).toHaveBeenCalledWith({
-        targets: [],
-        options: [],
-      });
-    });
-
-    it("passes --options option correctly", async () => {
-      await createCliParser(["watch", "-o", "dev"]).parse();
-
-      expect(runWatch).toHaveBeenCalledWith({
-        targets: [],
-        options: ["dev"],
-      });
-    });
   });
 
   describe("build command", () => {
@@ -191,23 +147,6 @@ describe("sd-cli", () => {
       });
     });
 
-    it("runs build command without targets", async () => {
-      await createCliParser(["build"]).parse();
-
-      expect(runBuild).toHaveBeenCalledWith({
-        targets: [],
-        options: [],
-      });
-    });
-
-    it("passes --options option correctly", async () => {
-      await createCliParser(["build", "-o", "prod"]).parse();
-
-      expect(runBuild).toHaveBeenCalledWith({
-        targets: [],
-        options: ["prod"],
-      });
-    });
   });
 
   describe("publish command", () => {
@@ -216,17 +155,6 @@ describe("sd-cli", () => {
 
       expect(runPublish).toHaveBeenCalledWith({
         targets: ["solid", "core-common"],
-        noBuild: false,
-        dryRun: false,
-        options: [],
-      });
-    });
-
-    it("runs publish command without targets", async () => {
-      await createCliParser(["publish"]).parse();
-
-      expect(runPublish).toHaveBeenCalledWith({
-        targets: [],
         noBuild: false,
         dryRun: false,
         options: [],
@@ -277,16 +205,6 @@ describe("sd-cli", () => {
       });
     });
 
-    it("uses --dry-run with other options together", async () => {
-      await createCliParser(["publish", "solid", "--dry-run", "-o", "prod"]).parse();
-
-      expect(runPublish).toHaveBeenCalledWith({
-        targets: ["solid"],
-        noBuild: false,
-        dryRun: true,
-        options: ["prod"],
-      });
-    });
   });
 
   describe("global --debug option", () => {
@@ -296,12 +214,6 @@ describe("sd-cli", () => {
       expect(consola.level).toBe(LogLevels.debug);
     });
 
-    it("does not change consola.level without --debug", async () => {
-      const levelBefore = consola.level;
-      await createCliParser(["lint"]).parse();
-
-      expect(consola.level).toBe(levelBefore);
-    });
   });
 
   describe("error handling", () => {

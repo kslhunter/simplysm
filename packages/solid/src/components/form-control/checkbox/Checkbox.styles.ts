@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { border } from "../../../styles/base.styles";
-import { type ComponentSize, disabledOpacity, gap, pad } from "../../../styles/control.styles";
+import { type ComponentSize, state, gap, pad } from "../../../styles/control.styles";
 
 export type CheckboxSize = ComponentSize;
 
@@ -60,4 +60,4 @@ export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
 export const checkboxInlineClass = clsx("!h-auto", "!p-0", gap.default);
 
 // Disabled styles
-export const checkboxDisabledClass = clsx(disabledOpacity);
+export const checkboxDisabledClass = clsx(state.disabled);

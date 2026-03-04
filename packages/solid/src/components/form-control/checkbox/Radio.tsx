@@ -17,8 +17,6 @@ import {
 } from "./Checkbox.styles";
 import { Invalid } from "../Invalid";
 
-const radioDotClass = clsx("size-2", "rounded-full", "bg-current");
-
 // Directive usage declaration (for TypeScript)
 void ripple;
 
@@ -107,7 +105,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
       >
         <div class={getIndicatorClass()}>
           <Show when={value()}>
-            <div class={radioDotClass} />
+            <div class="size-2 rounded-full bg-current" />
           </Show>
         </div>
         <Show when={local.children}>

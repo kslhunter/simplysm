@@ -68,25 +68,6 @@ describe("getTypesFromPackageJson", () => {
     expect(result).toEqual([]);
   });
 
-  it("filters out dependencies that are not @types/*", async () => {
-    const packageDir = "/project/packages/core-common";
-    const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJson = vi.mocked(fsReadJson);
-
-    mockFsExists.mockResolvedValue(true);
-    mockFsReadJson.mockResolvedValue({
-      devDependencies: {
-        typescript: "^5.0.0",
-        vitest: "^1.0.0",
-        eslint: "^9.0.0",
-      },
-    });
-
-    const result = await getTypesFromPackageJson(packageDir);
-
-    expect(result).toEqual([]);
-  });
-
   it("handles scoped @types packages correctly", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);

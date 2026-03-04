@@ -175,18 +175,6 @@ describe("ZipArchive", () => {
       expect(notExists).toBe(false);
     });
 
-    it("returns true for cached file", async () => {
-      const zip = new ZipArchive();
-      zip.write("file.txt", encoder.encode("content"));
-      const zipBuffer = await zip.compress();
-
-      const result = new ZipArchive(zipBuffer);
-      await result.get("file.txt"); // Load into cache
-      const exists = await result.exists("file.txt");
-
-      expect(exists).toBe(true);
-    });
-
     it("returns false when reader is not available", async () => {
       const zip = new ZipArchive();
       const exists = await zip.exists("file.txt");
@@ -213,11 +201,6 @@ describe("ZipArchive", () => {
       // Cached data is still available after close
       const content = await result.get("file.txt");
       expect(content != null ? decoder.decode(content) : undefined).toBe("content");
-    });
-
-    it("works without error when reader is not available", async () => {
-      const zip = new ZipArchive();
-      await expect(zip.close()).resolves.not.toThrow();
     });
 
     it("automatically closes with await using statement", async () => {

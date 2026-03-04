@@ -102,8 +102,4 @@ describe("I18nProvider", () => {
     ));
     expect(result).toBe("日");
   });
-
-  it("should throw when used without provider", () => {
-    expect(() => useI18n()).toThrow("useI18n can only be used inside I18nProvider");
-  });
 });

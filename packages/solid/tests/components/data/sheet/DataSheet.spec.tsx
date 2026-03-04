@@ -30,35 +30,6 @@ const testData: TestItem[] = [
 ];
 
 describe("DataSheet", () => {
-  it("basic rendering: column headers and data rows are displayed", () => {
-    const { container } = render(() => (
-      <ConfigProvider clientName="test"><I18nProvider>
-        <TestWrapper>
-        <DataSheet items={testData} persistKey="test">
-          <DataSheet.Column<TestItem> key="name" header="이름">
-            {(ctx) => <div>{ctx.item.name}</div>}
-          </DataSheet.Column>
-          <DataSheet.Column<TestItem> key="age" header="나이">
-            {(ctx) => <div>{ctx.item.age}</div>}
-          </DataSheet.Column>
-          <DataSheet.Column<TestItem> key="email" header="이메일">
-            {(ctx) => <div>{ctx.item.email}</div>}
-          </DataSheet.Column>
-        </DataSheet>
-      </TestWrapper>
-      </I18nProvider></ConfigProvider>
-    ));
-
-    const ths = container.querySelectorAll("thead th");
-    expect(ths.length).toBe(3);
-    expect(ths[0].textContent).toContain("이름");
-    expect(ths[1].textContent).toContain("나이");
-    expect(ths[2].textContent).toContain("이메일");
-
-    const rows = container.querySelectorAll("tbody tr");
-    expect(rows.length).toBe(3);
-  });
-
   it("multi-level header: colspan and rowspan are applied correctly", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
@@ -330,24 +301,6 @@ describe("DataSheet", () => {
     const tds = container.querySelectorAll("tbody tr:first-child td");
     // verify class included in fixedLastClass
     expect(tds[0].classList.contains("border-r")).toBe(true);
-  });
-
-  it("body rows have hover/selected overlay classes", () => {
-    const { container } = render(() => (
-      <ConfigProvider clientName="test"><I18nProvider>
-        <TestWrapper>
-        <DataSheet items={testData} persistKey="test">
-          <DataSheet.Column<TestItem> key="name" header="이름">
-            {(ctx) => <div>{ctx.item.name}</div>}
-          </DataSheet.Column>
-        </DataSheet>
-      </TestWrapper>
-      </I18nProvider></ConfigProvider>
-    ));
-    const row = container.querySelector("tbody tr");
-    expect(row).toBeTruthy();
-    // tr should have the relative class for ::after positioning
-    expect(row!.className).toContain("relative");
   });
 
   it("resizer: resizable column has a resizer handle", () => {

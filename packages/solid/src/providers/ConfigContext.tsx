@@ -40,7 +40,6 @@ export function useConfig(): AppConfig {
  */
 export const ConfigProvider: ParentComponent<{ clientName: string }> = (props) => {
   return (
-    // eslint-disable-next-line solid/reactivity -- clientName is an initial config value that does not change
     <ConfigContext.Provider value={{ clientName: props.clientName }}>
       {props.children}
     </ConfigContext.Provider>

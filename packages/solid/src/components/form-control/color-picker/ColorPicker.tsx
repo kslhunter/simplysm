@@ -6,20 +6,6 @@ import { Invalid } from "../Invalid";
 import { type ComponentSize } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
-// Base style
-const baseClass = clsx(
-  "size-field",
-  "rounded",
-  "border border-black/10 dark:border-white/10",
-  "cursor-pointer",
-  // Remove color input default styles
-  "[&::-webkit-color-swatch-wrapper]:p-0",
-  "[&::-webkit-color-swatch]:border-none",
-  "[&::-webkit-color-swatch]:rounded-none",
-  "[&::-moz-color-swatch]:border-none",
-  "[&::-moz-color-swatch]:rounded-none",
-);
-
 // Size-specific styles
 const sizeClasses: Record<ComponentSize, string> = {
   default: clsx`size-field`,
@@ -28,15 +14,6 @@ const sizeClasses: Record<ComponentSize, string> = {
   lg: "size-field-lg",
   xl: "size-field-xl",
 };
-
-// Disabled style - shown as diagonal stripes
-// eslint-disable-next-line tailwindcss/enforces-shorthand
-const disabledClass = clsx(
-  "cursor-default",
-  "relative",
-  "before:absolute before:bottom-0 before:left-0 before:right-0 before:top-0",
-  "before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
-);
 
 export interface ColorPickerProps {
   /** Color value (#RRGGBB format) */
@@ -109,9 +86,11 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   const getClassName = () =>
     twMerge(
-      baseClass,
+      // eslint-disable-next-line tailwindcss/enforces-shorthand
+      "size-field rounded border border-black/10 dark:border-white/10 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-none [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-none",
       sizeClasses[local.size ?? "default"],
-      local.disabled && disabledClass,
+      // eslint-disable-next-line tailwindcss/enforces-shorthand
+      local.disabled && "cursor-default relative before:absolute before:bottom-0 before:left-0 before:right-0 before:top-0 before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
       local.class,
     );
 

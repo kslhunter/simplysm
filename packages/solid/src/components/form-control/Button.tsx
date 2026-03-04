@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../directives/ripple";
-import { type ComponentSize, disabledOpacity, padding } from "../../styles/control.styles";
+import { type ComponentSize, state, pad } from "../../styles/control.styles";
 import { themeTokens, type SemanticTheme } from "../../styles/theme.styles";
 
 // Directive usage declaration (for TypeScript)
@@ -12,36 +12,23 @@ type ButtonTheme = SemanticTheme;
 type ButtonVariant = "solid" | "outline" | "ghost";
 type ButtonSize = ComponentSize;
 
-const baseClass = clsx(
-  "inline-flex items-center",
-  "font-bold",
-  "justify-center",
-  "text-center",
-  "cursor-pointer",
-  "transition",
-  "rounded",
-  "focus:outline-none",
-  "focus-visible:ring-2",
-  "border border-transparent",
-);
-
 const themeClasses = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [
     theme,
     {
       solid: clsx(t.solid, t.solidHover /*, "shadow-md hover:shadow-lg"*/),
       outline: clsx("bg-transparent", t.hoverBg, t.text, t.border),
-      ghost: clsx("bg-transparent", `hover:bg-base-100 dark:hover:bg-base-800/30`, t.text),
+      ghost: clsx("bg-transparent", t.hoverBg, t.text),
     },
   ]),
 ) as Record<ButtonTheme, Record<ButtonVariant, string>>;
 
 const sizeClasses: Record<ButtonSize, string> = {
-  default: clsx("min-w-8", padding.default),
-  xs: clsx("min-w-4", padding.xs),
-  sm: clsx("min-w-6", padding.sm),
-  lg: clsx("min-w-9", padding.lg),
-  xl: clsx("min-w-10", padding.xl, "text-lg"),
+  default: clsx("min-w-8", pad.default),
+  xs: clsx("min-w-4", pad.xs),
+  sm: clsx("min-w-6", pad.sm),
+  lg: clsx("min-w-9", pad.lg),
+  xl: clsx("min-w-10", pad.xl, "text-lg"),
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -68,11 +55,11 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
     const variant = local.variant ?? "outline";
 
     return twMerge(
-      baseClass,
+      "inline-flex items-center font-bold justify-center text-center cursor-pointer transition rounded focus:outline-none focus-visible:ring-2 border border-transparent",
       themeClasses[theme][variant],
       sizeClasses[local.size ?? "default"],
       local.inset && "rounded-none border-none",
-      local.disabled && disabledOpacity,
+      local.disabled && state.disabled,
       local.class,
     );
   };

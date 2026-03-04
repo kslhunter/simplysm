@@ -307,46 +307,5 @@ describe("no-subpath-imports-from-simplysm rule", () => {
       });
     });
 
-    describe("src path prohibited in default import", () => {
-      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `import SomeDefault from "@simplysm/sd-core-common/src/default";`,
-            output: `import SomeDefault from "@simplysm/sd-core-common";`,
-            errors: [
-              {
-                messageId: "noSubpathImport",
-                data: {
-                  pkg: "sd-core-common",
-                  importPath: "@simplysm/sd-core-common/src/default",
-                },
-              },
-            ],
-          },
-        ],
-      });
-    });
-
-    describe("src path prohibited in mixed import (default + named)", () => {
-      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
-        valid: [],
-        invalid: [
-          {
-            code: `import SomeDefault, { Something } from "@simplysm/sd-core-common/src";`,
-            output: `import SomeDefault, { Something } from "@simplysm/sd-core-common";`,
-            errors: [
-              {
-                messageId: "noSubpathImport",
-                data: {
-                  pkg: "sd-core-common",
-                  importPath: "@simplysm/sd-core-common/src",
-                },
-              },
-            ],
-          },
-        ],
-      });
-    });
   });
 });

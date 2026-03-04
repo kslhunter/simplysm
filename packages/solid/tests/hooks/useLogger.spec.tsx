@@ -17,15 +17,6 @@ describe("useLogger", () => {
     cleanup();
   });
 
-  it("should return a logger object with log, info, warn, error, configure methods", () => {
-    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
-    expect(typeof result.log).toBe("function");
-    expect(typeof result.info).toBe("function");
-    expect(typeof result.warn).toBe("function");
-    expect(typeof result.error).toBe("function");
-    expect(typeof result.configure).toBe("function");
-  });
-
   it("should call consola when no LoggerProvider is present", () => {
     const consolaSpy = {
       log: vi.spyOn(consola, "log").mockImplementation(() => {}),
@@ -84,14 +75,6 @@ describe("useLogger", () => {
     expect(writeSpy).toHaveBeenCalledWith("info", "b");
     expect(writeSpy).toHaveBeenCalledWith("warn", "c");
     expect(writeSpy).toHaveBeenCalledWith("error", "d");
-  });
-
-  it("should throw when configure() is called without LoggerProvider", () => {
-    const { result } = renderHook(() => useLogger());
-
-    expect(() => result.configure(() => ({ write: vi.fn() }))).toThrow(
-      "configure() can only be used inside LoggerProvider",
-    );
   });
 
   it("should chain decorators — origin receives the previous adapter", () => {

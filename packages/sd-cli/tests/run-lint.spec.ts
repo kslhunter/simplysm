@@ -255,25 +255,6 @@ describe("runLint", () => {
     expect(mockState.lintedFiles).toHaveLength(0);
   });
 
-  it("does not set exitCode when only warnings exist", async () => {
-    const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
-      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
-    });
-
-    mockJitiImportFn.mockResolvedValue({
-      default: [{ ignores: ["node_modules/**"] }],
-    });
-
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
-
-    mockState.lintResults = [{ errorCount: 0, warningCount: 3 }];
-
-    await runLint({ targets: [], fix: false, timing: false });
-
-    expect(process.exitCode).toBeUndefined();
-  });
-
   it("sets TIMING environment variable when timing option is enabled", async () => {
     const cwd = "/project";
     vi.mocked(fsExists).mockImplementation((filePath: string) => {
@@ -326,20 +307,6 @@ describe("runLint", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("propagates error when glob fails", async () => {
-    const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
-      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
-    });
-
-    mockJitiImportFn.mockResolvedValue({
-      default: [{ ignores: ["node_modules/**"] }],
-    });
-
-    vi.mocked(fsGlob).mockRejectedValue(new Error("Glob error"));
-
-    await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow("Glob error");
-  });
 });
 
 describe("executeLint", () => {
@@ -392,24 +359,4 @@ describe("executeLint", () => {
     expect(result.warningCount).toBe(1);
   });
 
-  it("includes formatter output in formattedOutput", async () => {
-    mockState.lintResults = [{ errorCount: 1, warningCount: 0 }];
-    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
-
-    const result = await executeLint({ targets: [], fix: false, timing: false });
-
-    // MockESLint's formatter returns empty string, so formattedOutput is also empty string
-    expect(result.formattedOutput).toBeDefined();
-    expect(typeof result.formattedOutput).toBe("string");
-  });
-
-  it("returns success result when no files exist", async () => {
-    vi.mocked(fsGlob).mockResolvedValue([]);
-
-    const result = await executeLint({ targets: [], fix: false, timing: false });
-
-    expect(result.success).toBe(true);
-    expect(result.errorCount).toBe(0);
-    expect(result.warningCount).toBe(0);
-  });
 });

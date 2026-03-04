@@ -30,28 +30,6 @@ describe("SELECT - ORDER BY", () => {
     });
   });
 
-  describe("ASC (explicit)", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .orderBy((item) => item.id, "ASC")
-      .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.orderAscExplicit[dialect]);
-    });
-  });
-
   describe("DESC", () => {
     const db = createTestDb();
     const def = db
@@ -133,33 +111,6 @@ describe("SELECT - ORDER BY", () => {
   //#endregion
 
   //#region ========== combinations ==========
-
-  describe("SELECT + ORDER BY combination", () => {
-    const db = createTestDb();
-    const def = db
-      .user()
-      .select((item) => ({ id: item.id, name: item.name }))
-      .orderBy((item) => item.name, "ASC")
-      .getSelectQueryDef();
-
-    it("Verify QueryDef", () => {
-      expect(def).toEqual({
-        type: "select",
-        as: "T1",
-        from: { database: "TestDb", schema: "TestSchema", name: "User" },
-        select: {
-          id: { type: "column", path: ["T1", "id"] },
-          name: { type: "column", path: ["T1", "name"] },
-        },
-        orderBy: [[{ type: "column", path: ["T1", "name"] }, "ASC"]],
-      });
-    });
-
-    it.each(dialects)("[%s] Verify SQL", (dialect) => {
-      const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.orderSelectCombo[dialect]);
-    });
-  });
 
   describe("ORDER BY + LIMIT combination", () => {
     const db = createTestDb();

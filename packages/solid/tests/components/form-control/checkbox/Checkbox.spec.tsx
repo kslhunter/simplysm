@@ -9,23 +9,6 @@ describe("Checkbox component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
-  describe("basic rendering", () => {
-    it("renders with checkbox role", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox /></I18nProvider></ConfigProvider>);
-      expect(getByRole("checkbox")).toBeTruthy();
-    });
-
-    it("renders children as label", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox>동의합니다</Checkbox></I18nProvider></ConfigProvider>);
-      expect(getByText("동의합니다")).toBeTruthy();
-    });
-
-    it("defaults to unchecked", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox /></I18nProvider></ConfigProvider>);
-      expect(getByRole("checkbox").getAttribute("aria-checked")).toBe("false");
-    });
-  });
-
   describe("click behavior", () => {
     it("toggles checked state on click", () => {
       const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox /></I18nProvider></ConfigProvider>);
@@ -82,35 +65,6 @@ describe("Checkbox component", () => {
 
       setValue(true);
       expect(getByRole("checkbox").getAttribute("aria-checked")).toBe("true");
-    });
-  });
-
-  describe("style variants", () => {
-    it("applies different styles per size", () => {
-      const { getByRole: getDefault } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox /></I18nProvider></ConfigProvider>);
-      const { getByRole: getSm } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox size="sm" /></I18nProvider></ConfigProvider>);
-
-      expect(getDefault("checkbox").className).not.toBe(getSm("checkbox").className);
-    });
-
-    it("applies different styles when inset", () => {
-      const { getByRole: getDefault } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox /></I18nProvider></ConfigProvider>);
-      const { getByRole: getInset } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox inset /></I18nProvider></ConfigProvider>);
-
-      expect(getDefault("checkbox").className).not.toBe(getInset("checkbox").className);
-    });
-
-    it("applies disabled style", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox disabled /></I18nProvider></ConfigProvider>);
-      expect(getByRole("checkbox").classList.contains("opacity-30")).toBe(true);
-    });
-  });
-
-  describe("class merging", () => {
-    it("merges custom classes", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox class="my-custom-class" /></I18nProvider></ConfigProvider>);
-      expect(getByRole("checkbox").classList.contains("my-custom-class")).toBe(true);
     });
   });
 

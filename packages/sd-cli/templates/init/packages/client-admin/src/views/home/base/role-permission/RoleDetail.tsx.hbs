@@ -33,7 +33,6 @@ export function RoleDetail(props: { itemId?: number }) {
     return appService.orm.connectWithoutTransaction(async (db) => {
       const role = await db
         .role()
-        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
         .where((c) => [expr.eq(c.id, props.itemId)])
         .select((c) => ({
           name: c.name,
@@ -61,7 +60,6 @@ export function RoleDetail(props: { itemId?: number }) {
     await appService.orm.connect(async (db) => {
       const count = await db
         .role()
-        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
         .where((c) => [
           expr.eq(c.name, data.name ?? ""),
 
@@ -78,7 +76,6 @@ export function RoleDetail(props: { itemId?: number }) {
     });
 
     // 저장
-    // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
     const savedId = await appService.orm.connect(async (db) => {
       if (props.itemId == null) {
         const [inserted] = await db.role().insert(
@@ -95,7 +92,6 @@ export function RoleDetail(props: { itemId?: number }) {
       } else {
         await db
           .role()
-          // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
           .where((_c) => [expr.eq(_c.id, props.itemId)])
           .update((_c) => ({
             name: data.name ?? "",
@@ -112,7 +108,6 @@ export function RoleDetail(props: { itemId?: number }) {
     await appService.orm.connect(async (db) => {
       await db
         .role()
-        // eslint-disable-next-line solid/reactivity -- 비동기 콜백 내부
         .where((_c) => [expr.eq(_c.id, props.itemId!)])
         .update((_c) => ({
           isDeleted: del,

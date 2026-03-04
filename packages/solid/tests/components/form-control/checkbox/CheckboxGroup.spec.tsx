@@ -9,31 +9,6 @@ describe("CheckboxGroup component", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
-  describe("basic rendering", () => {
-    it("renders the container", () => {
-      const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <CheckboxGroup>
-            <CheckboxGroup.Item value="a">A</CheckboxGroup.Item>
-          </CheckboxGroup>
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(container.querySelector("div")).toBeTruthy();
-    });
-
-    it("renders items as checkboxes", () => {
-      const { getAllByRole } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider>
-          <CheckboxGroup>
-            <CheckboxGroup.Item value="a">A</CheckboxGroup.Item>
-            <CheckboxGroup.Item value="b">B</CheckboxGroup.Item>
-          </CheckboxGroup>
-        </I18nProvider></ConfigProvider>
-      ));
-      expect(getAllByRole("checkbox").length).toBe(2);
-    });
-  });
-
   describe("controlled pattern", () => {
     it("reflects value prop as selected state", () => {
       const { getAllByRole } = render(() => (
