@@ -20,6 +20,23 @@ Start by understanding the current project context, then ask questions one at a 
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
 
+**When brainstorming a sub-design of a main design:**
+
+If a main design document is provided as context (via argument or already in conversation) and it contains a section plan:
+
+- **If no section is specified:** display the section plan's current progress and ask the user which section to work on. Suggest the next incomplete section as the default.
+- **If a section is specified but its prerequisites are incomplete** (as indicated by `after section N` notation): warn the user that prerequisite sections are still incomplete, and ask whether to proceed anyway or complete prerequisites first.
+
+When proceeding with a section:
+
+1. **Read the main design** — understand goals, overall structure, and the target section's scope
+2. **Read actual code** — check the current codebase state for what previous sections have built. Reference the **actual code**, NOT previous section design documents. Code may have diverged from earlier designs during implementation.
+3. **Scope the brainstorm** — limit questions, gap review, approaches, and design presentation to the target section only. Do not re-question decisions already established in the main design.
+4. **Conflict detection** — if the main design's direction conflicts with the actual code state (e.g., a previous section implemented something differently than planned), alert the user and ask for direction before proceeding.
+5. After the design is complete, save as `docs/plans/YYYY-MM-DD-<topic>-section-N-design.md`
+6. Update the main design document: mark the section `[ ]` → `[x]` in the section plan
+7. Commit both files, then proceed to the normal **Next Steps Guide** (Path A/B)
+
 **Gap review loop:**
 
 When you think you've asked enough, **STOP and run a gap review before moving on.**
@@ -75,6 +92,45 @@ If your first gap review shows all ✅:
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
+
+**Scale assessment:**
+
+After the design presentation is complete, assess whether the design is too large for a single plan → plan-dev cycle. Consider: estimated file count, logic complexity, number of distinct subsystems, scope of impact.
+
+- If the design is **manageable** → proceed to "After the Design" as normal.
+- If the design is **large** → propose splitting to the user:
+  1. Present two choices: **"proceed as-is"** (current flow) or **"split into sections"**
+  2. If the user chooses "split into sections":
+     - Propose 2-3 section division approaches (e.g., by feature, by layer, by dependency order), each with a concrete section list including names and scope summaries
+     - After the user selects an approach, append a **section plan** to the existing design document (keep all existing design content as-is):
+       ```markdown
+       ---
+
+       ## Section Plan
+
+       - [ ] Section 1: <name> — <scope summary>
+       - [ ] Section 2: <name> — <scope summary> (after section 1)
+       - [ ] Section 3: <name> — <scope summary> (after section 1, 2)
+       ```
+     - Save and commit the updated design document
+     - Instead of the Path A/B guide, show the **section guide** (in the user's configured language):
+       ```
+       Design has been split into sections.
+
+       Main design: docs/plans/YYYY-MM-DD-<topic>-design.md
+
+       Section progress:
+       - [ ] Section 1: <name>
+       - [ ] Section 2: <name> (after section 1)
+       - [ ] Section 3: <name> (after section 1, 2)
+
+       Run each section in order:
+         sd-brainstorm docs/plans/YYYY-MM-DD-<topic>-design.md section 1
+
+       After each section's brainstorm completes, you can choose Path A/B
+       to run plan → plan-dev → check → commit.
+       ```
+     - Brainstorm ends here. Do NOT auto-proceed to any section.
 
 ## After the Design
 
