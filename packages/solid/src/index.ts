@@ -163,6 +163,8 @@ export * from "./directives/ripple";
 export * from "./helpers/mergeStyles";
 export * from "./helpers/createAppStructure";
 export * from "./helpers/createSlotComponent";
+export * from "./helpers/createSlot";
+export * from "./helpers/createSlots";
 
 //#endregion
 
