@@ -464,6 +464,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const placeholderEl = document.createElement("div");
   placeholderEl.className = placeholderBaseClass;
 
+  let placeholderAnim: Animation | undefined;
+
   createEffect(() => {
     const target = dropTarget();
     const dc = boardCtx.dragCard();
@@ -489,17 +491,21 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
     bodyRef.insertBefore(placeholderEl, referenceNode);
     // kanban-ph-in: opacity 0 + height 0 → opacity 1 + auto height
-    placeholderEl.animate(
-      [
-        { opacity: 0, height: "0px" },
-        { opacity: 1, height: `${dc.heightOnDrag}px` },
-      ],
-      { duration: 200, easing: "ease-out", fill: "forwards" },
-    );
+    placeholderAnim?.cancel();
+    queueMicrotask(() => {
+      placeholderAnim = placeholderEl.animate(
+        [
+          { opacity: 0, height: "0px" },
+          { opacity: 1, height: `${dc.heightOnDrag}px` },
+        ],
+        { duration: 200, easing: "ease-out", fill: "forwards" },
+      );
+    });
   });
 
   // placeholder cleanup
   onCleanup(() => {
+    placeholderAnim?.cancel();
     if (placeholderEl.parentNode) {
       placeholderEl.remove();
     }
