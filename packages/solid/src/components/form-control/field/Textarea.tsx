@@ -1,12 +1,12 @@
 import clsx from "clsx";
-import { type Component, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createEffect, createMemo, type JSX, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { text } from "../../../styles/base.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { Invalid } from "../../form-control/Invalid";
+import { FieldShell } from "./FieldShell";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 export interface TextareaProps {
@@ -154,12 +154,15 @@ export const Textarea: Component<TextareaProps> = (props) => {
 
   // Wrapper class (exclude local.class when includeCustomClass=false — only apply to outer in inset)
   const getWrapperClass = (includeCustomClass: boolean) =>
-    getTextareaWrapperClass({
-      size: local.size,
-      disabled: local.disabled,
-      inset: local.inset,
-      includeCustomClass: includeCustomClass && local.class,
-    });
+    twMerge(
+      getTextareaWrapperClass({
+        size: local.size,
+        disabled: local.disabled,
+        inset: local.inset,
+        includeCustomClass: includeCustomClass && local.class,
+      }),
+      "whitespace-pre-wrap break-all",
+    );
 
   const getTextareaClass = () =>
     twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"], local.inset && "p-0");
@@ -188,99 +191,52 @@ export const Textarea: Component<TextareaProps> = (props) => {
   });
 
   return (
-    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <Show
-        when={local.inset}
-        fallback={
-          // standalone mode: maintain existing Show pattern
-          <Show
-            when={isEditable()}
-            fallback={
-              <div
-                {...rest}
-                data-textarea-field
-                class={getWrapperClass(true)}
-                style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
-                title={local.title}
-              >
-                <PlaceholderFallback value={value()} placeholder={local.placeholder} />
-              </div>
-            }
-          >
-            <div
-              {...rest}
-              data-textarea-field
-              class={getWrapperClass(true)}
-              style={{ position: "relative", ...local.style }}
-            >
-              <div
-                data-hidden-content
-                style={{
-                  "visibility": "hidden",
-                  "white-space": "pre-wrap",
-                  "word-break": "break-all",
-                }}
-              >
-                {contentForHeight()}
-              </div>
-
-              <textarea
-                class={getTextareaClass()}
-                value={value()}
-                placeholder={local.placeholder}
-                title={local.title}
-                onKeyDown={handleKeyDown}
-                onInput={handleInput}
-                onCompositionStart={handleCompositionStart}
-                onCompositionEnd={handleCompositionEnd}
-              />
-            </div>
-          </Show>
-        }
+    <FieldShell
+      errorMsg={errorMsg()}
+      invalidVariant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+      inset={local.inset}
+      isEditable={isEditable()}
+      wrapperClass={getWrapperClass}
+      dataAttr="data-textarea-field"
+      readonlyExtraClass="sd-textarea-field"
+      style={local.style}
+      title={local.title}
+      class={local.class}
+      rest={rest}
+      displayContent={
+        <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
+      }
+      renderSizing={() => (
+        isEditable() ? (
+          <span style={{ "white-space": "pre-wrap", "word-break": "break-all" }}>
+            {contentForHeight()}
+          </span>
+        ) : (
+          <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
+        )
+      )}
+    >
+      <div
+        data-hidden-content
+        style={{
+          "visibility": "hidden",
+          "white-space": "pre-wrap",
+          "word-break": "break-all",
+        }}
       >
-        {/* inset mode: dual-element overlay pattern */}
-        <div
-          {...rest}
-          data-textarea-field
-          class={clsx("relative", local.class)}
-          style={local.style}
-        >
-          <div
-            data-textarea-field-content
-            class={getWrapperClass(false)}
-            style={{
-              "visibility": isEditable() ? "hidden" : undefined,
-              "white-space": "pre-wrap",
-              "word-break": "break-all",
-            }}
-            title={local.title}
-          >
-            {isEditable() ? (
-              contentForHeight()
-            ) : (
-              <PlaceholderFallback value={value()} placeholder={local.placeholder} />
-            )}
-          </div>
-
-          <Show when={isEditable()}>
-            <div
-              class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}
-              style={{ position: "relative" }}
-            >
-              <textarea
-                class={twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"])}
-                value={value()}
-                placeholder={local.placeholder}
-                title={local.title}
-                onKeyDown={handleKeyDown}
-                onInput={handleInput}
-                onCompositionStart={handleCompositionStart}
-                onCompositionEnd={handleCompositionEnd}
-              />
-            </div>
-          </Show>
-        </div>
-      </Show>
-    </Invalid>
+        {contentForHeight()}
+      </div>
+      <textarea
+        class={getTextareaClass()}
+        value={value()}
+        placeholder={local.placeholder}
+        title={local.title}
+        onKeyDown={handleKeyDown}
+        onInput={handleInput}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
+      />
+    </FieldShell>
   );
 };
