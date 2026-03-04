@@ -90,14 +90,25 @@ Run selected analyzers **in parallel** (multiple Agent calls in a single message
 
 ### Step 2: Verify Findings
 
-After collecting results from all analyzers, **Read the actual code** for each finding and verify:
+After collecting results from all analyzers, **Read the actual code** for each finding and apply verification checks. Drop at first failure.
 
-- **Valid**: the structural issue is real AND within scope → include
-- **Invalid — out of scope**: bug, convention, documentation issue → drop
-- **Invalid — out of target**: issue is about code outside the target path → drop
-- **Invalid — duplicate**: another analyzer already reported the same → keep the better-scoped one
-- **Invalid — bikeshedding**: minor style preference, no real structural impact → drop
-- **Invalid — by design**: intentional architectural decision → drop
+**Check 1 — Scope**:
+- Is this about code structure? Not bugs, conventions, documentation, or performance → if not, drop (out of scope)
+- Is the issue within the target path? → if not, drop (out of target)
+- Already reported by another analyzer? → keep the better-scoped one (duplicate)
+- Minor style preference with no real structural impact? → drop (bikeshedding)
+
+**Check 2 — Duplication reality** (for duplication findings):
+- Count actual duplicated lines. If < 30 lines total, drop — not worth extracting.
+- Compare side by side. If the "duplicates" have meaningful behavioral differences (different guards, parameters, error handling), drop — not true duplication.
+- Check if "similar types" are an intentional Input/Normalized pattern (optional props → required internal def with defaults applied, `children` → `cell` rename). If yes, drop — by design.
+
+**Check 3 — Separation benefit** (for "too big", "mixed responsibilities", "mixed abstraction" findings):
+- Is the piece proposed for extraction < ~150 lines AND directly depends on the rest of the file (renders, calls, or shares state)? If yes, drop — splitting adds overhead without benefit.
+- Do all the abstractions serve a single cohesive domain concept (all functions called from one entry point, all types used together)? If yes, drop — it's cohesion, not mixing.
+- Would a realistic consumer reuse the extracted piece independently? If no, drop.
+
+**Check 4 — Not by design**: Is this an established pattern used consistently across the codebase? (Provider+Component, Factory+Product, Input/Output types) If yes, drop.
 
 ### Step 3: Final Report
 
