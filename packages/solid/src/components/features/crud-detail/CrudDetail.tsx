@@ -1,6 +1,4 @@
 import {
-  children,
-  createMemo,
   createSignal,
   createUniqueId,
   type JSX,
@@ -31,16 +29,13 @@ import {
   IconTrash,
   IconTrashOff,
 } from "@tabler/icons-solidjs";
-import { CrudDetailTools, isCrudDetailToolsDef } from "./CrudDetailTools";
-import { CrudDetailBefore, isCrudDetailBeforeDef } from "./CrudDetailBefore";
-import { CrudDetailAfter, isCrudDetailAfterDef } from "./CrudDetailAfter";
+import { CrudDetailTools, createCrudDetailToolsSlotAccessor } from "./CrudDetailTools";
+import { CrudDetailBefore, createCrudDetailBeforeSlotAccessor } from "./CrudDetailBefore";
+import { CrudDetailAfter, createCrudDetailAfterSlotAccessor } from "./CrudDetailAfter";
 import type {
-  CrudDetailAfterDef,
-  CrudDetailBeforeDef,
   CrudDetailContext,
   CrudDetailInfo,
   CrudDetailProps,
-  CrudDetailToolsDef,
 } from "./types";
 
 interface CrudDetailComponent {
@@ -85,6 +80,11 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   let formRef: HTMLFormElement | undefined;
 
   const crudId = createUniqueId();
+
+  // -- Slot Accessors --
+  const [tools, ToolsProvider] = createCrudDetailToolsSlotAccessor();
+  const [before, BeforeProvider] = createCrudDetailBeforeSlotAccessor();
+  const [after, AfterProvider] = createCrudDetailAfterSlotAccessor();
 
   // -- Load --
   async function doLoad() {
@@ -249,137 +249,122 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     refresh: handleRefresh,
   };
 
-  // -- Children Resolution --
-  const rendered = children(() => local.children(ctx));
-  const defs = createMemo(() => {
-    const arr = rendered.toArray();
-    return {
-      tools: arr.find(isCrudDetailToolsDef) as CrudDetailToolsDef | undefined,
-      before: arr.find(isCrudDetailBeforeDef) as CrudDetailBeforeDef | undefined,
-      after: arr.find(isCrudDetailAfterDef) as CrudDetailAfterDef | undefined,
-    };
-  });
-
-  const formContent = () =>
-    rendered
-      .toArray()
-      .filter(
-        (el) =>
-          !isCrudDetailToolsDef(el) && !isCrudDetailBeforeDef(el) && !isCrudDetailAfterDef(el),
-      );
-
   // -- Render --
   return (
-    <>
-      {/* Dialog mode: Dialog.Action (refresh button in header) */}
-      <Show when={isInDialog}>
-        <Dialog.Action>
-          <Button size={"sm"} variant={"ghost"} onClick={() => void handleRefresh()}>
-            <Icon icon={IconRefresh} />
-          </Button>
-        </Dialog.Action>
-      </Show>
-
-      <BusyContainer
-        ready={ready()}
-        busy={busyCount() > 0}
-        class={clsx("flex h-full flex-col gap-2", local.class)}
-      >
-        {/* Toolbar */}
-        <Show when={(!isInDialog && !topbarCtx) || defs().tools}>
-          <div class="flex gap-2 pb-0">
-            <Show when={!topbarCtx && !isInDialog}>
-              <Show when={canEdit() && local.submit}>
-                <Button
-                  size="sm"
-                  theme="primary"
-                  variant="ghost"
-                  onClick={() => formRef?.requestSubmit()}
-                >
-                  <Icon icon={IconDeviceFloppy} class="mr-1" />
-                  {i18n.t("crudDetail.save")}
-                </Button>
-              </Show>
-              <Show
-                when={
-                  canEdit() &&
-                  local.toggleDelete &&
-                  info() &&
-                  !info()!.isNew &&
-                  (local.deletable ?? true)
-                }
-              >
-                {(_) => (
-                  <Button
-                    size="sm"
-                    theme="danger"
-                    variant="ghost"
-                    onClick={() => void handleToggleDelete()}
-                  >
-                    <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                    {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
-                  </Button>
-                )}
-              </Show>
-              <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
-                <Icon icon={IconRefresh} class="mr-1" />
-                {i18n.t("crudDetail.refresh")}
+    <ToolsProvider>
+      <BeforeProvider>
+        <AfterProvider>
+          {/* Dialog mode: Dialog.Action (refresh button in header) */}
+          <Show when={isInDialog}>
+            <Dialog.Action>
+              <Button size={"sm"} variant={"ghost"} onClick={() => void handleRefresh()}>
+                <Icon icon={IconRefresh} />
               </Button>
+            </Dialog.Action>
+          </Show>
+
+          <BusyContainer
+            ready={ready()}
+            busy={busyCount() > 0}
+            class={clsx("flex h-full flex-col gap-2", local.class)}
+          >
+            {/* Toolbar */}
+            <Show when={(!isInDialog && !topbarCtx) || tools()}>
+              <div class="flex gap-2 pb-0">
+                <Show when={!topbarCtx && !isInDialog}>
+                  <Show when={canEdit() && local.submit}>
+                    <Button
+                      size="sm"
+                      theme="primary"
+                      variant="ghost"
+                      onClick={() => formRef?.requestSubmit()}
+                    >
+                      <Icon icon={IconDeviceFloppy} class="mr-1" />
+                      {i18n.t("crudDetail.save")}
+                    </Button>
+                  </Show>
+                  <Show
+                    when={
+                      canEdit() &&
+                      local.toggleDelete &&
+                      info() &&
+                      !info()!.isNew &&
+                      (local.deletable ?? true)
+                    }
+                  >
+                    {(_) => (
+                      <Button
+                        size="sm"
+                        theme="danger"
+                        variant="ghost"
+                        onClick={() => void handleToggleDelete()}
+                      >
+                        <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
+                        {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
+                      </Button>
+                    )}
+                  </Show>
+                  <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
+                    <Icon icon={IconRefresh} class="mr-1" />
+                    {i18n.t("crudDetail.refresh")}
+                  </Button>
+                </Show>
+                <Show when={tools()}>{(toolsSlot) => toolsSlot().children}</Show>
+              </div>
             </Show>
-            <Show when={defs().tools}>{(toolsDef) => toolsDef().children}</Show>
-          </div>
-        </Show>
 
-        {/* Before (outside form) */}
-        <Show when={defs().before}>{(beforeDef) => beforeDef().children}</Show>
+            {/* Before (outside form) */}
+            <Show when={before()}>{(beforeSlot) => beforeSlot().children}</Show>
 
-        {/* Form */}
-        <form ref={(el) => { formRef = el; registerCrud(crudId, el); }} class="flex-1 overflow-auto" onSubmit={handleFormSubmit}>
-          {formContent()}
-        </form>
+            {/* Form */}
+            <form ref={(el) => { formRef = el; registerCrud(crudId, el); }} class="flex-1 overflow-auto" onSubmit={handleFormSubmit}>
+              {local.children(ctx)}
+            </form>
 
-        {/* Last modified info */}
-        <Show when={info()?.lastModifiedAt}>
-          {(_) => (
-            <div class={clsx("px-2 pb-1 text-xs", text.muted)}>
-              {i18n.t("crudDetail.lastModified")}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
-              <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
-            </div>
-          )}
-        </Show>
-
-        {/* After (outside form) */}
-        <Show when={defs().after}>{(afterDef) => afterDef().children}</Show>
-
-        {/* Dialog mode: bottom bar */}
-        <Show when={isInDialog && canEdit()}>
-          <div class={clsx("flex gap-2 border-t px-3 py-1.5", border.default)}>
-            <div class="flex-1" />
-            <Show
-              when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}
-            >
+            {/* Last modified info */}
+            <Show when={info()?.lastModifiedAt}>
               {(_) => (
-                <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
-                  <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                  {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
-                </Button>
+                <div class={clsx("px-2 pb-1 text-xs", text.muted)}>
+                  {i18n.t("crudDetail.lastModified")}: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
+                  <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
+                </div>
               )}
             </Show>
-            <Show when={local.submit}>
-              <Button
-                variant={"solid"}
-                theme="primary"
-                onClick={() => formRef?.requestSubmit()}
-                class={"gap-1"}
-              >
-                <Icon icon={IconCheck} />
-                {i18n.t("crudDetail.confirm")}
-              </Button>
+
+            {/* After (outside form) */}
+            <Show when={after()}>{(afterSlot) => afterSlot().children}</Show>
+
+            {/* Dialog mode: bottom bar */}
+            <Show when={isInDialog && canEdit()}>
+              <div class={clsx("flex gap-2 border-t px-3 py-1.5", border.default)}>
+                <div class="flex-1" />
+                <Show
+                  when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}
+                >
+                  {(_) => (
+                    <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
+                      <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
+                      {info()!.isDeleted ? i18n.t("crudDetail.restore") : i18n.t("crudDetail.delete")}
+                    </Button>
+                  )}
+                </Show>
+                <Show when={local.submit}>
+                  <Button
+                    variant={"solid"}
+                    theme="primary"
+                    onClick={() => formRef?.requestSubmit()}
+                    class={"gap-1"}
+                  >
+                    <Icon icon={IconCheck} />
+                    {i18n.t("crudDetail.confirm")}
+                  </Button>
+                </Show>
+              </div>
             </Show>
-          </div>
-        </Show>
-      </BusyContainer>
-    </>
+          </BusyContainer>
+        </AfterProvider>
+      </BeforeProvider>
+    </ToolsProvider>
   );
 };
 

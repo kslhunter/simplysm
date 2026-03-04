@@ -1,18 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { type Accessor, type JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import {
-  CrudDetailTools,
-  isCrudDetailToolsDef,
-} from "../../../../src/components/features/crud-detail/CrudDetailTools";
-import {
-  CrudDetailBefore,
-  isCrudDetailBeforeDef,
-} from "../../../../src/components/features/crud-detail/CrudDetailBefore";
-import {
-  CrudDetailAfter,
-  isCrudDetailAfterDef,
-} from "../../../../src/components/features/crud-detail/CrudDetailAfter";
+import { CrudDetailTools } from "../../../../src/components/features/crud-detail/CrudDetailTools";
+import { CrudDetailBefore } from "../../../../src/components/features/crud-detail/CrudDetailBefore";
+import { CrudDetailAfter } from "../../../../src/components/features/crud-detail/CrudDetailAfter";
 import { CrudDetail } from "../../../../src/components/features/crud-detail/CrudDetail";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
@@ -23,7 +14,7 @@ import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
 // Helper: extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
-   
+
   props.onCapture(actions);
   return null;
 }
@@ -42,38 +33,16 @@ function TestWrapper(props: { children: JSX.Element }) {
 }
 
 describe("CrudDetail sub-components", () => {
-  it("CrudDetailTools: returns plain object and is identifiable by type guard", () => {
-    const def = CrudDetailTools({
-      children: <div>tools</div>,
-    });
-
-    expect(isCrudDetailToolsDef(def)).toBe(true);
-    expect((def as any).__type).toBe("crud-detail-tools");
+  it("CrudDetailTools: is a valid slot component (function)", () => {
+    expect(typeof CrudDetailTools).toBe("function");
   });
 
-  it("CrudDetailBefore: returns plain object and is identifiable by type guard", () => {
-    const def = CrudDetailBefore({
-      children: <div>before</div>,
-    });
-
-    expect(isCrudDetailBeforeDef(def)).toBe(true);
-    expect((def as any).__type).toBe("crud-detail-before");
+  it("CrudDetailBefore: is a valid slot component (function)", () => {
+    expect(typeof CrudDetailBefore).toBe("function");
   });
 
-  it("CrudDetailAfter: returns plain object and is identifiable by type guard", () => {
-    const def = CrudDetailAfter({
-      children: <div>after</div>,
-    });
-
-    expect(isCrudDetailAfterDef(def)).toBe(true);
-    expect((def as any).__type).toBe("crud-detail-after");
-  });
-
-  it("type guard: returns false for plain objects", () => {
-    expect(isCrudDetailToolsDef({})).toBe(false);
-    expect(isCrudDetailToolsDef(null)).toBe(false);
-    expect(isCrudDetailBeforeDef("string")).toBe(false);
-    expect(isCrudDetailAfterDef(42)).toBe(false);
+  it("CrudDetailAfter: is a valid slot component (function)", () => {
+    expect(typeof CrudDetailAfter).toBe("function");
   });
 });
 
