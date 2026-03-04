@@ -7,10 +7,10 @@ import { objClone, objEqual } from "@simplysm/core-common";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Icon } from "../../display/Icon";
-import { textPlaceholder } from "../../../styles/tokens.styles";
+import { textPlaceholder } from "../../../styles/base.styles";
+import { type ComponentSize, padding } from "../../../styles/control.styles";
+import { Button } from "../Button";
 import { useI18n } from "../../../providers/i18n/I18nContext";
-import type { ComponentSize } from "../../../styles/tokens.styles";
-import { iconButtonBase } from "../../../styles/patterns.styles";
 
 // ── Types ──
 
@@ -42,22 +42,20 @@ const chipClass = clsx(
   "cursor-default",
 );
 
-const chipDefaultClass = "px-3 py-1";
-
 const chipSizeClasses: Record<StatePresetSize, string> = {
-  xs: "px-1.5 py-0 text-sm",
-  sm: "px-2 py-0.5",
-  lg: "px-4 py-2",
-  xl: "px-5 py-3 text-lg",
+  default: padding.default,
+  xs: clsx(padding.xs, "text-sm"),
+  sm: padding.sm,
+  lg: padding.lg,
+  xl: clsx(padding.xl, "text-lg"),
 };
 
 const chipNameBtnClass = clsx("cursor-pointer", "hover:underline", "focus:outline-none");
 
-const iconBtnClass = twMerge(iconButtonBase, "rounded-full");
-
-const iconBtnDefaultClass = "p-0.5";
+const iconBtnExtraClass = "rounded-full";
 
 const iconBtnSizeClasses: Record<StatePresetSize, string> = {
+  default: "p-0.5",
   xs: "p-0",
   sm: "p-0.5",
   lg: "p-1",
@@ -74,9 +72,8 @@ const starBtnClass = clsx(
   "hover:bg-warning-100 dark:hover:bg-warning-900/40",
 );
 
-const starBtnDefaultClass = "p-1";
-
 const starBtnSizeClasses: Record<StatePresetSize, string> = {
+  default: "p-1",
   xs: "p-0",
   sm: "p-0.5",
   lg: "p-1.5",
@@ -93,13 +90,12 @@ const inputClass = clsx(
   textPlaceholder,
 );
 
-const inputDefaultClass = "px-3 py-1 w-24";
-
 const inputSizeClasses: Record<StatePresetSize, string> = {
-  xs: clsx("w-16 px-1 py-0 text-sm"),
-  sm: "px-2 py-0.5 w-20",
-  lg: "px-4 py-2 w-32",
-  xl: "px-5 py-3 w-36 text-lg",
+  default: clsx(padding.default, "w-24"),
+  xs: clsx("w-16", padding.xs, "text-sm"),
+  sm: clsx(padding.sm, "w-20"),
+  lg: clsx(padding.lg, "w-32"),
+  xl: clsx(padding.xl, "w-36 text-lg"),
 };
 
 const iconSize = "0.85em";
@@ -149,7 +145,10 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     }
 
     if (presets().some((p) => p.name === name)) {
-      notification.warning(i18n.t("statePreset.duplicateName"), i18n.t("statePreset.duplicateMessage"));
+      notification.warning(
+        i18n.t("statePreset.duplicateName"),
+        i18n.t("statePreset.duplicateMessage"),
+      );
       return;
     }
 
@@ -200,15 +199,19 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     const updated = snapshot.filter((_, i) => i !== index);
     setPresets(updated);
 
-    const notiId = notification.info(i18n.t("statePreset.deleted"), i18n.t("statePreset.deletedMessage", { name: presetName }), {
-      action: {
-        label: i18n.t("statePreset.undo"),
-        onClick: () => {
-          setPresets(snapshot);
-          notification.remove(notiId);
+    const notiId = notification.info(
+      i18n.t("statePreset.deleted"),
+      i18n.t("statePreset.deletedMessage", { name: presetName }),
+      {
+        action: {
+          label: i18n.t("statePreset.undo"),
+          onClick: () => {
+            setPresets(snapshot);
+            notification.remove(notiId);
+          },
         },
       },
-    });
+    );
   }
 
   function handleInputKeyDown(e: KeyboardEvent): void {
@@ -225,17 +228,15 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   const containerClass = () => twMerge(baseClass, local.class);
 
-  const resolvedChipClass = () =>
-    twMerge(chipClass, local.size ? chipSizeClasses[local.size] : chipDefaultClass);
+  const resolvedChipClass = () => twMerge(chipClass, chipSizeClasses[local.size ?? "default"]);
 
   const resolvedIconBtnClass = () =>
-    twMerge(iconBtnClass, local.size ? iconBtnSizeClasses[local.size] : iconBtnDefaultClass);
+    twMerge(iconBtnExtraClass, iconBtnSizeClasses[local.size ?? "default"]);
 
   const resolvedStarBtnClass = () =>
-    twMerge(starBtnClass, local.size ? starBtnSizeClasses[local.size] : starBtnDefaultClass);
+    twMerge(starBtnClass, starBtnSizeClasses[local.size ?? "default"]);
 
-  const resolvedInputClass = () =>
-    twMerge(inputClass, local.size ? inputSizeClasses[local.size] : inputDefaultClass);
+  const resolvedInputClass = () => twMerge(inputClass, inputSizeClasses[local.size ?? "default"]);
 
   return (
     <div class={containerClass()} style={local.style}>
@@ -261,22 +262,24 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
             >
               {preset.name}
             </button>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="xs"
               class={resolvedIconBtnClass()}
               onClick={() => handleOverwrite(index())}
               title={i18n.t("statePreset.overwrite")}
             >
               <Icon icon={IconDeviceFloppy} size={iconSize} />
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
+              size="xs"
               class={resolvedIconBtnClass()}
               onClick={() => handleDelete(index())}
               title={i18n.t("statePreset.deletePreset")}
             >
               <Icon icon={IconX} size={iconSize} />
-            </button>
+            </Button>
           </span>
         )}
       </For>
