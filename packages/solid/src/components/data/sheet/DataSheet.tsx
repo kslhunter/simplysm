@@ -1,5 +1,4 @@
 import {
-  children,
   createMemo,
   createSignal,
   For,
@@ -22,14 +21,15 @@ import {
 } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
 import type {
+  DataSheetCellContext,
   DataSheetColumnDef,
   DataSheetConfig,
   DataSheetConfigColumnInfo,
   DataSheetProps,
 } from "./types";
-import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
+import { DataSheetColumn, createColumnSlotsAccessor } from "./DataSheetColumn";
 import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
-import { buildHeaderTable } from "./sheetUtils";
+import { buildHeaderTable, normalizeHeader } from "./sheetUtils";
 import { startPointerDrag } from "../../../helpers/startPointerDrag";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
@@ -119,9 +119,28 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const i18n = useI18n();
 
   // #region Column Collection
-  const resolved = children(() => local.children);
+  const [rawColumns, ColumnsProvider] = createColumnSlotsAccessor();
   const columnDefs = createMemo(
-    () => resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[],
+    () =>
+      rawColumns().map(
+        (col): DataSheetColumnDef<T> => ({
+          __type: "sheet-column",
+          key: col.key,
+          header: normalizeHeader(col.header),
+          headerContent: col.headerContent,
+          headerStyle: col.headerStyle,
+          summary: col.summary,
+          tooltip: col.tooltip,
+          cell: col.children as (ctx: DataSheetCellContext<T>) => JSX.Element,
+          class: col.class,
+          fixed: col.fixed ?? false,
+          hidden: col.hidden ?? false,
+          collapse: col.collapse ?? false,
+          width: col.width,
+          sortable: col.sortable ?? true,
+          resizable: col.resizable ?? true,
+        }),
+      ),
   );
 
   // #region Config (useSyncConfig)
@@ -170,9 +189,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
 
     const { DataSheetConfigDialog: ConfigDialog } = await import("./DataSheetConfigDialog");
 
-    const allCols = resolved
-      .toArray()
-      .filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[];
+    const allCols = columnDefs();
 
     const columnInfos: DataSheetConfigColumnInfo[] = allCols
       .filter((col) => !col.collapse)
@@ -456,6 +473,8 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   void dragState;
 
   return (
+    <ColumnsProvider>
+      {local.children}
     <div
       data-sheet={local.persistKey ?? ""}
       class={twMerge(
@@ -977,6 +996,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
         <div data-reorder-indicator class={reorderIndicatorClass} style={{ display: "none" }} />
       </div>
     </div>
+    </ColumnsProvider>
   );
 };
 
