@@ -1,7 +1,6 @@
 ---
 name: sd-check
 description: "Typecheck, lint, test verification (explicit invocation only)"
-allowed-tools: Bash(npm run check:*), Bash(pnpm run check:*), Bash(yarn run check:*), Bash(npm run typecheck:*), Bash(pnpm run typecheck:*), Bash(yarn run typecheck:*), Bash(npm run lint:*), Bash(pnpm run lint:*), Bash(yarn run lint:*), Bash(npm run vitest:*), Bash(pnpm run vitest:*), Bash(yarn run vitest:*)
 ---
 
 # sd-check
@@ -37,6 +36,7 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 1. **Run** `$PM run check [path] [--type type]` (timeout: 600000)
 2. **All passed?** Report with actual output numbers → done
 3. **Errors?** Fix in priority order: typecheck → lint → test (fixes cascade)
+   - **Before fixing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the affected code area (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Fixing errors does NOT exempt you from following project conventions.
    - Test failures: **MUST** run `git log` to decide — update test or fix source
    - **E2E test failures**: use Playwright MCP to investigate before fixing
      1. `browser_navigate` to the target URL

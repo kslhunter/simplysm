@@ -3,5 +3,19 @@
   "statusLine": {
     "type": "command",
     "command": "node .claude/sd-statusline.js"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$(node -p 'JSON.parse(require(\"fs\").readFileSync(0,\"utf8\")).tool_input.file_path')\" 2>/dev/null || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

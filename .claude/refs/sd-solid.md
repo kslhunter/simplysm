@@ -49,6 +49,7 @@ All sub-components via dot notation only (`Parent.Child`).
 - Use `clsx()` with semantic grouping + `twMerge()` for conflict resolution
 - Before modifying styles: Read existing class patterns of the same component
 - **Class strings inline**: Do not extract class strings into separate variables — write them directly in the JSX return
+- **`*.styles.ts` files**: Tailwind class strings must be wrapped with `clsx()` for IntelliSense support
 
 ## Application View Naming (`client-*`)
 

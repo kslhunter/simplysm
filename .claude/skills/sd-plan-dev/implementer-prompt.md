@@ -26,6 +26,7 @@ If you encounter something unexpected mid-implementation (missing APIs, unexpect
 
 ## Your Job
 
+0. **Before writing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the code you'll touch (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Follow all project conventions — implementing a task does NOT exempt you from conventions.
 1. Implement exactly what the task specifies — nothing more, nothing less
 2. Write tests (follow TDD if the plan says to)
 3. Verify: tests pass, no type errors
