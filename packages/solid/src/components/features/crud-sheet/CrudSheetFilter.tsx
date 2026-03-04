@@ -1,6 +1,5 @@
 import type { JSX } from "solid-js";
 import type { CrudSheetFilterDef } from "./types";
-import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudSheetFilterDef(value: unknown): value is CrudSheetFilterDef<any> {
   return (
@@ -10,9 +9,11 @@ export function isCrudSheetFilterDef(value: unknown): value is CrudSheetFilterDe
   );
 }
 
-export const CrudSheetFilter = createDefComponent<CrudSheetFilterDef<any>>(
-  (props: { children: (filter: any, setFilter: any) => JSX.Element }) => ({
+export function CrudSheetFilter<TFilter>(props: {
+  children: (filter: TFilter, setFilter: any) => JSX.Element;
+}): JSX.Element {
+  return {
     __type: "crud-sheet-filter",
     children: props.children,
-  }),
-);
+  } as unknown as JSX.Element;
+}

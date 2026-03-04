@@ -201,6 +201,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -226,6 +227,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -255,6 +257,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -286,6 +289,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -311,6 +315,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -337,6 +342,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -375,6 +381,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -403,6 +410,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [
@@ -431,6 +439,7 @@ describe("useDataSheetFixedColumns", () => {
           width: undefined,
           sortable: false,
           resizable: false,
+          cell: () => null as any,
         });
 
         const effectiveColumns = () => [

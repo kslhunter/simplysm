@@ -1,7 +1,6 @@
 import type { JSX } from "solid-js";
 import type { CrudSheetColumnDef, CrudSheetColumnProps } from "./types";
 import { normalizeHeader } from "../../data/sheet/sheetUtils";
-import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDef<unknown> {
   return (
@@ -11,8 +10,8 @@ export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDe
   );
 }
 
-export const CrudSheetColumn = createDefComponent<CrudSheetColumnDef<any>>(
-  (props: CrudSheetColumnProps<any>) => ({
+export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.Element {
+  return {
     __type: "crud-sheet-column",
     key: props.key,
     header: normalizeHeader(props.header),
@@ -29,5 +28,5 @@ export const CrudSheetColumn = createDefComponent<CrudSheetColumnDef<any>>(
     sortable: props.sortable ?? true,
     resizable: props.resizable ?? true,
     editTrigger: props.editTrigger ?? false,
-  }),
-);
+  } as unknown as JSX.Element;
+}

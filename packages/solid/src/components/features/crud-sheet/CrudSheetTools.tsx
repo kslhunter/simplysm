@@ -1,6 +1,5 @@
 import type { JSX } from "solid-js";
 import type { CrudSheetToolsDef } from "./types";
-import { createDefComponent } from "../../../helpers/createDefComponent";
 
 export function isCrudSheetToolsDef(value: unknown): value is CrudSheetToolsDef<any> {
   return (
@@ -10,9 +9,11 @@ export function isCrudSheetToolsDef(value: unknown): value is CrudSheetToolsDef<
   );
 }
 
-export const CrudSheetTools = createDefComponent<CrudSheetToolsDef<any>>(
-  (props: { children: (ctx: any) => JSX.Element }) => ({
+export function CrudSheetTools<_TItem>(props: {
+  children: (ctx: any) => JSX.Element;
+}): JSX.Element {
+  return {
     __type: "crud-sheet-tools",
     children: props.children,
-  }),
-);
+  } as unknown as JSX.Element;
+}

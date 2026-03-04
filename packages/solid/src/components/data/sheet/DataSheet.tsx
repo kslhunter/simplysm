@@ -822,7 +822,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
               <col />
             </Show>
             <For each={effectiveColumns()}>
-              {(col) => <col style={col.width != null ? { width: col.width?.replace(/;/g, "") } : undefined} />}
+              {(col) => <col style={col.width != null ? { width: col.width.replace(/;/g, "") } : undefined} />}
             </For>
           </colgroup>
           <thead>
@@ -970,7 +970,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                               if (left != null) parts.push(left);
                               // max-width: apply if explicit width exists (allow column to shrink below content)
                               const col = effectiveColumns()[c().colIndex!];
-                              if (col.width != null) parts.push(`max-width: ${col.width?.replace(/;/g, "")}`);
+                              if (col.width != null) parts.push(`max-width: ${col.width.replace(/;/g, "")}`);
                             } else if (isGroupFixed()) {
                               const left = getFixedStyle(cellColIndex());
                               if (left != null) parts.push(left);
@@ -1261,7 +1261,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                         style={
                           [
                             getFixedStyle(colIndex()),
-                            col.width != null ? `max-width: ${col.width?.replace(/;/g, "")}` : undefined,
+                            col.width != null ? `max-width: ${col.width.replace(/;/g, "")}` : undefined,
                             local.cellStyle?.(flat.item, col.key),
                           ]
                             .filter(Boolean)
