@@ -16,13 +16,14 @@ export function createSlots<TItem>() {
   const Ctx = createContext<SlotRegistrar<TItem>>();
 
   const SlotComponent = (props: TItem) => {
-    const ctx = useContext(Ctx)!;
+    const ctx = useContext(Ctx);
+    if (!ctx) throw new Error("SlotComponent must be rendered inside its Provider");
     ctx.add(props);
     onCleanup(() => ctx.remove(props));
     return null;
   };
 
-  function useSlots(): [Accessor<TItem[]>, ParentComponent] {
+  function createSlotsAccessor(): [Accessor<TItem[]>, ParentComponent] {
     const [items, setItems] = createSignal<TItem[]>([]);
 
     const Provider: ParentComponent = (providerProps) =>
@@ -39,5 +40,5 @@ export function createSlots<TItem>() {
     return [items, Provider];
   }
 
-  return [SlotComponent, useSlots] as const;
+  return [SlotComponent, createSlotsAccessor] as const;
 }
