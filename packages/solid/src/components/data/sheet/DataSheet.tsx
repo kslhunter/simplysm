@@ -124,7 +124,6 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     () =>
       rawColumns().map(
         (col): DataSheetColumnDef<T> => ({
-          __type: "sheet-column",
           key: col.key,
           header: normalizeHeader(col.header),
           headerContent: col.headerContent,

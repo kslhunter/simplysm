@@ -192,7 +192,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return empty map when no columns are fixed", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -218,7 +217,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should calculate left positions for fixed columns", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -248,7 +246,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should stop mapping at first non-fixed column", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -280,7 +277,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return -1 when no columns are fixed", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -306,7 +302,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return index of last continuous fixed column", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -333,7 +328,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should stop at first non-fixed column", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -372,7 +366,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return CSS style string for fixed columns", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -401,7 +394,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return true for last fixed column", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,
@@ -430,7 +422,6 @@ describe("useDataSheetFixedColumns", () => {
     it("should return false for non-fixed columns", () => {
       createRoot(() => {
         const createColumn = (key: string, fixed: boolean): DataSheetColumnDef<TestItem> => ({
-          __type: "sheet-column",
           key,
           header: [key],
           fixed,

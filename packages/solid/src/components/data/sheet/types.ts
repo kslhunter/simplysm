@@ -88,7 +88,6 @@ export interface DataSheetConfigColumn {
 }
 
 export interface DataSheetColumnDef<TItem> {
-  __type: "sheet-column";
   key: string;
   header: string[];
   headerContent?: () => JSX.Element;

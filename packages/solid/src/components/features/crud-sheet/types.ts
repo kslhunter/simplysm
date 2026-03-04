@@ -1,5 +1,4 @@
 import type { JSX } from "solid-js";
-import type { SetStoreFunction } from "solid-js/store";
 import type { ArrayDiffs2Result } from "@simplysm/core-common";
 import type { DataSheetColumnProps, SortingDef } from "../../data/sheet/types";
 
@@ -108,19 +107,4 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
 export interface CrudSheetColumnProps<TItem> extends Omit<DataSheetColumnProps<TItem>, "children"> {
   editTrigger?: boolean;
   children: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;
-}
-
-export interface CrudSheetFilterDef<TFilter> {
-  __type: "crud-sheet-filter";
-  children: (filter: TFilter, setFilter: SetStoreFunction<TFilter>) => JSX.Element;
-}
-
-export interface CrudSheetToolsDef<TItem> {
-  __type: "crud-sheet-tools";
-  children: (ctx: CrudSheetContext<TItem>) => JSX.Element;
-}
-
-export interface CrudSheetHeaderDef {
-  __type: "crud-sheet-header";
-  children: JSX.Element;
 }
