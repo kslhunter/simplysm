@@ -5,18 +5,6 @@ import {
   CrudSheetColumn,
   isCrudSheetColumnDef,
 } from "../../../../src/components/features/crud-sheet/CrudSheetColumn";
-import {
-  CrudSheetFilter,
-  isCrudSheetFilterDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetFilter";
-import {
-  CrudSheetTools,
-  isCrudSheetToolsDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetTools";
-import {
-  CrudSheetHeader,
-  isCrudSheetHeaderDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetHeader";
 import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
@@ -60,30 +48,6 @@ describe("CrudSheet types", () => {
 
     expect(isCrudSheetColumnDef(def)).toBe(true);
     expect((def as any).key).toBe("name");
-  });
-
-  it("CrudSheetFilter: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetFilter({
-      children: (_filter, _setFilter) => <div>filter</div>,
-    });
-
-    expect(isCrudSheetFilterDef(def)).toBe(true);
-  });
-
-  it("CrudSheetTools: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetTools({
-      children: (_ctx) => <div>tools</div>,
-    });
-
-    expect(isCrudSheetToolsDef(def)).toBe(true);
-  });
-
-  it("CrudSheetHeader: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetHeader({
-      children: <div>header</div>,
-    });
-
-    expect(isCrudSheetHeaderDef(def)).toBe(true);
   });
 });
 

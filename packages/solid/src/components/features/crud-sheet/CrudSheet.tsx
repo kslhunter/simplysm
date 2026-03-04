@@ -46,16 +46,13 @@ import {
 } from "@tabler/icons-solidjs";
 import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
 import { CrudSheetColumn, isCrudSheetColumnDef } from "./CrudSheetColumn";
-import { CrudSheetFilter, isCrudSheetFilterDef } from "./CrudSheetFilter";
-import { CrudSheetTools, isCrudSheetToolsDef } from "./CrudSheetTools";
-import { CrudSheetHeader, isCrudSheetHeaderDef } from "./CrudSheetHeader";
+import { CrudSheetFilter, createCrudSheetFilterSlotAccessor } from "./CrudSheetFilter";
+import { CrudSheetTools, createCrudSheetToolsSlotAccessor } from "./CrudSheetTools";
+import { CrudSheetHeader, createCrudSheetHeaderSlotAccessor } from "./CrudSheetHeader";
 import type {
   CrudSheetColumnDef,
   CrudSheetContext,
-  CrudSheetFilterDef,
-  CrudSheetHeaderDef,
   CrudSheetProps,
-  CrudSheetToolsDef,
   SearchResult,
 } from "./types";
 
@@ -103,15 +100,23 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const isSelectMode = () => local.selectMode != null;
   const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
 
+  // -- Slot Accessors --
+  const [headerSlot, HeaderProvider] = createCrudSheetHeaderSlotAccessor();
+  const [filterSlot, FilterProvider] = createCrudSheetFilterSlotAccessor();
+  const [toolsSlot, ToolsProvider] = createCrudSheetToolsSlotAccessor();
+
   // -- Children Resolution --
-  const resolved = children(() => local.children);
+  const resolved = children(() => (
+    <HeaderProvider>
+      <FilterProvider>
+        <ToolsProvider>{local.children}</ToolsProvider>
+      </FilterProvider>
+    </HeaderProvider>
+  ));
   const defs = createMemo(() => {
     const arr = resolved.toArray();
     return {
-      filter: arr.find(isCrudSheetFilterDef) as CrudSheetFilterDef<TFilter> | undefined,
       columns: arr.filter(isCrudSheetColumnDef) as unknown as CrudSheetColumnDef<TItem>[],
-      tools: arr.find(isCrudSheetToolsDef) as CrudSheetToolsDef<TItem> | undefined,
-      header: arr.find(isCrudSheetHeaderDef) as CrudSheetHeaderDef | undefined,
     };
   });
 
@@ -511,11 +516,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </Show>
 
         {/* Header (optional) */}
-        <Show when={defs().header}>{(headerDef) => headerDef().children}</Show>
+        <Show when={headerSlot()}>{(slot) => slot().children}</Show>
 
         {/* Filter */}
-        <Show when={defs().filter}>
-          {(filterDef) => (
+        <Show when={filterSlot()}>
+          {(slot) => (
             <form class="p-2" onSubmit={handleFilterSubmit}>
               <FormGroup inline>
                 <FormGroup.Item>
@@ -524,7 +529,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     {i18n.t("crudSheet.search")}
                   </Button>
                 </FormGroup.Item>
-                {filterDef().children(filter, setFilter)}
+                {slot().children(filter, setFilter)}
               </FormGroup>
             </form>
           )}
@@ -604,7 +609,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             {/* Custom tools */}
-            <Show when={defs().tools}>{(toolsDef) => toolsDef().children(ctx)}</Show>
+            <Show when={toolsSlot()}>{(slot) => slot().children(ctx)}</Show>
           </div>
         </Show>
 

@@ -1,19 +1,17 @@
 import type { JSX } from "solid-js";
-import type { CrudSheetFilterDef } from "./types";
+import type { SetStoreFunction } from "solid-js/store";
+import { createSlot } from "../../../helpers/createSlot";
 
-export function isCrudSheetFilterDef(value: unknown): value is CrudSheetFilterDef<any> {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>)["__type"] === "crud-sheet-filter"
-  );
+export interface CrudSheetFilterSlotProps<TFilter> {
+  children: (filter: TFilter, setFilter: SetStoreFunction<TFilter>) => JSX.Element;
 }
 
-export function CrudSheetFilter<TFilter>(props: {
-  children: (filter: TFilter, setFilter: any) => JSX.Element;
-}): JSX.Element {
-  return {
-    __type: "crud-sheet-filter",
-    children: props.children,
-  } as unknown as JSX.Element;
+const [CrudSheetFilterBase, createCrudSheetFilterSlotAccessor] = createSlot<
+  CrudSheetFilterSlotProps<any>
+>();
+
+function CrudSheetFilter<TFilter>(props: CrudSheetFilterSlotProps<TFilter>): JSX.Element {
+  return CrudSheetFilterBase(props as CrudSheetFilterSlotProps<any>);
 }
+
+export { CrudSheetFilter, createCrudSheetFilterSlotAccessor };

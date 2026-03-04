@@ -1,19 +1,17 @@
 import type { JSX } from "solid-js";
-import type { CrudSheetToolsDef } from "./types";
+import type { CrudSheetContext } from "./types";
+import { createSlot } from "../../../helpers/createSlot";
 
-export function isCrudSheetToolsDef(value: unknown): value is CrudSheetToolsDef<any> {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>)["__type"] === "crud-sheet-tools"
-  );
+export interface CrudSheetToolsSlotProps<TItem> {
+  children: (ctx: CrudSheetContext<TItem>) => JSX.Element;
 }
 
-export function CrudSheetTools<_TItem>(props: {
-  children: (ctx: any) => JSX.Element;
-}): JSX.Element {
-  return {
-    __type: "crud-sheet-tools",
-    children: props.children,
-  } as unknown as JSX.Element;
+const [CrudSheetToolsBase, createCrudSheetToolsSlotAccessor] = createSlot<
+  CrudSheetToolsSlotProps<any>
+>();
+
+function CrudSheetTools<TItem>(props: CrudSheetToolsSlotProps<TItem>): JSX.Element {
+  return CrudSheetToolsBase(props as CrudSheetToolsSlotProps<any>);
 }
+
+export { CrudSheetTools, createCrudSheetToolsSlotAccessor };
