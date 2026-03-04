@@ -1,32 +1,11 @@
 import type { JSX } from "solid-js";
-import type { CrudSheetColumnDef, CrudSheetColumnProps } from "./types";
-import { normalizeHeader } from "../../data/sheet/sheetUtils";
+import { createSlots } from "../../../helpers/createSlots";
+import type { CrudSheetColumnProps } from "./types";
 
-export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDef<unknown> {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>)["__type"] === "crud-sheet-column"
-  );
+const [SlotComponent, createCrudSheetColumnSlotsAccessor] = createSlots<CrudSheetColumnProps<any>>();
+
+function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.Element {
+  return SlotComponent(props as CrudSheetColumnProps<any>);
 }
 
-export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.Element {
-  return {
-    __type: "crud-sheet-column",
-    key: props.key,
-    header: normalizeHeader(props.header),
-    headerContent: props.headerContent,
-    headerStyle: props.headerStyle,
-    summary: props.summary,
-    tooltip: props.tooltip,
-    cell: props.children,
-    class: props.class,
-    fixed: props.fixed ?? false,
-    hidden: props.hidden ?? false,
-    collapse: props.collapse ?? false,
-    width: props.width,
-    sortable: props.sortable ?? true,
-    resizable: props.resizable ?? true,
-    editTrigger: props.editTrigger ?? false,
-  } as unknown as JSX.Element;
-}
+export { CrudSheetColumn, createCrudSheetColumnSlotsAccessor };

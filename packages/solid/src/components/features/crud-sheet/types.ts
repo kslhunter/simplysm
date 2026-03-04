@@ -105,25 +105,6 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
 
 // ── Sub-component Defs ──
 
-export interface CrudSheetColumnDef<TItem> {
-  __type: "crud-sheet-column";
-  key: string;
-  header: string[];
-  headerContent?: () => JSX.Element;
-  headerStyle?: string;
-  summary?: () => JSX.Element;
-  tooltip?: string;
-  fixed: boolean;
-  hidden: boolean;
-  collapse: boolean;
-  width?: string;
-  class?: string;
-  sortable: boolean;
-  resizable: boolean;
-  editTrigger: boolean;
-  cell: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;
-}
-
 export interface CrudSheetColumnProps<TItem> extends Omit<DataSheetColumnProps<TItem>, "children"> {
   editTrigger?: boolean;
   children: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;

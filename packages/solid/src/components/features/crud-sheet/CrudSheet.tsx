@@ -1,7 +1,5 @@
 import {
-  children,
   createEffect,
-  createMemo,
   createSignal,
   createUniqueId,
   For,
@@ -19,6 +17,7 @@ import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../../data/sheet/types";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
+import { normalizeHeader } from "../../data/sheet/sheetUtils";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nContext";
@@ -45,12 +44,11 @@ import {
   IconUpload,
 } from "@tabler/icons-solidjs";
 import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
-import { CrudSheetColumn, isCrudSheetColumnDef } from "./CrudSheetColumn";
+import { CrudSheetColumn, createCrudSheetColumnSlotsAccessor } from "./CrudSheetColumn";
 import { CrudSheetFilter, createCrudSheetFilterSlotAccessor } from "./CrudSheetFilter";
 import { CrudSheetTools, createCrudSheetToolsSlotAccessor } from "./CrudSheetTools";
 import { CrudSheetHeader, createCrudSheetHeaderSlotAccessor } from "./CrudSheetHeader";
 import type {
-  CrudSheetColumnDef,
   CrudSheetContext,
   CrudSheetProps,
   SearchResult,
@@ -104,21 +102,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const [headerSlot, HeaderProvider] = createCrudSheetHeaderSlotAccessor();
   const [filterSlot, FilterProvider] = createCrudSheetFilterSlotAccessor();
   const [toolsSlot, ToolsProvider] = createCrudSheetToolsSlotAccessor();
-
-  // -- Children Resolution --
-  const resolved = children(() => (
-    <HeaderProvider>
-      <FilterProvider>
-        <ToolsProvider>{local.children}</ToolsProvider>
-      </FilterProvider>
-    </HeaderProvider>
-  ));
-  const defs = createMemo(() => {
-    const arr = resolved.toArray();
-    return {
-      columns: arr.filter(isCrudSheetColumnDef) as unknown as CrudSheetColumnDef<TItem>[],
-    };
-  });
+  const [columnSlots, ColumnsProvider] = createCrudSheetColumnSlotsAccessor();
 
   // -- State --
   const [items, setItems] = createControllableStore<TItem[]>({
@@ -477,6 +461,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   return (
     <>
+      <ColumnsProvider>
+        <HeaderProvider>
+          <FilterProvider>
+            <ToolsProvider>{local.children}</ToolsProvider>
+          </FilterProvider>
+        </HeaderProvider>
+      </ColumnsProvider>
+
       {/* Dialog mode: Dialog.Action (refresh button in header) */}
       <Show when={isInDialog}>
         <Dialog.Action>
@@ -666,22 +658,22 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             {/* User-defined columns -- map CrudSheetColumn to DataSheetColumn */}
-            <For each={defs().columns}>
+            <For each={columnSlots()}>
               {(col) => (
                 <DataSheetColumn<TItem>
                   key={col.key}
-                  header={col.header}
+                  header={normalizeHeader(col.header)}
                   headerContent={col.headerContent}
                   headerStyle={col.headerStyle}
                   summary={col.summary}
                   tooltip={col.tooltip}
-                  fixed={col.fixed}
-                  hidden={col.hidden}
-                  collapse={col.collapse}
+                  fixed={col.fixed ?? false}
+                  hidden={col.hidden ?? false}
+                  collapse={col.collapse ?? false}
                   width={col.width}
                   class={col.class}
-                  sortable={col.sortable}
-                  resizable={col.resizable}
+                  sortable={col.sortable ?? true}
+                  resizable={col.resizable ?? true}
                 >
                   {(dsCtx) => {
                     const crudCtx = {
@@ -694,7 +686,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     // dialogEdit editable column -- wrap with edit link
                     if (
                       local.dialogEdit &&
-                      col.editTrigger &&
+                      (col.editTrigger ?? false) &&
                       canEdit() &&
                       (local.itemEditable?.(dsCtx.item) ?? true)
                     ) {
@@ -710,12 +702,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                           <div class={"p-1"}>
                             <Icon icon={IconExternalLink} />
                           </div>
-                          <div class={"flex-1"}>{col.cell(crudCtx)}</div>
+                          <div class={"flex-1"}>{col.children(crudCtx)}</div>
                         </Link>
                       );
                     }
 
-                    return col.cell(crudCtx);
+                    return col.children(crudCtx);
                   }}
                 </DataSheetColumn>
               )}

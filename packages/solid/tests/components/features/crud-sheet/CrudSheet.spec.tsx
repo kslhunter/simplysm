@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import {
-  CrudSheetColumn,
-  isCrudSheetColumnDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetColumn";
 import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
@@ -37,19 +33,6 @@ function DialogWrapper(props: { children: JSX.Element }) {
     </ConfigContext.Provider>
   );
 }
-
-describe("CrudSheet types", () => {
-  it("CrudSheetColumn: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetColumn<TestItem>({
-      key: "name",
-      header: "이름",
-      children: (ctx) => <div>{ctx.item.name}</div>,
-    });
-
-    expect(isCrudSheetColumnDef(def)).toBe(true);
-    expect((def as any).key).toBe("name");
-  });
-});
 
 describe("CrudSheet rendering", () => {
   beforeEach(() => {
