@@ -77,4 +77,28 @@ describe("BusyContainer", () => {
       expect(queryByText("Content")).toBeTruthy();
     });
   });
+
+  describe("bar variant", () => {
+    it("bar variant: starts Web Animations on indicator bars", async () => {
+      const { container } = render(() => (
+        <BusyContainer busy variant="bar">
+          <span>Content</span>
+        </BusyContainer>
+      ));
+      // createMountTransition uses double rAF
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const barIndicator = container.querySelector("[data-busy-bar]");
+      expect(barIndicator).toBeTruthy();
+
+      const bars = barIndicator!.children;
+      expect(bars.length).toBe(2);
+
+      // Web Animations API — getAnimations() returns active animations
+      const anim0 = (bars[0] as HTMLElement).getAnimations();
+      const anim1 = (bars[1] as HTMLElement).getAnimations();
+      expect(anim0.length).toBeGreaterThan(0);
+      expect(anim1.length).toBeGreaterThan(0);
+    });
+  });
 });
