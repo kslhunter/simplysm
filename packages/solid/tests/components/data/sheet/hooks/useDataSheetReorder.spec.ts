@@ -18,7 +18,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder(
+        const { dragState } = useDataSheetReorder<TestItem>(
           {
             getChildren: (item) => item.children,
           },
@@ -37,7 +37,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder(
+        const { dragState } = useDataSheetReorder<TestItem>(
           {
             getChildren: (item) => item.children,
           },
@@ -57,7 +57,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder(
+        const { dragState } = useDataSheetReorder<TestItem>(
           {
             getChildren: (item) => item.children,
           },
@@ -80,7 +80,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder(
+        const { dragState } = useDataSheetReorder<TestItem>(
           {
             getChildren: (item) => item.children,
           },

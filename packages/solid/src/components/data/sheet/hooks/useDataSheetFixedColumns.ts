@@ -5,7 +5,7 @@ import type { DataSheetColumnDef } from "../types";
 export interface UseDataSheetFixedColumnsProps<TItem> {
   getChildren?: (item: TItem, index: number) => TItem[] | undefined;
   selectMode?: "single" | "multiple";
-  onItemsReorder?: (event: unknown) => void;
+  onItemsReorder?: (event: any) => void;
 }
 
 export function useDataSheetFixedColumns<TItem>(

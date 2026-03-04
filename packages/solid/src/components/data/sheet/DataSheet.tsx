@@ -22,18 +22,14 @@ import {
 } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
 import type {
-  FlatItem,
   DataSheetColumnDef,
   DataSheetConfig,
   DataSheetConfigColumnInfo,
   DataSheetProps,
-  DataSheetReorderEvent,
-  SortingDef,
 } from "./types";
 import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
 import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
-import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
-import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { buildHeaderTable } from "./sheetUtils";
 import { startPointerDrag } from "../../../helpers/startPointerDrag";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
@@ -76,6 +72,12 @@ import {
   toolbarClass,
   trRowClass,
 } from "./DataSheet.styles";
+import { useDataSheetSorting } from "./hooks/useDataSheetSorting";
+import { useDataSheetPaging } from "./hooks/useDataSheetPaging";
+import { useDataSheetExpansion } from "./hooks/useDataSheetExpansion";
+import { useDataSheetSelection } from "./hooks/useDataSheetSelection";
+import { useDataSheetReorder } from "./hooks/useDataSheetReorder";
+import { useDataSheetFixedColumns } from "./hooks/useDataSheetFixedColumns";
 
 interface DataSheetComponent {
   <T>(props: DataSheetProps<T>): JSX.Element;
@@ -205,68 +207,30 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const hasSummary = createMemo(() => effectiveColumns().some((col) => col.summary != null));
 
   // #region Sorting
-  const [sorts, setSorts] = createControllableSignal({
-    value: () => local.sorts ?? [],
-    onChange: () => local.onSortsChange,
+  const {
+    sorts,
+    toggleSort,
+    sortIndex: sortIndex,
+    sortedItems,
+  } = useDataSheetSorting<T>({
+    sorts: () => local.sorts,
+    onSortsChange: () => local.onSortsChange,
+    items: () => local.items,
+    autoSort: () => local.autoSort,
   });
 
-  function toggleSort(key: string, multiple: boolean): void {
-    const current = sorts();
-    const existing = current.find((s) => s.key === key);
-
-    if (existing) {
-      if (!existing.desc) {
-        // asc → desc
-        const updated = current.map((s) => (s.key === key ? { ...s, desc: true } : s));
-        setSorts(multiple ? updated : [{ key, desc: true }]);
-      } else {
-        // desc → remove
-        const updated = current.filter((s) => s.key !== key);
-        setSorts(multiple ? updated : []);
-      }
-    } else {
-      // none → add asc
-      const newSort: SortingDef = { key, desc: false };
-      setSorts(multiple ? [...current, newSort] : [newSort]);
-    }
-  }
-
-  function getSortDef(key: string): SortingDef | undefined {
+  function getSortDef(key: string) {
     return sorts().find((s) => s.key === key);
   }
 
-  function getSortIndex(key: string): number | undefined {
-    if (sorts().length <= 1) return undefined;
-    const idx = sorts().findIndex((s) => s.key === key);
-    return idx >= 0 ? idx + 1 : undefined;
-  }
-
-  const sortedItems = createMemo(() => {
-    if (!local.autoSort) return local.items ?? [];
-    return applySorting(local.items ?? [], sorts());
-  });
-
   // #region Paging
-  const [currentPage, setCurrentPage] = createControllableSignal({
-    value: () => local.page ?? 1,
-    onChange: () => local.onPageChange,
-  });
-
-  const effectivePageCount = createMemo(() => {
-    const ipp = local.itemsPerPage;
-    if (ipp != null && ipp !== 0 && (local.items ?? []).length > 0) {
-      return Math.ceil((local.items ?? []).length / ipp);
-    }
-    return local.totalPageCount ?? 0;
-  });
-
-  const pagedItems = createMemo(() => {
-    const ipp = local.itemsPerPage;
-    if (ipp == null || ipp === 0) return sortedItems();
-    if ((local.items ?? []).length <= 0) return sortedItems();
-
-    const page = Math.max(1, currentPage());
-    return sortedItems().slice((page - 1) * ipp, page * ipp);
+  const { currentPage, setCurrentPage, pageCount, pagedItems } = useDataSheetPaging<T>({
+    page: () => local.page,
+    onPageChange: () => local.onPageChange,
+    itemsPerPage: () => local.itemsPerPage,
+    totalPageCount: () => local.totalPageCount,
+    items: () => local.items,
+    sortedItems,
   });
 
   const originalIndexMap = createMemo(() => {
@@ -275,98 +239,27 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     return map;
   });
 
-  // #region Feature Column Setup (expand/select feature columns common)
-  const hasExpandFeature = () => local.getChildren != null;
-  const hasSelectFeature = () => local.selectMode != null;
-  const hasReorderFeature = () => local.onItemsReorder != null;
-
-  // Feature column width tracking helper
-  function createTrackedWidth(): [() => number, (el: HTMLElement) => void] {
-    const [width, setWidth] = createSignal(0);
-    const register = (el: HTMLElement) => {
-      createResizeObserver(el, () => {
-        setWidth(el.offsetWidth);
-      });
-    };
-    return [width, register];
-  }
-
-  const [expandColWidth, registerExpandColRef] = createTrackedWidth();
-  const [selectColWidth, registerSelectColRef] = createTrackedWidth();
-  const [reorderColWidth, registerReorderColRef] = createTrackedWidth();
-
-  // Feature column left position (used in select/reorder column style)
-  const selectColLeft = createMemo(() => (hasExpandFeature() ? `${expandColWidth()}px` : "0"));
-
-  const reorderColLeft = createMemo(() => {
-    let left = 0;
-    if (hasExpandFeature()) left += expandColWidth();
-    if (hasSelectFeature()) left += selectColWidth();
-    return `${left}px`;
-  });
-
-  // #region ColumnFixing
-  // Column cell refs → for width measurement
-  const columnRefs = new Map<number, HTMLElement>();
-
-  // Measured width of each column
-  const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
-
-  // Total width of feature columns (expand, etc.) — used for fixed column left offset
-  const featureColTotalWidth = createMemo(() => {
-    let w = 0;
-    if (hasExpandFeature()) w += expandColWidth();
-    if (hasSelectFeature()) w += selectColWidth();
-    if (hasReorderFeature()) w += reorderColWidth();
-    return w;
-  });
-
-  // Calculate left position of fixed columns
-  const fixedLeftMap = createMemo(() => {
-    const map = new Map<number, number>();
-    const cols = effectiveColumns();
-    const widths = columnWidths();
-    let left = featureColTotalWidth();
-    for (let c = 0; c < cols.length; c++) {
-      if (!cols[c].fixed) break; // Fixed columns are placed continuously at front
-      map.set(c, left);
-      left += widths.get(c) ?? 0;
-    }
-    return map;
-  });
-
-  // Last fixed column index
-  const lastFixedIndex = createMemo(() => {
-    const cols = effectiveColumns();
-    let last = -1;
-    for (let c = 0; c < cols.length; c++) {
-      if (cols[c].fixed) last = c;
-      else break;
-    }
-    return last;
-  });
-
-  function getFixedStyle(colIndex: number): string | undefined {
-    const leftVal = fixedLeftMap().get(colIndex);
-    if (leftVal == null) return undefined;
-    return `left: ${leftVal}px`;
-  }
-
-  function isLastFixed(colIndex: number): boolean {
-    return colIndex === lastFixedIndex();
-  }
-
-  // Register ResizeObserver for fixed column cells
-  function registerColumnRef(colIndex: number, el: HTMLElement): void {
-    columnRefs.set(colIndex, el);
-    createResizeObserver(el, () => {
-      setColumnWidths((prev) => {
-        const next = new Map(prev);
-        next.set(colIndex, el.offsetWidth);
-        return next;
-      });
-    });
-  }
+  // #region Fixed Columns
+  const {
+    hasExpandFeature,
+    hasSelectFeature,
+    hasReorderFeature,
+    registerExpandColRef,
+    registerSelectColRef,
+    registerReorderColRef,
+    selectColLeft,
+    reorderColLeft,
+    getFixedStyle,
+    isLastFixed,
+    registerColumnRef,
+  } = useDataSheetFixedColumns<T>(
+    {
+      getChildren: local.getChildren,
+      selectMode: local.selectMode,
+      onItemsReorder: local.onItemsReorder,
+    },
+    effectiveColumns,
+  );
 
   // #region Resizing
   const [resizeIndicatorStyle, setResizeIndicatorStyle] = createSignal<JSX.CSSProperties>({
@@ -454,100 +347,39 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   });
 
   // #region Expanding
-  const [expandedItems, setExpandedItems] = createControllableSignal({
-    value: () => local.expandedItems ?? [],
-    onChange: () => local.onExpandedItemsChange,
-  });
-
-  function toggleExpand(item: T): void {
-    const current = expandedItems();
-    if (current.includes(item)) {
-      setExpandedItems(current.filter((i) => i !== item));
-    } else {
-      setExpandedItems([...current, item]);
-    }
-  }
-
-  function toggleExpandAll(): void {
-    if (!local.getChildren) return;
-    const indexMap = originalIndexMap();
-    const allExpandable = collectAllExpandable(
-      pagedItems(),
-      local.getChildren,
-      (item) => indexMap.get(item) ?? -1,
+  const { expandedItems, flatItems, toggleExpand, isAllExpanded, toggleExpandAll } =
+    useDataSheetExpansion<T>(
+      {
+        expandedItems: local.expandedItems,
+        onExpandedItemsChange: local.onExpandedItemsChange,
+        getChildren: local.getChildren,
+      },
+      pagedItems,
+      originalIndexMap,
     );
-    const isAllExpanded = allExpandable.every((item) => expandedItems().includes(item));
-    setExpandedItems(isAllExpanded ? [] : allExpandable);
-  }
 
-  const flatItems = createMemo((): FlatItem<T>[] => {
-    const indexMap = originalIndexMap();
-    return flattenTree(
-      pagedItems(),
-      expandedItems(),
-      local.getChildren,
-      (item) => indexMap.get(item) ?? -1,
-    );
-  });
+  // #region Display
+  const displayItems = flatItems;
 
   // #region Selection
-  const [selectedItems, setSelectedItems] = createControllableSignal({
-    value: () => local.selectedItems ?? [],
-    onChange: () => local.onSelectedItemsChange,
-  });
-
-  const [lastClickedRow, setLastClickedRow] = createSignal<number | null>(null);
-  const [lastClickAction, setLastClickAction] = createSignal<"select" | "deselect">("select");
-
-  function getItemSelectable(item: T): boolean | string {
-    if (!local.isItemSelectable) return true;
-    return local.isItemSelectable(item);
-  }
-
-  function toggleSelect(item: T): void {
-    if (getItemSelectable(item) !== true) return;
-    const isSelected = selectedItems().includes(item);
-    setLastClickAction(isSelected ? "deselect" : "select");
-
-    if (local.selectMode === "single") {
-      setSelectedItems(isSelected ? [] : [item]);
-    } else {
-      setSelectedItems(
-        isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item],
-      );
-    }
-  }
-
-  function toggleSelectAll(): void {
-    const selectableItems = displayItems()
-      .map((flat) => flat.item)
-      .filter((item) => getItemSelectable(item) === true);
-    const isAllSelected = selectableItems.every((item) => selectedItems().includes(item));
-    setSelectedItems(isAllSelected ? [] : selectableItems);
-  }
-
-  function rangeSelect(targetRow: number): void {
-    const lastRow = lastClickedRow();
-    if (lastRow == null) return;
-
-    const start = Math.min(lastRow, targetRow);
-    const end = Math.max(lastRow, targetRow);
-
-    const rangeItems = displayItems()
-      .slice(start, end + 1)
-      .map((flat) => flat.item)
-      .filter((item) => getItemSelectable(item) === true);
-
-    if (lastClickAction() === "select") {
-      const newItems = [...selectedItems()];
-      for (const item of rangeItems) {
-        if (!newItems.includes(item)) newItems.push(item);
-      }
-      setSelectedItems(newItems);
-    } else {
-      setSelectedItems(selectedItems().filter((item) => !rangeItems.includes(item)));
-    }
-  }
+  const {
+    selectedItems,
+    setSelectedItems,
+    getItemSelectable,
+    toggleSelect,
+    toggleSelectAll,
+    rangeSelect,
+    lastClickedRow,
+    setLastClickedRow,
+  } = useDataSheetSelection<T>(
+    {
+      selectMode: local.selectMode,
+      selectedItems: local.selectedItems,
+      onSelectedItemsChange: local.onSelectedItemsChange,
+      isItemSelectable: local.isItemSelectable,
+    },
+    displayItems,
+  );
 
   // #region AutoSelect
   function selectItem(item: T): void {
@@ -562,140 +394,13 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   }
 
   // #region Reorder
-  const [dragState, setDragState] = createSignal<{
-    draggingItem: T;
-    targetItem: T | null;
-    position: "before" | "after" | "inside" | null;
-  } | null>(null);
-
-  function isDescendant(parent: T, child: T, visited = new Set<T>()): boolean {
-    if (visited.has(parent)) return false;
-    visited.add(parent);
-    if (!local.getChildren) return false;
-    const childItems = local.getChildren(parent, 0);
-    if (!childItems) return false;
-    for (const c of childItems) {
-      if (c === child) return true;
-      if (isDescendant(c, child, visited)) return true;
-    }
-    return false;
-  }
-
-  function onReorderPointerDown(e: PointerEvent, item: T): void {
-    e.preventDefault();
-    const target = e.currentTarget as HTMLElement;
-
-    const tableEl = target.closest("table")!;
-    const tbody = tableEl.querySelector("tbody")!;
-    const rows = Array.from(tbody.rows);
-
-    setDragState({ draggingItem: item, targetItem: null, position: null });
-
-    startPointerDrag(target, e.pointerId, {
-      onMove(ev) {
-        let foundTarget: T | null = null;
-        let foundPosition: "before" | "after" | "inside" | null = null;
-
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const rect = row.getBoundingClientRect();
-          if (ev.clientY < rect.top || ev.clientY > rect.bottom) continue;
-
-          if (i >= displayItems().length) break;
-          const flat = displayItems()[i];
-          if (flat.item === item) break;
-
-          // Cannot drop to child items of self
-          if (isDescendant(item, flat.item)) break;
-
-          const relY = ev.clientY - rect.top;
-          const third = rect.height / 3;
-
-          if (relY < third) {
-            foundPosition = "before";
-          } else if (relY > third * 2) {
-            foundPosition = "after";
-          } else {
-            foundPosition = local.getChildren
-              ? "inside"
-              : relY < rect.height / 2
-                ? "before"
-                : "after";
-          }
-          foundTarget = flat.item;
-          break;
-        }
-
-        setDragState({ draggingItem: item, targetItem: foundTarget, position: foundPosition });
-
-        // Update indicator DOM
-        for (let i = 0; i < rows.length; i++) {
-          rows[i].removeAttribute("data-dragging");
-          rows[i].removeAttribute("data-drag-over");
-
-          if (i < displayItems().length) {
-            const flat = displayItems()[i];
-            if (flat.item === item) {
-              rows[i].setAttribute("data-dragging", "");
-            }
-            if (flat.item === foundTarget && foundPosition === "inside") {
-              rows[i].setAttribute("data-drag-over", "inside");
-            }
-          }
-        }
-
-        // before/after indicator
-        const indicatorEl = tableEl
-          .closest("[data-sheet-scroll]")
-          ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
-        if (indicatorEl) {
-          if (foundTarget != null && foundPosition != null && foundPosition !== "inside") {
-            const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
-            if (targetIdx >= 0) {
-              const targetRow = rows[targetIdx];
-              const containerRect = tableEl.closest("[data-sheet-scroll]")!.getBoundingClientRect();
-              const rowRect = targetRow.getBoundingClientRect();
-              const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
-
-              const top =
-                foundPosition === "before"
-                  ? rowRect.top - containerRect.top + scrollEl.scrollTop
-                  : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
-
-              indicatorEl.style.display = "block";
-              indicatorEl.style.top = `${top}px`;
-            }
-          } else {
-            indicatorEl.style.display = "none";
-          }
-        }
-      },
-      onEnd() {
-        const state = dragState();
-        if (state?.targetItem != null && state.position != null) {
-          local.onItemsReorder?.({
-            item: state.draggingItem,
-            targetItem: state.targetItem,
-            position: state.position,
-          } as DataSheetReorderEvent<T>);
-        }
-
-        // Clean up
-        for (const row of rows) {
-          row.removeAttribute("data-dragging");
-          row.removeAttribute("data-drag-over");
-        }
-        const indicatorEl = tableEl
-          .closest("[data-sheet-scroll]")
-          ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
-        if (indicatorEl) {
-          indicatorEl.style.display = "none";
-        }
-
-        setDragState(null);
-      },
-    });
-  }
+  const { dragState, onReorderPointerDown } = useDataSheetReorder<T>(
+    {
+      onItemsReorder: local.onItemsReorder,
+      getChildren: local.getChildren,
+    },
+    displayItems,
+  );
 
   // #region Keyboard Navigation (move rows with Enter/Shift+Enter)
   function onTableKeyDown(e: KeyboardEvent): void {
@@ -730,18 +435,15 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     targetFocusable.focus();
   }
 
-  // #region Display
-  const displayItems = flatItems;
-
   // Is expand feature column "last fixed" (no regular fixed columns and no select feature)
   const isExpandColLastFixed = () =>
-    hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
+    hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && isLastFixed(-1);
 
   // Is select feature column "last fixed" (no regular fixed columns and select is rightmost feature)
   const isSelectColLastFixed = () =>
-    hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
+    hasSelectFeature() && !hasReorderFeature() && isLastFixed(-1);
 
-  const isReorderColLastFixed = () => hasReorderFeature() && lastFixedIndex() < 0;
+  const isReorderColLastFixed = () => hasReorderFeature() && isLastFixed(-1);
 
   // Total header row count + summary row count (used for feature column rowspan)
   const featureHeaderRowspan = createMemo(() => {
@@ -750,19 +452,8 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     return headerRows + summaryRow;
   });
 
-  // Is all expanded
-  const isAllExpanded = createMemo(() => {
-    if (!local.getChildren) return false;
-    const indexMap = originalIndexMap();
-    const allExpandable = collectAllExpandable(
-      pagedItems(),
-      local.getChildren,
-      (item) => indexMap.get(item) ?? -1,
-    );
-    return (
-      allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item))
-    );
-  });
+  // suppress unused variable warning — dragState is used for side effects (DOM mutation in hook)
+  void dragState;
 
   return (
     <div
@@ -773,13 +464,13 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
         local.class,
       )}
     >
-      <Show when={!local.hideConfigBar && (dialog != null || effectivePageCount() > 1)}>
+      <Show when={!local.hideConfigBar && (dialog != null || pageCount() > 1)}>
         <div class={toolbarClass}>
-          <Show when={effectivePageCount() > 1}>
+          <Show when={pageCount() > 1}>
             <Pagination
               page={currentPage()}
               onPageChange={setCurrentPage}
-              totalPageCount={effectivePageCount()}
+              totalPageCount={pageCount()}
               displayPageCount={local.displayPageCount}
               size="sm"
             />
@@ -1016,7 +707,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                                 <Show when={isSortable() && colKey()}>
                                   {(key) => {
                                     const sortDef = () => getSortDef(key());
-                                    const sortIndex = () => getSortIndex(key());
+                                    const sortIdx = () => sortIndex(key());
                                     return (
                                       <div class={sortIconClass}>
                                         <Show when={sortDef()?.desc === false}>
@@ -1031,7 +722,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                                             class="opacity-30"
                                           />
                                         </Show>
-                                        <Show when={sortIndex()}>
+                                        <Show when={sortIdx()}>
                                           {(idx) => <sub>{idx()}</sub>}
                                         </Show>
                                       </div>
