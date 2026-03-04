@@ -78,14 +78,14 @@ describe("createSlots", () => {
       const [items, Provider] = useSlots();
 
       // Mount an inner root that registers a slot item
-      const innerDispose = createRoot((innerDispose) => {
+      const innerDispose = createRoot((disposeInner) => {
         Provider({
           get children() {
             SlotComponent({ label: "temp", value: 42 });
             return undefined;
           },
         });
-        return innerDispose;
+        return disposeInner;
       });
 
       expect(items()).toHaveLength(1);
