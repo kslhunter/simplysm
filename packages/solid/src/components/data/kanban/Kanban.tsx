@@ -21,11 +21,11 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { padding } from "../../../styles/control.styles";
+import { bg, text } from "../../../styles/base.styles";
+import { gap, pad } from "../../../styles/control.styles";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import type { SlotAccessor } from "../../../hooks/createSlotSignal";
-import "./Kanban.css";
 import { Button } from "../../form-control/Button";
 
 // ── Types ──────────────────────────────────────────────────────
@@ -306,7 +306,7 @@ export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<
 const laneBaseClass = clsx(
   "flex flex-col",
   "w-72 min-w-72",
-  "bg-base-100 dark:bg-base-900",
+  bg.muted,
   "rounded-lg",
   "overflow-hidden",
   "transition-[background-color,box-shadow] duration-200",
@@ -315,24 +315,23 @@ const laneBaseClass = clsx(
 const laneDragOverClass = clsx("bg-primary-50 dark:bg-primary-950");
 
 const laneHeaderBaseClass = clsx(
-  "flex items-center gap-2",
-  padding.lg,
+  "flex items-center", gap.xl,
+  pad.lg,
   "font-bold",
-  "text-base-700 dark:text-base-200",
+  text.default,
   "select-none",
 );
 
 const collapseButtonClass = "size-6 hover:text-primary-500";
 
-const laneToolsClass = clsx("flex items-center", "gap-1");
+const laneToolsClass = clsx("flex items-center", gap.default);
 
-const laneBodyBaseClass = clsx("flex-1", "flex flex-col gap-2", "p-2", "overflow-y-auto");
+const laneBodyBaseClass = clsx("flex-1", "flex flex-col", gap.xl, "p-2", "overflow-y-auto");
 
 const placeholderBaseClass = clsx(
   "rounded-lg",
   "bg-primary-100/60 dark:bg-primary-900/30",
   "origin-top",
-  "animate-[kanban-ph-in_200ms_ease-out]",
 );
 
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
@@ -489,6 +488,14 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
 
     bodyRef.insertBefore(placeholderEl, referenceNode);
+    // kanban-ph-in: opacity 0 + height 0 → opacity 1 + auto height
+    placeholderEl.animate(
+      [
+        { opacity: 0, height: "0px" },
+        { opacity: 1, height: `${dc.heightOnDrag}px` },
+      ],
+      { duration: 200, easing: "ease-out", fill: "forwards" },
+    );
   });
 
   // placeholder cleanup
