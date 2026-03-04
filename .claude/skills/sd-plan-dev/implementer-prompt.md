@@ -36,7 +36,7 @@ If you encounter something unexpected mid-implementation (missing APIs, unexpect
    - **Discipline**: Nothing overbuilt (YAGNI)? Only what was requested?
    - **Testing**: Tests verify behavior (not implementation)? Comprehensive?
 5. Fix anything found in self-review
-6. Commit your work with a descriptive message (this is required for review)
+6. Commit using conventional commit format: `type(scope): description` (e.g., `feat(solid): add ConfirmDialog component`)
 7. Report back
 
 Work from: [directory path]

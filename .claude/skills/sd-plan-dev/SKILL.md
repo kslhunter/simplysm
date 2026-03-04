@@ -232,6 +232,28 @@ $PM run lint [affected packages]
 
 This catches cross-task integration issues early — especially when the next batch depends on the current batch's output. Do NOT skip this even if individual task reviews passed.
 
+If typecheck or lint fails, treat the errors as review issues: re-dispatch the implementer(s) whose changes caused the failure with the error output. After fix, re-run the integration check. Do NOT start the next batch until integration passes.
+
+## Final Review Dispatch
+
+After all batches complete and pass integration checks, dispatch the final reviewer:
+
+1. Locate the original design document from `docs/plans/` — it shares the same date and topic as the plan file (e.g., plan `2026-03-04-dialog-confirm.md` → design `2026-03-04-dialog-confirm-design.md`)
+2. Fill `./final-review-prompt.md` with:
+   - The full text of the original design document
+   - The full text of the implementation plan
+   - Summaries of all completed tasks (commit SHAs, files changed, test results)
+3. Dispatch as `Task(general-purpose)`
+4. If the final reviewer returns **APPROVED** → done
+5. If the final reviewer returns **ISSUES**:
+   - For cross-task integration issues: create a fix task targeting specific files, run through implementer → review cycle
+   - For missing design requirements: create new implementation tasks and run through the full batch cycle
+   - Re-run final review after all fixes
+
+## Completion
+
+After the final review passes, report to the user: number of tasks completed, total files changed, and final review outcome.
+
 ## Red Flags
 
 **Never:**
