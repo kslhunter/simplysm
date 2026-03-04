@@ -63,7 +63,6 @@ const textareaBaseClass = clsx(
   "size-full",
   "resize-none overflow-hidden",
   "bg-transparent",
-  "px-2 py-1",
   "placeholder:text-base-400 dark:placeholder:text-base-500",
 );
 
@@ -162,7 +161,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     });
 
   const getTextareaClass = () =>
-    twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size], local.inset && "p-0");
+    twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"], local.inset && "p-0");
 
   // Whether editable
   const isEditable = () => !local.disabled && !local.readonly;
@@ -268,7 +267,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
               style={{ position: "relative" }}
             >
               <textarea
-                class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
+                class={twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"])}
                 value={value()}
                 placeholder={local.placeholder}
                 title={local.title}

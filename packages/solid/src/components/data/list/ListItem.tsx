@@ -27,7 +27,7 @@ import {
   listItemContentClass,
   getListItemSelectedIconClass,
 } from "./ListItem.styles";
-import type { ComponentSize } from "../../../styles/tokens.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 
 void ripple;
 
@@ -153,7 +153,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const getHeaderClassName = () =>
     twMerge(
       listItemBaseClass,
-      local.size && listItemSizeClasses[local.size],
+      listItemSizeClasses[local.size ?? "default"],
       local.selected && listItemSelectedClass,
       local.readonly && listItemReadonlyClass,
       local.disabled && listItemDisabledClass,

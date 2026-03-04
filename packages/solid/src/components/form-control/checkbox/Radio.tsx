@@ -75,9 +75,9 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
   const getWrapperClass = () =>
     twMerge(
       checkboxBaseClass,
-      local.size && checkboxSizeClasses[local.size],
+      checkboxSizeClasses[local.size ?? "default"],
       local.inset && checkboxInsetClass,
-      local.inset && local.size && checkboxInsetSizeHeightClasses[local.size],
+      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "default"],
       local.inline && checkboxInlineClass,
       local.disabled && checkboxDisabledClass,
       local.class,
