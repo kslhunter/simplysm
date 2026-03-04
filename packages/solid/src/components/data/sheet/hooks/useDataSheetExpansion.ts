@@ -1,7 +1,7 @@
 import { createMemo, type Accessor } from "solid-js";
 import type { FlatItem } from "../types";
 import { collectAllExpandable, flattenTree } from "../sheetUtils";
-import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
 export interface UseDataSheetExpansionProps<TItem> {
   expandedItems?: TItem[];

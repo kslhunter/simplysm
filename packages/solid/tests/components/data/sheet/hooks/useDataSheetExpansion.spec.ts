@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetExpansion } from "../../../../src/components/data/sheet/hooks/useDataSheetExpansion";
+import { useDataSheetExpansion } from "../../../../../src/components/data/sheet/hooks/useDataSheetExpansion";
 
 interface TestNode {
   id: string;
@@ -144,8 +144,10 @@ describe("useDataSheetExpansion", () => {
   it("isAllExpanded should be true when all expandable items are expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
+      // collectAllExpandable will find root1, child1-2, and root2 as expandable
+      const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
       const result = useDataSheetExpansion(
-        { expandedItems: [treeData[0], treeData[1]], getChildren },
+        { expandedItems: allExpandable, getChildren },
         () => treeData,
         createIndexMap,
       );
@@ -186,8 +188,10 @@ describe("useDataSheetExpansion", () => {
   it("toggleExpandAll should collapse all items when all are expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
+      // collectAllExpandable will find root1, child1-2, and root2 as expandable
+      const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
       const result = useDataSheetExpansion(
-        { expandedItems: [treeData[0], treeData[1]], getChildren },
+        { expandedItems: allExpandable, getChildren },
         () => treeData,
         createIndexMap,
       );

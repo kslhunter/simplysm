@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetSelection } from "../../../../src/components/data/sheet/hooks/useDataSheetSelection";
-import type { FlatItem } from "../../../../src/components/data/sheet/types";
+import { useDataSheetSelection } from "../../../../../src/components/data/sheet/hooks/useDataSheetSelection";
+import type { FlatItem } from "../../../../../src/components/data/sheet/types";
 
 interface TestItem {
   id: string;

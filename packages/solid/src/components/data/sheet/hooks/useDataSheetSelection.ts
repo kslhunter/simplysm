@@ -1,6 +1,6 @@
 import { createSignal, type Accessor } from "solid-js";
 import type { FlatItem } from "../types";
-import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
 export interface UseDataSheetSelectionProps<TItem> {
   selectMode?: "single" | "multiple";
