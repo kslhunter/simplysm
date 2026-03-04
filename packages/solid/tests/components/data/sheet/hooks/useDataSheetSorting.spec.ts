@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createRoot, createSignal, type Accessor } from "solid-js";
-import { useDataSheetSorting } from "../../../../src/components/data/sheet/hooks/useDataSheetSorting";
-import type { SortingDef } from "../../../../src/components/data/sheet/types";
+import { useDataSheetSorting } from "../../../../../src/components/data/sheet/hooks/useDataSheetSorting";
+import type { SortingDef } from "../../../../../src/components/data/sheet/types";
 
 interface TestItem {
   id: number;

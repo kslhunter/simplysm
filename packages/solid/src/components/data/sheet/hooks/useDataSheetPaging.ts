@@ -1,5 +1,5 @@
 import { createMemo, type Accessor } from "solid-js";
-import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
 export interface UseDataSheetPagingOptions<TItem> {
   page: Accessor<number | undefined>;
