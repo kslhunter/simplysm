@@ -7,7 +7,6 @@ import {
 } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
