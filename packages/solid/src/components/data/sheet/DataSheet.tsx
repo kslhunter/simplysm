@@ -265,7 +265,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     if (ipp == null || ipp === 0) return sortedItems();
     if ((local.items ?? []).length <= 0) return sortedItems();
 
-    const page = currentPage();
+    const page = Math.max(1, currentPage());
     return sortedItems().slice((page - 1) * ipp, page * ipp);
   });
 
@@ -568,13 +568,15 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     position: "before" | "after" | "inside" | null;
   } | null>(null);
 
-  function isDescendant(parent: T, child: T): boolean {
+  function isDescendant(parent: T, child: T, visited = new Set<T>()): boolean {
+    if (visited.has(parent)) return false;
+    visited.add(parent);
     if (!local.getChildren) return false;
     const childItems = local.getChildren(parent, 0);
     if (!childItems) return false;
     for (const c of childItems) {
       if (c === child) return true;
-      if (isDescendant(c, child)) return true;
+      if (isDescendant(c, child, visited)) return true;
     }
     return false;
   }
@@ -820,7 +822,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
               <col />
             </Show>
             <For each={effectiveColumns()}>
-              {(col) => <col style={col.width != null ? { width: col.width } : undefined} />}
+              {(col) => <col style={col.width != null ? { width: col.width?.replace(/;/g, "") } : undefined} />}
             </For>
           </colgroup>
           <thead>
@@ -968,7 +970,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                               if (left != null) parts.push(left);
                               // max-width: apply if explicit width exists (allow column to shrink below content)
                               const col = effectiveColumns()[c().colIndex!];
-                              if (col.width != null) parts.push(`max-width: ${col.width}`);
+                              if (col.width != null) parts.push(`max-width: ${col.width?.replace(/;/g, "")}`);
                             } else if (isGroupFixed()) {
                               const left = getFixedStyle(cellColIndex());
                               if (left != null) parts.push(left);
@@ -1259,7 +1261,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                         style={
                           [
                             getFixedStyle(colIndex()),
-                            col.width != null ? `max-width: ${col.width}` : undefined,
+                            col.width != null ? `max-width: ${col.width?.replace(/;/g, "")}` : undefined,
                             local.cellStyle?.(flat.item, col.key),
                           ]
                             .filter(Boolean)
