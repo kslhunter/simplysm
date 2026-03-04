@@ -6,8 +6,6 @@ import {
   Show,
   splitProps,
 } from "solid-js";
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlot } from "../../../helpers/createSlot";
 import {
@@ -17,8 +15,9 @@ import {
   getFieldWrapperClass,
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { Invalid } from "../../form-control/Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
+import { FieldShell } from "./FieldShell";
+import clsx from "clsx";
 
 // NumberInput-specific input style (right-aligned + spinner hidden)
 const numberInputClass = clsx(
@@ -305,99 +304,48 @@ export const NumberInput: NumberInputComponent = (props) => {
   return (
     <PrefixProvider>
       {local.children}
-      <Invalid
-        message={errorMsg()}
-        variant={local.inset ? "dot" : "border"}
+      <FieldShell
+        errorMsg={errorMsg()}
+        invalidVariant={local.inset ? "dot" : "border"}
         touchMode={local.touchMode}
+        inset={local.inset}
+        isEditable={isEditable()}
+        wrapperClass={getWrapperClass}
+        dataAttr="data-number-field"
+        readonlyExtraClass="sd-number-field justify-end"
+        sizingExtraClass="justify-end"
+        style={local.style}
+        title={local.title}
+        class={local.class}
+        rest={rest}
+        displayContent={
+          <>
+            <Show when={prefix()}>
+              <span class="shrink-0">{prefix()!.children}</span>
+            </Show>
+            <PlaceholderFallback
+              value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+              placeholder={local.placeholder}
+            />
+          </>
+        }
       >
-        <Show
-          when={local.inset}
-          fallback={
-            // standalone mode: keep existing Show pattern
-            <Show
-              when={isEditable()}
-              fallback={
-                <div
-                  {...rest}
-                  data-number-field
-                  class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
-                  style={local.style}
-                  title={local.title}
-                >
-                  <Show when={prefix()}>
-                    <span class="shrink-0">{prefix()!.children}</span>
-                  </Show>
-                  <PlaceholderFallback
-                    value={formatNumber(value(), local.comma ?? true, local.minDigits)}
-                    placeholder={local.placeholder}
-                  />
-                </div>
-              }
-            >
-              <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
-                <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!.children}</span>
-                </Show>
-                <input
-                  type="text"
-                  inputmode="numeric"
-                  class={numberInputClass}
-                  value={displayValue()}
-                  placeholder={local.placeholder}
-                  title={local.title}
-                  autocomplete="one-time-code"
-                  onInput={handleInput}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                />
-              </div>
-            </Show>
-          }
-        >
-          {/* inset mode: dual-element overlay pattern */}
-          <div
-            {...rest}
-            data-number-field
-            class={clsx("relative", local.class)}
-            style={local.style}
-          >
-            <div
-              data-number-field-content
-              class={twMerge(getWrapperClass(false), "justify-end")}
-              style={{ visibility: isEditable() ? "hidden" : undefined }}
-              title={local.title}
-            >
-              <Show when={prefix()}>
-                <span class="shrink-0">{prefix()!.children}</span>
-              </Show>
-              <PlaceholderFallback
-                value={formatNumber(value(), local.comma ?? true, local.minDigits)}
-                placeholder={local.placeholder}
-              />
-            </div>
-
-            <Show when={isEditable()}>
-              <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-                <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!.children}</span>
-                </Show>
-                <input
-                  type="text"
-                  inputmode="numeric"
-                  class={numberInputClass}
-                  value={displayValue()}
-                  placeholder={local.placeholder}
-                  title={local.title}
-                  autocomplete="one-time-code"
-                  onInput={handleInput}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                />
-              </div>
-            </Show>
-          </div>
+        <Show when={prefix()}>
+          <span class="shrink-0">{prefix()!.children}</span>
         </Show>
-      </Invalid>
+        <input
+          type="text"
+          inputmode="numeric"
+          class={numberInputClass}
+          value={displayValue()}
+          placeholder={local.placeholder}
+          title={local.title}
+          autocomplete="one-time-code"
+          onInput={handleInput}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
+      </FieldShell>
     </PrefixProvider>
   );
 };
