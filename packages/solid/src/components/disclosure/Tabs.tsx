@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
-import { type ComponentSize } from "../../styles/tokens.styles";
+import { type ComponentSize } from "../../styles/control.styles";
 
 // --- Context ---
 
@@ -29,16 +29,15 @@ function TabsTabInner(props: TabsTabProps) {
 
   const isSelected = () => ctx.value() === props.value;
 
-  const sizeClasses = () => {
-    switch (ctx.size()) {
-      case "sm":
-        return "px-2.5 py-1 text-sm";
-      case "lg":
-        return "px-4 py-2.5 text-base";
-      default:
-        return "px-3 py-1.5 text-sm";
-    }
+  const tabSizeClasses: Record<ComponentSize, string> = {
+    default: "px-3 py-1.5 text-sm",
+    xs: "px-1.5 py-0.5 text-xs",
+    sm: "px-2.5 py-1 text-sm",
+    lg: "px-4 py-2.5 text-base",
+    xl: "px-5 py-3 text-lg",
   };
+
+  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "default"];
 
   const baseClass = clsx(
     "relative cursor-pointer select-none font-medium",
