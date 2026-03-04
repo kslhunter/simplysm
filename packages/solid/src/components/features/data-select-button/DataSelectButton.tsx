@@ -18,7 +18,7 @@ import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/Dialog";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { textMuted } from "../../../styles/base.styles";
+import { text } from "../../../styles/base.styles";
 import { type ComponentSize } from "../../../styles/control.styles";
 import {
   triggerBaseClass,
@@ -227,7 +227,7 @@ export function DataSelectButton<
   const renderSelectedDisplay = (): JSX.Element => {
     const items = selectedItems();
     if (!items || items.length === 0) {
-      return <span class={textMuted} />;
+      return <span class={text.muted} />;
     }
     return (
       <span class="flex items-center gap-1">
@@ -235,7 +235,7 @@ export function DataSelectButton<
           {(item, index) => (
             <>
               <Show when={index() > 0}>
-                <span class={textMuted}>,</span>
+                <span class={text.muted}>,</span>
               </Show>
               {local.renderItem(item)}
             </>

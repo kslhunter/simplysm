@@ -12,13 +12,13 @@ import {
 import clsx from "clsx";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
-import { borderDefault } from "../../../styles/base.styles";
+import { border } from "../../../styles/base.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
 const titleCellClass = clsx("flex items-stretch", "px-2");
 const indentGuideWrapperClass = clsx("mr-1 flex w-3", "justify-center");
-const indentGuideLineClass = clsx("w-0 self-stretch", "border-r", borderDefault);
+const indentGuideLineClass = clsx("w-0 self-stretch", "border-r", border.default);
 
 // --- Types ---
 

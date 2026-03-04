@@ -19,8 +19,8 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { textMuted } from "../../../styles/base.styles";
-import { type ComponentSize, padding } from "../../../styles/control.styles";
+import { text } from "../../../styles/base.styles";
+import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { useI18n } from "../../../providers/i18n/I18nContext";
@@ -69,7 +69,7 @@ const inputClass = clsx(
   "placeholder:text-base-400 dark:placeholder:text-base-500",
 );
 
-const noResultsClass = clsx(padding.lg, textMuted);
+const noResultsClass = clsx(pad.lg, text.muted);
 
 /**
  * Item template sub-component

@@ -1,16 +1,16 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type ComponentSize, gap, padding } from "../../../styles/control.styles";
-import { borderDefault, textDefault, textPlaceholder } from "../../../styles/base.styles";
+import { type ComponentSize, gap, pad } from "../../../styles/control.styles";
+import { border, text } from "../../../styles/base.styles";
 
 export type FieldSize = ComponentSize;
 
 // ── Form Field Common Surface (background + text + border + focus) ──
 export const fieldSurface = clsx(
   "bg-primary-50 dark:bg-primary-950/30",
-  textDefault,
+  text.default,
   "border",
-  borderDefault,
+  border.default,
   "rounded",
   "focus-within:border-primary-500 dark:focus-within:border-primary-400",
 );
@@ -24,11 +24,11 @@ export const fieldBaseClass = clsx(
 
 // Size-specific styles
 export const fieldSizeClasses: Record<FieldSize, string> = {
-  default: clsx("h-field", padding.default),
-  xs: clsx("h-field-xs", padding.xs),
-  sm: clsx("h-field-sm", padding.sm),
-  lg: clsx("h-field-lg", padding.lg),
-  xl: clsx("h-field-xl", padding.xl),
+  default: clsx("h-field", pad.default),
+  xs: clsx("h-field-xs", pad.xs),
+  sm: clsx("h-field-sm", pad.sm),
+  lg: clsx("h-field-lg", pad.lg),
+  xl: clsx("h-field-xl", pad.xl),
 };
 
 // Inset styles
@@ -57,11 +57,11 @@ export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface);
 
 // Textarea size-specific styles (h-field-* removed)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
-  default: padding.default,
-  xs: padding.xs,
-  sm: padding.sm,
-  lg: padding.lg,
-  xl: padding.xl,
+  default: pad.default,
+  xs: pad.xs,
+  sm: pad.sm,
+  lg: pad.lg,
+  xl: pad.xl,
 };
 
 // Input styles
@@ -70,7 +70,7 @@ export const fieldInputClass = clsx(
   "bg-transparent",
   "outline-none",
   "[text-decoration:inherit]",
-  textPlaceholder,
+  text.placeholder,
 );
 
 // Prefix icon gap classes (replaces nested ternary)

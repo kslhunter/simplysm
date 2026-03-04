@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { borderDefault } from "../../../styles/base.styles";
-import { type ComponentSize, disabledOpacity, gap, padding } from "../../../styles/control.styles";
+import { border } from "../../../styles/base.styles";
+import { type ComponentSize, disabledOpacity, gap, pad } from "../../../styles/control.styles";
 
 export type CheckboxSize = ComponentSize;
 
@@ -20,8 +20,8 @@ export const indicatorBaseClass = clsx(
   "flex shrink-0 items-center justify-center",
   "size-4",
   "border",
-  borderDefault,
-  // bgSurface,
+  border.default,
+  // bg.surface,
   "bg-primary-50 dark:bg-primary-950/30",
   "transition-colors",
 );
@@ -31,11 +31,11 @@ export const checkedClass = clsx("border-primary-500 bg-primary-500", "text-whit
 
 // Size-specific styles
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {
-  default: clsx("h-field", padding.default),
-  xs: clsx("h-field-xs", padding.xs),
-  sm: clsx("h-field-sm", padding.sm),
-  lg: clsx("h-field-lg", padding.lg),
-  xl: clsx("h-field-xl", padding.xl),
+  default: clsx("h-field", pad.default),
+  xs: clsx("h-field-xs", pad.xs),
+  sm: clsx("h-field-sm", pad.sm),
+  lg: clsx("h-field-lg", pad.lg),
+  xl: clsx("h-field-xl", pad.xl),
 };
 
 // Inset styles

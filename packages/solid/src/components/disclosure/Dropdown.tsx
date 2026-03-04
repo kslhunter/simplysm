@@ -17,7 +17,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { createSlotComponent } from "../../helpers/createSlotComponent";
-import { borderSubtle } from "../../styles/base.styles";
+import { border } from "../../styles/base.styles";
 import { tabbable } from "tabbable";
 
 // --- DropdownContext (internal) ---
@@ -467,7 +467,7 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
                 "z-dropdown",
                 "bg-white dark:bg-base-800",
                 "border",
-                borderSubtle,
+                border.subtle,
                 "shadow-lg dark:shadow-black/30",
                 "rounded-md",
                 "overflow-y-auto",

@@ -25,7 +25,7 @@ import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { useI18n } from "../../providers/i18n/I18nContext";
 import { Icon } from "../display/Icon";
-import { borderSubtle } from "../../styles/base.styles";
+import { border } from "../../styles/base.styles";
 import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
 
@@ -534,7 +534,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
       "w-fit min-w-[200px]",
       "bg-white dark:bg-base-800",
       local.float
-        ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle)
+        ? clsx("shadow-md dark:shadow-black/30", "border", border.subtle)
         : "shadow-2xl dark:shadow-black/40",
       local.fill ? "rounded-none border-none" : "rounded-lg",
       "overflow-hidden",
@@ -546,7 +546,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
 
   // Header class
   const headerClass = () =>
-    clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", borderSubtle);
+    clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", border.subtle);
 
   return (
     <Show when={mounted()}>

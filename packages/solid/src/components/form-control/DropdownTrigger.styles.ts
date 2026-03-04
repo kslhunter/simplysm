@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { borderDefault } from "../../styles/base.styles";
-import { type ComponentSize, gap, padding } from "../../styles/control.styles";
+import { border } from "../../styles/base.styles";
+import { type ComponentSize, gap, pad } from "../../styles/control.styles";
 
 export const triggerBaseClass = clsx(
   "inline-flex items-center gap-2",
   "w-40",
   "border",
-  borderDefault,
+  border.default,
   "rounded",
   "bg-transparent",
   "hover:bg-base-100 dark:hover:bg-base-700",
@@ -29,11 +29,11 @@ export const triggerInsetClass = clsx(
 );
 
 export const triggerSizeClasses: Record<ComponentSize, string> = {
-  default: clsx(gap.default, padding.default),
-  xs: clsx(gap.xs, padding.xs),
-  sm: clsx(gap.sm, padding.sm),
-  lg: clsx(gap.lg, padding.lg),
-  xl: clsx(gap.xl, padding.xl),
+  default: clsx(gap.default, pad.default),
+  xs: clsx(gap.xs, pad.xs),
+  sm: clsx(gap.sm, pad.sm),
+  lg: clsx(gap.lg, pad.lg),
+  xl: clsx(gap.xl, pad.xl),
 };
 
 export const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");

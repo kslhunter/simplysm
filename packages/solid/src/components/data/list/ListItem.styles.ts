@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { borderDefault } from "../../../styles/base.styles";
-import { type ComponentSize, padding } from "../../../styles/control.styles";
+import { border } from "../../../styles/base.styles";
+import { type ComponentSize, pad } from "../../../styles/control.styles";
 
 // Base item style
 export const listItemBaseClass = clsx(
@@ -18,11 +18,11 @@ export const listItemBaseClass = clsx(
 
 // Size-based styles
 export const listItemSizeClasses: Record<ComponentSize, string> = {
-  default: padding.default,
-  xs: padding.xs,
-  sm: padding.sm,
-  lg: padding.lg,
-  xl: padding.xl,
+  default: pad.default,
+  xs: pad.xs,
+  sm: pad.sm,
+  lg: pad.lg,
+  xl: pad.xl,
 };
 
 // Selected state
@@ -41,7 +41,7 @@ export const listItemDisabledClass = clsx("pointer-events-none cursor-auto opaci
 export const listItemReadonlyClass = clsx("cursor-auto select-text hover:bg-transparent");
 
 // Indent guide (for nested items)
-export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l", borderDefault);
+export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l", border.default);
 
 // Item content area
 export const listItemContentClass = clsx("flex flex-1 flex-row", "items-center gap-1", "text-left");

@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { borderDefault, borderSubtle } from "../../../styles/base.styles";
-import { padding } from "../../../styles/control.styles";
+import { border } from "../../../styles/base.styles";
+import { pad } from "../../../styles/control.styles";
 
 export const dataSheetContainerClass = clsx(
   "relative",
@@ -21,12 +21,12 @@ export const thClass = clsx(
   "align-middle",
 );
 
-export const thContentClass = clsx(padding.default);
+export const thContentClass = clsx(pad.default);
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-950",
   "border-b border-r",
-  borderSubtle,
+  border.subtle,
   "truncate",
   "p-0",
   "align-top",
@@ -43,7 +43,7 @@ export const insetTableClass = clsx(
   "[&_tbody>tr:last-child>td]:border-b-0",
 );
 
-export const defaultContainerClass = clsx("border", borderDefault, "rounded");
+export const defaultContainerClass = clsx("border", border.default, "rounded");
 
 // Sortable header — shows clickable indicator
 export const sortableThClass = clsx("cursor-pointer", "hover:underline");
@@ -54,9 +54,9 @@ export const sortIconClass = clsx("bg-base-100 dark:bg-base-900");
 // Top toolbar (settings button + pagination)
 export const toolbarClass = clsx(
   "flex items-center gap-2",
-  padding.default,
+  pad.default,
   "border-b",
-  borderDefault,
+  border.default,
 );
 
 // Fixed column base (sticky)
@@ -86,7 +86,7 @@ export const resizeIndicatorClass = clsx(
 export const featureThClass = clsx(
   "bg-base-100 dark:bg-base-800",
   "border-b border-r",
-  borderDefault,
+  border.default,
   "p-0",
   "align-middle",
 );
@@ -94,7 +94,7 @@ export const featureThClass = clsx(
 export const featureTdClass = clsx(
   "bg-base-50 dark:bg-base-900",
   "border-b border-r",
-  borderSubtle,
+  border.subtle,
   "p-0",
   "align-middle",
   "h-px",
@@ -104,7 +104,7 @@ export const featureTdClass = clsx(
 export const expandIndentGuideClass = clsx("mr-0.5 w-3 self-stretch", "flex justify-end");
 
 // Expand column depth guide — vertical line
-export const expandIndentGuideLineClass = clsx("w-0 self-stretch", "border-r", borderDefault);
+export const expandIndentGuideLineClass = clsx("w-0 self-stretch", "border-r", border.default);
 
 // Expand toggle button
 export const expandToggleClass = clsx(

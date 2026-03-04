@@ -1,5 +1,5 @@
 import { type Component, Show } from "solid-js";
-import { textMuted } from "../../../styles/base.styles";
+import { text } from "../../../styles/base.styles";
 
 /** Shared component to display placeholder or NBSP when value is empty */
 export const PlaceholderFallback: Component<{ value?: string; placeholder?: string }> = (props) => (
@@ -8,7 +8,7 @@ export const PlaceholderFallback: Component<{ value?: string; placeholder?: stri
       when={props.value}
       fallback={
         <Show when={props.placeholder != null && props.placeholder !== ""} fallback={"\u00A0"}>
-          <span class={textMuted}>{props.placeholder}</span>
+          <span class={text.muted}>{props.placeholder}</span>
         </Show>
       }
     >

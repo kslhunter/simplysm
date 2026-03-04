@@ -21,8 +21,8 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import { ripple } from "../../../directives/ripple";
-import { borderSubtle, textMuted } from "../../../styles/base.styles";
-import { type ComponentSize, padding } from "../../../styles/control.styles";
+import { border, text } from "../../../styles/base.styles";
+import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
@@ -119,10 +119,10 @@ const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
 
 // Search input styles (override TextInput wrapper)
-const searchInputClass = clsx("w-full", "rounded-none", "border-0 border-b", borderSubtle);
+const searchInputClass = clsx("w-full", "rounded-none", "border-0 border-b", border.subtle);
 
 // Select all/deselect all button area styles
-const selectAllBarClass = clsx("flex gap-2", "border-b", borderSubtle, padding.default, "text-xs");
+const selectAllBarClass = clsx("flex gap-2", "border-b", border.subtle, pad.default, "text-xs");
 
 // Select all/deselect all button styles
 const selectAllBtnClass = clsx(
@@ -508,8 +508,8 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
 
     // Include parent when child matches in hierarchical structure
     const matchesSearch = (item: T): boolean => {
-      const text = local.getSearchText!(item).toLowerCase();
-      if (terms.every((t) => text.includes(t.toLowerCase()))) return true;
+      const itemText = local.getSearchText!(item).toLowerCase();
+      if (terms.every((t) => itemText.includes(t.toLowerCase()))) return true;
 
       // Show parent if any child matches
       if (local.getChildren) {
@@ -614,7 +614,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
       const current = value();
 
       if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-        return <span class={textMuted}>{local.placeholder ?? ""}</span>;
+        return <span class={text.muted}>{local.placeholder ?? ""}</span>;
       }
 
       if (local.multiple && Array.isArray(current)) {
@@ -702,7 +702,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
                 {/* Unset item */}
                 <Show when={showUnsetItem()}>
                   <SelectItem value={undefined as T}>
-                    <span class={textMuted}>{i18n.t("select.unset")}</span>
+                    <span class={text.muted}>{i18n.t("select.unset")}</span>
                   </SelectItem>
                 </Show>
                 {renderItems(visibleItems() ?? [], 0)}

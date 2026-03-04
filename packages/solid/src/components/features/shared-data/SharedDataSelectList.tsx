@@ -6,7 +6,7 @@ import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nContext";
-import { textMuted } from "../../../styles/base.styles";
+import { text } from "../../../styles/base.styles";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createSlotComponent } from "../../../helpers/createSlotComponent";
 
@@ -156,8 +156,8 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
       const terms = searchText().trim().split(" ").filter(Boolean);
       if (terms.length > 0) {
         result = result.filter((item: TItem) => {
-          const text = getSearchText(item).toLowerCase();
-          return terms.every((t) => text.includes(t.toLowerCase()));
+          const itemText = getSearchText(item).toLowerCase();
+          return terms.every((t) => itemText.includes(t.toLowerCase()));
         });
       }
     }
@@ -262,7 +262,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
               disabled={local.disabled}
               onClick={() => handleSelect(undefined)}
             >
-              <span class={textMuted}>{i18n.t("sharedDataSelectList.unspecified")}</span>
+              <span class={text.muted}>{i18n.t("sharedDataSelectList.unspecified")}</span>
             </List.Item>
           </Show>
 

@@ -7,8 +7,8 @@ import { objClone, objEqual } from "@simplysm/core-common";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Icon } from "../../display/Icon";
-import { textPlaceholder } from "../../../styles/base.styles";
-import { type ComponentSize, padding } from "../../../styles/control.styles";
+import { text } from "../../../styles/base.styles";
+import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { Button } from "../Button";
 import { useI18n } from "../../../providers/i18n/I18nContext";
 
@@ -43,11 +43,11 @@ const chipClass = clsx(
 );
 
 const chipSizeClasses: Record<StatePresetSize, string> = {
-  default: padding.default,
-  xs: clsx(padding.xs, "text-sm"),
-  sm: padding.sm,
-  lg: padding.lg,
-  xl: clsx(padding.xl, "text-lg"),
+  default: pad.default,
+  xs: clsx(pad.xs, "text-sm"),
+  sm: pad.sm,
+  lg: pad.lg,
+  xl: clsx(pad.xl, "text-lg"),
 };
 
 const chipNameBtnClass = clsx("cursor-pointer", "hover:underline", "focus:outline-none");
@@ -87,15 +87,15 @@ const inputClass = clsx(
   "border border-transparent",
   "focus:ring-1 focus:ring-primary-400",
   "focus:outline-none",
-  textPlaceholder,
+  text.placeholder,
 );
 
 const inputSizeClasses: Record<StatePresetSize, string> = {
-  default: clsx(padding.default, "w-24"),
-  xs: clsx("w-16", padding.xs, "text-sm"),
-  sm: clsx(padding.sm, "w-20"),
-  lg: clsx(padding.lg, "w-32"),
-  xl: clsx(padding.xl, "w-36 text-lg"),
+  default: clsx(pad.default, "w-24"),
+  xs: clsx("w-16", pad.xs, "text-sm"),
+  sm: clsx(pad.sm, "w-20"),
+  lg: clsx(pad.lg, "w-32"),
+  xl: clsx(pad.xl, "w-36 text-lg"),
 };
 
 const iconSize = "0.85em";
