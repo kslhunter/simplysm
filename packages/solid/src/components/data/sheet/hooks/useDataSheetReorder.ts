@@ -1,5 +1,5 @@
 import { createSignal, type Accessor } from "solid-js";
-import { startPointerDrag } from "../../../helpers/startPointerDrag";
+import { startPointerDrag } from "../../../../helpers/startPointerDrag";
 import type { DataSheetReorderEvent } from "../types";
 import type { FlatItem } from "../types";
 
