@@ -148,9 +148,8 @@ export function MyInfoDetail() {
           <section>
             <h3 class="mb-4 border-l-4 border-base-500 pl-3 font-bold text-base-500">인증정보</h3>
             <FormTable>
-              <tr>
-                <th>이메일</th>
-                <td>
+              <FormTable.Row>
+                <FormTable.Item label="이메일">
                   <TextInput
                     type="email"
                     required
@@ -158,11 +157,10 @@ export function MyInfoDetail() {
                     onValueChange={(v) => ctx.setData("email", v)}
                     autocomplete="off"
                   />
-                </td>
-              </tr>
-              <tr>
-                <th>현재 비밀번호</th>
-                <td>
+                </FormTable.Item>
+              </FormTable.Row>
+              <FormTable.Row>
+                <FormTable.Item label="현재 비밀번호">
                   <TextInput
                     required={Boolean(ctx.data.newPassword || ctx.data.confirmPassword)}
                     class="w-56"
@@ -172,11 +170,10 @@ export function MyInfoDetail() {
                     onValueChange={(v) => ctx.setData("currentPassword", v)}
                     placeholder="비밀번호 변경 시에만 입력"
                   />
-                </td>
-              </tr>
-              <tr>
-                <th>새 비밀번호</th>
-                <td>
+                </FormTable.Item>
+              </FormTable.Row>
+              <FormTable.Row>
+                <FormTable.Item label="새 비밀번호">
                   <TextInput
                     required={Boolean(ctx.data.currentPassword || ctx.data.confirmPassword)}
                     minLength={8}
@@ -187,11 +184,10 @@ export function MyInfoDetail() {
                     onValueChange={(v) => ctx.setData("newPassword", v)}
                     placeholder="비밀번호 변경 시에만 입력"
                   />
-                </td>
-              </tr>
-              <tr>
-                <th>새 비밀번호 확인</th>
-                <td>
+                </FormTable.Item>
+              </FormTable.Row>
+              <FormTable.Row>
+                <FormTable.Item label="새 비밀번호 확인">
                   <TextInput
                     required={Boolean(ctx.data.currentPassword || ctx.data.newPassword)}
                     minLength={8}
@@ -207,38 +203,35 @@ export function MyInfoDetail() {
                     onValueChange={(v) => ctx.setData("confirmPassword", v)}
                     placeholder="비밀번호 변경 시에만 입력"
                   />
-                </td>
-              </tr>
+                </FormTable.Item>
+              </FormTable.Row>
             </FormTable>
           </section>
 
           <section>
             <h3 class="mb-4 border-l-4 border-base-500 pl-3 font-bold text-base-500">시스템설정</h3>
             <FormTable>
-              <tbody>
-                <tr>
-                  <th>로그인 시 화면</th>
-                  <td>
-                    <Select
-                      class="w-full"
-                      value={ctx.data.firstRouterLink}
-                      onValueChange={(v) => ctx.setData("firstRouterLink", v)}
-                      items={routeOptions()}
-                      renderValue={(v) => <>{routeMap().get(v) ?? v}</>}
-                      placeholder="선택 안함"
+              <FormTable.Row>
+                <FormTable.Item label="로그인 시 화면">
+                  <Select
+                    class="w-full"
+                    value={ctx.data.firstRouterLink}
+                    onValueChange={(v) => ctx.setData("firstRouterLink", v)}
+                    items={routeOptions()}
+                    renderValue={(v) => <>{routeMap().get(v) ?? v}</>}
+                    placeholder="선택 안함"
+                  >
+                    <Select.ItemTemplate>
+                      {(href: string) => <>{routeMap().get(href) ?? href}</>}
+                    </Select.ItemTemplate>
+                    <Select.Action
+                      onClick={() => ctx.setData("firstRouterLink", undefined as any)}
                     >
-                      <Select.ItemTemplate>
-                        {(href: string) => <>{routeMap().get(href) ?? href}</>}
-                      </Select.ItemTemplate>
-                      <Select.Action
-                        onClick={() => ctx.setData("firstRouterLink", undefined as any)}
-                      >
-                        <Icon icon={IconX} class={"text-danger-500"} />
-                      </Select.Action>
-                    </Select>
-                  </td>
-                </tr>
-              </tbody>
+                      <Icon icon={IconX} class={"text-danger-500"} />
+                    </Select.Action>
+                  </Select>
+                </FormTable.Item>
+              </FormTable.Row>
             </FormTable>
           </section>
         </div>

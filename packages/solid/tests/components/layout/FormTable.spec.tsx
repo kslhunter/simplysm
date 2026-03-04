@@ -7,11 +7,9 @@ describe("FormTable component", () => {
     it("displays children inside FormTable", () => {
       const { container } = render(() => (
         <FormTable>
-          <tbody>
-            <tr>
-              <td>Content</td>
-            </tr>
-          </tbody>
+          <FormTable.Row>
+            <FormTable.Item label="Label">Content</FormTable.Item>
+          </FormTable.Row>
         </FormTable>
       ));
       expect(container.querySelector("td")?.textContent).toBe("Content");
@@ -21,6 +19,19 @@ describe("FormTable component", () => {
       const { container } = render(() => <FormTable>Content</FormTable>);
       const table = container.firstChild as HTMLElement;
       expect(table.tagName).toBe("TABLE");
+    });
+
+    it("auto-generates tbody", () => {
+      const { container } = render(() => (
+        <FormTable>
+          <FormTable.Row>
+            <FormTable.Item label="Test">Value</FormTable.Item>
+          </FormTable.Row>
+        </FormTable>
+      ));
+      const tbody = container.querySelector("tbody");
+      expect(tbody).not.toBeNull();
+      expect(tbody?.querySelector("tr")).not.toBeNull();
     });
   });
 

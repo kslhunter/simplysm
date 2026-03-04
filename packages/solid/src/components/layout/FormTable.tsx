@@ -1,29 +1,65 @@
-import { type JSX, type ParentComponent, splitProps } from "solid-js";
+import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 
-const baseClass = clsx(
-  "border-separate border-spacing-0 border-0",
-  // All cells: vertical center, right/bottom padding
-  "[&_td]:align-middle [&_th]:align-middle",
-  "[&_td]:pr-1.5 [&_th]:pr-1.5",
-  "[&_td]:pb-1 [&_th]:pb-1",
-  // Last cell in row: remove right padding
-  "[&_tr>*:last-child]:pr-0",
-  // Cells in last row: remove bottom padding
-  "[&_tr:last-child>*]:pb-0",
-  // th: right align, content width, prevent wrapping
-  "[&_th]:w-0 [&_th]:whitespace-nowrap [&_th]:pl-1 [&_th]:text-right",
+export interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellElement> {
+  label?: JSX.Element;
+}
+
+const baseClass = clsx("border-separate border-spacing-0 border-0");
+
+// -- Sub-components --
+
+const rowClass = clsx(
+  "[&>*:last-child]:pr-0",
+  "last:[&>*]:pb-0",
 );
 
-export const FormTable: ParentComponent<FormTableProps> = (props) => {
+const FormTableRow: ParentComponent<JSX.HTMLAttributes<HTMLTableRowElement>> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class"]);
+  return <tr class={twMerge(rowClass, local.class)} {...rest}>{local.children}</tr>;
+};
+
+const thClass = clsx(
+  "align-middle pr-1.5 pb-1",
+  "w-0 whitespace-nowrap pl-1 text-right",
+);
+
+const tdClass = clsx("align-middle pr-1.5 pb-1");
+
+const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
+  const [local, rest] = splitProps(props, ["children", "class", "label", "colspan"]);
+
+  const effectiveColspan = () => {
+    const base = local.colspan != null ? Number(local.colspan) : undefined;
+    if (local.label != null) return base;
+    return (base ?? 1) + 1;
+  };
+
+  return (
+    <>
+      <Show when={local.label}>
+        <th class={thClass}>{local.label}</th>
+      </Show>
+      <td class={twMerge(tdClass, local.class)} colspan={effectiveColspan()} {...rest}>
+        {local.children}
+      </td>
+    </>
+  );
+};
+
+// -- Main component --
+
+const FormTableBase: ParentComponent<FormTableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   return (
     <table data-form-table class={twMerge(baseClass, local.class)} {...rest}>
-      {local.children}
+      <tbody>{local.children}</tbody>
     </table>
   );
 };
+
+export const FormTable = Object.assign(FormTableBase, { Row: FormTableRow, Item: FormTableItem });

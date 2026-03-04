@@ -124,64 +124,56 @@ export function EmployeeDetail(props: { itemId?: number }) {
             <section class={"flex flex-col gap-2"}>
               <h3 class="font-bold text-base-400">직원정보</h3>
               <FormTable>
-                <tbody>
-                  <tr>
-                    <th>이름</th>
-                    <td>
-                      <TextInput
-                        required
-                        disabled={!perms().edit}
-                        value={ctx.data.name ?? ""}
-                        onValueChange={(v) => ctx.setData("name", v)}
-                      />
-                    </td>
-                    <th>이메일</th>
-                    <td>
-                      <TextInput
-                        type="email"
-                        disabled={!perms().edit}
-                        value={ctx.data.email ?? ""}
-                        onValueChange={(v) => ctx.setData("email", v)}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>전화번호</th>
-                    <td>
-                      <TextInput
-                        disabled={!perms().edit}
-                        value={ctx.data.phoneNumber ?? ""}
-                        onValueChange={(v) => ctx.setData("phoneNumber", v)}
-                      />
-                    </td>
-                    <th>생년월일</th>
-                    <td>
-                      <DatePicker
-                        disabled={!perms().edit}
-                        value={ctx.data.birthDate}
-                        onValueChange={(v) => ctx.setData("birthDate", v)}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>입사일자</th>
-                    <td>
-                      <DatePicker
-                        disabled={!perms().edit}
-                        value={ctx.data.enteringDate}
-                        onValueChange={(v) => ctx.setData("enteringDate", v)}
-                      />
-                    </td>
-                    <th>퇴사일자</th>
-                    <td>
-                      <DatePicker
-                        disabled={!perms().edit}
-                        value={ctx.data.leavingDate}
-                        onValueChange={(v) => ctx.setData("leavingDate", v)}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
+                <FormTable.Row>
+                  <FormTable.Item label="이름">
+                    <TextInput
+                      required
+                      disabled={!perms().edit}
+                      value={ctx.data.name ?? ""}
+                      onValueChange={(v) => ctx.setData("name", v)}
+                    />
+                  </FormTable.Item>
+                  <FormTable.Item label="이메일">
+                    <TextInput
+                      type="email"
+                      disabled={!perms().edit}
+                      value={ctx.data.email ?? ""}
+                      onValueChange={(v) => ctx.setData("email", v)}
+                    />
+                  </FormTable.Item>
+                </FormTable.Row>
+                <FormTable.Row>
+                  <FormTable.Item label="전화번호">
+                    <TextInput
+                      disabled={!perms().edit}
+                      value={ctx.data.phoneNumber ?? ""}
+                      onValueChange={(v) => ctx.setData("phoneNumber", v)}
+                    />
+                  </FormTable.Item>
+                  <FormTable.Item label="생년월일">
+                    <DatePicker
+                      disabled={!perms().edit}
+                      value={ctx.data.birthDate}
+                      onValueChange={(v) => ctx.setData("birthDate", v)}
+                    />
+                  </FormTable.Item>
+                </FormTable.Row>
+                <FormTable.Row>
+                  <FormTable.Item label="입사일자">
+                    <DatePicker
+                      disabled={!perms().edit}
+                      value={ctx.data.enteringDate}
+                      onValueChange={(v) => ctx.setData("enteringDate", v)}
+                    />
+                  </FormTable.Item>
+                  <FormTable.Item label="퇴사일자">
+                    <DatePicker
+                      disabled={!perms().edit}
+                      value={ctx.data.leavingDate}
+                      onValueChange={(v) => ctx.setData("leavingDate", v)}
+                    />
+                  </FormTable.Item>
+                </FormTable.Row>
               </FormTable>
             </section>
 
@@ -189,19 +181,16 @@ export function EmployeeDetail(props: { itemId?: number }) {
               <section class={"flex flex-col gap-2"}>
                 <h3 class="font-bold text-base-400">인증정보</h3>
                 <FormTable>
-                  <tbody>
-                    <tr>
-                      <th>비밀번호</th>
-                      <td colSpan={3}>
-                        <TextInput
-                          type="password"
-                          disabled={!perms().authEdit}
-                          value={ctx.data.password ?? ""}
-                          onValueChange={(v) => ctx.setData("password", v)}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
+                  <FormTable.Row>
+                    <FormTable.Item label="비밀번호" colspan={3}>
+                      <TextInput
+                        type="password"
+                        disabled={!perms().authEdit}
+                        value={ctx.data.password ?? ""}
+                        onValueChange={(v) => ctx.setData("password", v)}
+                      />
+                    </FormTable.Item>
+                  </FormTable.Row>
                 </FormTable>
               </section>
             </Show>
@@ -210,19 +199,16 @@ export function EmployeeDetail(props: { itemId?: number }) {
               <section class={"flex flex-col gap-2"}>
                 <h3 class="font-bold text-base-400">개인정보</h3>
                 <FormTable>
-                  <tbody>
-                    <tr>
-                      <th>주민번호</th>
-                      <td colSpan={3}>
-                        <TextInput
-                          format="XXXXXX-XXXXXXX"
-                          disabled={!perms().personalEdit}
-                          value={ctx.data.socialSecurityNumber ?? ""}
-                          onValueChange={(v) => ctx.setData("socialSecurityNumber", v)}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
+                  <FormTable.Row>
+                    <FormTable.Item label="주민번호" colspan={3}>
+                      <TextInput
+                        format="XXXXXX-XXXXXXX"
+                        disabled={!perms().personalEdit}
+                        value={ctx.data.socialSecurityNumber ?? ""}
+                        onValueChange={(v) => ctx.setData("socialSecurityNumber", v)}
+                      />
+                    </FormTable.Item>
+                  </FormTable.Row>
                 </FormTable>
               </section>
             </Show>
@@ -231,26 +217,22 @@ export function EmployeeDetail(props: { itemId?: number }) {
               <section class={"flex flex-col gap-2"}>
                 <h3 class="font-bold text-base-400">급여정보</h3>
                 <FormTable>
-                  <tbody>
-                    <tr>
-                      <th>계좌은행</th>
-                      <td>
-                        <TextInput
-                          disabled={!perms().payrollEdit}
-                          value={ctx.data.payrollAccountBank ?? ""}
-                          onValueChange={(v) => ctx.setData("payrollAccountBank", v)}
-                        />
-                      </td>
-                      <th>계좌번호</th>
-                      <td>
-                        <TextInput
-                          disabled={!perms().payrollEdit}
-                          value={ctx.data.payrollAccountNumber ?? ""}
-                          onValueChange={(v) => ctx.setData("payrollAccountNumber", v)}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
+                  <FormTable.Row>
+                    <FormTable.Item label="계좌은행">
+                      <TextInput
+                        disabled={!perms().payrollEdit}
+                        value={ctx.data.payrollAccountBank ?? ""}
+                        onValueChange={(v) => ctx.setData("payrollAccountBank", v)}
+                      />
+                    </FormTable.Item>
+                    <FormTable.Item label="계좌번호">
+                      <TextInput
+                        disabled={!perms().payrollEdit}
+                        value={ctx.data.payrollAccountNumber ?? ""}
+                        onValueChange={(v) => ctx.setData("payrollAccountNumber", v)}
+                      />
+                    </FormTable.Item>
+                  </FormTable.Row>
                 </FormTable>
               </section>
             </Show>

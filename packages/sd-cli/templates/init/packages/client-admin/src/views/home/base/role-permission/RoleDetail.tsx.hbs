@@ -133,19 +133,16 @@ export function RoleDetail(props: { itemId?: number }) {
       {(ctx) => (
         <div class="p-2">
           <FormTable>
-            <tbody>
-            <tr>
-              <th>이름</th>
-              <td>
+            <FormTable.Row>
+              <FormTable.Item label="이름">
                 <TextInput
                   required
                   disabled={!perms().edit}
                   value={ctx.data.name ?? ""}
                   onValueChange={(v) => ctx.setData("name", v)}
                 />
-              </td>
-            </tr>
-            </tbody>
+              </FormTable.Item>
+            </FormTable.Row>
           </FormTable>
         </div>
       )}
