@@ -1,5 +1,4 @@
 import {
-  createContext,
   createEffect,
   createMemo,
   createSignal,
@@ -10,8 +9,7 @@ import {
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlot } from "../../../helpers/createSlot";
 import {
   type FieldSize,
   fieldInputClass,
@@ -30,13 +28,8 @@ const numberInputClass = clsx(
   "[&::-webkit-inner-spin-button]:appearance-none",
 );
 
-interface NumberInputSlotsContextValue {
-  setPrefix: (content: SlotAccessor) => void;
-}
-
-const NumberInputSlotsContext = createContext<NumberInputSlotsContextValue>();
-
-const NumberInputPrefix = createSlotComponent(NumberInputSlotsContext, (ctx) => ctx.setPrefix);
+const [NumberInputPrefixSlot, createNumberInputPrefixAccessor] = createSlot<{ children: JSX.Element }>();
+export const NumberInputPrefix = NumberInputPrefixSlot;
 
 export interface NumberInputProps {
   /** Input value */
@@ -229,7 +222,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  const [prefix, setPrefix] = createSlotSignal();
+  const [prefix, PrefixProvider] = createNumberInputPrefixAccessor();
   const prefixEl = () => prefix() !== undefined;
 
   // Sync input string when external value changes
@@ -310,7 +303,7 @@ export const NumberInput: NumberInputComponent = (props) => {
   });
 
   return (
-    <NumberInputSlotsContext.Provider value={{ setPrefix }}>
+    <PrefixProvider>
       {local.children}
       <Invalid
         message={errorMsg()}
@@ -332,7 +325,7 @@ export const NumberInput: NumberInputComponent = (props) => {
                   title={local.title}
                 >
                   <Show when={prefix()}>
-                    <span class="shrink-0">{prefix()!()}</span>
+                    <span class="shrink-0">{prefix()!.children}</span>
                   </Show>
                   <PlaceholderFallback
                     value={formatNumber(value(), local.comma ?? true, local.minDigits)}
@@ -343,7 +336,7 @@ export const NumberInput: NumberInputComponent = (props) => {
             >
               <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
                 <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!()}</span>
+                  <span class="shrink-0">{prefix()!.children}</span>
                 </Show>
                 <input
                   type="text"
@@ -375,7 +368,7 @@ export const NumberInput: NumberInputComponent = (props) => {
               title={local.title}
             >
               <Show when={prefix()}>
-                <span class="shrink-0">{prefix()!()}</span>
+                <span class="shrink-0">{prefix()!.children}</span>
               </Show>
               <PlaceholderFallback
                 value={formatNumber(value(), local.comma ?? true, local.minDigits)}
@@ -386,7 +379,7 @@ export const NumberInput: NumberInputComponent = (props) => {
             <Show when={isEditable()}>
               <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
                 <Show when={prefix()}>
-                  <span class="shrink-0">{prefix()!()}</span>
+                  <span class="shrink-0">{prefix()!.children}</span>
                 </Show>
                 <input
                   type="text"
@@ -405,7 +398,7 @@ export const NumberInput: NumberInputComponent = (props) => {
           </div>
         </Show>
       </Invalid>
-    </NumberInputSlotsContext.Provider>
+    </PrefixProvider>
   );
 };
 

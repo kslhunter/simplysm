@@ -138,7 +138,6 @@ export * from "./hooks/createControllableSignal";
 export * from "./hooks/createControllableStore";
 export * from "./hooks/createIMEHandler";
 export * from "./hooks/createMountTransition";
-export * from "./hooks/createSlotSignal";
 export * from "./hooks/useRouterLink";
 
 //#endregion
@@ -162,7 +161,8 @@ export * from "./directives/ripple";
 
 export * from "./helpers/mergeStyles";
 export * from "./helpers/createAppStructure";
-export * from "./helpers/createSlotComponent";
+export * from "./helpers/createSlot";
+export * from "./helpers/createSlots";
 
 //#endregion
 

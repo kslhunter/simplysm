@@ -1,18 +1,6 @@
 import type { JSX } from "solid-js";
-import type { CrudSheetHeaderDef } from "./types";
-import { createDefComponent } from "../../../helpers/createDefComponent";
+import { createSlot } from "../../../helpers/createSlot";
 
-export function isCrudSheetHeaderDef(value: unknown): value is CrudSheetHeaderDef {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>)["__type"] === "crud-sheet-header"
-  );
-}
+const [CrudSheetHeader, createCrudSheetHeaderSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
-export const CrudSheetHeader = createDefComponent<CrudSheetHeaderDef>(
-  (props: { children: JSX.Element }) => ({
-    __type: "crud-sheet-header",
-    children: props.children,
-  }),
-);
+export { CrudSheetHeader, createCrudSheetHeaderSlotAccessor };

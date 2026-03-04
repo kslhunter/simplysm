@@ -1,7 +1,5 @@
 import {
-  children,
   createEffect,
-  createMemo,
   createSignal,
   createUniqueId,
   For,
@@ -19,6 +17,7 @@ import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../../data/sheet/types";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
+import { normalizeHeader } from "../../data/sheet/sheetUtils";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nContext";
@@ -45,17 +44,14 @@ import {
   IconUpload,
 } from "@tabler/icons-solidjs";
 import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
-import { CrudSheetColumn, isCrudSheetColumnDef } from "./CrudSheetColumn";
-import { CrudSheetFilter, isCrudSheetFilterDef } from "./CrudSheetFilter";
-import { CrudSheetTools, isCrudSheetToolsDef } from "./CrudSheetTools";
-import { CrudSheetHeader, isCrudSheetHeaderDef } from "./CrudSheetHeader";
+import { CrudSheetColumn, createCrudSheetColumnSlotsAccessor } from "./CrudSheetColumn";
+import { CrudSheetFilter, createCrudSheetFilterSlotAccessor } from "./CrudSheetFilter";
+import { CrudSheetTools, createCrudSheetToolsSlotAccessor } from "./CrudSheetTools";
+import { CrudSheetHeader, createCrudSheetHeaderSlotAccessor } from "./CrudSheetHeader";
 import type {
-  CrudSheetColumnDef,
+  CrudSheetCellContext,
   CrudSheetContext,
-  CrudSheetFilterDef,
-  CrudSheetHeaderDef,
   CrudSheetProps,
-  CrudSheetToolsDef,
   SearchResult,
 } from "./types";
 
@@ -103,17 +99,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const isSelectMode = () => local.selectMode != null;
   const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
 
-  // -- Children Resolution --
-  const resolved = children(() => local.children);
-  const defs = createMemo(() => {
-    const arr = resolved.toArray();
-    return {
-      filter: arr.find(isCrudSheetFilterDef) as CrudSheetFilterDef<TFilter> | undefined,
-      columns: arr.filter(isCrudSheetColumnDef) as unknown as CrudSheetColumnDef<TItem>[],
-      tools: arr.find(isCrudSheetToolsDef) as CrudSheetToolsDef<TItem> | undefined,
-      header: arr.find(isCrudSheetHeaderDef) as CrudSheetHeaderDef | undefined,
-    };
-  });
+  // -- Slot Accessors --
+  const [headerSlot, HeaderProvider] = createCrudSheetHeaderSlotAccessor();
+  const [filterSlot, FilterProvider] = createCrudSheetFilterSlotAccessor();
+  const [toolsSlot, ToolsProvider] = createCrudSheetToolsSlotAccessor();
+  const [columnSlots, ColumnsProvider] = createCrudSheetColumnSlotsAccessor();
 
   // -- State --
   const [items, setItems] = createControllableStore<TItem[]>({
@@ -472,6 +462,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   return (
     <>
+      <ColumnsProvider>
+        <HeaderProvider>
+          <FilterProvider>
+            <ToolsProvider>{local.children}</ToolsProvider>
+          </FilterProvider>
+        </HeaderProvider>
+      </ColumnsProvider>
+
       {/* Dialog mode: Dialog.Action (refresh button in header) */}
       <Show when={isInDialog}>
         <Dialog.Action>
@@ -511,11 +509,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         </Show>
 
         {/* Header (optional) */}
-        <Show when={defs().header}>{(headerDef) => headerDef().children}</Show>
+        <Show when={headerSlot()}>{(slot) => slot().children}</Show>
 
         {/* Filter */}
-        <Show when={defs().filter}>
-          {(filterDef) => (
+        <Show when={filterSlot()}>
+          {(slot) => (
             <form class="p-2" onSubmit={handleFilterSubmit}>
               <FormGroup inline>
                 <FormGroup.Item>
@@ -524,7 +522,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     {i18n.t("crudSheet.search")}
                   </Button>
                 </FormGroup.Item>
-                {filterDef().children(filter, setFilter)}
+                {slot().children(filter, setFilter)}
               </FormGroup>
             </form>
           )}
@@ -604,7 +602,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             {/* Custom tools */}
-            <Show when={defs().tools}>{(toolsDef) => toolsDef().children(ctx)}</Show>
+            <Show when={toolsSlot()}>{(slot) => slot().children(ctx)}</Show>
           </div>
         </Show>
 
@@ -661,27 +659,27 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             {/* User-defined columns -- map CrudSheetColumn to DataSheetColumn */}
-            <For each={defs().columns}>
+            <For each={columnSlots()}>
               {(col) => (
                 <DataSheetColumn<TItem>
                   key={col.key}
-                  header={col.header}
+                  header={normalizeHeader(col.header)}
                   headerContent={col.headerContent}
                   headerStyle={col.headerStyle}
                   summary={col.summary}
                   tooltip={col.tooltip}
-                  fixed={col.fixed}
-                  hidden={col.hidden}
-                  collapse={col.collapse}
+                  fixed={col.fixed ?? false}
+                  hidden={col.hidden ?? false}
+                  collapse={col.collapse ?? false}
                   width={col.width}
                   class={col.class}
-                  sortable={col.sortable}
-                  resizable={col.resizable}
+                  sortable={col.sortable ?? true}
+                  resizable={col.resizable ?? true}
                 >
                   {(dsCtx) => {
-                    const crudCtx = {
+                    const crudCtx: CrudSheetCellContext<any> = {
                       ...dsCtx,
-                      setItem: <TKey extends keyof TItem>(key: TKey, value: TItem[TKey]) => {
+                      setItem: (key, value) => {
                         setItems(dsCtx.index as any, key as any, value as any);
                       },
                     };
@@ -689,7 +687,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     // dialogEdit editable column -- wrap with edit link
                     if (
                       local.dialogEdit &&
-                      col.editTrigger &&
+                      (col.editTrigger ?? false) &&
                       canEdit() &&
                       (local.itemEditable?.(dsCtx.item) ?? true)
                     ) {
@@ -705,12 +703,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                           <div class={"p-1"}>
                             <Icon icon={IconExternalLink} />
                           </div>
-                          <div class={"flex-1"}>{col.cell(crudCtx)}</div>
+                          <div class={"flex-1"}>{col.children(crudCtx)}</div>
                         </Link>
                       );
                     }
 
-                    return col.cell(crudCtx);
+                    return col.children(crudCtx);
                   }}
                 </DataSheetColumn>
               )}

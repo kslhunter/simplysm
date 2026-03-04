@@ -1,5 +1,4 @@
 import {
-  children as resolveChildren,
   type Component,
   createMemo,
   For,
@@ -18,55 +17,24 @@ import {
   type DialogPropsField,
   type SelectDialogBaseProps,
 } from "../data-select-button/DataSelectButton";
-// -- Slot detection --
-const ITEM_TEMPLATE_BRAND = Symbol("SharedDataSelect.ItemTemplate");
-const ACTION_BRAND = Symbol("SharedDataSelect.Action");
+import { createSlot } from "../../../helpers/createSlot";
+import { createSlots } from "../../../helpers/createSlots";
 
-interface ItemTemplateDef {
-  __brand: typeof ITEM_TEMPLATE_BRAND;
+// -- Slot definitions --
+interface ItemTemplateProps {
   children: (item: any, index: number, depth: number) => JSX.Element;
 }
 
-interface ActionDef {
-  __brand: typeof ACTION_BRAND;
-  children: JSX.Element;
-  onClick?: (e: MouseEvent) => void;
-}
-
-function isItemTemplateDef(v: unknown): v is ItemTemplateDef {
-  return (
-    v != null &&
-    typeof v === "object" &&
-    "__brand" in v &&
-    (v as any).__brand === ITEM_TEMPLATE_BRAND
-  );
-}
-
-function isActionDef(v: unknown): v is ActionDef {
-  return (
-    v != null && typeof v === "object" && "__brand" in v && (v as any).__brand === ACTION_BRAND
-  );
-}
-
-// -- Compound components --
-const ItemTemplate: Component<{
-  children: (item: any, index: number, depth: number) => JSX.Element;
-}> = (props) => {
-  return (() => ({
-    __brand: ITEM_TEMPLATE_BRAND,
-    children: props.children,
-  })) as unknown as JSX.Element;
-};
-
-const Action: Component<{
+interface ActionProps {
   children?: JSX.Element;
   onClick?: (e: MouseEvent) => void;
-}> = (props) => {
-  return (() => ({
-    __brand: ACTION_BRAND,
-    children: props.children,
-    onClick: props.onClick,
-  })) as unknown as JSX.Element;
+}
+
+const [ItemTemplate, createItemTemplateSlotAccessor] = createSlot<ItemTemplateProps>();
+const [ActionSlot, createActionSlotsAccessor] = createSlots<ActionProps>();
+
+const Action: Component<ActionProps> = (props) => {
+  return ActionSlot(props);
 };
 
 /** SharedDataSelect Props */
@@ -132,15 +100,9 @@ const SharedDataSelectBase = <
   const i18n = useI18n();
   const dialog = useDialog();
 
-  // Resolve compound children
-  const resolved = resolveChildren(() => local.children);
-  const defs = createMemo(() => {
-    const arr = resolved.toArray();
-    return {
-      itemTemplate: arr.find(isItemTemplateDef) as unknown as ItemTemplateDef | undefined,
-      actions: arr.filter(isActionDef) as unknown as ActionDef[],
-    };
-  });
+  // Slot accessors
+  const [itemTemplateSlot, ItemTemplateProvider] = createItemTemplateSlotAccessor();
+  const [actionSlots, ActionsProvider] = createActionSlotsAccessor();
 
   // Items with filterFn applied
   const items = createMemo(() => {
@@ -232,22 +194,27 @@ const SharedDataSelectBase = <
   }) as unknown as SelectProps;
 
   return (
-    <Select {...selectProps}>
-      {defs().itemTemplate && (
-        <Select.ItemTemplate>{defs().itemTemplate!.children}</Select.ItemTemplate>
-      )}
-      {local.dialog && (
-        <Select.Action
-          onClick={() => void handleOpenDialog()}
-          aria-label={i18n.t("sharedDataSelect.search")}
-        >
-          <Icon icon={IconSearch} />
-        </Select.Action>
-      )}
-      <For each={defs().actions}>
-        {(action) => <Select.Action onClick={action.onClick}>{action.children}</Select.Action>}
-      </For>
-    </Select>
+    <ItemTemplateProvider>
+      <ActionsProvider>
+        {local.children}
+        <Select {...selectProps}>
+          {itemTemplateSlot() && (
+            <Select.ItemTemplate>{itemTemplateSlot()!.children}</Select.ItemTemplate>
+          )}
+          {local.dialog && (
+            <Select.Action
+              onClick={() => void handleOpenDialog()}
+              aria-label={i18n.t("sharedDataSelect.search")}
+            >
+              <Icon icon={IconSearch} />
+            </Select.Action>
+          )}
+          <For each={actionSlots()}>
+            {(action) => <Select.Action onClick={action.onClick}>{action.children}</Select.Action>}
+          </For>
+        </Select>
+      </ActionsProvider>
+    </ItemTemplateProvider>
   );
 };
 

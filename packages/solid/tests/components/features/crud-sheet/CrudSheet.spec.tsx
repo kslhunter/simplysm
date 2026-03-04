@@ -1,22 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import {
-  CrudSheetColumn,
-  isCrudSheetColumnDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetColumn";
-import {
-  CrudSheetFilter,
-  isCrudSheetFilterDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetFilter";
-import {
-  CrudSheetTools,
-  isCrudSheetToolsDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetTools";
-import {
-  CrudSheetHeader,
-  isCrudSheetHeaderDef,
-} from "../../../../src/components/features/crud-sheet/CrudSheetHeader";
 import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
@@ -49,43 +33,6 @@ function DialogWrapper(props: { children: JSX.Element }) {
     </ConfigContext.Provider>
   );
 }
-
-describe("CrudSheet types", () => {
-  it("CrudSheetColumn: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetColumn<TestItem>({
-      key: "name",
-      header: "이름",
-      children: (ctx) => <div>{ctx.item.name}</div>,
-    });
-
-    expect(isCrudSheetColumnDef(def)).toBe(true);
-    expect((def as any).key).toBe("name");
-  });
-
-  it("CrudSheetFilter: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetFilter({
-      children: (_filter, _setFilter) => <div>filter</div>,
-    });
-
-    expect(isCrudSheetFilterDef(def)).toBe(true);
-  });
-
-  it("CrudSheetTools: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetTools({
-      children: (_ctx) => <div>tools</div>,
-    });
-
-    expect(isCrudSheetToolsDef(def)).toBe(true);
-  });
-
-  it("CrudSheetHeader: returns plain object and is identifiable by type guard", () => {
-    const def = CrudSheetHeader({
-      children: <div>header</div>,
-    });
-
-    expect(isCrudSheetHeaderDef(def)).toBe(true);
-  });
-});
 
 describe("CrudSheet rendering", () => {
   beforeEach(() => {

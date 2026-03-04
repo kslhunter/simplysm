@@ -1,18 +1,6 @@
 import type { JSX } from "solid-js";
-import type { CrudDetailBeforeDef } from "./types";
-import { createDefComponent } from "../../../helpers/createDefComponent";
+import { createSlot } from "../../../helpers/createSlot";
 
-export function isCrudDetailBeforeDef(value: unknown): value is CrudDetailBeforeDef {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>)["__type"] === "crud-detail-before"
-  );
-}
+const [CrudDetailBefore, createCrudDetailBeforeSlotAccessor] = createSlot<{ children: JSX.Element }>();
 
-export const CrudDetailBefore = createDefComponent<CrudDetailBeforeDef>(
-  (props: { children: JSX.Element }) => ({
-    __type: "crud-detail-before",
-    children: props.children,
-  }),
-);
+export { CrudDetailBefore, createCrudDetailBeforeSlotAccessor };

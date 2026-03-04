@@ -43,19 +43,3 @@ export interface CrudDetailProps<TData extends object> {
   class?: string;
 }
 
-// ── Sub-component Defs ──
-
-export interface CrudDetailToolsDef {
-  __type: "crud-detail-tools";
-  children: JSX.Element;
-}
-
-export interface CrudDetailBeforeDef {
-  __type: "crud-detail-before";
-  children: JSX.Element;
-}
-
-export interface CrudDetailAfterDef {
-  __type: "crud-detail-after";
-  children: JSX.Element;
-}

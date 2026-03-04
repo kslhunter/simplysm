@@ -25,8 +25,7 @@ import { bg, border, text } from "../../../styles/base.styles";
 import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { themeTokens } from "../../../styles/theme.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
-import { createSlotComponent } from "../../../helpers/createSlotComponent";
+import { createSlot } from "../../../helpers/createSlot";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { TextInput } from "../field/TextInput";
@@ -41,6 +40,13 @@ import {
 } from "../../data/list/ListItem.styles";
 
 void ripple;
+
+//#region Module-level slots
+
+const [SelectHeader, createHeaderSlotAccessor] = createSlot<{ children: JSX.Element }>();
+const [SelectItemChildren, createItemChildrenSlotAccessor] = createSlot<{ children: JSX.Element }>();
+
+//#endregion
 
 //#region SelectContext
 
@@ -57,12 +63,6 @@ export interface SelectContextValue<TValue = unknown> {
   /** Close dropdown */
   closeDropdown: () => void;
 
-  /** Register header slot */
-  setHeader: (content: SlotAccessor) => void;
-
-  /** Register action slot */
-  setAction: (content: SlotAccessor) => void;
-
   /** Register item template */
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
@@ -78,14 +78,17 @@ function useSelectContext<TValue = unknown>(): SelectContextValue<TValue> {
   return context as SelectContextValue<TValue>;
 }
 
-const SelectHeader = createSlotComponent(SelectCtx, (ctx) => ctx.setHeader);
+//#endregion
+
+//#region SelectAction
 
 interface SelectActionProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
   children?: JSX.Element;
 }
 
+const [SelectActionSlot, createActionSlotAccessor] = createSlot<{ children: JSX.Element }>();
+
 const SelectAction = (props: SelectActionProps) => {
-  const ctx = useSelectContext();
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   const handleClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> = (e) => {
@@ -96,21 +99,19 @@ const SelectAction = (props: SelectActionProps) => {
     }
   };
 
-  ctx.setAction(() => (
-    <button
-      {...rest}
-      type="button"
-      onClick={handleClick}
-      class={twMerge("p-2", themeTokens.base.hoverBg, local.class)}
-      data-select-action
-    >
-      {local.children}
-    </button>
-  ));
-
-  onCleanup(() => ctx.setAction(undefined));
-
-  return null;
+  return (
+    <SelectActionSlot>
+      <button
+        {...rest}
+        type="button"
+        onClick={handleClick}
+        class={twMerge("p-2", themeTokens.base.hoverBg, local.class)}
+        data-select-action
+      >
+        {local.children}
+      </button>
+    </SelectActionSlot>
+  );
 };
 
 //#endregion
@@ -131,14 +132,6 @@ const SelectItemTemplate = <TArgs extends unknown[]>(props: {
 };
 
 //#region SelectItem
-
-interface SelectItemSlotsContextValue {
-  setChildren: (content: SlotAccessor) => void;
-}
-
-const SelectItemSlotsContext = createContext<SelectItemSlotsContextValue>();
-
-const SelectItemChildren = createSlotComponent(SelectItemSlotsContext, (ctx) => ctx.setChildren);
 
 export interface SelectItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -178,7 +171,7 @@ const SelectItem: SelectItemComponent = <T,>(
 
   const context = useSelectContext<T>();
 
-  const [childrenSlot, setChildrenSlot] = createSlotSignal();
+  const [childrenSlot, ItemChildrenProvider] = createItemChildrenSlotAccessor();
   const hasChildren = () => childrenSlot() !== undefined;
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;
@@ -205,7 +198,7 @@ const SelectItem: SelectItemComponent = <T,>(
   const getCheckIconClass = () => getListItemSelectedIconClass(isSelected());
 
   return (
-    <SelectItemSlotsContext.Provider value={{ setChildren: setChildrenSlot }}>
+    <ItemChildrenProvider>
       <button
         {...rest}
         type="button"
@@ -229,12 +222,12 @@ const SelectItem: SelectItemComponent = <T,>(
           <div class="flex">
             <div class={listItemIndentGuideClass} />
             <List inset class="flex-1">
-              {childrenSlot()!()}
+              {childrenSlot()!.children}
             </List>
           </div>
         </Collapse>
       </Show>
-    </SelectItemSlotsContext.Provider>
+    </ItemChildrenProvider>
   );
 };
 
@@ -440,9 +433,9 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     setOpen(false);
   };
 
-  // Slot signals
-  const [header, setHeader] = createSlotSignal();
-  const [action, setAction] = createSlotSignal();
+  // Slot accessors
+  const [header, HeaderProvider] = createHeaderSlotAccessor();
+  const [action, ActionProvider] = createActionSlotAccessor();
   const [itemTemplate, _setItemTemplate] = createSignal<
     ((...args: unknown[]) => JSX.Element) | undefined
   >();
@@ -455,8 +448,6 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     isSelected,
     toggleValue,
     closeDropdown,
-    setHeader,
-    setAction,
     setItemTemplate,
   };
 
@@ -655,7 +646,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
             </div>
           </Dropdown.Trigger>
           <Dropdown.Content>
-            <Show when={header()}>{header()!()}</Show>
+            <Show when={header()}>{header()!.children}</Show>
             {/* Search input */}
             <Show when={local.getSearchText && local.items}>
               <TextInput
@@ -707,7 +698,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
               "[&>[data-select-action]+[data-select-action]]:-ml-px",
             )}
           >
-            {action()!()}
+            {action()!.children}
           </div>
         </Show>
       </div>
@@ -717,7 +708,11 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
       <SelectCtx.Provider value={contextValue as SelectContextValue}>
-        <SelectInnerRender>{local.children}</SelectInnerRender>
+        <HeaderProvider>
+          <ActionProvider>
+            <SelectInnerRender>{local.children}</SelectInnerRender>
+          </ActionProvider>
+        </HeaderProvider>
       </SelectCtx.Provider>
     </Invalid>
   );
