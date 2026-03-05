@@ -1,7 +1,7 @@
 import { createEffect } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type { SetStoreFunction } from "solid-js/store";
-import { objClone } from "@simplysm/core-common";
+import { objClone, objEqual } from "@simplysm/core-common";
 
 /**
  * Store hook that supports the controlled/uncontrolled pattern.
@@ -39,10 +39,9 @@ export function createControllableStore<TValue extends object>(options: {
 
   // Wrap setter with a function wrapper to add onChange notification
   const wrappedSet = ((...args: any[]) => {
-    const before = JSON.stringify(unwrap(store));
+    const before = objClone(unwrap(store));
     (rawSet as any)(...args);
-    const after = JSON.stringify(unwrap(store));
-    if (before !== after) {
+    if (!objEqual(before, unwrap(store))) {
       options.onChange()?.(objClone(unwrap(store)));
     }
   }) as SetStoreFunction<TValue>;
