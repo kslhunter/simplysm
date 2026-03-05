@@ -202,14 +202,14 @@ describe("FK switch", () => {
 
     const def = db.getSwitchFkQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Employee" },
-      "off",
+      false,
     );
 
     it("Verify QueryDef", () => {
       expect(def).toEqual({
         type: "switchFk",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
-        switch: "off",
+        enabled: false,
       });
     });
 

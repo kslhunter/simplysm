@@ -7,19 +7,19 @@ import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./conditional.expected";
 
 describe("Expr - Conditional functions", () => {
-  describe("ifNull - null replacement", () => {
+  describe("coalesce - null replacement", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        nameOrDefault: expr.ifNull(item.name, "Unknown"),
+        nameOrDefault: expr.coalesce(item.name, "Unknown"),
       }))
       .getSelectQueryDef();
 
     it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         nameOrDefault: {
-          type: "ifNull",
+          type: "coalesce",
           args: [
             { type: "column", path: ["T1", "name"] },
             { type: "value", value: "Unknown" },
@@ -30,7 +30,7 @@ describe("Expr - Conditional functions", () => {
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.ifNull[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.coalesce[dialect]);
     });
   });
 
@@ -219,19 +219,19 @@ describe("Expr - Conditional functions", () => {
     });
   });
 
-  describe("ifNull - create COALESCE with 3+ arguments", () => {
+  describe("coalesce - create COALESCE with 3+ arguments", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        firstValid: expr.ifNull(item.email, item.name, "Anonymous"),
+        firstValid: expr.coalesce(item.email, item.name, "Anonymous"),
       }))
       .getSelectQueryDef();
 
     it("Verify QueryDef", () => {
       expect(def.select).toMatchObject({
         firstValid: {
-          type: "ifNull",
+          type: "coalesce",
           args: [
             { type: "column", path: ["T1", "email"] },
             { type: "column", path: ["T1", "name"] },
@@ -243,7 +243,7 @@ describe("Expr - Conditional functions", () => {
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.ifNullMultiple[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.coalesceMultiple[dialect]);
     });
   });
 });

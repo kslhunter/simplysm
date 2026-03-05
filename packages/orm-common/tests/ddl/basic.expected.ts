@@ -212,19 +212,19 @@ export const renameColumn: ExpectedSql = {
 
 //#region ========== Primary Key ==========
 
-export const dropPk: ExpectedSql = {
+export const dropPrimaryKey: ExpectedSql = {
   mysql: mysql`ALTER TABLE \`TestDb\`.\`User\` DROP PRIMARY KEY`,
   mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[User] DROP CONSTRAINT [PK_User]`,
   postgresql: pgsql`ALTER TABLE "TestSchema"."User" DROP CONSTRAINT "PK_User"`,
 };
 
-export const addPk: ExpectedSql = {
+export const addPrimaryKey: ExpectedSql = {
   mysql: mysql`ALTER TABLE \`TestDb\`.\`User\` ADD PRIMARY KEY (\`id\`)`,
   mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[User] ADD CONSTRAINT [PK_User] PRIMARY KEY ([id])`,
   postgresql: pgsql`ALTER TABLE "TestSchema"."User" ADD CONSTRAINT "PK_User" PRIMARY KEY ("id")`,
 };
 
-export const addPkComposite: ExpectedSql = {
+export const addPrimaryKeyComposite: ExpectedSql = {
   mysql: mysql`ALTER TABLE \`TestDb\`.\`UserRole\` ADD PRIMARY KEY (\`userId\`, \`roleId\`)`,
   mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[UserRole] ADD CONSTRAINT [PK_UserRole] PRIMARY KEY ([userId], [roleId])`,
   postgresql: pgsql`ALTER TABLE "TestSchema"."UserRole" ADD CONSTRAINT "PK_UserRole" PRIMARY KEY ("userId", "roleId")`,
@@ -234,7 +234,7 @@ export const addPkComposite: ExpectedSql = {
 
 //#region ========== Foreign Key / Index ==========
 
-export const addFk: ExpectedSql = {
+export const addForeignKey: ExpectedSql = {
   mysql: mysql`
 ALTER TABLE \`TestDb\`.\`Post\` ADD CONSTRAINT \`FK_Post_user\`
 FOREIGN KEY (\`userId\`) REFERENCES \`TestDb\`.\`User\` (\`id\`)
@@ -251,25 +251,25 @@ CREATE INDEX "IDX_Post_Post_user" ON "TestSchema"."Post" ("userId");
   `,
 };
 
-export const dropFk: ExpectedSql = {
+export const dropForeignKey: ExpectedSql = {
   mysql: mysql`ALTER TABLE \`TestDb\`.\`Post\` DROP FOREIGN KEY \`FK_Post_user\``,
   mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[Post] DROP CONSTRAINT [FK_Post_user]`,
   postgresql: pgsql`ALTER TABLE "TestSchema"."Post" DROP CONSTRAINT "FK_Post_user"`,
 };
 
-export const addIdx: ExpectedSql = {
+export const addIndex: ExpectedSql = {
   mysql: mysql`CREATE UNIQUE INDEX \`IDX_User_email\` ON \`TestDb\`.\`User\` (\`email\` ASC)`,
   mssql: tsql`CREATE UNIQUE INDEX [IDX_User_email] ON [TestDb].[TestSchema].[User] ([email] ASC)`,
   postgresql: pgsql`CREATE UNIQUE INDEX "IDX_User_email" ON "TestSchema"."User" ("email" ASC)`,
 };
 
-export const dropIdx: ExpectedSql = {
+export const dropIndex: ExpectedSql = {
   mysql: mysql`DROP INDEX \`IDX_User_email\` ON \`TestDb\`.\`User\``,
   mssql: tsql`DROP INDEX [IDX_User_email] ON [TestDb].[TestSchema].[User]`,
   postgresql: pgsql`DROP INDEX "TestSchema"."IDX_User_email"`,
 };
 
-export const dropIdxComposite: ExpectedSql = {
+export const dropIndexComposite: ExpectedSql = {
   mysql: mysql`DROP INDEX \`IDX_User_name_email\` ON \`TestDb\`.\`User\``,
   mssql: tsql`DROP INDEX [IDX_User_name_email] ON [TestDb].[TestSchema].[User]`,
   postgresql: pgsql`DROP INDEX "TestSchema"."IDX_User_name_email"`,

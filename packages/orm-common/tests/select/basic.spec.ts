@@ -119,12 +119,12 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("ifNull (2 arguments)", () => {
+  describe("coalesce (2 arguments)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        email: expr.ifNull(item.email, "N/A"),
+        email: expr.coalesce(item.email, "N/A"),
       }))
       .getSelectQueryDef();
 
@@ -135,7 +135,7 @@ describe("SELECT - Basic", () => {
         from: { database: "TestDb", schema: "TestSchema", name: "User" },
         select: {
           email: {
-            type: "ifNull",
+            type: "coalesce",
             args: [
               { type: "column", path: ["T1", "email"] },
               { type: "value", value: "N/A" },
@@ -151,12 +151,12 @@ describe("SELECT - Basic", () => {
     });
   });
 
-  describe("ifNull (3 arguments, COALESCE)", () => {
+  describe("coalesce (3 arguments, COALESCE)", () => {
     const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
-        contact: expr.ifNull(item.email, item.name, "N/A"),
+        contact: expr.coalesce(item.email, item.name, "N/A"),
       }))
       .getSelectQueryDef();
 

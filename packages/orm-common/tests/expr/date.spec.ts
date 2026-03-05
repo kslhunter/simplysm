@@ -121,7 +121,7 @@ describe("Expr - Date/Time functions", () => {
       expect(def.select).toMatchObject({
         daysDiff: {
           type: "dateDiff",
-          separator: "day",
+          unit: "day",
           from: { type: "column", path: ["T1", "createdAt"] },
           to: { type: "value", value: targetDate },
         },
@@ -180,7 +180,7 @@ describe("Expr - Date/Time functions", () => {
       expect(def.select).toMatchObject({
         hoursDiff: {
           type: "dateDiff",
-          separator: "hour",
+          unit: "hour",
           from: { type: "column", path: ["T1", "createdAt"] },
           to: { type: "value", value: targetDate },
         },
@@ -207,7 +207,7 @@ describe("Expr - Date/Time functions", () => {
       expect(def.select).toMatchObject({
         minutesDiff: {
           type: "dateDiff",
-          separator: "minute",
+          unit: "minute",
           from: { type: "column", path: ["T1", "createdAt"] },
           to: { type: "value", value: targetDate },
         },
@@ -234,7 +234,7 @@ describe("Expr - Date/Time functions", () => {
       expect(def.select).toMatchObject({
         secondsDiff: {
           type: "dateDiff",
-          separator: "second",
+          unit: "second",
           from: { type: "column", path: ["T1", "createdAt"] },
           to: { type: "value", value: targetDate },
         },
@@ -260,7 +260,7 @@ describe("Expr - Date/Time functions", () => {
       expect(def.select).toMatchObject({
         nextMonth: {
           type: "dateAdd",
-          separator: "month",
+          unit: "month",
           source: { type: "column", path: ["T1", "createdAt"] },
           value: { type: "value", value: 1 },
         },

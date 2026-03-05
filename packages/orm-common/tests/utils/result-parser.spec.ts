@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bytesFromHex, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
+import { bytes, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import { parseQueryResult } from "../../src/utils/result-parser";
 import type { ResultMeta } from "../../src/types/db";
 
@@ -112,7 +112,7 @@ describe("result-parser", () => {
 
     it("Uuid conversion - Uint8Array", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
-      const uuidBytes = bytesFromHex(uuidStr.replace(/-/g, ""));
+      const uuidBytes = bytes.fromHex(uuidStr.replace(/-/g, ""));
       const raw = [{ id: uuidBytes }];
       const meta: ResultMeta = {
         columns: { id: "Uuid" },
@@ -126,8 +126,8 @@ describe("result-parser", () => {
     });
 
     it("Bytes conversion - Uint8Array passthrough", async () => {
-      const bytes = new Uint8Array([0x01, 0x02, 0x03]);
-      const raw = [{ data: bytes }];
+      const rawBytes = new Uint8Array([0x01, 0x02, 0x03]);
+      const raw = [{ data: rawBytes }];
       const meta: ResultMeta = {
         columns: { data: "Bytes" },
         joins: {},

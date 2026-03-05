@@ -12,14 +12,14 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - single column index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email");
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "IDX_User_email",
@@ -38,14 +38,14 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - unique index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").unique();
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "IDX_User_email",
@@ -64,14 +64,14 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - composite index", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email");
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "IDX_User_name_email",
@@ -93,14 +93,14 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - orderBy specified", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").orderBy("DESC", "ASC");
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "IDX_User_name_email",
@@ -122,14 +122,14 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - name specified", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").name("UQ_User_email");
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "UQ_User_email",

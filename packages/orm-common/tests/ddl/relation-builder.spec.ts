@@ -36,7 +36,7 @@ describe("DDL - Relation Builder", () => {
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User);
 
     const db = createTestDb();
-    const def = db.getAddFkQueryDef(
+    const def = db.getAddForeignKeyQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Post" },
       "user",
       fkBuilder,
@@ -44,7 +44,7 @@ describe("DDL - Relation Builder", () => {
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addFk",
+        type: "addForeignKey",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
         foreignKey: {
           name: "FK_Post_user",
@@ -88,7 +88,7 @@ describe("DDL - Relation Builder", () => {
     const fkBuilder = RelationFactory.foreignKey(["companyId", "companyRegionId"], () => Company);
 
     const db = createTestDb();
-    const def = db.getAddFkQueryDef(
+    const def = db.getAddForeignKeyQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Employee" },
       "company",
       fkBuilder,
@@ -96,7 +96,7 @@ describe("DDL - Relation Builder", () => {
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addFk",
+        type: "addForeignKey",
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         foreignKey: {
           name: "FK_Employee_company",

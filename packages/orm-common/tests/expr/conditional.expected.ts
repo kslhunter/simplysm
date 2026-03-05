@@ -1,7 +1,7 @@
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
-export const ifNull: ExpectedSql = {
+export const coalesce: ExpectedSql = {
   mysql: mysql`
     SELECT COALESCE(\`T1\`.\`name\`, 'Unknown') AS \`nameOrDefault\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
@@ -118,7 +118,7 @@ export const least: ExpectedSql = {
   `,
 };
 
-export const ifNullMultiple: ExpectedSql = {
+export const coalesceMultiple: ExpectedSql = {
   mysql: mysql`
     SELECT COALESCE(\`T1\`.\`email\`, \`T1\`.\`name\`, 'Anonymous') AS \`firstValid\`
     FROM \`TestDb\`.\`User\` AS \`T1\`

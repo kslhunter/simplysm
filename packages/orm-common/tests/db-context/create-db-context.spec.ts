@@ -64,14 +64,14 @@ describe("createDbContext", () => {
     });
   });
 
-  it("connect/trans methods exist", () => {
+  it("connect/transaction methods exist", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
     });
 
     expect(typeof db.connect).toBe("function");
     expect(typeof db.connectWithoutTransaction).toBe("function");
-    expect(typeof db.trans).toBe("function");
+    expect(typeof db.transaction).toBe("function");
   });
 
   it("connect manages status lifecycle", async () => {
@@ -100,7 +100,7 @@ describe("createDbContext", () => {
     expect(db.status).toBe("ready");
   });
 
-  it("trans manages status lifecycle within connectWithoutTransaction", async () => {
+  it("transaction manages status lifecycle within connectWithoutTransaction", async () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
     });
@@ -108,7 +108,7 @@ describe("createDbContext", () => {
     await db.connectWithoutTransaction(async () => {
       await Promise.resolve();
       expect(db.status).toBe("connect");
-      await db.trans(async () => {
+      await db.transaction(async () => {
         await Promise.resolve();
         expect(db.status).toBe("transact");
       });
@@ -166,14 +166,14 @@ describe("createDbContext", () => {
     expect(db.status).toBe("ready");
   });
 
-  it("trans throws when already in transaction state", async () => {
+  it("transaction throws when already in transaction state", async () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
     });
 
     await db.connect(async () => {
       // Already in transact state via connect
-      await expect(db.trans(async () => {})).rejects.toThrow("Already in TRANSACTION state.");
+      await expect(db.transaction(async () => {})).rejects.toThrow("Already in TRANSACTION state.");
     });
   });
 

@@ -295,32 +295,32 @@ describe("DDL - Column", () => {
 });
 
 describe("DDL - Primary Key", () => {
-  describe("getDropPkQueryDef", () => {
+  describe("getDropPrimaryKeyQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
+    const def = db.getDropPrimaryKeyQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "dropPk",
+        type: "dropPrimaryKey",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
       });
     });
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.dropPk[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.dropPrimaryKey[dialect]);
     });
   });
 
-  describe("getAddPkQueryDef", () => {
+  describe("getAddPrimaryKeyQueryDef", () => {
     const db = createTestDb();
-    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
+    const def = db.getAddPrimaryKeyQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
       "id",
     ]);
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addPk",
+        type: "addPrimaryKey",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         columns: ["id"],
       });
@@ -328,21 +328,21 @@ describe("DDL - Primary Key", () => {
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.addPk[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.addPrimaryKey[dialect]);
     });
   });
 
 });
 
 describe("DDL - Foreign Key / Index", () => {
-  describe("getAddFkQueryDef", () => {
+  describe("getAddForeignKeyQueryDef", () => {
     const db = createTestDb();
     const userRelation = Post.meta.relations?.["user"];
     if (!(userRelation instanceof ForeignKeyBuilder)) {
       throw new Error("user relation not found");
     }
 
-    const def = db.getAddFkQueryDef(
+    const def = db.getAddForeignKeyQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Post" },
       "user",
       userRelation,
@@ -350,7 +350,7 @@ describe("DDL - Foreign Key / Index", () => {
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addFk",
+        type: "addForeignKey",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
         foreignKey: {
           name: "FK_Post_user",
@@ -363,20 +363,20 @@ describe("DDL - Foreign Key / Index", () => {
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.addFk[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.addForeignKey[dialect]);
     });
   });
 
-  describe("getDropFkQueryDef", () => {
+  describe("getDropForeignKeyQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropFkQueryDef(
+    const def = db.getDropForeignKeyQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Post" },
       "user",
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "dropFk",
+        type: "dropForeignKey",
         table: { database: "TestDb", schema: "TestSchema", name: "Post" },
         foreignKey: "FK_Post_user",
       });
@@ -384,22 +384,22 @@ describe("DDL - Foreign Key / Index", () => {
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.dropFk[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.dropForeignKey[dialect]);
     });
   });
 
-  describe("getAddIdxQueryDef", () => {
+  describe("getAddIndexQueryDef", () => {
     const db = createTestDb();
     const indexBuilder = new IndexBuilder({ columns: ["email"] as string[], unique: true });
 
-    const def = db.getAddIdxQueryDef(
+    const def = db.getAddIndexQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       indexBuilder,
     );
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "addIdx",
+        type: "addIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: {
           name: "IDX_User_email",
@@ -411,19 +411,19 @@ describe("DDL - Foreign Key / Index", () => {
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.addIdx[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.addIndex[dialect]);
     });
   });
 
-  describe("getDropIdxQueryDef", () => {
+  describe("getDropIndexQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
+    const def = db.getDropIndexQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
       "email",
     ]);
 
     it("should validate QueryDef", () => {
       expect(def).toEqual({
-        type: "dropIdx",
+        type: "dropIndex",
         table: { database: "TestDb", schema: "TestSchema", name: "User" },
         index: "IDX_User_email",
       });
@@ -431,7 +431,7 @@ describe("DDL - Foreign Key / Index", () => {
 
     it.each(dialects)("[%s] should validate SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
-      expect(builder.build(def)).toMatchSql(expected.dropIdx[dialect]);
+      expect(builder.build(def)).toMatchSql(expected.dropIndex[dialect]);
     });
   });
 
