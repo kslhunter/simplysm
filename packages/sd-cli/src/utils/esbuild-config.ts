@@ -165,28 +165,14 @@ interface PkgJson {
 }
 
 /**
- * Collect uninstalled optional peer deps from dependency tree
- *
- * For server builds (bundle: true), specify uninstalled optional peer dependencies
- * as esbuild externals to prevent build failures
+ * Recursively scan dependency tree and collect externals based on predicate
  */
-export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
-  const external = new Set<string>();
-  const visited = new Set<string>();
-
-  const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
-  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    scanOptionalPeerDeps(dep, pkgDir, external, visited);
-  }
-
-  return [...external];
-}
-
-function scanOptionalPeerDeps(
+function scanDependencyTree(
   pkgName: string,
   resolveDir: string,
   external: Set<string>,
   visited: Set<string>,
+  collector: (pkgName: string, depDir: string, pkgJson: PkgJson) => string[],
 ): void {
   if (visited.has(pkgName)) return;
   visited.add(pkgName);
@@ -203,23 +189,50 @@ function scanOptionalPeerDeps(
   const depDir = path.dirname(pkgJsonPath);
   const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
 
-  if (pkgJson.peerDependenciesMeta != null) {
-    const peerDeps = pkgJson.peerDependencies ?? {};
-    const depReq = createRequire(path.join(depDir, "noop.js"));
-    for (const [name, meta] of Object.entries(pkgJson.peerDependenciesMeta)) {
-      if (meta.optional === true && name in peerDeps) {
-        try {
-          depReq.resolve(name);
-        } catch {
-          external.add(name);
-        }
-      }
-    }
+  // Collect packages marked as external by predicate
+  const toExternal = collector(pkgName, depDir, pkgJson);
+  for (const name of toExternal) {
+    external.add(name);
   }
 
+  // Recursively traverse sub-dependencies
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    scanOptionalPeerDeps(dep, depDir, external, visited);
+    scanDependencyTree(dep, depDir, external, visited, collector);
   }
+}
+
+/**
+ * Collect uninstalled optional peer deps from dependency tree
+ *
+ * For server builds (bundle: true), specify uninstalled optional peer dependencies
+ * as esbuild externals to prevent build failures
+ */
+export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
+  const external = new Set<string>();
+  const visited = new Set<string>();
+
+  const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    scanDependencyTree(dep, pkgDir, external, visited, (_pkgName, depDir, pkgJson) => {
+      const found: string[] = [];
+      if (pkgJson.peerDependenciesMeta != null) {
+        const peerDeps = pkgJson.peerDependencies ?? {};
+        const depReq = createRequire(path.join(depDir, "noop.js"));
+        for (const [name, meta] of Object.entries(pkgJson.peerDependenciesMeta)) {
+          if (meta.optional === true && name in peerDeps) {
+            try {
+              depReq.resolve(name);
+            } catch {
+              found.push(name);
+            }
+          }
+        }
+      }
+      return found;
+    });
+  }
+
+  return [...external];
 }
 
 //#endregion
@@ -238,42 +251,17 @@ export function collectNativeModuleExternals(pkgDir: string): string[] {
 
   const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    scanNativeModules(dep, pkgDir, external, visited);
+    scanDependencyTree(dep, pkgDir, external, visited, (pkgName, depDir, _pkgJson) => {
+      const found: string[] = [];
+      // Detect native modules by checking for binding.gyp
+      if (existsSync(path.join(depDir, "binding.gyp"))) {
+        found.push(pkgName);
+      }
+      return found;
+    });
   }
 
   return [...external];
-}
-
-function scanNativeModules(
-  pkgName: string,
-  resolveDir: string,
-  external: Set<string>,
-  visited: Set<string>,
-): void {
-  if (visited.has(pkgName)) return;
-  visited.add(pkgName);
-
-  const req = createRequire(path.join(resolveDir, "noop.js"));
-
-  let pkgJsonPath: string;
-  try {
-    pkgJsonPath = req.resolve(`${pkgName}/package.json`);
-  } catch {
-    return;
-  }
-
-  const depDir = path.dirname(pkgJsonPath);
-
-  // Detect native modules by checking for binding.gyp
-  if (existsSync(path.join(depDir, "binding.gyp"))) {
-    external.add(pkgName);
-  }
-
-  // Recursively traverse sub-dependencies
-  const depPkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
-  for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
-    scanNativeModules(dep, depDir, external, visited);
-  }
 }
 
 //#endregion
