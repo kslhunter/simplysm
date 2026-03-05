@@ -1,3 +1,3 @@
 // Broadcast
 export * from "./Broadcast";
-export * from "./IBroadcastPlugin";
+export * from "./BroadcastPlugin";

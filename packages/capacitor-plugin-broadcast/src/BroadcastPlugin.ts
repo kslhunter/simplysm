@@ -1,19 +1,19 @@
 import type { PluginListenerHandle } from "@capacitor/core";
 
-export interface IBroadcastResult {
+export interface BroadcastResult {
   /** Broadcast action */
   action?: string;
   /** Extra data */
   extras?: Record<string, unknown>;
 }
 
-export interface IBroadcastPlugin {
+export interface BroadcastPlugin {
   /**
    * Register broadcast receiver
    */
   subscribe(
     options: { filters: string[] },
-    callback: (result: IBroadcastResult) => void,
+    callback: (result: BroadcastResult) => void,
   ): Promise<{ id: string }>;
 
   /**
@@ -34,13 +34,18 @@ export interface IBroadcastPlugin {
   /**
    * Get launch intent
    */
-  getLaunchIntent(): Promise<IBroadcastResult>;
+  getLaunchIntent(): Promise<BroadcastResult>;
 
   /**
    * Register listener for new intents received while app is running
    */
   addListener(
-    eventName: "onNewIntent",
-    listenerFunc: (data: IBroadcastResult) => void,
+    eventName: "newIntent",
+    listenerFunc: (data: BroadcastResult) => void,
   ): Promise<PluginListenerHandle>;
+
+  /**
+   * Remove all event listeners
+   */
+  removeAllListeners(): Promise<void>;
 }
