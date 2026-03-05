@@ -21,5 +21,5 @@ export interface UsbStoragePlugin {
   requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
   checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
   readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>;
-  read(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
+  readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
 }
