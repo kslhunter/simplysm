@@ -1,20 +1,20 @@
 import { WebPlugin } from "@capacitor/core";
-import type { IFileInfo, IFileSystemPlugin, TStorage } from "../IFileSystemPlugin";
+import type { FileInfo, FileSystemPlugin, StorageType } from "../FileSystemPlugin";
 import { VirtualFileSystem } from "./VirtualFileSystem";
 import { bytesToBase64, bytesFromBase64 } from "@simplysm/core-common";
 
-export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
+export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
   private readonly _fs = new VirtualFileSystem("capacitor_web_virtual_fs");
   private readonly _textEncoder = new TextEncoder();
   private readonly _textDecoder = new TextDecoder();
 
-  async hasPermission(): Promise<{ granted: boolean }> {
+  async checkPermissions(): Promise<{ granted: boolean }> {
     return Promise.resolve({ granted: true });
   }
 
-  async requestPermission(): Promise<void> {}
+  async requestPermissions(): Promise<void> {}
 
-  async readdir(options: { path: string }): Promise<{ files: IFileInfo[] }> {
+  async readdir(options: { path: string }): Promise<{ files: FileInfo[] }> {
     const entry = await this._fs.getEntry(options.path);
     if (!entry || entry.kind !== "dir") {
       throw new Error("Directory does not exist");
@@ -23,7 +23,7 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
     return { files };
   }
 
-  async getStoragePath(options: { type: TStorage }): Promise<{ path: string }> {
+  async getStoragePath(options: { type: StorageType }): Promise<{ path: string }> {
     const base = "/webfs";
     let storagePath: string;
     switch (options.type) {
@@ -60,7 +60,7 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
    * @warning The returned URI must be released by calling `URL.revokeObjectURL(uri)` after use.
    * Failure to release may cause memory leaks.
    */
-  async getFileUri(options: { path: string }): Promise<{ uri: string }> {
+  async getUri(options: { path: string }): Promise<{ uri: string }> {
     const entry = await this._fs.getEntry(options.path);
     if (!entry || entry.kind !== "file" || entry.dataBase64 == null) {
       throw new Error("File not found: " + options.path);
