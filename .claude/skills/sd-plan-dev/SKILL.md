@@ -323,6 +323,5 @@ After simplify completes (or is skipped), report to the user: number of tasks co
 **Related skills:**
 
 - **sd-plan** — creates the plan this skill executes
-- **sd-explore** — for codebase exploration when implementers need deeper context
 - **sd-tdd** — implementers follow TDD
 - **sd-worktree** — branch isolation for worktree-based workflows

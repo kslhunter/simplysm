@@ -8,7 +8,7 @@ import { stdin } from "process";
 
 const STDIN_TIMEOUT_MS = 5000;
 const FETCH_TIMEOUT_MS = 3000;
-const CACHE_TTL_MS = 300_000; // 5 minutes
+const CACHE_TTL_MS = 120_000; // 2 minutes
 const CACHE_PATH = path.join(os.homedir(), ".claude", "usage-api-cache.json");
 
 //#endregion

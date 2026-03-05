@@ -138,7 +138,6 @@ git commit -m "feat: add specific feature"
 ## Related Skills
 
 - **sd-brainstorm** — prerequisite: creates the design this skill plans from
-- **sd-explore** — for deeper codebase exploration when gathering context
 - **sd-plan-dev** — executes the plan this skill creates
 
 ## Execution Handoff

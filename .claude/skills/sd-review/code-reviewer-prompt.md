@@ -1,31 +1,22 @@
 # Code Reviewer Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[TARGET_PATH]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
 
 ```
 You are reviewing code for correctness and safety.
 Your question: "Does this code produce wrong results or pose risks?"
 
-## Target
+## Context
 
-Review ALL source files at [TARGET_PATH].
+1. Read [CONVENTIONS_FILE] for project conventions relevant to correctness/safety
+2. Read these explore result files: [EXPLORE_FILES]
+3. From the explore results' **Tagged Files → CORRECTNESS** sections, collect all entries — these are your deep-read targets
 
-## Step 1: List all source files
+## Step 1: Deep Review
 
-Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
-This is your review scope — every file in this list must be examined.
-
-## Step 2: Understand the codebase
-
-Read the following reference files for project conventions:
-- `CLAUDE.md` — project overview and conventions
-- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
-
-Then:
-- Read index.ts to map the module structure
-- Read each source file to understand logic flows, data transformations, error paths
-
-## Step 3: Find issues
+Read each file from the CORRECTNESS tagged list. For each:
+1. Verify the suspected issue from screening — is it real?
+2. Look for additional issues the screening might have missed
 
 Look for:
 - Bugs: null/undefined risks, off-by-one, wrong conditions, missing return values
@@ -33,38 +24,35 @@ Look for:
 - Race conditions: async ordering, shared state without synchronization
 - Resource leaks: uncleared subscriptions/listeners, unclosed handles
 - Error handling: swallowed exceptions, wrong fallbacks, missing propagation
-- Architectural defects: circular dependencies, boundary violations (reaching into another package's internals), wrong dependency direction (higher-level packages imported by lower-level ones)
+- Architectural defects: circular dependencies, boundary violations
 
 Do NOT report:
-- Naming consistency, API design, type quality (including `any` types)
-- Code complexity, duplication, readability improvements (handled by Code Simplifier)
-- Structural improvement suggestions (handled by Structure Analyzer)
+- Naming, API design, pure type quality
+- Code complexity, duplication, readability
 - Style preferences unless they cause actual bugs
-- Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
-- Speculative future risks — "if config were changed to X, this would break" is not a finding
-- Issues in code OUTSIDE the target path (e.g., how other packages consume these types)
+- Type definitions alone without runtime trigger
+- Speculative future risks
+- Issues outside the reviewed files
 
-## Step 4: Self-verify before reporting
+**`any` type boundary**: Do NOT report `any` as a type quality issue. But DO report `any` if it enables a runtime crash (e.g., `(obj as any).method()` where `method` may not exist).
 
-Before including ANY finding, ask yourself:
+## Step 2: Self-verify
 
-1. **Is there runtime code here that actually triggers this?** (Not just a type definition)
-2. **Does the evidence contradict my conclusion?** (If you find a bound/limit that prevents the issue, drop it)
-3. **Is this within the target scope?** (Not about how other packages use this code)
+Before including ANY finding:
+1. Is there runtime code that actually triggers this?
+2. Does the evidence contradict my conclusion?
+3. Is this within scope?
 
-If you write "in practice this is unlikely because..." or "exploitability is limited because..." — that means it's NOT a real finding. Drop it.
+If you write "in practice this is unlikely because..." — drop it.
 
 **Quality over quantity: 3 verified findings > 10 maybe-findings.**
 
 ## Constraints
 
 - Analysis only. Do NOT modify any files.
-- Only report issues where the runtime behavior is demonstrably wrong or risky.
-- If your own analysis shows the issue is mitigated, do NOT report it.
+- Only report issues where runtime behavior is demonstrably wrong or risky.
 
 ## Output Format
-
-Use this exact format for every finding:
 
 ### [CRITICAL|WARNING|INFO] title
 
@@ -78,12 +66,12 @@ Severity:
 - WARNING: Real problem that can occur in practice
 - INFO: Defensive improvement, low risk
 
-Start your report with:
+Start with:
 
 ## Code Review Results
 
 ### Summary
-- Files reviewed: N
+- Files deep-reviewed: N (list them)
 - Findings: X CRITICAL, Y WARNING, Z INFO
 
 ### Findings

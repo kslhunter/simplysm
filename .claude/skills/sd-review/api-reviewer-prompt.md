@@ -1,31 +1,23 @@
 # API Reviewer Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[TARGET_PATH]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
 
 ```
 You are reviewing a library's public API for developer experience (DX).
 Your question: "Would a first-time developer be confused or make mistakes using this API?"
 
-## Target
+## Context
 
-Review ALL source files at [TARGET_PATH].
+1. Read [CONVENTIONS_FILE] for project conventions relevant to API design and naming
+2. Read these explore result files: [EXPLORE_FILES]
+3. From the explore results' **Tagged Files → API** sections, collect all entries — these are your deep-read targets
 
-## Step 1: List all source files
+## Step 1: Deep Review
 
-Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
-
-## Step 2: Map the public API surface
-
-Read the following reference files for project conventions:
-- `CLAUDE.md` — project overview and conventions
-- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
-
-Then:
-- Read index.ts to list all exports (types, functions, constants)
-- Read each exported type/interface/function definition
-- Read test files and consumer code to see actual usage patterns
-
-## Step 3: Find issues
+Read each file from the API tagged list. For each:
+1. Map the public API surface (exports, types, interfaces, function signatures)
+2. Verify suspected API issues from screening
+3. Look for additional issues
 
 Look for:
 - Naming consistency: same concept with different names, inconsistent prefix/suffix
@@ -34,37 +26,30 @@ Look for:
 - Defaults: basic use cases requiring excessive configuration
 - Pattern consistency: similar tasks requiring different patterns
 
-Important: Internal consistency takes priority over external standards.
-Before suggesting a naming change, verify the existing pattern across ALL similar
-components in the library. Do NOT suggest external conventions that break internal consistency.
+Internal consistency takes priority over external standards.
 
 Do NOT report:
 - Bugs, security, logic errors, race conditions
 - Code complexity, duplication, readability
-- Do NOT use WebSearch to compare with external libraries
-- TypeScript type system limitations that require workarounds (e.g., discriminated unions not narrowing due to template literals) — these are language constraints, not API design flaws
-- Naming preferences where the current name is used consistently across the codebase — consistency > personal preference
-- Minor field duplication in small interfaces (< 10 fields) where extraction adds indirection without real benefit
+- TypeScript type system limitations (language constraints, not API flaws)
+- Naming preferences where current name is used consistently
+- Minor field duplication in small interfaces (< 10 fields)
 
-## Step 4: Self-verify before reporting
+## Step 2: Self-verify
 
-Before including ANY finding, verify:
-
-1. **Severity check**: CRITICAL = developers WILL write wrong code because of this API. Not "could theoretically be confusing."
-2. **Consistency check**: Before suggesting a rename, search ALL usages. If the name is used consistently everywhere, it's NOT a finding.
-3. **Scope check**: Only report on the PUBLIC API of the target package. Do not report on how consumers should use it differently.
+1. CRITICAL = developers WILL write wrong code because of this API
+2. Before suggesting a rename, search ALL usages — consistent usage is NOT a finding
+3. Only report on PUBLIC API of the target
 
 **Quality over quantity: 3 verified findings > 10 maybe-findings.**
 
 ## Constraints
 
 - Analysis only. Do NOT modify any files.
-- Only report issues with real evidence from the code.
-- CRITICAL severity requires proof that the current API actively misleads — not just "could be better."
+- Only report issues with real evidence.
+- CRITICAL requires proof the API actively misleads.
 
 ## Output Format
-
-Use this exact format for every finding:
 
 ### [CRITICAL|WARNING|INFO] title
 
@@ -73,23 +58,15 @@ Use this exact format for every finding:
 - **Issue**: what the problem is
 - **Suggestion**: how to improve it
 
-Severity:
-- CRITICAL: API misleads developers or types are insufficient for correct usage
-- WARNING: Significant DX friction — unnecessary complexity or inconsistency
-- INFO: Minor improvement — better naming or defaults exist
-
-Start your report with:
+Start with:
 
 ## API Review Results
 
 ### Summary
-- Files reviewed: N
+- Files deep-reviewed: N (list them)
 - Public API surface: brief description
 - Findings: X CRITICAL, Y WARNING, Z INFO
 
 ### Findings
 [findings here]
-
-### Positive Observations
-[what's already well-designed — keep these]
 ```

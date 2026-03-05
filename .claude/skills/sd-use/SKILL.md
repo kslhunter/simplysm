@@ -11,7 +11,7 @@ Analyze user request from ARGUMENTS, select the best matching skill, explain why
 ## Execution Flow
 
 1. Read ARGUMENTS
-2. If user names a specific skill (e.g., "sd-explore로..."), route to that skill directly
+2. If user names a specific skill, route to that skill directly
 3. Otherwise, match against catalog below
 4. Report selection with reason
 5. Execute immediately
@@ -35,14 +35,13 @@ Analyze user request from ARGUMENTS, select the best matching skill, explain why
 | `sd-skill`           | Create or edit skills                                                                                                                           |
 | `sd-email-analyze`   | Analyze, read, or summarize email files (`.eml` or `.msg`) — parsing and attachment extraction                                                  |
 | `sd-document`        | Read or write document files (`.docx`, `.xlsx`, `.pptx`, `.pdf`) — content extraction, creation, data export                                    |
-| `sd-explore`         | Explore, analyze, trace, or understand code structure, architecture, or implementation flow                                                     |
 
 ## Selection Rules
 
-1. **Explicit skill name** — If user mentions a specific skill name (e.g., "sd-explore로...", "sd-plan 만들어줘"), route to that skill directly
+1. **Explicit skill name** — If user mentions a specific skill name, route to that skill directly
 2. Select **exactly one** skill — the most specific match wins
 3. **Review & Refactor**: "find bugs", "review", "refactor", "improve structure", "remove duplication" → `sd-review`
-4. **Sequential requests** (e.g., "brainstorm하고 plan 만들어줘"): Route to the **first** skill only. After completion, user can invoke the next
+4. **Sequential requests**: Route to the **first** skill only. After completion, user can invoke the next
 5. If nothing matches, use **default LLM behavior** and handle the request directly
 6. Pass ARGUMENTS through as the skill's input
 

@@ -35,7 +35,7 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 - **Do NOT comment on code outside the requested change.** This includes:
   - Listing issues you noticed but did not fix
   - Describing what you "left alone" or "did not change"
-  - "참고", "suggestions", "by the way", "note", "what I left alone"
+  - "reference", "suggestions", "by the way", "note", "what I left alone"
   - Any unsolicited observations about surrounding code quality
   - Only describe **what you changed** — nothing else
 
