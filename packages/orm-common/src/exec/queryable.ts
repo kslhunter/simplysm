@@ -49,7 +49,7 @@ class JoinQueryable {
    * @param table - Table to join
    * @returns Joined Queryable
    */
-  from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$infer"], T> {
+  from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$inferSelect"], T> {
     return queryable(this._db, table, this._joinAlias)();
   }
 
@@ -115,7 +115,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
    */
   from<T extends TableBuilder<any, any>>(
     table: T,
-  ): Queryable<T["$infer"] & { self?: TBaseData[] }, T> {
+  ): Queryable<T["$inferSelect"] & { self?: TBaseData[] }, T> {
     const selfAlias = `${this._cteName}.self`;
 
     return queryable(this._baseQr.meta.db, table, this._cteName)().join(
@@ -214,12 +214,12 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  * const users = await db.user()
  *   .where((u) => [expr.eq(u.isActive, true)])
  *   .orderBy((u) => u.name)
- *   .result();
+ *   .execute();
  *
  * // JOIN query
  * const posts = await db.post()
  *   .include((p) => p.user)
- *   .result();
+ *   .execute();
  *
  * // INSERT
  * await db.user().insert([{ name: "Gildong Hong", email: "test@test.com" }]);
@@ -621,7 +621,7 @@ export class Queryable<
    * 1:N 관계의 LEFT OUTER JOIN을 수행 (배열로 result Add)
    *
    * @param as - Result에 추가할 property 이름
-   * @param fwd - Join 조건을 정의하는 콜백 function
+   * @param fn - Join 조건을 정의하는 콜백 function
    * @returns join 결과가 배열로 추가된 Queryable
    *
    * @example
@@ -636,10 +636,10 @@ export class Queryable<
    */
   join<A extends string, R extends DataRecord>(
     as: A,
-    fwd: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
+    fn: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
   ): Queryable<TData & { [K in A]?: R[] }, TFrom> {
     if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.join(as, fwd));
+      const newFroms = this.meta.from.map((from) => from.join(as, fn));
       return new Queryable({
         ...this.meta,
         from: newFroms,
@@ -653,8 +653,8 @@ export class Queryable<
     // 2. target → Queryable Transform (alias 전달)
     const joinQr = new JoinQueryable(this.meta.db, joinAlias);
 
-    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
-    const resultQr = fwd(joinQr, this.meta.columns);
+    // 3. fn 실행 (where 등 condition 추가된 Queryable return)
+    const resultQr = fn(joinQr, this.meta.columns);
 
     // 4. 새 columns에 join result Add
     const joinColumns = transformColumnsAlias(resultQr.meta.columns, joinAlias);
@@ -674,7 +674,7 @@ export class Queryable<
    * N:1 또는 1:1 관계의 LEFT OUTER JOIN을 수행 (단일 객체로 result Add)
    *
    * @param as - Result에 추가할 property 이름
-   * @param fwd - Join 조건을 정의하는 콜백 function
+   * @param fn - Join 조건을 정의하는 콜백 function
    * @returns join 결과가 단일 객체로 추가된 Queryable
    *
    * @example
@@ -689,13 +689,13 @@ export class Queryable<
    */
   joinSingle<A extends string, R extends DataRecord>(
     as: A,
-    fwd: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
+    fn: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
   ): Queryable<
     { [K in keyof TData as K extends A ? never : K]: TData[K] } & { [K in A]?: R },
     TFrom
   > {
     if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.joinSingle(as, fwd));
+      const newFroms = this.meta.from.map((from) => from.joinSingle(as, fn));
       return new Queryable({
         ...this.meta,
         from: newFroms,
@@ -709,8 +709,8 @@ export class Queryable<
     // 2. target → Queryable Transform (alias 전달)
     const joinQr = new JoinQueryable(this.meta.db, joinAlias);
 
-    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
-    const resultQr = fwd(joinQr, this.meta.columns);
+    // 3. fn 실행 (where 등 condition 추가된 Queryable return)
+    const resultQr = fn(joinQr, this.meta.columns);
 
     // 4. 새 columns에 join result Add
     const joinColumns = transformColumnsAlias(resultQr.meta.columns, joinAlias);
@@ -957,7 +957,7 @@ export class Queryable<
    *
    * 계층 structure data(조직도, 카테고리 트리 등)를 조회할 때 사용
    *
-   * @param fwd - recursive part을 정의하는 콜백 function
+   * @param fn - recursive part을 정의하는 콜백 function
    * @returns recursive CTE가 apply된 Queryable
    *
    * @example
@@ -972,10 +972,10 @@ export class Queryable<
    * ```
    */
   recursive(
-    fwd: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>,
+    fn: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>,
   ): Queryable<TData, never> {
     if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.recursive(fwd));
+      const newFroms = this.meta.from.map((from) => from.recursive(fn));
       return new Queryable({
         ...this.meta,
         from: newFroms,
@@ -988,8 +988,8 @@ export class Queryable<
     // 2. target → Queryable Transform (CTE 이름 전달)
     const cteQr = new RecursiveQueryable(this, cteName);
 
-    // 3. fwd 실행 (where 등 condition 추가된 Queryable return)
-    const resultQr = fwd(cteQr);
+    // 3. fn 실행 (where 등 condition 추가된 Queryable return)
+    const resultQr = fn(cteQr);
 
     return new Queryable({
       db: this.meta.db,
@@ -1017,10 +1017,10 @@ export class Queryable<
    * ```typescript
    * const users = await db.user()
    *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .result();
+   *   .execute();
    * ```
    */
-  async result(): Promise<TData[]> {
+  async execute(): Promise<TData[]> {
     const results = await this.meta.db.executeDefs<TData>(
       [this.getSelectQueryDef()],
       [this.getResultMeta()],
@@ -1042,7 +1042,7 @@ export class Queryable<
    * ```
    */
   async single(): Promise<TData | undefined> {
-    const result = await this.top(2).result();
+    const result = await this.top(2).execute();
     if (result.length > 1) {
       throw new ArgumentError("Expected single result but multiple results returned.", {
         table: this._getSourceName(),
@@ -1079,14 +1079,14 @@ export class Queryable<
    * ```
    */
   async first(): Promise<TData | undefined> {
-    const results = await this.top(1).result();
+    const results = await this.top(1).execute();
     return results[0];
   }
 
   /**
    * result row 수를 return
    *
-   * @param fwd - 카운트할 column을 지정하는 function (Select)
+   * @param fn - 카운트할 column을 지정하는 function (Select)
    * @returns row 수
    * @throws distinct() 또는 groupBy() 후 직접 호출 시 에러 (wrap() 필요)
    *
@@ -1097,7 +1097,7 @@ export class Queryable<
    *   .count();
    * ```
    */
-  async count(fwd?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>): Promise<number> {
+  async count(fn?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>): Promise<number> {
     if (this.meta.distinct) {
       throw new Error("Cannot use count() after distinct(). Use wrap() first.");
     }
@@ -1105,8 +1105,8 @@ export class Queryable<
       throw new Error("Cannot use count() after groupBy(). Use wrap() first.");
     }
 
-    const countQr = fwd
-      ? this.select((c) => ({ cnt: expr.count(fwd(c)) }))
+    const countQr = fn
+      ? this.select((c) => ({ cnt: expr.count(fn(c)) }))
       : this.select(() => ({ cnt: expr.count() }));
 
     const result = await countQr.single();
@@ -1595,8 +1595,8 @@ export class Queryable<
    *
    * WHERE condition에 맞는 data가 있으면 UPDATE, 없으면 INSERT
    *
-   * @param updateFwd - Update할 column과 값을 반환하는 function
-   * @param insertFwd - Insert할 레코드를 반환하는 function (selection, 미지정 시 updateFwd와 동일)
+   * @param updateFn - Update할 column과 값을 반환하는 function
+   * @param insertFn - Insert할 레코드를 반환하는 function (selection, 미지정 시 updateFn와 동일)
    * @param outputColumns - column name array to receive (Select)
    * @returns outputColumns 지정 시 영향받은 레코드 array return
    *
@@ -1620,47 +1620,47 @@ export class Queryable<
    * ```
    */
   async upsert(
-    updateFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
+    updateFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
   async upsert<K extends keyof TFrom["$inferColumns"] & string>(
-    insertFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>,
+    insertFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
   async upsert<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
-    updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
+    updateFn: (cols: QueryableRecord<TData>) => U,
+    insertFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
   ): Promise<void>;
   async upsert<
     U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
-    updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
+    updateFn: (cols: QueryableRecord<TData>) => U,
+    insertFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
   async upsert<
     U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
-    updateFwdOrInsertFwd:
+    updateFnOrInsertFn:
       | ((cols: QueryableRecord<TData>) => U)
       | ((cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>),
-    insertFwdOrOutputColumns?:
+    insertFnOrOutputColumns?:
       | ((updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>)
       | K[],
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
-    const updateRecordFwd = updateFwdOrInsertFwd as (cols: QueryableRecord<TData>) => U;
+    const updateRecordFn = updateFnOrInsertFn as (cols: QueryableRecord<TData>) => U;
 
-    const insertRecordFwd = (
-      insertFwdOrOutputColumns instanceof Function ? insertFwdOrOutputColumns : updateFwdOrInsertFwd
+    const insertRecordFn = (
+      insertFnOrOutputColumns instanceof Function ? insertFnOrOutputColumns : updateFnOrInsertFn
     ) as (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>;
 
     const realOutputColumns =
-      insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
+      insertFnOrOutputColumns instanceof Function ? outputColumns : insertFnOrOutputColumns;
 
     const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
-      [this.getUpsertQueryDef(updateRecordFwd, insertRecordFwd, realOutputColumns)],
+      [this.getUpsertQueryDef(updateRecordFn, insertRecordFn, realOutputColumns)],
       [realOutputColumns ? this.getResultMeta(realOutputColumns) : undefined],
     );
 
@@ -1670,8 +1670,8 @@ export class Queryable<
   }
 
   getUpsertQueryDef<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
-    updateRecordFwd: (cols: QueryableRecord<TData>) => U,
-    insertRecordFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
+    updateRecordFn: (cols: QueryableRecord<TData>) => U,
+    insertRecordFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpsertQueryDef {
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
@@ -1680,14 +1680,14 @@ export class Queryable<
     const { select: _sel, ...existsSelectQuery } = this.getSelectQueryDef();
 
     // updateRecord Generate
-    const updateQrRecord = updateRecordFwd(this.meta.columns);
+    const updateQrRecord = updateRecordFn(this.meta.columns);
     const updateRecord: Record<string, Expr> = {};
     for (const [key, value] of Object.entries(updateQrRecord)) {
       updateRecord[key] = expr.toExpr(value);
     }
 
     // insertRecord Generate (updateRecordRaw를 두 번째 인자로)
-    const insertRecordRaw = insertRecordFwd(updateQrRecord);
+    const insertRecordRaw = insertRecordFn(updateQrRecord);
     const insertRecord = Object.fromEntries(
       Object.entries(insertRecordRaw).map(([key, value]) => [key, expr.toExpr(value)]),
     );
@@ -1715,14 +1715,14 @@ export class Queryable<
   /**
    * FK constraint on/off (transaction 내 사용 가능)
    */
-  async switchFk(switch_: "on" | "off"): Promise<void> {
+  async switchFk(enabled: boolean): Promise<void> {
     const from = this.meta.from;
     if (!(from instanceof TableBuilder) && !(from instanceof ViewBuilder)) {
       throw new Error(
         "switchFk는 TableBuilder 또는 ViewBuilder 기반 queryable에서만 사용할 수 있습니다.",
       );
     }
-    await this.meta.db.switchFk(this.meta.db.getQueryDefObjectName(from), switch_);
+    await this.meta.db.switchFk(this.meta.db.getQueryDefObjectName(from), enabled);
   }
 
   //#endregion
@@ -1981,7 +1981,7 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
  *   async getActiveUsers() {
  *     return this.user()
  *       .where((u) => [expr.eq(u.isActive, true)])
- *       .result();
+ *       .execute();
  *   }
  * }
  * ```
@@ -1990,7 +1990,7 @@ export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<
   db: DbContextBase,
   tableOrView: TBuilder,
   as?: string,
-): () => Queryable<TBuilder["$infer"], TBuilder extends TableBuilder<any, any> ? TBuilder : never> {
+): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any> ? TBuilder : never> {
   return () => {
     // as가 명시되지 않으면 db.getNextAlias() 사용 (카운터 증가)
     // as가 명시되면 그대로 사용 (카운터 증가 안함)
