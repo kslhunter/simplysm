@@ -54,14 +54,14 @@ describe("PostgreSQL Escape Integration Test", () => {
     { id: 6, value: "\\N", desc: "Value with PostgreSQL NULL marker literal" },
   ])("Should be able to save and query $desc", async ({ id, value }) => {
     await db.connectWithoutTransaction(async () => {
-      await db.trans(async () => {
+      await db.transaction(async () => {
         await db.escapeTest().insert([{ id, value }]);
       });
 
       const result = await db
         .escapeTest()
         .where((item) => [expr.eq(item.id, id)])
-        .result();
+        .execute();
       expect(result).toHaveLength(1);
       expect(result[0].value).toBe(value);
     });

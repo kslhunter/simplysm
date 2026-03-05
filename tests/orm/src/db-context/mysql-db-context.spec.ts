@@ -15,7 +15,7 @@ const User = Table("User")
 // Test DbContext
 const TestDbDef = defineDbContext({ tables: { user: User } });
 
-describe("MySQL DbContext - trans", () => {
+describe("MySQL DbContext - transaction", () => {
   let mysql2: typeof import("mysql2/promise");
   let conn: MysqlDbConn;
   let executor: NodeDbContextExecutor;
@@ -52,20 +52,20 @@ describe("MySQL DbContext - trans", () => {
   it("Auto rollback on error", async () => {
     await db.connectWithoutTransaction(async () => {
       // Insert initial data (in transaction)
-      await db.trans(async () => {
+      await db.transaction(async () => {
         await db.user().insert([{ id: 1, name: "initial" }]);
       });
 
-      // Error inside trans should trigger rollback
+      // Error inside transaction should trigger rollback
       await expect(
-        db.trans(async () => {
+        db.transaction(async () => {
           await db.user().insert([{ id: 2, name: "should-rollback" }]);
           throw new Error("Intentional error");
         }),
       ).rejects.toThrow("Intentional error");
 
       // Rolled back, only 1 record should exist
-      const result = await db.user().result();
+      const result = await db.user().execute();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ id: 1, name: "initial" });
     });

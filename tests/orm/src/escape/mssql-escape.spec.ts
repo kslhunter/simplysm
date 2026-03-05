@@ -53,14 +53,14 @@ describe("MSSQL Escape Integration Test", () => {
     { id: 5, value: "emoji\u{1F600}test", desc: "Value with Unicode emoji" },
   ])("Should be able to save and query $desc", async ({ id, value }) => {
     await db.connectWithoutTransaction(async () => {
-      await db.trans(async () => {
+      await db.transaction(async () => {
         await db.escapeTest().insert([{ id, value }]);
       });
 
       const result = await db
         .escapeTest()
         .where((item) => [expr.eq(item.id, id)])
-        .result();
+        .execute();
       expect(result).toHaveLength(1);
       expect(result[0].value).toBe(value);
     });
