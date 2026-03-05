@@ -324,7 +324,7 @@ export class DevOrchestrator {
     // Register event handlers
     for (const workerInfo of this._standaloneClientWorkers) {
       const completeTask = registerWorkerEventHandlers(
-        workerInfo as unknown as BaseWorkerInfo,
+        workerInfo,
         {
           resultKey: `${workerInfo.name}:build`,
           listrTitle: `${workerInfo.name} (client)`,
@@ -412,7 +412,7 @@ export class DevOrchestrator {
     // Register event handlers
     for (const workerInfo of this._viteClientWorkers) {
       const completeTask = registerWorkerEventHandlers(
-        workerInfo as unknown as BaseWorkerInfo,
+        workerInfo,
         {
           resultKey: `${workerInfo.name}:build`,
           listrTitle: `${workerInfo.name} (client)`,

@@ -64,10 +64,15 @@ export interface WorkerEventHandlerOptions {
  * @returns completeTask function (saves result and signals build completion)
  */
 export function registerWorkerEventHandlers<
-  TEvents extends Record<string, unknown>,
-  T extends BaseWorkerInfo<TEvents>,
+  TEvents extends Record<string, unknown> = Record<string, unknown>,
 >(
-  workerInfo: T,
+  workerInfo: {
+    name: string;
+    config: { target: string };
+    worker: { on(event: string, handler: (data: any) => void): void };
+    isInitialBuild: boolean;
+    buildResolver: (() => void) | undefined;
+  },
   opts: WorkerEventHandlerOptions,
   results: Map<string, BuildResult>,
   rebuildManager: RebuildManager,
