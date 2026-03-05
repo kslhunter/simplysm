@@ -34,7 +34,7 @@ public class BroadcastPlugin extends Plugin {
     @Override
     protected void handleOnNewIntent(Intent intent) {
         super.handleOnNewIntent(intent);
-        notifyListeners("onNewIntent", intentToJson(intent));
+        notifyListeners("newIntent", intentToJson(intent));
     }
 
     @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
