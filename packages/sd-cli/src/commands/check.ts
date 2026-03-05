@@ -110,7 +110,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
 
     tasks.push(
       lintWorker
-        .lint({ targets, fix: true, timing: false })
+        .lint({ targets, fix: false, timing: false })
         .then(
           (r: LintResult): CheckResult => ({
             name: "LINT",
