@@ -12,10 +12,15 @@ Review ALL source files at [TARGET_PATH].
 
 ## Step 1: List all source files
 
-Use Glob to list all .ts files under the target path (exclude node_modules, dist).
+Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
 
 ## Step 2: Map the public API surface
 
+Read the following reference files for project conventions:
+- `CLAUDE.md` — project overview and conventions
+- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
+
+Then:
 - Read index.ts to list all exports (types, functions, constants)
 - Read each exported type/interface/function definition
 - Read test files and consumer code to see actual usage patterns

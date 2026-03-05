@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { bytesConcat, SdError } from "@simplysm/core-common";
+import { bytes, SdError } from "@simplysm/core-common";
 import ftp from "basic-ftp";
 import { PassThrough, Readable } from "stream";
 import type { Storage, FileInfo } from "../types/storage";
@@ -74,7 +74,7 @@ export class FtpStorageClient implements Storage {
       chunks.push(chunk);
     });
     await client.downloadTo(writable, filePath);
-    return bytesConcat(chunks);
+    return bytes.concat(chunks);
   }
 
   /**

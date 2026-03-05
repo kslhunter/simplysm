@@ -6,7 +6,7 @@ import type {
   UsbStoragePlugin,
 } from "../UsbStoragePlugin";
 import { VirtualUsbStorage } from "./VirtualUsbStorage";
-import { bytesToBase64 } from "@simplysm/core-common";
+import { bytes } from "@simplysm/core-common";
 
 export class UsbStorageWeb extends WebPlugin implements UsbStoragePlugin {
   private readonly _storage = new VirtualUsbStorage();
@@ -90,7 +90,7 @@ export class UsbStorageWeb extends WebPlugin implements UsbStoragePlugin {
       deviceKey,
       path: filePath,
       kind: "file",
-      dataBase64: bytesToBase64(data),
+      dataBase64: bytes.toBase64(data),
     });
   }
 

@@ -1,5 +1,5 @@
 import "@simplysm/core-common";
-import { numParseInt } from "@simplysm/core-common";
+import { num } from "@simplysm/core-common";
 import type { ExcelRelationshipData, ExcelXml, ExcelXmlRelationshipData } from "../types";
 
 /**
@@ -84,6 +84,6 @@ export class ExcelXmlRelationship implements ExcelXml {
     if (match == null) {
       throw new Error(`Invalid relationship ID format: ${rel.$.Id}`);
     }
-    return numParseInt(match[0])!;
+    return num.parseInt(match[0])!;
   }
 }

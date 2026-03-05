@@ -83,10 +83,10 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   getItemKey: (item: TItem) => string | number | undefined;
   storageKey?: string;
   editable?: boolean;
-  itemEditable?: (item: TItem) => boolean;
-  itemDeletable?: (item: TItem) => boolean;
-  itemDeleted?: (item: TItem) => boolean;
-  itemSelectable?: (item: TItem) => boolean | string;
+  isItemEditable?: (item: TItem) => boolean;
+  isItemDeletable?: (item: TItem) => boolean;
+  isItemDeleted?: (item: TItem) => boolean;
+  isItemSelectable?: (item: TItem) => boolean | string;
   lastModifiedAtProp?: string;
   lastModifiedByProp?: string;
   filterInitial?: TFilter;

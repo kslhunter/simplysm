@@ -13,7 +13,7 @@ import { ViewBuilder } from "./schema/view-builder";
 import type { ProcedureBuilder } from "./schema/procedure-builder";
 import { queryable } from "./exec/queryable";
 import { executable } from "./exec/executable";
-import { objClearUndefined } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 
 // DDL imports
 import * as tableDdl from "./ddl/table-ddl";
@@ -100,7 +100,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     getQueryDefObjectName(
       tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
     ): QueryDefObjectName {
-      return objClearUndefined({
+      return obj.clearUndefined({
         database: tableOrView.meta.database ?? opt.database,
         schema: tableOrView.meta.schema ?? opt.schema,
         name: tableOrView.meta.name,

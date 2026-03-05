@@ -1,12 +1,12 @@
 import { Readable } from "stream";
 import consola from "consola";
 import {
-  bytesToHex,
+  bytes,
+  str,
   DateOnly,
   DateTime,
   SdError,
   EventEmitter,
-  strIsNullOrEmpty,
   Time,
   Uuid,
 } from "@simplysm/core-common";
@@ -117,7 +117,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
 
   async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
     const results: Record<string, unknown>[][] = [];
-    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !str.isNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
     }
@@ -210,18 +210,18 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
       case "varchar":
       case "char":
       case "text": {
-        const str = value as string;
+        const strVal = value as string;
         // CSV format: wrap with double quotes, escape internal double quotes with double quotes
         if (
-          str.includes('"') ||
-          str.includes(",") ||
-          str.includes("\n") ||
-          str.includes("\r") ||
-          str.includes("\\")
+          strVal.includes('"') ||
+          strVal.includes(",") ||
+          strVal.includes("\n") ||
+          strVal.includes("\r") ||
+          strVal.includes("\\")
         ) {
-          return '"' + str.replace(/"/g, '""') + '"';
+          return '"' + strVal.replace(/"/g, '""') + '"';
         }
-        return str;
+        return strVal;
       }
 
       case "datetime":
@@ -237,7 +237,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
         return (value as Uuid).toString();
 
       case "binary":
-        return '"\\x' + bytesToHex(value as Uint8Array) + '"'; // PostgreSQL bytea hex format (wrapped in CSV double quotes)
+        return '"\\x' + bytes.toHex(value as Uint8Array) + '"'; // PostgreSQL bytea hex format (wrapped in CSV double quotes)
 
       default:
         throw new SdError(`Unsupported DataType: ${JSON.stringify(dataType)}`);

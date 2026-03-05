@@ -14,11 +14,43 @@ Start by understanding the current project context, then ask questions one at a 
 ## The Process
 
 **Understanding the idea:**
-- Check out the current project state first (files, docs, recent commits)
+- Check out the current project state first (files, docs, recent commits). For deeper codebase exploration, consider using `sd-explore`.
 - Ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
 - Focus on understanding: purpose, constraints, success criteria
+
+**When a main design document is provided as context:**
+
+```dot
+digraph sub_design {
+    has_main [label="Main design with\nsection plan in context?" shape=diamond];
+    section_specified [label="Section specified?" shape=diamond];
+    prereqs_ok [label="Prerequisites\ncomplete?" shape=diamond];
+    normal [label="Normal brainstorm" shape=box];
+    show_progress [label="Show section progress\nAsk which section\n(suggest next incomplete)" shape=box];
+    warn [label="Warn prerequisites incomplete\nAsk: proceed anyway\nor complete first?" shape=box];
+    proceed [label="Proceed with section" shape=box];
+
+    has_main -> normal [label="no"];
+    has_main -> section_specified [label="yes"];
+    section_specified -> show_progress [label="no"];
+    section_specified -> prereqs_ok [label="yes"];
+    prereqs_ok -> proceed [label="yes"];
+    prereqs_ok -> warn [label="no"];
+    warn -> proceed [label="user: proceed"];
+}
+```
+
+When proceeding with a section:
+
+1. **Read the main design** — understand goals, overall structure, and the target section's scope
+2. **Read actual code** — check the current codebase state for what previous sections have built. Reference the **actual code**, NOT previous section design documents. Code may have diverged from earlier designs during implementation.
+3. **Scope the brainstorm** — limit questions, gap review, approaches, and design presentation to the target section only. Do not re-question decisions already established in the main design.
+4. **Conflict detection** — if the main design's direction conflicts with the actual code state, alert the user and ask for direction before proceeding.
+5. After the design is complete, save as `docs/plans/YYYY-MM-DD-<topic>-section-N-design.md`
+6. Update the main design document: mark the section `[ ]` → `[x]` in the section plan
+7. Commit both files, then proceed to the normal **Next Steps Guide** (Path A/B)
 
 **Gap review loop:**
 
@@ -75,6 +107,63 @@ If your first gap review shows all ✅:
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
+
+**Scale assessment:**
+
+After the design presentation is complete, assess scale (file count, logic complexity, number of distinct subsystems, scope of impact):
+
+```dot
+digraph scale {
+    assess [label="Assess design scale" shape=diamond];
+    manageable [label="Proceed to\nAfter the Design\n(Path A/B)" shape=box];
+    propose [label="Propose to user:\nproceed as-is OR\nsplit into sections" shape=box];
+    user_choice [label="User choice?" shape=diamond];
+    division [label="Propose 2-3 section\ndivision approaches\n(by feature/layer/dependency)" shape=box];
+    save [label="Append section plan\nto design doc\nSave + commit" shape=box];
+    guide [label="Show section guide\nBrainstorm ENDS" shape=box];
+
+    assess -> manageable [label="manageable"];
+    assess -> propose [label="large"];
+    propose -> user_choice;
+    user_choice -> manageable [label="proceed as-is"];
+    user_choice -> division [label="split"];
+    division -> save [label="user selects"];
+    save -> guide;
+}
+```
+
+**Section plan format** (append to existing design content as-is):
+
+```markdown
+---
+
+## Section Plan
+
+- [ ] Section 1: <name> — <scope summary>
+- [ ] Section 2: <name> — <scope summary> (after section 1)
+- [ ] Section 3: <name> — <scope summary> (after section 1, 2)
+```
+
+**Section guide** (shown instead of Path A/B, in user's configured language):
+
+```
+Design has been split into sections.
+
+Main design: docs/plans/YYYY-MM-DD-<topic>-design.md
+
+Section progress:
+- [ ] Section 1: <name>
+- [ ] Section 2: <name> (after section 1)
+- [ ] Section 3: <name> (after section 1, 2)
+
+Run each section in order:
+  sd-brainstorm docs/plans/YYYY-MM-DD-<topic>-design.md section 1
+
+After each section's brainstorm completes, you can choose Path A/B
+to run plan → plan-dev → check → commit.
+```
+
+Do NOT auto-proceed to any section.
 
 ## After the Design
 

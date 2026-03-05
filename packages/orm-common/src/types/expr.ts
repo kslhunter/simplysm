@@ -6,7 +6,7 @@ import type { SelectQueryDef } from "./query-def";
  *
  * dateDiff, dateAdd 등 Date functionused in
  */
-export type DateSeparator = "year" | "month" | "day" | "hour" | "minute" | "second";
+export type DateUnit = "year" | "month" | "day" | "hour" | "minute" | "second";
 
 //#region ========== value expression ==========
 
@@ -326,7 +326,7 @@ export interface ExprIsoYearMonth {
 /** Date 차이 (DATEDIFF) */
 export interface ExprDateDiff {
   type: "dateDiff";
-  separator: DateSeparator;
+  unit: DateUnit;
   from: Expr;
   to: Expr;
 }
@@ -334,7 +334,7 @@ export interface ExprDateDiff {
 /** Date 연산 (DATEADD) */
 export interface ExprDateAdd {
   type: "dateAdd";
-  separator: DateSeparator;
+  unit: DateUnit;
   source: Expr;
   value: Expr;
 }
@@ -351,8 +351,8 @@ export interface ExprFormatDate {
 //#region ========== condition ==========
 
 /** NULL 대체 (COALESCE - 첫 번째 non-null return) */
-export interface ExprIfNull {
-  type: "ifNull";
+export interface ExprCoalesce {
+  type: "coalesce";
   args: Expr[];
 }
 
@@ -668,7 +668,7 @@ export type Expr =
   | ExprFormatDate
 
   // Condition
-  | ExprIfNull
+  | ExprCoalesce
   | ExprNullIf
   | ExprIs
   | ExprSwitch

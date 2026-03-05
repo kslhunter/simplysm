@@ -6,9 +6,9 @@ import { DateTime } from "../types/date-time";
 import { DateOnly } from "../types/date-only";
 import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
-import { objNullToUndefined } from "./obj";
+import { nullToUndefined } from "./obj";
 import { SdError } from "../errors/sd-error";
-import { bytesToHex, bytesFromHex } from "./bytes";
+import { toHex, fromHex } from "./bytes";
 import { env } from "../env";
 
 interface TypedObject {
@@ -33,7 +33,7 @@ interface TypedObject {
  * - If object has toJSON method, it is called and the result is used (except for custom types like Date, DateTime)
  * - Safe in Worker environments as global prototypes are not modified
  */
-export function jsonStringify(
+export function stringify(
   obj: unknown,
   options?: {
     space?: string | number;
@@ -105,7 +105,7 @@ export function jsonStringify(
       if (options?.redactBytes === true) {
         return { __type__: "Uint8Array", data: "__hidden__" };
       }
-      return { __type__: "Uint8Array", data: bytesToHex(currValue) };
+      return { __type__: "Uint8Array", data: toHex(currValue) };
     }
 
     // Array processing
@@ -175,9 +175,9 @@ export function jsonStringify(
  * @security In development mode (`__DEV__`), the error message includes the entire JSON string.
  * In production mode, only JSON length is included.
  */
-export function jsonParse<TResult = unknown>(json: string): TResult {
+export function parse<TResult = unknown>(json: string): TResult {
   try {
-    return objNullToUndefined(
+    return nullToUndefined(
       JSON.parse(json, (_key, value: unknown) => {
         if (value != null && typeof value === "object") {
           // Restore types based on __type__ marker
@@ -216,7 +216,7 @@ export function jsonParse<TResult = unknown>(json: string): TResult {
                   "Uint8Array serialized with redactBytes option cannot be restored via parse",
                 );
               }
-              return bytesFromHex(typed.data);
+              return fromHex(typed.data);
             }
           }
         }

@@ -4,7 +4,7 @@ import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
 import { ArgumentError } from "../errors/argument-error";
 
-//#region objClone
+//#region clone
 
 /**
  * Deep clone
@@ -16,11 +16,11 @@ import { ArgumentError } from "../errors/argument-error";
  * @note Prototype chain is maintained (using Object.setPrototypeOf)
  * @note Getters/setters are evaluated as current values and copied (accessor properties themselves are not copied)
  */
-export function objClone<TSource>(source: TSource): TSource {
-  return objCloneImpl(source) as TSource;
+export function clone<TSource>(source: TSource): TSource {
+  return cloneImpl(source) as TSource;
 }
 
-function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {
+function cloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {
   // Primitives are returned as-is
   if (typeof source !== "object" || source === null) {
     return source;
@@ -67,12 +67,12 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     cloned.name = source.name;
     cloned.stack = source.stack;
     if (source.cause !== undefined) {
-      cloned.cause = objCloneImpl(source.cause, currPrevClones);
+      cloned.cause = cloneImpl(source.cause, currPrevClones);
     }
     // Copy custom Error properties
     for (const key of Object.keys(source)) {
       if (!["message", "name", "stack", "cause"].includes(key)) {
-        (cloned as unknown as Record<string, unknown>)[key] = objCloneImpl(
+        (cloned as unknown as Record<string, unknown>)[key] = cloneImpl(
           (source as unknown as Record<string, unknown>)[key],
           currPrevClones,
         );
@@ -91,7 +91,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     const result: unknown[] = [];
     currPrevClones.set(source, result);
     for (const item of source) {
-      result.push(objCloneImpl(item, currPrevClones));
+      result.push(cloneImpl(item, currPrevClones));
     }
     return result;
   }
@@ -100,7 +100,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     const result = new Map();
     currPrevClones.set(source, result);
     for (const [key, value] of source) {
-      result.set(objCloneImpl(key, currPrevClones), objCloneImpl(value, currPrevClones));
+      result.set(cloneImpl(key, currPrevClones), cloneImpl(value, currPrevClones));
     }
     return result;
   }
@@ -109,7 +109,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     const result = new Set();
     currPrevClones.set(source, result);
     for (const item of source) {
-      result.add(objCloneImpl(item, currPrevClones));
+      result.add(cloneImpl(item, currPrevClones));
     }
     return result;
   }
@@ -121,7 +121,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
 
   for (const key of Object.keys(source)) {
     const value = (source as Record<string, unknown>)[key];
-    result[key] = objCloneImpl(value, currPrevClones);
+    result[key] = cloneImpl(value, currPrevClones);
   }
 
   return result;
@@ -129,9 +129,9 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
 
 //#endregion
 
-//#region objEqual
+//#region equal
 
-/** objEqual options type */
+/** equal options type */
 export interface EqualOptions {
   /** List of keys to compare. When specified, only those keys are compared (applies only to top level) */
   topLevelIncludes?: string[];
@@ -140,7 +140,7 @@ export interface EqualOptions {
   /** Whether to ignore array order. O(n²) complexity when true */
   ignoreArrayIndex?: boolean;
   /** Whether to do shallow comparison. Only compare 1 level (reference comparison) when true */
-  onlyOneDepth?: boolean;
+  shallow?: boolean;
 }
 
 /**
@@ -154,7 +154,7 @@ export interface EqualOptions {
  * @param options.topLevelExcludes List of keys to exclude from comparison (applies only to top level)
  *   @example `{ topLevelExcludes: ["updatedAt"] }` - Compare excluding updatedAt key
  * @param options.ignoreArrayIndex Whether to ignore array order. O(n²) complexity when true
- * @param options.onlyOneDepth Whether to do shallow comparison. Only compare 1 level (reference comparison) when true
+ * @param options.shallow Whether to do shallow comparison. Only compare 1 level (reference comparison) when true
  *
  * @note topLevelIncludes/topLevelExcludes options apply only to object property keys.
  *       All keys in Map are always included in comparison.
@@ -166,7 +166,7 @@ export interface EqualOptions {
  * - Ignore array order and check if elements are permutations of the same set
  * - Example: `[1,2,3]` and `[3,2,1]` → true, `[1,1,1]` and `[1,2,3]` → false
  */
-export function objEqual(source: unknown, target: unknown, options?: EqualOptions): boolean {
+export function equal(source: unknown, target: unknown, options?: EqualOptions): boolean {
   if (source === target) return true;
   if (source == null || target == null) return false;
   if (typeof source !== typeof target) return false;
@@ -192,19 +192,19 @@ export function objEqual(source: unknown, target: unknown, options?: EqualOption
   }
 
   if (source instanceof Array && target instanceof Array) {
-    return objEqualArray(source, target, options);
+    return equalArray(source, target, options);
   }
 
   if (source instanceof Map && target instanceof Map) {
-    return objEqualMap(source, target, options);
+    return equalMap(source, target, options);
   }
 
   if (source instanceof Set && target instanceof Set) {
-    return objEqualSet(source, target, options);
+    return equalSet(source, target, options);
   }
 
   if (typeof source === "object" && typeof target === "object") {
-    return objEqualObject(
+    return equalObject(
       source as Record<string, unknown>,
       target as Record<string, unknown>,
       options,
@@ -214,7 +214,7 @@ export function objEqual(source: unknown, target: unknown, options?: EqualOption
   return false;
 }
 
-function objEqualArray(source: unknown[], target: unknown[], options?: EqualOptions): boolean {
+function equalArray(source: unknown[], target: unknown[], options?: EqualOptions): boolean {
   if (source.length !== target.length) {
     return false;
   }
@@ -222,7 +222,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
   if (options?.ignoreArrayIndex) {
     const matchedIndices = new Set<number>();
 
-    if (options.onlyOneDepth) {
+    if (options.shallow) {
       return source.every((sourceItem) => {
         const idx = target.findIndex((t, i) => !matchedIndices.has(i) && t === sourceItem);
         if (idx !== -1) {
@@ -235,11 +235,11 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
       // On recursive calls, topLevelIncludes/topLevelExcludes options apply only to top level, so exclude them
       const recursiveOptions = {
         ignoreArrayIndex: options.ignoreArrayIndex,
-        onlyOneDepth: options.onlyOneDepth,
+        shallow: options.shallow,
       };
       return source.every((sourceItem) => {
         const idx = target.findIndex(
-          (t, i) => !matchedIndices.has(i) && objEqual(t, sourceItem, recursiveOptions),
+          (t, i) => !matchedIndices.has(i) && equal(t, sourceItem, recursiveOptions),
         );
         if (idx !== -1) {
           matchedIndices.add(idx);
@@ -249,7 +249,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
       });
     }
   } else {
-    if (options?.onlyOneDepth) {
+    if (options?.shallow) {
       for (let i = 0; i < source.length; i++) {
         if (source[i] !== target[i]) {
           return false;
@@ -259,9 +259,9 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
       // On recursive calls, topLevelIncludes/topLevelExcludes options apply only to top level, so exclude them
       for (let i = 0; i < source.length; i++) {
         if (
-          !objEqual(source[i], target[i], {
+          !equal(source[i], target[i], {
             ignoreArrayIndex: options?.ignoreArrayIndex,
-            onlyOneDepth: options?.onlyOneDepth,
+            shallow: options?.shallow,
           })
         ) {
           return false;
@@ -276,9 +276,9 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
 /**
  * Map object comparison
  * @note O(n²) complexity when handling non-string keys (objects, arrays, etc.)
- * @note Recommended to use onlyOneDepth: true option for large datasets (improves to O(n) with reference comparison)
+ * @note Recommended to use shallow: true option for large datasets (improves to O(n) with reference comparison)
  */
-function objEqualMap(
+function equalMap(
   source: Map<unknown, unknown>,
   target: Map<unknown, unknown>,
   options?: EqualOptions,
@@ -297,13 +297,13 @@ function objEqualMap(
     if (typeof sourceKey === "string") {
       const sourceValue = source.get(sourceKey);
       const targetValue = target.get(sourceKey);
-      if (options?.onlyOneDepth) {
+      if (options?.shallow) {
         if (sourceValue !== targetValue) return false;
       } else {
         if (
-          !objEqual(sourceValue, targetValue, {
+          !equal(sourceValue, targetValue, {
             ignoreArrayIndex: options?.ignoreArrayIndex,
-            onlyOneDepth: options?.onlyOneDepth,
+            shallow: options?.shallow,
           })
         ) {
           return false;
@@ -315,17 +315,17 @@ function objEqualMap(
       for (let i = 0; i < targetKeys.length; i++) {
         const targetKey = targetKeys[i];
         if (typeof targetKey === "string" || usedTargetKeys.has(i)) continue;
-        if (options?.onlyOneDepth ? sourceKey === targetKey : objEqual(sourceKey, targetKey)) {
+        if (options?.shallow ? sourceKey === targetKey : equal(sourceKey, targetKey)) {
           usedTargetKeys.add(i);
           const sourceValue = source.get(sourceKey);
           const targetValue = target.get(targetKey);
-          if (options?.onlyOneDepth) {
+          if (options?.shallow) {
             if (sourceValue !== targetValue) return false;
           } else {
             if (
-              !objEqual(sourceValue, targetValue, {
+              !equal(sourceValue, targetValue, {
                 ignoreArrayIndex: options?.ignoreArrayIndex,
-                onlyOneDepth: options?.onlyOneDepth,
+                shallow: options?.shallow,
               })
             ) {
               return false;
@@ -342,7 +342,7 @@ function objEqualMap(
   return true;
 }
 
-function objEqualObject(
+function equalObject(
   source: Record<string, unknown>,
   target: Record<string, unknown>,
   options?: EqualOptions,
@@ -365,13 +365,13 @@ function objEqualObject(
   }
 
   for (const key of sourceKeys) {
-    if (options?.onlyOneDepth) {
+    if (options?.shallow) {
       if (source[key] !== target[key]) {
         return false;
       }
     } else {
       if (
-        !objEqual(source[key], target[key], {
+        !equal(source[key], target[key], {
           ignoreArrayIndex: options?.ignoreArrayIndex,
         })
       ) {
@@ -385,15 +385,15 @@ function objEqualObject(
 
 /**
  * Set deep equality comparison
- * @note Deep equal comparison (`onlyOneDepth: false`) has O(n²) time complexity.
- *   Recommended to use `onlyOneDepth: true` for primitive Sets or when performance is critical
+ * @note Deep equal comparison (`shallow: false`) has O(n²) time complexity.
+ *   Recommended to use `shallow: true` for primitive Sets or when performance is critical
  */
-function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: EqualOptions): boolean {
+function equalSet(source: Set<unknown>, target: Set<unknown>, options?: EqualOptions): boolean {
   if (source.size !== target.size) {
     return false;
   }
 
-  if (options?.onlyOneDepth) {
+  if (options?.shallow) {
     for (const sourceItem of source) {
       if (!target.has(sourceItem)) {
         return false;
@@ -406,7 +406,7 @@ function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: Equal
     const matchedIndices = new Set<number>();
     for (const sourceItem of source) {
       const idx = targetArr.findIndex(
-        (t, i) => !matchedIndices.has(i) && objEqual(sourceItem, t, options),
+        (t, i) => !matchedIndices.has(i) && equal(sourceItem, t, options),
       );
       if (idx === -1) {
         return false;
@@ -420,10 +420,10 @@ function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: Equal
 
 //#endregion
 
-//#region objMerge
+//#region merge
 
-/** objMerge options type */
-export interface ObjMergeOptions {
+/** merge options type */
+export interface MergeOptions {
   /** Array processing method. "replace": replace with target (default), "concat": merge (deduplicate) */
   arrayProcess?: "replace" | "concat";
   /** Whether to delete the key when target is null */
@@ -448,23 +448,23 @@ export interface ObjMergeOptions {
  *       and for object arrays, deduplication is determined by reference (address) comparison
  * @note If types are different, overwrite with target value
  */
-export function objMerge<TSource, TMergeTarget>(
+export function merge<TSource, TMergeTarget>(
   source: TSource,
   target: TMergeTarget,
-  opt?: ObjMergeOptions,
+  opt?: MergeOptions,
 ): TSource & TMergeTarget {
   if (source == null) {
-    return objClone(target) as TSource & TMergeTarget;
+    return clone(target) as TSource & TMergeTarget;
   }
 
   if (target === undefined) {
-    return objClone(source) as TSource & TMergeTarget;
+    return clone(source) as TSource & TMergeTarget;
   }
 
   if (target === null) {
     return opt?.useDelTargetNull
       ? (undefined as TSource & TMergeTarget)
-      : (objClone(source) as TSource & TMergeTarget);
+      : (clone(source) as TSource & TMergeTarget);
   }
 
   if (typeof target !== "object") {
@@ -480,21 +480,21 @@ export function objMerge<TSource, TMergeTarget>(
     target instanceof Uint8Array ||
     (opt?.arrayProcess === "replace" && target instanceof Array)
   ) {
-    return objClone(target) as TSource & TMergeTarget;
+    return clone(target) as TSource & TMergeTarget;
   }
 
   // If source is not an object or source and target are different types of objects, overwrite with target
   if (typeof source !== "object" || source.constructor !== target.constructor) {
-    return objClone(target) as TSource & TMergeTarget;
+    return clone(target) as TSource & TMergeTarget;
   }
 
   if (source instanceof Map && target instanceof Map) {
-    const result = objClone(source);
+    const result = clone(source);
     for (const key of target.keys()) {
       if (result.has(key)) {
-        result.set(key, objMerge(result.get(key), target.get(key), opt));
+        result.set(key, merge(result.get(key), target.get(key), opt));
       } else {
-        result.set(key, objClone(target.get(key)));
+        result.set(key, clone(target.get(key)));
       }
     }
     return result as TSource & TMergeTarget;
@@ -510,9 +510,9 @@ export function objMerge<TSource, TMergeTarget>(
 
   const sourceRec = source as Record<string, unknown>;
   const targetRec = target as Record<string, unknown>;
-  const resultRec = objClone(sourceRec);
+  const resultRec = clone(sourceRec);
   for (const key of Object.keys(target)) {
-    resultRec[key] = objMerge(sourceRec[key], targetRec[key], opt);
+    resultRec[key] = merge(sourceRec[key], targetRec[key], opt);
     if (resultRec[key] === undefined) {
       delete resultRec[key];
     }
@@ -522,7 +522,7 @@ export function objMerge<TSource, TMergeTarget>(
 }
 
 /** merge3 options type */
-export interface ObjMerge3KeyOptions {
+export interface Merge3KeyOptions {
   /** List of sub-keys to compare (same as equal's topLevelIncludes) */
   keys?: string[];
   /** List of sub-keys to exclude from comparison */
@@ -557,7 +557,7 @@ export interface ObjMerge3KeyOptions {
  * );
  * // conflict: false, result: { a: 2, b: 2 }
  */
-export function objMerge3<
+export function merge3<
   S extends Record<string, unknown>,
   O extends Record<string, unknown>,
   T extends Record<string, unknown>,
@@ -565,21 +565,21 @@ export function objMerge3<
   source: S,
   origin: O,
   target: T,
-  optionsObj?: Record<string, ObjMerge3KeyOptions>,
+  optionsObj?: Record<string, Merge3KeyOptions>,
 ): {
   conflict: boolean;
   result: O & S & T;
 } {
   let conflict = false;
-  const result = objClone(origin) as Record<string, unknown>;
+  const result = clone(origin) as Record<string, unknown>;
   const allKeys = new Set([...Object.keys(source), ...Object.keys(target), ...Object.keys(origin)]);
   for (const key of allKeys) {
-    if (objEqual(source[key], result[key], optionsObj?.[key])) {
-      result[key] = objClone(target[key]);
-    } else if (objEqual(target[key], result[key], optionsObj?.[key])) {
-      result[key] = objClone(source[key]);
-    } else if (objEqual(source[key], target[key], optionsObj?.[key])) {
-      result[key] = objClone(source[key]);
+    if (equal(source[key], result[key], optionsObj?.[key])) {
+      result[key] = clone(target[key]);
+    } else if (equal(target[key], result[key], optionsObj?.[key])) {
+      result[key] = clone(source[key]);
+    } else if (equal(source[key], target[key], optionsObj?.[key])) {
+      result[key] = clone(source[key]);
     } else {
       conflict = true;
     }
@@ -593,7 +593,7 @@ export function objMerge3<
 
 //#endregion
 
-//#region objOmit / objPick
+//#region omit / pick
 
 /**
  * Exclude specific keys from object
@@ -602,10 +602,10 @@ export function objMerge3<
  * @returns New object with specified keys excluded
  * @example
  * const user = { name: "Alice", age: 30, email: "alice@example.com" };
- * objOmit(user, ["email"]);
+ * omit(user, ["email"]);
  * // { name: "Alice", age: 30 }
  */
-export function objOmit<T extends Record<string, unknown>, K extends keyof T>(
+export function omit<T extends Record<string, unknown>, K extends keyof T>(
   item: T,
   omitKeys: K[],
 ): Omit<T, K> {
@@ -626,10 +626,10 @@ export function objOmit<T extends Record<string, unknown>, K extends keyof T>(
  * @returns New object with keys matching condition excluded
  * @example
  * const data = { name: "Alice", _internal: "secret", age: 30 };
- * objOmitByFilter(data, (key) => key.startsWith("_"));
+ * omitByFilter(data, (key) => key.startsWith("_"));
  * // { name: "Alice", age: 30 }
  */
-export function objOmitByFilter<T extends Record<string, unknown>>(
+export function omitByFilter<T extends Record<string, unknown>>(
   item: T,
   omitKeyFn: (key: keyof T) => boolean,
 ): T {
@@ -649,15 +649,15 @@ export function objOmitByFilter<T extends Record<string, unknown>>(
  * @returns New object containing only specified keys
  * @example
  * const user = { name: "Alice", age: 30, email: "alice@example.com" };
- * objPick(user, ["name", "age"]);
+ * pick(user, ["name", "age"]);
  * // { name: "Alice", age: 30 }
  */
-export function objPick<T extends Record<string, unknown>, K extends keyof T>(
+export function pick<T extends Record<string, unknown>, K extends keyof T>(
   item: T,
-  keys: K[],
+  pickKeys: K[],
 ): Pick<T, K> {
   const result: Record<string, unknown> = {};
-  for (const key of keys) {
+  for (const key of pickKeys) {
     result[key as string] = item[key];
   }
   return result as Pick<T, K>;
@@ -665,7 +665,7 @@ export function objPick<T extends Record<string, unknown>, K extends keyof T>(
 
 //#endregion
 
-//#region objGetChainValue / objSetChainValue / objDeleteChainValue
+//#region getChainValue / setChainValue / deleteChainValue
 
 // Regex caching (created once at module load)
 const chainSplitRegex = /[.[\]]/g;
@@ -691,11 +691,11 @@ function getChainSplits(chain: string): (string | number)[] {
 
 /**
  * Get value by chain path
- * @example objGetChainValue(obj, "a.b[0].c")
+ * @example getChainValue(obj, "a.b[0].c")
  */
-export function objGetChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
-export function objGetChainValue(obj: unknown, chain: string): unknown;
-export function objGetChainValue(
+export function getChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
+export function getChainValue(obj: unknown, chain: string): unknown;
+export function getChainValue(
   obj: unknown,
   chain: string,
   optional?: true,
@@ -720,20 +720,20 @@ export function objGetChainValue(
  * @param depth Depth to descend (1 or more)
  * @param optional If true, return undefined without error if null/undefined found in the middle
  * @throws ArgumentError If depth is less than 1
- * @example objGetChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
+ * @example getChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
  */
-export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+export function getChainValueByDepth<TObject, TKey extends keyof TObject>(
   obj: TObject,
   key: TKey,
   depth: number,
   optional: true,
 ): TObject[TKey] | undefined;
-export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+export function getChainValueByDepth<TObject, TKey extends keyof TObject>(
   obj: TObject,
   key: TKey,
   depth: number,
 ): TObject[TKey];
-export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+export function getChainValueByDepth<TObject, TKey extends keyof TObject>(
   obj: TObject,
   key: TKey,
   depth: number,
@@ -755,9 +755,9 @@ export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
 
 /**
  * Set value by chain path
- * @example objSetChainValue(obj, "a.b[0].c", value)
+ * @example setChainValue(obj, "a.b[0].c", value)
  */
-export function objSetChainValue(obj: unknown, chain: string, value: unknown): void {
+export function setChainValue(obj: unknown, chain: string, value: unknown): void {
   const splits = getChainSplits(chain);
   if (splits.length === 0) {
     throw new ArgumentError("Chain is empty", { chain });
@@ -775,9 +775,9 @@ export function objSetChainValue(obj: unknown, chain: string, value: unknown): v
 
 /**
  * Delete value by chain path
- * @example objDeleteChainValue(obj, "a.b[0].c")
+ * @example deleteChainValue(obj, "a.b[0].c")
  */
-export function objDeleteChainValue(obj: unknown, chain: string): void {
+export function deleteChainValue(obj: unknown, chain: string): void {
   const splits = getChainSplits(chain);
   if (splits.length === 0) {
     throw new ArgumentError("Chain is empty", { chain });
@@ -799,7 +799,7 @@ export function objDeleteChainValue(obj: unknown, chain: string): void {
 
 //#endregion
 
-//#region objClearUndefined / objClear / objNullToUndefined / objUnflatten
+//#region clearUndefined / clear / nullToUndefined / unflatten
 
 /**
  * Delete keys with undefined values from object
@@ -807,7 +807,7 @@ export function objDeleteChainValue(obj: unknown, chain: string): void {
  *
  * @mutates Modifies the original object directly
  */
-export function objClearUndefined<T extends object>(obj: T): T {
+export function clearUndefined<T extends object>(obj: T): T {
   const record = obj as Record<string, unknown>;
   for (const key of Object.keys(record)) {
     if (record[key] === undefined) {
@@ -823,7 +823,7 @@ export function objClearUndefined<T extends object>(obj: T): T {
  *
  * @mutates Modifies the original object directly
  */
-export function objClear<T extends Record<string, unknown>>(obj: T): Record<string, never> {
+export function clear<T extends Record<string, unknown>>(obj: T): Record<string, never> {
   for (const key of Object.keys(obj)) {
     delete obj[key];
   }
@@ -836,11 +836,11 @@ export function objClear<T extends Record<string, unknown>>(obj: T): Record<stri
  *
  * @mutates Modifies the original array/object directly
  */
-export function objNullToUndefined<TObject>(obj: TObject): TObject | undefined {
-  return objNullToUndefinedImpl(obj, new WeakSet());
+export function nullToUndefined<TObject>(obj: TObject): TObject | undefined {
+  return nullToUndefinedImpl(obj, new WeakSet());
 }
 
-function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): TObject | undefined {
+function nullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): TObject | undefined {
   if (obj == null) {
     return undefined;
   }
@@ -859,7 +859,7 @@ function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): T
     if (seen.has(obj)) return obj;
     seen.add(obj);
     for (let i = 0; i < obj.length; i++) {
-      obj[i] = objNullToUndefinedImpl(obj[i], seen);
+      obj[i] = nullToUndefinedImpl(obj[i], seen);
     }
     return obj;
   }
@@ -869,7 +869,7 @@ function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): T
     seen.add(obj as object);
     const objRec = obj as Record<string, unknown>;
     for (const key of Object.keys(obj)) {
-      objRec[key] = objNullToUndefinedImpl(objRec[key], seen);
+      objRec[key] = nullToUndefinedImpl(objRec[key], seen);
     }
 
     return obj;
@@ -881,9 +881,9 @@ function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): T
 /**
  * Convert flattened object to nested object
  * @internal
- * @example objUnflatten({ "a.b.c": 1 }) => { a: { b: { c: 1 } } }
+ * @example unflatten({ "a.b.c": 1 }) => { a: { b: { c: 1 } } }
  */
-export function objUnflatten(flatObj: Record<string, unknown>): Record<string, unknown> {
+export function unflatten(flatObj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const key in flatObj) {
@@ -915,7 +915,7 @@ export function objUnflatten(flatObj: Record<string, unknown>): Record<string, u
  * Convert properties with undefined to optional
  * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
-export type ObjUndefToOptional<TObject> = {
+export type UndefToOptional<TObject> = {
   [K in keyof TObject as undefined extends TObject[K] ? K : never]?: TObject[K];
 } & { [K in keyof TObject as undefined extends TObject[K] ? never : K]: TObject[K] };
 
@@ -923,7 +923,7 @@ export type ObjUndefToOptional<TObject> = {
  * Convert optional properties to required + undefined union
  * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
-export type ObjOptionalToUndef<TObject> = {
+export type OptionalToUndef<TObject> = {
   [K in keyof TObject]-?: {} extends Pick<TObject, K> ? TObject[K] | undefined : TObject[K];
 };
 
@@ -934,7 +934,7 @@ export type ObjOptionalToUndef<TObject> = {
  * @param obj Object to extract keys from
  * @returns Array of object keys
  */
-export function objKeys<T extends object>(obj: T): (keyof T)[] {
+export function keys<T extends object>(obj: T): (keyof T)[] {
   return Object.keys(obj) as (keyof T)[];
 }
 
@@ -943,8 +943,8 @@ export function objKeys<T extends object>(obj: T): (keyof T)[] {
  * @param obj Object to extract entries from
  * @returns Array of [key, value] tuples
  */
-export function objEntries<T extends object>(obj: T): ObjEntries<T> {
-  return Object.entries(obj) as ObjEntries<T>;
+export function entries<T extends object>(obj: T): Entries<T> {
+  return Object.entries(obj) as Entries<T>;
 }
 
 /**
@@ -952,11 +952,11 @@ export function objEntries<T extends object>(obj: T): ObjEntries<T> {
  * @param entries Array of [key, value] tuples
  * @returns Created object
  */
-export function objFromEntries<T extends [string, unknown]>(entries: T[]): { [K in T[0]]: T[1] } {
-  return Object.fromEntries(entries) as { [K in T[0]]: T[1] };
+export function fromEntries<T extends [string, unknown]>(entryPairs: T[]): { [K in T[0]]: T[1] } {
+  return Object.fromEntries(entryPairs) as { [K in T[0]]: T[1] };
 }
 
-type ObjEntries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObject][];
+type Entries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObject][];
 
 /**
  * Transform each entry of object and return new object
@@ -967,21 +967,21 @@ type ObjEntries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObje
  * const colors = { primary: "255, 0, 0", secondary: "0, 255, 0" };
  *
  * // Transform only values
- * objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]);
+ * map(colors, (key, rgb) => [null, `rgb(${rgb})`]);
  * // { primary: "rgb(255, 0, 0)", secondary: "rgb(0, 255, 0)" }
  *
  * // Transform both keys and values
- * objMap(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
+ * map(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
  * // { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
  */
-export function objMap<TSource extends object, TNewKey extends string, TNewValue>(
+export function map<TSource extends object, TNewKey extends string, TNewValue>(
   obj: TSource,
   fn: (key: keyof TSource, value: TSource[keyof TSource]) => [TNewKey | null, TNewValue],
 ): Record<TNewKey | Extract<keyof TSource, string>, TNewValue> {
-  return objMapImpl(obj, fn);
+  return mapImpl(obj, fn);
 }
 
-function objMapImpl<TSource extends object, TNewKey extends string, TNewValue>(
+function mapImpl<TSource extends object, TNewKey extends string, TNewValue>(
   obj: TSource,
   fn: (key: keyof TSource, value: TSource[keyof TSource]) => [TNewKey | null, TNewValue],
 ): Record<string, TNewValue> {

@@ -35,7 +35,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     info: TInfo,
     cb: (data: TData) => PromiseLike<void>,
   ): Promise<string> {
-    const key = Uuid.new().toString();
+    const key = Uuid.generate().toString();
     const eventName = eventDef.eventName;
 
     // Send registration request to server

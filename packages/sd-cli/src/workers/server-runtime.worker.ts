@@ -1,6 +1,6 @@
 import proxy from "@fastify/http-proxy";
 import { createWorker } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import net from "net";
 import { pathToFileURL } from "url";
@@ -61,14 +61,14 @@ async function cleanup(): Promise<void> {
 process.on("uncaughtException", (err) => {
   logger.error("Unhandled server runtime error", err);
   sender.send("error", {
-    message: errorMessage(err),
+    message: errNs.message(err),
   });
 });
 
 process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled server runtime promise rejection", reason);
   sender.send("error", {
-    message: errorMessage(reason),
+    message: errNs.message(reason),
   });
 });
 
@@ -145,7 +145,7 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
   } catch (err) {
     logger.error("Server Runtime startup failed", err);
     sender.send("error", {
-      message: errorMessage(err),
+      message: errNs.message(err),
     });
   }
 }

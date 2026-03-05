@@ -11,7 +11,7 @@ import {
   RelationKeyTargetBuilder,
 } from "../schema/factory/relation-builder";
 import { getCreateObjectQueryDef } from "./table-ddl";
-import { getAddFkQueryDef, getAddIdxQueryDef } from "./relation-ddl";
+import { getAddForeignKeyQueryDef, getAddIndexQueryDef } from "./relation-ddl";
 import { getClearSchemaQueryDef, getSchemaExistsQueryDef } from "./schema-ddl";
 
 /**
@@ -72,7 +72,7 @@ export async function initialize(
     // 3. Migration 기반 Initialize
     let appliedMigrations: { code: string }[] | undefined;
     try {
-      appliedMigrations = await db._migration().result();
+      appliedMigrations = await db._migration().execute();
     } catch (err) {
       // No Table = new environment
       if (!isTableNotExistsError(err)) {
@@ -129,7 +129,7 @@ async function createAllObjects(
     for (const [relationName, relationDef] of Object.entries(relations)) {
       if (!(relationDef instanceof ForeignKeyBuilder)) continue;
 
-      addFkDefs.push(getAddFkQueryDef(db, tableDef, relationName, relationDef));
+      addFkDefs.push(getAddForeignKeyQueryDef(db, tableDef, relationName, relationDef));
     }
   }
   if (addFkDefs.length > 0) {
@@ -144,7 +144,7 @@ async function createAllObjects(
 
     const indexTableDef = db.getQueryDefObjectName(table);
     for (const indexBuilder of indexes) {
-      createIndexDefs.push(getAddIdxQueryDef(indexTableDef, indexBuilder));
+      createIndexDefs.push(getAddIndexQueryDef(indexTableDef, indexBuilder));
     }
   }
   if (createIndexDefs.length > 0) {

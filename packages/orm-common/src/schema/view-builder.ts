@@ -55,7 +55,7 @@ export class ViewBuilder<
   /** relationship definition (type for inference) */
   readonly $relations!: TRelations;
   /** 전체 Type inference */
-  readonly $infer!: TData;
+  readonly $inferSelect!: TData;
 
   /**
    * @param meta - View Metadata

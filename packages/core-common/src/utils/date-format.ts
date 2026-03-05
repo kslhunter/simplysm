@@ -136,7 +136,7 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
  * // "PM 2:30:45"
  * ```
  */
-export function formatDate(
+export function format(
   formatString: string,
   args: {
     year?: number;

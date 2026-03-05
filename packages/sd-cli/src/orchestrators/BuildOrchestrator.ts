@@ -1,7 +1,7 @@
 import path from "path";
 import ts from "typescript";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type {
   SdConfig,
@@ -375,7 +375,7 @@ export class BuildOrchestrator {
               target: "client",
               type: "capacitor",
               success: false,
-              errors: [errorMessage(err)],
+              errors: [errNs.message(err)],
             });
             state.hasError = true;
           }
@@ -400,7 +400,7 @@ export class BuildOrchestrator {
               target: "client",
               type: "electron",
               success: false,
-              errors: [errorMessage(err)],
+              errors: [errNs.message(err)],
             });
             state.hasError = true;
           }

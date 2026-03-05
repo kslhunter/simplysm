@@ -1,40 +1,21 @@
 import { describe, it, expect } from "vitest";
-import {
-  objClone as clone,
-  objEqual,
-  objMerge,
-  objMerge3,
-  objOmit,
-  objOmitByFilter,
-  objPick,
-  objGetChainValue,
-  objGetChainValueByDepth,
-  objSetChainValue,
-  objDeleteChainValue,
-  objClearUndefined,
-  objClear,
-  objNullToUndefined,
-  objUnflatten,
-  DateTime,
-  DateOnly,
-  Uuid,
-} from "@simplysm/core-common";
+import { obj as objU, DateTime, DateOnly, Uuid } from "@simplysm/core-common";
 
 describe("object utils", () => {
   //#region clone
 
   describe("objClone()", () => {
     it("Clones primitive values", () => {
-      expect(clone(42)).toBe(42);
-      expect(clone("hello")).toBe("hello");
-      expect(clone(true)).toBe(true);
-      expect(clone(null)).toBe(null);
-      expect(clone(undefined)).toBe(undefined);
+      expect(objU.clone(42)).toBe(42);
+      expect(objU.clone("hello")).toBe("hello");
+      expect(objU.clone(true)).toBe(true);
+      expect(objU.clone(null)).toBe(null);
+      expect(objU.clone(undefined)).toBe(undefined);
     });
 
     it("Deep clones array", () => {
       const arr = [1, [2, 3], { a: 4 }];
-      const cloned = clone(arr);
+      const cloned = objU.clone(arr);
 
       expect(cloned).toEqual(arr);
       expect(cloned).not.toBe(arr);
@@ -44,7 +25,7 @@ describe("object utils", () => {
 
     it("Deep clones object", () => {
       const obj = { a: 1, b: { c: 2 }, d: [3, 4] };
-      const cloned = clone(obj);
+      const cloned = objU.clone(obj);
 
       expect(cloned).toEqual(obj);
       expect(cloned).not.toBe(obj);
@@ -54,7 +35,7 @@ describe("object utils", () => {
 
     it("Clones Date", () => {
       const date = new Date(2024, 2, 15);
-      const cloned = clone(date);
+      const cloned = objU.clone(date);
 
       expect(cloned).toEqual(date);
       expect(cloned).not.toBe(date);
@@ -62,7 +43,7 @@ describe("object utils", () => {
 
     it("Clones DateTime", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
-      const cloned = clone(dt);
+      const cloned = objU.clone(dt);
 
       expect(cloned.tick).toBe(dt.tick);
       expect(cloned).not.toBe(dt);
@@ -70,15 +51,15 @@ describe("object utils", () => {
 
     it("Clones DateOnly", () => {
       const d = new DateOnly(2024, 3, 15);
-      const cloned = clone(d);
+      const cloned = objU.clone(d);
 
       expect(cloned.tick).toBe(d.tick);
       expect(cloned).not.toBe(d);
     });
 
     it("Clones Uuid", () => {
-      const uuid = Uuid.new();
-      const cloned = clone(uuid);
+      const uuid = Uuid.generate();
+      const cloned = objU.clone(uuid);
 
       expect(cloned.toString()).toBe(uuid.toString());
       expect(cloned).not.toBe(uuid);
@@ -89,7 +70,7 @@ describe("object utils", () => {
         ["a", 1],
         ["b", { c: 2 }],
       ]);
-      const cloned = clone(map);
+      const cloned = objU.clone(map);
 
       expect(cloned.get("a")).toBe(1);
       expect(cloned.get("b")).toEqual({ c: 2 });
@@ -99,7 +80,7 @@ describe("object utils", () => {
     it("Clones Set", () => {
       const obj = { a: 1 };
       const set = new Set([1, 2, obj]);
-      const cloned = clone(set);
+      const cloned = objU.clone(set);
 
       expect(cloned.has(1)).toBe(true);
       expect(cloned.has(2)).toBe(true);
@@ -113,7 +94,7 @@ describe("object utils", () => {
       const obj: Record<string, unknown> = { a: 1 };
       obj["self"] = obj;
 
-      const cloned = clone(obj);
+      const cloned = objU.clone(obj);
 
       expect(cloned["a"]).toBe(1);
       expect(cloned["self"]).toBe(cloned);
@@ -122,7 +103,7 @@ describe("object utils", () => {
 
     it("Clones RegExp", () => {
       const regex = /test/gi;
-      const cloned = clone(regex);
+      const cloned = objU.clone(regex);
 
       expect(cloned).toEqual(regex);
       expect(cloned).not.toBe(regex);
@@ -132,7 +113,7 @@ describe("object utils", () => {
 
     it("Clones Error", () => {
       const error = new Error("test error");
-      const cloned = clone(error);
+      const cloned = objU.clone(error);
 
       expect(cloned.message).toBe("test error");
       expect(cloned).not.toBe(error);
@@ -141,7 +122,7 @@ describe("object utils", () => {
     it("Clones Error cause", () => {
       const cause = new Error("cause error");
       const error = new Error("test error", { cause });
-      const cloned = clone(error);
+      const cloned = objU.clone(error);
 
       expect(cloned.message).toBe("test error");
       expect(cloned.cause).toBeInstanceOf(Error);
@@ -152,7 +133,7 @@ describe("object utils", () => {
       const error = new Error("test") as Error & { code: string; detail: object };
       error.code = "ERR_CODE";
       error.detail = { key: "value" };
-      const cloned = clone(error);
+      const cloned = objU.clone(error);
 
       expect(cloned.code).toBe("ERR_CODE");
       expect(cloned.detail).toEqual({ key: "value" });
@@ -161,7 +142,7 @@ describe("object utils", () => {
 
     it("Clones Uint8Array", () => {
       const arr = new Uint8Array([1, 2, 3, 4, 5]);
-      const cloned = clone(arr);
+      const cloned = objU.clone(arr);
 
       expect(cloned).toEqual(arr);
       expect(cloned).not.toBe(arr);
@@ -172,7 +153,7 @@ describe("object utils", () => {
       // Object.keys() does not enumerate Symbol keys, so they are not cloned
       const sym = Symbol("test");
       const obj = { a: 1, [sym]: "symbol value" };
-      const cloned = clone(obj);
+      const cloned = objU.clone(obj);
 
       expect(cloned.a).toBe(1);
       expect(cloned[sym]).toBeUndefined();
@@ -183,31 +164,31 @@ describe("object utils", () => {
 
   //#region equal
 
-  describe("objEqual()", () => {
+  describe("objU.equal()", () => {
     it("Compares primitive values", () => {
-      expect(objEqual(1, 1)).toBe(true);
-      expect(objEqual(1, 2)).toBe(false);
-      expect(objEqual("a", "a")).toBe(true);
-      expect(objEqual(null, null)).toBe(true);
-      expect(objEqual(undefined, undefined)).toBe(true);
-      expect(objEqual(null, undefined)).toBe(false);
+      expect(objU.equal(1, 1)).toBe(true);
+      expect(objU.equal(1, 2)).toBe(false);
+      expect(objU.equal("a", "a")).toBe(true);
+      expect(objU.equal(null, null)).toBe(true);
+      expect(objU.equal(undefined, undefined)).toBe(true);
+      expect(objU.equal(null, undefined)).toBe(false);
     });
 
     it("Compares arrays", () => {
-      expect(objEqual([1, 2, 3], [1, 2, 3])).toBe(true);
-      expect(objEqual([1, 2, 3], [1, 2])).toBe(false);
-      expect(objEqual([1, 2, 3], [1, 3, 2])).toBe(false);
+      expect(objU.equal([1, 2, 3], [1, 2, 3])).toBe(true);
+      expect(objU.equal([1, 2, 3], [1, 2])).toBe(false);
+      expect(objU.equal([1, 2, 3], [1, 3, 2])).toBe(false);
     });
 
     it("Compares objects", () => {
-      expect(objEqual({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
-      expect(objEqual({ a: 1, b: 2 }, { a: 1, b: 3 })).toBe(false);
-      expect(objEqual({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+      expect(objU.equal({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
+      expect(objU.equal({ a: 1, b: 2 }, { a: 1, b: 3 })).toBe(false);
+      expect(objU.equal({ a: 1 }, { a: 1, b: 2 })).toBe(false);
     });
 
     it("Compares nested objects", () => {
-      expect(objEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 1 } } })).toBe(true);
-      expect(objEqual({ a: { b: { c: 1 } } }, { a: { b: { c: 2 } } })).toBe(false);
+      expect(objU.equal({ a: { b: { c: 1 } } }, { a: { b: { c: 1 } } })).toBe(true);
+      expect(objU.equal({ a: { b: { c: 1 } } }, { a: { b: { c: 2 } } })).toBe(false);
     });
 
     it("Compares DateTime", () => {
@@ -215,8 +196,8 @@ describe("object utils", () => {
       const dt2 = new DateTime(2024, 3, 15);
       const dt3 = new DateTime(2024, 3, 16);
 
-      expect(objEqual(dt1, dt2)).toBe(true);
-      expect(objEqual(dt1, dt3)).toBe(false);
+      expect(objU.equal(dt1, dt2)).toBe(true);
+      expect(objU.equal(dt1, dt3)).toBe(false);
     });
 
     it("Compares Uuid", () => {
@@ -224,8 +205,8 @@ describe("object utils", () => {
       const uuid2 = new Uuid("12345678-9abc-def0-1234-56789abcdef0");
       const uuid3 = new Uuid("12345678-9abc-def0-1234-56789abcdef1");
 
-      expect(objEqual(uuid1, uuid2)).toBe(true);
-      expect(objEqual(uuid1, uuid3)).toBe(false);
+      expect(objU.equal(uuid1, uuid2)).toBe(true);
+      expect(objU.equal(uuid1, uuid3)).toBe(false);
     });
 
     it("Compares RegExp", () => {
@@ -234,9 +215,9 @@ describe("object utils", () => {
       const regex3 = /test/g;
       const regex4 = /other/gi;
 
-      expect(objEqual(regex1, regex2)).toBe(true);
-      expect(objEqual(regex1, regex3)).toBe(false); // Different flags
-      expect(objEqual(regex1, regex4)).toBe(false); // Different source
+      expect(objU.equal(regex1, regex2)).toBe(true);
+      expect(objU.equal(regex1, regex3)).toBe(false); // Different flags
+      expect(objU.equal(regex1, regex4)).toBe(false); // Different source
     });
 
     it("Compares Map", () => {
@@ -253,8 +234,8 @@ describe("object utils", () => {
         ["b", 3],
       ]);
 
-      expect(objEqual(map1, map2)).toBe(true);
-      expect(objEqual(map1, map3)).toBe(false);
+      expect(objU.equal(map1, map2)).toBe(true);
+      expect(objU.equal(map1, map3)).toBe(false);
     });
 
     it("Compares Set", () => {
@@ -262,37 +243,37 @@ describe("object utils", () => {
       const set2 = new Set([1, 2, 3]);
       const set3 = new Set([1, 2, 4]);
 
-      expect(objEqual(set1, set2)).toBe(true);
-      expect(objEqual(set1, set3)).toBe(false);
+      expect(objU.equal(set1, set2)).toBe(true);
+      expect(objU.equal(set1, set3)).toBe(false);
     });
 
     it("Compares only specific keys with topLevelIncludes option", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
-      expect(objEqual(obj1, obj2, { topLevelIncludes: ["a"] })).toBe(true);
-      expect(objEqual(obj1, obj2, { topLevelIncludes: ["a", "b"] })).toBe(false);
+      expect(objU.equal(obj1, obj2, { topLevelIncludes: ["a"] })).toBe(true);
+      expect(objU.equal(obj1, obj2, { topLevelIncludes: ["a", "b"] })).toBe(false);
     });
 
     it("Excludes specific keys with topLevelExcludes option", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
-      expect(objEqual(obj1, obj2, { topLevelExcludes: ["b", "c"] })).toBe(true);
+      expect(objU.equal(obj1, obj2, { topLevelExcludes: ["b", "c"] })).toBe(true);
     });
 
     it("Ignores array order with ignoreArrayIndex option", () => {
-      expect(objEqual([1, 2, 3], [3, 2, 1], { ignoreArrayIndex: true })).toBe(true);
+      expect(objU.equal([1, 2, 3], [3, 2, 1], { ignoreArrayIndex: true })).toBe(true);
     });
 
-    it("Performs shallow comparison with onlyOneDepth option", () => {
+    it("Performs shallow comparison with shallow option", () => {
       const inner = { c: 1 };
       const obj1 = { a: 1, b: inner };
       const obj2 = { a: 1, b: inner };
       const obj3 = { a: 1, b: { c: 1 } };
 
-      expect(objEqual(obj1, obj2, { onlyOneDepth: true })).toBe(true);
-      expect(objEqual(obj1, obj3, { onlyOneDepth: true })).toBe(false);
+      expect(objU.equal(obj1, obj2, { shallow: true })).toBe(true);
+      expect(objU.equal(obj1, obj3, { shallow: true })).toBe(false);
     });
   });
 
@@ -300,10 +281,10 @@ describe("object utils", () => {
 
   //#region merge
 
-  describe("objMerge()", () => {
+  describe("objU.merge()", () => {
     it("Copies target when source is null", () => {
       const target = { a: 1 };
-      const result = objMerge(null, target);
+      const result = objU.merge(null, target);
 
       expect(result).toEqual({ a: 1 });
       expect(result).not.toBe(target);
@@ -311,7 +292,7 @@ describe("object utils", () => {
 
     it("Copies source when target is undefined", () => {
       const source = { a: 1 };
-      const result = objMerge(source, undefined);
+      const result = objU.merge(source, undefined);
 
       expect(result).toEqual({ a: 1 });
     });
@@ -319,7 +300,7 @@ describe("object utils", () => {
     it("Merges objects", () => {
       const source = { a: 1, b: 2 };
       const target = { b: 3, c: 4 };
-      const result = objMerge(source, target);
+      const result = objU.merge(source, target);
 
       expect(result).toEqual({ a: 1, b: 3, c: 4 });
     });
@@ -327,7 +308,7 @@ describe("object utils", () => {
     it("Merges nested objects", () => {
       const source = { a: { b: 1, c: 2 } };
       const target = { a: { c: 3, d: 4 } };
-      const result = objMerge(source, target);
+      const result = objU.merge(source, target);
 
       expect(result).toEqual({ a: { b: 1, c: 3, d: 4 } });
     });
@@ -335,7 +316,7 @@ describe("object utils", () => {
     it("Replaces array with arrayProcess: replace", () => {
       const source = { arr: [1, 2, 3] };
       const target = { arr: [4, 5] };
-      const result = objMerge(source, target, { arrayProcess: "replace" });
+      const result = objU.merge(source, target, { arrayProcess: "replace" });
 
       expect(result.arr).toEqual([4, 5]);
     });
@@ -343,7 +324,7 @@ describe("object utils", () => {
     it("Concatenates arrays with arrayProcess: concat", () => {
       const source = { arr: [1, 2, 3] };
       const target = { arr: [3, 4, 5] };
-      const result = objMerge(source, target, { arrayProcess: "concat" });
+      const result = objU.merge(source, target, { arrayProcess: "concat" });
 
       // Duplicates removed via Set
       expect(result.arr).toEqual([1, 2, 3, 4, 5]);
@@ -352,7 +333,7 @@ describe("object utils", () => {
     it("Deletes when null with useDelTargetNull option", () => {
       const source = { a: 1, b: 2 };
       const target = { b: null };
-      const result = objMerge(source, target, { useDelTargetNull: true });
+      const result = objU.merge(source, target, { useDelTargetNull: true });
 
       expect(result).toEqual({ a: 1 });
     });
@@ -361,7 +342,7 @@ describe("object utils", () => {
       const source = { a: 1 };
       const target = "string";
 
-      const result = objMerge(source, target as any);
+      const result = objU.merge(source, target as any);
 
       expect(result).toBe("string");
     });
@@ -370,7 +351,7 @@ describe("object utils", () => {
       const source = "string";
       const target = { a: 1 };
 
-      const result = objMerge(source as any, target);
+      const result = objU.merge(source as any, target);
 
       expect(result).toEqual({ a: 1 });
     });
@@ -379,7 +360,7 @@ describe("object utils", () => {
       const source = [1, 2, 3];
       const target = { a: 1 };
 
-      const result = objMerge(source as any, target);
+      const result = objU.merge(source as any, target);
 
       expect(result).toEqual({ a: 1 });
     });
@@ -388,7 +369,7 @@ describe("object utils", () => {
       const source = { a: 1 };
       const target = [1, 2, 3];
 
-      const result = objMerge(source as any, target);
+      const result = objU.merge(source as any, target);
 
       expect(result).toEqual([1, 2, 3]);
     });
@@ -418,7 +399,7 @@ describe("object utils", () => {
         },
       };
 
-      const result = objMerge(source, target);
+      const result = objU.merge(source, target);
 
       expect(result).toEqual({
         level1: {
@@ -456,7 +437,7 @@ describe("object utils", () => {
         },
       };
 
-      const result = objMerge(source, target);
+      const result = objU.merge(source, target);
 
       expect(result.a.b.c.d.value).toBe(2);
     });
@@ -466,7 +447,7 @@ describe("object utils", () => {
       const targetObj = { value: 2 };
       const targetMap = new Map<string, { value: number }>([["key2", targetObj]]);
 
-      const result = objMerge(sourceMap, targetMap);
+      const result = objU.merge(sourceMap, targetMap);
 
       // key2 value is cloned, should be different reference
       expect(result.get("key2")).toEqual({ value: 2 });
@@ -474,12 +455,12 @@ describe("object utils", () => {
     });
   });
 
-  describe("objMerge3()", () => {
+  describe("objU.merge3()", () => {
     it("Uses source value when only source changes", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 3 };
       const target = { a: 1, b: 2 };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(false);
       expect(result).toEqual({ a: 1, b: 3 });
@@ -489,7 +470,7 @@ describe("object utils", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 2 };
       const target = { a: 1, b: 4 };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(false);
       expect(result).toEqual({ a: 1, b: 4 });
@@ -499,7 +480,7 @@ describe("object utils", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 5 };
       const target = { a: 1, b: 5 };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(false);
       expect(result).toEqual({ a: 1, b: 5 });
@@ -509,7 +490,7 @@ describe("object utils", () => {
       const origin = { a: 1, b: 2 };
       const source = { a: 1, b: 3 };
       const target = { a: 1, b: 4 };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       // Origin value preserved
@@ -520,7 +501,7 @@ describe("object utils", () => {
       const origin = { a: 1, b: 2, c: 3 };
       const source = { a: 10, b: 20, c: 3 };
       const target = { a: 1, b: 30, c: 4 };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       expect(result.a).toBe(10); // Only source changed
@@ -532,7 +513,7 @@ describe("object utils", () => {
       const origin = { a: { b: 1, c: 2 } };
       const source = { a: { b: 10, c: 2 } };
       const target = { a: { b: 20, c: 2 } };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       expect(result.a.b).toBe(1); // Both changed differently → conflict → origin preserved
@@ -545,7 +526,7 @@ describe("object utils", () => {
       const origin = { a: { b: 1, c: 2 } };
       const source = { a: { b: 10, c: 2 } };
       const target = { a: { b: 1, c: 20 } };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       expect(result.a.b).toBe(1); // Conflict → origin preserved
@@ -556,7 +537,7 @@ describe("object utils", () => {
       const origin = { arr: [1, 2, 3] };
       const source = { arr: [1, 2, 4] };
       const target = { arr: [1, 2, 5] };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       expect(result.arr).toEqual([1, 2, 3]); // Conflict → origin preserved
@@ -566,7 +547,7 @@ describe("object utils", () => {
       const origin = { value: "original" };
       const source = { value: "from source" };
       const target = { value: "from target" };
-      const { conflict, result } = objMerge3(source, origin, target);
+      const { conflict, result } = objU.merge3(source, origin, target);
 
       expect(conflict).toBe(true);
       expect(result.value).toBe("original"); // Conflict → origin preserved
@@ -577,35 +558,35 @@ describe("object utils", () => {
 
   //#region omit / pick
 
-  describe("objOmit()", () => {
+  describe("objU.omit()", () => {
     it("Excludes specific keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const result = objOmit(obj, ["b"]);
+      const result = objU.omit(obj, ["b"]);
 
       expect(result).toEqual({ a: 1, c: 3 });
     });
 
     it("Excludes multiple keys", () => {
       const obj = { a: 1, b: 2, c: 3, d: 4 };
-      const result = objOmit(obj, ["a", "c"]);
+      const result = objU.omit(obj, ["a", "c"]);
 
       expect(result).toEqual({ b: 2, d: 4 });
     });
   });
 
-  describe("objOmitByFilter()", () => {
+  describe("objU.omitByFilter()", () => {
     it("Excludes keys matching condition", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const result = objOmitByFilter(obj, (key) => key === "b");
+      const result = objU.omitByFilter(obj, (key) => key === "b");
 
       expect(result).toEqual({ a: 1, c: 3 });
     });
   });
 
-  describe("objPick()", () => {
+  describe("objU.pick()", () => {
     it("Selects only specific keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const result = objPick(obj, ["a", "c"]);
+      const result = objU.pick(obj, ["a", "c"]);
 
       expect(result).toEqual({ a: 1, c: 3 });
     });
@@ -615,27 +596,27 @@ describe("object utils", () => {
 
   //#region chain value
 
-  describe("objGetChainValue()", () => {
+  describe("objU.getChainValue()", () => {
     it("Gets value using dot notation", () => {
       const obj = { a: { b: { c: 1 } } };
 
-      expect(objGetChainValue(obj, "a.b.c")).toBe(1);
+      expect(objU.getChainValue(obj, "a.b.c")).toBe(1);
     });
 
     it("Gets value using array notation", () => {
       const obj = { arr: [{ name: "first" }, { name: "second" }] };
 
-      expect(objGetChainValue(obj, "arr[1].name")).toBe("second");
+      expect(objU.getChainValue(obj, "arr[1].name")).toBe("second");
     });
 
     it("Returns undefined for non-existent path with optional: true", () => {
       const obj = { a: 1 };
 
-      expect(objGetChainValue(obj, "b.c.d", true)).toBe(undefined);
+      expect(objU.getChainValue(obj, "b.c.d", true)).toBe(undefined);
     });
   });
 
-  describe("objGetChainValueByDepth()", () => {
+  describe("objU.getChainValueByDepth()", () => {
     it("Descends by depth using same key", () => {
       const obj = {
         parent: {
@@ -647,7 +628,7 @@ describe("object utils", () => {
         },
       };
 
-      const result = objGetChainValueByDepth(obj, "parent", 2);
+      const result = objU.getChainValueByDepth(obj, "parent", 2);
 
       expect(result).toEqual({ parent: { name: "leaf" } });
     });
@@ -655,7 +636,7 @@ describe("object utils", () => {
     it("Throws error when depth is 0", () => {
       const obj = { parent: { name: "child" } };
 
-      expect(() => objGetChainValueByDepth(obj, "parent", 0)).toThrow(
+      expect(() => objU.getChainValueByDepth(obj, "parent", 0)).toThrow(
         "depth must be 1 or greater",
       );
     });
@@ -663,7 +644,7 @@ describe("object utils", () => {
     it("Descends one level when depth is 1", () => {
       const obj = { parent: { name: "child" } };
 
-      const result = objGetChainValueByDepth(obj, "parent", 1);
+      const result = objU.getChainValueByDepth(obj, "parent", 1);
 
       expect(result).toEqual({ name: "child" });
     });
@@ -671,7 +652,7 @@ describe("object utils", () => {
     it("Returns undefined when intermediate path missing with optional: true", () => {
       const obj = { parent: { name: "child" } };
 
-      const result = objGetChainValueByDepth(obj, "parent", 5, true);
+      const result = objU.getChainValueByDepth(obj, "parent", 5, true);
 
       expect(result).toBe(undefined);
     });
@@ -682,21 +663,21 @@ describe("object utils", () => {
       // Without optional, trying to access property on undefined throws error
       // Current implementation only checks result == null inside optional condition
       // So without optional, error is possible
-      expect(() => objGetChainValueByDepth(obj as any, "parent", 2)).toThrow();
+      expect(() => objU.getChainValueByDepth(obj as any, "parent", 2)).toThrow();
     });
   });
 
-  describe("objSetChainValue()", () => {
+  describe("objU.setChainValue()", () => {
     it("Sets value using dot notation", () => {
       const obj: Record<string, unknown> = {};
-      objSetChainValue(obj, "a.b.c", 1);
+      objU.setChainValue(obj, "a.b.c", 1);
 
       expect(obj).toEqual({ a: { b: { c: 1 } } });
     });
 
     it("Overwrites existing value", () => {
       const obj = { a: { b: { c: 1 } } };
-      objSetChainValue(obj, "a.b.c", 2);
+      objU.setChainValue(obj, "a.b.c", 2);
 
       expect(obj.a.b.c).toBe(2);
     });
@@ -704,14 +685,14 @@ describe("object utils", () => {
     it("Throws error for empty chain", () => {
       const obj: Record<string, unknown> = {};
 
-      expect(() => objSetChainValue(obj, "", 1)).toThrow();
+      expect(() => objU.setChainValue(obj, "", 1)).toThrow();
     });
   });
 
-  describe("objDeleteChainValue()", () => {
+  describe("objU.deleteChainValue()", () => {
     it("Deletes value at chain path", () => {
       const obj = { a: { b: { c: 1, d: 2 } } };
-      objDeleteChainValue(obj, "a.b.c");
+      objU.deleteChainValue(obj, "a.b.c");
 
       expect(obj.a.b).toEqual({ d: 2 });
     });
@@ -720,27 +701,27 @@ describe("object utils", () => {
       const obj = { a: 1 };
 
       // No error when intermediate path missing
-      expect(() => objDeleteChainValue(obj, "b.c.d")).not.toThrow();
+      expect(() => objU.deleteChainValue(obj, "b.c.d")).not.toThrow();
       expect(obj).toEqual({ a: 1 });
     });
 
     it("Silently ignores undefined intermediate path", () => {
       const obj: Record<string, unknown> = { a: undefined };
 
-      expect(() => objDeleteChainValue(obj, "a.b.c")).not.toThrow();
+      expect(() => objU.deleteChainValue(obj, "a.b.c")).not.toThrow();
       expect(obj).toEqual({ a: undefined });
     });
 
     it("Silently ignores null intermediate path", () => {
       const obj: Record<string, unknown> = { a: null };
 
-      expect(() => objDeleteChainValue(obj, "a.b.c")).not.toThrow();
+      expect(() => objU.deleteChainValue(obj, "a.b.c")).not.toThrow();
       expect(obj).toEqual({ a: null });
     });
 
     it("Deletes using array index path", () => {
       const obj = { arr: [{ name: "first" }, { name: "second" }] };
-      objDeleteChainValue(obj, "arr[0].name");
+      objU.deleteChainValue(obj, "arr[0].name");
 
       expect(obj.arr[0]).toEqual({});
       expect(obj.arr[1]).toEqual({ name: "second" });
@@ -749,7 +730,7 @@ describe("object utils", () => {
     it("Throws error for empty chain", () => {
       const obj = { a: 1 };
 
-      expect(() => objDeleteChainValue(obj, "")).toThrow();
+      expect(() => objU.deleteChainValue(obj, "")).toThrow();
     });
   });
 
@@ -757,40 +738,40 @@ describe("object utils", () => {
 
   //#region clear / transform
 
-  describe("objClearUndefined()", () => {
+  describe("objU.clearUndefined()", () => {
     it("Deletes keys with undefined value", () => {
       const obj = { a: 1, b: undefined, c: 3 };
-      const result = objClearUndefined(obj);
+      const result = objU.clearUndefined(obj);
 
       expect(result).toEqual({ a: 1, c: 3 });
       expect("b" in result).toBe(false);
     });
   });
 
-  describe("objClear()", () => {
+  describe("objU.clear()", () => {
     it("Deletes all keys", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const result = objClear(obj);
+      const result = objU.clear(obj);
 
       expect(Object.keys(result)).toHaveLength(0);
     });
   });
 
-  describe("objNullToUndefined()", () => {
+  describe("objU.nullToUndefined()", () => {
     it("Converts null to undefined", () => {
-      expect(objNullToUndefined(null)).toBe(undefined);
+      expect(objU.nullToUndefined(null)).toBe(undefined);
     });
 
     it("Converts nested null to undefined", () => {
       const obj = { a: 1, b: null, c: { d: null } };
-      const result = objNullToUndefined(obj);
+      const result = objU.nullToUndefined(obj);
 
       expect(result).toEqual({ a: 1, b: undefined, c: { d: undefined } });
     });
 
     it("Converts null in array to undefined", () => {
       const arr = [1, null, { a: null }];
-      const result = objNullToUndefined(arr);
+      const result = objU.nullToUndefined(arr);
 
       expect(result).toEqual([1, undefined, { a: undefined }]);
     });
@@ -798,7 +779,7 @@ describe("object utils", () => {
     it("Safely handles object with circular references", () => {
       const obj: Record<string, unknown> = { a: null };
       obj["self"] = obj;
-      const result = objNullToUndefined(obj);
+      const result = objU.nullToUndefined(obj);
       expect(result).toBeDefined();
       expect((result as Record<string, unknown>)["a"]).toBeUndefined();
     });
@@ -806,17 +787,17 @@ describe("object utils", () => {
     it("Safely handles array with circular references", () => {
       const arr: unknown[] = [null, 1];
       arr.push(arr);
-      const result = objNullToUndefined(arr);
+      const result = objU.nullToUndefined(arr);
       expect(result).toBeDefined();
       expect((result as unknown[])[0]).toBeUndefined();
       expect((result as unknown[])[1]).toBe(1);
     });
   });
 
-  describe("objUnflatten()", () => {
+  describe("objU.unflatten()", () => {
     it("Converts flattened object to nested", () => {
       const flat = { "a.b.c": 1, "a.b.d": 2, "e": 3 };
-      const result = objUnflatten(flat);
+      const result = objU.unflatten(flat);
 
       expect(result).toEqual({
         a: { b: { c: 1, d: 2 } },

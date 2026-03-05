@@ -330,8 +330,8 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("bulkInsert - insert UUID and binary types", async () => {
-      const testUuid1 = Uuid.new();
-      const testUuid2 = Uuid.new();
+      const testUuid1 = Uuid.generate();
+      const testUuid2 = Uuid.generate();
       const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
       const testBinary2 = new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]);
 

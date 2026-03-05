@@ -47,7 +47,7 @@ import type {
   ExprDateDiff,
   ExprDateAdd,
   ExprFormatDate,
-  ExprIfNull,
+  ExprCoalesce,
   ExprNullIf,
   ExprIs,
   ExprSwitch,
@@ -195,7 +195,7 @@ export abstract class ExprRendererBase {
 
   //#region ========== Abstract - Condition ==========
 
-  protected abstract ifNull(expr: ExprIfNull): string;
+  protected abstract coalesce(expr: ExprCoalesce): string;
   protected abstract nullIf(expr: ExprNullIf): string;
   protected abstract is(expr: ExprIs): string;
   protected abstract switch(expr: ExprSwitch): string;

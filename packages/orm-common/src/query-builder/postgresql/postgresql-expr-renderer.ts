@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid, bytesToHex } from "@simplysm/core-common";
+import { bytes, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,
@@ -111,7 +111,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
       return `'${value.toString()}'::uuid`;
     }
     if (value instanceof Uint8Array) {
-      return `'\\x${bytesToHex(value)}'::bytea`;
+      return `'\\x${bytes.toHex(value)}'::bytea`;
     }
     throw new Error(`Unknown value type: ${typeof value}`);
   }

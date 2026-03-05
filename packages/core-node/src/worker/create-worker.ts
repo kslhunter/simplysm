@@ -1,5 +1,5 @@
 import { parentPort } from "worker_threads";
-import { SdError, transferableDecode, transferableEncode } from "@simplysm/core-common";
+import { SdError, transfer } from "@simplysm/core-common";
 import type { WorkerRequest, WorkerResponse } from "./types";
 
 //#region createWorker
@@ -46,7 +46,7 @@ export function createWorker<
   ): boolean => {
     const body = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
     const response: WorkerResponse = { type: "log", body };
-    const serialized = transferableEncode(response);
+    const serialized = transfer.encode(response);
     port.postMessage(serialized.result, serialized.transferList);
 
     const cb = typeof encodingOrCallback === "function" ? encodingOrCallback : callback;
@@ -58,7 +58,7 @@ export function createWorker<
   };
 
   port.on("message", async (serializedRequest: unknown) => {
-    const decoded = transferableDecode(serializedRequest);
+    const decoded = transfer.decode(serializedRequest);
 
     // Validate request structure
     if (
@@ -79,7 +79,7 @@ export function createWorker<
         request: { id: "unknown", method: "unknown", params: [] },
         body: new SdError(`Invalid worker request format: ${decodedStr}`),
       };
-      const serialized = transferableEncode(errorResponse);
+      const serialized = transfer.encode(errorResponse);
       port.postMessage(serialized.result, serialized.transferList);
       return;
     }
@@ -94,7 +94,7 @@ export function createWorker<
         body: new SdError(`Unknown method: ${request.method}`),
       };
 
-      const serialized = transferableEncode(response);
+      const serialized = transfer.encode(response);
       port.postMessage(serialized.result, serialized.transferList);
       return;
     }
@@ -108,7 +108,7 @@ export function createWorker<
         body: result,
       };
 
-      const serialized = transferableEncode(response);
+      const serialized = transfer.encode(response);
       port.postMessage(serialized.result, serialized.transferList);
     } catch (err) {
       const response: WorkerResponse = {
@@ -117,7 +117,7 @@ export function createWorker<
         body: err instanceof Error ? err : new Error(String(err)),
       };
 
-      const serialized = transferableEncode(response);
+      const serialized = transfer.encode(response);
       port.postMessage(serialized.result, serialized.transferList);
     }
   });
@@ -132,7 +132,7 @@ export function createWorker<
         body: data,
       };
 
-      const serialized = transferableEncode(response);
+      const serialized = transfer.encode(response);
       port.postMessage(serialized.result, serialized.transferList);
     },
   };

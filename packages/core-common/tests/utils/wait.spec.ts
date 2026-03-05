@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { waitTime as time, waitUntil as until, TimeoutError } from "@simplysm/core-common";
+import { wait, TimeoutError } from "@simplysm/core-common";
 
 describe("Wait", () => {
   //#region time
@@ -7,7 +7,7 @@ describe("Wait", () => {
   describe("time()", () => {
     it("Waits for specified time", async () => {
       const start = Date.now();
-      await time(100);
+      await wait.time(100);
       const elapsed = Date.now() - start;
 
       // 100ms ± tolerance - CI environment load and timer precision considered
@@ -24,7 +24,7 @@ describe("Wait", () => {
     it("Waits until condition becomes true", async () => {
       let count = 0;
 
-      await until(() => {
+      await wait.until(() => {
         count++;
         return count >= 3;
       }, 10);
@@ -35,8 +35,8 @@ describe("Wait", () => {
     it("Supports async condition function", async () => {
       let count = 0;
 
-      await until(async () => {
-        await time(10);
+      await wait.until(async () => {
+        await wait.time(10);
         count++;
         return count >= 3;
       }, 10);
@@ -46,7 +46,7 @@ describe("Wait", () => {
 
     it("Returns immediately if condition already true", async () => {
       const start = Date.now();
-      await until(() => true, 100);
+      await wait.until(() => true, 100);
       const elapsed = Date.now() - start;
 
       expect(elapsed).toBeLessThan(50);
@@ -56,7 +56,7 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await until(
+        await wait.until(
           () => {
             count++;
             return false;
@@ -73,7 +73,7 @@ describe("Wait", () => {
       let count = 0;
 
       // Unlimited wait but returns when condition true
-      await until(
+      await wait.until(
         () => {
           count++;
           return count >= 10;
@@ -89,7 +89,7 @@ describe("Wait", () => {
       let count = 0;
       const start = Date.now();
 
-      await until(() => {
+      await wait.until(() => {
         count++;
         return count >= 3;
       });
@@ -104,7 +104,7 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await until(
+        await wait.until(
           () => {
             count++;
             return false;

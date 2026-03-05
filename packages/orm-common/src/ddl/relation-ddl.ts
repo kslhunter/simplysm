@@ -3,10 +3,10 @@ import type { IndexBuilder } from "../schema/factory/index-builder";
 import type {
   QueryDef,
   QueryDefObjectName,
-  AddPkQueryDef,
-  DropPkQueryDef,
-  DropFkQueryDef,
-  DropIdxQueryDef,
+  AddPrimaryKeyQueryDef,
+  DropPrimaryKeyQueryDef,
+  DropForeignKeyQueryDef,
+  DropIndexQueryDef,
 } from "../types/query-def";
 import type { DbContextBase } from "../types/db-context-def";
 import { getMatchedPrimaryKeys } from "../exec/queryable";
@@ -15,21 +15,21 @@ import { getQueryDefObjectName } from "./table-ddl";
 /**
  * Generate DROP PRIMARY KEY QueryDef
  */
-export function getDropPkQueryDef(table: QueryDefObjectName): DropPkQueryDef {
-  return { type: "dropPk", table };
+export function getDropPrimaryKeyQueryDef(table: QueryDefObjectName): DropPrimaryKeyQueryDef {
+  return { type: "dropPrimaryKey", table };
 }
 
 /**
  * Generate ADD PRIMARY KEY QueryDef
  */
-export function getAddPkQueryDef(table: QueryDefObjectName, columns: string[]): AddPkQueryDef {
-  return { type: "addPk", table, columns };
+export function getAddPrimaryKeyQueryDef(table: QueryDefObjectName, columns: string[]): AddPrimaryKeyQueryDef {
+  return { type: "addPrimaryKey", table, columns };
 }
 
 /**
  * Generate ADD FOREIGN KEY QueryDef
  */
-export function getAddFkQueryDef(
+export function getAddForeignKeyQueryDef(
   db: DbContextBase,
   table: QueryDefObjectName,
   relationName: string,
@@ -40,7 +40,7 @@ export function getAddFkQueryDef(
   const pk = getMatchedPrimaryKeys(fkColumns, targetTable);
 
   return {
-    type: "addFk",
+    type: "addForeignKey",
     table,
     foreignKey: {
       name: `FK_${table.name}_${relationName}`,
@@ -54,14 +54,14 @@ export function getAddFkQueryDef(
 /**
  * ADD INDEX QueryDef Generate
  */
-export function getAddIdxQueryDef(
+export function getAddIndexQueryDef(
   table: QueryDefObjectName,
   indexBuilder: IndexBuilder<string[]>,
 ): QueryDef {
   const indexMeta = indexBuilder.meta;
 
   return {
-    type: "addIdx",
+    type: "addIndex",
     table,
     index: {
       name: indexBuilder.meta.name ?? `IDX_${table.name}_${indexMeta.columns.join("_")}`,
@@ -77,13 +77,13 @@ export function getAddIdxQueryDef(
 /**
  * DROP FOREIGN KEY QueryDef Generate
  */
-export function getDropFkQueryDef(table: QueryDefObjectName, relationName: string): DropFkQueryDef {
-  return { type: "dropFk", table, foreignKey: `FK_${table.name}_${relationName}` };
+export function getDropForeignKeyQueryDef(table: QueryDefObjectName, relationName: string): DropForeignKeyQueryDef {
+  return { type: "dropForeignKey", table, foreignKey: `FK_${table.name}_${relationName}` };
 }
 
 /**
  * DROP INDEX QueryDef Generate
  */
-export function getDropIdxQueryDef(table: QueryDefObjectName, columns: string[]): DropIdxQueryDef {
-  return { type: "dropIdx", table, index: `IDX_${table.name}_${columns.join("_")}` };
+export function getDropIndexQueryDef(table: QueryDefObjectName, columns: string[]): DropIndexQueryDef {
+  return { type: "dropIndex", table, index: `IDX_${table.name}_${columns.join("_")}` };
 }

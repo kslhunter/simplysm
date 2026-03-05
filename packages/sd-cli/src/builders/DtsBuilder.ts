@@ -1,6 +1,6 @@
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import type { BuildResult } from "../infra/ResultCollector";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
@@ -83,7 +83,7 @@ export class DtsBuilder extends BaseBuilder {
           target: pkg.config.target,
           type: "dts",
           status: "error",
-          message: errorMessage(err),
+          message: errNs.message(err),
         };
         this.resultCollector.add(result);
         this.completeBuild(pkg);

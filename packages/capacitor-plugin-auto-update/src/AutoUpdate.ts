@@ -1,5 +1,5 @@
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
-import { html, waitUntil, pathJoin, pathBasename, pathExtname } from "@simplysm/core-common";
+import { html, wait, path } from "@simplysm/core-common";
 import { fetchUrlBytes } from "@simplysm/core-browser";
 import type { ServiceClient } from "@simplysm/service-client";
 import type { AutoUpdateService } from "@simplysm/service-common";
@@ -76,7 +76,7 @@ export abstract class AutoUpdate {
       `);
       await ApkInstaller.requestPermissions();
       // Wait up to 5 minutes (300 seconds) - time for user to grant permission in settings
-      await waitUntil(
+      await wait.until(
         async () => {
           const result = await ApkInstaller.checkPermissions();
           return result.granted;
@@ -165,7 +165,7 @@ export abstract class AutoUpdate {
         },
       );
       const storagePath = await FileSystem.getStoragePath("appCache");
-      const apkFilePath = pathJoin(storagePath, `latest.apk`);
+      const apkFilePath = path.join(storagePath, `latest.apk`);
       await FileSystem.writeFile(apkFilePath, buffer);
 
       await this._installApk(opt.log, apkFilePath);
@@ -185,14 +185,14 @@ export abstract class AutoUpdate {
 
       // Get versions
       const externalPath = await FileSystem.getStoragePath("external");
-      const fileInfos = await FileSystem.readdir(pathJoin(externalPath, opt.dirPath));
+      const fileInfos = await FileSystem.readdir(path.join(externalPath, opt.dirPath));
 
       const versions = fileInfos
         .filter((fileInfo) => !fileInfo.isDirectory)
         .map((fileInfo) => ({
           fileName: fileInfo.name,
-          version: pathBasename(fileInfo.name, pathExtname(fileInfo.name)),
-          extName: pathExtname(fileInfo.name),
+          version: path.basename(fileInfo.name, path.extname(fileInfo.name)),
+          extName: path.extname(fileInfo.name),
         }))
         .filter((item) => {
           return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
@@ -229,7 +229,7 @@ export abstract class AutoUpdate {
         return;
       }
 
-      const apkFilePath = pathJoin(externalPath, opt.dirPath, latestVersion + ".apk");
+      const apkFilePath = path.join(externalPath, opt.dirPath, latestVersion + ".apk");
       await this._installApk(opt.log, apkFilePath);
       await this._freezeApp();
     } catch (err) {

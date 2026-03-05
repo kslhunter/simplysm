@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { LazyGcMap, transferableDecode, Uuid } from "@simplysm/core-common";
+import { LazyGcMap, transfer, Uuid } from "@simplysm/core-common";
 import type {
   ServiceMessageDecodeResult,
   ServiceMessage,
@@ -77,14 +77,14 @@ function getWorker(): Worker | undefined {
 async function runWorker(
   type: "encode" | "decode",
   data: unknown,
-  transfer: Transferable[] = [],
+  transferables: Transferable[] = [],
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const id = Uuid.new().toString();
+    const id = Uuid.generate().toString();
 
     workerResolvers.set(id, { resolve, reject });
     // Called after workerAvailable check, so worker always exists
-    getWorker()!.postMessage({ id, type, data }, { transfer });
+    getWorker()!.postMessage({ id, type, data }, { transfer: transferables });
   });
 }
 
@@ -137,7 +137,7 @@ export function createClientProtocolWrapper(protocol: ServiceProtocol): ClientPr
     const rawResult = await runWorker("decode", bytes, [bytes.buffer]);
 
     // Restore class instances (DateTime, etc.) from Worker's plain object result
-    return transferableDecode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
+    return transfer.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
   }
 
   return {

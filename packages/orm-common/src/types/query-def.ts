@@ -174,7 +174,7 @@ export interface UpsertQueryDef {
 export interface SwitchFkQueryDef {
   type: "switchFk";
   table: QueryDefObjectName;
-  switch: "on" | "off";
+  enabled: boolean;
 }
 
 //#endregion
@@ -275,21 +275,21 @@ export interface RenameColumnQueryDef {
 //#region ========== DDL - PK/FK/Index ==========
 
 /** DROP PRIMARY KEY */
-export interface DropPkQueryDef {
-  type: "dropPk";
+export interface DropPrimaryKeyQueryDef {
+  type: "dropPrimaryKey";
   table: QueryDefObjectName;
 }
 
 /** ADD PRIMARY KEY */
-export interface AddPkQueryDef {
-  type: "addPk";
+export interface AddPrimaryKeyQueryDef {
+  type: "addPrimaryKey";
   table: QueryDefObjectName;
   columns: string[];
 }
 
 /** ADD FOREIGN KEY */
-export interface AddFkQueryDef {
-  type: "addFk";
+export interface AddForeignKeyQueryDef {
+  type: "addForeignKey";
   table: QueryDefObjectName;
   foreignKey: {
     name: string;
@@ -300,15 +300,15 @@ export interface AddFkQueryDef {
 }
 
 /** DROP FOREIGN KEY */
-export interface DropFkQueryDef {
-  type: "dropFk";
+export interface DropForeignKeyQueryDef {
+  type: "dropForeignKey";
   table: QueryDefObjectName;
   foreignKey: string;
 }
 
 /** CREATE INDEX */
-export interface AddIdxQueryDef {
-  type: "addIdx";
+export interface AddIndexQueryDef {
+  type: "addIndex";
   table: QueryDefObjectName;
   index: {
     name: string;
@@ -318,8 +318,8 @@ export interface AddIdxQueryDef {
 }
 
 /** DROP INDEX */
-export interface DropIdxQueryDef {
-  type: "dropIdx";
+export interface DropIndexQueryDef {
+  type: "dropIndex";
   table: QueryDefObjectName;
   index: string;
 }
@@ -403,12 +403,12 @@ type DdlQueryDef =
   | DropColumnQueryDef
   | ModifyColumnQueryDef
   | RenameColumnQueryDef
-  | DropPkQueryDef
-  | AddPkQueryDef
-  | AddFkQueryDef
-  | DropFkQueryDef
-  | AddIdxQueryDef
-  | DropIdxQueryDef
+  | DropPrimaryKeyQueryDef
+  | AddPrimaryKeyQueryDef
+  | AddForeignKeyQueryDef
+  | DropForeignKeyQueryDef
+  | AddIndexQueryDef
+  | DropIndexQueryDef
   | CreateViewQueryDef
   | DropViewQueryDef
   | CreateProcQueryDef
@@ -433,12 +433,12 @@ export const DDL_TYPES = [
   "dropColumn",
   "modifyColumn",
   "renameColumn",
-  "dropPk",
-  "addPk",
-  "addFk",
-  "dropFk",
-  "addIdx",
-  "dropIdx",
+  "dropPrimaryKey",
+  "addPrimaryKey",
+  "addForeignKey",
+  "dropForeignKey",
+  "addIndex",
+  "dropIndex",
   "createView",
   "dropView",
   "createProc",
@@ -490,12 +490,12 @@ export type QueryDef =
   | RenameColumnQueryDef
 
   // DDL - PK/FK/Index
-  | DropPkQueryDef
-  | AddPkQueryDef
-  | AddFkQueryDef
-  | DropFkQueryDef
-  | AddIdxQueryDef
-  | DropIdxQueryDef
+  | DropPrimaryKeyQueryDef
+  | AddPrimaryKeyQueryDef
+  | AddForeignKeyQueryDef
+  | DropForeignKeyQueryDef
+  | AddIndexQueryDef
+  | DropIndexQueryDef
 
   // DDL - View/Procedure
   | CreateViewQueryDef

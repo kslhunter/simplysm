@@ -1,4 +1,4 @@
-import { jsonParse } from "@simplysm/core-common";
+import { json } from "@simplysm/core-common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { verifyJwt } from "../../auth/jwt-manager";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
@@ -45,7 +45,7 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
     if (typeof query.json !== "string") {
       throw new Error("JSON query parameter required");
     }
-    params = jsonParse(query.json);
+    params = json.parse(query.json);
   } else if (req.method === "POST") {
     if (!Array.isArray(req.body)) {
       reply.status(400).send({

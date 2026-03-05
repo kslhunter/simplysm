@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { formatDate, normalizeMonth } from "../utils/date-format";
+import { format, normalizeMonth } from "../utils/date-format";
 
 /**
  * Date class (without time: yyyy-MM-dd, immutable)
@@ -327,7 +327,7 @@ export class DateOnly {
    * @see dtFormat for supported format strings
    */
   toFormatString(formatStr: string): string {
-    return formatDate(formatStr, {
+    return format(formatStr, {
       year: this.year,
       month: this.month,
       day: this.day,

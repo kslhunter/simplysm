@@ -213,7 +213,7 @@ export function createWebSocketHandler(
       changedFileSet: Set<string>,
     ): Promise<void> {
       for (const serviceSocket of socketMap.values()) {
-        await serviceSocket.send(Uuid.new().toString(), {
+        await serviceSocket.send(Uuid.generate().toString(), {
           name: "reload",
           body: {
             clientName,
@@ -237,7 +237,7 @@ export function createWebSocketHandler(
       for (const subSock of socketMap.values()) {
         const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
         if (subTargetKeys.length > 0) {
-          await subSock.send(Uuid.new().toString(), {
+          await subSock.send(Uuid.generate().toString(), {
             name: "evt:on",
             body: {
               keys: subTargetKeys,

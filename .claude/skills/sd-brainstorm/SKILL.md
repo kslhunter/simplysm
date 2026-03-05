@@ -132,6 +132,15 @@ digraph scale {
 }
 ```
 
+**How to present the split proposal:**
+
+When proposing the split to the user, you MUST clearly explain what "section split" means:
+
+- **Section split** = the design document is divided into sections, and each section goes through its own **separate brainstorm → plan → plan-dev → check → commit cycle**.
+- This is NOT about implementation phasing (doing some changes before others). It's about breaking the design work itself into independently deliverable chunks.
+- Explain: "Splitting into sections means each section goes through its own brainstorm → plan → plan-dev cycle. Complete and commit one section before moving to the next."
+- Contrast with: "Proceeding as-is means this single design document goes straight to plan → plan-dev."
+
 **Section plan format** (append to existing design content as-is):
 
 ```markdown

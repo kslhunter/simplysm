@@ -20,7 +20,7 @@ import type { PrimitiveTypeMap, PrimitiveTypeStr } from "../common.types";
  * getPrimitiveTypeStr(new DateTime()) // "DateTime"
  * getPrimitiveTypeStr(new Uint8Array()) // "Bytes"
  */
-export function getPrimitiveTypeStr(value: PrimitiveTypeMap[PrimitiveTypeStr]): PrimitiveTypeStr {
+export function typeStr(value: PrimitiveTypeMap[PrimitiveTypeStr]): PrimitiveTypeStr {
   if (typeof value === "string") return "string";
   if (typeof value === "number") return "number";
   if (typeof value === "boolean") return "boolean";

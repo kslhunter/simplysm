@@ -1,5 +1,5 @@
 import { type Accessor, type JSX, createContext, createMemo, createSignal, onCleanup, useContext } from "solid-js";
-import { objEqual, waitUntil } from "@simplysm/core-common";
+import { obj, wait as waitU } from "@simplysm/core-common";
 import { SharedDataChangeEvent } from "./SharedDataChangeEvent";
 import { useServiceClient } from "../ServiceClientProvider";
 import { useNotification } from "../../components/feedback/notification/NotificationProvider";
@@ -194,7 +194,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
   }
 
   async function wait(): Promise<void> {
-    await waitUntil(() => busyCount() <= 0);
+    await waitU.until(() => busyCount() <= 0);
   }
 
   function configure(
@@ -263,7 +263,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         emit: async (changeKeys?: Array<string | number>) => {
           await client.emitToServer(
             SharedDataChangeEvent,
-            (info) => info.name === name && objEqual(info.filter, def.filter),
+            (info) => info.name === name && obj.equal(info.filter, def.filter),
             changeKeys,
           );
         },

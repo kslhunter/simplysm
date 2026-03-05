@@ -7,7 +7,7 @@ import { ArgumentError } from "../errors/argument-error";
  * Generates cryptographically secure UUIDs based on crypto.getRandomValues. (Chrome 79+, Node.js compatible)
  *
  * @example
- * const id = Uuid.new();
+ * const id = Uuid.generate();
  * const fromStr = new Uuid("550e8400-e29b-41d4-a716-446655440000");
  */
 export class Uuid {
@@ -47,7 +47,7 @@ export class Uuid {
   }
 
   /** Create new UUID v4 instance */
-  static new(): Uuid {
+  static generate(): Uuid {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
 

@@ -3,7 +3,7 @@ import fs from "fs";
 import { execaSync } from "execa";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathNorm } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
   parseRootTsconfig,
@@ -353,7 +353,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     return {
       success: false,
       mainJsPath,
-      errors: [errorMessage(err)],
+      errors: [errNs.message(err)],
     };
   }
 }
@@ -539,13 +539,13 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
         }
       } catch (err) {
         sender.send("error", {
-          message: errorMessage(err),
+          message: errNs.message(err),
         });
       }
     });
   } catch (err) {
     sender.send("error", {
-      message: errorMessage(err),
+      message: errNs.message(err),
     });
   }
 }

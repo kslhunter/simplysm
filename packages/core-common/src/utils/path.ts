@@ -11,7 +11,7 @@
  * Combine paths (path.join replacement)
  * @note Supports POSIX style paths only (slash `/`)
  */
-export function pathJoin(...segments: string[]): string {
+export function join(...segments: string[]): string {
   return segments
     .map((s, i) => (i === 0 ? s.replace(/\/+$/, "") : s.replace(/^\/+|\/+$/g, "")))
     .filter(Boolean)
@@ -21,7 +21,7 @@ export function pathJoin(...segments: string[]): string {
 /**
  * Extract filename (path.basename replacement)
  */
-export function pathBasename(filePath: string, ext?: string): string {
+export function basename(filePath: string, ext?: string): string {
   const name = filePath.split("/").pop() ?? "";
   if (ext != null && ext !== "" && name.endsWith(ext)) {
     return name.slice(0, -ext.length);
@@ -33,7 +33,7 @@ export function pathBasename(filePath: string, ext?: string): string {
  * Extract file extension (path.extname replacement)
  * @note Hidden files (e.g., `.gitignore`) return empty string (same as Node.js path.extname)
  */
-export function pathExtname(filePath: string): string {
+export function extname(filePath: string): string {
   const name = filePath.split("/").pop() ?? "";
   const dotIndex = name.lastIndexOf(".");
   return dotIndex > 0 ? name.slice(dotIndex) : "";

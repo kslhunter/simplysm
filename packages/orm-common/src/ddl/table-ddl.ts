@@ -11,7 +11,7 @@ import type {
   DropProcQueryDef,
 } from "../types/query-def";
 import type { DbContextBase } from "../types/db-context-def";
-import { objClearUndefined } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 
 /**
  * Builder를 CREATE QueryDef로 Transform
@@ -181,7 +181,7 @@ export function getQueryDefObjectName(
   db: DbContextBase,
   tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
 ): QueryDefObjectName {
-  return objClearUndefined({
+  return obj.clearUndefined({
     database: tableOrView.meta.database ?? db.database,
     schema: tableOrView.meta.schema ?? db.schema,
     name: tableOrView.meta.name,

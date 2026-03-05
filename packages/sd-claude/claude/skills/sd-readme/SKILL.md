@@ -185,7 +185,7 @@ Report what was changed.
 | Ignoring existing docs/ structure     | If docs/ exists, update those files too                             |
 | Arbitrary section reorganization      | Follow index.ts `#region` structure                                 |
 | Missing import paths in examples      | Always: `import { X } from "@simplysm/..."`                         |
-| Writing in Korean                     | README must be in English                                           |
+| Writing in non-English languages      | README must be in English                                           |
 | Adding changelog sections             | Never add version history                                           |
 | Editing before reporting diff         | Always report ADDED/REMOVED/CHANGED and wait for confirmation       |
 | Destroying docs/ link format          | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |

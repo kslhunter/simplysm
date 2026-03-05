@@ -1,43 +1,43 @@
 import { describe, it, expect } from "vitest";
-import { getPrimitiveTypeStr, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
+import { primitive, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 
 describe("primitive utils", () => {
-  describe("getPrimitiveTypeStr()", () => {
+  describe("typeStr()", () => {
     it("Returns string", () => {
-      expect(getPrimitiveTypeStr("hello")).toBe("string");
+      expect(primitive.typeStr("hello")).toBe("string");
     });
 
     it("Returns number", () => {
-      expect(getPrimitiveTypeStr(42)).toBe("number");
+      expect(primitive.typeStr(42)).toBe("number");
     });
 
     it("Returns boolean", () => {
-      expect(getPrimitiveTypeStr(true)).toBe("boolean");
-      expect(getPrimitiveTypeStr(false)).toBe("boolean");
+      expect(primitive.typeStr(true)).toBe("boolean");
+      expect(primitive.typeStr(false)).toBe("boolean");
     });
 
     it("Returns DateTime", () => {
-      expect(getPrimitiveTypeStr(new DateTime())).toBe("DateTime");
+      expect(primitive.typeStr(new DateTime())).toBe("DateTime");
     });
 
     it("Returns DateOnly", () => {
-      expect(getPrimitiveTypeStr(new DateOnly())).toBe("DateOnly");
+      expect(primitive.typeStr(new DateOnly())).toBe("DateOnly");
     });
 
     it("Returns Time", () => {
-      expect(getPrimitiveTypeStr(new Time())).toBe("Time");
+      expect(primitive.typeStr(new Time())).toBe("Time");
     });
 
     it("Returns Uuid", () => {
-      expect(getPrimitiveTypeStr(Uuid.new())).toBe("Uuid");
+      expect(primitive.typeStr(Uuid.generate())).toBe("Uuid");
     });
 
     it("Uint8Array returns Bytes", () => {
-      expect(getPrimitiveTypeStr(new Uint8Array([1, 2]))).toBe("Bytes");
+      expect(primitive.typeStr(new Uint8Array([1, 2]))).toBe("Bytes");
     });
 
     it("Unsupported type throws error", () => {
-      expect(() => getPrimitiveTypeStr({} as never)).toThrow();
+      expect(() => primitive.typeStr({} as never)).toThrow();
     });
   });
 });

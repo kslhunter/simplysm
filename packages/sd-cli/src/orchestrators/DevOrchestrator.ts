@@ -1,6 +1,6 @@
 import path from "path";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
@@ -295,7 +295,7 @@ export class DevOrchestrator {
             target: "client",
             type: "capacitor",
             status: "error",
-            message: errorMessage(err),
+            message: errNs.message(err),
           });
           this._logger.fail(taskName);
         }
@@ -371,7 +371,7 @@ export class DevOrchestrator {
             target: workerInfo.config.target,
             type: "build",
             status: "error",
-            message: errorMessage(err),
+            message: errNs.message(err),
           });
         });
     }
@@ -471,7 +471,7 @@ export class DevOrchestrator {
             target: workerInfo.config.target,
             type: "build",
             status: "error",
-            message: errorMessage(err),
+            message: errNs.message(err),
           });
         });
     }
@@ -563,7 +563,7 @@ export class DevOrchestrator {
 
         // Start runtime worker on build success (separate async function to prevent error propagation)
         void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
-          const message = errorMessage(err);
+          const message = errNs.message(err);
           this._logger.error(`[${name}] Error starting Server Runtime:`, message);
 
           this._results.set(`${name}:server`, {
@@ -668,7 +668,7 @@ export class DevOrchestrator {
             clientPorts: serverClientPorts,
           })
           .catch((err: unknown) => {
-            const message = errorMessage(err);
+            const message = errNs.message(err);
             this._logger.error(`[${serverName}] Server Runtime Worker crashed:`, message);
 
             this._results.set(`${serverName}:server`, {
@@ -724,7 +724,7 @@ export class DevOrchestrator {
             target: "server",
             type: "build",
             status: "error",
-            message: errorMessage(err),
+            message: errNs.message(err),
           });
           serverRuntimePromises.get(name)?.resolver();
           serverBuild.buildResolver();

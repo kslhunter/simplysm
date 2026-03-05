@@ -13,7 +13,7 @@ Determine the major version by the `version` field in `package.json`.
 
 | When                                             | Read this file                        |
 | ------------------------------------------------ | ------------------------------------- |
-| Writing or modifying code                        | `.claude/refs/sd-code-conventions.md` |
+| Writing, modifying, or reviewing code            | `.claude/refs/sd-code-conventions.md` |
 | Working with `.cache/` or Playwright screenshots | `.claude/refs/sd-directories.md`      |
 | Using `@simplysm/*` package APIs                 | `.claude/refs/sd-simplysm-docs.md`    |
 | Debugging, problem-solving, or planning approach | `.claude/refs/sd-workflow.md`         |

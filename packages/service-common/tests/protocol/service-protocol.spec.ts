@@ -16,7 +16,7 @@ describe("ServiceProtocol", () => {
 
   describe("Encoding", () => {
     it("encode single message", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ test: "data" }] };
 
       const result = protocol.encode(uuid, message);
@@ -26,7 +26,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("throw error when message exceeds 100MB", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // Generate data larger than 100MB
       const largeData = "x".repeat(101 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
@@ -37,7 +37,7 @@ describe("ServiceProtocol", () => {
 
   describe("Decoding", () => {
     it("decode single message", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       const message: ServiceMessage = { name: "test.method", body: [{ value: 123 }] };
 
       const encoded = protocol.encode(uuid, message);
@@ -59,7 +59,7 @@ describe("ServiceProtocol", () => {
     it("throw error when decoded message exceeds 100MB", () => {
       // Manually create header with totalSize exceeding 100MB
       const headerBytes = new Uint8Array(28);
-      const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
+      const uuidBytes = new Uuid(Uuid.generate().toString()).toBytes();
       headerBytes.set(uuidBytes, 0);
 
       const headerView = new DataView(
@@ -76,7 +76,7 @@ describe("ServiceProtocol", () => {
 
   describe("Chunking", () => {
     it("chunk message larger than 3MB", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // Create 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
@@ -87,7 +87,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("assemble chunked message in order", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
@@ -111,7 +111,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("assemble chunked message in reverse order", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
@@ -133,7 +133,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("prevent duplicate packets", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // 4MB data
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
@@ -162,8 +162,8 @@ describe("ServiceProtocol", () => {
 
   describe("UUID interleaving", () => {
     it("receive chunks from multiple UUIDs in interleaved order", () => {
-      const uuid1 = Uuid.new().toString();
-      const uuid2 = Uuid.new().toString();
+      const uuid1 = Uuid.generate().toString();
+      const uuid2 = Uuid.generate().toString();
 
       // Each with 4MB data to trigger chunking
       const largeData1 = "A".repeat(4 * 1024 * 1024);
@@ -207,7 +207,7 @@ describe("ServiceProtocol", () => {
 
   describe("Edge cases", () => {
     it("handle null body", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       const message: ServiceMessage = { name: "test.method", body: [null] };
 
       const encoded = protocol.encode(uuid, message);
@@ -221,7 +221,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("handle message at exactly 3MB boundary", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       // Exactly 3MB
       const data = "x".repeat(3 * 1024 * 1024 - 50); // Account for some JSON overhead
       const message: ServiceMessage = { name: "test.method", body: [data] };
@@ -232,7 +232,7 @@ describe("ServiceProtocol", () => {
     });
 
     it("include correct information in progress response", () => {
-      const uuid = Uuid.new().toString();
+      const uuid = Uuid.generate().toString();
       const largeData = "x".repeat(4 * 1024 * 1024);
       const message: ServiceMessage = { name: "test.method", body: [largeData] };
 

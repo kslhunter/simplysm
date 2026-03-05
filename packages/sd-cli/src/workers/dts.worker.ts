@@ -1,7 +1,7 @@
 import path from "path";
 import ts from "typescript";
 import { createWorker, pathIsChildPath, pathNorm } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
   getCompilerOptionsForPackage,
@@ -329,7 +329,7 @@ async function build(info: DtsBuildInfo): Promise<DtsBuildResult> {
   } catch (err) {
     return {
       success: false,
-      errors: [errorMessage(err)],
+      errors: [errNs.message(err)],
       diagnostics: [],
       errorCount: 1,
       warningCount: 0,
@@ -449,7 +449,7 @@ async function startWatch(info: DtsWatchInfo): Promise<void> {
     tscWatchProgram = ts.createWatchProgram(host);
   } catch (err) {
     sender.send("error", {
-      message: errorMessage(err),
+      message: errNs.message(err),
     });
   }
 }

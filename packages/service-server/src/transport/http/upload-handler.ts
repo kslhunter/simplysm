@@ -52,7 +52,7 @@ export async function handleUpload(
       if (part.type === "file") {
         const originalFilename = part.filename;
         const extension = path.extname(originalFilename);
-        const saveName = `${Uuid.new().toString()}${extension}`;
+        const saveName = `${Uuid.generate().toString()}${extension}`;
         currentSavePath = path.join(uploadDir, saveName);
 
         await pipeline(part.file, createWriteStream(currentSavePath));

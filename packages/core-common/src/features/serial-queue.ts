@@ -18,7 +18,7 @@
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";
 import consola from "consola";
-import { waitTime } from "../utils/wait";
+import { time } from "../utils/wait";
 
 interface SerialQueueEvents {
   error: SdError;
@@ -84,7 +84,7 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
         }
 
         if (this._gap > 0 && this._queue.length > 0) {
-          await waitTime(this._gap);
+          await time(this._gap);
         }
       }
     } finally {

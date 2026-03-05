@@ -28,10 +28,10 @@ const suffixTable = {
  *   - `"라"`: 이라/라 (ira/ra - copula particle)
  *
  * @example
- * koreanGetSuffix("Apple", "을") // "를"
- * koreanGetSuffix("책", "이") // "이"
+ * getKoreanSuffix("Apple", "을") // "를"
+ * getKoreanSuffix("책", "이") // "이"
  */
-export function koreanGetSuffix(
+export function getKoreanSuffix(
   text: string,
   type: "을" | "은" | "이" | "와" | "랑" | "로" | "라",
 ): string {
@@ -147,10 +147,10 @@ const fullWidthCharRegex = new RegExp(`[${Object.keys(fullWidthCharMap).join("")
  * - Full-width parentheses (（） → ())
  *
  * @example
- * strReplaceFullWidth("Ａ１２３") // "A123"
- * strReplaceFullWidth("（株）") // "(株)"
+ * replaceFullWidth("Ａ１２３") // "A123"
+ * replaceFullWidth("（株）") // "(株)"
  */
-export function strReplaceFullWidth(str: string): string {
+export function replaceFullWidth(str: string): string {
   return str.replace(fullWidthCharRegex, (char) => fullWidthCharMap[char] ?? char);
 }
 
@@ -164,7 +164,7 @@ export function strReplaceFullWidth(str: string): string {
  * @example "hello_world" → "HelloWorld"
  * @example "hello.world" → "HelloWorld"
  */
-export function strToPascalCase(str: string): string {
+export function toPascalCase(str: string): string {
   return str
     .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
     .replace(/^[a-z]/, (m) => m.toUpperCase());
@@ -176,7 +176,7 @@ export function strToPascalCase(str: string): string {
  * @example "hello_world" → "helloWorld"
  * @example "HelloWorld" → "helloWorld"
  */
-export function strToCamelCase(str: string): string {
+export function toCamelCase(str: string): string {
   return str
     .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
     .replace(/^[A-Z]/, (m) => m.toLowerCase());
@@ -192,7 +192,7 @@ export function strToCamelCase(str: string): string {
  * @example "Hello-World" → "hello--world" (existing separators are preserved)
  * @example "XMLParser" → "x-m-l-parser" (consecutive uppercase letters are separated)
  */
-export function strToKebabCase(str: string): string {
+export function toKebabCase(str: string): string {
   return toCaseWithSeparator(str, "-");
 }
 
@@ -206,7 +206,7 @@ export function strToKebabCase(str: string): string {
  * @example "Hello_World" → "hello__world" (existing separators are preserved)
  * @example "XMLParser" → "x_m_l_parser" (consecutive uppercase letters are separated)
  */
-export function strToSnakeCase(str: string): string {
+export function toSnakeCase(str: string): string {
   return toCaseWithSeparator(str, "_");
 }
 
@@ -228,7 +228,7 @@ function toCaseWithSeparator(str: string, separator: string): string {
  *
  * @example
  * const name: string | undefined = getValue();
- * if (strIsNullOrEmpty(name)) {
+ * if (isNullOrEmpty(name)) {
  *   // name: "" | undefined
  *   console.log("Name is empty");
  * } else {
@@ -236,7 +236,7 @@ function toCaseWithSeparator(str: string, separator: string): string {
  *   console.log(`Name: ${name}`);
  * }
  */
-export function strIsNullOrEmpty(str: string | undefined): str is "" | undefined {
+export function isNullOrEmpty(str: string | undefined): str is "" | undefined {
   return str == null || str === "";
 }
 
@@ -249,11 +249,11 @@ export function strIsNullOrEmpty(str: string | undefined): str is "" | undefined
  * @returns A new string with the insertion applied
  *
  * @example
- * strInsert("Hello World", 5, ","); // "Hello, World"
- * strInsert("abc", 0, "X"); // "Xabc"
- * strInsert("abc", 3, "X"); // "abcX"
+ * insert("Hello World", 5, ","); // "Hello, World"
+ * insert("abc", 0, "X"); // "Xabc"
+ * insert("abc", 3, "X"); // "abcX"
  */
-export function strInsert(str: string, index: number, insertString: string): string {
+export function insert(str: string, index: number, insertString: string): string {
   return str.substring(0, index) + insertString + str.substring(index);
 }
 

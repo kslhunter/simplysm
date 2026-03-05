@@ -27,7 +27,7 @@ export interface DbContextBase {
   getQueryDefObjectName(
     tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName;
-  switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void>;
+  switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
 }
 
 export type DbContextStatus = "ready" | "connect" | "transact";
@@ -61,13 +61,13 @@ export type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbCont
   DbContextDdlMethods & {
     // Auto-mapped table queryable accessors
     [K in keyof TDef["meta"]["tables"]]: () => import("../exec/queryable").Queryable<
-      TDef["meta"]["tables"][K]["$infer"],
+      TDef["meta"]["tables"][K]["$inferSelect"],
       TDef["meta"]["tables"][K]
     >;
   } & {
     // Auto-mapped view queryable accessors
     [K in keyof TDef["meta"]["views"]]: () => import("../exec/queryable").Queryable<
-      TDef["meta"]["views"][K]["$infer"],
+      TDef["meta"]["views"][K]["$inferSelect"],
       never
     >;
   } & {
@@ -86,7 +86,7 @@ export type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbCont
 export interface DbContextConnectionMethods {
   connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
   connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult>;
-  trans<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
+  transaction<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
 }
 
 export interface DbContextDdlMethods {
@@ -109,20 +109,20 @@ export interface DbContextDdlMethods {
     column: ColumnBuilder<any, any>,
   ): Promise<void>;
   renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void>;
-  addPk(table: QueryDefObjectName, columns: string[]): Promise<void>;
-  dropPk(table: QueryDefObjectName): Promise<void>;
-  addFk(
+  addPrimaryKey(table: QueryDefObjectName, columns: string[]): Promise<void>;
+  dropPrimaryKey(table: QueryDefObjectName): Promise<void>;
+  addForeignKey(
     table: QueryDefObjectName,
     relationName: string,
     relationDef: ForeignKeyBuilder<any, any>,
   ): Promise<void>;
-  addIdx(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void>;
-  dropFk(table: QueryDefObjectName, relationName: string): Promise<void>;
-  dropIdx(table: QueryDefObjectName, columns: string[]): Promise<void>;
+  addIndex(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void>;
+  dropForeignKey(table: QueryDefObjectName, relationName: string): Promise<void>;
+  dropIndex(table: QueryDefObjectName, columns: string[]): Promise<void>;
   clearSchema(params: { database: string; schema?: string }): Promise<void>;
   schemaExists(database: string, schema?: string): Promise<boolean>;
   truncate(table: QueryDefObjectName): Promise<void>;
-  switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void>;
+  switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
   // QueryDef generators
   getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef;
   getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef;
@@ -146,18 +146,18 @@ export interface DbContextDdlMethods {
     column: ColumnBuilder<any, any>,
   ): QueryDef;
   getRenameColumnQueryDef(table: QueryDefObjectName, column: string, newName: string): QueryDef;
-  getAddPkQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
-  getDropPkQueryDef(table: QueryDefObjectName): QueryDef;
-  getAddFkQueryDef(
+  getAddPrimaryKeyQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
+  getDropPrimaryKeyQueryDef(table: QueryDefObjectName): QueryDef;
+  getAddForeignKeyQueryDef(
     table: QueryDefObjectName,
     relationName: string,
     relationDef: ForeignKeyBuilder<any, any>,
   ): QueryDef;
-  getAddIdxQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef;
-  getDropFkQueryDef(table: QueryDefObjectName, relationName: string): QueryDef;
-  getDropIdxQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
+  getAddIndexQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef;
+  getDropForeignKeyQueryDef(table: QueryDefObjectName, relationName: string): QueryDef;
+  getDropIndexQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
   getClearSchemaQueryDef(params: { database: string; schema?: string }): QueryDef;
   getSchemaExistsQueryDef(database: string, schema?: string): QueryDef;
   getTruncateQueryDef(table: QueryDefObjectName): QueryDef;
-  getSwitchFkQueryDef(table: QueryDefObjectName, switch_: "on" | "off"): QueryDef;
+  getSwitchFkQueryDef(table: QueryDefObjectName, enabled: boolean): QueryDef;
 }

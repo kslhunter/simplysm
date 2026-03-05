@@ -58,7 +58,7 @@ export class TableBuilder<
   readonly $relations!: TRelations;
 
   /** 전체 Type inference (column + relationship) */
-  readonly $infer!: InferColumns<TColumns> & InferDeepRelations<TRelations>;
+  readonly $inferSelect!: InferColumns<TColumns> & InferDeepRelations<TRelations>;
   /** column만 Type inference */
   readonly $inferColumns!: InferColumns<TColumns>;
   /** INSERT용 Type inference (autoIncrement exclude, nullable/default는 optional) */

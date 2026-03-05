@@ -176,11 +176,28 @@ Edit skill without testing? Same violation.
 - Don't "adapt" while running tests
 - Delete means delete
 
+**Only exemption — pure mechanical edits:** Typo fixes, tool/variable renames where the behavioral guidance is identical (e.g., `TodoWrite` → `TaskCreate`). If you're changing what the skill *teaches*, it's not mechanical — test it.
+
 **REQUIRED BACKGROUND:** The sd-tdd skill explains why this matters. Same principles apply to documentation.
 
 ## Testing All Skill Types
 
 Different skill types need different test approaches:
+
+```dot
+digraph test_methodology {
+    "What type of skill?" [shape=diamond];
+    "Pressure test\n(compliance under stress)" [shape=box];
+    "Application test\n(correct technique usage)" [shape=box];
+    "Recognition test\n(when/how to apply)" [shape=box];
+    "Retrieval test\n(find & use reference)" [shape=box];
+
+    "What type of skill?" -> "Pressure test\n(compliance under stress)" [label="Discipline\n(rules/requirements)"];
+    "What type of skill?" -> "Application test\n(correct technique usage)" [label="Technique\n(how-to guides)"];
+    "What type of skill?" -> "Recognition test\n(when/how to apply)" [label="Pattern\n(mental models)"];
+    "What type of skill?" -> "Retrieval test\n(find & use reference)" [label="Reference\n(docs/APIs)"];
+}
+```
 
 ### Discipline-Enforcing Skills (rules/requirements)
 
@@ -253,6 +270,8 @@ Example: Testing a "condition-based-waiting" skill
 | "Academic review is enough"            | Reading ≠ using. Test application scenarios.                                                                    |
 | "No time to test"                      | Deploying untested skill wastes more time fixing it later.                                                      |
 | "I already know the baseline failures" | You know what YOU think the failures are. Run a subagent to see what ACTUALLY happens. Knowledge ≠ observation. |
+| "This is process theater" | If the process catches even one issue you missed, it paid for itself. "Theater" is what you call process before it saves you. |
+| "It applies the wrong test methodology" | Different skill types need different tests (pressure vs retrieval), but ALL types need testing. No type is exempt. |
 
 **All of these mean: Test before deploying. No exceptions.**
 
@@ -263,6 +282,10 @@ Skills that enforce discipline need to resist rationalization. **See writing-gui
 ## RED-GREEN-REFACTOR for Skills
 
 Follow the TDD cycle:
+
+### Subagent Rules
+
+**NEVER use `isolation: "worktree"` when launching subagents.** Worktrees break lint/build tooling. Always run subagents in the default (non-isolated) mode.
 
 ### RED: Write Failing Test (Baseline)
 

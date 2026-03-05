@@ -20,12 +20,20 @@ You are implementing Task [N]: [task name]
 
 If anything is unclear about requirements or approach, return your questions under a `## Questions` heading and STOP. Do not guess — do not implement.
 
+## Plan Deviations
+
+Plans may contain minor inaccuracies (wrong file paths, outdated API signatures, incorrect line numbers). Handle deviations by severity:
+
+- **Minor** (file path renamed, import path different, line numbers shifted): Adapt to the actual codebase and note the deviation in your report.
+- **Major** (API doesn't exist, approach fundamentally different, missing dependency): Return your questions under `## Questions` and STOP.
+
 ## While You Work
 
 If you encounter something unexpected mid-implementation (missing APIs, unexpected patterns, ambiguous behavior), **ask questions rather than guess**. Return your questions under `## Questions` and STOP. It's always OK to pause and clarify.
 
 ## Your Job
 
+0. **Before writing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the code you'll touch (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Follow all project conventions — implementing a task does NOT exempt you from conventions.
 1. Implement exactly what the task specifies — nothing more, nothing less
 2. Write tests (follow TDD if the plan says to)
 3. Verify: tests pass, no type errors
@@ -35,7 +43,7 @@ If you encounter something unexpected mid-implementation (missing APIs, unexpect
    - **Discipline**: Nothing overbuilt (YAGNI)? Only what was requested?
    - **Testing**: Tests verify behavior (not implementation)? Comprehensive?
 5. Fix anything found in self-review
-6. Commit your work with a descriptive message (this is required for review)
+6. Commit using conventional commit format: `type(scope): description` (e.g., `feat(solid): add ConfirmDialog component`)
 7. Report back
 
 Work from: [directory path]
@@ -45,6 +53,7 @@ Work from: [directory path]
 When done, provide:
 - Commit SHA (from step 6)
 - Files created/modified (with brief description of changes)
+- Plan deviations (if any — what the plan said vs. what you did and why)
 - Test results
 - Self-review findings (if any were fixed)
 - Open concerns (if any)

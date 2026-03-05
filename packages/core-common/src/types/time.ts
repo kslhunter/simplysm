@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { convert12To24, formatDate } from "../utils/date-format";
+import { convert12To24, format } from "../utils/date-format";
 
 /**
  * Time class (without date: HH:mm:ss.fff, immutable)
@@ -205,7 +205,7 @@ export class Time {
    * @see dtFormat for supported format strings
    */
   toFormatString(formatStr: string): string {
-    return formatDate(formatStr, {
+    return format(formatStr, {
       hour: this.hour,
       minute: this.minute,
       second: this.second,

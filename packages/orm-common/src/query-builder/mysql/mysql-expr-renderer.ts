@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid, bytesToHex } from "@simplysm/core-common";
+import { bytes, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,
@@ -114,10 +114,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
       return `'${value.toFormatString("HH:mm:ss")}'`;
     }
     if (value instanceof Uuid) {
-      return `0x${bytesToHex(value.toBytes())}`;
+      return `0x${bytes.toHex(value.toBytes())}`;
     }
     if (value instanceof Uint8Array) {
-      return `0x${bytesToHex(value)}`;
+      return `0x${bytes.toHex(value)}`;
     }
     throw new Error(`Unknown value type: ${typeof value}`);
   }

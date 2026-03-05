@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { DebounceQueue, waitTime as time, SdError } from "@simplysm/core-common";
+import { DebounceQueue, wait, SdError } from "@simplysm/core-common";
+
+const time = wait.time;
 
 describe("DebounceQueue", () => {
   //#region Debounce behavior

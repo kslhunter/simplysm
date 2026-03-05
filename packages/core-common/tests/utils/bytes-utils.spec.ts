@@ -1,29 +1,22 @@
 import { describe, it, expect } from "vitest";
-import {
-  ArgumentError,
-  bytesConcat as concat,
-  bytesToHex as toHex,
-  bytesFromHex as fromHex,
-  bytesToBase64 as toBase64,
-  bytesFromBase64 as fromBase64,
-} from "@simplysm/core-common";
+import { ArgumentError, bytes } from "@simplysm/core-common";
 
 describe("BytesUtils", () => {
   //#region concat
 
-  describe("concat()", () => {
+  describe("bytes.concat()", () => {
     it("Concatenates multiple Uint8Arrays", () => {
       const arr1 = new Uint8Array([1, 2, 3]);
       const arr2 = new Uint8Array([4, 5]);
       const arr3 = new Uint8Array([6, 7, 8, 9]);
 
-      const result = concat([arr1, arr2, arr3]);
+      const result = bytes.concat([arr1, arr2, arr3]);
 
       expect(result).toEqual(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9]));
     });
 
     it("Handles empty array", () => {
-      const result = concat([]);
+      const result = bytes.concat([]);
 
       expect(result).toEqual(new Uint8Array([]));
       expect(result.length).toBe(0);
@@ -34,7 +27,7 @@ describe("BytesUtils", () => {
       const arr2 = new Uint8Array([]);
       const arr3 = new Uint8Array([3, 4]);
 
-      const result = concat([arr1, arr2, arr3]);
+      const result = bytes.concat([arr1, arr2, arr3]);
 
       expect(result).toEqual(new Uint8Array([1, 2, 3, 4]));
     });
@@ -44,56 +37,56 @@ describe("BytesUtils", () => {
 
   //#region toHex/fromHex
 
-  describe("toHex()", () => {
+  describe("bytes.toHex()", () => {
     it("Converts Uint8Array to hex string", () => {
-      const bytes = new Uint8Array([0, 1, 15, 16, 255]);
+      const data = new Uint8Array([0, 1, 15, 16, 255]);
 
-      const result = toHex(bytes);
+      const result = bytes.toHex(data);
 
       expect(result).toBe("00010f10ff");
     });
 
     it("Handles empty array", () => {
-      const result = toHex(new Uint8Array([]));
+      const result = bytes.toHex(new Uint8Array([]));
 
       expect(result).toBe("");
     });
 
     it("Handles single byte", () => {
-      expect(toHex(new Uint8Array([0]))).toBe("00");
-      expect(toHex(new Uint8Array([255]))).toBe("ff");
+      expect(bytes.toHex(new Uint8Array([0]))).toBe("00");
+      expect(bytes.toHex(new Uint8Array([255]))).toBe("ff");
     });
   });
 
-  describe("fromHex()", () => {
+  describe("bytes.fromHex()", () => {
     it("Converts hex string to Uint8Array", () => {
-      const result = fromHex("00010f10ff");
+      const result = bytes.fromHex("00010f10ff");
 
       expect(result).toEqual(new Uint8Array([0, 1, 15, 16, 255]));
     });
 
     it("Handles empty string", () => {
-      const result = fromHex("");
+      const result = bytes.fromHex("");
 
       expect(result).toEqual(new Uint8Array([]));
     });
 
     it("Handles uppercase hex", () => {
-      const result = fromHex("FF0A");
+      const result = bytes.fromHex("FF0A");
 
       expect(result).toEqual(new Uint8Array([255, 10]));
     });
 
     it("Throws error for odd-length string", () => {
-      expect(() => fromHex("abc")).toThrow(ArgumentError);
-      expect(() => fromHex("a")).toThrow(ArgumentError);
-      expect(() => fromHex("12345")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("abc")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("a")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("12345")).toThrow(ArgumentError);
     });
 
     it("Throws error for invalid hex characters", () => {
-      expect(() => fromHex("zz")).toThrow(ArgumentError);
-      expect(() => fromHex("gh")).toThrow(ArgumentError);
-      expect(() => fromHex("12g4")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("zz")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("gh")).toThrow(ArgumentError);
+      expect(() => bytes.fromHex("12g4")).toThrow(ArgumentError);
     });
   });
 
@@ -104,8 +97,8 @@ describe("BytesUtils", () => {
         original[i] = i;
       }
 
-      const hex = toHex(original);
-      const restored = fromHex(hex);
+      const hex = bytes.toHex(original);
+      const restored = bytes.fromHex(hex);
 
       expect(restored).toEqual(original);
     });
@@ -115,60 +108,60 @@ describe("BytesUtils", () => {
 
   //#region toBase64/fromBase64
 
-  describe("toBase64()", () => {
+  describe("bytes.toBase64()", () => {
     it("Handles empty array", () => {
-      expect(toBase64(new Uint8Array([]))).toBe("");
+      expect(bytes.toBase64(new Uint8Array([]))).toBe("");
     });
 
     it("Converts general data", () => {
-      expect(toBase64(new Uint8Array([72, 101, 108, 108, 111]))).toBe("SGVsbG8=");
+      expect(bytes.toBase64(new Uint8Array([72, 101, 108, 108, 111]))).toBe("SGVsbG8=");
     });
 
     it("Handles large data (1MB) without stack overflow", () => {
       const data = new Uint8Array(1024 * 1024);
-      expect(() => toBase64(data)).not.toThrow();
+      expect(() => bytes.toBase64(data)).not.toThrow();
     });
 
     it("Handles case with no padding needed", () => {
       // Multiple of 3 length - no padding
-      expect(toBase64(new Uint8Array([1, 2, 3]))).toBe("AQID");
+      expect(bytes.toBase64(new Uint8Array([1, 2, 3]))).toBe("AQID");
     });
 
     it("Handles case with single padding needed", () => {
       // Remainder 2 when divided by 3 - 1 padding
-      expect(toBase64(new Uint8Array([1, 2]))).toBe("AQI=");
+      expect(bytes.toBase64(new Uint8Array([1, 2]))).toBe("AQI=");
     });
 
     it("Handles case with double padding needed", () => {
       // Remainder 1 when divided by 3 - 2 padding
-      expect(toBase64(new Uint8Array([1]))).toBe("AQ==");
+      expect(bytes.toBase64(new Uint8Array([1]))).toBe("AQ==");
     });
   });
 
-  describe("fromBase64()", () => {
+  describe("bytes.fromBase64()", () => {
     it("Handles empty string", () => {
-      expect(fromBase64("")).toEqual(new Uint8Array([]));
+      expect(bytes.fromBase64("")).toEqual(new Uint8Array([]));
     });
 
     it("Converts general data", () => {
-      expect(fromBase64("SGVsbG8=")).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
+      expect(bytes.fromBase64("SGVsbG8=")).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
     });
 
     it("Throws error for invalid base64 characters", () => {
-      expect(() => fromBase64("!!invalid!!")).toThrow(ArgumentError);
+      expect(() => bytes.fromBase64("!!invalid!!")).toThrow(ArgumentError);
     });
 
     it("Throws error for invalid base64 length (remainder 1)", () => {
-      expect(() => fromBase64("A")).toThrow(ArgumentError);
-      expect(() => fromBase64("AAAAA")).toThrow(ArgumentError);
+      expect(() => bytes.fromBase64("A")).toThrow(ArgumentError);
+      expect(() => bytes.fromBase64("AAAAA")).toThrow(ArgumentError);
     });
 
     it("Handles base64 without padding", () => {
-      expect(fromBase64("AQID")).toEqual(new Uint8Array([1, 2, 3]));
+      expect(bytes.fromBase64("AQID")).toEqual(new Uint8Array([1, 2, 3]));
     });
 
     it("Handles base64 with whitespace", () => {
-      expect(fromBase64("SGVs bG8=")).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
+      expect(bytes.fromBase64("SGVs bG8=")).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
     });
   });
 
@@ -179,8 +172,8 @@ describe("BytesUtils", () => {
         original[i] = i;
       }
 
-      const base64 = toBase64(original);
-      const restored = fromBase64(base64);
+      const base64 = bytes.toBase64(original);
+      const restored = bytes.fromBase64(base64);
 
       expect(restored).toEqual(original);
     });
@@ -192,8 +185,8 @@ describe("BytesUtils", () => {
           original[i] = (i * 37 + 13) % 256;
         }
 
-        const base64 = toBase64(original);
-        const restored = fromBase64(base64);
+        const base64 = bytes.toBase64(original);
+        const restored = bytes.fromBase64(base64);
 
         expect(restored).toEqual(original);
       }

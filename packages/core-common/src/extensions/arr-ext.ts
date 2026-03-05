@@ -5,7 +5,7 @@
  */
 
 import "./map-ext";
-import { objClone, objEqual, objMerge } from "../utils/obj";
+import { clone, equal, merge } from "../utils/obj";
 import type { PrimitiveTypeStr, Type } from "../common.types";
 import { DateTime } from "../types/date-time";
 import { DateOnly } from "../types/date-only";
@@ -155,7 +155,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
 
       // Object keys use the existing approach O(n²)
-      const existsRecord = result.find((item) => objEqual(item.key, keyObj));
+      const existsRecord = result.find((item) => equal(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
       } else {
@@ -298,7 +298,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     const fn = (items: T[]): TreeArray<T>[] => {
       return items.map((item) => ({
-        ...objClone(item),
+        ...clone(item),
         children: fn(childrenMap.get(item[key]) ?? []),
       }));
     };
@@ -364,7 +364,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
         continue;
       }
 
-      if (!result.some((item1) => objEqual(item1, item))) {
+      if (!result.some((item1) => equal(item1, item))) {
         result.push(item);
       }
     }
@@ -432,7 +432,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       // Skip already matched items using Set-based skipping (avoid O(n) splice removal)
       for (const targetItem of uncheckedTarget) {
         if (!uncheckedTargetSet.has(targetItem)) continue;
-        if (objEqual(targetItem, sourceItem, excludeOpts)) {
+        if (equal(targetItem, sourceItem, excludeOpts)) {
           sameTarget = targetItem;
           break;
         }
@@ -504,7 +504,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
 
       if (
-        objEqual(orgItem, item, {
+        equal(orgItem, item, {
           topLevelExcludes: options?.excludes,
           topLevelIncludes: options?.includes,
         })
@@ -529,7 +529,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   ): (T | P | (T & P))[] {
     const diffs = this.diffs(target, options);
 
-    const result: (T | P | (T & P))[] = objClone(this);
+    const result: (T | P | (T & P))[] = clone(this);
 
     // Pre-calculate original index of source items to improve O(n) lookup to O(1)
     const sourceIndexMap = new Map<T, number>();
@@ -544,7 +544,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
         if (sourceIndex === undefined) {
           throw new SdError("Unexpected error: source item not found in merge.");
         }
-        result[sourceIndex] = objMerge(diff.source, diff.target);
+        result[sourceIndex] = merge(diff.source, diff.target);
       }
       // When adding
       else if (diff.target !== undefined) {
@@ -707,7 +707,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
       for (let j = 0; j < i; j++) {
         // Skip indices in toRemoveSet (O(1) lookup)
         if (toRemoveSet.has(j)) continue;
-        if (objEqual(this[j], item)) {
+        if (equal(this[j], item)) {
           hasDuplicateBefore = true;
           break;
         }

@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { Uuid } from "@simplysm/core-common";
 
 describe("Uuid", () => {
-  describe("new()", () => {
+  describe("generate()", () => {
     it("Generates valid UUID v4 format", () => {
-      const uuid = Uuid.new();
+      const uuid = Uuid.generate();
       const str = uuid.toString();
 
       // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
@@ -12,8 +12,8 @@ describe("Uuid", () => {
     });
 
     it("Generates new UUID each time", () => {
-      const uuid1 = Uuid.new();
-      const uuid2 = Uuid.new();
+      const uuid1 = Uuid.generate();
+      const uuid2 = Uuid.generate();
 
       expect(uuid1.toString()).not.toBe(uuid2.toString());
     });

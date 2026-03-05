@@ -1,4 +1,4 @@
-import { bytesFromHex, DateOnly, DateTime, objEqual, Time, Uuid } from "@simplysm/core-common";
+import { bytes, obj, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -55,7 +55,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
 
     case "Bytes":
       if (value instanceof Uint8Array) return value;
-      if (typeof value === "string") return bytesFromHex(value);
+      if (typeof value === "string") return bytes.fromHex(value);
       throw new Error(`Failed to parse Bytes: ${typeof value}`);
   }
 }
@@ -107,8 +107,8 @@ function flatToNested(
 /**
  * Check if object is empty (all values are undefined)
  */
-function isEmptyObject(obj: Record<string, unknown>): boolean {
-  return Object.keys(obj).length === 0;
+function isEmptyObject(record: Record<string, unknown>): boolean {
+  return Object.keys(record).length === 0;
 }
 
 // ============================================
@@ -422,7 +422,7 @@ function mergeJoinData(
   if (isSingle) {
     // isSingle: true - error if data exists and values differ
     if (existingJoinData != null) {
-      if (!objEqual(existingJoinData as Record<string, unknown>, newJoinData)) {
+      if (!obj.equal(existingJoinData as Record<string, unknown>, newJoinData)) {
         throw new Error(`isSingle relationship '${localKey}' has multiple different results.`);
       }
     } else {
@@ -447,7 +447,7 @@ function mergeJoinData(
       } else {
         // Fallback without hashSet (legacy approach)
         const isDuplicate = existingJoinData.some((item) =>
-          objEqual(item as Record<string, unknown>, newJoinData),
+          obj.equal(item as Record<string, unknown>, newJoinData),
         );
         if (!isDuplicate) {
           existingJoinData.push(newJoinData);

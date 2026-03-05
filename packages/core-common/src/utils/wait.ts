@@ -15,7 +15,7 @@ import { TimeoutError } from "../errors/timeout-error";
  * await waitUntil(() => someCondition, 100, 3);
  * @throws TimeoutError when maximum number of attempts is exceeded
  */
-export async function waitUntil(
+export async function until(
   forwarder: () => boolean | Promise<boolean>,
   milliseconds?: number,
   maxCount?: number,
@@ -27,7 +27,7 @@ export async function waitUntil(
       throw new TimeoutError(count);
     }
 
-    await waitTime(milliseconds ?? 100);
+    await time(milliseconds ?? 100);
   }
 }
 
@@ -35,6 +35,6 @@ export async function waitUntil(
  * Wait for a specified amount of time
  * @param millisecond Wait time (ms)
  */
-export async function waitTime(millisecond: number): Promise<void> {
+export async function time(millisecond: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, millisecond));
 }

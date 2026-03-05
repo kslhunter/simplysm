@@ -37,7 +37,7 @@ All execution uses `Task(general-purpose)` for parallel execution.
 
 Independent tasks run as **parallel Task calls in a single message**. After implementers complete, spec and quality reviews run as **parallel Task calls**.
 
-**CRITICAL: Do NOT use `run_in_background: true`** — achieve parallelism by making multiple Task calls in a single message (foreground parallel). This ensures the orchestrator waits for all tasks to complete before proceeding to the next batch, and prevents Stop hooks from firing prematurely.
+**CRITICAL: Always launch parallel tasks as multiple Task calls in a single message (foreground parallel).** Never set `run_in_background: true` — it causes Stop hooks to fire prematurely. This rule applies regardless of permission mode (yolo, plan, etc.).
 
 ## The Process
 
@@ -104,7 +104,14 @@ digraph process {
     "Batch integration check (typecheck + lint)" -> "More batches?";
     "More batches?" -> "Implement the task" [label="yes, next batch"];
     "More batches?" -> "Task: final review for entire implementation" [label="no"];
-    "Task: final review for entire implementation" -> "Done";
+    "Run /simplify on all changed code" [shape=box];
+    "Changes made?" [shape=diamond];
+
+    "Task: final review for entire implementation" -> "Run /simplify on all changed code";
+    "Run /simplify on all changed code" -> "Changes made?";
+    "Changes made?" -> "Typecheck + lint affected packages" [label="yes"];
+    "Typecheck + lint affected packages" -> "Done";
+    "Changes made?" -> "Done" [label="no"];
 }
 ```
 
@@ -216,8 +223,17 @@ You: Using sd-plan-dev to execute this plan.
 [Task: final review for entire implementation]
 Final reviewer: All requirements met, ready to merge
 
+[Run /simplify on all changed code]
+Simplify: extracted shared validation helper, removed 2 duplicate imports
+[typecheck + lint → pass]
+[Commit: refactor: simplify changed code]
+
 Done!
 ```
+
+## Verification-Only Tasks
+
+If a task is purely verification (no code changes — just running tests, typecheck, or manual checks), merge its checks into the batch integration check or final review rather than dispatching an implementer. These tasks exist in the plan for documentation purposes but don't need the full implementer → reviewer cycle.
 
 ## Batch Integration Check
 
@@ -231,6 +247,39 @@ $PM run lint [affected packages]
 ```
 
 This catches cross-task integration issues early — especially when the next batch depends on the current batch's output. Do NOT skip this even if individual task reviews passed.
+
+If typecheck or lint fails, treat the errors as review issues: re-dispatch the implementer(s) whose changes caused the failure with the error output. After fix, re-run the integration check. Do NOT start the next batch until integration passes.
+
+## Final Review Dispatch
+
+After all batches complete and pass integration checks, dispatch the final reviewer:
+
+1. Locate the original design document from `docs/plans/` — it shares the same date and topic as the plan file (e.g., plan `2026-03-04-dialog-confirm.md` → design `2026-03-04-dialog-confirm-design.md`)
+2. Fill `./final-review-prompt.md` with:
+   - The full text of the original design document
+   - The full text of the implementation plan
+   - Summaries of all completed tasks (commit SHAs, files changed, test results)
+3. Dispatch as `Task(general-purpose)`
+4. If the final reviewer returns **APPROVED** → done
+5. If the final reviewer returns **ISSUES**:
+   - For cross-task integration issues: create a fix task targeting specific files, run through implementer → review cycle
+   - For missing design requirements: create new implementation tasks and run through the full batch cycle
+   - Re-run final review after all fixes
+
+## Simplify
+
+After the final review passes, run `/simplify` to review all changed code for reuse, quality, and efficiency. This catches cross-task cleanup opportunities that individual reviewers miss.
+
+1. Orchestrator runs `/simplify` via the Skill tool
+2. If simplify made changes:
+   - Run typecheck/lint on affected packages
+   - If typecheck/lint fails → fix the issues and re-run typecheck/lint until it passes
+   - Commit simplify changes as a separate commit (`refactor: simplify changed code`)
+3. If simplify made no changes → skip to completion
+
+## Completion
+
+After simplify completes (or is skipped), report to the user: number of tasks completed, total files changed, and final review outcome.
 
 ## Red Flags
 
@@ -246,6 +295,7 @@ This catches cross-task integration issues early — especially when the next ba
 - Accept "close enough" on spec compliance
 - Skip review loops (issue found → fix → re-review)
 - Skip batch integration checks between batches
+- Skip `/simplify` after final review
 - Use `run_in_background: true` on Task calls (use foreground parallel instead)
 
 **If implementer returns questions:**
@@ -273,5 +323,6 @@ This catches cross-task integration issues early — especially when the next ba
 **Related skills:**
 
 - **sd-plan** — creates the plan this skill executes
+- **sd-explore** — for codebase exploration when implementers need deeper context
 - **sd-tdd** — implementers follow TDD
 - **sd-worktree** — branch isolation for worktree-based workflows

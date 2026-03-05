@@ -32,7 +32,7 @@ type Transferable = ArrayBuffer;
  * worker.postMessage(result, transferList);
  *
  * // Receive data from Worker
- * const decoded = transferableDecode(event.data);
+ * const decoded = decode(event.data);
  */
 
 //#region encode
@@ -43,7 +43,7 @@ type Transferable = ArrayBuffer;
  *
  * @throws TypeError if circular reference is detected
  */
-export function transferableEncode(obj: unknown): {
+export function encode(obj: unknown): {
   result: unknown;
   transferList: Transferable[];
 } {
@@ -204,7 +204,7 @@ function encodeImpl(
  * Convert serialized objects to objects using Simplysm types
  * Deserialize data received from a Worker
  */
-export function transferableDecode(obj: unknown): unknown {
+export function decode(obj: unknown): unknown {
   if (obj == null) return obj;
 
   // 1. Restore special types from tagged objects
@@ -239,22 +239,22 @@ export function transferableDecode(obj: unknown): unknown {
       err.stack = errorData.stack;
 
       if (errorData.code !== undefined) err.code = errorData.code;
-      if (errorData.cause !== undefined) (err as Error).cause = transferableDecode(errorData.cause);
-      if (errorData.detail !== undefined) err.detail = transferableDecode(errorData.detail);
+      if (errorData.cause !== undefined) (err as Error).cause = decode(errorData.cause);
+      if (errorData.detail !== undefined) err.detail = decode(errorData.detail);
       return err;
     }
   }
 
   // 2. Array recursion
   if (Array.isArray(obj)) {
-    return obj.map((item) => transferableDecode(item));
+    return obj.map((item) => decode(item));
   }
 
   // 3. Map recursion
   if (obj instanceof Map) {
     const newMap = new Map<unknown, unknown>();
     for (const [k, v] of obj) {
-      newMap.set(transferableDecode(k), transferableDecode(v));
+      newMap.set(decode(k), decode(v));
     }
     return newMap;
   }
@@ -263,7 +263,7 @@ export function transferableDecode(obj: unknown): unknown {
   if (obj instanceof Set) {
     const newSet = new Set<unknown>();
     for (const v of obj) {
-      newSet.add(transferableDecode(v));
+      newSet.add(decode(v));
     }
     return newSet;
   }
@@ -273,7 +273,7 @@ export function transferableDecode(obj: unknown): unknown {
     const record = obj as Record<string, unknown>;
     const result: Record<string, unknown> = {};
     for (const key of Object.keys(record)) {
-      result[key] = transferableDecode(record[key]);
+      result[key] = decode(record[key]);
     }
     return result;
   }

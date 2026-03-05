@@ -288,7 +288,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     }
 
     // PK가 AI 아님: 임시 Table로 PK 저장 후 조회
-    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
+    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
     // recordsSelectQuery에서 PK column만 추출한 SELECT Generate
     const pkSelectDef: SelectQueryDef = {
@@ -343,7 +343,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // OUTPUT 필요: multi-statement (임시table에 PK 저장 + UPDATE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
-    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
+    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
     // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
     const pkSelectCols = def.output.pkColNames
@@ -395,7 +395,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // OUTPUT 필요: multi-statement (Delete 전 임시table에 저장 + DELETE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
-    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
+    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
     // Delete 전 임시 Table에 저장
     let createTempSql = `CREATE TEMPORARY TABLE ${tempTableName} AS SELECT ${outputCols} FROM ${table} AS ${alias}`;
@@ -456,7 +456,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // OUTPUT 필요: multi-statement (CREATE TEMP + UPDATE + INSERT + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
-    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
+    const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
     // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
     const pkSelectCols = def.output.pkColNames.map((pk) => this.expr.wrap(pk)).join(", ");

@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { convert12To24, formatDate, normalizeMonth } from "../utils/date-format";
+import { convert12To24, format, normalizeMonth } from "../utils/date-format";
 
 /**
  * DateTime class (immutable)
@@ -355,7 +355,7 @@ export class DateTime {
    * @see dtFormat for supported format strings
    */
   toFormatString(formatStr: string): string {
-    return formatDate(formatStr, {
+    return format(formatStr, {
       year: this.year,
       month: this.month,
       day: this.day,

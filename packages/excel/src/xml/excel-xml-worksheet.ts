@@ -7,7 +7,7 @@ import type {
   ExcelXmlWorksheetData,
 } from "../types";
 import { ExcelUtils } from "../utils/excel-utils";
-import { numParseInt, objClone } from "@simplysm/core-common";
+import { num, obj } from "@simplysm/core-common";
 import "@simplysm/core-common";
 
 interface RowInfo {
@@ -231,7 +231,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
    * @param width Width to set
    */
   setColWidth(colIndex: string, width: string): void {
-    const colIndexNumber = numParseInt(colIndex);
+    const colIndexNumber = num.parseInt(colIndex);
     if (colIndexNumber == null) {
       throw new Error(`Invalid column index: ${colIndex}`);
     }
@@ -242,8 +242,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const col = cols
       ? cols.col.single(
           (item) =>
-            (numParseInt(item.$.min) ?? 0) <= colIndexNumber &&
-            (numParseInt(item.$.max) ?? 0) >= colIndexNumber,
+            (num.parseInt(item.$.min) ?? 0) <= colIndexNumber &&
+            (num.parseInt(item.$.max) ?? 0) >= colIndexNumber,
         )
       : undefined;
 
@@ -257,8 +257,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
         // Multi-column range: split the range and apply new width only to target column
         // e.g.: existing [1~5, width=10], target=3, new width=20
         //     -> [1~2, width=10], [3, width=20], [4~5, width=10]
-        const minNumber = numParseInt(col.$.min) ?? 0;
-        const maxNumber = numParseInt(col.$.max) ?? 0;
+        const minNumber = num.parseInt(col.$.min) ?? 0;
+        const maxNumber = num.parseInt(col.$.max) ?? 0;
 
         let insertIndex = cols.col.indexOf(col);
 
@@ -359,7 +359,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     if (sourceRowInfo != null) {
       // Clone rowData
-      const newRowData: ExcelRowData = objClone(sourceRowInfo.data);
+      const newRowData: ExcelRowData = obj.clone(sourceRowInfo.data);
 
       // Update ROW address
       newRowData.$.r = ExcelUtils.stringifyRowAddr(targetR);
@@ -402,7 +402,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const sourceCellData = this._getCellData(sourceAddr);
 
     if (sourceCellData != null) {
-      const newCellData = objClone(sourceCellData);
+      const newCellData = obj.clone(sourceCellData);
       newCellData.$.r = ExcelUtils.stringifyAddr(targetAddr);
       this._replaceCellData(targetAddr, newCellData);
     } else {
@@ -445,7 +445,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     // Sort ROWs
     const rowsData = (result.sheetData[0].row = result.sheetData[0].row ?? []);
-    rowsData.sort((a, b) => (numParseInt(a.$.r) ?? 0) - (numParseInt(b.$.r) ?? 0));
+    rowsData.sort((a, b) => (num.parseInt(a.$.r) ?? 0) - (num.parseInt(b.$.r) ?? 0));
 
     // Sort CELLs
     for (const rowData of rowsData) {

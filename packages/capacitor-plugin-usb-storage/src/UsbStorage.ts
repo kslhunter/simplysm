@@ -6,7 +6,7 @@ import type {
   UsbStoragePlugin,
 } from "./UsbStoragePlugin";
 import type { Bytes } from "@simplysm/core-common";
-import { bytesFromBase64 } from "@simplysm/core-common";
+import { bytes } from "@simplysm/core-common";
 
 const usbStoragePlugin = registerPlugin<UsbStoragePlugin>("UsbStorage", {
   web: async () => {
@@ -72,6 +72,6 @@ export abstract class UsbStorage {
     if (result.data == null) {
       return undefined;
     }
-    return bytesFromBase64(result.data);
+    return bytes.fromBase64(result.data);
   }
 }

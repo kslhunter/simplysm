@@ -1,4 +1,4 @@
-import { EventEmitter, transferableDecode, transferableEncode, Uuid } from "@simplysm/core-common";
+import { EventEmitter, transfer, Uuid } from "@simplysm/core-common";
 import consola from "consola";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -85,7 +85,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
-      const decoded = transferableDecode(serializedResponse);
+      const decoded = transfer.decode(serializedResponse);
 
       // Validate response structure
       if (decoded == null || typeof decoded !== "object" || !("type" in decoded)) {
@@ -131,14 +131,14 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
   call(method: string, params: unknown[]): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const request: WorkerRequest = {
-        id: Uuid.new().toString(),
+        id: Uuid.generate().toString(),
         method,
         params,
       };
 
       this._pendingRequests.set(request.id, { method, resolve, reject });
 
-      const serialized = transferableEncode(request);
+      const serialized = transfer.encode(request);
       this._worker.postMessage(serialized.result, serialized.transferList);
     });
   }

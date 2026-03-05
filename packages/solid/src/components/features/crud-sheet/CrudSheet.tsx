@@ -12,7 +12,7 @@ import {
 import { createStore, produce, reconcile } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
 import type { DateTime } from "@simplysm/core-common";
-import { objClone, objGetChainValue } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../../data/sheet/types";
 import { DataSheet } from "../../data/sheet/DataSheet";
@@ -71,10 +71,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "getItemKey",
     "storageKey",
     "editable",
-    "itemEditable",
-    "itemDeletable",
-    "itemDeleted",
-    "itemSelectable",
+    "isItemEditable",
+    "isItemDeletable",
+    "isItemDeleted",
+    "isItemSelectable",
     "lastModifiedAtProp",
     "lastModifiedByProp",
     "onSubmitComplete",
@@ -113,7 +113,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   let originalItems: TItem[] = [];
 
   const [filter, setFilter] = createStore<TFilter>((local.filterInitial ?? {}) as TFilter);
-  const [lastFilter, setLastFilter] = createSignal<TFilter>(objClone(filter));
+  const [lastFilter, setLastFilter] = createSignal<TFilter>(obj.clone(filter));
 
   const [page, setPage] = createSignal(1);
   const [totalPageCount, setTotalPageCount] = createSignal(0);
@@ -167,7 +167,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   async function refresh() {
     const result: SearchResult<TItem> = await local.search(lastFilter(), page(), sorts());
     setItems(reconcile(result.items));
-    originalItems = objClone(result.items);
+    originalItems = obj.clone(result.items);
     setTotalPageCount(result.pageCount ?? 0);
   }
 
@@ -188,7 +188,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     e.preventDefault();
     if (!checkIgnoreChanges()) return;
     setPage(1);
-    setLastFilter(() => objClone(filter));
+    setLastFilter(() => obj.clone(filter));
   }
 
   async function handleRefresh() {
@@ -207,7 +207,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   function handleToggleDelete(item: TItem, index: number) {
-    if (!(local.itemDeletable?.(item) ?? true)) return;
+    if (!(local.isItemDeletable?.(item) ?? true)) return;
     if (local.inlineEdit?.deleteProp == null) return;
     const dp = local.inlineEdit.deleteProp;
 
@@ -458,7 +458,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Render --
   const deleteProp = () => local.inlineEdit?.deleteProp;
-  const isItemDeleted = (item: TItem) => local.itemDeleted?.(item) ?? false;
+  const isItemDeleted = (item: TItem) => local.isItemDeleted?.(item) ?? false;
 
   return (
     <>
@@ -561,8 +561,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     selection().length === 0 ||
                     !selection().some(
                       (item) =>
-                        (local.itemDeletable?.(item) ?? true) &&
-                        !(local.itemDeleted?.(item) ?? false),
+                        (local.isItemDeletable?.(item) ?? true) &&
+                        !(local.isItemDeleted?.(item) ?? false),
                     )
                   }
                 >
@@ -578,7 +578,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={handleRestoreItems}
                   disabled={
                     selection().length === 0 ||
-                    !selection().some((item) => local.itemDeleted?.(item) ?? false)
+                    !selection().some((item) => local.isItemDeleted?.(item) ?? false)
                   }
                 >
                   <Icon icon={IconTrashOff} class="mr-1" />
@@ -617,7 +617,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             totalPageCount={totalPageCount()}
             sorts={sorts()}
             onSortsChange={setSorts}
-            itemSelectable={local.itemSelectable}
+            itemSelectable={local.isItemSelectable}
             selectionMode={
               isSelectMode()
                 ? local.selectionMode
@@ -648,7 +648,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   <div class="flex items-center justify-center px-1 py-0.5">
                     <Link
                       theme="danger"
-                      disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
+                      disabled={!(local.isItemDeletable?.(dsCtx.item) ?? true)}
                       onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
                     >
                       <Icon icon={isItemDeleted(dsCtx.item) ? IconTrashOff : IconTrash} />
@@ -689,7 +689,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                       local.dialogEdit &&
                       (col.editTrigger ?? false) &&
                       canEdit() &&
-                      (local.itemEditable?.(dsCtx.item) ?? true)
+                      (local.isItemEditable?.(dsCtx.item) ?? true)
                     ) {
                       return (
                         <Link
@@ -720,7 +720,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 {(dsCtx) => (
                   <div class={clsx(pad.default, "text-center")}>
                     {(
-                      objGetChainValue(dsCtx.item, local.lastModifiedAtProp!, true) as
+                      obj.getChainValue(dsCtx.item, local.lastModifiedAtProp!, true) as
                         | DateTime
                         | undefined
                     )?.toFormatString("yyyy-MM-dd HH:mm")}
@@ -733,7 +733,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n.t("crudSheet.modifiedBy")} hidden>
                 {(dsCtx) => (
                   <div class={clsx(pad.default, "text-center")}>
-                    {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
+                    {obj.getChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
                   </div>
                 )}
               </DataSheetColumn>

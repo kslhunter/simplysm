@@ -16,18 +16,20 @@ You run scenarios without the skill (RED - watch agent fail), write skill addres
 
 ## When to Use
 
-Test skills that:
+**Pressure test** skills that:
 
 - Enforce discipline (TDD, testing requirements)
 - Have compliance costs (time, effort, rework)
 - Could be rationalized away ("just this once")
 - Contradict immediate goals (speed over quality)
 
-Don't test:
+**Retrieval test** (not pressure test) skills that:
 
-- Pure reference skills (API docs, syntax guides)
-- Skills without rules to violate
-- Skills agents have no incentive to bypass
+- Are pure reference (API docs, syntax guides)
+- Have no rules to violate
+- Have no incentive to bypass
+
+Retrieval tests verify agents can find and correctly apply the information. See SKILL.md "Testing All Skill Types > Reference Skills" for methodology.
 
 ## TDD Mapping for Skill Testing
 
@@ -158,6 +160,8 @@ Forces explicit choice.
 5. **No easy outs** - Can't defer to "I'd ask your human partner" without choosing
 
 ### Testing Setup
+
+**NEVER use `isolation: "worktree"` when launching subagents.** Worktrees break lint/build tooling. Always run subagents in the default (non-isolated) mode.
 
 ```markdown
 IMPORTANT: This is a real scenario. You must choose and act.

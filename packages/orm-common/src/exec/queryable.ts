@@ -22,7 +22,7 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit, ExprInput } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
-import { ArgumentError, objClearUndefined } from "@simplysm/core-common";
+import { ArgumentError, obj } from "@simplysm/core-common";
 import {
   ForeignKeyBuilder,
   ForeignKeyTargetBuilder,
@@ -1132,7 +1132,7 @@ export class Queryable<
   }
 
   getSelectQueryDef(): SelectQueryDef {
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "select",
       from: this._buildFromDef(),
       as: this.meta.as,
@@ -1394,7 +1394,7 @@ export class Queryable<
       outputDef.aiColName != null &&
       records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] !== undefined);
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "insert",
       table: this.meta.db.getQueryDefObjectName(from),
       records,
@@ -1418,7 +1418,7 @@ export class Queryable<
 
     const { select: _, ...existsSelectQuery } = this.getSelectQueryDef();
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "insertIfNotExists",
       table: this.meta.db.getQueryDefObjectName(from),
       record,
@@ -1439,7 +1439,7 @@ export class Queryable<
   ): InsertIntoQueryDef {
     const outputDef = this._getCudOutputDef();
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "insertInto",
       table: this.meta.db.getQueryDefObjectName(targetTable),
       recordsSelectQuery: this.getSelectQueryDef(),
@@ -1545,7 +1545,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "update",
       table: this.meta.db.getQueryDefObjectName(from),
       as: this.meta.as,
@@ -1568,7 +1568,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "delete",
       table: this.meta.db.getQueryDefObjectName(from),
       as: this.meta.as,
@@ -1692,7 +1692,7 @@ export class Queryable<
       Object.entries(insertRecordRaw).map(([key, value]) => [key, expr.toExpr(value)]),
     );
 
-    return objClearUndefined({
+    return obj.clearUndefined({
       type: "upsert",
       table: this.meta.db.getQueryDefObjectName(from),
       existsSelectQuery,

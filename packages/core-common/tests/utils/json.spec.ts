@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  jsonStringify as stringify,
-  jsonParse as parse,
-  DateTime,
-  DateOnly,
-  Time,
-  Uuid,
-} from "@simplysm/core-common";
+import { json, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 
 describe("JsonConvert", () => {
   //#region stringify
@@ -14,8 +7,8 @@ describe("JsonConvert", () => {
   describe("stringify()", () => {
     it("Serializes Date with __type__", () => {
       const date = new Date("2024-03-15T10:30:00.000Z");
-      const json = stringify(date);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(date);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Date");
       expect(parsed.data).toBe("2024-03-15T10:30:00.000Z");
@@ -23,8 +16,8 @@ describe("JsonConvert", () => {
 
     it("Serializes DateTime with __type__", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
-      const json = stringify(dt);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(dt);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("DateTime");
       expect(typeof parsed.data).toBe("string");
@@ -32,24 +25,24 @@ describe("JsonConvert", () => {
 
     it("Serializes DateOnly with __type__", () => {
       const d = new DateOnly(2024, 3, 15);
-      const json = stringify(d);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(d);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("DateOnly");
     });
 
     it("Serializes Time with __type__", () => {
       const t = new Time(10, 30, 45);
-      const json = stringify(t);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(t);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Time");
     });
 
     it("Serializes Uuid with __type__", () => {
       const uuid = new Uuid("12345678-9abc-def0-1234-56789abcdef0");
-      const json = stringify(uuid);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(uuid);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Uuid");
       expect(parsed.data).toBe("12345678-9abc-def0-1234-56789abcdef0");
@@ -57,8 +50,8 @@ describe("JsonConvert", () => {
 
     it("Serializes Set with __type__", () => {
       const set = new Set([1, 2, 3]);
-      const json = stringify(set);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(set);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Set");
       expect(parsed.data).toEqual([1, 2, 3]);
@@ -69,8 +62,8 @@ describe("JsonConvert", () => {
         ["a", 1],
         ["b", 2],
       ]);
-      const json = stringify(map);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(map);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Map");
       expect(parsed.data).toEqual([
@@ -81,8 +74,8 @@ describe("JsonConvert", () => {
 
     it("Serializes Error with __type__", () => {
       const error = new Error("test error");
-      const json = stringify(error);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(error);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Error");
       expect(parsed.data.message).toBe("test error");
@@ -96,8 +89,8 @@ describe("JsonConvert", () => {
       error.detail = { key: "value" };
       (error as Error & { cause: Error }).cause = cause;
 
-      const json = stringify(error);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(error);
+      const parsed = JSON.parse(str);
 
       expect(parsed.__type__).toBe("Error");
       expect(parsed.data.message).toBe("test error");
@@ -109,21 +102,21 @@ describe("JsonConvert", () => {
 
     it("Hides Uint8Array with redactBytes option", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = stringify(obj, { redactBytes: true });
-      const parsed = JSON.parse(json);
+      const str = json.stringify(obj, { redactBytes: true });
+      const parsed = JSON.parse(str);
 
       expect(parsed.data.data).toBe("__hidden__");
     });
 
     it("Transforms values with replacer option", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const json = stringify(obj, {
+      const str = json.stringify(obj, {
         replacer: (key, value) => {
           if (key === "b") return undefined;
           return value;
         },
       });
-      const parsed = JSON.parse(json);
+      const parsed = JSON.parse(str);
 
       expect(parsed.a).toBe(1);
       expect(parsed.b).toBeUndefined();
@@ -145,8 +138,8 @@ describe("JsonConvert", () => {
       const promises = Array.from({ length: 100 }, (_, i) =>
         Promise.resolve().then(() => {
           const obj = createTestObject(i);
-          const json = stringify(obj);
-          const parsed = parse<typeof obj>(json);
+          const str = json.stringify(obj);
+          const parsed = json.parse<typeof obj>(str);
 
           // Verify all Dates restored correctly
           expect(parsed.date).toBeInstanceOf(Date);
@@ -175,8 +168,8 @@ describe("JsonConvert", () => {
         dates: [new Date("2024-01-01T00:00:00.000Z"), new Date("2024-12-31T23:59:59.000Z")],
       };
 
-      const json = stringify(obj);
-      const parsed = parse<typeof obj>(json);
+      const str = json.stringify(obj);
+      const parsed = json.parse<typeof obj>(str);
 
       expect(parsed.level1.level2.level3.date).toBeInstanceOf(Date);
       expect(parsed.level1.level2.level3.date.toISOString()).toBe("2024-06-15T12:00:00.000Z");
@@ -189,7 +182,7 @@ describe("JsonConvert", () => {
 
       // Call stringify
       const date = new Date("2024-03-15T10:30:00.000Z");
-      stringify({ date });
+      json.stringify({ date });
 
       // Verify toJSON not changed
       expect(Date.prototype.toJSON).toBe(originalToJSON);
@@ -199,15 +192,15 @@ describe("JsonConvert", () => {
       const obj: Record<string, unknown> = { name: "test" };
       obj["self"] = obj; // circular reference
 
-      expect(() => stringify(obj)).toThrow(TypeError);
-      expect(() => stringify(obj)).toThrow("Converting circular structure to JSON");
+      expect(() => json.stringify(obj)).toThrow(TypeError);
+      expect(() => json.stringify(obj)).toThrow("Converting circular structure to JSON");
     });
 
     it("Detects circular reference in array", () => {
       const arr: unknown[] = [1, 2];
       arr.push(arr); // array circular reference
 
-      expect(() => stringify(arr)).toThrow("Converting circular structure to JSON");
+      expect(() => json.stringify(arr)).toThrow("Converting circular structure to JSON");
     });
 
     it("Serializes custom object with toJSON method", () => {
@@ -218,8 +211,8 @@ describe("JsonConvert", () => {
         },
       };
 
-      const json = stringify(obj);
-      expect(json).toBe('"$100"');
+      const str = json.stringify(obj);
+      expect(str).toBe('"$100"');
     });
 
     it("Recursively processes toJSON if returning object", () => {
@@ -230,8 +223,8 @@ describe("JsonConvert", () => {
         },
       };
 
-      const json = stringify(obj);
-      const parsed = JSON.parse(json);
+      const str = json.stringify(obj);
+      const parsed = JSON.parse(str);
 
       expect(parsed.converted).toBe(true);
       expect(parsed.date.__type__).toBe("Date");
@@ -244,12 +237,12 @@ describe("JsonConvert", () => {
 
   describe("parse()", () => {
     it("Converts null to undefined", () => {
-      expect(parse("null")).toBe(undefined);
+      expect(json.parse("null")).toBe(undefined);
     });
 
     it("Restores Date", () => {
-      const json = '{"__type__":"Date","data":"2024-03-15T10:30:00.000Z"}';
-      const result = parse(json);
+      const str = '{"__type__":"Date","data":"2024-03-15T10:30:00.000Z"}';
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Date);
       expect((result as Date).toISOString()).toBe("2024-03-15T10:30:00.000Z");
@@ -257,8 +250,8 @@ describe("JsonConvert", () => {
 
     it("Restores DateTime", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
-      const json = stringify(dt);
-      const result = parse(json);
+      const str = json.stringify(dt);
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(DateTime);
       expect((result as DateTime).year).toBe(2024);
@@ -268,8 +261,8 @@ describe("JsonConvert", () => {
 
     it("Restores DateOnly", () => {
       const d = new DateOnly(2024, 3, 15);
-      const json = stringify(d);
-      const result = parse(json);
+      const str = json.stringify(d);
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(DateOnly);
       expect((result as DateOnly).year).toBe(2024);
@@ -277,32 +270,32 @@ describe("JsonConvert", () => {
 
     it("Restores Time", () => {
       const t = new Time(10, 30, 45);
-      const json = stringify(t);
-      const result = parse(json);
+      const str = json.stringify(t);
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Time);
       expect((result as Time).hour).toBe(10);
     });
 
     it("Restores Uuid", () => {
-      const json = '{"__type__":"Uuid","data":"12345678-9abc-def0-1234-56789abcdef0"}';
-      const result = parse(json);
+      const str = '{"__type__":"Uuid","data":"12345678-9abc-def0-1234-56789abcdef0"}';
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Uuid);
       expect((result as Uuid).toString()).toBe("12345678-9abc-def0-1234-56789abcdef0");
     });
 
     it("Restores Set", () => {
-      const json = '{"__type__":"Set","data":[1,2,3]}';
-      const result = parse(json);
+      const str = '{"__type__":"Set","data":[1,2,3]}';
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Set);
       expect(Array.from(result as Set<number>)).toEqual([1, 2, 3]);
     });
 
     it("Restores Map", () => {
-      const json = '{"__type__":"Map","data":[["a",1],["b",2]]}';
-      const result = parse(json);
+      const str = '{"__type__":"Map","data":[["a",1],["b",2]]}';
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Map);
       expect((result as Map<string, number>).get("a")).toBe(1);
@@ -319,8 +312,8 @@ describe("JsonConvert", () => {
       error.detail = { key: "value" };
       error.cause = cause;
 
-      const json = stringify(error);
-      const result = parse<typeof error>(json);
+      const str = json.stringify(error);
+      const result = json.parse<typeof error>(str);
 
       expect(result).toBeInstanceOf(Error);
       expect(result.message).toBe("test error");
@@ -331,8 +324,8 @@ describe("JsonConvert", () => {
     });
 
     it("Restores Uint8Array", () => {
-      const json = '{"__type__":"Uint8Array","data":"68656c6c6f"}';
-      const result = parse(json);
+      const str = '{"__type__":"Uint8Array","data":"68656c6c6f"}';
+      const result = json.parse(str);
 
       expect(result).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result as Uint8Array)).toBe("hello");
@@ -350,8 +343,8 @@ describe("JsonConvert", () => {
         bytes: new TextEncoder().encode("hello"),
       };
 
-      const json = stringify(original);
-      const result = parse<typeof original>(json);
+      const str = json.stringify(original);
+      const result = json.parse<typeof original>(str);
 
       expect(result.date).toBeInstanceOf(Date);
       expect(result.dateTime).toBeInstanceOf(DateTime);
@@ -365,23 +358,23 @@ describe("JsonConvert", () => {
 
     it("Data serialized with redactBytes throws error on parse", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = stringify(obj, { redactBytes: true });
+      const str = json.stringify(obj, { redactBytes: true });
 
       // "__hidden__" is data serialized with redactBytes option, so parse throws error
-      expect(() => parse<typeof obj>(json)).toThrow(
+      expect(() => json.parse<typeof obj>(str)).toThrow(
         "Uint8Array serialized with redactBytes option cannot be restored via parse",
       );
     });
 
     it("Invalid JSON throws error", () => {
-      expect(() => parse("invalid json")).toThrow("JSON parsing error");
+      expect(() => json.parse("invalid json")).toThrow("JSON parsing error");
     });
 
     it("In DEV mode, full JSON included in error message", () => {
       const longJson = "x".repeat(2000);
 
       try {
-        parse(longJson);
+        json.parse(longJson);
         expect.fail("Error should be thrown");
       } catch (err) {
         const message = (err as Error).message;
@@ -394,7 +387,7 @@ describe("JsonConvert", () => {
       const shortJson = "invalid";
 
       try {
-        parse(shortJson);
+        json.parse(shortJson);
         expect.fail("Error should be thrown");
       } catch (err) {
         const message = (err as Error).message;

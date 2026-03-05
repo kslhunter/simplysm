@@ -1,5 +1,5 @@
 import "@simplysm/core-common";
-import { numParseInt } from "@simplysm/core-common";
+import { num } from "@simplysm/core-common";
 import type { ExcelXml, ExcelXmlWorkbookData } from "../types";
 
 /**
@@ -27,8 +27,8 @@ export class ExcelXmlWorkbook implements ExcelXml {
   get lastWsRelId(): number | undefined {
     const sheets = this.data.workbook.sheets?.[0].sheet;
     if (!sheets || sheets.length === 0) return undefined;
-    const maxSheet = sheets.orderByDesc((sheet) => numParseInt(sheet.$["r:id"])!).first();
-    return maxSheet ? numParseInt(maxSheet.$["r:id"]) : undefined;
+    const maxSheet = sheets.orderByDesc((sheet) => num.parseInt(sheet.$["r:id"])!).first();
+    return maxSheet ? num.parseInt(maxSheet.$["r:id"]) : undefined;
   }
 
   get sheetNames(): string[] {
@@ -81,7 +81,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   getWsRelIdByName(name: string): number | undefined {
-    return numParseInt(
+    return num.parseInt(
       (this.data.workbook.sheets?.[0].sheet ?? []).single((item) => item.$.name === name)?.$[
         "r:id"
       ],
@@ -89,7 +89,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   getWsRelIdByIndex(index: number): number | undefined {
-    return numParseInt(this.data.workbook.sheets?.[0].sheet[index]?.$["r:id"]);
+    return num.parseInt(this.data.workbook.sheets?.[0].sheet[index]?.$["r:id"]);
   }
 
   getWorksheetNameById(id: number): string | undefined {
@@ -107,7 +107,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
 
   private _getSheetDataById(id: number) {
     return (this.data.workbook.sheets?.[0].sheet ?? []).single(
-      (item) => numParseInt(item.$["r:id"]) === id,
+      (item) => num.parseInt(item.$["r:id"]) === id,
     );
   }
 

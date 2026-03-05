@@ -5,11 +5,11 @@ import { ArgumentError } from "../errors/argument-error";
  * Uint8Array utility functions (complex operations only)
  *
  * Features:
- * - bytesConcat: Concatenate multiple Uint8Arrays
- * - bytesToHex: Convert Uint8Array to hex string
- * - bytesFromHex: Convert hex string to Uint8Array
- * - bytesToBase64: Convert Uint8Array to base64 string
- * - bytesFromBase64: Convert base64 string to Uint8Array
+ * - concat: Concatenate multiple Uint8Arrays
+ * - toHex: Convert Uint8Array to hex string
+ * - fromHex: Convert hex string to Uint8Array
+ * - toBase64: Convert Uint8Array to base64 string
+ * - fromBase64: Convert base64 string to Uint8Array
  */
 
 /** Lookup table for hex conversion (performance optimization) */
@@ -31,10 +31,10 @@ const BASE64_LOOKUP: number[] = Array.from({ length: 256 }, (_, i) => {
  * @example
  * const a = new Uint8Array([1, 2]);
  * const b = new Uint8Array([3, 4]);
- * bytesConcat([a, b]);
+ * concat([a, b]);
  * // Uint8Array([1, 2, 3, 4])
  */
-export function bytesConcat(arrays: Bytes[]): Bytes {
+export function concat(arrays: Bytes[]): Bytes {
   const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
   const result = new Uint8Array(total);
   let offset = 0;
@@ -50,10 +50,10 @@ export function bytesConcat(arrays: Bytes[]): Bytes {
  * @param bytes Uint8Array to convert
  * @returns Lowercase hex string
  * @example
- * bytesToHex(new Uint8Array([255, 0, 127]));
+ * toHex(new Uint8Array([255, 0, 127]));
  * // "ff007f"
  */
-export function bytesToHex(bytes: Bytes): string {
+export function toHex(bytes: Bytes): string {
   const h = hexTable;
   let result = "";
   for (let i = 0; i < bytes.length; i++) {
@@ -68,10 +68,10 @@ export function bytesToHex(bytes: Bytes): string {
  * @returns Converted Uint8Array
  * @throws {ArgumentError} If odd length or invalid hex characters are present
  * @example
- * bytesFromHex("ff007f");
+ * fromHex("ff007f");
  * // Uint8Array([255, 0, 127])
  */
-export function bytesFromHex(hex: string): Bytes {
+export function fromHex(hex: string): Bytes {
   if (hex.length % 2 !== 0) {
     throw new ArgumentError("Hex string must have even length", { hex });
   }
@@ -90,10 +90,10 @@ export function bytesFromHex(hex: string): Bytes {
  * @param bytes Uint8Array to convert
  * @returns Base64 encoded string
  * @example
- * bytesToBase64(new Uint8Array([72, 101, 108, 108, 111]));
+ * toBase64(new Uint8Array([72, 101, 108, 108, 111]));
  * // "SGVsbG8="
  */
-export function bytesToBase64(bytes: Bytes): string {
+export function toBase64(bytes: Bytes): string {
   if (bytes.length === 0) {
     return "";
   }
@@ -118,10 +118,10 @@ export function bytesToBase64(bytes: Bytes): string {
  * @returns Decoded Uint8Array
  * @throws {ArgumentError} If invalid base64 character is present
  * @example
- * bytesFromBase64("SGVsbG8=");
+ * fromBase64("SGVsbG8=");
  * // Uint8Array([72, 101, 108, 108, 111])
  */
-export function bytesFromBase64(base64: string): Bytes {
+export function fromBase64(base64: string): Bytes {
   // Remove whitespace and normalize padding
   const cleanBase64 = base64.replace(/\s/g, "").replace(/=+$/, "");
 

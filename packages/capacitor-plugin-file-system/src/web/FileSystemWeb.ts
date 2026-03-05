@@ -1,7 +1,7 @@
 import { WebPlugin } from "@capacitor/core";
 import type { FileInfo, FileSystemPlugin, StorageType } from "../FileSystemPlugin";
 import { VirtualFileSystem } from "./VirtualFileSystem";
-import { bytesToBase64, bytesFromBase64 } from "@simplysm/core-common";
+import { bytes } from "@simplysm/core-common";
 
 export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
   private readonly _fs = new VirtualFileSystem("capacitor_web_virtual_fs");
@@ -65,8 +65,8 @@ export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
     if (!entry || entry.kind !== "file" || entry.dataBase64 == null) {
       throw new Error("File not found: " + options.path);
     }
-    const bytes = bytesFromBase64(entry.dataBase64);
-    const blob = new Blob([bytes as BlobPart]);
+    const data = bytes.fromBase64(entry.dataBase64);
+    const blob = new Blob([data as BlobPart]);
     return { uri: URL.createObjectURL(blob) };
   }
 
@@ -81,7 +81,7 @@ export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
     const dataBase64 =
       options.encoding === "base64"
         ? options.data
-        : bytesToBase64(this._textEncoder.encode(options.data));
+        : bytes.toBase64(this._textEncoder.encode(options.data));
     await this._fs.putEntry({ path: options.path, kind: "file", dataBase64 });
   }
 
@@ -96,7 +96,7 @@ export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
     const data =
       options.encoding === "base64"
         ? entry.dataBase64
-        : this._textDecoder.decode(bytesFromBase64(entry.dataBase64));
+        : this._textDecoder.decode(bytes.fromBase64(entry.dataBase64));
     return { data };
   }
 

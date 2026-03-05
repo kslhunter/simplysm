@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { EventEmitter, Uuid, waitUntil, waitTime } from "@simplysm/core-common";
+import { EventEmitter, Uuid, wait } from "@simplysm/core-common";
 import consola from "consola";
 
 const logger = consola.withTag("service-client:SocketProvider");
@@ -73,14 +73,14 @@ export function createSocketProvider(
     if (currentWs != null) {
       currentWs.close();
       // Wait until fully closed (graceful shutdown)
-      await waitUntil(() => currentWs.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
+      await wait.until(() => currentWs.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
     }
     emitter.emit("state", "closed");
   }
 
   async function send(data: Bytes): Promise<void> {
     try {
-      await waitUntil(() => isConnected(), undefined, 50);
+      await wait.until(() => isConnected(), undefined, 50);
     } catch {
       throw new Error("Not connected to the server. Please check your internet connection.");
     }
@@ -92,7 +92,7 @@ export function createSocketProvider(
   }
 
   async function createSocket(): Promise<void> {
-    const clientId = Uuid.new().toString();
+    const clientId = Uuid.generate().toString();
     const params = new URLSearchParams({
       ver: "2",
       clientId,
@@ -156,7 +156,7 @@ export function createSocketProvider(
         maxReconnectCount,
       });
 
-      await waitTime(RECONNECT_DELAY);
+      await wait.time(RECONNECT_DELAY);
 
       try {
         await createSocket();

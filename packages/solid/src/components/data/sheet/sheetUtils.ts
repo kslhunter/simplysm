@@ -1,5 +1,5 @@
 import type { DataSheetColumnDef, FlatItem, HeaderDef, SortingDef } from "./types";
-import { objGetChainValue } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 
 export function normalizeHeader(header?: string | string[]): string[] {
   if (header == null) return [""];
@@ -166,7 +166,7 @@ export function applySorting<TItem>(items: TItem[], sorts: SortingDef[]): TItem[
   let result = [...items];
   for (const sort of [...sorts].reverse()) {
     const selector = (item: TItem) =>
-      objGetChainValue(item, sort.key) as string | number | undefined;
+      obj.getChainValue(item, sort.key) as string | number | undefined;
     result = sort.desc ? result.orderByDesc(selector) : result.orderBy(selector);
   }
   return result;

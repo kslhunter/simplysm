@@ -9,7 +9,7 @@ import type {
   ExcelXmlStyleDataXf,
 } from "../types";
 import "@simplysm/core-common";
-import { numParseInt, objClone, objEqual } from "@simplysm/core-common";
+import { num, obj } from "@simplysm/core-common";
 
 export interface ExcelStyle {
   numFmtId?: string;
@@ -106,7 +106,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   addWithClone(id: string, style: ExcelStyle): string {
-    const idNum = numParseInt(id);
+    const idNum = num.parseInt(id);
     if (idNum == null) {
       throw new Error(`Invalid style ID: ${id}`);
     }
@@ -115,7 +115,7 @@ export class ExcelXmlStyle implements ExcelXml {
       throw new Error(`Non-existent style ID: ${id} (Range: 0-${xfArray.length - 1})`);
     }
     const prevXf = xfArray[idNum];
-    const cloneXf = objClone(prevXf);
+    const cloneXf = obj.clone(prevXf);
 
     if (style.numFmtId !== undefined) {
       cloneXf.$.numFmtId = style.numFmtId;
@@ -127,12 +127,12 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.background !== undefined) {
-      const fillIdNum = cloneXf.$.fillId !== undefined ? numParseInt(cloneXf.$.fillId) : undefined;
+      const fillIdNum = cloneXf.$.fillId !== undefined ? num.parseInt(cloneXf.$.fillId) : undefined;
       const prevFill =
         fillIdNum !== undefined ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
 
       if (prevFill != null) {
-        const cloneFill = objClone(prevFill);
+        const cloneFill = obj.clone(prevFill);
         cloneFill.patternFill[0].$.patternType = "solid";
 
         if (cloneFill.patternFill[0].fgColor == null) {
@@ -159,12 +159,12 @@ export class ExcelXmlStyle implements ExcelXml {
 
     if (style.border !== undefined) {
       const borderIdNum =
-        cloneXf.$.borderId !== undefined ? numParseInt(cloneXf.$.borderId) : undefined;
+        cloneXf.$.borderId !== undefined ? num.parseInt(cloneXf.$.borderId) : undefined;
       const prevBorder =
         borderIdNum !== undefined ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
 
       if (prevBorder != null) {
-        const cloneBorder = objClone(prevBorder);
+        const cloneBorder = obj.clone(prevBorder);
         this._applyBorderPosition(cloneBorder, "left", style.border.includes("left"));
         this._applyBorderPosition(cloneBorder, "right", style.border.includes("right"));
         this._applyBorderPosition(cloneBorder, "top", style.border.includes("top"));
@@ -185,7 +185,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   get(id: string): ExcelStyle {
-    const idNum = numParseInt(id);
+    const idNum = num.parseInt(id);
     if (idNum == null) {
       throw new Error(`Invalid style ID: ${id}`);
     }
@@ -197,7 +197,7 @@ export class ExcelXmlStyle implements ExcelXml {
       result.numFmtId = xf.$.numFmtId;
 
       if (xf.$.fillId !== undefined) {
-        const fillIdNum = numParseInt(xf.$.fillId);
+        const fillIdNum = num.parseInt(xf.$.fillId);
         if (fillIdNum != null) {
           const fill = this.data.styleSheet.fills[0].fill[fillIdNum] as
             | ExcelXmlStyleDataFill
@@ -212,7 +212,7 @@ export class ExcelXmlStyle implements ExcelXml {
       }
 
       if (xf.$.borderId !== undefined) {
-        const borderIdNum = numParseInt(xf.$.borderId);
+        const borderIdNum = num.parseInt(xf.$.borderId);
         if (borderIdNum == null) {
           throw new Error(`Invalid border ID: ${xf.$.borderId}`);
         }
@@ -303,9 +303,9 @@ export class ExcelXmlStyle implements ExcelXml {
     const numFmts = this.data.styleSheet.numFmts[0].numFmt;
     const maxItem =
       numFmts.length > 0
-        ? numFmts.orderByDesc((item) => numParseInt(item.$.numFmtId) ?? 180).first()
+        ? numFmts.orderByDesc((item) => num.parseInt(item.$.numFmtId) ?? 180).first()
         : undefined;
-    const maxId = maxItem ? (numParseInt(maxItem.$.numFmtId) ?? 180) : 180;
+    const maxId = maxItem ? (num.parseInt(maxItem.$.numFmtId) ?? 180) : 180;
     const nextNumFmtId = (maxId + 1).toString();
     this.data.styleSheet.numFmts[0].numFmt.push({
       $: {
@@ -314,7 +314,7 @@ export class ExcelXmlStyle implements ExcelXml {
       },
     });
     this.data.styleSheet.numFmts[0].$.count = (
-      (numParseInt(this.data.styleSheet.numFmts[0].$.count) ?? 0) + 1
+      (num.parseInt(this.data.styleSheet.numFmts[0].$.count) ?? 0) + 1
     ).toString();
 
     return nextNumFmtId;
@@ -377,7 +377,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateXf(xfItem: ExcelXmlStyleDataXf): string {
-    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => objEqual(item, xfItem));
+    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => obj.equal(item, xfItem));
 
     if (prevSameXf != null) {
       return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
@@ -391,7 +391,7 @@ export class ExcelXmlStyle implements ExcelXml {
 
   private _getSameOrCreateFill(fillItem: ExcelXmlStyleDataFill): string {
     const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) =>
-      objEqual(item, fillItem),
+      obj.equal(item, fillItem),
     );
 
     if (prevSameFill != null) {
@@ -405,7 +405,7 @@ export class ExcelXmlStyle implements ExcelXml {
 
   private _getSameOrCreateBorder(borderItem: ExcelXmlStyleDataBorder): string {
     const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) =>
-      objEqual(item, borderItem),
+      obj.equal(item, borderItem),
     );
 
     if (prevSameBorder != null) {

@@ -1,4 +1,4 @@
-import { numParseInt } from "@simplysm/core-common";
+import { num } from "@simplysm/core-common";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelNumberFormat } from "../types";
 
 /**
@@ -37,9 +37,9 @@ export class ExcelUtils {
   /** Extract row index from cell address (e.g. "A3" -> 2) */
   static parseRowAddr(addr: string): number {
     const rowAddrCode = /\d*$/.exec(addr)?.[0] ?? "";
-    const parsed = numParseInt(rowAddrCode);
+    const parsed = num.parseInt(rowAddrCode);
     if (parsed == null) {
-      throw new Error(`Invalid row address code: ${addrCode}`);
+      throw new Error(`Invalid row address code: ${rowAddrCode}`);
     }
     return parsed - 1;
   }
@@ -102,9 +102,9 @@ export class ExcelUtils {
    * Convert Excel date number to JavaScript timestamp (ms).
    * Excel counts 1900-01-01 as 1 (1899-12-30 is date 0).
    */
-  static convertNumberToTimeTick(num: number): number {
+  static convertNumberToTimeTick(value: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
-    const excelDateNumberUtc = (num - 1) * 24 * 60 * 60 * 1000;
+    const excelDateNumberUtc = (value - 1) * 24 * 60 * 60 * 1000;
     const dateNumberUtc = excelBaseDateNumberUtc + excelDateNumberUtc;
     const date = new Date(dateNumberUtc);
     date.setMinutes(date.getMinutes() + date.getTimezoneOffset());

@@ -2,13 +2,13 @@ import consola from "consola";
 import {
   DateOnly,
   DateTime,
-  jsonStringify,
+  json,
+  str,
+  wait,
   SdError,
   EventEmitter,
-  strIsNullOrEmpty,
   Time,
   Uuid,
-  waitUntil,
 } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
@@ -116,12 +116,12 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     // Cancel in-progress requests
     conn.cancel();
-    await waitUntil(() => this._requests.length < 1, 30000, 100);
+    await wait.until(() => this._requests.length < 1, 30000, 100);
 
     // Wait for connection termination
     await new Promise<void>((resolve) => {
       conn.on("end", () => {
-        waitUntil(() => this._conn == null, 30000, 100)
+        wait.until(() => this._conn == null, 30000, 100)
           .then(() => resolve())
           .catch(() => resolve());
       });
@@ -194,7 +194,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
   async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
     const results: Record<string, unknown>[][] = [];
-    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !str.isNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
     }
@@ -320,7 +320,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           reject(
             new SdError(
               err,
-              `Bulk Insert error\n${jsonStringify(tediousColumnDefs)}\n-- data\n${jsonStringify(records).substring(0, 10000)}...\n--`,
+              `Bulk Insert error\n${json.stringify(tediousColumnDefs)}\n-- data\n${json.stringify(records).substring(0, 10000)}...\n--`,
             ),
           );
           return;

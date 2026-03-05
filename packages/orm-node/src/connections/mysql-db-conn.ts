@@ -5,12 +5,12 @@ import path from "path";
 import type { Connection } from "mysql2/promise";
 import consola from "consola";
 import {
-  bytesToHex,
+  bytes,
+  str,
   DateOnly,
   DateTime,
   SdError,
   EventEmitter,
-  strIsNullOrEmpty,
   Time,
   Uuid,
 } from "@simplysm/core-common";
@@ -126,7 +126,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
   async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
     const results: Record<string, unknown>[][] = [];
-    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !str.isNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
     }
@@ -263,9 +263,9 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       case "varchar":
       case "char":
       case "text": {
-        const str = value as string;
+        const strVal = value as string;
         // Escape tab, newline, backslash
-        return str
+        return strVal
           .replace(/\\/g, "\\\\")
           .replace(/\0/g, "\\0")
           .replace(/\t/g, "\\t")
@@ -286,7 +286,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         return (value as Uuid).toString().replace(/-/g, ""); // Hex for BINARY(16) storage
 
       case "binary":
-        return bytesToHex(value as Uint8Array);
+        return bytes.toHex(value as Uint8Array);
 
       default:
         throw new SdError(`Unsupported DataType: ${JSON.stringify(dataType)}`);

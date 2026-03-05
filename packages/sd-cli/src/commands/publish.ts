@@ -3,7 +3,7 @@ import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
 import { fsExists, fsRead, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
-import { env, jsonStringify } from "@simplysm/core-common";
+import { env, json } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
@@ -289,7 +289,7 @@ async function upgradeVersion(
   }
 
   projPkg.version = newVersion;
-  await fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
+  await fsWrite(projPkgPath, json.stringify(projPkg, { space: 2 }) + "\n");
   changedFiles.push(projPkgPath);
 
   // Set version in each package's package.json
@@ -297,7 +297,7 @@ async function upgradeVersion(
     const pkgJsonPath = path.resolve(pkgPath, "package.json");
     const pkgJson = await fsReadJson<PackageJson>(pkgJsonPath);
     pkgJson.version = newVersion;
-    await fsWrite(pkgJsonPath, jsonStringify(pkgJson, { space: 2 }) + "\n");
+    await fsWrite(pkgJsonPath, json.stringify(pkgJson, { space: 2 }) + "\n");
     changedFiles.push(pkgJsonPath);
   }
 

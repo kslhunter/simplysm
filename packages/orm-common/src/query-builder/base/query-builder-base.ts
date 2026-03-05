@@ -15,12 +15,12 @@ import type {
   DropColumnQueryDef,
   ModifyColumnQueryDef,
   RenameColumnQueryDef,
-  AddPkQueryDef,
-  DropPkQueryDef,
-  AddFkQueryDef,
-  DropFkQueryDef,
-  AddIdxQueryDef,
-  DropIdxQueryDef,
+  AddPrimaryKeyQueryDef,
+  DropPrimaryKeyQueryDef,
+  AddForeignKeyQueryDef,
+  DropForeignKeyQueryDef,
+  AddIndexQueryDef,
+  DropIndexQueryDef,
   CreateViewQueryDef,
   DropViewQueryDef,
   CreateProcQueryDef,
@@ -184,12 +184,12 @@ export abstract class QueryBuilderBase {
 
   //#region ========== Abstract - DDL Constraint ==========
 
-  protected abstract addPk(def: AddPkQueryDef): QueryBuildResult;
-  protected abstract dropPk(def: DropPkQueryDef): QueryBuildResult;
-  protected abstract addFk(def: AddFkQueryDef): QueryBuildResult;
-  protected abstract dropFk(def: DropFkQueryDef): QueryBuildResult;
-  protected abstract addIdx(def: AddIdxQueryDef): QueryBuildResult;
-  protected abstract dropIdx(def: DropIdxQueryDef): QueryBuildResult;
+  protected abstract addPrimaryKey(def: AddPrimaryKeyQueryDef): QueryBuildResult;
+  protected abstract dropPrimaryKey(def: DropPrimaryKeyQueryDef): QueryBuildResult;
+  protected abstract addForeignKey(def: AddForeignKeyQueryDef): QueryBuildResult;
+  protected abstract dropForeignKey(def: DropForeignKeyQueryDef): QueryBuildResult;
+  protected abstract addIndex(def: AddIndexQueryDef): QueryBuildResult;
+  protected abstract dropIndex(def: DropIndexQueryDef): QueryBuildResult;
 
   //#endregion
 

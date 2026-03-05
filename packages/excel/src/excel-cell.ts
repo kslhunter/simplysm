@@ -8,9 +8,8 @@ import type { ExcelAddressPoint, ExcelStyleOptions, ExcelValueType } from "./typ
 import {
   DateOnly,
   DateTime,
-  numParseFloat,
-  numParseInt,
-  strIsNullOrEmpty,
+  num,
+  str,
   Time,
 } from "@simplysm/core-common";
 import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
@@ -111,14 +110,14 @@ export class ExcelCell {
   async getValue(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
-    if (cellVal === undefined || strIsNullOrEmpty(cellVal)) {
+    if (cellVal === undefined || str.isNullOrEmpty(cellVal)) {
       return undefined;
     }
 
     const cellType = wsData.getCellType(this.addr);
     if (cellType === "s") {
       const ssData = await this._getOrCreateSsData();
-      const ssId = numParseInt(cellVal);
+      const ssId = num.parseInt(cellVal);
       if (ssId == null) {
         throw new Error(
           `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse SharedString ID: ${cellVal}`,
@@ -159,7 +158,7 @@ export class ExcelCell {
       if (numFmtCode !== undefined) {
         numFmt = ExcelUtils.convertNumFmtCodeToName(numFmtCode);
       } else {
-        const numFmtIdNum = numParseInt(numFmtId);
+        const numFmtIdNum = num.parseInt(numFmtId);
         if (numFmtIdNum == null) {
           throw new Error(
             `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse numFmtId: ${numFmtId}`,
@@ -174,7 +173,7 @@ export class ExcelCell {
         return cellVal;
       } else {
         // DateOnly, DateTime, Time
-        const dateNum = numParseFloat(cellVal);
+        const dateNum = num.parseFloat(cellVal);
         if (dateNum == null) {
           throw new Error(
             `[${ExcelUtils.stringifyAddr(this.addr)}] Failed to parse date number: ${cellVal}`,

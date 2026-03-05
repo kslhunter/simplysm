@@ -54,7 +54,7 @@ export function createServiceTransport(
   });
 
   async function send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown> {
-    const uuid = Uuid.new().toString();
+    const uuid = Uuid.generate().toString();
 
     // Start awaiting response (register listener before sending request for safety)
     const responsePromise = new Promise((resolve, reject) => {

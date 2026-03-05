@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 import type { FileInfo, FileSystemPlugin, StorageType } from "./FileSystemPlugin";
 import type { Bytes } from "@simplysm/core-common";
-import { bytesToBase64, bytesFromBase64 } from "@simplysm/core-common";
+import { bytes } from "@simplysm/core-common";
 
 const fileSystemPlugin = registerPlugin<FileSystemPlugin>("FileSystem", {
   web: async () => {
@@ -74,7 +74,7 @@ export abstract class FileSystem {
       // Bytes (Uint8Array) - works safely in cross-realm environments
       await fileSystemPlugin.writeFile({
         path: filePath,
-        data: bytesToBase64(data),
+        data: bytes.toBase64(data),
         encoding: "base64",
       });
     } else {
@@ -97,7 +97,7 @@ export abstract class FileSystem {
       return result.data;
     } else {
       const result = await fileSystemPlugin.readFile({ path: filePath, encoding: "base64" });
-      return bytesFromBase64(result.data);
+      return bytes.fromBase64(result.data);
     }
   }
 

@@ -196,25 +196,26 @@ You MUST complete each phase before proceeding to the next.
    - Issue actually resolved?
 
 4. **If Fix Doesn't Work**
-   - STOP
-   - Count: How many fixes have you tried?
-   - If < 3: Return to Phase 1, re-analyze with new information
-   - **If ≥ 3: STOP and question the architecture (step 5 below)**
-   - DON'T attempt Fix #4 without architectural discussion
 
-5. **If 3+ Fixes Failed: Question Architecture**
+   ```dot
+   digraph fix_failure_loop {
+       "Fix failed?" [shape=diamond];
+       "Attempts < 3?" [shape=diamond];
+       "Phase 1: Re-analyze\nwith new information" [shape=box];
+       "STOP: Question Architecture\n→ Discuss with user first" [shape=box];
 
-   **Pattern indicating architectural problem:**
+       "Fix failed?" -> "Attempts < 3?";
+       "Attempts < 3?" -> "Phase 1: Re-analyze\nwith new information" [label="yes"];
+       "Attempts < 3?" -> "STOP: Question Architecture\n→ Discuss with user first" [label="no (≥3)"];
+   }
+   ```
+
+   **Signs of architectural problem (≥3 failures):**
    - Each fix reveals new shared state/coupling/problem in different place
    - Fixes require "massive refactoring" to implement
    - Each fix creates new symptoms elsewhere
 
-   **STOP and question fundamentals:**
-   - Is this pattern fundamentally sound?
-   - Are we "sticking with it through sheer inertia"?
-   - Should we refactor architecture vs. continue fixing symptoms?
-
-   **Discuss with the user before attempting more fixes**
+   **Question fundamentals:** Is this pattern sound? Are we sticking with it through inertia? Should we refactor architecture vs. continue fixing symptoms?
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 

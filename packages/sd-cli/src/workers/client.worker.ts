@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import { build as viteBuild, createServer, type ViteDevServer } from "vite";
 import { createWorker } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdClientPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getCompilerOptionsForPackage } from "../utils/tsconfig";
@@ -143,7 +143,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   } catch (err) {
     return {
       success: false,
-      errors: [errorMessage(err)],
+      errors: [errNs.message(err)],
     };
   }
 }
@@ -211,7 +211,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     sender.send("serverReady", { port: actualPort });
   } catch (err) {
     sender.send("error", {
-      message: errorMessage(err),
+      message: errNs.message(err),
     });
   }
 }

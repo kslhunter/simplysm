@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { ZipArchive, xmlStringify, xmlParse } from "@simplysm/core-common";
+import { ZipArchive, xml as xmlU } from "@simplysm/core-common";
 import type {
   ExcelXml,
   ExcelXmlContentTypeData,
@@ -51,7 +51,7 @@ export class ZipCache {
 
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
       const fileText = new TextDecoder().decode(fileData);
-      const xml = xmlParse(fileText, { stripTagPrefix: true });
+      const xml = xmlU.parse(fileText, { stripTagPrefix: true });
       if (filePath.endsWith(".rels")) {
         this._cache.set(filePath, new ExcelXmlRelationship(xml as ExcelXmlRelationshipData));
       } else if (filePath === "[Content_Types].xml") {
@@ -87,7 +87,7 @@ export class ZipCache {
 
       if ("cleanup" in content) {
         content.cleanup();
-        this._zip.write(filePath, new TextEncoder().encode(xmlStringify(content.data)));
+        this._zip.write(filePath, new TextEncoder().encode(xmlU.stringify(content.data)));
       } else {
         this._zip.write(filePath, content);
       }

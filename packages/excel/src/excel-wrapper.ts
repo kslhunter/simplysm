@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { DateOnly, DateTime, numParseFloat, Time } from "@simplysm/core-common";
+import { DateOnly, DateTime, num, Time } from "@simplysm/core-common";
 import {
   type z,
   ZodBoolean,
@@ -188,7 +188,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
     if (innerSchema instanceof ZodNumber) {
       if (typeof rawValue === "number") return rawValue;
-      return numParseFloat(String(rawValue));
+      return num.parseFloat(String(rawValue));
     }
 
     if (innerSchema instanceof ZodBoolean) {

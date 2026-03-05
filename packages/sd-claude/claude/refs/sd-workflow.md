@@ -6,7 +6,7 @@
 ## Problem-Solving Principles
 
 - **Root cause first**: When encountering errors or unexpected behavior, always investigate the root cause before attempting a fix. Do not apply workarounds, hacks, or surface-level patches.
-- **No band-aid fixes**: Avoid techniques like suppressing errors, adding defensive checks to hide symptoms, or bypassing validation. These mask the real problem and create technical debt.
+- **No band-aid fixes**: Avoid techniques like suppressing errors, adding defensive checks to hide symptoms, bypassing validation, or inflating timeout values. These mask the real problem and create technical debt.
 - **Consider refactoring**: If the root cause reveals a design flaw or structural issue, propose a refactoring approach rather than working around it. A proper fix — even if larger in scope — is better than a fragile workaround.
 - **Trace the full chain**: Follow the error or issue through the entire call chain (caller -> callee -> dependencies) to understand why it happens, not just where it happens.
 - **When uncertain, ask**: If the root cause is unclear or the fix requires significant changes, discuss with the user before proceeding. Present findings and options rather than silently applying a quick fix.
@@ -16,6 +16,7 @@
 - Before creating new files: Glob/Read similar existing files to check structure and patterns
 - Before modifying functions/classes: Read the file to understand existing code style
 - When unsure about API/method usage: Check signatures in source code
+- **Always search the local codebase first.** Do not search the web or external docs until you have confirmed the answer is not in local code.
 - **If confidence is low, ask the user instead of writing code**
 
 ## Memory Policy

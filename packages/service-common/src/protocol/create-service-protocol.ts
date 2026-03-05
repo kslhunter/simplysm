@@ -2,11 +2,10 @@ import type { Bytes } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import {
   ArgumentError,
-  jsonStringify,
-  jsonParse,
+  bytes as bytesU,
+  json,
   LazyGcMap,
   Uuid,
-  bytesConcat,
 } from "@simplysm/core-common";
 import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
 
@@ -114,7 +113,7 @@ export function createServiceProtocol(): ServiceProtocol {
     headerView.setBigUint64(16, BigInt(header.totalSize), false);
     headerView.setUint32(24, header.index, false);
 
-    return bytesConcat([headerBytes, ...(bodyBytes ? [bodyBytes] : [])]);
+    return bytesU.concat([headerBytes, ...(bodyBytes ? [bodyBytes] : [])]);
   }
 
   // -------------------------------------------------------------------
@@ -123,7 +122,7 @@ export function createServiceProtocol(): ServiceProtocol {
 
   return {
     encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number } {
-      const msgJson = jsonStringify([message.name, ...("body" in message ? [message.body] : [])]);
+      const msgJson = json.stringify([message.name, ...("body" in message ? [message.body] : [])]);
       const msgBytes = new TextEncoder().encode(msgJson);
 
       const totalSize = msgBytes.length;
@@ -209,10 +208,10 @@ export function createServiceProtocol(): ServiceProtocol {
       } else {
         accumulator.delete(uuid); // Free memory
 
-        const resultBytes = bytesConcat(accItem.chunks.filterExists());
+        const resultBytes = bytesU.concat(accItem.chunks.filterExists());
         let messageArr: [string, unknown];
         try {
-          messageArr = jsonParse<[string, unknown]>(new TextDecoder().decode(resultBytes));
+          messageArr = json.parse<[string, unknown]>(new TextDecoder().decode(resultBytes));
         } catch (err) {
           throw new ArgumentError("Failed to decode message.", { uuid, cause: err });
         }

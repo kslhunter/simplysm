@@ -1,13 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  koreanGetSuffix,
-  strReplaceFullWidth,
-  strToPascalCase,
-  strToCamelCase,
-  strToKebabCase,
-  strToSnakeCase,
-  strInsert,
-} from "@simplysm/core-common";
+import { str } from "@simplysm/core-common";
 
 describe("string utils", () => {
   //#region koreanGetSuffix - Korean postposition handling
@@ -15,104 +7,104 @@ describe("string utils", () => {
   describe("koreanGetSuffix()", () => {
     describe("with final consonant", () => {
       it("'을' type returns '을'", () => {
-        expect(koreanGetSuffix("책", "을")).toBe("을");
+        expect(str.getKoreanSuffix("책", "을")).toBe("을");
       });
 
       it("'은' type returns '은'", () => {
-        expect(koreanGetSuffix("책", "은")).toBe("은");
+        expect(str.getKoreanSuffix("책", "은")).toBe("은");
       });
 
       it("'이' type returns '이'", () => {
-        expect(koreanGetSuffix("책", "이")).toBe("이");
+        expect(str.getKoreanSuffix("책", "이")).toBe("이");
       });
 
       it("'와' type returns '과'", () => {
-        expect(koreanGetSuffix("책", "와")).toBe("과");
+        expect(str.getKoreanSuffix("책", "와")).toBe("과");
       });
 
       it("'랑' type returns '이랑'", () => {
-        expect(koreanGetSuffix("책", "랑")).toBe("이랑");
+        expect(str.getKoreanSuffix("책", "랑")).toBe("이랑");
       });
 
       it("'로' type returns '으로'", () => {
-        expect(koreanGetSuffix("책", "로")).toBe("으로");
+        expect(str.getKoreanSuffix("책", "로")).toBe("으로");
       });
 
       it("'라' type returns '이라'", () => {
-        expect(koreanGetSuffix("책", "라")).toBe("이라");
+        expect(str.getKoreanSuffix("책", "라")).toBe("이라");
       });
     });
 
     describe("non-Korean character cases", () => {
       it("treats words ending with English letter as no final consonant", () => {
-        expect(koreanGetSuffix("ABC", "을")).toBe("를");
-        expect(koreanGetSuffix("test", "은")).toBe("는");
+        expect(str.getKoreanSuffix("ABC", "을")).toBe("를");
+        expect(str.getKoreanSuffix("test", "은")).toBe("는");
       });
 
       it("treats words ending with number as no final consonant", () => {
-        expect(koreanGetSuffix("123", "을")).toBe("를");
-        expect(koreanGetSuffix("456", "은")).toBe("는");
+        expect(str.getKoreanSuffix("123", "을")).toBe("를");
+        expect(str.getKoreanSuffix("456", "은")).toBe("는");
       });
 
       it("empty string treated as no final consonant", () => {
-        expect(koreanGetSuffix("", "을")).toBe("를");
-        expect(koreanGetSuffix("", "은")).toBe("는");
+        expect(str.getKoreanSuffix("", "을")).toBe("를");
+        expect(str.getKoreanSuffix("", "은")).toBe("는");
       });
     });
 
     describe("without final consonant", () => {
       it("'을' type returns '를'", () => {
-        expect(koreanGetSuffix("나무", "을")).toBe("를");
+        expect(str.getKoreanSuffix("나무", "을")).toBe("를");
       });
 
       it("'은' type returns '는'", () => {
-        expect(koreanGetSuffix("나무", "은")).toBe("는");
+        expect(str.getKoreanSuffix("나무", "은")).toBe("는");
       });
 
       it("'이' type returns '가'", () => {
-        expect(koreanGetSuffix("나무", "이")).toBe("가");
+        expect(str.getKoreanSuffix("나무", "이")).toBe("가");
       });
 
       it("'와' type returns '와'", () => {
-        expect(koreanGetSuffix("나무", "와")).toBe("와");
+        expect(str.getKoreanSuffix("나무", "와")).toBe("와");
       });
 
       it("'랑' type returns '랑'", () => {
-        expect(koreanGetSuffix("나무", "랑")).toBe("랑");
+        expect(str.getKoreanSuffix("나무", "랑")).toBe("랑");
       });
 
       it("'로' type returns '로'", () => {
-        expect(koreanGetSuffix("나무", "로")).toBe("로");
+        expect(str.getKoreanSuffix("나무", "로")).toBe("로");
       });
 
       it("'라' type returns '라'", () => {
-        expect(koreanGetSuffix("나무", "라")).toBe("라");
+        expect(str.getKoreanSuffix("나무", "라")).toBe("라");
       });
     });
 
     describe("final consonant ㄹ (special '로' handling)", () => {
       it("'로' type returns '로' for final ㄹ (Seoul)", () => {
-        expect(koreanGetSuffix("서울", "로")).toBe("로");
+        expect(str.getKoreanSuffix("서울", "로")).toBe("로");
       });
 
       it("'로' type returns '로' for final ㄹ (road)", () => {
-        expect(koreanGetSuffix("길", "로")).toBe("로");
+        expect(str.getKoreanSuffix("길", "로")).toBe("로");
       });
 
       it("'로' type returns '로' for final ㄹ (foot)", () => {
-        expect(koreanGetSuffix("발", "로")).toBe("로");
+        expect(str.getKoreanSuffix("발", "로")).toBe("로");
       });
 
       it("'로' type returns '로' for final ㄹ (alcohol)", () => {
-        expect(koreanGetSuffix("술", "로")).toBe("로");
+        expect(str.getKoreanSuffix("술", "로")).toBe("로");
       });
 
       it("'을' type returns '을' for final ㄹ by general rule", () => {
-        expect(koreanGetSuffix("서울", "을")).toBe("을");
+        expect(str.getKoreanSuffix("서울", "을")).toBe("을");
       });
 
       it("'은' type returns '은' for final ㄹ by general rule", () => {
-        expect(koreanGetSuffix("서울", "은")).toBe("은");
+        expect(str.getKoreanSuffix("서울", "은")).toBe("은");
       });
     });
   });
@@ -123,32 +115,32 @@ describe("string utils", () => {
 
   //#region strReplaceFullWidth - Full-width to half-width conversion
 
-  describe("strReplaceFullWidth()", () => {
+  describe("replaceFullWidth()", () => {
     it("converts full-width alphabet to half-width", () => {
-      expect(strReplaceFullWidth("ＡＢＣＤＥＦＧ")).toBe("ABCDEFG");
-      expect(strReplaceFullWidth("ＨＩＪＫＬＭＮ")).toBe("HIJKLMN");
-      expect(strReplaceFullWidth("ＯＰＱＲＳＴＵ")).toBe("OPQRSTU");
-      expect(strReplaceFullWidth("ＶＷＸＹＺ")).toBe("VWXYZ");
+      expect(str.replaceFullWidth("ＡＢＣＤＥＦＧ")).toBe("ABCDEFG");
+      expect(str.replaceFullWidth("ＨＩＪＫＬＭＮ")).toBe("HIJKLMN");
+      expect(str.replaceFullWidth("ＯＰＱＲＳＴＵ")).toBe("OPQRSTU");
+      expect(str.replaceFullWidth("ＶＷＸＹＺ")).toBe("VWXYZ");
     });
 
     it("converts full-width number to half-width", () => {
-      expect(strReplaceFullWidth("０１２３４５６７８９")).toBe("0123456789");
+      expect(str.replaceFullWidth("０１２３４５６７８９")).toBe("0123456789");
     });
 
     it("converts full-width parenthesis to half-width", () => {
-      expect(strReplaceFullWidth("（ＡＢＣ）")).toBe("(ABC)");
+      expect(str.replaceFullWidth("（ＡＢＣ）")).toBe("(ABC)");
     });
 
     it("converts full-width space to half-width space", () => {
-      expect(strReplaceFullWidth("Ａ　Ｂ　Ｃ")).toBe("A B C");
+      expect(str.replaceFullWidth("Ａ　Ｂ　Ｃ")).toBe("A B C");
     });
 
     it("converts mixed full-width/half-width string", () => {
-      expect(strReplaceFullWidth("ＡBC１23")).toBe("ABC123");
+      expect(str.replaceFullWidth("ＡBC１23")).toBe("ABC123");
     });
 
     it("returns original if no full-width characters", () => {
-      expect(strReplaceFullWidth("ABC123")).toBe("ABC123");
+      expect(str.replaceFullWidth("ABC123")).toBe("ABC123");
     });
   });
 
@@ -158,98 +150,98 @@ describe("string utils", () => {
 
   //#region Case conversion
 
-  describe("strToPascalCase()", () => {
+  describe("toPascalCase()", () => {
     it("converts kebab-case to PascalCase", () => {
-      expect(strToPascalCase("hello-world")).toBe("HelloWorld");
+      expect(str.toPascalCase("hello-world")).toBe("HelloWorld");
     });
 
     it("converts dot.case to PascalCase", () => {
-      expect(strToPascalCase("hello.world")).toBe("HelloWorld");
+      expect(str.toPascalCase("hello.world")).toBe("HelloWorld");
     });
 
     it("converts snake_case to PascalCase", () => {
-      expect(strToPascalCase("hello_world")).toBe("HelloWorld");
+      expect(str.toPascalCase("hello_world")).toBe("HelloWorld");
     });
 
     it("capitalizes first letter of lowercase string", () => {
-      expect(strToPascalCase("hello")).toBe("Hello");
+      expect(str.toPascalCase("hello")).toBe("Hello");
     });
 
     it("returns as-is if already PascalCase", () => {
-      expect(strToPascalCase("HelloWorld")).toBe("HelloWorld");
+      expect(str.toPascalCase("HelloWorld")).toBe("HelloWorld");
     });
 
     it("handles consecutive hyphens", () => {
-      expect(strToPascalCase("hello-world-test")).toBe("HelloWorldTest");
+      expect(str.toPascalCase("hello-world-test")).toBe("HelloWorldTest");
     });
   });
 
-  describe("strToCamelCase()", () => {
+  describe("toCamelCase()", () => {
     it("converts kebab-case to camelCase", () => {
-      expect(strToCamelCase("hello-world")).toBe("helloWorld");
+      expect(str.toCamelCase("hello-world")).toBe("helloWorld");
     });
 
     it("converts PascalCase to camelCase", () => {
-      expect(strToCamelCase("HelloWorld")).toBe("helloWorld");
+      expect(str.toCamelCase("HelloWorld")).toBe("helloWorld");
     });
 
     it("converts dot.case to camelCase", () => {
-      expect(strToCamelCase("hello.world")).toBe("helloWorld");
+      expect(str.toCamelCase("hello.world")).toBe("helloWorld");
     });
 
     it("converts snake_case to camelCase", () => {
-      expect(strToCamelCase("hello_world")).toBe("helloWorld");
+      expect(str.toCamelCase("hello_world")).toBe("helloWorld");
     });
 
     it("returns as-is if already camelCase", () => {
-      expect(strToCamelCase("helloWorld")).toBe("helloWorld");
+      expect(str.toCamelCase("helloWorld")).toBe("helloWorld");
     });
   });
 
-  describe("strToKebabCase()", () => {
+  describe("toKebabCase()", () => {
     it("converts PascalCase to kebab-case", () => {
-      expect(strToKebabCase("HelloWorld")).toBe("hello-world");
+      expect(str.toKebabCase("HelloWorld")).toBe("hello-world");
     });
 
     it("converts camelCase to kebab-case", () => {
-      expect(strToKebabCase("helloWorld")).toBe("hello-world");
+      expect(str.toKebabCase("helloWorld")).toBe("hello-world");
     });
 
     it("adds hyphen before underscore when present", () => {
       // toKebabCase converts [-_]?[A-Z] to -lowercase, so _W → -_w
-      expect(strToKebabCase("Hello_World")).toBe("hello-_world");
+      expect(str.toKebabCase("Hello_World")).toBe("hello-_world");
     });
 
     it("returns as-is if already kebab-case", () => {
-      expect(strToKebabCase("hello-world")).toBe("hello-world");
+      expect(str.toKebabCase("hello-world")).toBe("hello-world");
     });
 
     it("handles consecutive uppercase letters", () => {
-      expect(strToKebabCase("HelloWorldTest")).toBe("hello-world-test");
+      expect(str.toKebabCase("HelloWorldTest")).toBe("hello-world-test");
     });
 
     it("handles consecutive uppercase followed by lowercase", () => {
       // each uppercase letter treated as separate word
-      expect(strToKebabCase("XMLParser")).toBe("x-m-l-parser");
-      expect(strToKebabCase("HTTPSConnection")).toBe("h-t-t-p-s-connection");
+      expect(str.toKebabCase("XMLParser")).toBe("x-m-l-parser");
+      expect(str.toKebabCase("HTTPSConnection")).toBe("h-t-t-p-s-connection");
     });
   });
 
-  describe("strToSnakeCase()", () => {
+  describe("toSnakeCase()", () => {
     it("converts PascalCase to snake_case", () => {
-      expect(strToSnakeCase("HelloWorld")).toBe("hello_world");
+      expect(str.toSnakeCase("HelloWorld")).toBe("hello_world");
     });
 
     it("converts camelCase to snake_case", () => {
-      expect(strToSnakeCase("helloWorld")).toBe("hello_world");
+      expect(str.toSnakeCase("helloWorld")).toBe("hello_world");
     });
 
     it("returns as-is if already snake_case", () => {
-      expect(strToSnakeCase("hello_world")).toBe("hello_world");
+      expect(str.toSnakeCase("hello_world")).toBe("hello_world");
     });
 
     it("handles consecutive uppercase letters", () => {
-      expect(strToSnakeCase("HelloWorldTest")).toBe("hello_world_test");
+      expect(str.toSnakeCase("HelloWorldTest")).toBe("hello_world_test");
     });
   });
 
@@ -259,13 +251,13 @@ describe("string utils", () => {
 
   //#region Other
 
-  describe("strInsert()", () => {
+  describe("insert()", () => {
     it("inserts at start of string", () => {
-      expect(strInsert("world", 0, "hello ")).toBe("hello world");
+      expect(str.insert("world", 0, "hello ")).toBe("hello world");
     });
 
     it("inserts at end of string", () => {
-      expect(strInsert("hello", 5, " world")).toBe("hello world");
+      expect(str.insert("hello", 5, " world")).toBe("hello world");
     });
   });
 

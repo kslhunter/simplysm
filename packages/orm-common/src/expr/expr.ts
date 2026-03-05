@@ -10,7 +10,7 @@ import {
 } from "../types/column";
 import type { ExprInput } from "./expr-unit";
 import { ExprUnit, WhereExprUnit } from "./expr-unit";
-import type { Expr, DateSeparator, WhereExpr, WinSpec } from "../types/expr";
+import type { Expr, DateUnit, WhereExpr, WinSpec } from "../types/expr";
 import type { SelectQueryDef } from "../types/query-def";
 import type { Queryable } from "../exec/queryable";
 
@@ -1163,7 +1163,7 @@ export const expr = {
   /**
    * Date 차이 계산 (DATEDIFF)
    *
-   * @param separator - 단위 ("year", "month", "day", "hour", "minute", "second")
+   * @param unit - 단위 ("year", "month", "day", "hour", "minute", "second")
    * @param from - start Date
    * @param to - 끝 Date
    * @returns 차이 value (to - from)
@@ -1177,13 +1177,13 @@ export const expr = {
    * ```
    */
   dateDiff<T extends DateTime | DateOnly | Time | undefined>(
-    separator: DateSeparator,
+    unit: DateUnit,
     from: ExprInput<T>,
     to: ExprInput<T>,
   ): ExprUnit<T extends undefined ? undefined : number> {
     return new ExprUnit("number", {
       type: "dateDiff",
-      separator,
+      unit,
       from: toExpr(from),
       to: toExpr(to),
     });
@@ -1192,7 +1192,7 @@ export const expr = {
   /**
    * Date 더하기 (DATEADD)
    *
-   * @param separator - 단위 ("year", "month", "day", "hour", "minute", "second")
+   * @param unit - 단위 ("year", "month", "day", "hour", "minute", "second")
    * @param source - 원본 Date
    * @param value - 더할 value (음수 가능)
    * @returns 계산된 Date
@@ -1206,13 +1206,13 @@ export const expr = {
    * ```
    */
   dateAdd<T extends DateTime | DateOnly | Time | undefined>(
-    separator: DateSeparator,
+    unit: DateUnit,
     source: ExprUnit<T>,
     value: ExprInput<number>,
   ): ExprUnit<T> {
     return new ExprUnit(source.dataType, {
       type: "dateAdd",
-      separator,
+      unit,
       source: toExpr(source),
       value: toExpr(value),
     });
@@ -1262,12 +1262,12 @@ export const expr = {
    * @example
    * ```typescript
    * db.user().select((u) => ({
-   *   displayName: expr.ifNull(u.nickname, u.name, "Guest"),
+   *   displayName: expr.coalesce(u.nickname, u.name, "Guest"),
    * }))
    * // SELECT COALESCE(nickname, name, 'Guest') AS displayName
    * ```
    */
-  ifNull,
+  coalesce,
 
   /**
    * 특정 값이면 NULL return (NULLIF)
@@ -2050,21 +2050,21 @@ export const expr = {
 //#region ========== Internal Helpers ==========
 
 // 여러 value 중 첫 번째 non-null return (COALESCE)
-function ifNull<TPrimitive extends ColumnPrimitive>(
+function coalesce<TPrimitive extends ColumnPrimitive>(
   ...args: [
     ExprInput<TPrimitive | undefined>,
     ...ExprInput<TPrimitive | undefined>[],
     ExprInput<NonNullable<TPrimitive>>,
   ]
 ): ExprUnit<NonNullable<TPrimitive>>;
-function ifNull<TPrimitive extends ColumnPrimitive>(
+function coalesce<TPrimitive extends ColumnPrimitive>(
   ...args: ExprInput<TPrimitive>[]
 ): ExprUnit<TPrimitive>;
-function ifNull<TPrimitive extends ColumnPrimitive>(
+function coalesce<TPrimitive extends ColumnPrimitive>(
   ...args: ExprInput<TPrimitive>[]
 ): ExprUnit<TPrimitive> {
   return new ExprUnit(findDataType(args), {
-    type: "ifNull",
+    type: "coalesce",
     args: args.map((a) => toExpr(a)),
   });
 }

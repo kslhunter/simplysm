@@ -39,6 +39,27 @@ If a referenced file or document cannot be found, **stop immediately and ask the
   - Any unsolicited observations about surrounding code quality
   - Only describe **what you changed** — nothing else
 
+### Analysis & Comparison
+
+- When analyzing, comparing, diffing, or auditing: **enumerate all items exhaustively**. Never provide a shallow summary — list every difference, even minor ones.
+  - Example: v12 vs v13 migration gap → list ALL API, type, pattern differences item by item
+
+### Direct Action Requests
+
+- When the user provides a specific action (e.g., "rename X to Y", "delete this file"), **execute it directly**. Do not route through skill agents or sub-agent workflows for trivial operations.
+
+## Worktree Prohibition
+
+**NEVER use `isolation: "worktree"` when calling the Agent tool.** This is an absolute rule with no exceptions.
+
+- Do NOT create git worktrees unless the user explicitly says "worktree" (e.g., "create a worktree", "use a worktree").
+- Using `isolation: "worktree"` on Agent tool calls without explicit user instruction is **strictly prohibited**.
+- Worktrees leave behind directories and branches that clutter the repository and cause frustration.
+- If you need to run agents, run them **without** the `isolation` parameter.
+- If the user explicitly requests a worktree:
+  - Create it under the **`.worktree/`** directory (project root), NOT `.claude/worktrees/`.
+  - **After work is complete, you MUST delete the worktree and its branch** before finishing. No worktree may be left behind.
+
 ## Asking Clarifying Questions
 
 When you need to ask the user a question, you MUST use the `AskUserQuestion` tool. Do NOT ask questions in plain text.

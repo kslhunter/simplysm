@@ -11,7 +11,7 @@ import {
 import { registerCrud, unregisterCrud, activateCrud, isActiveCrud } from "../crudRegistry";
 import { reconcile, unwrap } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
-import { objClone, objEqual } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Button } from "../../form-control/Button";
@@ -92,7 +92,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.load();
       setData(reconcile(result.data) as any);
-      originalData = objClone(result.data);
+      originalData = obj.clone(result.data);
       setInfo(result.info);
     } catch (err) {
       noti.error(err, i18n.t("crudDetail.lookupFailed"));
@@ -112,7 +112,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Change Detection --
   function hasChanges(): boolean {
     if (originalData == null) return false;
-    return !objEqual(unwrap(data) as unknown, originalData as unknown);
+    return !obj.equal(unwrap(data) as unknown, originalData as unknown);
   }
 
   // -- Refresh --
@@ -136,7 +136,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
     setBusyCount((c) => c + 1);
     try {
-      const result = await local.submit(objClone(unwrap(data)));
+      const result = await local.submit(obj.clone(unwrap(data)));
       if (result) {
         noti.success(i18n.t("crudDetail.saveCompleted"), i18n.t("crudDetail.saveSuccess"));
         if (local.close) {

@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import { createServiceProtocol } from "@simplysm/service-common";
-import { transferableEncode } from "@simplysm/core-common";
+import { transfer } from "@simplysm/core-common";
 
 const protocol = createServiceProtocol();
 
@@ -36,7 +36,7 @@ self.onmessage = (event: MessageEvent) => {
       const decodeResult = protocol.decode(bytes);
 
       // Convert result object to transferable form (prepare for zero-copy)
-      const encoded = transferableEncode(decodeResult);
+      const encoded = transfer.encode(decodeResult);
       result = encoded.result;
       transferList = encoded.transferList;
     }

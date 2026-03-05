@@ -12,12 +12,16 @@ Review ALL source files at [TARGET_PATH].
 
 ## Step 1: List all source files
 
-Use Glob to list all .ts files under the target path (exclude node_modules, dist).
+Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
 This is your review scope — every file in this list must be examined.
 
 ## Step 2: Understand the codebase
 
-Read the project's CLAUDE.md for conventions. Then:
+Read the following reference files for project conventions:
+- `CLAUDE.md` — project overview and conventions
+- `.claude/rules/sd-refs-linker.md` — reference guide linking to detailed docs per topic (read relevant refs based on the target code)
+
+Then:
 - Read index.ts to map the module structure
 - Read each source file to understand logic flows, data transformations, error paths
 
@@ -29,10 +33,12 @@ Look for:
 - Race conditions: async ordering, shared state without synchronization
 - Resource leaks: uncleared subscriptions/listeners, unclosed handles
 - Error handling: swallowed exceptions, wrong fallbacks, missing propagation
+- Architectural defects: circular dependencies, boundary violations (reaching into another package's internals), wrong dependency direction (higher-level packages imported by lower-level ones)
 
 Do NOT report:
 - Naming consistency, API design, type quality (including `any` types)
-- Code complexity, duplication, readability improvements
+- Code complexity, duplication, readability improvements (handled by Code Simplifier)
+- Structural improvement suggestions (handled by Structure Analyzer)
 - Style preferences unless they cause actual bugs
 - Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
 - Speculative future risks — "if config were changed to X, this would break" is not a finding

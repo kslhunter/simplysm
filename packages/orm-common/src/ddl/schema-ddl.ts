@@ -35,7 +35,7 @@ export function getTruncateQueryDef(table: QueryDefObjectName): TruncateQueryDef
  */
 export function getSwitchFkQueryDef(
   table: QueryDefObjectName,
-  switch_: "on" | "off",
+  enabled: boolean,
 ): SwitchFkQueryDef {
-  return { type: "switchFk", table, switch: switch_ };
+  return { type: "switchFk", table, enabled };
 }

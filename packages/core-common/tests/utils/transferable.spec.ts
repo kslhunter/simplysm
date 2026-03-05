@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  transferableEncode as transferEncode,
-  transferableDecode as transferDecode,
-  DateTime,
-  DateOnly,
-  Time,
-  Uuid,
-} from "@simplysm/core-common";
+import { transfer, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 
 describe("TransferableConvert", () => {
   //#region encode - Special types
@@ -14,7 +7,7 @@ describe("TransferableConvert", () => {
   describe("encode() - Special types", () => {
     it("Encodes DateTime", () => {
       const dt = new DateTime(2025, 1, 6, 15, 30, 45, 123);
-      const { result } = transferEncode(dt);
+      const { result } = transfer.encode(dt);
 
       expect(result).toEqual({
         __type__: "DateTime",
@@ -24,7 +17,7 @@ describe("TransferableConvert", () => {
 
     it("Encodes DateOnly", () => {
       const d = new DateOnly(2025, 1, 6);
-      const { result } = transferEncode(d);
+      const { result } = transfer.encode(d);
 
       expect(result).toEqual({
         __type__: "DateOnly",
@@ -34,7 +27,7 @@ describe("TransferableConvert", () => {
 
     it("Encodes Time", () => {
       const t = new Time(15, 30, 45, 123);
-      const { result } = transferEncode(t);
+      const { result } = transfer.encode(t);
 
       expect(result).toEqual({
         __type__: "Time",
@@ -43,8 +36,8 @@ describe("TransferableConvert", () => {
     });
 
     it("Encodes Uuid", () => {
-      const uuid = Uuid.new();
-      const { result } = transferEncode(uuid);
+      const uuid = Uuid.generate();
+      const { result } = transfer.encode(uuid);
 
       expect(result).toEqual({
         __type__: "Uuid",
@@ -55,7 +48,7 @@ describe("TransferableConvert", () => {
     it("Encodes Error", () => {
       const err = new Error("test error");
       err.stack = "test stack";
-      const { result } = transferEncode(err);
+      const { result } = transfer.encode(err);
 
       expect(result).toEqual({
         __type__: "Error",
@@ -70,7 +63,7 @@ describe("TransferableConvert", () => {
     it("Recursively encodes Error cause", () => {
       const cause = new Error("cause error");
       const err = new Error("main error", { cause });
-      const { result } = transferEncode(err);
+      const { result } = transfer.encode(err);
 
       const typedResult = result as {
         __type__: string;
@@ -100,7 +93,7 @@ describe("TransferableConvert", () => {
     it("Encodes Error code property", () => {
       const err = new Error("test error") as Error & { code: string };
       err.code = "ERR_CUSTOM";
-      const { result } = transferEncode(err);
+      const { result } = transfer.encode(err);
 
       const typedResult = result as {
         __type__: string;
@@ -117,7 +110,7 @@ describe("TransferableConvert", () => {
     it("Encodes Error detail property", () => {
       const err = new Error("test error") as Error & { detail: unknown };
       err.detail = { userId: 123, action: "delete" };
-      const { result } = transferEncode(err);
+      const { result } = transfer.encode(err);
 
       const typedResult = result as {
         __type__: string;
@@ -135,7 +128,7 @@ describe("TransferableConvert", () => {
       const err = new Error("test error") as Error & { detail: unknown };
       const dt = new DateTime(2025, 1, 6);
       err.detail = { timestamp: dt };
-      const { result } = transferEncode(err);
+      const { result } = transfer.encode(err);
 
       const typedResult = result as {
         __type__: string;
@@ -154,7 +147,7 @@ describe("TransferableConvert", () => {
 
     it("Encodes Uint8Array and adds to transferList", () => {
       const bytes = new TextEncoder().encode("hello");
-      const { result, transferList } = transferEncode(bytes);
+      const { result, transferList } = transfer.encode(bytes);
 
       expect(result).toBe(bytes);
       expect(transferList).toContain(bytes.buffer);
@@ -162,7 +155,7 @@ describe("TransferableConvert", () => {
 
     it("Encodes Date", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45, 123);
-      const { result } = transferEncode(date);
+      const { result } = transfer.encode(date);
 
       expect(result).toEqual({
         __type__: "Date",
@@ -172,7 +165,7 @@ describe("TransferableConvert", () => {
 
     it("Encodes RegExp", () => {
       const regex = /test\d+/gi;
-      const { result } = transferEncode(regex);
+      const { result } = transfer.encode(regex);
 
       expect(result).toEqual({
         __type__: "RegExp",
@@ -187,8 +180,8 @@ describe("TransferableConvert", () => {
 
   describe("encode() - Collections", () => {
     it("Recursively encodes array", () => {
-      const arr = [new DateTime(2025, 1, 6), Uuid.new(), "string", 123] as const;
-      const { result } = transferEncode(arr);
+      const arr = [new DateTime(2025, 1, 6), Uuid.generate(), "string", 123] as const;
+      const { result } = transfer.encode(arr);
 
       expect(Array.isArray(result)).toBe(true);
       const resultArr = result as unknown[];
@@ -202,9 +195,9 @@ describe("TransferableConvert", () => {
     it("Recursively encodes Map", () => {
       const map = new Map<string, DateTime | Uuid>([
         ["key1", new DateTime(2025, 1, 6)],
-        ["key2", Uuid.new()],
+        ["key2", Uuid.generate()],
       ]);
-      const { result } = transferEncode(map);
+      const { result } = transfer.encode(map);
 
       expect(result instanceof Map).toBe(true);
       const resultMap = result as Map<string, unknown>;
@@ -214,8 +207,8 @@ describe("TransferableConvert", () => {
     });
 
     it("Recursively encodes Set", () => {
-      const set = new Set([new DateTime(2025, 1, 6), Uuid.new()]);
-      const { result } = transferEncode(set);
+      const set = new Set([new DateTime(2025, 1, 6), Uuid.generate()]);
+      const { result } = transfer.encode(set);
 
       expect(result instanceof Set).toBe(true);
       const resultSet = result as Set<unknown>;
@@ -229,11 +222,11 @@ describe("TransferableConvert", () => {
       const obj = {
         dt: new DateTime(2025, 1, 6),
         nested: {
-          uuid: Uuid.new(),
+          uuid: Uuid.generate(),
           arr: [new DateOnly(2025, 1, 6)],
         },
       };
-      const { result } = transferEncode(obj);
+      const { result } = transfer.encode(obj);
 
       const typedResult = result as {
         dt: { __type__: string };
@@ -258,8 +251,8 @@ describe("TransferableConvert", () => {
       const obj: Record<string, unknown> = { a: 1 };
       obj["self"] = obj;
 
-      expect(() => transferEncode(obj)).toThrow(TypeError);
-      expect(() => transferEncode(obj)).toThrow("Circular reference detected");
+      expect(() => transfer.encode(obj)).toThrow(TypeError);
+      expect(() => transfer.encode(obj)).toThrow("Circular reference detected");
     });
 
     it("Detects nested circular references", () => {
@@ -267,14 +260,14 @@ describe("TransferableConvert", () => {
       const b: Record<string, unknown> = { name: "b", ref: a };
       a["ref"] = b;
 
-      expect(() => transferEncode(a)).toThrow("Circular reference detected");
+      expect(() => transfer.encode(a)).toThrow("Circular reference detected");
     });
 
     it("Detects circular references in array", () => {
       const arr: unknown[] = [1, 2, 3];
       arr.push(arr);
 
-      expect(() => transferEncode(arr)).toThrow("Circular reference detected");
+      expect(() => transfer.encode(arr)).toThrow("Circular reference detected");
     });
   });
 
@@ -286,7 +279,7 @@ describe("TransferableConvert", () => {
     it("Encodes without error when same object is referenced from multiple places", () => {
       const shared = { name: "shared" };
       const data = { a: shared, b: shared };
-      const { result } = transferEncode(data);
+      const { result } = transfer.encode(data);
       const decoded = result as Record<string, Record<string, string>>;
       expect(decoded["a"]["name"]).toBe("shared");
       expect(decoded["b"]["name"]).toBe("shared");
@@ -295,7 +288,7 @@ describe("TransferableConvert", () => {
     it("Encodes without error when same array is referenced from multiple places", () => {
       const sharedArr = [1, 2, 3];
       const data = { x: sharedArr, y: sharedArr };
-      const { result } = transferEncode(data);
+      const { result } = transfer.encode(data);
       const decoded = result as Record<string, number[]>;
       expect(decoded["x"]).toEqual([1, 2, 3]);
       expect(decoded["y"]).toEqual([1, 2, 3]);
@@ -310,7 +303,7 @@ describe("TransferableConvert", () => {
     it("Decodes DateTime", () => {
       const tick = new DateTime(2025, 1, 6, 15, 30, 45, 123).tick;
       const encoded = { __type__: "DateTime", data: tick };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof DateTime).toBe(true);
       const dt = decoded as DateTime;
@@ -326,7 +319,7 @@ describe("TransferableConvert", () => {
     it("Decodes DateOnly", () => {
       const tick = new DateOnly(2025, 1, 6).tick;
       const encoded = { __type__: "DateOnly", data: tick };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof DateOnly).toBe(true);
       const d = decoded as DateOnly;
@@ -338,7 +331,7 @@ describe("TransferableConvert", () => {
     it("Decodes Time", () => {
       const tick = new Time(15, 30, 45, 123).tick;
       const encoded = { __type__: "Time", data: tick };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Time).toBe(true);
       const t = decoded as Time;
@@ -349,9 +342,9 @@ describe("TransferableConvert", () => {
     });
 
     it("Decodes Uuid", () => {
-      const uuid = Uuid.new();
+      const uuid = Uuid.generate();
       const encoded = { __type__: "Uuid", data: uuid.toString() };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Uuid).toBe(true);
       expect((decoded as Uuid).toString()).toBe(uuid.toString());
@@ -366,7 +359,7 @@ describe("TransferableConvert", () => {
           stack: "test stack",
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Error).toBe(true);
       const err = decoded as Error;
@@ -390,7 +383,7 @@ describe("TransferableConvert", () => {
           },
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Error).toBe(true);
       const err = decoded as Error;
@@ -408,7 +401,7 @@ describe("TransferableConvert", () => {
           code: "ERR_CUSTOM",
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Error).toBe(true);
       const err = decoded as Error & { code?: string };
@@ -424,7 +417,7 @@ describe("TransferableConvert", () => {
           detail: { userId: 123, action: "delete" },
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Error).toBe(true);
       const err = decoded as Error & { detail?: unknown };
@@ -441,7 +434,7 @@ describe("TransferableConvert", () => {
           detail: { timestamp: { __type__: "DateTime", data: tick } },
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Error).toBe(true);
       const err = decoded as Error & { detail?: { timestamp: DateTime } };
@@ -452,7 +445,7 @@ describe("TransferableConvert", () => {
     it("Decodes Date", () => {
       const tick = new Date(2025, 0, 6, 15, 30, 45, 123).getTime();
       const encoded = { __type__: "Date", data: tick };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Date).toBe(true);
       const date = decoded as Date;
@@ -470,7 +463,7 @@ describe("TransferableConvert", () => {
         __type__: "RegExp",
         data: { source: "test\\d+", flags: "gi" },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof RegExp).toBe(true);
       const regex = decoded as RegExp;
@@ -490,14 +483,14 @@ describe("TransferableConvert", () => {
   describe("decode() - Collections", () => {
     it("Recursively decodes array", () => {
       const tick = new DateTime(2025, 1, 6).tick;
-      const uuidStr = Uuid.new().toString();
+      const uuidStr = Uuid.generate().toString();
       const encoded = [
         { __type__: "DateTime", data: tick },
         { __type__: "Uuid", data: uuidStr },
         "string",
         123,
       ];
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(Array.isArray(decoded)).toBe(true);
       const arr = decoded as unknown[];
@@ -513,7 +506,7 @@ describe("TransferableConvert", () => {
         ["key1", { __type__: "DateTime", data: tick }],
         ["key2", "value"],
       ]);
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Map).toBe(true);
       const map = decoded as Map<string, unknown>;
@@ -524,7 +517,7 @@ describe("TransferableConvert", () => {
     it("Recursively decodes Set", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const encoded = new Set([{ __type__: "DateTime", data: tick }, "string"]);
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       expect(decoded instanceof Set).toBe(true);
       const set = decoded as Set<unknown>;
@@ -535,7 +528,7 @@ describe("TransferableConvert", () => {
 
     it("Recursively decodes nested object", () => {
       const dtTick = new DateTime(2025, 1, 6).tick;
-      const uuidStr = Uuid.new().toString();
+      const uuidStr = Uuid.generate().toString();
       const dTick = new DateOnly(2025, 1, 6).tick;
       const encoded = {
         dt: { __type__: "DateTime", data: dtTick },
@@ -544,7 +537,7 @@ describe("TransferableConvert", () => {
           arr: [{ __type__: "DateOnly", data: dTick }],
         },
       };
-      const decoded = transferDecode(encoded);
+      const decoded = transfer.decode(encoded);
 
       const obj = decoded as {
         dt: DateTime;
@@ -573,7 +566,7 @@ describe("TransferableConvert", () => {
       };
       const originalCopy = JSON.stringify(original);
 
-      transferDecode(original);
+      transfer.decode(original);
 
       // Verify original is not modified
       expect(JSON.stringify(original)).toBe(originalCopy);
@@ -585,7 +578,7 @@ describe("TransferableConvert", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const original = [{ __type__: "DateTime", data: tick }];
 
-      const decoded = transferDecode(original);
+      const decoded = transfer.decode(original);
 
       // Result is a new array
       expect(decoded).not.toBe(original);
@@ -602,8 +595,8 @@ describe("TransferableConvert", () => {
   describe("Round-trip conversion (encode → decode)", () => {
     it("Round-trips DateTime", () => {
       const original = new DateTime(2025, 1, 6, 15, 30, 45, 123);
-      const { result } = transferEncode(original);
-      const decoded = transferDecode(result) as DateTime;
+      const { result } = transfer.encode(original);
+      const decoded = transfer.decode(result) as DateTime;
 
       expect(decoded.tick).toBe(original.tick);
     });
@@ -613,14 +606,14 @@ describe("TransferableConvert", () => {
         dt: new DateTime(2025, 1, 6),
         d: new DateOnly(2025, 1, 6),
         t: new Time(15, 30, 45),
-        uuid: Uuid.new(),
+        uuid: Uuid.generate(),
         arr: [new DateTime(2024, 12, 31)],
         map: new Map([["key", new DateOnly(2025, 1, 1)]]),
         set: new Set([new Time(12, 0, 0)]),
       };
 
-      const { result } = transferEncode(original);
-      const decoded = transferDecode(result) as typeof original;
+      const { result } = transfer.encode(original);
+      const decoded = transfer.decode(result) as typeof original;
 
       expect(decoded.dt instanceof DateTime).toBe(true);
       expect(decoded.d instanceof DateOnly).toBe(true);
@@ -633,8 +626,8 @@ describe("TransferableConvert", () => {
 
     it("Round-trips RegExp", () => {
       const original = /test\d+/gi;
-      const { result } = transferEncode(original);
-      const decoded = transferDecode(result) as RegExp;
+      const { result } = transfer.encode(original);
+      const decoded = transfer.decode(result) as RegExp;
 
       expect(decoded instanceof RegExp).toBe(true);
       expect(decoded.source).toBe(original.source);

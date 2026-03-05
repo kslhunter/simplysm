@@ -1,7 +1,7 @@
 import path from "path";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 import {
@@ -147,7 +147,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
   } catch (err) {
     return {
       success: false,
-      errors: [errorMessage(err)],
+      errors: [errNs.message(err)],
     };
   }
 }
@@ -281,13 +281,13 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
         }
       } catch (err) {
         sender.send("error", {
-          message: errorMessage(err),
+          message: errNs.message(err),
         });
       }
     });
   } catch (err) {
     sender.send("error", {
-      message: errorMessage(err),
+      message: errNs.message(err),
     });
   }
 }

@@ -3,7 +3,7 @@ import type { JSX } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import clsx from "clsx";
 import { IconDeviceFloppy, IconStar, IconX } from "@tabler/icons-solidjs";
-import { objClone, objEqual } from "@simplysm/core-common";
+import { obj } from "@simplysm/core-common";
 import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Icon } from "../../display/Icon";
@@ -119,7 +119,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
     const newPreset: StatePresetItem<TValue> = {
       name,
-      state: objClone(local.value),
+      state: obj.clone(local.value),
     };
     setPresets([...presets(), newPreset]);
     notification.info(i18n.t("statePreset.saved"), i18n.t("statePreset.savedMessage", { name }));
@@ -128,8 +128,8 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   }
 
   function handleRestore(preset: StatePresetItem<TValue>): void {
-    if (!objEqual(local.value, preset.state)) {
-      local.onValueChange(objClone(preset.state));
+    if (!obj.equal(local.value, preset.state)) {
+      local.onValueChange(obj.clone(preset.state));
     }
   }
 
@@ -138,7 +138,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     const presetName = snapshot[index].name;
 
     const updated = snapshot.map((p, i) =>
-      i === index ? { ...p, state: objClone(local.value) } : p,
+      i === index ? { ...p, state: obj.clone(local.value) } : p,
     );
     setPresets(updated);
 

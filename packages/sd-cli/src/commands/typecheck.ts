@@ -2,7 +2,7 @@ import ts from "typescript";
 import path from "path";
 import os from "os";
 import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
-import { errorMessage } from "@simplysm/core-common";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { parseRootTsconfig, type TypecheckEnv } from "../utils/tsconfig";
@@ -202,7 +202,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   try {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
-    logger.error(errorMessage(err));
+    logger.error(errNs.message(err));
     return { success: false, errorCount: 1, warningCount: 0, formattedOutput: "" };
   }
 
@@ -283,13 +283,13 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
           }
         } catch (err) {
           logger.error(`Worker error: ${task.displayName}`, {
-            error: errorMessage(err),
+            error: errNs.message(err),
           });
           allResults.push({
             displayName: task.displayName,
             result: {
               success: false,
-              errors: [errorMessage(err)],
+              errors: [errNs.message(err)],
               diagnostics: [],
               errorCount: 1,
               warningCount: 0,

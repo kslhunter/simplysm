@@ -2,18 +2,18 @@
  * Number utility functions
  */
 
-//#region numParseInt / numParseFloat / numParseRoundedInt
+//#region parseInt / parseFloat / parseRoundedInt
 
 /**
  * Parse string to integer
  * Remove non-numeric characters (except 0-9, -, .) before parsing
  *
  * @note Strings with decimal points return only the integer part (e.g., '12.34' → 12).
- *       Use {@link numParseRoundedInt} if rounding is needed.
+ *       Use {@link parseRoundedInt} if rounding is needed.
  * @note Hyphens (-) in the middle of the string are preserved, which may result in unintended negative numbers.
  *       Example: `"가-123나"` → `-123`
  */
-export function numParseInt(text: unknown): number | undefined {
+export function parseInt(text: unknown): number | undefined {
   if (typeof text === "number") return Math.trunc(text);
   if (typeof text !== "string") return undefined;
   const txt = text.replace(/[^0-9.\-]/g, "").trim();
@@ -26,8 +26,8 @@ export function numParseInt(text: unknown): number | undefined {
 /**
  * Parse string to float, then round and return integer
  */
-export function numParseRoundedInt(text: unknown): number | undefined {
-  const float = numParseFloat(text);
+export function parseRoundedInt(text: unknown): number | undefined {
+  const float = parseFloat(text);
   return float !== undefined ? Math.round(float) : undefined;
 }
 
@@ -35,7 +35,7 @@ export function numParseRoundedInt(text: unknown): number | undefined {
  * Parse string to float
  * Remove non-numeric characters before parsing
  */
-export function numParseFloat(text: unknown): number | undefined {
+export function parseFloat(text: unknown): number | undefined {
   if (typeof text === "number") return text;
   if (typeof text !== "string") return undefined;
   const txt = text.replace(/[^0-9.\-]/g, "").trim();
@@ -47,7 +47,7 @@ export function numParseFloat(text: unknown): number | undefined {
 
 //#endregion
 
-//#region numIsNullOrEmpty
+//#region isNullOrEmpty
 
 /**
  * Check undefined, null, 0 (type guard)
@@ -59,7 +59,7 @@ export function numParseFloat(text: unknown): number | undefined {
  * @returns true if undefined, null, or 0
  * @example
  * const count: number | undefined = getValue();
- * if (numIsNullOrEmpty(count)) {
+ * if (isNullOrEmpty(count)) {
  *   // count: 0 | undefined
  *   console.log("Empty");
  * } else {
@@ -67,13 +67,13 @@ export function numParseFloat(text: unknown): number | undefined {
  *   console.log(`Count: ${count}`);
  * }
  */
-export function numIsNullOrEmpty(val: number | undefined): val is 0 | undefined {
+export function isNullOrEmpty(val: number | undefined): val is 0 | undefined {
   return val == null || val === 0;
 }
 
 //#endregion
 
-//#region numFormat
+//#region format
 
 /**
  * Format number to string with thousand separators
@@ -82,15 +82,15 @@ export function numIsNullOrEmpty(val: number | undefined): val is 0 | undefined 
  * @param digit.max Maximum decimal places
  * @param digit.min Minimum decimal places (pad with 0 if insufficient)
  * @example
- * numFormat(1234.567, { max: 2 }) // "1,234.57"
- * numFormat(1234, { min: 2 }) // "1,234.00"
+ * format(1234.567, { max: 2 }) // "1,234.57"
+ * format(1234, { min: 2 }) // "1,234.00"
  */
-export function numFormat(val: number, digit?: { max?: number; min?: number }): string;
-export function numFormat(
+export function format(val: number, digit?: { max?: number; min?: number }): string;
+export function format(
   val: number | undefined,
   digit?: { max?: number; min?: number },
 ): string | undefined;
-export function numFormat(
+export function format(
   val: number | undefined,
   digit?: { max?: number; min?: number },
 ): string | undefined {

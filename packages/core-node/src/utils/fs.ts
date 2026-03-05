@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { glob as globRaw, type GlobOptions, globSync as globRawSync } from "glob";
-import { jsonParse, jsonStringify, SdError } from "@simplysm/core-common";
+import { json, SdError } from "@simplysm/core-common";
 import "@simplysm/core-common";
 
 //#region Existence Check
@@ -264,7 +264,7 @@ export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
 export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
   const contents = fsReadSync(targetPath);
   try {
-    return jsonParse(contents);
+    return json.parse(contents);
   } catch (err) {
     const preview = contents.length > 500 ? contents.slice(0, 500) + "...(truncated)" : contents;
     throw new SdError(err, targetPath + os.EOL + preview);
@@ -278,7 +278,7 @@ export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
 export async function fsReadJson<TData = unknown>(targetPath: string): Promise<TData> {
   const contents = await fsRead(targetPath);
   try {
-    return jsonParse<TData>(contents);
+    return json.parse<TData>(contents);
   } catch (err) {
     const preview = contents.length > 500 ? contents.slice(0, 500) + "...(truncated)" : contents;
     throw new SdError(err, targetPath + os.EOL + preview);
@@ -333,8 +333,8 @@ export function fsWriteJsonSync(
     space?: string | number;
   },
 ): void {
-  const json = jsonStringify(data, options);
-  fsWriteSync(targetPath, json);
+  const jsonStr = json.stringify(data, options);
+  fsWriteSync(targetPath, jsonStr);
 }
 
 /**
@@ -351,8 +351,8 @@ export async function fsWriteJson(
     space?: string | number;
   },
 ): Promise<void> {
-  const json = jsonStringify(data, options);
-  await fsWrite(targetPath, json);
+  const jsonStr = json.stringify(data, options);
+  await fsWrite(targetPath, jsonStr);
 }
 
 //#endregion

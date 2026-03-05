@@ -19,7 +19,7 @@ import { XMLBuilder, XMLParser } from "fast-xml-parser";
  * xmlParse('<root id="1"><item>hello</item></root>');
  * // { root: { $: { id: "1" }, item: [{ _: "hello" }] } }
  */
-export function xmlParse(str: string, options?: { stripTagPrefix?: boolean }): unknown {
+export function parse(str: string, options?: { stripTagPrefix?: boolean }): unknown {
   const result = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "",
@@ -53,7 +53,7 @@ export function xmlParse(str: string, options?: { stripTagPrefix?: boolean }): u
  * });
  * // '<root id="1"><item>hello</item><item>world</item></root>'
  */
-export function xmlStringify(obj: unknown, options?: XmlBuilderOptions): string {
+export function stringify(obj: unknown, options?: XmlBuilderOptions): string {
   return new XMLBuilder({
     ignoreAttributes: false,
     attributeNamePrefix: "",

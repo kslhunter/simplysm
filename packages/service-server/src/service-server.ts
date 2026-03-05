@@ -2,7 +2,7 @@ import type { ServiceEventDef } from "@simplysm/service-common";
 import { handleStaticFile } from "./transport/http/static-file-handler";
 import { handleHttpRequest } from "./transport/http/http-request-handler";
 import { executeServiceMethod } from "./core/service-executor";
-import { jsonStringify, jsonParse, EventEmitter, env } from "@simplysm/core-common";
+import { json, EventEmitter, env } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
@@ -103,8 +103,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       { parseAs: "string" },
       (req, body, done) => {
         try {
-          const json = jsonParse(body as string);
-          done(null, json);
+          const parsed = json.parse(body as string);
+          done(null, parsed);
         } catch (err: unknown) {
           const error = err as Error & { statusCode?: number };
           error.statusCode = 400;
@@ -114,7 +114,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     );
 
     // JSON serializer
-    this.fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
+    this.fastify.setSerializerCompiler(() => (data) => json.stringify(data));
 
     // API routes
     this.fastify.all("/api/:service/:method", async (req, reply) => {

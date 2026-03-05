@@ -1,6 +1,6 @@
 import type { Bytes } from "@simplysm/core-common";
 import "@simplysm/core-common";
-import { strIsNullOrEmpty } from "@simplysm/core-common";
+import { str } from "@simplysm/core-common";
 import mime from "mime";
 import type { ExcelCell } from "./excel-cell";
 import { ExcelCol } from "./excel-col";
@@ -220,7 +220,7 @@ export class ExcelWorksheet {
     const headers = records
       .flatMap((item) => Object.keys(item))
       .distinct()
-      .filter((item) => !strIsNullOrEmpty(item));
+      .filter((item) => !str.isNullOrEmpty(item));
 
     for (let c = 0; c < headers.length; c++) {
       await this.cell(0, c).setValue(headers[c]);
