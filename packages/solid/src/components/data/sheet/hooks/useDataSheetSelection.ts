@@ -6,7 +6,7 @@ export interface UseDataSheetSelectionProps<TItem> {
   selectMode?: "single" | "multiple";
   selectedItems?: TItem[];
   onSelectedItemsChange?: (items: TItem[]) => void;
-  isItemSelectable?: (item: TItem) => boolean | string;
+  itemSelectable?: (item: TItem) => boolean | string;
 }
 
 export interface UseDataSheetSelectionReturn<TItem> {
@@ -35,8 +35,8 @@ export function useDataSheetSelection<TItem>(
   const [lastClickAction, setLastClickAction] = createSignal<"select" | "deselect">("select");
 
   function getItemSelectable(item: TItem): boolean | string {
-    if (!props.isItemSelectable) return true;
-    return props.isItemSelectable(item);
+    if (!props.itemSelectable) return true;
+    return props.itemSelectable(item);
   }
 
   function toggleSelect(item: TItem): void {

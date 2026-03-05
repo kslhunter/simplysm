@@ -205,7 +205,7 @@ import { CrudSheet } from "@simplysm/solid";
 | `itemEditable` | `(item) => boolean` | Per-item edit permission |
 | `itemDeletable` | `(item) => boolean` | Per-item delete permission |
 | `itemDeleted` | `(item) => boolean` | Returns true if item is in deleted state |
-| `isItemSelectable` | `(item) => boolean \| string` | Per-item selection permission |
+| `itemSelectable` | `(item) => boolean \| string` | Per-item selection permission |
 | `lastModifiedAtProp` | `string` | Property path for last-modified datetime (adds hidden column) |
 | `lastModifiedByProp` | `string` | Property path for last-modified user (adds hidden column) |
 | `filterInitial` | `TFilter` | Initial filter values |
@@ -216,7 +216,7 @@ import { CrudSheet } from "@simplysm/solid";
 | `excel` | `ExcelConfig<TItem>` | Excel import/export config |
 | `selectMode` | `"single" \| "multiple"` | Selection mode |
 | `onSelect` | `(result: SelectResult<TItem>) => void` | Selection result callback |
-| `onSubmitted` | `() => void` | Called after successful save |
+| `onSubmitComplete` | `() => void` | Called after successful save |
 | `hideAutoTools` | `boolean` | Hide automatic toolbar buttons |
 | `class` | `string` | Custom class |
 

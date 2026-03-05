@@ -86,7 +86,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   itemEditable?: (item: TItem) => boolean;
   itemDeletable?: (item: TItem) => boolean;
   itemDeleted?: (item: TItem) => boolean;
-  isItemSelectable?: (item: TItem) => boolean | string;
+  itemSelectable?: (item: TItem) => boolean | string;
   lastModifiedAtProp?: string;
   lastModifiedByProp?: string;
   filterInitial?: TFilter;
@@ -95,7 +95,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   excel?: ExcelConfig<TItem>;
   selectMode?: "single" | "multiple";
   onSelect?: (result: SelectResult<TItem>) => void;
-  onSubmitted?: () => void;
+  onSubmitComplete?: () => void;
   hideAutoTools?: boolean;
   close?: () => void;
   class?: string;

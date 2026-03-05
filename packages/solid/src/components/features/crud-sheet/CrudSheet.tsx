@@ -74,10 +74,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "itemEditable",
     "itemDeletable",
     "itemDeleted",
-    "isItemSelectable",
+    "itemSelectable",
     "lastModifiedAtProp",
     "lastModifiedByProp",
-    "onSubmitted",
+    "onSubmitComplete",
     "filterInitial",
     "items",
     "onItemsChange",
@@ -240,7 +240,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       await local.inlineEdit.submit(diffs);
       noti.success(i18n.t("crudSheet.saveCompleted"), i18n.t("crudSheet.saveSuccess"));
       await refresh();
-      local.onSubmitted?.();
+      local.onSubmitComplete?.();
     } catch (err) {
       noti.error(err, i18n.t("crudSheet.saveFailed"));
     }
@@ -617,7 +617,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             totalPageCount={totalPageCount()}
             sorts={sorts()}
             onSortsChange={setSorts}
-            isItemSelectable={local.isItemSelectable}
+            itemSelectable={local.itemSelectable}
             selectMode={
               isSelectMode()
                 ? local.selectMode

@@ -107,7 +107,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     "selectedItems",
     "onSelectedItemsChange",
     "autoSelect",
-    "isItemSelectable",
+    "itemSelectable",
     "cellClass",
     "cellStyle",
     "onItemsReorder",
@@ -392,7 +392,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
       get selectMode() { return local.selectMode; },
       get selectedItems() { return local.selectedItems; },
       get onSelectedItemsChange() { return local.onSelectedItemsChange; },
-      get isItemSelectable() { return local.isItemSelectable; },
+      get itemSelectable() { return local.itemSelectable; },
     },
     displayItems,
   );
