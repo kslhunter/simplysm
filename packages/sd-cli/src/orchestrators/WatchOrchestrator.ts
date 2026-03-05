@@ -64,7 +64,7 @@ export class WatchOrchestrator {
       sdConfig = await loadSdConfig({
         cwd: this._cwd,
         dev: true,
-        opt: this._options.options,
+        options: this._options.options,
       });
       this._logger.debug("sd.config.ts loaded");
     } catch (err) {

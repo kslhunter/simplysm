@@ -30,7 +30,7 @@ if (isDev) {
   try {
     const { loadSdConfig } = await import("./utils/sd-config.js");
     const { setupReplaceDeps } = await import("./utils/replace-deps.js");
-    const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: false, opt: [] });
+    const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: false, options: [] });
     if (sdConfig.replaceDeps != null) {
       await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);
     }

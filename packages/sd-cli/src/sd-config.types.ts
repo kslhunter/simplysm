@@ -249,7 +249,7 @@ export interface SdConfigParams {
   /** development mode flag */
   dev: boolean;
   /** additional options (from CLI's -o flag) */
-  opt: string[];
+  options: string[];
 }
 
 /**

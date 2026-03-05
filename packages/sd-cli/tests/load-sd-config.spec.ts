@@ -27,7 +27,7 @@ describe("loadSdConfig", () => {
   it("throws error if sd.config.ts file not found", async () => {
     vi.mocked(fsExists).mockResolvedValue(false);
 
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
+    await expect(loadSdConfig({ cwd: "/project", dev: false, options: [] })).rejects.toThrow(
       "sd.config.ts file not found",
     );
   });
@@ -38,7 +38,7 @@ describe("loadSdConfig", () => {
       someOtherExport: () => ({}),
     });
 
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
+    await expect(loadSdConfig({ cwd: "/project", dev: false, options: [] })).rejects.toThrow(
       "sd.config.ts must export a function as default",
     );
   });
@@ -49,7 +49,7 @@ describe("loadSdConfig", () => {
       default: { packages: {} }, // object not function
     });
 
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
+    await expect(loadSdConfig({ cwd: "/project", dev: false, options: [] })).rejects.toThrow(
       "sd.config.ts must export a function as default",
     );
   });
@@ -60,7 +60,7 @@ describe("loadSdConfig", () => {
       default: () => ({}), // missing packages property
     });
 
-    await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
+    await expect(loadSdConfig({ cwd: "/project", dev: false, options: [] })).rejects.toThrow(
       /sd\.config\.ts return value is not in .* correct format/,
     );
   });
@@ -76,7 +76,7 @@ describe("loadSdConfig", () => {
       }),
     });
 
-    const config = await loadSdConfig({ cwd: "/project", dev: false, opt: [] });
+    const config = await loadSdConfig({ cwd: "/project", dev: false, options: [] });
 
     expect(config.packages).toEqual({
       "core-common": { target: "neutral" },
@@ -90,7 +90,7 @@ describe("loadSdConfig", () => {
       default: () => ({ packages: {} }),
     });
 
-    const config = await loadSdConfig({ cwd: "/project", dev: false, opt: [] });
+    const config = await loadSdConfig({ cwd: "/project", dev: false, options: [] });
 
     expect(config.packages).toEqual({});
   });

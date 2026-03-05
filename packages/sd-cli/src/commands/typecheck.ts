@@ -209,7 +209,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   // Load sd.config.ts
   let sdConfig: SdConfig;
   try {
-    sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
+    sdConfig = await loadSdConfig({ cwd, dev: false, options: options.options });
     logger.debug("sd.config.ts loaded");
   } catch (err) {
     // Use defaults if sd.config.ts is missing or load fails

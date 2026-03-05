@@ -43,7 +43,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   // Load sd.config.ts
   let sdConfig: SdConfig;
   try {
-    sdConfig = await loadSdConfig({ cwd, dev: true, opt: options.options });
+    sdConfig = await loadSdConfig({ cwd, dev: true, options: options.options });
     logger.debug("sd.config.ts loaded");
   } catch (err) {
     logger.error(`Failed to load sd.config.ts: ${err instanceof Error ? err.message : err}`);

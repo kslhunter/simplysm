@@ -157,7 +157,7 @@ export class BuildOrchestrator {
       this._sdConfig = await loadSdConfig({
         cwd: this._cwd,
         dev: false,
-        opt: this._options.options,
+        options: this._options.options,
       });
       this._logger.debug("sd.config.ts loaded");
     } catch (err) {
