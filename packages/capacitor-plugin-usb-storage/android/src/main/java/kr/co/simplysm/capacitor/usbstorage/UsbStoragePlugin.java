@@ -62,7 +62,7 @@ public class UsbStoragePlugin extends Plugin {
     }
 
     @PluginMethod
-    public void requestPermission(PluginCall call) {
+    public void requestPermissions(PluginCall call) {
         Integer vendorId = call.getInt("vendorId");
         Integer productId = call.getInt("productId");
 
@@ -120,7 +120,7 @@ public class UsbStoragePlugin extends Plugin {
     }
 
     @PluginMethod
-    public void hasPermission(PluginCall call) {
+    public void checkPermissions(PluginCall call) {
         Integer vendorId = call.getInt("vendorId");
         Integer productId = call.getInt("productId");
 
