@@ -23,7 +23,7 @@ interface StatePresetItem<TValue> {
 type StatePresetSize = ComponentSize;
 
 export interface StatePresetProps<TValue> {
-  presetKey: string;
+  storageKey: string;
   value: TValue;
   onValueChange: (value: TValue) => void;
   size?: StatePresetSize;
@@ -71,7 +71,7 @@ const iconSize = "0.85em";
 
 function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element {
   const [local] = splitProps(props, [
-    "presetKey",
+    "storageKey",
     "value",
     "onValueChange",
     "size",
@@ -82,9 +82,9 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   const notification = useNotification();
   const i18n = useI18n();
 
-  // presetKey is an identifier set only once at mount, evaluate immediately to capture
+  // storageKey is an identifier set only once at mount, evaluate immediately to capture
   const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(
-    `state-preset.${local.presetKey}`,
+    `state-preset.${local.storageKey}`,
     [],
   );
   const [adding, setAdding] = createSignal(false);
