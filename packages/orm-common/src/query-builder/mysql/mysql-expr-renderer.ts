@@ -46,7 +46,7 @@ import type {
   ExprDateDiff,
   ExprDateAdd,
   ExprFormatDate,
-  ExprIfNull,
+  ExprCoalesce,
   ExprNullIf,
   ExprIs,
   ExprSwitch,
@@ -60,9 +60,10 @@ import type {
   ExprLeast,
   ExprRowNum,
   ExprCast,
+  ExprRandom,
   ExprWindow,
   ExprSubquery,
-  DateSeparator,
+  DateUnit,
 } from "../../types/expr";
 import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/expr-renderer-base";
@@ -390,7 +391,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   protected dateDiff(expr: ExprDateDiff): string {
     const from = this.render(expr.from);
     const to = this.render(expr.to);
-    switch (expr.separator) {
+    switch (expr.unit) {
       case "year":
         return `TIMESTAMPDIFF(YEAR, ${from}, ${to})`;
       case "month":
@@ -409,7 +410,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   protected dateAdd(expr: ExprDateAdd): string {
     const source = this.render(expr.source);
     const value = this.render(expr.value);
-    const unit = this.dateSeparatorToUnit(expr.separator);
+    const unit = this.dateUnitToSql(expr.unit);
     return `DATE_ADD(${source}, INTERVAL ${value} ${unit})`;
   }
 
@@ -419,8 +420,8 @@ export class MysqlExprRenderer extends ExprRendererBase {
     return `DATE_FORMAT(${this.render(expr.source)}, '${mysqlFormat}')`;
   }
 
-  private dateSeparatorToUnit(sep: DateSeparator): string {
-    switch (sep) {
+  private dateUnitToSql(unit: DateUnit): string {
+    switch (unit) {
       case "year":
         return "YEAR";
       case "month":
@@ -451,7 +452,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#region ========== condition ==========
 
-  protected ifNull(expr: ExprIfNull): string {
+  protected coalesce(expr: ExprCoalesce): string {
     if (expr.args.length === 0) return "NULL";
     if (expr.args.length === 1) return this.render(expr.args[0]);
     // COALESCE로 Render (여러 value 중 첫 번째 non-null)
@@ -526,7 +527,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
     return "ROW_NUMBER() OVER ()";
   }
 
-  protected random(): string {
+  protected random(_expr: ExprRandom): string {
     return "RAND()";
   }
 

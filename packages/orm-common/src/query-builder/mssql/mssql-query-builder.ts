@@ -1,8 +1,8 @@
 import type {
   AddColumnQueryDef,
-  AddFkQueryDef,
-  AddIdxQueryDef,
-  AddPkQueryDef,
+  AddForeignKeyQueryDef,
+  AddIndexQueryDef,
+  AddPrimaryKeyQueryDef,
   ClearSchemaQueryDef,
   CreateProcQueryDef,
   CreateTableQueryDef,
@@ -10,9 +10,9 @@ import type {
   SchemaExistsQueryDef,
   DeleteQueryDef,
   DropColumnQueryDef,
-  DropFkQueryDef,
-  DropIdxQueryDef,
-  DropPkQueryDef,
+  DropForeignKeyQueryDef,
+  DropIndexQueryDef,
+  DropPrimaryKeyQueryDef,
   DropProcQueryDef,
   DropTableQueryDef,
   DropViewQueryDef,
@@ -463,7 +463,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
   //#region ========== DDL - Constraint ==========
 
-  protected addPk(def: AddPkQueryDef): QueryBuildResult {
+  protected addPrimaryKey(def: AddPrimaryKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const cols = def.columns.map((c) => this.expr.wrap(c)).join(", ");
     const pkName = `PK_${def.table.name}`;
@@ -472,13 +472,13 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     };
   }
 
-  protected dropPk(def: DropPkQueryDef): QueryBuildResult {
+  protected dropPrimaryKey(def: DropPrimaryKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const pkName = `PK_${def.table.name}`;
     return { sql: `ALTER TABLE ${table} DROP CONSTRAINT ${this.expr.wrap(pkName)}` };
   }
 
-  protected addFk(def: AddFkQueryDef): QueryBuildResult {
+  protected addForeignKey(def: AddForeignKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const fk = def.foreignKey;
     const fkCols = fk.fkColumns.map((c) => this.expr.wrap(c)).join(", ");
@@ -494,13 +494,13 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     return { sql };
   }
 
-  protected dropFk(def: DropFkQueryDef): QueryBuildResult {
+  protected dropForeignKey(def: DropForeignKeyQueryDef): QueryBuildResult {
     return {
       sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}`,
     };
   }
 
-  protected addIdx(def: AddIdxQueryDef): QueryBuildResult {
+  protected addIndex(def: AddIndexQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const idx = def.index;
     const cols = idx.columns.map((c) => `${this.expr.wrap(c.name)} ${c.orderBy}`).join(", ");
@@ -508,7 +508,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     return { sql: `CREATE ${unique}INDEX ${this.expr.wrap(idx.name)} ON ${table} (${cols})` };
   }
 
-  protected dropIdx(def: DropIdxQueryDef): QueryBuildResult {
+  protected dropIndex(def: DropIndexQueryDef): QueryBuildResult {
     return { sql: `DROP INDEX ${this.expr.wrap(def.index)} ON ${this.tableName(def.table)}` };
   }
 
@@ -640,7 +640,7 @@ SELECT @result AS name WHERE @result IS NOT NULL`,
 
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
-    if (def.switch === "on") {
+    if (def.enabled) {
       return { sql: `ALTER TABLE ${table} WITH CHECK CHECK CONSTRAINT ALL` };
     }
     return { sql: `ALTER TABLE ${table} NOCHECK CONSTRAINT ALL` };

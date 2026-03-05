@@ -1,9 +1,9 @@
 import { Uuid } from "@simplysm/core-common";
 import type {
   AddColumnQueryDef,
-  AddFkQueryDef,
-  AddIdxQueryDef,
-  AddPkQueryDef,
+  AddForeignKeyQueryDef,
+  AddIndexQueryDef,
+  AddPrimaryKeyQueryDef,
   ClearSchemaQueryDef,
   CreateProcQueryDef,
   CreateTableQueryDef,
@@ -11,9 +11,9 @@ import type {
   SchemaExistsQueryDef,
   DeleteQueryDef,
   DropColumnQueryDef,
-  DropFkQueryDef,
-  DropIdxQueryDef,
-  DropPkQueryDef,
+  DropForeignKeyQueryDef,
+  DropIndexQueryDef,
+  DropPrimaryKeyQueryDef,
   DropProcQueryDef,
   DropTableQueryDef,
   DropViewQueryDef,
@@ -618,17 +618,17 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
   //#region ========== DDL - Constraint ==========
 
-  protected addPk(def: AddPkQueryDef): QueryBuildResult {
+  protected addPrimaryKey(def: AddPrimaryKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const cols = def.columns.map((c) => this.expr.wrap(c)).join(", ");
     return { sql: `ALTER TABLE ${table} ADD PRIMARY KEY (${cols})` };
   }
 
-  protected dropPk(def: DropPkQueryDef): QueryBuildResult {
+  protected dropPrimaryKey(def: DropPrimaryKeyQueryDef): QueryBuildResult {
     return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP PRIMARY KEY` };
   }
 
-  protected addFk(def: AddFkQueryDef): QueryBuildResult {
+  protected addForeignKey(def: AddForeignKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const fk = def.foreignKey;
     const fkCols = fk.fkColumns.map((c) => this.expr.wrap(c)).join(", ");
@@ -641,13 +641,13 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     };
   }
 
-  protected dropFk(def: DropFkQueryDef): QueryBuildResult {
+  protected dropForeignKey(def: DropForeignKeyQueryDef): QueryBuildResult {
     return {
       sql: `ALTER TABLE ${this.tableName(def.table)} DROP FOREIGN KEY ${this.expr.wrap(def.foreignKey)}`,
     };
   }
 
-  protected addIdx(def: AddIdxQueryDef): QueryBuildResult {
+  protected addIndex(def: AddIndexQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const idx = def.index;
     const cols = idx.columns.map((c) => `${this.expr.wrap(c.name)} ${c.orderBy}`).join(", ");
@@ -655,7 +655,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     return { sql: `CREATE ${unique}INDEX ${this.expr.wrap(idx.name)} ON ${table} (${cols})` };
   }
 
-  protected dropIdx(def: DropIdxQueryDef): QueryBuildResult {
+  protected dropIndex(def: DropIndexQueryDef): QueryBuildResult {
     return { sql: `DROP INDEX ${this.expr.wrap(def.index)} ON ${this.tableName(def.table)}` };
   }
 
@@ -750,7 +750,7 @@ SET FOREIGN_KEY_CHECKS = 1`,
 
   /** MySQL은 전역 설정만 지원 (table 파라미터 무시됨) */
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {
-    return def.switch === "on"
+    return def.enabled
       ? { sql: "SET FOREIGN_KEY_CHECKS = 1" }
       : { sql: "SET FOREIGN_KEY_CHECKS = 0" };
   }

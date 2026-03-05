@@ -46,7 +46,7 @@ import type {
   ExprDateDiff,
   ExprDateAdd,
   ExprFormatDate,
-  ExprIfNull,
+  ExprCoalesce,
   ExprNullIf,
   ExprIs,
   ExprSwitch,
@@ -60,9 +60,10 @@ import type {
   ExprLeast,
   ExprRowNum,
   ExprCast,
+  ExprRandom,
   ExprWindow,
   ExprSubquery,
-  DateSeparator,
+  DateUnit,
 } from "../../types/expr";
 import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/expr-renderer-base";
@@ -398,14 +399,14 @@ export class MssqlExprRenderer extends ExprRendererBase {
   protected dateDiff(expr: ExprDateDiff): string {
     const from = this.render(expr.from);
     const to = this.render(expr.to);
-    const unit = this.dateSeparatorToUnit(expr.separator);
+    const unit = this.dateUnitToSql(expr.unit);
     return `DATEDIFF(${unit}, ${from}, ${to})`;
   }
 
   protected dateAdd(expr: ExprDateAdd): string {
     const source = this.render(expr.source);
     const value = this.render(expr.value);
-    const unit = this.dateSeparatorToUnit(expr.separator);
+    const unit = this.dateUnitToSql(expr.unit);
     return `DATEADD(${unit}, ${value}, ${source})`;
   }
 
@@ -415,8 +416,8 @@ export class MssqlExprRenderer extends ExprRendererBase {
     return `FORMAT(${this.render(expr.source)}, '${mssqlFormat}')`;
   }
 
-  private dateSeparatorToUnit(sep: DateSeparator): string {
-    switch (sep) {
+  private dateUnitToSql(unit: DateUnit): string {
+    switch (unit) {
       case "year":
         return "YEAR";
       case "month":
@@ -441,7 +442,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#region ========== condition ==========
 
-  protected ifNull(expr: ExprIfNull): string {
+  protected coalesce(expr: ExprCoalesce): string {
     if (expr.args.length === 0) return "NULL";
     if (expr.args.length === 1) return this.render(expr.args[0]);
     // MSSQL: COALESCE
@@ -520,7 +521,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     return "ROW_NUMBER() OVER (ORDER BY (SELECT NULL))";
   }
 
-  protected random(): string {
+  protected random(_expr: ExprRandom): string {
     return "NEWID()";
   }
 

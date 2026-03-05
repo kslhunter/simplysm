@@ -1,8 +1,8 @@
 import type {
   AddColumnQueryDef,
-  AddFkQueryDef,
-  AddIdxQueryDef,
-  AddPkQueryDef,
+  AddForeignKeyQueryDef,
+  AddIndexQueryDef,
+  AddPrimaryKeyQueryDef,
   ClearSchemaQueryDef,
   CreateProcQueryDef,
   CreateTableQueryDef,
@@ -10,9 +10,9 @@ import type {
   SchemaExistsQueryDef,
   DeleteQueryDef,
   DropColumnQueryDef,
-  DropFkQueryDef,
-  DropIdxQueryDef,
-  DropPkQueryDef,
+  DropForeignKeyQueryDef,
+  DropIndexQueryDef,
+  DropPrimaryKeyQueryDef,
   DropProcQueryDef,
   DropTableQueryDef,
   DropViewQueryDef,
@@ -502,7 +502,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
   //#region ========== DDL - Constraint ==========
 
-  protected addPk(def: AddPkQueryDef): QueryBuildResult {
+  protected addPrimaryKey(def: AddPrimaryKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const cols = def.columns.map((c) => this.expr.wrap(c)).join(", ");
     const pkName = `PK_${def.table.name}`;
@@ -511,13 +511,13 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     };
   }
 
-  protected dropPk(def: DropPkQueryDef): QueryBuildResult {
+  protected dropPrimaryKey(def: DropPrimaryKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const pkName = `PK_${def.table.name}`;
     return { sql: `ALTER TABLE ${table} DROP CONSTRAINT ${this.expr.wrap(pkName)}` };
   }
 
-  protected addFk(def: AddFkQueryDef): QueryBuildResult {
+  protected addForeignKey(def: AddForeignKeyQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const fk = def.foreignKey;
     const fkCols = fk.fkColumns.map((c) => this.expr.wrap(c)).join(", ");
@@ -533,13 +533,13 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     return { sql };
   }
 
-  protected dropFk(def: DropFkQueryDef): QueryBuildResult {
+  protected dropForeignKey(def: DropForeignKeyQueryDef): QueryBuildResult {
     return {
       sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}`,
     };
   }
 
-  protected addIdx(def: AddIdxQueryDef): QueryBuildResult {
+  protected addIndex(def: AddIndexQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const idx = def.index;
     const cols = idx.columns.map((c) => `${this.expr.wrap(c.name)} ${c.orderBy}`).join(", ");
@@ -547,7 +547,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     return { sql: `CREATE ${unique}INDEX ${this.expr.wrap(idx.name)} ON ${table} (${cols})` };
   }
 
-  protected dropIdx(def: DropIdxQueryDef): QueryBuildResult {
+  protected dropIndex(def: DropIndexQueryDef): QueryBuildResult {
     // PostgreSQL: Index는 schema 레벨에서 유니크하므로 Table명 불필요하지만 스키마는 명시 필요
     const schema = def.table.schema ?? "public";
     return { sql: `DROP INDEX ${this.expr.wrap(schema)}.${this.expr.wrap(def.index)}` };
@@ -674,7 +674,7 @@ END $$`,
 
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
-    if (def.switch === "on") {
+    if (def.enabled) {
       // PostgreSQL: Table의 모든 FK 트리거 Enable
       return { sql: `ALTER TABLE ${table} ENABLE TRIGGER ALL` };
     }
