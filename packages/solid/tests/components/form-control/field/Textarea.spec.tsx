@@ -60,20 +60,20 @@ describe("Textarea component", () => {
 
   describe("readonly state", () => {
     it("does not render textarea when readonly=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea readonly value="Readonly text" /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea readOnly value="Readonly text" /></I18nProvider></ConfigProvider>);
       const textarea = container.querySelector("textarea");
       expect(textarea).toBeFalsy();
     });
 
     it("displays value when readonly", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea readonly value="Readonly text" /></I18nProvider></ConfigProvider>);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea readOnly value="Readonly text" /></I18nProvider></ConfigProvider>);
       expect(getByText("Readonly text")).toBeTruthy();
     });
   });
 
   describe("inset style", () => {
     it("shows content div and no textarea when inset + readonly", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset readonly value="Hello" /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset readOnly value="Hello" /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
 
@@ -98,7 +98,7 @@ describe("Textarea component", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Textarea inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toContain("\u00A0");

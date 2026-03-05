@@ -130,7 +130,7 @@ describe("NumberInput", () => {
     });
 
     it("renders as div when readonly", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={5678} readonly /></I18nProvider></ConfigProvider>);
+      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={5678} readOnly /></I18nProvider></ConfigProvider>);
 
       expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
       expect(screen.getByText("5,678")).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe("NumberInput", () => {
 
   describe("inset dual-element", () => {
     it("shows content div and no input when inset + readonly", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset readonly value={1234} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset readOnly value={1234} /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
 
@@ -164,7 +164,7 @@ describe("NumberInput", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");

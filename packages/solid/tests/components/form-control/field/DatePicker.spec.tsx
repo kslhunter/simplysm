@@ -183,7 +183,7 @@ describe("DatePicker component", () => {
 
   describe("readonly state", () => {
     it("renders as div when readonly=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker readonly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker readOnly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-date-field");
 
@@ -193,7 +193,7 @@ describe("DatePicker component", () => {
 
     it("displays value when readonly", () => {
       const { getByText } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="date" readonly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><DatePicker unit="date" readOnly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>
       ));
       expect(getByText("2025-03-15")).toBeTruthy();
     });
@@ -202,7 +202,7 @@ describe("DatePicker component", () => {
   describe("inset style", () => {
     it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><DatePicker inset readonly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><DatePicker inset readOnly value={new DateOnly(2025, 3, 15)} /></I18nProvider></ConfigProvider>
       ));
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -228,7 +228,7 @@ describe("DatePicker component", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DatePicker inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-date-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");

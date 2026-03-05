@@ -177,7 +177,7 @@ describe("DateTimePicker component", () => {
   describe("readonly state", () => {
     it("renders as div when readonly=true", () => {
       const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker readOnly value={new DateTime(2025, 3, 15, 10, 30, 0)} /></I18nProvider></ConfigProvider>
       ));
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-datetime-field");
@@ -188,7 +188,7 @@ describe("DateTimePicker component", () => {
 
     it("displays value when readonly", () => {
       const { getByText } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker unit="minute" readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker unit="minute" readOnly value={new DateTime(2025, 3, 15, 10, 30, 0)} /></I18nProvider></ConfigProvider>
       ));
       expect(getByText("2025-03-15T10:30")).toBeTruthy();
     });
@@ -197,7 +197,7 @@ describe("DateTimePicker component", () => {
   describe("inset style", () => {
     it("shows content div and no input when inset + readonly", () => {
       const { container } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker inset readonly value={new DateTime(2025, 3, 15, 14, 30, 0)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><DateTimePicker inset readOnly value={new DateTime(2025, 3, 15, 14, 30, 0)} /></I18nProvider></ConfigProvider>
       ));
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
@@ -223,7 +223,7 @@ describe("DateTimePicker component", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateTimePicker inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><DateTimePicker inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-datetime-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");

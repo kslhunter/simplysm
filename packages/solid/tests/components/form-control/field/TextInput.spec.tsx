@@ -63,7 +63,7 @@ describe("TextInput component", () => {
 
   describe("readonly state", () => {
     it("renders as div when readonly=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput readonly value="Readonly text" /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput readOnly value="Readonly text" /></I18nProvider></ConfigProvider>);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-text-field");
 
@@ -72,7 +72,7 @@ describe("TextInput component", () => {
     });
 
     it("displays value when readonly", () => {
-      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput readonly value="Readonly text" /></I18nProvider></ConfigProvider>);
+      const { getByText } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput readOnly value="Readonly text" /></I18nProvider></ConfigProvider>);
       expect(getByText("Readonly text")).toBeTruthy();
     });
   });
@@ -100,7 +100,7 @@ describe("TextInput component", () => {
 
   describe("inset style", () => {
     it("shows content div and no input when inset + readonly", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readonly value="Hello" /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readOnly value="Hello" /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
 
@@ -126,7 +126,7 @@ describe("TextInput component", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");
@@ -134,7 +134,7 @@ describe("TextInput component", () => {
 
     it("content div is always in DOM when toggling inset + readonly/editable", () => {
       const [readonly, setReadonly] = createSignal(true);
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readonly={readonly()} value="Test" /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TextInput inset readOnly={readonly()} value="Test" /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
 
       let contentDiv = outer.querySelector("[data-text-field-content]");

@@ -130,7 +130,7 @@ describe("TimePicker component", () => {
 
   describe("readonly state", () => {
     it("renders as div when readonly=true", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker readonly value={new Time(10, 30, 0)} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker readOnly value={new Time(10, 30, 0)} /></I18nProvider></ConfigProvider>);
       const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-time-field");
 
@@ -140,7 +140,7 @@ describe("TimePicker component", () => {
 
     it("displays value when readonly", () => {
       const { getByText } = render(() => (
-        <ConfigProvider clientName="test"><I18nProvider><TimePicker unit="minute" readonly value={new Time(10, 30, 0)} /></I18nProvider></ConfigProvider>
+        <ConfigProvider clientName="test"><I18nProvider><TimePicker unit="minute" readOnly value={new Time(10, 30, 0)} /></I18nProvider></ConfigProvider>
       ));
       expect(getByText("10:30")).toBeTruthy();
     });
@@ -148,7 +148,7 @@ describe("TimePicker component", () => {
 
   describe("inset style", () => {
     it("shows content div and no input when inset + readonly", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset readonly value={new Time(14, 30, 0)} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset readOnly value={new Time(14, 30, 0)} /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       expect(outer.classList.contains("relative")).toBe(true);
 
@@ -171,7 +171,7 @@ describe("TimePicker component", () => {
     });
 
     it("shows NBSP in content div when inset + empty value", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset readonly /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><TimePicker inset readOnly /></I18nProvider></ConfigProvider>);
       const outer = container.firstChild as HTMLElement;
       const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
       expect(contentDiv.textContent).toBe("\u00A0");

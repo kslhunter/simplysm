@@ -52,7 +52,7 @@ export interface ListItemProps extends Omit<
   /**
    * Readonly (click disabled, normal color retained)
    */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /**
    * Disabled (unclickable, dimmed)
@@ -109,7 +109,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
     "open",
     "onOpenChange",
     "selected",
-    "readonly",
+    "readOnly",
     "disabled",
     "selectedIcon",
     "size",
@@ -127,10 +127,10 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const [childrenSlot, ChildrenProvider] = createChildrenSlotAccessor();
   const hasChildren = () => childrenSlot() !== undefined;
 
-  const useRipple = () => !(local.readonly || local.disabled);
+  const useRipple = () => !(local.readOnly || local.disabled);
 
   const onHeaderClick = (e: MouseEvent) => {
-    if (local.readonly || local.disabled) return;
+    if (local.readOnly || local.disabled) return;
 
     if (hasChildren()) {
       setOpenState((v: boolean) => !v);
@@ -144,7 +144,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
       listItemBaseClass,
       listItemSizeClasses[local.size ?? "default"],
       local.selected && listItemSelectedClass,
-      local.readonly && listItemReadonlyClass,
+      local.readOnly && listItemReadonlyClass,
       local.disabled && listItemDisabledClass,
       local.class,
     );

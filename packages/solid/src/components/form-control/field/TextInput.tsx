@@ -38,7 +38,7 @@ export interface TextInputProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -154,7 +154,7 @@ const TextInputInner = (props: TextInputProps) => {
     "title",
     "autocomplete",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "format",
@@ -233,7 +233,7 @@ const TextInputInner = (props: TextInputProps) => {
     });
 
   // Whether editable
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Flush uncommitted composition value when toggling disabled
   createEffect(() => {

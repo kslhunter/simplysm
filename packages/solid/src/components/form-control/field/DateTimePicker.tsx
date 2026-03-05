@@ -30,7 +30,7 @@ export interface DateTimePickerProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -139,7 +139,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
     "max",
     "title",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "class",
@@ -181,7 +181,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
     });
 
   // Editable check
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Step attribute (1 when second)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);

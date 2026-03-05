@@ -30,7 +30,7 @@ export interface DatePickerProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -144,7 +144,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "max",
     "title",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "class",
@@ -186,7 +186,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     });
 
   // Editable check
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {

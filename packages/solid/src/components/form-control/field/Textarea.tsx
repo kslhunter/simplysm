@@ -26,7 +26,7 @@ export interface TextareaProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -86,7 +86,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     "placeholder",
     "title",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "minRows",
@@ -168,7 +168,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"], local.inset && "p-0");
 
   // Whether editable
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Flush uncommitted composition value when toggling disabled
   createEffect(() => {

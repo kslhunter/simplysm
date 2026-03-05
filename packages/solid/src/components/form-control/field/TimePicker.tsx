@@ -24,7 +24,7 @@ export interface TimePickerProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -112,7 +112,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     "unit",
     "title",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "class",
@@ -156,7 +156,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     });
 
   // Editable check
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Step attribute (1 when second)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);

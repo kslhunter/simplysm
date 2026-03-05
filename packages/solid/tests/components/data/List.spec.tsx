@@ -236,7 +236,7 @@ describe("List.Item component", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
-          <List.Item readonly onClick={onClick}>
+          <List.Item readOnly onClick={onClick}>
             Readonly Item
           </List.Item>
         </List>

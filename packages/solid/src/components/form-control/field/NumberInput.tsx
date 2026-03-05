@@ -53,7 +53,7 @@ export interface NumberInputProps {
   disabled?: boolean;
 
   /** Read-only */
-  readonly?: boolean;
+  readOnly?: boolean;
 
   /** Size */
   size?: FieldSize;
@@ -196,7 +196,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     "placeholder",
     "title",
     "disabled",
-    "readonly",
+    "readOnly",
     "size",
     "inset",
     "required",
@@ -288,7 +288,7 @@ export const NumberInput: NumberInputComponent = (props) => {
       extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
     });
 
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled && !local.readOnly;
 
   // Validation message (check in order, return first error)
   const errorMsg = createMemo(() => {

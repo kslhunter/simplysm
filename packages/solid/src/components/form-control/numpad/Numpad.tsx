@@ -137,7 +137,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
           value={value()}
           onValueChange={handleFieldValueChange}
           placeholder={props.placeholder}
-          readonly={props.inputDisabled}
+          readOnly={props.inputDisabled}
           inset
           class="w-full"
           useGrouping={false}
