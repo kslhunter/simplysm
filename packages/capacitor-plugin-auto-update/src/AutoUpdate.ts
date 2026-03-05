@@ -51,18 +51,20 @@ export abstract class AutoUpdate {
       throw new Error("Only Android is supported.");
     }
 
+    let granted: boolean;
     try {
-      const { manifest } = await ApkInstaller.checkPermissions();
-      if (!manifest) {
+      const result = await ApkInstaller.checkPermissions();
+      if (!result.manifest) {
         this._throwAboutReinstall(1, targetHref);
       }
+      granted = result.granted;
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("[AutoUpdate] checkPermissions manifest check failed:", err);
       this._throwAboutReinstall(2, targetHref);
+      return; // unreachable — _throwAboutReinstall always throws
     }
 
-    const { granted } = await ApkInstaller.checkPermissions();
     if (!granted) {
       log(html`
         Installation permission must be enabled.
