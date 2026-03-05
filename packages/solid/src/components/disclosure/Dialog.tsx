@@ -35,7 +35,7 @@ export interface DialogDefaults {
   /** Allow closing via ESC key */
   closeOnEscape?: boolean;
   /** Allow closing via backdrop click */
-  closeOnBackdrop?: boolean;
+  closeOnInteractOutside?: boolean;
 }
 
 /** Dialog default configuration Context */
@@ -48,13 +48,13 @@ export interface DialogShowOptions {
   /** Show close button */
   closable?: boolean;
   /** Close on backdrop click */
-  closeOnBackdrop?: boolean;
+  closeOnInteractOutside?: boolean;
   /** Close on ESC key */
   closeOnEscape?: boolean;
   /** Resizable */
   resizable?: boolean;
   /** Draggable */
-  movable?: boolean;
+  draggable?: boolean;
   /** Floating mode (fixed to bottom-right) */
   float?: boolean;
   /** Fill full screen */
@@ -116,13 +116,13 @@ export interface DialogProps {
   /** Show close button (default: true) */
   closable?: boolean;
   /** Close on backdrop click */
-  closeOnBackdrop?: boolean;
+  closeOnInteractOutside?: boolean;
   /** Close on Escape key (default: true) */
   closeOnEscape?: boolean;
   /** Resizable (default: false) */
   resizable?: boolean;
   /** Draggable (default: true) */
-  movable?: boolean;
+  draggable?: boolean;
   /** Floating mode (no backdrop) */
   float?: boolean;
   /** Full-screen mode */
@@ -215,10 +215,10 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
     "open",
     "onOpenChange",
     "closable",
-    "closeOnBackdrop",
+    "closeOnInteractOutside",
     "closeOnEscape",
     "resizable",
-    "movable",
+    "draggable",
     "float",
     "fill",
     "width",
@@ -279,8 +279,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
   const [wrapperRef, setWrapperRef] = createSignal<HTMLDivElement>();
 
   const closeOnEscape = () => local.closeOnEscape ?? dialogDefaults?.().closeOnEscape ?? true;
-  const closeOnBackdrop = () =>
-    local.closeOnBackdrop ?? dialogDefaults?.().closeOnBackdrop ?? false;
+  const closeOnInteractOutside = () =>
+    local.closeOnInteractOutside ?? dialogDefaults?.().closeOnInteractOutside ?? false;
 
   // Detect Escape key
   createEffect(() => {
@@ -319,7 +319,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
 
   // Backdrop click handler
   const handleBackdropClick = () => {
-    if (!closeOnBackdrop()) return;
+    if (!closeOnInteractOutside()) return;
     tryClose();
   };
 
@@ -345,8 +345,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
 
   // Dragging
   const handleHeaderPointerDown = (event: PointerEvent) => {
-    // movable default is true
-    if (local.movable === false) return;
+    // draggable default is true
+    if (local.draggable === false) return;
     const wrapperEl = wrapperRef();
     if (!dialogRef || !wrapperEl) return;
     // Do not treat events from interactive elements like close button as drag
@@ -663,11 +663,11 @@ let nextId = 0;
 export interface DialogProviderProps extends DialogDefaults {}
 
 export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
-  const [local, _rest] = splitProps(props, ["closeOnEscape", "closeOnBackdrop", "children"]);
+  const [local, _rest] = splitProps(props, ["closeOnEscape", "closeOnInteractOutside", "children"]);
 
   const defaults = () => ({
     closeOnEscape: local.closeOnEscape,
-    closeOnBackdrop: local.closeOnBackdrop,
+    closeOnInteractOutside: local.closeOnInteractOutside,
   });
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
@@ -732,10 +732,10 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
               }}
               onCloseComplete={() => removeEntry(entry.id)}
               closable={entry.options.closable}
-              closeOnBackdrop={entry.options.closeOnBackdrop}
+              closeOnInteractOutside={entry.options.closeOnInteractOutside}
               closeOnEscape={entry.options.closeOnEscape}
               resizable={entry.options.resizable}
-              movable={entry.options.movable}
+              draggable={entry.options.draggable}
               float={entry.options.float}
               fill={entry.options.fill}
               width={entry.options.width}

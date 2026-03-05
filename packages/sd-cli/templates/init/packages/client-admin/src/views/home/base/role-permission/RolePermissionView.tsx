@@ -24,7 +24,7 @@ export function RolePermissionView() {
               variant={"ghost"}
               theme={"primary"}
               size={"xs"}
-              onClick={() => dialog.show(() => <RoleSheet />, { header: "권한그룹", closeOnBackdrop: true })}
+              onClick={() => dialog.show(() => <RoleSheet />, { header: "권한그룹", closeOnInteractOutside: true })}
             >
               <Icon icon={IconExternalLink} />
             </Button>

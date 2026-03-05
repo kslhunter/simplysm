@@ -208,7 +208,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
       { columnInfos, currentConfig },
       {
         header: "Sheet Settings",
-        closeOnBackdrop: true,
+        closeOnInteractOutside: true,
         closeOnEscape: true,
       },
     );

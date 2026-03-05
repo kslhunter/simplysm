@@ -33,13 +33,13 @@ export default function ModalPage() {
   // Fill dialog
   const [fillOpen, setFillOpen] = createSignal(false);
 
-  // Resizable/movable dialog
+  // Resizable/draggable dialog
   const [resizableOpen, setResizableOpen] = createSignal(false);
 
   const handleProgrammaticOpen = async () => {
     const result = await dialog.show(SampleDialogContent, {}, {
       header: "Programmatic Dialog",
-      closeOnBackdrop: true,
+      closeOnInteractOutside: true,
       closeOnEscape: true,
     });
     setProgrammaticResult(result);
@@ -91,7 +91,7 @@ export default function ModalPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Close Options</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Enable closeOnBackdrop and closeOnEscape to allow closing the dialog by clicking the backdrop or pressing Escape.
+          Enable closeOnInteractOutside and closeOnEscape to allow closing the dialog by clicking the backdrop or pressing Escape.
         </p>
         <Button theme="info" variant="solid" onClick={() => setCloseOptionOpen(true)}>
           Open Close Options Dialog
@@ -99,7 +99,7 @@ export default function ModalPage() {
         <Dialog
           open={closeOptionOpen()}
           onOpenChange={setCloseOptionOpen}
-          closeOnBackdrop
+          closeOnInteractOutside
           closeOnEscape
         >
           <Dialog.Header>Close Options</Dialog.Header>
@@ -153,7 +153,7 @@ export default function ModalPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">리사이즈 / 이동</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          resizable과 movable을 활성화하여, 다이얼로그의 크기를 조절하고 헤더를 드래그하여 이동할 수
+          resizable과 draggable을 활성화하여, 다이얼로그의 크기를 조절하고 헤더를 드래그하여 이동할 수
           있습니다.
         </p>
         <Button theme="danger" variant="solid" onClick={() => setResizableOpen(true)}>
@@ -163,7 +163,7 @@ export default function ModalPage() {
           open={resizableOpen()}
           onOpenChange={setResizableOpen}
           resizable
-          movable
+          draggable
           width={400}
           height={300}
           minWidth={250}

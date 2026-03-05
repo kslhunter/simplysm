@@ -122,11 +122,11 @@ describe("Dialog", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("closes on backdrop click when closeOnBackdrop=true", async () => {
+    it("closes on backdrop click when closeOnInteractOutside=true", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} closeOnBackdrop onOpenChange={handleOpenChange}>
+          <Dialog open={true} closeOnInteractOutside onOpenChange={handleOpenChange}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
@@ -139,7 +139,7 @@ describe("Dialog", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("does not close on backdrop click when closeOnBackdrop is not set", async () => {
+    it("does not close on backdrop click when closeOnInteractOutside is not set", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
