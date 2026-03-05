@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ExcelUtils } from "../../src/utils/excel-utils";
 
 describe("ExcelUtils", () => {
-  describe("stringifyColAddr / parseColAddrCode", () => {
+  describe("stringifyColAddr / parseColAddr", () => {
     it("converts 26 and above to AA, AB, etc.", () => {
       expect(ExcelUtils.stringifyColAddr(26)).toBe("AA");
       expect(ExcelUtils.stringifyColAddr(27)).toBe("AB");
@@ -18,13 +18,13 @@ describe("ExcelUtils", () => {
     it("handles Excel maximum column index (XFD, 16383)", () => {
       // Excel maximum column is XFD (index 16383, 0-based)
       expect(ExcelUtils.stringifyColAddr(16383)).toBe("XFD");
-      expect(ExcelUtils.parseColAddrCode("XFD")).toBe(16383);
+      expect(ExcelUtils.parseColAddr("XFD")).toBe(16383);
     });
 
     it("round-trip: stringify → parse returns original value", () => {
       for (let i = 0; i < 100; i++) {
         const stringified = ExcelUtils.stringifyColAddr(i);
-        const parsed = ExcelUtils.parseColAddrCode(stringified);
+        const parsed = ExcelUtils.parseColAddr(stringified);
         expect(parsed).toBe(i);
       }
     });
@@ -35,7 +35,7 @@ describe("ExcelUtils", () => {
     });
   });
 
-  describe("stringifyRowAddr / parseRowAddrCode", () => {
+  describe("stringifyRowAddr / parseRowAddr", () => {
     it("converts 0-based index to 1-based string", () => {
       expect(ExcelUtils.stringifyRowAddr(0)).toBe("1");
       expect(ExcelUtils.stringifyRowAddr(9)).toBe("10");
@@ -43,13 +43,13 @@ describe("ExcelUtils", () => {
     });
 
     it("parses 1-based string to 0-based index", () => {
-      expect(ExcelUtils.parseRowAddrCode("A1")).toBe(0);
-      expect(ExcelUtils.parseRowAddrCode("B10")).toBe(9);
-      expect(ExcelUtils.parseRowAddrCode("AA100")).toBe(99);
+      expect(ExcelUtils.parseRowAddr("A1")).toBe(0);
+      expect(ExcelUtils.parseRowAddr("B10")).toBe(9);
+      expect(ExcelUtils.parseRowAddr("AA100")).toBe(99);
     });
   });
 
-  describe("stringifyAddr / parseCellAddrCode", () => {
+  describe("stringifyAddr / parseCellAddr", () => {
     it("correctly converts cell address", () => {
       expect(ExcelUtils.stringifyAddr({ r: 0, c: 0 })).toBe("A1");
       expect(ExcelUtils.stringifyAddr({ r: 9, c: 1 })).toBe("B10");
@@ -57,21 +57,21 @@ describe("ExcelUtils", () => {
     });
 
     it("correctly parses cell address", () => {
-      expect(ExcelUtils.parseCellAddrCode("A1")).toEqual({ r: 0, c: 0 });
-      expect(ExcelUtils.parseCellAddrCode("B10")).toEqual({ r: 9, c: 1 });
-      expect(ExcelUtils.parseCellAddrCode("AA100")).toEqual({ r: 99, c: 26 });
+      expect(ExcelUtils.parseCellAddr("A1")).toEqual({ r: 0, c: 0 });
+      expect(ExcelUtils.parseCellAddr("B10")).toEqual({ r: 9, c: 1 });
+      expect(ExcelUtils.parseCellAddr("AA100")).toEqual({ r: 99, c: 26 });
     });
   });
 
-  describe("parseRangeAddrCode / stringifyRangeAddr", () => {
+  describe("parseRangeAddr / stringifyRangeAddr", () => {
     it("parses single cell range", () => {
-      const range = ExcelUtils.parseRangeAddrCode("A1");
+      const range = ExcelUtils.parseRangeAddr("A1");
       expect(range.s).toEqual({ r: 0, c: 0 });
       expect(range.e).toEqual({ r: 0, c: 0 });
     });
 
     it("parses multi-cell range", () => {
-      const range = ExcelUtils.parseRangeAddrCode("A1:C3");
+      const range = ExcelUtils.parseRangeAddr("A1:C3");
       expect(range.s).toEqual({ r: 0, c: 0 });
       expect(range.e).toEqual({ r: 2, c: 2 });
     });

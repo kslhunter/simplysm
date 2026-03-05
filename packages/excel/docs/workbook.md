@@ -15,7 +15,7 @@ await using wb = new ExcelWorkbook(bytes);
 
 // Create a new workbook
 await using wb = new ExcelWorkbook();
-const ws = await wb.createWorksheet("Sheet1");
+const ws = await wb.addWorksheet("Sheet1");
 
 // Get worksheet names
 const names = await wb.getWorksheetNames();
@@ -25,8 +25,8 @@ const ws = await wb.getWorksheet(0);
 const ws2 = await wb.getWorksheet("Sheet1");
 
 // Export
-const exportedBytes = await wb.getBytes();
-const blob = await wb.getBlob();
+const exportedBytes = await wb.toBytes();
+const blob = await wb.toBlob();
 
 // Manual resource management
 const wb2 = new ExcelWorkbook(bytes);
@@ -51,10 +51,10 @@ constructor(arg?: Blob | Bytes)
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `getWorksheetNames` | `() => Promise<string[]>` | Return all worksheet names in the workbook |
-| `createWorksheet` | `(name: string) => Promise<ExcelWorksheet>` | Create and return a new worksheet |
+| `addWorksheet` | `(name: string) => Promise<ExcelWorksheet>` | Create and return a new worksheet |
 | `getWorksheet` | `(nameOrIndex: string \| number) => Promise<ExcelWorksheet>` | Look up a worksheet by name or 0-based index |
-| `getBytes` | `() => Promise<Bytes>` | Export workbook as a `Uint8Array` byte array |
-| `getBlob` | `() => Promise<Blob>` | Export workbook as a `Blob` |
+| `toBytes` | `() => Promise<Bytes>` | Export workbook as a `Uint8Array` byte array |
+| `toBlob` | `() => Promise<Blob>` | Export workbook as a `Blob` |
 | `close` | `() => Promise<void>` | Release all resources (idempotent) |
 | `[Symbol.asyncDispose]` | `() => Promise<void>` | Called automatically by `await using` |
 
@@ -110,9 +110,9 @@ await ws.setRecords([{ Name: "Alice", Age: 30 }]);
 
 // View settings
 await ws.setZoom(85);          // 85%
-await ws.setFix({ r: 1 });     // freeze first row
-await ws.setFix({ c: 1 });     // freeze first column
-await ws.setFix({ r: 1, c: 1 }); // freeze both
+await ws.freezeAt({ r: 1 });     // freeze first row
+await ws.freezeAt({ c: 1 });     // freeze first column
+await ws.freezeAt({ r: 1, c: 1 }); // freeze both
 
 // Insert image
 await ws.addImage({
@@ -143,7 +143,7 @@ await ws.addImage({
 | `setDataMatrix` | `(matrix: ExcelValueType[][]) => Promise<void>` | Write a 2D array to the worksheet |
 | `setRecords` | `(records: Record<string, ExcelValueType>[]) => Promise<void>` | Write records with auto-generated header row |
 | `setZoom` | `(percent: number) => Promise<void>` | Set the worksheet zoom level |
-| `setFix` | `(point: { r?: number; c?: number }) => Promise<void>` | Set freeze panes |
+| `freezeAt` | `(point: { r?: number; c?: number }) => Promise<void>` | Set freeze panes |
 | `addImage` | `(opts) => Promise<void>` | Insert an image into the worksheet |
 
 **`getDataTable` options**
@@ -241,15 +241,15 @@ const cell = ws.cell(0, 0); // A1
 console.log(cell.addr); // { r: 0, c: 0 }
 
 // Read/write values
-await cell.setVal("Hello");
-await cell.setVal(42);
-await cell.setVal(true);
-await cell.setVal(new DateOnly(Date.now()));
-await cell.setVal(new DateTime(Date.now()));
-await cell.setVal(new Time(Date.now()));
-await cell.setVal(undefined); // deletes the cell
+await cell.setValue("Hello");
+await cell.setValue(42);
+await cell.setValue(true);
+await cell.setValue(new DateOnly(Date.now()));
+await cell.setValue(new DateTime(Date.now()));
+await cell.setValue(new Time(Date.now()));
+await cell.setValue(undefined); // deletes the cell
 
-const value = await cell.getVal(); // ExcelValueType
+const value = await cell.getValue(); // ExcelValueType
 
 // Formulas
 await cell.setFormula("=SUM(A1:A10)");
@@ -284,8 +284,8 @@ await cell.merge(2, 2); // end row=2, end col=2
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `getVal` | `() => Promise<ExcelValueType>` | Read the cell value |
-| `setVal` | `(val: ExcelValueType) => Promise<void>` | Write the cell value (`undefined` deletes the cell) |
+| `getValue` | `() => Promise<ExcelValueType>` | Read the cell value |
+| `setValue` | `(val: ExcelValueType) => Promise<void>` | Write the cell value (`undefined` deletes the cell) |
 | `getFormula` | `() => Promise<string \| undefined>` | Read the cell formula |
 | `setFormula` | `(val: string \| undefined) => Promise<void>` | Write the cell formula (`undefined` removes it) |
 | `getStyleId` | `() => Promise<string \| undefined>` | Read the raw style ID |

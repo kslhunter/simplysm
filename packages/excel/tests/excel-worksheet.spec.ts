@@ -5,7 +5,7 @@ describe("ExcelWorksheet", () => {
   describe("Sheet name", () => {
     it("should change sheet name", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("OldName");
+      const ws = await wb.addWorksheet("OldName");
 
       await ws.setName("NewName");
       const name = await ws.getName();
@@ -14,10 +14,10 @@ describe("ExcelWorksheet", () => {
 
     it("should preserve changed sheet name after roundtrip", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("OldName");
+      const ws = await wb.addWorksheet("OldName");
       await ws.setName("NewName");
 
-      const bytes = await wb.getBytes();
+      const bytes = await wb.toBytes();
 
       const wb2 = new ExcelWorkbook(bytes);
       const names = await wb2.getWorksheetNames();
@@ -33,47 +33,47 @@ describe("ExcelWorksheet", () => {
   describe("Row/Column copy", () => {
     it("should copy row", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       // Set source row
-      await ws.cell(0, 0).setVal("A");
-      await ws.cell(0, 1).setVal("B");
-      await ws.cell(0, 2).setVal("C");
+      await ws.cell(0, 0).setValue("A");
+      await ws.cell(0, 1).setValue("B");
+      await ws.cell(0, 2).setValue("C");
 
       // Copy row
       await ws.copyRow(0, 2);
 
-      expect(await ws.cell(2, 0).getVal()).toBe("A");
-      expect(await ws.cell(2, 1).getVal()).toBe("B");
-      expect(await ws.cell(2, 2).getVal()).toBe("C");
+      expect(await ws.cell(2, 0).getValue()).toBe("A");
+      expect(await ws.cell(2, 1).getValue()).toBe("B");
+      expect(await ws.cell(2, 2).getValue()).toBe("C");
     });
 
     it("should copy cell", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Original");
+      await ws.cell(0, 0).setValue("Original");
       await ws.copyCell({ r: 0, c: 0 }, { r: 1, c: 1 });
 
-      expect(await ws.cell(1, 1).getVal()).toBe("Original");
+      expect(await ws.cell(1, 1).getValue()).toBe("Original");
     });
 
     it("should copy only row style", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       // Set styles
-      await ws.cell(0, 0).setVal("Styled");
+      await ws.cell(0, 0).setValue("Styled");
       await ws.cell(0, 0).setStyle({ background: "00FF0000" });
-      await ws.cell(0, 1).setVal("Also Styled");
+      await ws.cell(0, 1).setValue("Also Styled");
       await ws.cell(0, 1).setStyle({ background: "0000FF00" });
 
       // Copy only styles
       await ws.copyRowStyle(0, 2);
 
       // Values should not be copied
-      expect(await ws.cell(2, 0).getVal()).toBeUndefined();
-      expect(await ws.cell(2, 1).getVal()).toBeUndefined();
+      expect(await ws.cell(2, 0).getValue()).toBeUndefined();
+      expect(await ws.cell(2, 1).getValue()).toBeUndefined();
 
       // Styles should be copied
       const styleId0 = await ws.cell(0, 0).getStyleId();
@@ -83,65 +83,65 @@ describe("ExcelWorksheet", () => {
 
     it("should insert copy row when srcR < targetR", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Row0");
-      await ws.cell(1, 0).setVal("Row1");
-      await ws.cell(2, 0).setVal("Row2");
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
 
       // Insert copy row 0 at position 1 (existing rows are shifted)
       await ws.insertCopyRow(0, 1);
 
-      expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row0"); // copied
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted
+      expect(await ws.cell(0, 0).getValue()).toBe("Row0");
+      expect(await ws.cell(1, 0).getValue()).toBe("Row0"); // copied
+      expect(await ws.cell(2, 0).getValue()).toBe("Row1"); // shifted
+      expect(await ws.cell(3, 0).getValue()).toBe("Row2"); // shifted
     });
 
     it("should insert copy row when srcR > targetR", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Row0");
-      await ws.cell(1, 0).setVal("Row1");
-      await ws.cell(2, 0).setVal("Row2");
-      await ws.cell(3, 0).setVal("Row3");
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
+      await ws.cell(3, 0).setValue("Row3");
 
       // Insert copy row 2 at position 1 (existing rows are shifted)
       await ws.insertCopyRow(2, 1);
 
-      expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row2"); // copied
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted (original Row2)
-      expect(await ws.cell(4, 0).getVal()).toBe("Row3"); // shifted
+      expect(await ws.cell(0, 0).getValue()).toBe("Row0");
+      expect(await ws.cell(1, 0).getValue()).toBe("Row2"); // copied
+      expect(await ws.cell(2, 0).getValue()).toBe("Row1"); // shifted
+      expect(await ws.cell(3, 0).getValue()).toBe("Row2"); // shifted (original Row2)
+      expect(await ws.cell(4, 0).getValue()).toBe("Row3"); // shifted
     });
 
     it("should insert copy row when srcR == targetR", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Row0");
-      await ws.cell(1, 0).setVal("Row1");
-      await ws.cell(2, 0).setVal("Row2");
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
 
       // Insert copy row 1 at position 1 (copy itself)
       await ws.insertCopyRow(1, 1);
 
-      expect(await ws.cell(0, 0).getVal()).toBe("Row0");
-      expect(await ws.cell(1, 0).getVal()).toBe("Row1"); // copied
-      expect(await ws.cell(2, 0).getVal()).toBe("Row1"); // shifted (original Row1)
-      expect(await ws.cell(3, 0).getVal()).toBe("Row2"); // shifted
+      expect(await ws.cell(0, 0).getValue()).toBe("Row0");
+      expect(await ws.cell(1, 0).getValue()).toBe("Row1"); // copied
+      expect(await ws.cell(2, 0).getValue()).toBe("Row1"); // shifted (original Row1)
+      expect(await ws.cell(3, 0).getValue()).toBe("Row2"); // shifted
     });
   });
 
   describe("Range and cell access", () => {
     it("should get data range", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("A");
-      await ws.cell(2, 3).setVal("D");
+      await ws.cell(0, 0).setValue("A");
+      await ws.cell(2, 3).setValue("D");
 
       const range = await ws.getRange();
       expect(range.s.r).toBe(0);
@@ -152,12 +152,12 @@ describe("ExcelWorksheet", () => {
 
     it("should get all cells", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("A");
-      await ws.cell(0, 1).setVal("B");
-      await ws.cell(1, 0).setVal("C");
-      await ws.cell(1, 1).setVal("D");
+      await ws.cell(0, 0).setValue("A");
+      await ws.cell(0, 1).setValue("B");
+      await ws.cell(1, 0).setValue("C");
+      await ws.cell(1, 1).setValue("D");
 
       const cells = await ws.getCells();
       expect(cells.length).toBe(2);
@@ -168,16 +168,16 @@ describe("ExcelWorksheet", () => {
   describe("Data table", () => {
     it("should get data table", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       // Headers
-      await ws.cell(0, 0).setVal("Name");
-      await ws.cell(0, 1).setVal("Age");
+      await ws.cell(0, 0).setValue("Name");
+      await ws.cell(0, 1).setValue("Age");
       // Data
-      await ws.cell(1, 0).setVal("Alice");
-      await ws.cell(1, 1).setVal(30);
-      await ws.cell(2, 0).setVal("Bob");
-      await ws.cell(2, 1).setVal(25);
+      await ws.cell(1, 0).setValue("Alice");
+      await ws.cell(1, 1).setValue(30);
+      await ws.cell(2, 0).setValue("Bob");
+      await ws.cell(2, 1).setValue(25);
 
       const data = await ws.getDataTable();
       expect(data.length).toBe(2);
@@ -189,14 +189,14 @@ describe("ExcelWorksheet", () => {
 
     it("should filter specific headers only", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Name");
-      await ws.cell(0, 1).setVal("Age");
-      await ws.cell(0, 2).setVal("Ignore");
-      await ws.cell(1, 0).setVal("Alice");
-      await ws.cell(1, 1).setVal(30);
-      await ws.cell(1, 2).setVal("X");
+      await ws.cell(0, 0).setValue("Name");
+      await ws.cell(0, 1).setValue("Age");
+      await ws.cell(0, 2).setValue("Ignore");
+      await ws.cell(1, 0).setValue("Alice");
+      await ws.cell(1, 1).setValue(30);
+      await ws.cell(1, 2).setValue("X");
 
       const data = await ws.getDataTable({
         usableHeaderNameFn: (name) => name !== "Ignore",
@@ -209,7 +209,7 @@ describe("ExcelWorksheet", () => {
 
     it("should set data matrix", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       const matrix = [
         ["A", "B", "C"],
@@ -219,14 +219,14 @@ describe("ExcelWorksheet", () => {
 
       await ws.setDataMatrix(matrix);
 
-      expect(await ws.cell(0, 0).getVal()).toBe("A");
-      expect(await ws.cell(0, 2).getVal()).toBe("C");
-      expect(await ws.cell(2, 2).getVal()).toBe(6);
+      expect(await ws.cell(0, 0).getValue()).toBe("A");
+      expect(await ws.cell(0, 2).getValue()).toBe("C");
+      expect(await ws.cell(2, 2).getValue()).toBe(6);
     });
 
     it("should set records array", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       const records = [
         { Name: "Alice", Age: 30 },
@@ -236,7 +236,7 @@ describe("ExcelWorksheet", () => {
       await ws.setRecords(records);
 
       // Check headers
-      const headers = [await ws.cell(0, 0).getVal(), await ws.cell(0, 1).getVal()];
+      const headers = [await ws.cell(0, 0).getValue(), await ws.cell(0, 1).getValue()];
       expect(headers).toContain("Name");
       expect(headers).toContain("Age");
 
@@ -249,13 +249,13 @@ describe("ExcelWorksheet", () => {
   describe("Column width", () => {
     it("should preserve column width after roundtrip", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("A1");
+      await ws.cell(0, 0).setValue("A1");
       await ws.col(0).setWidth(25);
       await ws.col(2).setWidth(30);
 
-      const bytes = await wb.getBytes();
+      const bytes = await wb.toBytes();
 
       const wb2 = new ExcelWorkbook(bytes);
       await wb2.getWorksheet("Test");
@@ -279,33 +279,33 @@ describe("ExcelWorksheet", () => {
   describe("Column access", () => {
     it("should get all cells in column", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("A1");
-      await ws.cell(1, 0).setVal("A2");
-      await ws.cell(2, 0).setVal("A3");
+      await ws.cell(0, 0).setValue("A1");
+      await ws.cell(1, 0).setValue("A2");
+      await ws.cell(2, 0).setValue("A3");
 
       const cells = await ws.col(0).getCells();
       expect(cells.length).toBe(3);
-      expect(await cells[0].getVal()).toBe("A1");
-      expect(await cells[1].getVal()).toBe("A2");
-      expect(await cells[2].getVal()).toBe("A3");
+      expect(await cells[0].getValue()).toBe("A1");
+      expect(await cells[1].getValue()).toBe("A2");
+      expect(await cells[2].getValue()).toBe("A3");
     });
   });
 
   describe("Data table edge cases", () => {
     it("should return empty array when calling getDataTable on empty sheet", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Empty");
+      const ws = await wb.addWorksheet("Empty");
       const data = await ws.getDataTable();
       expect(data).toEqual([]);
     });
 
     it("should return empty array when only headers exist without data", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-      await ws.cell(0, 0).setVal("Header1");
-      await ws.cell(0, 1).setVal("Header2");
+      const ws = await wb.addWorksheet("Test");
+      await ws.cell(0, 0).setValue("Header1");
+      await ws.cell(0, 1).setValue("Header2");
       const data = await ws.getDataTable();
       expect(data).toEqual([]);
     });
@@ -314,16 +314,16 @@ describe("ExcelWorksheet", () => {
   describe("Data table options", () => {
     it("should specify header row with headerRowIndex", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
       // Row 0 is title
-      await ws.cell(0, 0).setVal("Title");
+      await ws.cell(0, 0).setValue("Title");
       // Row 1 is header
-      await ws.cell(1, 0).setVal("Name");
-      await ws.cell(1, 1).setVal("Age");
+      await ws.cell(1, 0).setValue("Name");
+      await ws.cell(1, 1).setValue("Age");
       // Data starts from row 2
-      await ws.cell(2, 0).setVal("Alice");
-      await ws.cell(2, 1).setVal(30);
+      await ws.cell(2, 0).setValue("Alice");
+      await ws.cell(2, 1).setValue(30);
 
       const data = await ws.getDataTable({ headerRowIndex: 1 });
       expect(data.length).toBe(1);
@@ -333,16 +333,16 @@ describe("ExcelWorksheet", () => {
 
     it("should detect data end with checkEndColIndex", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
+      const ws = await wb.addWorksheet("Test");
 
-      await ws.cell(0, 0).setVal("Name");
-      await ws.cell(0, 1).setVal("Age");
-      await ws.cell(1, 0).setVal("Alice");
-      await ws.cell(1, 1).setVal(30);
-      await ws.cell(2, 0).setVal("Bob");
-      await ws.cell(2, 1).setVal(25);
+      await ws.cell(0, 0).setValue("Name");
+      await ws.cell(0, 1).setValue("Age");
+      await ws.cell(1, 0).setValue("Alice");
+      await ws.cell(1, 1).setValue(30);
+      await ws.cell(2, 0).setValue("Bob");
+      await ws.cell(2, 1).setValue(25);
       // Row 3 has empty Name column -> data end
-      await ws.cell(3, 1).setVal(999);
+      await ws.cell(3, 1).setValue(999);
 
       const data = await ws.getDataTable({ checkEndColIndex: 0 });
       expect(data.length).toBe(2);

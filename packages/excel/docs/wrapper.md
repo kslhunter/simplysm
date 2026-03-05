@@ -21,7 +21,7 @@ const records3 = await wrapper.read(fileBytes, 0, { excludes: ["age"] });
 
 // Write records to Excel workbook
 await using wb = await wrapper.write("Members", records);
-const bytes = await wb.getBytes();
+const bytes = await wb.toBytes();
 
 // Write with excludes
 await using wb2 = await wrapper.write("Members", records, { excludes: ["joinDate"] });

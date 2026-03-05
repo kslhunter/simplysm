@@ -98,7 +98,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
    * @example
    * ```typescript
    * await using wb = await wrapper.write("Sheet1", records);
-   * const bytes = await wb.getBytes();
+   * const bytes = await wb.toBytes();
    * ```
    */
   async write(
@@ -107,7 +107,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     options?: { excludes?: (keyof z.infer<TSchema>)[] },
   ): Promise<ExcelWorkbook> {
     const wb = new ExcelWorkbook();
-    const ws = await wb.createWorksheet(wsName);
+    const ws = await wb.addWorksheet(wsName);
 
     const displayNameMap = this._getDisplayNameMap(options?.excludes as string[] | undefined);
     const keys = Object.keys(displayNameMap) as (keyof z.infer<TSchema>)[];
@@ -115,7 +115,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
     // Write header row
     for (let c = 0; c < headers.length; c++) {
-      await ws.cell(0, c).setVal(headers[c]);
+      await ws.cell(0, c).setValue(headers[c]);
     }
 
     // Write data rows
@@ -123,7 +123,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       for (let c = 0; c < keys.length; c++) {
         const key = keys[c];
         const value = records[r][key] as ExcelValueType;
-        await ws.cell(r + 1, c).setVal(value);
+        await ws.cell(r + 1, c).setValue(value);
       }
     }
 
@@ -151,7 +151,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
     // View settings
     await ws.setZoom(85);
-    await ws.setFix({ r: 0 });
+    await ws.freezeAt({ r: 0 });
 
     return wb;
   }

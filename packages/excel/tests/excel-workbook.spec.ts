@@ -6,7 +6,7 @@ describe("ExcelWorkbook", () => {
   describe("Creating empty workbook", () => {
     it("Can create a worksheet", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("TestSheet");
+      const ws = await wb.addWorksheet("TestSheet");
 
       expect(ws).toBeDefined();
       const name = await ws.getName();
@@ -15,9 +15,9 @@ describe("ExcelWorkbook", () => {
 
     it("Can create multiple worksheets", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("Sheet1");
-      await wb.createWorksheet("Sheet2");
-      await wb.createWorksheet("Sheet3");
+      await wb.addWorksheet("Sheet1");
+      await wb.addWorksheet("Sheet2");
+      await wb.addWorksheet("Sheet3");
 
       const names = await wb.getWorksheetNames();
       expect(names).toEqual(["Sheet1", "Sheet2", "Sheet3"]);
@@ -27,8 +27,8 @@ describe("ExcelWorkbook", () => {
   describe("Accessing worksheets", () => {
     it("Can get worksheet by index", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("First");
-      await wb.createWorksheet("Second");
+      await wb.addWorksheet("First");
+      await wb.addWorksheet("Second");
 
       const ws = await wb.getWorksheet(1);
       const name = await ws.getName();
@@ -37,7 +37,7 @@ describe("ExcelWorkbook", () => {
 
     it("Can get worksheet by name", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("MySheet");
+      await wb.addWorksheet("MySheet");
 
       const ws = await wb.getWorksheet("MySheet");
       const name = await ws.getName();
@@ -46,7 +46,7 @@ describe("ExcelWorkbook", () => {
 
     it("Error when accessing non-existent sheet", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("Sheet1");
+      await wb.addWorksheet("Sheet1");
 
       await expect(wb.getWorksheet("NotExist")).rejects.toThrow();
       await expect(wb.getWorksheet(10)).rejects.toThrow();
@@ -56,20 +56,20 @@ describe("ExcelWorkbook", () => {
   describe("Bytes/Blob export", () => {
     it("Can export as Bytes", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-      await ws.cell(0, 0).setVal("Hello");
+      const ws = await wb.addWorksheet("Test");
+      await ws.cell(0, 0).setValue("Hello");
 
-      const bytes: Bytes = await wb.getBytes();
+      const bytes: Bytes = await wb.toBytes();
       expect(bytes).toBeInstanceOf(Uint8Array);
       expect(bytes.length).toBeGreaterThan(0);
     });
 
     it("Can export as Blob", async () => {
       const wb = new ExcelWorkbook();
-      const ws = await wb.createWorksheet("Test");
-      await ws.cell(0, 0).setVal("Hello");
+      const ws = await wb.addWorksheet("Test");
+      await ws.cell(0, 0).setValue("Hello");
 
-      const blob = await wb.getBlob();
+      const blob = await wb.toBlob();
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       expect(blob.size).toBeGreaterThan(0);
@@ -80,9 +80,9 @@ describe("ExcelWorkbook", () => {
     it("Can create workbook from Blob", async () => {
       // First create workbook with Bytes
       const wb1 = new ExcelWorkbook();
-      const ws1 = await wb1.createWorksheet("Test");
-      await ws1.cell(0, 0).setVal("BlobTest");
-      const bytes = await wb1.getBytes();
+      const ws1 = await wb1.addWorksheet("Test");
+      await ws1.cell(0, 0).setValue("BlobTest");
+      const bytes = await wb1.toBytes();
       await wb1.close();
 
       // Convert to Blob
@@ -93,7 +93,7 @@ describe("ExcelWorkbook", () => {
       // Read workbook from Blob
       const wb2 = new ExcelWorkbook(blob);
       const ws2 = await wb2.getWorksheet(0);
-      const val = await ws2.cell(0, 0).getVal();
+      const val = await ws2.cell(0, 0).getValue();
 
       expect(val).toBe("BlobTest");
       await wb2.close();
@@ -102,12 +102,12 @@ describe("ExcelWorkbook", () => {
     it("Can save created workbook as Bytes and read again", async () => {
       // Create
       const wb1 = new ExcelWorkbook();
-      const ws1 = await wb1.createWorksheet("RoundTrip");
-      await ws1.cell(0, 0).setVal("TestValue");
-      await ws1.cell(0, 1).setVal(12345);
+      const ws1 = await wb1.addWorksheet("RoundTrip");
+      await ws1.cell(0, 0).setValue("TestValue");
+      await ws1.cell(0, 1).setValue(12345);
 
       // Save
-      const bytes = await wb1.getBytes();
+      const bytes = await wb1.toBytes();
       await wb1.close();
 
       // Read again
@@ -116,8 +116,8 @@ describe("ExcelWorkbook", () => {
       expect(names).toContain("RoundTrip");
 
       const ws2 = await wb2.getWorksheet("RoundTrip");
-      const val1 = await ws2.cell(0, 0).getVal();
-      const val2 = await ws2.cell(0, 1).getVal();
+      const val1 = await ws2.cell(0, 0).getValue();
+      const val2 = await ws2.cell(0, 1).getValue();
 
       expect(val1).toBe("TestValue");
       expect(val2).toBe(12345);
@@ -129,7 +129,7 @@ describe("ExcelWorkbook", () => {
   describe("Error after resource cleanup", () => {
     it("Error when calling getWorksheetNames() after close()", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("Test");
+      await wb.addWorksheet("Test");
       await wb.close();
 
       await expect(wb.getWorksheetNames()).rejects.toThrow();
@@ -137,7 +137,7 @@ describe("ExcelWorkbook", () => {
 
     it("Error when calling getWorksheet() after close()", async () => {
       const wb = new ExcelWorkbook();
-      await wb.createWorksheet("Test");
+      await wb.addWorksheet("Test");
       await wb.close();
 
       await expect(wb.getWorksheet(0)).rejects.toThrow();

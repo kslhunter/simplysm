@@ -92,7 +92,7 @@ export class ExcelWorkbook {
   }
 
   /** Create and return a new worksheet */
-  async createWorksheet(name: string): Promise<ExcelWorksheet> {
+  async addWorksheet(name: string): Promise<ExcelWorksheet> {
     this._ensureNotClosed();
     // Workbook
     const wbXml = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
@@ -167,13 +167,13 @@ export class ExcelWorkbook {
   //#region Export Methods
 
   /** Export workbook as byte array */
-  async getBytes(): Promise<Bytes> {
+  async toBytes(): Promise<Bytes> {
     this._ensureNotClosed();
     return this.zipCache.toBytes();
   }
 
   /** Export workbook as Blob */
-  async getBlob(): Promise<Blob> {
+  async toBlob(): Promise<Blob> {
     this._ensureNotClosed();
     const bytes = await this.zipCache.toBytes();
     return new Blob([new Uint8Array(bytes)], {

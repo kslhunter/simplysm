@@ -16,12 +16,12 @@ ExcelUtils.stringifyColAddr(26); // "AA"
 ExcelUtils.stringifyRowAddr(0); // "1"
 
 // Parse cell address
-ExcelUtils.parseCellAddrCode("B3"); // { r: 2, c: 1 }
-ExcelUtils.parseRowAddrCode("B3"); // 2
-ExcelUtils.parseColAddrCode("B3"); // 1
+ExcelUtils.parseCellAddr("B3"); // { r: 2, c: 1 }
+ExcelUtils.parseRowAddr("B3"); // 2
+ExcelUtils.parseColAddr("B3"); // 1
 
 // Parse range address
-ExcelUtils.parseRangeAddrCode("A1:C3"); // { s: { r: 0, c: 0 }, e: { r: 2, c: 2 } }
+ExcelUtils.parseRangeAddr("A1:C3"); // { s: { r: 0, c: 0 }, e: { r: 2, c: 2 } }
 
 // Convert range coordinates to address string
 ExcelUtils.stringifyRangeAddr({ s: { r: 0, c: 0 }, e: { r: 2, c: 2 } }); // "A1:C3"
@@ -43,10 +43,10 @@ ExcelUtils.convertNumFmtNameToId("DateTime");  // 22
 | `stringifyAddr` | `(point: ExcelAddressPoint) => string` | Convert coordinates to "A1" format |
 | `stringifyRowAddr` | `(r: number) => string` | Convert 0-based row index to row number string |
 | `stringifyColAddr` | `(c: number) => string` | Convert 0-based column index to column letter(s) |
-| `parseRowAddrCode` | `(addrCode: string) => number` | Extract 0-based row index from cell address |
-| `parseColAddrCode` | `(addrCode: string) => number` | Extract 0-based column index from cell address |
-| `parseCellAddrCode` | `(addr: string) => ExcelAddressPoint` | Convert cell address string to coordinates |
-| `parseRangeAddrCode` | `(rangeAddr: string) => ExcelAddressRangePoint` | Convert range address to coordinate pair |
+| `parseRowAddr` | `(addr: string) => number` | Extract 0-based row index from cell address |
+| `parseColAddr` | `(addr: string) => number` | Extract 0-based column index from cell address |
+| `parseCellAddr` | `(addr: string) => ExcelAddressPoint` | Convert cell address string to coordinates |
+| `parseRangeAddr` | `(rangeAddr: string) => ExcelAddressRangePoint` | Convert range address to coordinate pair |
 | `stringifyRangeAddr` | `(point: ExcelAddressRangePoint) => string` | Convert coordinate pair to range address string |
 | `convertTimeTickToNumber` | `(tick: number) => number` | Convert JS timestamp (ms) to Excel serial date number |
 | `convertNumberToTimeTick` | `(num: number) => number` | Convert Excel serial date number to JS timestamp (ms) |

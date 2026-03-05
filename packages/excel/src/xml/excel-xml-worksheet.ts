@@ -46,11 +46,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
 
     this._dataMap = (this.data.worksheet.sheetData[0].row ?? []).toMap(
-      (row) => ExcelUtils.parseRowAddrCode(row.$.r),
+      (row) => ExcelUtils.parseRowAddr(row.$.r),
       (row) => ({
         data: row,
         cellMap: (row.c ?? []).toMap(
-          (cell) => ExcelUtils.parseColAddrCode(cell.$.r),
+          (cell) => ExcelUtils.parseColAddr(cell.$.r),
           (cell) => cell,
         ),
       }),
@@ -164,7 +164,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     // Check for merge overlap
     const existingMergeCells = mergeCells[0].mergeCell;
     for (const mergeCell of existingMergeCells) {
-      const existingRange = ExcelUtils.parseRangeAddrCode(mergeCell.$.ref);
+      const existingRange = ExcelUtils.parseRangeAddr(mergeCell.$.ref);
 
       if (
         newRange.s.r <= existingRange.e.r &&
@@ -195,7 +195,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   getMergeCells(): { s: { r: number; c: number }; e: { r: number; c: number } }[] {
     const mergeCells = this.data.worksheet.mergeCells;
     if (mergeCells === undefined) return [];
-    return mergeCells[0].mergeCell.map((item) => ExcelUtils.parseRangeAddrCode(item.$.ref));
+    return mergeCells[0].mergeCell.map((item) => ExcelUtils.parseRangeAddr(item.$.ref));
   }
 
   removeMergeCells(fromAddr: { r: number; c: number }, toAddr: { r: number; c: number }): void {
@@ -204,7 +204,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const range = { s: fromAddr, e: toAddr };
 
     const filteredMergeCells = this.data.worksheet.mergeCells[0].mergeCell.filter((item) => {
-      const rangeAddr = ExcelUtils.parseRangeAddrCode(item.$.ref);
+      const rangeAddr = ExcelUtils.parseRangeAddr(item.$.ref);
       return !(
         rangeAddr.s.r >= range.s.r &&
         rangeAddr.e.r <= range.e.r &&
@@ -324,7 +324,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     this.data.worksheet.sheetViews[0].sheetView[0].$.zoomScale = percent.toString();
   }
 
-  setFix(point: { r?: number; c?: number }): void {
+  freezeAt(point: { r?: number; c?: number }): void {
     this.data.worksheet.sheetViews = this.data.worksheet.sheetViews ?? [
       { sheetView: [{ $: { workbookViewId: "0" } }] },
     ];
@@ -367,7 +367,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
       // Update each CELL address
       if (newRowData.c != null) {
         for (const cellData of newRowData.c) {
-          const colAddr = ExcelUtils.parseColAddrCode(cellData.$.r);
+          const colAddr = ExcelUtils.parseColAddr(cellData.$.r);
           cellData.$.r = ExcelUtils.stringifyAddr({ r: targetR, c: colAddr });
         }
       }
@@ -452,7 +452,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
       const cellsData = rowData.c;
       if (cellsData == null) continue;
       cellsData.sort(
-        (a, b) => ExcelUtils.parseCellAddrCode(a.$.r).c - ExcelUtils.parseCellAddrCode(b.$.r).c,
+        (a, b) => ExcelUtils.parseCellAddr(a.$.r).c - ExcelUtils.parseCellAddr(b.$.r).c,
       );
     }
 
@@ -506,7 +506,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const rowInfo = {
       data: rowData,
       cellMap: (rowData.c ?? []).toMap(
-        (cell) => ExcelUtils.parseColAddrCode(cell.$.r),
+        (cell) => ExcelUtils.parseColAddr(cell.$.r),
         (cell) => cell,
       ),
     };

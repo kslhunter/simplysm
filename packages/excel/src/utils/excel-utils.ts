@@ -35,8 +35,8 @@ export class ExcelUtils {
   }
 
   /** Extract row index from cell address (e.g. "A3" -> 2) */
-  static parseRowAddrCode(addrCode: string): number {
-    const rowAddrCode = /\d*$/.exec(addrCode)?.[0] ?? "";
+  static parseRowAddr(addr: string): number {
+    const rowAddrCode = /\d*$/.exec(addr)?.[0] ?? "";
     const parsed = numParseInt(rowAddrCode);
     if (parsed == null) {
       throw new Error(`Invalid row address code: ${addrCode}`);
@@ -45,8 +45,8 @@ export class ExcelUtils {
   }
 
   /** Extract column index from cell address (e.g. "B3" -> 1) */
-  static parseColAddrCode(addrCode: string): number {
-    const colAddrCode = /^[a-zA-Z]*/.exec(addrCode)?.[0] ?? "";
+  static parseColAddr(addr: string): number {
+    const colAddrCode = /^[a-zA-Z]*/.exec(addr)?.[0] ?? "";
 
     let result = 0;
     const revAddr = Array.from(colAddrCode).reverse().join("");
@@ -58,19 +58,19 @@ export class ExcelUtils {
   }
 
   /** Convert cell address to coordinates (e.g. "B3" -> {r: 2, c: 1}) */
-  static parseCellAddrCode(addr: string): ExcelAddressPoint {
+  static parseCellAddr(addr: string): ExcelAddressPoint {
     return {
-      r: ExcelUtils.parseRowAddrCode(addr),
-      c: ExcelUtils.parseColAddrCode(addr),
+      r: ExcelUtils.parseRowAddr(addr),
+      c: ExcelUtils.parseColAddr(addr),
     };
   }
 
   /** Convert range address to coordinates (e.g. "A1:C3" -> {s: {r:0,c:0}, e: {r:2,c:2}}) */
-  static parseRangeAddrCode(rangeAddr: string): ExcelAddressRangePoint {
+  static parseRangeAddr(rangeAddr: string): ExcelAddressRangePoint {
     const parts = rangeAddr.split(":");
     return {
-      s: ExcelUtils.parseCellAddrCode(parts[0]),
-      e: ExcelUtils.parseCellAddrCode(parts[1] ?? parts[0]),
+      s: ExcelUtils.parseCellAddr(parts[0]),
+      e: ExcelUtils.parseCellAddr(parts[1] ?? parts[0]),
     };
   }
 

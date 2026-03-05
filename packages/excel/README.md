@@ -21,9 +21,9 @@ const table = await ws.getDataTable(); // [{ Name: "Alice", Age: 30 }, ...]
 
 // Create a new file
 await using wb2 = new ExcelWorkbook();
-const ws2 = await wb2.createWorksheet("Sheet1");
+const ws2 = await wb2.addWorksheet("Sheet1");
 await ws2.setRecords([{ Name: "Alice", Age: 30 }]);
-const output = await wb2.getBytes();
+const output = await wb2.toBytes();
 ```
 
 ### Type-safe read/write with Zod (ExcelWrapper)
@@ -44,7 +44,7 @@ const records = await wrapper.read(fileBytes);
 
 // Write
 await using wb = await wrapper.write("Members", records);
-const output = await wb.getBytes();
+const output = await wb.toBytes();
 ```
 
 ## Modules

@@ -24,7 +24,7 @@ import { ExcelUtils } from "./utils/excel-utils";
  * @remarks
  * ## Async Method Design
  *
- * Why all cell methods like `getVal()`, `setVal()` are `async`:
+ * Why all cell methods like `getValue()`, `setValue()` are `async`:
  * - Only the XML needed for the cell type is selectively loaded
  * - String cell: loads SharedStrings.xml
  * - Number cell: does not load SharedStrings
@@ -67,7 +67,7 @@ export class ExcelCell {
   }
 
   /** Set cell value (undefined: delete cell) */
-  async setVal(val: ExcelValueType): Promise<void> {
+  async setValue(val: ExcelValueType): Promise<void> {
     if (val === undefined) {
       await this._deleteCell(this.addr);
     } else if (typeof val === "string") {
@@ -108,7 +108,7 @@ export class ExcelCell {
   }
 
   /** Return cell value */
-  async getVal(): Promise<ExcelValueType> {
+  async getValue(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
     if (cellVal === undefined || strIsNullOrEmpty(cellVal)) {

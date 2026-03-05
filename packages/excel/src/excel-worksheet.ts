@@ -172,7 +172,7 @@ export class ExcelWorksheet {
     const startRow = opt?.headerRowIndex ?? range.s.r;
 
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const headerName = await this.cell(startRow, c).getVal();
+      const headerName = await this.cell(startRow, c).getValue();
       if (typeof headerName === "string") {
         if (opt?.usableHeaderNameFn == null || opt.usableHeaderNameFn(headerName)) {
           headerMap.set(headerName, c);
@@ -183,7 +183,7 @@ export class ExcelWorksheet {
     for (let r = startRow + 1; r <= range.e.r; r++) {
       if (
         opt?.checkEndColIndex !== undefined &&
-        (await this.cell(r, opt.checkEndColIndex).getVal()) === undefined
+        (await this.cell(r, opt.checkEndColIndex).getValue()) === undefined
       ) {
         break;
       }
@@ -191,7 +191,7 @@ export class ExcelWorksheet {
       const record: Record<string, ExcelValueType> = {};
       for (const header of headerMap.keys()) {
         const c = headerMap.get(header)!;
-        record[header] = await this.cell(r, c).getVal();
+        record[header] = await this.cell(r, c).getValue();
       }
 
       result.push(record);
@@ -207,7 +207,7 @@ export class ExcelWorksheet {
   async setDataMatrix(matrix: ExcelValueType[][]): Promise<void> {
     for (let r = 0; r < matrix.length; r++) {
       for (let c = 0; c < matrix[r].length; c++) {
-        await this.cell(r, c).setVal(matrix[r][c]);
+        await this.cell(r, c).setValue(matrix[r][c]);
       }
     }
   }
@@ -223,12 +223,12 @@ export class ExcelWorksheet {
       .filter((item) => !strIsNullOrEmpty(item));
 
     for (let c = 0; c < headers.length; c++) {
-      await this.cell(0, c).setVal(headers[c]);
+      await this.cell(0, c).setValue(headers[c]);
     }
 
     for (let r = 1; r < records.length + 1; r++) {
       for (let c = 0; c < headers.length; c++) {
-        await this.cell(r, c).setVal(records[r - 1][headers[c]]);
+        await this.cell(r, c).setValue(records[r - 1][headers[c]]);
       }
     }
   }
@@ -247,12 +247,12 @@ export class ExcelWorksheet {
   }
 
   /** Set freeze panes for rows/columns */
-  async setFix(point: { r?: number; c?: number }): Promise<void> {
+  async freezeAt(point: { r?: number; c?: number }): Promise<void> {
     const wbXml = await this._getWbData();
     wbXml.initializeView();
 
     const wsXml = await this._getWsData();
-    wsXml.setFix(point);
+    wsXml.freezeAt(point);
   }
 
   //#endregion

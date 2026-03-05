@@ -24,16 +24,16 @@ describe("ExcelWrapper", () => {
       const ws = await wb.getWorksheet("Users");
 
       // Check headers
-      expect(await ws.cell(0, 0).getVal()).toBe("Name");
-      expect(await ws.cell(0, 1).getVal()).toBe("Age");
-      expect(await ws.cell(0, 2).getVal()).toBe("Email");
-      expect(await ws.cell(0, 3).getVal()).toBe("Active");
+      expect(await ws.cell(0, 0).getValue()).toBe("Name");
+      expect(await ws.cell(0, 1).getValue()).toBe("Age");
+      expect(await ws.cell(0, 2).getValue()).toBe("Email");
+      expect(await ws.cell(0, 3).getValue()).toBe("Active");
 
       // Check data
-      expect(await ws.cell(1, 0).getVal()).toBe("John Doe");
-      expect(await ws.cell(1, 1).getVal()).toBe(30);
-      expect(await ws.cell(2, 0).getVal()).toBe("Jane Smith");
-      expect(await ws.cell(2, 1).getVal()).toBe(25);
+      expect(await ws.cell(1, 0).getValue()).toBe("John Doe");
+      expect(await ws.cell(1, 1).getValue()).toBe(30);
+      expect(await ws.cell(2, 0).getValue()).toBe("Jane Smith");
+      expect(await ws.cell(2, 1).getValue()).toBe(25);
 
       await wb.close();
     });
@@ -65,7 +65,7 @@ describe("ExcelWrapper", () => {
       ];
 
       const wb = await wrapper.write("Users", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       // Read from Excel
@@ -85,7 +85,7 @@ describe("ExcelWrapper", () => {
 
       const records = [{ name: "Test", age: 20 }];
       const wb = await wrapper.write("Sheet1", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, 0);
@@ -100,7 +100,7 @@ describe("ExcelWrapper", () => {
 
       // Save without active field
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       const records = await wrapper.read(buffer);
@@ -120,7 +120,7 @@ describe("ExcelWrapper", () => {
       const records = [{ title: "Event 1", date: new DateOnly(2024, 6, 15) }, { title: "Event 2" }];
 
       const wb = await wrapper.write("Events", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, "Events");
@@ -144,7 +144,7 @@ describe("ExcelWrapper", () => {
       const records = [{ title: "Meeting", datetime: new DateTime(2024, 6, 15, 14, 30, 0) }];
 
       const wb = await wrapper.write("Events", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, "Events");
@@ -168,7 +168,7 @@ describe("ExcelWrapper", () => {
       const records = [{ title: "Alarm", time: new Time(9, 30, 0) }];
 
       const wb = await wrapper.write("Events", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, "Events");
@@ -185,7 +185,7 @@ describe("ExcelWrapper", () => {
 
       // Create empty Excel with only headers
       const wb = await wrapper.write("Empty", []);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(
@@ -197,7 +197,7 @@ describe("ExcelWrapper", () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       await expect(wrapper.read(buffer, "NotExist")).rejects.toThrow();
@@ -215,9 +215,9 @@ describe("ExcelWrapper", () => {
 
       // Modify data directly to trigger validation failure
       const ws = await wb.getWorksheet("Validation");
-      await ws.cell(1, 0).setVal("AB"); // Change to less than 5 characters
+      await ws.cell(1, 0).setValue("AB"); // Change to less than 5 characters
 
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       // Should throw validation error
@@ -241,13 +241,13 @@ describe("ExcelWrapper", () => {
       const ws = await wb.getWorksheet("Test");
 
       // Headers: only name and age exist
-      expect(await ws.cell(0, 0).getVal()).toBe("Name");
-      expect(await ws.cell(0, 1).getVal()).toBe("Age");
-      expect(await ws.cell(0, 2).getVal()).toBeUndefined();
+      expect(await ws.cell(0, 0).getValue()).toBe("Name");
+      expect(await ws.cell(0, 1).getValue()).toBe("Age");
+      expect(await ws.cell(0, 2).getValue()).toBeUndefined();
 
       // Check data
-      expect(await ws.cell(1, 0).getVal()).toBe("John Doe");
-      expect(await ws.cell(1, 1).getVal()).toBe(30);
+      expect(await ws.cell(1, 0).getValue()).toBe("John Doe");
+      expect(await ws.cell(1, 1).getValue()).toBe(30);
 
       await wb.close();
     });
@@ -258,7 +258,7 @@ describe("ExcelWrapper", () => {
       // Create Excel with all fields
       const records = [{ name: "John Doe", age: 30, email: "john@test.com", phone: "010-1234-5678" }];
       const wb = await wrapper.write("Test", records);
-      const buffer = await wb.getBytes();
+      const buffer = await wb.toBytes();
       await wb.close();
 
       // Read with excludes

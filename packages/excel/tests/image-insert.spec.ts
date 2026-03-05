@@ -33,7 +33,7 @@ async function loadPngFile(): Promise<Uint8Array> {
 describe("ExcelWorksheet.addImage integration", () => {
   it("should write media, drawing, drawing rels, worksheet rel and content types", async () => {
     const wb = new ExcelWorkbook();
-    const ws = await wb.createWorksheet("Sheet1");
+    const ws = await wb.addWorksheet("Sheet1");
 
     const bytes = await loadPngFile();
 
@@ -102,14 +102,14 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(drawingElems.some((d: any) => d.$ != null && d.$["r:id"] != null)).toBeTruthy();
 
     // Verify buffer creation
-    const resultBuffer = await wb.getBytes();
+    const resultBuffer = await wb.toBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
 
   it("can insert multiple images into the same worksheet", async () => {
     const wb = new ExcelWorkbook();
-    const ws = await wb.createWorksheet("Sheet1");
+    const ws = await wb.addWorksheet("Sheet1");
 
     const bytes = await loadPngFile();
 
@@ -170,14 +170,14 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(relsArr.some((r: any) => r.$.Target === "../media/image2.png")).toBeTruthy();
 
     // Verify buffer creation
-    const resultBuffer = await wb.getBytes();
+    const resultBuffer = await wb.toBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
 
   it("throws error for unsupported file extensions", async () => {
     const wb = new ExcelWorkbook();
-    const ws = await wb.createWorksheet("Sheet1");
+    const ws = await wb.addWorksheet("Sheet1");
 
     await expect(
       ws.addImage({
