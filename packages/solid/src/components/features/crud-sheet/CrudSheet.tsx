@@ -335,7 +335,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   // -- Select Mode --
-  function handleSelectionChange(newSelectedItems: TItem[]) {
+  function handleSelectionChange(newSelection: TItem[]) {
     // Current page items key Set
     const currentItems = items as unknown as TItem[];
     const currentKeys = new Set<string | number>();
@@ -346,7 +346,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
     // Newly selected items key
     const newSelectedKeys = new Set<string | number>();
-    for (const item of newSelectedItems) {
+    for (const item of newSelection) {
       const key = local.getItemKey(item);
       if (key != null) newSelectedKeys.add(key);
     }
@@ -363,7 +363,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     }
 
     setSelectedKeys(merged);
-    setSelection(newSelectedItems);
+    setSelection(newSelection);
   }
 
   function clearSelection() {
