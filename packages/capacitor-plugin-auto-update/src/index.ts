@@ -1,6 +1,6 @@
 // APK Installer
 export * from "./ApkInstaller";
-export * from "./IApkInstallerPlugin";
+export * from "./ApkInstallerPlugin";
 
 // Auto Update
 export * from "./AutoUpdate";

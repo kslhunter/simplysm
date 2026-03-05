@@ -1,3 +1,3 @@
 // File System
 export * from "./FileSystem";
-export * from "./IFileSystemPlugin";
+export * from "./FileSystemPlugin";
