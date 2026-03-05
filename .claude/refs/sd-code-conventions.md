@@ -138,3 +138,10 @@ function getNameFromEvent(event: unknown): string {
   throw new Error("Invalid event structure");
 }
 ```
+
+## Boolean Prop Defaults
+
+- Name boolean props so their default value is `false`
+- Prefer `hide*`, `disable*` patterns where the feature is ON by default
+- This avoids double-negation in JSX: `hideX={false}` is clearer than `showX={true}` when both mean "show X"
+- Exception: inherent HTML attributes like `draggable` may default to `true`
