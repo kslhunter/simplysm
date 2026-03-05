@@ -306,7 +306,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
     onCleanup(() => unregisterDialog(el));
   });
 
-  // Attempt to close (check canDeactivate)
+  // Attempt to close (check beforeClose)
   const tryClose = () => {
     if (local.beforeClose && !local.beforeClose()) return;
     setOpen(false);

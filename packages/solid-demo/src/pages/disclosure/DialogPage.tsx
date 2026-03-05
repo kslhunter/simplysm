@@ -113,7 +113,7 @@ export default function ModalPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Float Dialog</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Set float=true to display a floating dialog without a backdrop. You can interact with the content behind it.
+          Set mode="float" to display a floating dialog without a backdrop. You can interact with the content behind it.
         </p>
         <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
           {floatOpen() ? "Close Float Dialog" : "Open Float Dialog"}
@@ -133,7 +133,7 @@ export default function ModalPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Fill Dialog</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Set fill=true to display a dialog that fills the entire screen.
+          Set mode="fill" to display a dialog that fills the entire screen.
         </p>
         <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
           Open Fill Dialog
