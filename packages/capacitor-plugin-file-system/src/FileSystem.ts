@@ -1,9 +1,9 @@
 import { registerPlugin } from "@capacitor/core";
-import type { IFileInfo, IFileSystemPlugin, TStorage } from "./IFileSystemPlugin";
+import type { FileInfo, FileSystemPlugin, StorageType } from "./FileSystemPlugin";
 import type { Bytes } from "@simplysm/core-common";
 import { bytesToBase64, bytesFromBase64 } from "@simplysm/core-common";
 
-const FileSystemPlugin = registerPlugin<IFileSystemPlugin>("FileSystem", {
+const fileSystemPlugin = registerPlugin<FileSystemPlugin>("FileSystem", {
   web: async () => {
     const { FileSystemWeb } = await import("./web/FileSystemWeb");
     return new FileSystemWeb();
@@ -20,8 +20,8 @@ export abstract class FileSystem {
   /**
    * Check permission
    */
-  static async hasPermission(): Promise<boolean> {
-    const result = await FileSystemPlugin.hasPermission();
+  static async checkPermissions(): Promise<boolean> {
+    const result = await fileSystemPlugin.checkPermissions();
     return result.granted;
   }
 
@@ -30,15 +30,15 @@ export abstract class FileSystem {
    * - Android 11+: Navigate to settings
    * - Android 10-: Show permission dialog
    */
-  static async requestPermission(): Promise<void> {
-    await FileSystemPlugin.requestPermission();
+  static async requestPermissions(): Promise<void> {
+    await fileSystemPlugin.requestPermissions();
   }
 
   /**
    * Read directory
    */
-  static async readdir(dirPath: string): Promise<IFileInfo[]> {
-    const result = await FileSystemPlugin.readdir({ path: dirPath });
+  static async readdir(dirPath: string): Promise<FileInfo[]> {
+    const result = await fileSystemPlugin.readdir({ path: dirPath });
     return result.files;
   }
 
@@ -53,16 +53,16 @@ export abstract class FileSystem {
    * - appFiles: App files directory
    * - appCache: App cache directory
    */
-  static async getStoragePath(type: TStorage): Promise<string> {
-    const result = await FileSystemPlugin.getStoragePath({ type });
+  static async getStoragePath(type: StorageType): Promise<string> {
+    const result = await fileSystemPlugin.getStoragePath({ type });
     return result.path;
   }
 
   /**
    * Get file URI (FileProvider)
    */
-  static async getFileUri(filePath: string): Promise<string> {
-    const result = await FileSystemPlugin.getFileUri({ path: filePath });
+  static async getUri(filePath: string): Promise<string> {
+    const result = await fileSystemPlugin.getUri({ path: filePath });
     return result.uri;
   }
 
@@ -72,13 +72,13 @@ export abstract class FileSystem {
   static async writeFile(filePath: string, data: string | Bytes): Promise<void> {
     if (typeof data !== "string") {
       // Bytes (Uint8Array) - works safely in cross-realm environments
-      await FileSystemPlugin.writeFile({
+      await fileSystemPlugin.writeFile({
         path: filePath,
         data: bytesToBase64(data),
         encoding: "base64",
       });
     } else {
-      await FileSystemPlugin.writeFile({
+      await fileSystemPlugin.writeFile({
         path: filePath,
         data,
         encoding: "utf8",
@@ -87,40 +87,39 @@ export abstract class FileSystem {
   }
 
   /**
-   * Read file (UTF-8 string)
+   * Read file (default: Bytes, with encoding "utf8": string)
    */
-  static async readFileString(filePath: string): Promise<string> {
-    const result = await FileSystemPlugin.readFile({ path: filePath, encoding: "utf8" });
-    return result.data;
-  }
-
-  /**
-   * Read file (Bytes)
-   */
-  static async readFileBytes(filePath: string): Promise<Bytes> {
-    const result = await FileSystemPlugin.readFile({ path: filePath, encoding: "base64" });
-    return bytesFromBase64(result.data);
+  static async readFile(filePath: string): Promise<Bytes>;
+  static async readFile(filePath: string, encoding: "utf8"): Promise<string>;
+  static async readFile(filePath: string, encoding?: "utf8"): Promise<string | Bytes> {
+    if (encoding === "utf8") {
+      const result = await fileSystemPlugin.readFile({ path: filePath, encoding: "utf8" });
+      return result.data;
+    } else {
+      const result = await fileSystemPlugin.readFile({ path: filePath, encoding: "base64" });
+      return bytesFromBase64(result.data);
+    }
   }
 
   /**
    * Delete file/directory (recursive)
    */
   static async remove(targetPath: string): Promise<void> {
-    await FileSystemPlugin.remove({ path: targetPath });
+    await fileSystemPlugin.remove({ path: targetPath });
   }
 
   /**
    * Create directory (recursive)
    */
   static async mkdir(targetPath: string): Promise<void> {
-    await FileSystemPlugin.mkdir({ path: targetPath });
+    await fileSystemPlugin.mkdir({ path: targetPath });
   }
 
   /**
    * Check existence
    */
   static async exists(targetPath: string): Promise<boolean> {
-    const result = await FileSystemPlugin.exists({ path: targetPath });
+    const result = await fileSystemPlugin.exists({ path: targetPath });
     return result.exists;
   }
 }
