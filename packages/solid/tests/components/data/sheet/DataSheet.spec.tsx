@@ -34,7 +34,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-multi">
+        <DataSheet items={testData} storageKey="test-multi">
           <DataSheet.Column<TestItem> key="name" header={["기본정보", "이름"]}>
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -69,7 +69,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-summary">
+        <DataSheet items={testData} storageKey="test-summary">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -93,7 +93,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={[] as TestItem[]} persistKey="test-empty">
+        <DataSheet items={[] as TestItem[]} storageKey="test-empty">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -114,7 +114,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-hidden">
+        <DataSheet items={testData} storageKey="test-hidden">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -138,7 +138,7 @@ describe("DataSheet", () => {
         <TestWrapper>
         <DataSheet
           items={testData}
-          persistKey="test-sort"
+          storageKey="test-sort"
           sorts={[]}
           onSortsChange={(s) => {
             capturedSorts = s;
@@ -168,7 +168,7 @@ describe("DataSheet", () => {
         <TestWrapper>
         <DataSheet
           items={testData}
-          persistKey="test-no-sort"
+          storageKey="test-no-sort"
           sorts={[]}
           onSortsChange={(s) => {
             capturedSorts = s;
@@ -193,7 +193,7 @@ describe("DataSheet", () => {
         <TestWrapper>
         <DataSheet
           items={testData}
-          persistKey="test-auto-sort"
+          storageKey="test-auto-sort"
           sorts={[{ key: "name", desc: false }]}
           autoSort
         >
@@ -210,11 +210,11 @@ describe("DataSheet", () => {
     expect(names).toEqual(["김철수", "이영희", "홍길동"]);
   });
 
-  it("pagination: data is sliced by itemsPerPage", () => {
+  it("pagination: data is sliced by pageSize", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-paging" itemsPerPage={2} page={1}>
+        <DataSheet items={testData} storageKey="test-paging" pageSize={2} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -231,7 +231,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-paging-nav" itemsPerPage={2} page={1}>
+        <DataSheet items={testData} storageKey="test-paging-nav" pageSize={2} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -248,7 +248,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-no-paging" itemsPerPage={10} page={1}>
+        <DataSheet items={testData} storageKey="test-no-paging" pageSize={10} page={1}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -265,7 +265,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-fixed">
+        <DataSheet items={testData} storageKey="test-fixed">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -286,7 +286,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-fixed-border">
+        <DataSheet items={testData} storageKey="test-fixed-border">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -307,7 +307,7 @@ describe("DataSheet", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={testData} persistKey="test-resizer">
+        <DataSheet items={testData} storageKey="test-resizer">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -513,7 +513,7 @@ describe("DataSheet tree expansion", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={treeData} persistKey="test-tree" itemChildren={(item) => item.children}>
+        <DataSheet items={treeData} storageKey="test-tree" itemChildren={(item) => item.children}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -537,7 +537,7 @@ describe("DataSheet tree expansion", () => {
         <TestWrapper>
         <DataSheet
           items={treeData}
-          persistKey="test-tree-collapsed"
+          storageKey="test-tree-collapsed"
           itemChildren={(item) => item.children}
           expandedItems={[]}
         >
@@ -562,7 +562,7 @@ describe("DataSheet tree expansion", () => {
         <TestWrapper>
         <DataSheet
           items={treeData}
-          persistKey="test-tree-expanded"
+          storageKey="test-tree-expanded"
           itemChildren={(item) => item.children}
           expandedItems={[treeData[0]]}
         >
@@ -592,7 +592,7 @@ describe("DataSheet tree expansion", () => {
         <TestWrapper>
         <DataSheet
           items={treeData}
-          persistKey="test-tree-no-children"
+          storageKey="test-tree-no-children"
           itemChildren={(item) => item.children}
           expandedItems={[]}
         >

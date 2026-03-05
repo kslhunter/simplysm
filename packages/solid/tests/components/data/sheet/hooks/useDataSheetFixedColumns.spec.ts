@@ -35,13 +35,13 @@ describe("useDataSheetFixedColumns", () => {
       });
     });
 
-    it("should detect select feature when selectMode is provided", () => {
+    it("should detect select feature when selectionMode is provided", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
         const { hasSelectFeature } = useDataSheetFixedColumns(
           {
-            selectMode: "single",
+            selectionMode: "single",
           },
           effectiveColumns
         );
@@ -50,7 +50,7 @@ describe("useDataSheetFixedColumns", () => {
       });
     });
 
-    it("should not detect select feature when selectMode is not provided", () => {
+    it("should not detect select feature when selectionMode is not provided", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
@@ -94,7 +94,7 @@ describe("useDataSheetFixedColumns", () => {
         const { expandColWidth, selectColWidth, reorderColWidth } = useDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
-            selectMode: "single",
+            selectionMode: "single",
             onItemsReorder: () => {},
           },
           effectiveColumns
@@ -114,7 +114,7 @@ describe("useDataSheetFixedColumns", () => {
 
         const { selectColLeft } = useDataSheetFixedColumns(
           {
-            selectMode: "single",
+            selectionMode: "single",
           },
           effectiveColumns
         );
@@ -130,7 +130,7 @@ describe("useDataSheetFixedColumns", () => {
         const { selectColLeft, expandColWidth: _expandColWidth } = useDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
-            selectMode: "single",
+            selectionMode: "single",
           },
           effectiveColumns
         );
@@ -147,7 +147,7 @@ describe("useDataSheetFixedColumns", () => {
         const { reorderColLeft } = useDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
-            selectMode: "single",
+            selectionMode: "single",
             onItemsReorder: () => {},
           },
           effectiveColumns
@@ -166,7 +166,7 @@ describe("useDataSheetFixedColumns", () => {
         const { featureColTotalWidth } = useDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
-            selectMode: "single",
+            selectionMode: "single",
             onItemsReorder: () => {},
           },
           effectiveColumns

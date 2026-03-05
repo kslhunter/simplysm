@@ -4,7 +4,7 @@ import { createControllableSignal } from "../../../../hooks/createControllableSi
 export interface UseDataSheetPagingOptions<TItem> {
   page: Accessor<number | undefined>;
   onPageChange: Accessor<((page: number) => void) | undefined>;
-  itemsPerPage: Accessor<number | undefined>;
+  pageSize: Accessor<number | undefined>;
   totalPageCount: Accessor<number | undefined>;
   items: Accessor<TItem[] | undefined>;
   sortedItems: Accessor<TItem[]>;
@@ -26,7 +26,7 @@ export function useDataSheetPaging<TItem>(
   });
 
   const pageCount = createMemo(() => {
-    const ipp = options.itemsPerPage();
+    const ipp = options.pageSize();
     if (ipp != null && ipp !== 0 && (options.items() ?? []).length > 0) {
       return Math.ceil((options.items() ?? []).length / ipp);
     }
@@ -34,7 +34,7 @@ export function useDataSheetPaging<TItem>(
   });
 
   const pagedItems = createMemo(() => {
-    const ipp = options.itemsPerPage();
+    const ipp = options.pageSize();
     if (ipp == null || ipp === 0) return options.sortedItems();
     if ((options.items() ?? []).length <= 0) return options.sortedItems();
 

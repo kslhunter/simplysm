@@ -88,7 +88,7 @@ interface DataSheetComponent {
 const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const [local] = splitProps(props, [
     "items",
-    "persistKey",
+    "storageKey",
     "hideConfigBar",
     "inset",
     "contentStyle",
@@ -98,14 +98,14 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     "page",
     "onPageChange",
     "totalPageCount",
-    "itemsPerPage",
+    "pageSize",
     "displayPageCount",
     "expandedItems",
     "onExpandedItemsChange",
     "itemChildren",
-    "selectMode",
-    "selectedItems",
-    "onSelectedItemsChange",
+    "selectionMode",
+    "selection",
+    "onSelectionChange",
     "autoSelect",
     "itemSelectable",
     "cellClass",
@@ -144,8 +144,8 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
 
   // #region Config (useSyncConfig)
   const [config, setConfig] =
-    local.persistKey != null && local.persistKey !== ""
-      ? useSyncConfig<DataSheetConfig>(`sheet.${local.persistKey}`, { columnRecord: {} })
+    local.storageKey != null && local.storageKey !== ""
+      ? useSyncConfig<DataSheetConfig>(`sheet.${local.storageKey}`, { columnRecord: {} })
       : createSignal<DataSheetConfig>({ columnRecord: {} });
 
   // Final columns with config applied — config's hidden/fixed/width/displayOrder overrides are applied
@@ -243,7 +243,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const { currentPage, setCurrentPage, pageCount, pagedItems } = useDataSheetPaging<T>({
     page: () => local.page,
     onPageChange: () => local.onPageChange,
-    itemsPerPage: () => local.itemsPerPage,
+    pageSize: () => local.pageSize,
     totalPageCount: () => local.totalPageCount,
     items: () => local.items,
     sortedItems,
@@ -271,7 +271,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   } = useDataSheetFixedColumns<T>(
     {
       get itemChildren() { return local.itemChildren; },
-      get selectMode() { return local.selectMode; },
+      get selectionMode() { return local.selectionMode; },
       get onItemsReorder() { return local.onItemsReorder; },
     },
     effectiveColumns,
@@ -379,8 +379,8 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
 
   // #region Selection
   const {
-    selectedItems,
-    setSelectedItems,
+    selection,
+    setSelection,
     getItemSelectable,
     toggleSelect,
     toggleSelectAll,
@@ -389,9 +389,9 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     setLastClickedRow,
   } = useDataSheetSelection<T>(
     {
-      get selectMode() { return local.selectMode; },
-      get selectedItems() { return local.selectedItems; },
-      get onSelectedItemsChange() { return local.onSelectedItemsChange; },
+      get selectionMode() { return local.selectionMode; },
+      get selection() { return local.selection; },
+      get onSelectionChange() { return local.onSelectionChange; },
       get itemSelectable() { return local.itemSelectable; },
     },
     displayItems,
@@ -400,11 +400,11 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   // #region AutoSelect
   function selectItem(item: T): void {
     if (getItemSelectable(item) !== true) return;
-    if (local.selectMode === "single") {
-      setSelectedItems([item]);
+    if (local.selectionMode === "single") {
+      setSelection([item]);
     } else {
-      if (!selectedItems().includes(item)) {
-        setSelectedItems([...selectedItems(), item]);
+      if (!selection().includes(item)) {
+        setSelection([...selection(), item]);
       }
     }
   }
@@ -475,7 +475,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     <ColumnsProvider>
       {local.children}
     <div
-      data-sheet={local.persistKey ?? ""}
+      data-sheet={local.storageKey ?? ""}
       class={twMerge(
         "flex flex-col",
         local.inset ? insetContainerClass : defaultContainerClass,
@@ -588,7 +588,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                       }}
                       ref={registerSelectColRef}
                     >
-                      <Show when={local.selectMode === "multiple"}>
+                      <Show when={local.selectionMode === "multiple"}>
                         <div class={featureCellClickableClass} onClick={() => toggleSelectAll()}>
                           <Checkbox
                             value={(() => {
@@ -597,7 +597,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                                 .filter((item) => getItemSelectable(item) === true);
                               return (
                                 selectableItems.length > 0 &&
-                                selectableItems.every((item) => selectedItems().includes(item))
+                                selectableItems.every((item) => selection().includes(item))
                               );
                             })()}
                             inset
@@ -812,7 +812,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
             <For each={displayItems()}>
               {(flat) => (
                 <tr
-                  data-selected={selectedItems().includes(flat.item) ? "" : undefined}
+                  data-selected={selection().includes(flat.item) ? "" : undefined}
                   onClick={() => {
                     if (local.autoSelect === "click") {
                       selectItem(flat.item);
@@ -862,7 +862,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                   <Show when={hasSelectFeature()}>
                     {(() => {
                       const selectable = () => getItemSelectable(flat.item);
-                      const isSelected = () => selectedItems().includes(flat.item);
+                      const isSelected = () => selection().includes(flat.item);
                       const rowIndex = () => flat.row;
 
                       return (
@@ -878,7 +878,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
                           }}
                         >
                           <Show
-                            when={local.selectMode === "multiple"}
+                            when={local.selectionMode === "multiple"}
                             fallback={
                               /* single mode */
                               <Show when={selectable() === true}>

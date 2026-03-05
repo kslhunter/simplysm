@@ -4,7 +4,7 @@ import type { DataSheetColumnDef } from "../types";
 
 export interface UseDataSheetFixedColumnsProps<TItem> {
   itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
-  selectMode?: "single" | "multiple";
+  selectionMode?: "single" | "multiple";
   onItemsReorder?: (event: any) => void;
 }
 
@@ -14,7 +14,7 @@ export function useDataSheetFixedColumns<TItem>(
 ) {
   // Feature column presence checks
   const hasExpandFeature = () => props.itemChildren != null;
-  const hasSelectFeature = () => props.selectMode != null;
+  const hasSelectFeature = () => props.selectionMode != null;
   const hasReorderFeature = () => props.onItemsReorder != null;
 
   // Feature column width tracking helper

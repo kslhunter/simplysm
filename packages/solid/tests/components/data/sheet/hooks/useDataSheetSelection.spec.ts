@@ -32,19 +32,19 @@ describe("useDataSheetSelection", () => {
     createRoot(() => {
       const result = useDataSheetSelection({}, () => createTestFlatItems(testItems));
 
-      expect(result.selectedItems()).toEqual([]);
+      expect(result.selection()).toEqual([]);
     });
   });
 
   it("should initialize with provided selected items", () => {
     createRoot(() => {
-      const selectedItems = [testItems[0]];
+      const selection = [testItems[0]];
       const result = useDataSheetSelection(
-        { selectedItems },
+        { selection },
         () => createTestFlatItems(testItems),
       );
 
-      expect(result.selectedItems()).toEqual(selectedItems);
+      expect(result.selection()).toEqual(selection);
     });
   });
 
@@ -83,52 +83,52 @@ describe("useDataSheetSelection", () => {
   it("toggleSelect should add item in multiple mode", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
       result.toggleSelect(testItems[0]);
 
-      expect(result.selectedItems()).toContain(testItems[0]);
+      expect(result.selection()).toContain(testItems[0]);
     });
   });
 
   it("toggleSelect should remove item in multiple mode", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple", selectedItems: [testItems[0]] },
+        { selectionMode: "multiple", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
 
       result.toggleSelect(testItems[0]);
 
-      expect(result.selectedItems()).not.toContain(testItems[0]);
+      expect(result.selection()).not.toContain(testItems[0]);
     });
   });
 
   it("toggleSelect should replace selection in single mode", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "single", selectedItems: [testItems[0]] },
+        { selectionMode: "single", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
 
       result.toggleSelect(testItems[1]);
 
-      expect(result.selectedItems()).toEqual([testItems[1]]);
+      expect(result.selection()).toEqual([testItems[1]]);
     });
   });
 
   it("toggleSelect should deselect in single mode when toggling selected item", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "single", selectedItems: [testItems[0]] },
+        { selectionMode: "single", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
 
       result.toggleSelect(testItems[0]);
 
-      expect(result.selectedItems()).toEqual([]);
+      expect(result.selection()).toEqual([]);
     });
   });
 
@@ -142,14 +142,14 @@ describe("useDataSheetSelection", () => {
 
       result.toggleSelect(testItems[2]);
 
-      expect(result.selectedItems()).not.toContain(testItems[2]);
+      expect(result.selection()).not.toContain(testItems[2]);
     });
   });
 
   it("toggleSelect should update lastClickAction to 'select' when selecting", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
@@ -162,7 +162,7 @@ describe("useDataSheetSelection", () => {
   it("toggleSelect should update lastClickAction to 'deselect' when deselecting", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple", selectedItems: [testItems[0]] },
+        { selectionMode: "multiple", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
 
@@ -183,7 +183,7 @@ describe("useDataSheetSelection", () => {
       result.toggleSelectAll();
 
       const selectableItems = testItems.filter((i) => i.selectable !== false);
-      expect(result.selectedItems()).toEqual(selectableItems);
+      expect(result.selection()).toEqual(selectableItems);
     });
   });
 
@@ -192,13 +192,13 @@ describe("useDataSheetSelection", () => {
       const itemSelectable = (item: TestItem) => item.selectable !== false;
       const selectableItems = testItems.filter((i) => i.selectable !== false);
       const result = useDataSheetSelection(
-        { itemSelectable, selectedItems: selectableItems },
+        { itemSelectable, selection: selectableItems },
         () => createTestFlatItems(testItems),
       );
 
       result.toggleSelectAll();
 
-      expect(result.selectedItems()).toEqual([]);
+      expect(result.selection()).toEqual([]);
     });
   });
 
@@ -212,27 +212,27 @@ describe("useDataSheetSelection", () => {
 
       result.toggleSelectAll();
 
-      expect(result.selectedItems()).not.toContain(testItems[2]);
+      expect(result.selection()).not.toContain(testItems[2]);
     });
   });
 
   it("rangeSelect should do nothing if lastClickedRow is null", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
       result.rangeSelect(2);
 
-      expect(result.selectedItems()).toEqual([]);
+      expect(result.selection()).toEqual([]);
     });
   });
 
   it("rangeSelect should select items in range when lastClickAction is 'select'", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
@@ -240,17 +240,17 @@ describe("useDataSheetSelection", () => {
       result.setLastClickAction("select");
       result.rangeSelect(2);
 
-      expect(result.selectedItems().length).toBe(3);
-      expect(result.selectedItems()).toContain(testItems[0]);
-      expect(result.selectedItems()).toContain(testItems[1]);
-      expect(result.selectedItems()).toContain(testItems[2]);
+      expect(result.selection().length).toBe(3);
+      expect(result.selection()).toContain(testItems[0]);
+      expect(result.selection()).toContain(testItems[1]);
+      expect(result.selection()).toContain(testItems[2]);
     });
   });
 
   it("rangeSelect should select items in reverse range", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
@@ -258,17 +258,17 @@ describe("useDataSheetSelection", () => {
       result.setLastClickAction("select");
       result.rangeSelect(0);
 
-      expect(result.selectedItems().length).toBe(3);
-      expect(result.selectedItems()).toContain(testItems[0]);
-      expect(result.selectedItems()).toContain(testItems[1]);
-      expect(result.selectedItems()).toContain(testItems[2]);
+      expect(result.selection().length).toBe(3);
+      expect(result.selection()).toContain(testItems[0]);
+      expect(result.selection()).toContain(testItems[1]);
+      expect(result.selection()).toContain(testItems[2]);
     });
   });
 
   it("rangeSelect should deselect items in range when lastClickAction is 'deselect'", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple", selectedItems: testItems },
+        { selectionMode: "multiple", selection: testItems },
         () => createTestFlatItems(testItems),
       );
 
@@ -276,9 +276,9 @@ describe("useDataSheetSelection", () => {
       result.setLastClickAction("deselect");
       result.rangeSelect(2);
 
-      expect(result.selectedItems()).not.toContain(testItems[0]);
-      expect(result.selectedItems()).not.toContain(testItems[1]);
-      expect(result.selectedItems()).toContain(testItems[3]);
+      expect(result.selection()).not.toContain(testItems[0]);
+      expect(result.selection()).not.toContain(testItems[1]);
+      expect(result.selection()).toContain(testItems[3]);
     });
   });
 
@@ -286,7 +286,7 @@ describe("useDataSheetSelection", () => {
     createRoot(() => {
       const itemSelectable = (item: TestItem) => item.selectable !== false;
       const result = useDataSheetSelection(
-        { selectMode: "multiple", itemSelectable },
+        { selectionMode: "multiple", itemSelectable },
         () => createTestFlatItems(testItems),
       );
 
@@ -294,22 +294,22 @@ describe("useDataSheetSelection", () => {
       result.setLastClickAction("select");
       result.rangeSelect(3);
 
-      expect(result.selectedItems()).not.toContain(testItems[2]);
-      expect(result.selectedItems()).toContain(testItems[0]);
-      expect(result.selectedItems()).toContain(testItems[1]);
-      expect(result.selectedItems()).toContain(testItems[3]);
+      expect(result.selection()).not.toContain(testItems[2]);
+      expect(result.selection()).toContain(testItems[0]);
+      expect(result.selection()).toContain(testItems[1]);
+      expect(result.selection()).toContain(testItems[3]);
     });
   });
 
   it("should respect controlled mode with onChange callback", () => {
     createRoot(() => {
       let lastCalledWith: TestItem[] | null = null;
-      const onSelectedItemsChange = (items: TestItem[]) => {
+      const onSelectionChange = (items: TestItem[]) => {
         lastCalledWith = items;
       };
 
       const result = useDataSheetSelection(
-        { selectMode: "multiple", onSelectedItemsChange },
+        { selectionMode: "multiple", onSelectionChange },
         () => createTestFlatItems(testItems),
       );
 
@@ -322,7 +322,7 @@ describe("useDataSheetSelection", () => {
   it("should track last clicked row", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 
@@ -335,7 +335,7 @@ describe("useDataSheetSelection", () => {
   it("should default to 'select' action", () => {
     createRoot(() => {
       const result = useDataSheetSelection(
-        { selectMode: "multiple" },
+        { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
 

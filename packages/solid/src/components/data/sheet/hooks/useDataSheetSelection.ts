@@ -3,15 +3,15 @@ import type { FlatItem } from "../types";
 import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
 export interface UseDataSheetSelectionProps<TItem> {
-  selectMode?: "single" | "multiple";
-  selectedItems?: TItem[];
-  onSelectedItemsChange?: (items: TItem[]) => void;
+  selectionMode?: "single" | "multiple";
+  selection?: TItem[];
+  onSelectionChange?: (items: TItem[]) => void;
   itemSelectable?: (item: TItem) => boolean | string;
 }
 
 export interface UseDataSheetSelectionReturn<TItem> {
-  selectedItems: Accessor<TItem[]>;
-  setSelectedItems: (newValue: TItem[] | ((prev: TItem[]) => TItem[])) => TItem[];
+  selection: Accessor<TItem[]>;
+  setSelection: (newValue: TItem[] | ((prev: TItem[]) => TItem[])) => TItem[];
   getItemSelectable: (item: TItem) => boolean | string;
   toggleSelect: (item: TItem) => void;
   toggleSelectAll: () => void;
@@ -26,9 +26,9 @@ export function useDataSheetSelection<TItem>(
   props: UseDataSheetSelectionProps<TItem>,
   displayItems: Accessor<FlatItem<TItem>[]>,
 ): UseDataSheetSelectionReturn<TItem> {
-  const [selectedItems, setSelectedItems] = createControllableSignal({
-    value: () => props.selectedItems ?? [],
-    onChange: () => props.onSelectedItemsChange,
+  const [selection, setSelection] = createControllableSignal({
+    value: () => props.selection ?? [],
+    onChange: () => props.onSelectionChange,
   });
 
   const [lastClickedRow, setLastClickedRow] = createSignal<number | null>(null);
@@ -41,14 +41,14 @@ export function useDataSheetSelection<TItem>(
 
   function toggleSelect(item: TItem): void {
     if (getItemSelectable(item) !== true) return;
-    const isSelected = selectedItems().includes(item);
+    const isSelected = selection().includes(item);
     setLastClickAction(isSelected ? "deselect" : "select");
 
-    if (props.selectMode === "single") {
-      setSelectedItems(isSelected ? [] : [item]);
+    if (props.selectionMode === "single") {
+      setSelection(isSelected ? [] : [item]);
     } else {
-      setSelectedItems(
-        isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item],
+      setSelection(
+        isSelected ? selection().filter((i) => i !== item) : [...selection(), item],
       );
     }
   }
@@ -57,8 +57,8 @@ export function useDataSheetSelection<TItem>(
     const selectableItems = displayItems()
       .map((flat) => flat.item)
       .filter((item) => getItemSelectable(item) === true);
-    const isAllSelected = selectableItems.every((item) => selectedItems().includes(item));
-    setSelectedItems(isAllSelected ? [] : selectableItems);
+    const isAllSelected = selectableItems.every((item) => selection().includes(item));
+    setSelection(isAllSelected ? [] : selectableItems);
   }
 
   function rangeSelect(targetRow: number): void {
@@ -74,19 +74,19 @@ export function useDataSheetSelection<TItem>(
       .filter((item) => getItemSelectable(item) === true);
 
     if (lastClickAction() === "select") {
-      const newItems = [...selectedItems()];
+      const newItems = [...selection()];
       for (const item of rangeItems) {
         if (!newItems.includes(item)) newItems.push(item);
       }
-      setSelectedItems(newItems);
+      setSelection(newItems);
     } else {
-      setSelectedItems(selectedItems().filter((item) => !rangeItems.includes(item)));
+      setSelection(selection().filter((item) => !rangeItems.includes(item)));
     }
   }
 
   return {
-    selectedItems,
-    setSelectedItems,
+    selection,
+    setSelection,
     getItemSelectable,
     toggleSelect,
     toggleSelectAll,

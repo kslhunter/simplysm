@@ -4,7 +4,7 @@ export interface DataSheetProps<TItem> {
   // Data
   items?: TItem[];
   // Config
-  persistKey?: string;
+  storageKey?: string;
   hideConfigBar?: boolean;
   inset?: boolean;
   contentStyle?: JSX.CSSProperties | string;
@@ -18,13 +18,13 @@ export interface DataSheetProps<TItem> {
   page?: number;
   onPageChange?: (page: number) => void;
   totalPageCount?: number;
-  itemsPerPage?: number;
+  pageSize?: number;
   displayPageCount?: number;
 
   // Selection
-  selectMode?: "single" | "multiple";
-  selectedItems?: TItem[];
-  onSelectedItemsChange?: (items: TItem[]) => void;
+  selectionMode?: "single" | "multiple";
+  selection?: TItem[];
+  onSelectionChange?: (items: TItem[]) => void;
   autoSelect?: "click";
   itemSelectable?: (item: TItem) => boolean | string;
 

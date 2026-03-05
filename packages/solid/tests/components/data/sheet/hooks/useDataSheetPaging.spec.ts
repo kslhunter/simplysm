@@ -21,7 +21,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(undefined);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(undefined);
+      const [pageSize] = createSignal<number | undefined>(undefined);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -29,7 +29,7 @@ describe("useDataSheetPaging", () => {
       const { currentPage } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -39,11 +39,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("calculates pageCount from itemsPerPage and items length", () => {
+  it("calculates pageCount from pageSize and items length", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -51,7 +51,7 @@ describe("useDataSheetPaging", () => {
       const { pageCount } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -62,11 +62,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("returns totalPageCount when itemsPerPage is not set", () => {
+  it("returns totalPageCount when pageSize is not set", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(undefined);
+      const [pageSize] = createSignal<number | undefined>(undefined);
       const [totalPageCount] = createSignal<number | undefined>(5);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -74,7 +74,7 @@ describe("useDataSheetPaging", () => {
       const { pageCount } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -88,7 +88,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>([]);
       const [sortedItems] = createSignal<TestItem[]>([]);
@@ -96,7 +96,7 @@ describe("useDataSheetPaging", () => {
       const { pageCount } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -106,11 +106,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("returns pageCount 0 when itemsPerPage is 0", () => {
+  it("returns pageCount 0 when pageSize is 0", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(0);
+      const [pageSize] = createSignal<number | undefined>(0);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -118,7 +118,7 @@ describe("useDataSheetPaging", () => {
       const { pageCount } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -132,7 +132,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(2);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -140,7 +140,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -155,11 +155,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("returns all sortedItems when itemsPerPage is not set", () => {
+  it("returns all sortedItems when pageSize is not set", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(undefined);
+      const [pageSize] = createSignal<number | undefined>(undefined);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -167,7 +167,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -177,11 +177,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("returns all sortedItems when itemsPerPage is 0", () => {
+  it("returns all sortedItems when pageSize is 0", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(0);
+      const [pageSize] = createSignal<number | undefined>(0);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -189,7 +189,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -203,7 +203,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>([]);
       const [sortedItems] = createSignal<TestItem[]>([]);
@@ -211,7 +211,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -225,7 +225,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(-5);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -233,7 +233,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -252,7 +252,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(0);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -260,7 +260,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -275,11 +275,11 @@ describe("useDataSheetPaging", () => {
     });
   });
 
-  it("handles last page with fewer items than itemsPerPage", () => {
+  it("handles last page with fewer items than pageSize", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(3);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -287,7 +287,7 @@ describe("useDataSheetPaging", () => {
       const { pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -306,7 +306,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page, _setPage] = createSignal<number | undefined>(1);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -314,7 +314,7 @@ describe("useDataSheetPaging", () => {
       const { setCurrentPage, pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
@@ -337,7 +337,7 @@ describe("useDataSheetPaging", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(2);
       const [onPageChange] = createSignal<((page: number) => void) | undefined>(undefined);
-      const [itemsPerPage] = createSignal<number | undefined>(2);
+      const [pageSize] = createSignal<number | undefined>(2);
       const [totalPageCount] = createSignal<number | undefined>(undefined);
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
@@ -345,7 +345,7 @@ describe("useDataSheetPaging", () => {
       const { setCurrentPage, pagedItems } = useDataSheetPaging({
         page,
         onPageChange,
-        itemsPerPage,
+        pageSize,
         totalPageCount,
         items,
         sortedItems,
