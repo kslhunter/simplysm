@@ -519,13 +519,28 @@ export class DevOrchestrator {
       serverRuntimePromises.set(name, { promise, resolver });
     }
 
+    // Track first build state per server
+    const isFirstBuild = new Map<string, boolean>(
+      this._serverPackages.map(({ name }) => [name, true])
+    );
+
+    // Helper to encapsulate result + promise resolution pattern
+    const resolveServerStep = (serverName: string, resultKey: string, result: BuildResult): void => {
+      this._results.set(resultKey, result);
+      if (isFirstBuild.get(serverName)) {
+        isFirstBuild.set(serverName, false);
+        serverRuntimePromises.get(serverName)?.resolver();
+      }
+      const updatedBuild = this._serverBuildWorkers.get(serverName)!;
+      updatedBuild.buildResolver();
+    };
+
     // Register Server Build Worker event handlers
     for (const { name } of this._serverPackages) {
       const serverBuild = this._serverBuildWorkers.get(name)!;
-      let isFirstBuild = true;
 
       serverBuild.worker.on("buildStart", () => {
-        if (!isFirstBuild) {
+        if (!isFirstBuild.get(name)) {
           // Register with RebuildManager on rebuild
           const resolver = this._rebuildManager.registerBuild(`${name}:server`, `${name} (server)`);
           this._serverBuildWorkers.set(name, {
@@ -545,162 +560,47 @@ export class DevOrchestrator {
         }
 
         if (!event.success) {
-          this._results.set(`${name}:build`, {
+          resolveServerStep(name, `${name}:build`, {
             name,
             target: "server",
             type: "build",
             status: "error",
             message: event.errors?.join("\n"),
           });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(name)?.resolver();
-          }
-          this._serverBuildWorkers.get(name)!.buildResolver();
           return;
         }
 
         // Start runtime worker on build success (separate async function to prevent error propagation)
-        void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
+        void this._startServerRuntime(
+          name,
+          event.mainJsPath,
+          serverRuntimeWorkerPath,
+          serverRuntimePromises,
+          resolveServerStep,
+          viteClientReadyPromises,
+        ).catch((err: unknown) => {
           const message = errNs.message(err);
           this._logger.error(`[${name}] Error starting Server Runtime:`, message);
 
-          this._results.set(`${name}:server`, {
+          resolveServerStep(name, `${name}:server`, {
             name,
             target: "server",
             type: "server",
             status: "error",
             message,
           });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(name)?.resolver();
-          }
-          const updatedBuild = this._serverBuildWorkers.get(name)!;
-          updatedBuild.buildResolver();
         });
       });
 
-      /**
-       * Start server runtime worker.
-       * Separated as a dedicated function to catch errors from async event handlers.
-       */
-      const startServerRuntime = async (serverName: string, mainJsPath: string): Promise<void> => {
-        this._logger.debug(`[${serverName}] startServerRuntime: ${mainJsPath}`);
-        const updatedBuild = this._serverBuildWorkers.get(serverName)!;
-        updatedBuild.mainJsPath = mainJsPath;
-
-        // Terminate existing Server Runtime Worker
-        const existingRuntime = this._serverRuntimeWorkers.get(serverName);
-        if (existingRuntime != null) {
-          this._logger.info(`[${serverName}] Restarting server...`);
-          await existingRuntime.terminate();
-        }
-
-        // Create and start new Server Runtime Worker
-        const runtimeWorker =
-          Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
-        this._serverRuntimeWorkers.set(serverName, runtimeWorker);
-
-        // Wait for Vite servers of clients connected to this server to be ready
-        const connectedClients = this._serverClientsMap.get(serverName) ?? [];
-        const clientReadyPromises = connectedClients
-          .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
-          .filter((p): p is Promise<void> => p != null);
-        this._logger.debug(
-          `[${serverName}] Waiting for clients: ${String(clientReadyPromises.length)} total`,
-        );
-        if (clientReadyPromises.length > 0) {
-          await Promise.all(clientReadyPromises);
-        }
-
-        // Collect client ports for this server
-        const serverClientPorts: Record<string, number> = {};
-        for (const clientName of connectedClients) {
-          if (clientName in this._clientPorts) {
-            serverClientPorts[clientName] = this._clientPorts[clientName];
-          }
-        }
-
-        // Server Runtime event handlers
-        runtimeWorker.on("serverReady", (readyData) => {
-          const readyEvent = readyData as ServerReadyEventData;
-          this._results.set(`${serverName}:server`, {
-            name: serverName,
-            target: "server",
-            type: "server",
-            status: "running",
-            port: readyEvent.port,
-          });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(serverName)?.resolver();
-          }
-          updatedBuild.buildResolver();
-        });
-
-        runtimeWorker.on("error", (errorData) => {
-          const errorEvent = errorData as ErrorEventData;
-          this._results.set(`${serverName}:server`, {
-            name: serverName,
-            target: "server",
-            type: "server",
-            status: "error",
-            message: errorEvent.message,
-          });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(serverName)?.resolver();
-          }
-          updatedBuild.buildResolver();
-        });
-
-        // Start Server Runtime
-        // If worker crashes, it terminates without emitting "serverReady"/"error" events,
-        // so catch promise rejection to prevent hanging
-        runtimeWorker
-          .start({
-            mainJsPath,
-            clientPorts: serverClientPorts,
-          })
-          .catch((err: unknown) => {
-            const message = errNs.message(err);
-            this._logger.error(`[${serverName}] Server Runtime Worker crashed:`, message);
-
-            this._results.set(`${serverName}:server`, {
-              name: serverName,
-              target: "server",
-              type: "server",
-              status: "error",
-              message,
-            });
-
-            if (isFirstBuild) {
-              isFirstBuild = false;
-              serverRuntimePromises.get(serverName)?.resolver();
-            }
-            updatedBuild.buildResolver();
-          });
-      };
-
       serverBuild.worker.on("error", (data) => {
         const event = data as ErrorEventData;
-        this._results.set(`${name}:build`, {
+        resolveServerStep(name, `${name}:build`, {
           name,
           target: "server",
           type: "build",
           status: "error",
           message: event.message,
         });
-        if (isFirstBuild) {
-          isFirstBuild = false;
-          serverRuntimePromises.get(name)?.resolver();
-        }
-        this._serverBuildWorkers.get(name)!.buildResolver();
       });
     }
 
@@ -735,6 +635,98 @@ export class DevOrchestrator {
       name: `${name} (server)`,
       promise: serverRuntimePromises.get(name)?.promise ?? Promise.resolve(),
     }));
+  }
+
+  /**
+   * Start server runtime worker.
+   * Separated as a dedicated method to catch errors from async event handlers.
+   */
+  private async _startServerRuntime(
+    serverName: string,
+    mainJsPath: string,
+    serverRuntimeWorkerPath: string,
+    serverRuntimePromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
+    resolveServerStep: (serverName: string, resultKey: string, result: BuildResult) => void,
+    viteClientReadyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
+  ): Promise<void> {
+    this._logger.debug(`[${serverName}] _startServerRuntime: ${mainJsPath}`);
+    const updatedBuild = this._serverBuildWorkers.get(serverName)!;
+    updatedBuild.mainJsPath = mainJsPath;
+
+    // Terminate existing Server Runtime Worker
+    const existingRuntime = this._serverRuntimeWorkers.get(serverName);
+    if (existingRuntime != null) {
+      this._logger.info(`[${serverName}] Restarting server...`);
+      await existingRuntime.terminate();
+    }
+
+    // Create and start new Server Runtime Worker
+    const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
+    this._serverRuntimeWorkers.set(serverName, runtimeWorker);
+
+    // Wait for Vite servers of clients connected to this server to be ready
+    const connectedClients = this._serverClientsMap.get(serverName) ?? [];
+    const clientReadyPromises = connectedClients
+      .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
+      .filter((p): p is Promise<void> => p != null);
+    this._logger.debug(
+      `[${serverName}] Waiting for clients: ${String(clientReadyPromises.length)} total`,
+    );
+    if (clientReadyPromises.length > 0) {
+      await Promise.all(clientReadyPromises);
+    }
+
+    // Collect client ports for this server
+    const serverClientPorts: Record<string, number> = {};
+    for (const clientName of connectedClients) {
+      if (clientName in this._clientPorts) {
+        serverClientPorts[clientName] = this._clientPorts[clientName];
+      }
+    }
+
+    // Server Runtime event handlers
+    runtimeWorker.on("serverReady", (readyData) => {
+      const readyEvent = readyData as ServerReadyEventData;
+      resolveServerStep(serverName, `${serverName}:server`, {
+        name: serverName,
+        target: "server",
+        type: "server",
+        status: "running",
+        port: readyEvent.port,
+      });
+    });
+
+    runtimeWorker.on("error", (errorData) => {
+      const errorEvent = errorData as ErrorEventData;
+      resolveServerStep(serverName, `${serverName}:server`, {
+        name: serverName,
+        target: "server",
+        type: "server",
+        status: "error",
+        message: errorEvent.message,
+      });
+    });
+
+    // Start Server Runtime
+    // If worker crashes, it terminates without emitting "serverReady"/"error" events,
+    // so catch promise rejection to prevent hanging
+    runtimeWorker
+      .start({
+        mainJsPath,
+        clientPorts: serverClientPorts,
+      })
+      .catch((err: unknown) => {
+        const message = errNs.message(err);
+        this._logger.error(`[${serverName}] Server Runtime Worker crashed:`, message);
+
+        resolveServerStep(serverName, `${serverName}:server`, {
+          name: serverName,
+          target: "server",
+          type: "server",
+          status: "error",
+          message,
+        });
+      });
   }
 
   /**
