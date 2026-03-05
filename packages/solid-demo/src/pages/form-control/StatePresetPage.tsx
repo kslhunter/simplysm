@@ -23,7 +23,7 @@ export default function StatePresetPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Save/Restore Filter State</h3>
             <StatePreset<FilterState>
-              presetKey="demo-filter"
+              storageKey="demo-filter"
               value={filter()}
               onValueChange={setFilter}
             />
@@ -77,7 +77,7 @@ export default function StatePresetPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">sm</h3>
             <StatePreset<FilterState>
-              presetKey="demo-filter-sm"
+              storageKey="demo-filter-sm"
               value={filter()}
               onValueChange={setFilter}
               size="sm"
@@ -86,7 +86,7 @@ export default function StatePresetPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Default (md)</h3>
             <StatePreset<FilterState>
-              presetKey="demo-filter-md"
+              storageKey="demo-filter-md"
               value={filter()}
               onValueChange={setFilter}
             />
@@ -94,7 +94,7 @@ export default function StatePresetPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">lg</h3>
             <StatePreset<FilterState>
-              presetKey="demo-filter-lg"
+              storageKey="demo-filter-lg"
               value={filter()}
               onValueChange={setFilter}
               size="lg"

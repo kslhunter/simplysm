@@ -36,7 +36,7 @@ export interface DataSelectDialogResult<TKey> {
 /** Base props for select dialog components (injected by DataSelectButton/SharedDataSelect + DialogProvider) */
 export interface SelectDialogBaseProps<TKey = string | number> {
   close?: (result?: DataSelectDialogResult<TKey>) => void;
-  selectMode: "single" | "multiple";
+  selectionMode: "single" | "multiple";
   selectedKeys: TKey[];
 }
 
@@ -193,7 +193,7 @@ export function DataSelectButton<
       local.dialog,
       {
         ...((local as any).dialogProps ?? {}),
-        selectMode: local.multiple ? "multiple" : "single",
+        selectionMode: local.multiple ? "multiple" : "single",
         selectedKeys: normalizeKeys(getValue()) as (string | number)[],
       },
       local.dialogOptions,

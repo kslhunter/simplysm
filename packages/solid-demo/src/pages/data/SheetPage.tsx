@@ -162,7 +162,7 @@ export default function SheetPage() {
       {/* Basic table */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Table</h2>
-        <DataSheet items={users} persistKey="basic">
+        <DataSheet items={users} storageKey="basic">
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
             {(ctx) => ctx.item.name}
           </DataSheet.Column>
@@ -181,7 +181,7 @@ export default function SheetPage() {
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Pass an array to the header prop to create multi-level headers. Same group names are automatically merged.
         </p>
-        <DataSheet items={users} persistKey="multi-header">
+        <DataSheet items={users} storageKey="multi-header">
           <DataSheet.Column<User> key="name" header={["Basic Info", "Name"]} class="px-2 py-1">
             {(ctx) => ctx.item.name}
           </DataSheet.Column>
@@ -203,7 +203,7 @@ export default function SheetPage() {
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Add a summary row using the summary prop. It is placed within thead and remains fixed at the top when scrolling.
         </p>
-        <DataSheet items={users} persistKey="summary">
+        <DataSheet items={users} storageKey="summary">
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
             {(ctx) => ctx.item.name}
           </DataSheet.Column>
@@ -226,7 +226,7 @@ export default function SheetPage() {
         </p>
         <DataSheet
           items={users}
-          persistKey="sorting"
+          storageKey="sorting"
           sorts={sorts()}
           onSortsChange={setSorts}
           autoSort
@@ -255,12 +255,12 @@ export default function SheetPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Pagination</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Setting itemsPerPage automatically displays pagination.
+          Setting pageSize automatically displays pagination.
         </p>
         <DataSheet
           items={users}
-          persistKey="paging"
-          itemsPerPage={2}
+          storageKey="paging"
+          pageSize={2}
           page={page()}
           onPageChange={setPage}
         >
@@ -284,7 +284,7 @@ export default function SheetPage() {
         </p>
         <DataSheet
           items={categories}
-          persistKey="tree"
+          storageKey="tree"
           itemChildren={(item) => item.children}
           expandedItems={expanded()}
           onExpandedItemsChange={setExpanded}
@@ -307,7 +307,7 @@ export default function SheetPage() {
           Fixed columns remain on the left when scrolling. Drag the right edge of header to resize, double-click to reset.
         </p>
         <div>
-          <DataSheet items={users} persistKey="fixed-resize">
+          <DataSheet items={users} storageKey="fixed-resize">
             <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1 font-medium" fixed>
               {(ctx) => ctx.item.name}
             </DataSheet.Column>
@@ -330,7 +330,7 @@ export default function SheetPage() {
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Use inset components to edit directly within cells.
         </p>
-        <DataSheet items={editUsers} persistKey="cell-edit">
+        <DataSheet items={editUsers} storageKey="cell-edit">
           <DataSheet.Column<User> key="name" header="Name">
             {(ctx) => (
               <TextInput
@@ -439,14 +439,14 @@ export default function SheetPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Multiple Selection</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          selectMode="multiple" for checkbox-based multi-select. Shift+Click for range selection.
+          selectionMode="multiple" for checkbox-based multi-select. Shift+Click for range selection.
         </p>
         <DataSheet
           items={users}
-          persistKey="select-multi"
-          selectMode="multiple"
-          selectedItems={multiSelected()}
-          onSelectedItemsChange={setMultiSelected}
+          storageKey="select-multi"
+          selectionMode="multiple"
+          selection={multiSelected()}
+          onSelectionChange={setMultiSelected}
         >
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
             {(ctx) => ctx.item.name}
@@ -472,14 +472,14 @@ export default function SheetPage() {
           Single Selection + autoSelect
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          selectMode="single" for arrow icon-based single selection. autoSelect="click" to auto-select on row click.
+          selectionMode="single" for arrow icon-based single selection. autoSelect="click" to auto-select on row click.
         </p>
         <DataSheet
           items={users}
-          persistKey="select-single"
-          selectMode="single"
-          selectedItems={singleSelected()}
-          onSelectedItemsChange={setSingleSelected}
+          storageKey="select-single"
+          selectionMode="single"
+          selection={singleSelected()}
+          onSelectionChange={setSingleSelected}
           autoSelect="click"
         >
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
@@ -508,10 +508,10 @@ export default function SheetPage() {
         </p>
         <DataSheet
           items={users}
-          persistKey="select-disabled"
-          selectMode="multiple"
-          selectedItems={disabledSelected()}
-          onSelectedItemsChange={setDisabledSelected}
+          storageKey="select-disabled"
+          selectionMode="multiple"
+          selection={disabledSelected()}
+          onSelectionChange={setDisabledSelected}
           itemSelectable={(item) => (item.salary >= 4500 ? true : "Salary under 4,500 cannot be selected")}
         >
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
@@ -540,7 +540,7 @@ export default function SheetPage() {
         </p>
         <DataSheet
           items={reorderItems()}
-          persistKey="reorder"
+          storageKey="reorder"
           onItemsReorder={(event) => {
             const items = [...reorderItems()];
             const fromIndex = items.indexOf(event.item);

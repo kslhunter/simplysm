@@ -48,7 +48,7 @@ export interface CrudSheetCellContext<TItem> {
 
 export interface CrudSheetContext<TItem> {
   items(): TItem[];
-  selectedItems(): TItem[];
+  selection(): TItem[];
   page(): number;
   sorts(): SortingDef[];
   busy(): boolean;
@@ -81,7 +81,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
     sorts: SortingDef[],
   ) => Promise<SearchResult<TItem>>;
   getItemKey: (item: TItem) => string | number | undefined;
-  persistKey?: string;
+  storageKey?: string;
   editable?: boolean;
   itemEditable?: (item: TItem) => boolean;
   itemDeletable?: (item: TItem) => boolean;
@@ -93,7 +93,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   items?: TItem[];
   onItemsChange?: (items: TItem[]) => void;
   excel?: ExcelConfig<TItem>;
-  selectMode?: "single" | "multiple";
+  selectionMode?: "single" | "multiple";
   onSelect?: (result: SelectResult<TItem>) => void;
   onSubmitComplete?: () => void;
   hideAutoTools?: boolean;

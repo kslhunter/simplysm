@@ -52,7 +52,7 @@ export function CrudSheetPage() {
         newItem: () => ({ name: "", age: 0, email: "", isDeleted: false }),
         deleteProp: "isDeleted",
       }}
-      persistKey="crud-sheet-demo"
+      storageKey="crud-sheet-demo"
     >
       <CrudSheet.Filter<DemoFilter>>
         {(filter, setFilter) => (

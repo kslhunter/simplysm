@@ -149,7 +149,7 @@ const SharedDataSelectBase = <
       local.dialog as any,
       {
         ...((local as any).dialogProps ?? {}),
-        selectMode: rest.multiple ? "multiple" : "single",
+        selectionMode: rest.multiple ? "multiple" : "single",
         selectedKeys: normalizeKeys(rest.value),
       },
       local.dialogOptions,

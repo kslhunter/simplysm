@@ -69,7 +69,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const [local] = splitProps(props, [
     "search",
     "getItemKey",
-    "persistKey",
+    "storageKey",
     "editable",
     "itemEditable",
     "itemDeletable",
@@ -84,7 +84,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "inlineEdit",
     "dialogEdit",
     "excel",
-    "selectMode",
+    "selectionMode",
     "onSelect",
     "hideAutoTools",
     "close",
@@ -96,7 +96,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const i18n = useI18n();
   const topbarCtx = useContext(TopbarContext);
   const isInDialog = local.close !== undefined;
-  const isSelectMode = () => local.selectMode != null;
+  const isSelectMode = () => local.selectionMode != null;
   const canEdit = () => (isInDialog && isSelectMode() ? false : (local.editable ?? true));
 
   // -- Slot Accessors --
@@ -122,7 +122,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const [busyCount, setBusyCount] = createSignal(0);
   const [ready, setReady] = createSignal(false);
 
-  const [selectedItems, setSelectedItems] = createSignal<TItem[]>([]);
+  const [selection, setSelection] = createSignal<TItem[]>([]);
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string | number>>(new Set());
 
   let formRef: HTMLFormElement | undefined;
@@ -136,13 +136,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     void doRefresh();
   });
 
-  // -- Key-based selection: restore selectedItems when items change --
+  // -- Key-based selection: restore selection when items change --
   createEffect(() => {
     const currentItems = items as unknown as TItem[];
     const keys = selectedKeys();
     if (keys.size === 0) {
-      if (selectedItems().length > 0) {
-        setSelectedItems([]);
+      if (selection().length > 0) {
+        setSelection([]);
       }
       return;
     }
@@ -150,7 +150,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       const key = local.getItemKey(item);
       return key != null && keys.has(key);
     });
-    setSelectedItems(restored);
+    setSelection(restored);
   });
 
   async function doRefresh() {
@@ -269,7 +269,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   async function handleDeleteItems() {
     if (!local.dialogEdit?.deleteItems) return;
-    const result = await local.dialogEdit.deleteItems(selectedItems());
+    const result = await local.dialogEdit.deleteItems(selection());
     if (!result) return;
 
     setBusyCount((c) => c + 1);
@@ -284,7 +284,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   async function handleRestoreItems() {
     if (!local.dialogEdit?.restoreItems) return;
-    const result = await local.dialogEdit.restoreItems(selectedItems());
+    const result = await local.dialogEdit.restoreItems(selection());
     if (!result) return;
 
     setBusyCount((c) => c + 1);
@@ -335,7 +335,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   // -- Select Mode --
-  function handleSelectedItemsChange(newSelectedItems: TItem[]) {
+  function handleSelectionChange(newSelectedItems: TItem[]) {
     // Current page items key Set
     const currentItems = items as unknown as TItem[];
     const currentKeys = new Set<string | number>();
@@ -363,17 +363,17 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     }
 
     setSelectedKeys(merged);
-    setSelectedItems(newSelectedItems);
+    setSelection(newSelectedItems);
   }
 
   function clearSelection() {
     setSelectedKeys(new Set<string | number>());
-    setSelectedItems([]);
+    setSelection([]);
   }
 
   function handleSelectConfirm() {
     local.onSelect?.({
-      items: selectedItems(),
+      items: selection(),
       keys: [...selectedKeys()],
     });
   }
@@ -438,7 +438,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   // -- Context for Tools --
   const ctx: CrudSheetContext<TItem> = {
     items: () => items as unknown as TItem[],
-    selectedItems,
+    selection,
     page,
     sorts,
     busy: () => busyCount() > 0,
@@ -558,8 +558,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   variant="ghost"
                   onClick={handleDeleteItems}
                   disabled={
-                    selectedItems().length === 0 ||
-                    !selectedItems().some(
+                    selection().length === 0 ||
+                    !selection().some(
                       (item) =>
                         (local.itemDeletable?.(item) ?? true) &&
                         !(local.itemDeleted?.(item) ?? false),
@@ -577,8 +577,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   variant="ghost"
                   onClick={handleRestoreItems}
                   disabled={
-                    selectedItems().length === 0 ||
-                    !selectedItems().some((item) => local.itemDeleted?.(item) ?? false)
+                    selection().length === 0 ||
+                    !selection().some((item) => local.itemDeleted?.(item) ?? false)
                   }
                 >
                   <Icon icon={IconTrashOff} class="mr-1" />
@@ -611,23 +611,23 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
           <DataSheet
             class="h-full"
             items={items}
-            persistKey={local.persistKey != null ? `${local.persistKey}-sheet` : undefined}
+            storageKey={local.storageKey != null ? `${local.storageKey}-sheet` : undefined}
             page={totalPageCount() > 0 ? page() : undefined}
             onPageChange={setPage}
             totalPageCount={totalPageCount()}
             sorts={sorts()}
             onSortsChange={setSorts}
             itemSelectable={local.itemSelectable}
-            selectMode={
+            selectionMode={
               isSelectMode()
-                ? local.selectMode
+                ? local.selectionMode
                 : local.dialogEdit?.deleteItems != null || local.dialogEdit?.restoreItems != null
                   ? "multiple"
                   : undefined
             }
-            selectedItems={selectedItems()}
-            onSelectedItemsChange={handleSelectedItemsChange}
-            autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
+            selection={selection()}
+            onSelectionChange={handleSelectionChange}
+            autoSelect={isSelectMode() && local.selectionMode === "single" ? "click" : undefined}
             cellClass={(item) => {
               if (isItemDeleted(item)) {
                 return "line-through";
@@ -745,14 +745,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         <Show when={isInDialog && isSelectMode()}>
           <div class="flex gap-2 border-t p-2">
             <div class="flex-1" />
-            <Show when={selectedItems().length > 0}>
+            <Show when={selection().length > 0}>
               <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-                {local.selectMode === "multiple" ? i18n.t("crudSheet.deselectAll") : i18n.t("crudSheet.deselect")}
+                {local.selectionMode === "multiple" ? i18n.t("crudSheet.deselectAll") : i18n.t("crudSheet.deselect")}
               </Button>
             </Show>
-            <Show when={local.selectMode === "multiple"}>
+            <Show when={local.selectionMode === "multiple"}>
               <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
-                {i18n.t("crudSheet.confirm")} ({selectedItems().length})
+                {i18n.t("crudSheet.confirm")} ({selection().length})
               </Button>
             </Show>
           </div>

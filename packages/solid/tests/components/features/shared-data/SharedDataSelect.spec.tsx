@@ -34,7 +34,7 @@ function createMockAccessor(itemsSignal: Accessor<TestItem[]>): SharedDataAccess
 function TestDialogComponent(props: SelectDialogBaseProps & { confirmKeys: number[] }) {
   return (
     <div data-testid="dialog-content">
-      <div data-testid="select-mode">{props.selectMode}</div>
+      <div data-testid="select-mode">{props.selectionMode}</div>
       <div data-testid="selected-keys">{JSON.stringify([...props.selectedKeys])}</div>
       <button
         data-testid="dialog-confirm"

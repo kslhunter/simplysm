@@ -124,13 +124,13 @@ export default function SheetFullPage() {
     <div class="flex h-full flex-col overflow-hidden p-2">
       <DataSheet
         items={employees}
-        persistKey="full"
+        storageKey="full"
         class="h-full"
         inset
         sorts={sorts()}
         onSortsChange={setSorts}
         autoSort
-        itemsPerPage={20}
+        pageSize={20}
         page={page()}
         onPageChange={setPage}
       >

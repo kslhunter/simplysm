@@ -295,14 +295,14 @@ describe("CrudSheet select mode", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  it("toolbar is hidden when selectMode is set inside Dialog", async () => {
+  it("toolbar is hidden when selectionMode is set inside Dialog", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="single"
+          selectionMode="single"
           onSelect={() => {}}
           close={() => {}}
           inlineEdit={{
@@ -322,14 +322,14 @@ describe("CrudSheet select mode", () => {
     expect(container.textContent).not.toContain("Add Row");
   });
 
-  it("Confirm button is displayed when selectMode='multiple'", async () => {
+  it("Confirm button is displayed when selectionMode='multiple'", async () => {
     render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multiple"
+          selectionMode="multiple"
           onSelect={() => {}}
           close={() => {}}
         >
@@ -413,14 +413,14 @@ describe("CrudSheet dialog mode", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  it("bottom bar is displayed when selectMode='multiple' inside Dialog", async () => {
+  it("bottom bar is displayed when selectionMode='multiple' inside Dialog", async () => {
     render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multiple"
+          selectionMode="multiple"
           onSelect={() => {}}
           close={() => {}}
         >
@@ -438,14 +438,14 @@ describe("CrudSheet dialog mode", () => {
     expect(dialogContent?.textContent).toContain("Confirm");
   });
 
-  it("bottom bar is not displayed when selectMode='multiple' without Dialog", async () => {
+  it("bottom bar is not displayed when selectionMode='multiple' without Dialog", async () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multiple"
+          selectionMode="multiple"
           onSelect={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
