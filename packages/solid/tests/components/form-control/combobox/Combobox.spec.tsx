@@ -1,7 +1,7 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Combobox component", () => {
@@ -131,8 +131,8 @@ describe("Combobox component", () => {
     });
   });
 
-  describe("allowCustomValue", () => {
-    it("allows entering custom value with Enter when allowCustomValue is true", () => {
+  describe("allowsCustomValue", () => {
+    it("allows entering custom value with Enter when allowsCustomValue is true", () => {
       const handleChange = vi.fn();
       const loadItems = vi.fn(() => Promise.resolve([]));
 
@@ -141,7 +141,7 @@ describe("Combobox component", () => {
           <Combobox
             loadItems={loadItems}
             onValueChange={handleChange}
-            allowCustomValue
+            allowsCustomValue
             renderValue={(v) => <>{v}</>}
           />
         </I18nProvider></ConfigProvider>
@@ -163,7 +163,7 @@ describe("Combobox component", () => {
           <Combobox
             loadItems={loadItems}
             onValueChange={handleChange}
-            allowCustomValue
+            allowsCustomValue
             parseCustomValue={(text) => ({ name: text, custom: true })}
             renderValue={(v: { name: string }) => <>{v.name}</>}
           />

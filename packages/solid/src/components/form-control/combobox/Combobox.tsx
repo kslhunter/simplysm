@@ -23,7 +23,7 @@ import { text } from "../../../styles/base.styles";
 import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import {
   listItemBaseClass,
   listItemSelectedClass,
@@ -151,7 +151,7 @@ export interface ComboboxProps<TValue = unknown> {
   debounceMs?: number;
 
   /** Allow custom values */
-  allowCustomValue?: boolean;
+  allowsCustomValue?: boolean;
 
   /** Custom value parsing function */
   parseCustomValue?: (text: string) => TValue;
@@ -229,7 +229,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
     "onValueChange",
     "loadItems",
     "debounceMs",
-    "allowCustomValue",
+    "allowsCustomValue",
     "parseCustomValue",
     "renderValue",
     "disabled",
@@ -341,7 +341,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
     } else if (e.key === "Escape" && open()) {
       e.preventDefault();
       setOpen(false);
-    } else if (e.key === "Enter" && local.allowCustomValue && query().trim() !== "") {
+    } else if (e.key === "Enter" && local.allowsCustomValue && query().trim() !== "") {
       e.preventDefault();
       const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as T);
       selectValue(customValue);
