@@ -1,27 +1,22 @@
 import { WebPlugin } from "@capacitor/core";
-import type { IApkInstallerPlugin, IVersionInfo } from "../IApkInstallerPlugin";
+import type { ApkInstallerPlugin, VersionInfo } from "../ApkInstallerPlugin";
 
-export class ApkInstallerWeb extends WebPlugin implements IApkInstallerPlugin {
+export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
   install(_options: { uri: string }): Promise<void> {
     alert("[ApkInstaller] APK installation is not supported in web environment.");
     return Promise.resolve();
   }
 
-  hasPermission(): Promise<{ granted: boolean }> {
+  checkPermissions(): Promise<{ granted: boolean; manifest: boolean }> {
     // Skip permission check on web
-    return Promise.resolve({ granted: true });
+    return Promise.resolve({ granted: true, manifest: true });
   }
 
-  async requestPermission(): Promise<void> {
+  async requestPermissions(): Promise<void> {
     // No-op on web
   }
 
-  hasPermissionManifest(): Promise<{ declared: boolean }> {
-    // Skip manifest check on web
-    return Promise.resolve({ declared: true });
-  }
-
-  getVersionInfo(): Promise<IVersionInfo> {
+  getVersionInfo(): Promise<VersionInfo> {
     return Promise.resolve({
       versionName:
         (import.meta as unknown as { env?: Record<string, string> }).env?.["__VER__"] ?? "0.0.0",

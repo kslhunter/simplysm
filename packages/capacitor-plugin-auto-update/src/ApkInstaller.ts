@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
-import type { IApkInstallerPlugin, IVersionInfo } from "./IApkInstallerPlugin";
+import type { ApkInstallerPlugin, VersionInfo } from "./ApkInstallerPlugin";
 
-const ApkInstallerPlugin = registerPlugin<IApkInstallerPlugin>("ApkInstaller", {
+const apkInstallerPlugin = registerPlugin<ApkInstallerPlugin>("ApkInstaller", {
   web: async () => {
     const { ApkInstallerWeb } = await import("./web/ApkInstallerWeb");
     return new ApkInstallerWeb();
@@ -15,26 +15,17 @@ const ApkInstallerPlugin = registerPlugin<IApkInstallerPlugin>("ApkInstaller", {
  */
 export abstract class ApkInstaller {
   /**
-   * Check if REQUEST_INSTALL_PACKAGES permission is declared in the manifest
+   * Check permissions (install permission granted + manifest declared)
    */
-  static async hasPermissionManifest(): Promise<boolean> {
-    const result = await ApkInstallerPlugin.hasPermissionManifest();
-    return result.declared;
-  }
-
-  /**
-   * Check if REQUEST_INSTALL_PACKAGES permission is granted
-   */
-  static async hasPermission(): Promise<boolean> {
-    const result = await ApkInstallerPlugin.hasPermission();
-    return result.granted;
+  static async checkPermissions(): Promise<{ granted: boolean; manifest: boolean }> {
+    return apkInstallerPlugin.checkPermissions();
   }
 
   /**
    * Request REQUEST_INSTALL_PACKAGES permission (navigates to settings)
    */
-  static async requestPermission(): Promise<void> {
-    await ApkInstallerPlugin.requestPermission();
+  static async requestPermissions(): Promise<void> {
+    await apkInstallerPlugin.requestPermissions();
   }
 
   /**
@@ -42,13 +33,13 @@ export abstract class ApkInstaller {
    * @param apkUri content:// URI (FileProvider URI)
    */
   static async install(apkUri: string): Promise<void> {
-    await ApkInstallerPlugin.install({ uri: apkUri });
+    await apkInstallerPlugin.install({ uri: apkUri });
   }
 
   /**
    * Get app version info
    */
-  static async getVersionInfo(): Promise<IVersionInfo> {
-    return ApkInstallerPlugin.getVersionInfo();
+  static async getVersionInfo(): Promise<VersionInfo> {
+    return apkInstallerPlugin.getVersionInfo();
   }
 }

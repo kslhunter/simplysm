@@ -52,17 +52,18 @@ export abstract class AutoUpdate {
     }
 
     try {
-      if (!(await ApkInstaller.hasPermissionManifest())) {
+      const { manifest } = await ApkInstaller.checkPermissions();
+      if (!manifest) {
         this._throwAboutReinstall(1, targetHref);
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error("[AutoUpdate] hasPermissionManifest check failed:", err);
+      console.error("[AutoUpdate] checkPermissions manifest check failed:", err);
       this._throwAboutReinstall(2, targetHref);
     }
 
-    const hasPerm = await ApkInstaller.hasPermission();
-    if (!hasPerm) {
+    const { granted } = await ApkInstaller.checkPermissions();
+    if (!granted) {
       log(html`
         Installation permission must be enabled.
         <style>
@@ -71,11 +72,12 @@ export abstract class AutoUpdate {
         </style>
         <button onclick="location.reload()">Retry</button>
       `);
-      await ApkInstaller.requestPermission();
+      await ApkInstaller.requestPermissions();
       // Wait up to 5 minutes (300 seconds) - time for user to grant permission in settings
       await waitUntil(
         async () => {
-          return ApkInstaller.hasPermission();
+          const result = await ApkInstaller.checkPermissions();
+          return result.granted;
         },
         1000,
         300,
@@ -95,7 +97,7 @@ export abstract class AutoUpdate {
       </style>
       <button onclick="location.reload()">Retry</button>
     `);
-    const apkFileUri = await FileSystem.getFileUri(apkFilePath);
+    const apkFileUri = await FileSystem.getUri(apkFilePath);
     await ApkInstaller.install(apkFileUri);
   }
 

@@ -1,4 +1,4 @@
-import type { IFileInfo } from "../IFileSystemPlugin";
+import type { FileInfo } from "../FileSystemPlugin";
 import { IndexedDbStore } from "./IndexedDbStore";
 
 interface FsEntry {
@@ -54,7 +54,7 @@ export class VirtualFileSystem {
    * intermediate paths are treated as directories. e.g., With only "/a/b/c.txt" stored,
    * calling listChildren("/a") returns "b" with isDirectory: true.
    */
-  async listChildren(dirPath: string): Promise<IFileInfo[]> {
+  async listChildren(dirPath: string): Promise<FileInfo[]> {
     const prefix = dirPath === "/" ? "/" : dirPath + "/";
     return this._db.withStore(this._STORE_NAME, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
