@@ -20,7 +20,7 @@ import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
 import { normalizeHeader } from "../../data/sheet/sheetUtils";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";

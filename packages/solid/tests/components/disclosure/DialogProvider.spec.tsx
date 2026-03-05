@@ -1,7 +1,7 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, beforeEach } from "vitest";
 import { DialogProvider, useDialog } from "../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../src/providers/ConfigContext";
 
 // dialog content component for testing

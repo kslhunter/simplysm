@@ -2,7 +2,7 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { NotificationBanner } from "../../../../src/components/feedback/notification/NotificationBanner";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationProvider";
 

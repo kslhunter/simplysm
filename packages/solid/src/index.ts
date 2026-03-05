@@ -105,10 +105,10 @@ export * from "./components/feedback/Progress";
 export * from "./providers/ConfigContext";
 
 // SyncStorage
-export * from "./providers/SyncStorageContext";
+export * from "./providers/SyncStorageProvider";
 
 // Logger
-export * from "./providers/LoggerContext";
+export * from "./providers/LoggerProvider";
 
 // Theme
 export * from "./providers/ThemeContext";
@@ -124,8 +124,8 @@ export * from "./providers/shared-data/SharedDataChangeEvent";
 export * from "./providers/SystemProvider";
 
 // I18n
-export * from "./providers/i18n/I18nContext";
-export * from "./providers/i18n/I18nContext.types";
+export * from "./providers/i18n/I18nProvider";
+export * from "./providers/i18n/I18nProvider.types";
 
 //#endregion
 

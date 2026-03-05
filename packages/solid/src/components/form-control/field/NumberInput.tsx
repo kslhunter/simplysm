@@ -15,7 +15,7 @@ import {
   getFieldWrapperClass,
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { FieldShell } from "./FieldShell";
 import clsx from "clsx";
 
@@ -38,10 +38,10 @@ export interface NumberInputProps {
   onValueChange?: (value: number | undefined) => void;
 
   /** Display thousand separator (default: true) */
-  comma?: boolean;
+  useGrouping?: boolean;
 
   /** Minimum decimal places */
-  minDigits?: number;
+  minimumFractionDigits?: number;
 
   /** Placeholder text */
   placeholder?: string;
@@ -89,24 +89,24 @@ export interface NumberInputProps {
 /**
  * Convert number to display string
  * @param value - Numeric value
- * @param useComma - Whether to use thousand separator
- * @param minDigits - Minimum decimal places
+ * @param useGrouping - Whether to use thousand separator
+ * @param minimumFractionDigits - Minimum decimal places
  * @returns Display string
  */
-function formatNumber(value: number | undefined, useComma: boolean, minDigits?: number): string {
+function formatNumber(value: number | undefined, useGrouping: boolean, minimumFractionDigits?: number): string {
   if (value == null) return "";
 
   let result: string;
 
-  if (minDigits != null && minDigits > 0) {
+  if (minimumFractionDigits != null && minimumFractionDigits > 0) {
     // Check current decimal places
     const valueStr = String(value);
     const decimalIndex = valueStr.indexOf(".");
     const currentDigits = decimalIndex >= 0 ? valueStr.length - decimalIndex - 1 : 0;
 
     // Pad if less than minimum decimal places
-    if (currentDigits < minDigits) {
-      result = value.toFixed(minDigits);
+    if (currentDigits < minimumFractionDigits) {
+      result = value.toFixed(minimumFractionDigits);
     } else {
       result = valueStr;
     }
@@ -114,7 +114,7 @@ function formatNumber(value: number | undefined, useComma: boolean, minDigits?: 
     result = String(value);
   }
 
-  if (useComma) {
+  if (useGrouping) {
     // Separate integer and decimal parts
     const dotIndex = result.indexOf(".");
     const integerPart = dotIndex >= 0 ? result.slice(0, dotIndex) : result;
@@ -176,10 +176,10 @@ interface NumberInputComponent {
  * <NumberInput value={num()} onValueChange={setNum} />
  *
  * // Without thousand separator
- * <NumberInput value={num()} comma={false} />
+ * <NumberInput value={num()} useGrouping={false} />
  *
  * // Specify minimum decimal places
- * <NumberInput value={price()} minDigits={2} />
+ * <NumberInput value={price()} minimumFractionDigits={2} />
  *
  * // Prefix slot
  * <NumberInput value={price()}>
@@ -191,8 +191,8 @@ export const NumberInput: NumberInputComponent = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
-    "comma",
-    "minDigits",
+    "useGrouping",
+    "minimumFractionDigits",
     "placeholder",
     "title",
     "disabled",
@@ -228,7 +228,7 @@ export const NumberInput: NumberInputComponent = (props) => {
   createEffect(() => {
     const val = value();
     if (!isEditing()) {
-      setInputStr(formatNumber(val, local.comma ?? true, local.minDigits));
+      setInputStr(formatNumber(val, local.useGrouping ?? true, local.minimumFractionDigits));
     }
   });
 
@@ -237,7 +237,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     if (isEditing()) {
       return inputStr();
     }
-    return formatNumber(value(), local.comma ?? true, local.minDigits);
+    return formatNumber(value(), local.useGrouping ?? true, local.minimumFractionDigits);
   };
 
   // Input handler
@@ -275,7 +275,7 @@ export const NumberInput: NumberInputComponent = (props) => {
   const handleBlur: JSX.FocusEventHandler<HTMLInputElement, FocusEvent> = () => {
     setIsEditing(false);
     // On blur, apply formatting
-    setInputStr(formatNumber(value(), local.comma ?? true, local.minDigits));
+    setInputStr(formatNumber(value(), local.useGrouping ?? true, local.minimumFractionDigits));
   };
 
   // Wrapper class (exclude local.class in inset branch)
@@ -324,7 +324,7 @@ export const NumberInput: NumberInputComponent = (props) => {
               <span class="shrink-0">{prefix()!.children}</span>
             </Show>
             <PlaceholderFallback
-              value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+              value={formatNumber(value(), local.useGrouping ?? true, local.minimumFractionDigits)}
               placeholder={local.placeholder}
             />
           </>

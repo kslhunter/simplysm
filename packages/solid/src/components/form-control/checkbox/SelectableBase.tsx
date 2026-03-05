@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, Show, splitProps, createMemo } from "so
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import {
   type CheckboxSize,
   checkboxBaseClass,

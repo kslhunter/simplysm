@@ -1,7 +1,7 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect, beforeEach } from "vitest";
 import { FieldShell } from "../../../../src/components/form-control/field/FieldShell";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // Minimal wrapperClass stub — returns a predictable class string.

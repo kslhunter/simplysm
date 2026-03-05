@@ -7,7 +7,7 @@ import {
 import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider";
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/providers/ConfigContext";
-import { I18nProvider } from "../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../src/providers/i18n/I18nProvider";
 
 describe("ServiceClientProvider", () => {
   beforeEach(() => {

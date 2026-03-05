@@ -3,7 +3,7 @@ import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { IconX } from "@tabler/icons-solidjs";
 import { useNotification } from "./NotificationProvider";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { Icon } from "../../display/Icon";
 import { themeTokens } from "../../../styles/theme.styles";
 import { gap } from "../../../styles/control.styles";

@@ -10,7 +10,7 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { FieldShell } from "./FieldShell";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 const [TextInputPrefixSlot, createTextInputPrefixAccessor] = createSlot<{ children: JSX.Element }>();
 export const TextInputPrefix = TextInputPrefixSlot;

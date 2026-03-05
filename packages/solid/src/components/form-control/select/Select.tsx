@@ -29,7 +29,7 @@ import { createSlot } from "../../../helpers/createSlot";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 import { TextInput } from "../field/TextInput";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import {
   listItemBaseClass,
   listItemSelectedClass,

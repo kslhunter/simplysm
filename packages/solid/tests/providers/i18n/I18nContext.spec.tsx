@@ -1,5 +1,5 @@
 import { render, cleanup } from "@solidjs/testing-library";
-import { useI18n, I18nProvider } from "../../../src/providers/i18n/I18nContext";
+import { useI18n, I18nProvider } from "../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../src/providers/ConfigContext";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 

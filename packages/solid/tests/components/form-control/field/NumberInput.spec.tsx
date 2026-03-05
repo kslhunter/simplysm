@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { NumberInput } from "../../../../src/components/form-control/field/NumberInput";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("NumberInput", () => {
@@ -15,7 +15,7 @@ describe("NumberInput", () => {
       render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={12345} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
-      // comma is true by default, so commas are included
+      // useGrouping is true by default, so grouping separators are included
       expect(input).toHaveValue("12,345");
     });
 
@@ -83,36 +83,36 @@ describe("NumberInput", () => {
   });
 
   describe("display format", () => {
-    it("displays thousands comma when comma=true", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={1234567} comma={true} /></I18nProvider></ConfigProvider>);
+    it("displays thousands separator when useGrouping=true", () => {
+      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={1234567} useGrouping={true} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("1,234,567");
     });
 
-    it("displays without comma when comma=false", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={1234567} comma={false} /></I18nProvider></ConfigProvider>);
+    it("displays without separator when useGrouping=false", () => {
+      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={1234567} useGrouping={false} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("1234567");
     });
 
-    it("defaults comma to true", () => {
+    it("defaults useGrouping to true", () => {
       render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={1234567} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("1,234,567");
     });
 
-    it("sets minimum decimal digits with minDigits", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={100} minDigits={2} /></I18nProvider></ConfigProvider>);
+    it("sets minimum decimal digits with minimumFractionDigits", () => {
+      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={100} minimumFractionDigits={2} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("100.00");
     });
 
-    it("displays decimals longer than minDigits as-is", () => {
-      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={100.12345} minDigits={2} /></I18nProvider></ConfigProvider>);
+    it("displays decimals longer than minimumFractionDigits as-is", () => {
+      render(() => <ConfigProvider clientName="test"><I18nProvider><NumberInput value={100.12345} minimumFractionDigits={2} /></I18nProvider></ConfigProvider>);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("100.12345");

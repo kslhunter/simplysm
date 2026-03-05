@@ -16,7 +16,7 @@ import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/Dialog";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { text } from "../../../styles/base.styles";
 import { gap, type ComponentSize } from "../../../styles/control.styles";

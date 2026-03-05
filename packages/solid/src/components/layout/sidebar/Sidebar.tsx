@@ -29,7 +29,7 @@ import { Collapse } from "../../disclosure/Collapse";
 import { Icon } from "../../display/Icon";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 void ripple;
 
@@ -56,23 +56,21 @@ export interface SidebarContextValue {
 
 const SidebarContext = createContext<SidebarContextValue>();
 
-export function useSidebarContext(): SidebarContextValue {
+function _useSidebar(): SidebarContextValue {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error("useSidebarContext can only be used inside SidebarContainer");
+    throw new Error("useSidebar must be used inside SidebarContainer");
   }
   return context;
 }
 
-/**
- * Optionally use SidebarContext (returns undefined if no Context)
- *
- * @remarks
- * Used in components that can be used outside SidebarContainer (e.g., Topbar)
- */
-export function useSidebarContextOptional(): SidebarContextValue | undefined {
+function _useSidebarOptional(): SidebarContextValue | undefined {
   return useContext(SidebarContext);
 }
+
+export const useSidebar = Object.assign(_useSidebar, {
+  optional: _useSidebarOptional,
+});
 
 //#endregion
 
@@ -456,7 +454,7 @@ export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
  * @remarks
  * - Must be used inside SidebarContainer (`position: absolute` dependency)
  * - Reads toggle state from Context to apply open/close animation
- * - Does not include toggle button - controlled externally via useSidebarContext().setToggle
+ * - Does not include toggle button - controlled externally via useSidebar().setToggle
  *
  * @example
  * ```tsx
@@ -477,7 +475,7 @@ interface SidebarComponent extends ParentComponent<SidebarProps> {
 const SidebarInner: ParentComponent<SidebarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
 
-  const { toggle } = useSidebarContext();
+  const { toggle } = useSidebar();
 
   // Detect Tailwind sm: breakpoint
   const isDesktop = createMediaQuery(SM_MEDIA_QUERY);

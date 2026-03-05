@@ -1,7 +1,7 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Kanban } from "../../../../src/components/data/kanban/Kanban";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Kanban selection system", () => {

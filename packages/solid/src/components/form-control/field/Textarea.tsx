@@ -7,7 +7,7 @@ import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { FieldShell } from "./FieldShell";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface TextareaProps {
   /** Input value */

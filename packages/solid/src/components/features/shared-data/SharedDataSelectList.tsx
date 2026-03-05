@@ -5,7 +5,7 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import { List } from "../../data/list/List";
 import { Pagination } from "../../data/Pagination";
 import { TextInput } from "../../form-control/field/TextInput";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { text } from "../../../styles/base.styles";
 import { gap } from "../../../styles/control.styles";
 import { createSlot } from "../../../helpers/createSlot";

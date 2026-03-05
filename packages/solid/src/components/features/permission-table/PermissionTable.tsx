@@ -14,7 +14,7 @@ import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { border } from "../../../styles/base.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 // --- Types ---
 

@@ -2,7 +2,7 @@ import { type Component, createMemo, type JSX, splitProps } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { fieldInputClass, type FieldSize, getFieldWrapperClass } from "./Field.styles";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { FieldShell } from "./FieldShell";
 
 type DatePickerUnit = "year" | "month" | "date";

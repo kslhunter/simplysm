@@ -2,7 +2,7 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { DateOnly } from "@simplysm/core-common";
 import { DateRangePicker } from "../../../../src/components/form-control/date-range-picker/DateRangePicker";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("DateRangePicker component", () => {

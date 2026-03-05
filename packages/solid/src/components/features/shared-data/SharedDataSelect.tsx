@@ -11,7 +11,7 @@ import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDa
 import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { type DialogShowOptions, useDialog } from "../../disclosure/Dialog";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { type ComponentSize } from "../../../styles/control.styles";
 import {
   type DialogPropsField,

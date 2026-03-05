@@ -5,7 +5,7 @@ import {
   createSignal,
   createMemo,
 } from "solid-js";
-import type { I18nContextValue, I18nConfigureOptions, FlatDict } from "./I18nContext.types";
+import type { I18nContextValue, I18nConfigureOptions, FlatDict } from "./I18nProvider.types";
 import { flattenDict, mergeDict, interpolate } from "./i18nUtils";
 import enDict from "./locales/en";
 import koDict from "./locales/ko";

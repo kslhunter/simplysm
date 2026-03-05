@@ -1,6 +1,6 @@
 import { createContext, createMemo, createSignal, type Accessor, type ParentComponent, Show, useContext } from "solid-js";
 import { useLogger } from "../../../hooks/useLogger";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 /** Notification theme */
 export type NotificationTheme = "info" | "success" | "warning" | "danger";

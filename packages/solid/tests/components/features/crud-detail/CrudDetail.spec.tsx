@@ -9,7 +9,7 @@ import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigC
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
 import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/Topbar";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 
 // Helper: extract actions accessor from TopbarContext
 function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {

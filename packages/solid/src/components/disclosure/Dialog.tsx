@@ -22,7 +22,7 @@ import { createMountTransition } from "../../hooks/createMountTransition";
 import { startPointerDrag } from "../../helpers/startPointerDrag";
 import { createSlot } from "../../helpers/createSlot";
 import { mergeStyles } from "../../helpers/mergeStyles";
-import { useI18n } from "../../providers/i18n/I18nContext";
+import { useI18n } from "../../providers/i18n/I18nProvider";
 import { Icon } from "../display/Icon";
 import { bg, border } from "../../styles/base.styles";
 import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";

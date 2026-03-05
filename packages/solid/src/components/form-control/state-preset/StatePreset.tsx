@@ -11,7 +11,7 @@ import { bg, text } from "../../../styles/base.styles";
 import { type ComponentSize, gap, pad } from "../../../styles/control.styles";
 import { themeTokens } from "../../../styles/theme.styles";
 import { Button } from "../Button";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 // ── Types ──
 

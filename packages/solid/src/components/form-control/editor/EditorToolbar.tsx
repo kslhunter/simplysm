@@ -29,7 +29,7 @@ import { Icon } from "../../display/Icon";
 import { border, text } from "../../../styles/base.styles";
 import { gap, pad } from "../../../styles/control.styles";
 import { themeTokens } from "../../../styles/theme.styles";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface EditorToolbarProps {
   editor: Editor;

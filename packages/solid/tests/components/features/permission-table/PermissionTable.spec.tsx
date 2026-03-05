@@ -8,7 +8,7 @@ import {
   changePermCheck,
 } from "../../../../src/components/features/permission-table/PermissionTable";
 import type { AppPerm } from "../../../../src/helpers/createAppStructure";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // --- test data ---

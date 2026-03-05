@@ -2,7 +2,7 @@ import { render, cleanup } from "@solidjs/testing-library";
 import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { createSignal, Show } from "solid-js";
 import { Topbar, createTopbarActions } from "../../../../src";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Topbar.Actions component", () => {

@@ -7,7 +7,7 @@ import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
 import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
 import { gap, type ComponentSize } from "../../../styles/control.styles";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface NumpadProps {
   /** Input value */
@@ -140,7 +140,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
           readonly={props.inputDisabled}
           inset
           class="w-full"
-          comma={false}
+          useGrouping={false}
         />
       </div>
       <Show when={props.useEnterButton}>

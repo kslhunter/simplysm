@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { Time } from "@simplysm/core-common";
 import { TimePicker } from "../../../../src/components/form-control/field/TimePicker";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("TimePicker component", () => {

@@ -7,7 +7,7 @@ import {
 } from "@simplysm/solid";
 import { type SharedDataAccessor } from "../../../../src/providers/shared-data/SharedDataProvider";
 import { DialogProvider } from "../../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 interface TestItem {

@@ -1,6 +1,6 @@
 import { useContext } from "solid-js";
 import { consola } from "consola";
-import { LoggerContext, type LogAdapter } from "../providers/LoggerContext";
+import { LoggerContext, type LogAdapter } from "../providers/LoggerProvider";
 
 type LogLevel = Parameters<LogAdapter["write"]>[0];
 

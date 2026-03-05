@@ -6,7 +6,7 @@ import {
 } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { Invalid } from "../Invalid";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface SelectionGroupBaseProps {
   required?: boolean;

@@ -4,7 +4,7 @@ import { IconSun, IconMoon, IconDeviceDesktop } from "@tabler/icons-solidjs";
 import { useTheme, type ThemeMode } from "../../providers/ThemeContext";
 import { Icon } from "../display/Icon";
 import { Button } from "./Button";
-import { useI18n } from "../../providers/i18n/I18nContext";
+import { useI18n } from "../../providers/i18n/I18nProvider";
 import { type ComponentSize } from "../../styles/control.styles";
 
 const sizeClasses: Record<ComponentSize, string> = {

@@ -13,7 +13,7 @@ import { TextInput } from "../../form-control/field/TextInput";
 import { Button } from "../../form-control/Button";
 import { border } from "../../../styles/base.styles";
 import { pad } from "../../../styles/control.styles";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 interface EditColumnItem {
   key: string;

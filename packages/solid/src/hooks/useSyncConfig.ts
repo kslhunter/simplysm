@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, createEffect, createSignal, untrack } from "solid-js";
 import { useConfig } from "../providers/ConfigContext";
-import { useSyncStorage } from "../providers/SyncStorageContext";
+import { useSyncStorage } from "../providers/SyncStorageProvider";
 
 /**
  * Creates a reactive signal that syncs configuration data to storage.

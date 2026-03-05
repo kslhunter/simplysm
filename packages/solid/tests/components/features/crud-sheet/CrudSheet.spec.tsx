@@ -5,7 +5,7 @@ import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSh
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Dialog } from "../../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 
 interface TestItem {
   id?: number;

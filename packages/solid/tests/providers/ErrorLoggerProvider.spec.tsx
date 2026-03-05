@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { ErrorLoggerProvider } from "../../src/providers/ErrorLoggerProvider";
-import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerContext";
+import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerProvider";
 import { useLogger } from "../../src/hooks/useLogger";
 
 /** Helper to configure adapter within LoggerProvider and render children */

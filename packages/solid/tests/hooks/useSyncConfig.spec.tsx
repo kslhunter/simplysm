@@ -6,7 +6,7 @@ import {
   SyncStorageProvider,
   useSyncStorage,
   type StorageAdapter,
-} from "../../src/providers/SyncStorageContext";
+} from "../../src/providers/SyncStorageProvider";
 
 /** Helper to configure adapter within SyncStorageProvider and render children */
 function ConfigureStorage(props: { storage: StorageAdapter; children: any }) {

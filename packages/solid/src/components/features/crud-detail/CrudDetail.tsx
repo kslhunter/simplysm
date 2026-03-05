@@ -19,7 +19,7 @@ import { Icon } from "../../display/Icon";
 import { createTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import clsx from "clsx";
 import { border, text } from "../../../styles/base.styles";
 import {

@@ -9,7 +9,7 @@ import {
 import type { SortingDef } from "../../../../src/components/data/sheet/types";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import type { JSX } from "solid-js";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 
 function TestWrapper(props: { children: JSX.Element }) {
   return (

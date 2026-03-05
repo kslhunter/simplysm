@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { render, waitFor } from "@solidjs/testing-library";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import {
   useNotification,
   type NotificationContextValue,

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, renderHook } from "@solidjs/testing-library";
 import { useLogger } from "../../src/hooks/useLogger";
-import { LoggerProvider } from "../../src/providers/LoggerContext";
+import { LoggerProvider } from "../../src/providers/LoggerProvider";
 import { consola } from "consola";
 
 function loggerWrapper() {

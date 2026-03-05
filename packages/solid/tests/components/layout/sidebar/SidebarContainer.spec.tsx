@@ -15,13 +15,13 @@ vi.mock("@solidjs/router", () => ({
   useNavigate: vi.fn(() => vi.fn()),
 }));
 
-import { Sidebar, useSidebarContext } from "../../../../src";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { Sidebar, useSidebar } from "../../../../src";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // ToggleCapture helper - Extract setToggle from Context for external control
 const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
-  const { setToggle } = useSidebarContext();
+  const { setToggle } = useSidebar();
    
   props.onCapture(setToggle);
   return null;

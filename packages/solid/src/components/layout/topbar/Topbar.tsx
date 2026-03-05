@@ -18,8 +18,8 @@ import clsx from "clsx";
 import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
-import { useSidebarContextOptional } from "../sidebar/Sidebar";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useSidebar } from "../sidebar/Sidebar";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
@@ -121,7 +121,7 @@ const TopbarInner: ParentComponent<TopbarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   // Optional use of SidebarContext (toggle button not shown if Context doesn't exist)
-  const sidebarContext = useSidebarContextOptional();
+  const sidebarContext = useSidebar.optional();
   const i18n = useI18n();
 
   const handleToggle = () => {

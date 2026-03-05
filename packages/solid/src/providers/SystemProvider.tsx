@@ -1,8 +1,8 @@
 import { type ParentComponent } from "solid-js";
 import { ConfigProvider } from "./ConfigContext";
-import { I18nProvider } from "./i18n/I18nContext";
-import { SyncStorageProvider } from "./SyncStorageContext";
-import { LoggerProvider } from "./LoggerContext";
+import { I18nProvider } from "./i18n/I18nProvider";
+import { SyncStorageProvider } from "./SyncStorageProvider";
+import { LoggerProvider } from "./LoggerProvider";
 import { NotificationProvider } from "../components/feedback/notification/NotificationProvider";
 import { NotificationBanner } from "../components/feedback/notification/NotificationBanner";
 import { ErrorLoggerProvider } from "./ErrorLoggerProvider";

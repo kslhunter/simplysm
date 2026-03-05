@@ -3,7 +3,7 @@ import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
 import { DataSelectButton, type SelectDialogBaseProps } from "@simplysm/solid";
 import { DialogProvider } from "../../../../src/components/disclosure/Dialog";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 // item type for tests

@@ -8,7 +8,7 @@ import { text } from "../../../styles/base.styles";
 import { gap } from "../../../styles/control.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export type DateRangePeriodType = "day" | "month" | "range";
 

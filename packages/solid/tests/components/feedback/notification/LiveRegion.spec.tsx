@@ -2,7 +2,7 @@ import { render, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, beforeEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationProvider";
 
 describe("Notification Live Region", () => {

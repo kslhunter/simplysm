@@ -8,7 +8,7 @@ import { NotificationBanner } from "./NotificationBanner";
 import { text } from "../../../styles/base.styles";
 import { gap } from "../../../styles/control.styles";
 import { Button } from "../../form-control/Button";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface NotificationBellProps {
   showBanner?: boolean;

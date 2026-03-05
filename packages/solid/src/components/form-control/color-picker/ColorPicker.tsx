@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Invalid } from "../Invalid";
 import { type ComponentSize } from "../../../styles/control.styles";
-import { useI18n } from "../../../providers/i18n/I18nContext";
+import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 // Size-specific styles
 const sizeClasses: Record<ComponentSize, string> = {

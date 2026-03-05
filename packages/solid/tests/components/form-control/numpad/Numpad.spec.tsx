@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Numpad } from "../../../../src/components/form-control/numpad/Numpad";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("Numpad", () => {

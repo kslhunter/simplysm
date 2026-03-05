@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { DateTime } from "@simplysm/core-common";
 import { DateTimePicker } from "../../../../src/components/form-control/field/DateTimePicker";
-import { I18nProvider } from "../../../../src/providers/i18n/I18nContext";
+import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
 describe("DateTimePicker component", () => {
