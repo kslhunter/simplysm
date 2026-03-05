@@ -1,14 +1,14 @@
 import { WebPlugin } from "@capacitor/core";
-import type { IBroadcastPlugin, IBroadcastResult } from "../IBroadcastPlugin";
+import type { BroadcastPlugin, BroadcastResult } from "../BroadcastPlugin";
 
-export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
+export class BroadcastWeb extends WebPlugin implements BroadcastPlugin {
   private static readonly _warn = () =>
     // eslint-disable-next-line no-console
     console.warn("[Broadcast] Broadcast is not supported in web environment.");
 
   subscribe(
     _options: { filters: string[] },
-    _callback: (result: IBroadcastResult) => void,
+    _callback: (result: BroadcastResult) => void,
   ): Promise<{ id: string }> {
     BroadcastWeb._warn();
     return Promise.resolve({ id: "web-stub" });
@@ -27,7 +27,7 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
     return Promise.resolve();
   }
 
-  getLaunchIntent(): Promise<IBroadcastResult> {
+  getLaunchIntent(): Promise<BroadcastResult> {
     return Promise.resolve({});
   }
 }

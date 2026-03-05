@@ -1,8 +1,8 @@
 import { registerPlugin } from "@capacitor/core";
 import type { PluginListenerHandle } from "@capacitor/core";
-import type { IBroadcastPlugin, IBroadcastResult } from "./IBroadcastPlugin";
+import type { BroadcastPlugin, BroadcastResult } from "./BroadcastPlugin";
 
-const BroadcastPlugin = registerPlugin<IBroadcastPlugin>("Broadcast", {
+const broadcastPlugin = registerPlugin<BroadcastPlugin>("Broadcast", {
   web: async () => {
     const { BroadcastWeb } = await import("./web/BroadcastWeb");
     return new BroadcastWeb();
@@ -31,16 +31,16 @@ export abstract class Broadcast {
    */
   static async subscribe(
     filters: string[],
-    callback: (result: IBroadcastResult) => void,
+    callback: (result: BroadcastResult) => void,
   ): Promise<() => Promise<void>> {
-    const { id } = await BroadcastPlugin.subscribe({ filters }, (result) => {
+    const { id } = await broadcastPlugin.subscribe({ filters }, (result) => {
       // Filter out the initial resolve that only contains { id }
       if (result.action != null) {
         callback(result);
       }
     });
     return async () => {
-      await BroadcastPlugin.unsubscribe({ id });
+      await broadcastPlugin.unsubscribe({ id });
     };
   }
 
@@ -48,7 +48,7 @@ export abstract class Broadcast {
    * Unsubscribe all broadcast receivers
    */
   static async unsubscribeAll(): Promise<void> {
-    await BroadcastPlugin.unsubscribeAll();
+    await broadcastPlugin.unsubscribeAll();
   }
 
   /**
@@ -65,23 +65,31 @@ export abstract class Broadcast {
    * ```
    */
   static async send(options: { action: string; extras?: Record<string, unknown> }): Promise<void> {
-    await BroadcastPlugin.send(options);
+    await broadcastPlugin.send(options);
   }
 
   /**
    * Get launch intent
    */
-  static async getLaunchIntent(): Promise<IBroadcastResult> {
-    return BroadcastPlugin.getLaunchIntent();
+  static async getLaunchIntent(): Promise<BroadcastResult> {
+    return broadcastPlugin.getLaunchIntent();
   }
 
   /**
-   * Register listener for new intents received while app is running
-   * @returns Listener handle (release with remove())
+   * Register listener for events
+   * @returns Listener handle (release with handle.remove())
    */
-  static async addNewIntentListener(
-    callback: (result: IBroadcastResult) => void,
+  static async addListener(
+    eventName: "newIntent",
+    callback: (result: BroadcastResult) => void,
   ): Promise<PluginListenerHandle> {
-    return BroadcastPlugin.addListener("onNewIntent", callback);
+    return broadcastPlugin.addListener(eventName, callback);
+  }
+
+  /**
+   * Remove all event listeners
+   */
+  static async removeAllListeners(): Promise<void> {
+    await broadcastPlugin.removeAllListeners();
   }
 }
