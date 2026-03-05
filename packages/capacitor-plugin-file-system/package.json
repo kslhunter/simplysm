@@ -18,6 +18,7 @@
     "android"
   ],
   "dependencies": {
+    "@simplysm/core-browser": "workspace:*",
     "@simplysm/core-common": "workspace:*"
   },
   "devDependencies": {

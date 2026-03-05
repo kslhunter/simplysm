@@ -19,7 +19,7 @@ export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
   getVersionInfo(): Promise<VersionInfo> {
     return Promise.resolve({
       versionName:
-        (import.meta as unknown as { env?: Record<string, string> }).env?.["__VER__"] ?? "0.0.0",
+        import.meta.env.__VER__ ?? "0.0.0",
       versionCode: "0",
     });
   }

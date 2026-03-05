@@ -47,7 +47,7 @@ export class UsbStorageWeb extends WebPlugin implements UsbStoragePlugin {
     return { files: children };
   }
 
-  async read(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }> {
+  async readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }> {
     const deviceKey = `${options.vendorId}:${options.productId}`;
     const devices = await this._storage.getDevices();
     const deviceExists = devices.some((d) => d.key === deviceKey);

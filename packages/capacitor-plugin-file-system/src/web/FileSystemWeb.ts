@@ -24,33 +24,7 @@ export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
   }
 
   async getStoragePath(options: { type: StorageType }): Promise<{ path: string }> {
-    const base = "/webfs";
-    let storagePath: string;
-    switch (options.type) {
-      case "external":
-        storagePath = base + "/external";
-        break;
-      case "externalFiles":
-        storagePath = base + "/externalFiles";
-        break;
-      case "externalCache":
-        storagePath = base + "/externalCache";
-        break;
-      case "externalMedia":
-        storagePath = base + "/externalMedia";
-        break;
-      case "appData":
-        storagePath = base + "/appData";
-        break;
-      case "appFiles":
-        storagePath = base + "/appFiles";
-        break;
-      case "appCache":
-        storagePath = base + "/appCache";
-        break;
-      default:
-        throw new Error("Unknown storage type: " + options.type);
-    }
+    const storagePath = "/webfs/" + options.type;
     await this._fs.ensureDir(storagePath);
     return { path: storagePath };
   }

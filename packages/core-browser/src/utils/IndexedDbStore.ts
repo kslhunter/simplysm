@@ -1,4 +1,4 @@
-export interface IStoreConfig {
+export interface StoreConfig {
   name: string;
   keyPath: string;
 }
@@ -7,7 +7,7 @@ export class IndexedDbStore {
   constructor(
     private readonly _dbName: string,
     private readonly _dbVersion: number,
-    private readonly _storeConfigs: IStoreConfig[],
+    private readonly _storeConfigs: StoreConfig[],
   ) {}
 
   async open(): Promise<IDBDatabase> {
@@ -27,16 +27,16 @@ export class IndexedDbStore {
     });
   }
 
-  async withStore<T>(
+  async withStore<TResult>(
     storeName: string,
     mode: IDBTransactionMode,
-    fn: (store: IDBObjectStore) => Promise<T>,
-  ): Promise<T> {
+    fn: (store: IDBObjectStore) => Promise<TResult>,
+  ): Promise<TResult> {
     const db = await this.open();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, mode);
       const store = tx.objectStore(storeName);
-      let result: T;
+      let result: TResult;
       Promise.resolve(fn(store))
         .then((r) => {
           result = r;
@@ -56,11 +56,11 @@ export class IndexedDbStore {
     });
   }
 
-  async get<T>(storeName: string, key: IDBValidKey): Promise<T | undefined> {
+  async get<TValue>(storeName: string, key: IDBValidKey): Promise<TValue | undefined> {
     return this.withStore(storeName, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
         const req = store.get(key);
-        req.onsuccess = () => resolve(req.result as T | undefined);
+        req.onsuccess = () => resolve(req.result as TValue | undefined);
         req.onerror = () => reject(req.error);
       });
     });
@@ -76,11 +76,11 @@ export class IndexedDbStore {
     });
   }
 
-  async getAll<T>(storeName: string): Promise<T[]> {
+  async getAll<TItem>(storeName: string): Promise<TItem[]> {
     return this.withStore(storeName, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
         const req = store.getAll();
-        req.onsuccess = () => resolve(req.result as T[]);
+        req.onsuccess = () => resolve(req.result as TItem[]);
         req.onerror = () => reject(req.error);
       });
     });

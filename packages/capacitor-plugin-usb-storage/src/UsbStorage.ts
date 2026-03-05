@@ -67,8 +67,8 @@ export abstract class UsbStorage {
    * @param filePath File path to read
    * @returns Bytes containing file data, or undefined
    */
-  static async read(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
-    const result = await usbStoragePlugin.read({ ...filter, path: filePath });
+  static async readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
+    const result = await usbStoragePlugin.readFile({ ...filter, path: filePath });
     if (result.data == null) {
       return undefined;
     }

@@ -10,3 +10,5 @@ export * from "./extensions/html-element-ext";
 export * from "./utils/download";
 export * from "./utils/fetch";
 export * from "./utils/file-dialog";
+export * from "./utils/IndexedDbStore";
+export * from "./utils/IndexedDbVirtualFs";

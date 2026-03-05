@@ -197,7 +197,7 @@ public class UsbStoragePlugin extends Plugin {
     }
 
     @PluginMethod
-    public void read(PluginCall call) {
+    public void readFile(PluginCall call) {
         Integer vendorId = call.getInt("vendorId");
         Integer productId = call.getInt("productId");
         String path = call.getString("path");
@@ -258,8 +258,8 @@ public class UsbStoragePlugin extends Plugin {
                 device.close();
             }
         } catch (Exception e) {
-            Log.e(TAG, "read failed", e);
-            call.reject("read failed: " + e.getMessage());
+            Log.e(TAG, "readFile failed", e);
+            call.reject("readFile failed: " + e.getMessage());
         }
     }
 
