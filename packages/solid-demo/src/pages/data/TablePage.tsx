@@ -17,20 +17,20 @@ export default function TablePage() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Table</h2>
         <Table>
           <thead>
-            <Table.Tr>
-              <Table.Th>Key</Table.Th>
-              <Table.Th>Value</Table.Th>
-            </Table.Tr>
+            <Table.Row>
+              <Table.HeaderCell>Key</Table.HeaderCell>
+              <Table.HeaderCell>Value</Table.HeaderCell>
+            </Table.Row>
           </thead>
           <tbody>
-            <Table.Tr>
-              <Table.Td>A</Table.Td>
-              <Table.Td>100</Table.Td>
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td>B</Table.Td>
-              <Table.Td>200</Table.Td>
-            </Table.Tr>
+            <Table.Row>
+              <Table.Cell>A</Table.Cell>
+              <Table.Cell>100</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>B</Table.Cell>
+              <Table.Cell>200</Table.Cell>
+            </Table.Row>
           </tbody>
         </Table>
       </section>
@@ -40,23 +40,23 @@ export default function TablePage() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Full Width Table</h2>
         <Table class="w-full">
           <thead>
-            <Table.Tr>
-              <Table.Th>ID</Table.Th>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>Role</Table.Th>
-              <Table.Th>Status</Table.Th>
-            </Table.Tr>
+            <Table.Row>
+              <Table.HeaderCell>ID</Table.HeaderCell>
+              <Table.HeaderCell>Name</Table.HeaderCell>
+              <Table.HeaderCell>Email</Table.HeaderCell>
+              <Table.HeaderCell>Role</Table.HeaderCell>
+              <Table.HeaderCell>Status</Table.HeaderCell>
+            </Table.Row>
           </thead>
           <tbody>
             <For each={sampleData}>
               {(row) => (
-                <Table.Tr class="hover:bg-base-50 dark:hover:bg-base-800/50">
-                  <Table.Td>{row.id}</Table.Td>
-                  <Table.Td>{row.name}</Table.Td>
-                  <Table.Td>{row.email}</Table.Td>
-                  <Table.Td>{row.role}</Table.Td>
-                  <Table.Td>
+                <Table.Row class="hover:bg-base-50 dark:hover:bg-base-800/50">
+                  <Table.Cell>{row.id}</Table.Cell>
+                  <Table.Cell>{row.name}</Table.Cell>
+                  <Table.Cell>{row.email}</Table.Cell>
+                  <Table.Cell>{row.role}</Table.Cell>
+                  <Table.Cell>
                     <Tag
                       theme={
                         row.status === "Active"
@@ -68,8 +68,8 @@ export default function TablePage() {
                     >
                       {row.status}
                     </Tag>
-                  </Table.Td>
-                </Table.Tr>
+                  </Table.Cell>
+                </Table.Row>
               )}
             </For>
           </tbody>
@@ -85,24 +85,24 @@ export default function TablePage() {
 
         <Table inset class="w-full">
           <thead>
-            <Table.Tr>
-              <Table.Th>Item</Table.Th>
-              <Table.Th>Value</Table.Th>
-            </Table.Tr>
+            <Table.Row>
+              <Table.HeaderCell>Item</Table.HeaderCell>
+              <Table.HeaderCell>Value</Table.HeaderCell>
+            </Table.Row>
           </thead>
           <tbody>
-            <Table.Tr>
-              <Table.Td>Server</Table.Td>
-              <Table.Td>production-01</Table.Td>
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td>Status</Table.Td>
-              <Table.Td>Healthy</Table.Td>
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td>Uptime</Table.Td>
-              <Table.Td>99.9%</Table.Td>
-            </Table.Tr>
+            <Table.Row>
+              <Table.Cell>Server</Table.Cell>
+              <Table.Cell>production-01</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>Status</Table.Cell>
+              <Table.Cell>Healthy</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>Uptime</Table.Cell>
+              <Table.Cell>99.9%</Table.Cell>
+            </Table.Row>
           </tbody>
         </Table>
       </section>

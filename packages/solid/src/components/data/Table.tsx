@@ -73,4 +73,4 @@ const TableBase: ParentComponent<TableProps> = (props) => {
   );
 };
 
-export const Table = Object.assign(TableBase, { Tr: TableTr, Th: TableTh, Td: TableTd });
+export const Table = Object.assign(TableBase, { Row: TableTr, HeaderCell: TableTh, Cell: TableTd });
