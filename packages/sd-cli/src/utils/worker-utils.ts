@@ -7,15 +7,15 @@ import type { ConsolaInstance } from "consola";
  * before process exit. Both handlers execute the cleanup function and
  * exit with code 0.
  *
- * @param cleanup - Async cleanup function to execute on shutdown
+ * @param cleanup - Cleanup function to execute on shutdown (sync or async)
  * @param logger - Consola logger instance for error logging
  */
 export function registerCleanupHandlers(
-  cleanup: () => Promise<void>,
+  cleanup: () => void | Promise<void>,
   logger: ConsolaInstance,
 ): void {
   const handleSignal = () => {
-    cleanup()
+    Promise.resolve(cleanup())
       .catch((err) => {
         logger.error("cleanup failed", err);
       })

@@ -752,9 +752,9 @@ export default config;
     signingConfigs {
         release {
             storeFile file("${keystoreRelativePath}")
-            storePassword '${signConfig.storePassword}'
-            keyAlias '${signConfig.alias}'
-            keyPassword '${signConfig.password}'
+            storePassword '${Capacitor._escapeGroovyString(signConfig.storePassword)}'
+            keyAlias '${Capacitor._escapeGroovyString(signConfig.alias)}'
+            keyPassword '${Capacitor._escapeGroovyString(signConfig.password)}'
             storeType "${keystoreType}"
         }
     }
@@ -773,6 +773,14 @@ export default config;
     }
 
     await fsWrite(buildGradlePath, content);
+  }
+
+  /**
+   * Escape single quotes in Groovy string (for use in single-quoted strings)
+   * Groovy: 'string with \'single quote\' inside'
+   */
+  private static _escapeGroovyString(value: string): string {
+    return value.replace(/'/g, "\\'");
   }
 
   //#endregion

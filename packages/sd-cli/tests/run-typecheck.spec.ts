@@ -101,6 +101,52 @@ import ts from "typescript";
 import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { runTypecheck } from "../src/commands/typecheck";
 
+/**
+ * Create mock parsed tsconfig
+ */
+function createMockParsedCommandLine(overrides: Partial<ts.ParsedCommandLine> = {}): ts.ParsedCommandLine {
+  return {
+    options: {},
+    fileNames: [],
+    errors: [],
+    ...overrides,
+  } as ts.ParsedCommandLine;
+}
+
+/**
+ * Create mock diagnostic
+ */
+function createMockDiagnostic(overrides: Partial<ts.Diagnostic> = {}): ts.Diagnostic {
+  return {
+    file: undefined,
+    start: 0,
+    length: 0,
+    messageText: "test error",
+    category: 1,
+    code: 0,
+    ...overrides,
+  } as ts.Diagnostic;
+}
+
+/**
+ * Create mock diagnostic array
+ */
+function createMockDiagnosticArray(diagnostics: ts.Diagnostic[] = []): ts.SortedReadonlyArray<ts.Diagnostic> {
+  return diagnostics as ts.SortedReadonlyArray<ts.Diagnostic>;
+}
+
+/**
+ * Create mock Worker
+ */
+function createMockWorker<T extends Record<string, unknown>>(overrides?: Partial<T>): any {
+  return {
+    on: vi.fn(),
+    send: vi.fn(),
+    terminate: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
 describe("runTypecheck", () => {
   let originalExitCode: typeof process.exitCode;
   let originalCwd: () => string;
@@ -123,11 +169,13 @@ describe("runTypecheck", () => {
       config: {},
     });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: [],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: [],
+        errors: [],
+      }),
+    );
 
     await runTypecheck({ targets: [], options: [] });
 
@@ -154,11 +202,13 @@ describe("runTypecheck", () => {
       config: {},
     });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: {},
-      fileNames: [],
-      errors: [{ category: ts.DiagnosticCategory.Error, messageText: "Parse error" }],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: {},
+        fileNames: [],
+        errors: [{ category: ts.DiagnosticCategory.Error, messageText: "Parse error" }],
+      }),
+    );
 
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
 
@@ -172,21 +222,23 @@ describe("runTypecheck", () => {
       config: {},
     });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: [
-        "/project/packages/core-common/src/index.ts",
-        "/project/packages/core-node/src/index.ts",
-        "/project/packages/cli/src/index.ts",
-      ],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: [
+          "/project/packages/core-common/src/index.ts",
+          "/project/packages/core-node/src/index.ts",
+          "/project/packages/cli/src/index.ts",
+        ],
+        errors: [],
+      }),
+    );
 
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
 
     await runTypecheck({
@@ -203,16 +255,18 @@ describe("runTypecheck", () => {
       config: {},
     });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: [
-        "/project/packages/core-common/src/index.ts",
-        "/project/packages/core-common/tests/utils.spec.ts",
-        "/project/packages/core-node/src/index.ts",
-        "/project/packages/cli/src/index.ts",
-      ],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: [
+          "/project/packages/core-common/src/index.ts",
+          "/project/packages/core-common/tests/utils.spec.ts",
+          "/project/packages/core-node/src/index.ts",
+          "/project/packages/cli/src/index.ts",
+        ],
+        errors: [],
+      }),
+    );
 
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
@@ -226,13 +280,15 @@ describe("runTypecheck", () => {
         warningCount: 0,
       }),
     );
-    vi.mocked(Worker.create).mockReturnValue({
-      build: mockBuildDts,
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
+    vi.mocked(Worker.create).mockReturnValue(
+      createMockWorker({
+        build: mockBuildDts,
+        terminate: vi.fn(() => Promise.resolve()),
+      }),
+    );
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
 
     await runTypecheck({
@@ -252,16 +308,18 @@ describe("runTypecheck", () => {
       config: {},
     });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/sd.config.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: ["/project/sd.config.ts"],
+        errors: [],
+      }),
+    );
 
     vi.mocked(fsExists).mockResolvedValue(false);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
 
     // Should proceed without error even if sd.config.ts fails to load
@@ -273,38 +331,42 @@ describe("runTypecheck", () => {
   it("sets exitCode to 1 when typecheck errors occur", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/packages/core-common/src/index.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: ["/project/packages/core-common/src/index.ts"],
+        errors: [],
+      }),
+    );
 
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     // Mock Worker to return error results
     const { Worker } = await import("@simplysm/core-node");
-    vi.mocked(Worker.create).mockReturnValue({
-      build: vi.fn(() =>
-        Promise.resolve({
-          success: false,
-          diagnostics: [
-            {
-              category: 1,
-              code: 2322,
-              messageText: "Type error",
-              fileName: "/project/packages/core-common/src/index.ts",
-            },
-          ],
-          errorCount: 1,
-          warningCount: 0,
-        }),
-      ),
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
+    vi.mocked(Worker.create).mockReturnValue(
+      createMockWorker({
+        build: vi.fn(() =>
+          Promise.resolve({
+            success: false,
+            diagnostics: [
+              {
+                category: 1,
+                code: 2322,
+                messageText: "Type error",
+                fileName: "/project/packages/core-common/src/index.ts",
+              },
+            ],
+            errorCount: 1,
+            warningCount: 0,
+          }),
+        ),
+        terminate: vi.fn(() => Promise.resolve()),
+      }),
+    );
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
 
@@ -316,11 +378,13 @@ describe("runTypecheck", () => {
   it("creates other task when non-package files (like tests/) are included", async () => {
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
 
-    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
-      options: { lib: ["ES2024"], types: [] },
-      fileNames: ["/project/packages/core-node/src/index.ts", "/project/tests/orm/some-test.ts"],
-      errors: [],
-    } as unknown as ts.ParsedCommandLine);
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue(
+      createMockParsedCommandLine({
+        options: { lib: ["ES2024"], types: [] },
+        fileNames: ["/project/packages/core-node/src/index.ts", "/project/tests/orm/some-test.ts"],
+        errors: [],
+      }),
+    );
 
     vi.mocked(fsExists).mockResolvedValue(false);
     // Set core-node as node target package
@@ -341,7 +405,7 @@ describe("runTypecheck", () => {
     });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
 
     const { Worker } = await import("@simplysm/core-node");
@@ -353,10 +417,12 @@ describe("runTypecheck", () => {
         warningCount: 0,
       }),
     );
-    vi.mocked(Worker.create).mockReturnValue({
-      build: mockBuildDts,
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
+    vi.mocked(Worker.create).mockReturnValue(
+      createMockWorker({
+        build: mockBuildDts,
+        terminate: vi.fn(() => Promise.resolve()),
+      }),
+    );
 
     await runTypecheck({ targets: [], options: [] });
 
@@ -409,20 +475,22 @@ describe("executeTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    vi.mocked(Worker.create).mockReturnValue({
-      build: vi.fn(() =>
-        Promise.resolve({
-          success: true,
-          diagnostics: [],
-          errorCount: 0,
-          warningCount: 0,
-        }),
-      ),
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
+    vi.mocked(Worker.create).mockReturnValue(
+      createMockWorker({
+        build: vi.fn(() =>
+          Promise.resolve({
+            success: true,
+            diagnostics: [],
+            errorCount: 0,
+            warningCount: 0,
+          }),
+        ),
+        terminate: vi.fn(() => Promise.resolve()),
+      }),
+    );
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+      createMockDiagnosticArray([]),
     );
 
     const result = await executeTypecheck({ targets: [], options: [] });
@@ -448,24 +516,26 @@ describe("executeTypecheck", () => {
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     // Mock worker to return error results
-    vi.mocked(Worker.create).mockReturnValue({
-      build: vi.fn(() =>
-        Promise.resolve({
-          success: false,
-          diagnostics: [
-            {
-              category: 1,
-              code: 2322,
-              messageText: "Type error",
-              fileName: "/project/packages/core-common/src/index.ts",
-            },
-          ],
-          errorCount: 1,
-          warningCount: 0,
-        }),
-      ),
-      terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof Worker.create>);
+    vi.mocked(Worker.create).mockReturnValue(
+      createMockWorker({
+        build: vi.fn(() =>
+          Promise.resolve({
+            success: false,
+            diagnostics: [
+              {
+                category: 1,
+                code: 2322,
+                messageText: "Type error",
+                fileName: "/project/packages/core-common/src/index.ts",
+              },
+            ],
+            errorCount: 1,
+            warningCount: 0,
+          }),
+        ),
+        terminate: vi.fn(() => Promise.resolve()),
+      }),
+    );
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockImplementation(
       (diagnostics) => diagnostics as ts.SortedReadonlyArray<ts.Diagnostic>,
