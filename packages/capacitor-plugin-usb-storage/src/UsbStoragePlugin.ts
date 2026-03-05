@@ -1,4 +1,4 @@
-export interface IUsbDeviceInfo {
+export interface UsbDeviceInfo {
   deviceName: string;
   manufacturerName: string;
   productName: string;
@@ -6,20 +6,20 @@ export interface IUsbDeviceInfo {
   productId: number;
 }
 
-export interface IUsbDeviceFilter {
+export interface UsbDeviceFilter {
   vendorId: number;
   productId: number;
 }
 
-export interface IUsbFileInfo {
+export interface UsbFileInfo {
   name: string;
   isDirectory: boolean;
 }
 
-export interface IUsbStoragePlugin {
-  getDevices(): Promise<{ devices: IUsbDeviceInfo[] }>;
-  requestPermission(options: IUsbDeviceFilter): Promise<{ granted: boolean }>;
-  hasPermission(options: IUsbDeviceFilter): Promise<{ granted: boolean }>;
-  readdir(options: IUsbDeviceFilter & { path: string }): Promise<{ files: IUsbFileInfo[] }>;
-  read(options: IUsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
+export interface UsbStoragePlugin {
+  getDevices(): Promise<{ devices: UsbDeviceInfo[] }>;
+  requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
+  checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
+  readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>;
+  read(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
 }

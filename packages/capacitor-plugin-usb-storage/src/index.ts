@@ -1,3 +1,3 @@
 // USB Storage
-export * from "./IUsbStoragePlugin";
+export * from "./UsbStoragePlugin";
 export * from "./UsbStorage";
