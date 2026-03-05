@@ -6,7 +6,7 @@ import { createControllableSignal } from "../../../../hooks/createControllableSi
 export interface UseDataSheetExpansionProps<TItem> {
   expandedItems?: TItem[];
   onExpandedItemsChange?: (items: TItem[]) => void;
-  getChildren?: (item: TItem, index: number) => TItem[] | undefined;
+  itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
 }
 
 export interface UseDataSheetExpansionReturn<TItem> {
@@ -38,11 +38,11 @@ export function useDataSheetExpansion<TItem>(
   }
 
   function toggleExpandAll(): void {
-    if (!props.getChildren) return;
+    if (!props.itemChildren) return;
     const indexMap = originalIndexMap();
     const allExpandable = collectAllExpandable(
       pagedItems(),
-      props.getChildren,
+      props.itemChildren,
       (item) => indexMap.get(item) ?? -1,
     );
     const isAllCurrentlyExpanded = allExpandable.every((item) =>
@@ -56,17 +56,17 @@ export function useDataSheetExpansion<TItem>(
     return flattenTree(
       pagedItems(),
       expandedItems(),
-      props.getChildren,
+      props.itemChildren,
       (item) => indexMap.get(item) ?? -1,
     );
   });
 
   const isAllExpanded = createMemo(() => {
-    if (!props.getChildren) return false;
+    if (!props.itemChildren) return false;
     const indexMap = originalIndexMap();
     const allExpandable = collectAllExpandable(
       pagedItems(),
-      props.getChildren,
+      props.itemChildren,
       (item) => indexMap.get(item) ?? -1,
     );
     return (

@@ -261,10 +261,10 @@ interface SelectCommonProps<TValue = unknown> {
   touchMode?: boolean;
 
   /** Search text extraction function (shows search input when set) */
-  getSearchText?: (item: TValue) => string;
+  itemSearchText?: (item: TValue) => string;
 
   /** Function to determine if item is hidden */
-  getIsHidden?: (item: TValue) => boolean;
+  isItemHidden?: (item: TValue) => boolean;
 
   /** Custom class */
   class?: string;
@@ -312,7 +312,7 @@ interface SelectMultipleBaseProps<TValue> extends SelectCommonProps<TValue> {
 // items mode
 interface SelectWithItemsPropsBase<TValue> {
   items: TValue[];
-  getChildren?: (item: TValue, index: number, depth: number) => TValue[] | undefined;
+  itemChildren?: (item: TValue, index: number, depth: number) => TValue[] | undefined;
   renderValue?: (value: TValue) => JSX.Element;
   children?: JSX.Element;
 }
@@ -320,7 +320,7 @@ interface SelectWithItemsPropsBase<TValue> {
 // children mode
 interface SelectWithChildrenPropsBase<TValue> {
   items?: never;
-  getChildren?: never;
+  itemChildren?: never;
   renderValue: (value: TValue) => JSX.Element;
   children: JSX.Element;
 }
@@ -374,12 +374,12 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     "multiDisplayDirection",
     "hideSelectAll",
     "items",
-    "getChildren",
+    "itemChildren",
     "renderValue",
     "validate",
     "touchMode",
-    "getSearchText",
-    "getIsHidden",
+    "itemSearchText",
+    "isItemHidden",
   ]);
 
   const i18n = useI18n();
@@ -481,19 +481,19 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   // Search filtering (supports hierarchical structure)
   const filteredItems = createMemo((): T[] | undefined => {
     if (!local.items) return undefined;
-    if (!local.getSearchText || !searchText()) return local.items;
+    if (!local.itemSearchText || !searchText()) return local.items;
 
     const terms = searchText().trim().split(" ").filter(Boolean);
     if (terms.length === 0) return local.items;
 
     // Include parent when child matches in hierarchical structure
     const matchesSearch = (item: T): boolean => {
-      const itemText = local.getSearchText!(item).toLowerCase();
+      const itemText = local.itemSearchText!(item).toLowerCase();
       if (terms.every((t) => itemText.includes(t.toLowerCase()))) return true;
 
       // Show parent if any child matches
-      if (local.getChildren) {
-        const itemChildren = local.getChildren(item, 0, 0);
+      if (local.itemChildren) {
+        const itemChildren = local.itemChildren(item, 0, 0);
         if (itemChildren?.some((child) => matchesSearch(child))) return true;
       }
 
@@ -506,11 +506,11 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   // Items with hidden filter applied
   const visibleItems = createMemo((): T[] | undefined => {
     const items = filteredItems();
-    if (!items || !local.getIsHidden) return items;
+    if (!items || !local.isItemHidden) return items;
 
     return items.filter((item) => {
       // Show hidden item if selected (with strikethrough)
-      if (local.getIsHidden!(item)) {
+      if (local.isItemHidden!(item)) {
         return isSelected(item);
       }
       return true;
@@ -547,17 +547,17 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
       return (
         <For each={itemList}>
           {(item, index) => {
-            const hidden = () => local.getIsHidden?.(item) ?? false;
+            const hidden = () => local.isItemHidden?.(item) ?? false;
             return (
               <SelectItem value={item} class={hidden() ? "line-through opacity-60" : undefined}>
                 {tpl ? tpl(item, index(), depth) : String(item)}
-                <Show when={local.getChildren?.(item, index(), depth)} keyed>
+                <Show when={local.itemChildren?.(item, index(), depth)} keyed>
                   {(itemChildren) => {
                     // Apply hidden filter to child list
                     const visibleChildren = () => {
-                      if (!local.getIsHidden) return itemChildren;
+                      if (!local.isItemHidden) return itemChildren;
                       return itemChildren.filter((child) => {
-                        if (local.getIsHidden!(child)) return isSelected(child);
+                        if (local.isItemHidden!(child)) return isSelected(child);
                         return true;
                       });
                     };
@@ -648,7 +648,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
           <Dropdown.Content>
             <Show when={header()}>{header()!.children}</Show>
             {/* Search input */}
-            <Show when={local.getSearchText && local.items}>
+            <Show when={local.itemSearchText && local.items}>
               <TextInput
                 value={searchText()}
                 onValueChange={setSearchText}

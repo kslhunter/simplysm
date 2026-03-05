@@ -135,13 +135,13 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     let result = local.data.items();
 
     // getIsHidden filter
-    const isHidden = local.data.getIsHidden;
+    const isHidden = local.data.isItemHidden;
     if (isHidden) {
       result = result.filter((item: TItem) => !isHidden(item));
     }
 
     // Search filter (only when Filter compound is absent and getSearchText exists)
-    const getSearchText = local.data.getSearchText;
+    const getSearchText = local.data.itemSearchText;
     if (!filter() && getSearchText && searchText()) {
       const terms = searchText().trim().split(" ").filter(Boolean);
       if (terms.length > 0) {
@@ -220,7 +220,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
         <Show when={local.header != null}>{local.header}</Show>
 
         {/* Search input: when Filter compound is absent and getSearchText exists */}
-        <Show when={!filter() && local.data.getSearchText}>
+        <Show when={!filter() && local.data.itemSearchText}>
           <div class={"p-1"}>
             <TextInput
               value={searchText()}

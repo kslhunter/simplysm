@@ -31,7 +31,7 @@ export interface DataSheetProps<TItem> {
   // Tree expansion
   expandedItems?: TItem[];
   onExpandedItemsChange?: (items: TItem[]) => void;
-  getChildren?: (item: TItem, index: number) => TItem[] | undefined;
+  itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
 
   // Cell styling
   cellClass?: (item: TItem, colKey: string) => string | undefined;

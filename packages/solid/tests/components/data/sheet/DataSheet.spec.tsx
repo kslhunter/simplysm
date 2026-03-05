@@ -382,7 +382,7 @@ describe("flattenTree", () => {
     children?: TreeNode[];
   }
 
-  const getChildren = (item: TreeNode) => item.children;
+  const itemChildren = (item: TreeNode) => item.children;
 
   const tree: TreeNode[] = [
     {
@@ -392,7 +392,7 @@ describe("flattenTree", () => {
     { id: "b" },
   ];
 
-  it("returns flat list when getChildren is not provided", () => {
+  it("returns flat list when itemChildren is not provided", () => {
     const result = flattenTree(tree, []);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
     expect(result.every((r) => r.depth === 0)).toBe(true);
@@ -400,14 +400,14 @@ describe("flattenTree", () => {
   });
 
   it("returns only roots when all are collapsed", () => {
-    const result = flattenTree(tree, [], getChildren);
+    const result = flattenTree(tree, [], itemChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
     expect(result[0].hasChildren).toBe(true);
     expect(result[1].hasChildren).toBe(false);
   });
 
   it("includes 1-level children when root is expanded", () => {
-    const result = flattenTree(tree, [tree[0]], getChildren);
+    const result = flattenTree(tree, [tree[0]], itemChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "b"]);
     expect(result[1].depth).toBe(1);
     expect(result[1].parent).toBe(tree[0]);
@@ -416,7 +416,7 @@ describe("flattenTree", () => {
 
   it("includes up to 2-level children when nested expanded", () => {
     const a2 = tree[0].children![1];
-    const result = flattenTree(tree, [tree[0], a2], getChildren);
+    const result = flattenTree(tree, [tree[0], a2], itemChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "a2x", "b"]);
     expect(result[3].depth).toBe(2);
     expect(result[3].parent).toBe(a2);
@@ -425,22 +425,22 @@ describe("flattenTree", () => {
   it("children of collapsed nodes are not included", () => {
     // only a2 is expanded but a is collapsed → a2 itself is not visible, so its children are also hidden
     const a2 = tree[0].children![1];
-    const result = flattenTree(tree, [a2], getChildren);
+    const result = flattenTree(tree, [a2], itemChildren);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
   });
 
   it("returns empty result for empty array", () => {
-    const result = flattenTree([], [], getChildren);
+    const result = flattenTree([], [], itemChildren);
     expect(result).toEqual([]);
   });
 
   it("row increments in order", () => {
-    const result = flattenTree(tree, [tree[0]], getChildren);
+    const result = flattenTree(tree, [tree[0]], itemChildren);
     expect(result.map((r) => r.row)).toEqual([0, 1, 2, 3]);
   });
 
   it("index returns position within containing array", () => {
-    const result = flattenTree(tree, [tree[0]], getChildren);
+    const result = flattenTree(tree, [tree[0]], itemChildren);
     // tree[0]="a" → index 0 (root items[0])
     // tree[0].children[0]="a1" → index 0 (children[0])
     // tree[0].children[1]="a2" → index 1 (children[1])
@@ -456,7 +456,7 @@ describe("flattenTree", () => {
     const result = flattenTree(
       items,
       [tree[0]],
-      getChildren,
+      itemChildren,
       (item) => originalMap.get(item) ?? -1,
     );
     // items[0]=tree[1]="b" → originalIndex 1
@@ -474,7 +474,7 @@ describe("collectAllExpandable", () => {
     children?: TreeNode[];
   }
 
-  const getChildren = (item: TreeNode) => item.children;
+  const itemChildren = (item: TreeNode) => item.children;
 
   it("recursively collects all nodes that have children", () => {
     const tree: TreeNode[] = [
@@ -484,13 +484,13 @@ describe("collectAllExpandable", () => {
       },
       { id: "b" },
     ];
-    const result = collectAllExpandable(tree, getChildren);
+    const result = collectAllExpandable(tree, itemChildren);
     expect(result.map((r) => r.id)).toEqual(["a", "a2"]);
   });
 
   it("returns empty array when no nodes have children", () => {
     const tree: TreeNode[] = [{ id: "a" }, { id: "b" }];
-    const result = collectAllExpandable(tree, getChildren);
+    const result = collectAllExpandable(tree, itemChildren);
     expect(result).toEqual([]);
   });
 });
@@ -509,11 +509,11 @@ describe("DataSheet tree expansion", () => {
     { name: "폴더B" },
   ];
 
-  it("renders expand column when getChildren is set", () => {
+  it("renders expand column when itemChildren is set", () => {
     const { container } = render(() => (
       <ConfigProvider clientName="test"><I18nProvider>
         <TestWrapper>
-        <DataSheet items={treeData} persistKey="test-tree" getChildren={(item) => item.children}>
+        <DataSheet items={treeData} persistKey="test-tree" itemChildren={(item) => item.children}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -538,7 +538,7 @@ describe("DataSheet tree expansion", () => {
         <DataSheet
           items={treeData}
           persistKey="test-tree-collapsed"
-          getChildren={(item) => item.children}
+          itemChildren={(item) => item.children}
           expandedItems={[]}
         >
           <DataSheet.Column<TreeItem> key="name" header="이름">
@@ -563,7 +563,7 @@ describe("DataSheet tree expansion", () => {
         <DataSheet
           items={treeData}
           persistKey="test-tree-expanded"
-          getChildren={(item) => item.children}
+          itemChildren={(item) => item.children}
           expandedItems={[treeData[0]]}
         >
           <DataSheet.Column<TreeItem> key="name" header="이름">
@@ -593,7 +593,7 @@ describe("DataSheet tree expansion", () => {
         <DataSheet
           items={treeData}
           persistKey="test-tree-no-children"
-          getChildren={(item) => item.children}
+          itemChildren={(item) => item.children}
           expandedItems={[]}
         >
           <DataSheet.Column<TreeItem> key="name" header="이름">

@@ -27,7 +27,7 @@ function createMockAccessor(itemsSignal: Accessor<TestItem[]>): SharedDataAccess
     get: (key: string | number | undefined) => itemsSignal().find((item: TestItem) => item.id === key),
     emit: vi.fn(async () => {}),
     getKey: (item: TestItem) => item.id,
-    getSearchText: (item: TestItem) => item.name,
+    itemSearchText: (item: TestItem) => item.name,
   };
 }
 

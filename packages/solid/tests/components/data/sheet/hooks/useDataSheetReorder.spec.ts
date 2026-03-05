@@ -19,7 +19,7 @@ describe("useDataSheetReorder", () => {
 
         const { dragState } = useDataSheetReorder<TestItem>(
           {
-            getChildren: (item) => item.children,
+            itemChildren: (item) => item.children,
           },
           displayItems
         );
@@ -38,7 +38,7 @@ describe("useDataSheetReorder", () => {
 
         const { dragState } = useDataSheetReorder<TestItem>(
           {
-            getChildren: (item) => item.children,
+            itemChildren: (item) => item.children,
           },
           displayItems
         );
@@ -58,7 +58,7 @@ describe("useDataSheetReorder", () => {
 
         const { dragState } = useDataSheetReorder<TestItem>(
           {
-            getChildren: (item) => item.children,
+            itemChildren: (item) => item.children,
           },
           displayItems
         );
@@ -81,7 +81,7 @@ describe("useDataSheetReorder", () => {
 
         const { dragState } = useDataSheetReorder<TestItem>(
           {
-            getChildren: (item) => item.children,
+            itemChildren: (item) => item.children,
           },
           displayItems
         );
@@ -91,7 +91,7 @@ describe("useDataSheetReorder", () => {
       });
     });
 
-    it("should return false when getChildren is not provided", () => {
+    it("should return false when itemChildren is not provided", () => {
       createRoot(() => {
         const _item1: TestItem = { id: 1, name: "Item 1" };
         const _item2: TestItem = { id: 2, name: "Item 2" };
@@ -100,7 +100,7 @@ describe("useDataSheetReorder", () => {
 
         const { dragState } = useDataSheetReorder({}, displayItems);
 
-        // Without getChildren, no parent-child relationships exist
+        // Without itemChildren, no parent-child relationships exist
         expect(dragState()).toBeNull();
       });
     });

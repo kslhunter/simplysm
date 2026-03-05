@@ -5,7 +5,7 @@ import type { FlatItem } from "../types";
 
 export interface UseDataSheetReorderProps<TItem> {
   onItemsReorder?: (event: DataSheetReorderEvent<TItem>) => void;
-  getChildren?: (item: TItem, index: number) => TItem[] | undefined;
+  itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
 }
 
 export function useDataSheetReorder<TItem>(
@@ -21,8 +21,8 @@ export function useDataSheetReorder<TItem>(
   function isDescendant(parent: TItem, child: TItem, visited = new Set<TItem>()): boolean {
     if (visited.has(parent)) return false;
     visited.add(parent);
-    if (!props.getChildren) return false;
-    const childItems = props.getChildren(parent, 0);
+    if (!props.itemChildren) return false;
+    const childItems = props.itemChildren(parent, 0);
     if (!childItems) return false;
     for (const c of childItems) {
       if (c === child) return true;
@@ -66,7 +66,7 @@ export function useDataSheetReorder<TItem>(
           } else if (relY > third * 2) {
             foundPosition = "after";
           } else {
-            foundPosition = props.getChildren
+            foundPosition = props.itemChildren
               ? "inside"
               : relY < rect.height / 2
                 ? "before"

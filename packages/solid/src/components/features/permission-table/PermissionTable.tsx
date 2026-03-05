@@ -220,8 +220,8 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
     return items.filter((item) => isItemVisible(item, local.modules));
   });
 
-  // Sheet's getChildren — apply module filter, preserve object reference
-  const getChildren = (item: AppPerm): AppPerm[] | undefined => {
+  // Sheet's itemChildren — apply module filter, preserve object reference
+  const itemChildren = (item: AppPerm): AppPerm[] | undefined => {
     if (!item.children || item.children.length === 0) return undefined;
     const modules = local.modules;
     if (!modules || modules.length === 0) return item.children;
@@ -235,7 +235,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
   const currentValue = createMemo(() => local.value ?? {});
 
   // Expanded state — all expanded by default
-  const getAllExpandable = () => collectExpandable(visibleItems(), getChildren);
+  const getAllExpandable = () => collectExpandable(visibleItems(), itemChildren);
 
   const [expandedItems, setExpandedItems] = createSignal<AppPerm[]>(getAllExpandable());
 
@@ -259,7 +259,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
     <DataSheet
       data-permission-table
       items={visibleItems()}
-      getChildren={getChildren}
+      itemChildren={itemChildren}
       expandedItems={expandedItems()}
       onExpandedItemsChange={setExpandedItems}
       hideConfigBar

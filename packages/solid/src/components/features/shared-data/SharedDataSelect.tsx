@@ -178,18 +178,18 @@ const SharedDataSelectBase = <
     get items() {
       return items();
     },
-    get getChildren() {
+    get itemChildren() {
       if (!local.data.getParentKey) return undefined;
       return (item: TItem) => {
         const key = local.data.getKey(item);
         return items().filter((child: TItem) => local.data.getParentKey!(child) === key);
       };
     },
-    get getSearchText() {
-      return local.data.getSearchText;
+    get itemSearchText() {
+      return local.data.itemSearchText;
     },
-    get getIsHidden() {
-      return local.data.getIsHidden;
+    get isItemHidden() {
+      return local.data.isItemHidden;
     },
   }) as unknown as SelectProps;
 

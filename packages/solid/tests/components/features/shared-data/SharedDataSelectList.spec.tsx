@@ -10,8 +10,8 @@ import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 function createMockAccessor<T>(
   items: T[],
   options?: {
-    getIsHidden?: (item: T) => boolean;
-    getSearchText?: (item: T) => string;
+    isItemHidden?: (item: T) => boolean;
+    itemSearchText?: (item: T) => string;
   },
 ) {
   const [itemsSignal] = createSignal(items);
@@ -20,8 +20,8 @@ function createMockAccessor<T>(
     get: (key: string | number | undefined) => items.find((_, i) => i === Number(key)),
     emit: vi.fn(),
     getKey: (item: T) => items.indexOf(item),
-    getIsHidden: options?.getIsHidden,
-    getSearchText: options?.getSearchText,
+    isItemHidden: options?.isItemHidden,
+    itemSearchText: options?.itemSearchText,
   };
 }
 
@@ -264,9 +264,9 @@ describe("SharedDataSelectList", () => {
   // ─── Filtering ────────────────────────────────────────────
 
   describe("filtering", () => {
-    it("items hidden by getIsHidden are not displayed", () => {
+    it("items hidden by isItemHidden are not displayed", () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"], {
-        getIsHidden: (item) => item === "Banana",
+        isItemHidden: (item) => item === "Banana",
       });
 
       renderWithDialog(() => (
@@ -298,9 +298,9 @@ describe("SharedDataSelectList", () => {
   // ─── Search ────────────────────────────────────────────
 
   describe("search", () => {
-    it("search input is shown when getSearchText is provided", () => {
+    it("search input is shown when itemSearchText is provided", () => {
       const accessor = createMockAccessor(["Apple", "Banana"], {
-        getSearchText: (item) => item,
+        itemSearchText: (item) => item,
       });
 
       renderWithDialog(() => (
@@ -312,7 +312,7 @@ describe("SharedDataSelectList", () => {
       expect(document.querySelector("[data-shared-data-select-list] input")).toBeTruthy();
     });
 
-    it("search input is hidden when getSearchText is not provided", () => {
+    it("search input is hidden when itemSearchText is not provided", () => {
       const accessor = createMockAccessor(["Apple", "Banana"]);
 
       renderWithDialog(() => (
@@ -324,9 +324,9 @@ describe("SharedDataSelectList", () => {
       expect(document.querySelector("[data-shared-data-select-list] input")).toBeNull();
     });
 
-    it("typing in search input filters items by getSearchText", async () => {
+    it("typing in search input filters items by itemSearchText", async () => {
       const accessor = createMockAccessor(["Apple", "Banana", "Cherry"], {
-        getSearchText: (item) => item,
+        itemSearchText: (item) => item,
       });
 
       renderWithDialog(() => (
@@ -347,7 +347,7 @@ describe("SharedDataSelectList", () => {
 
     it("search is case-insensitive", async () => {
       const accessor = createMockAccessor(["Apple", "Banana"], {
-        getSearchText: (item) => item,
+        itemSearchText: (item) => item,
       });
 
       renderWithDialog(() => (
@@ -367,7 +367,7 @@ describe("SharedDataSelectList", () => {
 
     it("multiple space-separated terms must all match", async () => {
       const accessor = createMockAccessor(["Red Apple", "Green Apple", "Red Banana"], {
-        getSearchText: (item) => item,
+        itemSearchText: (item) => item,
       });
 
       renderWithDialog(() => (
@@ -392,7 +392,7 @@ describe("SharedDataSelectList", () => {
   describe("custom filter", () => {
     it("search input is hidden when Filter compound is provided", () => {
       const accessor = createMockAccessor(["Apple", "Banana"], {
-        getSearchText: (item) => item,
+        itemSearchText: (item) => item,
       });
 
       renderWithDialog(() => (

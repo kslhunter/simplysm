@@ -102,10 +102,10 @@ function isSameGroup(
 export function flattenTree<TNode>(
   items: TNode[],
   expandedItems: TNode[],
-  getChildren?: (item: TNode, index: number) => TNode[] | undefined,
+  itemChildren?: (item: TNode, index: number) => TNode[] | undefined,
   getOriginalIndex?: (item: TNode) => number,
 ): FlatItem<TNode>[] {
-  if (!getChildren) {
+  if (!itemChildren) {
     return items.map((item, i) => ({
       item,
       index: getOriginalIndex ? getOriginalIndex(item) : i,
@@ -122,7 +122,7 @@ export function flattenTree<TNode>(
     for (let localIdx = 0; localIdx < list.length; localIdx++) {
       const item = list[localIdx];
       const index = depth === 0 && getOriginalIndex ? getOriginalIndex(item) : localIdx;
-      const children = getChildren!(item, index);
+      const children = itemChildren!(item, index);
       const hasChildren = children != null && children.length > 0;
       result.push({ item, index, row, depth, hasChildren, parent });
       row++;
@@ -139,7 +139,7 @@ export function flattenTree<TNode>(
 
 export function collectAllExpandable<TItem>(
   items: TItem[],
-  getChildren: (item: TItem, index: number) => TItem[] | undefined,
+  itemChildren: (item: TItem, index: number) => TItem[] | undefined,
   getOriginalIndex?: (item: TItem) => number,
 ): TItem[] {
   const result: TItem[] = [];
@@ -148,7 +148,7 @@ export function collectAllExpandable<TItem>(
     for (let localIdx = 0; localIdx < list.length; localIdx++) {
       const item = list[localIdx];
       const index = depth === 0 && getOriginalIndex ? getOriginalIndex(item) : localIdx;
-      const children = getChildren(item, index);
+      const children = itemChildren(item, index);
       if (children != null && children.length > 0) {
         result.push(item);
         walk(children, depth + 1);

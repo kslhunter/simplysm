@@ -235,12 +235,12 @@ describe("Select component", () => {
   });
 
   describe("search functionality", () => {
-    it("displays search input when getSearchText is provided", async () => {
+    it("displays search input when itemSearchText is provided", async () => {
       const { getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
-          getSearchText={(item) => item}
+          itemSearchText={(item) => item}
           renderValue={(v) => <>{v}</>}
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
@@ -261,7 +261,7 @@ describe("Select component", () => {
         <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
-          getSearchText={(item) => item}
+          itemSearchText={(item) => item}
           renderValue={(v) => <>{v}</>}
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
@@ -292,7 +292,7 @@ describe("Select component", () => {
         <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["red apple", "green apple", "banana"]}
-          getSearchText={(item) => item}
+          itemSearchText={(item) => item}
           renderValue={(v) => <>{v}</>}
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
@@ -318,7 +318,7 @@ describe("Select component", () => {
       });
     });
 
-    it("does not display search input when getSearchText is not provided", async () => {
+    it("does not display search input when itemSearchText is not provided", async () => {
       const { getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
@@ -515,12 +515,12 @@ describe("Select component", () => {
   });
 
   describe("hiding handling", () => {
-    it("hides items where getIsHidden is true", async () => {
+    it("hides items where isItemHidden is true", async () => {
       const { getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
-          getIsHidden={(item) => item === "banana"}
+          isItemHidden={(item) => item === "banana"}
           renderValue={(v) => <>{v}</>}
         >
           <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
@@ -548,7 +548,7 @@ describe("Select component", () => {
         <ConfigProvider clientName="test"><I18nProvider>
           <Select
           items={["apple", "banana", "cherry"]}
-          getIsHidden={(item) => item === "banana"}
+          isItemHidden={(item) => item === "banana"}
           value="banana"
           renderValue={(v) => <>{v}</>}
         >

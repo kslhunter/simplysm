@@ -10,13 +10,13 @@ interface TestItem {
 
 describe("useDataSheetFixedColumns", () => {
   describe("feature column tracking", () => {
-    it("should detect expand feature when getChildren is provided", () => {
+    it("should detect expand feature when itemChildren is provided", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
         const { hasExpandFeature } = useDataSheetFixedColumns(
           {
-            getChildren: () => undefined,
+            itemChildren: () => undefined,
           },
           effectiveColumns
         );
@@ -25,7 +25,7 @@ describe("useDataSheetFixedColumns", () => {
       });
     });
 
-    it("should not detect expand feature when getChildren is not provided", () => {
+    it("should not detect expand feature when itemChildren is not provided", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
@@ -93,7 +93,7 @@ describe("useDataSheetFixedColumns", () => {
 
         const { expandColWidth, selectColWidth, reorderColWidth } = useDataSheetFixedColumns(
           {
-            getChildren: () => undefined,
+            itemChildren: () => undefined,
             selectMode: "single",
             onItemsReorder: () => {},
           },
@@ -129,7 +129,7 @@ describe("useDataSheetFixedColumns", () => {
 
         const { selectColLeft, expandColWidth: _expandColWidth } = useDataSheetFixedColumns(
           {
-            getChildren: () => undefined,
+            itemChildren: () => undefined,
             selectMode: "single",
           },
           effectiveColumns
@@ -146,7 +146,7 @@ describe("useDataSheetFixedColumns", () => {
 
         const { reorderColLeft } = useDataSheetFixedColumns(
           {
-            getChildren: () => undefined,
+            itemChildren: () => undefined,
             selectMode: "single",
             onItemsReorder: () => {},
           },
@@ -165,7 +165,7 @@ describe("useDataSheetFixedColumns", () => {
 
         const { featureColTotalWidth } = useDataSheetFixedColumns(
           {
-            getChildren: () => undefined,
+            itemChildren: () => undefined,
             selectMode: "single",
             onItemsReorder: () => {},
           },

@@ -259,8 +259,8 @@ describe("SharedDataProvider", () => {
     const { serviceClientValue } = createMockServiceClient();
 
     const getKeyFn = (item: TestUser) => item.id;
-    const getSearchTextFn = (item: TestUser) => item.name;
-    const getIsHiddenFn = (item: TestUser) => item.name === "hidden";
+    const itemSearchTextFn = (item: TestUser) => item.name;
+    const isItemHiddenFn = (item: TestUser) => item.name === "hidden";
     const getParentKeyFn = (_item: TestUser) => undefined as number | undefined;
 
     let sharedRef: any;
@@ -270,8 +270,8 @@ describe("SharedDataProvider", () => {
         fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
         getKey: getKeyFn,
         orderBy: [[(item) => item.name, "asc"]],
-        getSearchText: getSearchTextFn,
-        getIsHidden: getIsHiddenFn,
+        itemSearchText: itemSearchTextFn,
+        isItemHidden: isItemHiddenFn,
         getParentKey: getParentKeyFn,
       },
     };
@@ -298,15 +298,15 @@ describe("SharedDataProvider", () => {
 
     // Verify meta function references in accessor match definition
     expect(sharedRef!.user.getKey).toBe(getKeyFn);
-    expect(sharedRef!.user.getSearchText).toBe(getSearchTextFn);
-    expect(sharedRef!.user.getIsHidden).toBe(getIsHiddenFn);
+    expect(sharedRef!.user.itemSearchText).toBe(itemSearchTextFn);
+    expect(sharedRef!.user.isItemHidden).toBe(isItemHiddenFn);
     expect(sharedRef!.user.getParentKey).toBe(getParentKeyFn);
 
     // Verify actual call results
     const testItem: TestUser = { id: 42, name: "Test" };
     expect(sharedRef!.user.getKey(testItem)).toBe(42);
-    expect(sharedRef!.user.getSearchText(testItem)).toBe("Test");
-    expect(sharedRef!.user.getIsHidden(testItem)).toBe(false);
+    expect(sharedRef!.user.itemSearchText(testItem)).toBe("Test");
+    expect(sharedRef!.user.isItemHidden(testItem)).toBe(false);
     expect(sharedRef!.user.getParentKey(testItem)).toBeUndefined();
 
     result.unmount();
@@ -324,7 +324,7 @@ describe("SharedDataProvider", () => {
         fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
         getKey: getKeyFn,
         orderBy: [[(item) => item.name, "asc"]],
-        // getSearchText, getIsHidden, getParentKey not specified
+        // itemSearchText, isItemHidden, getParentKey not specified
       },
     };
 
@@ -352,8 +352,8 @@ describe("SharedDataProvider", () => {
     expect(sharedRef!.user.getKey).toBe(getKeyFn);
 
     // Optional meta functions are undefined when not specified
-    expect(sharedRef!.user.getSearchText).toBeUndefined();
-    expect(sharedRef!.user.getIsHidden).toBeUndefined();
+    expect(sharedRef!.user.itemSearchText).toBeUndefined();
+    expect(sharedRef!.user.isItemHidden).toBeUndefined();
     expect(sharedRef!.user.getParentKey).toBeUndefined();
 
     result.unmount();

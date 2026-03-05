@@ -23,9 +23,9 @@ export interface SharedDataDefinition<TData> {
   /** Server event filter (receives only events with matching filter among same-name events) */
   filter?: unknown;
   /** Function to extract search text from an item */
-  getSearchText?: (item: TData) => string;
+  itemSearchText?: (item: TData) => string;
   /** Function to determine if an item is hidden */
-  getIsHidden?: (item: TData) => boolean;
+  isItemHidden?: (item: TData) => boolean;
   /** Function to extract parent key from an item (tree structure support) */
   getParentKey?: (item: TData) => string | number | undefined;
 }
@@ -46,9 +46,9 @@ export interface SharedDataAccessor<TData> {
   /** Function to extract the unique key from an item */
   getKey: (item: TData) => string | number;
   /** Function to extract search text from an item */
-  getSearchText?: (item: TData) => string;
+  itemSearchText?: (item: TData) => string;
   /** Function to determine if an item is hidden */
-  getIsHidden?: (item: TData) => boolean;
+  isItemHidden?: (item: TData) => boolean;
   /** Function to extract parent key from an item (tree structure support) */
   getParentKey?: (item: TData) => string | number | undefined;
 }
@@ -268,8 +268,8 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
           );
         },
         getKey: def.getKey,
-        getSearchText: def.getSearchText,
-        getIsHidden: def.getIsHidden,
+        itemSearchText: def.itemSearchText,
+        isItemHidden: def.isItemHidden,
         getParentKey: def.getParentKey,
       };
     }

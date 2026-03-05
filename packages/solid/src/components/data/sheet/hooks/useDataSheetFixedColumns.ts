@@ -3,7 +3,7 @@ import { createResizeObserver } from "@solid-primitives/resize-observer";
 import type { DataSheetColumnDef } from "../types";
 
 export interface UseDataSheetFixedColumnsProps<TItem> {
-  getChildren?: (item: TItem, index: number) => TItem[] | undefined;
+  itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
   selectMode?: "single" | "multiple";
   onItemsReorder?: (event: any) => void;
 }
@@ -13,7 +13,7 @@ export function useDataSheetFixedColumns<TItem>(
   effectiveColumns: Accessor<DataSheetColumnDef<TItem>[]>
 ) {
   // Feature column presence checks
-  const hasExpandFeature = () => props.getChildren != null;
+  const hasExpandFeature = () => props.itemChildren != null;
   const hasSelectFeature = () => props.selectMode != null;
   const hasReorderFeature = () => props.onItemsReorder != null;
 

@@ -102,7 +102,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     "displayPageCount",
     "expandedItems",
     "onExpandedItemsChange",
-    "getChildren",
+    "itemChildren",
     "selectMode",
     "selectedItems",
     "onSelectedItemsChange",
@@ -270,7 +270,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     registerColumnRef,
   } = useDataSheetFixedColumns<T>(
     {
-      get getChildren() { return local.getChildren; },
+      get itemChildren() { return local.itemChildren; },
       get selectMode() { return local.selectMode; },
       get onItemsReorder() { return local.onItemsReorder; },
     },
@@ -368,7 +368,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
       {
         get expandedItems() { return local.expandedItems; },
         get onExpandedItemsChange() { return local.onExpandedItemsChange; },
-        get getChildren() { return local.getChildren; },
+        get itemChildren() { return local.itemChildren; },
       },
       pagedItems,
       originalIndexMap,
@@ -413,7 +413,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const { dragState, onReorderPointerDown } = useDataSheetReorder<T>(
     {
       get onItemsReorder() { return local.onItemsReorder; },
-      get getChildren() { return local.getChildren; },
+      get itemChildren() { return local.itemChildren; },
     },
     displayItems,
   );

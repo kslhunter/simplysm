@@ -28,7 +28,7 @@ const treeData: TestNode[] = [
   { id: "root3" },
 ];
 
-function getChildren(item: TestNode, _index: number): TestNode[] | undefined {
+function itemChildren(item: TestNode, _index: number): TestNode[] | undefined {
   return item.children;
 }
 
@@ -37,7 +37,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { getChildren },
+        { itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -51,7 +51,7 @@ describe("useDataSheetExpansion", () => {
       const createIndexMap = () => new Map<TestNode, number>();
       const expandedItems = [treeData[0]];
       const result = useDataSheetExpansion(
-        { expandedItems, getChildren },
+        { expandedItems, itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -64,7 +64,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { getChildren },
+        { itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -81,7 +81,7 @@ describe("useDataSheetExpansion", () => {
       const createIndexMap = () => new Map<TestNode, number>();
       const expandedItems = [treeData[0]];
       const result = useDataSheetExpansion(
-        { expandedItems: [...expandedItems], getChildren },
+        { expandedItems: [...expandedItems], itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -96,7 +96,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { expandedItems: [treeData[0]], getChildren },
+        { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -115,7 +115,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { getChildren },
+        { itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -132,7 +132,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { getChildren },
+        { itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -147,7 +147,7 @@ describe("useDataSheetExpansion", () => {
       // collectAllExpandable will find root1, child1-2, and root2 as expandable
       const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
       const result = useDataSheetExpansion(
-        { expandedItems: allExpandable, getChildren },
+        { expandedItems: allExpandable, itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -160,7 +160,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { expandedItems: [treeData[0]], getChildren },
+        { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -173,7 +173,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { getChildren },
+        { itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -191,7 +191,7 @@ describe("useDataSheetExpansion", () => {
       // collectAllExpandable will find root1, child1-2, and root2 as expandable
       const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
       const result = useDataSheetExpansion(
-        { expandedItems: allExpandable, getChildren },
+        { expandedItems: allExpandable, itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -207,7 +207,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const result = useDataSheetExpansion(
-        { expandedItems: [treeData[0]], getChildren },
+        { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
       );
@@ -241,7 +241,7 @@ describe("useDataSheetExpansion", () => {
       };
 
       const result = useDataSheetExpansion(
-        { getChildren, onExpandedItemsChange },
+        { itemChildren, onExpandedItemsChange },
         () => treeData,
         createIndexMap,
       );
