@@ -72,17 +72,17 @@ export default function ComboboxPage() {
         </Combobox>
       </section>
 
-      {/* allowCustomValue */}
+      {/* allowsCustomValue */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Allow Custom Values</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
-          When allowCustomValue is true, you can enter values not in the list by pressing Enter.
+          When allowsCustomValue is true, you can enter values not in the list by pressing Enter.
         </p>
         <div class="flex flex-col items-start gap-3">
           <Combobox
             loadItems={filterFruits}
             placeholder="Search or enter directly"
-            allowCustomValue
+            allowsCustomValue
             value={customValue()}
             onValueChange={setCustomValue}
             renderValue={(v: string | Fruit) =>
@@ -125,7 +125,7 @@ export default function ComboboxPage() {
         <Combobox<Fruit>
           loadItems={filterFruits}
           placeholder="Enter fruit name"
-          allowCustomValue
+          allowsCustomValue
           parseCustomValue={(text) => ({ id: 0, name: text, emoji: "🆕" })}
           renderValue={(v) => (
             <>

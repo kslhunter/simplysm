@@ -1,4 +1,4 @@
-import { Button, Icon, Sidebar, useSidebarContext, type AppMenu } from "@simplysm/solid";
+import { Button, Icon, Sidebar, useSidebar, type AppMenu } from "@simplysm/solid";
 import { IconFolder, IconHome, IconMenu2, IconSettings } from "@tabler/icons-solidjs";
 
 const sampleMenuItems: AppMenu[] = [
@@ -15,7 +15,7 @@ const sampleMenuItems: AppMenu[] = [
 ];
 
 const SidebarToggleButton = () => {
-  const { setToggle } = useSidebarContext();
+  const { setToggle } = useSidebar();
   return (
     <Button variant="ghost" onClick={() => setToggle((v) => !v)}>
       <Icon icon={IconMenu2} class="size-6" />
@@ -66,7 +66,7 @@ export default function SidebarPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Toggled State</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Control the sidebar toggle state through useSidebarContext().setToggle().
+          Control the sidebar toggle state through useSidebar().setToggle().
         </p>
         <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Sidebar.Container>
@@ -81,7 +81,7 @@ export default function SidebarPage() {
               </div>
               <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                 <p class="text-sm text-base-600 dark:text-base-400">
-                  Clicking the toggle button calls useSidebarContext().setToggle().
+                  Clicking the toggle button calls useSidebar().setToggle().
                 </p>
               </div>
             </main>
