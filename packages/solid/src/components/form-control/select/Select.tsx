@@ -285,7 +285,7 @@ interface SelectSingleBaseProps<TValue> extends SelectCommonProps<TValue> {
   onValueChange?: (value: TValue) => void;
 
   /** Display direction for multiple select (not used in single select) */
-  multiDisplayDirection?: never;
+  tagDirection?: never;
 
   /** Hide select all button (not used in single select) */
   hideSelectAll?: never;
@@ -303,7 +303,7 @@ interface SelectMultipleBaseProps<TValue> extends SelectCommonProps<TValue> {
   onValueChange?: (value: TValue[]) => void;
 
   /** Display direction for multiple select */
-  multiDisplayDirection?: "horizontal" | "vertical";
+  tagDirection?: "horizontal" | "vertical";
 
   /** Hide select all button */
   hideSelectAll?: boolean;
@@ -371,7 +371,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     "placeholder",
     "size",
     "inset",
-    "multiDisplayDirection",
+    "tagDirection",
     "hideSelectAll",
     "items",
     "itemChildren",
@@ -598,7 +598,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
       }
 
       if (local.multiple && Array.isArray(current)) {
-        const direction = local.multiDisplayDirection ?? "horizontal";
+        const direction = local.tagDirection ?? "horizontal";
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
             <For each={current}>{(v) => <span class={clsx("rounded px-1", bg.subtle)}>{renderValue(v)}</span>}</For>
