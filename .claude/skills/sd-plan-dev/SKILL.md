@@ -104,7 +104,14 @@ digraph process {
     "Batch integration check (typecheck + lint)" -> "More batches?";
     "More batches?" -> "Implement the task" [label="yes, next batch"];
     "More batches?" -> "Task: final review for entire implementation" [label="no"];
-    "Task: final review for entire implementation" -> "Done";
+    "Run /simplify on all changed code" [shape=box];
+    "Changes made?" [shape=diamond];
+
+    "Task: final review for entire implementation" -> "Run /simplify on all changed code";
+    "Run /simplify on all changed code" -> "Changes made?";
+    "Changes made?" -> "Typecheck + lint affected packages" [label="yes"];
+    "Typecheck + lint affected packages" -> "Done";
+    "Changes made?" -> "Done" [label="no"];
 }
 ```
 
@@ -216,6 +223,11 @@ You: Using sd-plan-dev to execute this plan.
 [Task: final review for entire implementation]
 Final reviewer: All requirements met, ready to merge
 
+[Run /simplify on all changed code]
+Simplify: extracted shared validation helper, removed 2 duplicate imports
+[typecheck + lint → pass]
+[Commit: refactor: simplify changed code]
+
 Done!
 ```
 
@@ -254,9 +266,20 @@ After all batches complete and pass integration checks, dispatch the final revie
    - For missing design requirements: create new implementation tasks and run through the full batch cycle
    - Re-run final review after all fixes
 
+## Simplify
+
+After the final review passes, run `/simplify` to review all changed code for reuse, quality, and efficiency. This catches cross-task cleanup opportunities that individual reviewers miss.
+
+1. Orchestrator runs `/simplify` via the Skill tool
+2. If simplify made changes:
+   - Run typecheck/lint on affected packages
+   - If typecheck/lint fails → fix the issues and re-run typecheck/lint until it passes
+   - Commit simplify changes as a separate commit (`refactor: simplify changed code`)
+3. If simplify made no changes → skip to completion
+
 ## Completion
 
-After the final review passes, report to the user: number of tasks completed, total files changed, and final review outcome.
+After simplify completes (or is skipped), report to the user: number of tasks completed, total files changed, and final review outcome.
 
 ## Red Flags
 
@@ -272,6 +295,7 @@ After the final review passes, report to the user: number of tasks completed, to
 - Accept "close enough" on spec compliance
 - Skip review loops (issue found → fix → re-review)
 - Skip batch integration checks between batches
+- Skip `/simplify` after final review
 - Use `run_in_background: true` on Task calls (use foreground parallel instead)
 
 **If implementer returns questions:**
