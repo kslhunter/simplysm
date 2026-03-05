@@ -32,7 +32,7 @@ public class FileSystemPlugin extends Plugin {
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
     @PluginMethod
-    public void hasPermission(PluginCall call) {
+    public void checkPermissions(PluginCall call) {
         boolean granted;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             granted = Environment.isExternalStorageManager();
@@ -47,7 +47,7 @@ public class FileSystemPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void requestPermission(PluginCall call) {
+    public void requestPermissions(PluginCall call) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -155,7 +155,7 @@ public class FileSystemPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void getFileUri(PluginCall call) {
+    public void getUri(PluginCall call) {
         String path = call.getString("path");
         if (path == null) {
             call.reject("path is required");
@@ -169,8 +169,8 @@ public class FileSystemPlugin extends Plugin {
             ret.put("uri", uri.toString());
             call.resolve(ret);
         } catch (Exception e) {
-            Log.e(TAG, "getFileUri failed", e);
-            call.reject("getFileUri failed: " + e.getMessage());
+            Log.e(TAG, "getUri failed", e);
+            call.reject("getUri failed: " + e.getMessage());
         }
     }
 
