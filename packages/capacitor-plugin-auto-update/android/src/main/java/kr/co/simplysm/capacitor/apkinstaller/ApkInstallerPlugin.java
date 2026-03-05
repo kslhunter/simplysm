@@ -44,7 +44,8 @@ public class ApkInstallerPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void hasPermission(PluginCall call) {
+    public void checkPermissions(PluginCall call) {
+        // Check granted
         boolean granted;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             granted = getContext().getPackageManager().canRequestPackageInstalls();
@@ -52,13 +53,34 @@ public class ApkInstallerPlugin extends Plugin {
             granted = true;
         }
 
+        // Check manifest
+        boolean manifest = false;
+        try {
+            Context context = getContext();
+            String targetPermission = "android.permission.REQUEST_INSTALL_PACKAGES";
+            String[] requestedPermissions = context.getPackageManager()
+                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
+                .requestedPermissions;
+            if (requestedPermissions != null) {
+                for (String perm : requestedPermissions) {
+                    if (targetPermission.equals(perm)) {
+                        manifest = true;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "checkPermissions manifest check failed", e);
+        }
+
         JSObject ret = new JSObject();
         ret.put("granted", granted);
+        ret.put("manifest", manifest);
         call.resolve(ret);
     }
 
     @PluginMethod
-    public void requestPermission(PluginCall call) {
+    public void requestPermissions(PluginCall call) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getContext();
             Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
@@ -67,35 +89,6 @@ public class ApkInstallerPlugin extends Plugin {
             context.startActivity(intent);
         }
         call.resolve();
-    }
-
-    @PluginMethod
-    public void hasPermissionManifest(PluginCall call) {
-        try {
-            Context context = getContext();
-            String targetPermission = "android.permission.REQUEST_INSTALL_PACKAGES";
-
-            String[] requestedPermissions = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
-
-            boolean declared = false;
-            if (requestedPermissions != null) {
-                for (String perm : requestedPermissions) {
-                    if (targetPermission.equals(perm)) {
-                        declared = true;
-                        break;
-                    }
-                }
-            }
-
-            JSObject ret = new JSObject();
-            ret.put("declared", declared);
-            call.resolve(ret);
-        } catch (Exception e) {
-            Log.e(TAG, "hasPermissionManifest failed", e);
-            call.reject("Manifest check failed: " + e.getMessage());
-        }
     }
 
     @PluginMethod
