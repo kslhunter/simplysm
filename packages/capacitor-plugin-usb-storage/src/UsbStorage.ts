@@ -1,14 +1,14 @@
 import { registerPlugin } from "@capacitor/core";
 import type {
-  IUsbDeviceFilter,
-  IUsbDeviceInfo,
-  IUsbFileInfo,
-  IUsbStoragePlugin,
-} from "./IUsbStoragePlugin";
+  UsbDeviceFilter,
+  UsbDeviceInfo,
+  UsbFileInfo,
+  UsbStoragePlugin,
+} from "./UsbStoragePlugin";
 import type { Bytes } from "@simplysm/core-common";
 import { bytesFromBase64 } from "@simplysm/core-common";
 
-const UsbStoragePlugin = registerPlugin<IUsbStoragePlugin>("UsbStorage", {
+const usbStoragePlugin = registerPlugin<UsbStoragePlugin>("UsbStorage", {
   web: async () => {
     const { UsbStorageWeb } = await import("./web/UsbStorageWeb");
     return new UsbStorageWeb();
@@ -25,8 +25,8 @@ export abstract class UsbStorage {
    * Get list of connected USB devices
    * @returns Array of connected USB device info
    */
-  static async getDevices(): Promise<IUsbDeviceInfo[]> {
-    const result = await UsbStoragePlugin.getDevices();
+  static async getDevices(): Promise<UsbDeviceInfo[]> {
+    const result = await usbStoragePlugin.getDevices();
     return result.devices;
   }
 
@@ -35,8 +35,8 @@ export abstract class UsbStorage {
    * @param filter vendorId and productId of the USB device to request permission for
    * @returns Whether permission was granted
    */
-  static async requestPermission(filter: IUsbDeviceFilter): Promise<boolean> {
-    const result = await UsbStoragePlugin.requestPermission(filter);
+  static async requestPermissions(filter: UsbDeviceFilter): Promise<boolean> {
+    const result = await usbStoragePlugin.requestPermissions(filter);
     return result.granted;
   }
 
@@ -45,8 +45,8 @@ export abstract class UsbStorage {
    * @param filter vendorId and productId of the USB device to check permission for
    * @returns Whether permission is held
    */
-  static async hasPermission(filter: IUsbDeviceFilter): Promise<boolean> {
-    const result = await UsbStoragePlugin.hasPermission(filter);
+  static async checkPermissions(filter: UsbDeviceFilter): Promise<boolean> {
+    const result = await usbStoragePlugin.checkPermissions(filter);
     return result.granted;
   }
 
@@ -56,8 +56,8 @@ export abstract class UsbStorage {
    * @param dirPath Directory path to read
    * @returns Array of file/folder info in the directory
    */
-  static async readdir(filter: IUsbDeviceFilter, dirPath: string): Promise<IUsbFileInfo[]> {
-    const result = await UsbStoragePlugin.readdir({ ...filter, path: dirPath });
+  static async readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]> {
+    const result = await usbStoragePlugin.readdir({ ...filter, path: dirPath });
     return result.files;
   }
 
@@ -67,8 +67,8 @@ export abstract class UsbStorage {
    * @param filePath File path to read
    * @returns Bytes containing file data, or undefined
    */
-  static async read(filter: IUsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
-    const result = await UsbStoragePlugin.read({ ...filter, path: filePath });
+  static async read(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
+    const result = await usbStoragePlugin.read({ ...filter, path: filePath });
     if (result.data == null) {
       return undefined;
     }

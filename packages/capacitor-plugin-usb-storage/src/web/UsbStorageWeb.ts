@@ -1,17 +1,17 @@
 import { WebPlugin } from "@capacitor/core";
 import type {
-  IUsbDeviceFilter,
-  IUsbDeviceInfo,
-  IUsbFileInfo,
-  IUsbStoragePlugin,
-} from "../IUsbStoragePlugin";
+  UsbDeviceFilter,
+  UsbDeviceInfo,
+  UsbFileInfo,
+  UsbStoragePlugin,
+} from "../UsbStoragePlugin";
 import { VirtualUsbStorage } from "./VirtualUsbStorage";
 import { bytesToBase64 } from "@simplysm/core-common";
 
-export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
+export class UsbStorageWeb extends WebPlugin implements UsbStoragePlugin {
   private readonly _storage = new VirtualUsbStorage();
 
-  async getDevices(): Promise<{ devices: IUsbDeviceInfo[] }> {
+  async getDevices(): Promise<{ devices: UsbDeviceInfo[] }> {
     const devices = await this._storage.getDevices();
     return {
       devices: devices.map((d) => ({
@@ -24,15 +24,15 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
     };
   }
 
-  async requestPermission(_options: IUsbDeviceFilter): Promise<{ granted: boolean }> {
+  async requestPermissions(_options: UsbDeviceFilter): Promise<{ granted: boolean }> {
     return Promise.resolve({ granted: true });
   }
 
-  async hasPermission(_options: IUsbDeviceFilter): Promise<{ granted: boolean }> {
+  async checkPermissions(_options: UsbDeviceFilter): Promise<{ granted: boolean }> {
     return Promise.resolve({ granted: true });
   }
 
-  async readdir(options: IUsbDeviceFilter & { path: string }): Promise<{ files: IUsbFileInfo[] }> {
+  async readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }> {
     const deviceKey = `${options.vendorId}:${options.productId}`;
     const devices = await this._storage.getDevices();
     const deviceExists = devices.some((d) => d.key === deviceKey);
@@ -47,7 +47,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
     return { files: children };
   }
 
-  async read(options: IUsbDeviceFilter & { path: string }): Promise<{ data: string | null }> {
+  async read(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }> {
     const deviceKey = `${options.vendorId}:${options.productId}`;
     const devices = await this._storage.getDevices();
     const deviceExists = devices.some((d) => d.key === deviceKey);
@@ -78,7 +78,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
    * Add a file to a virtual USB device. (For testing/development)
    */
   async addVirtualFile(
-    filter: IUsbDeviceFilter,
+    filter: UsbDeviceFilter,
     filePath: string,
     data: Uint8Array,
   ): Promise<void> {
@@ -97,7 +97,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   /**
    * Add a directory to a virtual USB device. (For testing/development)
    */
-  async addVirtualDirectory(filter: IUsbDeviceFilter, dirPath: string): Promise<void> {
+  async addVirtualDirectory(filter: UsbDeviceFilter, dirPath: string): Promise<void> {
     const deviceKey = `${filter.vendorId}:${filter.productId}`;
     await this._storage.ensureDir(deviceKey, dirPath);
   }
