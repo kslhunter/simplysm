@@ -85,15 +85,14 @@ import { Dialog } from "@simplysm/solid";
 | `closeOnEscape` | `boolean` | Close on Escape key |
 | `resizable` | `boolean` | Allow resize |
 | `draggable` | `boolean` | Allow drag to move |
-| `float` | `boolean` | Floating (no backdrop) |
-| `fill` | `boolean` | Fill viewport |
+| `mode` | `"float" \| "fill"` | Dialog display mode (default: modal) |
 | `width` | `number` | Dialog width (px) |
 | `height` | `number` | Dialog height (px) |
 | `minWidth` | `number` | Minimum width (px) |
 | `minHeight` | `number` | Minimum height (px) |
 | `position` | `"bottom-right" \| "top-right"` | Fixed position |
 | `headerStyle` | `JSX.CSSProperties \| string` | Header style |
-| `canDeactivate` | `() => boolean` | Guard function before close |
+| `beforeClose` | `() => boolean` | Guard function before close |
 | `onCloseComplete` | `() => void` | Callback after close animation |
 | `class` | `string` | Additional CSS class |
 
@@ -135,15 +134,14 @@ import { DialogDefaultsContext } from "@simplysm/solid";
 | `closeOnEscape?` | `boolean` | Close on ESC key |
 | `resizable?` | `boolean` | Resizable |
 | `draggable?` | `boolean` | Draggable |
-| `float?` | `boolean` | Floating mode (no backdrop) |
-| `fill?` | `boolean` | Fill full screen |
+| `mode?` | `"float" \| "fill"` | Dialog display mode (default: modal) |
 | `width?` | `number` | Initial width (px) |
 | `height?` | `number` | Initial height (px) |
 | `minWidth?` | `number` | Minimum width (px) |
 | `minHeight?` | `number` | Minimum height (px) |
 | `position?` | `"bottom-right" \| "top-right"` | Floating position |
 | `headerStyle?` | `JSX.CSSProperties \| string` | Custom header style |
-| `canDeactivate?` | `() => boolean` | Guard function before close |
+| `beforeClose?` | `() => boolean` | Guard function before close |
 
 **`DialogContextValue`**
 

@@ -156,7 +156,7 @@ import { DataSelectButton } from "@simplysm/solid";
 | `size` | `ComponentSize` | Trigger size |
 | `inset` | `boolean` | Borderless inset style |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `dialogOptions` | `DialogShowOptions` | Options forwarded to `dialog.show()` |
 
 The dialog must close with a `DataSelectDialogResult<TKey>` value: `{ selectedKeys: TKey[] }`.

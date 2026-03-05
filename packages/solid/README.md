@@ -25,7 +25,7 @@ pnpm add @simplysm/solid
 
 ## Form Control
 
-Input and selection components for user data entry. All field components support `required`, `validate`, `disabled`, `inset`, `size`, and `touchMode` unless noted.
+Input and selection components for user data entry. All field components support `required`, `validate`, `disabled`, `inset`, `size`, and `lazyValidation` unless noted.
 
 See [docs/form-control.md](docs/form-control.md) for full signatures and props.
 

@@ -1,6 +1,6 @@
 # Form Control
 
-Form input components for user data entry and selection. All field components support `required`, `validate`, `disabled`, `inset`, `size`, and `touchMode` unless noted otherwise.
+Form input components for user data entry and selection. All field components support `required`, `validate`, `disabled`, `inset`, `size`, and `lazyValidation` unless noted otherwise.
 
 ---
 
@@ -62,7 +62,7 @@ import { Select } from "@simplysm/solid";
 | `size` | `ComponentSize` | Size |
 | `inset` | `boolean` | Borderless inset style |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 Sub-components: `Select.Item`, `Select.Action`, `Select.Header`, `Select.ItemTemplate`
 
@@ -97,7 +97,7 @@ import { Combobox } from "@simplysm/solid";
 | `size` | `FieldSize` | Size |
 | `inset` | `boolean` | Borderless inset style |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 Sub-components: `Combobox.Item`, `Combobox.ItemTemplate`
 
@@ -126,7 +126,7 @@ import { TextInput } from "@simplysm/solid";
 | `maxLength` | `number` | Maximum length |
 | `pattern` | `string` | Regex pattern |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -156,7 +156,7 @@ import { NumberInput } from "@simplysm/solid";
 | `max` | `number` | Maximum value |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -185,7 +185,7 @@ import { DatePicker } from "@simplysm/solid";
 | `max` | `DateOnly` | Maximum date |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -212,7 +212,7 @@ import { DateTimePicker } from "@simplysm/solid";
 | `max` | `DateTime` | Maximum date-time |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -239,7 +239,7 @@ import { TimePicker } from "@simplysm/solid";
 | `max` | `Time` | Maximum time |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -266,7 +266,7 @@ import { Textarea } from "@simplysm/solid";
 | `minLength` | `number` | Minimum length |
 | `maxLength` | `number` | Maximum length |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
 | `size` | `FieldSize` | Size |
 
@@ -294,7 +294,7 @@ import { Checkbox } from "@simplysm/solid";
 | `inline` | `boolean` | Inline display |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 ---
 
@@ -337,7 +337,7 @@ import { CheckboxGroup } from "@simplysm/solid";
 | `inset` | `boolean` | Borderless inset style |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 Sub-components: `CheckboxGroup.Item`
 
@@ -368,7 +368,7 @@ import { RadioGroup } from "@simplysm/solid";
 | `inset` | `boolean` | Borderless inset style |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 Sub-components: `RadioGroup.Item`
 
@@ -395,7 +395,7 @@ import { ColorPicker } from "@simplysm/solid";
 | `inset` | `boolean` | Borderless inset style |
 | `required` | `boolean` | Required validation |
 | `validate` | `(value) => string \| undefined` | Custom validation |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 ---
 
@@ -529,7 +529,7 @@ Validation wrapper that displays error indicators and injects a hidden input for
 ```tsx
 import { Invalid } from "@simplysm/solid";
 
-<Invalid message={errorMsg} variant="border" touchMode>
+<Invalid message={errorMsg} variant="border" lazyValidation>
   <SomeInput />
 </Invalid>
 ```
@@ -540,7 +540,7 @@ import { Invalid } from "@simplysm/solid";
 |------|------|-------------|
 | `message` | `string \| undefined` | Error message |
 | `variant` | `"border" \| "dot"` | Error indicator style |
-| `touchMode` | `boolean` | Show error only after blur |
+| `lazyValidation` | `boolean` | Show error only after blur |
 
 ---
 
