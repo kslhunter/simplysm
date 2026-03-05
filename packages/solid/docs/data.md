@@ -54,7 +54,7 @@ import { List } from "@simplysm/solid";
 |------|------|-------------|
 | `selected` | `boolean` | Selected state |
 | `disabled` | `boolean` | Disabled state |
-| `readonly` | `boolean` | Readonly state (no pointer) |
+| `readOnly` | `boolean` | Readonly state (no pointer) |
 | `onClick` | `() => void` | Click handler |
 
 Sub-components: `List.Item`
@@ -152,7 +152,7 @@ Sub-components: `DataSheet.Column`
 | `itemSelectable` | `(item) => boolean \| string` | Item selectability |
 | `expandedItems` | `TItem[]` | Expanded tree items |
 | `onExpandedItemsChange` | `(items) => void` | Expand change callback |
-| `getChildren` | `(item, index) => TItem[] \| undefined` | Tree children resolver |
+| `itemChildren` | `(item, index) => TItem[] \| undefined` | Tree children resolver |
 | `cellClass` | `(item, colKey) => string \| undefined` | Per-cell class |
 | `cellStyle` | `(item, colKey) => string \| undefined` | Per-cell style |
 | `onItemsReorder` | `(event: DataSheetReorderEvent<TItem>) => void` | Reorder callback |

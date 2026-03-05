@@ -81,15 +81,15 @@ Sub-components: `Sidebar.Container`, `Sidebar.Menu`, `Sidebar.User`
 Context and utilities for the Sidebar component.
 
 ```tsx
-import { SidebarContext, useSidebarContext, useSidebarContextOptional, SM_MEDIA_QUERY } from "@simplysm/solid";
+import { SidebarContext, useSidebar, SM_MEDIA_QUERY } from "@simplysm/solid";
 ```
 
 | Export | Description |
 |--------|-------------|
 | `SM_MEDIA_QUERY` | Media query string for small screen breakpoint |
 | `SidebarContext` | SolidJS context object |
-| `useSidebarContext()` | Hook — throws if outside Sidebar |
-| `useSidebarContextOptional()` | Hook — returns undefined if outside Sidebar |
+| `useSidebar()` | Hook — throws if outside Sidebar |
+| `useSidebar.optional()` | Hook — returns undefined if outside Sidebar |
 
 ---
 

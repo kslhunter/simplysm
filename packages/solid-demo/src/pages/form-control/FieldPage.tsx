@@ -152,25 +152,25 @@ export default function FieldPage() {
             <NumberInput placeholder="Enter a number" />
           </div>
 
-          {/* Thousands comma */}
+          {/* Thousands separator */}
           <div>
             <h3 class="mb-3 text-lg font-bold">Thousands Separator</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">comma=true (default)</p>
+                <p class="mb-1 text-sm text-base-500">useGrouping=true (default)</p>
                 <NumberInput value={1234567} />
               </div>
               <div>
-                <p class="mb-1 text-sm text-base-500">comma=false</p>
-                <NumberInput value={1234567} comma={false} />
+                <p class="mb-1 text-sm text-base-500">useGrouping=false</p>
+                <NumberInput value={1234567} useGrouping={false} />
               </div>
             </div>
           </div>
 
           {/* Decimal places */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">Decimal Places (minDigits)</h3>
-            <NumberInput value={100} minDigits={2} placeholder="minDigits=2" />
+            <h3 class="mb-3 text-lg font-bold">Decimal Places (minimumFractionDigits)</h3>
+            <NumberInput value={100} minimumFractionDigits={2} placeholder="minimumFractionDigits=2" />
           </div>
 
           {/* State */}

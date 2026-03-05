@@ -28,7 +28,7 @@ const config = useConfig();
 
 ---
 
-## `SyncStorageContext`
+## `SyncStorageProvider`
 
 Persistent key-value storage context with pluggable adapter.
 
@@ -56,7 +56,7 @@ storage.set("key", value);
 
 ---
 
-## `LoggerContext`
+## `LoggerProvider`
 
 Structured logging context with pluggable adapter.
 
@@ -150,8 +150,8 @@ const items = shared.users.items();
 |----------|-------------|
 | `getKey(item)` | Returns the primary key of an item |
 | `getParentKey?(item)` | Returns parent key for tree data |
-| `getSearchText?(item)` | Returns search text for filtering |
-| `getIsHidden?(item)` | Returns whether item is hidden |
+| `itemSearchText?(item)` | Returns search text for filtering |
+| `isItemHidden?(item)` | Returns whether item is hidden |
 
 ---
 
@@ -165,7 +165,7 @@ import { SharedDataChangeEvent } from "@simplysm/solid";
 
 ---
 
-## `I18nContext`
+## `I18nProvider`
 
 Internationalization context with built-in English and Korean dictionaries. **`I18nProvider` is required** — all components using `useI18n()` will throw an error if rendered outside of `I18nProvider`.
 

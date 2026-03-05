@@ -81,10 +81,10 @@ import { Dialog } from "@simplysm/solid";
 | `open` | `boolean` | Controlled open state |
 | `onOpenChange` | `(open: boolean) => void` | Open state change callback |
 | `closable` | `boolean` | Show close button |
-| `closeOnBackdrop` | `boolean` | Close on backdrop click |
+| `closeOnInteractOutside` | `boolean` | Close on backdrop click |
 | `closeOnEscape` | `boolean` | Close on Escape key |
 | `resizable` | `boolean` | Allow resize |
-| `movable` | `boolean` | Allow drag to move |
+| `draggable` | `boolean` | Allow drag to move |
 | `float` | `boolean` | Floating (no backdrop) |
 | `fill` | `boolean` | Fill viewport |
 | `width` | `number` | Dialog width (px) |
@@ -117,7 +117,7 @@ const result = await dialog.show<MyResult>(() => <MyDialog />, { header: "Confir
 | Property | Type | Description |
 |----------|------|-------------|
 | `closeOnEscape?` | `boolean` | Allow closing via ESC key |
-| `closeOnBackdrop?` | `boolean` | Allow closing via backdrop click |
+| `closeOnInteractOutside?` | `boolean` | Allow closing via backdrop click |
 
 **`DialogDefaultsContext`** — Context holding `Accessor<DialogDefaults>`, used internally by `DialogProvider`.
 
@@ -131,10 +131,10 @@ import { DialogDefaultsContext } from "@simplysm/solid";
 |----------|------|-------------|
 | `header?` | `JSX.Element` | Dialog header |
 | `closable?` | `boolean` | Show close button |
-| `closeOnBackdrop?` | `boolean` | Close on backdrop click |
+| `closeOnInteractOutside?` | `boolean` | Close on backdrop click |
 | `closeOnEscape?` | `boolean` | Close on ESC key |
 | `resizable?` | `boolean` | Resizable |
-| `movable?` | `boolean` | Draggable |
+| `draggable?` | `boolean` | Draggable |
 | `float?` | `boolean` | Floating mode (no backdrop) |
 | `fill?` | `boolean` | Fill full screen |
 | `width?` | `number` | Initial width (px) |
@@ -160,7 +160,7 @@ Provider that enables programmatic dialog creation via `useDialog()`.
 ```tsx
 import { DialogProvider } from "@simplysm/solid";
 
-<DialogProvider closeOnEscape closeOnBackdrop>
+<DialogProvider closeOnEscape closeOnInteractOutside>
   <App />
 </DialogProvider>
 ```
@@ -170,7 +170,7 @@ import { DialogProvider } from "@simplysm/solid";
 | Prop | Type | Description |
 |------|------|-------------|
 | `closeOnEscape?` | `boolean` | Default ESC close behavior for all dialogs |
-| `closeOnBackdrop?` | `boolean` | Default backdrop close behavior for all dialogs |
+| `closeOnInteractOutside?` | `boolean` | Default backdrop close behavior for all dialogs |
 
 ---
 

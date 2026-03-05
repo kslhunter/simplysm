@@ -35,7 +35,7 @@ See [docs/form-control.md](docs/form-control.md) for full signatures and props.
 | [`Select`](docs/form-control.md#select) | Dropdown supporting single/multiple selection and hierarchical items |
 | [`Combobox`](docs/form-control.md#combobox) | Async search combo box with optional free-text input |
 | [`TextInput`](docs/form-control.md#textinput) | Text/password/email input with format transformation |
-| [`NumberInput`](docs/form-control.md#numberinput) | Number input with comma formatting and min/max constraints |
+| [`NumberInput`](docs/form-control.md#numberinput) | Number input with grouping formatting and min/max constraints |
 | [`DatePicker`](docs/form-control.md#datepicker) | Date picker with configurable granularity (year/month/date) |
 | [`DateTimePicker`](docs/form-control.md#datetimepicker) | Date-time picker (minute/second granularity) |
 | [`TimePicker`](docs/form-control.md#timepicker) | Time picker (minute/second granularity) |
@@ -159,14 +159,14 @@ See [docs/providers.md](docs/providers.md) for full details.
 | Provider | Description |
 |----------|-------------|
 | [`ConfigContext`](docs/providers.md#configcontext) | Application-wide configuration context |
-| [`SyncStorageContext`](docs/providers.md#syncstoragecontext) | Persistent key-value storage with pluggable adapter |
-| [`LoggerContext`](docs/providers.md#loggercontext) | Structured logging with pluggable adapter |
+| [`SyncStorageProvider`](docs/providers.md#syncstorageprovider) | Persistent key-value storage with pluggable adapter |
+| [`LoggerProvider`](docs/providers.md#loggerprovider) | Structured logging with pluggable adapter |
 | [`ThemeContext`](docs/providers.md#themecontext) | Light/dark/system theme management |
 | [`ServiceClientContext`](docs/providers.md#serviceclientcontext) | WebSocket service client context |
 | [`SystemProvider`](docs/providers.md#systemprovider) | Composite root provider for applications |
 | [`SharedDataContext`](docs/providers.md#shareddatacontext) | Shared data synchronized with the server |
 | [`SharedDataChangeEvent`](docs/providers.md#shareddatachangeevent) | Event class for shared data change notifications |
-| [`I18nContext`](docs/providers.md#i18ncontext) | Internationalization with built-in EN/KO dictionaries |
+| [`I18nProvider`](docs/providers.md#i18nprovider) | Internationalization with built-in EN/KO dictionaries |
 
 ---
 

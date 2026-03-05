@@ -124,7 +124,7 @@ export default function ListPage() {
         <List>
           <List.Item>Normal item</List.Item>
           <List.Item selected>Selected item</List.Item>
-          <List.Item readonly>Readonly item</List.Item>
+          <List.Item readOnly>Readonly item</List.Item>
           <List.Item disabled>Disabled item</List.Item>
         </List>
       </section>

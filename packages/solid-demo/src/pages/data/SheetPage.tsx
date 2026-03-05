@@ -280,12 +280,12 @@ export default function SheetPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Tree Expansion</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Define tree structure with getChildren. Use caret icons to expand/collapse and vertical guides to show depth.
+          Define tree structure with itemChildren. Use caret icons to expand/collapse and vertical guides to show depth.
         </p>
         <DataSheet
           items={categories}
           persistKey="tree"
-          getChildren={(item) => item.children}
+          itemChildren={(item) => item.children}
           expandedItems={expanded()}
           onExpandedItemsChange={setExpanded}
         >
@@ -504,7 +504,7 @@ export default function SheetPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Non-selectable Items</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Use isItemSelectable to disable selection of specific items. The reason is displayed as a tooltip.
+          Use itemSelectable to disable selection of specific items. The reason is displayed as a tooltip.
         </p>
         <DataSheet
           items={users}
@@ -512,7 +512,7 @@ export default function SheetPage() {
           selectMode="multiple"
           selectedItems={disabledSelected()}
           onSelectedItemsChange={setDisabledSelected}
-          isItemSelectable={(item) => (item.salary >= 4500 ? true : "Salary under 4,500 cannot be selected")}
+          itemSelectable={(item) => (item.salary >= 4500 ? true : "Salary under 4,500 cannot be selected")}
         >
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
             {(ctx) => ctx.item.name}

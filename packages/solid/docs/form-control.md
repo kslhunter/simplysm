@@ -54,9 +54,9 @@ import { Select } from "@simplysm/solid";
 | `onValueChange` | `(value) => void` | Value change callback |
 | `multiple` | `boolean` | Multiple selection mode |
 | `items` | `TValue[]` | Item list (items prop mode) |
-| `getChildren` | `(item) => TValue[] \| undefined` | Hierarchical children |
-| `getSearchText` | `(item) => string` | Search text extractor |
-| `getIsHidden` | `(item) => boolean` | Item visibility |
+| `itemChildren` | `(item) => TValue[] \| undefined` | Hierarchical children |
+| `itemSearchText` | `(item) => string` | Search text extractor |
+| `isItemHidden` | `(item) => boolean` | Item visibility |
 | `required` | `boolean` | Required validation |
 | `disabled` | `boolean` | Disabled state |
 | `size` | `ComponentSize` | Size |
@@ -91,7 +91,7 @@ import { Combobox } from "@simplysm/solid";
 | `value` | `TValue` | Selected value |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `search` | `(text: string) => Promise<TValue[]>` | Async search function |
-| `allowCustomValue` | `boolean` | Allow free-text values |
+| `allowsCustomValue` | `boolean` | Allow free-text values |
 | `required` | `boolean` | Required validation |
 | `disabled` | `boolean` | Disabled state |
 | `size` | `FieldSize` | Size |
@@ -136,12 +136,12 @@ Sub-components: `TextInput.Prefix`
 
 ## `NumberInput`
 
-Number input with comma formatting and min/max constraints.
+Number input with grouping formatting and min/max constraints.
 
 ```tsx
 import { NumberInput } from "@simplysm/solid";
 
-<NumberInput value={val} onValueChange={setVal} comma min={0} max={100} />
+<NumberInput value={val} onValueChange={setVal} useGrouping min={0} max={100} />
 ```
 
 **Props**
@@ -150,8 +150,8 @@ import { NumberInput } from "@simplysm/solid";
 |------|------|-------------|
 | `value` | `number \| undefined` | Current value |
 | `onValueChange` | `(value: number \| undefined) => void` | Value change callback |
-| `comma` | `boolean` | Thousand-separator formatting |
-| `minDigits` | `number` | Minimum decimal digits |
+| `useGrouping` | `boolean` | Thousand-separator formatting |
+| `minimumFractionDigits` | `number` | Minimum decimal digits |
 | `min` | `number` | Minimum value |
 | `max` | `number` | Maximum value |
 | `required` | `boolean` | Required validation |
