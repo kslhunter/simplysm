@@ -55,10 +55,8 @@ export interface DialogShowOptions {
   resizable?: boolean;
   /** Draggable */
   draggable?: boolean;
-  /** Floating mode (fixed to bottom-right) */
-  float?: boolean;
-  /** Fill full screen */
-  fill?: boolean;
+  /** Display mode */
+  mode?: "float" | "fill";
   /** Initial width (px) */
   width?: number;
   /** Initial height (px) */
@@ -72,7 +70,7 @@ export interface DialogShowOptions {
   /** Custom header style */
   headerStyle?: JSX.CSSProperties | string;
   /** Confirmation function before closing (return false to cancel) */
-  canDeactivate?: () => boolean;
+  beforeClose?: () => boolean;
 }
 
 /** Extract result type from component's close prop */
@@ -123,10 +121,8 @@ export interface DialogProps {
   resizable?: boolean;
   /** Draggable (default: true) */
   draggable?: boolean;
-  /** Floating mode (no backdrop) */
-  float?: boolean;
-  /** Full-screen mode */
-  fill?: boolean;
+  /** Display mode */
+  mode?: "float" | "fill";
   /** Width */
   width?: number;
   /** Height */
@@ -140,7 +136,7 @@ export interface DialogProps {
   /** Header style */
   headerStyle?: JSX.CSSProperties | string;
   /** Confirmation function before closing */
-  canDeactivate?: () => boolean;
+  beforeClose?: () => boolean;
   /** Callback after close animation completes */
   onCloseComplete?: () => void;
   /** Additional CSS class */
@@ -219,15 +215,14 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
     "closeOnEscape",
     "resizable",
     "draggable",
-    "float",
-    "fill",
+    "mode",
     "width",
     "height",
     "minWidth",
     "minHeight",
     "position",
     "headerStyle",
-    "canDeactivate",
+    "beforeClose",
     "onCloseComplete",
     "class",
     "children",
@@ -313,7 +308,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
 
   // Attempt to close (check canDeactivate)
   const tryClose = () => {
-    if (local.canDeactivate && !local.canDeactivate()) return;
+    if (local.beforeClose && !local.beforeClose()) return;
     setOpen(false);
   };
 
@@ -450,7 +445,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
   const dialogStyle = (): JSX.CSSProperties => {
     const style: JSX.CSSProperties = {};
 
-    if (local.fill) {
+    if (local.mode === "fill") {
       style.width = "100%";
       style.height = "100%";
     } else {
@@ -499,8 +494,8 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
     clsx(
       "fixed bottom-0 left-0 right-0 top-0",
       "flex flex-col items-center",
-      !local.fill && "pt-[calc(3rem+0.5rem)]",
-      local.float && "pointer-events-none",
+      local.mode !== "fill" && "pt-[calc(3rem+0.5rem)]",
+      local.mode === "float" && "pointer-events-none",
     );
 
   // Backdrop class
@@ -523,14 +518,14 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
       "mx-auto",
       "w-fit min-w-[200px]",
       bg.surface,
-      local.float
+      local.mode === "float"
         ? clsx("shadow-md dark:shadow-black/30", "border", border.subtle)
         : "shadow-2xl dark:shadow-black/40",
-      local.fill ? "rounded-none border-none" : "rounded-lg",
+      local.mode === "fill" ? "rounded-none border-none" : "rounded-lg",
       "overflow-hidden",
       "flex flex-col",
       "focus:outline-none",
-      local.float && "pointer-events-auto",
+      local.mode === "float" && "pointer-events-auto",
       animationClass(),
     );
 
@@ -545,7 +540,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
           <ActionProvider>
           <div ref={setWrapperRef} data-dialog class={wrapperClass()}>
             {/* Backdrop */}
-            <Show when={!local.float}>
+            <Show when={local.mode !== "float"}>
               <div data-dialog-backdrop class={backdropClass()} onClick={handleBackdropClick} />
             </Show>
 
@@ -556,7 +551,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
               }}
               data-dialog-panel
               role="dialog"
-              aria-modal={local.float ? undefined : true}
+              aria-modal={local.mode === "float" ? undefined : true}
               aria-labelledby={hasHeader() ? headerId : undefined}
               tabIndex={0}
               class={twMerge(dialogBaseClass(), local.class)}
@@ -736,15 +731,14 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
               closeOnEscape={entry.options.closeOnEscape}
               resizable={entry.options.resizable}
               draggable={entry.options.draggable}
-              float={entry.options.float}
-              fill={entry.options.fill}
+              mode={entry.options.mode}
               width={entry.options.width}
               height={entry.options.height}
               minWidth={entry.options.minWidth}
               minHeight={entry.options.minHeight}
               position={entry.options.position}
               headerStyle={entry.options.headerStyle}
-              canDeactivate={entry.options.canDeactivate}
+              beforeClose={entry.options.beforeClose}
             >
               <Show when={entry.options.header !== undefined}>
                 <Dialog.Header>{entry.options.header}</Dialog.Header>

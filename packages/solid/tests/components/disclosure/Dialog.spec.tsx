@@ -207,11 +207,11 @@ describe("Dialog", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
-    it("does not close when canDeactivate returns false", async () => {
+    it("does not close when beforeClose returns false", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} onOpenChange={handleOpenChange} canDeactivate={() => false}>
+          <Dialog open={true} onOpenChange={handleOpenChange} beforeClose={() => false}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
@@ -264,7 +264,7 @@ describe("Dialog", () => {
     it("does not set aria-modal in float mode", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} float>
+          <Dialog open={true} mode="float">
           <Dialog.Header>플로팅 다이얼로그</Dialog.Header>
           <div>내용</div>
         </Dialog>
@@ -280,10 +280,10 @@ describe("Dialog", () => {
   });
 
   describe("float mode", () => {
-    it("has no backdrop when float=true", async () => {
+    it("has no backdrop when mode='float'", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} float>
+          <Dialog open={true} mode="float">
           <Dialog.Header>테스트</Dialog.Header>
           <div data-testid="content">내용</div>
         </Dialog>
@@ -298,10 +298,10 @@ describe("Dialog", () => {
   });
 
   describe("fill mode", () => {
-    it("applies fill style to dialog when fill=true", async () => {
+    it("applies fill style to dialog when mode='fill'", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} fill>
+          <Dialog open={true} mode="fill">
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>

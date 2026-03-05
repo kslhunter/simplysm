@@ -118,7 +118,7 @@ export default function ModalPage() {
         <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
           {floatOpen() ? "Close Float Dialog" : "Open Float Dialog"}
         </Button>
-        <Dialog open={floatOpen()} onOpenChange={setFloatOpen} float width={320}>
+        <Dialog open={floatOpen()} onOpenChange={setFloatOpen} mode="float" width={320}>
           <Dialog.Header>Float Dialog</Dialog.Header>
           <div class="p-4">
             <p class="text-sm">This is a floating dialog without a backdrop.</p>
@@ -138,7 +138,7 @@ export default function ModalPage() {
         <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
           Open Fill Dialog
         </Button>
-        <Dialog open={fillOpen()} onOpenChange={setFillOpen} fill closeOnEscape>
+        <Dialog open={fillOpen()} onOpenChange={setFillOpen} mode="fill" closeOnEscape>
           <Dialog.Header>Fill Dialog</Dialog.Header>
           <div class="flex flex-1 flex-col items-center justify-center p-4">
             <p class="text-lg font-bold">Full Screen Dialog</p>

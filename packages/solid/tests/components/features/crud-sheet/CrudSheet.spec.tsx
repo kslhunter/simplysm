@@ -25,7 +25,7 @@ function DialogWrapper(props: { children: JSX.Element }) {
   return (
     <ConfigContext.Provider value={{ clientName: "test" }}>
       <NotificationProvider>
-        <Dialog open fill>
+        <Dialog open mode="fill">
           <Dialog.Header>Test Dialog</Dialog.Header>
           {props.children}
         </Dialog>
