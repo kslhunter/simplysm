@@ -84,6 +84,7 @@ After collecting results from all reviewers, **Read the actual code** for each f
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
 - **Invalid — intentional pattern**: by-design architectural decision
 - **Invalid — misread**: the reviewer misinterpreted the code
+- **Invalid — tradeoff-negative**: the fix introduces more complexity, risk, or cost than the issue itself warrants (e.g., large-scale refactor for marginal safety gain, performance regression to fix a rare edge case)
 
 **For refactoring findings (Simplifier, Structure reviewers):**
 
@@ -105,6 +106,11 @@ After collecting results from all reviewers, **Read the actual code** for each f
 
 **Check 4 — Not by design**: Is this an established pattern used consistently across the codebase? (Provider+Component, Factory+Product, Input/Output types) If yes, drop.
 
+**Check 5 — Tradeoff-negative** (all refactoring findings):
+- Does the refactoring introduce significant complexity (new abstractions, indirection, generics) for marginal structural benefit? If yes, drop.
+- Does it require touching many files/callsites relative to the improvement? If yes, drop.
+- Would it degrade performance, readability, or debuggability more than the current structure costs? If yes, drop.
+
 ### Step 3: Invalid Findings Report
 
 Present only the **filtered findings** to the user:
@@ -118,24 +124,13 @@ Present only the **filtered findings** to the user:
 
 If there are **no valid findings**, report that the review found no actionable issues and end.
 
-### Step 4: User Confirmation
+### Step 4: Brainstorm Handoff
 
-Present each verified finding to the user **one at a time**, ordered by severity (CRITICAL → WARNING → INFO → HIGH → MEDIUM → LOW).
-
-For each finding, explain:
-1. **What the problem is** — the current code behavior and why it's an issue
-2. **How it could be fixed** — possible solution approaches (if multiple exist, list them briefly)
-3. **Ask**: address this or skip?
-
-Collect only findings the user confirms. If the user skips all findings, report that and end.
-
-### Step 5: Brainstorm Handoff
-
-Pass only the **user-confirmed findings** to **sd-brainstorm**.
+Pass all **verified findings** to **sd-brainstorm** with the instruction: **"Present each finding to the user one at a time. For each, explain the problem, possible fixes, and tradeoffs, then ask whether to address or skip. Only proceed with confirmed findings."**
 
 Each finding includes: **source reviewer**, **file:line**, **evidence**, **issue**, and **suggestion**.
 
-sd-brainstorm will handle prioritization, grouping, approach exploration, and design.
+sd-brainstorm will handle user confirmation, prioritization, grouping, approach exploration, and design.
 
 ## Common Mistakes
 
@@ -147,9 +142,8 @@ sd-brainstorm will handle prioritization, grouping, approach exploration, and de
 | Running all reviewers for focused requests | Match reviewer selection to user's request |
 | Reporting bugs as refactoring | Ask: "Is the behavior wrong?" If yes → defect, not refactoring |
 | Reporting style as refactoring | Ask: "Is this structural?" If no → lint, not refactoring |
-| Presenting valid findings as final report | Valid findings must be confirmed by user, then handed off to sd-brainstorm |
-| Dumping all findings at once for user confirmation | Present findings one at a time with problem explanation and solution approaches |
+| Presenting valid findings as final report | Valid findings must be handed off to sd-brainstorm for user confirmation |
 
 ## Completion Criteria
 
-Report invalid findings, then hand off all valid findings to sd-brainstorm. No code modifications during review.
+Report invalid findings, then hand off all verified findings to sd-brainstorm for user confirmation and design. No code modifications during review.

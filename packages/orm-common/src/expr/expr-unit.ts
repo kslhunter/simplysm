@@ -9,7 +9,7 @@ export class ExprUnit<TPrimitive extends ColumnPrimitive> {
   readonly $infer!: TPrimitive;
 
   get n(): ExprUnit<NonNullable<TPrimitive>> {
-    return this as unknown as ExprUnit<NonNullable<TPrimitive>>;
+    return new ExprUnit<NonNullable<TPrimitive>>(this.dataType, this.expr);
   }
 
   constructor(

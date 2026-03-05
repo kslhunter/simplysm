@@ -71,7 +71,13 @@ switch (cmd) {
       console.error("Usage: sd-worktree.mjs merge [name]  (or run inside .worktrees/<name>)");
       process.exit(1);
     }
-    // Check for uncommitted changes
+    // Check for uncommitted changes in BOTH main and worktree
+    const mainStatus = getOutput(`git -C "${mainWorktree}" status --porcelain`);
+    if (mainStatus) {
+      console.error(`Error: main working tree has uncommitted changes:\n${mainStatus}`);
+      console.error("Commit or stash changes before merging.");
+      process.exit(1);
+    }
     const worktreePath_m = resolve(mainWorktree, ".worktrees", name);
     if (existsSync(worktreePath_m)) {
       const status = getOutput(`git -C "${worktreePath_m}" status --porcelain`);
@@ -82,8 +88,8 @@ switch (cmd) {
       }
     }
     const branch = getMainBranch();
-    console.log(`Merging '${name}' into '${branch}'...`);
-    run(`git merge "${name}" --no-ff`, { cwd: mainWorktree });
+    console.log(`Merging '${name}' into '${branch}' (union strategy)...`);
+    run(`git merge "${name}" --no-ff -X union`, { cwd: mainWorktree });
     console.log(`\nMerged '${name}' into '${branch}'.`);
     break;
   }
@@ -122,7 +128,7 @@ switch (cmd) {
     // Block execution from inside the worktree
     const worktreePath = resolve(mainWorktree, ".worktrees", name);
     const cwd = process.cwd();
-    if (cwd === worktreePath || cwd.startsWith(worktreePath + "/")) {
+    if (cwd === worktreePath || cwd.startsWith(worktreePath + sep)) {
       console.error(`Error: Cannot clean '${name}' from inside its worktree.`);
       console.error(
         `Run: cd "${mainWorktree}" && node .claude/skills/sd-worktree/sd-worktree.mjs clean ${name}`,

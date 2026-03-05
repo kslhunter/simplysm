@@ -19,6 +19,7 @@ Before using extension methods: Verify actual existence in `@simplysm/core-commo
 
 - Do not use `Async` suffix on function names — Async is the default
 - When both sync and async versions exist, use `Sync` suffix on the sync function
+- **Exception — extensions**: When adding an async version to an existing prototype (e.g., `Array`), follow the original naming convention. If the sync method already exists without a `Sync` suffix, use `Async` suffix for the async version.
 
 ```typescript
 // Good
@@ -27,7 +28,11 @@ function readFileSync() { ... }        // Sync version
 
 // Bad
 async function readFileAsync() { ... } // Async suffix prohibited
+
+// Exception — Array extension already has mapMany()
+Array.prototype.mapManyAsync = async function () { ... }  // OK
 ```
+
 
 ## File Naming
 
@@ -46,9 +51,13 @@ async function readFileAsync() { ... } // Async suffix prohibited
 
 ## index.ts Export Pattern
 
-- Large packages: `#region`/`#endregion` for sections + `//` for sub-groups
-- Small packages (≤10 exports): `//` comments only
+- Use `//` comments to group exports
 - Always `export *` (wildcard), never explicit `export type { ... } from "..."`
+
+## `#region` / `#endregion`
+
+- When splitting a large ts/tsx file has a bigger tradeoff than keeping it as-is, use `#region`/`#endregion` to organize sections within the file
+- Do not use in simple export files like index.ts
 
 ## `any` vs `unknown` vs Generics
 
@@ -87,7 +96,6 @@ function wrapValue<T>(value: T): { value: T } {
 
 - API changes must be detectable via **typecheck alone** — all affected usage sites must show compile errors
 - Public component props must support **IDE intellisense** (autocomplete, type hints)
-- **No `any` in public-facing types** — use generics or specific union types instead
 - **No `Record<string, any>` for structured props** — define explicit interfaces so consumers get autocomplete
 
 ```typescript

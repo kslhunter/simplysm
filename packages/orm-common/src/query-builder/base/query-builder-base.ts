@@ -44,6 +44,11 @@ import type { ExprRendererBase } from "./expr-renderer-base";
  * - If different at all, make it abstract
  * - Method name identical to def.type (enables dynamic dispatch)
  */
+/** Properties that are part of a basic (non-LATERAL) JOIN */
+const BASIC_JOIN_PROPS: ReadonlySet<string> = new Set<
+  keyof Pick<SelectQueryDefJoin, "type" | "from" | "as" | "where" | "isSingle">
+>(["type", "from", "as", "where", "isSingle"]);
+
 export abstract class QueryBuilderBase {
   protected abstract expr: ExprRendererBase;
 
@@ -129,8 +134,7 @@ export abstract class QueryBuilderBase {
     }
 
     // LATERAL needed if join has additional properties beyond basic JOIN properties
-    const basicJoinProps = ["type", "from", "as", "where", "isSingle"];
-    return Object.keys(join).some((key) => !basicJoinProps.includes(key));
+    return Object.keys(join).some((key) => !BASIC_JOIN_PROPS.has(key));
   }
 
   /** FROM clause source render */

@@ -64,6 +64,22 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
 // Grouping Utilities
 // ============================================
 
+/** Precomputed column metadata for flatToNested */
+interface ColumnInfo {
+  key: string;
+  type: ColumnPrimitiveStr;
+  parts: string[] | undefined; // undefined for simple keys, string[] for nested keys
+}
+
+/** Precompute column info once per unique columns object */
+function buildColumnInfos(columns: Record<string, ColumnPrimitiveStr>): ColumnInfo[] {
+  return Object.entries(columns).map(([key, type]) => ({
+    key,
+    type,
+    parts: key.includes(".") ? key.split(".") : undefined,
+  }));
+}
+
 /**
  * Transform flat record to nested object
  *
@@ -72,20 +88,19 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
  */
 function flatToNested(
   record: Record<string, unknown>,
-  columns: Record<string, ColumnPrimitiveStr>,
+  columnInfos: ColumnInfo[],
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
-  for (const [key, type] of Object.entries(columns)) {
+  for (const { key, type, parts } of columnInfos) {
     const rawValue = record[key];
     const parsedValue = parseValue(rawValue, type);
 
     // undefined values are not added as keys
     if (parsedValue === undefined) continue;
 
-    if (key.includes(".")) {
+    if (parts != null) {
       // Nested key: "posts.id" → { posts: { id: ... } }
-      const parts = key.split(".");
       let current = result;
       for (let i = 0; i < parts.length - 1; i++) {
         const part = parts[i];
@@ -186,6 +201,7 @@ async function parseSimpleRecords<TRecord>(
   rawResults: Record<string, unknown>[],
   columns: Record<string, ColumnPrimitiveStr>,
 ): Promise<TRecord[] | undefined> {
+  const columnInfos = buildColumnInfos(columns);
   const results: Record<string, unknown>[] = [];
 
   for (let i = 0; i < rawResults.length; i++) {
@@ -194,7 +210,7 @@ async function parseSimpleRecords<TRecord>(
       await yieldToEventLoop();
     }
 
-    const parsed = flatToNested(rawResults[i], columns);
+    const parsed = flatToNested(rawResults[i], columnInfos);
 
     // Exclude empty objects
     if (!isEmptyObject(parsed)) {
@@ -226,12 +242,13 @@ async function parseJoinedRecords<TRecord>(
   meta: ResultMeta,
 ): Promise<TRecord[] | undefined> {
   // 1. Transform all records to nested structure
+  const columnInfos = buildColumnInfos(meta.columns);
   const nestedRecords: Record<string, unknown>[] = [];
   for (let i = 0; i < rawResults.length; i++) {
     if (i > 0 && i % YIELD_INTERVAL === 0) {
       await yieldToEventLoop();
     }
-    nestedRecords.push(flatToNested(rawResults[i], meta.columns));
+    nestedRecords.push(flatToNested(rawResults[i], columnInfos));
   }
 
   // 2. Sort JOIN keys by depth (shallower ones first)
@@ -253,7 +270,15 @@ async function parseJoinedRecords<TRecord>(
  */
 function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
-  return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
+  let result = "";
+  for (let i = 0; i < keys.length; i++) {
+    if (i > 0) result += "|";
+    const v = groupKey[keys[i]];
+    result += keys[i];
+    result += ":";
+    result += v === null ? "null" : String(v);
+  }
+  return result;
 }
 
 /**
@@ -295,12 +320,15 @@ function groupRecordsRecursively(
   // Map-based grouping (O(n) complexity)
   const groupMap = new Map<string, Record<string, unknown>>();
 
+  // Precompute join key exclusion set for O(1) lookup
+  const joinKeyExclusions = buildJoinKeyExclusionSet(childJoinKeys);
+
   // Key order caching (determined from first record and reused)
   let groupKeyOrder: string[] | undefined;
 
   for (const record of records) {
     // Extract and serialize group key (excluding JOIN keys)
-    const groupKey = extractGroupKey(record, childJoinKeys);
+    const groupKey = extractGroupKey(record, joinKeyExclusions);
     if (groupKeyOrder == null) {
       groupKeyOrder = Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
     }
@@ -383,16 +411,32 @@ function groupRecordsRecursively(
 }
 
 /**
+ * Build a Set of keys that should be excluded from group key (join keys and their prefixes)
+ */
+function buildJoinKeyExclusionSet(joinKeys: string[]): Set<string> {
+  const exclusions = new Set<string>();
+  for (const jk of joinKeys) {
+    exclusions.add(jk);
+    // Also exclude parent paths (e.g., "posts" for join key "posts.comments")
+    const parts = jk.split(".");
+    for (let i = 1; i < parts.length; i++) {
+      exclusions.add(parts.slice(0, i).join("."));
+    }
+  }
+  return exclusions;
+}
+
+/**
  * Extract group key from record excluding JOIN keys
  */
 function extractGroupKey(
   record: Record<string, unknown>,
-  joinKeys: string[],
+  joinKeyExclusions: Set<string>,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     // Only include non-JOIN keys
-    if (!joinKeys.some((jk) => jk === key || jk.startsWith(key + "."))) {
+    if (!joinKeyExclusions.has(key)) {
       // Only use primitive values (not object/array) as group key
       if (value == null || typeof value !== "object") {
         result[key] = value;

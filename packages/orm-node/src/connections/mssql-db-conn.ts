@@ -221,11 +221,11 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           rejected = true;
           this._requests = this._requests.filter((r) => r !== queryRequest);
 
-          const errRec = err as unknown as Record<string, unknown>;
-          if (errRec["code"] === "ECANCEL") {
+          const errCode = "code" in err ? err.code : undefined;
+          if (errCode === "ECANCEL") {
             reject(new SdError(err, "Query was cancelled."));
           } else {
-            const lineNumber = errRec["lineNumber"] as number | undefined;
+            const lineNumber = "lineNumber" in err && typeof err.lineNumber === "number" ? err.lineNumber : undefined;
             if (lineNumber != null && lineNumber > 0) {
               const splitQuery = query.split("\n");
               splitQuery[lineNumber - 1] = "==> " + splitQuery[lineNumber - 1];

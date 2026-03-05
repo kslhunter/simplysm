@@ -64,6 +64,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
   // ── Internal state (closure) ──
   let aliasCounter = 0;
   let status: DbContextStatus = "ready";
+  let relationsValidated = false;
 
   // ── DbContextBase implementation ──
   const base: DbContextBase = {
@@ -143,7 +144,10 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
       fn: () => Promise<TResult>,
       isolationLevel?: IsolationLevel,
     ): Promise<TResult> {
-      validateRelationsImpl(def);
+      if (!relationsValidated) {
+        validateRelationsImpl(def);
+        relationsValidated = true;
+      }
       base.resetAliasCounter();
 
       await executor.connect();
@@ -192,7 +196,10 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      * Used for DDL operations or read operations that don't require transactions
      */
     async connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult> {
-      validateRelationsImpl(def);
+      if (!relationsValidated) {
+        validateRelationsImpl(def);
+        relationsValidated = true;
+      }
       base.resetAliasCounter();
 
       await executor.connect();
