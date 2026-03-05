@@ -10,7 +10,7 @@ import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 export interface SelectionGroupBaseProps {
   required?: boolean;
-  touchMode?: boolean;
+  lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -34,7 +34,7 @@ export function SelectionGroupBase<TContextValue>(props: SelectionGroupBaseProps
     "isEmpty",
     "validate",
     "required",
-    "touchMode",
+    "lazyValidation",
     "class",
     "style",
     "children",
@@ -46,7 +46,7 @@ export function SelectionGroupBase<TContextValue>(props: SelectionGroupBaseProps
   });
 
   return (
-    <Invalid message={errorMsg()} variant="dot" touchMode={local.touchMode}>
+    <Invalid message={errorMsg()} variant="dot" lazyValidation={local.lazyValidation}>
       <local.context.Provider value={local.contextValue}>
         <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
           {local.children}

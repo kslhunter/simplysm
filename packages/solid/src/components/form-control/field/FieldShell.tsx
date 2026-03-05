@@ -9,7 +9,7 @@ export interface FieldShellProps {
   /** Invalid visual indicator variant */
   invalidVariant: "dot" | "border";
   /** Show error only after blur */
-  touchMode?: boolean;
+  lazyValidation?: boolean;
 
   /** Inset (borderless) mode */
   inset: boolean | undefined;
@@ -50,7 +50,7 @@ export const FieldShell: ParentComponent<FieldShellProps> = (props) => {
     <Invalid
       message={props.errorMsg}
       variant={props.invalidVariant}
-      touchMode={props.touchMode}
+      lazyValidation={props.lazyValidation}
     >
       <Show
         when={props.inset}

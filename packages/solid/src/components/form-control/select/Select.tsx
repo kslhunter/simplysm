@@ -257,8 +257,8 @@ interface SelectCommonProps<TValue = unknown> {
   /** Custom validation function */
   validate?: (value: unknown) => string | undefined;
 
-  /** touchMode: Show error only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: Show error only after blur */
+  lazyValidation?: boolean;
 
   /** Search text extraction function (shows search input when set) */
   itemSearchText?: (item: TValue) => string;
@@ -377,7 +377,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     "itemChildren",
     "renderValue",
     "validate",
-    "touchMode",
+    "lazyValidation",
     "itemSearchText",
     "isItemHidden",
   ]);
@@ -706,7 +706,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   };
 
   return (
-    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+    <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
       <SelectCtx.Provider value={contextValue as SelectContextValue}>
         <HeaderProvider>
           <ActionProvider>

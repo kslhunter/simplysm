@@ -197,10 +197,10 @@ export default function SelectPage() {
             </Select>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
+            <h3 class="mb-3 text-lg font-semibold">lazyValidation (displays after blur)</h3>
             <Select
               required
-              touchMode
+              lazyValidation
               placeholder="Required selection with touch mode"
               renderValue={(v: string) => <>{v}</>}
             >

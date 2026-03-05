@@ -24,7 +24,7 @@ interface CheckboxGroupProps<TValue> {
   inset?: boolean;
   required?: boolean;
   validate?: (value: TValue[]) => string | undefined;
-  touchMode?: boolean;
+  lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -61,7 +61,7 @@ function CheckboxGroupInner<TValue = unknown>(props: CheckboxGroupProps<TValue>)
       isEmpty={(v) => (v as unknown[]).length === 0}
       validate={props.validate as ((value: any) => string | undefined) | undefined}
       required={props.required}
-      touchMode={props.touchMode}
+      lazyValidation={props.lazyValidation}
       class={props.class}
       style={props.style}
     >

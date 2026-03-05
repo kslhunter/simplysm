@@ -277,10 +277,10 @@ export default function ComboboxPage() {
             </Combobox>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
+            <h3 class="mb-3 text-lg font-semibold">lazyValidation (displays after blur)</h3>
             <Combobox
               required
-              touchMode
+              lazyValidation
               loadItems={filterFruits}
               placeholder="Required selection with touch mode"
               renderValue={(v: Fruit) => (

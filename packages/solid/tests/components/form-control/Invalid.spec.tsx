@@ -90,10 +90,10 @@ describe("Invalid component", () => {
     });
   });
 
-  describe("touchMode", () => {
-    it("has no visual indication initially in touchMode", () => {
+  describe("lazyValidation", () => {
+    it("has no visual indication initially in lazyValidation", () => {
       const { container } = render(() => (
-        <Invalid variant="border" message="error" touchMode>
+        <Invalid variant="border" message="error" lazyValidation>
           <div data-testid="target" class="border">
             Content
           </div>
@@ -103,9 +103,9 @@ describe("Invalid component", () => {
       expect(target.classList.contains("border-danger-500")).toBe(false);
     });
 
-    it("setCustomValidity is always set in touchMode", () => {
+    it("setCustomValidity is always set in lazyValidation", () => {
       const { container } = render(() => (
-        <Invalid variant="border" message="error" touchMode>
+        <Invalid variant="border" message="error" lazyValidation>
           <div>Content</div>
         </Invalid>
       ));

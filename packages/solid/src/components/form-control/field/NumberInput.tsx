@@ -79,8 +79,8 @@ export interface NumberInputProps {
   /** Custom validation function */
   validate?: (value: number | undefined) => string | undefined;
 
-  /** touchMode: show errors only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: show errors only after blur */
+  lazyValidation?: boolean;
 
   /** Children (Prefix slot, etc.) */
   children?: JSX.Element;
@@ -203,7 +203,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     "min",
     "max",
     "validate",
-    "touchMode",
+    "lazyValidation",
     "class",
     "style",
     "children",
@@ -307,7 +307,7 @@ export const NumberInput: NumberInputComponent = (props) => {
       <FieldShell
         errorMsg={errorMsg()}
         invalidVariant={local.inset ? "dot" : "border"}
-        touchMode={local.touchMode}
+        lazyValidation={local.lazyValidation}
         inset={local.inset}
         isEditable={isEditable()}
         wrapperClass={getWrapperClass}

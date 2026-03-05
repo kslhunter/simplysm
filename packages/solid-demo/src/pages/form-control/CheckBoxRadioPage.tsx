@@ -137,10 +137,10 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-bold">touchMode (displays after blur)</h3>
+            <h3 class="mb-3 text-lg font-bold">lazyValidation (displays after blur)</h3>
             <div class="flex flex-col items-start gap-3">
-              <Checkbox required touchMode value={false}>
-                touchMode required checkbox
+              <Checkbox required lazyValidation value={false}>
+                lazyValidation required checkbox
               </Checkbox>
             </div>
           </div>

@@ -8,7 +8,7 @@ export interface InvalidProps {
   /** Visual indicator variant */
   variant?: "border" | "dot";
   /** When true, visual display only appears after target loses focus */
-  touchMode?: boolean;
+  lazyValidation?: boolean;
 }
 
 export const Invalid: ParentComponent<InvalidProps> = (props) => {
@@ -27,7 +27,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
 
   const resolved = children(() => props.children);
 
-  // Reactively update setCustomValidity when message changes (always, regardless of touchMode)
+  // Reactively update setCustomValidity when message changes (always, regardless of lazyValidation)
   createEffect(() => {
     const msg = props.message ?? "";
     hiddenInputEl.setCustomValidity(msg);
@@ -56,14 +56,14 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
   createEffect(() => {
     const variant = props.variant ?? "dot";
     const message = props.message ?? "";
-    const touchMode = props.touchMode ?? false;
+    const lazyValidation = props.lazyValidation ?? false;
     const isTouched = touched();
 
     const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
 
     if (!targetEl) return;
 
-    const shouldShow = message !== "" && (!touchMode || isTouched);
+    const shouldShow = message !== "" && (!lazyValidation || isTouched);
 
     if (variant === "border") {
       if (shouldShow) {
@@ -102,9 +102,9 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     }
   });
 
-  // touchMode: register focusout event on target to track touched state
+  // lazyValidation: register focusout event on target to track touched state
   createEffect(() => {
-    if (!(props.touchMode ?? false)) return;
+    if (!(props.lazyValidation ?? false)) return;
 
     const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
 

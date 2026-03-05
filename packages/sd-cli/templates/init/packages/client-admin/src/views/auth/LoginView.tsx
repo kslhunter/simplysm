@@ -81,7 +81,7 @@ export function LoginView() {
                   type="email"
                   placeholder="이메일을 입력하세요"
                   required
-                  touchMode
+                  lazyValidation
                   size="lg"
                   autocomplete="employeename"
                   value={data.email}
@@ -95,7 +95,7 @@ export function LoginView() {
               <FormGroup.Item>
                 <TextInput
                   required
-                  touchMode
+                  lazyValidation
                   class="w-full"
                   type="password"
                   placeholder="비밀번호를 입력하세요"

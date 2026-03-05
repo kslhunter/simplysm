@@ -13,7 +13,7 @@ export interface CheckboxProps {
   inline?: boolean;
   required?: boolean;
   validate?: (value: boolean) => string | undefined;
-  touchMode?: boolean;
+  lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;

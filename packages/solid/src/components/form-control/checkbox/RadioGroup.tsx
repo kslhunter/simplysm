@@ -24,7 +24,7 @@ interface RadioGroupProps<TValue> {
   inset?: boolean;
   required?: boolean;
   validate?: (value: TValue | undefined) => string | undefined;
-  touchMode?: boolean;
+  lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -58,7 +58,7 @@ function RadioGroupInner<TValue = unknown>(props: RadioGroupProps<TValue>): JSX.
       isEmpty={(v) => v === undefined || v === null}
       validate={props.validate as ((value: any) => string | undefined) | undefined}
       required={props.required}
-      touchMode={props.touchMode}
+      lazyValidation={props.lazyValidation}
       class={props.class}
       style={props.style}
     >

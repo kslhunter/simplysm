@@ -168,8 +168,8 @@ export interface ComboboxProps<TValue = unknown> {
   /** Custom validation function */
   validate?: (value: TValue | undefined) => string | undefined;
 
-  /** touchMode: show errors only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: show errors only after blur */
+  lazyValidation?: boolean;
 
   /** Placeholder text */
   placeholder?: string;
@@ -238,7 +238,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
     "size",
     "inset",
     "validate",
-    "touchMode",
+    "lazyValidation",
   ]);
 
   const i18n = useI18n();
@@ -427,7 +427,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
   };
 
   return (
-    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+    <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
       <ComboboxContext.Provider value={contextValue as ComboboxContextValue}>
         <div {...rest} data-combobox class={local.inset ? "flex" : "inline-flex"}>
           <Dropdown

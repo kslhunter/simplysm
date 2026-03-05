@@ -40,8 +40,8 @@ export interface ColorPickerProps {
   /** Custom validation function */
   validate?: (value: string | undefined) => string | undefined;
 
-  /** touchMode: show errors only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: show errors only after blur */
+  lazyValidation?: boolean;
 
   /** Custom class */
   class?: string;
@@ -68,7 +68,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     "inset",
     "required",
     "validate",
-    "touchMode",
+    "lazyValidation",
     "class",
     "style",
   ]);
@@ -104,7 +104,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     <Invalid
       variant={local.inset ? "dot" : "border"}
       message={errorMsg()}
-      touchMode={local.touchMode}
+      lazyValidation={local.lazyValidation}
     >
       <input
         {...rest}

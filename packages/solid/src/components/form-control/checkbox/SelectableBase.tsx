@@ -27,7 +27,7 @@ export interface SelectableBaseProps {
   inline?: boolean;
   required?: boolean;
   validate?: (value: boolean) => string | undefined;
-  touchMode?: boolean;
+  lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -50,7 +50,7 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
     "inline",
     "required",
     "validate",
-    "touchMode",
+    "lazyValidation",
     "class",
     "style",
     "children",
@@ -97,7 +97,7 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
   });
 
   return (
-    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+    <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
       <div
         {...rest}
         use:ripple={!local.disabled}

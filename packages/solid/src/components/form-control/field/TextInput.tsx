@@ -64,8 +64,8 @@ export interface TextInputProps {
   /** Custom validation function */
   validate?: (value: string) => string | undefined;
 
-  /** touchMode: Show error only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: Show error only after blur */
+  lazyValidation?: boolean;
 
   /** Custom class */
   class?: string;
@@ -163,7 +163,7 @@ const TextInputInner = (props: TextInputProps) => {
     "maxLength",
     "pattern",
     "validate",
-    "touchMode",
+    "lazyValidation",
     "class",
     "style",
     "children",
@@ -263,7 +263,7 @@ const TextInputInner = (props: TextInputProps) => {
       <FieldShell
         errorMsg={errorMsg()}
         invalidVariant={local.inset ? "dot" : "border"}
-        touchMode={local.touchMode}
+        lazyValidation={local.lazyValidation}
         inset={local.inset}
         isEditable={isEditable()}
         wrapperClass={getWrapperClass}

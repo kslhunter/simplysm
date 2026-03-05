@@ -96,8 +96,8 @@ export default function CheckboxRadioGroupPage() {
             </RadioGroup>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-bold">touchMode (displays after blur)</h3>
-            <CheckboxGroup required touchMode value={[]}>
+            <h3 class="mb-3 text-lg font-bold">lazyValidation (displays after blur)</h3>
+            <CheckboxGroup required lazyValidation value={[]}>
               <CheckboxGroup.Item value="x">X</CheckboxGroup.Item>
               <CheckboxGroup.Item value="y">Y</CheckboxGroup.Item>
             </CheckboxGroup>

@@ -33,7 +33,7 @@ export default function LoginPage() {
                   placeholder="Enter your ID"
                   size="lg"
                   required
-                  touchMode
+                  lazyValidation
                   value={id()}
                   onValueChange={setId}
                 >
@@ -49,7 +49,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   size="lg"
                   required
-                  touchMode
+                  lazyValidation
                   value={pw()}
                   onValueChange={setPw}
                 >

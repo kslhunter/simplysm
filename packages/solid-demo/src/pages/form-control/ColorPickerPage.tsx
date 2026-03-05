@@ -43,8 +43,8 @@ export default function ColorPickerPage() {
             <ColorPicker required value={undefined} />
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
-            <ColorPicker required touchMode value={undefined} />
+            <h3 class="mb-3 text-lg font-semibold">lazyValidation (displays after blur)</h3>
+            <ColorPicker required lazyValidation value={undefined} />
           </div>
         </div>
       </section>

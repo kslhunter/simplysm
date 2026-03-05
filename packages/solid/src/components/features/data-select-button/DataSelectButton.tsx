@@ -79,8 +79,8 @@ export type DataSelectButtonProps<
   inset?: boolean;
   /** Custom validation function */
   validate?: (value: unknown) => string | undefined;
-  /** touchMode: show error only after focus is lost */
-  touchMode?: boolean;
+  /** lazyValidation: show error only after focus is lost */
+  lazyValidation?: boolean;
 } & DialogPropsField<TDialogProps, TKey>;
 
 const actionButtonClass = clsx(
@@ -127,7 +127,7 @@ export function DataSelectButton<
     "size",
     "inset",
     "validate",
-    "touchMode",
+    "lazyValidation",
   ]) as unknown as [typeof props];
 
   const i18n = useI18n();
@@ -250,7 +250,7 @@ export function DataSelectButton<
     });
 
   return (
-    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+    <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
       <div data-data-select-button class="group inline-flex items-center">
         <div
           role="combobox"

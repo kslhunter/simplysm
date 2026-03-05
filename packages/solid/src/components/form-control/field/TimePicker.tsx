@@ -50,8 +50,8 @@ export interface TimePickerProps {
   /** Custom validation function */
   validate?: (value: Time | undefined) => string | undefined;
 
-  /** touchMode: show errors only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: show errors only after blur */
+  lazyValidation?: boolean;
 }
 
 /**
@@ -121,7 +121,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     "max",
     "required",
     "validate",
-    "touchMode",
+    "lazyValidation",
   ]);
 
   const i18n = useI18n();
@@ -178,7 +178,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     <FieldShell
       errorMsg={errorMsg()}
       invalidVariant={local.inset ? "dot" : "border"}
-      touchMode={local.touchMode}
+      lazyValidation={local.lazyValidation}
       inset={local.inset}
       isEditable={isEditable()}
       wrapperClass={getWrapperClass}

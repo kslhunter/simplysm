@@ -50,8 +50,8 @@ export interface DatePickerProps {
   /** Custom validation function */
   validate?: (value: DateOnly | undefined) => string | undefined;
 
-  /** touchMode: show errors only after blur */
-  touchMode?: boolean;
+  /** lazyValidation: show errors only after blur */
+  lazyValidation?: boolean;
 }
 
 /**
@@ -151,7 +151,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "style",
     "required",
     "validate",
-    "touchMode",
+    "lazyValidation",
   ]);
 
   const i18n = useI18n();
@@ -205,7 +205,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     <FieldShell
       errorMsg={errorMsg()}
       invalidVariant={local.inset ? "dot" : "border"}
-      touchMode={local.touchMode}
+      lazyValidation={local.lazyValidation}
       inset={local.inset}
       isEditable={isEditable()}
       wrapperClass={getWrapperClass}

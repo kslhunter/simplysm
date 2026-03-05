@@ -313,7 +313,7 @@ export default function FieldPage() {
                   validate={(v) => (v.includes("@") ? undefined : "@ character is required")}
                   placeholder="Custom validation"
                 />
-                <TextInput required touchMode placeholder="touchMode (displays after blur)" />
+                <TextInput required lazyValidation placeholder="lazyValidation (displays after blur)" />
                 <NumberInput required min={0} max={100} placeholder="0-100" />
                 <Textarea required minLength={10} placeholder="Minimum 10 characters" />
                 <Button type="submit" theme="primary" variant="solid">
