@@ -164,7 +164,7 @@ export function EmployeeSheet() {
     <CrudSheet<SheetItem, Filter>
       search={search}
       getItemKey={(item) => item.id}
-      itemDeleted={(item) => item.isDeleted}
+      isItemDeleted={(item) => item.isDeleted}
       isItemSelectable={(item) => item.id != null}
       persistKey="employee-page"
       editable={employeePerms.edit}

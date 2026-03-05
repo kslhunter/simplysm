@@ -202,10 +202,10 @@ import { CrudSheet } from "@simplysm/solid";
 | `getItemKey` | `(item) => string \| number \| undefined` | Row key extractor (required) |
 | `persistKey` | `string` | Key for persisting column config |
 | `editable` | `boolean` | Enable editing (default: true) |
-| `itemEditable` | `(item) => boolean` | Per-item edit permission |
-| `itemDeletable` | `(item) => boolean` | Per-item delete permission |
-| `itemDeleted` | `(item) => boolean` | Returns true if item is in deleted state |
-| `itemSelectable` | `(item) => boolean \| string` | Per-item selection permission |
+| `isItemEditable` | `(item) => boolean` | Per-item edit permission |
+| `isItemDeletable` | `(item) => boolean` | Per-item delete permission |
+| `isItemDeleted` | `(item) => boolean` | Returns true if item is in deleted state |
+| `isItemSelectable` | `(item) => boolean \| string` | Per-item selection permission |
 | `lastModifiedAtProp` | `string` | Property path for last-modified datetime (adds hidden column) |
 | `lastModifiedByProp` | `string` | Property path for last-modified user (adds hidden column) |
 | `filterInitial` | `TFilter` | Initial filter values |

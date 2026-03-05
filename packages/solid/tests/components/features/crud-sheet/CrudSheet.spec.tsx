@@ -174,7 +174,7 @@ describe("CrudSheet inline edit", () => {
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
-          itemDeleted={(item) => item.isDeleted}
+          isItemDeleted={(item) => item.isDeleted}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),
@@ -196,7 +196,7 @@ describe("CrudSheet inline edit", () => {
   });
 });
 
-describe("CrudSheet itemDeletable", () => {
+describe("CrudSheet isItemDeletable", () => {
   beforeEach(() => {
     localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
   });
@@ -205,7 +205,7 @@ describe("CrudSheet itemDeletable", () => {
     localStorage.removeItem("test.i18n-locale");
   });
 
-  it("inline delete button is disabled for items where itemDeletable=false", async () => {
+  it("inline delete button is disabled for items where isItemDeletable=false", async () => {
     const searchFn = () =>
       Promise.resolve({
         items: [
@@ -221,8 +221,8 @@ describe("CrudSheet itemDeletable", () => {
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
-          itemDeletable={(item) => item.id !== 1}
-          itemDeleted={(item) => item.isDeleted}
+          isItemDeletable={(item) => item.id !== 1}
+          isItemDeleted={(item) => item.isDeleted}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),

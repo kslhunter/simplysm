@@ -617,7 +617,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             totalPageCount={totalPageCount()}
             sorts={sorts()}
             onSortsChange={setSorts}
-            itemSelectable={local.isItemSelectable}
+            isItemSelectable={local.isItemSelectable}
             selectionMode={
               isSelectMode()
                 ? local.selectionMode

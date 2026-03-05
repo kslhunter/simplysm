@@ -85,7 +85,7 @@ export function RoleSheet() {
     <CrudSheet<SheetItem, Filter>
       search={search}
       getItemKey={(item) => item.id}
-      itemDeleted={(item) => item.isDeleted}
+      isItemDeleted={(item) => item.isDeleted}
       isItemSelectable={(item) => item.id != null}
       persistKey="role-sheet-page"
       editable={rolePerms.edit}

@@ -149,7 +149,7 @@ Sub-components: `DataSheet.Column`
 | `selectedItems` | `TItem[]` | Selected items |
 | `onSelectedItemsChange` | `(items) => void` | Selection change callback |
 | `autoSelect` | `"click"` | Auto-select trigger on row click |
-| `itemSelectable` | `(item) => boolean \| string` | Item selectability |
+| `isItemSelectable` | `(item) => boolean \| string` | Item selectability |
 | `expandedItems` | `TItem[]` | Expanded tree items |
 | `onExpandedItemsChange` | `(items) => void` | Expand change callback |
 | `itemChildren` | `(item, index) => TItem[] \| undefined` | Tree children resolver |
