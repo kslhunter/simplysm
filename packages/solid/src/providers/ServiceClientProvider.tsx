@@ -66,6 +66,31 @@ export const ServiceClientProvider: ParentComponent = (props) => {
   const reqProgressMap = new Map<string, string>();
   const resProgressMap = new Map<string, string>();
 
+  function handleProgress(
+    progressMap: Map<string, string>,
+    state: { uuid: string; completedSize: number; totalSize: number },
+    startTitle: string,
+    completeTitle: string,
+  ) {
+    const existing = progressMap.get(state.uuid);
+
+    if (existing == null) {
+      const id = notification.info(startTitle, "0%");
+      progressMap.set(state.uuid, id);
+    } else {
+      const percent = Math.round((state.completedSize / state.totalSize) * 100);
+      notification.update(existing, { message: `${percent}%` });
+    }
+
+    if (state.completedSize === state.totalSize) {
+      const id = progressMap.get(state.uuid);
+      if (id != null) {
+        notification.update(id, { title: completeTitle, message: "100%" }, { renotify: true });
+        progressMap.delete(state.uuid);
+      }
+    }
+  }
+
   onCleanup(() => {
     for (const client of clientMap.values()) {
       void client.close();
@@ -99,60 +124,12 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       ...options,
     });
 
-    // Request progress event
     client.on("request-progress", (state) => {
-      const existing = reqProgressMap.get(state.uuid);
-
-      if (existing == null) {
-        const id = notification.info("Sending request", "0%");
-        reqProgressMap.set(state.uuid, id);
-      } else {
-        const percent = Math.round((state.completedSize / state.totalSize) * 100);
-        notification.update(existing, { message: `${percent}%` });
-      }
-
-      if (state.completedSize === state.totalSize) {
-        const id = reqProgressMap.get(state.uuid);
-        if (id != null) {
-          notification.update(
-            id,
-            {
-              title: "Request transmission completed",
-              message: "100%",
-            },
-            { renotify: true },
-          );
-          reqProgressMap.delete(state.uuid);
-        }
-      }
+      handleProgress(reqProgressMap, state, "Sending request", "Request transmission completed");
     });
 
-    // Response progress event
     client.on("response-progress", (state) => {
-      const existing = resProgressMap.get(state.uuid);
-
-      if (existing == null) {
-        const id = notification.info("Receiving response", "0%");
-        resProgressMap.set(state.uuid, id);
-      } else {
-        const percent = Math.round((state.completedSize / state.totalSize) * 100);
-        notification.update(existing, { message: `${percent}%` });
-      }
-
-      if (state.completedSize === state.totalSize) {
-        const id = resProgressMap.get(state.uuid);
-        if (id != null) {
-          notification.update(
-            id,
-            {
-              title: "Response reception completed",
-              message: "100%",
-            },
-            { renotify: true },
-          );
-          resProgressMap.delete(state.uuid);
-        }
-      }
+      handleProgress(resProgressMap, state, "Receiving response", "Response reception completed");
     });
 
     await client.connect();
