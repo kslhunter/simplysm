@@ -11,7 +11,7 @@ import {
   type TypecheckEnv,
 } from "../utils/tsconfig";
 import { serializeDiagnostic, type SerializedDiagnostic } from "../utils/typecheck-serialization";
-import { createOnceGuard } from "../utils/worker-utils";
+import { createOnceGuard, registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
 
@@ -95,23 +95,7 @@ function cleanup(): void {
   }
 }
 
-process.on("SIGTERM", () => {
-  try {
-    cleanup();
-  } catch (err) {
-    logger.error("Cleanup failed", err);
-  }
-  process.exit(0);
-});
-
-process.on("SIGINT", () => {
-  try {
-    cleanup();
-  } catch (err) {
-    logger.error("Cleanup failed", err);
-  }
-  process.exit(0);
-});
+registerCleanupHandlers(cleanup, logger);
 
 //#endregion
 
