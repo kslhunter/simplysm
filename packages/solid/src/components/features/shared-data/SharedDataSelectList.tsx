@@ -134,19 +134,19 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
   const filteredItems = createMemo(() => {
     let result = local.data.items();
 
-    // getIsHidden filter
+    // isItemHidden filter
     const isHidden = local.data.isItemHidden;
     if (isHidden) {
       result = result.filter((item: TItem) => !isHidden(item));
     }
 
-    // Search filter (only when Filter compound is absent and getSearchText exists)
-    const getSearchText = local.data.itemSearchText;
-    if (!filter() && getSearchText && searchText()) {
+    // Search filter (only when Filter compound is absent and itemSearchText exists)
+    const itemSearchText = local.data.itemSearchText;
+    if (!filter() && itemSearchText && searchText()) {
       const terms = searchText().trim().split(" ").filter(Boolean);
       if (terms.length > 0) {
         result = result.filter((item: TItem) => {
-          const itemText = getSearchText(item).toLowerCase();
+          const itemText = itemSearchText(item).toLowerCase();
           return terms.every((t) => itemText.includes(t.toLowerCase()));
         });
       }
@@ -219,7 +219,7 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
         {/* Header */}
         <Show when={local.header != null}>{local.header}</Show>
 
-        {/* Search input: when Filter compound is absent and getSearchText exists */}
+        {/* Search input: when Filter compound is absent and itemSearchText exists */}
         <Show when={!filter() && local.data.itemSearchText}>
           <div class={"p-1"}>
             <TextInput
