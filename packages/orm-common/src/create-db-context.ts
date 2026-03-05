@@ -52,7 +52,7 @@ import type { IndexBuilder } from "./schema/factory/index-builder";
  * const db = createDbContext(MyDb, executor, { database: "mydb" });
  *
  * await db.connect(async () => {
- *   const users = await db.user().result();
+ *   const users = await db.user().execute();
  * });
  * ```
  */
@@ -106,8 +106,8 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
         name: tableOrView.meta.name,
       });
     },
-    async switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void> {
-      await base.executeDefs([schemaDdl.getSwitchFkQueryDef(table, switch_)]);
+    async switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void> {
+      await base.executeDefs([schemaDdl.getSwitchFkQueryDef(table, enabled)]);
     },
   };
 
@@ -217,7 +217,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      *
      * Used when transaction is needed partially within connectWithoutTransaction
      */
-    async trans<TResult>(
+    async transaction<TResult>(
       fn: () => Promise<TResult>,
       isolationLevel?: IsolationLevel,
     ): Promise<TResult> {
@@ -300,29 +300,29 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     async renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void> {
       await base.executeDefs([columnDdl.getRenameColumnQueryDef(table, column, newName)]);
     },
-    async addPk(table: QueryDefObjectName, columns: string[]): Promise<void> {
-      await base.executeDefs([relationDdl.getAddPkQueryDef(table, columns)]);
+    async addPrimaryKey(table: QueryDefObjectName, columns: string[]): Promise<void> {
+      await base.executeDefs([relationDdl.getAddPrimaryKeyQueryDef(table, columns)]);
     },
-    async dropPk(table: QueryDefObjectName): Promise<void> {
-      await base.executeDefs([relationDdl.getDropPkQueryDef(table)]);
+    async dropPrimaryKey(table: QueryDefObjectName): Promise<void> {
+      await base.executeDefs([relationDdl.getDropPrimaryKeyQueryDef(table)]);
     },
-    async addFk(
+    async addForeignKey(
       table: QueryDefObjectName,
       relationName: string,
       relationDef: ForeignKeyBuilder<any, any>,
     ): Promise<void> {
       await base.executeDefs([
-        relationDdl.getAddFkQueryDef(base, table, relationName, relationDef),
+        relationDdl.getAddForeignKeyQueryDef(base, table, relationName, relationDef),
       ]);
     },
-    async addIdx(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void> {
-      await base.executeDefs([relationDdl.getAddIdxQueryDef(table, indexBuilder)]);
+    async addIndex(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void> {
+      await base.executeDefs([relationDdl.getAddIndexQueryDef(table, indexBuilder)]);
     },
-    async dropFk(table: QueryDefObjectName, relationName: string): Promise<void> {
-      await base.executeDefs([relationDdl.getDropFkQueryDef(table, relationName)]);
+    async dropForeignKey(table: QueryDefObjectName, relationName: string): Promise<void> {
+      await base.executeDefs([relationDdl.getDropForeignKeyQueryDef(table, relationName)]);
     },
-    async dropIdx(table: QueryDefObjectName, columns: string[]): Promise<void> {
-      await base.executeDefs([relationDdl.getDropIdxQueryDef(table, columns)]);
+    async dropIndex(table: QueryDefObjectName, columns: string[]): Promise<void> {
+      await base.executeDefs([relationDdl.getDropIndexQueryDef(table, columns)]);
     },
     async clearSchema(params: { database: string; schema?: string }): Promise<void> {
       await base.executeDefs([schemaDdl.getClearSchemaQueryDef(params)]);
@@ -334,8 +334,8 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     async truncate(table: QueryDefObjectName): Promise<void> {
       await base.executeDefs([schemaDdl.getTruncateQueryDef(table)]);
     },
-    async switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void> {
-      await base.executeDefs([schemaDdl.getSwitchFkQueryDef(table, switch_)]);
+    async switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void> {
+      await base.executeDefs([schemaDdl.getSwitchFkQueryDef(table, enabled)]);
     },
 
     //#endregion
@@ -359,16 +359,16 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     getDropColumnQueryDef: columnDdl.getDropColumnQueryDef,
     getModifyColumnQueryDef: columnDdl.getModifyColumnQueryDef,
     getRenameColumnQueryDef: columnDdl.getRenameColumnQueryDef,
-    getAddPkQueryDef: relationDdl.getAddPkQueryDef,
-    getDropPkQueryDef: relationDdl.getDropPkQueryDef,
-    getAddFkQueryDef: (
+    getAddPrimaryKeyQueryDef: relationDdl.getAddPrimaryKeyQueryDef,
+    getDropPrimaryKeyQueryDef: relationDdl.getDropPrimaryKeyQueryDef,
+    getAddForeignKeyQueryDef: (
       table: QueryDefObjectName,
       relationName: string,
       relationDef: ForeignKeyBuilder<any, any>,
-    ) => relationDdl.getAddFkQueryDef(base, table, relationName, relationDef),
-    getAddIdxQueryDef: relationDdl.getAddIdxQueryDef,
-    getDropFkQueryDef: relationDdl.getDropFkQueryDef,
-    getDropIdxQueryDef: relationDdl.getDropIdxQueryDef,
+    ) => relationDdl.getAddForeignKeyQueryDef(base, table, relationName, relationDef),
+    getAddIndexQueryDef: relationDdl.getAddIndexQueryDef,
+    getDropForeignKeyQueryDef: relationDdl.getDropForeignKeyQueryDef,
+    getDropIndexQueryDef: relationDdl.getDropIndexQueryDef,
     getClearSchemaQueryDef: schemaDdl.getClearSchemaQueryDef,
     getSchemaExistsQueryDef: schemaDdl.getSchemaExistsQueryDef,
     getTruncateQueryDef: schemaDdl.getTruncateQueryDef,

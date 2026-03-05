@@ -78,13 +78,13 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
  *
  * // Execute within a transaction
  * await orm.connect(async (db) => {
- *   const users = await db.user().result();
+ *   const users = await db.user().execute();
  *   return users;
  * });
  *
  * // Execute without a transaction
  * await orm.connectWithoutTransaction(async (db) => {
- *   const users = await db.user().result();
+ *   const users = await db.user().execute();
  *   return users;
  * });
  * ```
