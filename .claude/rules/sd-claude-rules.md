@@ -39,6 +39,15 @@ If a referenced file or document cannot be found, **stop immediately and ask the
   - Any unsolicited observations about surrounding code quality
   - Only describe **what you changed** — nothing else
 
+### Analysis & Comparison
+
+- When analyzing, comparing, diffing, or auditing: **enumerate all items exhaustively**. Never provide a shallow summary — list every difference, even minor ones.
+  - Example: v12 vs v13 migration gap → list ALL API, type, pattern differences item by item
+
+### Direct Action Requests
+
+- When the user provides a specific action (e.g., "rename X to Y", "delete this file"), **execute it directly**. Do not route through skill agents or sub-agent workflows for trivial operations.
+
 ## Worktree Prohibition
 
 **NEVER use `isolation: "worktree"` when calling the Agent tool.** This is an absolute rule with no exceptions.

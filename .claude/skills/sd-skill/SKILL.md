@@ -184,6 +184,21 @@ Edit skill without testing? Same violation.
 
 Different skill types need different test approaches:
 
+```dot
+digraph test_methodology {
+    "What type of skill?" [shape=diamond];
+    "Pressure test\n(compliance under stress)" [shape=box];
+    "Application test\n(correct technique usage)" [shape=box];
+    "Recognition test\n(when/how to apply)" [shape=box];
+    "Retrieval test\n(find & use reference)" [shape=box];
+
+    "What type of skill?" -> "Pressure test\n(compliance under stress)" [label="Discipline\n(rules/requirements)"];
+    "What type of skill?" -> "Application test\n(correct technique usage)" [label="Technique\n(how-to guides)"];
+    "What type of skill?" -> "Recognition test\n(when/how to apply)" [label="Pattern\n(mental models)"];
+    "What type of skill?" -> "Retrieval test\n(find & use reference)" [label="Reference\n(docs/APIs)"];
+}
+```
+
 ### Discipline-Enforcing Skills (rules/requirements)
 
 **Examples:** TDD, verification-before-completion, designing-before-coding

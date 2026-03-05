@@ -33,20 +33,36 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 
 ## Workflow
 
-1. **Run** `$PM run check [path] [--type type]` (timeout: 600000)
-2. **All passed?** Report with actual output numbers → done
-3. **Errors?** Fix in priority order: typecheck → lint → test (fixes cascade)
-   - **Before fixing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the affected code area (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Fixing errors does NOT exempt you from following project conventions.
-   - Test failures: **MUST** run `git log` to decide — update test or fix source
-   - **E2E test failures**: use Playwright MCP to investigate before fixing
-     1. `browser_navigate` to the target URL
-     2. `browser_snapshot` / `browser_take_screenshot` (save to `.tmp/playwright/`) to see page state
-     3. `browser_console_messages` for JS errors
-     4. `browser_network_requests` for failed API calls
-     5. Interact with the page following the test steps to reproduce the failure
-     6. Fix based on observed evidence, not guesswork
-   - Stuck after 2-3 attempts → recommend `/sd-debug`
-4. **Go to 1** — always re-run ALL checks after any fix
+```dot
+digraph check_workflow {
+    "Run check" [shape=box];
+    "All passed?" [shape=diamond];
+    "Report results → done" [shape=box];
+    "Fix errors\n(typecheck → lint → test)" [shape=box];
+    "Stuck after 2-3 tries?" [shape=diamond];
+    "Recommend /sd-debug" [shape=box];
+
+    "Run check" -> "All passed?";
+    "All passed?" -> "Report results → done" [label="yes"];
+    "All passed?" -> "Fix errors\n(typecheck → lint → test)" [label="no"];
+    "Fix errors\n(typecheck → lint → test)" -> "Stuck after 2-3 tries?";
+    "Stuck after 2-3 tries?" -> "Run check" [label="no"];
+    "Stuck after 2-3 tries?" -> "Recommend /sd-debug" [label="yes"];
+}
+```
+
+**Run command:** `$PM run check [path] [--type type]` (timeout: 600000)
+
+**Fixing errors:**
+- **Before fixing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the affected code area (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Fixing errors does NOT exempt you from following project conventions.
+- Test failures: **MUST** run `git log` to decide — update test or fix source
+- **E2E test failures**: use Playwright MCP to investigate before fixing
+  1. `browser_navigate` to the target URL
+  2. `browser_snapshot` / `browser_take_screenshot` (save to `.tmp/playwright/`) to see page state
+  3. `browser_console_messages` for JS errors
+  4. `browser_network_requests` for failed API calls
+  5. Interact with the page following the test steps to reproduce the failure
+  6. Fix based on observed evidence, not guesswork
 
 ## Rules
 

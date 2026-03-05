@@ -8,6 +8,8 @@ import { stdin } from "process";
 
 const STDIN_TIMEOUT_MS = 5000;
 const FETCH_TIMEOUT_MS = 3000;
+const CACHE_TTL_MS = 60_000; // 1 minute
+const CACHE_PATH = path.join(os.homedir(), ".claude", "usage-api-cache.json");
 
 //#endregion
 
@@ -75,16 +77,49 @@ function getOAuthToken() {
 }
 
 /**
- * Fetch Anthropic API usage information using OAuth token.
+ * Read cached usage data from local file.
+ * @returns {{ data: object, timestamp: number } | undefined}
+ */
+function readCache() {
+  try {
+    if (!fs.existsSync(CACHE_PATH)) return undefined;
+    const content = fs.readFileSync(CACHE_PATH, "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Write usage data to local cache file.
+ * @param {object} data
+ */
+function writeCache(data) {
+  try {
+    fs.writeFileSync(CACHE_PATH, JSON.stringify({ data, timestamp: Date.now() }), "utf-8");
+  } catch {
+    // ignore write errors
+  }
+}
+
+/**
+ * Fetch Anthropic API usage information using OAuth token, with 1-minute cache.
  * @param {string} token - OAuth access token
+ * @param {string} version - Claude Code version
  * @returns {Promise<{
- *   seven_day?: {utilization?: number, resets_at?: string},  // 7-day usage
- *   daily?: {utilization?: number, resets_at?: string},       // daily usage
- *   five_hour?: {utilization?: number, resets_at?: string},   // 5-hour usage
- *   extra_usage?: {is_enabled?: boolean, monthly_limit?: number | null, used_credits?: number}  // extra usage
+ *   seven_day?: {utilization?: number, resets_at?: string},
+ *   daily?: {utilization?: number, resets_at?: string},
+ *   five_hour?: {utilization?: number, resets_at?: string},
+ *   extra_usage?: {is_enabled?: boolean, monthly_limit?: number | null, used_credits?: number}
  * } | undefined>}
  */
-async function fetchUsage(token) {
+async function fetchUsage(token, version) {
+  // Return cached data if still valid
+  const cache = readCache();
+  if (cache != null && (Date.now() - cache.timestamp) < CACHE_TTL_MS) {
+    return cache.data;
+  }
+
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -93,6 +128,7 @@ async function fetchUsage(token) {
       headers: {
         "Authorization": `Bearer ${token}`,
         "anthropic-beta": "oauth-2025-04-20",
+        "User-Agent": `claude-code/${version}`,
       },
       signal: controller.signal,
     });
@@ -100,19 +136,24 @@ async function fetchUsage(token) {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      return undefined;
+      // API failed — update timestamp to prevent retry for TTL duration
+      writeCache(cache?.data ?? {});
+      return cache?.data;
     }
 
     const data = await response.json();
 
-    // Validate response structure
     if (data == null || typeof data !== "object") {
-      return undefined;
+      writeCache(cache?.data ?? {});
+      return cache?.data;
     }
 
+    writeCache(data);
     return data;
   } catch {
-    return undefined;
+    // Network error — update timestamp to prevent retry for TTL duration
+    writeCache(cache?.data ?? {});
+    return cache?.data;
   }
 }
 
@@ -172,6 +213,7 @@ function formatTimeRemaining(isoDate) {
  * @property {{display_name?: string}} [model] - Model information
  * @property {{context_window_size?: number, remaining_context_tokens?: number, current_usage?: {input_tokens?: number, output_tokens?: number, cache_creation_input_tokens?: number, cache_read_input_tokens?: number}}} [context_window] - Context window information
  * @property {{tokens_used?: number, tokens_limit?: number}} [weekly_token_usage] - Weekly token usage (fallback)
+ * @property {string} [version] - Claude Code version
  */
 
 /**
@@ -212,7 +254,7 @@ async function main() {
   let extraUsage = "";
 
   if (token != null) {
-    const usageResponse = await fetchUsage(token);
+    const usageResponse = await fetchUsage(token, input.version ?? "unknown");
     if (usageResponse != null) {
       // Use daily or five_hour
       const dailyData = usageResponse.daily ?? usageResponse.five_hour;

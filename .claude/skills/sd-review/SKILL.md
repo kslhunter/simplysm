@@ -1,17 +1,15 @@
 ---
 name: sd-review
-description: "Use when the user explicitly requests a code review focused on defects, correctness, and safety. Finds bugs, security issues, architectural violations, and API design problems. Explicit invocation only."
+description: "Use when the user explicitly requests code review, refactoring analysis, or structural improvement. Covers correctness, safety, API design, conventions, complexity, duplication, and code structure. Explicit invocation only."
 ---
 
 # sd-review
 
 ## Overview
 
-Perform a code review focused on **defects and correctness**, producing a comprehensive report. **Analysis only — no code modifications.**
+Comprehensive code analysis combining **defect review** (correctness, safety, API, conventions) and **refactoring analysis** (structure, simplification). Dispatches up to 5 reviewer agents in parallel, verifies findings against actual code, and compiles a unified report.
 
-Dispatches up to 2 reviewer agents in parallel using prompt templates. Each agent independently explores the codebase from its own perspective. Collects results, verifies findings against actual code, and compiles the final report.
-
-**Note:** For structural improvement (complexity, duplication, organization), use `/sd-refactoring` instead.
+**Analysis only — no code modifications.**
 
 ## Principles
 
@@ -19,8 +17,9 @@ Dispatches up to 2 reviewer agents in parallel using prompt templates. Each agen
 
 ## Usage
 
-- `/sd-review packages/solid` — full review (both perspectives)
+- `/sd-review packages/solid` — full review (all perspectives)
 - `/sd-review packages/solid focus on bugs` — selective review based on request
+- `/sd-review packages/solid focus on refactoring` — structural analysis only
 - `/sd-review` — if no argument, ask the user for the target path
 
 ## Target Selection
@@ -36,20 +35,26 @@ Dispatches up to 2 reviewer agents in parallel using prompt templates. Each agen
 |----------|----------------|-------------|
 | **Code Reviewer** | `code-reviewer-prompt.md` | Correctness & Safety — bugs, security, logic errors, architectural defects (circular deps, boundary violations) |
 | **API Reviewer** | `api-reviewer-prompt.md` | Usability & DX — naming, types, consistency |
+| **Convention Checker** | `convention-checker-prompt.md` | Project rules — Grep-based systematic check against convention files (prohibited patterns, naming rules, export rules) |
+| **Code Simplifier** | `code-simplifier-prompt.md` | Simplification — complexity, duplication, readability |
+| **Structure Analyzer** | `structure-analyzer-prompt.md` | Organization — responsibility separation, abstraction levels, module structure |
 
 ## Reviewer Selection
 
-By default, run **both reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
+By default, run **all 5 reviewers**. If the user specifies a focus in natural language, select only the relevant reviewer(s):
 
 | User says | Run |
 |-----------|-----|
 | "bugs", "security", "safety", "architecture", "dependencies", "boundaries" | Code Reviewer only |
 | "API", "naming", "types", "DX" | API Reviewer only |
-| (no specific focus) | Both |
+| "conventions", "rules", "patterns" | Convention Checker only |
+| "simplify", "complexity", "duplication", "readability" | Code Simplifier only |
+| "structure", "responsibility", "module", "organization", "abstraction" | Structure Analyzer only |
+| "defects", "correctness" | Code + API + Convention |
+| "refactoring", "refactor", "maintainability" | Simplifier + Structure |
+| (no specific focus) | All 5 |
 
-**Redirects:** If the user asks about "complexity", "duplication", "structure", or "maintainability", redirect them to `/sd-refactoring` instead.
-
-Use judgment for ambiguous requests. When in doubt, run both.
+Use judgment for ambiguous requests.
 
 ## Workflow
 
@@ -65,40 +70,72 @@ Run selected reviewers **in parallel** (multiple Agent calls in a single message
 
 ### Step 2: Verify Findings
 
-After collecting results from all reviewers, **Read the actual code** for each finding and verify:
+After collecting results from all reviewers, **Read the actual code** for each finding and verify.
+
+**For defect findings (Code, API, Convention reviewers):**
 
 - **Valid**: the issue is real AND within scope → include in the report
 - **Invalid — self-contradicted**: the reviewer's own analysis shows the issue is mitigated (e.g., "exploitability is limited because..."). Drop it.
 - **Invalid — type-only**: reports a type definition as a runtime issue without showing actual runtime code that triggers it. Drop it.
 - **Invalid — out of scope**: the issue is about code outside the target path (e.g., how other packages use this code). Drop it.
-- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain (bugs→Code, API→API).
+- **Invalid — duplicate**: another reviewer already reported the same issue. Keep only the one from the correct domain.
 - **Invalid — bikeshedding**: minor style preference on stable, well-commented code (magic numbers with clear comments, small interface field duplication, naming when used consistently). Drop it.
 - **Invalid — severity inflated**: downgrade or drop findings where the stated severity doesn't match the actual impact.
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
 - **Invalid — intentional pattern**: by-design architectural decision
 - **Invalid — misread**: the reviewer misinterpreted the code
 
-### Step 3: Final Report
+**For refactoring findings (Simplifier, Structure reviewers):**
 
-Compile only **verified findings** grouped by severity (not by reviewer):
+**Check 1 — Scope**:
+- Is this about code structure? Not bugs, conventions, documentation, or performance → if not, drop (out of scope)
+- Is the issue within the target path? → if not, drop (out of target)
+- Already reported by another reviewer? → keep the better-scoped one (duplicate)
+- Minor style preference with no real structural impact? → drop (bikeshedding)
+
+**Check 2 — Duplication reality** (for duplication findings):
+- Count actual duplicated lines. If < 30 lines total, drop — not worth extracting.
+- Compare side by side. If the "duplicates" have meaningful behavioral differences (different guards, parameters, error handling), drop — not true duplication.
+- Check if "similar types" are an intentional Input/Normalized pattern (optional props → required internal def with defaults applied, `children` → `cell` rename). If yes, drop — by design.
+
+**Check 3 — Separation benefit** (for "too big", "mixed responsibilities", "mixed abstraction" findings):
+- Is the piece proposed for extraction < ~150 lines AND directly depends on the rest of the file (renders, calls, or shares state)? If yes, drop — splitting adds overhead without benefit.
+- Do all the abstractions serve a single cohesive domain concept (all functions called from one entry point, all types used together)? If yes, drop — it's cohesion, not mixing.
+- Would a realistic consumer reuse the extracted piece independently? If no, drop.
+
+**Check 4 — Not by design**: Is this an established pattern used consistently across the codebase? (Provider+Component, Factory+Product, Input/Output types) If yes, drop.
+
+### Step 3: Invalid Findings Report
+
+Present only the **filtered findings** to the user:
 
 ```
-## Review Report: <target-path>
+## Review: <target-path>
 
-### CRITICAL
-[verified critical findings from all reviewers]
-
-### WARNING
-[verified warning findings from all reviewers]
-
-### INFO
-[verified info findings from all reviewers]
-
-### Invalid Findings Summary (optional)
-[findings filtered out and why]
+### Invalid Findings
+[findings filtered out — grouped by rejection reason]
 ```
+
+If there are **no valid findings**, report that the review found no actionable issues and end.
+
+### Step 4: User Confirmation
+
+Present each verified finding to the user **one at a time**, ordered by severity (CRITICAL → WARNING → INFO → HIGH → MEDIUM → LOW).
+
+For each finding, explain:
+1. **What the problem is** — the current code behavior and why it's an issue
+2. **How it could be fixed** — possible solution approaches (if multiple exist, list them briefly)
+3. **Ask**: address this or skip?
+
+Collect only findings the user confirms. If the user skips all findings, report that and end.
+
+### Step 5: Brainstorm Handoff
+
+Pass only the **user-confirmed findings** to **sd-brainstorm**.
 
 Each finding includes: **source reviewer**, **file:line**, **evidence**, **issue**, and **suggestion**.
+
+sd-brainstorm will handle prioritization, grouping, approach exploration, and design.
 
 ## Common Mistakes
 
@@ -108,7 +145,11 @@ Each finding includes: **source reviewer**, **file:line**, **evidence**, **issue
 | Skipping verification step | Always verify reviewer findings against actual code |
 | Reporting unverified issues | Only include verified findings in final report |
 | Running all reviewers for focused requests | Match reviewer selection to user's request |
+| Reporting bugs as refactoring | Ask: "Is the behavior wrong?" If yes → defect, not refactoring |
+| Reporting style as refactoring | Ask: "Is this structural?" If no → lint, not refactoring |
+| Presenting valid findings as final report | Valid findings must be confirmed by user, then handed off to sd-brainstorm |
+| Dumping all findings at once for user confirmation | Present findings one at a time with problem explanation and solution approaches |
 
 ## Completion Criteria
 
-Present the comprehensive report to the user. No code modifications.
+Report invalid findings, then hand off all valid findings to sd-brainstorm. No code modifications during review.

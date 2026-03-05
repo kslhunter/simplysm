@@ -12,7 +12,7 @@ Review ALL source files at [TARGET_PATH].
 
 ## Step 1: List all source files
 
-Use Glob to list all .ts files under the target path (exclude node_modules, dist).
+Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
 This is your review scope — every file in this list must be examined.
 
 ## Step 2: Understand the codebase
@@ -37,8 +37,8 @@ Look for:
 
 Do NOT report:
 - Naming consistency, API design, type quality (including `any` types)
-- Code complexity, duplication, readability improvements → use sd-refactoring
-- Structural improvement suggestions (better responsibility separation, abstraction levels) → use sd-refactoring
+- Code complexity, duplication, readability improvements (handled by Code Simplifier)
+- Structural improvement suggestions (handled by Structure Analyzer)
 - Style preferences unless they cause actual bugs
 - Type definitions alone — a type allowing `stack?: string` is NOT a security issue unless the runtime code actually sends it unsanitized
 - Speculative future risks — "if config were changed to X, this would break" is not a finding

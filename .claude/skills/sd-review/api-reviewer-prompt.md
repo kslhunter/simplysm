@@ -12,7 +12,7 @@ Review ALL source files at [TARGET_PATH].
 
 ## Step 1: List all source files
 
-Use Glob to list all .ts files under the target path (exclude node_modules, dist).
+Use Glob to list all .ts/.tsx files under the target path (exclude node_modules, dist).
 
 ## Step 2: Map the public API surface
 
