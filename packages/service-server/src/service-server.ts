@@ -1,7 +1,7 @@
 import type { ServiceEventDef } from "@simplysm/service-common";
 import { handleStaticFile } from "./transport/http/static-file-handler";
 import { handleHttpRequest } from "./transport/http/http-request-handler";
-import { runServiceMethod } from "./core/service-executor";
+import { executeServiceMethod } from "./core/service-executor";
 import { jsonStringify, jsonParse, EventEmitter, env } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
@@ -46,7 +46,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.fastify = fastify({ https: httpsConf });
 
     this._wsHandler = createWebSocketHandler(
-      (def) => runServiceMethod(this, def),
+      (def) => executeServiceMethod(this, def),
       options.auth?.jwtSecret,
     );
   }
@@ -119,7 +119,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     // API routes
     this.fastify.all("/api/:service/:method", async (req, reply) => {
       await handleHttpRequest(req, reply, this.options.auth?.jwtSecret, (def) =>
-        runServiceMethod(this, def),
+        executeServiceMethod(this, def),
       );
     });
 
@@ -210,10 +210,10 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     infoSelector: (item: TInfo) => boolean,
     data: TData,
   ) {
-    await this._wsHandler.emitToServer(eventDef, infoSelector, data);
+    await this._wsHandler.emit(eventDef, infoSelector, data);
   }
 
-  async generateAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
+  async signAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
     const jwtSecret = this.options.auth?.jwtSecret;
     if (jwtSecret == null) throw new Error("JWT Secret is not defined.");
 

@@ -30,7 +30,7 @@ export interface SmtpClientSendOption {
   attachments?: SmtpClientSendAttachment[];
 }
 
-export interface SmtpClientDefaultConfig {
+export interface SmtpClientDefaultOptions {
   senderName: string;
   senderEmail?: string;
   user?: string;

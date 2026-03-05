@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runServiceMethod } from "../src/core/service-executor";
+import { executeServiceMethod } from "../src/core/service-executor";
 import { defineService, auth } from "../src/core/define-service";
 
 // Minimal mock server
@@ -7,14 +7,14 @@ function createMockServer(services: any[]) {
   return { options: { services, auth: { jwtSecret: "test" } } } as any;
 }
 
-describe("runServiceMethod with ServiceDefinition", () => {
+describe("executeServiceMethod with ServiceDefinition", () => {
   it("executes a basic service method", async () => {
     const EchoService = defineService("Echo", (_ctx) => ({
       echo: (msg: string) => `Echo: ${msg}`,
     }));
 
     const server = createMockServer([EchoService]);
-    const result = await runServiceMethod(server, {
+    const result = await executeServiceMethod(server, {
       serviceName: "Echo",
       methodName: "echo",
       params: ["hello"],
@@ -27,7 +27,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     const server = createMockServer([]);
 
     await expect(
-      runServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] }),
+      executeServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] }),
     ).rejects.toThrow("Service [Unknown] not found.");
   });
 
@@ -38,7 +38,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     const server = createMockServer([svc]);
 
     await expect(
-      runServiceMethod(server, { serviceName: "Test", methodName: "nonexistent", params: [] }),
+      executeServiceMethod(server, { serviceName: "Test", methodName: "nonexistent", params: [] }),
     ).rejects.toThrow("Method [Test.nonexistent] not found.");
   });
 
@@ -52,7 +52,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     const server = createMockServer([svc]);
 
     await expect(
-      runServiceMethod(server, { serviceName: "Protected", methodName: "secret", params: [] }),
+      executeServiceMethod(server, { serviceName: "Protected", methodName: "secret", params: [] }),
     ).rejects.toThrow("Login is required.");
   });
 
@@ -68,7 +68,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
 
     // Has auth but wrong role
     await expect(
-      runServiceMethod(server, {
+      executeServiceMethod(server, {
         serviceName: "Admin",
         methodName: "manage",
         params: [],
@@ -86,7 +86,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     );
     const server = createMockServer([svc]);
 
-    const result = await runServiceMethod(server, {
+    const result = await executeServiceMethod(server, {
       serviceName: "Admin",
       methodName: "manage",
       params: [],
@@ -102,7 +102,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     }));
     const server = createMockServer([svc]);
 
-    const result = await runServiceMethod(server, {
+    const result = await executeServiceMethod(server, {
       serviceName: "Ctx",
       methodName: "getClientName",
       params: [],

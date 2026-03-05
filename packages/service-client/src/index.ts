@@ -1,5 +1,5 @@
 // Types
-export * from "./types/connection-config";
+export * from "./types/connection-options";
 export * from "./types/progress.types";
 
 // Transport
@@ -12,7 +12,7 @@ export * from "./protocol/client-protocol-wrapper";
 // Features
 export * from "./features/event-client";
 export * from "./features/file-client";
-export * from "./features/orm/orm-connect-config";
+export * from "./features/orm/orm-connect-options";
 export * from "./features/orm/orm-client-connector";
 export * from "./features/orm/orm-client-db-context-executor";
 

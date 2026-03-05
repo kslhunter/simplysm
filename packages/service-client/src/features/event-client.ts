@@ -12,12 +12,12 @@ export interface EventClient {
     cb: (data: TData) => PromiseLike<void>,
   ): Promise<string>;
   removeListener(key: string): Promise<void>;
-  emitToServer<TInfo, TData>(
+  emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
   ): Promise<void>;
-  reRegisterAll(): Promise<void>;
+  resubscribeAll(): Promise<void>;
 }
 
 export function createEventClient(transport: ServiceTransport): EventClient {
@@ -63,7 +63,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     }
   }
 
-  async function emitToServer<TInfo, TData>(
+  async function emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
@@ -89,7 +89,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   }
 
   // Called on reconnect
-  async function reRegisterAll(): Promise<void> {
+  async function resubscribeAll(): Promise<void> {
     for (const [key, value] of listenerMap.entries()) {
       try {
         await transport.send({
@@ -119,7 +119,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   return {
     addListener,
     removeListener,
-    emitToServer,
-    reRegisterAll,
+    emit,
+    resubscribeAll,
   };
 }

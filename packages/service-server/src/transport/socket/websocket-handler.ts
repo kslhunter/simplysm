@@ -31,9 +31,9 @@ export interface WebSocketHandler {
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void>;
 
   /**
-   * Emit event to server with info filtering
+   * Emit event to matching clients
    */
-  emitToServer<TInfo, TData>(
+  emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
@@ -84,11 +84,11 @@ export function createWebSocketHandler(
         return await serviceSocket.send(uuid, { name: "response", body: result });
       } else if (message.name === "evt:add") {
         const { key, name, info } = message.body as { key: string; name: string; info: unknown };
-        serviceSocket.addEventListener(key, name, info);
+        serviceSocket.addListener(key, name, info);
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:remove") {
         const { key } = message.body as { key: string };
-        serviceSocket.removeEventListener(key);
+        serviceSocket.removeListener(key);
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body as { name: string };
@@ -223,7 +223,7 @@ export function createWebSocketHandler(
       }
     },
 
-    async emitToServer<TInfo, TData>(
+    async emit<TInfo, TData>(
       eventDef: ServiceEventDef<TInfo, TData>,
       infoSelector: (item: TInfo) => boolean,
       data: TData,

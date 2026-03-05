@@ -190,7 +190,7 @@ describe("ServiceClient browser test", () => {
 
       // Event receive callback
       const receivedData: string[] = [];
-      const listenerKey = await client.addEventListener(
+      const listenerKey = await client.addListener(
         TestEvent,
         { channel: "test-channel" },
         (data) => {
@@ -203,7 +203,7 @@ describe("ServiceClient browser test", () => {
       expect(typeof listenerKey).toBe("string");
 
       // Remove listener
-      await client.removeEventListener(listenerKey);
+      await client.removeListener(listenerKey);
     });
   });
 });

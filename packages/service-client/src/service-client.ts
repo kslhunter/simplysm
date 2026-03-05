@@ -3,7 +3,7 @@ import { EventEmitter } from "@simplysm/core-common";
 import type { ServiceEventDef } from "@simplysm/service-common";
 import { createServiceProtocol } from "@simplysm/service-common";
 
-import type { ServiceConnectionConfig } from "./types/connection-config";
+import type { ServiceConnectionOptions } from "./types/connection-options";
 import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
 import { createServiceTransport, type ServiceTransport } from "./transport/service-transport";
 import { createSocketProvider, type SocketProvider } from "./transport/socket-provider";
@@ -40,7 +40,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
   constructor(
     public readonly name: string,
-    public readonly options: ServiceConnectionConfig,
+    public readonly options: ServiceConnectionOptions,
   ) {
     super();
 
@@ -65,7 +65,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
           if (this._authToken != null) {
             await this.auth(this._authToken); // Re-authenticate
           }
-          await this._eventClient.reRegisterAll();
+          await this._eventClient.resubscribeAll();
         } catch (err) {
           logger.error("Failed to recover event listeners", err);
         }
@@ -78,8 +78,8 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 
   // Proxy creation method for type safety
-  getService<TService>(serviceName: string): RemoteService<TService> {
-    return new Proxy({} as RemoteService<TService>, {
+  getService<TService>(serviceName: string): ServiceProxy<TService> {
+    return new Proxy({} as ServiceProxy<TService>, {
       get: (_target, prop) => {
         const methodName = String(prop);
         return async (...params: unknown[]) => {
@@ -126,7 +126,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     this._authToken = token;
   }
 
-  async addEventListener<TInfo, TData>(
+  async addListener<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     info: TInfo,
     cb: (data: TData) => PromiseLike<void>,
@@ -135,16 +135,16 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     return this._eventClient.addListener(eventDef, info, cb);
   }
 
-  async removeEventListener(key: string): Promise<void> {
+  async removeListener(key: string): Promise<void> {
     await this._eventClient.removeListener(key);
   }
 
-  async emitToServer<TInfo, TData>(
+  async emitEvent<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
   ): Promise<void> {
-    await this._eventClient.emitToServer(eventDef, infoSelector, data);
+    await this._eventClient.emit(eventDef, infoSelector, data);
   }
 
   async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {
@@ -162,12 +162,12 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 }
 
 // Type transformer that wraps all method return types of TService with Promise
-export type RemoteService<TService> = {
+export type ServiceProxy<TService> = {
   [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
     ? (...args: P) => Promise<Awaited<R>>
     : never; // Non-function properties are excluded
 };
 
-export function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient {
+export function createServiceClient(name: string, options: ServiceConnectionOptions): ServiceClient {
   return new ServiceClient(name, options);
 }

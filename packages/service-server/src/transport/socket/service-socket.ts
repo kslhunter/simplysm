@@ -5,7 +5,7 @@ import { clearInterval } from "node:timers";
 import consola from "consola";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
-import { createProtocolWrapper } from "../../protocol/protocol-wrapper";
+import { createServerProtocolWrapper } from "../../protocol/protocol-wrapper";
 import type {
   ServiceClientMessage,
   ServiceServerMessage,
@@ -39,12 +39,12 @@ export interface ServiceSocket {
   /**
    * Register an event listener with key/name/info
    */
-  addEventListener(key: string, eventName: string, info: unknown): void;
+  addListener(key: string, eventName: string, info: unknown): void;
 
   /**
    * Remove an event listener by key
    */
-  removeEventListener(key: string): void;
+  removeListener(key: string): void;
 
   /**
    * Get all event listeners for a specific event name
@@ -83,7 +83,7 @@ export function createServiceSocket(
   const PING_INTERVAL = 5000; // Send ping every 5s
   const PONG_PACKET = new Uint8Array([0x02]);
 
-  const protocol = createProtocolWrapper();
+  const protocol = createServerProtocolWrapper();
   const listenerInfos: Array<{ eventName: string; key: string; info: unknown }> = [];
   const eventHandlers = {
     error: [] as Array<(err: Error) => void>,
@@ -210,11 +210,11 @@ export function createServiceSocket(
       return sendInternal(uuid, msg);
     },
 
-    addEventListener(key: string, eventName: string, info: unknown): void {
+    addListener(key: string, eventName: string, info: unknown): void {
       listenerInfos.push({ key, eventName, info });
     },
 
-    removeEventListener(key: string): void {
+    removeListener(key: string): void {
       const idx = listenerInfos.findIndex((item) => item.key === key);
       if (idx >= 0) {
         listenerInfos.splice(idx, 1);

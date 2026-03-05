@@ -10,7 +10,7 @@ import type * as ServiceProtocolWorkerModule from "../workers/service-protocol.w
  * Automatically offloads heavy message encoding/decoding to a worker thread
  * while using main thread for lightweight operations.
  */
-export interface ProtocolWrapper {
+export interface ServerProtocolWrapper {
   /**
    * Encode message (auto worker delegation)
    */
@@ -48,7 +48,7 @@ function getWorker(): WorkerProxy<typeof ServiceProtocolWorkerModule> {
  * Automatically offloads heavy message encoding/decoding to a worker thread
  * while using main thread for lightweight operations.
  */
-export function createProtocolWrapper(): ProtocolWrapper {
+export function createServerProtocolWrapper(): ServerProtocolWrapper {
   // -------------------------------------------------------------------
   // State
   // -------------------------------------------------------------------

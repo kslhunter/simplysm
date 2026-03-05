@@ -3,7 +3,7 @@ import type { ServiceSocket } from "../transport/socket/service-socket";
 import type { AuthTokenPayload } from "../auth/auth-token-payload";
 import { createServiceContext, getServiceAuthPermissions } from "./define-service";
 
-export async function runServiceMethod(
+export async function executeServiceMethod(
   server: ServiceServer,
   def: {
     serviceName: string;

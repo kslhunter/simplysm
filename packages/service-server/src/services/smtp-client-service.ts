@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { defineService, type ServiceMethods } from "../core/define-service";
 import type {
-  SmtpClientDefaultConfig,
+  SmtpClientDefaultOptions,
   SmtpClientSendByDefaultOption,
   SmtpClientSendOption,
 } from "@simplysm/service-common";
@@ -38,7 +38,7 @@ export const SmtpClientService = defineService("SmtpClient", (ctx) => ({
 
   async sendByConfig(configName: string, options: SmtpClientSendByDefaultOption): Promise<string> {
     const config = (
-      await ctx.getConfig<Record<string, SmtpClientDefaultConfig | undefined>>("smtp")
+      await ctx.getConfig<Record<string, SmtpClientDefaultOptions | undefined>>("smtp")
     )[configName];
     if (config == null) {
       throw new Error(`SMTP config not found: ${configName}`);
