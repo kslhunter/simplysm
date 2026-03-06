@@ -1,91 +1,238 @@
-# Solid Package Review Fixes Design
+# Solid Package Review Fixes Design (Round 2)
 
 ## Overview
 
-`packages/solid` 코드 리뷰에서 발견된 16개 finding을 수정하는 설계. Echarts는 이미 수정 완료.
+Design for 14 accepted findings from `packages/solid` comprehensive code review (round 2). Covers type safety, correctness, naming conventions, compound component patterns, and SharedDataProvider lifecycle refactoring.
 
-## Changes
+## Section 1: Type/Name Cleanup (Findings 5, 8, 10, 13, 14, 15)
 
-### 1. CrudDetail: setReady after failed load (CRITICAL)
+### Finding 5: `isItemSelectable` Type Change
 
-**File**: `components/features/crud-detail/CrudDetail.tsx`
-**Change**: `doLoad()`에서 `setReady(true)`를 try 블록 안으로 이동, `setBusyCount` 감소를 finally로 이동.
+Change `(item: TItem) => true | string` → `(item: TItem) => boolean | string`.
 
-### 2. NotificationProvider.error re-throw (WARNING)
+**Files:**
+- `data/sheet/DataSheet.types.ts:29` — `DataSheetProps.isItemSelectable`
+- `data/sheet/hooks/useDataSheetSelection.ts:9,15` — props type + `getItemSelectable` return type
+- `features/crud-sheet/CrudSheet.types.ts:89` — `CrudSheetBaseProps.isItemSelectable`
 
-**File**: `components/feedback/notification/NotificationProvider.tsx`
-**Change**: non-Error 값도 danger 알림으로 변환. string이면 그대로, null/undefined면 generic 메시지. re-throw 제거.
+No consumer code changes needed — all consumers already use `=== true` / `!== true` comparisons.
 
-### 3. CrudSheet concurrent refresh (WARNING)
+### Finding 8: Auxiliary File Renames
 
-**File**: `components/features/crud-sheet/CrudSheet.tsx`
-**Change**: `doRefresh`에 version counter 추가. await 후 현재 version과 비교하여 stale이면 결과 무시. `setReady(true)`도 try 안으로 이동, `setBusyCount`는 finally로 이동.
+| Original | Target |
+|----------|--------|
+| `data/sheet/types.ts` | `data/sheet/DataSheet.types.ts` |
+| `data/sheet/sheetUtils.ts` | `data/sheet/DataSheet.utils.ts` |
+| `features/crud-detail/types.ts` | `features/crud-detail/CrudDetail.types.ts` |
+| `features/crud-sheet/types.ts` | `features/crud-sheet/CrudSheet.types.ts` |
 
-### 4. SharedDataProvider swallowed rejection (WARNING)
+Update all import paths accordingly.
 
-**File**: `providers/shared-data/SharedDataProvider.tsx`
-**Change**: `void client.addEventListener(...).then(...)` 체인에 `.catch()` 추가. catch에서 `initialized = false`로 리셋하여 다음 접근 시 재시도.
+### Finding 10: DataSheetConfigDialog Internalization
 
-### 5. CrudSheet handleExcelUpload DOM leak (WARNING)
+- Remove `ConfigDialog: DataSheetConfigDialog` from `Object.assign` in `DataSheet.tsx:1025`
+- Remove `export { DataSheetConfigDialog }` from `DataSheet.tsx:1027`
+- Remove any re-export from `index.ts`
 
-**File**: `components/features/crud-sheet/CrudSheet.tsx`
-**Change**: `handleExcelUpload` 내부에서 매번 `document.createElement`하던 것을 컴포넌트 레벨 단일 persistent input으로 변경, 매 호출마다 재사용.
+### Finding 13: `createTopbarActions` → `useTopbarActions`
 
-### 6. isItemSelectable type (WARNING)
+Rename function and update all references:
+- `Topbar.tsx:46` — definition
+- `Topbar.tsx:49` — error message
+- `CrudSheet.tsx:27,410` — import/call
+- `CrudDetail.tsx:18,200` — import/call
+- Test files: `TopbarActions.spec.tsx`, `createTopbarActions.spec.tsx` (rename to `useTopbarActions.spec.tsx`)
+- `docs/layout.md`
+- `index.ts` export
+- `solid-demo/src/pages/layout/TopbarPage.tsx`
 
-**File**: `components/data/sheet/types.ts`
-**Change**: `isItemSelectable?: (item: TItem) => boolean | string` → `(item: TItem) => true | string`. CrudSheet의 동일 타입도 함께 변경. consumer 코드에서 `false` 반환 시 타입 에러로 감지됨 (breaking change 허용).
+### Finding 14: `createAppStructure.ts` #region
 
-### 7. Select onValueChange undefined (WARNING)
+Add #region blocks to 519-line file:
+```
+#region Types
+#region Builder Functions
+#region createAppStructure (main export)
+```
 
-**File**: `components/form-control/select/Select.tsx`
-**Change**: `SelectSingleBaseProps`의 `onValueChange?: (value: TValue) => void` → `(value: TValue | undefined) => void`.
+### Finding 15: `Kanban.tsx` #region
 
-### 8. `as unknown as` removal — compound component interfaces (WARNING)
+Add #region blocks to 603-line file:
+```
+#region Types
+#region KanbanCard
+#region KanbanLane
+#region KanbanBoard (main)
+#region Export
+```
 
-**Files**: `Sidebar.tsx`, `Tabs.tsx`, `Dropdown.tsx`, `Print.tsx`, `CrudDetail.tsx`, `DataSheet.tsx`, `CrudSheet.tsx`, `TextInput.tsx`, `SharedDataProvider.tsx`, `DataSelectButton.tsx`, `SharedDataSelect.tsx`, `SharedDataSelectButton.tsx`, `EditorToolbar.tsx`
-**Change**: `XxxComponent` interface 제거, `Object.assign(Inner, { Sub1, Sub2 })` 결과를 직접 export. `as unknown as` 제거. splitProps/context casts도 타입 전파 개선으로 제거.
+## Section 2: Correctness Fixes (Findings 1, 4, 16)
 
-### 9. Single-letter generic `<T>` (WARNING)
+### Finding 1: Combobox `allowsCustomValue` Safe Handling
 
-**Files**: `Select.tsx`, `Combobox.tsx`, `DataSheet.tsx`, `Kanban.tsx`
-**Change**: `<T>` → `<TValue>` (Select, Combobox), `<TItem>` (DataSheet), `<TCard>` (Kanban). 파일 내 모든 `T` 참조를 일괄 변경.
+**File:** `Combobox.tsx:346`
 
-### 10. notification/index.ts barrel removal (WARNING)
+When `allowsCustomValue=true` and no `parseCustomValue` provided, treat custom value as undefined instead of unsafe cast:
 
-**File**: `components/feedback/notification/index.ts`
-**Change**: barrel 파일 삭제. `src/index.ts`의 기존 re-export 확인 필요 — barrel을 참조하는 경우 개별 파일 경로로 변경.
+```ts
+// Before
+const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as TValue);
+selectValue(customValue);
 
-### 11. Record<string, any> → Record<string, unknown> (WARNING)
+// After
+if (local.parseCustomValue) {
+  selectValue(local.parseCustomValue(query()));
+} else {
+  setInternalValue(undefined);
+  setQuery("");
+  setOpen(false);
+}
+```
 
-**Files**: `Dialog.tsx`, `CrudSheet.tsx`, `crud-sheet/types.ts`
-**Change**: `Record<string, any>` → `Record<string, unknown>`.
+### Finding 4: AddressSearch onerror
 
-### 12. CrudDetail toolbar condition extraction (HIGH)
+**File:** `AddressSearch.tsx:18-30`
 
-**File**: `components/features/crud-detail/CrudDetail.tsx`
-**Change**: 3곳에서 반복되는 조건식을 변수로 추출:
-- `const showSave = () => canEdit() && local.submit;`
-- `const showDelete = () => canEdit() && local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true);`
+Add `onerror` handler and `reject` path:
 
-3곳의 JSX 구조는 모드별로 다르므로 유지.
+```ts
+await new Promise<void>((resolve, reject) => {
+  const scriptEl = document.createElement("script");
+  scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+  scriptEl.onload = (): void => { daum.postcode.load(() => { resolve(); }); };
+  scriptEl.onerror = () => { reject(new Error("Failed to load Daum postcode script")); };
+  document.head.appendChild(scriptEl);
+});
+```
 
-### 13. Invalid target element createMemo (HIGH)
+### Finding 16: PrintProvider Canvas Context Null Check
 
-**File**: `components/form-control/Invalid.tsx`
-**Change**: 4개 `createEffect`에서 각각 `resolved.toArray().find(...)` 하던 것을 `createMemo`로 한 번만 해석. 4개 effect에서 memo 값을 공유.
+**File:** `PrintProvider.tsx:250`
 
-### 14. EditorToolbar descriptor array (HIGH)
+```ts
+// Before
+const ctx = sliceCanvas.getContext("2d")!;
 
-**File**: `components/form-control/editor/EditorToolbar.tsx`
-**Change**: 18개 toolbar 버튼을 descriptor 배열로 정의 (icon, i18n key, active check, command, group). `createEditorTransaction` 14회 반복도 배열에서 파생. `<For>` 루프로 렌더링, group 경계에 separator 자동 삽입.
+// After
+const ctx = sliceCanvas.getContext("2d");
+if (!ctx) throw new Error("Failed to get 2D canvas context");
+```
 
-### 15. DataSheet JSX sub-render functions (MEDIUM)
+## Section 3: Type Safety (Findings 6, 7, 11)
 
-**File**: `components/data/sheet/DataSheet.tsx`
-**Change**: 525-line JSX에서 header cell renderer, feature column cells (expand/select/reorder), summary row를 같은 파일 내 named render function으로 추출.
+### Finding 6: SharedDataSelect TKey Generic
 
-### 16. Barcode type extraction (LOW)
+**File:** `SharedDataSelect.tsx`
 
-**Files**: `components/display/Barcode.tsx` → `Barcode.types.ts`
-**Change**: `BarcodeType` union 타입을 `Barcode.types.ts`로 분리. `Barcode.tsx`에서 import.
+Add `TKey` generic parameter:
+
+```ts
+export type SharedDataSelectProps<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> = {
+  data: SharedDataAccessor<TItem>;
+  value?: TKey | TKey[];
+  onValueChange?: (value: TKey | TKey[] | undefined) => void;
+  // ...rest
+};
+```
+
+Update internal functions (`normalizeKeys`, `itemToKey`) to use `TKey` instead of `unknown`.
+
+### Finding 7: `as unknown as` Removal
+
+**SharedDataSelect.tsx:180** — Remove `as unknown as SelectProps` by properly typing `selectProps` after TKey generic is added.
+
+**DataSelectButton.tsx:216** — Change `[] as unknown as TKey[]` → `[] as TKey[]` (safe narrowing of empty array).
+
+### Finding 11: `any` → Proper Types
+
+1. **useDataSheetFixedColumns.ts:8** — `(event: any)` → `(event: DataSheetReorderEvent<TItem>)`
+2. **AddressSearch.tsx:35,59** — Define `DaumPostcodeResult` and `DaumPostcodeSize` interfaces for Daum API
+3. **CrudSheet.tsx:221** — `setItems(index as any, ...)` → use `produce()` or properly typed store path
+4. **DataSelectButton.tsx:207** — `as any` → proper generic typing via TKey union
+
+## Section 4: Pattern Normalization (Finding 9)
+
+Remove separate interface declarations + type assertions from 6 compound components. Use `Object.assign` for TypeScript inference (matching Combobox/Dialog pattern):
+
+1. **List.tsx** — Remove `interface ListComponent`, use `Object.assign(ListBase, { Item: ListItem })`
+2. **CheckboxGroup.tsx** — Remove `interface CheckboxGroupComponent`, remove `as` cast from Object.assign
+3. **RadioGroup.tsx** — Same pattern as CheckboxGroup
+4. **NumberInput.tsx** — Remove `interface NumberInputComponent`, extract inner function, use Object.assign
+5. **SharedDataSelectList.tsx** — Remove `interface SharedDataSelectListComponent`, remove `as` cast
+6. **Select.tsx (SelectItemComponent)** — Remove `interface SelectItemComponent`, use Object.assign
+
+## Section 5: SharedDataProvider Lifecycle Refactoring (Finding 2)
+
+### State Machine
+
+Replace `initialized: boolean` with per-entry state:
+
+```ts
+type EntryState = "idle" | "initializing" | "ready" | "error";
+```
+
+### `createSharedDataEntry` Extraction
+
+Extract per-key logic from `configure()` into a standalone function:
+
+```ts
+function createSharedDataEntry(
+  name: string,
+  def: SharedDataDefinition<unknown>,
+  client: ServiceClient,
+): SharedDataAccessor<unknown> & { cleanup(): void } {
+  const [items, setItems] = createSignal<unknown[]>([]);
+  let state: EntryState = "idle";
+  let listenerKey: string | undefined;
+
+  const itemMap = createMemo(() => { ... });
+
+  // Serialized initialization: addListener completes before loadData
+  async function initialize(): Promise<void> {
+    if (state !== "idle" && state !== "error") return;
+    state = "initializing";
+    try {
+      listenerKey = await client.addListener(SharedDataChangeEvent, ...);
+      if (disposed) { void client.removeListener(listenerKey); return; }
+      await loadData();
+      state = "ready";
+    } catch (err) {
+      state = "error";
+      logger.error(...);
+    }
+  }
+
+  // Data loading with version counter (preserved from original)
+  async function loadData(changeKeys?: ...): Promise<void> { ... }
+
+  function cleanup(): void {
+    if (listenerKey != null) void client.removeListener(listenerKey);
+  }
+
+  return {
+    items: () => { void initialize(); return items(); },
+    get: (key) => { void initialize(); ... },
+    emit: async (changeKeys) => { ... },
+    getKey: def.getKey,
+    itemSearchText: def.itemSearchText,
+    isItemHidden: def.isItemHidden,
+    getParentKey: def.getParentKey,
+    cleanup,
+  };
+}
+```
+
+### Key Improvements
+
+1. **State machine**: error state allows retry on next access
+2. **Serialization**: addListener completes before loadData starts (await)
+3. **Per-key encapsulation**: each entry manages its own state independently
+4. **Cleanup integration**: `onCleanup` calls each entry's `cleanup()`
+
+### External API Unchanged
+
+`SharedDataAccessor` interface (items, get, emit, getKey, etc.), `wait()`, `busy()`, `configure()` signatures remain identical.
