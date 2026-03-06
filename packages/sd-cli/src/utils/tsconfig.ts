@@ -32,9 +32,8 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
  * Type check environment
  * - node: remove DOM lib + add node types
  * - browser: remove node types
- * - neutral: keep DOM lib + add node types (for Node/browser shared packages)
  */
-export type TypecheckEnv = "node" | "browser" | "neutral";
+export type TypecheckEnv = "node" | "browser";
 
 /**
  * Create compiler options for package
@@ -71,9 +70,6 @@ export async function getCompilerOptionsForPackage(
       break;
     case "browser":
       options.types = packageTypes.filter((t) => t !== "node");
-      break;
-    case "neutral":
-      options.types = [...new Set([...packageTypes, "node"])];
       break;
   }
 
