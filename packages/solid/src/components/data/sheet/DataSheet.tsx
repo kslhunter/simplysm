@@ -80,12 +80,12 @@ import { useDataSheetReorder } from "./hooks/useDataSheetReorder";
 import { useDataSheetFixedColumns } from "./hooks/useDataSheetFixedColumns";
 
 interface DataSheetComponent {
-  <T>(props: DataSheetProps<T>): JSX.Element;
+  <TItem>(props: DataSheetProps<TItem>): JSX.Element;
   Column: typeof DataSheetColumn;
   ConfigDialog: typeof DataSheetConfigDialog;
 }
 
-const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
+const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
   const [local] = splitProps(props, [
     "items",
     "storageKey",
@@ -123,14 +123,14 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   const columnDefs = createMemo(
     () =>
       rawColumns().map(
-        (col): DataSheetColumnDef<T> => ({
+        (col): DataSheetColumnDef<TItem> => ({
           key: col.key,
           header: normalizeHeader(col.header),
           headerContent: col.headerContent,
           headerStyle: col.headerStyle,
           summary: col.summary,
           tooltip: col.tooltip,
-          cell: col.children as (ctx: DataSheetCellContext<T>) => JSX.Element,
+          cell: col.children as (ctx: DataSheetCellContext<TItem>) => JSX.Element,
           class: col.class,
           fixed: col.fixed ?? false,
           hidden: col.hidden ?? false,
@@ -228,7 +228,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     toggleSort,
     sortIndex: sortIndex,
     sortedItems,
-  } = useDataSheetSorting<T>({
+  } = useDataSheetSorting<TItem>({
     sorts: () => local.sorts,
     onSortsChange: () => local.onSortsChange,
     items: () => local.items,
@@ -240,7 +240,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   }
 
   // #region Paging
-  const { currentPage, setCurrentPage, pageCount, pagedItems } = useDataSheetPaging<T>({
+  const { currentPage, setCurrentPage, pageCount, pagedItems } = useDataSheetPaging<TItem>({
     page: () => local.page,
     onPageChange: () => local.onPageChange,
     pageSize: () => local.pageSize,
@@ -250,7 +250,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   });
 
   const originalIndexMap = createMemo(() => {
-    const map = new Map<T, number>();
+    const map = new Map<TItem, number>();
     (local.items ?? []).forEach((item, i) => map.set(item, i));
     return map;
   });
@@ -268,7 +268,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     getFixedStyle,
     isLastFixed,
     registerColumnRef,
-  } = useDataSheetFixedColumns<T>(
+  } = useDataSheetFixedColumns<TItem>(
     {
       get itemChildren() { return local.itemChildren; },
       get selectionMode() { return local.selectionMode; },
@@ -364,7 +364,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
 
   // #region Expanding
   const { expandedItems, flatItems, toggleExpand, isAllExpanded, toggleExpandAll } =
-    useDataSheetExpansion<T>(
+    useDataSheetExpansion<TItem>(
       {
         get expandedItems() { return local.expandedItems; },
         get onExpandedItemsChange() { return local.onExpandedItemsChange; },
@@ -387,7 +387,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
     rangeSelect,
     lastClickedRow,
     setLastClickedRow,
-  } = useDataSheetSelection<T>(
+  } = useDataSheetSelection<TItem>(
     {
       get selectionMode() { return local.selectionMode; },
       get selection() { return local.selection; },
@@ -398,7 +398,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   );
 
   // #region AutoSelect
-  function selectItem(item: T): void {
+  function selectItem(item: TItem): void {
     if (getItemSelectable(item) !== true) return;
     if (local.selectionMode === "single") {
       setSelection([item]);
@@ -410,7 +410,7 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
   }
 
   // #region Reorder
-  const { dragState, onReorderPointerDown } = useDataSheetReorder<T>(
+  const { dragState, onReorderPointerDown } = useDataSheetReorder<TItem>(
     {
       get onItemsReorder() { return local.onItemsReorder; },
       get itemChildren() { return local.itemChildren; },
@@ -1000,9 +1000,9 @@ const DataSheetInner = <T,>(props: DataSheetProps<T>) => {
 };
 
 //#region Export
-export const DataSheet = Object.assign(DataSheetInner, {
+export const DataSheet: DataSheetComponent = Object.assign(DataSheetInner, {
   Column: DataSheetColumn,
   ConfigDialog: DataSheetConfigDialog,
-}) as unknown as DataSheetComponent;
+});
 export { DataSheetConfigDialog };
 //#endregion

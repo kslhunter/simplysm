@@ -91,12 +91,12 @@ export interface ComboboxItemProps<TValue = unknown> extends Omit<
 /**
  * Selectable item in Combobox dropdown
  */
-const ComboboxItem: ParentComponent<ComboboxItemProps> = <T,>(
-  props: ComboboxItemProps<T> & { children?: JSX.Element },
+const ComboboxItem: ParentComponent<ComboboxItemProps> = <TValue,>(
+  props: ComboboxItemProps<TValue> & { children?: JSX.Element },
 ) => {
   const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
 
-  const context = useComboboxContext<T>();
+  const context = useComboboxContext<TValue>();
 
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;
@@ -220,8 +220,8 @@ export interface ComboboxProps<TValue = unknown> {
  * </Combobox>
  * ```
  */
-const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
-  const [local, rest] = splitProps(props as ComboboxProps<T> & { children?: JSX.Element }, [
+const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
+  const [local, rest] = splitProps(props as ComboboxProps<TValue> & { children?: JSX.Element }, [
     "children",
     "class",
     "style",
@@ -246,14 +246,14 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
   // State
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
-  const [items, setItems] = createSignal<T[]>([]);
+  const [items, setItems] = createSignal<TValue[]>([]);
   const [busyCount, setBusyCount] = createSignal(0);
 
   // Selected value management (controlled/uncontrolled pattern)
-  const [getValue, setInternalValue] = createControllableSignal<T | undefined>({
+  const [getValue, setInternalValue] = createControllableSignal<TValue | undefined>({
     value: () => local.value,
     onChange: () => local.onValueChange,
-  } as Parameters<typeof createControllableSignal<T | undefined>>[0]);
+  } as Parameters<typeof createControllableSignal<TValue | undefined>>[0]);
 
   // Debounce queue (created once on mount, debounceMs only used as initial value)
   const debounceQueue = new DebounceQueue(local.debounceMs ?? 300);
@@ -263,13 +263,13 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
   });
 
   // Check if value is selected
-  const isSelected = (value: T): boolean => {
+  const isSelected = (value: TValue): boolean => {
     const current = getValue();
     return current === value;
   };
 
   // Select value
-  const selectValue = (value: T) => {
+  const selectValue = (value: TValue) => {
     setInternalValue(value as any);
     setQuery("");
     setOpen(false);
@@ -288,7 +288,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
     _setItemTemplate(() => fn);
 
   // Context value
-  const contextValue: ComboboxContextValue<T> = {
+  const contextValue: ComboboxContextValue<TValue> = {
     isSelected,
     selectValue,
     closeDropdown,
@@ -343,7 +343,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
       setOpen(false);
     } else if (e.key === "Enter" && local.allowsCustomValue && query().trim() !== "") {
       e.preventDefault();
-      const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as T);
+      const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as TValue);
       selectValue(customValue);
     }
   };
@@ -399,7 +399,7 @@ const ComboboxInner = <T,>(props: ComboboxProps<T>) => {
 
   // Render items
   const renderItems = (): JSX.Element => {
-    const template = itemTemplate() as ((item: T, index: number) => JSX.Element) | undefined;
+    const template = itemTemplate() as ((item: TValue, index: number) => JSX.Element) | undefined;
 
     // Loading
     if (busyCount() > 0) {

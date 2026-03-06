@@ -164,12 +164,12 @@ interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectIt
  * </Select.Item>
  * ```
  */
-const SelectItem: SelectItemComponent = <T,>(
-  props: SelectItemProps<T> & { children?: JSX.Element },
+const SelectItem: SelectItemComponent = <TValue,>(
+  props: SelectItemProps<TValue> & { children?: JSX.Element },
 ) => {
   const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
 
-  const context = useSelectContext<T>();
+  const context = useSelectContext<TValue>();
 
   const [childrenSlot, ItemChildrenProvider] = createItemChildrenSlotAccessor();
   const hasChildren = () => childrenSlot() !== undefined;
@@ -358,8 +358,8 @@ interface SelectComponent {
  * </Select>
  * ```
  */
-const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
-  const [local, rest] = splitProps(props as SelectProps<T> & { children?: JSX.Element }, [
+const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
+  const [local, rest] = splitProps(props as SelectProps<TValue> & { children?: JSX.Element }, [
     "children",
     "class",
     "style",
@@ -396,14 +396,14 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   });
 
   // Manage selected value (controlled/uncontrolled pattern)
-  type ValueType = T | T[] | undefined;
+  type ValueType = TValue | TValue[] | undefined;
   const [value, setValue] = createControllableSignal<ValueType>({
     value: () => local.value,
     onChange: () => local.onValueChange as ((v: ValueType) => void) | undefined,
   } as Parameters<typeof createControllableSignal<ValueType>>[0]);
 
   // Check if value is selected
-  const isSelected = (itemValue: T): boolean => {
+  const isSelected = (itemValue: TValue): boolean => {
     const current = value();
     if (current === undefined) return false;
 
@@ -414,9 +414,9 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   };
 
   // Toggle value
-  const toggleValue = (itemValue: T) => {
+  const toggleValue = (itemValue: TValue) => {
     if (local.multiple) {
-      const current = (value() as T[] | undefined) ?? [];
+      const current = (value() as TValue[] | undefined) ?? [];
       const idx = current.indexOf(itemValue);
       if (idx >= 0) {
         setValue([...current.slice(0, idx), ...current.slice(idx + 1)]);
@@ -443,7 +443,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     _setItemTemplate(() => fn);
 
   // Context value
-  const contextValue: SelectContextValue<T> = {
+  const contextValue: SelectContextValue<TValue> = {
     multiple: () => local.multiple ?? false,
     isSelected,
     toggleValue,
@@ -479,7 +479,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     });
 
   // Search filtering (supports hierarchical structure)
-  const filteredItems = createMemo((): T[] | undefined => {
+  const filteredItems = createMemo((): TValue[] | undefined => {
     if (!local.items) return undefined;
     if (!local.itemSearchText || !searchText()) return local.items;
 
@@ -487,7 +487,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     if (terms.length === 0) return local.items;
 
     // Include parent when child matches in hierarchical structure
-    const matchesSearch = (item: T): boolean => {
+    const matchesSearch = (item: TValue): boolean => {
       const itemText = local.itemSearchText!(item).toLowerCase();
       if (terms.every((t) => itemText.includes(t.toLowerCase()))) return true;
 
@@ -504,7 +504,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
   });
 
   // Items with hidden filter applied
-  const visibleItems = createMemo((): T[] | undefined => {
+  const visibleItems = createMemo((): TValue[] | undefined => {
     const items = filteredItems();
     if (!items || !local.isItemHidden) return items;
 
@@ -526,7 +526,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
 
   // Deselect all
   const handleDeselectAll = () => {
-    setValue([] as unknown as T[]);
+    setValue([] as TValue[]);
   };
 
   // Inner component: resolve children inside Provider to trigger slot registration
@@ -536,13 +536,13 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
 
     // Extract itemTemplate function
     const getItemTemplate = ():
-      | ((item: T, index: number, depth: number) => JSX.Element)
+      | ((item: TValue, index: number, depth: number) => JSX.Element)
       | undefined => {
-      return itemTemplate() as ((item: T, index: number, depth: number) => JSX.Element) | undefined;
+      return itemTemplate() as ((item: TValue, index: number, depth: number) => JSX.Element) | undefined;
     };
 
     // Render items recursively
-    const renderItems = (itemList: T[], depth: number): JSX.Element => {
+    const renderItems = (itemList: TValue[], depth: number): JSX.Element => {
       const tpl = getItemTemplate();
       return (
         <For each={itemList}>
@@ -578,7 +578,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
     };
 
     // Render selected value (reuse itemTemplate when in items mode)
-    const renderValue = (renderVal: T): JSX.Element => {
+    const renderValue = (renderVal: TValue): JSX.Element => {
       if (local.renderValue) {
         return local.renderValue(renderVal);
       }
@@ -606,7 +606,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
         );
       }
 
-      return renderValue(current as T);
+      return renderValue(current as TValue);
     };
 
     // Show unset item: single select + not required + items mode
@@ -681,7 +681,7 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
               <Show when={local.items} fallback={resolved()}>
                 {/* Unset item */}
                 <Show when={showUnsetItem()}>
-                  <SelectItem value={undefined as T}>
+                  <SelectItem value={undefined as TValue}>
                     <span class={text.muted}>{i18n.t("select.unset")}</span>
                   </SelectItem>
                 </Show>
@@ -719,10 +719,10 @@ const SelectInnerComponent = <T,>(props: SelectProps<T>) => {
 };
 
 //#region Export
-export const Select = Object.assign(SelectInnerComponent, {
+export const Select: SelectComponent = Object.assign(SelectInnerComponent, {
   Item: SelectItem,
   Header: SelectHeader,
   Action: SelectAction,
   ItemTemplate: SelectItemTemplate,
-}) as SelectComponent;
+});
 //#endregion
