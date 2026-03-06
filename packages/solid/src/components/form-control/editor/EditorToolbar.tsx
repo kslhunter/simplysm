@@ -71,7 +71,8 @@ interface ToolbarButtonItem {
 
 type ToolbarItem = ToolbarButtonItem | "separator";
 
-const toolbarItems: ToolbarItem[] = [
+// Items before color pickers: Headings + Text formatting
+const toolbarItemsBefore: ToolbarItem[] = [
   // Headings
   { icon: IconH1, i18nKey: "editorToolbar.heading1", command: (c) => c.toggleHeading({ level: 1 }).run(), isActive: (e) => e.isActive("heading", { level: 1 }) },
   { icon: IconH2, i18nKey: "editorToolbar.heading2", command: (c) => c.toggleHeading({ level: 2 }).run(), isActive: (e) => e.isActive("heading", { level: 2 }) },
@@ -81,7 +82,10 @@ const toolbarItems: ToolbarItem[] = [
   { icon: IconItalic, i18nKey: "editorToolbar.italic", command: (c) => c.toggleItalic().run(), isActive: (e) => e.isActive("italic") },
   { icon: IconUnderline, i18nKey: "editorToolbar.underline", command: (c) => c.toggleUnderline().run(), isActive: (e) => e.isActive("underline") },
   { icon: IconStrikethrough, i18nKey: "editorToolbar.strikethrough", command: (c) => c.toggleStrike().run(), isActive: (e) => e.isActive("strike") },
-  "separator",
+];
+
+// Items after color pickers: Lists + Indent + Block + Alignment
+const toolbarItemsAfter: ToolbarItem[] = [
   // Lists
   { icon: IconList, i18nKey: "editorToolbar.bulletList", command: (c) => c.toggleBulletList().run(), isActive: (e) => e.isActive("bulletList") },
   { icon: IconListNumbers, i18nKey: "editorToolbar.numberedList", command: (c) => c.toggleOrderedList().run(), isActive: (e) => e.isActive("orderedList") },
@@ -107,7 +111,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   // Track active state reactively with createEditorTransaction
   const activeStates = new Map<ToolbarButtonItem, () => boolean>();
-  for (const item of toolbarItems) {
+  for (const item of [...toolbarItemsBefore, ...toolbarItemsAfter]) {
     if (item !== "separator" && item.isActive) {
       const check = item.isActive;
       activeStates.set(item, createEditorTransaction(e, (editor) => check(editor)));
@@ -152,7 +156,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   return (
     <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.default), props.class)}>
-      <For each={toolbarItems}>
+      <For each={toolbarItemsBefore}>
         {(item) =>
           item === "separator" ? (
             <div class={separatorClass} />
@@ -198,6 +202,25 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
           }
         />
       </label>
+
+      <div class={separatorClass} />
+      <For each={toolbarItemsAfter}>
+        {(item) =>
+          item === "separator" ? (
+            <div class={separatorClass} />
+          ) : (
+            <Button
+              variant="ghost"
+              size="xs"
+              class={item.isActive ? btnClass(() => activeStates.get(item)?.() ?? false) : toolbarBtnExtra}
+              title={i18n.t(item.i18nKey)}
+              onClick={() => item.command(props.editor.chain().focus())}
+            >
+              <Icon icon={item.icon} size="1em" />
+            </Button>
+          )
+        }
+      </For>
 
       {/* Insert table */}
       <div class={separatorClass} />
