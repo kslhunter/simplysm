@@ -95,6 +95,29 @@ export async function rm(targetPath: string): Promise<void> {
 
 //#region Copy
 
+interface CopyEntry {
+  sourcePath: string;
+  targetPath: string;
+}
+
+function collectCopyEntries(
+  sourcePath: string,
+  targetPath: string,
+  children: string[],
+  filter?: (absolutePath: string) => boolean,
+): CopyEntry[] {
+  const entries: CopyEntry[] = [];
+  for (const childPath of children) {
+    if (filter !== undefined && !filter(childPath)) {
+      continue;
+    }
+    const relativeChildPath = path.relative(sourcePath, childPath);
+    const childTargetPath = path.resolve(targetPath, relativeChildPath);
+    entries.push({ sourcePath: childPath, targetPath: childTargetPath });
+  }
+  return entries;
+}
+
 /**
  * Copies a file or directory.
  *
@@ -127,17 +150,9 @@ export function copySync(
 
   if (stats.isDirectory()) {
     mkdirSync(targetPath);
-
     const children = globSync(path.resolve(sourcePath, "*"), { dot: true });
-
-    for (const childPath of children) {
-      if (filter !== undefined && !filter(childPath)) {
-        continue;
-      }
-
-      const relativeChildPath = path.relative(sourcePath, childPath);
-      const childTargetPath = path.resolve(targetPath, relativeChildPath);
-      copySync(childPath, childTargetPath, filter);
+    for (const entry of collectCopyEntries(sourcePath, targetPath, children, filter)) {
+      copySync(entry.sourcePath, entry.targetPath, filter);
     }
   } else {
     mkdirSync(path.dirname(targetPath));
@@ -182,18 +197,11 @@ export async function copy(
 
   if (stats.isDirectory()) {
     await mkdir(targetPath);
-
     const children = await glob(path.resolve(sourcePath, "*"), { dot: true });
-
-    await children.parallelAsync(async (childPath) => {
-      if (filter !== undefined && !filter(childPath)) {
-        return;
-      }
-
-      const relativeChildPath = path.relative(sourcePath, childPath);
-      const childTargetPath = path.resolve(targetPath, relativeChildPath);
-      await copy(childPath, childTargetPath, filter);
-    });
+    await collectCopyEntries(sourcePath, targetPath, children, filter)
+      .parallelAsync(async (entry) => {
+        await copy(entry.sourcePath, entry.targetPath, filter);
+      });
   } else {
     await mkdir(path.dirname(targetPath));
 
