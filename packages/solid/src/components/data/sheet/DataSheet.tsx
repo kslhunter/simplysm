@@ -11,13 +11,10 @@ import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
-  IconArrowsSort,
   IconChevronDown,
   IconChevronRight,
   IconGripVertical,
   IconSettings,
-  IconSortAscending,
-  IconSortDescending,
 } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
 import type {
@@ -27,7 +24,6 @@ import type {
   DataSheetConfigColumnInfo,
   DataSheetProps,
   FlatItem,
-  HeaderDef,
 } from "./DataSheet.types";
 import { DataSheetColumn, createColumnSlotsAccessor } from "./DataSheetColumn";
 import { buildHeaderTable, normalizeHeader } from "./DataSheet.utils";
@@ -79,6 +75,7 @@ import { useDataSheetExpansion } from "./hooks/useDataSheetExpansion";
 import { useDataSheetSelection } from "./hooks/useDataSheetSelection";
 import { useDataSheetReorder } from "./hooks/useDataSheetReorder";
 import { useDataSheetFixedColumns } from "./hooks/useDataSheetFixedColumns";
+import { useDataSheetHeaderCell } from "./hooks/useDataSheetHeaderCell";
 
 
 const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
@@ -469,149 +466,25 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
 
   // #region Sub-render functions
 
-  function renderHeaderCell(header: HeaderDef, colIndex: number, rowIndex: number): JSX.Element {
-    const isSortable = () =>
-      header.isLastRow &&
-      header.colIndex != null &&
-      effectiveColumns()[header.colIndex].sortable;
-    const colKey = () =>
-      header.colIndex != null
-        ? effectiveColumns()[header.colIndex].key
-        : undefined;
-
-    // Group header fixed status: all columns in colspan range are fixed
-    const isGroupFixed = (): boolean => {
-      if (header.isLastRow) return false;
-      const start = colIndex;
-      const span = header.colspan;
-      const cols = effectiveColumns();
-      for (let i = start; i < start + span && i < cols.length; i++) {
-        if (!cols[i].fixed) return false;
-      }
-      return true;
-    };
-
-    // Cell fixed column status (based on colIndex if last row, group-based otherwise)
-    const isCellFixed = () =>
-      (header.isLastRow &&
-        header.colIndex != null &&
-        effectiveColumns()[header.colIndex].fixed) ||
-      isGroupFixed();
-
-    // Cell's last fixed status
-    const isCellLastFixed = () => {
-      if (header.isLastRow && header.colIndex != null)
-        return isLastFixed(header.colIndex);
-      if (isGroupFixed()) {
-        const lastCol = colIndex + header.colspan - 1;
-        return isLastFixed(lastCol);
-      }
-      return false;
-    };
-
-    // Fixed cell left + top inline style
-    const cellStyle = (): string | undefined => {
-      const parts: string[] = [];
-      // top: apply to all th (fix header to top)
-      const top = headerRowTops()[rowIndex];
-      parts.push(`top: ${top}px`);
-      // left: apply only to fixed columns
-      if (header.isLastRow && header.colIndex != null) {
-        const left = getFixedStyle(header.colIndex);
-        if (left != null) parts.push(left);
-        // max-width: apply if explicit width exists (allow column to shrink below content)
-        const col = effectiveColumns()[header.colIndex];
-        if (col.width != null) parts.push(`max-width: ${col.width.replace(/;/g, "")}`);
-      } else if (isGroupFixed()) {
-        const left = getFixedStyle(colIndex);
-        if (left != null) parts.push(left);
-      }
-      return parts.length > 0 ? parts.join("; ") : undefined;
-    };
-
-    return (
-      <th
-        class={twMerge(
-          thClass,
-          fixedClass,
-          isSortable() ? sortableThClass : undefined,
-          isCellFixed() ? "z-[5]" : "z-[3]",
-          isCellLastFixed() ? fixedLastClass : undefined,
-        )}
-        colspan={header.colspan > 1 ? header.colspan : undefined}
-        rowspan={header.rowspan > 1 ? header.rowspan : undefined}
-        style={cellStyle()}
-        title={
-          header.isLastRow && header.colIndex != null
-            ? (effectiveColumns()[header.colIndex].tooltip ?? header.text)
-            : header.text
-        }
-        ref={(el: HTMLElement) => {
-          if (
-            header.isLastRow &&
-            header.colIndex != null &&
-            effectiveColumns()[header.colIndex].fixed
-          ) {
-            registerColumnRef(header.colIndex, el);
-          }
-        }}
-        onClick={(e) => {
-          if (!isSortable()) return;
-          const key = colKey();
-          if (key == null) return;
-          toggleSort(key, e.shiftKey || e.ctrlKey);
-        }}
-      >
-        <div class={clsx("flex items-center gap-2", thContentClass)}>
-          <div class="flex-1">{header.headerContent?.() ?? header.text}</div>
-          <Show when={isSortable() && colKey()}>
-            {(key) => {
-              const sortDef = () => getSortDef(key());
-              const sortIdx = () => sortIndex(key());
-              return (
-                <div class={sortIconClass}>
-                  <Show when={sortDef()?.desc === false}>
-                    <Icon icon={IconSortAscending} />
-                  </Show>
-                  <Show when={sortDef()?.desc === true}>
-                    <Icon icon={IconSortDescending} />
-                  </Show>
-                  <Show when={sortDef() == null}>
-                    <Icon
-                      icon={IconArrowsSort}
-                      class="opacity-30"
-                    />
-                  </Show>
-                  <Show when={sortIdx()}>
-                    {(idx) => <sub>{idx()}</sub>}
-                  </Show>
-                </div>
-              );
-            }}
-          </Show>
-        </div>
-        <Show
-          when={
-            header.isLastRow &&
-            header.colIndex != null &&
-            effectiveColumns()[header.colIndex].resizable
-          }
-        >
-          <div
-            class={resizerClass}
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) =>
-              onResizerPointerdown(e, effectiveColumns()[header.colIndex!].key)
-            }
-            onDblClick={(e) => {
-              e.stopPropagation();
-              onResizerDoubleClick(effectiveColumns()[header.colIndex!].key);
-            }}
-          />
-        </Show>
-      </th>
-    );
-  }
+  const { renderHeaderCell } = useDataSheetHeaderCell({
+    effectiveColumns,
+    headerRowTops,
+    getFixedStyle,
+    isLastFixed,
+    registerColumnRef,
+    toggleSort,
+    getSortDef,
+    sortIndex,
+    onResizerPointerdown,
+    onResizerDoubleClick,
+    thClass,
+    fixedClass,
+    sortableThClass,
+    fixedLastClass,
+    thContentClass,
+    resizerClass,
+    sortIconClass,
+  });
 
   function renderExpandCell(flatItem: FlatItem<TItem>): JSX.Element {
     return (
@@ -961,11 +834,11 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                 <tr
                   data-selected={selection().includes(flat.item) ? "" : undefined}
                   onClick={() => {
-                    if (local.autoSelect === "click") {
+                    if (local.autoSelect) {
                       selectItem(flat.item);
                     }
                   }}
-                  class={clsx(trRowClass, local.autoSelect === "click" && "cursor-pointer")}
+                  class={clsx(trRowClass, local.autoSelect && "cursor-pointer")}
                 >
                   <Show when={hasExpandFeature()}>
                     {renderExpandCell(flat)}

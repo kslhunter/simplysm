@@ -472,7 +472,7 @@ export default function SheetPage() {
           Single Selection + autoSelect
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          selectionMode="single" for arrow icon-based single selection. autoSelect="click" to auto-select on row click.
+          selectionMode="single" for arrow icon-based single selection. autoSelect to auto-select on row click.
         </p>
         <DataSheet
           items={users}
@@ -480,7 +480,7 @@ export default function SheetPage() {
           selectionMode="single"
           selection={singleSelected()}
           onSelectionChange={setSingleSelected}
-          autoSelect="click"
+          autoSelect
         >
           <DataSheet.Column<User> key="name" header="Name" class="px-2 py-1">
             {(ctx) => ctx.item.name}
