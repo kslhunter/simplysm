@@ -25,7 +25,7 @@ declare global {
      * @param selector - CSS selector
      * @returns Array of matching elements (empty selector returns empty array)
      */
-    findAll<T extends Element = Element>(selector: string): T[];
+    findAll<TEl extends Element = Element>(selector: string): TEl[];
 
     /**
      * Find first element matching selector
@@ -33,7 +33,7 @@ declare global {
      * @param selector - CSS selector
      * @returns First matching element or undefined (empty selector returns undefined)
      */
-    findFirst<T extends Element = Element>(selector: string): T | undefined;
+    findFirst<TEl extends Element = Element>(selector: string): TEl | undefined;
 
     /**
      * Insert element as first child
@@ -41,7 +41,7 @@ declare global {
      * @param child - Child element to insert
      * @returns Inserted child element
      */
-    prependChild<T extends Element>(child: T): T;
+    prependChild<TEl extends Element>(child: TEl): TEl;
 
     /**
      * Get all parent elements (in order of proximity)
@@ -83,21 +83,21 @@ declare global {
   }
 }
 
-Element.prototype.findAll = function <T extends Element = Element>(selector: string): T[] {
+Element.prototype.findAll = function <TEl extends Element = Element>(selector: string): TEl[] {
   const trimmed = selector.trim();
   if (trimmed === "") return [];
-  return Array.from(this.querySelectorAll<T>(trimmed));
+  return Array.from(this.querySelectorAll<TEl>(trimmed));
 };
 
-Element.prototype.findFirst = function <T extends Element = Element>(
+Element.prototype.findFirst = function <TEl extends Element = Element>(
   selector: string,
-): T | undefined {
+): TEl | undefined {
   const trimmed = selector.trim();
   if (trimmed === "") return undefined;
-  return this.querySelector<T>(trimmed) ?? undefined;
+  return this.querySelector<TEl>(trimmed) ?? undefined;
 };
 
-Element.prototype.prependChild = function <T extends Element>(child: T): T {
+Element.prototype.prependChild = function <TEl extends Element>(child: TEl): TEl {
   return this.insertBefore(child, this.firstElementChild);
 };
 

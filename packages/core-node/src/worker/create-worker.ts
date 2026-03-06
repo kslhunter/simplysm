@@ -27,7 +27,7 @@ export function createWorker<
 >(
   methods: TMethods,
 ): {
-  send<K extends keyof TEvents & string>(event: K, data?: TEvents[K]): void;
+  send<TEventName extends keyof TEvents & string>(event: TEventName, data?: TEvents[TEventName]): void;
   __methods: TMethods;
   __events: TEvents;
 } {

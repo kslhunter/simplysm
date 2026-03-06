@@ -39,33 +39,33 @@ export interface ReadonlyArrayExt<TItem> {
   filterExists(): NonNullable<TItem>[];
 
   /** Filter only elements of specific type (PrimitiveTypeStr or constructor type) */
-  ofType<K extends PrimitiveTypeStr>(type: K): Extract<TItem, PrimitiveTypeMap[K]>[];
-  ofType<N extends TItem>(type: Type<N>): N[];
+  ofType<TKey extends PrimitiveTypeStr>(type: TKey): Extract<TItem, PrimitiveTypeMap[TKey]>[];
+  ofType<TNarrow extends TItem>(type: Type<TNarrow>): TNarrow[];
 
   /** Async mapping (sequential execution) */
-  mapAsync<R>(selector: (item: TItem, index: number) => Promise<R>): Promise<R[]>;
+  mapAsync<TResult>(selector: (item: TItem, index: number) => Promise<TResult>): Promise<TResult[]>;
 
   /** Flatten nested array */
   mapMany(): TItem extends readonly (infer U)[] ? U[] : TItem;
 
   /** Map and then flatten */
-  mapMany<R>(selector: (item: TItem, index: number) => R[]): R[];
+  mapMany<TResult>(selector: (item: TItem, index: number) => TResult[]): TResult[];
 
   /** Async mapping and then flatten (sequential execution) */
-  mapManyAsync<R>(selector: (item: TItem, index: number) => Promise<R[]>): Promise<R[]>;
+  mapManyAsync<TResult>(selector: (item: TItem, index: number) => Promise<TResult[]>): Promise<TResult[]>;
 
   /**
    * Async parallel processing (using Promise.all)
    * @note If any rejects, entire operation fail-fast rejects (Promise.all behavior)
    */
-  parallelAsync<R>(fn: (item: TItem, index: number) => Promise<R>): Promise<R[]>;
+  parallelAsync<TResult>(fn: (item: TItem, index: number) => Promise<TResult>): Promise<TResult[]>;
 
   /**
    * Group by key
    * @param keySelector Key selection function for group
    * @note O(n²) complexity (deep comparison for object key support). If only primitive keys are needed, toArrayMap() is more efficient at O(n)
    */
-  groupBy<K>(keySelector: (item: TItem, index: number) => K): { key: K; values: TItem[] }[];
+  groupBy<TKey>(keySelector: (item: TItem, index: number) => TKey): { key: TKey; values: TItem[] }[];
 
   /**
    * Group by key (with value transformation)
@@ -73,52 +73,52 @@ export interface ReadonlyArrayExt<TItem> {
    * @param valueSelector Value transformation function
    * @note O(n²) complexity (deep comparison for object key support). If only primitive keys are needed, toArrayMap() is more efficient at O(n)
    */
-  groupBy<K, V>(
-    keySelector: (item: TItem, index: number) => K,
-    valueSelector: (item: TItem, index: number) => V,
+  groupBy<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => TKey,
+    valueSelector: (item: TItem, index: number) => TValue,
   ): {
-    key: K;
-    values: V[];
+    key: TKey;
+    values: TValue[];
   }[];
 
-  toMap<K>(keySelector: (item: TItem, index: number) => K): Map<K, TItem>;
+  toMap<TKey>(keySelector: (item: TItem, index: number) => TKey): Map<TKey, TItem>;
 
-  toMap<K, V>(
-    keySelector: (item: TItem, index: number) => K,
-    valueSelector: (item: TItem, index: number) => V,
-  ): Map<K, V>;
+  toMap<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => TKey,
+    valueSelector: (item: TItem, index: number) => TValue,
+  ): Map<TKey, TValue>;
 
-  toMapAsync<K>(keySelector: (item: TItem, index: number) => Promise<K>): Promise<Map<K, TItem>>;
+  toMapAsync<TKey>(keySelector: (item: TItem, index: number) => Promise<TKey>): Promise<Map<TKey, TItem>>;
 
-  toMapAsync<K, V>(
-    keySelector: (item: TItem, index: number) => Promise<K> | K,
-    valueSelector: (item: TItem, index: number) => Promise<V> | V,
-  ): Promise<Map<K, V>>;
+  toMapAsync<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => Promise<TKey> | TKey,
+    valueSelector: (item: TItem, index: number) => Promise<TValue> | TValue,
+  ): Promise<Map<TKey, TValue>>;
 
-  toArrayMap<K>(keySelector: (item: TItem, index: number) => K): Map<K, TItem[]>;
+  toArrayMap<TKey>(keySelector: (item: TItem, index: number) => TKey): Map<TKey, TItem[]>;
 
-  toArrayMap<K, V>(
-    keySelector: (item: TItem, index: number) => K,
-    valueSelector: (item: TItem, index: number) => V,
-  ): Map<K, V[]>;
+  toArrayMap<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => TKey,
+    valueSelector: (item: TItem, index: number) => TValue,
+  ): Map<TKey, TValue[]>;
 
-  toSetMap<K>(keySelector: (item: TItem, index: number) => K): Map<K, Set<TItem>>;
-  toSetMap<K, V>(
-    keySelector: (item: TItem, index: number) => K,
-    valueSelector: (item: TItem, index: number) => V,
-  ): Map<K, Set<V>>;
+  toSetMap<TKey>(keySelector: (item: TItem, index: number) => TKey): Map<TKey, Set<TItem>>;
+  toSetMap<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => TKey,
+    valueSelector: (item: TItem, index: number) => TValue,
+  ): Map<TKey, Set<TValue>>;
 
-  toMapValues<K, V>(
-    keySelector: (item: TItem, index: number) => K,
-    valueSelector: (items: TItem[]) => V,
-  ): Map<K, V>;
+  toMapValues<TKey, TValue>(
+    keySelector: (item: TItem, index: number) => TKey,
+    valueSelector: (items: TItem[]) => TValue,
+  ): Map<TKey, TValue>;
 
   toObject(keySelector: (item: TItem, index: number) => string): Record<string, TItem>;
 
-  toObject<V>(
+  toObject<TValue>(
     keySelector: (item: TItem, index: number) => string,
-    valueSelector: (item: TItem, index: number) => V,
-  ): Record<string, V>;
+    valueSelector: (item: TItem, index: number) => TValue,
+  ): Record<string, TValue>;
 
   /**
    * Convert flat array to tree structure
@@ -186,22 +186,50 @@ export interface ReadonlyArrayExt<TItem> {
    */
   diffs<TOtherItem>(
     target: TOtherItem[],
-    options?: { keys?: string[]; excludes?: string[] },
   ): ArrayDiffsResult<TItem, TOtherItem>[];
 
-  oneWayDiffs<K extends keyof TItem>(
-    orgItems: TItem[] | Map<TItem[K], TItem>,
-    keyPropNameOrGetValFn: K | ((item: TItem) => string | number | undefined),
+  diffs<TOtherItem extends Record<string, unknown> = Record<string, unknown>>(
+    target: TOtherItem[],
+    options: {
+      keys: ((keyof TItem | keyof TOtherItem) & string)[];
+      excludes?: ((keyof TItem | keyof TOtherItem) & string)[];
+    },
+  ): ArrayDiffsResult<TItem, TOtherItem>[];
+
+  diffs<TOtherItem extends Record<string, unknown> = Record<string, unknown>>(
+    target: TOtherItem[],
+    options: {
+      excludes: ((keyof TItem | keyof TOtherItem) & string)[];
+    },
+  ): ArrayDiffsResult<TItem, TOtherItem>[];
+
+  oneWayDiffs<TKey extends keyof TItem>(
+    orgItems: TItem[] | Map<TItem[TKey], TItem>,
+    keyPropNameOrGetValFn: TKey | ((item: TItem) => string | number | undefined),
     options?: {
       includeSame?: boolean;
       excludes?: string[];
       includes?: string[];
     },
-  ): ArrayDiffs2Result<TItem>[];
+  ): ArrayOneWayDiffResult<TItem>[];
 
   merge<TOtherItem>(
     target: TOtherItem[],
-    options?: { keys?: string[]; excludes?: string[] },
+  ): (TItem | TOtherItem | (TItem & TOtherItem))[];
+
+  merge<TOtherItem extends Record<string, unknown> = Record<string, unknown>>(
+    target: TOtherItem[],
+    options: {
+      keys: ((keyof TItem | keyof TOtherItem) & string)[];
+      excludes?: ((keyof TItem | keyof TOtherItem) & string)[];
+    },
+  ): (TItem | TOtherItem | (TItem & TOtherItem))[];
+
+  merge<TOtherItem extends Record<string, unknown> = Record<string, unknown>>(
+    target: TOtherItem[],
+    options: {
+      excludes: ((keyof TItem | keyof TOtherItem) & string)[];
+    },
   ): (TItem | TOtherItem | (TItem & TOtherItem))[];
 
   /**
@@ -213,11 +241,11 @@ export interface ReadonlyArrayExt<TItem> {
 
   min(): TItem extends number | string ? TItem | undefined : never;
 
-  min<P extends number | string>(selector?: (item: TItem, index: number) => P): P | undefined;
+  min<TProp extends number | string>(selector?: (item: TItem, index: number) => TProp): TProp | undefined;
 
   max(): TItem extends number | string ? TItem | undefined : never;
 
-  max<P extends number | string>(selector?: (item: TItem, index: number) => P): P | undefined;
+  max<TProp extends number | string>(selector?: (item: TItem, index: number) => TProp): TProp | undefined;
 
   shuffle(): TItem[];
 }

@@ -16,8 +16,8 @@ import { ArgumentError } from "../errors/argument-error";
  * @note Prototype chain is maintained (using Object.setPrototypeOf)
  * @note Getters/setters are evaluated as current values and copied (accessor properties themselves are not copied)
  */
-export function clone<TSource>(source: TSource): TSource {
-  return cloneImpl(source) as TSource;
+export function clone<TObj>(source: TObj): TObj {
+  return cloneImpl(source) as TObj;
 }
 
 function cloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {

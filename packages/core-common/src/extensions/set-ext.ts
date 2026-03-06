@@ -36,7 +36,7 @@ declare global {
 }
 
 Object.defineProperty(Set.prototype, "adds", {
-  value: function <T>(this: Set<T>, ...values: T[]): Set<T> {
+  value: function <TItem>(this: Set<TItem>, ...values: TItem[]): Set<TItem> {
     for (const val of values) {
       this.add(val);
     }
@@ -48,7 +48,7 @@ Object.defineProperty(Set.prototype, "adds", {
 });
 
 Object.defineProperty(Set.prototype, "toggle", {
-  value: function <T>(this: Set<T>, value: T, addOrDel?: "add" | "del"): Set<T> {
+  value: function <TItem>(this: Set<TItem>, value: TItem, addOrDel?: "add" | "del"): Set<TItem> {
     if (addOrDel === "add") {
       this.add(value);
     } else if (addOrDel === "del") {

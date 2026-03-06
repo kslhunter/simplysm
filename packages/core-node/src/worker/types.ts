@@ -35,17 +35,17 @@ export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
   /**
    * Registers a worker event listener.
    */
-  on<K extends keyof TModule["default"]["__events"] & string>(
-    event: K,
-    listener: (data: TModule["default"]["__events"][K]) => void,
+  on<TEventName extends keyof TModule["default"]["__events"] & string>(
+    event: TEventName,
+    listener: (data: TModule["default"]["__events"][TEventName]) => void,
   ): void;
 
   /**
    * Unregisters a worker event listener.
    */
-  off<K extends keyof TModule["default"]["__events"] & string>(
-    event: K,
-    listener: (data: TModule["default"]["__events"][K]) => void,
+  off<TEventName extends keyof TModule["default"]["__events"] & string>(
+    event: TEventName,
+    listener: (data: TModule["default"]["__events"][TEventName]) => void,
   ): void;
 
   /**

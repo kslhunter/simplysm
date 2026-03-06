@@ -57,10 +57,10 @@ declare global {
 }
 
 Object.defineProperty(Map.prototype, "getOrCreate", {
-  value: function <K, V>(this: Map<K, V>, key: K, newValue: V | (() => V)): V {
+  value: function <TKey, TValue>(this: Map<TKey, TValue>, key: TKey, newValue: TValue | (() => TValue)): TValue {
     if (!this.has(key)) {
       if (typeof newValue === "function") {
-        this.set(key, (newValue as () => V)());
+        this.set(key, (newValue as () => TValue)());
       } else {
         this.set(key, newValue);
       }
@@ -73,7 +73,7 @@ Object.defineProperty(Map.prototype, "getOrCreate", {
 });
 
 Object.defineProperty(Map.prototype, "update", {
-  value: function <K, V>(this: Map<K, V>, key: K, updateFn: (v: V | undefined) => V): void {
+  value: function <TKey, TValue>(this: Map<TKey, TValue>, key: TKey, updateFn: (v: TValue | undefined) => TValue): void {
     const val = this.get(key);
     const res = updateFn(val);
     this.set(key, res);

@@ -35,7 +35,7 @@ export class EventEmitter<
    * @param listener Event handler
    * @note Duplicate registration of the same listener to the same event is ignored
    */
-  on<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
+  on<TEventName extends keyof TEvents & string>(type: TEventName, listener: (data: TEvents[TEventName]) => void): void {
     // Get or create map for event type
     let typeMap = this._listenerMap.get(type);
     if (!typeMap) {
@@ -57,7 +57,7 @@ export class EventEmitter<
    * @param type Event type
    * @param listener Event handler to remove
    */
-  off<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
+  off<TEventName extends keyof TEvents & string>(type: TEventName, listener: (data: TEvents[TEventName]) => void): void {
     const typeMap = this._listenerMap.get(type);
     if (!typeMap) return;
 
@@ -79,9 +79,9 @@ export class EventEmitter<
    * @param type Event type
    * @param args Event data (omitted if void type)
    */
-  emit<K extends keyof TEvents & string>(
-    type: K,
-    ...args: TEvents[K] extends void ? [] : [data: TEvents[K]]
+  emit<TEventName extends keyof TEvents & string>(
+    type: TEventName,
+    ...args: TEvents[TEventName] extends void ? [] : [data: TEvents[TEventName]]
   ): void {
     this._target.dispatchEvent(new CustomEvent(type, { detail: args[0] }));
   }
@@ -92,7 +92,7 @@ export class EventEmitter<
    * @param type Event type
    * @returns Number of registered listeners
    */
-  listenerCount<K extends keyof TEvents & string>(type: K): number {
+  listenerCount<TEventName extends keyof TEvents & string>(type: TEventName): number {
     return this._listenerMap.get(type)?.size ?? 0;
   }
 
