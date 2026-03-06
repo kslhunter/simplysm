@@ -359,6 +359,65 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
+  it("retries initialization after error on next access", async () => {
+    const { serviceClientValue } = createMockServiceClient();
+
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new Error("Network error"))
+      .mockResolvedValueOnce([{ id: 1, name: "Alice" }]);
+
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
+      user: {
+        fetch: fetchMock,
+        getKey: (item) => item.id,
+        orderBy: [[(item) => item.name, "asc"]],
+      },
+    };
+
+    let sharedRef: any;
+
+    const result = render(() => (
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
+              <TestConsumer
+                onData={(s) => {
+                  sharedRef = s;
+                }}
+              />
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
+    ));
+
+    // First access triggers init; fetch fails -> state becomes "error"
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    // Items should still be empty after the failed fetch
+    expect(sharedRef!.user.items()).toEqual([]);
+
+    // Second access retries because state is "error"
+    // Trigger re-access by calling items() again (which calls void initialize())
+    sharedRef!.user.items();
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    // Now data should be available
+    await vi.waitFor(() => {
+      expect(sharedRef!.user.items().length).toBe(1);
+    });
+
+    expect(sharedRef!.user.items()[0]).toEqual({ id: 1, name: "Alice" });
+
+    result.unmount();
+  });
+
   it("does not fetch immediately after configure(), fetches lazily when items() is accessed", async () => {
     const { serviceClientValue, mockClient } = createMockServiceClient();
     const mockUsers: TestUser[] = [{ id: 1, name: "Alice" }];

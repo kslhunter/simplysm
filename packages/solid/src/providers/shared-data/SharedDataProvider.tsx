@@ -4,6 +4,7 @@ import { SharedDataChangeEvent } from "./SharedDataChangeEvent";
 import { useServiceClient } from "../ServiceClientProvider";
 import { useNotification } from "../../components/feedback/notification/NotificationProvider";
 import { useLogger } from "../../hooks/useLogger";
+import type { ServiceClient } from "@simplysm/service-client";
 
 /**
  * Shared data definition.
@@ -95,6 +96,8 @@ export function useSharedData<
   return context as SharedDataValue<TSharedData>;
 }
 
+type EntryState = "idle" | "initializing" | "ready" | "error";
+
 /**
  * Shared data Provider.
  *
@@ -132,17 +135,15 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
   const [busyCount, setBusyCount] = createSignal(0);
   const busy: Accessor<boolean> = () => busyCount() > 0;
 
-  const signalMap = new Map<string, ReturnType<typeof createSignal<unknown[]>>>();
-  const memoMap = new Map<string, Accessor<Map<string | number, unknown>>>();
-  const listenerKeyMap = new Map<string, string>();
   const versionMap = new Map<string, number>();
   const accessors: Record<string, SharedDataAccessor<unknown>> = {};
-  let currentDefinitions: Record<string, SharedDataDefinition<unknown>> | undefined;
 
-  function ordering<TT>(data: TT[], orderByList: [(item: TT) => unknown, "asc" | "desc"][]): TT[] {
+  let disposed = false;
+
+  function ordering<TItem>(data: TItem[], orderByList: [(item: TItem) => unknown, "asc" | "desc"][]): TItem[] {
     let result = [...data];
     for (const orderBy of [...orderByList].reverse()) {
-      const selector = (item: TT) => orderBy[0](item) as string | number | undefined;
+      const selector = (item: TItem) => orderBy[0](item) as string | number | undefined;
       if (orderBy[1] === "desc") {
         result = result.orderByDesc(selector);
       } else {
@@ -152,46 +153,117 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     return result;
   }
 
-  async function loadData(
+  function createSharedDataEntry(
     name: string,
     def: SharedDataDefinition<unknown>,
-    changeKeys?: Array<string | number>,
-  ): Promise<void> {
-    // CR-1: Prevent data inversion on concurrent calls via version counter
-    const currentVersion = (versionMap.get(name) ?? 0) + 1;
-    versionMap.set(name, currentVersion);
+    client: ServiceClient,
+  ): SharedDataAccessor<unknown> & { cleanup: () => void } {
+    const [items, setItems] = createSignal<unknown[]>([]);
 
-    setBusyCount((c) => c + 1);
-    try {
-      const signal = signalMap.get(name);
-      if (!signal) throw new Error(`No shared data store found for '${name}'.`);
-
-      const [, setItems] = signal;
-      const resData = await def.fetch(changeKeys);
-
-      // CR-1: Ignore stale responses
-      if (versionMap.get(name) !== currentVersion) return;
-
-      if (!changeKeys) {
-        setItems(ordering(resData, def.orderBy));
-      } else {
-        setItems((prev) => {
-          const filtered = prev.filter((item) => !changeKeys.includes(def.getKey(item as never)));
-          filtered.push(...resData);
-          return ordering(filtered, def.orderBy);
-        });
+    const itemMap = createMemo(() => {
+      const map = new Map<string | number, unknown>();
+      for (const item of items()) {
+        map.set(def.getKey(item as never), item);
       }
-    } catch (err) {
-      // CR-2: Notify user on fetch failure
-      logger.error(`SharedData '${name}' fetch failed:`, err);
-      notification.danger(
-        "Shared data load failed",
-        err instanceof Error ? err.message : `Error occurred while loading '${name}' data.`,
-      );
-    } finally {
-      setBusyCount((c) => c - 1);
+      return map;
+    });
+
+    let state: EntryState = "idle";
+    let listenerKey: string | undefined;
+
+    async function loadData(changeKeys?: Array<string | number>): Promise<void> {
+      // Prevent data inversion on concurrent calls via version counter
+      const currentVersion = (versionMap.get(name) ?? 0) + 1;
+      versionMap.set(name, currentVersion);
+
+      setBusyCount((c) => c + 1);
+      try {
+        const resData = await def.fetch(changeKeys);
+
+        // Ignore stale responses
+        if (versionMap.get(name) !== currentVersion) return;
+
+        if (!changeKeys) {
+          setItems(ordering(resData, def.orderBy));
+        } else {
+          setItems((prev) => {
+            const filtered = prev.filter((item) => !changeKeys.includes(def.getKey(item as never)));
+            filtered.push(...resData);
+            return ordering(filtered, def.orderBy);
+          });
+        }
+      } catch (err) {
+        logger.error(`SharedData '${name}' fetch failed:`, err);
+        notification.danger(
+          "Shared data load failed",
+          err instanceof Error ? err.message : `Error occurred while loading '${name}' data.`,
+        );
+        throw err;
+      } finally {
+        setBusyCount((c) => c - 1);
+      }
     }
+
+    async function initialize(): Promise<void> {
+      if (state !== "idle" && state !== "error") return;
+      state = "initializing";
+
+      try {
+        const key = await client.addListener(
+          SharedDataChangeEvent,
+          { name, filter: def.filter },
+          async (changeKeys) => {
+            await loadData(changeKeys);
+          },
+        );
+
+        if (disposed) {
+          void client.removeListener(key);
+          return;
+        }
+
+        listenerKey = key;
+
+        await loadData();
+
+        state = "ready";
+      } catch {
+        state = "error";
+      }
+    }
+
+    function cleanup(): void {
+      if (listenerKey != null) {
+        void client.removeListener(listenerKey);
+      }
+    }
+
+    return {
+      items: () => {
+        void initialize();
+        return items();
+      },
+      get: (key: string | number | undefined) => {
+        void initialize();
+        if (key === undefined) return undefined;
+        return itemMap().get(key);
+      },
+      emit: async (changeKeys?: Array<string | number>) => {
+        await client.emitEvent(
+          SharedDataChangeEvent,
+          (info) => info.name === name && obj.equal(info.filter, def.filter),
+          changeKeys,
+        );
+      },
+      getKey: def.getKey,
+      itemSearchText: def.itemSearchText,
+      isItemHidden: def.isItemHidden,
+      getParentKey: def.getParentKey,
+      cleanup,
+    };
   }
+
+  const entries = new Map<string, ReturnType<typeof createSharedDataEntry>>();
 
   async function wait(): Promise<void> {
     await waitU.until(() => busyCount() <= 0);
@@ -208,88 +280,19 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     configured = true;
 
     const definitions = fn({});
-    currentDefinitions = definitions;
 
     for (const [name, def] of Object.entries(definitions)) {
-      const [items, setItems] = createSignal<unknown[]>([]);
-      signalMap.set(name, [items, setItems]);
-
-      const itemMap = createMemo(() => {
-        const map = new Map<string | number, unknown>();
-        for (const item of items()) {
-          map.set(def.getKey(item as never), item);
-        }
-        return map;
-      });
-      memoMap.set(name, itemMap);
-
       const client = serviceClient.get(def.serviceKey ?? "default");
-
-      let initialized = false;
-
-      function ensureInitialized() {
-        if (initialized) return;
-        initialized = true;
-
-        void client
-          .addListener(
-            SharedDataChangeEvent,
-            { name, filter: def.filter },
-            async (changeKeys) => {
-              await loadData(name, def, changeKeys);
-            },
-          )
-          .then((key) => {
-            if (disposed) {
-              void client.removeListener(key);
-            } else {
-              listenerKeyMap.set(name, key);
-            }
-          })
-          .catch(() => {
-            initialized = false;
-          });
-
-        void loadData(name, def);
-      }
-
-      accessors[name] = {
-        items: () => {
-          ensureInitialized();
-          return items();
-        },
-        get: (key: string | number | undefined) => {
-          ensureInitialized();
-          if (key === undefined) return undefined;
-          return itemMap().get(key);
-        },
-        emit: async (changeKeys?: Array<string | number>) => {
-          await client.emitEvent(
-            SharedDataChangeEvent,
-            (info) => info.name === name && obj.equal(info.filter, def.filter),
-            changeKeys,
-          );
-        },
-        getKey: def.getKey,
-        itemSearchText: def.itemSearchText,
-        isItemHidden: def.isItemHidden,
-        getParentKey: def.getParentKey,
-      };
+      const entry = createSharedDataEntry(name, def, client);
+      entries.set(name, entry);
+      accessors[name] = entry;
     }
   }
 
-  let disposed = false;
-
   onCleanup(() => {
     disposed = true;
-    if (!currentDefinitions) return;
-    for (const [name] of Object.entries(currentDefinitions)) {
-      const listenerKey = listenerKeyMap.get(name);
-      if (listenerKey != null) {
-        const def = currentDefinitions[name];
-        const client = serviceClient.get(def.serviceKey ?? "default");
-        void client.removeListener(listenerKey);
-      }
+    for (const entry of entries.values()) {
+      entry.cleanup();
     }
   });
 
