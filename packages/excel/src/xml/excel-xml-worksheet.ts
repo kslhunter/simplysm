@@ -221,6 +221,24 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
   }
 
+  shiftMergeCells(fromRow: number, delta: number): void {
+    const mergeCells = this.data.worksheet.mergeCells;
+    if (mergeCells === undefined) return;
+
+    for (const mergeCell of mergeCells[0].mergeCell) {
+      const range = ExcelUtils.parseRangeAddr(mergeCell.$.ref);
+
+      if (range.s.r >= fromRow) {
+        range.s.r += delta;
+      }
+      if (range.e.r >= fromRow) {
+        range.e.r += delta;
+      }
+
+      mergeCell.$.ref = ExcelUtils.stringifyRangeAddr(range);
+    }
+  }
+
   /**
    * Set width of a specific column.
    *

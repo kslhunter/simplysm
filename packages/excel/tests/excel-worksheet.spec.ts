@@ -133,6 +133,26 @@ describe("ExcelWorksheet", () => {
       expect(await ws.cell(2, 0).getValue()).toBe("Row1"); // shifted (original Row1)
       expect(await ws.cell(3, 0).getValue()).toBe("Row2"); // shifted
     });
+
+    it("should skip merge handling when skipMerge is true", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(0, 0).merge(0, 1); // Merge A1:B1
+
+      const wsData = await ws["_getWsData"]();
+
+      // Copy row 0 to row 1, but skip merge handling
+      wsData.copyRow(0, 1, { skipMerge: true });
+
+      // Row 1 should have the data but merge should not be copied
+      const merges = wsData.getMergeCells();
+      expect(merges).toEqual([
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }, // original merge, unchanged
+      ]);
+    });
   });
 
   describe("Range and cell access", () => {
@@ -348,6 +368,26 @@ describe("ExcelWorksheet", () => {
       expect(data.length).toBe(2);
       expect(data[0]["Name"]).toBe("Alice");
       expect(data[1]["Name"]).toBe("Bob");
+    });
+  });
+
+  describe("Merge cells", () => {
+    it("should shift merge cells when inserting row", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      // Create merged cells: A1:B2 and C3:D4
+      await ws.cell(0, 0).merge(1, 1); // A1:B2
+      await ws.cell(2, 2).merge(3, 3); // C3:D4
+
+      const wsData = await ws["_getWsData"](); // Access private method for testing
+      wsData.shiftMergeCells(2, 1); // Shift rows >= 2 by +1
+
+      const merges = wsData.getMergeCells();
+      expect(merges).toEqual([
+        { s: { r: 0, c: 0 }, e: { r: 1, c: 1 } }, // unchanged
+        { s: { r: 3, c: 2 }, e: { r: 4, c: 3 } }, // shifted down by 1
+      ]);
     });
   });
 });
