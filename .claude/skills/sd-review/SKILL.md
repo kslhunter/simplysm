@@ -7,7 +7,7 @@ description: "Use when the user explicitly requests code review, refactoring ana
 
 ## Overview
 
-Comprehensive code analysis combining **defect review** (correctness, safety, API, conventions) and **refactoring analysis** (structure, simplification). Uses split-explore to minimize redundant file reads, then dispatches reviewers with pre-filtered context.
+Comprehensive code analysis combining **defect review** (correctness, safety, API, conventions) and **refactoring analysis** (structure, simplification). Uses **sd-explore** to minimize redundant file reads, then dispatches reviewers with pre-filtered context.
 
 **Analysis only — no code modifications.**
 
@@ -65,48 +65,43 @@ Based on version and target, read all applicable reference files (e.g., `sd-code
 
 Keep the collected conventions in memory — they will be inlined into each reviewer's prompt in Step 3.
 
-### Step 2: Split Explore (Parallel)
+### Step 2: Explore (via sd-explore)
 
-Glob all .ts/.tsx files under target (exclude node_modules, dist).
+Follow the **sd-explore** workflow to read all source files under the target.
 
-- **< 30 files**: run a single Explore agent (no split)
-- **>= 30 files**: split into groups of ~30
+**sd-explore input:**
 
-**Splitting strategy**: Group files by subdirectory. If the target is mostly flat (few subdirectories), group by file proximity instead. The goal is balanced groups.
+- **Target path**: the review target directory
+- **Output directory**: `.tmp/sd-review`
+- **File patterns**: `**/*.ts`, `**/*.tsx` (exclude `node_modules`, `dist`)
+- **Analysis instructions**:
 
-Dispatch each group as a parallel `Agent(subagent_type=Explore)` call. Each agent should:
+"For each file:
+1. Write a 1-2 line summary of what it does
+2. Tag files that need deep review (~30-50% of files; a file can have multiple tags)
 
-1. Read all .ts/.tsx files in its assigned directories
-2. Write a 1-2 line summary per file
-3. Tag files that need deep review (~30-50% of files; a file can have multiple tags)
+Tag criteria:
+- [CORRECTNESS] — Unguarded null/! assertions, async races, DOM manipulation (SSR risks), resource lifecycle gaps, swallowed exceptions, mutable state for sync
+- [API] — Public exports, complex type signatures/generics/overloads, props/options interfaces, naming inconsistency
+- [REFACTOR] — File > 300 lines or function > 50 lines, deep nesting (> 3 levels), similar patterns across files, mixed abstraction levels, mixed responsibilities
 
-**Tag criteria:**
-
-- **[CORRECTNESS]** — Unguarded null/`!` assertions, async races, DOM manipulation (SSR risks), resource lifecycle gaps, swallowed exceptions, mutable state for sync
-- **[API]** — Public exports, complex type signatures/generics/overloads, props/options interfaces, naming inconsistency
-- **[REFACTOR]** — File > 300 lines or function > 50 lines, deep nesting (> 3 levels), similar patterns across files, mixed abstraction levels, mixed responsibilities
-
-**Output**: Write result to `.tmp/sd-review/explore-{group}.md` in this format:
-
-```markdown
+Output format:
+```
 # Explore: [directory names]
 
 ## File Summaries
 - `path/to/file.ts` — Brief description
 
 ## Tagged Files
-
 ### CORRECTNESS
 - `path/to/file.ts:42` — Suspected issue description
-
 ### API
 - `path/to/file.ts` — Why this needs API review
-
 ### REFACTOR
 - `path/to/file.ts` — Structural concern
 ```
 
-Files not listed under Tagged Files are considered clean. Do NOT add tags in File Summaries — Tagged Files is the single source of truth.
+Files not listed under Tagged Files are considered clean. Do NOT add tags in File Summaries — Tagged Files is the single source of truth."
 
 ### Step 3: Dispatch Reviewers (Parallel)
 
@@ -159,59 +154,23 @@ If no valid findings, report that and end here.
 
 **If valid findings exist, you MUST proceed to Step 6. Do NOT ask the user whether to apply findings directly.**
 
-### Step 6: Finding Triage
+### Step 6: Brainstorm Handoff
 
-Present each verified finding to the user one at a time using this template:
+Invoke **sd-brainstorm** with all valid findings as context:
+_
+"Design fixes for the following review findings.
 
-```
-#### [Reviewer] Finding N: <title>
+**For each finding, you MUST:**
+1. Review it thoroughly — examine the code, understand the context, assess the real impact
+2. If any aspect is unclear or ambiguous, ask the user (one question at a time, per brainstorm rules)
+3. If a finding has low cost-benefit (adds complexity for marginal gain, pure style preference, scope too small), propose dropping it with a concrete reason and ask the user for confirmation
+4. For findings worth fixing, explore approaches and design solutions
 
-**File:** `path/to/file.ts:42`
+Findings that survive your review become the design scope. Apply your normal brainstorm process (gap review → approaches → design presentation) to the surviving findings as a group.
 
-**Problem:**
-<2-3 sentences explaining what's wrong and why it matters>
+<include all valid findings with their reviewer tag, file:line, problem description, and current code snippet>"
 
-**Current code:**
-```ts
-// the problematic code snippet
-```
-
-**Possible fixes:**
-
-1. **<approach name>** — <description>
-   - Tradeoff: <pros/cons>
-2. **<approach name>** — <description>
-   - Tradeoff: <pros/cons>
-```
-
-After presenting each finding, use `AskUserQuestion` with options: **Apply** / **Skip**.
-- If "Apply": record the finding as accepted
-- If "Skip": move to the next finding
-
-After all findings are triaged, summarize the results:
-
-```
-## Triage Summary
-
-### Accepted (N)
-- Finding 1: <title> (file:line)
-- Finding 3: <title> (file:line)
-
-### Skipped (N)
-- Finding 2: <title> — <user's reason if given>
-```
-
-If no findings were accepted, end here.
-
-### Step 7: Brainstorm Handoff
-
-If any findings were accepted, invoke **sd-brainstorm** with the accepted findings as context:
-
-"Design fixes for the following review findings. Each finding has already been triaged and accepted by the user.
-
-<include the full triage summary with accepted findings, their file:line, problem description, and possible fixes>"
-
-sd-brainstorm then runs its normal design process (approaches → gap review → design presentation) scoped to the accepted findings.
+sd-brainstorm then owns the full cycle: triage (with user input as needed) → design.
 
 ## Common Mistakes
 

@@ -8,32 +8,97 @@ model: sonnet
 
 ## Overview
 
-Compare a library/module's public API names against industry standards and review internal consistency, producing a standardization report. **Analysis only — no code modifications.**
+Compare a library/module's public API names against industry standards and review internal consistency, producing a standardization report. Uses **sd-explore** to extract the API surface, then dispatches research agents for industry comparison.
+
+**Analysis only — no code modifications.**
+
+## Principles
+
+- **Breaking changes are irrelevant**: Do NOT dismiss findings because renaming would cause a breaking change.
+- **Internal consistency first**: Internal naming consistency takes priority over external standards.
+
+## Usage
+
+- `/sd-api-name-review packages/solid` — full naming review
+- `/sd-api-name-review packages/orm-common` — review specific package
+- `/sd-api-name-review` — if no argument, ask the user for the target path
 
 ## Target Selection
 
-1. If args contain a path, use that path
-2. Otherwise, ask the user for the target path
+- With argument: review source code at the given path
+- Without argument: ask the user for the target path
 
-## Phase 1: API Extraction
+**Important:** Review ALL source files under the target path. Do not use git status or git diff to limit scope.
 
-Use an Explore agent to extract the target's public API surface:
+## Workflow
 
+### Step 1: Prepare Context
+
+Read these files:
+- `CLAUDE.md` — project overview
+- `.claude/rules/sd-refs-linker.md` — reference guide
+- Target's `package.json` — version (v12/v13)
+
+Based on version and target, read all applicable reference files (e.g., `sd-code-conventions.md`, `sd-solid.md`).
+
+Keep the collected conventions in memory — they will inform the analysis in later steps.
+
+### Step 2: API Extraction (via sd-explore)
+
+Follow the **sd-explore** workflow to extract the target's public API surface.
+
+**sd-explore input:**
+
+- **Target path**: the review target directory
+- **Output directory**: `.tmp/sd-api-name-review`
+- **File patterns**: `**/*.ts`, `**/*.tsx` (exclude `node_modules`, `dist`)
+- **Analysis instructions**:
+
+"For each file, extract its public API surface:
 - All exported identifiers (functions, classes, types, constants, etc.)
 - Names and types of user-facing parameters/options/config
 - Naming pattern classification (prefixes, suffixes, verb/adjective/noun usage, abbreviations, etc.)
 
-## Phase 2: Industry Standard Research
+Output format:
+```
+# API Surface: [directory names]
 
-Based on Phase 1 results, determine comparison targets and perspectives:
+## Exports
+- `path/to/file.ts` — `exportName`: type (function/class/type/const), signature summary
+
+## Naming Patterns
+- Pattern: description (e.g., 'create-' prefix for factory functions)
+- Examples: list of identifiers using this pattern
+```
+"
+
+### Step 3: Industry Standard Research
+
+Based on Step 2 results:
 
 1. Identify **recurring naming patterns** from the extracted API
 2. Determine the target's domain and tech stack to **select comparable libraries**
-3. Use **parallel agents** to web-search/fetch official docs for each library, investigating naming conventions for the same pattern categories
+3. Dispatch **parallel agents** to web-search/fetch official docs for each comparable library, investigating naming conventions for the same pattern categories
 
-## Phase 3: Comparative Analysis
+Each research agent receives:
 
-Cross-compare Phase 1 and Phase 2 results and classify each item:
+```
+Research naming conventions in [library name] for these pattern categories:
+[list of patterns from Step 2]
+
+For each pattern, document:
+- What naming convention the library uses
+- Specific examples from the API
+- Any documented rationale for the convention
+
+Write results to: .tmp/sd-api-name-review/research-{library_name}.md
+```
+
+### Step 4: Comparative Analysis & Verification
+
+Cross-compare Step 2 (API surface) and Step 3 (industry research) results.
+
+Classify each naming pattern:
 
 | Priority | Criteria                                               |
 | -------- | ------------------------------------------------------ |
@@ -42,9 +107,11 @@ Cross-compare Phase 1 and Phase 2 results and classify each item:
 | **P2**   | Better industry term exists (optional)                 |
 | **Keep** | Already aligned with standards                         |
 
-Each item includes: current name, recommended change, rationale (usage patterns per library).
+**MANDATORY: Read actual code for EVERY finding.** For each finding, `Read` the file at the referenced location before finalizing. Do NOT rely on explore descriptions alone — verify against the actual code.
 
-## Phase 4: Report & User Confirmation
+Each finding includes: current name, recommended change, rationale (usage patterns per library).
+
+### Step 5: Report & User Confirmation
 
 Present **Keep** items to the user as a summary.
 
@@ -57,12 +124,31 @@ For each finding, explain:
 
 Collect only findings the user confirms. If the user skips all findings, report that and end.
 
-## Phase 5: Brainstorm Handoff
+### Step 6: Brainstorm Handoff
 
-Pass only the **user-confirmed findings** to **sd-brainstorm**.
+Invoke **sd-brainstorm** with all user-confirmed findings as context:
 
-sd-brainstorm will handle prioritization, grouping, approach exploration, and design.
+_
+"Design naming changes for the following review findings.
 
-## Completion Criteria
+**For each finding, you MUST:**
+1. Review it thoroughly — examine the code, understand the context, assess the real impact
+2. If any aspect is unclear or ambiguous, ask the user (one question at a time, per brainstorm rules)
+3. If a finding has low cost-benefit (adds complexity for marginal gain, scope too small), propose dropping it with a concrete reason and ask the user for confirmation
+4. For findings worth fixing, explore approaches and design solutions
 
-Report Keep items, confirm P0/P1/P2 findings with user one by one, then hand off confirmed findings to sd-brainstorm. No code modifications during review.
+Findings that survive your review become the design scope. Apply your normal brainstorm process (gap review → approaches → design presentation) to the surviving findings as a group.
+
+<include all confirmed findings with their priority, file:line, current name, recommended name, and rationale>"
+
+sd-brainstorm then owns the full cycle: triage (with user input as needed) → design.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Using git diff to limit scope | Review ALL source files under target |
+| Skipping context preparation | Always read conventions and refs before analysis |
+| Skipping verification | Always verify findings against actual code |
+| Dismissing findings due to breaking changes | Breaking changes are irrelevant — report the naming issue |
+| Not writing research results to files | Research agents MUST write to disk — prevents context bloat |

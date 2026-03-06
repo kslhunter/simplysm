@@ -48,10 +48,7 @@ export * as primitive from "./utils/primitive";
 
 //#region utils (direct exports)
 export * from "./utils/template-strings";
-//#endregion
-
-//#region zip
-export * from "./zip/sd-zip";
+export * from "./utils/zip";
 //#endregion
 
 //#region type utilities
