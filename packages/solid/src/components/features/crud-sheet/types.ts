@@ -64,7 +64,7 @@ export interface CrudSheetContext<TItem> {
 
 // ── Props ──
 
-export type CrudSheetProps<TItem, TFilter extends Record<string, any>> = CrudSheetBaseProps<
+export type CrudSheetProps<TItem, TFilter extends Record<string, unknown>> = CrudSheetBaseProps<
   TItem,
   TFilter
 > &
@@ -74,7 +74,7 @@ export type CrudSheetProps<TItem, TFilter extends Record<string, any>> = CrudShe
     | { inlineEdit?: never; dialogEdit?: never }
   );
 
-interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
+interface CrudSheetBaseProps<TItem, TFilter extends Record<string, unknown>> {
   search: (
     filter: TFilter,
     page: number | undefined,
