@@ -113,7 +113,7 @@ const SharedDataSelectBase = <
 
   const valueAsItem = createMemo((): TItem | TItem[] | undefined => {
     const key = rest.value as TKey | TKey[] | undefined;
-    if (key === undefined || key === null) return undefined;
+    if (key === undefined) return undefined;
     if (Array.isArray(key)) {
       return key
         .map((k) => keyToItem(k))
