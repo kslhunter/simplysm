@@ -1,4 +1,4 @@
-import type { SdPackageConfig } from "../sd-config.types";
+import type { SdBuildPackageConfig, SdPackageConfig } from "../sd-config.types";
 import type { ResultCollector } from "../infra/ResultCollector";
 import type { RebuildManager } from "../utils/rebuild-manager";
 
@@ -10,6 +10,11 @@ export interface PackageInfo {
   dir: string;
   config: SdPackageConfig;
 }
+
+/**
+ * PackageInfo narrowed for build packages (node/browser/neutral)
+ */
+export type BuildPackageInfo = PackageInfo & { config: SdBuildPackageConfig };
 
 /**
  * Common Builder options
