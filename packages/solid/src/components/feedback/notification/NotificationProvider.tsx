@@ -173,7 +173,15 @@ export const NotificationProvider: ParentComponent = (props) => {
       logger.error(err.stack ?? err.message);
       return;
     }
-    throw err;
+    if (typeof err === "string") {
+      danger(header ?? err, header != null ? err : undefined);
+      logger.error(err);
+      return;
+    }
+    danger(header ?? "Unknown error");
+    if (err != null) {
+      logger.error(String(err));
+    }
   };
 
   const update = (
