@@ -3,33 +3,32 @@ import {
   createEffect,
   createSignal,
   onCleanup,
+  onMount,
   splitProps,
   type JSX,
 } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import type * as echartsType from "echarts";
+import * as echarts from "echarts";
 import { twMerge } from "tailwind-merge";
 
 export interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  option: echartsType.EChartsOption;
+  option: echarts.EChartsOption;
   busy?: boolean;
 }
 
 export const Echarts: Component<EchartsProps> = (props) => {
   const [local, rest] = splitProps(props, ["option", "busy", "class"]);
   let containerRef!: HTMLDivElement;
-  let chart: echartsType.EChartsType | undefined;
+  let chart: echarts.EChartsType | undefined;
   const [ready, setReady] = createSignal(false);
 
-  // On mount, dynamically load echarts + initialize chart
-  createEffect(() => {
-    void import("echarts").then((echarts) => {
-      chart = echarts.init(containerRef, null, { renderer: "svg" });
-      setReady(true);
-    });
-
-    onCleanup(() => chart?.dispose());
+  // Initialize chart on mount
+  onMount(() => {
+    chart = echarts.init(containerRef, null, { renderer: "svg" });
+    setReady(true);
   });
+
+  onCleanup(() => chart?.dispose());
 
   // Detect option changes
   createEffect(() => {

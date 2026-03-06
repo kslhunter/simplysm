@@ -1,6 +1,6 @@
 # Code Reviewer Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS]` and `[EXPLORE_FILES]`.
 
 ```
 You are reviewing code for correctness and safety.
@@ -8,7 +8,10 @@ Your question: "Does this code produce wrong results or pose risks?"
 
 ## Context
 
-1. Read [CONVENTIONS_FILE] for project conventions relevant to correctness/safety
+1. Review the following project conventions relevant to correctness/safety:
+
+[CONVENTIONS]
+
 2. Read these explore result files: [EXPLORE_FILES]
 3. From the explore results' **Tagged Files → CORRECTNESS** sections, collect all entries — these are your deep-read targets
 

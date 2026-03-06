@@ -63,34 +63,55 @@ Read these files:
 
 Based on version and target, read all applicable reference files (e.g., `sd-code-conventions.md`, `sd-solid.md`).
 
-Write all conventions to `.tmp/sd-review/conventions.md`:
-
-```markdown
-# Review Conventions
-
-## Project Info
-- Version: v12/v13
-- Framework: SolidJS/Angular
-
-## Conventions
-[all applicable conventions from refs, organized by topic]
-```
+Keep the collected conventions in memory — they will be inlined into each reviewer's prompt in Step 3.
 
 ### Step 2: Split Explore (Parallel)
 
 Glob all .ts/.tsx files under target (exclude node_modules, dist).
 
-- **< 30 files**: run a single explore agent (no split)
+- **< 30 files**: run a single Explore agent (no split)
 - **>= 30 files**: split into groups of ~30
 
 **Splitting strategy**: Group files by subdirectory. If the target is mostly flat (few subdirectories), group by file proximity instead. The goal is balanced groups.
 
-Read `explore-prompt.md`, fill in `[TARGET_DIRS]` and `[OUTPUT_FILE]` per group, dispatch as parallel `Agent(general-purpose)` calls.
+Dispatch each group as a parallel `Agent(subagent_type=Explore)` call. Each agent should:
+
+1. Read all .ts/.tsx files in its assigned directories
+2. Write a 1-2 line summary per file
+3. Tag files that need deep review (~30-50% of files; a file can have multiple tags)
+
+**Tag criteria:**
+
+- **[CORRECTNESS]** — Unguarded null/`!` assertions, async races, DOM manipulation (SSR risks), resource lifecycle gaps, swallowed exceptions, mutable state for sync
+- **[API]** — Public exports, complex type signatures/generics/overloads, props/options interfaces, naming inconsistency
+- **[REFACTOR]** — File > 300 lines or function > 50 lines, deep nesting (> 3 levels), similar patterns across files, mixed abstraction levels, mixed responsibilities
+
+**Output**: Write result to `.tmp/sd-review/explore-{group}.md` in this format:
+
+```markdown
+# Explore: [directory names]
+
+## File Summaries
+- `path/to/file.ts` — Brief description
+
+## Tagged Files
+
+### CORRECTNESS
+- `path/to/file.ts:42` — Suspected issue description
+
+### API
+- `path/to/file.ts` — Why this needs API review
+
+### REFACTOR
+- `path/to/file.ts` — Structural concern
+```
+
+Files not listed under Tagged Files are considered clean. Do NOT add tags in File Summaries — Tagged Files is the single source of truth.
 
 ### Step 3: Dispatch Reviewers (Parallel)
 
 Read each reviewer's prompt template. Replace:
-- `[CONVENTIONS_FILE]` → `.tmp/sd-review/conventions.md`
+- `[CONVENTIONS]` → the conventions text collected in Step 1 (inline, not a file path)
 - `[EXPLORE_FILES]` → comma-separated list of explore output file paths
 
 Dispatch selected reviewers in parallel.
@@ -131,6 +152,8 @@ Present **both** invalid and valid findings:
 ```
 
 If no valid findings, report that and end here.
+
+**If valid findings exist, you MUST proceed to Step 6. Do NOT ask the user whether to apply findings directly.**
 
 ### Step 6: Brainstorm Handoff
 

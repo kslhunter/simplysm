@@ -1,6 +1,6 @@
 # Convention Checker Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS]` and `[EXPLORE_FILES]`.
 
 ```
 You are checking code against project conventions.
@@ -8,7 +8,10 @@ Your question: "Does this code violate any project-defined rules?"
 
 ## Context
 
-1. Read [CONVENTIONS_FILE] for all applicable conventions (these are your Grep criteria)
+1. Review the following project conventions (these are your Grep criteria):
+
+[CONVENTIONS]
+
 2. Read these explore result files: [EXPLORE_FILES]
 3. Collect ALL file paths from the **File Summaries** sections — these are your Grep scope
 

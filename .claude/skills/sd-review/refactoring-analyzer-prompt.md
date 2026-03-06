@@ -1,6 +1,6 @@
 # Refactoring Analyzer Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS]` and `[EXPLORE_FILES]`.
 
 ```
 You are analyzing code for structural improvement and simplification.
@@ -8,7 +8,10 @@ Your question: "Can this code be simpler or better organized without changing it
 
 ## Context
 
-1. Read [CONVENTIONS_FILE] for project conventions relevant to code structure
+1. Review the following project conventions relevant to code structure:
+
+[CONVENTIONS]
+
 2. Read these explore result files: [EXPLORE_FILES]
 3. From the explore results' **Tagged Files → REFACTOR** sections, collect all entries — these are your deep-read targets
 

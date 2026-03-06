@@ -1,6 +1,6 @@
 # API Reviewer Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS_FILE]` and `[EXPLORE_FILES]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS]` and `[EXPLORE_FILES]`.
 
 ```
 You are reviewing a library's public API for developer experience (DX).
@@ -8,7 +8,10 @@ Your question: "Would a first-time developer be confused or make mistakes using 
 
 ## Context
 
-1. Read [CONVENTIONS_FILE] for project conventions relevant to API design and naming
+1. Review the following project conventions relevant to API design and naming:
+
+[CONVENTIONS]
+
 2. Read these explore result files: [EXPLORE_FILES]
 3. From the explore results' **Tagged Files → API** sections, collect all entries — these are your deep-read targets
 
