@@ -79,11 +79,6 @@ import { useDataSheetSelection } from "./hooks/useDataSheetSelection";
 import { useDataSheetReorder } from "./hooks/useDataSheetReorder";
 import { useDataSheetFixedColumns } from "./hooks/useDataSheetFixedColumns";
 
-interface DataSheetComponent {
-  <TItem>(props: DataSheetProps<TItem>): JSX.Element;
-  Column: typeof DataSheetColumn;
-  ConfigDialog: typeof DataSheetConfigDialog;
-}
 
 const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
   const [local] = splitProps(props, [
@@ -1000,7 +995,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
 };
 
 //#region Export
-export const DataSheet: DataSheetComponent = Object.assign(DataSheetInner, {
+export const DataSheet = Object.assign(DataSheetInner, {
   Column: DataSheetColumn,
   ConfigDialog: DataSheetConfigDialog,
 });

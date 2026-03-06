@@ -521,15 +521,6 @@ export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends
 }
 
 
-interface KanbanComponent {
-  <TCardValue = unknown, TLaneValue = unknown>(
-    props: KanbanProps<TCardValue, TLaneValue>,
-  ): JSX.Element;
-  Lane: typeof KanbanLane;
-  Card: typeof KanbanCard;
-  LaneTitle: typeof KanbanLaneTitle;
-  LaneTools: typeof KanbanLaneTools;
-}
 
 const KanbanInner = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
@@ -607,5 +598,5 @@ export const Kanban = Object.assign(KanbanInner, {
   Card: KanbanCard,
   LaneTitle: KanbanLaneTitle,
   LaneTools: KanbanLaneTools,
-}) as KanbanComponent;
+});
 //#endregion

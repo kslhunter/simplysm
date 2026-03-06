@@ -331,13 +331,6 @@ export type SelectProps<TValue = unknown> =
   | (SelectMultipleBaseProps<TValue> & SelectWithItemsPropsBase<TValue>)
   | (SelectMultipleBaseProps<TValue> & SelectWithChildrenPropsBase<TValue>);
 
-interface SelectComponent {
-  <TValue = unknown>(props: SelectProps<TValue>): JSX.Element;
-  Item: typeof SelectItem;
-  Action: typeof SelectAction;
-  Header: typeof SelectHeader;
-  ItemTemplate: typeof SelectItemTemplate;
-}
 
 /**
  * Select component
@@ -719,7 +712,7 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
 };
 
 //#region Export
-export const Select: SelectComponent = Object.assign(SelectInnerComponent, {
+export const Select = Object.assign(SelectInnerComponent, {
   Item: SelectItem,
   Header: SelectHeader,
   Action: SelectAction,
