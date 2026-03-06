@@ -7,6 +7,21 @@ export interface AddressSearchResult {
   buildingName: string | undefined;
 }
 
+interface DaumPostcodeResult {
+  userSelectedType: "R" | "J";
+  roadAddress: string;
+  jibunAddress: string;
+  zonecode: string;
+  bname: string;
+  buildingName: string;
+  apartment: "Y" | "N";
+}
+
+interface DaumPostcodeSize {
+  width: number;
+  height: number;
+}
+
 export const AddressSearchContent: Component<{
   close?: (result?: AddressSearchResult) => void;
 }> = (props) => {
@@ -15,7 +30,7 @@ export const AddressSearchContent: Component<{
 
   onMount(async () => {
     if (!document.getElementById("daum_address")) {
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
         const scriptEl = document.createElement("script");
         scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
         scriptEl.setAttribute("id", "daum_address");
@@ -26,13 +41,16 @@ export const AddressSearchContent: Component<{
             resolve();
           });
         };
+        scriptEl.onerror = () => {
+          reject(new Error("Failed to load Daum postcode script"));
+        };
         document.head.appendChild(scriptEl);
       });
     }
 
     // @ts-expect-error -- Daum Postcode global API
     new daum.Postcode({
-      oncomplete: (data: any): void => {
+      oncomplete: (data: DaumPostcodeResult): void => {
         const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
 
         let extraAddr = "";
@@ -56,7 +74,7 @@ export const AddressSearchContent: Component<{
           buildingName: data.buildingName,
         });
       },
-      onresize: (size: any): void => {
+      onresize: (size: DaumPostcodeSize): void => {
         contentEl.style.height = size.height + "px";
       },
       width: "100%",
