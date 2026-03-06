@@ -30,7 +30,6 @@ import type {
   HeaderDef,
 } from "./DataSheet.types";
 import { DataSheetColumn, createColumnSlotsAccessor } from "./DataSheetColumn";
-import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
 import { buildHeaderTable, normalizeHeader } from "./DataSheet.utils";
 import { startPointerDrag } from "../../../helpers/startPointerDrag";
 import { Icon } from "../../display/Icon";
@@ -1022,7 +1021,5 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
 //#region Export
 export const DataSheet = Object.assign(DataSheetInner, {
   Column: DataSheetColumn,
-  ConfigDialog: DataSheetConfigDialog,
 });
-export { DataSheetConfigDialog };
 //#endregion

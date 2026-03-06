@@ -24,7 +24,7 @@ import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
-import { createTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
+import { useTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
 import { Dialog } from "../../disclosure/Dialog";
 import { Link } from "../../display/Link";
 import { createEventListener } from "@solid-primitives/event-listener";
@@ -218,7 +218,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
       return;
     }
 
-    setItems(index as any, dp as any, !(item[dp] as boolean) as any);
+    setItems(
+      produce((draft) => {
+        (draft[index] as Record<string, unknown>)[dp] = !(item[dp] as boolean);
+      }),
+    );
   }
 
   async function handleSave() {
@@ -407,7 +411,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
   // -- Topbar Actions --
   if (topbarCtx) {
-    createTopbarActions(() => (
+    useTopbarActions(() => (
       <>
         <Show when={canEdit() && local.inlineEdit}>
           <Button

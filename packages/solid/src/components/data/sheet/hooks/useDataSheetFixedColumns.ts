@@ -1,11 +1,11 @@
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import type { DataSheetColumnDef } from "../DataSheet.types";
+import type { DataSheetColumnDef, DataSheetReorderEvent } from "../DataSheet.types";
 
 export interface UseDataSheetFixedColumnsProps<TItem> {
   itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
   selectionMode?: "single" | "multiple";
-  onItemsReorder?: (event: any) => void;
+  onItemsReorder?: (event: DataSheetReorderEvent<TItem>) => void;
 }
 
 export function useDataSheetFixedColumns<TItem>(

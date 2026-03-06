@@ -247,7 +247,8 @@ export const PrintProvider: ParentComponent = (props) => {
           sliceCanvas.width = canvas.width;
           sliceCanvas.height = Math.min(pageHeightPx, canvas.height - i * pageHeightPx);
 
-          const ctx = sliceCanvas.getContext("2d")!;
+          const ctx = sliceCanvas.getContext("2d");
+          if (!ctx) throw new Error("Failed to get 2D canvas context");
           ctx.drawImage(
             canvas,
             0,

@@ -1,7 +1,7 @@
 import { render, cleanup } from "@solidjs/testing-library";
 import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { createSignal, Show } from "solid-js";
-import { Topbar, createTopbarActions } from "../../../../src";
+import { Topbar, useTopbarActions } from "../../../../src";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";
 import { ConfigProvider } from "../../../../src/providers/ConfigContext";
 
@@ -16,7 +16,7 @@ describe("Topbar.Actions component", () => {
 
   it("renders registered actions at Topbar.Actions position", () => {
     function PageWithActions() {
-      createTopbarActions(() => <button>Save</button>);
+      useTopbarActions(() => <button>Save</button>);
       return <div>Page Content</div>;
     }
 
@@ -58,12 +58,12 @@ describe("Topbar.Actions component", () => {
 
   it("releases previous actions and displays new actions when switching components", () => {
     function PageA() {
-      createTopbarActions(() => <button>Save</button>);
+      useTopbarActions(() => <button>Save</button>);
       return <div>Page A</div>;
     }
 
     function PageB() {
-      createTopbarActions(() => <button>Delete</button>);
+      useTopbarActions(() => <button>Delete</button>);
       return <div>Page B</div>;
     }
 

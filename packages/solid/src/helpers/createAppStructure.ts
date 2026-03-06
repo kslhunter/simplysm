@@ -2,6 +2,7 @@ import type { Component, ParentComponent } from "solid-js";
 import { type Accessor, createContext, createMemo, createRoot, useContext } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 
+//#region Types
 // ── Input Types ──
 
 export interface AppStructureGroupItem<TModule> {
@@ -80,7 +81,9 @@ export interface AppStructure<TModule> {
   allFlatPerms: AppFlatPerm<TModule>[];
   getTitleChainByHref(href: string): string[];
 }
+//#endregion
 
+//#region Type Inference
 // ── Perms Type Inference ──
 
 type PermKey<TItem> = TItem extends { code: infer C extends string }
@@ -113,7 +116,9 @@ type InferPerms<TItems extends any[]> = {
     ? InferPerms<C>
     : InferLeafPerms<Item>;
 };
+//#endregion
 
+//#region Internal Helpers
 // ── Internal Helpers ──
 
 function isGroupItem<TModule>(
@@ -139,7 +144,9 @@ function checkModules<TModule>(
 
   return true;
 }
+//#endregion
 
+//#region Routes
 // ── Routes ──
 
 function buildUsableRoutes<TModule>(
@@ -170,7 +177,9 @@ function buildUsableRoutes<TModule>(
 
   return result;
 }
+//#endregion
 
+//#region Menus
 // ── Menus ──
 
 function buildMenus<TModule>(
@@ -217,7 +226,9 @@ function flattenMenus(menus: AppMenu[], titleChain: string[] = []): AppFlatMenu[
 
   return result;
 }
+//#endregion
 
+//#region Perms
 // ── Perms ──
 
 function buildPerms<TModule>(
@@ -396,7 +407,9 @@ function buildPermsObject<TModule>(
 
   return obj;
 }
+//#endregion
 
+//#region Info
 // ── Info ──
 
 function findItemChainByCodes<TModule>(
@@ -415,7 +428,9 @@ function findItemChainByCodes<TModule>(
 
   return result;
 }
+//#endregion
 
+//#region createAppStructure
 // ── Main Function ──
 
 function buildAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(opts: {
@@ -517,3 +532,4 @@ export function createAppStructure<TModule, const TItems extends AppStructureIte
 
   return { AppStructureProvider, useAppStructure };
 }
+//#endregion

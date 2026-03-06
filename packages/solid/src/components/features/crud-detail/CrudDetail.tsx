@@ -15,7 +15,7 @@ import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
-import { createTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
+import { useTopbarActions, TopbarContext } from "../../layout/topbar/Topbar";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
@@ -197,7 +197,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
   // -- Topbar Actions (Page mode) --
   if (topbarCtx) {
-    createTopbarActions(() => (
+    useTopbarActions(() => (
       <>
         <Show when={showSave()}>
           <Button

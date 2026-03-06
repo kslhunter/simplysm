@@ -342,4 +342,21 @@ describe("useDataSheetSelection", () => {
       expect(result.lastClickAction()).toBe("select");
     });
   });
+
+  it("treats false return from isItemSelectable as not selectable", () => {
+    createRoot((dispose) => {
+      const flatItems = () => createTestFlatItems(testItems);
+      const sel = useDataSheetSelection<TestItem>(
+        {
+          selectionMode: "multiple",
+          isItemSelectable: (item) => (item.selectable === false ? false : true),
+        },
+        flatItems,
+      );
+      expect(sel.getItemSelectable(testItems[2])).toBe(false);
+      sel.toggleSelect(testItems[2]);
+      expect(sel.selection()).toEqual([]);
+      dispose();
+    });
+  });
 });

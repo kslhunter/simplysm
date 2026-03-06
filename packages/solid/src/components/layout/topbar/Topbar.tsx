@@ -43,10 +43,10 @@ export function useTopbarActionsAccessor(): Accessor<JSX.Element | undefined> {
   return context.actions;
 }
 
-export function createTopbarActions(accessor: () => JSX.Element): void {
+export function useTopbarActions(accessor: () => JSX.Element): void {
   const context = useContext(TopbarContext);
   if (!context) {
-    throw new Error("createTopbarActions can only be used inside Topbar.Container");
+    throw new Error("useTopbarActions can only be used inside Topbar.Container");
   }
 
   context.setActions(() => accessor());
@@ -450,7 +450,7 @@ const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
  *
  * @remarks
  * - Used inside TopbarContainer
- * - Displays actions set by createTopbarActions()
+ * - Displays actions set by useTopbarActions()
  */
 const TopbarActions: Component = () => {
   const context = useContext(TopbarContext);

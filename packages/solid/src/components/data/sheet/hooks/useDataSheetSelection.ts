@@ -6,13 +6,13 @@ export interface UseDataSheetSelectionProps<TItem> {
   selectionMode?: "single" | "multiple";
   selection?: TItem[];
   onSelectionChange?: (items: TItem[]) => void;
-  isItemSelectable?: (item: TItem) => true | string;
+  isItemSelectable?: (item: TItem) => boolean | string;
 }
 
 export interface UseDataSheetSelectionReturn<TItem> {
   selection: Accessor<TItem[]>;
   setSelection: (newValue: TItem[] | ((prev: TItem[]) => TItem[])) => TItem[];
-  getItemSelectable: (item: TItem) => true | string;
+  getItemSelectable: (item: TItem) => boolean | string;
   toggleSelect: (item: TItem) => void;
   toggleSelectAll: () => void;
   rangeSelect: (targetRow: number) => void;
@@ -34,7 +34,7 @@ export function useDataSheetSelection<TItem>(
   const [lastClickedRow, setLastClickedRow] = createSignal<number | null>(null);
   const [lastClickAction, setLastClickAction] = createSignal<"select" | "deselect">("select");
 
-  function getItemSelectable(item: TItem): true | string {
+  function getItemSelectable(item: TItem): boolean | string {
     if (!props.isItemSelectable) return true;
     return props.isItemSelectable(item);
   }

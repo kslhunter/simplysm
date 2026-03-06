@@ -119,10 +119,10 @@ Sub-components: `Topbar.Actions`, `Topbar.Container`, `Topbar.Menu`, `Topbar.Use
 Context and utilities for injecting actions into the Topbar from child pages.
 
 ```tsx
-import { TopbarContext, useTopbarActionsAccessor, createTopbarActions } from "@simplysm/solid";
+import { TopbarContext, useTopbarActionsAccessor, useTopbarActions } from "@simplysm/solid";
 
 // Inside a page component:
-createTopbarActions(() => (
+useTopbarActions(() => (
   <Button onClick={save}>Save</Button>
 ));
 ```
@@ -131,4 +131,4 @@ createTopbarActions(() => (
 |--------|-------------|
 | `TopbarContext` | SolidJS context object |
 | `useTopbarActionsAccessor()` | Hook — returns accessor to current topbar actions element |
-| `createTopbarActions(factory)` | Registers a reactive topbar actions element for the current page |
+| `useTopbarActions(factory)` | Registers a reactive topbar actions element for the current page |

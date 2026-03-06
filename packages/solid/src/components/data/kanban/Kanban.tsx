@@ -27,6 +27,7 @@ import { createSlot } from "../../../helpers/createSlot";
 import "./Kanban.animate.css";
 import { Button } from "../../form-control/Button";
 
+//#region Types
 // ── Types ──────────────────────────────────────────────────────
 
 export interface KanbanCardRef<L = unknown, TCard = unknown> {
@@ -47,7 +48,9 @@ export interface KanbanDropTarget<TCard = unknown> {
   value: TCard | undefined;
   position: "before" | "after";
 }
+//#endregion
 
+//#region Board Context
 // ── Board Context ──────────────────────────────────────────────
 
 export interface KanbanContextValue<L = unknown, TCard = unknown> {
@@ -74,7 +77,9 @@ export function useKanbanContext(): KanbanContextValue {
   }
   return context;
 }
+//#endregion
 
+//#region Lane Context
 // ── Lane Context ───────────────────────────────────────────────
 
 export interface KanbanLaneContextValue<L = unknown, TCard = unknown> {
@@ -96,7 +101,9 @@ export function useKanbanLaneContext(): KanbanLaneContextValue {
   }
   return context;
 }
+//#endregion
 
+//#region Slots
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
 const [KanbanLaneTitle, createTitleSlotAccessor] = createSlot<{ children: JSX.Element }>();
@@ -104,7 +111,9 @@ const [KanbanLaneTitle, createTitleSlotAccessor] = createSlot<{ children: JSX.El
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
 const [KanbanLaneTools, createToolsSlotAccessor] = createSlot<{ children: JSX.Element }>();
+//#endregion
 
+//#region KanbanCard
 // ─── KanbanCard ──────────────────────────────────────────────────
 
 export interface KanbanCardProps<TCardValue = unknown> extends Omit<
@@ -277,7 +286,9 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     </div>
   );
 };
+//#endregion
 
+//#region KanbanLane
 // ─── KanbanLane ──────────────────────────────────────────────────
 
 export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<
@@ -507,7 +518,9 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     </TitleProvider>
   );
 };
+//#endregion
 
+//#region KanbanBoard
 // ─── Kanban (Board) ──────────────────────────────────────────────
 
 export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends Omit<
@@ -591,6 +604,7 @@ const KanbanInner = (props: KanbanProps) => {
     </KanbanContext.Provider>
   );
 };
+//#endregion
 
 //#region Export
 export const Kanban = Object.assign(KanbanInner, {

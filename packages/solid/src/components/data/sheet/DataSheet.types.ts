@@ -26,7 +26,7 @@ export interface DataSheetProps<TItem> {
   selection?: TItem[];
   onSelectionChange?: (items: TItem[]) => void;
   autoSelect?: "click";
-  isItemSelectable?: (item: TItem) => true | string;
+  isItemSelectable?: (item: TItem) => boolean | string;
 
   // Tree expansion
   expandedItems?: TItem[];

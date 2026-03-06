@@ -2,7 +2,7 @@ import {
   Button,
   Sidebar,
   Topbar,
-  createTopbarActions,
+  useTopbarActions,
   type AppMenu,
   type TopbarMenuItem,
   type TopbarUserMenu,
@@ -78,7 +78,7 @@ const sidebarMenus: AppMenu[] = [
 
 // Sub-page simulation component
 function UserPageSimulation() {
-  createTopbarActions(() => (
+  useTopbarActions(() => (
     <div class="flex gap-1">
       <Button size="sm" theme="success">
         Save
@@ -91,7 +91,7 @@ function UserPageSimulation() {
   return (
     <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
       <p class="text-sm text-base-600 dark:text-base-400">
-        This page registers Save/Delete buttons via createTopbarActions
+        This page registers Save/Delete buttons via useTopbarActions
       </p>
     </div>
   );
@@ -356,7 +356,7 @@ export default function TopbarPage() {
           Topbar.Actions slot
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Inject action buttons to the Topbar via createTopbarActions() from child pages. Topbar.Actions acts as a slot outlet.
+          Inject action buttons to the Topbar via useTopbarActions() from child pages. Topbar.Actions acts as a slot outlet.
         </p>
         <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Topbar.Container>

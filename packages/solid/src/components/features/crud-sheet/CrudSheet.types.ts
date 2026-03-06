@@ -86,7 +86,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, unknown>> {
   isItemEditable?: (item: TItem) => boolean;
   isItemDeletable?: (item: TItem) => boolean;
   isItemDeleted?: (item: TItem) => boolean;
-  isItemSelectable?: (item: TItem) => true | string;
+  isItemSelectable?: (item: TItem) => boolean | string;
   lastModifiedAtProp?: string;
   lastModifiedByProp?: string;
   filterInitial?: TFilter;
