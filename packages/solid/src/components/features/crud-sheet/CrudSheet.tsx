@@ -13,6 +13,7 @@ import { createControllableStore } from "../../../hooks/createControllableStore"
 import type { DateTime } from "@simplysm/core-common";
 import { obj } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
+import { openFileDialog } from "@simplysm/core-browser";
 import type { SortingDef } from "../../data/sheet/types";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
@@ -308,29 +309,22 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     setBusyCount((c) => c - 1);
   }
 
-  const excelInput = document.createElement("input");
-  excelInput.type = "file";
-  excelInput.accept = ".xlsx";
-
-  function handleExcelUpload() {
+  async function handleExcelUpload() {
     if (!local.excel?.upload) return;
 
-    excelInput.value = ""; // reset so same file can be re-selected
-    excelInput.onchange = async () => {
-      const file = excelInput.files?.[0];
-      if (file == null) return;
+    const files = await openFileDialog({ accept: ".xlsx" });
+    const file = files?.[0];
+    if (file == null) return;
 
-      setBusyCount((c) => c + 1);
-      try {
-        await local.excel!.upload!(file);
-        noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
-        await refresh();
-      } catch (err) {
-        noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
-      }
-      setBusyCount((c) => c - 1);
-    };
-    excelInput.click();
+    setBusyCount((c) => c + 1);
+    try {
+      await local.excel!.upload!(file);
+      noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
+      await refresh();
+    } catch (err) {
+      noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
+    }
+    setBusyCount((c) => c - 1);
   }
 
   // -- Select Mode --

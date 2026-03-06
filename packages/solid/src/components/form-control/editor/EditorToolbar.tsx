@@ -133,6 +133,28 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const btnClass = (active: () => boolean) =>
     twMerge(toolbarBtnExtra, active() && toolbarBtnActiveClass);
 
+  function renderToolbarItems(items: ToolbarItem[]) {
+    return (
+      <For each={items}>
+        {(item) =>
+          item === "separator" ? (
+            <div class={separatorClass} />
+          ) : (
+            <Button
+              variant="ghost"
+              size="xs"
+              class={item.isActive ? btnClass(() => activeStates.get(item)?.() ?? false) : toolbarBtnExtra}
+              title={i18n.t(item.i18nKey)}
+              onClick={() => item.command(props.editor.chain().focus())}
+            >
+              <Icon icon={item.icon} size="1em" />
+            </Button>
+          )
+        }
+      </For>
+    );
+  }
+
   // Image insert handler
   const handleImageInsert = () => {
     const input = document.createElement("input");
@@ -156,23 +178,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   return (
     <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.default), props.class)}>
-      <For each={toolbarItemsBefore}>
-        {(item) =>
-          item === "separator" ? (
-            <div class={separatorClass} />
-          ) : (
-            <Button
-              variant="ghost"
-              size="xs"
-              class={item.isActive ? btnClass(() => activeStates.get(item)?.() ?? false) : toolbarBtnExtra}
-              title={i18n.t(item.i18nKey)}
-              onClick={() => item.command(props.editor.chain().focus())}
-            >
-              <Icon icon={item.icon} size="1em" />
-            </Button>
-          )
-        }
-      </For>
+      {renderToolbarItems(toolbarItemsBefore)}
 
       {/* Color pickers */}
       <div class={separatorClass} />
@@ -204,23 +210,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       </label>
 
       <div class={separatorClass} />
-      <For each={toolbarItemsAfter}>
-        {(item) =>
-          item === "separator" ? (
-            <div class={separatorClass} />
-          ) : (
-            <Button
-              variant="ghost"
-              size="xs"
-              class={item.isActive ? btnClass(() => activeStates.get(item)?.() ?? false) : toolbarBtnExtra}
-              title={i18n.t(item.i18nKey)}
-              onClick={() => item.command(props.editor.chain().focus())}
-            >
-              <Icon icon={item.icon} size="1em" />
-            </Button>
-          )
-        }
-      </For>
+      {renderToolbarItems(toolbarItemsAfter)}
 
       {/* Insert table */}
       <div class={separatorClass} />
