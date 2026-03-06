@@ -151,7 +151,13 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
           const ext = path.extname(filePath);
           res.setHeader("Content-Type", getMimeType(ext));
           const stream = fs.createReadStream(filePath);
-          stream.on("error", () => next());
+          stream.on("error", () => {
+            if (!res.headersSent) {
+              next();
+            } else {
+              res.destroy();
+            }
+          });
           stream.pipe(res);
         } else {
           next();
