@@ -106,7 +106,7 @@ export function registerWorkerEventHandlers(
       name: workerInfo.name,
       target: workerInfo.config.target,
       type: opts.resultType,
-      status: data.success ? "success" : "error",
+      status: data.success === true ? "success" : "error",
       message: data.errors?.join("\n"),
     });
   });
