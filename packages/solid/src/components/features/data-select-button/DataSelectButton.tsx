@@ -204,7 +204,7 @@ export function DataSelectButton<
       if (local.multiple) {
         setValue(newKeys);
       } else {
-        setValue((newKeys.length > 0 ? newKeys[0] : undefined) as any);
+        setValue((newKeys.length > 0 ? newKeys[0] : undefined) as TKey | undefined);
       }
     }
   };
@@ -213,7 +213,7 @@ export function DataSelectButton<
   const handleClear = (e: MouseEvent) => {
     e.stopPropagation();
     if (local.multiple) {
-      setValue([] as unknown as TKey[]);
+      setValue([] as TKey[]);
     } else {
       setValue(undefined);
     }
