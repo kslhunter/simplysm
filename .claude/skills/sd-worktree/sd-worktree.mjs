@@ -88,8 +88,8 @@ switch (cmd) {
       }
     }
     const branch = getMainBranch();
-    console.log(`Merging '${name}' into '${branch}' (union strategy)...`);
-    run(`git merge "${name}" --no-ff -X union`, { cwd: mainWorktree });
+    console.log(`Merging '${name}' into '${branch}'...`);
+    run(`git merge "${name}" --no-ff`, { cwd: mainWorktree });
     console.log(`\nMerged '${name}' into '${branch}'.`);
     break;
   }
