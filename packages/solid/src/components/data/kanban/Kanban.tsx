@@ -29,40 +29,40 @@ import { Button } from "../../form-control/Button";
 
 // ── Types ──────────────────────────────────────────────────────
 
-export interface KanbanCardRef<L = unknown, T = unknown> {
-  value: T | undefined;
+export interface KanbanCardRef<L = unknown, TCard = unknown> {
+  value: TCard | undefined;
   laneValue: L | undefined;
   heightOnDrag: number;
 }
 
-export interface KanbanDropInfo<L = unknown, T = unknown> {
-  sourceValue?: T;
+export interface KanbanDropInfo<L = unknown, TCard = unknown> {
+  sourceValue?: TCard;
   targetLaneValue?: L;
-  targetCardValue?: T;
+  targetCardValue?: TCard;
   position?: "before" | "after";
 }
 
-export interface KanbanDropTarget<T = unknown> {
+export interface KanbanDropTarget<TCard = unknown> {
   element: HTMLElement;
-  value: T | undefined;
+  value: TCard | undefined;
   position: "before" | "after";
 }
 
 // ── Board Context ──────────────────────────────────────────────
 
-export interface KanbanContextValue<L = unknown, T = unknown> {
-  dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
-  setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
+export interface KanbanContextValue<L = unknown, TCard = unknown> {
+  dragCard: Accessor<KanbanCardRef<L, TCard> | undefined>;
+  setDragCard: Setter<KanbanCardRef<L, TCard> | undefined>;
   onDropTo: (
     targetLaneValue: L | undefined,
-    targetCardValue: T | undefined,
+    targetCardValue: TCard | undefined,
     position: "before" | "after" | undefined,
   ) => void;
 
   // Selection (Phase 4)
-  selectedValues: Accessor<T[]>;
-  setSelectedValues: (updater: T[] | ((prev: T[]) => T[])) => void;
-  toggleSelection: (value: T) => void;
+  selectedValues: Accessor<TCard[]>;
+  setSelectedValues: (updater: TCard[] | ((prev: TCard[]) => TCard[])) => void;
+  toggleSelection: (value: TCard) => void;
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -77,13 +77,13 @@ export function useKanbanContext(): KanbanContextValue {
 
 // ── Lane Context ───────────────────────────────────────────────
 
-export interface KanbanLaneContextValue<L = unknown, T = unknown> {
+export interface KanbanLaneContextValue<L = unknown, TCard = unknown> {
   value: Accessor<L | undefined>;
-  dropTarget: Accessor<KanbanDropTarget<T> | undefined>;
-  setDropTarget: (target: KanbanDropTarget<T> | undefined) => void;
+  dropTarget: Accessor<KanbanDropTarget<TCard> | undefined>;
+  setDropTarget: (target: KanbanDropTarget<TCard> | undefined) => void;
 
   // Card registration (Phase 4)
-  registerCard: (id: string, info: { value: T | undefined; selectable: boolean }) => void;
+  registerCard: (id: string, info: { value: TCard | undefined; selectable: boolean }) => void;
   unregisterCard: (id: string) => void;
 }
 
@@ -521,15 +521,6 @@ export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends
 }
 
 
-interface KanbanComponent {
-  <TCardValue = unknown, TLaneValue = unknown>(
-    props: KanbanProps<TCardValue, TLaneValue>,
-  ): JSX.Element;
-  Lane: typeof KanbanLane;
-  Card: typeof KanbanCard;
-  LaneTitle: typeof KanbanLaneTitle;
-  LaneTools: typeof KanbanLaneTools;
-}
 
 const KanbanInner = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
@@ -607,5 +598,5 @@ export const Kanban = Object.assign(KanbanInner, {
   Card: KanbanCard,
   LaneTitle: KanbanLaneTitle,
   LaneTools: KanbanLaneTools,
-}) as KanbanComponent;
+});
 //#endregion

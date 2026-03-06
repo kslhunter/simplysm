@@ -1,7 +1,7 @@
-import { type Component } from "solid-js";
+import { type Component, For } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { Editor } from "@tiptap/core";
+import type { ChainedCommands, Editor } from "@tiptap/core";
 import { createEditorTransaction } from "solid-tiptap";
 import { Button } from "../Button";
 import {
@@ -60,33 +60,63 @@ const colorLabelClass = clsx(
 // Color input hide style
 const colorInputClass = clsx("absolute opacity-0", "size-0");
 
+interface ToolbarButtonItem {
+  icon: Component;
+  i18nKey: string;
+  /** Tiptap editor command — receives editor.chain().focus() */
+  command: (chain: ChainedCommands) => void;
+  /** Active state check — receives editor instance */
+  isActive?: (editor: Editor) => boolean;
+}
+
+type ToolbarItem = ToolbarButtonItem | "separator";
+
+// Items before color pickers: Headings + Text formatting
+const toolbarItemsBefore: ToolbarItem[] = [
+  // Headings
+  { icon: IconH1, i18nKey: "editorToolbar.heading1", command: (c) => c.toggleHeading({ level: 1 }).run(), isActive: (e) => e.isActive("heading", { level: 1 }) },
+  { icon: IconH2, i18nKey: "editorToolbar.heading2", command: (c) => c.toggleHeading({ level: 2 }).run(), isActive: (e) => e.isActive("heading", { level: 2 }) },
+  "separator",
+  // Text formatting
+  { icon: IconBold, i18nKey: "editorToolbar.bold", command: (c) => c.toggleBold().run(), isActive: (e) => e.isActive("bold") },
+  { icon: IconItalic, i18nKey: "editorToolbar.italic", command: (c) => c.toggleItalic().run(), isActive: (e) => e.isActive("italic") },
+  { icon: IconUnderline, i18nKey: "editorToolbar.underline", command: (c) => c.toggleUnderline().run(), isActive: (e) => e.isActive("underline") },
+  { icon: IconStrikethrough, i18nKey: "editorToolbar.strikethrough", command: (c) => c.toggleStrike().run(), isActive: (e) => e.isActive("strike") },
+];
+
+// Items after color pickers: Lists + Indent + Block + Alignment
+const toolbarItemsAfter: ToolbarItem[] = [
+  // Lists
+  { icon: IconList, i18nKey: "editorToolbar.bulletList", command: (c) => c.toggleBulletList().run(), isActive: (e) => e.isActive("bulletList") },
+  { icon: IconListNumbers, i18nKey: "editorToolbar.numberedList", command: (c) => c.toggleOrderedList().run(), isActive: (e) => e.isActive("orderedList") },
+  "separator",
+  // Indentation
+  { icon: IconIndentIncrease, i18nKey: "editorToolbar.increaseIndent", command: (c) => c.sinkListItem("listItem").run() },
+  { icon: IconIndentDecrease, i18nKey: "editorToolbar.decreaseIndent", command: (c) => c.liftListItem("listItem").run() },
+  "separator",
+  // Block
+  { icon: IconQuote, i18nKey: "editorToolbar.blockquote", command: (c) => c.toggleBlockquote().run(), isActive: (e) => e.isActive("blockquote") },
+  { icon: IconCode, i18nKey: "editorToolbar.codeBlock", command: (c) => c.toggleCodeBlock().run(), isActive: (e) => e.isActive("codeBlock") },
+  "separator",
+  // Alignment
+  { icon: IconAlignLeft, i18nKey: "editorToolbar.alignLeft", command: (c) => c.setTextAlign("left").run(), isActive: (e) => e.isActive({ textAlign: "left" }) },
+  { icon: IconAlignCenter, i18nKey: "editorToolbar.alignCenter", command: (c) => c.setTextAlign("center").run(), isActive: (e) => e.isActive({ textAlign: "center" }) },
+  { icon: IconAlignRight, i18nKey: "editorToolbar.alignRight", command: (c) => c.setTextAlign("right").run(), isActive: (e) => e.isActive({ textAlign: "right" }) },
+  { icon: IconAlignJustified, i18nKey: "editorToolbar.justify", command: (c) => c.setTextAlign("justify").run(), isActive: (e) => e.isActive({ textAlign: "justify" }) },
+];
+
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
   const i18n = useI18n();
 
   // Track active state reactively with createEditorTransaction
-  const isBold = createEditorTransaction(e, (editor) => editor.isActive("bold"));
-  const isItalic = createEditorTransaction(e, (editor) => editor.isActive("italic"));
-  const isUnderline = createEditorTransaction(e, (editor) => editor.isActive("underline"));
-  const isStrike = createEditorTransaction(e, (editor) => editor.isActive("strike"));
-  const isH1 = createEditorTransaction(e, (editor) => editor.isActive("heading", { level: 1 }));
-  const isH2 = createEditorTransaction(e, (editor) => editor.isActive("heading", { level: 2 }));
-  const isBulletList = createEditorTransaction(e, (editor) => editor.isActive("bulletList"));
-  const isOrderedList = createEditorTransaction(e, (editor) => editor.isActive("orderedList"));
-  const isBlockquote = createEditorTransaction(e, (editor) => editor.isActive("blockquote"));
-  const isCodeBlock = createEditorTransaction(e, (editor) => editor.isActive("codeBlock"));
-  const isAlignLeft = createEditorTransaction(e, (editor) =>
-    editor.isActive({ textAlign: "left" } as unknown as string),
-  );
-  const isAlignCenter = createEditorTransaction(e, (editor) =>
-    editor.isActive({ textAlign: "center" } as unknown as string),
-  );
-  const isAlignRight = createEditorTransaction(e, (editor) =>
-    editor.isActive({ textAlign: "right" } as unknown as string),
-  );
-  const isAlignJustify = createEditorTransaction(e, (editor) =>
-    editor.isActive({ textAlign: "justify" } as unknown as string),
-  );
+  const activeStates = new Map<ToolbarButtonItem, () => boolean>();
+  for (const item of [...toolbarItemsBefore, ...toolbarItemsAfter]) {
+    if (item !== "separator" && item.isActive) {
+      const check = item.isActive;
+      activeStates.set(item, createEditorTransaction(e, (editor) => check(editor)));
+    }
+  }
 
   // Current text color
   const currentColor = createEditorTransaction(
@@ -102,6 +132,28 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   const btnClass = (active: () => boolean) =>
     twMerge(toolbarBtnExtra, active() && toolbarBtnActiveClass);
+
+  function renderToolbarItems(items: ToolbarItem[]) {
+    return (
+      <For each={items}>
+        {(item) =>
+          item === "separator" ? (
+            <div class={separatorClass} />
+          ) : (
+            <Button
+              variant="ghost"
+              size="xs"
+              class={item.isActive ? btnClass(() => activeStates.get(item)?.() ?? false) : toolbarBtnExtra}
+              title={i18n.t(item.i18nKey)}
+              onClick={() => item.command(props.editor.chain().focus())}
+            >
+              <Icon icon={item.icon} size="1em" />
+            </Button>
+          )
+        }
+      </For>
+    );
+  }
 
   // Image insert handler
   const handleImageInsert = () => {
@@ -126,71 +178,10 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   return (
     <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.default), props.class)}>
-      {/* 1. Header (H1, H2) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isH1)}
-        title={i18n.t("editorToolbar.heading1")}
-        onClick={() => props.editor.chain().focus().toggleHeading({ level: 1 }).run()}
-      >
-        <Icon icon={IconH1} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isH2)}
-        title={i18n.t("editorToolbar.heading2")}
-        onClick={() => props.editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      >
-        <Icon icon={IconH2} size="1em" />
-      </Button>
+      {renderToolbarItems(toolbarItemsBefore)}
 
-      {/* 2. Separator */}
+      {/* Color pickers */}
       <div class={separatorClass} />
-
-      {/* 3. Text format (Bold, Italic, Underline, Strike) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isBold)}
-        title={i18n.t("editorToolbar.bold")}
-        onClick={() => props.editor.chain().focus().toggleBold().run()}
-      >
-        <Icon icon={IconBold} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isItalic)}
-        title={i18n.t("editorToolbar.italic")}
-        onClick={() => props.editor.chain().focus().toggleItalic().run()}
-      >
-        <Icon icon={IconItalic} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isUnderline)}
-        title={i18n.t("editorToolbar.underline")}
-        onClick={() => props.editor.chain().focus().toggleUnderline().run()}
-      >
-        <Icon icon={IconUnderline} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isStrike)}
-        title={i18n.t("editorToolbar.strikethrough")}
-        onClick={() => props.editor.chain().focus().toggleStrike().run()}
-      >
-        <Icon icon={IconStrikethrough} size="1em" />
-      </Button>
-
-      {/* 4. Separator */}
-      <div class={separatorClass} />
-
-      {/* 5. Text color + background color (using input[type=color]) */}
       <label class={colorLabelClass} title={i18n.t("editorToolbar.textColor")}>
         <span class={clsx("text-sm font-bold")}>A</span>
         <div class="absolute inset-x-1 bottom-0.5 h-0.5 rounded-full" style={{ "background-color": currentColor() }} />
@@ -218,120 +209,11 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         />
       </label>
 
-      {/* 6. Separator */}
       <div class={separatorClass} />
+      {renderToolbarItems(toolbarItemsAfter)}
 
-      {/* 7. List (Bullet, Ordered) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isBulletList)}
-        title={i18n.t("editorToolbar.bulletList")}
-        onClick={() => props.editor.chain().focus().toggleBulletList().run()}
-      >
-        <Icon icon={IconList} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isOrderedList)}
-        title={i18n.t("editorToolbar.numberedList")}
-        onClick={() => props.editor.chain().focus().toggleOrderedList().run()}
-      >
-        <Icon icon={IconListNumbers} size="1em" />
-      </Button>
-
-      {/* 8. Separator */}
+      {/* Insert table */}
       <div class={separatorClass} />
-
-      {/* 9. Indentation (Increase, Decrease) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={toolbarBtnExtra}
-        title={i18n.t("editorToolbar.increaseIndent")}
-        onClick={() => props.editor.chain().focus().sinkListItem("listItem").run()}
-      >
-        <Icon icon={IconIndentIncrease} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={toolbarBtnExtra}
-        title={i18n.t("editorToolbar.decreaseIndent")}
-        onClick={() => props.editor.chain().focus().liftListItem("listItem").run()}
-      >
-        <Icon icon={IconIndentDecrease} size="1em" />
-      </Button>
-
-      {/* 10. Separator */}
-      <div class={separatorClass} />
-
-      {/* 11. Block (Blockquote, CodeBlock) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isBlockquote)}
-        title={i18n.t("editorToolbar.blockquote")}
-        onClick={() => props.editor.chain().focus().toggleBlockquote().run()}
-      >
-        <Icon icon={IconQuote} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isCodeBlock)}
-        title={i18n.t("editorToolbar.codeBlock")}
-        onClick={() => props.editor.chain().focus().toggleCodeBlock().run()}
-      >
-        <Icon icon={IconCode} size="1em" />
-      </Button>
-
-      {/* 12. Separator */}
-      <div class={separatorClass} />
-
-      {/* 13. Alignment (Left, Center, Right, Justify) */}
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isAlignLeft)}
-        title={i18n.t("editorToolbar.alignLeft")}
-        onClick={() => props.editor.chain().focus().setTextAlign("left").run()}
-      >
-        <Icon icon={IconAlignLeft} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isAlignCenter)}
-        title={i18n.t("editorToolbar.alignCenter")}
-        onClick={() => props.editor.chain().focus().setTextAlign("center").run()}
-      >
-        <Icon icon={IconAlignCenter} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isAlignRight)}
-        title={i18n.t("editorToolbar.alignRight")}
-        onClick={() => props.editor.chain().focus().setTextAlign("right").run()}
-      >
-        <Icon icon={IconAlignRight} size="1em" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="xs"
-        class={btnClass(isAlignJustify)}
-        title={i18n.t("editorToolbar.justify")}
-        onClick={() => props.editor.chain().focus().setTextAlign("justify").run()}
-      >
-        <Icon icon={IconAlignJustified} size="1em" />
-      </Button>
-
-      {/* 14. Separator */}
-      <div class={separatorClass} />
-
-      {/* 15. Insert table */}
       <Button
         variant="ghost"
         size="xs"
@@ -344,7 +226,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         <Icon icon={IconTablePlus} size="1em" />
       </Button>
 
-      {/* 16. Insert image */}
+      {/* Insert image */}
       <Button
         variant="ghost"
         size="xs"
@@ -355,10 +237,8 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         <Icon icon={IconPhoto} size="1em" />
       </Button>
 
-      {/* 17. Separator */}
+      {/* Clear formatting */}
       <div class={separatorClass} />
-
-      {/* 18. Clear formatting */}
       <Button
         variant="ghost"
         size="xs"

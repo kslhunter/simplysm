@@ -111,13 +111,13 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   });
 
   // Handle period type change
-  const handlePeriodTypeChange = (newType: DateRangePeriodType | DateRangePeriodType[]) => {
-    const type = Array.isArray(newType) ? newType[0] : newType;
-    setPeriodType(type);
+  const handlePeriodTypeChange = (newType: DateRangePeriodType | undefined) => {
+    if (newType == null) return;
+    setPeriodType(newType);
 
     const currentFrom = from();
 
-    if (type === "month") {
+    if (newType === "month") {
       if (currentFrom) {
         const adjusted = currentFrom.setDay(1);
         setFrom(adjusted);
@@ -125,7 +125,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       } else {
         setTo(undefined as DateOnly | undefined);
       }
-    } else if (type === "day") {
+    } else if (newType === "day") {
       setTo(currentFrom);
     }
   };

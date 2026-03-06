@@ -3,7 +3,6 @@ import {
   createSignal,
   createUniqueId,
   For,
-  type JSX,
   onCleanup,
   Show,
   splitProps,
@@ -14,6 +13,7 @@ import { createControllableStore } from "../../../hooks/createControllableStore"
 import type { DateTime } from "@simplysm/core-common";
 import { obj } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
+import { openFileDialog } from "@simplysm/core-browser";
 import type { SortingDef } from "../../data/sheet/types";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
@@ -55,15 +55,7 @@ import type {
   SearchResult,
 } from "./types";
 
-interface CrudSheetComponent {
-  <TItem, TFilter extends Record<string, any>>(props: CrudSheetProps<TItem, TFilter>): JSX.Element;
-  Column: typeof CrudSheetColumn;
-  Filter: typeof CrudSheetFilter;
-  Tools: typeof CrudSheetTools;
-  Header: typeof CrudSheetHeader;
-}
-
-const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
+const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   props: CrudSheetProps<TItem, TFilter>,
 ) => {
   const [local] = splitProps(props, [
@@ -132,13 +124,15 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   createEventListener(() => formRef, "pointerdown", () => activateCrud(crudId));
   createEventListener(() => formRef, "focusin", () => activateCrud(crudId));
 
+  let refreshVersion = 0;
+
   createEffect(() => {
     void doRefresh();
   });
 
   // -- Key-based selection: restore selection when items change --
   createEffect(() => {
-    const currentItems = items as unknown as TItem[];
+    const currentItems = items as TItem[];
     const keys = selectedKeys();
     if (keys.size === 0) {
       if (selection().length > 0) {
@@ -154,14 +148,18 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
 
   async function doRefresh() {
+    const version = ++refreshVersion;
     setBusyCount((c) => c + 1);
     try {
       await refresh();
+      if (version !== refreshVersion) return;
+      setReady(true);
     } catch (err) {
+      if (version !== refreshVersion) return;
       noti.error(err, i18n.t("crudSheet.lookupFailed"));
+    } finally {
+      setBusyCount((c) => c - 1);
     }
-    setBusyCount((c) => c - 1);
-    setReady(true);
   }
 
   async function refresh() {
@@ -311,33 +309,28 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c - 1);
   }
 
-  function handleExcelUpload() {
+  async function handleExcelUpload() {
     if (!local.excel?.upload) return;
 
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".xlsx";
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file == null) return;
+    const files = await openFileDialog({ accept: ".xlsx" });
+    const file = files?.[0];
+    if (file == null) return;
 
-      setBusyCount((c) => c + 1);
-      try {
-        await local.excel!.upload!(file);
-        noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
-        await refresh();
-      } catch (err) {
-        noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
-      }
-      setBusyCount((c) => c - 1);
-    };
-    input.click();
+    setBusyCount((c) => c + 1);
+    try {
+      await local.excel!.upload!(file);
+      noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
+      await refresh();
+    } catch (err) {
+      noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
+    }
+    setBusyCount((c) => c - 1);
   }
 
   // -- Select Mode --
   function handleSelectionChange(newSelection: TItem[]) {
     // Current page items key Set
-    const currentItems = items as unknown as TItem[];
+    const currentItems = items as TItem[];
     const currentKeys = new Set<string | number>();
     for (const item of currentItems) {
       const key = local.getItemKey(item);
@@ -437,7 +430,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Context for Tools --
   const ctx: CrudSheetContext<TItem> = {
-    items: () => items as unknown as TItem[],
+    items: () => items as TItem[],
     selection,
     page,
     sorts,
@@ -763,7 +756,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 };
 
 //#region Export
-export const CrudSheet = Object.assign(CrudSheetBase as unknown as CrudSheetComponent, {
+export const CrudSheet = Object.assign(CrudSheetBase, {
   Column: CrudSheetColumn,
   Filter: CrudSheetFilter,
   Tools: CrudSheetTools,

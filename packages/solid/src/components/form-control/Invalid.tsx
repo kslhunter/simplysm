@@ -1,4 +1,4 @@
-import { children, createEffect, createSignal, onCleanup, type ParentComponent } from "solid-js";
+import { children, createEffect, createMemo, createSignal, onCleanup, type ParentComponent } from "solid-js";
 import clsx from "clsx";
 import "@simplysm/core-browser";
 
@@ -27,6 +27,10 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
 
   const resolved = children(() => props.children);
 
+  const targetEl = createMemo(() =>
+    resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement),
+  );
+
   // Reactively update setCustomValidity when message changes (always, regardless of lazyValidation)
   createEffect(() => {
     const msg = props.message ?? "";
@@ -35,19 +39,19 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
 
   // Set target to relative + insert hidden input inside target
   createEffect(() => {
-    const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
-    if (!targetEl) return;
+    const el = targetEl();
+    if (!el) return;
 
-    const computedPosition = getComputedStyle(targetEl).position;
+    const computedPosition = getComputedStyle(el).position;
     if (computedPosition === "static") {
-      targetEl.style.position = "relative";
+      el.style.position = "relative";
     }
 
-    targetEl.appendChild(hiddenInputEl);
+    el.appendChild(hiddenInputEl);
 
     onCleanup(() => {
-      if (hiddenInputEl.parentElement === targetEl) {
-        targetEl.removeChild(hiddenInputEl);
+      if (hiddenInputEl.parentElement === el) {
+        el.removeChild(hiddenInputEl);
       }
     });
   });
@@ -59,25 +63,25 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     const lazyValidation = props.lazyValidation ?? false;
     const isTouched = touched();
 
-    const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
+    const el = targetEl();
 
-    if (!targetEl) return;
+    if (!el) return;
 
     const shouldShow = message !== "" && (!lazyValidation || isTouched);
 
     if (variant === "border") {
       if (shouldShow) {
-        targetEl.classList.add("border-danger-500");
+        el.classList.add("border-danger-500");
       } else {
-        targetEl.classList.remove("border-danger-500");
+        el.classList.remove("border-danger-500");
       }
 
       onCleanup(() => {
-        targetEl.classList.remove("border-danger-500");
+        el.classList.remove("border-danger-500");
       });
     } else {
       // variant === "dot"
-      const existingDot = targetEl.querySelector("[data-invalid-dot]");
+      const existingDot = el.querySelector("[data-invalid-dot]");
       if (existingDot) {
         existingDot.remove();
       }
@@ -90,11 +94,11 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
           "size-1.5 rounded-full",
           "pointer-events-none bg-danger-500",
         );
-        targetEl.appendChild(dot);
+        el.appendChild(dot);
       }
 
       onCleanup(() => {
-        const dot = targetEl.querySelector("[data-invalid-dot]");
+        const dot = el.querySelector("[data-invalid-dot]");
         if (dot) {
           dot.remove();
         }
@@ -106,28 +110,28 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
   createEffect(() => {
     if (!(props.lazyValidation ?? false)) return;
 
-    const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
+    const el = targetEl();
 
-    if (!targetEl) return;
+    if (!el) return;
 
     const handleFocusOut = () => {
       setTouched(true);
     };
 
-    targetEl.addEventListener("focusout", handleFocusOut);
+    el.addEventListener("focusout", handleFocusOut);
 
     onCleanup(() => {
-      targetEl.removeEventListener("focusout", handleFocusOut);
+      el.removeEventListener("focusout", handleFocusOut);
     });
   });
 
   // Redirect hidden input focus to focusable child of target
   hiddenInputEl.addEventListener("focus", () => {
-    const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
+    const el = targetEl();
 
-    if (targetEl) {
+    if (el) {
       const focusable =
-        targetEl.findFirstFocusableChild() ?? (targetEl.tabIndex >= 0 ? targetEl : undefined);
+        el.findFirstFocusableChild() ?? (el.tabIndex >= 0 ? el : undefined);
       if (focusable && focusable !== hiddenInputEl) {
         focusable.focus();
       }

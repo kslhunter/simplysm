@@ -92,7 +92,7 @@ export function useSharedData<
   if (!context) {
     throw new Error("useSharedData can only be used inside SharedDataProvider");
   }
-  return context as unknown as SharedDataValue<TSharedData>;
+  return context as SharedDataValue<TSharedData>;
 }
 
 /**
@@ -245,6 +245,9 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
             } else {
               listenerKeyMap.set(name, key);
             }
+          })
+          .catch(() => {
+            initialized = false;
           });
 
         void loadData(name, def);

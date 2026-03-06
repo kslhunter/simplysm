@@ -68,34 +68,20 @@ export type SharedDataSelectProps<
   children: JSX.Element;
 } & DialogPropsField<TDialogProps>;
 
-interface SharedDataSelectComponent {
-  <TItem, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps>(
-    props: SharedDataSelectProps<TItem, TDialogProps>,
-  ): JSX.Element;
-  ItemTemplate: typeof ItemTemplate;
-  Action: typeof Action;
-}
-
 const SharedDataSelectBase = <
   TItem,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
 >(
   props: SharedDataSelectProps<TItem, TDialogProps>,
 ): JSX.Element => {
-  const [local, rest] = splitProps(props as any, [
+  const [local, rest] = splitProps(props, [
     "data",
     "filterFn",
     "dialog",
     "dialogProps",
     "dialogOptions",
     "children",
-  ]) as unknown as [
-    typeof props,
-    Omit<
-      typeof props,
-      "data" | "filterFn" | "dialog" | "dialogProps" | "dialogOptions" | "children"
-    >,
-  ];
+  ]);
 
   const i18n = useI18n();
   const dialog = useDialog();
@@ -218,6 +204,7 @@ const SharedDataSelectBase = <
   );
 };
 
-export const SharedDataSelect: SharedDataSelectComponent = SharedDataSelectBase as any;
-SharedDataSelect.ItemTemplate = ItemTemplate;
-SharedDataSelect.Action = Action;
+export const SharedDataSelect = Object.assign(SharedDataSelectBase, {
+  ItemTemplate,
+  Action,
+});

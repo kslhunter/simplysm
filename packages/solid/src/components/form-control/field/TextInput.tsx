@@ -140,11 +140,6 @@ function removeFormat(formattedValue: string, format: string): string {
  * <TextInput type="password" placeholder="Enter password" />
  * ```
  */
-interface TextInputComponent {
-  (props: TextInputProps): JSX.Element;
-  Prefix: typeof TextInputPrefix;
-}
-
 const TextInputInner = (props: TextInputProps) => {
   const [local, rest] = splitProps(props, [
     "value",
@@ -302,5 +297,6 @@ const TextInputInner = (props: TextInputProps) => {
   );
 };
 
-export const TextInput = TextInputInner as unknown as TextInputComponent;
-TextInput.Prefix = TextInputPrefix;
+export const TextInput = Object.assign(TextInputInner, {
+  Prefix: TextInputPrefix,
+});

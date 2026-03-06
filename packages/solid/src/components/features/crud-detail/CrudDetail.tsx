@@ -1,7 +1,6 @@
 import {
   createSignal,
   createUniqueId,
-  type JSX,
   onCleanup,
   onMount,
   Show,
@@ -37,13 +36,6 @@ import type {
   CrudDetailInfo,
   CrudDetailProps,
 } from "./types";
-
-interface CrudDetailComponent {
-  <TData extends object>(props: CrudDetailProps<TData>): JSX.Element;
-  Tools: typeof CrudDetailTools;
-  Before: typeof CrudDetailBefore;
-  After: typeof CrudDetailAfter;
-}
 
 const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => {
   const [local] = splitProps(props, [
@@ -94,11 +86,12 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       setData(reconcile(result.data) as any);
       originalData = obj.clone(result.data);
       setInfo(result.info);
+      setReady(true);
     } catch (err) {
       noti.error(err, i18n.t("crudDetail.lookupFailed"));
+    } finally {
+      setBusyCount((c) => c - 1);
     }
-    setBusyCount((c) => c - 1);
-    setReady(true);
   }
 
   onMount(() => {
@@ -198,11 +191,15 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     }
   });
 
+  const showSave = () => canEdit() && local.submit;
+  const showDelete = () =>
+    canEdit() && local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true);
+
   // -- Topbar Actions (Page mode) --
   if (topbarCtx) {
     createTopbarActions(() => (
       <>
-        <Show when={canEdit() && local.submit}>
+        <Show when={showSave()}>
           <Button
             size="lg"
             variant="ghost"
@@ -213,11 +210,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             {i18n.t("crudDetail.save")}
           </Button>
         </Show>
-        <Show
-          when={
-            canEdit() && local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)
-          }
-        >
+        <Show when={showDelete()}>
           {(_) => (
             <Button
               size="lg"
@@ -272,7 +265,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             <Show when={(!isInDialog && !topbarCtx) || tools()}>
               <div class="flex gap-2 pb-0">
                 <Show when={!topbarCtx && !isInDialog}>
-                  <Show when={canEdit() && local.submit}>
+                  <Show when={showSave()}>
                     <Button
                       size="sm"
                       theme="primary"
@@ -283,15 +276,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                       {i18n.t("crudDetail.save")}
                     </Button>
                   </Show>
-                  <Show
-                    when={
-                      canEdit() &&
-                      local.toggleDelete &&
-                      info() &&
-                      !info()!.isNew &&
-                      (local.deletable ?? true)
-                    }
-                  >
+                  <Show when={showDelete()}>
                     {(_) => (
                       <Button
                         size="sm"
@@ -338,9 +323,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             <Show when={isInDialog && canEdit()}>
               <div class={clsx("flex gap-2 border-t px-3 py-1.5", border.default)}>
                 <div class="flex-1" />
-                <Show
-                  when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}
-                >
+                <Show when={showDelete()}>
                   {(_) => (
                     <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
                       <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
@@ -348,7 +331,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                     </Button>
                   )}
                 </Show>
-                <Show when={local.submit}>
+                <Show when={showSave()}>
                   <Button
                     variant={"solid"}
                     theme="primary"
@@ -373,5 +356,5 @@ export const CrudDetail = Object.assign(CrudDetailBase, {
   Tools: CrudDetailTools,
   Before: CrudDetailBefore,
   After: CrudDetailAfter,
-}) as unknown as CrudDetailComponent;
+});
 //#endregion
