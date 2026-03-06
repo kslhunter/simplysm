@@ -54,7 +54,7 @@ export * from "./components/data/list/ListItem.styles";
 export * from "./components/data/Pagination";
 export * from "./components/data/sheet/DataSheet";
 export * from "./components/data/sheet/DataSheet.styles";
-export * from "./components/data/sheet/types";
+export * from "./components/data/sheet/DataSheet.types";
 export * from "./components/data/calendar/Calendar";
 export * from "./components/data/kanban/Kanban";
 
@@ -182,11 +182,11 @@ export * from "./components/features/data-select-button/DataSelectButton";
 
 // CrudSheet
 export * from "./components/features/crud-sheet/CrudSheet";
-export * from "./components/features/crud-sheet/types";
+export * from "./components/features/crud-sheet/CrudSheet.types";
 
 // CrudDetail
 export * from "./components/features/crud-detail/CrudDetail";
-export * from "./components/features/crud-detail/types";
+export * from "./components/features/crud-detail/CrudDetail.types";
 
 // PermissionTable
 export * from "./components/features/permission-table/PermissionTable";

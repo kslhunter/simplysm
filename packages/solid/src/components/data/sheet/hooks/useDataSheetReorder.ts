@@ -1,7 +1,7 @@
 import { createSignal, type Accessor } from "solid-js";
 import { startPointerDrag } from "../../../../helpers/startPointerDrag";
-import type { DataSheetReorderEvent } from "../types";
-import type { FlatItem } from "../types";
+import type { DataSheetReorderEvent } from "../DataSheet.types";
+import type { FlatItem } from "../DataSheet.types";
 
 export interface UseDataSheetReorderProps<TItem> {
   onItemsReorder?: (event: DataSheetReorderEvent<TItem>) => void;

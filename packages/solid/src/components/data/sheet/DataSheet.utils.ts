@@ -1,4 +1,4 @@
-import type { DataSheetColumnDef, FlatItem, HeaderDef, SortingDef } from "./types";
+import type { DataSheetColumnDef, FlatItem, HeaderDef, SortingDef } from "./DataSheet.types";
 import { obj } from "@simplysm/core-common";
 
 export function normalizeHeader(header?: string | string[]): string[] {

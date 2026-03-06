@@ -1,7 +1,7 @@
 import { createMemo, type Accessor } from "solid-js";
 import { createControllableSignal } from "../../../../hooks/createControllableSignal";
-import { applySorting } from "../sheetUtils";
-import type { SortingDef } from "../types";
+import { applySorting } from "../DataSheet.utils";
+import type { SortingDef } from "../DataSheet.types";
 
 export interface UseDataSheetSortingOptions<TItem> {
   sorts: Accessor<SortingDef[] | undefined>;

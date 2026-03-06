@@ -1,6 +1,6 @@
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import type { DataSheetColumnDef } from "../types";
+import type { DataSheetColumnDef } from "../DataSheet.types";
 
 export interface UseDataSheetFixedColumnsProps<TItem> {
   itemChildren?: (item: TItem, index: number) => TItem[] | undefined;

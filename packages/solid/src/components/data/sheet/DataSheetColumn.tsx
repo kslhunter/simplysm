@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import { createSlots } from "../../../helpers/createSlots";
-import type { DataSheetColumnProps } from "./types";
+import type { DataSheetColumnProps } from "./DataSheet.types";
 
 const [SlotComponent, createColumnSlotsAccessor] = createSlots<DataSheetColumnProps<any>>();
 

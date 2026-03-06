@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import { createSlots } from "../../../helpers/createSlots";
-import type { CrudSheetColumnProps } from "./types";
+import type { CrudSheetColumnProps } from "./CrudSheet.types";
 
 const [SlotComponent, createCrudSheetColumnSlotsAccessor] = createSlots<CrudSheetColumnProps<any>>();
 

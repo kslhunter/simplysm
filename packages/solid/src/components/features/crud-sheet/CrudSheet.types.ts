@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import type { ArrayOneWayDiffResult } from "@simplysm/core-common";
-import type { DataSheetColumnProps, SortingDef } from "../../data/sheet/types";
+import type { DataSheetColumnProps, SortingDef } from "../../data/sheet/DataSheet.types";
 
 // ── Search ──
 

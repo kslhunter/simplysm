@@ -35,7 +35,7 @@ import type {
   CrudDetailContext,
   CrudDetailInfo,
   CrudDetailProps,
-} from "./types";
+} from "./CrudDetail.types";
 
 const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => {
   const [local] = splitProps(props, [

@@ -14,10 +14,10 @@ import type { DateTime } from "@simplysm/core-common";
 import { obj } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import { openFileDialog } from "@simplysm/core-browser";
-import type { SortingDef } from "../../data/sheet/types";
+import type { SortingDef } from "../../data/sheet/DataSheet.types";
 import { DataSheet } from "../../data/sheet/DataSheet";
 import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
-import { normalizeHeader } from "../../data/sheet/sheetUtils";
+import { normalizeHeader } from "../../data/sheet/DataSheet.utils";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationProvider";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
@@ -53,7 +53,7 @@ import type {
   CrudSheetContext,
   CrudSheetProps,
   SearchResult,
-} from "./types";
+} from "./CrudSheet.types";
 
 const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   props: CrudSheetProps<TItem, TFilter>,

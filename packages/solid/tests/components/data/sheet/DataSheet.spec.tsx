@@ -5,8 +5,8 @@ import {
   applySorting,
   collectAllExpandable,
   flattenTree,
-} from "../../../../src/components/data/sheet/sheetUtils";
-import type { SortingDef } from "../../../../src/components/data/sheet/types";
+} from "../../../../src/components/data/sheet/DataSheet.utils";
+import type { SortingDef } from "../../../../src/components/data/sheet/DataSheet.types";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import type { JSX } from "solid-js";
 import { I18nProvider } from "../../../../src/providers/i18n/I18nProvider";

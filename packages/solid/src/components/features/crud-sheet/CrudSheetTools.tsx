@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import type { CrudSheetContext } from "./types";
+import type { CrudSheetContext } from "./CrudSheet.types";
 import { createSlot } from "../../../helpers/createSlot";
 
 export interface CrudSheetToolsSlotProps<TItem> {

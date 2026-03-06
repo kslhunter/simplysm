@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
 import { useDataSheetFixedColumns } from "../../../../../src/components/data/sheet/hooks/useDataSheetFixedColumns";
-import type { DataSheetColumnDef } from "../../../../../src/components/data/sheet/types";
+import type { DataSheetColumnDef } from "../../../../../src/components/data/sheet/DataSheet.types";
 
 interface TestItem {
   id: number;

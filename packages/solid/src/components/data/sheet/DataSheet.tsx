@@ -28,10 +28,10 @@ import type {
   DataSheetProps,
   FlatItem,
   HeaderDef,
-} from "./types";
+} from "./DataSheet.types";
 import { DataSheetColumn, createColumnSlotsAccessor } from "./DataSheetColumn";
 import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
-import { buildHeaderTable, normalizeHeader } from "./sheetUtils";
+import { buildHeaderTable, normalizeHeader } from "./DataSheet.utils";
 import { startPointerDrag } from "../../../helpers/startPointerDrag";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";

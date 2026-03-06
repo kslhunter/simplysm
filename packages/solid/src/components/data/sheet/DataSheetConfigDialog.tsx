@@ -6,7 +6,7 @@ import type {
   DataSheetConfigColumn,
   DataSheetConfigColumnInfo,
   DataSheetReorderEvent,
-} from "./types";
+} from "./DataSheet.types";
 import { DataSheet } from "./DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { TextInput } from "../../form-control/field/TextInput";
