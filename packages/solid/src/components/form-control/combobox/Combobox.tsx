@@ -343,8 +343,13 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
       setOpen(false);
     } else if (e.key === "Enter" && local.allowsCustomValue && query().trim() !== "") {
       e.preventDefault();
-      const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as TValue);
-      selectValue(customValue);
+      if (local.parseCustomValue) {
+        selectValue(local.parseCustomValue(query()));
+      } else {
+        setInternalValue(undefined as any);
+        setQuery("");
+        setOpen(false);
+      }
     }
   };
 
