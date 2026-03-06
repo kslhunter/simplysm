@@ -11,7 +11,7 @@ import "@simplysm/core-common";
  * Checks if a file or directory exists (synchronous).
  * @param targetPath - Path to check
  */
-export function fsExistsSync(targetPath: string): boolean {
+export function existsSync(targetPath: string): boolean {
   return fs.existsSync(targetPath);
 }
 
@@ -19,7 +19,7 @@ export function fsExistsSync(targetPath: string): boolean {
  * Checks if a file or directory exists (asynchronous).
  * @param targetPath - Path to check
  */
-export async function fsExists(targetPath: string): Promise<boolean> {
+export async function exists(targetPath: string): Promise<boolean> {
   try {
     await fs.promises.access(targetPath);
     return true;
@@ -36,7 +36,7 @@ export async function fsExists(targetPath: string): Promise<boolean> {
  * Creates a directory (recursive).
  * @param targetPath - Directory path to create
  */
-export function fsMkdirSync(targetPath: string): void {
+export function mkdirSync(targetPath: string): void {
   try {
     fs.mkdirSync(targetPath, { recursive: true });
   } catch (err) {
@@ -48,7 +48,7 @@ export function fsMkdirSync(targetPath: string): void {
  * Creates a directory (recursive, asynchronous).
  * @param targetPath - Directory path to create
  */
-export async function fsMkdir(targetPath: string): Promise<void> {
+export async function mkdir(targetPath: string): Promise<void> {
   try {
     await fs.promises.mkdir(targetPath, { recursive: true });
   } catch (err) {
@@ -63,9 +63,9 @@ export async function fsMkdir(targetPath: string): Promise<void> {
 /**
  * Deletes a file or directory.
  * @param targetPath - Path to delete
- * @remarks The synchronous version fails immediately without retries. Use fsRm for cases with potential transient errors like file locks.
+ * @remarks The synchronous version fails immediately without retries. Use rm for cases with potential transient errors like file locks.
  */
-export function fsRmSync(targetPath: string): void {
+export function rmSync(targetPath: string): void {
   try {
     fs.rmSync(targetPath, { recursive: true, force: true });
   } catch (err) {
@@ -78,7 +78,7 @@ export function fsRmSync(targetPath: string): void {
  * @param targetPath - Path to delete
  * @remarks The asynchronous version retries up to 6 times (500ms interval) for transient errors like file locks.
  */
-export async function fsRm(targetPath: string): Promise<void> {
+export async function rm(targetPath: string): Promise<void> {
   try {
     await fs.promises.rm(targetPath, {
       recursive: true,
@@ -109,12 +109,12 @@ export async function fsRm(targetPath: string): Promise<void> {
  *               the filter function is applied recursively to all children (direct and indirect).
  *               Returning false for a directory skips that directory and all its contents.
  */
-export function fsCopySync(
+export function copySync(
   sourcePath: string,
   targetPath: string,
   filter?: (absolutePath: string) => boolean,
 ): void {
-  if (!fsExistsSync(sourcePath)) {
+  if (!existsSync(sourcePath)) {
     return;
   }
 
@@ -126,9 +126,9 @@ export function fsCopySync(
   }
 
   if (stats.isDirectory()) {
-    fsMkdirSync(targetPath);
+    mkdirSync(targetPath);
 
-    const children = fsGlobSync(path.resolve(sourcePath, "*"), { dot: true });
+    const children = globSync(path.resolve(sourcePath, "*"), { dot: true });
 
     for (const childPath of children) {
       if (filter !== undefined && !filter(childPath)) {
@@ -137,10 +137,10 @@ export function fsCopySync(
 
       const relativeChildPath = path.relative(sourcePath, childPath);
       const childTargetPath = path.resolve(targetPath, relativeChildPath);
-      fsCopySync(childPath, childTargetPath, filter);
+      copySync(childPath, childTargetPath, filter);
     }
   } else {
-    fsMkdirSync(path.dirname(targetPath));
+    mkdirSync(path.dirname(targetPath));
 
     try {
       fs.copyFileSync(sourcePath, targetPath);
@@ -164,12 +164,12 @@ export function fsCopySync(
  *               the filter function is applied recursively to all children (direct and indirect).
  *               Returning false for a directory skips that directory and all its contents.
  */
-export async function fsCopy(
+export async function copy(
   sourcePath: string,
   targetPath: string,
   filter?: (absolutePath: string) => boolean,
 ): Promise<void> {
-  if (!(await fsExists(sourcePath))) {
+  if (!(await exists(sourcePath))) {
     return;
   }
 
@@ -181,9 +181,9 @@ export async function fsCopy(
   }
 
   if (stats.isDirectory()) {
-    await fsMkdir(targetPath);
+    await mkdir(targetPath);
 
-    const children = await fsGlob(path.resolve(sourcePath, "*"), { dot: true });
+    const children = await glob(path.resolve(sourcePath, "*"), { dot: true });
 
     await children.parallelAsync(async (childPath) => {
       if (filter !== undefined && !filter(childPath)) {
@@ -192,10 +192,10 @@ export async function fsCopy(
 
       const relativeChildPath = path.relative(sourcePath, childPath);
       const childTargetPath = path.resolve(targetPath, relativeChildPath);
-      await fsCopy(childPath, childTargetPath, filter);
+      await copy(childPath, childTargetPath, filter);
     });
   } else {
-    await fsMkdir(path.dirname(targetPath));
+    await mkdir(path.dirname(targetPath));
 
     try {
       await fs.promises.copyFile(sourcePath, targetPath);
@@ -213,7 +213,7 @@ export async function fsCopy(
  * Reads a file as a UTF-8 string.
  * @param targetPath - Path of the file to read
  */
-export function fsReadSync(targetPath: string): string {
+export function readSync(targetPath: string): string {
   try {
     return fs.readFileSync(targetPath, "utf-8");
   } catch (err) {
@@ -225,7 +225,7 @@ export function fsReadSync(targetPath: string): string {
  * Reads a file as a UTF-8 string (asynchronous).
  * @param targetPath - Path of the file to read
  */
-export async function fsRead(targetPath: string): Promise<string> {
+export async function read(targetPath: string): Promise<string> {
   try {
     return await fs.promises.readFile(targetPath, "utf-8");
   } catch (err) {
@@ -237,7 +237,7 @@ export async function fsRead(targetPath: string): Promise<string> {
  * Reads a file as a Buffer.
  * @param targetPath - Path of the file to read
  */
-export function fsReadBufferSync(targetPath: string): Buffer {
+export function readBufferSync(targetPath: string): Buffer {
   try {
     return fs.readFileSync(targetPath);
   } catch (err) {
@@ -249,7 +249,7 @@ export function fsReadBufferSync(targetPath: string): Buffer {
  * Reads a file as a Buffer (asynchronous).
  * @param targetPath - Path of the file to read
  */
-export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
+export async function readBuffer(targetPath: string): Promise<Buffer> {
   try {
     return await fs.promises.readFile(targetPath);
   } catch (err) {
@@ -261,8 +261,8 @@ export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
  * Reads a JSON file (using JsonConvert).
  * @param targetPath - Path of the JSON file to read
  */
-export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
-  const contents = fsReadSync(targetPath);
+export function readJsonSync<TData = unknown>(targetPath: string): TData {
+  const contents = readSync(targetPath);
   try {
     return json.parse(contents);
   } catch (err) {
@@ -275,8 +275,8 @@ export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
  * Reads a JSON file (using JsonConvert, asynchronous).
  * @param targetPath - Path of the JSON file to read
  */
-export async function fsReadJson<TData = unknown>(targetPath: string): Promise<TData> {
-  const contents = await fsRead(targetPath);
+export async function readJson<TData = unknown>(targetPath: string): Promise<TData> {
+  const contents = await read(targetPath);
   try {
     return json.parse<TData>(contents);
   } catch (err) {
@@ -294,8 +294,8 @@ export async function fsReadJson<TData = unknown>(targetPath: string): Promise<T
  * @param targetPath - Path of the file to write
  * @param data - Data to write (string or binary)
  */
-export function fsWriteSync(targetPath: string, data: string | Uint8Array): void {
-  fsMkdirSync(path.dirname(targetPath));
+export function writeSync(targetPath: string, data: string | Uint8Array): void {
+  mkdirSync(path.dirname(targetPath));
 
   try {
     fs.writeFileSync(targetPath, data, { flush: true });
@@ -309,8 +309,8 @@ export function fsWriteSync(targetPath: string, data: string | Uint8Array): void
  * @param targetPath - Path of the file to write
  * @param data - Data to write (string or binary)
  */
-export async function fsWrite(targetPath: string, data: string | Uint8Array): Promise<void> {
-  await fsMkdir(path.dirname(targetPath));
+export async function write(targetPath: string, data: string | Uint8Array): Promise<void> {
+  await mkdir(path.dirname(targetPath));
 
   try {
     await fs.promises.writeFile(targetPath, data, { flush: true });
@@ -325,7 +325,7 @@ export async function fsWrite(targetPath: string, data: string | Uint8Array): Pr
  * @param data - Data to write
  * @param options - JSON serialization options
  */
-export function fsWriteJsonSync(
+export function writeJsonSync(
   targetPath: string,
   data: unknown,
   options?: {
@@ -334,7 +334,7 @@ export function fsWriteJsonSync(
   },
 ): void {
   const jsonStr = json.stringify(data, options);
-  fsWriteSync(targetPath, jsonStr);
+  writeSync(targetPath, jsonStr);
 }
 
 /**
@@ -343,7 +343,7 @@ export function fsWriteJsonSync(
  * @param data - Data to write
  * @param options - JSON serialization options
  */
-export async function fsWriteJson(
+export async function writeJson(
   targetPath: string,
   data: unknown,
   options?: {
@@ -352,7 +352,7 @@ export async function fsWriteJson(
   },
 ): Promise<void> {
   const jsonStr = json.stringify(data, options);
-  await fsWrite(targetPath, jsonStr);
+  await write(targetPath, jsonStr);
 }
 
 //#endregion
@@ -363,7 +363,7 @@ export async function fsWriteJson(
  * Reads the contents of a directory.
  * @param targetPath - Path of the directory to read
  */
-export function fsReaddirSync(targetPath: string): string[] {
+export function readdirSync(targetPath: string): string[] {
   try {
     return fs.readdirSync(targetPath);
   } catch (err) {
@@ -375,7 +375,7 @@ export function fsReaddirSync(targetPath: string): string[] {
  * Reads the contents of a directory (asynchronous).
  * @param targetPath - Path of the directory to read
  */
-export async function fsReaddir(targetPath: string): Promise<string[]> {
+export async function readdir(targetPath: string): Promise<string[]> {
   try {
     return await fs.promises.readdir(targetPath);
   } catch (err) {
@@ -391,7 +391,7 @@ export async function fsReaddir(targetPath: string): Promise<string[]> {
  * Gets file/directory information (follows symbolic links).
  * @param targetPath - Path to query information for
  */
-export function fsStatSync(targetPath: string): fs.Stats {
+export function statSync(targetPath: string): fs.Stats {
   try {
     return fs.statSync(targetPath);
   } catch (err) {
@@ -403,7 +403,7 @@ export function fsStatSync(targetPath: string): fs.Stats {
  * Gets file/directory information (follows symbolic links, asynchronous).
  * @param targetPath - Path to query information for
  */
-export async function fsStat(targetPath: string): Promise<fs.Stats> {
+export async function stat(targetPath: string): Promise<fs.Stats> {
   try {
     return await fs.promises.stat(targetPath);
   } catch (err) {
@@ -415,7 +415,7 @@ export async function fsStat(targetPath: string): Promise<fs.Stats> {
  * Gets file/directory information (does not follow symbolic links).
  * @param targetPath - Path to query information for
  */
-export function fsLstatSync(targetPath: string): fs.Stats {
+export function lstatSync(targetPath: string): fs.Stats {
   try {
     return fs.lstatSync(targetPath);
   } catch (err) {
@@ -427,7 +427,7 @@ export function fsLstatSync(targetPath: string): fs.Stats {
  * Gets file/directory information (does not follow symbolic links, asynchronous).
  * @param targetPath - Path to query information for
  */
-export async function fsLstat(targetPath: string): Promise<fs.Stats> {
+export async function lstat(targetPath: string): Promise<fs.Stats> {
   try {
     return await fs.promises.lstat(targetPath);
   } catch (err) {
@@ -445,7 +445,7 @@ export async function fsLstat(targetPath: string): Promise<fs.Stats> {
  * @param options - glob options
  * @returns Array of absolute paths for matched files
  */
-export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
+export function globSync(pattern: string, options?: GlobOptions): string[] {
   return globRawSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) =>
     path.resolve(item.toString()),
   );
@@ -457,7 +457,7 @@ export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
  * @param options - glob options
  * @returns Array of absolute paths for matched files
  */
-export async function fsGlob(pattern: string, options?: GlobOptions): Promise<string[]> {
+export async function glob(pattern: string, options?: GlobOptions): Promise<string[]> {
   return (await globRaw(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
     path.resolve(item.toString()),
   );
@@ -471,16 +471,16 @@ export async function fsGlob(pattern: string, options?: GlobOptions): Promise<st
  * Recursively searches and deletes empty directories under a specified directory.
  * If all child directories are deleted and a parent becomes empty, it will also be deleted.
  */
-export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
-  if (!(await fsExists(dirPath))) return;
+export async function clearEmptyDirectory(dirPath: string): Promise<void> {
+  if (!(await exists(dirPath))) return;
 
-  const childNames = await fsReaddir(dirPath);
+  const childNames = await readdir(dirPath);
   let hasFiles = false;
 
   for (const childName of childNames) {
     const childPath = path.resolve(dirPath, childName);
-    if ((await fsLstat(childPath)).isDirectory()) {
-      await fsClearEmptyDirectory(childPath);
+    if ((await lstat(childPath)).isDirectory()) {
+      await clearEmptyDirectory(childPath);
     } else {
       hasFiles = true;
     }
@@ -490,8 +490,8 @@ export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
   if (hasFiles) return;
 
   // Only re-check if there were no files (child directories may have been deleted)
-  if ((await fsReaddir(dirPath)).length === 0) {
-    await fsRm(dirPath);
+  if ((await readdir(dirPath)).length === 0) {
+    await rm(dirPath);
   }
 }
 
@@ -504,7 +504,7 @@ export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
  *                   **Note**: fromPath must be a child path of rootPath.
  *                   Otherwise, searches to the filesystem root.
  */
-export function fsFindAllParentChildPathsSync(
+export function findAllParentChildPathsSync(
   childGlob: string,
   fromPath: string,
   rootPath?: string,
@@ -514,7 +514,7 @@ export function fsFindAllParentChildPathsSync(
   let current = fromPath;
   while (current) {
     const potential = path.resolve(current, childGlob);
-    const globResults = fsGlobSync(potential);
+    const globResults = globSync(potential);
     resultPaths.push(...globResults);
 
     if (current === rootPath) break;
@@ -536,7 +536,7 @@ export function fsFindAllParentChildPathsSync(
  *                   **Note**: fromPath must be a child path of rootPath.
  *                   Otherwise, searches to the filesystem root.
  */
-export async function fsFindAllParentChildPaths(
+export async function findAllParentChildPaths(
   childGlob: string,
   fromPath: string,
   rootPath?: string,
@@ -546,7 +546,7 @@ export async function fsFindAllParentChildPaths(
   let current = fromPath;
   while (current) {
     const potential = path.resolve(current, childGlob);
-    const globResults = await fsGlob(potential);
+    const globResults = await glob(potential);
     resultPaths.push(...globResults);
 
     if (current === rootPath) break;
