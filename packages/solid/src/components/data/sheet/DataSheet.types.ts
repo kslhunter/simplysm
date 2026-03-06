@@ -25,7 +25,13 @@ export interface DataSheetProps<TItem> {
   selectionMode?: "single" | "multiple";
   selection?: TItem[];
   onSelectionChange?: (items: TItem[]) => void;
-  autoSelect?: "click";
+  autoSelect?: boolean;
+  /**
+   * Determines if an item can be selected.
+   * - `true` → selectable
+   * - `false` → not selectable
+   * - `string` → not selectable, string shown as tooltip explaining why
+   */
   isItemSelectable?: (item: TItem) => boolean | string;
 
   // Tree expansion

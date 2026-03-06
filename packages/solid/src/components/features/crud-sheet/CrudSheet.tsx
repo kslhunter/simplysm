@@ -624,7 +624,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
             }
             selection={selection()}
             onSelectionChange={handleSelectionChange}
-            autoSelect={isSelectMode() && local.selectionMode === "single" ? "click" : undefined}
+            autoSelect={isSelectMode() && local.selectionMode === "single" ? true : undefined}
             cellClass={(item) => {
               if (isItemDeleted(item)) {
                 return "line-through";

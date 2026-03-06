@@ -148,7 +148,7 @@ Sub-components: `DataSheet.Column`
 | `selectMode` | `"single" \| "multiple"` | Selection mode |
 | `selectedItems` | `TItem[]` | Selected items |
 | `onSelectedItemsChange` | `(items) => void` | Selection change callback |
-| `autoSelect` | `"click"` | Auto-select trigger on row click |
+| `autoSelect` | `boolean` | Auto-select trigger on row click |
 | `isItemSelectable` | `(item) => boolean \| string` | Item selectability |
 | `expandedItems` | `TItem[]` | Expanded tree items |
 | `onExpandedItemsChange` | `(items) => void` | Expand change callback |

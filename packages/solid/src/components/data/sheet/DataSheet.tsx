@@ -961,11 +961,11 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                 <tr
                   data-selected={selection().includes(flat.item) ? "" : undefined}
                   onClick={() => {
-                    if (local.autoSelect === "click") {
+                    if (local.autoSelect) {
                       selectItem(flat.item);
                     }
                   }}
-                  class={clsx(trRowClass, local.autoSelect === "click" && "cursor-pointer")}
+                  class={clsx(trRowClass, local.autoSelect && "cursor-pointer")}
                 >
                   <Show when={hasExpandFeature()}>
                     {renderExpandCell(flat)}
