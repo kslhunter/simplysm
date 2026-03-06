@@ -418,7 +418,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("does not fetch immediately after configure(), fetches lazily when items() is accessed", async () => {
+  it("fetches eagerly after configure()", async () => {
     const { serviceClientValue, mockClient } = createMockServiceClient();
     const mockUsers: TestUser[] = [{ id: 1, name: "Alice" }];
 
@@ -432,7 +432,6 @@ describe("SharedDataProvider", () => {
       },
     };
 
-    // Component that only calls configure() and does not access items()
     function ConfigureOnly() {
       const shared = useTestSharedData();
       shared.configure(() => definitions);
@@ -449,13 +448,77 @@ describe("SharedDataProvider", () => {
       </NotificationContext.Provider>
     ));
 
-    // After configure: fetch and addEventListener should not be called
     await vi.waitFor(() => {
       expect(result.getByTestId("configured").textContent).toBe("configured");
     });
 
-    expect(fetchFn).not.toHaveBeenCalled();
-    expect(mockClient.addListener).not.toHaveBeenCalled();
+    // Now configure() triggers eager init
+    await vi.waitFor(() => {
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+      expect(mockClient.addListener).toHaveBeenCalledTimes(1);
+    });
+
+    result.unmount();
+  });
+
+  it("wait() resolves after data is loaded even without items() access", async () => {
+    const { serviceClientValue } = createMockServiceClient();
+
+    let resolveUsers!: (value: TestUser[]) => void;
+    const fetchPromise = new Promise<TestUser[]>((resolve) => {
+      resolveUsers = resolve;
+    });
+
+    const fetchFn = vi.fn(() => fetchPromise);
+
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
+      user: {
+        fetch: fetchFn,
+        getKey: (item) => item.id,
+        orderBy: [[(item) => item.name, "asc"]],
+      },
+    };
+
+    let waitResolved = false;
+
+    // Component that calls configure() + wait() but never accesses items()
+    function ConfigureAndWait() {
+      const shared = useTestSharedData();
+      shared.configure(() => definitions);
+
+      // Call wait() immediately — should NOT resolve until fetch completes
+      void shared.wait().then(() => {
+        waitResolved = true;
+      });
+
+      return <div data-testid="ready">{String(waitResolved)}</div>;
+    }
+
+    const result = render(() => (
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureAndWait />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
+    ));
+
+    // fetch should have been called (eager init)
+    await vi.waitFor(() => {
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
+    // wait() should NOT have resolved yet (fetch still pending)
+    expect(waitResolved).toBe(false);
+
+    // Resolve the fetch
+    resolveUsers([{ id: 1, name: "Alice" }]);
+
+    // wait() should now resolve
+    await vi.waitFor(() => {
+      expect(waitResolved).toBe(true);
+    });
 
     result.unmount();
   });

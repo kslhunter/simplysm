@@ -105,7 +105,7 @@ type EntryState = "idle" | "initializing" | "ready" | "error";
  * - Must be used inside ServiceClientProvider and NotificationProvider
  * - Logs fetch failures to logger if LoggerProvider is present
  * - Before configure(): only wait, busy, configure are accessible. Data access throws
- * - After configure(): registers definitions. Registers server event listeners + fetch on first items()/get() access per key (lazy)
+ * - After configure(): registers definitions and immediately starts fetching data for all entries
  * - Prevents data inversion on concurrent fetch calls via version counter
  * - Displays danger notification to the user on fetch failure
  * - Automatically releases all event listeners on cleanup
@@ -156,7 +156,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     name: string,
     def: SharedDataDefinition<unknown>,
     client: ServiceClient,
-  ): SharedDataAccessor<unknown> & { cleanup: () => void } {
+  ): SharedDataAccessor<unknown> & { cleanup: () => void; initialize: () => Promise<void> } {
     const [items, setItems] = createSignal<unknown[]>([]);
 
     const itemMap = createMemo(() => {
@@ -214,6 +214,9 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
       state = "initializing";
 
+      // Increment busyCount synchronously so wait() sees busy state immediately
+      setBusyCount((c) => c + 1);
+
       try {
         const key = await client.addListener(
           SharedDataChangeEvent,
@@ -239,6 +242,8 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         state = "ready";
       } catch {
         state = "error";
+      } finally {
+        setBusyCount((c) => c - 1);
       }
     }
 
@@ -270,6 +275,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       isItemHidden: def.isItemHidden,
       getParentKey: def.getParentKey,
       cleanup,
+      initialize,
     };
   }
 
@@ -296,6 +302,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       const entry = createSharedDataEntry(name, def, client);
       entries.set(name, entry);
       accessors[name] = entry;
+      void entry.initialize();
     }
   }
 
