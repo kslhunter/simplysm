@@ -26,6 +26,8 @@ import type {
   DataSheetConfig,
   DataSheetConfigColumnInfo,
   DataSheetProps,
+  FlatItem,
+  HeaderDef,
 } from "./types";
 import { DataSheetColumn, createColumnSlotsAccessor } from "./DataSheetColumn";
 import { DataSheetConfigDialog } from "./DataSheetConfigDialog";
@@ -466,6 +468,329 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
   // suppress unused variable warning — dragState is used for side effects (DOM mutation in hook)
   void dragState;
 
+  // #region Sub-render functions
+
+  function renderHeaderCell(header: HeaderDef, colIndex: number, rowIndex: number): JSX.Element {
+    const isSortable = () =>
+      header.isLastRow &&
+      header.colIndex != null &&
+      effectiveColumns()[header.colIndex!].sortable;
+    const colKey = () =>
+      header.colIndex != null
+        ? effectiveColumns()[header.colIndex!].key
+        : undefined;
+
+    // Group header fixed status: all columns in colspan range are fixed
+    const isGroupFixed = (): boolean => {
+      if (header.isLastRow) return false;
+      const start = colIndex;
+      const span = header.colspan;
+      const cols = effectiveColumns();
+      for (let i = start; i < start + span && i < cols.length; i++) {
+        if (!cols[i].fixed) return false;
+      }
+      return true;
+    };
+
+    // Cell fixed column status (based on colIndex if last row, group-based otherwise)
+    const isCellFixed = () =>
+      (header.isLastRow &&
+        header.colIndex != null &&
+        effectiveColumns()[header.colIndex!].fixed) ||
+      isGroupFixed();
+
+    // Cell's last fixed status
+    const isCellLastFixed = () => {
+      if (header.isLastRow && header.colIndex != null)
+        return isLastFixed(header.colIndex!);
+      if (isGroupFixed()) {
+        const lastCol = colIndex + header.colspan - 1;
+        return isLastFixed(lastCol);
+      }
+      return false;
+    };
+
+    // Fixed cell left + top inline style
+    const cellStyle = (): string | undefined => {
+      const parts: string[] = [];
+      // top: apply to all th (fix header to top)
+      const top = headerRowTops()[rowIndex];
+      parts.push(`top: ${top}px`);
+      // left: apply only to fixed columns
+      if (header.isLastRow && header.colIndex != null) {
+        const left = getFixedStyle(header.colIndex!);
+        if (left != null) parts.push(left);
+        // max-width: apply if explicit width exists (allow column to shrink below content)
+        const col = effectiveColumns()[header.colIndex!];
+        if (col.width != null) parts.push(`max-width: ${col.width.replace(/;/g, "")}`);
+      } else if (isGroupFixed()) {
+        const left = getFixedStyle(colIndex);
+        if (left != null) parts.push(left);
+      }
+      return parts.length > 0 ? parts.join("; ") : undefined;
+    };
+
+    return (
+      <th
+        class={twMerge(
+          thClass,
+          fixedClass,
+          isSortable() ? sortableThClass : undefined,
+          isCellFixed() ? "z-[5]" : "z-[3]",
+          isCellLastFixed() ? fixedLastClass : undefined,
+        )}
+        colspan={header.colspan > 1 ? header.colspan : undefined}
+        rowspan={header.rowspan > 1 ? header.rowspan : undefined}
+        style={cellStyle()}
+        title={
+          header.isLastRow && header.colIndex != null
+            ? (effectiveColumns()[header.colIndex!].tooltip ?? header.text)
+            : header.text
+        }
+        ref={(el: HTMLElement) => {
+          if (
+            header.isLastRow &&
+            header.colIndex != null &&
+            effectiveColumns()[header.colIndex!].fixed
+          ) {
+            registerColumnRef(header.colIndex!, el);
+          }
+        }}
+        onClick={(e) => {
+          if (!isSortable()) return;
+          const key = colKey();
+          if (key == null) return;
+          toggleSort(key, e.shiftKey || e.ctrlKey);
+        }}
+      >
+        <div class={clsx("flex items-center gap-2", thContentClass)}>
+          <div class="flex-1">{header.headerContent?.() ?? header.text}</div>
+          <Show when={isSortable() && colKey()}>
+            {(key) => {
+              const sortDef = () => getSortDef(key());
+              const sortIdx = () => sortIndex(key());
+              return (
+                <div class={sortIconClass}>
+                  <Show when={sortDef()?.desc === false}>
+                    <Icon icon={IconSortAscending} />
+                  </Show>
+                  <Show when={sortDef()?.desc === true}>
+                    <Icon icon={IconSortDescending} />
+                  </Show>
+                  <Show when={sortDef() == null}>
+                    <Icon
+                      icon={IconArrowsSort}
+                      class="opacity-30"
+                    />
+                  </Show>
+                  <Show when={sortIdx()}>
+                    {(idx) => <sub>{idx()}</sub>}
+                  </Show>
+                </div>
+              );
+            }}
+          </Show>
+        </div>
+        <Show
+          when={
+            header.isLastRow &&
+            header.colIndex != null &&
+            effectiveColumns()[header.colIndex!].resizable
+          }
+        >
+          <div
+            class={resizerClass}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) =>
+              onResizerPointerdown(e, effectiveColumns()[header.colIndex!].key)
+            }
+            onDblClick={(e) => {
+              e.stopPropagation();
+              onResizerDoubleClick(effectiveColumns()[header.colIndex!].key);
+            }}
+          />
+        </Show>
+      </th>
+    );
+  }
+
+  function renderExpandCell(flatItem: FlatItem<TItem>): JSX.Element {
+    return (
+      <td
+        class={twMerge(
+          featureTdClass,
+          fixedClass,
+          "z-[2]",
+          isExpandColLastFixed() ? fixedLastClass : undefined,
+        )}
+        style={{ left: "0" }}
+      >
+        <div class={featureCellBodyWrapperClass}>
+          <For each={Array.from({ length: flatItem.depth })}>
+            {() => (
+              <div class={expandIndentGuideClass}>
+                <div class={expandIndentGuideLineClass} />
+              </div>
+            )}
+          </For>
+          <Show when={flatItem.hasChildren}>
+            <button
+              type="button"
+              class={expandToggleClass}
+              onClick={() => toggleExpand(flatItem.item)}
+            >
+              <Icon
+                icon={IconChevronDown}
+                size="1em"
+                class={clsx(
+                  "transition-transform",
+                  expandedItems().includes(flatItem.item) ? "rotate-0" : "-rotate-90",
+                )}
+              />
+            </button>
+          </Show>
+        </div>
+      </td>
+    );
+  }
+
+  function renderSelectCell(flatItem: FlatItem<TItem>): JSX.Element {
+    const selectable = () => getItemSelectable(flatItem.item);
+    const isSelected = () => selection().includes(flatItem.item);
+    const rowIndex = () => flatItem.row;
+
+    return (
+      <td
+        class={twMerge(
+          featureTdClass,
+          fixedClass,
+          "z-[2]",
+          isSelectColLastFixed() ? fixedLastClass : undefined,
+        )}
+        style={{
+          left: selectColLeft(),
+        }}
+      >
+        <Show
+          when={local.selectionMode === "multiple"}
+          fallback={
+            /* single mode */
+            <Show when={selectable() === true}>
+              <div
+                class={featureCellBodyClickableClass}
+                onClick={() => toggleSelect(flatItem.item)}
+              >
+                <div
+                  class={twMerge(
+                    selectSingleClass,
+                    isSelected()
+                      ? selectSingleSelectedClass
+                      : selectSingleUnselectedClass,
+                  )}
+                >
+                  <Icon icon={IconChevronRight} size="1em" />
+                </div>
+              </div>
+            </Show>
+          }
+        >
+          {/* multi mode */}
+          <div
+            class={featureCellBodyClickableClass}
+            onClick={(e) => {
+              if (e.shiftKey) {
+                rangeSelect(rowIndex());
+              } else {
+                toggleSelect(flatItem.item);
+              }
+              setLastClickedRow(rowIndex());
+            }}
+            title={
+              typeof selectable() === "string"
+                ? (selectable() as string)
+                : undefined
+            }
+          >
+            <Checkbox
+              value={isSelected()}
+              disabled={selectable() !== true}
+              inset
+              class={twMerge(
+                "pointer-events-none",
+                lastClickedRow() === rowIndex()
+                  ? "[&>div]:ring-2 [&>div]:ring-primary-200 dark:[&>div]:ring-primary-700"
+                  : undefined,
+              )}
+            />
+          </div>
+        </Show>
+      </td>
+    );
+  }
+
+  function renderReorderCell(flatItem: FlatItem<TItem>): JSX.Element {
+    return (
+      <td
+        class={twMerge(
+          featureTdClass,
+          fixedClass,
+          "z-[2]",
+          isReorderColLastFixed() ? fixedLastClass : undefined,
+        )}
+        style={{
+          left: reorderColLeft(),
+        }}
+      >
+        <div
+          class={reorderCellWrapperClass}
+          onPointerDown={(e) => onReorderPointerDown(e, flatItem.item)}
+        >
+          <div class={reorderHandleClass}>
+            <Icon icon={IconGripVertical} size="1em" />
+          </div>
+        </div>
+      </td>
+    );
+  }
+
+  function renderSummaryRow(): JSX.Element {
+    return (
+      <Show when={hasSummary()}>
+        <tr>
+          {/* Expand feature column summary cell already covered by rowspan, skip */}
+          <For each={effectiveColumns()}>
+            {(col, colIndex) => {
+              const summaryStyle = (): string | undefined => {
+                const parts: string[] = [];
+                parts.push(`top: ${summaryRowTop()}px`);
+                const left = getFixedStyle(colIndex());
+                if (left != null) parts.push(left);
+                return parts.join("; ");
+              };
+
+              return (
+                <th
+                  class={twMerge(
+                    thClass,
+                    summaryThClass,
+                    fixedClass,
+                    col.fixed ? "z-[5]" : "z-[3]",
+                    isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                  )}
+                  style={summaryStyle()}
+                >
+                  <div class={thContentClass}>{col.summary?.()}</div>
+                </th>
+              );
+            }}
+          </For>
+        </tr>
+      </Show>
+    );
+  }
+
+  // #endregion
+
   return (
     <ColumnsProvider>
       {local.children}
@@ -622,186 +947,14 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                   <For each={row}>
                     {(cell, cellColIndex) => (
                       <Show when={cell}>
-                        {(c) => {
-                          const isSortable = () =>
-                            c().isLastRow &&
-                            c().colIndex != null &&
-                            effectiveColumns()[c().colIndex!].sortable;
-                          const colKey = () =>
-                            c().colIndex != null
-                              ? effectiveColumns()[c().colIndex!].key
-                              : undefined;
-
-                          // Group header fixed status: all columns in colspan range are fixed
-                          const isGroupFixed = (): boolean => {
-                            if (c().isLastRow) return false;
-                            const start = cellColIndex();
-                            const span = c().colspan;
-                            const cols = effectiveColumns();
-                            for (let i = start; i < start + span && i < cols.length; i++) {
-                              if (!cols[i].fixed) return false;
-                            }
-                            return true;
-                          };
-
-                          // Cell fixed column status (based on colIndex if last row, group-based otherwise)
-                          const isCellFixed = () =>
-                            (c().isLastRow &&
-                              c().colIndex != null &&
-                              effectiveColumns()[c().colIndex!].fixed) ||
-                            isGroupFixed();
-
-                          // Cell's last fixed status
-                          const isCellLastFixed = () => {
-                            if (c().isLastRow && c().colIndex != null)
-                              return isLastFixed(c().colIndex!);
-                            if (isGroupFixed()) {
-                              const lastCol = cellColIndex() + c().colspan - 1;
-                              return isLastFixed(lastCol);
-                            }
-                            return false;
-                          };
-
-                          // Fixed cell left + top inline style
-                          const cellStyle = (): string | undefined => {
-                            const parts: string[] = [];
-                            // top: apply to all th (fix header to top)
-                            const top = headerRowTops()[rowIndex()];
-                            parts.push(`top: ${top}px`);
-                            // left: apply only to fixed columns
-                            if (c().isLastRow && c().colIndex != null) {
-                              const left = getFixedStyle(c().colIndex!);
-                              if (left != null) parts.push(left);
-                              // max-width: apply if explicit width exists (allow column to shrink below content)
-                              const col = effectiveColumns()[c().colIndex!];
-                              if (col.width != null) parts.push(`max-width: ${col.width.replace(/;/g, "")}`);
-                            } else if (isGroupFixed()) {
-                              const left = getFixedStyle(cellColIndex());
-                              if (left != null) parts.push(left);
-                            }
-                            return parts.length > 0 ? parts.join("; ") : undefined;
-                          };
-
-                          return (
-                            <th
-                              class={twMerge(
-                                thClass,
-                                fixedClass,
-                                isSortable() ? sortableThClass : undefined,
-                                isCellFixed() ? "z-[5]" : "z-[3]",
-                                isCellLastFixed() ? fixedLastClass : undefined,
-                              )}
-                              colspan={c().colspan > 1 ? c().colspan : undefined}
-                              rowspan={c().rowspan > 1 ? c().rowspan : undefined}
-                              style={cellStyle()}
-                              title={
-                                c().isLastRow && c().colIndex != null
-                                  ? (effectiveColumns()[c().colIndex!].tooltip ?? c().text)
-                                  : c().text
-                              }
-                              ref={(el: HTMLElement) => {
-                                if (
-                                  c().isLastRow &&
-                                  c().colIndex != null &&
-                                  effectiveColumns()[c().colIndex!].fixed
-                                ) {
-                                  registerColumnRef(c().colIndex!, el);
-                                }
-                              }}
-                              onClick={(e) => {
-                                if (!isSortable()) return;
-                                const key = colKey();
-                                if (key == null) return;
-                                toggleSort(key, e.shiftKey || e.ctrlKey);
-                              }}
-                            >
-                              <div class={clsx("flex items-center gap-2", thContentClass)}>
-                                <div class="flex-1">{c().headerContent?.() ?? c().text}</div>
-                                <Show when={isSortable() && colKey()}>
-                                  {(key) => {
-                                    const sortDef = () => getSortDef(key());
-                                    const sortIdx = () => sortIndex(key());
-                                    return (
-                                      <div class={sortIconClass}>
-                                        <Show when={sortDef()?.desc === false}>
-                                          <Icon icon={IconSortAscending} />
-                                        </Show>
-                                        <Show when={sortDef()?.desc === true}>
-                                          <Icon icon={IconSortDescending} />
-                                        </Show>
-                                        <Show when={sortDef() == null}>
-                                          <Icon
-                                            icon={IconArrowsSort}
-                                            class="opacity-30"
-                                          />
-                                        </Show>
-                                        <Show when={sortIdx()}>
-                                          {(idx) => <sub>{idx()}</sub>}
-                                        </Show>
-                                      </div>
-                                    );
-                                  }}
-                                </Show>
-                              </div>
-                              <Show
-                                when={
-                                  c().isLastRow &&
-                                  c().colIndex != null &&
-                                  effectiveColumns()[c().colIndex!].resizable
-                                }
-                              >
-                                <div
-                                  class={resizerClass}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onPointerDown={(e) =>
-                                    onResizerPointerdown(e, effectiveColumns()[c().colIndex!].key)
-                                  }
-                                  onDblClick={(e) => {
-                                    e.stopPropagation();
-                                    onResizerDoubleClick(effectiveColumns()[c().colIndex!].key);
-                                  }}
-                                />
-                              </Show>
-                            </th>
-                          );
-                        }}
+                        {(c) => renderHeaderCell(c(), cellColIndex(), rowIndex())}
                       </Show>
                     )}
                   </For>
                 </tr>
               )}
             </For>
-            <Show when={hasSummary()}>
-              <tr>
-                {/* Expand feature column summary cell already covered by rowspan, skip */}
-                <For each={effectiveColumns()}>
-                  {(col, colIndex) => {
-                    const summaryStyle = (): string | undefined => {
-                      const parts: string[] = [];
-                      parts.push(`top: ${summaryRowTop()}px`);
-                      const left = getFixedStyle(colIndex());
-                      if (left != null) parts.push(left);
-                      return parts.join("; ");
-                    };
-
-                    return (
-                      <th
-                        class={twMerge(
-                          thClass,
-                          summaryThClass,
-                          fixedClass,
-                          col.fixed ? "z-[5]" : "z-[3]",
-                          isLastFixed(colIndex()) ? fixedLastClass : undefined,
-                        )}
-                        style={summaryStyle()}
-                      >
-                        <div class={thContentClass}>{col.summary?.()}</div>
-                      </th>
-                    );
-                  }}
-                </For>
-              </tr>
-            </Show>
+            {renderSummaryRow()}
           </thead>
           <tbody>
             <For each={displayItems()}>
@@ -815,142 +968,14 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                   }}
                   class={clsx(trRowClass, local.autoSelect === "click" && "cursor-pointer")}
                 >
-                  {/* Expand feature column body cell */}
                   <Show when={hasExpandFeature()}>
-                    <td
-                      class={twMerge(
-                        featureTdClass,
-                        fixedClass,
-                        "z-[2]",
-                        isExpandColLastFixed() ? fixedLastClass : undefined,
-                      )}
-                      style={{ left: "0" }}
-                    >
-                      <div class={featureCellBodyWrapperClass}>
-                        <For each={Array.from({ length: flat.depth })}>
-                          {() => (
-                            <div class={expandIndentGuideClass}>
-                              <div class={expandIndentGuideLineClass} />
-                            </div>
-                          )}
-                        </For>
-                        <Show when={flat.hasChildren}>
-                          <button
-                            type="button"
-                            class={expandToggleClass}
-                            onClick={() => toggleExpand(flat.item)}
-                          >
-                            <Icon
-                              icon={IconChevronDown}
-                              size="1em"
-                              class={clsx(
-                                "transition-transform",
-                                expandedItems().includes(flat.item) ? "rotate-0" : "-rotate-90",
-                              )}
-                            />
-                          </button>
-                        </Show>
-                      </div>
-                    </td>
+                    {renderExpandCell(flat)}
                   </Show>
-                  {/* Select feature column body cell */}
                   <Show when={hasSelectFeature()}>
-                    {(() => {
-                      const selectable = () => getItemSelectable(flat.item);
-                      const isSelected = () => selection().includes(flat.item);
-                      const rowIndex = () => flat.row;
-
-                      return (
-                        <td
-                          class={twMerge(
-                            featureTdClass,
-                            fixedClass,
-                            "z-[2]",
-                            isSelectColLastFixed() ? fixedLastClass : undefined,
-                          )}
-                          style={{
-                            left: selectColLeft(),
-                          }}
-                        >
-                          <Show
-                            when={local.selectionMode === "multiple"}
-                            fallback={
-                              /* single mode */
-                              <Show when={selectable() === true}>
-                                <div
-                                  class={featureCellBodyClickableClass}
-                                  onClick={() => toggleSelect(flat.item)}
-                                >
-                                  <div
-                                    class={twMerge(
-                                      selectSingleClass,
-                                      isSelected()
-                                        ? selectSingleSelectedClass
-                                        : selectSingleUnselectedClass,
-                                    )}
-                                  >
-                                    <Icon icon={IconChevronRight} size="1em" />
-                                  </div>
-                                </div>
-                              </Show>
-                            }
-                          >
-                            {/* multi mode */}
-                            <div
-                              class={featureCellBodyClickableClass}
-                              onClick={(e) => {
-                                if (e.shiftKey) {
-                                  rangeSelect(rowIndex());
-                                } else {
-                                  toggleSelect(flat.item);
-                                }
-                                setLastClickedRow(rowIndex());
-                              }}
-                              title={
-                                typeof selectable() === "string"
-                                  ? (selectable() as string)
-                                  : undefined
-                              }
-                            >
-                              <Checkbox
-                                value={isSelected()}
-                                disabled={selectable() !== true}
-                                inset
-                                class={twMerge(
-                                  "pointer-events-none",
-                                  lastClickedRow() === rowIndex()
-                                    ? "[&>div]:ring-2 [&>div]:ring-primary-200 dark:[&>div]:ring-primary-700"
-                                    : undefined,
-                                )}
-                              />
-                            </div>
-                          </Show>
-                        </td>
-                      );
-                    })()}
+                    {renderSelectCell(flat)}
                   </Show>
-                  {/* Drag reorder feature column body cell */}
                   <Show when={hasReorderFeature()}>
-                    <td
-                      class={twMerge(
-                        featureTdClass,
-                        fixedClass,
-                        "z-[2]",
-                        isReorderColLastFixed() ? fixedLastClass : undefined,
-                      )}
-                      style={{
-                        left: reorderColLeft(),
-                      }}
-                    >
-                      <div
-                        class={reorderCellWrapperClass}
-                        onPointerDown={(e) => onReorderPointerDown(e, flat.item)}
-                      >
-                        <div class={reorderHandleClass}>
-                          <Icon icon={IconGripVertical} size="1em" />
-                        </div>
-                      </div>
-                    </td>
+                    {renderReorderCell(flat)}
                   </Show>
                   <For each={effectiveColumns()}>
                     {(col, colIndex) => (
