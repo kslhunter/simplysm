@@ -22,7 +22,7 @@ interface WebSocketHandler {
   broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void>;
 
   // Emit a server-side event to matching client listeners
-  emitToServer<TInfo, TData>(
+  emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
@@ -65,8 +65,8 @@ interface ServiceSocket {
 
   close(): void;
   send(uuid: string, msg: ServiceServerMessage): Promise<number>;
-  addEventListener(key: string, eventName: string, info: unknown): void;
-  removeEventListener(key: string): void;
+  addListener(key: string, eventName: string, info: unknown): void;
+  removeListener(key: string): void;
   getEventListeners(eventName: string): Array<{ key: string; info: unknown }>;
   filterEventTargetKeys(targetKeys: string[]): string[];
   on(event: "error", handler: (err: Error) => void): void;
@@ -152,28 +152,28 @@ async function handleStaticFile(
 
 ## Protocol
 
-### `ProtocolWrapper`
+### `ServerProtocolWrapper`
 
 Interface for encoding and decoding service messages. Automatically offloads large payloads (over 30 KB or containing `Uint8Array` data) to a worker thread.
 
 ```typescript
-import { ProtocolWrapper } from "@simplysm/service-server";
+import { ServerProtocolWrapper } from "@simplysm/service-server";
 
-interface ProtocolWrapper {
+interface ServerProtocolWrapper {
   encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
   decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>>;
   dispose(): void;
 }
 ```
 
-### `createProtocolWrapper()`
+### `createServerProtocolWrapper()`
 
-Creates a `ProtocolWrapper` instance.
+Creates a `ServerProtocolWrapper` instance.
 
 ```typescript
-import { createProtocolWrapper } from "@simplysm/service-server";
+import { createServerProtocolWrapper } from "@simplysm/service-server";
 
-function createProtocolWrapper(): ProtocolWrapper;
+function createServerProtocolWrapper(): ServerProtocolWrapper;
 ```
 
 ---

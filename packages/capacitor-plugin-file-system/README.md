@@ -22,22 +22,22 @@ An abstract class that provides static methods for file system access via the Ca
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 ```
 
-#### `FileSystem.hasPermission()`
+#### `FileSystem.checkPermissions()`
 
 Checks whether the required file system permission has been granted.
 
 ```typescript
-static async hasPermission(): Promise<boolean>
+static async checkPermissions(): Promise<boolean>
 ```
 
 ```typescript
-const granted = await FileSystem.hasPermission();
+const granted = await FileSystem.checkPermissions();
 if (!granted) {
-  await FileSystem.requestPermission();
+  await FileSystem.requestPermissions();
 }
 ```
 
-#### `FileSystem.requestPermission()`
+#### `FileSystem.requestPermissions()`
 
 Requests the required file system permission.
 
@@ -45,19 +45,19 @@ Requests the required file system permission.
 - Android 10 and below: Shows the OS permission dialog.
 
 ```typescript
-static async requestPermission(): Promise<void>
+static async requestPermissions(): Promise<void>
 ```
 
 ```typescript
-await FileSystem.requestPermission();
+await FileSystem.requestPermissions();
 ```
 
 #### `FileSystem.readdir(dirPath)`
 
-Reads the contents of a directory and returns an array of `IFileInfo` objects.
+Reads the contents of a directory and returns an array of `FileInfo` objects.
 
 ```typescript
-static async readdir(dirPath: string): Promise<IFileInfo[]>
+static async readdir(dirPath: string): Promise<FileInfo[]>
 ```
 
 ```typescript
@@ -72,34 +72,34 @@ for (const entry of entries) {
 Returns the absolute path for the given storage type.
 
 ```typescript
-static async getStoragePath(type: TStorage): Promise<string>
+static async getStoragePath(type: StorageType): Promise<string>
 ```
 
-| `type` value     | Description                                                   |
-|------------------|---------------------------------------------------------------|
-| `"external"`     | External storage root (`Environment.getExternalStorageDirectory`) |
-| `"externalFiles"`| App-specific external files directory                         |
-| `"externalCache"`| App-specific external cache directory                         |
-| `"externalMedia"`| App-specific external media directory                         |
-| `"appData"`      | App data directory                                            |
-| `"appFiles"`     | App files directory                                           |
-| `"appCache"`     | App cache directory                                           |
+| `type` value      | Description                                                        |
+|-------------------|--------------------------------------------------------------------|
+| `"external"`      | External storage root (`Environment.getExternalStorageDirectory`)  |
+| `"externalFiles"` | App-specific external files directory                              |
+| `"externalCache"` | App-specific external cache directory                              |
+| `"externalMedia"` | App-specific external media directory                              |
+| `"appData"`       | App data directory                                                 |
+| `"appFiles"`      | App files directory                                                |
+| `"appCache"`      | App cache directory                                                |
 
 ```typescript
 const path = await FileSystem.getStoragePath("external");
 console.log(path); // e.g. "/storage/emulated/0"
 ```
 
-#### `FileSystem.getFileUri(filePath)`
+#### `FileSystem.getUri(filePath)`
 
 Returns a `FileProvider` URI for the given file path. Required for sharing files with other apps on Android.
 
 ```typescript
-static async getFileUri(filePath: string): Promise<string>
+static async getUri(filePath: string): Promise<string>
 ```
 
 ```typescript
-const uri = await FileSystem.getFileUri("/storage/emulated/0/Download/report.pdf");
+const uri = await FileSystem.getUri("/storage/emulated/0/Download/report.pdf");
 console.log(uri); // content://...
 ```
 
@@ -120,30 +120,23 @@ const bytes: Uint8Array = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
 await FileSystem.writeFile("/storage/emulated/0/Download/image.png", bytes);
 ```
 
-#### `FileSystem.readFileString(filePath)`
+#### `FileSystem.readFile(filePath)`
 
-Reads a file as a UTF-8 string.
+Reads a file. When called without an encoding argument, returns a `Bytes` (`Uint8Array`) value. When called with `"utf8"`, returns a UTF-8 string.
 
 ```typescript
-static async readFileString(filePath: string): Promise<string>
+static async readFile(filePath: string): Promise<Bytes>
+static async readFile(filePath: string, encoding: "utf8"): Promise<string>
 ```
 
 ```typescript
-const text = await FileSystem.readFileString("/storage/emulated/0/Download/hello.txt");
-console.log(text);
-```
-
-#### `FileSystem.readFileBytes(filePath)`
-
-Reads a file as a `Bytes` (`Uint8Array`) value.
-
-```typescript
-static async readFileBytes(filePath: string): Promise<Bytes>
-```
-
-```typescript
-const bytes = await FileSystem.readFileBytes("/storage/emulated/0/Download/image.png");
+// Read as bytes
+const bytes = await FileSystem.readFile("/storage/emulated/0/Download/image.png");
 console.log(bytes.length);
+
+// Read as string
+const text = await FileSystem.readFile("/storage/emulated/0/Download/hello.txt", "utf8");
+console.log(text);
 ```
 
 #### `FileSystem.remove(targetPath)`
@@ -185,14 +178,14 @@ console.log(exists); // true or false
 
 ## Types
 
-### `TStorage`
+### `StorageType`
 
 Union type representing supported storage location identifiers used with `FileSystem.getStoragePath()`.
 
 ```typescript
-import { type TStorage } from "@simplysm/capacitor-plugin-file-system";
+import { type StorageType } from "@simplysm/capacitor-plugin-file-system";
 
-type TStorage =
+type StorageType =
   | "external"
   | "externalFiles"
   | "externalCache"
@@ -202,32 +195,32 @@ type TStorage =
   | "appCache";
 ```
 
-### `IFileInfo`
+### `FileInfo`
 
 Represents a single entry returned by `FileSystem.readdir()`.
 
 ```typescript
-import { type IFileInfo } from "@simplysm/capacitor-plugin-file-system";
+import { type FileInfo } from "@simplysm/capacitor-plugin-file-system";
 
-interface IFileInfo {
+interface FileInfo {
   name: string;        // File or directory name
   isDirectory: boolean; // true if the entry is a directory
 }
 ```
 
-### `IFileSystemPlugin`
+### `FileSystemPlugin`
 
 The low-level plugin interface registered with Capacitor. Used internally by `FileSystem`. Direct use is not required in most cases.
 
 ```typescript
-import { type IFileSystemPlugin } from "@simplysm/capacitor-plugin-file-system";
+import { type FileSystemPlugin } from "@simplysm/capacitor-plugin-file-system";
 
-interface IFileSystemPlugin {
-  hasPermission(): Promise<{ granted: boolean }>;
-  requestPermission(): Promise<void>;
-  readdir(options: { path: string }): Promise<{ files: IFileInfo[] }>;
-  getStoragePath(options: { type: TStorage }): Promise<{ path: string }>;
-  getFileUri(options: { path: string }): Promise<{ uri: string }>;
+interface FileSystemPlugin {
+  checkPermissions(): Promise<{ granted: boolean }>;
+  requestPermissions(): Promise<void>;
+  readdir(options: { path: string }): Promise<{ files: FileInfo[] }>;
+  getStoragePath(options: { type: StorageType }): Promise<{ path: string }>;
+  getUri(options: { path: string }): Promise<{ uri: string }>;
   writeFile(options: { path: string; data: string; encoding?: "utf8" | "base64" }): Promise<void>;
   readFile(options: { path: string; encoding?: "utf8" | "base64" }): Promise<{ data: string }>;
   remove(options: { path: string }): Promise<void>;

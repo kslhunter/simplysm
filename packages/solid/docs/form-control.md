@@ -64,21 +64,24 @@ import { Select } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 
-Sub-components: `Select.Item`, `Select.Action`, `Select.Header`, `Select.ItemTemplate`
+Sub-components: `Select.Item` (with `Select.Item.Children`), `Select.Action`, `Select.Header`, `Select.ItemTemplate`
+
+Also exports: `SelectContext`, `SelectContextValue`, `SelectProps`, `SelectItemProps`
 
 ---
 
 ## `Combobox`
 
-Combo box with async search, debounce, and optional free-text input.
+Combo box with async item loading, debounce, and optional free-text input.
 
 ```tsx
 import { Combobox } from "@simplysm/solid";
 
 <Combobox
+  loadItems={async (query) => fetchResults(query)}
+  renderValue={(item) => item.name}
   value={val}
   onValueChange={setVal}
-  search={async (text) => fetchResults(text)}
 >
   <Combobox.ItemTemplate>{(item) => <span>{item.label}</span>}</Combobox.ItemTemplate>
 </Combobox>
@@ -90,27 +93,35 @@ import { Combobox } from "@simplysm/solid";
 |------|------|-------------|
 | `value` | `TValue` | Selected value |
 | `onValueChange` | `(value) => void` | Value change callback |
-| `search` | `(text: string) => Promise<TValue[]>` | Async search function |
+| `loadItems` | `(query: string) => TValue[] \| Promise<TValue[]>` | Item load function (required) |
+| `renderValue` | `(value: TValue) => JSX.Element` | Selected value renderer (required) |
+| `debounceMs` | `number` | Debounce delay (default: 300ms) |
 | `allowsCustomValue` | `boolean` | Allow free-text values |
+| `parseCustomValue` | `(text: string) => TValue` | Custom value parser |
 | `required` | `boolean` | Required validation |
 | `disabled` | `boolean` | Disabled state |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 | `inset` | `boolean` | Borderless inset style |
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
+| `placeholder` | `string` | Placeholder text |
 
 Sub-components: `Combobox.Item`, `Combobox.ItemTemplate`
+
+Also exports: `ComboboxContext`, `ComboboxContextValue`, `ComboboxItemProps`
 
 ---
 
 ## `TextInput`
 
-Text input field supporting text, password, and email types, with format transformation.
+Text input field supporting text, password, and email types, with format masking.
 
 ```tsx
 import { TextInput } from "@simplysm/solid";
 
 <TextInput value={val} onValueChange={setVal} placeholder="Enter text" />
+// With format mask:
+<TextInput value={val} onValueChange={setVal} format="XXX-XXXX-XXXX" />
 ```
 
 **Props**
@@ -120,7 +131,7 @@ import { TextInput } from "@simplysm/solid";
 | `value` | `string \| undefined` | Current value |
 | `onValueChange` | `(value: string) => void` | Value change callback |
 | `type` | `"text" \| "password" \| "email"` | Input type |
-| `format` | `(value: string) => string` | Value formatter |
+| `format` | `string` | Format mask pattern (e.g., `"XXX-XXXX-XXXX"`) |
 | `required` | `boolean` | Required validation |
 | `minLength` | `number` | Minimum length |
 | `maxLength` | `number` | Maximum length |
@@ -128,9 +139,11 @@ import { TextInput } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 Sub-components: `TextInput.Prefix`
+
+Also exports: `TextInputPrefix`
 
 ---
 
@@ -150,7 +163,7 @@ import { NumberInput } from "@simplysm/solid";
 |------|------|-------------|
 | `value` | `number \| undefined` | Current value |
 | `onValueChange` | `(value: number \| undefined) => void` | Value change callback |
-| `useGrouping` | `boolean` | Thousand-separator formatting |
+| `useGrouping` | `boolean` | Thousand-separator formatting (default: true) |
 | `minimumFractionDigits` | `number` | Minimum decimal digits |
 | `min` | `number` | Minimum value |
 | `max` | `number` | Maximum value |
@@ -158,9 +171,11 @@ import { NumberInput } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 Sub-components: `NumberInput.Prefix`
+
+Also exports: `NumberInputPrefix`
 
 ---
 
@@ -187,7 +202,7 @@ import { DatePicker } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
@@ -214,7 +229,7 @@ import { DateTimePicker } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
@@ -241,13 +256,13 @@ import { TimePicker } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
 ## `Textarea`
 
-Multi-line text input with auto-grow (configurable minimum rows).
+Multi-line text input with auto-grow (configurable minimum rows). Alt+Enter inserts a newline.
 
 ```tsx
 import { Textarea } from "@simplysm/solid";
@@ -268,7 +283,7 @@ import { Textarea } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `inset` | `boolean` | Borderless inset style |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
@@ -449,7 +464,7 @@ import { RichTextEditor } from "@simplysm/solid";
 | `value` | `string \| undefined` | HTML content |
 | `onValueChange` | `(value: string) => void` | Value change callback |
 | `disabled` | `boolean` | Disabled state |
-| `size` | `FieldSize` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
@@ -486,19 +501,17 @@ Named state snapshot save/restore control backed by `SyncConfig`.
 ```tsx
 import { StatePreset } from "@simplysm/solid";
 
-<StatePreset presetKey="my-filter" value={filter} onValueChange={setFilter} />
+<StatePreset storageKey="my-filter" value={filter} onValueChange={setFilter} />
 ```
 
 **Props**
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `presetKey` | `string` | Unique storage key |
-| `value` | `TValue` | Current value to snapshot |
-| `onValueChange` | `(value: TValue) => void` | Restore callback |
+| `storageKey` | `string` | Unique storage key (required) |
+| `value` | `TValue` | Current value to snapshot (required) |
+| `onValueChange` | `(value: TValue) => void` | Restore callback (required) |
 | `size` | `ComponentSize` | Size |
-| `class` | `string` | Custom class |
-| `style` | `JSX.CSSProperties` | Custom style |
 
 ---
 
@@ -516,7 +529,7 @@ import { ThemeToggle } from "@simplysm/solid";
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `size` | `"sm" \| "lg"` | Button size |
+| `size` | `ComponentSize` | Button size |
 
 Extends `JSX.ButtonHTMLAttributes<HTMLButtonElement>`.
 
@@ -551,10 +564,10 @@ Style utilities for building custom field components.
 ```tsx
 import {
   FieldSize,
+  fieldSurface,
   fieldBaseClass,
   fieldSizeClasses,
   fieldInsetClass,
-  fieldInsetHeightClass,
   fieldInsetSizeHeightClasses,
   fieldDisabledClass,
   textAreaBaseClass,

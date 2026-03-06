@@ -12,8 +12,8 @@ Dialog content component for Korean address search via the Daum Postcode API. In
 import { AddressSearchContent } from "@simplysm/solid";
 
 const dialog = useDialog();
-const result = await dialog.show<AddressSearchResult>(() => <AddressSearchContent />);
-// result: { postNumber, address, buildingName }
+const result = await dialog.show(AddressSearchContent, {});
+// result: { postNumber, address, buildingName } | undefined
 ```
 
 **`AddressSearchResult`**
@@ -28,22 +28,24 @@ const result = await dialog.show<AddressSearchResult>(() => <AddressSearchConten
 
 ## `SharedDataSelect`
 
-`Select` component pre-wired to a `SharedDataAccessor`. Supports optional search and edit dialog actions.
+`Select` component pre-wired to a `SharedDataAccessor`. Accepts keys instead of items; resolves items internally. Supports optional search dialog and custom actions.
 
 ```tsx
 import { SharedDataSelect } from "@simplysm/solid";
 
 <SharedDataSelect data={shared.users} value={selectedId} onValueChange={setSelectedId}>
-  {(user) => <span>{user.name}</span>}
+  <SharedDataSelect.ItemTemplate>
+    {(user, index, depth) => <span>{user.name}</span>}
+  </SharedDataSelect.ItemTemplate>
 </SharedDataSelect>
 ```
 
-**Props**
+**`SharedDataSelectProps<TItem, TKey, TDialogProps>`**
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `data` | `SharedDataAccessor<TItem>` | Shared data source |
-| `value` | `unknown` | Selected value |
+| `data` | `SharedDataAccessor<TItem>` | Shared data source (required) |
+| `value` | `TKey \| TKey[]` | Selected key(s) |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `multiple` | `boolean` | Multiple selection |
 | `required` | `boolean` | Required validation |
@@ -51,15 +53,18 @@ import { SharedDataSelect } from "@simplysm/solid";
 | `size` | `ComponentSize` | Trigger size |
 | `inset` | `boolean` | Borderless inset style |
 | `filterFn` | `(item, index) => boolean` | Item filter |
-| `dialog` | `() => JSX.Element` | Search dialog factory |
-| `editDialog` | `() => JSX.Element` | Edit dialog factory |
-| `children` | `(item, index, depth) => JSX.Element` | Item renderer (required) |
+| `dialog` | `Component<TDialogProps>` | Search dialog component |
+| `dialogOptions` | `DialogShowOptions` | Options forwarded to `dialog.show()` |
+| `dialogProps` | `UserDialogProps<TDialogProps>` | Extra props passed to the dialog component |
+| `children` | `JSX.Element` | Compound sub-components (required) |
+
+Sub-components: `SharedDataSelect.ItemTemplate`, `SharedDataSelect.Action`
 
 ---
 
 ## `SharedDataSelectButton`
 
-`DataSelectButton` pre-wired to a `SharedDataAccessor`.
+`DataSelectButton` pre-wired to a `SharedDataAccessor`. Opens a selection dialog and renders selected items using a provided render function.
 
 ```tsx
 import { SharedDataSelectButton } from "@simplysm/solid";
@@ -68,17 +73,17 @@ import { SharedDataSelectButton } from "@simplysm/solid";
   data={shared.users}
   value={selectedId}
   onValueChange={setSelectedId}
-  dialog={() => <UserSelectDialog />}
+  dialog={UserSelectDialog}
 >
   {(user) => <span>{user.name}</span>}
 </SharedDataSelectButton>
 ```
 
-**Props**
+**`SharedDataSelectButtonProps<TItem, TDialogProps>`**
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `data` | `SharedDataAccessor<TItem>` | Shared data source |
+| `data` | `SharedDataAccessor<TItem>` | Shared data source (required) |
 | `value` | `TKey \| TKey[]` | Selected key(s) |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `multiple` | `boolean` | Multiple selection |
@@ -86,14 +91,16 @@ import { SharedDataSelectButton } from "@simplysm/solid";
 | `disabled` | `boolean` | Disabled state |
 | `size` | `ComponentSize` | Trigger size |
 | `inset` | `boolean` | Borderless inset style |
-| `dialog` | `() => JSX.Element` | Selection dialog factory (required) |
+| `dialog` | `Component<TDialogProps>` | Selection dialog component (required) |
+| `dialogOptions` | `DialogShowOptions` | Options forwarded to `dialog.show()` |
+| `dialogProps` | `UserDialogProps<TDialogProps>` | Extra props passed to the dialog component |
 | `children` | `(item: TItem) => JSX.Element` | Item renderer (required) |
 
 ---
 
 ## `SharedDataSelectList`
 
-Searchable list pre-wired to a `SharedDataAccessor` with pagination support.
+Searchable list pre-wired to a `SharedDataAccessor` with pagination support. Renders an `(unspecified)` option when not required.
 
 ```tsx
 import { SharedDataSelectList } from "@simplysm/solid";
@@ -105,11 +112,11 @@ import { SharedDataSelectList } from "@simplysm/solid";
 </SharedDataSelectList>
 ```
 
-**Props**
+**`SharedDataSelectListProps<TItem>`**
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `data` | `SharedDataAccessor<TItem>` | Shared data source |
+| `data` | `SharedDataAccessor<TItem>` | Shared data source (required) |
 | `value` | `TItem \| undefined` | Selected item |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `required` | `boolean` | Required (no unspecified option) |
@@ -123,11 +130,13 @@ import { SharedDataSelectList } from "@simplysm/solid";
 
 Sub-components: `SharedDataSelectList.ItemTemplate`, `SharedDataSelectList.Filter`
 
+Also exports: `SharedDataSelectListContextValue`
+
 ---
 
 ## `DataSelectButton`
 
-Generic trigger button that opens a selection dialog and displays the selected items.
+Generic trigger button that opens a selection dialog and displays the selected items. Loads items by key via the `load` function.
 
 ```tsx
 import { DataSelectButton } from "@simplysm/solid";
@@ -136,19 +145,19 @@ import { DataSelectButton } from "@simplysm/solid";
   value={selectedKey}
   onValueChange={setSelectedKey}
   load={(keys) => fetchItemsByKey(keys)}
-  dialog={() => <MySelectionDialog />}
+  dialog={MySelectionDialog}
   renderItem={(item) => <span>{item.name}</span>}
 />
 ```
 
-**Props**
+**`DataSelectButtonProps<TItem, TKey, TDialogProps>`**
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `value` | `TKey \| TKey[]` | Selected key(s) |
 | `onValueChange` | `(value) => void` | Value change callback |
 | `load` | `(keys: TKey[]) => TItem[] \| Promise<TItem[]>` | Load items by keys (required) |
-| `dialog` | `() => JSX.Element` | Selection dialog factory (required) |
+| `dialog` | `Component<TDialogProps>` | Selection dialog component (required) |
 | `renderItem` | `(item: TItem) => JSX.Element` | Item display renderer (required) |
 | `multiple` | `boolean` | Multiple selection |
 | `required` | `boolean` | Required validation |
@@ -158,8 +167,11 @@ import { DataSelectButton } from "@simplysm/solid";
 | `validate` | `(value) => string \| undefined` | Custom validation |
 | `lazyValidation` | `boolean` | Show error only after blur |
 | `dialogOptions` | `DialogShowOptions` | Options forwarded to `dialog.show()` |
+| `dialogProps` | `UserDialogProps<TDialogProps, TKey>` | Extra props passed to the dialog component |
 
-The dialog must close with a `DataSelectDialogResult<TKey>` value: `{ selectedKeys: TKey[] }`.
+The dialog receives `SelectDialogBaseProps<TKey>` and must close with `DataSelectDialogResult<TKey>`: `{ selectedKeys: TKey[] }`.
+
+Also exports: `SelectDialogBaseProps`, `DataSelectDialogResult`, `DialogPropsField`
 
 ---
 
@@ -200,24 +212,25 @@ import { CrudSheet } from "@simplysm/solid";
 |------|------|-------------|
 | `search` | `(filter, page, sorts) => Promise<SearchResult<TItem>>` | Data fetch function (required) |
 | `getItemKey` | `(item) => string \| number \| undefined` | Row key extractor (required) |
-| `persistKey` | `string` | Key for persisting column config |
+| `storageKey` | `string` | Key for persisting column config |
 | `editable` | `boolean` | Enable editing (default: true) |
 | `isItemEditable` | `(item) => boolean` | Per-item edit permission |
 | `isItemDeletable` | `(item) => boolean` | Per-item delete permission |
 | `isItemDeleted` | `(item) => boolean` | Returns true if item is in deleted state |
 | `isItemSelectable` | `(item) => boolean \| string` | Per-item selection permission |
-| `lastModifiedAtProp` | `string` | Property path for last-modified datetime (adds hidden column) |
-| `lastModifiedByProp` | `string` | Property path for last-modified user (adds hidden column) |
+| `lastModifiedAtProp` | `string` | Property path for last-modified datetime |
+| `lastModifiedByProp` | `string` | Property path for last-modified user |
 | `filterInitial` | `TFilter` | Initial filter values |
 | `items` | `TItem[]` | Controlled items (optional) |
 | `onItemsChange` | `(items) => void` | Controlled items change callback |
 | `inlineEdit` | `InlineEditConfig<TItem>` | Inline editing config |
 | `dialogEdit` | `DialogEditConfig<TItem>` | Dialog editing config |
 | `excel` | `ExcelConfig<TItem>` | Excel import/export config |
-| `selectMode` | `"single" \| "multiple"` | Selection mode |
+| `selectionMode` | `"single" \| "multiple"` | Selection mode |
 | `onSelect` | `(result: SelectResult<TItem>) => void` | Selection result callback |
 | `onSubmitComplete` | `() => void` | Called after successful save |
 | `hideAutoTools` | `boolean` | Hide automatic toolbar buttons |
+| `close` | `() => void` | Close dialog callback (injected when used in dialog mode) |
 | `class` | `string` | Custom class |
 
 Sub-components: `CrudSheet.Column`, `CrudSheet.Filter`, `CrudSheet.Tools`, `CrudSheet.Header`
@@ -251,7 +264,7 @@ Sub-components: `CrudSheet.Column`, `CrudSheet.Filter`, `CrudSheet.Tools`, `Crud
 | Member | Description |
 |--------|-------------|
 | `items()` | Current item array |
-| `selectedItems()` | Currently selected items |
+| `selection()` | Currently selected items |
 | `page()` | Current page number |
 | `sorts()` | Current sort definitions |
 | `busy()` | Whether a request is in progress |
@@ -262,6 +275,18 @@ Sub-components: `CrudSheet.Column`, `CrudSheet.Filter`, `CrudSheet.Tools`, `Crud
 | `clearSelection()` | Clear selection |
 | `setPage(page)` | Change page |
 | `setSorts(sorts)` | Change sorts |
+
+**`CrudSheetCellContext<TItem>`** (available in `CrudSheet.Column` render prop)
+
+| Member | Description |
+|--------|-------------|
+| `item` | Row data |
+| `index` | Row index |
+| `row` | Flattened display row number |
+| `depth` | Tree depth |
+| `setItem(key, value)` | Update a field on the item |
+
+Also exports: `SearchResult`, `SelectResult`, `CrudSheetColumnProps`
 
 ---
 
@@ -292,13 +317,14 @@ import { CrudDetail } from "@simplysm/solid";
 | Prop | Type | Description |
 |------|------|-------------|
 | `load` | `() => Promise<{ data: TData; info: CrudDetailInfo }>` | Data loader (required) |
-| `children` | `(ctx: CrudDetailContext<TData>) => JSX.Element` | Form content (required) |
+| `children` | `(ctx: CrudDetailContext<TData>) => JSX.Element` | Form content render prop (required) |
 | `submit` | `(data: TData) => Promise<boolean \| undefined>` | Save handler |
 | `toggleDelete` | `(del: boolean) => Promise<boolean \| undefined>` | Soft-delete/restore handler |
 | `editable` | `boolean` | Enable editing (default: true) |
-| `deletable` | `boolean` | Enable delete/restore (default: true) |
+| `deletable` | `boolean` | Enable delete/restore |
 | `data` | `TData` | Controlled data |
 | `onDataChange` | `(data: TData) => void` | Controlled data change callback |
+| `close` | `(result?: boolean) => void` | Close dialog callback (injected when in dialog mode) |
 | `class` | `string` | Custom class |
 
 **`CrudDetailInfo`**
@@ -307,7 +333,7 @@ import { CrudDetail } from "@simplysm/solid";
 |----------|-------------|
 | `isNew` | Whether this is a new (unsaved) record |
 | `isDeleted` | Whether the record is soft-deleted |
-| `lastModifiedAt?` | Last modification timestamp |
+| `lastModifiedAt?` | Last modification timestamp (`DateTime`) |
 | `lastModifiedBy?` | Last modifier username |
 
 **`CrudDetailContext<TData>`** (passed to `children` render prop)
@@ -341,7 +367,7 @@ import { PermissionTable } from "@simplysm/solid";
 />
 ```
 
-**Props**
+**`PermissionTableProps<TModule>`**
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -446,106 +472,3 @@ const canEdit = structure.perms.admin.users.edit; // typed
 | `allFlatPerms` | Static `AppFlatPerm<TModule>[]` — all permission codes |
 | `perms` | Typed permission accessor object (reactive getters) |
 | `getTitleChainByHref(href)` | Returns title breadcrumb for a route path |
-
----
-
-## `createSlotComponent`
-
-Factory function that creates a slot registration component for use in compound component patterns.
-
-```tsx
-import { createSlotComponent } from "@simplysm/solid";
-
-const MySlot = createSlotComponent(MyContext, (ctx) => ctx.setSlotContent);
-```
-
-```
-createSlotComponent<TCtx>(
-  context: Context<TCtx | undefined>,
-  getSetter: (ctx: TCtx) => (value: (() => JSX.Element) | undefined) => void,
-): ParentComponent
-```
-
----
-
-## Types Reference
-
-Key types re-exported from `@simplysm/solid`:
-
-```tsx
-import type {
-  // Style tokens
-  ComponentSize,
-  ComponentSizeCompact,
-  SemanticTheme,
-
-  // Field
-  FieldSize,
-  CheckboxSize,
-  DateRangePeriodType,
-
-  // Data
-  SortingDef,
-  DataSheetConfig,
-  DataSheetColumnDef,
-  DataSheetCellContext,
-  FlatItem,
-  DataSheetReorderEvent,
-
-  // App structure
-  AppStructureItem,
-  AppStructureGroupItem,
-  AppStructureLeafItem,
-  AppStructureSubPerm,
-  AppMenu,
-  AppPerm,
-  AppFlatPerm,
-  AppRoute,
-  AppFlatMenu,
-  AppStructure,
-
-  // CRUD
-  SearchResult,
-  InlineEditConfig,
-  DialogEditConfig,
-  ExcelConfig,
-  SelectResult,
-  CrudSheetContext,
-  CrudSheetCellContext,
-  CrudDetailInfo,
-  CrudDetailContext,
-
-  // Data select
-  DataSelectDialogResult,
-
-  // Shared data
-  SharedDataDefinition,
-  SharedDataAccessor,
-
-  // Address
-  AddressSearchResult,
-
-  // i18n
-  I18nContextValue,
-  I18nConfigureOptions,
-  FlatDict,
-
-  // Notification
-  NotificationItem,
-  NotificationOptions,
-
-  // Print
-  PrintOptions,
-
-  // Dialog
-  DialogShowOptions,
-  DialogInstance,
-
-  // Kanban
-  KanbanCardRef,
-  KanbanDropInfo,
-
-  // Slots
-  SlotAccessor,
-} from "@simplysm/solid";
-```

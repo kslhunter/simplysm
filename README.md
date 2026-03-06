@@ -45,8 +45,8 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 | Package                                               | Target | Description |
 |-------------------------------------------------------|--------|-------------|
 | [`@simplysm/sd-cli`](packages/sd-cli)                 | node   | Build, lint, typecheck CLI tool |
-| [`@simplysm/sd-claude`](packages/sd-claude)           | node   | Claude Code CLI — asset installer and cross-platform npx wrapper (auto-installs via postinstall) |
-| [`@simplysm/lint`](packages/lint)                     | node   | Lint config (ESLint + Stylelint) |
+| [`@simplysm/sd-claude`](packages/sd-claude)           | node   | Claude Code CLI — asset installer (auto-installs via postinstall) |
+| [`@simplysm/lint`](packages/lint)                     | node   | Lint config (ESLint) |
 | [`@simplysm/excel`](packages/excel)                   | neutral | Excel (.xlsx) read/write |
 | [`@simplysm/storage`](packages/storage)               | node   | FTP/SFTP client |
 | [`@simplysm/mcp-playwright`](packages/mcp-playwright) | node   | MCP server — multi-session Playwright proxy (`sd-mcp-playwright`) |
@@ -104,7 +104,7 @@ pnpm build
 
 ```bash
 pnpm lint
-pnpm lint --fix
+pnpm lint:fix
 pnpm typecheck
 ```
 

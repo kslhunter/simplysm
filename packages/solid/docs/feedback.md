@@ -13,7 +13,7 @@ import { useNotification } from "@simplysm/solid";
 
 const noti = useNotification();
 noti.success("Done", "Item saved successfully.");
-noti.error(err, "Save failed");
+noti.danger("Save failed", err.message);
 ```
 
 **`NotificationContextValue`**
@@ -21,11 +21,13 @@ noti.error(err, "Save failed");
 | Method | Description |
 |--------|-------------|
 | `success(title, message, options?)` | Success notification |
-| `error(err, title?, options?)` | Error notification (accepts Error objects) |
+| `danger(title, message, options?)` | Danger/error notification |
 | `warning(title, message, options?)` | Warning notification |
 | `info(title, message, options?)` | Info notification |
 | `update(id, options)` | Update an existing notification |
 | `remove(id)` | Remove a notification |
+
+Also exports: `NotificationTheme`, `NotificationAction`, `NotificationItem`, `NotificationOptions`, `NotificationUpdateOptions`, `NotificationContextValue`, `NotificationContext`, `NotificationProvider`
 
 ---
 
@@ -64,12 +66,18 @@ import { NotificationBanner } from "@simplysm/solid";
 Context and hook for displaying global busy state overlays.
 
 ```tsx
-import { useBusy } from "@simplysm/solid";
+import { useBusy, BusyProvider } from "@simplysm/solid";
+
+<BusyProvider variant="spinner">
+  <App />
+</BusyProvider>
 
 const busy = useBusy();
 busy.set(true);
 busy.set(false);
 ```
+
+Also exports: `BusyVariant`, `BusyContextValue`, `BusyProviderProps`
 
 ---
 
@@ -120,6 +128,8 @@ const pdfBytes = await print.toPdf(() => <PrintableContent />);
 | `toPrinter(factory, options?)` | Opens browser print dialog |
 | `toPdf(factory, options?) => Promise<Uint8Array>` | Generates PDF bytes via html-to-image + jsPDF |
 
+Also exports: `PrintOptions`, `PrintContext`, `PrintInstance`
+
 ---
 
 ## `PrintProvider`
@@ -157,7 +167,7 @@ Sub-components: `Print.Page`
 
 ## `PrintInstanceContext`
 
-Context for communication within print components.
+Context for communication within print components. Use `usePrintInstance()` inside components rendered via `usePrint()` to access the current print job.
 
 ```tsx
 import { PrintInstanceContext, usePrintInstance } from "@simplysm/solid";

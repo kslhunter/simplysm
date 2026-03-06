@@ -135,14 +135,14 @@ export type HealthServiceType = ServiceMethods<typeof HealthService>;
 // Client: client.getService<HealthServiceType>("Health");
 ```
 
-### `runServiceMethod(server, def)`
+### `executeServiceMethod(server, def)`
 
 Executes a single service method call, performing security validation and auth checks. Used internally by HTTP and WebSocket transports.
 
 ```typescript
-import { runServiceMethod } from "@simplysm/service-server";
+import { executeServiceMethod } from "@simplysm/service-server";
 
-async function runServiceMethod(
+async function executeServiceMethod(
   server: ServiceServer,
   def: {
     serviceName: string;

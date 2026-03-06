@@ -89,7 +89,15 @@ switch (cmd) {
     }
     const branch = getMainBranch();
     console.log(`Merging '${name}' into '${branch}'...`);
-    run(`git merge "${name}" --no-ff`, { cwd: mainWorktree });
+    try {
+      run(`git merge "${name}" --no-ff`, { cwd: mainWorktree });
+    } catch {
+      console.error(`\n` +
+        `MERGE FAILED. DO NOT run git merge manually.\n` +
+        `Ask the user how to proceed using AskUserQuestion.\n` +
+        `NEVER attempt manual git merge, rebase, or any other workaround.`);
+      process.exit(1);
+    }
     console.log(`\nMerged '${name}' into '${branch}'.`);
     break;
   }

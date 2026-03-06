@@ -35,10 +35,10 @@ const unsub = await Broadcast.subscribe(
 await unsub();
 ```
 
-| Parameter  | Type                                    | Description                              |
-| ---------- | --------------------------------------- | ---------------------------------------- |
-| `filters`  | `string[]`                              | List of broadcast action strings to listen for |
-| `callback` | `(result: IBroadcastResult) => void`    | Called each time a matching broadcast is received |
+| Parameter  | Type                                   | Description                                     |
+| ---------- | -------------------------------------- | ----------------------------------------------- |
+| `filters`  | `string[]`                             | List of broadcast action strings to listen for  |
+| `callback` | `(result: BroadcastResult) => void`    | Called each time a matching broadcast is received |
 
 Returns: `Promise<() => Promise<void>>` — an async function that unsubscribes the receiver.
 
@@ -67,10 +67,10 @@ await Broadcast.send({
 });
 ```
 
-| Parameter        | Type                          | Description                         |
-| ---------------- | ----------------------------- | ----------------------------------- |
-| `options.action` | `string`                      | The broadcast action string to send |
-| `options.extras` | `Record<string, unknown>` (optional) | Extra data to include in the intent |
+| Parameter        | Type                                  | Description                          |
+| ---------------- | ------------------------------------- | ------------------------------------ |
+| `options.action` | `string`                              | The broadcast action string to send  |
+| `options.extras` | `Record<string, unknown>` (optional)  | Extra data to include in the intent  |
 
 #### `Broadcast.getLaunchIntent()`
 
@@ -84,16 +84,16 @@ console.log(intent.action);
 console.log(intent.extras);
 ```
 
-Returns: `Promise<IBroadcastResult>`
+Returns: `Promise<BroadcastResult>`
 
-#### `Broadcast.addNewIntentListener(callback)`
+#### `Broadcast.addListener(eventName, callback)`
 
 Registers a listener for new intents received while the app is running. Returns a `PluginListenerHandle` which can be released by calling `.remove()`.
 
 ```ts
 import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
 
-const handle = await Broadcast.addNewIntentListener((result) => {
+const handle = await Broadcast.addListener("newIntent", (result) => {
   console.log(result.action);
   console.log(result.extras);
 });
@@ -102,40 +102,52 @@ const handle = await Broadcast.addNewIntentListener((result) => {
 await handle.remove();
 ```
 
-| Parameter  | Type                                    | Description                              |
-| ---------- | --------------------------------------- | ---------------------------------------- |
-| `callback` | `(result: IBroadcastResult) => void`    | Called when a new intent is received     |
+| Parameter   | Type                                   | Description                          |
+| ----------- | -------------------------------------- | ------------------------------------ |
+| `eventName` | `"newIntent"`                          | The event to listen for              |
+| `callback`  | `(result: BroadcastResult) => void`    | Called when a new intent is received |
 
 Returns: `Promise<PluginListenerHandle>`
 
+#### `Broadcast.removeAllListeners()`
+
+Removes all registered event listeners.
+
+```ts
+import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
+
+await Broadcast.removeAllListeners();
+```
+
 ## Types
 
-### `IBroadcastResult`
+### `BroadcastResult`
 
 Represents the data received from a broadcast intent.
 
 ```ts
-import type { IBroadcastResult } from "@simplysm/capacitor-plugin-broadcast";
+import type { BroadcastResult } from "@simplysm/capacitor-plugin-broadcast";
 ```
 
-| Field     | Type                          | Description           |
-| --------- | ----------------------------- | --------------------- |
-| `action`  | `string` (optional)           | The broadcast action  |
-| `extras`  | `Record<string, unknown>` (optional) | Extra intent data     |
+| Field    | Type                                  | Description           |
+| -------- | ------------------------------------- | --------------------- |
+| `action` | `string` (optional)                   | The broadcast action  |
+| `extras` | `Record<string, unknown>` (optional)  | Extra intent data     |
 
-### `IBroadcastPlugin`
+### `BroadcastPlugin`
 
 The low-level Capacitor plugin interface. Use the `Broadcast` class instead of this interface directly.
 
 ```ts
-import type { IBroadcastPlugin } from "@simplysm/capacitor-plugin-broadcast";
+import type { BroadcastPlugin } from "@simplysm/capacitor-plugin-broadcast";
 ```
 
-| Method              | Signature                                                                                              | Description                                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
-| `subscribe`         | `(options: { filters: string[] }, callback: (result: IBroadcastResult) => void) => Promise<{ id: string }>` | Register a broadcast receiver                |
-| `unsubscribe`       | `(options: { id: string }) => Promise<void>`                                                           | Unsubscribe a specific receiver by ID        |
-| `unsubscribeAll`    | `() => Promise<void>`                                                                                  | Unsubscribe all receivers                    |
-| `send`              | `(options: { action: string; extras?: Record<string, unknown> }) => Promise<void>`                     | Send a broadcast                             |
-| `getLaunchIntent`   | `() => Promise<IBroadcastResult>`                                                                      | Get the launch intent                        |
-| `addListener`       | `(eventName: "onNewIntent", listenerFunc: (data: IBroadcastResult) => void) => Promise<PluginListenerHandle>` | Listen for new intents while app is running  |
+| Method               | Signature                                                                                                        | Description                             |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `subscribe`          | `(options: { filters: string[] }, callback: (result: BroadcastResult) => void) => Promise<{ id: string }>`      | Register a broadcast receiver           |
+| `unsubscribe`        | `(options: { id: string }) => Promise<void>`                                                                     | Unsubscribe a specific receiver by ID   |
+| `unsubscribeAll`     | `() => Promise<void>`                                                                                            | Unsubscribe all receivers               |
+| `send`               | `(options: { action: string; extras?: Record<string, unknown> }) => Promise<void>`                               | Send a broadcast                        |
+| `getLaunchIntent`    | `() => Promise<BroadcastResult>`                                                                                 | Get the launch intent                   |
+| `addListener`        | `(eventName: "newIntent", listenerFunc: (data: BroadcastResult) => void) => Promise<PluginListenerHandle>`       | Listen for new intents while app is running |
+| `removeAllListeners` | `() => Promise<void>`                                                                                            | Remove all event listeners              |

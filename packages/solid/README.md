@@ -33,8 +33,8 @@ See [docs/form-control.md](docs/form-control.md) for full signatures and props.
 |-----------|-------------|
 | [`Button`](docs/form-control.md#button) | Interactive button with semantic themes and variants |
 | [`Select`](docs/form-control.md#select) | Dropdown supporting single/multiple selection and hierarchical items |
-| [`Combobox`](docs/form-control.md#combobox) | Async search combo box with optional free-text input |
-| [`TextInput`](docs/form-control.md#textinput) | Text/password/email input with format transformation |
+| [`Combobox`](docs/form-control.md#combobox) | Async item loading combo box with optional free-text input |
+| [`TextInput`](docs/form-control.md#textinput) | Text/password/email input with format mask |
 | [`NumberInput`](docs/form-control.md#numberinput) | Number input with grouping formatting and min/max constraints |
 | [`DatePicker`](docs/form-control.md#datepicker) | Date picker with configurable granularity (year/month/date) |
 | [`DateTimePicker`](docs/form-control.md#datetimepicker) | Date-time picker (minute/second granularity) |
@@ -89,7 +89,6 @@ See [docs/data.md](docs/data.md) for full details.
 | [`DataSheet`](docs/data.md#datasheet) | Feature-rich data grid with sorting, pagination, selection, tree, and reorder |
 | [`Calendar`](docs/data.md#calendar) | Monthly calendar view rendering items on dates |
 | [`Kanban`](docs/data.md#kanban) | Kanban board with drag-and-drop card reordering |
-| [`KanbanContext`](docs/data.md#kanbancontext) | Internal context and types for Kanban |
 
 ---
 
@@ -124,7 +123,6 @@ See [docs/disclosure.md](docs/disclosure.md) for full details.
 | [`Dialog`](docs/disclosure.md#dialog) | Dialog with header, actions, resize/move support |
 | [`DialogContext`](docs/disclosure.md#dialogcontext) | Hook for programmatic dialog management |
 | [`DialogProvider`](docs/disclosure.md#dialogprovider) | Provider enabling `useDialog()` |
-| [`DialogInstanceContext`](docs/disclosure.md#dialoginstancecontext) | Context for dialog result communication |
 | [`Tabs`](docs/disclosure.md#tabs) | Tab navigation component |
 
 ---
@@ -164,7 +162,7 @@ See [docs/providers.md](docs/providers.md) for full details.
 | [`ThemeContext`](docs/providers.md#themecontext) | Light/dark/system theme management |
 | [`ServiceClientContext`](docs/providers.md#serviceclientcontext) | WebSocket service client context |
 | [`SystemProvider`](docs/providers.md#systemprovider) | Composite root provider for applications |
-| [`SharedDataContext`](docs/providers.md#shareddatacontext) | Shared data synchronized with the server |
+| [`SharedDataProvider`](docs/providers.md#shareddataprovider) | Shared data synchronized with the server |
 | [`SharedDataChangeEvent`](docs/providers.md#shareddatachangeevent) | Event class for shared data change notifications |
 | [`I18nProvider`](docs/providers.md#i18nprovider) | Internationalization with built-in EN/KO dictionaries |
 
@@ -185,7 +183,6 @@ See [docs/hooks.md](docs/hooks.md) for full details.
 | [`createControllableStore`](docs/hooks.md#createcontrollablestore) | Store for controlled/uncontrolled patterns |
 | [`createIMEHandler`](docs/hooks.md#createimehandler) | IME composition handlers for CJK input |
 | [`createMountTransition`](docs/hooks.md#createmounttransition) | Mount/unmount lifecycle with animation support |
-| [`createSlotSignal`](docs/hooks.md#createslotsignal) | Slot registration for compound components |
 | [`useRouterLink`](docs/hooks.md#userouterlink) | SolidJS Router navigation click handler |
 
 ---
@@ -198,10 +195,13 @@ See [docs/styles.md](docs/styles.md) for full details.
 
 | Export | Description |
 |--------|-------------|
-| [`tokens.styles`](docs/styles.md#tokensstyles) | Design token constants and type definitions |
-| [`patterns.styles`](docs/styles.md#patternsstyles) | Reusable Tailwind class patterns |
+| [`base.styles`](docs/styles.md#basestyles) | Border, background, and text token class strings |
+| [`control.styles`](docs/styles.md#controlstyles) | Component size type, padding and gap class strings |
+| [`theme.styles`](docs/styles.md#themestyles) | Semantic theme type and per-theme class sets |
 | [`ripple`](docs/styles.md#ripple-directive) | Material-style ripple click effect directive |
 | [`mergeStyles`](docs/styles.md#mergestyles) | Merge multiple CSS style values into one object |
+| [`createSlot`](docs/styles.md#createslot) | Single-slot registration factory for compound components |
+| [`createSlots`](docs/styles.md#createslots) | Multi-slot registration factory for compound components |
 
 ---
 
@@ -222,4 +222,3 @@ See [docs/features.md](docs/features.md) for full details.
 | [`CrudDetail`](docs/features.md#cruddetail) | Detail form with load/save/delete lifecycle |
 | [`PermissionTable`](docs/features.md#permissiontable) | Permission editor grid with cascading checkbox logic |
 | [`createAppStructure`](docs/features.md#createappstructure) | Typed app structure builder (routes, menus, permissions) |
-| [`createSlotComponent`](docs/features.md#createslotcomponent) | Factory for slot registration in compound components |

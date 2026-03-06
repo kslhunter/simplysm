@@ -49,7 +49,7 @@ await server.listen();
 | `ServiceMethods<TDefinition>` | Extracts method map type from a `ServiceDefinition` |
 | `WebSocketHandler` | Manages all active WebSocket connections |
 | `ServiceSocket` | Represents a single active WebSocket connection |
-| `ProtocolWrapper` | Encode/decode service messages with optional worker offload |
+| `ServerProtocolWrapper` | Encode/decode service messages with optional worker offload |
 | `OrmServiceType` | Method map type for `OrmService` |
 | `AutoUpdateServiceType` | Method map type for `AutoUpdateService` |
 | `SmtpClientServiceType` | Method map type for `SmtpClientService` |
@@ -57,6 +57,6 @@ await server.listen();
 ## Detailed Documentation
 
 - [docs/auth.md](docs/auth.md) — `AuthTokenPayload`, `signJwt`, `verifyJwt`, `decodeJwt`
-- [docs/services.md](docs/services.md) — `defineService`, `auth`, `ServiceContext`, `runServiceMethod`, `OrmService`, `AutoUpdateService`, `SmtpClientService`
-- [docs/transport.md](docs/transport.md) — `WebSocketHandler`, `ServiceSocket`, `handleHttpRequest`, `handleUpload`, `handleStaticFile`, `ProtocolWrapper`, legacy handler
+- [docs/services.md](docs/services.md) — `defineService`, `auth`, `ServiceContext`, `executeServiceMethod`, `OrmService`, `AutoUpdateService`, `SmtpClientService`
+- [docs/transport.md](docs/transport.md) — `WebSocketHandler`, `ServiceSocket`, `handleHttpRequest`, `handleUpload`, `handleStaticFile`, `ServerProtocolWrapper`, legacy handler
 - [docs/server.md](docs/server.md) — `ServiceServerOptions`, `ServiceServer`, `createServiceServer`, `getConfig`

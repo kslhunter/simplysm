@@ -44,5 +44,6 @@ constructor(schema: TSchema extends z.ZodObject<z.ZodRawShape>)
 
 - Header names are taken from Zod field `.describe()` values; if not set, the field key is used.
 - `read` throws if no data rows are found after the header row.
+- `read` validates each row with the Zod schema and throws on validation failure.
 - `write` automatically applies borders to all data cells, highlights required (non-optional, non-boolean) header cells with a yellow background, sets zoom to 85%, and freezes the first row.
 - The `ExcelWorkbook` returned by `write` must be closed by the caller (`await using` or `close()`).

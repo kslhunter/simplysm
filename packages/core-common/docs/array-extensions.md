@@ -22,7 +22,7 @@ These methods return new arrays or values and do not mutate the original.
 | `mapMany` | `(selector?) => R[]` | Flattens one level (with optional transform). |
 | `mapManyAsync` | `(selector?) => Promise<R[]>` | Async map-and-flatten (sequential). |
 | `parallelAsync` | `(fn) => Promise<R[]>` | Parallel async map (`Promise.all`). |
-| `groupBy` | `(keySelector, valueSelector?) => { key, values }[]` | Groups elements by key. Supports object keys (O(n²)) and primitive keys (O(n)). |
+| `groupBy` | `(keySelector, valueSelector?) => { key, values }[]` | Groups elements by key. Primitive keys: O(n). Object keys: O(n²). |
 | `toMap` | `(keySelector, valueSelector?) => Map<K, V>` | Converts to `Map`. Throws on duplicate key. |
 | `toMapAsync` | `(keySelector, valueSelector?) => Promise<Map<K, V>>` | Async version of `toMap`. |
 | `toArrayMap` | `(keySelector, valueSelector?) => Map<K, V[]>` | Converts to `Map` where values are arrays. |

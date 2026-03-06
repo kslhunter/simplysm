@@ -2,7 +2,7 @@
 
 Simplysm package - Core module (browser)
 
-Browser-only utilities including DOM element extensions, file download helpers, fetch utilities, and file dialog helpers.
+Browser-only utilities including DOM element extensions, file download helpers, fetch utilities, file dialog helpers, and IndexedDB wrappers.
 
 ## Installation
 
@@ -22,7 +22,7 @@ import "@simplysm/core-browser";
 
 Extends the global `Element` interface with utility methods. These are activated as side effects when the package is imported.
 
-### `element.findAll<T>(selector)`
+### `element.findAll<TEl>(selector)`
 
 Finds all child elements matching a CSS selector.
 
@@ -37,12 +37,12 @@ const items = containerEl.findAll<HTMLLIElement>("li.active");
 **Signature:**
 
 ```ts
-findAll<T extends Element = Element>(selector: string): T[]
+findAll<TEl extends Element = Element>(selector: string): TEl[]
 ```
 
 ---
 
-### `element.findFirst<T>(selector)`
+### `element.findFirst<TEl>(selector)`
 
 Finds the first child element matching a CSS selector.
 
@@ -57,12 +57,12 @@ const input = formEl.findFirst<HTMLInputElement>("input[name='email']");
 **Signature:**
 
 ```ts
-findFirst<T extends Element = Element>(selector: string): T | undefined
+findFirst<TEl extends Element = Element>(selector: string): TEl | undefined
 ```
 
 ---
 
-### `element.prependChild<T>(child)`
+### `element.prependChild<TEl>(child)`
 
 Inserts a child element as the first child of the element.
 
@@ -76,7 +76,7 @@ containerEl.prependChild(newEl);
 **Signature:**
 
 ```ts
-prependChild<T extends Element>(child: T): T
+prependChild<TEl extends Element>(child: TEl): TEl
 ```
 
 ---
@@ -429,6 +429,116 @@ function openFileDialog(options?: {
 
 ---
 
+## IndexedDB Store
+
+### `IndexedDbStore`
+
+A thin wrapper around the browser `IndexedDB` API for typed key-value object stores. Opens a versioned database, auto-creates stores on upgrade, and closes the connection after each operation.
+
+```ts
+import { IndexedDbStore } from "@simplysm/core-browser";
+
+const db = new IndexedDbStore("my-db", 1, [
+  { name: "users", keyPath: "id" },
+]);
+
+await db.put("users", { id: 1, name: "Alice" });
+const user = await db.get<{ id: number; name: string }>("users", 1);
+const all = await db.getAll<{ id: number; name: string }>("users");
+```
+
+**Constructor:**
+
+```ts
+new IndexedDbStore(
+  dbName: string,
+  dbVersion: number,
+  storeConfigs: StoreConfig[],
+)
+```
+
+**Methods:**
+
+```ts
+open(): Promise<IDBDatabase>
+
+withStore<TResult>(
+  storeName: string,
+  mode: IDBTransactionMode,
+  fn: (store: IDBObjectStore) => Promise<TResult>,
+): Promise<TResult>
+
+get<TValue>(storeName: string, key: IDBValidKey): Promise<TValue | undefined>
+
+put(storeName: string, value: unknown): Promise<void>
+
+getAll<TItem>(storeName: string): Promise<TItem[]>
+```
+
+- `open()` — opens the database and returns the raw `IDBDatabase`. Creates missing object stores declared in `storeConfigs`. Rejects if the connection is blocked.
+- `withStore()` — executes `fn` inside a single transaction on `storeName`. Aborts the transaction if `fn` throws. Closes the database when the transaction completes.
+- `get()` — retrieves one record by `key` from `storeName`. Returns `undefined` if not found.
+- `put()` — inserts or updates a record in `storeName`.
+- `getAll()` — retrieves all records from `storeName`.
+
+---
+
+## IndexedDB Virtual Filesystem
+
+### `IndexedDbVirtualFs`
+
+A virtual filesystem built on top of `IndexedDbStore`. Each entry is stored as a flat key (slash-separated path string) with a kind (`"file"` or `"dir"`) and optional base64 data payload.
+
+```ts
+import { IndexedDbStore, IndexedDbVirtualFs } from "@simplysm/core-browser";
+
+const db = new IndexedDbStore("my-fs-db", 1, [
+  { name: "fs", keyPath: "fullKey" },
+]);
+const vfs = new IndexedDbVirtualFs(db, "fs", "fullKey");
+
+await vfs.putEntry("/docs/readme.txt", "file", btoa("hello"));
+const entry = await vfs.getEntry("/docs/readme.txt");
+const children = await vfs.listChildren("/docs/");
+await vfs.deleteByPrefix("/docs");
+```
+
+**Constructor:**
+
+```ts
+new IndexedDbVirtualFs(
+  db: IndexedDbStore,
+  storeName: string,
+  keyField: string,
+)
+```
+
+- `db` — an `IndexedDbStore` instance to use for persistence.
+- `storeName` — the object store name within the database.
+- `keyField` — the field name used as the primary key in stored records.
+
+**Methods:**
+
+```ts
+getEntry(fullKey: string): Promise<VirtualFsEntry | undefined>
+
+putEntry(fullKey: string, kind: "file" | "dir", dataBase64?: string): Promise<void>
+
+deleteByPrefix(keyPrefix: string): Promise<boolean>
+
+listChildren(prefix: string): Promise<{ name: string; isDirectory: boolean }[]>
+
+ensureDir(fullKeyBuilder: (path: string) => string, dirPath: string): Promise<void>
+```
+
+- `getEntry()` — retrieves the entry for `fullKey`. Returns `undefined` if not found.
+- `putEntry()` — writes or overwrites an entry with the given `kind` and optional base64 data.
+- `deleteByPrefix()` — deletes all entries whose key equals `keyPrefix` or starts with `keyPrefix + "/"`. Returns `true` if at least one entry was deleted.
+- `listChildren()` — lists the immediate children under `prefix`. Each result includes `name` (the path segment) and `isDirectory`.
+- `ensureDir()` — creates directory entries for every path segment in `dirPath` if they do not already exist. `fullKeyBuilder` maps a path string to the full store key.
+
+---
+
 ## Types
 
 ### `ElementBounds`
@@ -462,5 +572,35 @@ interface DownloadProgress {
   receivedLength: number;
   /** Total content length in bytes (0 if unknown) */
   contentLength: number;
+}
+```
+
+---
+
+### `StoreConfig`
+
+Configuration for a single object store within an `IndexedDbStore`.
+
+```ts
+interface StoreConfig {
+  /** Object store name */
+  name: string;
+  /** Primary key field path */
+  keyPath: string;
+}
+```
+
+---
+
+### `VirtualFsEntry`
+
+A single entry stored in the `IndexedDbVirtualFs`.
+
+```ts
+interface VirtualFsEntry {
+  /** Entry kind: "file" or "dir" */
+  kind: "file" | "dir";
+  /** File contents encoded as base64 (only present for file entries) */
+  dataBase64?: string;
 }
 ```

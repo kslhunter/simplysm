@@ -104,9 +104,19 @@ const msg: ServiceErrorMessage = {
     code: "NOT_FOUND",
     stack: "...",
     detail: { id: 42 },
+    cause: undefined,
   },
 };
 ```
+
+| Field | Required | Description |
+|---|---|---|
+| `name` | yes | Error class name |
+| `message` | yes | Error message |
+| `code` | yes | Error code string |
+| `stack` | no | Stack trace |
+| `detail` | no | Additional context |
+| `cause` | no | Underlying cause |
 
 #### `ServiceAuthMessage`
 
@@ -301,8 +311,8 @@ import type { OrmService } from "@simplysm/service-common";
 
 | Method | Description |
 |---|---|
-| `getInfo(opt)` | Returns dialect, database, and schema for a connection config |
-| `connect(opt)` | Opens a connection and returns a connection ID |
+| `getInfo(opt)` | Returns dialect, database, and schema for a named connection config |
+| `connect(opt)` | Opens a connection using an inline config object and returns a connection ID |
 | `close(connId)` | Closes the connection |
 | `beginTransaction(connId, isolationLevel?)` | Begins a transaction |
 | `commitTransaction(connId)` | Commits the current transaction |
@@ -310,6 +320,33 @@ import type { OrmService } from "@simplysm/service-common";
 | `executeParametrized(connId, query, params?)` | Executes a parameterized SQL query |
 | `executeDefs(connId, defs, options?)` | Executes a list of `QueryDef` objects |
 | `bulkInsert(connId, tableName, columnDefs, records)` | Performs a bulk insert |
+
+**Signatures**
+
+```ts
+getInfo(opt: DbConnOptions & { configName: string }): Promise<{
+  dialect: Dialect;
+  database?: string;
+  schema?: string;
+}>;
+
+connect(opt: Record<string, unknown>): Promise<number>;
+
+executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]>;
+
+executeDefs(
+  connId: number,
+  defs: QueryDef[],
+  options?: (ResultMeta | undefined)[],
+): Promise<unknown[][]>;
+
+bulkInsert(
+  connId: number,
+  tableName: string,
+  columnDefs: Record<string, ColumnMeta>,
+  records: Record<string, unknown>[],
+): Promise<void>;
+```
 
 ---
 
@@ -321,7 +358,7 @@ Options for selecting a database connection configuration.
 import type { DbConnOptions } from "@simplysm/service-common";
 
 type DbConnOptions = {
-  configName?: string;           // Named config key
+  configName?: string;              // Named config key
   config?: Record<string, unknown>; // Inline config object
 };
 ```
@@ -414,14 +451,14 @@ interface SmtpClientSendOption {
 
 ---
 
-### `SmtpClientDefaultConfig`
+### `SmtpClientDefaultOptions`
 
 Configuration for a default SMTP sender used server-side.
 
 ```ts
-import type { SmtpClientDefaultConfig } from "@simplysm/service-common";
+import type { SmtpClientDefaultOptions } from "@simplysm/service-common";
 
-interface SmtpClientDefaultConfig {
+interface SmtpClientDefaultOptions {
   senderName: string;
   senderEmail?: string;
   user?: string;

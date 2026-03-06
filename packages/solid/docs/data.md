@@ -57,7 +57,7 @@ import { List } from "@simplysm/solid";
 | `readOnly` | `boolean` | Readonly state (no pointer) |
 | `onClick` | `() => void` | Click handler |
 
-Sub-components: `List.Item`
+Sub-components: `List.Item` (with `List.Item.Children` for tree nesting)
 
 ---
 
@@ -68,6 +68,8 @@ Context for tracking nesting level in List.
 ```tsx
 import { ListContext, useListContext } from "@simplysm/solid";
 ```
+
+Also exports: `ListContextValue`
 
 ---
 
@@ -104,11 +106,11 @@ import { Pagination } from "@simplysm/solid";
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `page` | `number` | Current page (1-based) |
+| `page` | `number` | Current page (1-based, required) |
 | `onPageChange` | `(page: number) => void` | Page change callback |
-| `totalPageCount` | `number` | Total number of pages |
+| `totalPageCount` | `number` | Total number of pages (required) |
 | `displayPageCount` | `number` | Number of page buttons shown |
-| `size` | `ComponentSizeCompact` | Size |
+| `size` | `ComponentSize` | Size |
 
 ---
 
@@ -119,7 +121,7 @@ Feature-rich data grid with sorting, pagination, column resizing, fixed columns,
 ```tsx
 import { DataSheet } from "@simplysm/solid";
 
-<DataSheet items={items} persistKey="my-sheet">
+<DataSheet items={items} storageKey="my-sheet">
   <DataSheet.Column key="name" header="Name">
     {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
   </DataSheet.Column>
@@ -133,7 +135,7 @@ Sub-components: `DataSheet.Column`
 | Prop | Type | Description |
 |------|------|-------------|
 | `items` | `TItem[]` | Data rows |
-| `persistKey` | `string` | Key for persisting column config |
+| `storageKey` | `string` | Key for persisting column config |
 | `hideConfigBar` | `boolean` | Hides the settings toolbar |
 | `inset` | `boolean` | Borderless inset style |
 | `contentStyle` | `JSX.CSSProperties \| string` | Custom content style |
@@ -142,17 +144,17 @@ Sub-components: `DataSheet.Column`
 | `autoSort` | `boolean` | Enable automatic client-side sorting |
 | `page` | `number` | Current page |
 | `onPageChange` | `(page) => void` | Page change callback |
-| `totalPageCount` | `number` | Total pages |
-| `itemsPerPage` | `number` | Items per page |
+| `totalPageCount` | `number` | Total pages (server-side paging) |
+| `pageSize` | `number` | Items per page (client-side paging) |
 | `displayPageCount` | `number` | Number of page buttons shown |
-| `selectMode` | `"single" \| "multiple"` | Selection mode |
-| `selectedItems` | `TItem[]` | Selected items |
-| `onSelectedItemsChange` | `(items) => void` | Selection change callback |
+| `selectionMode` | `"single" \| "multiple"` | Selection mode |
+| `selection` | `TItem[]` | Selected items |
+| `onSelectionChange` | `(items) => void` | Selection change callback |
 | `autoSelect` | `boolean` | Auto-select trigger on row click |
 | `isItemSelectable` | `(item) => boolean \| string` | Item selectability |
 | `expandedItems` | `TItem[]` | Expanded tree items |
 | `onExpandedItemsChange` | `(items) => void` | Expand change callback |
-| `itemChildren` | `(item, index) => TItem[] \| undefined` | Tree children resolver |
+| `itemChildren` | `(item) => TItem[] \| undefined` | Tree children resolver |
 | `cellClass` | `(item, colKey) => string \| undefined` | Per-cell class |
 | `cellStyle` | `(item, colKey) => string \| undefined` | Per-cell style |
 | `onItemsReorder` | `(event: DataSheetReorderEvent<TItem>) => void` | Reorder callback |
@@ -162,7 +164,7 @@ Sub-components: `DataSheet.Column`
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `key` | `string` | Column identifier |
+| `key` | `string` | Column identifier (required) |
 | `header` | `string \| string[]` | Header text (string array for multi-level) |
 | `headerContent` | `() => JSX.Element` | Custom header content |
 | `headerStyle` | `string` | Custom header style |
@@ -170,20 +172,20 @@ Sub-components: `DataSheet.Column`
 | `tooltip` | `string` | Column tooltip |
 | `fixed` | `boolean` | Sticky column |
 | `hidden` | `boolean` | Initially hidden (user can show via config) |
-| `collapse` | `boolean` | Initially collapsed |
+| `collapse` | `boolean` | Collapse — excluded from user config dialog |
 | `width` | `string` | Column width CSS value |
 | `class` | `string` | Cell class |
 | `sortable` | `boolean` | Sortable (default: true) |
 | `resizable` | `boolean` | Resizable (default: true) |
-| `children` | `(ctx: DataSheetCellContext<TItem>) => JSX.Element` | Cell renderer |
+| `children` | `(ctx: DataSheetCellContext<TItem>) => JSX.Element` | Cell renderer (required) |
 
 **`DataSheetCellContext<TItem>`**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `item` | `TItem` | Row data |
-| `index` | `number` | Row index |
-| `row` | `number` | Row number (flattened) |
+| `index` | `number` | Original item index |
+| `row` | `number` | Row number (flattened display index) |
 | `depth` | `number` | Tree depth |
 
 ---
@@ -247,6 +249,7 @@ import {
   featureCellBodyClickableClass,
   reorderCellWrapperClass,
   configButtonClass,
+  trRowClass,
 } from "@simplysm/solid";
 ```
 
@@ -271,8 +274,8 @@ import { Calendar } from "@simplysm/solid";
 | Prop | Type | Description |
 |------|------|-------------|
 | `items` | `TValue[]` | Items to display |
-| `getItemDate` | `(item) => DateOnly` | Date extractor |
-| `renderItem` | `(item) => JSX.Element` | Item renderer |
+| `getItemDate` | `(item) => DateOnly` | Date extractor (required) |
+| `renderItem` | `(item) => JSX.Element` | Item renderer (required) |
 | `yearMonth` | `DateOnly` | Controlled year/month |
 | `onYearMonthChange` | `(ym) => void` | Year/month change callback |
 | `weekStartDay` | `number` | First day of week (0=Sun) |
@@ -287,10 +290,10 @@ Kanban board with drag-and-drop card reordering across lanes.
 ```tsx
 import { Kanban } from "@simplysm/solid";
 
-<Kanban items={cards} onDrop={handleDrop}>
-  <Kanban.Lane value={lane} laneValue={lane}>
+<Kanban onDrop={handleDrop}>
+  <Kanban.Lane laneValue={lane}>
     <Kanban.LaneTitle>{lane.title}</Kanban.LaneTitle>
-    <Kanban.Card value={card} cardValue={card}>
+    <Kanban.Card cardValue={card}>
       {card.title}
     </Kanban.Card>
   </Kanban.Lane>
@@ -299,17 +302,4 @@ import { Kanban } from "@simplysm/solid";
 
 Sub-components: `Kanban.Lane`, `Kanban.Card`, `Kanban.LaneTitle`, `Kanban.LaneTools`
 
----
-
-## `KanbanContext`
-
-Internal context and types for Kanban board components.
-
-```tsx
-import {
-  KanbanContext,
-  KanbanLaneContext,
-  useKanbanContext,
-  useKanbanLaneContext,
-} from "@simplysm/solid";
-```
+Also exports: `KanbanContext`, `KanbanContextValue`, `KanbanLaneContext`, `KanbanLaneContextValue`, `KanbanCardRef`, `KanbanDropInfo`, `KanbanDropTarget`, `KanbanCardProps`, `KanbanLaneProps`, `KanbanProps`

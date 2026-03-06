@@ -49,7 +49,7 @@ ExcelUtils.convertNumFmtNameToId("DateTime");  // 22
 | `parseRangeAddr` | `(rangeAddr: string) => ExcelAddressRangePoint` | Convert range address to coordinate pair |
 | `stringifyRangeAddr` | `(point: ExcelAddressRangePoint) => string` | Convert coordinate pair to range address string |
 | `convertTimeTickToNumber` | `(tick: number) => number` | Convert JS timestamp (ms) to Excel serial date number |
-| `convertNumberToTimeTick` | `(num: number) => number` | Convert Excel serial date number to JS timestamp (ms) |
+| `convertNumberToTimeTick` | `(value: number) => number` | Convert Excel serial date number to JS timestamp (ms) |
 | `convertNumFmtCodeToName` | `(numFmtCode: string) => ExcelNumberFormat` | Convert format code string to format name |
 | `convertNumFmtIdToName` | `(numFmtId: number) => ExcelNumberFormat` | Convert built-in format ID to format name |
 | `convertNumFmtNameToId` | `(numFmtName: ExcelNumberFormat) => number` | Convert format name to built-in format ID |

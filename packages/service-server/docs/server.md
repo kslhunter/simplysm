@@ -56,7 +56,7 @@ class ServiceServer<TAuthInfo = unknown> {
   ): Promise<void>;
 
   // Sign an auth token with the configured JWT secret
-  generateAuthToken(payload: AuthTokenPayload<TAuthInfo>): Promise<string>;
+  signAuthToken(payload: AuthTokenPayload<TAuthInfo>): Promise<string>;
 
   // Verify and decode an auth token
   verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>>;

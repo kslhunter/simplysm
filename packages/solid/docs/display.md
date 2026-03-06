@@ -19,7 +19,7 @@ import { Barcode } from "@simplysm/solid";
 | Prop | Type | Description |
 |------|------|-------------|
 | `type` | `BarcodeType` | Barcode format (e.g., `"code128"`, `"qrcode"`, `"ean13"`, ...) |
-| `value` | `string` | Barcode data |
+| `value` | `string \| undefined` | Barcode data |
 
 `BarcodeType` is a string union of all supported bwip-js symbology names.
 
@@ -92,7 +92,7 @@ import { Tag } from "@simplysm/solid";
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `theme` | `TagTheme` | Color theme (SemanticTheme) |
+| `theme` | `SemanticTheme` | Color theme |
 
 ---
 
@@ -110,7 +110,7 @@ import { Link } from "@simplysm/solid";
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `theme` | `LinkTheme` | Color theme |
+| `theme` | `SemanticTheme` | Color theme (default: `"primary"`) |
 | `disabled` | `boolean` | Disabled state |
 
 Extends `JSX.AnchorHTMLAttributes<HTMLAnchorElement>`.
@@ -131,4 +131,4 @@ import { Alert } from "@simplysm/solid";
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `theme` | `AlertTheme` | Color theme |
+| `theme` | `SemanticTheme` | Color theme (default: `"base"`) |

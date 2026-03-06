@@ -50,10 +50,9 @@ Returns all currently active session IDs.
 
 **Input:** _(none)_
 
-**Output:** JSON array of session ID strings.
+**Output:** Pretty-printed JSON array of session ID strings.
 
 ```json
-// Example response content
 ["session-a", "session-b"]
 ```
 
@@ -71,7 +70,7 @@ Closes a specific browser session and releases its resources.
 
 ## Playwright Proxy Tools
 
-All tools from `@playwright/mcp` are forwarded by this server. Each forwarded tool has a `sessionId` field **prepended** to its original input schema.
+All tools from `@playwright/mcp` are forwarded by this server. Each forwarded tool has a `sessionId` field added to its original input schema.
 
 **Every proxied tool requires:**
 
@@ -80,7 +79,7 @@ All tools from `@playwright/mcp` are forwarded by this server. Each forwarded to
 | `sessionId` | `string` | Yes | Session ID for browser isolation |
 | _(original fields)_ | — | — | Same as the original `@playwright/mcp` tool |
 
-If an error occurs during a proxied tool call, the session is automatically destroyed to avoid leaving a browser in a broken state.
+If an error occurs during a proxied tool call, the server checks whether the underlying connection is still alive. If the connection is broken, the session is automatically destroyed to avoid leaving a browser in an unusable state. If the connection is still alive, the error is returned without destroying the session.
 
 ## Server Internals
 
@@ -91,19 +90,24 @@ Internal class that manages the lifecycle of per-session Playwright MCP clients.
 **Constructor**
 
 ```ts
-new SessionManager(config: Record<string, unknown>, timeoutMs?: number)
+new SessionManager(
+  config: NonNullable<Parameters<typeof createConnection>[0]>,
+  timeoutMs?: number,
+  version?: string,
+)
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `config` | `Record<string, unknown>` | — | Configuration passed to `@playwright/mcp`'s `createConnection` |
-| `timeoutMs` | `number` | `300000` (5 min) | Inactivity timeout before a session is auto-cleaned |
+| `config` | `NonNullable<Parameters<typeof createConnection>[0]>` | — | Configuration passed to `@playwright/mcp`'s `createConnection` |
+| `timeoutMs` | `number` | `300000` (5 min) | Inactivity timeout in milliseconds before a session is auto-cleaned |
+| `version` | `string` | `"0.0.0"` | Version string reported by the internal MCP client |
 
 **Methods**
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `getOrCreate` | `(sessionId: string) => Promise<Client>` | Returns an existing MCP client for the session, or creates a new one. Updates the last-used timestamp on each call. |
+| `getOrCreate` | `(sessionId: string) => Promise<Client>` | Returns an existing MCP client for the session, or creates a new one. Updates the last-used timestamp on each call. Concurrent calls for the same `sessionId` are deduplicated. |
 | `destroy` | `(sessionId: string) => Promise<void>` | Closes and removes a single session. No-op if the session does not exist. |
 | `disposeAll` | `() => Promise<void>` | Closes all sessions and stops the cleanup interval. Called on `SIGINT`/`SIGTERM`. |
 | `list` | `() => string[]` | Returns an array of all currently active session IDs. |
@@ -116,7 +120,7 @@ Internal utility that adds the `sessionId` field to a Playwright tool's input sc
 function injectSessionId(tool: Tool): Tool
 ```
 
-- Prepends `sessionId` to `inputSchema.properties`.
+- Adds `sessionId` to `inputSchema.properties`.
 - Ensures `sessionId` appears first in the `required` array.
 - Deduplicates `sessionId` if it is already present in `required`.
 - Returns a new tool object; the original is not mutated.

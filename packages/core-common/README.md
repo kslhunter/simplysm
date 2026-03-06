@@ -1,6 +1,6 @@
 # @simplysm/core-common
 
-Common utility package providing environment variables, array extensions, error classes, date/time types, async features, and a wide range of utility functions. Works in both browser and Node.js environments.
+Common utility package providing environment variables, array/map/set extensions, error classes, date/time types, async features, and a wide range of utility namespaces. Works in both browser and Node.js environments.
 
 ## Installation
 
@@ -11,6 +11,8 @@ pnpm add @simplysm/core-common
 ## Table of Contents
 
 - [Array Extensions](#array-extensions)
+- [Map Extensions](#map-extensions)
+- [Set Extensions](#set-extensions)
 - [Types](#types)
 - [Utils](#utils)
 - [Features](#features)
@@ -31,14 +33,53 @@ Prototype extensions added to `Array` and `ReadonlyArray` as a side effect of im
 | [`first`](docs/array-extensions.md#readonly-array-methods) | First matching element |
 | [`last`](docs/array-extensions.md#readonly-array-methods) | Last matching element |
 | [`filterExists`](docs/array-extensions.md#readonly-array-methods) | Removes `null`/`undefined` entries |
+| [`filterAsync`](docs/array-extensions.md#readonly-array-methods) | Async filter (sequential) |
+| [`ofType`](docs/array-extensions.md#readonly-array-methods) | Filter by primitive type string or constructor |
+| [`mapAsync`](docs/array-extensions.md#readonly-array-methods) | Async map (sequential) |
+| [`mapMany`](docs/array-extensions.md#readonly-array-methods) / [`mapManyAsync`](docs/array-extensions.md#readonly-array-methods) | Flatten with optional transform |
+| [`parallelAsync`](docs/array-extensions.md#readonly-array-methods) | Parallel async map (`Promise.all`) |
 | [`groupBy`](docs/array-extensions.md#readonly-array-methods) | Groups elements by key |
-| [`toMap`](docs/array-extensions.md#readonly-array-methods) | Converts to `Map` |
+| [`toMap`](docs/array-extensions.md#readonly-array-methods) / [`toMapAsync`](docs/array-extensions.md#readonly-array-methods) | Converts to `Map` |
+| [`toArrayMap`](docs/array-extensions.md#readonly-array-methods) | Converts to `Map` where values are arrays |
+| [`toSetMap`](docs/array-extensions.md#readonly-array-methods) | Converts to `Map` where values are sets |
+| [`toMapValues`](docs/array-extensions.md#readonly-array-methods) | Groups by key then reduces each group |
+| [`toObject`](docs/array-extensions.md#readonly-array-methods) | Converts to plain `Record<string, V>` |
 | [`toTree`](docs/array-extensions.md#readonly-array-methods) | Builds a tree from a flat list |
 | [`distinct`](docs/array-extensions.md#readonly-array-methods) | Returns unique elements |
 | [`orderBy`](docs/array-extensions.md#readonly-array-methods) / [`orderByDesc`](docs/array-extensions.md#readonly-array-methods) | Sorted copy (ascending/descending) |
 | [`diffs`](docs/array-extensions.md#readonly-array-methods) / [`oneWayDiffs`](docs/array-extensions.md#readonly-array-methods) | Array diff comparison |
-| [`insert`](docs/array-extensions.md#mutable-array-methods) / [`remove`](docs/array-extensions.md#mutable-array-methods) / [`toggle`](docs/array-extensions.md#mutable-array-methods) | In-place mutation helpers |
-| [`ArrayDiffsResult`](docs/array-extensions.md#related-types) / [`TreeArray`](docs/array-extensions.md#related-types) | Related TypeScript types |
+| [`merge`](docs/array-extensions.md#readonly-array-methods) | Merge two arrays using diffs |
+| [`sum`](docs/array-extensions.md#readonly-array-methods) / [`min`](docs/array-extensions.md#readonly-array-methods) / [`max`](docs/array-extensions.md#readonly-array-methods) | Aggregation helpers |
+| [`shuffle`](docs/array-extensions.md#readonly-array-methods) | Returns a new randomly shuffled array |
+| [`distinctThis`](docs/array-extensions.md#mutable-array-methods) / [`orderByThis`](docs/array-extensions.md#mutable-array-methods) / [`orderByDescThis`](docs/array-extensions.md#mutable-array-methods) | In-place sort/dedup |
+| [`insert`](docs/array-extensions.md#mutable-array-methods) / [`remove`](docs/array-extensions.md#mutable-array-methods) / [`toggle`](docs/array-extensions.md#mutable-array-methods) / [`clear`](docs/array-extensions.md#mutable-array-methods) | In-place mutation helpers |
+| [`ArrayDiffsResult`](docs/array-extensions.md#related-types) / [`ArrayOneWayDiffResult`](docs/array-extensions.md#related-types) / [`TreeArray`](docs/array-extensions.md#related-types) / [`ComparableType`](docs/array-extensions.md#related-types) | Related TypeScript types |
+
+---
+
+## Map Extensions
+
+Prototype extensions added to `Map` as a side effect of importing from this package.
+
+[Full documentation](docs/utils.md#map-extensions-side-effect)
+
+| Symbol | Description |
+|--------|-------------|
+| `getOrCreate` | Return existing value or set and return a new value via factory |
+| `update` | Update value in place using a transform function |
+
+---
+
+## Set Extensions
+
+Prototype extensions added to `Set` as a side effect of importing from this package.
+
+[Full documentation](docs/utils.md#set-extensions-side-effect)
+
+| Symbol | Description |
+|--------|-------------|
+| `adds` | Add multiple values at once |
+| `toggle` | Remove if present, add if absent; optional forced direction |
 
 ---
 
@@ -55,34 +96,36 @@ Immutable value types and utility type aliases. All support parsing, formatting,
 | [`DateTime`](docs/types.md#datetime) | Immutable date-time (millisecond precision, local timezone) |
 | [`DateOnly`](docs/types.md#dateonly) | Immutable date without time; includes week-sequence helpers |
 | [`Time`](docs/types.md#time) | Immutable time without date; 24-hour wrap normalization |
-| [`Bytes`](docs/types.md#primitive-types) / [`PrimitiveType`](docs/types.md#primitive-types) | Primitive type aliases |
-| [`DeepPartial`](docs/types.md#utility-types) / [`ObjUndefToOptional`](docs/types.md#utility-types) | TypeScript utility types |
+| [`Bytes`](docs/types.md#primitive-types) / [`PrimitiveType`](docs/types.md#primitive-types) / [`PrimitiveTypeStr`](docs/types.md#primitive-types) / [`PrimitiveTypeMap`](docs/types.md#primitive-types) | Primitive type aliases |
+| [`DeepPartial`](docs/types.md#utility-types) / [`Type`](docs/types.md#utility-types) | TypeScript utility types |
+| [`UndefToOptional`](docs/types.md#utility-types) / [`OptionalToUndef`](docs/types.md#utility-types) | Optional/undefined conversion types |
+| [`EqualOptions`](docs/types.md#utility-types) / [`MergeOptions`](docs/types.md#utility-types) / [`Merge3KeyOptions`](docs/types.md#utility-types) | Option types for `obj.*` utilities |
+| [`DtNormalizedMonth`](docs/types.md#utility-types) | Return type of `dt.normalizeMonth` |
 
 ---
 
 ## Utils
 
-Pure utility functions for common tasks: formatting, parsing, transformation, and I/O encoding.
+Pure utility namespaces for common tasks: formatting, parsing, transformation, and I/O encoding.
 
 [Full documentation](docs/utils.md)
 
 | Symbol | Description |
 |--------|-------------|
 | [`env`](docs/utils.md#env) | Global environment object from `process.env` |
-| [`formatDate`](docs/utils.md#formatedateformatstring-args) | C#-style date/time format string renderer |
-| [`bytesConcat`](docs/utils.md#bytes-utilities) / [`bytesToHex`](docs/utils.md#bytes-utilities) / [`bytesFromBase64`](docs/utils.md#bytes-utilities) | Binary encoding helpers |
-| [`jsonStringify`](docs/utils.md#json-utilities) / [`jsonParse`](docs/utils.md#json-utilities) | JSON with support for `DateTime`, `Uuid`, `Set`, `Map`, etc. |
-| [`numFormat`](docs/utils.md#number-utilities) / [`numParseInt`](docs/utils.md#number-utilities) | Number formatting and parsing |
-| [`objClone`](docs/utils.md#object-utilities) / [`objEqual`](docs/utils.md#object-utilities) / [`objMerge`](docs/utils.md#object-utilities) | Deep clone, equality, and merge |
-| [`objGetChainValue`](docs/utils.md#object-utilities) / [`objSetChainValue`](docs/utils.md#object-utilities) | Dot-path chain access |
-| [`strToPascalCase`](docs/utils.md#string-utilities) / [`strToKebabCase`](docs/utils.md#string-utilities) | String case conversion |
-| [`koreanGetSuffix`](docs/utils.md#string-utilities) | Korean grammatical particle helper |
-| [`js`](docs/utils.md#template-string-tags) / [`ts`](docs/utils.md#template-string-tags) / [`tsql`](docs/utils.md#template-string-tags) | Template literal syntax-highlighting tags |
-| [`transferableEncode`](docs/utils.md#transferable-utilities) / [`transferableDecode`](docs/utils.md#transferable-utilities) | Web Worker transfer helpers |
-| [`waitUntil`](docs/utils.md#wait-utilities) / [`waitTime`](docs/utils.md#wait-utilities) | Async wait primitives |
-| [`xmlParse`](docs/utils.md#xml-utilities) / [`xmlStringify`](docs/utils.md#xml-utilities) | XML serialization |
-| [`pathJoin`](docs/utils.md#path-utilities) / [`pathBasename`](docs/utils.md#path-utilities) | POSIX path helpers (browser/Capacitor) |
-| [`errorMessage`](docs/utils.md#error-utility) | Safe error-to-string conversion |
+| [`dt`](docs/utils.md#dt--date-utilities) | Date/time formatting and normalization (`dt.format`, `dt.normalizeMonth`, `dt.convert12To24`) |
+| [`bytes`](docs/utils.md#bytes--binary-utilities) | Binary encoding helpers (`concat`, `toHex`, `fromHex`, `toBase64`, `fromBase64`) |
+| [`json`](docs/utils.md#json--json-utilities) | JSON with support for `DateTime`, `Uuid`, `Set`, `Map`, etc. (`stringify`, `parse`) |
+| [`num`](docs/utils.md#num--number-utilities) | Number formatting and parsing (`parseInt`, `parseFloat`, `parseRoundedInt`, `format`, `isNullOrEmpty`) |
+| [`obj`](docs/utils.md#obj--object-utilities) | Deep clone, equality, merge, chain path access, key utilities |
+| [`primitive`](docs/utils.md#primitive--primitive-type-utility) | Infer `PrimitiveTypeStr` from a value at runtime |
+| [`str`](docs/utils.md#str--string-utilities) | String case conversion, Korean particle, full-width conversion, null check, insert |
+| [`path`](docs/utils.md#path--path-utilities) | POSIX path helpers (`join`, `basename`, `extname`) |
+| [`xml`](docs/utils.md#xml--xml-utilities) | XML serialization (`parse`, `stringify`) |
+| [`wait`](docs/utils.md#wait--wait-utilities) | Async wait primitives (`until`, `time`) |
+| [`transfer`](docs/utils.md#transfer--transferable-utilities) | Web Worker transfer helpers (`encode`, `decode`) |
+| [`err`](docs/utils.md#err--error-utility) | Safe error-to-string conversion (`message`) |
+| [`js`](docs/utils.md#template-string-tags) / [`ts`](docs/utils.md#template-string-tags) / [`html`](docs/utils.md#template-string-tags) / [`tsql`](docs/utils.md#template-string-tags) / [`mysql`](docs/utils.md#template-string-tags) / [`pgsql`](docs/utils.md#template-string-tags) | Template literal syntax-highlighting tags |
 
 ---
 

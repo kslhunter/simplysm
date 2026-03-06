@@ -145,24 +145,6 @@ const { mounted, animating, unmount } = createMountTransition(open);
 
 ---
 
-## `createSlotSignal`
-
-Creates a slot registration mechanism for compound components.
-
-```tsx
-import { createSlotSignal } from "@simplysm/solid";
-
-const [accessor, setter] = createSlotSignal();
-```
-
-```
-createSlotSignal(): [SlotAccessor, (content: SlotAccessor) => void]
-```
-
-`SlotAccessor` is `Accessor<(() => JSX.Element) | undefined>`.
-
----
-
 ## `useRouterLink`
 
 Returns a click handler that performs SolidJS Router navigation, including support for Ctrl+click (new tab) and Shift+click (new window).

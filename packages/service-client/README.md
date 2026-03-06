@@ -49,7 +49,7 @@ await client.connect();
 | Property | Type | Description |
 |---|---|---|
 | `name` | `string` | Client identifier sent to the server |
-| `options` | `ServiceConnectionConfig` | Connection configuration (readonly) |
+| `options` | `ServiceConnectionOptions` | Connection configuration (readonly) |
 | `connected` | `boolean` | Whether the WebSocket is currently connected |
 | `hostUrl` | `string` | HTTP base URL derived from `options` (e.g. `http://localhost:3000`) |
 
@@ -59,10 +59,10 @@ await client.connect();
 - `close(): Promise<void>` — Closes the WebSocket connection.
 - `auth(token: string): Promise<void>` — Sends an auth token to the server and stores it for automatic re-authentication on reconnect.
 - `send(serviceName, methodName, params, progress?): Promise<unknown>` — Sends a raw RPC call. Prefer `getService()` for type safety.
-- `getService<TService>(serviceName): RemoteService<TService>` — Returns a typed proxy object where every method of `TService` is wrapped to return a `Promise`.
-- `addEventListener(eventDef, info, cb): Promise<string>` — Subscribes to a server event. Returns a listener key.
-- `removeEventListener(key): Promise<void>` — Unsubscribes from a server event by key.
-- `emitToServer(eventDef, infoSelector, data): Promise<void>` — Triggers a server event for listeners matching `infoSelector`.
+- `getService<TService>(serviceName): ServiceProxy<TService>` — Returns a typed proxy object where every method of `TService` is wrapped to return a `Promise`.
+- `addListener(eventDef, info, cb): Promise<string>` — Subscribes to a server event. Returns a listener key.
+- `removeListener(key): Promise<void>` — Unsubscribes from a server event by key.
+- `emitEvent(eventDef, infoSelector, data): Promise<void>` — Triggers a server event for listeners matching `infoSelector`.
 - `uploadFile(files): Promise<ServiceUploadResult[]>` — Uploads files to the server. Requires prior `auth()` call.
 - `downloadFileBuffer(relPath): Promise<Bytes>` — Downloads a file from the server as a `Uint8Array`.
 
@@ -229,12 +229,12 @@ export interface EventClient {
     cb: (data: TData) => PromiseLike<void>,
   ): Promise<string>;
   removeListener(key: string): Promise<void>;
-  emitToServer<TInfo, TData>(
+  emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
   ): Promise<void>;
-  reRegisterAll(): Promise<void>;
+  resubscribeAll(): Promise<void>;
 }
 ```
 
@@ -242,8 +242,8 @@ export interface EventClient {
 
 - `addListener(eventDef, info, cb)` — Registers a listener. `info` is sent to the server to filter which events this client receives. Returns a unique key.
 - `removeListener(key)` — Unregisters a listener by the key returned from `addListener`.
-- `emitToServer(eventDef, infoSelector, data)` — Fetches all registered listeners from the server and emits `data` to those where `infoSelector(info)` returns `true`.
-- `reRegisterAll()` — Re-registers all listeners with the server (called automatically on reconnect).
+- `emit(eventDef, infoSelector, data)` — Fetches all registered listeners from the server and emits `data` to those where `infoSelector(info)` returns `true`.
+- `resubscribeAll()` — Re-registers all listeners with the server (called automatically on reconnect).
 
 ---
 
@@ -297,12 +297,12 @@ const fileClient = createFileClient("http://localhost:3000", "my-app");
 
 ---
 
-#### `OrmConnectConfig<TDef>` (interface)
+#### `OrmConnectOptions<TDef>` (interface)
 
 Configuration for connecting to a database through the ORM service.
 
 ```typescript
-export interface OrmConnectConfig<TDef extends DbContextDef<any, any, any>> {
+export interface OrmConnectOptions<TDef extends DbContextDef<any, any, any>> {
   dbContextDef: TDef;
   connOpt: DbConnOptions & { configName: string };
   dbContextOpt?: {
@@ -327,11 +327,11 @@ Provides a high-level API for running ORM operations through the service client.
 ```typescript
 export interface OrmClientConnector {
   connect<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectConfig<TDef>,
+    config: OrmConnectOptions<TDef>,
     callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R>;
   connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectConfig<TDef>,
+    config: OrmConnectOptions<TDef>,
     callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R>;
 }
@@ -404,12 +404,12 @@ constructor(client: ServiceClient, opt: DbConnOptions & { configName: string })
 
 ## Types
 
-### `ServiceConnectionConfig`
+### `ServiceConnectionOptions`
 
 ```typescript
-import { ServiceConnectionConfig } from "@simplysm/service-client";
+import { ServiceConnectionOptions } from "@simplysm/service-client";
 
-export interface ServiceConnectionConfig {
+export interface ServiceConnectionOptions {
   port: number;
   host: string;
   ssl?: boolean;
@@ -464,13 +464,13 @@ export interface ServiceProgressState {
 
 ---
 
-### `RemoteService<TService>`
+### `ServiceProxy<TService>`
 
 Utility type that wraps all methods of `TService` so their return types become `Promise`. Non-function properties are excluded (`never`). Used as the return type of `ServiceClient.getService()`.
 
 ```typescript
-import type { RemoteService } from "@simplysm/service-client";
+import type { ServiceProxy } from "@simplysm/service-client";
 
-type RemoteMyService = RemoteService<MyService>;
+type ProxiedMyService = ServiceProxy<MyService>;
 // Every method now returns Promise<ReturnType>
 ```

@@ -20,6 +20,8 @@ import { ConfigProvider, useConfig } from "@simplysm/solid";
 const config = useConfig();
 ```
 
+Also exports: `AppConfig`, `ConfigContext`
+
 **`AppConfig`**
 
 | Property | Type | Description |
@@ -46,6 +48,8 @@ const value = storage.get("key");
 storage.set("key", value);
 ```
 
+Also exports: `StorageAdapter`, `SyncStorageContextValue`, `SyncStorageContext`
+
 **`StorageAdapter`**
 
 | Method | Description |
@@ -67,6 +71,8 @@ import { LoggerProvider } from "@simplysm/solid";
   <App />
 </LoggerProvider>
 ```
+
+Also exports: `LogAdapter`, `LoggerContextValue`, `LoggerContext`
 
 **`LogAdapter`**
 
@@ -92,6 +98,8 @@ theme.setMode("dark");
 console.log(theme.resolved()); // "dark" | "light"
 ```
 
+Also exports: `ThemeMode`, `ResolvedTheme`
+
 **`ThemeMode`**: `"light" | "dark" | "system"`
 
 **`ResolvedTheme`**: `"light" | "dark"`
@@ -105,8 +113,11 @@ WebSocket service client context for `@simplysm/service-client`.
 ```tsx
 import { useServiceClient } from "@simplysm/solid";
 
-const client = useServiceClient();
+const clientMap = useServiceClient();
+const client = clientMap.get("default");
 ```
+
+Also exports: `ServiceClientContextValue`, `ServiceClientContext`
 
 ---
 
@@ -129,29 +140,66 @@ import { SystemProvider } from "@simplysm/solid";
 | `clientName` | `string` | Application name (used in service client) |
 | `busyVariant` | `BusyVariant` | Global busy indicator style (`"spinner"` or `"bar"`) |
 
-Internally composes: `ConfigProvider`, `I18nProvider`, `SyncStorageProvider`, `LoggerProvider`, `NotificationProvider`, `NotificationBanner`, `ErrorLoggerProvider`, `PwaUpdateProvider`, `ClipboardProvider`, `ThemeProvider`, `ServiceClientProvider`, `SharedDataProvider`, `BusyProvider`.
+Internally composes: `ConfigProvider`, `I18nProvider`, `SyncStorageProvider`, `LoggerProvider`, `NotificationProvider`, `NotificationBanner`, `ThemeProvider`, `ServiceClientProvider`, `SharedDataProvider`, `BusyProvider`, `DialogProvider`.
+
+Also re-exports: `BusyVariant`
 
 ---
 
-## `SharedDataContext`
+## `SharedDataProvider`
 
-Context for shared data definitions that are synchronized with the server.
+Context for shared data definitions that are synchronized with the server in real time.
 
 ```tsx
-import { useSharedData } from "@simplysm/solid";
+import { SharedDataProvider, useSharedData } from "@simplysm/solid";
 
+// Wrap app:
+<SharedDataProvider>
+  <App />
+</SharedDataProvider>
+
+// Configure in a child component (called once):
+useSharedData().configure(() => ({
+  users: {
+    fetch: async (changeKeys) => fetchUsers(changeKeys),
+    getKey: (item) => item.id,
+    orderBy: [[(item) => item.name, "asc"]],
+  },
+}));
+
+// Consume:
 const shared = useSharedData<MySharedData>();
 const items = shared.users.items();
+const user = shared.users.get(userId);
+await shared.users.emit([changedId]);
 ```
+
+Also exports: `SharedDataDefinition`, `SharedDataAccessor`, `SharedDataValue`
 
 **`SharedDataDefinition<TData>`**
 
-| Property | Description |
-|----------|-------------|
-| `getKey(item)` | Returns the primary key of an item |
-| `getParentKey?(item)` | Returns parent key for tree data |
-| `itemSearchText?(item)` | Returns search text for filtering |
-| `isItemHidden?(item)` | Returns whether item is hidden |
+| Property | Type | Description |
+|----------|------|-------------|
+| `serviceKey?` | `string` | Service connection key (defaults to `"default"`) |
+| `fetch` | `(changeKeys?) => Promise<TData[]>` | Data fetch function (required) |
+| `getKey` | `(item) => string \| number` | Primary key extractor (required) |
+| `orderBy` | `[(item) => unknown, "asc" \| "desc"][]` | Sort criteria (required) |
+| `filter?` | `unknown` | Server event filter value |
+| `itemSearchText?` | `(item) => string` | Search text extractor |
+| `isItemHidden?` | `(item) => boolean` | Item visibility |
+| `getParentKey?` | `(item) => string \| number \| undefined` | Parent key for tree data |
+
+**`SharedDataAccessor<TData>`**
+
+| Member | Description |
+|--------|-------------|
+| `items()` | Reactive items array |
+| `get(key)` | Get a single item by key |
+| `emit(changeKeys?)` | Propagate change event to server |
+| `getKey(item)` | Primary key extractor |
+| `itemSearchText?(item)` | Search text extractor |
+| `isItemHidden?(item)` | Item visibility |
+| `getParentKey?(item)` | Parent key extractor |
 
 ---
 
@@ -162,6 +210,8 @@ Event class used to notify the shared data system about data changes.
 ```tsx
 import { SharedDataChangeEvent } from "@simplysm/solid";
 ```
+
+Event info shape: `{ name: string; filter: unknown }`. Event data: `(string | number)[] | undefined` (changed keys, or `undefined` for full refresh).
 
 ---
 
@@ -188,6 +238,8 @@ i18n.configure({
   },
 });
 ```
+
+Also exports: `I18nContextValue`, `I18nConfigureOptions`, `FlatDict`
 
 **`useI18n()`** — Returns the `I18nContextValue`. Throws if called outside `I18nProvider`.
 

@@ -108,7 +108,7 @@ Context and hook for programmatic dialog management.
 import { useDialog } from "@simplysm/solid";
 
 const dialog = useDialog();
-const result = await dialog.show<MyResult>(() => <MyDialog />, { header: "Confirm" });
+const result = await dialog.show(MyDialog, props, { header: "Confirm" });
 ```
 
 **`DialogDefaults`**
@@ -147,7 +147,7 @@ import { DialogDefaultsContext } from "@simplysm/solid";
 
 | Member | Type | Description |
 |--------|------|-------------|
-| `show<TResult>` | `(factory, options) => Promise<TResult \| undefined>` | Opens a dialog and awaits its result |
+| `show<TResult>` | `(component, props, options?) => Promise<TResult \| undefined>` | Opens a dialog component and awaits its result |
 
 ---
 
@@ -169,26 +169,6 @@ import { DialogProvider } from "@simplysm/solid";
 |------|------|-------------|
 | `closeOnEscape?` | `boolean` | Default ESC close behavior for all dialogs |
 | `closeOnInteractOutside?` | `boolean` | Default backdrop close behavior for all dialogs |
-
----
-
-## `DialogInstanceContext`
-
-Context for dialogs to communicate their result back to the caller.
-
-```tsx
-import { DialogInstanceContext, useDialogInstance } from "@simplysm/solid";
-
-// Inside a dialog component:
-const instance = useDialogInstance<MyResult>();
-instance.close({ success: true });
-```
-
-**`DialogInstance<TResult>`**
-
-| Member | Description |
-|--------|-------------|
-| `close(result?)` | Closes the dialog and resolves the promise with the result |
 
 ---
 

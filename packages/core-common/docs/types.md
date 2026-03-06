@@ -11,7 +11,7 @@ UUID v4 class using `crypto.getRandomValues`.
 ```typescript
 import { Uuid } from "@simplysm/core-common";
 
-const id = Uuid.new();                                // create new UUID v4
+const id = Uuid.generate();                           // create new UUID v4
 const fromStr = new Uuid("550e8400-e29b-41d4-a716-446655440000");
 const fromBytes = Uuid.fromBytes(new Uint8Array(16)); // 16-byte array
 
@@ -21,7 +21,7 @@ id.toBytes();  // Uint8Array (16 bytes)
 
 | Member | Description |
 |--------|-------------|
-| `Uuid.new()` | Creates a new UUID v4 instance |
+| `Uuid.generate()` | Creates a new UUID v4 instance |
 | `Uuid.fromBytes(bytes)` | Creates from 16-byte `Uint8Array`. Throws `ArgumentError` if not 16 bytes |
 | `new Uuid(str)` | Parses UUID string. Throws `ArgumentError` on invalid format |
 | `.toString()` | Returns UUID string |
@@ -37,7 +37,7 @@ A `Map` that automatically expires and removes entries not accessed within a con
 import { LazyGcMap } from "@simplysm/core-common";
 
 // Recommended: using statement (auto-dispose)
-await using map = new LazyGcMap({ expireTime: 60_000 });
+using map = new LazyGcMap({ expireTime: 60_000 });
 
 map.set("key", value);
 map.get("key");           // updates last-access time
@@ -53,6 +53,21 @@ map.dispose();            // stop GC timer and clear data
 | `expireTime` | `number` | Milliseconds since last access before expiry (required) |
 | `gcInterval` | `number?` | GC timer interval in ms. Defaults to `expireTime / 10` (min 1000 ms) |
 | `onExpire` | `(key, value) => void \| Promise<void>` | Callback on expiry (errors are logged and ignored) |
+
+| Member | Description |
+|--------|-------------|
+| `.size` | Number of stored items |
+| `.has(key)` | Check if key exists (does not update access time) |
+| `.get(key)` | Get value (updates access time) |
+| `.set(key, value)` | Store value (starts GC timer if not running) |
+| `.delete(key)` | Delete item |
+| `.clear()` | Delete all items (instance still usable) |
+| `.getOrCreate(key, factory)` | Return existing value or create and store via factory |
+| `.values()` | Iterate values |
+| `.keys()` | Iterate keys |
+| `.entries()` | Iterate `[key, value]` pairs |
+| `.dispose()` | Stop GC timer and clear all data |
+| `[Symbol.dispose]()` | `using` statement support |
 
 ---
 
@@ -85,7 +100,7 @@ DateTime.parse("2025-01-15 AM 10:30:00");     // AM/PM format
 | `.isValid` | Whether the date is valid |
 | `.setYear/Month/Day/Hour/Minute/Second/Millisecond(n)` | Returns new instance with field replaced |
 | `.addYears/Months/Days/Hours/Minutes/Seconds/Milliseconds(n)` | Returns new instance with field added |
-| `.toFormatString(fmt)` | Formats using format string (see `formatDate` for tokens) |
+| `.toFormatString(fmt)` | Formats using format string (see `dt.format` for tokens) |
 | `.toString()` | `"yyyy-MM-ddTHH:mm:ss.fffzzz"` format |
 
 ---
@@ -175,16 +190,18 @@ import type { Bytes, PrimitiveTypeMap, PrimitiveTypeStr, PrimitiveType } from "@
 ### Utility types
 
 ```typescript
-import type { DeepPartial, Type, ObjUndefToOptional, ObjOptionalToUndef, EqualOptions, ObjMergeOptions, ObjMerge3KeyOptions, DtNormalizedMonth } from "@simplysm/core-common";
+import type { DeepPartial, Type } from "@simplysm/core-common";
+import type { UndefToOptional, OptionalToUndef, EqualOptions, MergeOptions, Merge3KeyOptions } from "@simplysm/core-common";
+import type { DtNormalizedMonth } from "@simplysm/core-common";
 ```
 
 | Type | Description |
 |------|-------------|
 | `DeepPartial<T>` | Recursively makes all properties optional (primitives kept as-is) |
 | `Type<TInstance>` | Constructor type: `new (...args) => TInstance` |
-| `ObjUndefToOptional<T>` | Converts `prop: T \| undefined` to `prop?: T \| undefined` |
-| `ObjOptionalToUndef<T>` | Converts `prop?: T` to `prop: T \| undefined` |
-| `EqualOptions` | Options for `objEqual` |
-| `ObjMergeOptions` | Options for `objMerge` |
-| `ObjMerge3KeyOptions` | Per-key options for `objMerge3` |
-| `DtNormalizedMonth` | Return type of `normalizeMonth`: `{ year, month, day }` |
+| `UndefToOptional<T>` | Converts `prop: T \| undefined` to `prop?: T \| undefined` |
+| `OptionalToUndef<T>` | Converts `prop?: T` to `prop: T \| undefined` |
+| `EqualOptions` | Options for `obj.equal` — `topLevelIncludes`, `topLevelExcludes`, `ignoreArrayIndex`, `shallow` |
+| `MergeOptions` | Options for `obj.merge` — `arrayProcess`, `useDelTargetNull` |
+| `Merge3KeyOptions` | Per-key options for `obj.merge3` — `keys`, `excludes`, `ignoreArrayIndex` |
+| `DtNormalizedMonth` | Return type of `dt.normalizeMonth`: `{ year, month, day }` |

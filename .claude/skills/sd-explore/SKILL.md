@@ -28,7 +28,7 @@ Split a large codebase into manageable groups and dispatch parallel sub-agents, 
 The calling skill provides:
 
 1. **Target path** — directory to explore (e.g., `packages/solid/src`)
-2. **Output directory** — where to write result files (e.g., `.tmp/sd-review`)
+2. **Name** — caller identifier for output filenames (e.g., `review`, `debug`, `brainstorm`)
 3. **File patterns** — glob patterns to match (default: `**/*.ts`, `**/*.tsx`; exclude `node_modules`, `dist`)
 4. **Analysis instructions** — free-form text describing what each sub-agent should do
 
@@ -40,7 +40,7 @@ The analysis instructions are passed verbatim to each sub-agent. They can reques
 
 Glob all matching files under the target path.
 
-- **< 30 files**: Run a single `Agent(subagent_type=Explore)` with the analysis instructions. No splitting needed. Write result to `{output_dir}/explore.md`.
+- **< 30 files**: Run a single `Agent(subagent_type=Explore)` with the analysis instructions. No splitting needed. Write result to `.tmp/explore/{dt}_{name}.md` (where `{dt}` is current datetime as `yyyyMMddHHmmss`).
 - **>= 30 files**: Proceed to Step 2.
 
 ### Step 2: Split Into Groups
@@ -72,7 +72,7 @@ You are exploring a section of a codebase. Read ALL assigned files and write you
 **Analysis instructions:**
 [caller's free-form instructions, passed verbatim]
 
-**Output file:** {output_dir}/explore-{group_index}.md
+**Output file:** .tmp/explore/{dt}_{name}-{group_index}.md
 
 Read every assigned file. Write your complete analysis to the output file. Do NOT skip files.
 ```

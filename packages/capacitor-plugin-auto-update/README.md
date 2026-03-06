@@ -19,19 +19,16 @@ pnpm add @simplysm/capacitor-plugin-auto-update
 Abstract class with static methods that wrap the native `ApkInstaller` Capacitor plugin.
 
 - Android: executes APK install intent and manages `REQUEST_INSTALL_PACKAGES` permission.
-- Browser (web fallback): shows an alert message and returns normally.
+- Browser (web fallback): `checkPermissions` returns `{ granted: true, manifest: true }`, `install` shows an alert and returns normally.
 
 ```ts
 import { ApkInstaller } from "@simplysm/capacitor-plugin-auto-update";
 
-// Check whether REQUEST_INSTALL_PACKAGES is declared in the manifest
-const declared = await ApkInstaller.hasPermissionManifest();
-
-// Check whether REQUEST_INSTALL_PACKAGES is currently granted
-const granted = await ApkInstaller.hasPermission();
+// Check whether REQUEST_INSTALL_PACKAGES is declared in the manifest and currently granted
+const { granted, manifest } = await ApkInstaller.checkPermissions();
 
 // Navigate the user to the settings page to grant the permission
-await ApkInstaller.requestPermission();
+await ApkInstaller.requestPermissions();
 
 // Install an APK given a content:// FileProvider URI
 await ApkInstaller.install("content://com.example/files/latest.apk");
@@ -46,11 +43,10 @@ const info = await ApkInstaller.getVersionInfo();
 
 | Method | Signature | Description |
 |---|---|---|
-| `hasPermissionManifest` | `() => Promise<boolean>` | Returns `true` if `REQUEST_INSTALL_PACKAGES` is declared in the manifest. |
-| `hasPermission` | `() => Promise<boolean>` | Returns `true` if `REQUEST_INSTALL_PACKAGES` is currently granted. |
-| `requestPermission` | `() => Promise<void>` | Opens the system settings screen for the user to grant the permission. |
+| `checkPermissions` | `() => Promise<{ granted: boolean; manifest: boolean }>` | Returns whether `REQUEST_INSTALL_PACKAGES` is granted and declared in the manifest. |
+| `requestPermissions` | `() => Promise<void>` | Opens the system settings screen for the user to grant the permission. |
 | `install` | `(apkUri: string) => Promise<void>` | Fires the install intent for the given `content://` URI. |
-| `getVersionInfo` | `() => Promise<IVersionInfo>` | Returns the running app's `versionName` and `versionCode`. |
+| `getVersionInfo` | `() => Promise<VersionInfo>` | Returns the running app's `versionName` and `versionCode`. |
 
 ---
 
@@ -125,31 +121,30 @@ await AutoUpdate.runByExternalStorage({
 
 ## Types
 
-### `IVersionInfo`
+### `VersionInfo`
 
 Version information returned by `ApkInstaller.getVersionInfo()`.
 
 ```ts
-import type { IVersionInfo } from "@simplysm/capacitor-plugin-auto-update";
+import type { VersionInfo } from "@simplysm/capacitor-plugin-auto-update";
 
-interface IVersionInfo {
+interface VersionInfo {
   versionName: string; // Human-readable version string, e.g. "1.2.3"
   versionCode: string; // Integer build number as a string, e.g. "10203"
 }
 ```
 
-### `IApkInstallerPlugin`
+### `ApkInstallerPlugin`
 
 Low-level interface implemented by the native Capacitor plugin. Use `ApkInstaller` (the abstract class) instead of this interface directly.
 
 ```ts
-import type { IApkInstallerPlugin } from "@simplysm/capacitor-plugin-auto-update";
+import type { ApkInstallerPlugin } from "@simplysm/capacitor-plugin-auto-update";
 
-interface IApkInstallerPlugin {
+interface ApkInstallerPlugin {
   install(options: { uri: string }): Promise<void>;
-  hasPermission(): Promise<{ granted: boolean }>;
-  requestPermission(): Promise<void>;
-  hasPermissionManifest(): Promise<{ declared: boolean }>;
-  getVersionInfo(): Promise<IVersionInfo>;
+  checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>;
+  requestPermissions(): Promise<void>;
+  getVersionInfo(): Promise<VersionInfo>;
 }
 ```

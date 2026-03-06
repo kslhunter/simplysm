@@ -50,7 +50,7 @@ Follow the **sd-explore** workflow to extract the target's public API surface.
 **sd-explore input:**
 
 - **Target path**: the review target directory
-- **Output directory**: `.tmp/sd-api-name-review`
+- **Name**: `api-name-review`
 - **File patterns**: `**/*.ts`, `**/*.tsx` (exclude `node_modules`, `dist`)
 - **Analysis instructions**:
 
@@ -91,7 +91,7 @@ For each pattern, document:
 - Specific examples from the API
 - Any documented rationale for the convention
 
-Write results to: .tmp/sd-api-name-review/research-{library_name}.md
+Write results to: .tmp/api-name-review/research-{library_name}.md
 ```
 
 ### Step 4: Comparative Analysis & Verification

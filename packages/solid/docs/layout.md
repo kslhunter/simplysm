@@ -102,15 +102,41 @@ import { Topbar } from "@simplysm/solid";
 
 <Topbar.Container>
   <Topbar>
-    <Topbar.Menu>{/* nav items */}</Topbar.Menu>
-    <Topbar.Actions>{/* right-side actions */}</Topbar.Actions>
-    <Topbar.User name="User" />
+    <Topbar.Menu menus={menuItems} />
+    <div class="flex-1" />
+    <Topbar.Actions />
+    <Topbar.User menus={userMenus}>
+      <span>Username</span>
+    </Topbar.User>
   </Topbar>
   <main>{/* page content */}</main>
 </Topbar.Container>
 ```
 
-Sub-components: `Topbar.Actions`, `Topbar.Container`, `Topbar.Menu`, `Topbar.User`
+Sub-components: `Topbar.Container`, `Topbar.Menu`, `Topbar.User`, `Topbar.Actions`
+
+**`TopbarUserProps`**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `menus` | `TopbarUserMenu[]` | Dropdown menu items (dropdown shown only when provided) |
+| `children` | `JSX.Element` | User information display (required) |
+
+**`TopbarUserMenu`**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `title` | `string` | Menu item label |
+| `onClick` | `() => void` | Click handler |
+
+**`TopbarMenuItem`**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `title` | `string` | Label |
+| `href?` | `string` | Navigation URL |
+| `icon?` | `Component<IconProps>` | Icon |
+| `children?` | `TopbarMenuItem[]` | Sub-items |
 
 ---
 

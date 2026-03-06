@@ -4,71 +4,58 @@ Design tokens, reusable CSS class patterns, SolidJS directives, and utility help
 
 ---
 
-## `tokens.styles`
+## `base.styles`
 
-Design token constants and type definitions shared across all components.
+Base design token class strings for borders, backgrounds, and text.
 
 ```tsx
-import {
-  borderDefault,
-  borderSubtle,
-  bgSurface,
-  textDefault,
-  textMuted,
-  textPlaceholder,
-  disabledOpacity,
-  ComponentSize,
-  ComponentSizeCompact,
-  paddingXs,
-  paddingSm,
-  paddingLg,
-  paddingXl,
-  SemanticTheme,
-  themeTokens,
-} from "@simplysm/solid";
+import { border, bg, text } from "@simplysm/solid";
+
+// border object: border.default, border.subtle, border.strong
+// bg object: bg.surface, bg.overlay, bg.muted
+// text object: text.default, text.muted, text.placeholder
 ```
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `borderDefault` | `string` | Default border color class |
-| `borderSubtle` | `string` | Subtle border color class |
-| `bgSurface` | `string` | Surface background class |
-| `textDefault` | `string` | Default text color class |
-| `textMuted` | `string` | Muted text color class |
-| `textPlaceholder` | `string` | Placeholder text color class |
-| `disabledOpacity` | `string` | Disabled opacity class |
-| `ComponentSize` | `type` | `"xs" \| "sm" \| "lg" \| "xl"` (default `"lg"`) |
-| `ComponentSizeCompact` | `type` | `"sm" \| "lg"` |
-| `paddingXs` | `string` | XS padding class |
-| `paddingSm` | `string` | SM padding class |
-| `paddingLg` | `string` | LG padding class |
-| `paddingXl` | `string` | XL padding class |
-| `SemanticTheme` | `type` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` |
-| `themeTokens` | `Record<SemanticTheme, ThemeTokens>` | Per-theme Tailwind class sets |
+| `border` | `object` | Border color class strings (`default`, `subtle`, `strong`) |
+| `bg` | `object` | Background color class strings (`surface`, `overlay`, `muted`) |
+| `text` | `object` | Text color class strings (`default`, `muted`, `placeholder`) |
 
 ---
 
-## `patterns.styles`
+## `control.styles`
 
-Reusable Tailwind class patterns for common UI patterns.
+Component size types and spacing class strings.
 
 ```tsx
-import {
-  insetFocusOutline,
-  insetFocusOutlineSelf,
-  insetBase,
-  fieldSurface,
-  inputBase,
-} from "@simplysm/solid";
+import { state, ComponentSize, pad, gap } from "@simplysm/solid";
 ```
 
-| Export | Description |
-|--------|-------------|
-| `insetFocusOutline` | Focus ring for inset (borderless) elements |
-| `insetFocusOutlineSelf` | Self-applied focus ring variant |
-| `insetBase` | Base class for inset-styled components |
-| `fieldSurface` | Background class for field surfaces |
-| `inputBase` | Base class for input elements |
+| Export | Type | Description |
+|--------|------|-------------|
+| `state` | `object` | Interactive state class strings (hover, focus, active, disabled) |
+| `ComponentSize` | `type` | `"xs" \| "sm" \| "default" \| "lg" \| "xl"` |
+| `pad` | `object` | Padding class strings per size (`xs`, `sm`, `default`, `lg`, `xl`) |
+| `gap` | `object` | Gap class strings per size (`xs`, `sm`, `default`, `lg`, `xl`) |
+
+---
+
+## `theme.styles`
+
+Semantic color theme types and per-theme Tailwind class sets.
+
+```tsx
+import { themeTokens, SemanticTheme } from "@simplysm/solid";
+
+// SemanticTheme: "primary" | "info" | "success" | "warning" | "danger" | "base"
+// themeTokens[theme].bg, themeTokens[theme].text, etc.
+```
+
+| Export | Type | Description |
+|--------|------|-------------|
+| `SemanticTheme` | `type` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` |
+| `themeTokens` | `Record<SemanticTheme, ThemeTokens>` | Per-theme Tailwind class sets |
 
 ---
 
@@ -106,4 +93,69 @@ const style = mergeStyles(
 
 ```
 mergeStyles(...styles: (JSX.CSSProperties | string | undefined)[]): JSX.CSSProperties
+```
+
+---
+
+## `createSlot`
+
+Factory that creates a single-slot registration component for compound component patterns. The slot can hold at most one item at a time.
+
+```tsx
+import { createSlot } from "@simplysm/solid";
+
+const [MySlot, createMySlotAccessor] = createSlot<MySlotProps>();
+
+// Inside compound component:
+const [slotItem, SlotProvider] = createMySlotAccessor();
+
+// Usage in JSX tree:
+<SlotProvider>
+  <MySlot prop1="value" />
+  {/* rest of children */}
+</SlotProvider>
+```
+
+```
+createSlot<TItem>(): [
+  SlotComponent: (props: TItem) => null,
+  createSlotAccessor: () => [Accessor<TItem | undefined>, ParentComponent]
+]
+```
+
+---
+
+## `createSlots`
+
+Factory that creates a multi-slot registration component for compound component patterns. Multiple items can be registered.
+
+```tsx
+import { createSlots } from "@simplysm/solid";
+
+const [ActionSlot, createActionSlotsAccessor] = createSlots<ActionProps>();
+
+// Inside compound component:
+const [actions, ActionsProvider] = createActionSlotsAccessor();
+
+// Usage in JSX tree:
+<ActionsProvider>
+  <ActionSlot onClick={handler1}>Action 1</ActionSlot>
+  <ActionSlot onClick={handler2}>Action 2</ActionSlot>
+</ActionsProvider>
+```
+
+```
+createSlots<TItem>(): [
+  SlotComponent: (props: TItem) => null,
+  createSlotsAccessor: () => [Accessor<TItem[]>, ParentComponent]
+]
+```
+
+Also exports `SlotRegistrar<TItem>` interface:
+
+```
+interface SlotRegistrar<TItem> {
+  add: (item: TItem) => void;
+  remove: (item: TItem) => void;
+}
 ```
