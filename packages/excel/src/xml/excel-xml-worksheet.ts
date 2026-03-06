@@ -400,13 +400,15 @@ export class ExcelXmlWorksheet implements ExcelXml {
       return;
     }
 
+    const allMergeCells = this.getMergeCells();
+
     // Copy and store source row merge cell info first
-    const sourceMergeCells = this.getMergeCells()
+    const sourceMergeCells = allMergeCells
       .filter((mc) => mc.s.r <= sourceR && mc.e.r >= sourceR)
       .map((mc) => ({ s: { ...mc.s }, e: { ...mc.e } }));
 
     // Remove existing merge cells in target row
-    for (const mergeCell of this.getMergeCells()) {
+    for (const mergeCell of allMergeCells) {
       if (mergeCell.s.r <= targetR && mergeCell.e.r >= targetR) {
         this.removeMergeCells(mergeCell.s, mergeCell.e);
       }
