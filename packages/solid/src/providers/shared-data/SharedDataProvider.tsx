@@ -135,7 +135,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
   const [busyCount, setBusyCount] = createSignal(0);
   const busy: Accessor<boolean> = () => busyCount() > 0;
 
-  const versionMap = new Map<string, number>();
   const accessors: Record<string, SharedDataAccessor<unknown>> = {};
 
   let disposed = false;
@@ -170,18 +169,18 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
     let state: EntryState = "idle";
     let listenerKey: string | undefined;
+    let version = 0;
 
     async function loadData(changeKeys?: Array<string | number>): Promise<void> {
       // Prevent data inversion on concurrent calls via version counter
-      const currentVersion = (versionMap.get(name) ?? 0) + 1;
-      versionMap.set(name, currentVersion);
+      const currentVersion = ++version;
 
       setBusyCount((c) => c + 1);
       try {
         const resData = await def.fetch(changeKeys);
 
         // Ignore stale responses
-        if (versionMap.get(name) !== currentVersion) return;
+        if (version !== currentVersion) return;
 
         if (!changeKeys) {
           setItems(ordering(resData, def.orderBy));
@@ -206,6 +205,13 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
     async function initialize(): Promise<void> {
       if (state !== "idle" && state !== "error") return;
+
+      // Clean up leaked listener from previous failed attempt
+      if (listenerKey != null) {
+        void client.removeListener(listenerKey);
+        listenerKey = undefined;
+      }
+
       state = "initializing";
 
       try {
@@ -213,7 +219,11 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
           SharedDataChangeEvent,
           { name, filter: def.filter },
           async (changeKeys) => {
-            await loadData(changeKeys);
+            try {
+              await loadData(changeKeys);
+            } catch {
+              // Error already logged and notified in loadData
+            }
           },
         );
 
