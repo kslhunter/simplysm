@@ -469,7 +469,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       excludes?: string[];
     },
   ): (T | P | (T & P))[] {
-    const diffs = this.diffs(target, options);
+    const diffs = this.diffs(target as any[], options as any);
 
     const result: (T | P | (T & P))[] = clone(this);
 
@@ -490,7 +490,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
       // When adding
       else if (diff.target !== undefined) {
-        result.push(diff.target);
+        result.push(diff.target as any);
       }
     }
 
