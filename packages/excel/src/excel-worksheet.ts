@@ -109,21 +109,20 @@ export class ExcelWorksheet {
     const wsData = await this._getWsData();
     const range = wsData.range;
 
-    // Increment row index by 1 for all merge cells at or below targetR
-    const mergeCells = wsData.getMergeCells();
-    for (const mc of mergeCells) {
-      if (mc.s.r >= targetR) mc.s.r++;
-      if (mc.e.r >= targetR) mc.e.r++;
-    }
+    // Shift merge cells at or below targetR down by 1
+    wsData.shiftMergeCells(targetR, 1);
 
     // When srcR >= targetR, adjust for the shifted position of srcR
     const adjustedSrcR = srcR >= targetR ? srcR + 1 : srcR;
 
+    // Shift existing rows down (from bottom to top to avoid overwriting)
+    // Use skipMerge: true because merge cells are already shifted above
     for (let r = range.e.r; r >= targetR; r--) {
-      await this.copyRow(r, r + 1);
+      wsData.copyRow(r, r + 1, { skipMerge: true });
     }
 
-    await this.copyRow(adjustedSrcR, targetR);
+    // Copy source row to target position (includes merge handling)
+    wsData.copyRow(adjustedSrcR, targetR);
   }
 
   //#endregion

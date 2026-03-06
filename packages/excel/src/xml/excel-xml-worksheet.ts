@@ -85,7 +85,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   getCellType(addr: { r: number; c: number }): ExcelCellType | undefined {
-    return this._getCellData(addr)?.$.t as ExcelCellType | undefined;
+    return this._getCellData(addr)?.$.t;
   }
 
   setCellVal(addr: { r: number; c: number }, val: string | undefined): void {
@@ -221,6 +221,24 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
   }
 
+  shiftMergeCells(fromRow: number, delta: number): void {
+    const mergeCells = this.data.worksheet.mergeCells;
+    if (mergeCells === undefined) return;
+
+    for (const mergeCell of mergeCells[0].mergeCell) {
+      const range = ExcelUtils.parseRangeAddr(mergeCell.$.ref);
+
+      if (range.s.r >= fromRow) {
+        range.s.r += delta;
+      }
+      if (range.e.r >= fromRow) {
+        range.e.r += delta;
+      }
+
+      mergeCell.$.ref = ExcelUtils.stringifyRangeAddr(range);
+    }
+  }
+
   /**
    * Set width of a specific column.
    *
@@ -353,7 +371,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     ];
   }
 
-  copyRow(sourceR: number, targetR: number): void {
+  copyRow(sourceR: number, targetR: number, options?: { skipMerge?: boolean }): void {
     // Clone source ROW data
     const sourceRowInfo = this._dataMap.get(sourceR);
 
@@ -377,13 +395,20 @@ export class ExcelXmlWorksheet implements ExcelXml {
       this._deleteRow(targetR);
     }
 
+    // Skip merge handling if skipMerge option is true
+    if (options?.skipMerge === true) {
+      return;
+    }
+
+    const allMergeCells = this.getMergeCells();
+
     // Copy and store source row merge cell info first
-    const sourceMergeCells = this.getMergeCells()
+    const sourceMergeCells = allMergeCells
       .filter((mc) => mc.s.r <= sourceR && mc.e.r >= sourceR)
       .map((mc) => ({ s: { ...mc.s }, e: { ...mc.e } }));
 
     // Remove existing merge cells in target row
-    for (const mergeCell of this.getMergeCells()) {
+    for (const mergeCell of allMergeCells) {
       if (mergeCell.s.r <= targetR && mergeCell.e.r >= targetR) {
         this.removeMergeCells(mergeCell.s, mergeCell.e);
       }

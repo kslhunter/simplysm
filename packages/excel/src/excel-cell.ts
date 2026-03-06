@@ -227,7 +227,7 @@ export class ExcelCell {
   /**
    * Set cell style
    * @param opts Style options
-   * @param opts.background Background color (ARGB format, 8-digit hex. e.g. "FFFF0000")
+   * @param opts.background Background color (ARGB format, 8-digit hex. e.g. "00FF0000")
    * @param opts.border Border position array (e.g. ["left", "right", "top", "bottom"])
    * @param opts.horizontalAlign Horizontal alignment ("left", "center", "right")
    * @param opts.verticalAlign Vertical alignment ("top", "center", "bottom")
