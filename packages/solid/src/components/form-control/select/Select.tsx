@@ -144,10 +144,6 @@ export interface SelectItemProps<TValue = unknown> extends Omit<
   disabled?: boolean;
 }
 
-interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectItemProps<TValue>> {
-  Children: typeof SelectItemChildren;
-}
-
 /**
  * Selectable item within Select dropdown
  *
@@ -164,7 +160,7 @@ interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectIt
  * </Select.Item>
  * ```
  */
-const SelectItem: SelectItemComponent = <TValue,>(
+const SelectItemInner = <TValue,>(
   props: SelectItemProps<TValue> & { children?: JSX.Element },
 ) => {
   const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
@@ -231,7 +227,9 @@ const SelectItem: SelectItemComponent = <TValue,>(
   );
 };
 
-SelectItem.Children = SelectItemChildren;
+const SelectItem = Object.assign(SelectItemInner, {
+  Children: SelectItemChildren,
+});
 
 //#endregion
 

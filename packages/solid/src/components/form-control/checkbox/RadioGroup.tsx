@@ -95,15 +95,6 @@ function RadioGroupItem<TValue = unknown>(props: {
   );
 }
 
-interface RadioGroupComponent {
-  <TValue = unknown>(props: RadioGroupProps<TValue>): JSX.Element;
-  Item: <TValue = unknown>(props: {
-    value: TValue;
-    disabled?: boolean;
-    children?: JSX.Element;
-  }) => JSX.Element;
-}
-
 export const RadioGroup = Object.assign(RadioGroupInner, {
   Item: RadioGroupItem,
-}) as RadioGroupComponent;
+});

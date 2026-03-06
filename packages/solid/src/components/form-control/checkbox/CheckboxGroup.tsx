@@ -98,15 +98,6 @@ function CheckboxGroupItem<TValue = unknown>(props: {
   );
 }
 
-interface CheckboxGroupComponent {
-  <TValue = unknown>(props: CheckboxGroupProps<TValue>): JSX.Element;
-  Item: <TValue = unknown>(props: {
-    value: TValue;
-    disabled?: boolean;
-    children?: JSX.Element;
-  }) => JSX.Element;
-}
-
 export const CheckboxGroup = Object.assign(CheckboxGroupInner, {
   Item: CheckboxGroupItem,
-}) as CheckboxGroupComponent;
+});

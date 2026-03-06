@@ -162,11 +162,6 @@ function isValidNumberInput(str: string): boolean {
   return /^-?\d*\.?\d*$/.test(cleanStr);
 }
 
-interface NumberInputComponent {
-  (props: NumberInputProps): JSX.Element;
-  Prefix: typeof NumberInputPrefix;
-}
-
 /**
  * NumberInput component
  *
@@ -187,7 +182,7 @@ interface NumberInputComponent {
  * </NumberInput>
  * ```
  */
-export const NumberInput: NumberInputComponent = (props) => {
+const NumberInputInner = (props: NumberInputProps): JSX.Element => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
@@ -350,4 +345,6 @@ export const NumberInput: NumberInputComponent = (props) => {
   );
 };
 
-NumberInput.Prefix = NumberInputPrefix;
+export const NumberInput = Object.assign(NumberInputInner, {
+  Prefix: NumberInputPrefix,
+});

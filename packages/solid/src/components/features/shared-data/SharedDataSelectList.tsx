@@ -75,13 +75,7 @@ export interface SharedDataSelectListProps<TItem> {
 
 // ─── Component ───────────────────────────────────────────
 
-export interface SharedDataSelectListComponent {
-  <TItem>(props: SharedDataSelectListProps<TItem>): JSX.Element;
-  ItemTemplate: typeof SharedDataSelectListItemTemplate;
-  Filter: typeof SharedDataSelectListFilter;
-}
-
-export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
+const SharedDataSelectListInner = (<TItem,>(
   props: SharedDataSelectListProps<TItem>,
 ): JSX.Element => {
   const [local, rest] = splitProps(props, [
@@ -274,7 +268,9 @@ export const SharedDataSelectList: SharedDataSelectListComponent = (<TItem,>(
     </SharedDataSelectListContext.Provider>
     </FilterProvider>
   );
-}) as SharedDataSelectListComponent;
+});
 
-SharedDataSelectList.ItemTemplate = SharedDataSelectListItemTemplate;
-SharedDataSelectList.Filter = SharedDataSelectListFilter;
+export const SharedDataSelectList = Object.assign(SharedDataSelectListInner, {
+  ItemTemplate: SharedDataSelectListItemTemplate,
+  Filter: SharedDataSelectListFilter,
+});

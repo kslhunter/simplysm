@@ -34,10 +34,6 @@ export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
  * </List>
  * ```
  */
-interface ListComponent extends ParentComponent<ListProps> {
-  Item: typeof ListItem;
-}
-
 const ListBase: ParentComponent<ListProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inset"]);
 
@@ -176,5 +172,6 @@ const ListBase: ParentComponent<ListProps> = (props) => {
   );
 };
 
-export const List = ListBase as ListComponent;
-List.Item = ListItem;
+export const List = Object.assign(ListBase, {
+  Item: ListItem,
+});
