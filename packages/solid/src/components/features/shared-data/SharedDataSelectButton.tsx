@@ -44,10 +44,7 @@ export function SharedDataSelectButton<
 >(
   props: SharedDataSelectButtonProps<TItem, TDialogProps>,
 ): JSX.Element {
-  const [local, rest] = splitProps(props as any, ["data", "children"]) as unknown as [
-    Pick<typeof props, "data" | "children">,
-    Omit<typeof props, "data" | "children">,
-  ];
+  const [local, rest] = splitProps(props, ["data", "children"]);
 
   return (
     <DataSelectButton

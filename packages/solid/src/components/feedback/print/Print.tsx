@@ -8,14 +8,10 @@ function PrintPage(props: ParentProps) {
 
 // --- Print ---
 
-interface PrintComponent {
-  (props: ParentProps): JSX.Element;
-  Page: typeof PrintPage;
-}
-
 const PrintInner = (props: ParentProps) => {
   return <>{props.children}</>;
 };
 
-export const Print = PrintInner as unknown as PrintComponent;
-Print.Page = PrintPage;
+export const Print = Object.assign(PrintInner, {
+  Page: PrintPage,
+});

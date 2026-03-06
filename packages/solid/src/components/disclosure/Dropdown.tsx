@@ -85,11 +85,6 @@ export interface DropdownProps {
   children: JSX.Element;
 }
 
-interface DropdownComponent extends ParentComponent<DropdownProps> {
-  Trigger: typeof DropdownTrigger;
-  Content: typeof DropdownContent;
-}
-
 /**
  * Dropdown popup component
  *
@@ -480,5 +475,5 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
 export const Dropdown = Object.assign(DropdownInner, {
   Trigger: DropdownTrigger,
   Content: DropdownContent,
-}) as unknown as DropdownComponent;
+});
 //#endregion

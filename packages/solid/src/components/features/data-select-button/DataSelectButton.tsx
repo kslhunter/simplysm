@@ -113,7 +113,7 @@ export function DataSelectButton<
   TKey = string | number,
   TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
 >(props: DataSelectButtonProps<TItem, TKey, TDialogProps>): JSX.Element {
-  const [local] = splitProps(props as any, [
+  const [local] = splitProps(props, [
     "value",
     "onValueChange",
     "load",
@@ -128,7 +128,7 @@ export function DataSelectButton<
     "inset",
     "validate",
     "lazyValidation",
-  ]) as unknown as [typeof props];
+  ]);
 
   const i18n = useI18n();
   const dialog = useDialog();

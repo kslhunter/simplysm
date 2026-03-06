@@ -632,7 +632,7 @@ export const Dialog = Object.assign(DialogInner, {
 interface DialogEntry {
   id: string;
   component: Component<any>;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   options: DialogShowOptions;
   resolve: (result: unknown) => void;
   open: Accessor<boolean>;

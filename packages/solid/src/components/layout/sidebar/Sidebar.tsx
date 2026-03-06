@@ -466,12 +466,6 @@ export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
  * </Sidebar>
  * ```
  */
-interface SidebarComponent extends ParentComponent<SidebarProps> {
-  Container: typeof SidebarContainer;
-  Menu: typeof SidebarMenu;
-  User: typeof SidebarUser;
-}
-
 const SidebarInner: ParentComponent<SidebarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
 
@@ -518,6 +512,6 @@ export const Sidebar = Object.assign(SidebarInner, {
   Container: SidebarContainer,
   Menu: SidebarMenu,
   User: SidebarUser,
-}) as unknown as SidebarComponent;
+});
 
 //#endregion

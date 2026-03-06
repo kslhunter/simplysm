@@ -98,11 +98,6 @@ interface TabsProps {
   children?: JSX.Element;
 }
 
-interface TabsComponent {
-  (props: TabsProps): JSX.Element;
-  Tab: typeof TabsTabInner;
-}
-
 const TabsInner: ParentComponent<TabsProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
@@ -138,5 +133,5 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
 //#region Export
 export const Tabs = Object.assign(TabsInner, {
   Tab: TabsTabInner,
-}) as unknown as TabsComponent;
+});
 //#endregion
