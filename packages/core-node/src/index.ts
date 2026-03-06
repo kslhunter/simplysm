@@ -1,6 +1,6 @@
 // Utils
-export * from "./utils/fs";
-export * from "./utils/path";
+export * as fs from "./utils/fs";
+export * as path from "./utils/path";
 
 // Features
 export * from "./features/fs-watcher";
