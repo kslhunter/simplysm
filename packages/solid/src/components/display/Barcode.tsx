@@ -35,7 +35,8 @@ export const Barcode: Component<BarcodeProps> = (props) => {
           svgEl.setAttribute("height", parts[3]);
         }
       }
-    } catch {
+    } catch (err) {
+      console.warn("Barcode render failed:", err);
       containerRef.innerHTML = "";
     }
   });

@@ -1,5 +1,5 @@
 import { render } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { Barcode } from "../../../src/components/display/Barcode";
 
@@ -16,6 +16,20 @@ describe("Barcode", () => {
       const el = container.querySelector("[data-barcode]")!;
       expect(el.innerHTML).toBe("");
     });
+  });
+
+  it("logs warning on render failure", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    // "code128" requires specific format; passing invalid chars triggers bwip-js error
+    render(() => <Barcode type={"invalid-type" as any} value="test" />);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Barcode render failed:",
+      expect.any(Error),
+    );
+
+    warnSpy.mockRestore();
   });
 
   describe("reactivity", () => {
