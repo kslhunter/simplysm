@@ -171,6 +171,8 @@ export function stringify(
  * Objects with `__type__` and `data` keys are used for type restoration.
  * Be careful if user data contains objects with `{ __type__: "Date" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Set" | "Map" | "Error" | "Uint8Array", data: ... }`
  * format as they may be unintentionally converted to types.
+ * All JSON null values are converted to undefined.
+ * This is intentional for the simplysm framework's null-free convention.
  *
  * @security In development mode (`__DEV__`), the error message includes the entire JSON string.
  * In production mode, only JSON length is included.
