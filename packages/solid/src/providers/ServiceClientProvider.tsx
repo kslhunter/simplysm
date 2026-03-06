@@ -2,7 +2,7 @@ import { createContext, type ParentComponent, onCleanup, useContext } from "soli
 import {
   createServiceClient,
   type ServiceClient,
-  type ServiceConnectionConfig,
+  type ServiceConnectionOptions,
 } from "@simplysm/service-client";
 import { useConfig } from "./ConfigContext";
 import { useNotification } from "../components/feedback/notification/NotificationProvider";
@@ -12,7 +12,7 @@ import { useNotification } from "../components/feedback/notification/Notificatio
  */
 export interface ServiceClientContextValue {
   /** Open a WebSocket connection (defaults to "default" if key is omitted) */
-  connect: (key?: string, options?: Partial<ServiceConnectionConfig>) => Promise<void>;
+  connect: (key?: string, options?: Partial<ServiceConnectionOptions>) => Promise<void>;
   /** Close a connection */
   close: (key?: string) => Promise<void>;
   /** Get a connected client instance (throws if the key is not connected) */
@@ -100,7 +100,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
 
   const connect = async (
     key?: string,
-    options?: Partial<ServiceConnectionConfig>,
+    options?: Partial<ServiceConnectionOptions>,
   ): Promise<void> => {
     const resolvedKey = key ?? "default";
 
@@ -113,7 +113,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       }
     }
 
-    const defaultConfig: ServiceConnectionConfig = {
+    const defaultConfig: ServiceConnectionOptions = {
       host: location.hostname,
       port: Number(location.port) || (location.protocol.startsWith("https") ? 443 : 80),
       ssl: location.protocol.startsWith("https"),

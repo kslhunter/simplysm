@@ -8,7 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
-import { FsWatcher, path as pathNs } from "@simplysm/core-node";
+import { FsWatcher, pathx } from "@simplysm/core-node";
 
 /**
  * Vite plugin that watches scope package dependencies of a Tailwind config.
@@ -34,7 +34,7 @@ function sdTailwindConfigDepsPlugin(pkgDir: string, replaceDeps: string[]): Plug
       }
 
       server.watcher.on("change", (changed) => {
-        if (externalDeps.some((d) => pathNs.pathNorm(d) === pathNs.pathNorm(changed))) {
+        if (externalDeps.some((d) => pathx.norm(d) === pathx.norm(changed))) {
           // Clear require cache used by jiti (Tailwind's config loader)
           // so changed files are re-read on config reload
           const _require = createRequire(import.meta.url);

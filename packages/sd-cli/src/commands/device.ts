@@ -1,5 +1,5 @@
 import path from "path";
-import { fs } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdConfig, SdClientPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
@@ -114,7 +114,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     logger.debug("development server URL", { serverUrl });
 
     const capPath = path.join(pkgDir, ".capacitor");
-    if (!(await fs.exists(capPath))) {
+    if (!(await fsx.exists(capPath))) {
       logger.error(
         `Capacitor project is not initialized. First run 'pnpm watch ${packageName}'.`,
       );

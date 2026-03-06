@@ -1,5 +1,5 @@
 import path from "path";
-import { fs, path as pathNs } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import consola from "consola";
 
@@ -15,12 +15,12 @@ export async function handleStaticFile(
   const allowedRootPath = path.resolve(rootPath, "www");
 
   // Security guard for targetPath (prevent path traversal)
-  if (targetFilePath !== allowedRootPath && !pathNs.pathIsChildPath(targetFilePath, allowedRootPath)) {
+  if (targetFilePath !== allowedRootPath && !pathx.isChildPath(targetFilePath, allowedRootPath)) {
     throw new Error("Access denied");
   }
 
   // Redirect with trailing slash for directories (standard web server behavior)
-  if ((await fs.exists(targetFilePath)) && (await fs.stat(targetFilePath)).isDirectory()) {
+  if ((await fsx.exists(targetFilePath)) && (await fsx.stat(targetFilePath)).isDirectory()) {
     if (!urlPath.endsWith("/")) {
       const urlObj = new URL(req.raw.url!, "http://localhost");
       reply.redirect(urlObj.pathname + "/" + urlObj.search);

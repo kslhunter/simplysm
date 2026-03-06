@@ -48,7 +48,7 @@ export class IndexedDbStore {
       }
 
       // Wait for transaction completion
-      return new Promise<TResult>((resolve, reject) => {
+      return await new Promise<TResult>((resolve, reject) => {
         if (fnError !== undefined) {
           tx.onerror = () => {
             db.close();

@@ -197,17 +197,11 @@ You MUST complete each phase before proceeding to the next.
 
 4. **If Fix Doesn't Work**
 
-   ```dot
-   digraph fix_failure_loop {
-       "Fix failed?" [shape=diamond];
-       "Attempts < 3?" [shape=diamond];
-       "Phase 1: Re-analyze\nwith new information" [shape=box];
-       "STOP: Question Architecture\n→ Discuss with user first" [shape=box];
-
-       "Fix failed?" -> "Attempts < 3?";
-       "Attempts < 3?" -> "Phase 1: Re-analyze\nwith new information" [label="yes"];
-       "Attempts < 3?" -> "STOP: Question Architecture\n→ Discuss with user first" [label="no (≥3)"];
-   }
+   ```mermaid
+   flowchart TD
+       A{"Fix failed?"} --> B{"Attempts < 3?"}
+       B -->|yes| C["Phase 1: Re-analyze<br>with new information"]
+       B -->|"no (≥3)"| D["STOP: Question Architecture<br>→ Discuss with user first"]
    ```
 
    **Signs of architectural problem (≥3 failures):**

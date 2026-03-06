@@ -1,5 +1,5 @@
 import path from "path";
-import { fs } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import sharp from "sharp";
@@ -61,7 +61,7 @@ export class Capacitor {
     // F5: validate runtime configuration
     Capacitor._validateConfig(config);
 
-    const npmConfig = await fs.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
+    const npmConfig = await fsx.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
     return new Capacitor(pkgPath, config, npmConfig);
   }
 
@@ -106,15 +106,15 @@ export class Capacitor {
    */
   private async _acquireLock(): Promise<void> {
     const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
-    if (await fs.exists(lockPath)) {
-      const lockContent = await fs.read(lockPath);
+    if (await fsx.exists(lockPath)) {
+      const lockContent = await fsx.read(lockPath);
       throw new Error(
         `Another Capacitor operation is in progress (PID: ${lockContent}). ` +
           `If there's an issue, delete the ${lockPath} file.`,
       );
     }
-    await fs.mkdir(this._capPath);
-    await fs.write(lockPath, String(process.pid));
+    await fsx.mkdir(this._capPath);
+    await fsx.write(lockPath, String(process.pid));
   }
 
   /**
@@ -122,7 +122,7 @@ export class Capacitor {
    */
   private async _releaseLock(): Promise<void> {
     const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
-    await fs.rm(lockPath);
+    await fsx.rm(lockPath);
   }
 
   /**
@@ -278,7 +278,7 @@ export class Capacitor {
 
     // F12: cap init idempotency - execute only when capacitor.config.ts does not exist
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
-    if (!(await fs.exists(configPath))) {
+    if (!(await fsx.exists(configPath))) {
       await this._exec(
         "npx",
         ["cap", "init", this._config.appName, this._config.appId],
@@ -288,8 +288,8 @@ export class Capacitor {
 
     // Create default www/index.html
     const wwwPath = path.resolve(this._capPath, "www");
-    await fs.mkdir(wwwPath);
-    await fs.write(
+    await fsx.mkdir(wwwPath);
+    await fsx.write(
       path.resolve(wwwPath, "index.html"),
       "<!DOCTYPE html><html><head></head><body></body></html>",
     );
@@ -304,15 +304,15 @@ export class Capacitor {
     const projNpmConfigPath = path.resolve(this._pkgPath, "../../package.json");
 
     // F3: Check if file exists
-    if (!(await fs.exists(projNpmConfigPath))) {
+    if (!(await fsx.exists(projNpmConfigPath))) {
       throw new Error(`root package.json not found: ${projNpmConfigPath}`);
     }
 
-    const projNpmConfig = await fs.readJson<NpmConfig>(projNpmConfigPath);
+    const projNpmConfig = await fsx.readJson<NpmConfig>(projNpmConfigPath);
 
     const capNpmConfPath = path.resolve(this._capPath, "package.json");
-    const orgCapNpmConf: NpmConfig = (await fs.exists(capNpmConfPath))
-      ? await fs.readJson<NpmConfig>(capNpmConfPath)
+    const orgCapNpmConf: NpmConfig = (await fsx.exists(capNpmConfPath))
+      ? await fsx.readJson<NpmConfig>(capNpmConfPath)
       : { name: "", version: "" };
 
     const capNpmConf: NpmConfig = { ...orgCapNpmConf };
@@ -368,8 +368,8 @@ export class Capacitor {
     }
 
     // Save
-    await fs.mkdir(this._capPath);
-    await fs.writeJson(capNpmConfPath, capNpmConf, { space: 2 });
+    await fsx.mkdir(this._capPath);
+    await fsx.writeJson(capNpmConfPath, capNpmConf, { space: 2 });
 
     // Check if dependencies changed
     const isChanged =
@@ -416,7 +416,7 @@ const config: CapacitorConfig = {
 export default config;
 `;
 
-    await fs.write(confPath, configContent);
+    await fsx.write(confPath, configContent);
   }
 
   /**
@@ -425,7 +425,7 @@ export default config;
   private async _addPlatforms(): Promise<void> {
     for (const platform of this._platforms) {
       const platformPath = path.resolve(this._capPath, platform);
-      if (await fs.exists(platformPath)) {
+      if (await fsx.exists(platformPath)) {
         Capacitor._logger.debug(`platform already exists: ${platform}`);
         continue;
       }
@@ -444,7 +444,7 @@ export default config;
       const iconSource = path.resolve(this._pkgPath, this._config.icon);
 
       // F6: Check if source icon exists
-      if (!(await fs.exists(iconSource))) {
+      if (!(await fsx.exists(iconSource))) {
         Capacitor._logger.warn(
           `icon file not found: ${iconSource}. Using default icon.`,
         );
@@ -452,7 +452,7 @@ export default config;
       }
 
       try {
-        await fs.mkdir(assetsDirPath);
+        await fsx.mkdir(assetsDirPath);
 
         // Create icon
         const logoPath = path.resolve(assetsDirPath, "logo.png");
@@ -494,7 +494,7 @@ export default config;
         // F6: Continue even if it fails (use default icon)
       }
     } else {
-      await fs.rm(assetsDirPath);
+      await fsx.rm(assetsDirPath);
     }
   }
 
@@ -509,7 +509,7 @@ export default config;
     const androidPath = path.resolve(this._capPath, "android");
 
     // F3: Check if Android directory exists
-    if (!(await fs.exists(androidPath))) {
+    if (!(await fsx.exists(androidPath))) {
       throw new Error(`Android project directory not found: ${androidPath}`);
     }
 
@@ -526,19 +526,19 @@ export default config;
     const gradlePropsPath = path.resolve(androidPath, "gradle.properties");
 
     // F3: Check if file exists
-    if (!(await fs.exists(gradlePropsPath))) {
+    if (!(await fsx.exists(gradlePropsPath))) {
       Capacitor._logger.warn(`gradle.properties file not found: ${gradlePropsPath}`);
       return;
     }
 
-    let content = await fs.read(gradlePropsPath);
+    let content = await fsx.read(gradlePropsPath);
 
     const java21Path = await this._findJava21();
     if (java21Path != null && !content.includes("org.gradle.java.home")) {
       // F9: Improved Windows path escaping
       const escapedPath = java21Path.replace(/\\/g, "\\\\");
       content += `\norg.gradle.java.home=${escapedPath}\n`;
-      await fs.write(gradlePropsPath, content);
+      await fsx.write(gradlePropsPath, content);
     }
   }
 
@@ -556,7 +556,7 @@ export default config;
     ];
 
     for (const pattern of patterns) {
-      const matches = await fs.glob(pattern);
+      const matches = await fsx.glob(pattern);
       if (matches.length > 0) {
         return matches.sort().at(-1);
       }
@@ -574,7 +574,7 @@ export default config;
     const sdkPath = await this._findAndroidSdk();
     if (sdkPath != null) {
       // F9: Always use forward slash (Gradle compatible)
-      await fs.write(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
+      await fsx.write(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
     } else {
       throw new Error(
         "Android SDK not found.\n" +
@@ -589,7 +589,7 @@ export default config;
    */
   private async _findAndroidSdk(): Promise<string | undefined> {
     const fromEnv = (env["ANDROID_HOME"] ?? env["ANDROID_SDK_ROOT"]) as string | undefined;
-    if (fromEnv != null && (await fs.exists(fromEnv))) {
+    if (fromEnv != null && (await fsx.exists(fromEnv))) {
       return fromEnv;
     }
 
@@ -601,7 +601,7 @@ export default config;
     ];
 
     for (const candidate of candidates) {
-      if (await fs.exists(candidate)) {
+      if (await fsx.exists(candidate)) {
         return candidate;
       }
     }
@@ -616,11 +616,11 @@ export default config;
     const manifestPath = path.resolve(androidPath, "app/src/main/AndroidManifest.xml");
 
     // F3: Check if file exists
-    if (!(await fs.exists(manifestPath))) {
+    if (!(await fsx.exists(manifestPath))) {
       throw new Error(`AndroidManifest.xml file not found: ${manifestPath}`);
     }
 
-    let content = await fs.read(manifestPath);
+    let content = await fsx.read(manifestPath);
 
     // Configure usesCleartextTraffic
     if (!content.includes("android:usesCleartextTraffic")) {
@@ -679,7 +679,7 @@ export default config;
       }
     }
 
-    await fs.write(manifestPath, content);
+    await fsx.write(manifestPath, content);
   }
 
   /**
@@ -689,11 +689,11 @@ export default config;
     const buildGradlePath = path.resolve(androidPath, "app/build.gradle");
 
     // F3: Check if file exists
-    if (!(await fs.exists(buildGradlePath))) {
+    if (!(await fsx.exists(buildGradlePath))) {
       throw new Error(`build.gradle file not found: ${buildGradlePath}`);
     }
 
-    let content = await fs.read(buildGradlePath);
+    let content = await fsx.read(buildGradlePath);
 
     // Configure versionName and versionCode
     const version = this._npmConfig.version;
@@ -726,10 +726,10 @@ export default config;
     if (signConfig) {
       const keystoreSource = path.resolve(this._pkgPath, signConfig.keystore);
       // F3: Check if keystore file exists
-      if (!(await fs.exists(keystoreSource))) {
+      if (!(await fsx.exists(keystoreSource))) {
         throw new Error(`keystore file not found: ${keystoreSource}`);
       }
-      await fs.copy(keystoreSource, keystorePath);
+      await fsx.copy(keystoreSource, keystorePath);
 
       // F9: Convert relative path to forward slash
       const keystoreRelativePath = path
@@ -759,10 +759,10 @@ export default config;
         );
       }
     } else {
-      await fs.rm(keystorePath);
+      await fsx.rm(keystorePath);
     }
 
-    await fs.write(buildGradlePath, content);
+    await fsx.write(buildGradlePath, content);
   }
 
   /**
@@ -823,7 +823,7 @@ export default config;
       fileName,
     );
 
-    const actualPath = (await fs.exists(sourcePath))
+    const actualPath = (await fsx.exists(sourcePath))
       ? sourcePath
       : path.resolve(
           androidPath,
@@ -833,20 +833,20 @@ export default config;
           `app-${buildType}.${ext}`,
         );
 
-    if (!(await fs.exists(actualPath))) {
+    if (!(await fsx.exists(actualPath))) {
       Capacitor._logger.warn(`build output not found: ${actualPath}`);
       return;
     }
 
     const outputFileName = `${this._config.appName}${isSigned ? "" : "-unsigned"}-latest.${ext}`;
 
-    await fs.mkdir(targetOutPath);
-    await fs.copy(actualPath, path.resolve(targetOutPath, outputFileName));
+    await fsx.mkdir(targetOutPath);
+    await fsx.copy(actualPath, path.resolve(targetOutPath, outputFileName));
 
     // Save per-version
     const updatesPath = path.resolve(targetOutPath, "updates");
-    await fs.mkdir(updatesPath);
-    await fs.copy(actualPath, path.resolve(updatesPath, `${this._npmConfig.version}.${ext}`));
+    await fsx.mkdir(updatesPath);
+    await fsx.copy(actualPath, path.resolve(updatesPath, `${this._npmConfig.version}.${ext}`));
   }
 
   //#endregion
@@ -859,9 +859,9 @@ export default config;
   private async _updateServerUrl(url: string): Promise<void> {
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
 
-    if (!(await fs.exists(configPath))) return;
+    if (!(await fsx.exists(configPath))) return;
 
-    let content = await fs.read(configPath);
+    let content = await fsx.read(configPath);
 
     if (content.includes("url:")) {
       content = content.replace(/url:\s*"[^"]*"/, `url: "${url}"`);
@@ -869,7 +869,7 @@ export default config;
       content = content.replace(/server:\s*\{/, `server: {\n    url: "${url}",`);
     }
 
-    await fs.write(configPath, content);
+    await fsx.write(configPath, content);
   }
 
   //#endregion

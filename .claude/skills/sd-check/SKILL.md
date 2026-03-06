@@ -33,25 +33,23 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 
 ## Workflow
 
-```dot
-digraph check_workflow {
-    "Run check" [shape=box];
-    "All passed?" [shape=diamond];
-    "Report results → done" [shape=box];
-    "Fix errors\n(typecheck → lint → test)" [shape=box];
-    "Stuck after 2-3 tries?" [shape=diamond];
-    "Recommend /sd-debug" [shape=box];
-
-    "Run check" -> "All passed?";
-    "All passed?" -> "Report results → done" [label="yes"];
-    "All passed?" -> "Fix errors\n(typecheck → lint → test)" [label="no"];
-    "Fix errors\n(typecheck → lint → test)" -> "Stuck after 2-3 tries?";
-    "Stuck after 2-3 tries?" -> "Run check" [label="no"];
-    "Stuck after 2-3 tries?" -> "Recommend /sd-debug" [label="yes"];
-}
+```mermaid
+flowchart TD
+    A[Run check] --> B{All passed?}
+    B -->|yes| C[Report results → done]
+    B -->|no| D["Fix errors (typecheck → lint → test)"]
+    D --> E{Stuck after 2-3 tries?}
+    E -->|no| A
+    E -->|yes| F[Recommend /sd-debug]
 ```
 
 **Run command:** `$PM run check [path] [--type type]` (timeout: 600000)
+
+- **Output capture:** Bash truncates long output. Always redirect to a file and read it:
+  ```bash
+  mkdir -p .tmp && $PM run check [path] [--type type] > .tmp/check-output.txt 2>&1; echo "EXIT:$?"
+  ```
+  Then use the **Read** tool on `.tmp/check-output.txt` to see the full result. Check `EXIT:0` for success or non-zero for failure.
 
 **Fixing errors:**
 - **Before fixing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the affected code area (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Fixing errors does NOT exempt you from following project conventions.

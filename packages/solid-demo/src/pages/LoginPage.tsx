@@ -19,7 +19,7 @@ export default function LoginPage() {
     <div class={clsx("flex items-center justify-center", "pb-64", "bg-base-100 dark:bg-base-900")}>
       <div class="max-w-sm">
         {/* Logo */}
-        <div class={clsx("flex justify-center", "mb-4", "animate-fade-in")}>
+        <div class={clsx("flex justify-center", "mb-4")}>
           <img src="logo-landscape.png" alt="SIMPLYSM" class="h-12 w-auto" />
         </div>
 

@@ -8,10 +8,10 @@ interface DemoItem {
   isDeleted: boolean;
 }
 
-interface DemoFilter {
+type DemoFilter = {
   searchText?: string;
   isIncludeDeleted: boolean;
-}
+};
 
 let nextId = 4;
 let mockData: DemoItem[] = [

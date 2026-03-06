@@ -184,19 +184,13 @@ Edit skill without testing? Same violation.
 
 Different skill types need different test approaches:
 
-```dot
-digraph test_methodology {
-    "What type of skill?" [shape=diamond];
-    "Pressure test\n(compliance under stress)" [shape=box];
-    "Application test\n(correct technique usage)" [shape=box];
-    "Recognition test\n(when/how to apply)" [shape=box];
-    "Retrieval test\n(find & use reference)" [shape=box];
-
-    "What type of skill?" -> "Pressure test\n(compliance under stress)" [label="Discipline\n(rules/requirements)"];
-    "What type of skill?" -> "Application test\n(correct technique usage)" [label="Technique\n(how-to guides)"];
-    "What type of skill?" -> "Recognition test\n(when/how to apply)" [label="Pattern\n(mental models)"];
-    "What type of skill?" -> "Retrieval test\n(find & use reference)" [label="Reference\n(docs/APIs)"];
-}
+```mermaid
+flowchart TD
+    A{"What type of skill?"}
+    A -->|"Discipline (rules/requirements)"| B["Pressure test<br>(compliance under stress)"]
+    A -->|"Technique (how-to guides)"| C["Application test<br>(correct technique usage)"]
+    A -->|"Pattern (mental models)"| D["Recognition test<br>(when/how to apply)"]
+    A -->|"Reference (docs/APIs)"| E["Retrieval test<br>(find & use reference)"]
 ```
 
 ### Discipline-Enforcing Skills (rules/requirements)
@@ -330,9 +324,9 @@ example-js.js, example-py.py, example-go.go
 
 ### ❌ Code in Flowcharts
 
-```dot
-step1 [label="import fs"];
-step2 [label="read file"];
+```mermaid
+flowchart TD
+    A["import fs"] --> B["read file"]
 ```
 
 **Why bad:** Can't copy-paste, hard to read

@@ -63,9 +63,7 @@ export interface WorkerEventHandlerOptions {
  * @param rebuildManager Rebuild manager
  * @returns completeTask function (saves result and signals build completion)
  */
-export function registerWorkerEventHandlers<
-  TEvents extends Record<string, unknown> = Record<string, unknown>,
->(
+export function registerWorkerEventHandlers(
   workerInfo: {
     name: string;
     config: { target: string };

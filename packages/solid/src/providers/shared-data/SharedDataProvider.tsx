@@ -232,7 +232,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         initialized = true;
 
         void client
-          .addEventListener(
+          .addListener(
             SharedDataChangeEvent,
             { name, filter: def.filter },
             async (changeKeys) => {
@@ -241,7 +241,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
           )
           .then((key) => {
             if (disposed) {
-              void client.removeEventListener(key);
+              void client.removeListener(key);
             } else {
               listenerKeyMap.set(name, key);
             }
@@ -264,7 +264,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
           return itemMap().get(key);
         },
         emit: async (changeKeys?: Array<string | number>) => {
-          await client.emitToServer(
+          await client.emitEvent(
             SharedDataChangeEvent,
             (info) => info.name === name && obj.equal(info.filter, def.filter),
             changeKeys,
@@ -288,7 +288,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       if (listenerKey != null) {
         const def = currentDefinitions[name];
         const client = serviceClient.get(def.serviceKey ?? "default");
-        void client.removeEventListener(listenerKey);
+        void client.removeListener(listenerKey);
       }
     }
   });

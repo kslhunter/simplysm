@@ -132,7 +132,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
   // -- Key-based selection: restore selection when items change --
   createEffect(() => {
-    const currentItems = items as TItem[];
+    const currentItems = items;
     const keys = selectedKeys();
     if (keys.size === 0) {
       if (selection().length > 0) {
@@ -318,7 +318,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
     setBusyCount((c) => c + 1);
     try {
-      await local.excel!.upload!(file);
+      await local.excel.upload(file);
       noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
       await refresh();
     } catch (err) {
@@ -330,7 +330,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   // -- Select Mode --
   function handleSelectionChange(newSelection: TItem[]) {
     // Current page items key Set
-    const currentItems = items as TItem[];
+    const currentItems = items;
     const currentKeys = new Set<string | number>();
     for (const item of currentItems) {
       const key = local.getItemKey(item);
@@ -430,7 +430,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
   // -- Context for Tools --
   const ctx: CrudSheetContext<TItem> = {
-    items: () => items as TItem[],
+    items: () => items,
     selection,
     page,
     sorts,

@@ -7,7 +7,7 @@ const NORM = Symbol("NormPath");
 
 /**
  * Brand type representing a normalized path.
- * Can only be created through pathNorm().
+ * Can only be created through norm().
  */
 export type NormPath = string & {
   [NORM]: never;
@@ -21,10 +21,10 @@ export type NormPath = string & {
  * Converts to POSIX-style path (backslash → forward slash).
  *
  * @example
- * pathPosix("C:\\Users\\test"); // "C:/Users/test"
- * pathPosix("src", "index.ts"); // "src/index.ts"
+ * posix("C:\\Users\\test"); // "C:/Users/test"
+ * posix("src", "index.ts"); // "src/index.ts"
  */
-export function pathPosix(...args: string[]): string {
+export function posix(...args: string[]): string {
   const resolvedPath = path.join(...args);
   return resolvedPath.replace(/\\/g, "/");
 }
@@ -33,12 +33,12 @@ export function pathPosix(...args: string[]): string {
  * Changes the directory of a file path.
  *
  * @example
- * pathChangeFileDirectory("/a/b/c.txt", "/a", "/x");
+ * changeFileDirectory("/a/b/c.txt", "/a", "/x");
  * // → "/x/b/c.txt"
  *
  * @throws Error if the file is not inside fromDirectory
  */
-export function pathChangeFileDirectory(
+export function changeFileDirectory(
   filePath: string,
   fromDirectory: string,
   toDirectory: string,
@@ -47,7 +47,7 @@ export function pathChangeFileDirectory(
     return toDirectory;
   }
 
-  if (!pathIsChildPath(filePath, fromDirectory)) {
+  if (!isChildPath(filePath, fromDirectory)) {
     throw new ArgumentError(`'${filePath}' is not inside ${fromDirectory}.`, {
       filePath,
       fromDirectory,
@@ -61,10 +61,10 @@ export function pathChangeFileDirectory(
  * Returns the filename (basename) without extension.
  *
  * @example
- * pathBasenameWithoutExt("file.txt"); // "file"
- * pathBasenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
+ * basenameWithoutExt("file.txt"); // "file"
+ * basenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
  */
-export function pathBasenameWithoutExt(filePath: string): string {
+export function basenameWithoutExt(filePath: string): string {
   return path.basename(filePath, path.extname(filePath));
 }
 
@@ -72,17 +72,17 @@ export function pathBasenameWithoutExt(filePath: string): string {
  * Checks if childPath is a child path of parentPath.
  * Returns false if the paths are the same.
  *
- * Paths are internally normalized using `pathNorm()` and compared using
+ * Paths are internally normalized using `norm()` and compared using
  * platform-specific path separators (Windows: `\`, Unix: `/`).
  *
  * @example
- * pathIsChildPath("/a/b/c", "/a/b"); // true
- * pathIsChildPath("/a/b", "/a/b/c"); // false
- * pathIsChildPath("/a/b", "/a/b"); // false (same path)
+ * isChildPath("/a/b/c", "/a/b"); // true
+ * isChildPath("/a/b", "/a/b/c"); // false
+ * isChildPath("/a/b", "/a/b"); // false (same path)
  */
-export function pathIsChildPath(childPath: string, parentPath: string): boolean {
-  const normalizedChild = pathNorm(childPath);
-  const normalizedParent = pathNorm(parentPath);
+export function isChildPath(childPath: string, parentPath: string): boolean {
+  const normalizedChild = norm(childPath);
+  const normalizedParent = norm(parentPath);
 
   // Same path returns false
   if (normalizedChild === normalizedParent) {
@@ -102,10 +102,10 @@ export function pathIsChildPath(childPath: string, parentPath: string): boolean 
  * Converts to absolute path and normalizes using platform-specific separators.
  *
  * @example
- * pathNorm("/some/path"); // NormPath
- * pathNorm("relative", "path"); // NormPath (converted to absolute path)
+ * norm("/some/path"); // NormPath
+ * norm("relative", "path"); // NormPath (converted to absolute path)
  */
-export function pathNorm(...paths: string[]): NormPath {
+export function norm(...paths: string[]): NormPath {
   return path.resolve(...paths) as NormPath;
 }
 
@@ -122,14 +122,14 @@ export function pathNorm(...paths: string[]): NormPath {
  *
  * @example
  * const files = ["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts"];
- * pathFilterByTargets(files, ["src"], "/proj");
+ * filterByTargets(files, ["src"], "/proj");
  * // → ["/proj/src/a.ts", "/proj/src/b.ts"]
  */
-export function pathFilterByTargets(files: string[], targets: string[], cwd: string): string[] {
+export function filterByTargets(files: string[], targets: string[], cwd: string): string[] {
   if (targets.length === 0) return files;
-  const normalizedTargets = targets.map((t) => pathPosix(t));
+  const normalizedTargets = targets.map((t) => posix(t));
   return files.filter((file) => {
-    const relativePath = pathPosix(path.relative(cwd, file));
+    const relativePath = posix(path.relative(cwd, file));
     return normalizedTargets.some(
       (target) => relativePath === target || relativePath.startsWith(target + "/"),
     );

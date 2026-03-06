@@ -1,5 +1,5 @@
 import { LazyGcMap } from "@simplysm/core-common";
-import { fs, FsWatcher } from "@simplysm/core-node";
+import { fsx, FsWatcher } from "@simplysm/core-node";
 import path from "path";
 import consola from "consola";
 
@@ -23,10 +23,10 @@ export async function getConfig<TConfig>(filePath: string): Promise<TConfig | un
     return _cache.get(filePath) as TConfig;
   }
 
-  if (!(await fs.exists(filePath))) return undefined;
+  if (!(await fsx.exists(filePath))) return undefined;
 
   // 2. Load and cache
-  const config = await fs.readJson(filePath);
+  const config = await fsx.readJson(filePath);
   _cache.set(filePath, config);
 
   // 3. Register watcher
@@ -36,7 +36,7 @@ export async function getConfig<TConfig>(filePath: string): Promise<TConfig | un
       _watchers.set(filePath, watcher);
 
       watcher.onChange({ delay: 100 }, async () => {
-        if (!(await fsExists(filePath))) {
+        if (!(await fsx.exists(filePath))) {
           _cache.delete(filePath);
           await closeWatcher(filePath);
           logger.debug(`Config file deleted: ${path.basename(filePath)}`);
@@ -44,7 +44,7 @@ export async function getConfig<TConfig>(filePath: string): Promise<TConfig | un
         }
 
         try {
-          const newConfig = await fsReadJson(filePath);
+          const newConfig = await fsx.readJson(filePath);
           _cache.set(filePath, newConfig);
           logger.debug(`Config file live-reloaded: ${path.basename(filePath)}`);
         } catch (err) {

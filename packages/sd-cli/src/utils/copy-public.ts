@@ -1,7 +1,7 @@
 import path from "path";
 import {
-  fs,
-  path as pathNs,
+  fsx,
+  pathx,
   FsWatcher,
 } from "@simplysm/core-node";
 
@@ -14,30 +14,30 @@ import {
  */
 export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Promise<void> {
   const distDir = path.join(pkgDir, "dist");
-  await fs.mkdir(distDir);
+  await fsx.mkdir(distDir);
 
   // Copy public/
   const publicDir = path.join(pkgDir, "public");
-  if (await fs.exists(publicDir)) {
-    const files = await fs.glob("**/*", { cwd: publicDir, absolute: true });
+  if (await fsx.exists(publicDir)) {
+    const files = await fsx.glob("**/*", { cwd: publicDir, absolute: true });
     for (const file of files) {
       const relativePath = path.relative(publicDir, file);
       const distPath = path.join(distDir, relativePath);
-      await fs.mkdir(path.dirname(distPath));
-      await fs.copy(file, distPath);
+      await fsx.mkdir(path.dirname(distPath));
+      await fsx.copy(file, distPath);
     }
   }
 
   // Copy public-dev/ (overlay: overwrites public/)
   if (includeDev) {
     const publicDevDir = path.join(pkgDir, "public-dev");
-    if (await fs.exists(publicDevDir)) {
-      const files = await fs.glob("**/*", { cwd: publicDevDir, absolute: true });
+    if (await fsx.exists(publicDevDir)) {
+      const files = await fsx.glob("**/*", { cwd: publicDevDir, absolute: true });
       for (const file of files) {
         const relativePath = path.relative(publicDevDir, file);
         const distPath = path.join(distDir, relativePath);
-        await fs.mkdir(path.dirname(distPath));
-        await fs.copy(file, distPath);
+        await fsx.mkdir(path.dirname(distPath));
+        await fsx.copy(file, distPath);
       }
     }
   }
@@ -64,10 +64,10 @@ export async function watchPublicFiles(
 
   // Collect watch target paths
   const watchPaths: string[] = [];
-  if (await fs.exists(publicDir)) {
+  if (await fsx.exists(publicDir)) {
     watchPaths.push(path.join(publicDir, "**/*"));
   }
-  if (includeDev && (await fs.exists(publicDevDir))) {
+  if (includeDev && (await fsx.exists(publicDevDir))) {
     watchPaths.push(path.join(publicDevDir, "**/*"));
   }
 
@@ -81,7 +81,7 @@ export async function watchPublicFiles(
     for (const { event, path: filePath } of changes) {
       // Determine which source directory the change came from
       let sourceDir: string;
-      if (pathNs.pathIsChildPath(filePath, publicDevDir)) {
+      if (pathx.isChildPath(filePath, publicDevDir)) {
         sourceDir = publicDevDir;
       } else {
         sourceDir = publicDir;
@@ -94,30 +94,30 @@ export async function watchPublicFiles(
         // If deleted from public, don't delete if same file exists in public-dev
         if (sourceDir === publicDir && includeDev) {
           const devOverride = path.join(publicDevDir, relPath);
-          if (await fs.exists(devOverride)) {
+          if (await fsx.exists(devOverride)) {
             continue;
           }
         }
         // If deleted from public-dev, restore from public if it exists (fallback restore)
         if (sourceDir === publicDevDir && includeDev) {
           const publicFallback = path.join(publicDir, relPath);
-          if (await fs.exists(publicFallback)) {
-            await fs.mkdir(path.dirname(distPath));
-            await fs.copy(publicFallback, distPath);
+          if (await fsx.exists(publicFallback)) {
+            await fsx.mkdir(path.dirname(distPath));
+            await fsx.copy(publicFallback, distPath);
             continue;
           }
         }
-        await fs.rm(distPath);
+        await fsx.rm(distPath);
       } else if (event === "add" || event === "change") {
         // If changed in public, skip if same file exists in public-dev (overlay takes priority)
         if (sourceDir === publicDir && includeDev) {
           const devOverride = path.join(publicDevDir, relPath);
-          if (await fs.exists(devOverride)) {
+          if (await fsx.exists(devOverride)) {
             continue;
           }
         }
-        await fs.mkdir(path.dirname(distPath));
-        await fs.copy(filePath, distPath);
+        await fsx.mkdir(path.dirname(distPath));
+        await fsx.copy(filePath, distPath);
       }
     }
   });

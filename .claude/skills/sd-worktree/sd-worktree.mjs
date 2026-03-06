@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve, sep } from "node:path";
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -141,8 +141,10 @@ switch (cmd) {
         run(`git worktree remove --force "${worktreePath}"`, { cwd: mainWorktree });
       } catch {
         // Manual cleanup when git worktree remove fails (e.g., due to node_modules)
+        // Use bash rm -rf instead of Node.js rmSync — MSYS2's rm handles Windows file locks
         console.log("git worktree remove failed, cleaning up manually...");
-        rmSync(worktreePath, { recursive: true, force: true });
+        const cleanPath = worktreePath.replace(/\\/g, "/");
+        run(`rm -rf "${cleanPath}"`, { shell: "bash" });
         run("git worktree prune", { cwd: mainWorktree });
       }
     }

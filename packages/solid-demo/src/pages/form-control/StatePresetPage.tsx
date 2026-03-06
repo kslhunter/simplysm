@@ -39,7 +39,7 @@ export default function StatePresetPage() {
                 <label class="text-sm font-medium">Category:</label>
                 <Select<string>
                   value={filter().category}
-                  onValueChange={(v) => setFilter((prev) => ({ ...prev, category: v }))}
+                  onValueChange={(v) => setFilter((prev) => ({ ...prev, category: v ?? prev.category }))}
                   renderValue={(v) => <>{{ all: "All", food: "Food", drink: "Drink" }[v]}</>}
                 >
                   <Select.Item value="all">All</Select.Item>
@@ -51,7 +51,7 @@ export default function StatePresetPage() {
                 <label class="text-sm font-medium">Sort:</label>
                 <Select<string>
                   value={filter().sortBy}
-                  onValueChange={(v) => setFilter((prev) => ({ ...prev, sortBy: v }))}
+                  onValueChange={(v) => setFilter((prev) => ({ ...prev, sortBy: v ?? prev.sortBy }))}
                   renderValue={(v) => <>{{ name: "Name", price: "Price", date: "Date" }[v]}</>}
                 >
                   <Select.Item value="name">Name</Select.Item>

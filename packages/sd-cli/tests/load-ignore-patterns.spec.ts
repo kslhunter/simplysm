@@ -4,10 +4,10 @@ import path from "path";
 
 // Mock core-node functions and jiti
 vi.mock("@simplysm/core-node", () => ({
-  fs: {
+  fsx: {
     exists: vi.fn(),
   },
-  path: {
+  pathx: {
     posix: vi.fn(),
   },
 }));
@@ -19,7 +19,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-import { fs } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 
 describe("loadIgnorePatterns", () => {
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe("loadIgnorePatterns", () => {
 
   it("extracts globalIgnores pattern from eslint.config.ts", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fs.exists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -49,7 +49,7 @@ describe("loadIgnorePatterns", () => {
 
   it("does not extract as globalIgnores if files is present", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fs.exists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -70,7 +70,7 @@ describe("loadIgnorePatterns", () => {
 
   it("throws error if config file not found", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockResolvedValue(false);
 
@@ -79,7 +79,7 @@ describe("loadIgnorePatterns", () => {
 
   it("throws error if config is not array", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -94,7 +94,7 @@ describe("loadIgnorePatterns", () => {
 
   it("merges multiple globalIgnores settings", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -111,7 +111,7 @@ describe("loadIgnorePatterns", () => {
 
   it("handles config that directly exports array", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.js"));
@@ -126,7 +126,7 @@ describe("loadIgnorePatterns", () => {
 
   it("throws error if config has no default and is not array", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -143,7 +143,7 @@ describe("loadIgnorePatterns", () => {
 
   it("uses mts file if eslint.config.ts not found", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fsx.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       // eslint.config.ts does not exist, only eslint.config.mts

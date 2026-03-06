@@ -474,10 +474,10 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     const isSortable = () =>
       header.isLastRow &&
       header.colIndex != null &&
-      effectiveColumns()[header.colIndex!].sortable;
+      effectiveColumns()[header.colIndex].sortable;
     const colKey = () =>
       header.colIndex != null
-        ? effectiveColumns()[header.colIndex!].key
+        ? effectiveColumns()[header.colIndex].key
         : undefined;
 
     // Group header fixed status: all columns in colspan range are fixed
@@ -496,13 +496,13 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     const isCellFixed = () =>
       (header.isLastRow &&
         header.colIndex != null &&
-        effectiveColumns()[header.colIndex!].fixed) ||
+        effectiveColumns()[header.colIndex].fixed) ||
       isGroupFixed();
 
     // Cell's last fixed status
     const isCellLastFixed = () => {
       if (header.isLastRow && header.colIndex != null)
-        return isLastFixed(header.colIndex!);
+        return isLastFixed(header.colIndex);
       if (isGroupFixed()) {
         const lastCol = colIndex + header.colspan - 1;
         return isLastFixed(lastCol);
@@ -518,10 +518,10 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
       parts.push(`top: ${top}px`);
       // left: apply only to fixed columns
       if (header.isLastRow && header.colIndex != null) {
-        const left = getFixedStyle(header.colIndex!);
+        const left = getFixedStyle(header.colIndex);
         if (left != null) parts.push(left);
         // max-width: apply if explicit width exists (allow column to shrink below content)
-        const col = effectiveColumns()[header.colIndex!];
+        const col = effectiveColumns()[header.colIndex];
         if (col.width != null) parts.push(`max-width: ${col.width.replace(/;/g, "")}`);
       } else if (isGroupFixed()) {
         const left = getFixedStyle(colIndex);
@@ -544,16 +544,16 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
         style={cellStyle()}
         title={
           header.isLastRow && header.colIndex != null
-            ? (effectiveColumns()[header.colIndex!].tooltip ?? header.text)
+            ? (effectiveColumns()[header.colIndex].tooltip ?? header.text)
             : header.text
         }
         ref={(el: HTMLElement) => {
           if (
             header.isLastRow &&
             header.colIndex != null &&
-            effectiveColumns()[header.colIndex!].fixed
+            effectiveColumns()[header.colIndex].fixed
           ) {
-            registerColumnRef(header.colIndex!, el);
+            registerColumnRef(header.colIndex, el);
           }
         }}
         onClick={(e) => {
@@ -595,7 +595,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
           when={
             header.isLastRow &&
             header.colIndex != null &&
-            effectiveColumns()[header.colIndex!].resizable
+            effectiveColumns()[header.colIndex].resizable
           }
         >
           <div

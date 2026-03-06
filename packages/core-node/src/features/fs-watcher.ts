@@ -4,7 +4,7 @@ import consola from "consola";
 import type { EventName } from "chokidar/handler.js";
 import { Minimatch } from "minimatch";
 import path from "path";
-import { type NormPath, pathNorm } from "../utils/path";
+import { type NormPath, norm } from "../utils/path";
 
 //#region Helpers
 
@@ -200,7 +200,7 @@ export class FsWatcher {
 
         const changeInfos = Array.from(currChangeInfoMap.entries()).map(
           ([changedPath, evt]): FsWatcherChangeInfo => ({
-            path: pathNorm(changedPath),
+            path: norm(changedPath),
             event: evt as FsWatcherEvent,
           }),
         );

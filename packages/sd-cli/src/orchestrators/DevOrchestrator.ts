@@ -16,7 +16,6 @@ import { formatBuildMessages, printErrors, printServers } from "../utils/output-
 import { RebuildManager } from "../utils/rebuild-manager";
 import {
   registerWorkerEventHandlers,
-  type BaseWorkerInfo,
   type ServerReadyEventData,
   type ServerBuildEventData,
   type ErrorEventData,

@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { fs } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 
 /**
  * Serialized Diagnostic that can be passed to Worker
@@ -67,7 +67,7 @@ export function deserializeDiagnostic(
     // If file was deleted or inaccessible, treat as empty content
     // (source code context won't be displayed but diagnostic message is shown normally)
     if (!fileCache.has(fileName)) {
-      fileCache.set(fileName, fs.existsSync(fileName) ? fs.readSync(fileName) : "");
+      fileCache.set(fileName, fsx.existsSync(fileName) ? fsx.readSync(fileName) : "");
     }
     const content = fileCache.get(fileName)!;
 

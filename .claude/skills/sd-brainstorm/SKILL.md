@@ -22,24 +22,16 @@ Start by understanding the current project context, then ask questions one at a 
 
 **When a main design document is provided as context:**
 
-```dot
-digraph sub_design {
-    has_main [label="Main design with\nsection plan in context?" shape=diamond];
-    section_specified [label="Section specified?" shape=diamond];
-    prereqs_ok [label="Prerequisites\ncomplete?" shape=diamond];
-    normal [label="Normal brainstorm" shape=box];
-    show_progress [label="Show section progress\nAsk which section\n(suggest next incomplete)" shape=box];
-    warn [label="Warn prerequisites incomplete\nAsk: proceed anyway\nor complete first?" shape=box];
-    proceed [label="Proceed with section" shape=box];
-
-    has_main -> normal [label="no"];
-    has_main -> section_specified [label="yes"];
-    section_specified -> show_progress [label="no"];
-    section_specified -> prereqs_ok [label="yes"];
-    prereqs_ok -> proceed [label="yes"];
-    prereqs_ok -> warn [label="no"];
-    warn -> proceed [label="user: proceed"];
-}
+```mermaid
+flowchart TD
+    A{"Main design with<br>section plan in context?"}
+    A -->|no| B[Normal brainstorm]
+    A -->|yes| C{Section specified?}
+    C -->|no| D["Show section progress<br>Ask which section<br>(suggest next incomplete)"]
+    C -->|yes| E{"Prerequisites<br>complete?"}
+    E -->|yes| F[Proceed with section]
+    E -->|no| G["Warn prerequisites incomplete<br>Ask: proceed anyway<br>or complete first?"]
+    G -->|"user: proceed"| F
 ```
 
 When proceeding with a section:
@@ -112,24 +104,16 @@ If your first gap review shows all ✅:
 
 After the design presentation is complete, assess scale (file count, logic complexity, number of distinct subsystems, scope of impact):
 
-```dot
-digraph scale {
-    assess [label="Assess design scale" shape=diamond];
-    manageable [label="Proceed to\nAfter the Design\n(Path A/B)" shape=box];
-    propose [label="Propose to user:\nproceed as-is OR\nsplit into sections" shape=box];
-    user_choice [label="User choice?" shape=diamond];
-    division [label="Propose 2-3 section\ndivision approaches\n(by feature/layer/dependency)" shape=box];
-    save [label="Append section plan\nto design doc\nSave + commit" shape=box];
-    guide [label="Show section guide\nBrainstorm ENDS" shape=box];
-
-    assess -> manageable [label="manageable"];
-    assess -> propose [label="large"];
-    propose -> user_choice;
-    user_choice -> manageable [label="proceed as-is"];
-    user_choice -> division [label="split"];
-    division -> save [label="user selects"];
-    save -> guide;
-}
+```mermaid
+flowchart TD
+    A{"Assess design scale"}
+    A -->|manageable| B["Proceed to<br>After the Design<br>(Path A/B)"]
+    A -->|large| C["Propose to user:<br>proceed as-is OR<br>split into sections"]
+    C --> D{"User choice?"}
+    D -->|"proceed as-is"| B
+    D -->|split| E["Propose 2-3 section<br>division approaches<br>(by feature/layer/dependency)"]
+    E -->|"user selects"| F["Append section plan<br>to design doc<br>Save + commit"]
+    F --> G["Show section guide<br>Brainstorm ENDS"]
 ```
 
 **How to present the split proposal:**

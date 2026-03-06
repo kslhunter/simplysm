@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { glob } from "glob";
 import { consola } from "consola";
-import { fs as fsCoreNode, path as pathNs, FsWatcher } from "@simplysm/core-node";
+import { fsx, pathx, FsWatcher } from "@simplysm/core-node";
 
 /**
  * Match glob patterns from replaceDeps config with target package list
@@ -249,7 +249,7 @@ export async function setupReplaceDeps(
   for (const { targetName, resolvedSourcePath, actualTargetPath } of entries) {
     try {
       // Overwrite-copy source files to actualTargetPath (maintain existing directory, preserve symlinks)
-      await fsCoreNode.copy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
+      await fsx.copy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
 
       setupCount += 1;
     } catch (err) {
@@ -300,7 +300,7 @@ export async function watchReplaceDeps(
         // Filter excluded items: basename match or path within excluded directory
         if (
           EXCLUDED_NAMES.has(path.basename(changedPath)) ||
-          excludedPaths.some((ep) => pathNs.pathIsChildPath(changedPath, ep))
+          excludedPaths.some((ep) => pathx.isChildPath(changedPath, ep))
         ) {
           continue;
         }
@@ -327,14 +327,14 @@ export async function watchReplaceDeps(
               // Check if source is directory or file
               const stat = await fs.promises.stat(changedPath);
               if (stat.isDirectory()) {
-                await fsCoreNode.mkdir(destPath);
+                await fsx.mkdir(destPath);
               } else {
-                await fsCoreNode.mkdir(path.dirname(destPath));
-                await fsCoreNode.copy(changedPath, destPath, replaceDepsCopyFilter);
+                await fsx.mkdir(path.dirname(destPath));
+                await fsx.copy(changedPath, destPath, replaceDepsCopyFilter);
               }
             } else {
               // Source was deleted → delete target
-              await fsCoreNode.rm(destPath);
+              await fsx.rm(destPath);
             }
           } catch (err) {
             logger.error(

@@ -25,15 +25,15 @@ function createMockServiceClient() {
   let listenerCounter = 0;
 
   const mockClient = {
-    addEventListener: vi.fn(
+    addListener: vi.fn(
       (_type: unknown, _info: unknown, cb: (data: unknown) => PromiseLike<void>) => {
         const key = String(listenerCounter++);
         listeners.set(key, cb);
         return Promise.resolve(key);
       },
     ),
-    removeEventListener: vi.fn((_key: string) => Promise.resolve()),
-    emitToServer: vi.fn(() => Promise.resolve()),
+    removeListener: vi.fn((_key: string) => Promise.resolve()),
+    emitEvent: vi.fn(() => Promise.resolve()),
   };
 
   const serviceClientValue: ServiceClientContextValue = {
@@ -396,7 +396,7 @@ describe("SharedDataProvider", () => {
     });
 
     expect(fetchFn).not.toHaveBeenCalled();
-    expect(mockClient.addEventListener).not.toHaveBeenCalled();
+    expect(mockClient.addListener).not.toHaveBeenCalled();
 
     result.unmount();
   });

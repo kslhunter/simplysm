@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import { execaSync } from "execa";
 import esbuild from "esbuild";
-import { createWorker, FsWatcher, path as pathNs } from "@simplysm/core-node";
+import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
@@ -527,7 +527,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 
         // Convert metafile.inputs keys to absolute paths (NormPath) for comparison
         const metafileAbsPaths = new Set(
-          Object.keys(lastMetafile.inputs).map((key) => pathNs.pathNorm(info.cwd, key)),
+          Object.keys(lastMetafile.inputs).map((key) => pathx.norm(info.cwd, key)),
         );
 
         const hasRelevantChange = changes.some((c) => metafileAbsPaths.has(c.path));

@@ -213,12 +213,12 @@ export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
 
   const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
-    scanDependencyTree(dep, pkgDir, external, visited, (_pkgName, depDir, pkgJson) => {
+    scanDependencyTree(dep, pkgDir, external, visited, (_pkgName, depDir, depPkgJson) => {
       const found: string[] = [];
-      if (pkgJson.peerDependenciesMeta != null) {
-        const peerDeps = pkgJson.peerDependencies ?? {};
+      if (depPkgJson.peerDependenciesMeta != null) {
+        const peerDeps = depPkgJson.peerDependencies ?? {};
         const depReq = createRequire(path.join(depDir, "noop.js"));
-        for (const [name, meta] of Object.entries(pkgJson.peerDependenciesMeta)) {
+        for (const [name, meta] of Object.entries(depPkgJson.peerDependenciesMeta)) {
           if (meta.optional === true && name in peerDeps) {
             try {
               depReq.resolve(name);

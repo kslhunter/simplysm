@@ -3,16 +3,16 @@ import type ts from "typescript";
 
 // Mock core-node functions
 vi.mock("@simplysm/core-node", () => ({
-  fs: {
+  fsx: {
     exists: vi.fn(),
     readJson: vi.fn(),
   },
-  path: {
+  pathx: {
     posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
   },
 }));
 
-import { fs } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 import { getCompilerOptionsForPackage } from "../src/utils/tsconfig";
 
 describe("getCompilerOptionsForPackage", () => {
@@ -32,8 +32,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("node target: removes DOM lib, includes node in types", async () => {
     const packageDir = "/project/packages/core-node";
-    vi.mocked(fs.exists).mockResolvedValue(true);
-    vi.mocked(fs.readJson).mockResolvedValue({
+    vi.mocked(fsx.exists).mockResolvedValue(true);
+    vi.mocked(fsx.readJson).mockResolvedValue({
       devDependencies: {
         "@types/express": "^4.17.0",
       },
@@ -50,8 +50,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("browser target: keeps lib, removes node from types", async () => {
     const packageDir = "/project/packages/core-browser";
-    vi.mocked(fs.exists).mockResolvedValue(true);
-    vi.mocked(fs.readJson).mockResolvedValue({
+    vi.mocked(fsx.exists).mockResolvedValue(true);
+    vi.mocked(fsx.readJson).mockResolvedValue({
       devDependencies: {
         "@types/node": "^20.0.0",
         "@types/react": "^18.0.0",
@@ -69,8 +69,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("neutral target: keeps lib, includes node in types", async () => {
     const packageDir = "/project/packages/core-common";
-    vi.mocked(fs.exists).mockResolvedValue(true);
-    vi.mocked(fs.readJson).mockResolvedValue({
+    vi.mocked(fsx.exists).mockResolvedValue(true);
+    vi.mocked(fsx.readJson).mockResolvedValue({
       devDependencies: {
         "@types/lodash": "^4.0.0",
       },
@@ -87,7 +87,7 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("handles missing package.json with empty types", async () => {
     const packageDir = "/project/packages/unknown";
-    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fsx.exists).mockResolvedValue(false);
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 

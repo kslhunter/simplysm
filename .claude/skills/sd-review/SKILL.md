@@ -118,7 +118,9 @@ Dispatch selected reviewers in parallel.
 
 ### Step 4: Verify & Deduplicate
 
-This is the **orchestrator-level** verification. Reviewers already self-verify, but findings can still be invalid or overlap. Read the actual code for each finding.
+This is the **orchestrator-level** verification. Reviewers already self-verify, but findings can still be invalid or overlap.
+
+**MANDATORY: Read actual code for EVERY finding.** For each finding, you MUST `Read` the file at the referenced location before deciding keep/drop. Do NOT rely on reviewer descriptions alone — verify against the actual code. A finding that was not verified by reading the source code CANNOT pass this step.
 
 **Deduplication**: If multiple reviewers flag the same code location, keep the finding under the most specific reviewer:
 - Convention violation + correctness concern → Convention Checker owns it
@@ -127,12 +129,14 @@ This is the **orchestrator-level** verification. Reviewers already self-verify, 
 
 **For defect findings (Code, API, Convention):**
 
-Drop if: self-contradicted, type-only (no runtime trigger), out of scope, duplicate, bikeshedding, severity inflated, already handled, intentional pattern, misread, tradeoff-negative.
+Read the code, then drop if: self-contradicted, type-only (no runtime trigger), out of scope, duplicate, bikeshedding, severity inflated, already handled, intentional pattern, misread, tradeoff-negative.
 
 **For refactoring findings:**
 
+Read the code at both/all referenced locations, then check:
+
 - **Scope**: structural issue? within target? not a duplicate?
-- **Duplication reality**: < 30 lines → drop. Behavioral differences → drop. Intentional Input/Normalized pattern → drop.
+- **Duplication reality**: count the actual shared lines (not the reviewer's estimate). < 30 lines → drop. Behavioral differences between the "duplicated" code → drop. Intentional Input/Normalized pattern → drop.
 - **Separation benefit**: < ~150 lines AND tightly coupled → drop. Single cohesive domain → drop. Not independently reusable → drop.
 - **By design**: established pattern used consistently → drop.
 - **Tradeoff-negative**: introduces more complexity than it removes → drop.

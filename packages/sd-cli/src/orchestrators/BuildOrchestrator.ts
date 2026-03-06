@@ -1,6 +1,6 @@
 import path from "path";
 import ts from "typescript";
-import { Worker, type WorkerProxy, fs } from "@simplysm/core-node";
+import { Worker, type WorkerProxy, fsx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type {
@@ -110,7 +110,7 @@ function classifyPackages(
  * Delete dist folders
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
-  await Promise.all(packageNames.map((name) => fs.rm(path.join(cwd, "packages", name, "dist"))));
+  await Promise.all(packageNames.map((name) => fsx.rm(path.join(cwd, "packages", name, "dist"))));
 }
 
 //#endregion
