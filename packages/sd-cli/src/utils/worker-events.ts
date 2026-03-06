@@ -67,7 +67,9 @@ export function registerWorkerEventHandlers(
   workerInfo: {
     name: string;
     config: { target: string };
-    worker: { on(event: string, handler: (data: any) => void): void };
+    worker: {
+      on(event: string, handler: (data: any) => void): void;
+    };
     isInitialBuild: boolean;
     buildResolver: (() => void) | undefined;
   },
@@ -90,8 +92,7 @@ export function registerWorkerEventHandlers(
   });
 
   // Build completion
-  workerInfo.worker.on("build", (_data) => {
-    const data = _data as BuildEventData;
+  workerInfo.worker.on("build", (data) => {
     workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(data.success)}`);
 
     // Print warnings
@@ -105,14 +106,13 @@ export function registerWorkerEventHandlers(
       name: workerInfo.name,
       target: workerInfo.config.target,
       type: opts.resultType,
-      status: data.success ? "success" : "error",
+      status: data.success === true ? "success" : "error",
       message: data.errors?.join("\n"),
     });
   });
 
   // Error
-  workerInfo.worker.on("error", (_data) => {
-    const data = _data as ErrorEventData;
+  workerInfo.worker.on("error", (data) => {
     workerEventsLogger.debug(`[${workerInfo.name}] error: ${data.message}`);
     completeTask({
       name: workerInfo.name,

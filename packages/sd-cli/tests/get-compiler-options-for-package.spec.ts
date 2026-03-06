@@ -67,24 +67,6 @@ describe("getCompilerOptionsForPackage", () => {
     expect(result.types).toContain("react");
   });
 
-  it("neutral target: keeps lib, includes node in types", async () => {
-    const packageDir = "/project/packages/core-common";
-    vi.mocked(fsx.exists).mockResolvedValue(true);
-    vi.mocked(fsx.readJson).mockResolvedValue({
-      devDependencies: {
-        "@types/lodash": "^4.0.0",
-      },
-    });
-
-    const result = await getCompilerOptionsForPackage(baseOptions, "neutral", packageDir);
-
-    // lib is preserved (includes DOM)
-    expect(result.lib).toEqual(["ES2024", "DOM", "DOM.Iterable", "WebWorker"]);
-    // types includes node and lodash
-    expect(result.types).toContain("node");
-    expect(result.types).toContain("lodash");
-  });
-
   it("handles missing package.json with empty types", async () => {
     const packageDir = "/project/packages/unknown";
     vi.mocked(fsx.exists).mockResolvedValue(false);

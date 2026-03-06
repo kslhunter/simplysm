@@ -1,6 +1,6 @@
 import path from "path";
 import { consola } from "consola";
-import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
+import type { BuildTarget, SdBuildPackageConfig, SdConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
 import { watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
@@ -10,10 +10,9 @@ import { ResultCollector } from "../infra/ResultCollector";
 import { SignalHandler } from "../infra/SignalHandler";
 import { LibraryBuilder } from "../builders/LibraryBuilder";
 import { DtsBuilder } from "../builders/DtsBuilder";
-import type { PackageInfo } from "../builders/types";
+import type { BuildPackageInfo } from "../builders/types";
 import { watchCopySrcFiles } from "../utils/copy-src";
 import type { FsWatcher } from "@simplysm/core-node";
-import type { SdBuildPackageConfig } from "../sd-config.types";
 
 /**
  * Watch command options
@@ -40,7 +39,7 @@ export class WatchOrchestrator {
   private _rebuildManager!: RebuildManager;
   private _libraryBuilder!: LibraryBuilder;
   private _dtsBuilder!: DtsBuilder;
-  private _packages: PackageInfo[] = [];
+  private _packages: BuildPackageInfo[] = [];
   private _copySrcWatchers: FsWatcher[] = [];
   private _replaceDepWatcher: WatchReplaceDepResult | undefined;
 
@@ -85,10 +84,10 @@ export class WatchOrchestrator {
     const isLibraryTarget = (target: string): target is BuildTarget =>
       target === "node" || target === "browser" || target === "neutral";
 
-    const libraryConfigs: Record<string, SdPackageConfig> = {};
+    const libraryConfigs: Record<string, SdBuildPackageConfig> = {};
     for (const [name, config] of Object.entries(allPackages)) {
       if (isLibraryTarget(config.target)) {
-        libraryConfigs[name] = config;
+        libraryConfigs[name] = config as SdBuildPackageConfig;
       }
     }
 
@@ -145,9 +144,8 @@ export class WatchOrchestrator {
 
     // Start copySrc watch
     for (const pkg of this._packages) {
-      const buildConfig = pkg.config as SdBuildPackageConfig;
-      if (buildConfig.copySrc != null && buildConfig.copySrc.length > 0) {
-        const watcher = await watchCopySrcFiles(pkg.dir, buildConfig.copySrc);
+      if (pkg.config.copySrc != null && pkg.config.copySrc.length > 0) {
+        const watcher = await watchCopySrcFiles(pkg.dir, pkg.config.copySrc);
         this._copySrcWatchers.push(watcher);
       }
     }

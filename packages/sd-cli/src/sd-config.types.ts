@@ -9,12 +9,19 @@ export type BuildTarget = "node" | "browser" | "neutral";
 //#region Publish configuration types
 
 /**
+ * npm registry publish configuration
+ */
+export interface SdNpmPublishConfig {
+  type: "npm";
+}
+
+/**
  * Package publish configuration
- * - "npm": deploy to npm registry
+ * - SdNpmPublishConfig: deploy to npm registry
  * - SdLocalDirectoryPublishConfig: copy to local directory
  * - SdStoragePublishConfig: upload to FTP/FTPS/SFTP server
  */
-export type SdPublishConfig = "npm" | SdLocalDirectoryPublishConfig | SdStoragePublishConfig;
+export type SdPublishConfig = SdNpmPublishConfig | SdLocalDirectoryPublishConfig | SdStoragePublishConfig;
 
 /**
  * Local directory publish configuration

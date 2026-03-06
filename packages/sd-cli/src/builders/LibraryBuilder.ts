@@ -1,9 +1,8 @@
 import type * as LibraryWorkerModule from "../workers/library.worker";
 import type { BuildResult } from "../infra/ResultCollector";
 import { err as errNs } from "@simplysm/core-common";
-import type { SdBuildPackageConfig } from "../sd-config.types";
 import { BaseBuilder } from "./BaseBuilder";
-import type { PackageInfo } from "./types";
+import type { BuildPackageInfo } from "./types";
 
 /**
  * Builder responsible for Library package builds
@@ -37,7 +36,7 @@ export class LibraryBuilder extends BaseBuilder {
     }
   }
 
-  protected async buildPackage(pkg: PackageInfo): Promise<void> {
+  protected async buildPackage(pkg: BuildPackageInfo): Promise<void> {
     const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
     // Create build completion Promise
@@ -50,10 +49,9 @@ export class LibraryBuilder extends BaseBuilder {
     });
 
     // Start build (without await - completion detected via events)
-    // LibraryBuilder only receives library packages (node/browser/neutral), so casting is safe
     void worker.startWatch({
       name: pkg.name,
-      config: pkg.config as SdBuildPackageConfig,
+      config: pkg.config,
       cwd: this.cwd,
       pkgDir: pkg.dir,
     });
@@ -61,14 +59,13 @@ export class LibraryBuilder extends BaseBuilder {
     await buildPromise;
   }
 
-  protected startWatchPackage(pkg: PackageInfo): void {
+  protected startWatchPackage(pkg: BuildPackageInfo): void {
     const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
-    // LibraryBuilder only receives library packages (node/browser/neutral), so casting is safe
     worker
       .startWatch({
         name: pkg.name,
-        config: pkg.config as SdBuildPackageConfig,
+        config: pkg.config,
         cwd: this.cwd,
         pkgDir: pkg.dir,
       })
