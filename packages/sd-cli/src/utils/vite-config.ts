@@ -82,6 +82,33 @@ function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
   return false;
 }
 
+/** Common MIME types for web assets served from public-dev/ */
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html",
+  ".css": "text/css",
+  ".js": "text/javascript",
+  ".mjs": "text/javascript",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+};
+
+/** @internal Exported for testing */
+export function getMimeType(ext: string): string {
+  return MIME_TYPES[ext.toLowerCase()] ?? "application/octet-stream";
+}
+
 /**
  * Vite plugin that serves files from public-dev/ directory with priority over public/ in dev mode.
  * Keeps Vite's default publicDir (public/) while giving precedence to public-dev/ files at the same path.
@@ -121,8 +148,10 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
         }
 
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-          // Respond with file stream instead of sirv
+          const ext = path.extname(filePath);
+          res.setHeader("Content-Type", getMimeType(ext));
           const stream = fs.createReadStream(filePath);
+          stream.on("error", () => next());
           stream.pipe(res);
         } else {
           next();
