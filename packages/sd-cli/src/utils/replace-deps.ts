@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { glob } from "glob";
 import { consola } from "consola";
-import { fsCopy, fsMkdir, fsRm, FsWatcher, pathIsChildPath } from "@simplysm/core-node";
+import { fs as fsCoreNode, path as pathNs, FsWatcher } from "@simplysm/core-node";
 
 /**
  * Match glob patterns from replaceDeps config with target package list
@@ -249,7 +249,7 @@ export async function setupReplaceDeps(
   for (const { targetName, resolvedSourcePath, actualTargetPath } of entries) {
     try {
       // Overwrite-copy source files to actualTargetPath (maintain existing directory, preserve symlinks)
-      await fsCopy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
+      await fsCoreNode.copy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
 
       setupCount += 1;
     } catch (err) {
@@ -300,7 +300,7 @@ export async function watchReplaceDeps(
         // Filter excluded items: basename match or path within excluded directory
         if (
           EXCLUDED_NAMES.has(path.basename(changedPath)) ||
-          excludedPaths.some((ep) => pathIsChildPath(changedPath, ep))
+          excludedPaths.some((ep) => pathNs.pathIsChildPath(changedPath, ep))
         ) {
           continue;
         }
@@ -327,14 +327,14 @@ export async function watchReplaceDeps(
               // Check if source is directory or file
               const stat = await fs.promises.stat(changedPath);
               if (stat.isDirectory()) {
-                await fsMkdir(destPath);
+                await fsCoreNode.mkdir(destPath);
               } else {
-                await fsMkdir(path.dirname(destPath));
-                await fsCopy(changedPath, destPath, replaceDepsCopyFilter);
+                await fsCoreNode.mkdir(path.dirname(destPath));
+                await fsCoreNode.copy(changedPath, destPath, replaceDepsCopyFilter);
               }
             } else {
               // Source was deleted → delete target
-              await fsRm(destPath);
+              await fsCoreNode.rm(destPath);
             }
           } catch (err) {
             logger.error(

@@ -1,5 +1,5 @@
 import { LazyGcMap } from "@simplysm/core-common";
-import { fsExists, fsReadJson, FsWatcher } from "@simplysm/core-node";
+import { fs, FsWatcher } from "@simplysm/core-node";
 import path from "path";
 import consola from "consola";
 
@@ -23,10 +23,10 @@ export async function getConfig<TConfig>(filePath: string): Promise<TConfig | un
     return _cache.get(filePath) as TConfig;
   }
 
-  if (!(await fsExists(filePath))) return undefined;
+  if (!(await fs.exists(filePath))) return undefined;
 
   // 2. Load and cache
-  const config = await fsReadJson(filePath);
+  const config = await fs.readJson(filePath);
   _cache.set(filePath, config);
 
   // 3. Register watcher

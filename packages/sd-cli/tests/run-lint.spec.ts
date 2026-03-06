@@ -40,19 +40,23 @@ vi.mock("@simplysm/core-node", () => {
     return child.startsWith(parentWithSlash);
   };
   return {
-    fsExists: vi.fn(),
-    fsGlob: vi.fn(),
-    pathPosix: vi.fn(posix),
-    pathIsChildPath: vi.fn(isChildPath),
-    pathFilterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
-      if (targets.length === 0) return files;
-      return files.filter((file) => {
-        const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some(
-          (target) => relativePath === target || isChildPath(relativePath, target),
-        );
-      });
-    }),
+    fs: {
+      exists: vi.fn(),
+      glob: vi.fn(),
+    },
+    path: {
+      posix: vi.fn(posix),
+      isChildPath: vi.fn(isChildPath),
+      filterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
+        if (targets.length === 0) return files;
+        return files.filter((file) => {
+          const relativePath = posix(file.replace(cwd + "/", ""));
+          return targets.some(
+            (target) => relativePath === target || isChildPath(relativePath, target),
+          );
+        });
+      }),
+    },
   };
 });
 
@@ -81,7 +85,7 @@ vi.mock("consola", () => {
   };
 });
 
-import { fsExists, fsGlob } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 import { runLint, executeLint } from "../src/commands/lint";
 
 describe("runLint", () => {
@@ -108,7 +112,7 @@ describe("runLint", () => {
 
   it("sets exitCode to 1 when lint errors occur", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -116,7 +120,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 2, warningCount: 0 }];
 
@@ -127,7 +131,7 @@ describe("runLint", () => {
 
   it("does not set exitCode when no lint errors", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -135,7 +139,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -146,7 +150,7 @@ describe("runLint", () => {
 
   it("filters files using targets option", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -154,7 +158,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue([
+    vi.mocked(fs.glob).mockResolvedValue([
       "/project/packages/core-common/src/index.ts",
       "/project/packages/core-node/src/index.ts",
       "/project/packages/cli/src/index.ts",
@@ -174,7 +178,7 @@ describe("runLint", () => {
 
   it("filters files from all paths when multiple targets specified", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -182,7 +186,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue([
+    vi.mocked(fs.glob).mockResolvedValue([
       "/project/packages/core-common/src/index.ts",
       "/project/packages/core-node/src/index.ts",
       "/project/packages/cli/src/index.ts",
@@ -206,7 +210,7 @@ describe("runLint", () => {
 
   it("calls ESLint.outputFixes when fix option is enabled", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -214,7 +218,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -225,7 +229,7 @@ describe("runLint", () => {
 
   it("exits early when no files to lint", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -233,7 +237,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue([]);
+    vi.mocked(fs.glob).mockResolvedValue([]);
 
     await runLint({ targets: [], fix: false, timing: false });
 
@@ -244,7 +248,7 @@ describe("runLint", () => {
 
   it("throws error when ESLint config file is not found", async () => {
     // When all config files are missing
-    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fs.exists).mockResolvedValue(false);
 
     await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow(
       "Cannot find ESLint config file",
@@ -257,7 +261,7 @@ describe("runLint", () => {
 
   it("sets TIMING environment variable when timing option is enabled", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
@@ -265,7 +269,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -287,7 +291,7 @@ describe("runLint", () => {
 
   it("uses eslint.config.mts when eslint.config.ts is not found", async () => {
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       // eslint.config.ts does not exist, only eslint.config.mts
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.mts"));
     });
@@ -296,7 +300,7 @@ describe("runLint", () => {
       default: [{ ignores: ["dist/**"] }],
     });
 
-    vi.mocked(fsGlob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -324,7 +328,7 @@ describe("executeLint", () => {
 
     // Default ESLint config mock
     const cwd = "/project";
-    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+    vi.mocked(fs.exists).mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
     mockJitiImportFn.mockResolvedValue({
@@ -339,7 +343,7 @@ describe("executeLint", () => {
 
   it("returns success result when no errors", async () => {
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
-    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
 
     const result = await executeLint({ targets: [], fix: false, timing: false });
 
@@ -350,7 +354,7 @@ describe("executeLint", () => {
 
   it("returns failure result when errors exist", async () => {
     mockState.lintResults = [{ errorCount: 2, warningCount: 1 }];
-    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
+    vi.mocked(fs.glob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
 
     const result = await executeLint({ targets: [], fix: false, timing: false });
 

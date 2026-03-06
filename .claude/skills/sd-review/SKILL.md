@@ -155,11 +155,59 @@ If no valid findings, report that and end here.
 
 **If valid findings exist, you MUST proceed to Step 6. Do NOT ask the user whether to apply findings directly.**
 
-### Step 6: Brainstorm Handoff
+### Step 6: Finding Triage
 
-Pass verified findings to **sd-brainstorm**: "Present each finding to the user one at a time. Explain the problem, possible fixes, tradeoffs, then ask whether to address or skip."
+Present each verified finding to the user one at a time using this template:
 
-Each finding includes: **source reviewer**, **file:line**, **evidence**, **issue**, **suggestion**.
+```
+#### [Reviewer] Finding N: <title>
+
+**File:** `path/to/file.ts:42`
+
+**Problem:**
+<2-3 sentences explaining what's wrong and why it matters>
+
+**Current code:**
+```ts
+// the problematic code snippet
+```
+
+**Possible fixes:**
+
+1. **<approach name>** — <description>
+   - Tradeoff: <pros/cons>
+2. **<approach name>** — <description>
+   - Tradeoff: <pros/cons>
+```
+
+After presenting each finding, use `AskUserQuestion` with options: **Apply** / **Skip**.
+- If "Apply": record the finding as accepted
+- If "Skip": move to the next finding
+
+After all findings are triaged, summarize the results:
+
+```
+## Triage Summary
+
+### Accepted (N)
+- Finding 1: <title> (file:line)
+- Finding 3: <title> (file:line)
+
+### Skipped (N)
+- Finding 2: <title> — <user's reason if given>
+```
+
+If no findings were accepted, end here.
+
+### Step 7: Brainstorm Handoff
+
+If any findings were accepted, invoke **sd-brainstorm** with the accepted findings as context:
+
+"Design fixes for the following review findings. Each finding has already been triaged and accepted by the user.
+
+<include the full triage summary with accepted findings, their file:line, problem description, and possible fixes>"
+
+sd-brainstorm then runs its normal design process (approaches → gap review → design presentation) scoped to the accepted findings.
 
 ## Common Mistakes
 

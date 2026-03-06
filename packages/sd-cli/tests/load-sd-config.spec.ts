@@ -3,7 +3,9 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 const mockJitiImport = vi.fn();
 
 vi.mock("@simplysm/core-node", () => ({
-  fsExists: vi.fn(),
+  fs: {
+    exists: vi.fn(),
+  },
 }));
 
 vi.mock("jiti", () => ({
@@ -12,7 +14,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-import { fsExists } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 import { loadSdConfig } from "../src/utils/sd-config";
 
 describe("loadSdConfig", () => {
@@ -25,7 +27,7 @@ describe("loadSdConfig", () => {
   });
 
   it("throws error if sd.config.ts file not found", async () => {
-    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fs.exists).mockResolvedValue(false);
 
     await expect(loadSdConfig({ cwd: "/project", dev: false, options: [] })).rejects.toThrow(
       "sd.config.ts file not found",
@@ -33,7 +35,7 @@ describe("loadSdConfig", () => {
   });
 
   it("throws error if no default export", async () => {
-    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fs.exists).mockResolvedValue(true);
     mockJitiImport.mockResolvedValue({
       someOtherExport: () => ({}),
     });
@@ -44,7 +46,7 @@ describe("loadSdConfig", () => {
   });
 
   it("throws error if default export is not function", async () => {
-    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fs.exists).mockResolvedValue(true);
     mockJitiImport.mockResolvedValue({
       default: { packages: {} }, // object not function
     });

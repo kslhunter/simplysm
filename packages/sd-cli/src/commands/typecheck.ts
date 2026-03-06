@@ -1,7 +1,7 @@
 import ts from "typescript";
 import path from "path";
 import os from "os";
-import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
+import { path as pathNs, Worker, type WorkerProxy } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
@@ -86,7 +86,7 @@ export function extractPackages(
   const packages = new Map<string, PackageInfo>();
 
   for (const fileName of fileNames) {
-    const relativePath = pathPosix(path.relative(cwd, fileName));
+    const relativePath = pathNs.pathPosix(path.relative(cwd, fileName));
 
     // packages/{pkg}/...
     const packageMatch = relativePath.match(PATH_PATTERNS.PACKAGE);
@@ -113,7 +113,7 @@ export function extractPackages(
  */
 function hasNonPackageFiles(fileNames: string[], cwd: string): boolean {
   return fileNames.some((f) => {
-    const relativePath = pathPosix(path.relative(cwd, f));
+    const relativePath = pathNs.pathPosix(path.relative(cwd, f));
     if (!relativePath.startsWith("packages/")) return true;
     // Also treat files directly under package root (config files) as non-package
     return relativePath.split("/").length === 3;
@@ -218,7 +218,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   }
 
   // Filter fileNames if targets specified
-  const fileNames = pathFilterByTargets(parsedConfig.fileNames, targets, cwd);
+  const fileNames = pathNs.pathFilterByTargets(parsedConfig.fileNames, targets, cwd);
 
   if (fileNames.length === 0) {
     logger.info("no files to typecheck");

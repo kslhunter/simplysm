@@ -1,7 +1,7 @@
 import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
-import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
+import { fs, path as pathNs } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
 import { consola } from "consola";
@@ -67,7 +67,7 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   let configPath: string | undefined;
   for (const f of ESLINT_CONFIG_FILES) {
     const p = path.join(cwd, f);
-    if (await fsExists(p)) {
+    if (await fs.exists(p)) {
       configPath = p;
       break;
     }
@@ -139,13 +139,13 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
 
   // Collect lint target files
   logger.start("collecting lint target files");
-  let files = await fsGlob("**/*.{ts,tsx,js,jsx}", {
+  let files = await fs.glob("**/*.{ts,tsx,js,jsx}", {
     cwd,
     ignore: ignorePatterns,
     nodir: true,
     absolute: true,
   });
-  files = pathFilterByTargets(files, targets, cwd);
+  files = pathNs.pathFilterByTargets(files, targets, cwd);
   logger.debug("file collection complete", { fileCount: files.length });
   logger.success(`collected lint target files (${files.length} files)`);
 

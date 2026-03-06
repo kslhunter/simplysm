@@ -2,7 +2,7 @@ import path from "path";
 import os from "os";
 import fs from "fs";
 import module from "module";
-import { fsExists, fsMkdir, fsCopy, fsReaddir, fsReadJson, fsWriteJson } from "@simplysm/core-node";
+import { fs as fsCoreNode } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdElectronConfig } from "../sd-config.types";
 import { execa } from "execa";
@@ -45,7 +45,7 @@ export class Electron {
   static async create(pkgPath: string, config: SdElectronConfig): Promise<Electron> {
     Electron._validateConfig(config);
 
-    const npmConfig = await fsReadJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
+    const npmConfig = await fsCoreNode.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
     return new Electron(pkgPath, config, npmConfig);
   }
 
@@ -137,8 +137,8 @@ export class Electron {
     await this._bundleMainProcess(electronRunPath);
 
     // 2. Create package.json
-    await fsMkdir(electronRunPath);
-    await fsWriteJson(
+    await fsCoreNode.mkdir(electronRunPath);
+    await fsCoreNode.writeJson(
       path.resolve(electronRunPath, "package.json"),
       { name: this._npmConfig.name, version: this._npmConfig.version, main: "electron-main.js" },
       { space: 2 },
@@ -165,7 +165,7 @@ export class Electron {
    * Create .electron/src/package.json
    */
   private async _setupPackageJson(srcPath: string): Promise<void> {
-    await fsMkdir(srcPath);
+    await fsCoreNode.mkdir(srcPath);
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
@@ -190,7 +190,7 @@ export class Electron {
       packageJson["scripts"] = { postinstall: this._config.postInstallScript };
     }
 
-    await fsWriteJson(path.resolve(srcPath, "package.json"), packageJson, { space: 2 });
+    await fsCoreNode.writeJson(path.resolve(srcPath, "package.json"), packageJson, { space: 2 });
   }
 
   //#endregion
@@ -204,14 +204,14 @@ export class Electron {
     const esbuild = await import("esbuild");
     const entryPoint = path.resolve(this._pkgPath, "src/electron-main.ts");
 
-    if (!(await fsExists(entryPoint))) {
+    if (!(await fsCoreNode.exists(entryPoint))) {
       throw new Error(`electron-main.ts file not found: ${entryPoint}`);
     }
 
     const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
-    await fsMkdir(outDir);
+    await fsCoreNode.mkdir(outDir);
 
     await esbuild.build({
       entryPoints: [entryPoint],
@@ -232,14 +232,14 @@ export class Electron {
    * Copy web assets (build output → .electron/src/)
    */
   private async _copyWebAssets(outPath: string, srcPath: string): Promise<void> {
-    const items = await fsReaddir(outPath);
+    const items = await fsCoreNode.readdir(outPath);
     for (const item of items) {
       // Exclude electron/ subdirectory (prevent self-copying)
       if (item === "electron") continue;
 
       const source = path.resolve(outPath, item);
       const dest = path.resolve(srcPath, item);
-      await fsCopy(source, dest);
+      await fsCoreNode.copy(source, dest);
     }
   }
 
@@ -297,7 +297,7 @@ export class Electron {
     }
 
     const configFilePath = path.resolve(this._electronPath, "builder-config.json");
-    await fsWriteJson(configFilePath, builderConfig, { space: 2 });
+    await fsCoreNode.writeJson(configFilePath, builderConfig, { space: 2 });
 
     await this._exec(
       "npx",
@@ -312,7 +312,7 @@ export class Electron {
   private async _copyBuildOutput(outPath: string): Promise<void> {
     const distPath = path.resolve(this._electronPath, "dist");
     const electronOutPath = path.resolve(outPath, "electron");
-    await fsMkdir(electronOutPath);
+    await fsCoreNode.mkdir(electronOutPath);
 
     const description = this._npmConfig.description ?? this._npmConfig.name;
     const version = this._npmConfig.version;
@@ -322,15 +322,15 @@ export class Electron {
     const builderFileName = `${description} ${isPortable ? "" : "Setup "}${version}.exe`;
     const sourcePath = path.resolve(distPath, builderFileName);
 
-    if (await fsExists(sourcePath)) {
+    if (await fsCoreNode.exists(sourcePath)) {
       // Copy latest file
       const latestFileName = `${description}${isPortable ? "-portable" : ""}-latest.exe`;
-      await fsCopy(sourcePath, path.resolve(electronOutPath, latestFileName));
+      await fsCoreNode.copy(sourcePath, path.resolve(electronOutPath, latestFileName));
 
       // Copy per-version file to updates/
       const updatesPath = path.resolve(electronOutPath, "updates");
-      await fsMkdir(updatesPath);
-      await fsCopy(sourcePath, path.resolve(updatesPath, `${version}.exe`));
+      await fsCoreNode.mkdir(updatesPath);
+      await fsCoreNode.copy(sourcePath, path.resolve(updatesPath, `${version}.exe`));
     } else {
       Electron._logger.warn(`build output not found: ${sourcePath}`);
     }

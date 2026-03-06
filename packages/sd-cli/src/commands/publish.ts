@@ -2,7 +2,7 @@ import path from "path";
 import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
-import { fsExists, fsRead, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
+import { fs as fsCoreNode } from "@simplysm/core-node";
 import { env, json } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../sd-config.types";
@@ -272,7 +272,7 @@ async function upgradeVersion(
 ): Promise<{ version: string; changedFiles: string[] }> {
   const changedFiles: string[] = [];
   const projPkgPath = path.resolve(cwd, "package.json");
-  const projPkg = await fsReadJson<PackageJson>(projPkgPath);
+  const projPkg = await fsCoreNode.readJson<PackageJson>(projPkgPath);
 
   const currentVersion = projPkg.version;
   const prereleaseInfo = semver.prerelease(currentVersion);
@@ -289,28 +289,28 @@ async function upgradeVersion(
   }
 
   projPkg.version = newVersion;
-  await fsWrite(projPkgPath, json.stringify(projPkg, { space: 2 }) + "\n");
+  await fsCoreNode.write(projPkgPath, json.stringify(projPkg, { space: 2 }) + "\n");
   changedFiles.push(projPkgPath);
 
   // Set version in each package's package.json
   for (const pkgPath of allPkgPaths) {
     const pkgJsonPath = path.resolve(pkgPath, "package.json");
-    const pkgJson = await fsReadJson<PackageJson>(pkgJsonPath);
+    const pkgJson = await fsCoreNode.readJson<PackageJson>(pkgJsonPath);
     pkgJson.version = newVersion;
-    await fsWrite(pkgJsonPath, json.stringify(pkgJson, { space: 2 }) + "\n");
+    await fsCoreNode.write(pkgJsonPath, json.stringify(pkgJson, { space: 2 }) + "\n");
     changedFiles.push(pkgJsonPath);
   }
 
   // Synchronize @simplysm package version in template files
-  const templateFiles = await fsGlob(path.resolve(cwd, "packages/sd-cli/templates/**/*.hbs"));
+  const templateFiles = await fsCoreNode.glob(path.resolve(cwd, "packages/sd-cli/templates/**/*.hbs"));
   const versionRegex = /("@simplysm\/[^"]+"\s*:\s*)"~[^"]+"/g;
 
   for (const templatePath of templateFiles) {
-    const content = await fsRead(templatePath);
+    const content = await fsCoreNode.read(templatePath);
     const newContent = content.replace(versionRegex, `$1"~${newVersion}"`);
 
     if (content !== newContent) {
-      await fsWrite(templatePath, newContent);
+      await fsCoreNode.write(templatePath, newContent);
       changedFiles.push(templatePath);
     }
   }
@@ -362,7 +362,7 @@ async function publishPackage(
       logger.info(`[DRY-RUN] [${pkgName}] copy to local: ${distPath} → ${targetPath}`);
     } else {
       logger.debug(`[${pkgName}] copy to local: ${distPath} → ${targetPath}`);
-      await fsCopy(distPath, targetPath);
+      await fsCoreNode.copy(distPath, targetPath);
     }
   } else {
     // Upload to storage
@@ -407,7 +407,7 @@ async function computePublishLevels(
   // Collect workspace dependencies for each package
   const depsMap = new Map<string, Set<string>>();
   for (const pkg of publishPkgs) {
-    const pkgJson = await fsReadJson<PackageJson>(path.resolve(pkg.path, "package.json"));
+    const pkgJson = await fsCoreNode.readJson<PackageJson>(path.resolve(pkg.path, "package.json"));
     const allDeps = {
       ...pkgJson.dependencies,
       ...pkgJson.peerDependencies,
@@ -493,18 +493,18 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   // Load package.json
   const projPkgPath = path.resolve(cwd, "package.json");
-  const projPkg = await fsReadJson<PackageJson>(projPkgPath);
+  const projPkg = await fsCoreNode.readJson<PackageJson>(projPkgPath);
 
   // Collect workspace package paths from pnpm-workspace.yaml
   const workspaceYamlPath = path.resolve(cwd, "pnpm-workspace.yaml");
   const workspaceGlobs: string[] = [];
-  if (await fsExists(workspaceYamlPath)) {
-    const yamlContent = await fsRead(workspaceYamlPath);
+  if (await fsCoreNode.exists(workspaceYamlPath)) {
+    const yamlContent = await fsCoreNode.read(workspaceYamlPath);
     workspaceGlobs.push(...parseWorkspaceGlobs(yamlContent));
   }
 
   const allPkgPaths = (
-    await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item))))
+    await Promise.all(workspaceGlobs.map((item) => fsCoreNode.glob(path.resolve(cwd, item))))
   )
     .flat()
     .filter((item) => !path.basename(item).includes("."));
@@ -550,7 +550,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   );
 
   // Check if Git is available
-  const hasGit = await fsExists(path.resolve(cwd, ".git"));
+  const hasGit = await fsCoreNode.exists(path.resolve(cwd, ".git"));
 
   //#region Phase 1: Pre-validation
 

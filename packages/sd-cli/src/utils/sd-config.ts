@@ -1,7 +1,7 @@
 import path from "path";
 import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
-import { fsExists } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 import type { SdConfig, SdConfigParams } from "../sd-config.types";
 
 /**
@@ -12,7 +12,7 @@ import type { SdConfig, SdConfigParams } from "../sd-config.types";
 export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
   const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
 
-  if (!(await fsExists(sdConfigPath))) {
+  if (!(await fs.exists(sdConfigPath))) {
     throw new SdError(`sd.config.ts file not found: ${sdConfigPath}`);
   }
 

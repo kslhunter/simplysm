@@ -1,5 +1,5 @@
 import path from "path";
-import { fsGlob, fsCopy, fsMkdir, fsRm, FsWatcher } from "@simplysm/core-node";
+import { fs, FsWatcher } from "@simplysm/core-node";
 
 /**
  * Copy files matching glob patterns from src/ to dist/
@@ -13,12 +13,12 @@ export async function copySrcFiles(pkgDir: string, patterns: string[]): Promise<
   const distDir = path.join(pkgDir, "dist");
 
   for (const pattern of patterns) {
-    const files = await fsGlob(pattern, { cwd: srcDir, absolute: true });
+    const files = await fs.glob(pattern, { cwd: srcDir, absolute: true });
     for (const file of files) {
       const relativePath = path.relative(srcDir, file);
       const distPath = path.join(distDir, relativePath);
-      await fsMkdir(path.dirname(distPath));
-      await fsCopy(file, distPath);
+      await fs.mkdir(path.dirname(distPath));
+      await fs.copy(file, distPath);
     }
   }
 }
@@ -48,10 +48,10 @@ export async function watchCopySrcFiles(pkgDir: string, patterns: string[]): Pro
       const distPath = path.join(distDir, relPath);
 
       if (event === "unlink") {
-        await fsRm(distPath);
+        await fs.rm(distPath);
       } else if (event === "add" || event === "change") {
-        await fsMkdir(path.dirname(distPath));
-        await fsCopy(filePath, distPath);
+        await fs.mkdir(path.dirname(distPath));
+        await fs.copy(filePath, distPath);
       }
     }
   });

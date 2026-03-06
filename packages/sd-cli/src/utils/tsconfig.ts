@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { fsExists, fsReadJson, pathIsChildPath } from "@simplysm/core-node";
+import { fs, path as pathNs } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 
 /**
@@ -14,11 +14,11 @@ const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
  */
 export async function getTypesFromPackageJson(packageDir: string): Promise<string[]> {
   const packageJsonPath = path.join(packageDir, "package.json");
-  if (!(await fsExists(packageJsonPath))) {
+  if (!(await fs.exists(packageJsonPath))) {
     return [];
   }
 
-  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(
+  const packageJson = await fs.readJson<{ devDependencies?: Record<string, string> }>(
     packageJsonPath,
   );
   const devDeps = packageJson.devDependencies ?? {};
@@ -111,7 +111,7 @@ export function getPackageSourceFiles(
   parsedConfig: ts.ParsedCommandLine,
 ): string[] {
   const pkgSrcDir = path.join(pkgDir, "src");
-  return parsedConfig.fileNames.filter((f) => pathIsChildPath(f, pkgSrcDir));
+  return parsedConfig.fileNames.filter((f) => pathNs.pathIsChildPath(f, pkgSrcDir));
 }
 
 /**
@@ -119,7 +119,7 @@ export function getPackageSourceFiles(
  */
 export function getPackageFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
   return parsedConfig.fileNames.filter((f) => {
-    if (!pathIsChildPath(f, pkgDir)) return false;
+    if (!pathNs.pathIsChildPath(f, pkgDir)) return false;
     // Exclude files directly in package root (config files) — treated same as project root files in other tasks
     const relative = path.relative(pkgDir, f);
     return path.dirname(relative) !== ".";

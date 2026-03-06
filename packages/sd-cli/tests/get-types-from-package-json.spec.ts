@@ -3,12 +3,16 @@ import path from "path";
 
 // Mock core-node functions
 vi.mock("@simplysm/core-node", () => ({
-  fsExists: vi.fn(),
-  fsReadJson: vi.fn(),
-  pathPosix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+  fs: {
+    exists: vi.fn(),
+    readJson: vi.fn(),
+  },
+  path: {
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+  },
 }));
 
-import { fsExists, fsReadJson } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 import { getTypesFromPackageJson } from "../src/utils/tsconfig";
 
 describe("getTypesFromPackageJson", () => {
@@ -22,8 +26,8 @@ describe("getTypesFromPackageJson", () => {
 
   it("converts @types/* devDependencies to types list", async () => {
     const packageDir = "/project/packages/core-common";
-    const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJson = vi.mocked(fsReadJson);
+    const mockFsExists = vi.mocked(fs.exists);
+    const mockFsReadJson = vi.mocked(fs.readJson);
 
     mockFsExists.mockResolvedValue(true);
     mockFsReadJson.mockResolvedValue({
@@ -43,7 +47,7 @@ describe("getTypesFromPackageJson", () => {
 
   it("returns empty array if package.json does not exist", async () => {
     const packageDir = "/project/packages/unknown";
-    const mockFsExists = vi.mocked(fsExists);
+    const mockFsExists = vi.mocked(fs.exists);
 
     mockFsExists.mockResolvedValue(false);
 
@@ -54,8 +58,8 @@ describe("getTypesFromPackageJson", () => {
 
   it("returns empty array if devDependencies does not exist", async () => {
     const packageDir = "/project/packages/core-common";
-    const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJson = vi.mocked(fsReadJson);
+    const mockFsExists = vi.mocked(fs.exists);
+    const mockFsReadJson = vi.mocked(fs.readJson);
 
     mockFsExists.mockResolvedValue(true);
     mockFsReadJson.mockResolvedValue({
@@ -70,8 +74,8 @@ describe("getTypesFromPackageJson", () => {
 
   it("handles scoped @types packages correctly", async () => {
     const packageDir = "/project/packages/core-common";
-    const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJson = vi.mocked(fsReadJson);
+    const mockFsExists = vi.mocked(fs.exists);
+    const mockFsReadJson = vi.mocked(fs.readJson);
 
     mockFsExists.mockResolvedValue(true);
     mockFsReadJson.mockResolvedValue({

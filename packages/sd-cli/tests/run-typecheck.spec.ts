@@ -49,21 +49,25 @@ vi.mock("@simplysm/core-node", () => {
   });
 
   return {
-    fsExists: vi.fn(),
-    fsExistsSync: vi.fn(() => false),
-    fsReadJson: vi.fn(),
-    fsReadSync: vi.fn(() => ""),
-    pathPosix: vi.fn(posix),
-    pathIsChildPath: vi.fn(isChildPath),
-    pathFilterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
-      if (targets.length === 0) return files;
-      return files.filter((file) => {
-        const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some(
-          (target) => relativePath === target || isChildPath(relativePath, target),
-        );
-      });
-    }),
+    fs: {
+      exists: vi.fn(),
+      existsSync: vi.fn(() => false),
+      readJson: vi.fn(),
+      readSync: vi.fn(() => ""),
+    },
+    path: {
+      posix: vi.fn(posix),
+      isChildPath: vi.fn(isChildPath),
+      filterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
+        if (targets.length === 0) return files;
+        return files.filter((file) => {
+          const relativePath = posix(file.replace(cwd + "/", ""));
+          return targets.some(
+            (target) => relativePath === target || isChildPath(relativePath, target),
+          );
+        });
+      }),
+    },
     Worker: {
       create: vi.fn(() => createMockWorkerProxy()),
     },
@@ -98,7 +102,7 @@ vi.mock("jiti", () => ({
 
 import path from "path";
 import ts from "typescript";
-import { fsExists, fsReadJson } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 import { runTypecheck } from "../src/commands/typecheck";
 
 /**
@@ -234,8 +238,8 @@ describe("runTypecheck", () => {
       }),
     );
 
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fs.readJson).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       createMockDiagnosticArray([]),
@@ -268,8 +272,8 @@ describe("runTypecheck", () => {
       }),
     );
 
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fs.readJson).mockResolvedValue({ devDependencies: {} });
 
     const { Worker } = await import("@simplysm/core-node");
     const mockBuildDts = vi.fn(() =>
@@ -316,7 +320,7 @@ describe("runTypecheck", () => {
       }),
     );
 
-    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fs.exists).mockResolvedValue(false);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       createMockDiagnosticArray([]),
@@ -339,8 +343,8 @@ describe("runTypecheck", () => {
       }),
     );
 
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fs.readJson).mockResolvedValue({ devDependencies: {} });
 
     // Mock Worker to return error results
     const { Worker } = await import("@simplysm/core-node");
@@ -386,9 +390,9 @@ describe("runTypecheck", () => {
       }),
     );
 
-    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fs.exists).mockResolvedValue(false);
     // Set core-node as node target package
-    vi.mocked(fsReadJson).mockImplementation((filePath: string) => {
+    vi.mocked(fs.readJson).mockImplementation((filePath: string) => {
       if (filePath.includes("core-node")) {
         return Promise.resolve({ name: "@simplysm/core-node" });
       }
@@ -472,8 +476,8 @@ describe("executeTypecheck", () => {
       errors: [],
     } as never);
 
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fs.readJson).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(Worker.create).mockReturnValue(
       createMockWorker({
@@ -512,8 +516,8 @@ describe("executeTypecheck", () => {
       errors: [],
     } as never);
 
-    vi.mocked(fsExists).mockResolvedValue(false);
-    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fs.exists).mockResolvedValue(false);
+    vi.mocked(fs.readJson).mockResolvedValue({ devDependencies: {} });
 
     // Mock worker to return error results
     vi.mocked(Worker.create).mockReturnValue(

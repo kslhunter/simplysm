@@ -4,8 +4,12 @@ import path from "path";
 
 // Mock core-node functions and jiti
 vi.mock("@simplysm/core-node", () => ({
-  fsExists: vi.fn(),
-  pathPosix: vi.fn(),
+  fs: {
+    exists: vi.fn(),
+  },
+  path: {
+    posix: vi.fn(),
+  },
 }));
 
 const mockJitiImportFn = vi.fn();
@@ -15,7 +19,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-import { fsExists } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 
 describe("loadIgnorePatterns", () => {
   beforeEach(() => {
@@ -28,7 +32,7 @@ describe("loadIgnorePatterns", () => {
 
   it("extracts globalIgnores pattern from eslint.config.ts", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fs.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
@@ -45,7 +49,7 @@ describe("loadIgnorePatterns", () => {
 
   it("does not extract as globalIgnores if files is present", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(fsExists);
+    const mockExists = vi.mocked(fs.exists);
 
     mockExists.mockImplementation((filePath: string) => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));

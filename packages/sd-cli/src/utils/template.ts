@@ -1,6 +1,6 @@
 import path from "path";
 import Handlebars from "handlebars";
-import { fsCopy, fsMkdir, fsRead, fsReaddir, fsStat, fsWrite } from "@simplysm/core-node";
+import { fs } from "@simplysm/core-node";
 
 /**
  * Recursively traverse template directory, render with Handlebars, and generate files
@@ -20,13 +20,13 @@ export async function renderTemplateDir(
   context: Record<string, unknown>,
   dirReplacements?: Record<string, string>,
 ): Promise<void> {
-  await fsMkdir(destDir);
+  await fs.mkdir(destDir);
 
-  const entries = await fsReaddir(srcDir);
+  const entries = await fs.readdir(srcDir);
 
   for (const entry of entries) {
     const srcPath = path.join(srcDir, entry);
-    const stat = await fsStat(srcPath);
+    const stat = await fs.stat(srcPath);
 
     if (stat.isDirectory()) {
       // Apply directory name substitution
@@ -39,7 +39,7 @@ export async function renderTemplateDir(
       );
     } else if (entry.endsWith(".hbs")) {
       // Render Handlebars template
-      const source = await fsRead(srcPath);
+      const source = await fs.read(srcPath);
       const template = Handlebars.compile(source, { noEscape: true });
       const result = template(context);
 
@@ -47,10 +47,10 @@ export async function renderTemplateDir(
       if (result.trim().length === 0) continue;
 
       const destFileName = entry.slice(0, -4); // Remove .hbs
-      await fsWrite(path.join(destDir, destFileName), result);
+      await fs.write(path.join(destDir, destFileName), result);
     } else {
       // Copy binary files as-is
-      await fsCopy(srcPath, path.join(destDir, entry));
+      await fs.copy(srcPath, path.join(destDir, entry));
     }
   }
 }

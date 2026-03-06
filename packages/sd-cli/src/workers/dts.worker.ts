@@ -1,6 +1,6 @@
 import path from "path";
 import ts from "typescript";
-import { createWorker, pathIsChildPath, pathNorm } from "@simplysm/core-node";
+import { createWorker, path as pathNs } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
@@ -134,13 +134,13 @@ function createDtsPathRewriter(
   pkgDir: string,
 ): (fileName: string, content: string) => [string, string] | null {
   const pkgName = path.basename(pkgDir);
-  const distDir = pathNorm(path.join(pkgDir, "dist"));
+  const distDir = pathNs.pathNorm(path.join(pkgDir, "dist"));
   const distPrefix = distDir + path.sep;
   // Nested structure prefix for this package: dist/{pkgName}/src/
-  const ownNestedPrefix = pathNorm(path.join(distDir, pkgName, "src")) + path.sep;
+  const ownNestedPrefix = pathNs.pathNorm(path.join(distDir, pkgName, "src")) + path.sep;
 
   return (fileName, content) => {
-    fileName = pathNorm(fileName);
+    fileName = pathNs.pathNorm(fileName);
 
     if (!fileName.startsWith(distPrefix)) return null;
 
@@ -190,12 +190,12 @@ async function build(info: DtsBuildInfo): Promise<DtsBuildResult> {
         // Emit mode: only src (generate d.ts)
         rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
         const pkgSrcDir = path.join(info.pkgDir, "src");
-        diagnosticFilter = (d) => d.file == null || pathIsChildPath(d.file.fileName, pkgSrcDir);
+        diagnosticFilter = (d) => d.file == null || pathNs.pathIsChildPath(d.file.fileName, pkgSrcDir);
       } else {
         // Typecheck mode: all package files (src + tests)
         rootFiles = getPackageFiles(info.pkgDir, parsedConfig);
         const pkgDir = info.pkgDir;
-        diagnosticFilter = (d) => d.file == null || pathIsChildPath(d.file.fileName, pkgDir);
+        diagnosticFilter = (d) => d.file == null || pathNs.pathIsChildPath(d.file.fileName, pkgDir);
       }
 
       tsBuildInfoFile = path.join(
@@ -207,7 +207,7 @@ async function build(info: DtsBuildInfo): Promise<DtsBuildResult> {
       // Non-package mode: root project files + package root config files typecheck
       const packagesDir = path.join(info.cwd, "packages");
       const isNonPackageFile = (fileName: string): boolean => {
-        if (!pathIsChildPath(fileName, packagesDir)) return true;
+        if (!pathNs.pathIsChildPath(fileName, packagesDir)) return true;
         // Include files directly in package root (config files): packages/{pkg}/file.ts
         const relative = path.relative(packagesDir, fileName);
         return relative.split(path.sep).length === 2;
@@ -366,7 +366,7 @@ async function startWatch(info: DtsWatchInfo): Promise<void> {
     const reportDiagnostic: ts.DiagnosticReporter = (diagnostic) => {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         // Collect errors only from this package's src folder (ignore other packages' errors)
-        if (diagnostic.file != null && !pathIsChildPath(diagnostic.file.fileName, pkgSrcDir)) {
+        if (diagnostic.file != null && !pathNs.pathIsChildPath(diagnostic.file.fileName, pkgSrcDir)) {
           return;
         }
 
