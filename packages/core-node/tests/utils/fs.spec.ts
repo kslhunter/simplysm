@@ -3,35 +3,35 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import {
-  fsExistsSync,
-  fsExists,
-  fsMkdirSync,
-  fsMkdir,
-  fsRmSync,
-  fsRm,
-  fsCopySync,
-  fsCopy,
-  fsReadSync,
-  fsRead,
-  fsReadBufferSync,
-  fsReadBuffer,
-  fsReadJsonSync,
-  fsReadJson,
-  fsWriteSync,
-  fsWrite,
-  fsWriteJsonSync,
-  fsWriteJson,
-  fsReaddirSync,
-  fsReaddir,
-  fsStatSync,
-  fsStat,
-  fsLstatSync,
-  fsLstat,
-  fsGlobSync,
-  fsGlob,
-  fsClearEmptyDirectory,
-  fsFindAllParentChildPathsSync,
-  fsFindAllParentChildPaths,
+  existsSync,
+  exists,
+  mkdirSync,
+  mkdir,
+  rmSync,
+  rm,
+  copySync,
+  copy,
+  readSync,
+  read,
+  readBufferSync,
+  readBuffer,
+  readJsonSync,
+  readJson,
+  writeSync,
+  write,
+  writeJsonSync,
+  writeJson,
+  readdirSync,
+  readdir,
+  statSync,
+  stat,
+  lstatSync,
+  lstat,
+  globSync,
+  glob,
+  clearEmptyDirectory,
+  findAllParentChildPathsSync,
+  findAllParentChildPaths,
 } from "../../src/utils/fs";
 import { SdError } from "@simplysm/core-common";
 
@@ -48,32 +48,32 @@ describe("fs functions", () => {
 
   //#region exists
 
-  describe("fsExistsSync", () => {
+  describe("existsSync", () => {
     it("returns true for existing file", () => {
       const filePath = path.join(testDir, "test.txt");
       fs.writeFileSync(filePath, "test");
 
-      expect(fsExistsSync(filePath)).toBe(true);
+      expect(existsSync(filePath)).toBe(true);
     });
 
     it("returns false for nonexistent file", () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(fsExistsSync(filePath)).toBe(false);
+      expect(existsSync(filePath)).toBe(false);
     });
 
   });
 
-  describe("fsExists", () => {
+  describe("exists", () => {
     it("returns true for existing file", async () => {
       const filePath = path.join(testDir, "test.txt");
       fs.writeFileSync(filePath, "test");
 
-      expect(await fsExists(filePath)).toBe(true);
+      expect(await exists(filePath)).toBe(true);
     });
 
     it("returns false for nonexistent file", async () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(await fsExists(filePath)).toBe(false);
+      expect(await exists(filePath)).toBe(false);
     });
 
   });
@@ -82,10 +82,10 @@ describe("fs functions", () => {
 
   //#region mkdir
 
-  describe("fsMkdirSync", () => {
+  describe("mkdirSync", () => {
     it("creates directory", () => {
       const dirPath = path.join(testDir, "newdir");
-      fsMkdirSync(dirPath);
+      mkdirSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
       expect(fs.statSync(dirPath).isDirectory()).toBe(true);
@@ -93,20 +93,20 @@ describe("fs functions", () => {
 
     it("creates nested directories (recursive)", () => {
       const dirPath = path.join(testDir, "a/b/c");
-      fsMkdirSync(dirPath);
+      mkdirSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
     });
 
     it("passes without error for existing directory", () => {
-      expect(() => fsMkdirSync(testDir)).not.toThrow();
+      expect(() => mkdirSync(testDir)).not.toThrow();
     });
   });
 
-  describe("fsMkdir", () => {
+  describe("mkdir", () => {
     it("creates directory asynchronously", async () => {
       const dirPath = path.join(testDir, "asyncdir");
-      await fsMkdir(dirPath);
+      await mkdir(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
     });
@@ -116,12 +116,12 @@ describe("fs functions", () => {
 
   //#region rm
 
-  describe("fsRmSync", () => {
+  describe("rmSync", () => {
     it("deletes file", () => {
       const filePath = path.join(testDir, "todelete.txt");
       fs.writeFileSync(filePath, "test");
 
-      fsRmSync(filePath);
+      rmSync(filePath);
 
       expect(fs.existsSync(filePath)).toBe(false);
     });
@@ -131,22 +131,22 @@ describe("fs functions", () => {
       fs.mkdirSync(dirPath);
       fs.writeFileSync(path.join(dirPath, "file.txt"), "test");
 
-      fsRmSync(dirPath);
+      rmSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(false);
     });
 
     it("passes without error for nonexistent path", () => {
-      expect(() => fsRmSync(path.join(testDir, "nonexistent"))).not.toThrow();
+      expect(() => rmSync(path.join(testDir, "nonexistent"))).not.toThrow();
     });
   });
 
-  describe("fsRm", () => {
+  describe("rm", () => {
     it("deletes file asynchronously", async () => {
       const filePath = path.join(testDir, "asyncdelete.txt");
       fs.writeFileSync(filePath, "test");
 
-      await fsRm(filePath);
+      await rm(filePath);
 
       expect(fs.existsSync(filePath)).toBe(false);
     });
@@ -156,58 +156,58 @@ describe("fs functions", () => {
 
   //#region read/write
 
-  describe("fsReadSync", () => {
+  describe("readSync", () => {
     it("reads file content as UTF-8 string", () => {
       const filePath = path.join(testDir, "read.txt");
       fs.writeFileSync(filePath, "Hello, World!");
 
-      const content = fsReadSync(filePath);
+      const content = readSync(filePath);
 
       expect(content).toBe("Hello, World!");
     });
 
   });
 
-  describe("fsRead", () => {
+  describe("read", () => {
     it("reads file asynchronously", async () => {
       const filePath = path.join(testDir, "asyncread.txt");
       fs.writeFileSync(filePath, "async content");
 
-      const content = await fsRead(filePath);
+      const content = await read(filePath);
 
       expect(content).toBe("async content");
     });
   });
 
-  describe("fsReadBufferSync", () => {
+  describe("readBufferSync", () => {
     it("reads file as Buffer", () => {
       const filePath = path.join(testDir, "buffer.txt");
       fs.writeFileSync(filePath, "buffer content");
 
-      const buffer = fsReadBufferSync(filePath);
+      const buffer = readBufferSync(filePath);
 
       expect(buffer instanceof Uint8Array).toBe(true);
       expect(buffer.toString()).toBe("buffer content");
     });
   });
 
-  describe("fsReadBuffer", () => {
+  describe("readBuffer", () => {
     it("reads file as Buffer asynchronously", async () => {
       const filePath = path.join(testDir, "asyncbuffer.txt");
       fs.writeFileSync(filePath, "async buffer content");
 
-      const buffer = await fsReadBuffer(filePath);
+      const buffer = await readBuffer(filePath);
 
       expect(buffer instanceof Uint8Array).toBe(true);
       expect(buffer.toString()).toBe("async buffer content");
     });
   });
 
-  describe("fsWriteSync", () => {
+  describe("writeSync", () => {
     it("writes string to file", () => {
       const filePath = path.join(testDir, "write.txt");
 
-      fsWriteSync(filePath, "written content");
+      writeSync(filePath, "written content");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("written content");
     });
@@ -216,7 +216,7 @@ describe("fs functions", () => {
       const filePath = path.join(testDir, "buffer-write.bin");
       const buffer = new Uint8Array([0x00, 0x01, 0x02, 0xff]);
 
-      fsWriteSync(filePath, buffer);
+      writeSync(filePath, buffer);
 
       expect(new Uint8Array(fs.readFileSync(filePath))).toEqual(buffer);
     });
@@ -224,17 +224,17 @@ describe("fs functions", () => {
     it("auto-creates parent directory if missing", () => {
       const filePath = path.join(testDir, "sub/dir/write.txt");
 
-      fsWriteSync(filePath, "nested content");
+      writeSync(filePath, "nested content");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("nested content");
     });
   });
 
-  describe("fsWrite", () => {
+  describe("write", () => {
     it("writes file asynchronously", async () => {
       const filePath = path.join(testDir, "asyncwrite.txt");
 
-      await fsWrite(filePath, "async written");
+      await write(filePath, "async written");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("async written");
     });
@@ -244,12 +244,12 @@ describe("fs functions", () => {
 
   //#region JSON
 
-  describe("fsReadJsonSync", () => {
+  describe("readJsonSync", () => {
     it("reads JSON file", () => {
       const filePath = path.join(testDir, "data.json");
       fs.writeFileSync(filePath, '{"name": "test", "value": 42}');
 
-      const data = fsReadJsonSync<{ name: string; value: number }>(filePath);
+      const data = readJsonSync<{ name: string; value: number }>(filePath);
 
       expect(data).toEqual({ name: "test", value: 42 });
     });
@@ -260,7 +260,7 @@ describe("fs functions", () => {
       fs.writeFileSync(filePath, longContent);
 
       try {
-        fsReadJsonSync(filePath);
+        readJsonSync(filePath);
         expect.fail("Should throw error");
       } catch (err) {
         expect((err as Error).message).toContain("...(truncated)");
@@ -268,12 +268,12 @@ describe("fs functions", () => {
     });
   });
 
-  describe("fsWriteJsonSync", () => {
+  describe("writeJsonSync", () => {
     it("writes JSON file", () => {
       const filePath = path.join(testDir, "output.json");
       const data = { name: "test", value: 42 };
 
-      fsWriteJsonSync(filePath, data);
+      writeJsonSync(filePath, data);
 
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
       expect(content).toEqual(data);
@@ -283,7 +283,7 @@ describe("fs functions", () => {
       const filePath = path.join(testDir, "formatted.json");
       const data = { name: "test" };
 
-      fsWriteJsonSync(filePath, data, { space: 2 });
+      writeJsonSync(filePath, data, { space: 2 });
 
       const content = fs.readFileSync(filePath, "utf-8");
       expect(content).toContain("\n");
@@ -293,7 +293,7 @@ describe("fs functions", () => {
       const filePath = path.join(testDir, "replaced.json");
       const data = { name: "test", secret: "hidden" };
 
-      fsWriteJsonSync(filePath, data, {
+      writeJsonSync(filePath, data, {
         replacer: (_key, value) =>
           typeof value === "string" && value === "hidden" ? undefined : value,
       });
@@ -304,23 +304,23 @@ describe("fs functions", () => {
     });
   });
 
-  describe("fsReadJson", () => {
+  describe("readJson", () => {
     it("reads JSON file asynchronously", async () => {
       const filePath = path.join(testDir, "asyncdata.json");
       fs.writeFileSync(filePath, '{"name": "async", "value": 100}');
 
-      const data = await fsReadJson<{ name: string; value: number }>(filePath);
+      const data = await readJson<{ name: string; value: number }>(filePath);
 
       expect(data).toEqual({ name: "async", value: 100 });
     });
   });
 
-  describe("fsWriteJson", () => {
+  describe("writeJson", () => {
     it("writes JSON file asynchronously", async () => {
       const filePath = path.join(testDir, "asyncoutput.json");
       const data = { name: "async", value: 100 };
 
-      await fsWriteJson(filePath, data);
+      await writeJson(filePath, data);
 
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
       expect(content).toEqual(data);
@@ -331,13 +331,13 @@ describe("fs functions", () => {
 
   //#region copy
 
-  describe("fsCopySync", () => {
+  describe("copySync", () => {
     it("copies file", () => {
       const source = path.join(testDir, "source.txt");
       const target = path.join(testDir, "target.txt");
       fs.writeFileSync(source, "source content");
 
-      fsCopySync(source, target);
+      copySync(source, target);
 
       expect(fs.readFileSync(target, "utf-8")).toBe("source content");
     });
@@ -350,7 +350,7 @@ describe("fs functions", () => {
       fs.mkdirSync(path.join(sourceDir, "sub"));
       fs.writeFileSync(path.join(sourceDir, "sub/nested.txt"), "nested");
 
-      fsCopySync(sourceDir, targetDir);
+      copySync(sourceDir, targetDir);
 
       expect(fs.existsSync(path.join(targetDir, "file.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "sub/nested.txt"))).toBe(true);
@@ -360,7 +360,7 @@ describe("fs functions", () => {
       const source = path.join(testDir, "nonexistent");
       const target = path.join(testDir, "target");
 
-      expect(() => fsCopySync(source, target)).not.toThrow();
+      expect(() => copySync(source, target)).not.toThrow();
     });
 
     it("selectively copies with filter option", () => {
@@ -370,7 +370,7 @@ describe("fs functions", () => {
       fs.writeFileSync(path.join(sourceDir, "include.txt"), "include");
       fs.writeFileSync(path.join(sourceDir, "exclude.log"), "exclude");
 
-      fsCopySync(sourceDir, targetDir, (p) => !p.endsWith(".log"));
+      copySync(sourceDir, targetDir, (p) => !p.endsWith(".log"));
 
       expect(fs.existsSync(path.join(targetDir, "include.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "exclude.log"))).toBe(false);
@@ -385,7 +385,7 @@ describe("fs functions", () => {
       fs.writeFileSync(path.join(sourceDir, "excluded", "nested.txt"), "nested");
       fs.writeFileSync(path.join(sourceDir, "included", "nested.txt"), "nested");
 
-      fsCopySync(sourceDir, targetDir, (p) => !p.includes("excluded"));
+      copySync(sourceDir, targetDir, (p) => !p.includes("excluded"));
 
       expect(fs.existsSync(path.join(targetDir, "excluded"))).toBe(false);
       expect(fs.existsSync(path.join(targetDir, "excluded", "nested.txt"))).toBe(false);
@@ -394,13 +394,13 @@ describe("fs functions", () => {
     });
   });
 
-  describe("fsCopy", () => {
+  describe("copy", () => {
     it("copies file asynchronously", async () => {
       const source = path.join(testDir, "asyncSource.txt");
       const target = path.join(testDir, "asyncTarget.txt");
       fs.writeFileSync(source, "async source content");
 
-      await fsCopy(source, target);
+      await copy(source, target);
 
       expect(fs.readFileSync(target, "utf-8")).toBe("async source content");
     });
@@ -412,7 +412,7 @@ describe("fs functions", () => {
       fs.writeFileSync(path.join(sourceDir, "keep.ts"), "keep");
       fs.writeFileSync(path.join(sourceDir, "skip.js"), "skip");
 
-      await fsCopy(sourceDir, targetDir, (p) => p.endsWith(".ts"));
+      await copy(sourceDir, targetDir, (p) => p.endsWith(".ts"));
 
       expect(fs.existsSync(path.join(targetDir, "keep.ts"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "skip.js"))).toBe(false);
@@ -423,13 +423,13 @@ describe("fs functions", () => {
 
   //#region readdir
 
-  describe("fsReaddirSync", () => {
+  describe("readdirSync", () => {
     it("reads directory contents", () => {
       fs.writeFileSync(path.join(testDir, "file1.txt"), "");
       fs.writeFileSync(path.join(testDir, "file2.txt"), "");
       fs.mkdirSync(path.join(testDir, "subdir"));
 
-      const entries = fsReaddirSync(testDir);
+      const entries = readdirSync(testDir);
 
       expect(entries).toContain("file1.txt");
       expect(entries).toContain("file2.txt");
@@ -437,12 +437,12 @@ describe("fs functions", () => {
     });
   });
 
-  describe("fsReaddir", () => {
+  describe("readdir", () => {
     it("reads directory contents asynchronously", async () => {
       fs.writeFileSync(path.join(testDir, "async1.txt"), "");
       fs.writeFileSync(path.join(testDir, "async2.txt"), "");
 
-      const entries = await fsReaddir(testDir);
+      const entries = await readdir(testDir);
 
       expect(entries).toContain("async1.txt");
       expect(entries).toContain("async2.txt");
@@ -453,12 +453,12 @@ describe("fs functions", () => {
 
   //#region stat
 
-  describe("fsStatSync", () => {
+  describe("statSync", () => {
     it("gets file information", () => {
       const filePath = path.join(testDir, "statfile.txt");
       fs.writeFileSync(filePath, "content");
 
-      const result = fsStatSync(filePath);
+      const result = statSync(filePath);
 
       expect(result.isFile()).toBe(true);
       expect(result.size).toBeGreaterThan(0);
@@ -466,27 +466,27 @@ describe("fs functions", () => {
 
   });
 
-  describe("fsStat", () => {
+  describe("stat", () => {
     it("gets file information asynchronously", async () => {
       const filePath = path.join(testDir, "asyncstatfile.txt");
       fs.writeFileSync(filePath, "async content");
 
-      const stat = await fsStat(filePath);
+      const result = await stat(filePath);
 
-      expect(stat.isFile()).toBe(true);
-      expect(stat.size).toBeGreaterThan(0);
+      expect(result.isFile()).toBe(true);
+      expect(result.size).toBeGreaterThan(0);
     });
   });
 
-  describe("fsLstatSync", () => {
+  describe("lstatSync", () => {
     it("returns symbolic link information for symbolic links", () => {
       const targetPath = path.join(testDir, "target.txt");
       const linkPath = path.join(testDir, "link.txt");
       fs.writeFileSync(targetPath, "target content");
       fs.symlinkSync(targetPath, linkPath);
 
-      const lstatResult = fsLstatSync(linkPath);
-      const statResult = fsStatSync(linkPath);
+      const lstatResult = lstatSync(linkPath);
+      const statResult = statSync(linkPath);
 
       // lstat returns information about the symbolic link itself
       expect(lstatResult.isSymbolicLink()).toBe(true);
@@ -498,15 +498,15 @@ describe("fs functions", () => {
     });
   });
 
-  describe("fsLstat", () => {
+  describe("lstat", () => {
     it("returns symbolic link information asynchronously", async () => {
       const targetPath = path.join(testDir, "async-target.txt");
       const linkPath = path.join(testDir, "async-link.txt");
       fs.writeFileSync(targetPath, "target content");
       fs.symlinkSync(targetPath, linkPath);
 
-      const lstatResult = await fsLstat(linkPath);
-      const statResult = await fsStat(linkPath);
+      const lstatResult = await lstat(linkPath);
+      const statResult = await stat(linkPath);
 
       // lstat returns information about the symbolic link itself
       expect(lstatResult.isSymbolicLink()).toBe(true);
@@ -522,13 +522,13 @@ describe("fs functions", () => {
 
   //#region glob
 
-  describe("fsGlobSync", () => {
+  describe("globSync", () => {
     it("searches files by glob pattern", () => {
       fs.writeFileSync(path.join(testDir, "a.txt"), "");
       fs.writeFileSync(path.join(testDir, "b.txt"), "");
       fs.writeFileSync(path.join(testDir, "c.js"), "");
 
-      const txtFiles = fsGlobSync(path.join(testDir, "*.txt"));
+      const txtFiles = globSync(path.join(testDir, "*.txt"));
 
       expect(txtFiles.length).toBe(2);
       expect(txtFiles.some((f) => f.endsWith("a.txt"))).toBe(true);
@@ -539,7 +539,7 @@ describe("fs functions", () => {
       fs.mkdirSync(path.join(testDir, "nested"));
       fs.writeFileSync(path.join(testDir, "nested/deep.txt"), "");
 
-      const files = fsGlobSync(path.join(testDir, "**/*.txt"));
+      const files = globSync(path.join(testDir, "**/*.txt"));
 
       expect(files.some((f) => f.endsWith("deep.txt"))).toBe(true);
     });
@@ -548,19 +548,19 @@ describe("fs functions", () => {
       fs.writeFileSync(path.join(testDir, ".hidden"), "");
       fs.writeFileSync(path.join(testDir, "visible"), "");
 
-      const withoutDot = fsGlobSync(path.join(testDir, "*"));
-      const withDot = fsGlobSync(path.join(testDir, "*"), { dot: true });
+      const withoutDot = globSync(path.join(testDir, "*"));
+      const withDot = globSync(path.join(testDir, "*"), { dot: true });
 
       expect(withoutDot.some((f) => f.endsWith(".hidden"))).toBe(false);
       expect(withDot.some((f) => f.endsWith(".hidden"))).toBe(true);
     });
   });
 
-  describe("fsGlob", () => {
+  describe("glob", () => {
     it("searches files asynchronously by glob pattern", async () => {
       fs.writeFileSync(path.join(testDir, "async.txt"), "");
 
-      const files = await fsGlob(path.join(testDir, "*.txt"));
+      const files = await glob(path.join(testDir, "*.txt"));
 
       expect(files.length).toBeGreaterThan(0);
     });
@@ -570,12 +570,12 @@ describe("fs functions", () => {
 
   //#region clearEmptyDirectoryAsync
 
-  describe("fsClearEmptyDirectory", () => {
+  describe("clearEmptyDirectory", () => {
     it("recursively deletes empty directories", async () => {
       const emptyDir = path.join(testDir, "empty/nested/deep");
       fs.mkdirSync(emptyDir, { recursive: true });
 
-      await fsClearEmptyDirectory(path.join(testDir, "empty"));
+      await clearEmptyDirectory(path.join(testDir, "empty"));
 
       expect(fs.existsSync(path.join(testDir, "empty"))).toBe(false);
     });
@@ -585,7 +585,7 @@ describe("fs functions", () => {
       fs.mkdirSync(dirWithFile);
       fs.writeFileSync(path.join(dirWithFile, "file.txt"), "content");
 
-      await fsClearEmptyDirectory(dirWithFile);
+      await clearEmptyDirectory(dirWithFile);
 
       expect(fs.existsSync(dirWithFile)).toBe(true);
     });
@@ -595,14 +595,14 @@ describe("fs functions", () => {
 
   //#region findAllParentChildPaths
 
-  describe("fsFindAllParentChildPathsSync", () => {
+  describe("findAllParentChildPathsSync", () => {
     it("finds specific file in parent directories", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "marker.txt"), "");
       fs.writeFileSync(path.join(testDir, "a/marker.txt"), "");
 
-      const results = fsFindAllParentChildPathsSync("marker.txt", deepDir, testDir);
+      const results = findAllParentChildPathsSync("marker.txt", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -611,20 +611,20 @@ describe("fs functions", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = fsFindAllParentChildPathsSync("nonexistent-file.txt", deepDir, testDir);
+      const results = findAllParentChildPathsSync("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });
   });
 
-  describe("fsFindAllParentChildPaths", () => {
+  describe("findAllParentChildPaths", () => {
     it("finds specific file in parent directories asynchronously", async () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "config.json"), "");
       fs.writeFileSync(path.join(testDir, "x/config.json"), "");
 
-      const results = await fsFindAllParentChildPaths("config.json", deepDir, testDir);
+      const results = await findAllParentChildPaths("config.json", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -633,7 +633,7 @@ describe("fs functions", () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = await fsFindAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
+      const results = await findAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });
@@ -646,9 +646,9 @@ describe("fs functions", () => {
   describe("error cases", () => {
     it("includes path information in SdError when reading nonexistent file", () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(() => fsReadSync(filePath)).toThrow(SdError);
+      expect(() => readSync(filePath)).toThrow(SdError);
       try {
-        fsReadSync(filePath);
+        readSync(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
       }
@@ -656,20 +656,20 @@ describe("fs functions", () => {
 
     it("includes path information in SdError when reading nonexistent file asynchronously", async () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      await expect(fsRead(filePath)).rejects.toThrow(SdError);
+      await expect(read(filePath)).rejects.toThrow(SdError);
       try {
-        await fsRead(filePath);
+        await read(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
       }
     });
 
     it("throws error when reading nonexistent directory", () => {
-      expect(() => fsReaddirSync(path.join(testDir, "nonexistent"))).toThrow();
+      expect(() => readdirSync(path.join(testDir, "nonexistent"))).toThrow();
     });
 
     it("throws error when stat nonexistent file", () => {
-      expect(() => fsStatSync(path.join(testDir, "nonexistent.txt"))).toThrow();
+      expect(() => statSync(path.join(testDir, "nonexistent.txt"))).toThrow();
     });
 
     it("includes path and content information in SdError when reading invalid JSON", () => {
@@ -677,9 +677,9 @@ describe("fs functions", () => {
       const content = "{ invalid json }";
       fs.writeFileSync(filePath, content);
 
-      expect(() => fsReadJsonSync(filePath)).toThrow(SdError);
+      expect(() => readJsonSync(filePath)).toThrow(SdError);
       try {
-        fsReadJsonSync(filePath);
+        readJsonSync(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
         expect((err as Error).message).toContain(content);
@@ -691,9 +691,9 @@ describe("fs functions", () => {
       const content = "{ invalid json }";
       fs.writeFileSync(filePath, content);
 
-      await expect(fsReadJson(filePath)).rejects.toThrow(SdError);
+      await expect(readJson(filePath)).rejects.toThrow(SdError);
       try {
-        await fsReadJson(filePath);
+        await readJson(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
         expect((err as Error).message).toContain(content);
