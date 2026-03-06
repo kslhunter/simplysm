@@ -44,6 +44,19 @@ interface ClientWorkerInfo {
   buildResolver: (() => void) | undefined;
 }
 
+/**
+ * Options for client worker setup
+ */
+interface ClientSetupOptions {
+  workers: ClientWorkerInfo[];
+  /** Called on serverReady event. If undefined, completeTask is called with running status. */
+  onServerReady?: (workerInfo: ClientWorkerInfo, port: number, completeTask: (result: BuildResult) => void) => void;
+  /** Called on error event (in addition to default error handling) */
+  onError?: (workerInfo: ClientWorkerInfo) => void;
+  /** Create the config to pass to worker.startWatch() */
+  createConfig: (workerInfo: ClientWorkerInfo) => SdClientPackageConfig;
+}
+
 //#endregion
 
 //#region DevOrchestrator
@@ -235,9 +248,54 @@ export class DevOrchestrator {
       }));
 
     // Setup and start workers for each section
-    const standaloneClientPromises = this._setupStandaloneClients();
-    const { buildPromises: viteClientPromises, readyPromises: viteClientReadyPromises } =
-      this._setupViteClients();
+    const standaloneClientPromises = this._setupClientWorkers({
+      workers: this._standaloneClientWorkers,
+      createConfig: (workerInfo) => ({
+        ...workerInfo.config,
+        env: { ...this._baseEnv, ...workerInfo.config.env },
+      }),
+    });
+
+    // Vite client ready promises (server waits for client ports before starting runtime)
+    const viteClientReadyPromises = new Map<string, { promise: Promise<void>; resolver: () => void }>();
+    for (const workerInfo of this._viteClientWorkers) {
+      let readyResolver!: () => void;
+      const readyPromise = new Promise<void>((resolve) => {
+        readyResolver = resolve;
+      });
+      viteClientReadyPromises.set(workerInfo.name, {
+        promise: readyPromise,
+        resolver: readyResolver,
+      });
+    }
+
+    const viteClientPromises = this._setupClientWorkers({
+      workers: this._viteClientWorkers,
+      onServerReady: (workerInfo, port, completeTask) => {
+        this._logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(port)})`);
+        this._clientPorts[workerInfo.name] = port;
+        // Notify Vite server ready (server is waiting for proxy setup)
+        viteClientReadyPromises.get(workerInfo.name)?.resolver();
+        // Call completeTask for build completion (Vite doesn't emit build event)
+        completeTask({
+          name: workerInfo.name,
+          target: workerInfo.config.target,
+          type: "build",
+          status: "success",
+        });
+      },
+      onError: (workerInfo) => {
+        // Also resolve readyPromises on Vite client error
+        // (prevent server from hanging indefinitely in await Promise.all(clientReadyPromises))
+        viteClientReadyPromises.get(workerInfo.name)?.resolver();
+      },
+      createConfig: (workerInfo) => ({
+        ...workerInfo.config,
+        server: 0, // Vite will automatically assign port
+        env: { ...this._baseEnv, ...workerInfo.config.env },
+      }),
+    });
+
     const serverPromises = this._setupServers(
       serverWorkerPath,
       serverRuntimeWorkerPath,
@@ -307,11 +365,11 @@ export class DevOrchestrator {
   }
 
   /**
-   * Setup and start standalone client workers
+   * Setup and start client workers (unified for standalone and server-connected clients)
    */
-  private _setupStandaloneClients(): Array<{ name: string; promise: Promise<void> }> {
+  private _setupClientWorkers(opts: ClientSetupOptions): Array<{ name: string; promise: Promise<void> }> {
     const buildPromises = new Map<string, Promise<void>>();
-    for (const workerInfo of this._standaloneClientWorkers) {
+    for (const workerInfo of opts.workers) {
       buildPromises.set(
         workerInfo.name,
         new Promise<void>((resolve) => {
@@ -321,7 +379,7 @@ export class DevOrchestrator {
     }
 
     // Register event handlers
-    for (const workerInfo of this._standaloneClientWorkers) {
+    for (const workerInfo of opts.workers) {
       const completeTask = registerWorkerEventHandlers(
         workerInfo,
         {
@@ -336,14 +394,25 @@ export class DevOrchestrator {
       // serverReady (Vite dev server)
       workerInfo.worker.on("serverReady", (data) => {
         const event = data as ServerReadyEventData;
-        completeTask({
-          name: workerInfo.name,
-          target: workerInfo.config.target,
-          type: "server",
-          status: "running",
-          port: event.port,
-        });
+        if (opts.onServerReady != null) {
+          opts.onServerReady(workerInfo, event.port, completeTask);
+        } else {
+          completeTask({
+            name: workerInfo.name,
+            target: workerInfo.config.target,
+            type: "server",
+            status: "running",
+            port: event.port,
+          });
+        }
       });
+
+      // Additional error handling (in addition to default from registerWorkerEventHandlers)
+      if (opts.onError != null) {
+        workerInfo.worker.on("error", () => {
+          opts.onError!(workerInfo);
+        });
+      }
 
       // Print server URL when scope package rebuild is detected
       workerInfo.worker.on("scopeRebuild", () => {
@@ -352,10 +421,7 @@ export class DevOrchestrator {
 
       // Start worker
       const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
-      const clientConfig: SdClientPackageConfig = {
-        ...workerInfo.config,
-        env: { ...this._baseEnv, ...workerInfo.config.env },
-      };
+      const clientConfig = opts.createConfig(workerInfo);
       workerInfo.worker
         .startWatch({
           name: workerInfo.name,
@@ -375,113 +441,10 @@ export class DevOrchestrator {
         });
     }
 
-    return this._standaloneClientWorkers.map((workerInfo) => ({
+    return opts.workers.map((workerInfo) => ({
       name: `${workerInfo.name} (client)`,
       promise: buildPromises.get(workerInfo.name) ?? Promise.resolve(),
     }));
-  }
-
-  /**
-   * Setup and start Vite client (server-connected) workers
-   */
-  private _setupViteClients(): {
-    buildPromises: Array<{ name: string; promise: Promise<void> }>;
-    readyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>;
-  } {
-    const buildPromiseMap = new Map<string, Promise<void>>();
-    const readyPromises = new Map<string, { promise: Promise<void>; resolver: () => void }>();
-    for (const workerInfo of this._viteClientWorkers) {
-      buildPromiseMap.set(
-        workerInfo.name,
-        new Promise<void>((resolve) => {
-          workerInfo.buildResolver = resolve;
-        }),
-      );
-      // Vite server ready promise (wait until server knows client port)
-      let readyResolver!: () => void;
-      const readyPromise = new Promise<void>((resolve) => {
-        readyResolver = resolve;
-      });
-      readyPromises.set(workerInfo.name, {
-        promise: readyPromise,
-        resolver: readyResolver,
-      });
-    }
-
-    // Register event handlers
-    for (const workerInfo of this._viteClientWorkers) {
-      const completeTask = registerWorkerEventHandlers(
-        workerInfo,
-        {
-          resultKey: `${workerInfo.name}:build`,
-          listrTitle: `${workerInfo.name} (client)`,
-          resultType: "build",
-        },
-        this._results,
-        this._rebuildManager,
-      );
-
-      // serverReady - Store Vite port in clientPorts (URL is printed via server)
-      workerInfo.worker.on("serverReady", (data) => {
-        const event = data as ServerReadyEventData;
-        this._logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(event.port)})`);
-        this._clientPorts[workerInfo.name] = event.port;
-        // Notify Vite server ready (server is waiting for proxy setup)
-        readyPromises.get(workerInfo.name)?.resolver();
-        // Call completeTask for build completion (Vite doesn't emit build event)
-        completeTask({
-          name: workerInfo.name,
-          target: workerInfo.config.target,
-          type: "build",
-          status: "success",
-        });
-      });
-
-      // Also resolve readyPromises on Vite client error
-      // (prevent server from hanging indefinitely in await Promise.all(clientReadyPromises))
-      workerInfo.worker.on("error", () => {
-        readyPromises.get(workerInfo.name)?.resolver();
-      });
-
-      // Print server URL when scope package rebuild is detected
-      workerInfo.worker.on("scopeRebuild", () => {
-        this._schedulePrintServers();
-      });
-
-      // Start worker
-      const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
-      // Allow Vite to automatically assign port
-      const viteConfig: SdClientPackageConfig = {
-        ...workerInfo.config,
-        server: 0, // Vite will automatically assign port
-        env: { ...this._baseEnv, ...workerInfo.config.env },
-      };
-      workerInfo.worker
-        .startWatch({
-          name: workerInfo.name,
-          config: viteConfig,
-          cwd: this._cwd,
-          pkgDir,
-          replaceDeps: this._sdConfig!.replaceDeps,
-        })
-        .catch((err: unknown) => {
-          completeTask({
-            name: workerInfo.name,
-            target: workerInfo.config.target,
-            type: "build",
-            status: "error",
-            message: errNs.message(err),
-          });
-        });
-    }
-
-    return {
-      buildPromises: this._viteClientWorkers.map((workerInfo) => ({
-        name: `${workerInfo.name} (client)`,
-        promise: buildPromiseMap.get(workerInfo.name) ?? Promise.resolve(),
-      })),
-      readyPromises,
-    };
   }
 
   /**

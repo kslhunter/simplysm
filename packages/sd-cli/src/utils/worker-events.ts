@@ -68,9 +68,7 @@ export function registerWorkerEventHandlers(
     name: string;
     config: { target: string };
     worker: {
-      on(event: "buildStart", handler: (data: unknown) => void): void;
-      on(event: "build", handler: (data: BuildEventData) => void): void;
-      on(event: "error", handler: (data: ErrorEventData) => void): void;
+      on(event: string, handler: (data: any) => void): void;
     };
     isInitialBuild: boolean;
     buildResolver: (() => void) | undefined;
