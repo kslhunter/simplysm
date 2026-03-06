@@ -33,27 +33,42 @@ export class IndexedDbStore {
     fn: (store: IDBObjectStore) => Promise<TResult>,
   ): Promise<TResult> {
     const db = await this.open();
-    return new Promise((resolve, reject) => {
+    try {
       const tx = db.transaction(storeName, mode);
       const store = tx.objectStore(storeName);
+
+      // Await fn result first
       let result: TResult;
-      Promise.resolve(fn(store))
-        .then((r) => {
-          result = r;
-        })
-        .catch((err) => {
-          db.close();
-          reject(err);
-        });
-      tx.oncomplete = () => {
-        db.close();
-        resolve(result);
-      };
-      tx.onerror = () => {
-        db.close();
-        reject(tx.error);
-      };
-    });
+      let fnError: unknown;
+      try {
+        result = await fn(store);
+      } catch (err) {
+        fnError = err;
+        tx.abort();
+      }
+
+      // Wait for transaction completion
+      return new Promise<TResult>((resolve, reject) => {
+        if (fnError !== undefined) {
+          tx.onerror = () => {
+            db.close();
+            reject(fnError);
+          };
+        } else {
+          tx.oncomplete = () => {
+            db.close();
+            resolve(result!);
+          };
+          tx.onerror = () => {
+            db.close();
+            reject(tx.error);
+          };
+        }
+      });
+    } catch (err) {
+      db.close();
+      throw err;
+    }
   }
 
   async get<TValue>(storeName: string, key: IDBValidKey): Promise<TValue | undefined> {
