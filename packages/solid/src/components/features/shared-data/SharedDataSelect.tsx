@@ -40,14 +40,15 @@ const Action: Component<ActionProps> = (props) => {
 /** SharedDataSelect Props */
 export type SharedDataSelectProps<
   TItem,
+  TKey extends string | number = string | number,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
 > = {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
   /** Currently selected key value (translated to item internally) */
-  value?: unknown;
+  value?: TKey | TKey[];
   /** Value change callback (receives key, not item) */
-  onValueChange?: (value: unknown) => void;
+  onValueChange?: (value: TKey | TKey[] | undefined) => void;
   /** Multiple selection mode */
   multiple?: boolean;
   /** Required input */
@@ -70,9 +71,10 @@ export type SharedDataSelectProps<
 
 const SharedDataSelectBase = <
   TItem,
+  TKey extends string | number = string | number,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
 >(
-  props: SharedDataSelectProps<TItem, TDialogProps>,
+  props: SharedDataSelectProps<TItem, TKey, TDialogProps>,
 ): JSX.Element => {
   const [local, rest] = splitProps(props, [
     "data",
@@ -98,33 +100,33 @@ const SharedDataSelectBase = <
   });
 
   // Normalize value to keys array
-  const normalizeKeys = (value: unknown): (string | number)[] => {
+  const normalizeKeys = (value: TKey | TKey[] | undefined | null): TKey[] => {
     if (value === undefined || value === null) return [];
     if (Array.isArray(value)) return value;
-    return [value as string | number];
+    return [value];
   };
 
   // Translate key(s) to item(s) for Select's value prop
-  const keyToItem = (key: string | number): TItem | undefined => {
+  const keyToItem = (key: TKey): TItem | undefined => {
     return local.data.get(key);
   };
 
   const valueAsItem = createMemo((): TItem | TItem[] | undefined => {
-    const key = rest.value;
+    const key = rest.value as TKey | TKey[] | undefined;
     if (key === undefined || key === null) return undefined;
     if (Array.isArray(key)) {
       return key
-        .map((k) => keyToItem(k as string | number))
+        .map((k) => keyToItem(k))
         .filter((v): v is TItem => v !== undefined);
     }
-    return keyToItem(key as string | number);
+    return keyToItem(key);
   });
 
   // Translate item back to key for onValueChange callback
-  const itemToKey = (item: TItem | TItem[] | undefined): unknown => {
+  const itemToKey = (item: TItem | TItem[] | undefined): TKey | TKey[] | undefined => {
     if (item === undefined || item === null) return undefined;
-    if (Array.isArray(item)) return item.map((i) => local.data.getKey(i));
-    return local.data.getKey(item);
+    if (Array.isArray(item)) return item.map((i) => local.data.getKey(i) as TKey);
+    return local.data.getKey(item) as TKey;
   };
 
   // Open dialog and handle selection result
@@ -139,7 +141,7 @@ const SharedDataSelectBase = <
         selectedKeys: normalizeKeys(rest.value),
       },
       local.dialogOptions,
-    )) as { selectedKeys: (string | number)[] } | undefined;
+    )) as { selectedKeys: TKey[] } | undefined;
 
     if (result) {
       const newKeys = result.selectedKeys;
@@ -177,7 +179,7 @@ const SharedDataSelectBase = <
     get isItemHidden() {
       return local.data.isItemHidden;
     },
-  }) as unknown as SelectProps;
+  }) as SelectProps<TItem>;
 
   return (
     <ItemTemplateProvider>
