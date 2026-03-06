@@ -112,6 +112,19 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
 
   const [busyCount, setBusyCount] = createSignal(0);
+
+  async function withBusy<T>(fn: () => Promise<T>, errorMessage?: string): Promise<T | undefined> {
+    setBusyCount((c) => c + 1);
+    try {
+      return await fn();
+    } catch (err) {
+      noti.error(err, errorMessage);
+      return undefined;
+    } finally {
+      setBusyCount((c) => c - 1);
+    }
+  }
+
   const [ready, setReady] = createSignal(false);
 
   const [selection, setSelection] = createSignal<TItem[]>([]);
@@ -237,16 +250,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
       return;
     }
 
-    setBusyCount((c) => c + 1);
-    try {
-      await local.inlineEdit.submit(diffs);
+    await withBusy(async () => {
+      await local.inlineEdit!.submit(diffs);
       noti.success(i18n.t("crudSheet.saveCompleted"), i18n.t("crudSheet.saveSuccess"));
       await refresh();
       local.onSubmitComplete?.();
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.saveFailed"));
-    }
-    setBusyCount((c) => c - 1);
+    }, i18n.t("crudSheet.saveFailed"));
   }
 
   async function handleFormSubmit(e: Event) {
@@ -260,13 +269,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     const result = await local.dialogEdit.editItem(item);
     if (!result) return;
 
-    setBusyCount((c) => c + 1);
-    try {
-      await refresh();
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.lookupFailed"));
-    }
-    setBusyCount((c) => c - 1);
+    await withBusy(() => refresh(), i18n.t("crudSheet.lookupFailed"));
   }
 
   async function handleDeleteItems() {
@@ -274,14 +277,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     const result = await local.dialogEdit.deleteItems(selection());
     if (!result) return;
 
-    setBusyCount((c) => c + 1);
-    try {
+    await withBusy(async () => {
       await refresh();
       noti.success(i18n.t("crudSheet.deleteCompleted"), i18n.t("crudSheet.deleteSuccess"));
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.deleteFailed"));
-    }
-    setBusyCount((c) => c - 1);
+    }, i18n.t("crudSheet.deleteFailed"));
   }
 
   async function handleRestoreItems() {
@@ -289,28 +288,20 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     const result = await local.dialogEdit.restoreItems(selection());
     if (!result) return;
 
-    setBusyCount((c) => c + 1);
-    try {
+    await withBusy(async () => {
       await refresh();
       noti.success(i18n.t("crudSheet.restoreCompleted"), i18n.t("crudSheet.restoreSuccess"));
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.restoreFailed"));
-    }
-    setBusyCount((c) => c - 1);
+    }, i18n.t("crudSheet.restoreFailed"));
   }
 
   // -- Excel --
   async function handleExcelDownload() {
     if (!local.excel) return;
 
-    setBusyCount((c) => c + 1);
-    try {
+    await withBusy(async () => {
       const result = await local.search(lastFilter(), undefined, sorts());
-      await local.excel.download(result.items);
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.excelDownloadFailed"));
-    }
-    setBusyCount((c) => c - 1);
+      await local.excel!.download(result.items);
+    }, i18n.t("crudSheet.excelDownloadFailed"));
   }
 
   async function handleExcelUpload() {
@@ -320,15 +311,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     const file = files?.[0];
     if (file == null) return;
 
-    setBusyCount((c) => c + 1);
-    try {
-      await local.excel.upload(file);
+    await withBusy(async () => {
+      await local.excel!.upload!(file);
       noti.success(i18n.t("crudSheet.excelCompleted"), i18n.t("crudSheet.excelUploadSuccess"));
       await refresh();
-    } catch (err) {
-      noti.error(err, i18n.t("crudSheet.excelUploadFailed"));
-    }
-    setBusyCount((c) => c - 1);
+    }, i18n.t("crudSheet.excelUploadFailed"));
   }
 
   // -- Select Mode --
