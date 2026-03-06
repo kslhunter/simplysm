@@ -371,7 +371,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     ];
   }
 
-  copyRow(sourceR: number, targetR: number): void {
+  copyRow(sourceR: number, targetR: number, options?: { skipMerge?: boolean }): void {
     // Clone source ROW data
     const sourceRowInfo = this._dataMap.get(sourceR);
 
@@ -393,6 +393,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
       this._replaceRowData(targetR, newRowData);
     } else {
       this._deleteRow(targetR);
+    }
+
+    // Skip merge handling if skipMerge option is true
+    if (options?.skipMerge === true) {
+      return;
     }
 
     // Copy and store source row merge cell info first
