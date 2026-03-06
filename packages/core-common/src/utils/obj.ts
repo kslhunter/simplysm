@@ -72,10 +72,13 @@ function cloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unkn
     // Copy custom Error properties
     for (const key of Object.keys(source)) {
       if (!["message", "name", "stack", "cause"].includes(key)) {
-        (cloned as unknown as Record<string, unknown>)[key] = cloneImpl(
-          (source as unknown as Record<string, unknown>)[key],
-          currPrevClones,
-        );
+        const desc = Object.getOwnPropertyDescriptor(source, key);
+        if (desc !== undefined) {
+          Object.defineProperty(cloned, key, {
+            ...desc,
+            value: "value" in desc ? cloneImpl(desc.value, currPrevClones) : desc.value,
+          });
+        }
       }
     }
     return cloned;
