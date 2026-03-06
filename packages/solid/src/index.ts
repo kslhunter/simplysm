@@ -63,6 +63,7 @@ export * from "./components/data/kanban/Kanban";
 //#region ========== Display ==========
 
 export * from "./components/display/Barcode";
+export * from "./components/display/Barcode.types";
 export * from "./components/display/Card";
 export * from "./components/display/Echarts";
 export * from "./components/display/Icon";
