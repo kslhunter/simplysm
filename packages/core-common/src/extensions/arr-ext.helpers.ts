@@ -103,8 +103,9 @@ export function getDistinctIndices<TItem>(
       const type = typeof item;
 
       if (type === "symbol" || type === "function") {
-        if (!seenRefs.has(item)) {
-          seenRefs.add(item);
+        const ref = item as symbol | ((...args: unknown[]) => unknown);
+        if (!seenRefs.has(ref)) {
+          seenRefs.add(ref);
           result.add(i);
         }
         continue;

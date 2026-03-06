@@ -196,6 +196,7 @@ describe("Array prototype extensions", () => {
   describe("diffs()", () => {
     it("Analyzes differences between arrays", () => {
       interface Item {
+        [key: string]: unknown;
         id: number;
         value: string;
       }
@@ -214,13 +215,13 @@ describe("Array prototype extensions", () => {
 
       const result = source.diffs(target, { keys: ["id"] });
 
-      const deleted = result.find((d) => d.source?.id === 1);
+      const deleted = result.find((d) => d.source?.["id"] === 1);
       expect(deleted?.target).toBe(undefined);
 
-      const updated = result.find((d) => d.source?.id === 3);
-      expect(updated?.target?.value).toBe("changed");
+      const updated = result.find((d) => d.source?.["id"] === 3);
+      expect(updated?.target?.["value"]).toBe("changed");
 
-      const inserted = result.find((d) => d.target?.id === 4);
+      const inserted = result.find((d) => d.target?.["id"] === 4);
       expect(inserted?.source).toBe(undefined);
     });
   });
@@ -280,6 +281,7 @@ describe("Array prototype extensions", () => {
   describe("merge()", () => {
     it("Merges modified items", () => {
       interface Item {
+        [key: string]: unknown;
         id: number;
         value: string;
       }
@@ -296,7 +298,7 @@ describe("Array prototype extensions", () => {
       const result = source.merge(target, { keys: ["id"] });
 
       expect(result).toHaveLength(2);
-      expect(result.find((r) => r.id === 2)?.value).toBe("changed");
+      expect(result.find((r) => r["id"] === 2)?.["value"]).toBe("changed");
     });
   });
 

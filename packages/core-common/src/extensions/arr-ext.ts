@@ -490,7 +490,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
       // When adding
       else if (diff.target !== undefined) {
-        result.push(diff.target as any);
+        result.push(diff.target);
       }
     }
 
