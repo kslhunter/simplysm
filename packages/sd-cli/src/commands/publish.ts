@@ -106,7 +106,7 @@ async function ensureSshAuth(
   // Collect SFTP servers without pass (deduplicate user@host)
   const sshTargets = new Map<string, { host: string; port?: number; user: string }>();
   for (const pkg of publishPackages) {
-    if (pkg.config === "npm") continue;
+    if (pkg.config.type === "npm") continue;
     if (pkg.config.type !== "sftp") continue;
     if (pkg.config.pass != null) continue;
     if (pkg.config.user == null) {
@@ -336,7 +336,7 @@ async function publishPackage(
 ): Promise<void> {
   const pkgName = path.basename(pkgPath);
 
-  if (publishConfig === "npm") {
+  if (publishConfig.type === "npm") {
     // npm publish
     const prereleaseInfo = semver.prerelease(version);
     const args = ["publish", "--access", "public", "--no-git-checks"];
@@ -555,7 +555,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   //#region Phase 1: Pre-validation
 
   // Verify npm authentication (if npm publish config exists)
-  if (publishPackages.some((p) => p.config === "npm")) {
+  if (publishPackages.some((p) => p.config.type === "npm")) {
     logger.debug("Verifying npm authentication...");
     try {
       const { stdout: whoami } = await execa("npm", ["whoami"]);
