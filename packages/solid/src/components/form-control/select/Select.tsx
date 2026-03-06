@@ -282,7 +282,7 @@ interface SelectSingleBaseProps<TValue> extends SelectCommonProps<TValue> {
   value?: TValue;
 
   /** Value change callback */
-  onValueChange?: (value: TValue) => void;
+  onValueChange?: (value: TValue | undefined) => void;
 
   /** Display direction for multiple select (not used in single select) */
   tagDirection?: never;
