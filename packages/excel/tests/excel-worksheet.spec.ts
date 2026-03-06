@@ -389,5 +389,81 @@ describe("ExcelWorksheet", () => {
         { s: { r: 3, c: 2 }, e: { r: 4, c: 3 } }, // shifted down by 1
       ]);
     });
+
+    it("should shift merge cells when inserting row with merges", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
+
+      // Create merge A3:B4 (rows 2-3, well below insertion point)
+      await ws.cell(2, 0).merge(3, 1);
+
+      // Insert copy of row 0 at position 1
+      await ws.insertCopyRow(0, 1);
+
+      // Check that merge was shifted correctly
+      const wsData = await ws["_getWsData"]();
+      const merges = wsData.getMergeCells();
+
+      // Merge at rows 2-3 should shift to rows 3-4
+      expect(merges).toEqual([
+        { s: { r: 3, c: 0 }, e: { r: 4, c: 1 } },
+      ]);
+
+      expect(await ws.cell(0, 0).getValue()).toBe("Row0");
+      expect(await ws.cell(1, 0).getValue()).toBe("Row0"); // copied
+      expect(await ws.cell(2, 0).getValue()).toBe("Row1"); // shifted
+      expect(await ws.cell(3, 0).getValue()).toBe("Row2"); // shifted
+    });
+
+    it("should handle multi-row merge when inserting row", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
+      await ws.cell(3, 0).setValue("Row3");
+
+      // Create merge A3:B4 (rows 2-3, below insertion point)
+      await ws.cell(2, 0).merge(3, 1);
+
+      // Insert copy of row 0 at position 1
+      await ws.insertCopyRow(0, 1);
+
+      const wsData = await ws["_getWsData"]();
+      const merges = wsData.getMergeCells();
+
+      // Merge at rows 2-3 should shift to rows 3-4 (rows >= 1 shift by 1)
+      expect(merges).toHaveLength(1);
+      expect(merges[0].s).toEqual({ r: 3, c: 0 });
+      expect(merges[0].e).toEqual({ r: 4, c: 1 }); // shifted from 2-3 to 3-4
+    });
+
+    it("should not shift merge above insertion point", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue("Row0");
+      await ws.cell(1, 0).setValue("Row1");
+      await ws.cell(2, 0).setValue("Row2");
+
+      // Create merge A1:B1 (row 0)
+      await ws.cell(0, 0).merge(0, 1);
+
+      // Insert copy of row 1 at position 2
+      await ws.insertCopyRow(1, 2);
+
+      const wsData = await ws["_getWsData"]();
+      const merges = wsData.getMergeCells();
+
+      // Merge should remain unchanged at A1:B1
+      expect(merges).toEqual([
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+      ]);
+    });
   });
 });
