@@ -85,7 +85,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   getCellType(addr: { r: number; c: number }): ExcelCellType | undefined {
-    return this._getCellData(addr)?.$.t as ExcelCellType | undefined;
+    return this._getCellData(addr)?.$.t;
   }
 
   setCellVal(addr: { r: number; c: number }, val: string | undefined): void {

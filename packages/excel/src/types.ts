@@ -143,7 +143,7 @@ export interface ExcelCellData {
   $: {
     r: string; // address (A~)
     s?: string; // styleId
-    t?: string; // type: s(sharedString)
+    t?: ExcelCellType; // type: s(sharedString)
   };
   v?: [string];
   f?: [string];

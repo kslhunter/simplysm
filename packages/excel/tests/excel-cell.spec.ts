@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 import { ExcelXmlWorksheet } from "../src/xml/excel-xml-worksheet";
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
+import type { ExcelCellData, ExcelCellType } from "../src";
 
 describe("ExcelXmlWorksheet.getCellVal - inline string", () => {
   it("should read plain string inline text (no attributes)", () => {
@@ -373,5 +374,20 @@ describe("ExcelCell", () => {
       expect(xf.alignment[0].$.horizontal).toBe("center");
       expect(xf.alignment[0].$.vertical).toBe("top");
     });
+  });
+});
+
+describe("ExcelCellData type narrowing", () => {
+  it("should type cell type field as ExcelCellType", () => {
+    const cellData: ExcelCellData = {
+      $: { r: "A1", t: "s" },
+      v: ["test"],
+    };
+
+    const cellType: ExcelCellType | undefined = cellData.$.t;
+    expect(cellType).toBe("s");
+
+    // This should compile: no cast needed
+    expect(["s", "b", "str", "n", "inlineStr", "e", undefined].includes(cellData.$.t)).toBe(true);
   });
 });
