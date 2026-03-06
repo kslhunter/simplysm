@@ -36,6 +36,7 @@ export const Barcode: Component<BarcodeProps> = (props) => {
         }
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.warn("Barcode render failed:", err);
       containerRef.innerHTML = "";
     }
