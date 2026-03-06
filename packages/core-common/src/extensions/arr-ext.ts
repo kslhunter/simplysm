@@ -13,12 +13,12 @@ import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
 import { ArgumentError } from "../errors/argument-error";
 import { SdError } from "../errors/sd-error";
-import { compareForOrder } from "./arr-ext.helpers";
+import { compareForOrder, getDistinctIndices } from "./arr-ext.helpers";
 import type {
   ReadonlyArrayExt,
   MutableArrayExt,
   ArrayDiffsResult,
-  ArrayDiffs2Result,
+  ArrayOneWayDiffResult,
   TreeArray,
 } from "./arr-ext.types";
 
@@ -310,66 +310,8 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   distinct<T>(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
   ): T[] {
-    // Normalize options
-    const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
-
-    // matchAddress: Set-based O(n)
-    if (opts.matchAddress === true) return [...new Set(this)];
-
-    // keyFn provided: custom key-based O(n)
-    if (opts.keyFn) {
-      const seen = new Set<string | number>();
-      const result: T[] = [];
-      for (const item of this) {
-        const key = opts.keyFn(item);
-        if (!seen.has(key)) {
-          seen.add(key);
-          result.push(item);
-        }
-      }
-      return result;
-    }
-
-    // Default: type-based processing
-    const seen = new Map<string, T>();
-    const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>(); // O(n) processing for symbol/function
-    const result: T[] = [];
-
-    for (const item of this) {
-      // primitive types take the fast path
-      if (item === null || typeof item !== "object") {
-        const type = typeof item;
-
-        // symbol, function use Set for identity comparison (O(n))
-        if (type === "symbol" || type === "function") {
-          if (!seenRefs.has(item)) {
-            seenRefs.add(item);
-            result.push(item);
-          }
-          continue;
-        }
-
-        // Other primitives: type prefix + special case handling
-        let key = type + ":";
-        if (Object.is(item, -0)) {
-          key += "-0";
-        } else {
-          key += String(item);
-        }
-
-        if (!seen.has(key)) {
-          seen.set(key, item);
-          result.push(item);
-        }
-        continue;
-      }
-
-      if (!result.some((item1) => equal(item1, item))) {
-        result.push(item);
-      }
-    }
-
-    return result;
+    const keptIndices = getDistinctIndices(this, options);
+    return Array.from(keptIndices).map((i) => this[i]);
   },
 
   orderBy<T>(
@@ -475,7 +417,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       excludes?: string[];
       includes?: string[];
     },
-  ): ArrayDiffs2Result<T>[] {
+  ): ArrayOneWayDiffResult<T>[] {
     const orgItemMap =
       orgItems instanceof Map
         ? orgItems
@@ -486,7 +428,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
           );
     const includeSame = options?.includeSame ?? false;
 
-    const diffs: ArrayDiffs2Result<T>[] = [];
+    const diffs: ArrayOneWayDiffResult<T>[] = [];
     for (const item of this) {
       const keyValue =
         typeof keyPropNameOrGetValFn === "function"
@@ -622,107 +564,17 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
   distinctThis<T>(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
   ): T[] {
-    // Normalize options
-    const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
-
-    // matchAddress: Set-based O(n)
-    // To preserve first occurrence, collect indices to remove after forward traversal
-    if (opts.matchAddress === true) {
-      const seen = new Set<T>();
-      const toRemove: number[] = [];
-      for (let i = 0; i < this.length; i++) {
-        if (seen.has(this[i])) {
-          toRemove.push(i);
-        } else {
-          seen.add(this[i]);
-        }
-      }
-      // Remove in reverse order (prevent index changes)
-      for (let i = toRemove.length - 1; i >= 0; i--) {
-        this.splice(toRemove[i], 1);
-      }
-      return this;
-    }
-
-    // keyFn provided: custom key-based O(n)
-    // To preserve first occurrence, collect indices to remove after forward traversal
-    if (opts.keyFn) {
-      const seen = new Set<string | number>();
-      const toRemove: number[] = [];
-      for (let i = 0; i < this.length; i++) {
-        const key = opts.keyFn(this[i]);
-        if (seen.has(key)) {
-          toRemove.push(i);
-        } else {
-          seen.add(key);
-        }
-      }
-      // Remove in reverse order (prevent index changes)
-      for (let i = toRemove.length - 1; i >= 0; i--) {
-        this.splice(toRemove[i], 1);
-      }
-      return this;
-    }
-
-    // Default: type-based processing (primitive optimization)
-    const seen = new Map<string, T>();
-    const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>();
-    const toRemoveSet = new Set<number>();
-
+    const keptIndices = getDistinctIndices(this, options);
+    const indicesToRemove = [];
     for (let i = 0; i < this.length; i++) {
-      const item = this[i];
-
-      // primitive types take the fast path O(n)
-      if (item === null || typeof item !== "object") {
-        const type = typeof item;
-
-        // symbol, function use Set for identity comparison
-        if (type === "symbol" || type === "function") {
-          if (seenRefs.has(item)) {
-            toRemoveSet.add(i);
-          } else {
-            seenRefs.add(item);
-          }
-          continue;
-        }
-
-        // Other primitives: type prefix + special case handling
-        let key = type + ":";
-        if (Object.is(item, -0)) {
-          key += "-0";
-        } else {
-          key += String(item);
-        }
-
-        if (seen.has(key)) {
-          toRemoveSet.add(i);
-        } else {
-          seen.set(key, item);
-        }
-        continue;
-      }
-
-      // Objects: deep comparison O(n²) - compare with previous non-removed items
-      let hasDuplicateBefore = false;
-      for (let j = 0; j < i; j++) {
-        // Skip indices in toRemoveSet (O(1) lookup)
-        if (toRemoveSet.has(j)) continue;
-        if (equal(this[j], item)) {
-          hasDuplicateBefore = true;
-          break;
-        }
-      }
-      if (hasDuplicateBefore) {
-        toRemoveSet.add(i);
+      if (!keptIndices.has(i)) {
+        indicesToRemove.push(i);
       }
     }
-
-    // Remove in reverse order (prevent index changes)
-    const toRemoveArr = Array.from(toRemoveSet).sort((a, b) => b - a);
-    for (const idx of toRemoveArr) {
-      this.splice(idx, 1);
+    // Remove in reverse order to prevent index shifts
+    for (let i = indicesToRemove.length - 1; i >= 0; i--) {
+      this.splice(indicesToRemove[i], 1);
     }
-
     return this;
   },
 
@@ -806,7 +658,7 @@ declare global {
 
 export type {
   ArrayDiffsResult,
-  ArrayDiffs2Result,
+  ArrayOneWayDiffResult,
   TreeArray,
   ComparableType,
 } from "./arr-ext.types";

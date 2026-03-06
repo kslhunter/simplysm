@@ -34,7 +34,7 @@ These methods return new arrays or values and do not mutate the original.
 | `orderBy` | `(selector?) => T[]` | Sorts ascending (new array). |
 | `orderByDesc` | `(selector?) => T[]` | Sorts descending (new array). |
 | `diffs` | `(target, options?) => ArrayDiffsResult[]` | Compares two arrays (insert/delete/update). |
-| `oneWayDiffs` | `(orgItems, key, options?) => ArrayDiffs2Result[]` | One-way diff (create/update/same). |
+| `oneWayDiffs` | `(orgItems, key, options?) => ArrayOneWayDiffResult[]` | One-way diff (create/update/same). |
 | `merge` | `(target, options?) => (T \| P)[]` | Merges two arrays using diffs. |
 | `sum` | `(selector?) => number` | Sums numeric values. |
 | `min` | `(selector?) => string \| number \| undefined` | Returns minimum value. |
@@ -72,12 +72,12 @@ users.toMap((u) => u.id);        // Map { 1 => { id: 1, ... }, 2 => { id: 2, ...
 ## Related Types
 
 ```typescript
-import type { ArrayDiffsResult, ArrayDiffs2Result, TreeArray, ComparableType } from "@simplysm/core-common";
+import type { ArrayDiffsResult, ArrayOneWayDiffResult, TreeArray, ComparableType } from "@simplysm/core-common";
 ```
 
 | Type | Description |
 |------|-------------|
 | `ArrayDiffsResult<TOriginal, TOther>` | Result of `arr.diffs()`: `{ source, target }` pairs where one may be `undefined` |
-| `ArrayDiffs2Result<TItem>` | Result of `arr.oneWayDiffs()`: `{ type: "create" \| "update" \| "same", item, orgItem }` |
+| `ArrayOneWayDiffResult<TItem>` | Result of `arr.oneWayDiffs()`: `{ type: "create" \| "update" \| "same", item, orgItem }` |
 | `TreeArray<TNode>` | `TNode & { children: TreeArray<TNode>[] }` — result of `arr.toTree()` |
 | `ComparableType` | `string \| number \| boolean \| DateTime \| DateOnly \| Time \| undefined` |

@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import type { ArrayDiffs2Result } from "@simplysm/core-common";
+import type { ArrayOneWayDiffResult } from "@simplysm/core-common";
 import type { DataSheetColumnProps, SortingDef } from "../../data/sheet/types";
 
 // ── Search ──
@@ -12,7 +12,7 @@ export interface SearchResult<TItem> {
 // ── Feature Configs ──
 
 export interface InlineEditConfig<TItem> {
-  submit: (diffs: ArrayDiffs2Result<TItem>[]) => Promise<void>;
+  submit: (diffs: ArrayOneWayDiffResult<TItem>[]) => Promise<void>;
   newItem: () => TItem;
   deleteProp?: keyof TItem & string;
   diffsExcludes?: string[];

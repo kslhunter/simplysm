@@ -272,7 +272,7 @@ export type ArrayDiffsResult<TOriginal, TOther> =
   | { source: TOriginal; target: undefined } // DELETE
   | { source: TOriginal; target: TOther }; // UPDATE
 
-export type ArrayDiffs2Result<TItem> =
+export type ArrayOneWayDiffResult<TItem> =
   | { type: "create"; item: TItem; orgItem: undefined }
   | { type: "update"; item: TItem; orgItem: TItem }
   | { type: "same"; item: TItem; orgItem: TItem };
