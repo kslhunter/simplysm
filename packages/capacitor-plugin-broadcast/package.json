@@ -18,7 +18,7 @@
     "android"
   ],
   "devDependencies": {
-    "@capacitor/core": "^7.5.0"
+    "@capacitor/core": "^7.6.0"
   },
   "peerDependencies": {
     "@capacitor/core": "^7.4.4"

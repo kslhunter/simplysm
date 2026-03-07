@@ -21,7 +21,7 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "basic-ftp": "^5.2.0",
-    "ssh2-sftp-client": "^12.0.1"
+    "ssh2-sftp-client": "^12.1.0"
   },
   "devDependencies": {
     "@types/ssh2-sftp-client": "^9.0.6"

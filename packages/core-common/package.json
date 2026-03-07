@@ -28,7 +28,7 @@
     "./dist/index.js"
   ],
   "dependencies": {
-    "@zip.js/zip.js": "^2.8.22",
+    "@zip.js/zip.js": "^2.8.23",
     "consola": "^3.4.2",
     "fast-xml-parser": "^5.4.2",
     "yaml": "^2.8.2"
