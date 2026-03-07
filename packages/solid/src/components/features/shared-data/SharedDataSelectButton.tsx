@@ -2,26 +2,19 @@ import { type Component, type JSX, splitProps } from "solid-js";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataProvider";
 import {
   DataSelectButton,
-  type DataSelectButtonProps,
   type SelectDialogBaseProps,
   type DialogPropsField,
 } from "../data-select-button/DataSelectButton";
 import { type DialogShowOptions } from "../../disclosure/Dialog";
 import { type ComponentSize } from "../../../styles/control.styles";
 
-/** SharedDataSelectButton Props */
-export type SharedDataSelectButtonProps<
+/** Common props shared between single and multiple modes */
+interface SharedDataSelectButtonCommonProps<
   TItem,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
-> = {
+> {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
-  /** Currently selected key(s) (single or multiple) */
-  value?: DataSelectButtonProps<TItem>["value"];
-  /** Value change callback */
-  onValueChange?: DataSelectButtonProps<TItem>["onValueChange"];
-  /** Multiple selection mode */
-  multiple?: boolean;
   /** Required input */
   required?: boolean;
   /** Disabled */
@@ -36,7 +29,41 @@ export type SharedDataSelectButtonProps<
   dialogOptions?: DialogShowOptions;
   /** Item rendering function */
   children: (item: TItem) => JSX.Element;
-} & DialogPropsField<TDialogProps>;
+}
+
+/** Single select props */
+interface SharedDataSelectButtonSingleProps<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> extends SharedDataSelectButtonCommonProps<TItem, TDialogProps> {
+  /** Single select mode */
+  multiple?: false;
+  /** Currently selected key */
+  value?: string | number;
+  /** Value change callback */
+  onValueChange?: (value: string | number | undefined) => void;
+}
+
+/** Multiple select props */
+interface SharedDataSelectButtonMultipleProps<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> extends SharedDataSelectButtonCommonProps<TItem, TDialogProps> {
+  /** Multiple select mode */
+  multiple: true;
+  /** Currently selected keys */
+  value?: (string | number)[];
+  /** Value change callback */
+  onValueChange?: (value: (string | number)[]) => void;
+}
+
+/** SharedDataSelectButton Props */
+export type SharedDataSelectButtonProps<
+  TItem,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> =
+  | (SharedDataSelectButtonSingleProps<TItem, TDialogProps> & DialogPropsField<TDialogProps>)
+  | (SharedDataSelectButtonMultipleProps<TItem, TDialogProps> & DialogPropsField<TDialogProps>);
 
 export function SharedDataSelectButton<
   TItem,
