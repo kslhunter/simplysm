@@ -87,10 +87,10 @@ describe("Dialog", () => {
       });
     });
 
-    it("hides close button when closable={false}", async () => {
+    it("hides close button when withCloseButton={false}", async () => {
       render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
-          <Dialog open={true} closable={false}>
+          <Dialog open={true} withCloseButton={false}>
           <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
