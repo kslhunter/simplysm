@@ -24,7 +24,7 @@ const themeClasses = Object.fromEntries(
 ) as Record<ButtonTheme, Record<ButtonVariant, string>>;
 
 const sizeClasses: Record<ButtonSize, string> = {
-  default: clsx("min-w-8", pad.default),
+  md: clsx("min-w-8", pad.md),
   xs: clsx("min-w-4", pad.xs),
   sm: clsx("min-w-6", pad.sm),
   lg: clsx("min-w-9", pad.lg),
@@ -57,7 +57,7 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
     return twMerge(
       "inline-flex items-center font-bold justify-center text-center cursor-pointer transition rounded focus:outline-none focus-visible:ring-2 border border-transparent",
       themeClasses[theme][variant],
-      sizeClasses[local.size ?? "default"],
+      sizeClasses[local.size ?? "md"],
       local.inset && "rounded-none border-none",
       local.disabled && state.disabled,
       local.class,

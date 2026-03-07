@@ -280,7 +280,7 @@ const NumberInputInner = (props: NumberInputProps): JSX.Element => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
-      extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
+      extra: prefixEl() && fieldGapClasses[local.size ?? "md"],
     });
 
   const isEditable = () => !local.disabled && !local.readOnly;

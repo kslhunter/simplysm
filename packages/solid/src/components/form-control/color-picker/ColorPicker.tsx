@@ -8,7 +8,7 @@ import { useI18n } from "../../../providers/i18n/I18nProvider";
 
 // Size-specific styles
 const sizeClasses: Record<ComponentSize, string> = {
-  default: clsx`size-field`,
+  md: clsx`size-field`,
   xs: "size-field-xs",
   sm: "size-field-sm",
   lg: "size-field-lg",
@@ -88,7 +88,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     twMerge(
        
       "size-field rounded border border-black/10 dark:border-white/10 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-none [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-none",
-      sizeClasses[local.size ?? "default"],
+      sizeClasses[local.size ?? "md"],
        
       local.disabled && "cursor-default relative before:absolute before:bottom-0 before:left-0 before:right-0 before:top-0 before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
       local.class,

@@ -22,7 +22,7 @@ export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
 const btnClass = clsx("border-none font-normal");
 
 const gapClasses: Record<ComponentSize, string> = {
-  default: gap.default,
+  md: gap.md,
   xs: gap.xs,
   sm: gap.sm,
   lg: gap.lg,
@@ -54,7 +54,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
   const hasPrev = () => (pages()[0] ?? 1) > 1;
   const hasNext = () => (pages()[pages().length - 1] ?? 1) < local.totalPageCount;
 
-  const getClassName = () => twMerge("inline-flex items-center", gapClasses[local.size ?? "default"], local.class);
+  const getClassName = () => twMerge("inline-flex items-center", gapClasses[local.size ?? "md"], local.class);
 
   return (
     <nav {...rest} data-pagination class={getClassName()}>

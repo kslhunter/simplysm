@@ -142,7 +142,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
   const getHeaderClassName = () =>
     twMerge(
       listItemBaseClass,
-      listItemSizeClasses[local.size ?? "default"],
+      listItemSizeClasses[local.size ?? "md"],
       local.selected && listItemSelectedClass,
       local.readOnly && listItemReadonlyClass,
       local.disabled && listItemDisabledClass,

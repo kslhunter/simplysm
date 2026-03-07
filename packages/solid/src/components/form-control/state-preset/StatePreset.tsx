@@ -34,7 +34,7 @@ export interface StatePresetProps<TValue> {
 // ── Style constants ──
 
 const chipSizeClasses: Record<StatePresetSize, string> = {
-  default: pad.default,
+  md: pad.md,
   xs: clsx(pad.xs, "text-sm"),
   sm: pad.sm,
   lg: pad.lg,
@@ -42,7 +42,7 @@ const chipSizeClasses: Record<StatePresetSize, string> = {
 };
 
 const iconBtnSizeClasses: Record<StatePresetSize, string> = {
-  default: "p-0.5",
+  md: "p-0.5",
   xs: "p-0",
   sm: "p-0.5",
   lg: "p-1",
@@ -50,7 +50,7 @@ const iconBtnSizeClasses: Record<StatePresetSize, string> = {
 };
 
 const starBtnSizeClasses: Record<StatePresetSize, string> = {
-  default: "p-1",
+  md: "p-1",
   xs: "p-0",
   sm: "p-0.5",
   lg: "p-1.5",
@@ -58,7 +58,7 @@ const starBtnSizeClasses: Record<StatePresetSize, string> = {
 };
 
 const inputSizeClasses: Record<StatePresetSize, string> = {
-  default: clsx(pad.default, "w-24"),
+  md: clsx(pad.md, "w-24"),
   xs: clsx("w-16", pad.xs, "text-sm"),
   sm: clsx(pad.sm, "w-20"),
   lg: clsx(pad.lg, "w-32"),
@@ -195,21 +195,21 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   const resolvedChipClass = () => twMerge(
     clsx("inline-flex items-center", gap.default, "rounded-full", bg.subtle, text.default, "cursor-default"),
-    chipSizeClasses[local.size ?? "default"],
+    chipSizeClasses[local.size ?? "md"],
   );
 
   const resolvedIconBtnClass = () =>
-    twMerge("rounded-full", iconBtnSizeClasses[local.size ?? "default"]);
+    twMerge("rounded-full", iconBtnSizeClasses[local.size ?? "md"]);
 
   const resolvedStarBtnClass = () =>
     twMerge(
       clsx("inline-flex cursor-pointer items-center justify-center rounded-full text-warning-500 transition-colors focus:outline-none", themeTokens.warning.hoverBg),
-      starBtnSizeClasses[local.size ?? "default"],
+      starBtnSizeClasses[local.size ?? "md"],
     );
 
   const resolvedInputClass = () => twMerge(
     clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
-    inputSizeClasses[local.size ?? "default"],
+    inputSizeClasses[local.size ?? "md"],
   );
 
   return (

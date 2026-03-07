@@ -79,9 +79,9 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
   const getWrapperClass = () =>
     twMerge(
       checkboxBaseClass,
-      checkboxSizeClasses[local.size ?? "default"],
+      checkboxSizeClasses[local.size ?? "md"],
       local.inset && checkboxInsetClass,
-      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "default"],
+      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "md"],
       local.inline && checkboxInlineClass,
       local.disabled && checkboxDisabledClass,
       local.class,

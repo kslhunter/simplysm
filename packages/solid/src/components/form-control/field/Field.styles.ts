@@ -93,10 +93,10 @@ export function getFieldWrapperClass(options: {
   return twMerge(
     fieldBaseClass,
     options.extra,
-    fieldSizeClasses[options.size ?? "default"],
+    fieldSizeClasses[options.size ?? "md"],
     options.disabled && fieldDisabledClass,
     options.inset && fieldInsetClass,
-    options.inset && fieldInsetSizeHeightClasses[options.size ?? "default"],
+    options.inset && fieldInsetSizeHeightClasses[options.size ?? "md"],
     options.includeCustomClass,
   );
 }
@@ -110,7 +110,7 @@ export function getTextareaWrapperClass(options: {
 }): string {
   return twMerge(
     textAreaBaseClass,
-    textAreaSizeClasses[options.size ?? "default"],
+    textAreaSizeClasses[options.size ?? "md"],
     options.disabled && fieldDisabledClass,
     options.inset && fieldInsetClass,
     options.includeCustomClass,

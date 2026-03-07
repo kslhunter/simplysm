@@ -8,7 +8,7 @@ import { useI18n } from "../../providers/i18n/I18nProvider";
 import { type ComponentSize } from "../../styles/control.styles";
 
 const sizeClasses: Record<ComponentSize, string> = {
-  default: "p-1.5",
+  md: "p-1.5",
   xs: "p-0.5",
   sm: "p-1",
   lg: "p-2",
@@ -16,7 +16,7 @@ const sizeClasses: Record<ComponentSize, string> = {
 };
 
 const iconSizes: Record<ComponentSize, string> = {
-  default: "1.25em",
+  md: "1.25em",
   xs: "0.75em",
   sm: "1em",
   lg: "1.5em",
@@ -63,9 +63,9 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
 
   const modeLabel = () => i18n.t(modeLabelKeys[mode()]);
 
-  const getClassName = () => twMerge(sizeClasses[local.size ?? "default"], local.class);
+  const getClassName = () => twMerge(sizeClasses[local.size ?? "md"], local.class);
 
-  const iconSize = () => iconSizes[local.size ?? "default"];
+  const iconSize = () => iconSizes[local.size ?? "md"];
 
   return (
     <Button

@@ -32,14 +32,14 @@ function TabsTabInner(props: TabsTabProps) {
   const isSelected = () => ctx.value() === props.value;
 
   const tabSizeClasses: Record<ComponentSize, string> = {
-    default: "px-3 py-1.5 text-sm",
+    md: "px-3 py-1.5 text-sm",
     xs: clsx(pad.sm, "text-xs"),
     sm: "px-2.5 py-1 text-sm",
     lg: "px-4 py-2.5 text-base",
     xl: "px-5 py-3 text-lg",
   };
 
-  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "default"];
+  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "md"];
 
   const stateClass = () =>
     isSelected()

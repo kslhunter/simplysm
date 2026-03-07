@@ -50,7 +50,7 @@ export interface RichTextEditorProps {
 
 // Editor content size-based style
 const editorContentSizeClasses: Record<FieldSize, string> = {
-  default: clsx(pad.xl, "min-h-32"),
+  md: clsx(pad.xl, "min-h-32"),
   xs: clsx(pad.xs, "min-h-12"),
   sm: clsx(pad.sm, "min-h-24"),
   lg: clsx(pad.lg, "min-h-48"),
@@ -154,7 +154,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     );
 
   const getContentClass = () =>
-    twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "default"]);
+    twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "md"]);
 
   return (
     <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>
