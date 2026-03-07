@@ -53,8 +53,8 @@ export default function NumpadPage() {
             <Numpad
               value={enterValue()}
               onValueChange={setEnterValue}
-              useEnterButton
-              useMinusButton
+              withEnterButton
+              withMinusButton
               onEnterButtonClick={() => alert(`Entered value: ${enterValue()}`)}
             />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
@@ -79,7 +79,7 @@ export default function NumpadPage() {
               onValueChange={setDisabledValue}
               inputDisabled
               required
-              useEnterButton
+              withEnterButton
               onEnterButtonClick={() => alert(`Entered value: ${disabledValue()}`)}
             />
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">

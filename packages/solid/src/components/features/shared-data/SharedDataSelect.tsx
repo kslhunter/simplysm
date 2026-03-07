@@ -40,7 +40,7 @@ const Action: Component<ActionProps> = (props) => {
 /** Common props shared between single and multiple modes */
 interface SharedDataSelectCommonProps<
   TItem,
-  TKey extends string | number = string | number,
+  _TKey extends string | number = string | number,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
 > {
   /** Shared data accessor */

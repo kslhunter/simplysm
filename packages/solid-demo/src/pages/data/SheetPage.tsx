@@ -413,8 +413,8 @@ export default function SheetPage() {
           <DataSheet.Column<User> key="active" header="Active">
             {(ctx) => (
               <Checkbox
-                value={ctx.item.active}
-                onValueChange={(v) => {
+                checked={ctx.item.active}
+                onCheckedChange={(v) => {
                   ctx.item.active = v;
                 }}
                 inset
@@ -424,8 +424,8 @@ export default function SheetPage() {
           <DataSheet.Column<User> key="vip" header="VIP">
             {(ctx) => (
               <Radio
-                value={ctx.item.vip}
-                onValueChange={(v) => {
+                checked={ctx.item.vip}
+                onCheckedChange={(v) => {
                   ctx.item.vip = v;
                 }}
                 inset

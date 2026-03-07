@@ -41,7 +41,7 @@ export default function CheckboxRadioPage() {
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled (checked)</p>
-                <Checkbox disabled value={true}>
+                <Checkbox disabled checked={true}>
                   Disabled (checked)
                 </Checkbox>
               </div>
@@ -57,7 +57,7 @@ export default function CheckboxRadioPage() {
             <h3 class="mb-3 text-lg font-bold">Inline</h3>
             <p class="text-base-700 dark:text-base-300">
               You can place <Checkbox inline>agree</Checkbox> checkbox within text. It can also be{" "}
-              <Checkbox inline value={true}>
+              <Checkbox inline checked={true}>
                 selected
               </Checkbox>{" "}
               in this way.
@@ -100,7 +100,7 @@ export default function CheckboxRadioPage() {
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled (selected)</p>
-                <Radio disabled value={true}>
+                <Radio disabled checked={true}>
                   Disabled (selected)
                 </Radio>
               </div>
@@ -112,7 +112,7 @@ export default function CheckboxRadioPage() {
             <h3 class="mb-3 text-lg font-bold">Inline</h3>
             <p class="text-base-700 dark:text-base-300">
               You can place <Radio inline>option</Radio> radio button within text. It can also be{" "}
-              <Radio inline value={true}>
+              <Radio inline checked={true}>
                 selected
               </Radio>{" "}
               in this way.
@@ -128,10 +128,10 @@ export default function CheckboxRadioPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Required</h3>
             <div class="flex flex-col items-start gap-3">
-              <Checkbox required value={false}>
+              <Checkbox required checked={false}>
                 Required checkbox
               </Checkbox>
-              <Radio required value={false}>
+              <Radio required checked={false}>
                 Required selection
               </Radio>
             </div>
@@ -139,7 +139,7 @@ export default function CheckboxRadioPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">lazyValidation (displays after blur)</h3>
             <div class="flex flex-col items-start gap-3">
-              <Checkbox required lazyValidation value={false}>
+              <Checkbox required lazyValidation checked={false}>
                 lazyValidation required checkbox
               </Checkbox>
             </div>
@@ -155,7 +155,7 @@ export default function CheckboxRadioPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Checkbox</h3>
             <div class="flex flex-col items-start gap-3">
-              <Checkbox value={controlledCheck()} onValueChange={setControlledCheck}>
+              <Checkbox checked={controlledCheck()} onCheckedChange={setControlledCheck}>
                 I agree
               </Checkbox>
               <p class="text-sm text-base-600 dark:text-base-400">
@@ -179,13 +179,13 @@ export default function CheckboxRadioPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Radio (Group)</h3>
             <div class="flex flex-col items-start gap-3">
-              <Radio value={selectedRadio() === "A"} onValueChange={() => setSelectedRadio("A")}>
+              <Radio checked={selectedRadio() === "A"} onCheckedChange={() => setSelectedRadio("A")}>
                 Option A
               </Radio>
-              <Radio value={selectedRadio() === "B"} onValueChange={() => setSelectedRadio("B")}>
+              <Radio checked={selectedRadio() === "B"} onCheckedChange={() => setSelectedRadio("B")}>
                 Option B
               </Radio>
-              <Radio value={selectedRadio() === "C"} onValueChange={() => setSelectedRadio("C")}>
+              <Radio checked={selectedRadio() === "C"} onCheckedChange={() => setSelectedRadio("C")}>
                 Option C
               </Radio>
               <p class="text-sm text-base-600 dark:text-base-400">

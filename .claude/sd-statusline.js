@@ -128,7 +128,8 @@ async function fetchUsage(token, version) {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Accept": "application/json",
-        'anthropic-beta': 'oauth-2025-04-20'
+        'anthropic-beta': 'oauth-2025-04-20',
+        "User-Agent": `claude-code/${version}`
       },
       signal: controller.signal,
     });

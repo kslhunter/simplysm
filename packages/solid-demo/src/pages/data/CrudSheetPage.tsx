@@ -65,8 +65,8 @@ export function CrudSheetPage() {
             </FormGroup.Item>
             <FormGroup.Item>
               <Checkbox
-                value={filter.isIncludeDeleted}
-                onValueChange={(v) => setFilter("isIncludeDeleted", v)}
+                checked={filter.isIncludeDeleted}
+                onCheckedChange={(v) => setFilter("isIncludeDeleted", v)}
               >
                 삭제항목 포함
               </Checkbox>
