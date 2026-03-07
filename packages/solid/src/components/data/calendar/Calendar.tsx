@@ -108,7 +108,7 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
                 class={clsx(
                   "border-l border-t",
                   border.default,
-                  pad.default,
+                  pad.md,
                   bg.muted,
                   "text-center text-sm font-bold",
                 )}
@@ -141,7 +141,7 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
                     >
                       {cell.date.day}
                     </div>
-                    <div class={clsx("flex flex-col", gap.default)}>
+                    <div class={clsx("flex flex-col", gap.md)}>
                       <For each={cell.items}>
                         {(entry) => local.renderItem(entry.item, entry.index)}
                       </For>

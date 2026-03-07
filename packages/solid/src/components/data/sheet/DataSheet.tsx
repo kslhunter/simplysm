@@ -584,7 +584,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
             }
           >
             <Checkbox
-              value={isSelected()}
+              checked={isSelected()}
               disabled={selectable() !== true}
               inset
               class={twMerge(
@@ -783,7 +783,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                       <Show when={local.selectionMode === "multiple"}>
                         <div class={featureCellClickableClass} onClick={() => toggleSelectAll()}>
                           <Checkbox
-                            value={(() => {
+                            checked={(() => {
                               const selectableItems = displayItems()
                                 .map((flat) => flat.item)
                                 .filter((item) => getItemSelectable(item) === true);

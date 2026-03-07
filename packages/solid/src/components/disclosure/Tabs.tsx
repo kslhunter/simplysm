@@ -123,7 +123,7 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
 
   return (
     <TabsContext.Provider value={contextValue}>
-      <div {...rest} role="tablist" class={twMerge(clsx("inline-flex items-center", gap.default, "border-b", border.default), local.class)} style={local.style}>
+      <div {...rest} role="tablist" class={twMerge(clsx("inline-flex items-center", gap.md, "border-b", border.default), local.class)} style={local.style}>
         {local.children}
       </div>
     </TabsContext.Provider>

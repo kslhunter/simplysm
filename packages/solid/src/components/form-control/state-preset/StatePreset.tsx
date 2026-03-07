@@ -194,7 +194,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   const containerClass = () => twMerge(clsx("inline-flex items-center", gap.lg, "flex-wrap"), local.class);
 
   const resolvedChipClass = () => twMerge(
-    clsx("inline-flex items-center", gap.default, "rounded-full", bg.subtle, text.default, "cursor-default"),
+    clsx("inline-flex items-center", gap.md, "rounded-full", bg.subtle, text.default, "cursor-default"),
     chipSizeClasses[local.size ?? "md"],
   );
 

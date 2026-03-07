@@ -177,7 +177,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   };
 
   return (
-    <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.default), props.class)}>
+    <div class={twMerge(clsx("flex flex-wrap items-center", gap.sm, "border-b", border.default, pad.md), props.class)}>
       {renderToolbarItems(toolbarItemsBefore)}
 
       {/* Color pickers */}

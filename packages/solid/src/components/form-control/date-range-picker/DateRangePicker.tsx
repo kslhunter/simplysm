@@ -154,7 +154,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   };
 
   // Wrapper CSS class
-  const getWrapperClass = () => twMerge(clsx("inline-flex items-center", gap.default), local.class);
+  const getWrapperClass = () => twMerge(clsx("inline-flex items-center", gap.md), local.class);
 
   return (
     <div {...rest} data-date-range-picker class={getWrapperClass()} style={local.style}>

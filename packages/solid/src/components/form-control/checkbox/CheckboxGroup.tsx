@@ -86,8 +86,8 @@ function CheckboxGroupItem<TValue = unknown>(props: {
 
   return (
     <Checkbox
-      value={isSelected()}
-      onValueChange={handleChange}
+      checked={isSelected()}
+      onCheckedChange={handleChange}
       disabled={props.disabled ?? ctx.disabled()}
       size={ctx.size()}
       inline={ctx.inline()}

@@ -30,7 +30,7 @@ describe("Numpad", () => {
           </I18nProvider>
         </ConfigProvider>
       ));
-      // without useMinusButton, there should be no button with "-" text
+      // without withMinusButton, there should be no button with "-" text
       const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeFalsy();
     });
@@ -179,11 +179,11 @@ describe("Numpad", () => {
   });
 
   describe("ENT button", () => {
-    it("renders ENT button when useEnterButton=true", () => {
+    it("renders ENT button when withEnterButton=true", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useEnterButton />
+            <Numpad withEnterButton />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -195,7 +195,7 @@ describe("Numpad", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useEnterButton onEnterButtonClick={handleEnter} />
+            <Numpad withEnterButton onEnterButtonClick={handleEnter} />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -208,7 +208,7 @@ describe("Numpad", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useEnterButton required />
+            <Numpad withEnterButton required />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -221,7 +221,7 @@ describe("Numpad", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useEnterButton required value={123} />
+            <Numpad withEnterButton required value={123} />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -232,11 +232,11 @@ describe("Numpad", () => {
   });
 
   describe("minus button", () => {
-    it("renders minus button when useMinusButton=true", () => {
+    it("renders minus button when withMinusButton=true", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useMinusButton />
+            <Numpad withMinusButton />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -250,7 +250,7 @@ describe("Numpad", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useMinusButton onValueChange={handleChange} />
+            <Numpad withMinusButton onValueChange={handleChange} />
           </I18nProvider>
         </ConfigProvider>
       ));
@@ -270,7 +270,7 @@ describe("Numpad", () => {
       render(() => (
         <ConfigProvider clientName="test">
           <I18nProvider>
-            <Numpad useMinusButton value={-5} onValueChange={handleChange} />
+            <Numpad withMinusButton value={-5} onValueChange={handleChange} />
           </I18nProvider>
         </ConfigProvider>
       ));

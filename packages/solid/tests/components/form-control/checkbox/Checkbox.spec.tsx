@@ -45,13 +45,13 @@ describe("Checkbox component", () => {
 
   describe("controlled pattern", () => {
     it("reflects value prop as checked state", () => {
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox value={true} /></I18nProvider></ConfigProvider>);
+      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox checked={true} /></I18nProvider></ConfigProvider>);
       expect(getByRole("checkbox").getAttribute("aria-checked")).toBe("true");
     });
 
-    it("calls onValueChange on click", () => {
+    it("calls onCheckedChange on click", () => {
       const handleChange = vi.fn();
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox value={false} onValueChange={handleChange} /></I18nProvider></ConfigProvider>);
+      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox checked={false} onCheckedChange={handleChange} /></I18nProvider></ConfigProvider>);
 
       fireEvent.click(getByRole("checkbox"));
       expect(handleChange).toHaveBeenCalledWith(true);
@@ -59,7 +59,7 @@ describe("Checkbox component", () => {
 
     it("updates when external state changes", () => {
       const [value, setValue] = createSignal(false);
-      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox value={value()} onValueChange={setValue} /></I18nProvider></ConfigProvider>);
+      const { getByRole } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox checked={value()} onCheckedChange={setValue} /></I18nProvider></ConfigProvider>);
 
       expect(getByRole("checkbox").getAttribute("aria-checked")).toBe("false");
 
@@ -70,25 +70,25 @@ describe("Checkbox component", () => {
 
   describe("validation", () => {
     it("sets error message when required and unchecked", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox required value={false} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox required checked={false} /></I18nProvider></ConfigProvider>);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("This is a required selection");
     });
 
     it("is valid when required and checked", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox required value={true} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox required checked={true} /></I18nProvider></ConfigProvider>);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
 
     it("sets error message returned by validate function", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox value={true} validate={() => "커스텀 에러"} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox checked={true} validate={() => "커스텀 에러"} /></I18nProvider></ConfigProvider>);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validationMessage).toBe("커스텀 에러");
     });
 
     it("is valid when validate function returns undefined", () => {
-      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox value={true} validate={() => undefined} /></I18nProvider></ConfigProvider>);
+      const { container } = render(() => <ConfigProvider clientName="test"><I18nProvider><Checkbox checked={true} validate={() => undefined} /></I18nProvider></ConfigProvider>);
       const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
       expect(hiddenInput.validity.valid).toBe(true);
     });
