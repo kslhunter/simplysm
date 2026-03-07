@@ -26,8 +26,11 @@ function createTestLoad() {
   return loadFn;
 }
 
+// Full props type for the test dialog component
+type TestDialogComponentProps = SelectDialogBaseProps<number> & { confirmKeys: number[] };
+
 // Dialog component for tests — uses close prop directly
-function TestDialogComponent(props: SelectDialogBaseProps<number> & { confirmKeys: number[] }) {
+function TestDialogComponent(props: TestDialogComponentProps) {
   return (
     <div data-testid="dialog-content">
       <div data-testid="select-mode">{props.selectionMode}</div>
@@ -94,7 +97,7 @@ describe("DataSelectButton", () => {
   it("loads and displays multiple selected items", async () => {
     const load = createTestLoad();
     const { findByText } = renderWithDialog(() => (
-      <DataSelectButton
+      <DataSelectButton<TestItem, number, TestDialogComponentProps>
         value={[1, 3]}
         multiple
         load={load}
@@ -199,7 +202,7 @@ describe("DataSelectButton", () => {
     const onValueChange = vi.fn();
 
     const { container, findByText } = renderWithDialog(() => (
-      <DataSelectButton
+      <DataSelectButton<TestItem, number, TestDialogComponentProps>
         value={[1, 2]}
         multiple
         onValueChange={onValueChange}
@@ -286,7 +289,7 @@ describe("DataSelectButton", () => {
     const onValueChange = vi.fn();
 
     const { container } = renderWithDialog(() => (
-      <DataSelectButton
+      <DataSelectButton<TestItem, number, TestDialogComponentProps>
         multiple
         onValueChange={onValueChange}
         load={load}
@@ -501,7 +504,7 @@ describe("DataSelectButton", () => {
     const load = createTestLoad();
 
     const { container } = renderWithDialog(() => (
-      <DataSelectButton
+      <DataSelectButton<TestItem, number, TestDialogComponentProps>
         value={[1]}
         multiple
         load={load}
@@ -525,6 +528,14 @@ describe("DataSelectButton", () => {
 });
 
 describe("DataSelectButton type safety", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it("single mode types value as TKey", () => {
     const load = createTestLoad();
     // Single mode: value is number, onValueChange receives number | undefined
@@ -548,7 +559,7 @@ describe("DataSelectButton type safety", () => {
     // Multiple mode: value is number[], onValueChange receives number[]
     const onValueChange = vi.fn<(v: number[]) => void>();
     renderWithDialog(() => (
-      <DataSelectButton
+      <DataSelectButton<TestItem, number, TestDialogComponentProps>
         multiple
         value={[1, 2]}
         onValueChange={onValueChange}
