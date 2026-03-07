@@ -14,7 +14,7 @@ Start by understanding the current project context, then ask questions one at a 
 ## The Process
 
 **Understanding the idea:**
-- Check out the current project state first (files, docs, recent commits). For deeper codebase exploration, consider using `sd-explore`.
+- Check out the current project state first (files, docs, recent commits).
 - Ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
@@ -22,24 +22,16 @@ Start by understanding the current project context, then ask questions one at a 
 
 **When a main design document is provided as context:**
 
-```dot
-digraph sub_design {
-    has_main [label="Main design with\nsection plan in context?" shape=diamond];
-    section_specified [label="Section specified?" shape=diamond];
-    prereqs_ok [label="Prerequisites\ncomplete?" shape=diamond];
-    normal [label="Normal brainstorm" shape=box];
-    show_progress [label="Show section progress\nAsk which section\n(suggest next incomplete)" shape=box];
-    warn [label="Warn prerequisites incomplete\nAsk: proceed anyway\nor complete first?" shape=box];
-    proceed [label="Proceed with section" shape=box];
-
-    has_main -> normal [label="no"];
-    has_main -> section_specified [label="yes"];
-    section_specified -> show_progress [label="no"];
-    section_specified -> prereqs_ok [label="yes"];
-    prereqs_ok -> proceed [label="yes"];
-    prereqs_ok -> warn [label="no"];
-    warn -> proceed [label="user: proceed"];
-}
+```mermaid
+flowchart TD
+    A{"Main design with<br>section plan in context?"}
+    A -->|no| B[Normal brainstorm]
+    A -->|yes| C{Section specified?}
+    C -->|no| D["Show section progress<br>Ask which section<br>(suggest next incomplete)"]
+    C -->|yes| E{"Prerequisites<br>complete?"}
+    E -->|yes| F[Proceed with section]
+    E -->|no| G["Warn prerequisites incomplete<br>Ask: proceed anyway<br>or complete first?"]
+    G -->|"user: proceed"| F
 ```
 
 When proceeding with a section:
@@ -101,36 +93,30 @@ If your first gap review shows all ✅:
 - Present options conversationally with your recommendation and reasoning
 - Lead with your recommended option and explain why
 
-**Presenting the design:**
-- Once you believe you understand what you're building, present the design
-- Break it into sections of 200-300 words
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
-
 **Scale assessment:**
 
-After the design presentation is complete, assess scale (file count, logic complexity, number of distinct subsystems, scope of impact):
+After the approach is selected, assess scale (file count, logic complexity, number of distinct subsystems, scope of impact):
 
-```dot
-digraph scale {
-    assess [label="Assess design scale" shape=diamond];
-    manageable [label="Proceed to\nAfter the Design\n(Path A/B)" shape=box];
-    propose [label="Propose to user:\nproceed as-is OR\nsplit into sections" shape=box];
-    user_choice [label="User choice?" shape=diamond];
-    division [label="Propose 2-3 section\ndivision approaches\n(by feature/layer/dependency)" shape=box];
-    save [label="Append section plan\nto design doc\nSave + commit" shape=box];
-    guide [label="Show section guide\nBrainstorm ENDS" shape=box];
-
-    assess -> manageable [label="manageable"];
-    assess -> propose [label="large"];
-    propose -> user_choice;
-    user_choice -> manageable [label="proceed as-is"];
-    user_choice -> division [label="split"];
-    division -> save [label="user selects"];
-    save -> guide;
-}
+```mermaid
+flowchart TD
+    A{"Assess design scale"}
+    A -->|manageable| B["Proceed to<br>After the Design<br>(Path A/B)"]
+    A -->|large| C["Propose to user:<br>proceed as-is OR<br>split into sections"]
+    C --> D{"User choice?"}
+    D -->|"proceed as-is"| B
+    D -->|split| E["Propose 2-3 section<br>division approaches<br>(by feature/layer/dependency)"]
+    E -->|"user selects"| F["Append section plan<br>to design doc<br>Save + commit"]
+    F --> G["Show section guide<br>Brainstorm ENDS"]
 ```
+
+**How to present the split proposal:**
+
+When proposing the split to the user, you MUST clearly explain what "section split" means:
+
+- **Section split** = the design document is divided into sections, and each section goes through its own **separate brainstorm → plan → plan-dev → check → commit cycle**.
+- This is NOT about implementation phasing (doing some changes before others). It's about breaking the design work itself into independently deliverable chunks.
+- Explain: "Splitting into sections means each section goes through its own brainstorm → plan → plan-dev cycle. Complete and commit one section before moving to the next."
+- Contrast with: "Proceeding as-is means this single design document goes straight to plan → plan-dev."
 
 **Section plan format** (append to existing design content as-is):
 
@@ -226,5 +212,4 @@ You can start from any step or skip steps as needed.
 - **Multiple choice preferred** - Easier to answer than open-ended when possible
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design in sections, validate each
 - **Be flexible** - Go back and clarify when something doesn't make sense

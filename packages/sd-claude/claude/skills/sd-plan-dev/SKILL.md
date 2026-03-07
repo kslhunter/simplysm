@@ -11,15 +11,11 @@ Execute plan tasks via parallel implementers with dependency-aware scheduling.
 
 ## When to Use
 
-```dot
-digraph when_to_use {
-    "Have implementation plan?" [shape=diamond];
-    "sd-plan-dev" [shape=box];
-    "Manual execution or brainstorm first" [shape=box];
-
-    "Have implementation plan?" -> "sd-plan-dev" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-}
+```mermaid
+flowchart TD
+    A{Have implementation plan?}
+    A -->|yes| B[sd-plan-dev]
+    A -->|no| C[Manual execution or brainstorm first]
 ```
 
 ## Execution Method
@@ -41,78 +37,49 @@ Independent tasks run as **parallel Task calls in a single message**. After impl
 
 ## The Process
 
-```dot
-digraph process {
-    rankdir=TB;
+```mermaid
+flowchart TD
+    A["Read plan, extract tasks, create TaskCreate"] --> B["Dependency analysis: identify files per task, build graph, group into batches"]
 
-    "Read plan, extract tasks, create TaskCreate" [shape=box];
-    "Dependency analysis: identify files per task, build graph, group into batches" [shape=box];
+    subgraph BATCH["Per Batch (independent tasks)"]
+        subgraph PAR_IMPL["Parallel implementer Task calls (single message)"]
+            subgraph IMPL["Each Implementer"]
+                C["Implement the task"] --> D{"Questions?"}
+                D -->|yes| E["Return questions to orchestrator"]
+                E --> F["Re-launch with answers"]
+                F --> C
+                D -->|no| G["Commit and report"]
+            end
+        end
 
-    subgraph cluster_batch {
-        label="Per Batch (independent tasks)";
+        subgraph REVIEW["Orchestrator review loop (per implementer)"]
+            subgraph PAR_REV["Parallel reviewer Task calls (single message)"]
+                H["Task: spec reviewer"]
+                I["Task: quality reviewer"]
+            end
+            J{"Any issues?"}
+            K["Task: implementer fix"]
+            L["Re-review (parallel Task calls)"]
+        end
+    end
 
-        subgraph cluster_parallel_implementers {
-            label="Parallel implementer Task calls (single message)";
-            style=dashed;
-
-            subgraph cluster_implementer {
-                label="Each Implementer";
-                "Implement the task" [shape=box];
-                "Questions?" [shape=diamond];
-                "Return questions to orchestrator" [shape=box];
-                "Re-launch with answers" [shape=box];
-                "Commit and report" [shape=box];
-            }
-        }
-
-        subgraph cluster_review {
-            label="Orchestrator review loop (per implementer)";
-
-            subgraph cluster_parallel_reviewers {
-                label="Parallel reviewer Task calls (single message)";
-                style=dashed;
-                "Task: spec reviewer" [shape=box];
-                "Task: quality reviewer" [shape=box];
-            }
-
-            "Any issues?" [shape=diamond];
-            "Task: implementer fix" [shape=box];
-            "Re-review (parallel Task calls)" [shape=box];
-        }
-    }
-
-    "More batches?" [shape=diamond];
-    "Batch integration check (typecheck + lint)" [shape=box];
-    "Task: final review for entire implementation" [shape=box];
-    "Done" [shape=ellipse];
-
-    "Read plan, extract tasks, create TaskCreate" -> "Dependency analysis: identify files per task, build graph, group into batches";
-    "Dependency analysis: identify files per task, build graph, group into batches" -> "Implement the task";
-    "Implement the task" -> "Questions?";
-    "Questions?" -> "Return questions to orchestrator" [label="yes"];
-    "Return questions to orchestrator" -> "Re-launch with answers";
-    "Re-launch with answers" -> "Implement the task";
-    "Questions?" -> "Commit and report" [label="no"];
-    "Commit and report" -> "Task: spec reviewer";
-    "Commit and report" -> "Task: quality reviewer";
-    "Task: spec reviewer" -> "Any issues?";
-    "Task: quality reviewer" -> "Any issues?";
-    "Any issues?" -> "Task: implementer fix" [label="yes"];
-    "Task: implementer fix" -> "Re-review (parallel Task calls)";
-    "Re-review (parallel Task calls)" -> "Any issues?";
-    "Any issues?" -> "Batch integration check (typecheck + lint)" [label="no"];
-    "Batch integration check (typecheck + lint)" -> "More batches?";
-    "More batches?" -> "Implement the task" [label="yes, next batch"];
-    "More batches?" -> "Task: final review for entire implementation" [label="no"];
-    "Run /simplify on all changed code" [shape=box];
-    "Changes made?" [shape=diamond];
-
-    "Task: final review for entire implementation" -> "Run /simplify on all changed code";
-    "Run /simplify on all changed code" -> "Changes made?";
-    "Changes made?" -> "Typecheck + lint affected packages" [label="yes"];
-    "Typecheck + lint affected packages" -> "Done";
-    "Changes made?" -> "Done" [label="no"];
-}
+    B --> C
+    G --> H
+    G --> I
+    H --> J
+    I --> J
+    J -->|yes| K
+    K --> L
+    L --> J
+    J -->|no| M["Batch integration check (typecheck + lint)"]
+    M --> N{"More batches?"}
+    N -->|"yes, next batch"| C
+    N -->|no| O["Task: final review for entire implementation"]
+    O --> P["Run /simplify on all changed code"]
+    P --> Q{"Changes made?"}
+    Q -->|yes| R["Typecheck + lint affected packages"]
+    R --> S(["Done"])
+    Q -->|no| S
 ```
 
 ## Dependency Analysis
@@ -323,6 +290,5 @@ After simplify completes (or is skipped), report to the user: number of tasks co
 **Related skills:**
 
 - **sd-plan** — creates the plan this skill executes
-- **sd-explore** — for codebase exploration when implementers need deeper context
 - **sd-tdd** — implementers follow TDD
 - **sd-worktree** — branch isolation for worktree-based workflows

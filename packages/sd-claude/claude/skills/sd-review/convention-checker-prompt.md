@@ -1,62 +1,59 @@
 # Convention Checker Prompt
 
-Template for `Agent(general-purpose)`. Fill in `[TARGET_PATH]`.
+Template for `Agent(general-purpose)`. Fill in `[CONVENTIONS]` and `[EXPLORE_FILES]`.
 
 ```
 You are checking code against project conventions.
 Your question: "Does this code violate any project-defined rules?"
 
-## Target
+## Context
 
-Check ALL source files at [TARGET_PATH].
+1. Review the following project conventions (these are your Grep criteria):
 
-## Step 1: Read convention files
+[CONVENTIONS]
 
-Read `.claude/rules/sd-refs-linker.md` to find ALL convention files that apply to the target code. Then read each referenced convention file.
+2. Read these explore result files: [EXPLORE_FILES]
+3. Collect ALL file paths from the **File Summaries** sections — these are your Grep scope
 
-At minimum, always read:
-- `.claude/refs/sd-code-conventions.md` — applies to all code
+## Step 1: Extract Grep-searchable patterns
 
-Also read topic-specific refs based on the target code (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM).
+From the conventions, extract rules that can be checked via text pattern matching.
 
-## Step 2: Extract prohibited patterns
-
-From each convention file, extract rules that define prohibited or required patterns. Build a checklist of Grep-searchable patterns.
-
-Example from `sd-code-conventions.md`:
+Examples of Grep-searchable rules:
 - `as unknown as` — prohibited
 - `as any` — prohibited in public-facing types
 - `export * from` or `export { } from` outside `src/index.ts` — prohibited
 
-## Step 3: Grep for each pattern
+**Skip rules that require semantic understanding** (e.g., "Boolean props should default to false", "file names must be self-identifying"). Only check patterns that can be matched syntactically.
 
-For each prohibited pattern, run a Grep search across all target files. Report every match.
+## Step 2: Grep for each pattern
 
-Do NOT skip, downgrade, or dismiss matches for any reason:
+For each prohibited pattern, run Grep across all files in scope.
+
+For patterns with justified exceptions (e.g., `as X` casts where no alternative exists), **read the surrounding code** to determine if the usage is justified per the convention's own exception clause. Report only unjustified matches.
+
+Do NOT skip or dismiss matches for these reasons:
 - "Widespread usage" is NOT an exception — it means widespread violation
-- "No alternative" is NOT an exception — the convention file lists alternatives
-- "Codebase pattern" is NOT an exception — the convention defines what's correct, not current usage
+- "Codebase pattern" is NOT an exception — conventions define what's correct
 
-## Step 4: Report
-
-Use this exact format for every finding:
+## Step 3: Report
 
 ### [WARNING] title
 
 - **File**: path/to/file.ts:42
-- **Convention**: which rule from which convention file
+- **Convention**: which rule from which convention
 - **Evidence**: the matching code (include snippet)
-- **Suggestion**: the fix recommended by the convention file
+- **Suggestion**: the fix recommended by the convention
 
-All convention violations are WARNING severity. Use CRITICAL only if the violation causes an immediate runtime bug.
+All violations are WARNING. Use CRITICAL only if the violation causes an immediate runtime bug.
 
-Start your report with:
+Start with:
 
 ## Convention Check Results
 
 ### Summary
 - Files checked: N
-- Convention files referenced: [list]
+- Conventions referenced: [list]
 - Violations found: N
 
 ### Violations

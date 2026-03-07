@@ -761,9 +761,14 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     const results = await Promise.allSettled(publishPromises);
 
     // Check for failures within level
-    const levelFailed = results.some((r) => r.status === "rejected");
-    if (levelFailed) {
+    const rejectedResults = results.filter(
+      (r): r is PromiseRejectedResult => r.status === "rejected",
+    );
+    if (rejectedResults.length > 0) {
       publishFailed = true;
+      for (const r of rejectedResults) {
+        logger.error(r.reason instanceof Error ? r.reason.message : r.reason);
+      }
       logger.fail(`Level ${levelIdx + 1}/${levels.length}`);
     } else {
       logger.success(`Level ${levelIdx + 1}/${levels.length}`);

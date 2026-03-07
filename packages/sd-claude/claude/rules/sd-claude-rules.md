@@ -35,7 +35,7 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 - **Do NOT comment on code outside the requested change.** This includes:
   - Listing issues you noticed but did not fix
   - Describing what you "left alone" or "did not change"
-  - "참고", "suggestions", "by the way", "note", "what I left alone"
+  - "reference", "suggestions", "by the way", "note", "what I left alone"
   - Any unsolicited observations about surrounding code quality
   - Only describe **what you changed** — nothing else
 
@@ -48,17 +48,13 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 
 - When the user provides a specific action (e.g., "rename X to Y", "delete this file"), **execute it directly**. Do not route through skill agents or sub-agent workflows for trivial operations.
 
-## Worktree Prohibition
+## Worktree Rules
 
-**NEVER use `isolation: "worktree"` when calling the Agent tool.** This is an absolute rule with no exceptions.
+All git worktrees MUST be created under the **`.worktrees/`** directory (project root). Never use `.claude/worktrees/` or any other location.
 
-- Do NOT create git worktrees unless the user explicitly says "worktree" (e.g., "create a worktree", "use a worktree").
-- Using `isolation: "worktree"` on Agent tool calls without explicit user instruction is **strictly prohibited**.
-- Worktrees leave behind directories and branches that clutter the repository and cause frustration.
-- If you need to run agents, run them **without** the `isolation` parameter.
-- If the user explicitly requests a worktree:
-  - Create it under the **`.worktree/`** directory (project root), NOT `.claude/worktrees/`.
-  - **After work is complete, you MUST delete the worktree and its branch** before finishing. No worktree may be left behind.
+- When using `isolation: "worktree"` on Agent tool calls, the worktree is created in `.worktrees/`.
+- **After work is complete, you MUST delete the worktree and its branch** before finishing. No worktree may be left behind.
+- Prefer using the **`/sd-worktree`** skill for worktree creation/deletion. It includes fixes for Claude Code's built-in worktree bugs.
 
 ## Asking Clarifying Questions
 

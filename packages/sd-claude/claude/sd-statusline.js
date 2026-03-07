@@ -8,7 +8,7 @@ import { stdin } from "process";
 
 const STDIN_TIMEOUT_MS = 5000;
 const FETCH_TIMEOUT_MS = 3000;
-const CACHE_TTL_MS = 60_000; // 1 minute
+const CACHE_TTL_MS = 120_000; // 2 minutes
 const CACHE_PATH = path.join(os.homedir(), ".claude", "usage-api-cache.json");
 
 //#endregion
@@ -116,7 +116,7 @@ function writeCache(data) {
 async function fetchUsage(token, version) {
   // Return cached data if still valid
   const cache = readCache();
-  if (cache != null && (Date.now() - cache.timestamp) < CACHE_TTL_MS) {
+  if (cache != null && Date.now() - cache.timestamp < CACHE_TTL_MS) {
     return cache.data;
   }
 
@@ -127,8 +127,8 @@ async function fetchUsage(token, version) {
     const response = await fetch("https://api.anthropic.com/api/oauth/usage", {
       headers: {
         "Authorization": `Bearer ${token}`,
-        "anthropic-beta": "oauth-2025-04-20",
-        "User-Agent": `claude-code/${version}`,
+        "Accept": "application/json",
+        'anthropic-beta': 'oauth-2025-04-20'
       },
       signal: controller.signal,
     });
@@ -138,14 +138,14 @@ async function fetchUsage(token, version) {
     if (!response.ok) {
       // API failed — update timestamp to prevent retry for TTL duration
       writeCache(cache?.data ?? {});
-      return cache?.data;
+      return undefined;
     }
 
     const data = await response.json();
 
     if (data == null || typeof data !== "object") {
       writeCache(cache?.data ?? {});
-      return cache?.data;
+      return undefined;
     }
 
     writeCache(data);
@@ -153,7 +153,7 @@ async function fetchUsage(token, version) {
   } catch {
     // Network error — update timestamp to prevent retry for TTL duration
     writeCache(cache?.data ?? {});
-    return cache?.data;
+    return undefined;
   }
 }
 
