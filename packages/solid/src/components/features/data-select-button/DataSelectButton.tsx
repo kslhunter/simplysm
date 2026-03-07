@@ -49,16 +49,12 @@ export type DialogPropsField<P, TKey = string | number> =
     ? { dialogProps?: UserDialogProps<P, TKey> }
     : { dialogProps: UserDialogProps<P, TKey> };
 
-/** DataSelectButton Props */
-export type DataSelectButtonProps<
+/** Common props shared between single and multiple modes */
+interface DataSelectButtonCommonProps<
   TItem,
   TKey = string | number,
   TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
-> = {
-  /** Currently selected key(s) (single or multiple) */
-  value?: TKey | TKey[];
-  /** Value change callback */
-  onValueChange?: (value: TKey | TKey[] | undefined) => void;
+> {
   /** Function to load items by key */
   load: (keys: TKey[]) => TItem[] | Promise<TItem[]>;
   /** Item rendering function */
@@ -67,8 +63,6 @@ export type DataSelectButtonProps<
   dialog: Component<TDialogProps>;
   /** Dialog options (header, size, etc.) */
   dialogOptions?: DialogShowOptions;
-  /** Multiple selection mode */
-  multiple?: boolean;
   /** Required input */
   required?: boolean;
   /** Disabled */
@@ -81,7 +75,44 @@ export type DataSelectButtonProps<
   validate?: (value: unknown) => string | undefined;
   /** lazyValidation: show error only after focus is lost */
   lazyValidation?: boolean;
-} & DialogPropsField<TDialogProps, TKey>;
+}
+
+/** Single select props */
+interface DataSelectButtonSingleProps<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
+> extends DataSelectButtonCommonProps<TItem, TKey, TDialogProps> {
+  /** Single select mode */
+  multiple?: false;
+  /** Currently selected key */
+  value?: TKey;
+  /** Value change callback */
+  onValueChange?: (value: TKey | undefined) => void;
+}
+
+/** Multiple select props */
+interface DataSelectButtonMultipleProps<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
+> extends DataSelectButtonCommonProps<TItem, TKey, TDialogProps> {
+  /** Multiple select mode */
+  multiple: true;
+  /** Currently selected keys */
+  value?: TKey[];
+  /** Value change callback */
+  onValueChange?: (value: TKey[]) => void;
+}
+
+/** DataSelectButton Props */
+export type DataSelectButtonProps<
+  TItem,
+  TKey = string | number,
+  TDialogProps extends SelectDialogBaseProps<TKey> = SelectDialogBaseProps<TKey>,
+> =
+  | (DataSelectButtonSingleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps, TKey>)
+  | (DataSelectButtonMultipleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps, TKey>);
 
 const actionButtonClass = clsx(
   "flex-shrink-0",

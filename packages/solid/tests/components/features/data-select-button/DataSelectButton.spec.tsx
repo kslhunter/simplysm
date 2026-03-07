@@ -502,7 +502,7 @@ describe("DataSelectButton", () => {
 
     const { container } = renderWithDialog(() => (
       <DataSelectButton
-        value={1}
+        value={[1]}
         multiple
         load={load}
         dialog={TestDialogComponent}
@@ -521,5 +521,43 @@ describe("DataSelectButton", () => {
       const selectedKeys = document.querySelector("[data-testid='selected-keys']");
       expect(selectedKeys?.textContent).toBe("[1]");
     });
+  });
+});
+
+describe("DataSelectButton type safety", () => {
+  it("single mode types value as TKey", () => {
+    const load = createTestLoad();
+    // Single mode: value is number, onValueChange receives number | undefined
+    const onValueChange = vi.fn<(v: number | undefined) => void>();
+    renderWithDialog(() => (
+      <DataSelectButton
+        value={1}
+        onValueChange={onValueChange}
+        load={load}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
+        renderItem={(item: TestItem) => <span>{item.name}</span>}
+      />
+    ));
+    // If this compiles, single mode type is correct
+    expect(true).toBe(true);
+  });
+
+  it("multiple mode types value as TKey[]", () => {
+    const load = createTestLoad();
+    // Multiple mode: value is number[], onValueChange receives number[]
+    const onValueChange = vi.fn<(v: number[]) => void>();
+    renderWithDialog(() => (
+      <DataSelectButton
+        multiple
+        value={[1, 2]}
+        onValueChange={onValueChange}
+        load={load}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
+        renderItem={(item: TestItem) => <span>{item.name}</span>}
+      />
+    ));
+    expect(true).toBe(true);
   });
 });
