@@ -21,9 +21,9 @@ export interface NumpadProps {
   /** Disable direct text field input */
   inputDisabled?: boolean;
   /** Show Enter button */
-  useEnterButton?: boolean;
+  withEnterButton?: boolean;
   /** Show minus button */
-  useMinusButton?: boolean;
+  withMinusButton?: boolean;
   /** Enter button click callback */
   onEnterButtonClick?: () => void;
   /** Size */
@@ -132,7 +132,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
   return (
     <div data-numpad class={twMerge(clsx("grid grid-cols-3", gap.sm, "w-auto"), props.class)} style={props.style}>
       {/* Row 1: NumberInput + optional ENT */}
-      <div class={clsx("flex", props.useEnterButton ? "col-span-2" : "col-span-3")}>
+      <div class={clsx("flex", props.withEnterButton ? "col-span-2" : "col-span-3")}>
         <NumberInput
           value={value()}
           onValueChange={handleFieldValueChange}
@@ -143,7 +143,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
           useGrouping={false}
         />
       </div>
-      <Show when={props.useEnterButton}>
+      <Show when={props.withEnterButton}>
         <Button
           theme="primary"
           variant="solid"
@@ -157,7 +157,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
       </Show>
 
       {/* Row 2: optional Minus + C + BS */}
-      <Show when={props.useMinusButton}>
+      <Show when={props.withMinusButton}>
         <Button size={buttonSize()} inset onClick={handleMinus}>
           -
         </Button>
@@ -166,7 +166,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
         size={buttonSize()}
         inset
         onClick={handleClear}
-        class={clsx(props.useMinusButton ? "col-span-1" : "col-span-2", "text-danger-500")}
+        class={clsx(props.withMinusButton ? "col-span-1" : "col-span-2", "text-danger-500")}
       >
         <Icon icon={IconEraser} />
       </Button>
