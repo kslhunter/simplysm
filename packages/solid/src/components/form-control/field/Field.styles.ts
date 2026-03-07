@@ -24,7 +24,7 @@ export const fieldBaseClass = clsx(
 
 // Size-specific styles
 export const fieldSizeClasses: Record<FieldSize, string> = {
-  default: clsx("h-field", pad.default),
+  md: clsx("h-field", pad.md),
   xs: clsx("h-field-xs", pad.xs),
   sm: clsx("h-field-sm", pad.sm),
   lg: clsx("h-field-lg", pad.lg),
@@ -42,7 +42,7 @@ export const fieldInsetClass = clsx(
 
 // Inset heights (excluding 2px border)
 export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
-  default: clsx`h-field-inset`,
+  md: clsx`h-field-inset`,
   xs: clsx`h-field-inset-xs`,
   sm: clsx`h-field-inset-sm`,
   lg: clsx`h-field-inset-lg`,
@@ -57,7 +57,7 @@ export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface);
 
 // Textarea size-specific styles (h-field-* removed)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
-  default: pad.default,
+  md: pad.md,
   xs: pad.xs,
   sm: pad.sm,
   lg: pad.lg,
@@ -75,7 +75,7 @@ export const fieldInputClass = clsx(
 
 // Prefix icon gap classes (replaces nested ternary)
 export const fieldGapClasses: Record<FieldSize, string> = {
-  default: gap.default,
+  md: gap.md,
   xs: gap.xs,
   sm: gap.sm,
   lg: gap.lg,
