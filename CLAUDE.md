@@ -16,6 +16,16 @@ Simplysm is a TypeScript-based full-stack framework monorepo. Managed with pnpm 
 - **Explicit and predictable code**: Prefer explicit code over implicit behavior.
 - **Incremental learning**: Each package is independently usable.
 
+## Reference Docs (`docs/refs/`)
+
+| When | Read this file |
+| --- | --- |
+| Writing, modifying, or reviewing code | `docs/refs/code-rules.md` |
+| Running build, lint, typecheck, test commands | `docs/refs/commands.md` |
+| Understanding package layout or dependencies | `docs/refs/project-structure.md` |
+| Working on SolidJS / `@simplysm/solid` | `docs/refs/solid-guide.md` |
+| Writing or modifying tests | `docs/refs/testing.md` |
+
 ## Code Language
 
 All source code must be written in **English**. This includes variable names, function names, class names, comments, error messages, and string literals intended for developers (e.g., log messages). Only user-facing strings (UI labels, i18n resources) may use other languages.

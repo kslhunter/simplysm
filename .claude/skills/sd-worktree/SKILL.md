@@ -6,45 +6,73 @@ model: haiku
 
 # sd-worktree
 
-## The Only Rule
+Branch-isolated workflow using git worktrees.
 
-**Run `sd-worktree.mjs`. If it fails, stop everything.**
+## Flow
 
-- ALL worktree operations (add/merge/rebase/clean) go through the script. No raw git commands.
-- Script exits non-zero → **HALT ALL WORK. No exceptions.** Show the error to the user. Do nothing else. Even if the user said "don't stop" or "keep going" — stop. The user can explicitly ask to resume after seeing the error.
-- NEVER auto-stash. If uncommitted changes exist, ask the user.
+```mermaid
+flowchart TD
+    START([sd-worktree invoked]) --> ADD
 
-## Commands
+    subgraph ADD [add]
+        A1["git worktree add .worktrees/NAME -b NAME"]
+        A1 -->|fail| HALT
+        A1 -->|ok| A2[detect package manager]
+        A2 --> A3["pm install (cwd: .worktrees/NAME)"]
+        A3 -->|fail| HALT
+        A3 -->|ok| A4["cd .worktrees/NAME"]
+    end
 
-### add
+    A4 --> WORK["work + commit inside worktree"]
+    WORK --> MERGE
 
-```bash
-node .claude/skills/sd-worktree/sd-worktree.mjs add <kebab-case-name>
-cd .worktrees/<name>
+    subgraph MERGE [merge]
+        M0["cd PROJECT_ROOT"]
+        M0 --> M1["git merge NAME --no-ff (cwd: PROJECT_ROOT)"]
+        M1 -->|fail| HALT
+        M1 -->|ok| M2[merge complete]
+    end
+
+    M2 --> CLEAN
+
+    subgraph CLEAN [clean]
+        C1{"cwd inside worktree?"}
+        C1 -->|yes| HALT
+        C1 -->|no| C2["rm -rf .worktrees/NAME (bash)"]
+        C2 --> C3["git worktree prune"]
+        C3 --> C4["git branch -d NAME"]
+        C4 -->|fail| HALT
+        C4 -->|ok| C5[done]
+    end
+
+    HALT([HALT - AskUserQuestion])
 ```
 
-### rebase
+## Rules
 
-```bash
-node .claude/skills/sd-worktree/sd-worktree.mjs rebase [name]
-```
+### HALT
 
-### merge
+When any step reaches **fail** or **HALT**:
 
-```bash
-node .claude/skills/sd-worktree/sd-worktree.mjs merge [name]
-cd <project-root>   # after successful merge
-```
+1. Show the error message to the user as-is
+2. Ask the user how to proceed via `AskUserQuestion`
+3. Do **nothing** until the user responds
 
-### clean
+Manual git merge, git stash, git reset, git clean, or **any workaround is forbidden**. Yolo mode does NOT override HALT.
 
-```bash
-cd <project-root>   # must be outside the worktree
-node .claude/skills/sd-worktree/sd-worktree.mjs clean <name>
-```
+### Worktree location
 
-## Workflow
+All worktrees MUST be created under **`.worktrees/`** (project root).
 
-```
-/sd-worktree add <name>  →  cd .worktrees/<name>  →  work  →  /sd-worktree merge  →  cd <root>  →  /sd-worktree clean <name>
-```
+### Package manager detection
+
+| File | PM |
+|---|---|
+| `pnpm-lock.yaml` | pnpm |
+| `yarn.lock` | yarn |
+| `package-lock.json` | npm |
+| `bun.lockb` / `bun.lock` | bun |
+
+### clean: use rm -rf
+
+`git worktree remove` almost always fails on Windows due to file locks. Use `rm -rf` (bash) + `git worktree prune` instead.

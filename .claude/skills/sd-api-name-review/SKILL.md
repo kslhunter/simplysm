@@ -134,10 +134,10 @@ _
 **For each finding, you MUST:**
 1. Review it thoroughly — examine the code, understand the context, assess the real impact
 2. If any aspect is unclear or ambiguous, ask the user (one question at a time, per brainstorm rules)
-3. If a finding has low cost-benefit (adds complexity for marginal gain, scope too small), propose dropping it with a concrete reason and ask the user for confirmation
+3. If a finding has low cost-benefit (adds complexity for marginal gain, pure style preference, scope too small), drop it. After triage, briefly list all dropped findings with one-line reasons (no user confirmation needed).
 4. For findings worth fixing, explore approaches and design solutions
 
-Findings that survive your review become the design scope. Apply your normal brainstorm process (gap review → approaches → design presentation) to the surviving findings as a group.
+Findings that survive your triage become the design scope. Apply your normal brainstorm process (gap review → approaches → design presentation) to the surviving findings as a group.
 
 <include all confirmed findings with their priority, file:line, current name, recommended name, and rationale>"
 

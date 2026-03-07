@@ -4,7 +4,7 @@
 
 ## Flowchart Usage
 
-Always use Mermaid (`flowchart`) for flowcharts.
+Use Mermaid (`flowchart`) when there are decision branches or non-obvious process flows.
 
 ```mermaid
 flowchart TD
