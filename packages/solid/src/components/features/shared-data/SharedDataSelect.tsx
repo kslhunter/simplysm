@@ -37,20 +37,14 @@ const Action: Component<ActionProps> = (props) => {
   return ActionSlot(props);
 };
 
-/** SharedDataSelect Props */
-export type SharedDataSelectProps<
+/** Common props shared between single and multiple modes */
+interface SharedDataSelectCommonProps<
   TItem,
   TKey extends string | number = string | number,
   TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
-> = {
+> {
   /** Shared data accessor */
   data: SharedDataAccessor<TItem>;
-  /** Currently selected key value (translated to item internally) */
-  value?: TKey | TKey[];
-  /** Value change callback (receives key, not item) */
-  onValueChange?: (value: TKey | TKey[] | undefined) => void;
-  /** Multiple selection mode */
-  multiple?: boolean;
   /** Required input */
   required?: boolean;
   /** Disabled */
@@ -67,7 +61,44 @@ export type SharedDataSelectProps<
   dialogOptions?: DialogShowOptions;
   /** Compound children: ItemTemplate, Action */
   children: JSX.Element;
-} & DialogPropsField<TDialogProps>;
+}
+
+/** Single select props */
+interface SharedDataSelectSingleProps<
+  TItem,
+  TKey extends string | number = string | number,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> extends SharedDataSelectCommonProps<TItem, TKey, TDialogProps> {
+  /** Single select mode */
+  multiple?: false;
+  /** Currently selected key value */
+  value?: TKey;
+  /** Value change callback */
+  onValueChange?: (value: TKey | undefined) => void;
+}
+
+/** Multiple select props */
+interface SharedDataSelectMultipleProps<
+  TItem,
+  TKey extends string | number = string | number,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> extends SharedDataSelectCommonProps<TItem, TKey, TDialogProps> {
+  /** Multiple select mode */
+  multiple: true;
+  /** Currently selected key values */
+  value?: TKey[];
+  /** Value change callback */
+  onValueChange?: (value: TKey[]) => void;
+}
+
+/** SharedDataSelect Props */
+export type SharedDataSelectProps<
+  TItem,
+  TKey extends string | number = string | number,
+  TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps,
+> =
+  | (SharedDataSelectSingleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps>)
+  | (SharedDataSelectMultipleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps>);
 
 const SharedDataSelectBase = <
   TItem,
@@ -146,9 +177,9 @@ const SharedDataSelectBase = <
     if (result) {
       const newKeys = result.selectedKeys;
       if (rest.multiple) {
-        rest.onValueChange?.(newKeys);
+        (rest.onValueChange as ((value: TKey[]) => void) | undefined)?.(newKeys);
       } else {
-        rest.onValueChange?.(newKeys.length > 0 ? newKeys[0] : undefined);
+        (rest.onValueChange as ((value: TKey | undefined) => void) | undefined)?.(newKeys.length > 0 ? newKeys[0] : undefined);
       }
     }
   };
@@ -160,7 +191,7 @@ const SharedDataSelectBase = <
     get onValueChange() {
       if (!rest.onValueChange) return undefined;
       return (item: TItem | TItem[] | undefined) => {
-        rest.onValueChange!(itemToKey(item));
+        (rest.onValueChange as (value: any) => void)(itemToKey(item));
       };
     },
     get items() {

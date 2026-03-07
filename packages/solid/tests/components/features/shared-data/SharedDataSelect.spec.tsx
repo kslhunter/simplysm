@@ -166,3 +166,43 @@ describe("SharedDataSelect", () => {
     });
   });
 });
+
+describe("SharedDataSelect type safety", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("single mode types value as TKey", () => {
+    const [items] = createSignal(testItems);
+    const accessor = createMockAccessor(items);
+    const onValueChange = vi.fn<(v: number | undefined) => void>();
+
+    renderWithDialog(() => (
+      <SharedDataSelect data={accessor} value={1} onValueChange={onValueChange}>
+        <SharedDataSelect.ItemTemplate>
+          {(item: TestItem) => <span>{item.name}</span>}
+        </SharedDataSelect.ItemTemplate>
+      </SharedDataSelect>
+    ));
+    expect(true).toBe(true);
+  });
+
+  it("multiple mode types value as TKey[]", () => {
+    const [items] = createSignal(testItems);
+    const accessor = createMockAccessor(items);
+    const onValueChange = vi.fn<(v: number[]) => void>();
+
+    renderWithDialog(() => (
+      <SharedDataSelect multiple data={accessor} value={[1, 2]} onValueChange={onValueChange}>
+        <SharedDataSelect.ItemTemplate>
+          {(item: TestItem) => <span>{item.name}</span>}
+        </SharedDataSelect.ItemTemplate>
+      </SharedDataSelect>
+    ));
+    expect(true).toBe(true);
+  });
+});
