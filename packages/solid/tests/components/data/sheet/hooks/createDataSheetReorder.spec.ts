@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetReorder } from "../../../../../src/components/data/sheet/hooks/useDataSheetReorder";
+import { createDataSheetReorder } from "../../../../../src/components/data/sheet/hooks/createDataSheetReorder";
 
 interface TestItem {
   id: number;
@@ -8,7 +8,7 @@ interface TestItem {
   children?: TestItem[];
 }
 
-describe("useDataSheetReorder", () => {
+describe("createDataSheetReorder", () => {
   describe("isDescendant", () => {
     it("should return false for non-descendant items", () => {
       createRoot(() => {
@@ -17,7 +17,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder<TestItem>(
+        const { dragState } = createDataSheetReorder<TestItem>(
           {
             itemChildren: (item) => item.children,
           },
@@ -36,7 +36,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder<TestItem>(
+        const { dragState } = createDataSheetReorder<TestItem>(
           {
             itemChildren: (item) => item.children,
           },
@@ -56,7 +56,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder<TestItem>(
+        const { dragState } = createDataSheetReorder<TestItem>(
           {
             itemChildren: (item) => item.children,
           },
@@ -79,7 +79,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder<TestItem>(
+        const { dragState } = createDataSheetReorder<TestItem>(
           {
             itemChildren: (item) => item.children,
           },
@@ -98,7 +98,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder({}, displayItems);
+        const { dragState } = createDataSheetReorder({}, displayItems);
 
         // Without itemChildren, no parent-child relationships exist
         expect(dragState()).toBeNull();
@@ -111,7 +111,7 @@ describe("useDataSheetReorder", () => {
       createRoot(() => {
         const displayItems = () => [];
 
-        const { dragState } = useDataSheetReorder({}, displayItems);
+        const { dragState } = createDataSheetReorder({}, displayItems);
 
         expect(dragState()).toBeNull();
       });
@@ -124,7 +124,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState, setDragState } = useDataSheetReorder({}, displayItems);
+        const { dragState, setDragState } = createDataSheetReorder({}, displayItems);
 
         setDragState({
           draggingItem: item1,
@@ -147,7 +147,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState, setDragState } = useDataSheetReorder({}, displayItems);
+        const { dragState, setDragState } = createDataSheetReorder({}, displayItems);
 
         setDragState({
           draggingItem: item1,
@@ -169,7 +169,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { dragState, setDragState } = useDataSheetReorder({}, displayItems);
+        const { dragState, setDragState } = createDataSheetReorder({}, displayItems);
 
         // Test "before" position
         setDragState({
@@ -208,7 +208,7 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const { setDragState: _setDragState } = useDataSheetReorder(
+        const { setDragState: _setDragState } = createDataSheetReorder(
           {
             onItemsReorder: onReorder,
           },
@@ -228,8 +228,8 @@ describe("useDataSheetReorder", () => {
 
         const displayItems = () => [];
 
-        const hook1 = useDataSheetReorder({}, displayItems);
-        const hook2 = useDataSheetReorder({}, displayItems);
+        const hook1 = createDataSheetReorder({}, displayItems);
+        const hook2 = createDataSheetReorder({}, displayItems);
 
         hook1.setDragState({
           draggingItem: item1,

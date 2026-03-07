@@ -2,14 +2,14 @@ import { createSignal, type Accessor } from "solid-js";
 import type { FlatItem } from "../DataSheet.types";
 import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
-export interface UseDataSheetSelectionProps<TItem> {
+export interface CreateDataSheetSelectionProps<TItem> {
   selectionMode?: "single" | "multiple";
   selection?: TItem[];
   onSelectionChange?: (items: TItem[]) => void;
   isItemSelectable?: (item: TItem) => boolean | string;
 }
 
-export interface UseDataSheetSelectionReturn<TItem> {
+export interface CreateDataSheetSelectionReturn<TItem> {
   selection: Accessor<TItem[]>;
   setSelection: (newValue: TItem[] | ((prev: TItem[]) => TItem[])) => TItem[];
   getItemSelectable: (item: TItem) => boolean | string;
@@ -22,10 +22,10 @@ export interface UseDataSheetSelectionReturn<TItem> {
   setLastClickAction: (value: "select" | "deselect") => void;
 }
 
-export function useDataSheetSelection<TItem>(
-  props: UseDataSheetSelectionProps<TItem>,
+export function createDataSheetSelection<TItem>(
+  props: CreateDataSheetSelectionProps<TItem>,
   displayItems: Accessor<FlatItem<TItem>[]>,
-): UseDataSheetSelectionReturn<TItem> {
+): CreateDataSheetSelectionReturn<TItem> {
   const [selection, setSelection] = createControllableSignal({
     value: () => props.selection ?? [],
     onChange: () => props.onSelectionChange,

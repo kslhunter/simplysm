@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetSelection } from "../../../../../src/components/data/sheet/hooks/useDataSheetSelection";
+import { createDataSheetSelection } from "../../../../../src/components/data/sheet/hooks/createDataSheetSelection";
 import type { FlatItem } from "../../../../../src/components/data/sheet/DataSheet.types";
 
 interface TestItem {
@@ -27,10 +27,10 @@ function createTestFlatItems(items: TestItem[]): FlatItem<TestItem>[] {
   }));
 }
 
-describe("useDataSheetSelection", () => {
+describe("createDataSheetSelection", () => {
   it("should initialize with empty selected items by default", () => {
     createRoot(() => {
-      const result = useDataSheetSelection({}, () => createTestFlatItems(testItems));
+      const result = createDataSheetSelection({}, () => createTestFlatItems(testItems));
 
       expect(result.selection()).toEqual([]);
     });
@@ -39,7 +39,7 @@ describe("useDataSheetSelection", () => {
   it("should initialize with provided selected items", () => {
     createRoot(() => {
       const selection = [testItems[0]];
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selection },
         () => createTestFlatItems(testItems),
       );
@@ -50,7 +50,7 @@ describe("useDataSheetSelection", () => {
 
   it("getItemSelectable should return true for selectable items", () => {
     createRoot(() => {
-      const result = useDataSheetSelection({}, () => createTestFlatItems(testItems));
+      const result = createDataSheetSelection({}, () => createTestFlatItems(testItems));
 
       expect(result.getItemSelectable(testItems[0])).toBe(true);
     });
@@ -59,7 +59,7 @@ describe("useDataSheetSelection", () => {
   it("getItemSelectable should return disabled string when item is not selectable", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -71,7 +71,7 @@ describe("useDataSheetSelection", () => {
   it("getItemSelectable should return reason string when item is disabled", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem) => item.disabledReason != null && item.disabledReason !== "" ? item.disabledReason : true;
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -82,7 +82,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should add item in multiple mode", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -95,7 +95,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should remove item in multiple mode", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
@@ -108,7 +108,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should replace selection in single mode", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "single", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
@@ -121,7 +121,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should deselect in single mode when toggling selected item", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "single", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
@@ -135,7 +135,7 @@ describe("useDataSheetSelection", () => {
   it("toggleSelect should not select non-selectable items", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -148,7 +148,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should update lastClickAction to 'select' when selecting", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -161,7 +161,7 @@ describe("useDataSheetSelection", () => {
 
   it("toggleSelect should update lastClickAction to 'deselect' when deselecting", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple", selection: [testItems[0]] },
         () => createTestFlatItems(testItems),
       );
@@ -175,7 +175,7 @@ describe("useDataSheetSelection", () => {
   it("toggleSelectAll should select all selectable items", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -191,7 +191,7 @@ describe("useDataSheetSelection", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
       const selectableItems = testItems.filter((i) => i.selectable !== false);
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable, selection: selectableItems },
         () => createTestFlatItems(testItems),
       );
@@ -205,7 +205,7 @@ describe("useDataSheetSelection", () => {
   it("toggleSelectAll should only select selectable items", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -218,7 +218,7 @@ describe("useDataSheetSelection", () => {
 
   it("rangeSelect should do nothing if lastClickedRow is null", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -231,7 +231,7 @@ describe("useDataSheetSelection", () => {
 
   it("rangeSelect should select items in range when lastClickAction is 'select'", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -249,7 +249,7 @@ describe("useDataSheetSelection", () => {
 
   it("rangeSelect should select items in reverse range", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -267,7 +267,7 @@ describe("useDataSheetSelection", () => {
 
   it("rangeSelect should deselect items in range when lastClickAction is 'deselect'", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple", selection: testItems },
         () => createTestFlatItems(testItems),
       );
@@ -285,7 +285,7 @@ describe("useDataSheetSelection", () => {
   it("rangeSelect should only select selectable items in range", () => {
     createRoot(() => {
       const isItemSelectable = (item: TestItem): true | string => item.selectable !== false ? true : "disabled";
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple", isItemSelectable },
         () => createTestFlatItems(testItems),
       );
@@ -308,7 +308,7 @@ describe("useDataSheetSelection", () => {
         lastCalledWith = items;
       };
 
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple", onSelectionChange },
         () => createTestFlatItems(testItems),
       );
@@ -321,7 +321,7 @@ describe("useDataSheetSelection", () => {
 
   it("should track last clicked row", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -334,7 +334,7 @@ describe("useDataSheetSelection", () => {
 
   it("should default to 'select' action", () => {
     createRoot(() => {
-      const result = useDataSheetSelection(
+      const result = createDataSheetSelection(
         { selectionMode: "multiple" },
         () => createTestFlatItems(testItems),
       );
@@ -346,7 +346,7 @@ describe("useDataSheetSelection", () => {
   it("treats false return from isItemSelectable as not selectable", () => {
     createRoot((dispose) => {
       const flatItems = () => createTestFlatItems(testItems);
-      const sel = useDataSheetSelection<TestItem>(
+      const sel = createDataSheetSelection<TestItem>(
         {
           selectionMode: "multiple",
           isItemSelectable: (item) => (item.selectable === false ? false : true),

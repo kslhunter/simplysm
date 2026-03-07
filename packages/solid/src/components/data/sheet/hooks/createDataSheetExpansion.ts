@@ -3,13 +3,13 @@ import type { FlatItem } from "../DataSheet.types";
 import { collectAllExpandable, flattenTree } from "../DataSheet.utils";
 import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
-export interface UseDataSheetExpansionProps<TItem> {
+export interface CreateDataSheetExpansionProps<TItem> {
   expandedItems?: TItem[];
   onExpandedItemsChange?: (items: TItem[]) => void;
   itemChildren?: (item: TItem, index: number) => TItem[] | undefined;
 }
 
-export interface UseDataSheetExpansionReturn<TItem> {
+export interface CreateDataSheetExpansionReturn<TItem> {
   expandedItems: Accessor<TItem[]>;
   setExpandedItems: (newValue: TItem[] | ((prev: TItem[]) => TItem[])) => TItem[];
   flatItems: Accessor<FlatItem<TItem>[]>;
@@ -18,11 +18,11 @@ export interface UseDataSheetExpansionReturn<TItem> {
   toggleExpandAll: () => void;
 }
 
-export function useDataSheetExpansion<TItem>(
-  props: UseDataSheetExpansionProps<TItem>,
+export function createDataSheetExpansion<TItem>(
+  props: CreateDataSheetExpansionProps<TItem>,
   pagedItems: Accessor<TItem[]>,
   originalIndexMap: Accessor<Map<TItem, number>>,
-): UseDataSheetExpansionReturn<TItem> {
+): CreateDataSheetExpansionReturn<TItem> {
   const [expandedItems, setExpandedItems] = createControllableSignal({
     value: () => props.expandedItems ?? [],
     onChange: () => props.onExpandedItemsChange,

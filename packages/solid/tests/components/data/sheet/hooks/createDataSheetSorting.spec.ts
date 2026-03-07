@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot, createSignal } from "solid-js";
-import { useDataSheetSorting } from "../../../../../src/components/data/sheet/hooks/useDataSheetSorting";
+import { createDataSheetSorting } from "../../../../../src/components/data/sheet/hooks/createDataSheetSorting";
 import type { SortingDef } from "../../../../../src/components/data/sheet/DataSheet.types";
 
 interface TestItem {
@@ -15,7 +15,7 @@ const testData: TestItem[] = [
   { id: 3, name: "Charlie", age: 35 },
 ];
 
-describe("useDataSheetSorting", () => {
+describe("createDataSheetSorting", () => {
   it("initializes with empty sorts", () => {
     createRoot(() => {
       const [sorts, _setSorts] = createSignal<SortingDef[] | undefined>(undefined);
@@ -25,7 +25,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sorts: resultSorts } = useDataSheetSorting({
+      const { sorts: resultSorts } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -43,7 +43,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { toggleSort, sorts: resultSorts } = useDataSheetSorting({
+      const { toggleSort, sorts: resultSorts } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -63,7 +63,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { toggleSort, sorts: resultSorts } = useDataSheetSorting({
+      const { toggleSort, sorts: resultSorts } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -91,7 +91,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { toggleSort, sorts: resultSorts } = useDataSheetSorting({
+      const { toggleSort, sorts: resultSorts } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -125,7 +125,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortIndex } = useDataSheetSorting({
+      const { sortIndex } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -147,7 +147,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortIndex } = useDataSheetSorting({
+      const { sortIndex } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -168,7 +168,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortedItems } = useDataSheetSorting({
+      const { sortedItems } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -190,7 +190,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(false);
 
-      const { sortedItems } = useDataSheetSorting({
+      const { sortedItems } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -210,7 +210,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortedItems } = useDataSheetSorting({
+      const { sortedItems } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -241,7 +241,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(multiData);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortedItems } = useDataSheetSorting({
+      const { sortedItems } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,
@@ -266,7 +266,7 @@ describe("useDataSheetSorting", () => {
       const [items] = createSignal<TestItem[] | undefined>(undefined);
       const [autoSort] = createSignal<boolean | undefined>(true);
 
-      const { sortedItems } = useDataSheetSorting({
+      const { sortedItems } = createDataSheetSorting({
         sorts,
         onSortsChange,
         items,

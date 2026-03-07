@@ -3,14 +3,14 @@ import { createControllableSignal } from "../../../../hooks/createControllableSi
 import { applySorting } from "../DataSheet.utils";
 import type { SortingDef } from "../DataSheet.types";
 
-export interface UseDataSheetSortingOptions<TItem> {
+export interface CreateDataSheetSortingOptions<TItem> {
   sorts: Accessor<SortingDef[] | undefined>;
   onSortsChange: Accessor<((sorts: SortingDef[]) => void) | undefined>;
   items: Accessor<TItem[] | undefined>;
   autoSort: Accessor<boolean | undefined>;
 }
 
-export interface UseDataSheetSortingReturn<TItem> {
+export interface CreateDataSheetSortingReturn<TItem> {
   sorts: Accessor<SortingDef[]>;
   setSorts: (newValue: SortingDef[] | ((prev: SortingDef[]) => SortingDef[])) => SortingDef[];
   toggleSort: (key: string, multiple: boolean) => void;
@@ -18,9 +18,9 @@ export interface UseDataSheetSortingReturn<TItem> {
   sortedItems: Accessor<TItem[]>;
 }
 
-export function useDataSheetSorting<TItem>(
-  options: UseDataSheetSortingOptions<TItem>,
-): UseDataSheetSortingReturn<TItem> {
+export function createDataSheetSorting<TItem>(
+  options: CreateDataSheetSortingOptions<TItem>,
+): CreateDataSheetSortingReturn<TItem> {
   const [sorts, setSorts] = createControllableSignal({
     value: () => options.sorts() ?? [],
     onChange: () => options.onSortsChange(),

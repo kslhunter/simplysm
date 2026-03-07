@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetExpansion } from "../../../../../src/components/data/sheet/hooks/useDataSheetExpansion";
+import { createDataSheetExpansion } from "../../../../../src/components/data/sheet/hooks/createDataSheetExpansion";
 
 interface TestNode {
   id: string;
@@ -32,11 +32,11 @@ function itemChildren(item: TestNode, _index: number): TestNode[] | undefined {
   return item.children;
 }
 
-describe("useDataSheetExpansion", () => {
+describe("createDataSheetExpansion", () => {
   it("should initialize with empty expanded items by default", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren },
         () => treeData,
         createIndexMap,
@@ -50,7 +50,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const expandedItems = [treeData[0]];
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems, itemChildren },
         () => treeData,
         createIndexMap,
@@ -63,7 +63,7 @@ describe("useDataSheetExpansion", () => {
   it("toggleExpand should add item when not expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren },
         () => treeData,
         createIndexMap,
@@ -80,7 +80,7 @@ describe("useDataSheetExpansion", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
       const expandedItems = [treeData[0]];
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: [...expandedItems], itemChildren },
         () => treeData,
         createIndexMap,
@@ -95,7 +95,7 @@ describe("useDataSheetExpansion", () => {
   it("flatItems should include children when item is expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
@@ -114,7 +114,7 @@ describe("useDataSheetExpansion", () => {
   it("flatItems should not include children when item is not expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren },
         () => treeData,
         createIndexMap,
@@ -131,7 +131,7 @@ describe("useDataSheetExpansion", () => {
   it("isAllExpanded should be false when no items are expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren },
         () => treeData,
         createIndexMap,
@@ -146,7 +146,7 @@ describe("useDataSheetExpansion", () => {
       const createIndexMap = () => new Map<TestNode, number>();
       // collectAllExpandable will find root1, child1-2, and root2 as expandable
       const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: allExpandable, itemChildren },
         () => treeData,
         createIndexMap,
@@ -159,7 +159,7 @@ describe("useDataSheetExpansion", () => {
   it("isAllExpanded should be false when only some items are expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
@@ -172,7 +172,7 @@ describe("useDataSheetExpansion", () => {
   it("toggleExpandAll should expand all items when not all are expanded", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren },
         () => treeData,
         createIndexMap,
@@ -190,7 +190,7 @@ describe("useDataSheetExpansion", () => {
       const createIndexMap = () => new Map<TestNode, number>();
       // collectAllExpandable will find root1, child1-2, and root2 as expandable
       const allExpandable = [treeData[0], treeData[0].children![1], treeData[1]];
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: allExpandable, itemChildren },
         () => treeData,
         createIndexMap,
@@ -206,7 +206,7 @@ describe("useDataSheetExpansion", () => {
   it("flatItems should have correct depth values", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { expandedItems: [treeData[0]], itemChildren },
         () => treeData,
         createIndexMap,
@@ -225,7 +225,7 @@ describe("useDataSheetExpansion", () => {
   it("should work with flat list (no children)", () => {
     createRoot(() => {
       const createIndexMap = () => new Map<TestNode, number>();
-      const result = useDataSheetExpansion({}, () => flatListData, createIndexMap);
+      const result = createDataSheetExpansion({}, () => flatListData, createIndexMap);
 
       expect(result.flatItems().length).toBe(flatListData.length);
       expect(result.isAllExpanded()).toBe(false);
@@ -240,7 +240,7 @@ describe("useDataSheetExpansion", () => {
         lastCalledWith = items;
       };
 
-      const result = useDataSheetExpansion(
+      const result = createDataSheetExpansion(
         { itemChildren, onExpandedItemsChange },
         () => treeData,
         createIndexMap,
