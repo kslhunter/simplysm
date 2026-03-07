@@ -165,7 +165,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     );
 
   const getTextareaClass = () =>
-    twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "default"], local.inset && "p-0");
+    twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "md"], local.inset && "p-0");
 
   // Whether editable
   const isEditable = () => !local.disabled && !local.readOnly;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot, createSignal } from "solid-js";
-import { useDataSheetPaging } from "../../../../../src/components/data/sheet/hooks/useDataSheetPaging";
+import { createDataSheetPaging } from "../../../../../src/components/data/sheet/hooks/createDataSheetPaging";
 
 interface TestItem {
   id: number;
@@ -16,7 +16,7 @@ const testData: TestItem[] = [
   { id: 6, name: "Item 6" },
 ];
 
-describe("useDataSheetPaging", () => {
+describe("createDataSheetPaging", () => {
   it("initializes with page 1", () => {
     createRoot(() => {
       const [page] = createSignal<number | undefined>(undefined);
@@ -26,7 +26,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { currentPage } = useDataSheetPaging({
+      const { currentPage } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -48,7 +48,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pageCount } = useDataSheetPaging({
+      const { pageCount } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -71,7 +71,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pageCount } = useDataSheetPaging({
+      const { pageCount } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -93,7 +93,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>([]);
       const [sortedItems] = createSignal<TestItem[]>([]);
 
-      const { pageCount } = useDataSheetPaging({
+      const { pageCount } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -115,7 +115,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pageCount } = useDataSheetPaging({
+      const { pageCount } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -137,7 +137,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -164,7 +164,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -186,7 +186,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -208,7 +208,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>([]);
       const [sortedItems] = createSignal<TestItem[]>([]);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -230,7 +230,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -257,7 +257,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -284,7 +284,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { pagedItems } = useDataSheetPaging({
+      const { pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -311,7 +311,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { setCurrentPage, pagedItems } = useDataSheetPaging({
+      const { setCurrentPage, pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,
@@ -342,7 +342,7 @@ describe("useDataSheetPaging", () => {
       const [items] = createSignal<TestItem[] | undefined>(testData);
       const [sortedItems] = createSignal<TestItem[]>(testData);
 
-      const { setCurrentPage, pagedItems } = useDataSheetPaging({
+      const { setCurrentPage, pagedItems } = createDataSheetPaging({
         page,
         onPageChange,
         pageSize,

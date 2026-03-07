@@ -1,7 +1,7 @@
 import { createMemo, type Accessor } from "solid-js";
 import { createControllableSignal } from "../../../../hooks/createControllableSignal";
 
-export interface UseDataSheetPagingOptions<TItem> {
+export interface CreateDataSheetPagingOptions<TItem> {
   page: Accessor<number | undefined>;
   onPageChange: Accessor<((page: number) => void) | undefined>;
   pageSize: Accessor<number | undefined>;
@@ -10,16 +10,16 @@ export interface UseDataSheetPagingOptions<TItem> {
   sortedItems: Accessor<TItem[]>;
 }
 
-export interface UseDataSheetPagingReturn<TItem> {
+export interface CreateDataSheetPagingReturn<TItem> {
   currentPage: Accessor<number>;
   setCurrentPage: (newValue: number | ((prev: number) => number)) => number;
   pageCount: Accessor<number>;
   pagedItems: Accessor<TItem[]>;
 }
 
-export function useDataSheetPaging<TItem>(
-  options: UseDataSheetPagingOptions<TItem>,
-): UseDataSheetPagingReturn<TItem> {
+export function createDataSheetPaging<TItem>(
+  options: CreateDataSheetPagingOptions<TItem>,
+): CreateDataSheetPagingReturn<TItem> {
   const [currentPage, setCurrentPage] = createControllableSignal({
     value: () => options.page() ?? 1,
     onChange: () => options.onPageChange(),

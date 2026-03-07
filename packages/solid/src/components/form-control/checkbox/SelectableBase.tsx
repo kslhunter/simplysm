@@ -19,14 +19,14 @@ import { Invalid } from "../Invalid";
 void ripple;
 
 export interface SelectableBaseProps {
-  value?: boolean;
-  onValueChange?: (value: boolean) => void;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   size?: CheckboxSize;
   inset?: boolean;
   inline?: boolean;
   required?: boolean;
-  validate?: (value: boolean) => string | undefined;
+  validate?: (checked: boolean) => string | undefined;
   lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
@@ -42,8 +42,8 @@ export interface SelectableBaseConfig {
 
 export const SelectableBase: ParentComponent<SelectableBaseProps & { config: SelectableBaseConfig }> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value",
-    "onValueChange",
+    "checked",
+    "onCheckedChange",
     "disabled",
     "size",
     "inset",
@@ -59,14 +59,14 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
 
   const i18n = useI18n();
 
-  const [value, setValue] = createControllableSignal({
-    value: () => local.value ?? false,
-    onChange: () => local.onValueChange,
+  const [checked, setChecked] = createControllableSignal({
+    value: () => local.checked ?? false,
+    onChange: () => local.onCheckedChange,
   });
 
   const handleClick = () => {
     if (local.disabled) return;
-    setValue((v) => local.config.onToggle(v));
+    setChecked((v) => local.config.onToggle(v));
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,19 +79,19 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
   const getWrapperClass = () =>
     twMerge(
       checkboxBaseClass,
-      checkboxSizeClasses[local.size ?? "default"],
+      checkboxSizeClasses[local.size ?? "md"],
       local.inset && checkboxInsetClass,
-      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "default"],
+      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "md"],
       local.inline && checkboxInlineClass,
       local.disabled && checkboxDisabledClass,
       local.class,
     );
 
   const getIndicatorClass = () =>
-    twMerge(indicatorBaseClass, local.config.indicatorShape, value() && checkedClass);
+    twMerge(indicatorBaseClass, local.config.indicatorShape, checked() && checkedClass);
 
   const errorMsg = createMemo(() => {
-    const v = local.value ?? false;
+    const v = local.checked ?? false;
     if (local.required && !v) return i18n.t("validation.requiredSelection");
     return local.validate?.(v);
   });
@@ -102,7 +102,7 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
         {...rest}
         use:ripple={!local.disabled}
         role={local.config.role}
-        aria-checked={value()}
+        aria-checked={checked()}
         tabIndex={local.disabled ? -1 : 0}
         class={getWrapperClass()}
         style={local.style}
@@ -110,7 +110,7 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
         onKeyDown={handleKeyDown}
       >
         <div class={getIndicatorClass()}>
-          <Show when={value()}>
+          <Show when={checked()}>
             {local.config.indicatorContent}
           </Show>
         </div>

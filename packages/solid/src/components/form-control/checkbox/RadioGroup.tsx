@@ -83,8 +83,8 @@ function RadioGroupItem<TValue = unknown>(props: {
 
   return (
     <Radio
-      value={isSelected()}
-      onValueChange={handleChange}
+      checked={isSelected()}
+      onCheckedChange={handleChange}
       disabled={props.disabled ?? ctx.disabled()}
       size={ctx.size()}
       inline={ctx.inline()}

@@ -215,7 +215,7 @@ const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <>
       {/* Desktop menu (shown only on 640px and above) */}
-      <nav {...rest} data-topbar-menu class={twMerge(clsx("hidden flex-row sm:flex", gap.default, "items-center"), local.class)}>
+      <nav {...rest} data-topbar-menu class={twMerge(clsx("hidden flex-row sm:flex", gap.md, "items-center"), local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 
@@ -291,7 +291,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
     <Button
       variant={isSelected() ? "solid" : "ghost"}
       theme={isSelected() ? "primary" : "base"}
-      class={clsx("flex items-center", gap.default)}
+      class={clsx("flex items-center", gap.md)}
       aria-haspopup={hasChildren() ? "menu" : undefined}
       aria-expanded={hasChildren() ? open() : undefined}
       onClick={hasChildren() ? undefined : handleNavigate}
@@ -410,7 +410,7 @@ const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
   const buttonContent = () => (
     <Button
       variant="ghost"
-      class={clsx("flex items-center", gap.default)}
+      class={clsx("flex items-center", gap.md)}
       aria-haspopup={hasMenus() ? "menu" : undefined}
       aria-expanded={hasMenus() ? open() : undefined}
     >

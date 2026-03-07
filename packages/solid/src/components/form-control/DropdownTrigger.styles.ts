@@ -29,7 +29,7 @@ export const triggerInsetClass = clsx(
 );
 
 export const triggerSizeClasses: Record<ComponentSize, string> = {
-  default: clsx(gap.default, pad.default),
+  md: clsx(gap.md, pad.md),
   xs: clsx(gap.xs, pad.xs),
   sm: clsx(gap.sm, pad.sm),
   lg: clsx(gap.lg, pad.lg),
@@ -47,7 +47,7 @@ export function getTriggerClass(options: {
 }): string {
   return twMerge(
     triggerBaseClass,
-    triggerSizeClasses[options.size ?? "default"],
+    triggerSizeClasses[options.size ?? "md"],
     options.disabled && triggerDisabledClass,
     options.inset && triggerInsetClass,
     options.class,

@@ -112,7 +112,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
           <DataSheet.Column<EditColumnItem>
             key="header"
             header={i18n.t("dataSheetConfigDialog.column")}
-            class={pad.default}
+            class={pad.md}
             sortable={false}
           >
             {(ctx) => ctx.item.headerText}
@@ -121,8 +121,8 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
             {(ctx) => (
               <Checkbox
                 inset
-                value={ctx.item.fixed}
-                onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)}
+                checked={ctx.item.fixed}
+                onCheckedChange={(v) => updateItem(ctx.item.key, "fixed", v)}
               />
             )}
           </DataSheet.Column>
@@ -130,8 +130,8 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
             {(ctx) => (
               <Checkbox
                 inset
-                value={ctx.item.hidden}
-                onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)}
+                checked={ctx.item.hidden}
+                onCheckedChange={(v) => updateItem(ctx.item.key, "hidden", v)}
               />
             )}
           </DataSheet.Column>

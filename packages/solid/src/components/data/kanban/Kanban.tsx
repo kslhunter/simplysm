@@ -494,13 +494,13 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
                 </Button>
               </Show>
               <Show when={hasSelectableCards()}>
-                <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline />
+                <Checkbox checked={isAllSelected()} onCheckedChange={handleSelectAll} inline />
               </Show>
               <div class="flex-1">
                 <Show when={title()}>{title()!.children}</Show>
               </div>
               <Show when={tools()}>
-                <div class={clsx("flex items-center", gap.default)}>{tools()!.children}</div>
+                <div class={clsx("flex items-center", gap.md)}>{tools()!.children}</div>
               </Show>
             </div>
           </Show>

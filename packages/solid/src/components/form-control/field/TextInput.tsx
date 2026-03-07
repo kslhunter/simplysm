@@ -224,7 +224,7 @@ const TextInputInner = (props: TextInputProps) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
-      extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
+      extra: prefixEl() && fieldGapClasses[local.size ?? "md"],
     });
 
   // Whether editable

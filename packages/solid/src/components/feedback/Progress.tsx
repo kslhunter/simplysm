@@ -16,7 +16,7 @@ export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 
 const sizeClasses: Record<ComponentSize, string> = {
-  default: pad.default,
+  md: pad.md,
   xs: pad.xs,
   sm: pad.sm,
   lg: pad.lg,
@@ -31,7 +31,7 @@ export const Progress: ParentComponent<ProgressProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "theme", "size", "value", "inset"]);
 
   const getClassName = () => {
-    const size = local.size ?? "default";
+    const size = local.size ?? "md";
     return twMerge(
       clsx("relative block w-full overflow-hidden rounded", bg.subtle, "border", border.default),
       sizeClasses[size],

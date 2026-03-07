@@ -132,7 +132,7 @@ function getTriggerContainerClass(options: {
 }): string {
   return twMerge(
     triggerBaseClass,
-    triggerSizeClasses[options.size ?? "default"],
+    triggerSizeClasses[options.size ?? "md"],
     options.disabled && triggerDisabledClass,
     options.inset && triggerInsetClass,
     options.class,

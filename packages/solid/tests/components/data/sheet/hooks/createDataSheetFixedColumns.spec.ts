@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useDataSheetFixedColumns } from "../../../../../src/components/data/sheet/hooks/useDataSheetFixedColumns";
+import { createDataSheetFixedColumns } from "../../../../../src/components/data/sheet/hooks/createDataSheetFixedColumns";
 import type { DataSheetColumnDef } from "../../../../../src/components/data/sheet/DataSheet.types";
 
 interface TestItem {
@@ -8,13 +8,13 @@ interface TestItem {
   name: string;
 }
 
-describe("useDataSheetFixedColumns", () => {
+describe("createDataSheetFixedColumns", () => {
   describe("feature column tracking", () => {
     it("should detect expand feature when itemChildren is provided", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasExpandFeature } = useDataSheetFixedColumns(
+        const { hasExpandFeature } = createDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
           },
@@ -29,7 +29,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasExpandFeature } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { hasExpandFeature } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(hasExpandFeature()).toBe(false);
       });
@@ -39,7 +39,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasSelectFeature } = useDataSheetFixedColumns(
+        const { hasSelectFeature } = createDataSheetFixedColumns(
           {
             selectionMode: "single",
           },
@@ -54,7 +54,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasSelectFeature } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { hasSelectFeature } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(hasSelectFeature()).toBe(false);
       });
@@ -64,7 +64,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasReorderFeature } = useDataSheetFixedColumns(
+        const { hasReorderFeature } = createDataSheetFixedColumns(
           {
             onItemsReorder: () => {},
           },
@@ -79,7 +79,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { hasReorderFeature } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { hasReorderFeature } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(hasReorderFeature()).toBe(false);
       });
@@ -91,7 +91,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { expandColWidth, selectColWidth, reorderColWidth } = useDataSheetFixedColumns(
+        const { expandColWidth, selectColWidth, reorderColWidth } = createDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
             selectionMode: "single",
@@ -112,7 +112,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { selectColLeft } = useDataSheetFixedColumns(
+        const { selectColLeft } = createDataSheetFixedColumns(
           {
             selectionMode: "single",
           },
@@ -127,7 +127,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { selectColLeft, expandColWidth: _expandColWidth } = useDataSheetFixedColumns(
+        const { selectColLeft, expandColWidth: _expandColWidth } = createDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
             selectionMode: "single",
@@ -144,7 +144,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { reorderColLeft } = useDataSheetFixedColumns(
+        const { reorderColLeft } = createDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
             selectionMode: "single",
@@ -163,7 +163,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { featureColTotalWidth } = useDataSheetFixedColumns(
+        const { featureColTotalWidth } = createDataSheetFixedColumns(
           {
             itemChildren: () => undefined,
             selectionMode: "single",
@@ -181,7 +181,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { featureColTotalWidth } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { featureColTotalWidth } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(featureColTotalWidth()).toBe(0);
       });
@@ -208,7 +208,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col2", false),
         ];
 
-        const { fixedLeftMap } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { fixedLeftMap } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(fixedLeftMap().size).toBe(0);
       });
@@ -234,7 +234,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col3", false),
         ];
 
-        const { fixedLeftMap } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { fixedLeftMap } = createDataSheetFixedColumns({}, effectiveColumns);
 
         const map = fixedLeftMap();
         expect(map.has(0)).toBe(true);
@@ -263,7 +263,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col3", true),
         ];
 
-        const { fixedLeftMap } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { fixedLeftMap } = createDataSheetFixedColumns({}, effectiveColumns);
 
         const map = fixedLeftMap();
         expect(map.has(0)).toBe(true);
@@ -293,7 +293,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col2", false),
         ];
 
-        const { lastFixedIndex } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { lastFixedIndex } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(lastFixedIndex()).toBe(-1);
       });
@@ -319,7 +319,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col3", false),
         ];
 
-        const { lastFixedIndex } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { lastFixedIndex } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(lastFixedIndex()).toBe(1);
       });
@@ -345,7 +345,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col3", true),
         ];
 
-        const { lastFixedIndex } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { lastFixedIndex } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(lastFixedIndex()).toBe(0);
       });
@@ -357,7 +357,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { getFixedStyle } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { getFixedStyle } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(getFixedStyle(0)).toBeUndefined();
       });
@@ -382,7 +382,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col2", false),
         ];
 
-        const { getFixedStyle } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { getFixedStyle } = createDataSheetFixedColumns({}, effectiveColumns);
 
         const style = getFixedStyle(0);
         expect(style).toMatch(/^left: \d+px$/);
@@ -411,7 +411,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col3", false),
         ];
 
-        const { isLastFixed } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { isLastFixed } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(isLastFixed(1)).toBe(true);
         expect(isLastFixed(0)).toBe(false);
@@ -438,7 +438,7 @@ describe("useDataSheetFixedColumns", () => {
           createColumn("col2", false),
         ];
 
-        const { isLastFixed } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { isLastFixed } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(isLastFixed(1)).toBe(false);
       });
@@ -450,7 +450,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { columnRefs } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { columnRefs } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(columnRefs.size).toBe(0);
       });
@@ -460,7 +460,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { columnRefs: _columnRefs, registerColumnRef } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { columnRefs: _columnRefs, registerColumnRef } = createDataSheetFixedColumns({}, effectiveColumns);
 
         const _mockElement = {
           offsetWidth: 100,
@@ -479,7 +479,7 @@ describe("useDataSheetFixedColumns", () => {
       createRoot(() => {
         const effectiveColumns = () => [];
 
-        const { columnWidths } = useDataSheetFixedColumns({}, effectiveColumns);
+        const { columnWidths } = createDataSheetFixedColumns({}, effectiveColumns);
 
         expect(columnWidths().size).toBe(0);
       });

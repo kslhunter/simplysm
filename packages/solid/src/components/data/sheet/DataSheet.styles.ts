@@ -21,7 +21,7 @@ export const thClass = clsx(
   "align-middle",
 );
 
-export const thContentClass = clsx(pad.default);
+export const thContentClass = clsx(pad.md);
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-950",
@@ -54,7 +54,7 @@ export const sortIconClass = clsx("bg-base-100 dark:bg-base-900");
 // Top toolbar (settings button + pagination)
 export const toolbarClass = clsx(
   "flex items-center gap-2",
-  pad.default,
+  pad.md,
   "border-b",
   border.default,
 );

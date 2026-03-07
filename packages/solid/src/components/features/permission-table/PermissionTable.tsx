@@ -294,8 +294,8 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
               return (
                 <Show when={hasPermInTree(item, perm)}>
                   <Checkbox
-                    value={isGroupPermChecked(item, perm, currentValue())}
-                    onValueChange={(checked) => handlePermChange(item, perm, checked)}
+                    checked={isGroupPermChecked(item, perm, currentValue())}
+                    onCheckedChange={(checked) => handlePermChange(item, perm, checked)}
                     disabled={local.disabled || isPermDisabled(item, perm, currentValue())}
                     inset
                   />

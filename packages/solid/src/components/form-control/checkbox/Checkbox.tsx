@@ -5,14 +5,14 @@ import { Icon } from "../../display/Icon";
 import { SelectableBase } from "./SelectableBase";
 
 export interface CheckboxProps {
-  value?: boolean;
-  onValueChange?: (value: boolean) => void;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   size?: CheckboxSize;
   inset?: boolean;
   inline?: boolean;
   required?: boolean;
-  validate?: (value: boolean) => string | undefined;
+  validate?: (checked: boolean) => string | undefined;
   lazyValidation?: boolean;
   class?: string;
   style?: JSX.CSSProperties;

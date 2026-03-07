@@ -677,7 +677,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
                     ) {
                       return (
                         <Link
-                          class={clsx("flex", gap.default)}
+                          class={clsx("flex", gap.md)}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -702,7 +702,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
             <Show when={local.lastModifiedAtProp}>
               <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header={i18n.t("crudSheet.lastModified")} hidden>
                 {(dsCtx) => (
-                  <div class={clsx(pad.default, "text-center")}>
+                  <div class={clsx(pad.md, "text-center")}>
                     {(
                       obj.getChainValue(dsCtx.item, local.lastModifiedAtProp!, true) as
                         | DateTime
@@ -716,7 +716,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
             <Show when={local.lastModifiedByProp}>
               <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header={i18n.t("crudSheet.modifiedBy")} hidden>
                 {(dsCtx) => (
-                  <div class={clsx(pad.default, "text-center")}>
+                  <div class={clsx(pad.md, "text-center")}>
                     {obj.getChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
                   </div>
                 )}

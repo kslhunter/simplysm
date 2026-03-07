@@ -207,7 +207,7 @@ const SharedDataSelectListInner = (<TItem,>(
       <div
         {...rest}
         data-shared-data-select-list
-        class={twMerge(clsx("flex-col", gap.default), local.class)}
+        class={twMerge(clsx("flex-col", gap.md), local.class)}
         style={local.style}
       >
         {/* Header */}

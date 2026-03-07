@@ -649,7 +649,7 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
             </Show>
             {/* Select all/deselect buttons */}
             <Show when={showSelectAllBar()}>
-              <div class={clsx("flex gap-2 border-b", border.subtle, pad.default, "text-xs")}>
+              <div class={clsx("flex gap-2 border-b", border.subtle, pad.md, "text-xs")}>
                 <button
                   type="button"
                   data-select-all

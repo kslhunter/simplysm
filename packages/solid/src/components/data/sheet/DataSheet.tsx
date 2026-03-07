@@ -69,13 +69,13 @@ import {
   toolbarClass,
   trRowClass,
 } from "./DataSheet.styles";
-import { useDataSheetSorting } from "./hooks/useDataSheetSorting";
-import { useDataSheetPaging } from "./hooks/useDataSheetPaging";
-import { useDataSheetExpansion } from "./hooks/useDataSheetExpansion";
-import { useDataSheetSelection } from "./hooks/useDataSheetSelection";
-import { useDataSheetReorder } from "./hooks/useDataSheetReorder";
-import { useDataSheetFixedColumns } from "./hooks/useDataSheetFixedColumns";
-import { useDataSheetHeaderCell } from "./hooks/useDataSheetHeaderCell";
+import { createDataSheetSorting } from "./hooks/createDataSheetSorting";
+import { createDataSheetPaging } from "./hooks/createDataSheetPaging";
+import { createDataSheetExpansion } from "./hooks/createDataSheetExpansion";
+import { createDataSheetSelection } from "./hooks/createDataSheetSelection";
+import { createDataSheetReorder } from "./hooks/createDataSheetReorder";
+import { createDataSheetFixedColumns } from "./hooks/createDataSheetFixedColumns";
+import { createDataSheetHeaderCell } from "./hooks/createDataSheetHeaderCell";
 
 
 const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
@@ -221,7 +221,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     toggleSort,
     sortIndex: sortIndex,
     sortedItems,
-  } = useDataSheetSorting<TItem>({
+  } = createDataSheetSorting<TItem>({
     sorts: () => local.sorts,
     onSortsChange: () => local.onSortsChange,
     items: () => local.items,
@@ -233,7 +233,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
   }
 
   // #region Paging
-  const { currentPage, setCurrentPage, pageCount, pagedItems } = useDataSheetPaging<TItem>({
+  const { currentPage, setCurrentPage, pageCount, pagedItems } = createDataSheetPaging<TItem>({
     page: () => local.page,
     onPageChange: () => local.onPageChange,
     pageSize: () => local.pageSize,
@@ -261,7 +261,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     getFixedStyle,
     isLastFixed,
     registerColumnRef,
-  } = useDataSheetFixedColumns<TItem>(
+  } = createDataSheetFixedColumns<TItem>(
     {
       get itemChildren() { return local.itemChildren; },
       get selectionMode() { return local.selectionMode; },
@@ -357,7 +357,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
 
   // #region Expanding
   const { expandedItems, flatItems, toggleExpand, isAllExpanded, toggleExpandAll } =
-    useDataSheetExpansion<TItem>(
+    createDataSheetExpansion<TItem>(
       {
         get expandedItems() { return local.expandedItems; },
         get onExpandedItemsChange() { return local.onExpandedItemsChange; },
@@ -380,7 +380,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     rangeSelect,
     lastClickedRow,
     setLastClickedRow,
-  } = useDataSheetSelection<TItem>(
+  } = createDataSheetSelection<TItem>(
     {
       get selectionMode() { return local.selectionMode; },
       get selection() { return local.selection; },
@@ -403,7 +403,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
   }
 
   // #region Reorder
-  const { dragState, onReorderPointerDown } = useDataSheetReorder<TItem>(
+  const { dragState, onReorderPointerDown } = createDataSheetReorder<TItem>(
     {
       get onItemsReorder() { return local.onItemsReorder; },
       get itemChildren() { return local.itemChildren; },
@@ -466,7 +466,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
 
   // #region Sub-render functions
 
-  const { renderHeaderCell } = useDataSheetHeaderCell({
+  const { renderHeaderCell } = createDataSheetHeaderCell({
     effectiveColumns,
     headerRowTops,
     getFixedStyle,
@@ -584,7 +584,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
             }
           >
             <Checkbox
-              value={isSelected()}
+              checked={isSelected()}
               disabled={selectable() !== true}
               inset
               class={twMerge(
@@ -783,7 +783,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                       <Show when={local.selectionMode === "multiple"}>
                         <div class={featureCellClickableClass} onClick={() => toggleSelectAll()}>
                           <Checkbox
-                            value={(() => {
+                            checked={(() => {
                               const selectableItems = displayItems()
                                 .map((flat) => flat.item)
                                 .filter((item) => getItemSelectable(item) === true);

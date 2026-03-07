@@ -32,14 +32,14 @@ function TabsTabInner(props: TabsTabProps) {
   const isSelected = () => ctx.value() === props.value;
 
   const tabSizeClasses: Record<ComponentSize, string> = {
-    default: "px-3 py-1.5 text-sm",
+    md: "px-3 py-1.5 text-sm",
     xs: clsx(pad.sm, "text-xs"),
     sm: "px-2.5 py-1 text-sm",
     lg: "px-4 py-2.5 text-base",
     xl: "px-5 py-3 text-lg",
   };
 
-  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "default"];
+  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "md"];
 
   const stateClass = () =>
     isSelected()
@@ -123,7 +123,7 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
 
   return (
     <TabsContext.Provider value={contextValue}>
-      <div {...rest} role="tablist" class={twMerge(clsx("inline-flex items-center", gap.default, "border-b", border.default), local.class)} style={local.style}>
+      <div {...rest} role="tablist" class={twMerge(clsx("inline-flex items-center", gap.md, "border-b", border.default), local.class)} style={local.style}>
         {local.children}
       </div>
     </TabsContext.Provider>

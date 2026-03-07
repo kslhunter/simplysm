@@ -6,7 +6,7 @@ import { Icon } from "../../../display/Icon";
 import { IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 import type { HeaderDef, DataSheetColumnDef } from "../DataSheet.types";
 
-export interface UseDataSheetHeaderCellProps<TItem> {
+export interface CreateDataSheetHeaderCellProps<TItem> {
   effectiveColumns: () => DataSheetColumnDef<TItem>[];
   headerRowTops: () => number[];
   getFixedStyle: (colIndex: number) => string | undefined;
@@ -26,7 +26,7 @@ export interface UseDataSheetHeaderCellProps<TItem> {
   sortIconClass: string;
 }
 
-export function useDataSheetHeaderCell<TItem>(props: UseDataSheetHeaderCellProps<TItem>) {
+export function createDataSheetHeaderCell<TItem>(props: CreateDataSheetHeaderCellProps<TItem>) {
   function renderHeaderCell(header: HeaderDef, colIndex: number, rowIndex: number): JSX.Element {
     const isSortable = () =>
       header.isLastRow &&

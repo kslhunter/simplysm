@@ -18,7 +18,7 @@ export const listItemBaseClass = clsx(
 
 // Size-based styles
 export const listItemSizeClasses: Record<ComponentSize, string> = {
-  default: pad.default,
+  md: pad.md,
   xs: pad.xs,
   sm: pad.sm,
   lg: pad.lg,

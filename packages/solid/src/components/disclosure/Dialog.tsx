@@ -46,7 +46,7 @@ export interface DialogShowOptions {
   /** Dialog header */
   header?: JSX.Element;
   /** Show close button */
-  closable?: boolean;
+  withCloseButton?: boolean;
   /** Close on backdrop click */
   closeOnInteractOutside?: boolean;
   /** Close on ESC key */
@@ -112,7 +112,7 @@ export interface DialogProps {
   /** Callback when open state changes */
   onOpenChange?: (open: boolean) => void;
   /** Show close button (default: true) */
-  closable?: boolean;
+  withCloseButton?: boolean;
   /** Close on backdrop click */
   closeOnInteractOutside?: boolean;
   /** Close on Escape key (default: true) */
@@ -210,7 +210,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
   const [local] = splitProps(props, [
     "open",
     "onOpenChange",
-    "closable",
+    "withCloseButton",
     "closeOnInteractOutside",
     "closeOnEscape",
     "resizable",
@@ -575,7 +575,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
                     {header()!.children}
                   </h5>
                   <Show when={action()}>{action()!.children}</Show>
-                  <Show when={local.closable ?? true}>
+                  <Show when={local.withCloseButton ?? true}>
                     <Button
                       data-dialog-close
                       size={"sm"}
@@ -726,7 +726,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
                 }
               }}
               onCloseComplete={() => removeEntry(entry.id)}
-              closable={entry.options.closable}
+              withCloseButton={entry.options.withCloseButton}
               closeOnInteractOutside={entry.options.closeOnInteractOutside}
               closeOnEscape={entry.options.closeOnEscape}
               resizable={entry.options.resizable}

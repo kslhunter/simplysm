@@ -31,7 +31,7 @@ export const checkedClass = clsx("border-primary-500 bg-primary-500", "text-whit
 
 // Size-specific styles
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {
-  default: clsx("h-field", pad.default),
+  md: clsx("h-field", pad.md),
   xs: clsx("h-field-xs", pad.xs),
   sm: clsx("h-field-sm", pad.sm),
   lg: clsx("h-field-lg", pad.lg),
@@ -49,7 +49,7 @@ export const checkboxInsetClass = clsx(
 
 // Inset size-specific heights (excluding 2px border)
 export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
-  default: clsx`h-field-inset`,
+  md: clsx`h-field-inset`,
   xs: clsx`h-field-inset-xs`,
   sm: clsx`h-field-inset-sm`,
   lg: clsx`h-field-inset-lg`,
@@ -57,7 +57,7 @@ export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
 };
 
 // Inline styles
-export const checkboxInlineClass = clsx("!h-auto", "!p-0", gap.default);
+export const checkboxInlineClass = clsx("!h-auto", "!p-0", gap.md);
 
 // Disabled styles
 export const checkboxDisabledClass = clsx(state.disabled);

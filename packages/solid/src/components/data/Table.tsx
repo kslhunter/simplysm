@@ -23,7 +23,7 @@ const TableTh: ParentComponent<JSX.ThHTMLAttributes<HTMLTableCellElement>> = (pr
   return (
     <th
       class={twMerge(
-        clsx("border-l border-t", border.default, pad.default, bg.muted, "text-left font-bold"),
+        clsx("border-l border-t", border.default, pad.md, bg.muted, "text-left font-bold"),
         ctx.inset && "first:border-l-0",
         local.class,
       )}
@@ -40,7 +40,7 @@ const TableTd: ParentComponent<JSX.TdHTMLAttributes<HTMLTableCellElement>> = (pr
   return (
     <td
       class={twMerge(
-        clsx("border-l border-t", border.default, pad.default),
+        clsx("border-l border-t", border.default, pad.md),
         ctx.inset && "first:border-l-0",
         local.class,
       )}

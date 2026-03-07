@@ -6,10 +6,10 @@ export const state = {
 };
 
 // ── Size ──
-export type ComponentSize = "default" | "xs" | "sm" | "lg" | "xl";
+export type ComponentSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 export const pad = {
-  default: clsx`px-2 py-1`,
+  md: clsx`px-2 py-1`,
   xs: clsx`px-1 py-0`,
   sm: clsx`px-1.5 py-0.5`,
   lg: clsx`px-3 py-2`,
@@ -17,7 +17,7 @@ export const pad = {
 };
 
 export const gap = {
-  default: clsx`gap-1`,
+  md: clsx`gap-1`,
   xs: clsx`gap-0`,
   sm: clsx`gap-0.5`,
   lg: clsx`gap-1.5`,
