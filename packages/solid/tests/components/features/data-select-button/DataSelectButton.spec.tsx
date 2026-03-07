@@ -525,6 +525,14 @@ describe("DataSelectButton", () => {
 });
 
 describe("DataSelectButton type safety", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it("single mode types value as TKey", () => {
     const load = createTestLoad();
     // Single mode: value is number, onValueChange receives number | undefined
