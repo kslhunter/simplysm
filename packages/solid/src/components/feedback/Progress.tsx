@@ -8,7 +8,7 @@ import { type SemanticTheme, themeTokens } from "../../styles/theme.styles";
 export type ProgressTheme = SemanticTheme;
 
 export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  /** Progress value (range 0-1, 0 = 0%, 1 = 100%) */
+  /** Progress value (range 0-100, 0 = 0%, 100 = 100%) */
   value: number;
   theme?: ProgressTheme;
   size?: ComponentSize;
@@ -45,7 +45,7 @@ export const Progress: ParentComponent<ProgressProps> = (props) => {
     return clsx("absolute left-0 top-0 h-full", "z-[1]", "transition-all", barThemeClasses[theme]);
   };
 
-  const getPercentText = () => (Math.max(0, Math.min(1, local.value)) * 100).toFixed(2) + "%";
+  const getPercentText = () => Math.max(0, Math.min(100, local.value)).toFixed(2) + "%";
 
   return (
     <div data-progress class={getClassName()} {...rest}>

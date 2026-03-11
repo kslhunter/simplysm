@@ -13,7 +13,7 @@ export default function ProgressPage() {
           The Progress component supports 6 themes. Default is primary.
         </p>
         <div class="space-y-2">
-          <For each={themes}>{(theme) => <Progress theme={theme} value={0.75} />}</For>
+          <For each={themes}>{(theme) => <Progress theme={theme} value={75} />}</For>
         </div>
       </section>
 
@@ -21,9 +21,9 @@ export default function ProgressPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Size</h2>
         <div class="space-y-2">
-          <Progress value={0.6} size="sm" />
-          <Progress value={0.6} />
-          <Progress value={0.6} size="lg" />
+          <Progress value={60} size="sm" />
+          <Progress value={60} />
+          <Progress value={60} size="lg" />
         </div>
       </section>
 
@@ -34,7 +34,7 @@ export default function ProgressPage() {
           Using inset removes the border and rounded corners.
         </p>
         <div class="rounded border border-base-300 dark:border-base-700">
-          <Progress value={0.5} inset />
+          <Progress value={50} inset />
         </div>
       </section>
 
@@ -45,10 +45,10 @@ export default function ProgressPage() {
           Pass children to display custom text instead of a percentage.
         </p>
         <div class="space-y-2">
-          <Progress value={0.3} theme="info">
+          <Progress value={30} theme="info">
             3/10 Completed
           </Progress>
-          <Progress value={0.75} theme="success">
+          <Progress value={75} theme="success">
             Downloading...
           </Progress>
         </div>
@@ -59,10 +59,10 @@ export default function ProgressPage() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Progress Levels</h2>
         <div class="space-y-2">
           <Progress value={0} />
-          <Progress value={0.25} />
-          <Progress value={0.5} />
-          <Progress value={0.75} />
-          <Progress value={1} />
+          <Progress value={25} />
+          <Progress value={50} />
+          <Progress value={75} />
+          <Progress value={100} />
         </div>
       </section>
     </div>
