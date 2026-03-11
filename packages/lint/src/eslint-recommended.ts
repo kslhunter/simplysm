@@ -27,11 +27,6 @@ const commonRules: FlatConfig.Rules = {
   "array-callback-return": "error",
 };
 
-/**
- * Prohibit Node.js-specific API usage across all packages (unified codebase)
- * - Buffer → Uint8Array, bytesToHex/bytesFromHex/bytesConcat
- * - EventEmitter → SdEventEmitter
- */
 const noNodeBuiltinsRules: FlatConfig.Rules = {
   "no-restricted-globals": [
     "error",
@@ -51,11 +46,11 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
         },
         {
           name: "events",
-          message: "Use SdEventEmitter from @simplysm/core-common.",
+          message: "Use EventEmitter from @simplysm/core-common.",
         },
         {
           name: "eventemitter3",
-          message: "Use SdEventEmitter from @simplysm/core-common.",
+          message: "Use EventEmitter from @simplysm/core-common.",
         },
       ],
     },

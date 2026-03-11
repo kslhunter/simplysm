@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Claude Code statusline: folder | model | context% | 5h%(time) | 7d%(time)"""
 
-import fcntl
 import json
 import os
 import re
@@ -10,6 +9,12 @@ import sys
 import tempfile
 import time
 from contextlib import contextmanager
+
+_IS_WINDOWS = os.name == "nt"
+if _IS_WINDOWS:
+    import msvcrt
+else:
+    import fcntl
 
 CACHE_FILE = os.path.expanduser("~/.claude/statusline-cache.json")
 CACHE_DIR = os.path.dirname(CACHE_FILE)
@@ -62,11 +67,19 @@ def should_fetch(cache):
 def _exclusive_lock():
     fd = os.open(LOCK_FILE, os.O_CREAT | os.O_WRONLY, 0o600)
     try:
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if _IS_WINDOWS:
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         yield True
-    except BlockingIOError:
+    except (BlockingIOError, OSError):
         yield False
     finally:
+        if _IS_WINDOWS:
+            try:
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            except OSError:
+                pass
         os.close(fd)
 
 
@@ -171,7 +184,7 @@ def write_cache_atomic(data):
     try:
         with os.fdopen(fd, "w") as f:
             json.dump(data, f)
-        os.rename(tmp_path, CACHE_FILE)
+        os.replace(tmp_path, CACHE_FILE)
     except Exception:
         try:
             os.unlink(tmp_path)

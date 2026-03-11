@@ -97,3 +97,16 @@ Tools:      sd-cli, lint, excel, storage, sd-claude, mcp-playwright
 ## Import 경로 별칭
 
 tsconfig paths로 `@simplysm/패키지명`이 `packages/패키지명/src/index.ts`에 매핑된다.
+
+## 코딩 규칙
+
+- `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
+- `console.*` 금지 (테스트 파일 제외), `===` 필수 (`== null`만 허용)
+- `if (str)` 금지 → `str !== ""` 명시 비교 (`strict-boolean-expressions`, nullable boolean/object는 허용)
+- `Buffer` 금지 → `Uint8Array`, `events`/`eventemitter3` 금지 → `@simplysm/core-common`의 `EventEmitter`
+- 미사용 변수 `_` 접두사 허용 (예: `_unused`), 미사용 import 자동 제거
+- `readonly` 선호 (`prefer-readonly`), index signature는 bracket notation (`noPropertyAccessFromIndexSignature`)
+- Promise는 반드시 `await`하거나 명시적으로 처리 (`no-floating-promises`), Error 객체만 throw 가능 (`only-throw-error`)
+- SolidJS: props 구조 분해 금지, `.map()` 대신 `<For>`, `className` 금지 → `class` 사용
+- Tailwind: 클래스 순서 자동 정렬, 커스텀 클래스 금지, 충돌 클래스 금지, shorthand 사용
+- Prettier: 100자, 2칸 스페이스, 세미콜론, trailing comma, LF

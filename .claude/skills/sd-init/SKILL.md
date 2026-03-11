@@ -19,11 +19,23 @@ description: "초기화", "init", "sd-init", "CLAUDE.md 생성" 등을 요청할
 
 ## Step 2: 스크립트 분석
 
-`package.json`의 `scripts`를 읽고, 각 스크립트가 호출하는 CLI 도구에 대해 Bash로 `--help`를 실행하여 사용 가능한 인자와 플래그를 파악하라. `--help` 실행이 실패하면 AI 지식으로 보충하라.
+`package.json`의 `scripts`를 읽고, 각 스크립트가 호출하는 CLI 도구에 대해 Bash로 `--help`등의 도움말 보기를 실행하여 사용 가능한 인자와 플래그를 파악하라.
 
 파악한 정보를 바탕으로 스크립트를 카테고리별(개발, 빌드, 테스트, 린트 등)로 그룹화하고, 각 스크립트의 기본 사용법과 주요 플래그 예시를 정리하라.
 
-## Step 3: CLAUDE.md 생성
+## Step 3: 코딩 규칙 분석
+
+프로젝트 루트에서 아래 설정 파일들을 찾아 읽어라 (존재하는 것만):
+
+- ESLint: `eslint.config.*`, `.eslintrc.*`, `packages/*/eslint.*` 등
+- Prettier: `.prettierrc*`, `prettier.config.*`
+- EditorConfig: `.editorconfig`
+- TypeScript: `tsconfig.json` (루트)의 `compilerOptions` 중 `strict`, `noImplicitAny` 등 코드 스타일에 영향을 주는 옵션
+- Stylelint: `.stylelintrc*`, `stylelint.config.*`
+
+Claude가 규칙과 반대로 수정하기를 제안할 정도의 자주 실수할 내용들만 대폭 간결하게 정리하라.
+
+## Step 4: CLAUDE.md 생성
 
 아래 정보를 종합하여 프로젝트 루트에 `CLAUDE.md`를 작성하라:
 
@@ -32,6 +44,7 @@ description: "초기화", "init", "sd-init", "CLAUDE.md 생성" 등을 요청할
 - **모노레포 구조**: `workspaces` 필드 또는 `pnpm-workspace.yaml`이 있으면 워크스페이스 경로를 간단히 기술
 - **기술스택**: `dependencies`/`devDependencies`에서 주요 기술(프레임워크, 번들러, 테스트 도구 등)을 파악하여 아주 간단히 기술
 - **명령어**: Step 2에서 정리한 스크립트 사용법
+- **코딩 규칙**: Step 3에서 분석한 규칙 중 Claude가 지켜야 할 것들. `## 코딩 규칙` 섹션으로 작성
 
 ### 참고 예시
 
@@ -101,9 +114,17 @@ Tools:    sd-cli, lint, excel, storage, sd-claude, mcp-playwright
 
 - `tests/orm` — DB 커넥션, DbContext, 이스케이프 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
 - `tests/service` — 서비스 클라이언트-서버 통신 테스트.
+
+## 코딩 규칙
+
+- `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 사용                                                                             
+- `console.*` 금지, `if (str)` 금지 → `str !== ""` 명시 비교 (nullable boolean/object는 허용)                                                               
+- `Buffer` 금지 → `Uint8Array`, `events` 금지 → `@simplysm/core-common`의 `EventEmitter`                                                                    
+- SolidJS: props 구조 분해 금지, `.map()` 대신 `<For>`, `className` 대신 `class`                                                                            
+- Prettier: 100자, 2칸 스페이스, 세미콜론, trailing comma, LF
 ```
 
-## Step 4: 완료 안내
+## Step 5: 완료 안내
 
 생성이 완료되면 아래를 출력하라:
 

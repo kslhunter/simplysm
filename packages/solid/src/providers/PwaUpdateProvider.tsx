@@ -16,6 +16,7 @@ export const PwaUpdateProvider: ParentComponent = (props) => {
   if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
     const notification = useNotification();
     let intervalId: ReturnType<typeof setInterval> | undefined;
+    const cleanups: (() => void)[] = [];
 
     void navigator.serviceWorker.getRegistration().then((registration) => {
       if (registration == null) return;
@@ -28,17 +29,22 @@ export const PwaUpdateProvider: ParentComponent = (props) => {
         promptUpdate(registration.waiting);
       }
 
-      registration.addEventListener("updatefound", () => {
+      const onUpdateFound = () => {
         const newSW = registration.installing;
         if (newSW == null) return;
 
-        newSW.addEventListener("statechange", () => {
+        const onStateChange = () => {
           if (newSW.state === "installed" && navigator.serviceWorker.controller != null) {
             promptUpdate(newSW);
           }
-        });
-      });
-    });
+        };
+        newSW.addEventListener("statechange", onStateChange);
+        cleanups.push(() => newSW.removeEventListener("statechange", onStateChange));
+      };
+
+      registration.addEventListener("updatefound", onUpdateFound);
+      cleanups.push(() => registration.removeEventListener("updatefound", onUpdateFound));
+    }).catch(() => {});
 
     const onControllerChange = () => {
       window.location.reload();
@@ -50,6 +56,7 @@ export const PwaUpdateProvider: ParentComponent = (props) => {
         clearInterval(intervalId);
       }
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      for (const fn of cleanups) fn();
     });
 
     function promptUpdate(waitingSW: ServiceWorker): void {

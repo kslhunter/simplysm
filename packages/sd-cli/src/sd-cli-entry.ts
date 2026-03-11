@@ -22,11 +22,49 @@ import { consola, LogLevels } from "consola";
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
 
+const COMMAND_NAMES = ["lint", "typecheck", "check", "watch", "dev", "build", "device", "init", "publish", "replace-deps"];
+
+function collectYargsHelp(argv: string[]): string {
+  const lines: string[] = [];
+  const orig = console.log;
+  // eslint-disable-next-line no-console
+  console.log = (...args: unknown[]) => lines.push(args.map(String).join(" "));
+  try {
+    createCliParser(argv).exitProcess(false).parse();
+  } catch {
+    // yargs may throw after help display
+  } finally {
+    // eslint-disable-next-line no-console
+    console.log = orig;
+  }
+  return lines.join("\n");
+}
+
 /**
  * Create CLI parser
  * @internal exported for testing
  */
 export function createCliParser(argv: string[]): Argv {
+  // Top-level --help/-h (without a subcommand): show comprehensive help for all commands
+  const hasHelp = argv.includes("--help") || argv.includes("-h");
+  const hasCommand = COMMAND_NAMES.some((cmd) => argv.includes(cmd));
+  if (hasHelp && !hasCommand) {
+    return yargs([]).command(
+      "$0",
+      false,
+      () => {},
+      () => {
+        for (const cmdName of COMMAND_NAMES) {
+          const helpText = collectYargsHelp([cmdName, "--help"]);
+          // eslint-disable-next-line no-console
+          console.log(helpText);
+          // eslint-disable-next-line no-console
+          console.log();
+        }
+      },
+    );
+  }
+
   return yargs(argv)
     .help("help", "Show help")
     .alias("help", "h")

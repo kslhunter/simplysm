@@ -216,6 +216,29 @@ describe("sd-cli", () => {
 
   });
 
+  describe("--help shows all commands", () => {
+    it("shows help for all commands", async () => {
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      await createCliParser(["--help"]).parse();
+
+      const output = logSpy.mock.calls.map((c) => c.join(" ")).join("\n");
+
+      // 모든 커맨드명이 출력에 포함
+      for (const cmd of ["lint", "typecheck", "check", "watch", "dev", "build", "device", "init", "publish", "replace-deps"]) {
+        expect(output).toContain(cmd);
+      }
+
+      // 각 커맨드 고유 옵션이 출력에 포함
+      expect(output).toContain("--fix");
+      expect(output).toContain("--timing");
+      expect(output).toContain("--no-build");
+      expect(output).toContain("--dry-run");
+
+      logSpy.mockRestore();
+    });
+  });
+
   describe("error handling", () => {
     it("throws error on unknown command", async () => {
       let errorMessage: string | undefined;
@@ -225,7 +248,7 @@ describe("sd-cli", () => {
 
       await parser.parse();
 
-      expect(errorMessage).toMatch(/Unknown argument/);
+      expect(errorMessage).toMatch(/Unknown argument|알 수 없는 인수/);
     });
 
     it("throws error when no command specified", async () => {
