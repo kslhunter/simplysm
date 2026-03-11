@@ -52,7 +52,7 @@ describe("FtpStorageClient", () => {
         host: "ftp.example.com",
         port: 21,
         user: "user",
-        pass: "pass",
+        password: "pass",
       });
 
       expect(mockAccess).toHaveBeenCalledWith({
@@ -96,8 +96,8 @@ describe("FtpStorageClient", () => {
       );
     });
 
-    it("Should throw error when readdir is called before connection", async () => {
-      await expect(client.readdir("/")).rejects.toThrow("Not connected to FTP server.");
+    it("Should throw error when list is called before connection", async () => {
+      await expect(client.list("/")).rejects.toThrow("Not connected to FTP server.");
     });
   });
 
@@ -119,10 +119,10 @@ describe("FtpStorageClient", () => {
     });
   });
 
-  describe("readdir", () => {
+  describe("list", () => {
     it("Should return directory list as FileInfo array", async () => {
       await client.connect({ host: "test" });
-      const result = await client.readdir("/");
+      const result = await client.list("/");
 
       expect(result).toEqual([
         { name: "file.txt", isFile: true },

@@ -1,6 +1,6 @@
 import type { StorageConnConfig } from "./types/storage-conn-config";
-import type { Storage } from "./types/storage";
-import type { StorageType } from "./types/storage-type";
+import type { StorageClient } from "./types/storage";
+import type { StorageProtocol } from "./types/storage-type";
 import { FtpStorageClient } from "./clients/ftp-storage-client";
 import { SftpStorageClient } from "./clients/sftp-storage-client";
 
@@ -18,9 +18,9 @@ export class StorageFactory {
    * The connection is automatically closed even if the callback throws an exception.
    */
   static async connect<R>(
-    type: StorageType,
+    type: StorageProtocol,
     config: StorageConnConfig,
-    fn: (storage: Storage) => R | Promise<R>,
+    fn: (storage: StorageClient) => R | Promise<R>,
   ): Promise<R> {
     const client = StorageFactory._createClient(type);
 
@@ -34,7 +34,7 @@ export class StorageFactory {
     }
   }
 
-  private static _createClient(type: StorageType): Storage {
+  private static _createClient(type: StorageProtocol): StorageClient {
     switch (type) {
       case "sftp":
         return new SftpStorageClient();

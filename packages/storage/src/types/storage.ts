@@ -6,11 +6,11 @@ export interface FileInfo {
   isFile: boolean;
 }
 
-export interface Storage {
+export interface StorageClient {
   connect(config: StorageConnConfig): Promise<void>;
   mkdir(dirPath: string): Promise<void>;
   rename(fromPath: string, toPath: string): Promise<void>;
-  readdir(dirPath: string): Promise<FileInfo[]>;
+  list(dirPath: string): Promise<FileInfo[]>;
   readFile(filePath: string): Promise<Bytes>;
   exists(filePath: string): Promise<boolean>;
   put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void>;

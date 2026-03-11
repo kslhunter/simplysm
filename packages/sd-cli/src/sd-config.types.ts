@@ -41,7 +41,7 @@ export interface SdStoragePublishConfig {
   port?: number;
   path?: string;
   user?: string;
-  pass?: string;
+  password?: string;
 }
 
 /**

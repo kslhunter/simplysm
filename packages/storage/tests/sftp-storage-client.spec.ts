@@ -49,7 +49,7 @@ describe("SftpStorageClient", () => {
         host: "sftp.example.com",
         port: 22,
         user: "user",
-        pass: "pass",
+        password: "pass",
       });
 
       expect(mockConnect).toHaveBeenCalledWith({
@@ -69,7 +69,7 @@ describe("SftpStorageClient", () => {
 
     it("Should clean up client on connection failure", async () => {
       mockConnect.mockRejectedValueOnce(new Error("Auth failed"));
-      await expect(client.connect({ host: "test", pass: "wrong" })).rejects.toThrow("Auth failed");
+      await expect(client.connect({ host: "test", password: "wrong" })).rejects.toThrow("Auth failed");
       expect(mockEnd).toHaveBeenCalled();
     });
   });
@@ -85,8 +85,8 @@ describe("SftpStorageClient", () => {
       );
     });
 
-    it("Should throw error when readdir is called before connection", async () => {
-      await expect(client.readdir("/")).rejects.toThrow("Not connected to SFTP server.");
+    it("Should throw error when list is called before connection", async () => {
+      await expect(client.list("/")).rejects.toThrow("Not connected to SFTP server.");
     });
   });
 
@@ -149,10 +149,10 @@ describe("SftpStorageClient", () => {
     });
   });
 
-  describe("readdir", () => {
+  describe("list", () => {
     it("Should return directory list as FileInfo array", async () => {
       await client.connect({ host: "test" });
-      const result = await client.readdir("/");
+      const result = await client.list("/");
 
       expect(result).toEqual([
         { name: "file.txt", isFile: true },

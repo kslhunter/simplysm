@@ -2,7 +2,7 @@ import type { Bytes } from "@simplysm/core-common";
 import { bytes, SdError } from "@simplysm/core-common";
 import ftp from "basic-ftp";
 import { PassThrough, Readable } from "stream";
-import type { Storage, FileInfo } from "../types/storage";
+import type { StorageClient, FileInfo } from "../types/storage";
 import type { StorageConnConfig } from "../types/storage-conn-config";
 
 /**
@@ -12,7 +12,7 @@ import type { StorageConnConfig } from "../types/storage-conn-config";
  * The `secure` constructor parameter configures whether to use FTPS.
  * Using {@link StorageFactory.connect} is recommended over direct usage.
  */
-export class FtpStorageClient implements Storage {
+export class FtpStorageClient implements StorageClient {
   private _client: ftp.Client | undefined;
 
   constructor(private readonly _secure: boolean = false) {}
@@ -35,7 +35,7 @@ export class FtpStorageClient implements Storage {
         host: config.host,
         port: config.port,
         user: config.user,
-        password: config.pass,
+        password: config.password,
         secure: this._secure,
       });
       this._client = client;
@@ -61,7 +61,7 @@ export class FtpStorageClient implements Storage {
     await this._requireClient().rename(fromPath, toPath);
   }
 
-  async readdir(dirPath: string): Promise<FileInfo[]> {
+  async list(dirPath: string): Promise<FileInfo[]> {
     const fileInfos = await this._requireClient().list(dirPath);
     return fileInfos.map((item) => ({ name: item.name, isFile: item.isFile }));
   }

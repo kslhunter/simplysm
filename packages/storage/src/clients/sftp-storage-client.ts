@@ -1,7 +1,7 @@
 import type { Bytes } from "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
 import SftpClient from "ssh2-sftp-client";
-import type { Storage, FileInfo } from "../types/storage";
+import type { StorageClient, FileInfo } from "../types/storage";
 import type { StorageConnConfig } from "../types/storage-conn-config";
 
 // Buffer usage from ssh2-sftp-client library type definitions
@@ -13,7 +13,7 @@ type SftpGetResult = string | NodeJS.WritableStream | Bytes;
  * @remarks
  * Using {@link StorageFactory.connect} is recommended over direct usage.
  */
-export class SftpStorageClient implements Storage {
+export class SftpStorageClient implements StorageClient {
   private _client: SftpClient | undefined;
 
   /**
@@ -31,12 +31,12 @@ export class SftpStorageClient implements Storage {
 
     const client = new SftpClient();
     try {
-      if (config.pass != null) {
+      if (config.password != null) {
         await client.connect({
           host: config.host,
           port: config.port,
           username: config.user,
-          password: config.pass,
+          password: config.password,
         });
       } else {
         // Authenticate with SSH agent + key file
@@ -103,7 +103,7 @@ export class SftpStorageClient implements Storage {
     }
   }
 
-  async readdir(dirPath: string): Promise<FileInfo[]> {
+  async list(dirPath: string): Promise<FileInfo[]> {
     const list = await this._requireClient().list(dirPath);
     return list.map((item) => ({
       name: item.name,

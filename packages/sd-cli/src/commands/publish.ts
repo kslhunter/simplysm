@@ -108,7 +108,7 @@ async function ensureSshAuth(
   for (const pkg of publishPackages) {
     if (pkg.config.type === "npm") continue;
     if (pkg.config.type !== "sftp") continue;
-    if (pkg.config.pass != null) continue;
+    if (pkg.config.password != null) continue;
     if (pkg.config.user == null) {
       throw new Error(`[${pkg.name}] SFTP config missing user.`);
     }
@@ -381,7 +381,7 @@ async function publishPackage(
           host: publishConfig.host,
           port: publishConfig.port,
           user: publishConfig.user,
-          pass: publishConfig.pass,
+          password: publishConfig.password,
         },
         async (storage) => {
           await storage.uploadDir(distPath, remotePath);

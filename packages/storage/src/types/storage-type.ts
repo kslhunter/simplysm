@@ -1,1 +1,1 @@
-export type StorageType = "ftp" | "ftps" | "sftp";
+export type StorageProtocol = "ftp" | "ftps" | "sftp";

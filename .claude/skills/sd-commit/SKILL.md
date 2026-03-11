@@ -57,3 +57,7 @@ chore: 인증 기능 추가 및 결제 오류 수정
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
+
+## Step 4: 결과 출력
+
+커밋 완료 후 커밋 메시지 전문을 사용자에게 보여줘라.
