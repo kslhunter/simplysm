@@ -1,68 +1,59 @@
 ---
 name: sd-commit
-description: "Git commit with conventional messages (explicit invocation only)"
-argument-hint: "[all]"
-model: haiku
+description: "커밋", "commit", "sd-commit" 등을 요청할 때 사용.
 ---
 
-# sd-commit
+# SD Commit — 변경사항 분석 후 커밋
 
-## Overview
+변경사항을 스테이징하고, 변경 내용을 분석하여 커밋 메시지를 생성한 뒤 커밋한다.
 
-Stages and commits changes using Conventional Commits format. Two modes: **default** (context-relevant files, single commit) and **all** (all changed files, single commit).
+ARGUMENTS: `all` (선택). 지정하면 모든 변경사항 대상, 미지정 시 대화 내 수정 파일만 대상.
 
-## Mode
+---
 
-- **Default mode** (no arguments): Stage files relevant to the current conversation context. Always a **single commit**.
-- **"all" mode** (`$ARGUMENTS` is "all"): Target **all** changed/untracked files. Always a **single commit**.
+## Step 1: 인자 파싱 및 스테이징
 
-## File Selection Rules
+ARGUMENTS에서 `all` 여부를 확인하라.
 
-**NEVER arbitrarily exclude files.** The ONLY valid reason to exclude a file is:
+- **`all`**: 워킹 트리의 모든 변경사항(수정, 삭제, 신규)을 스테이징하라.
+- **`all`이 아니거나 인자 없음**: 현재 대화에서 Edit 또는 Write 도구로 수정하거나 생성한 파일들만 스테이징하라. 대화 컨텍스트를 되돌아보며 해당 파일 목록을 추출하라.
 
-- It is in `.gitignore`
-- It is completely unrelated to the conversation context (default mode only)
+## Step 2: 변경사항 확인
 
-**Do NOT exclude files based on:**
+스테이징된 변경사항이 없으면 "커밋할 변경사항이 없습니다."라고 안내하고 **종료**하라.
 
-- File type or extension (e.g., `.styles.ts`, `.config.ts`)
-- Folder name or path (e.g., `node_modules` is handled by `.gitignore`)
-- Personal judgment about importance or "cleanliness"
-- Assumption that generated/config/style files are unimportant
+## Step 3: 커밋 메시지 생성 및 커밋
 
-**When in doubt, INCLUDE the file.** Over-inclusion is always better than silent exclusion.
+스테이징된 diff를 분석하여 아래 규칙에 따라 커밋 메시지를 생성하고 커밋하라.
 
-## Context
+### 커밋 메시지 규칙
 
-- Current status: !`git status`
-- Current diff: !`git diff HEAD`
-- Current branch: !`git branch --show-current`
-- Recent commits: !`git log --oneline -10`
+- **Conventional Commits** 형식: prefix + 설명
+  - prefix 예: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `test`, `perf`, `ci`, `build`
+- **subject** (첫 줄): 변경 요약. 70자 이내.
+- **body**: 빈 줄 후 주요 변경 내용을 나열. 여러 주제의 변경이 섞여 있으면 주제별로 `[prefix]` 태그를 붙여 그룹화하라.
+- 마지막에 `Co-Authored-By: Claude <noreply@anthropic.com>` 포함.
 
-## Commit Message Format
-
+단일 주제 예시:
 ```
-type(scope): short description
+feat: 사용자 인증 로직 추가
+
+- AuthService에 JWT 토큰 검증 로직 구현
+- 로그인 페이지에 폼 유효성 검사 추가
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-| Field         | Values                                                                       |
-| ------------- | ---------------------------------------------------------------------------- |
-| `type`        | `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf` |
-| `scope`       | package name or area (e.g., `solid`, `core-common`, `orm-node`)              |
-| `description` | English, imperative, lowercase, no period at end |
+여러 주제 예시:
+```
+chore: 인증 기능 추가 및 결제 오류 수정
 
-Examples:
+[feat] 사용자 인증
+- AuthService에 JWT 토큰 검증 로직 구현
+- 로그인 페이지에 폼 유효성 검사 추가
 
-- `feat(solid): add Select component`
-- `fix(orm-node): handle null values in bulk insert`
-- `docs: update README with new API examples`
+[fix] 결제 모듈
+- 결제 실패 시 재시도 로직 수정
 
-Use a HEREDOC for multi-line messages when needed.
-
-## Execution
-
-**Default mode:** `git add <context-relevant files>` → `git commit`
-
-**All mode:** `git add .` → `git commit` with a single message summarizing all changes (message may be long).
-
-Call multiple tools in one response when possible. Do not use other tools or output other text.
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

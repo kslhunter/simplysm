@@ -1,154 +1,97 @@
 ---
 name: sd-plan
-description: "Implementation plan from brainstorm designs (explicit invocation only)"
+description: 이 스킬은 사용자가 "계획 세워줘", "plan 만들어", "sd-plan", "구현 계획", "작업 계획" 등을 요청할 때 사용한다.
 ---
 
-# Writing Plans
+# SD Plan — 명확한 계획서 생성
 
-## Prerequisite Check
-
-**MANDATORY:** Before proceeding, verify that `sd-brainstorm` has already been completed in this conversation.
-
-- If a brainstorm design document exists (discussed or saved in this session) → proceed.
-- If NOT → **STOP** and tell the user (in the system's configured language) that sd-plan requires sd-brainstorm to be completed first, then invoke sd-brainstorm instead.
-
-## Overview
-
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
-
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
-
-When a task uses a codebase-specific utility (hook, helper, style token) or test pattern, add a one-line explanation of what it does and the source file path. Example: "`createMountTransition(open)` — manages mount/unmount with CSS transitions (`packages/solid/src/hooks/createMountTransition.ts`)". This applies to test utilities and patterns too — if a test uses a framework-specific pattern (e.g., SolidJS `createRoot` for reactive context), explain why that pattern is needed.
-
-**Announce at start:** "I'm using the sd-plan skill to create the implementation plan."
-
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
-
-## Bite-Sized Task Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
-
-**Step size limit:** If a single step produces more than ~30 lines of code, it is too large. Split it into multiple steps (e.g., "Define types and interfaces" → "Create context and hook" → "Implement provider component").
-
-**TDD means YAGNI per step:** Step 3 ("Write minimal implementation") must implement ONLY what's needed to pass Step 1's test — nothing more. If the component needs additional behavior (e.g., FIFO eviction, remove), that behavior goes in a SUBSEQUENT task with its own failing test first. Do NOT implement the full component in one task and then test it after the fact.
-
-## Task Ordering
-
-**Shared resources BEFORE consumers.** Tasks must be ordered so that every file a task imports already exists from a prior task.
-
-- Types, config, i18n entries → before components that use them
-- Provider → before components that call useX() hooks
-- If Task B imports from Task A's file → Task A must come first
-
-## Plan Document Header
-
-**Every plan MUST start with this header:**
-
-```markdown
-# [Feature Name] Implementation Plan
-
-> **For Claude:** REQUIRED SUB-SKILL: Use sd-plan-dev to implement this plan task-by-task.
-
-**Goal:** [One sentence describing what this builds]
-
-**Architecture:** [2-3 sentences about approach]
-
-**Tech Stack:** [Key technologies/libraries]
+사용자의 작업 요청을 받아, Plan mode를 활용하여 초기 계획서를 생성한 뒤, 불명확한 부분을 반복적으로 검토하고 질문하여 완벽히 명확한 계획서를 만든다.
 
 ---
-```
 
-## Package Manager Detection
+## Step 1: 입력 확인
 
-When writing run commands in the plan, detect the package manager:
-- If `pnpm-lock.yaml` exists in project root → use `pnpm`
-- If `yarn.lock` exists in project root → use `yarn`
-- Otherwise → use `npm`
+- 작업 설명을 아래 우선순위로 확보하라:
+  1. **작업 요청**: 사용자가 스킬 호출 시 함께 전달한 작업 설명
+  2. **현재 대화**: 작업 요청이 없으면 현재 대화 컨텍스트에서 작업 내용을 파악
+  3. **AskUserQuestion**: 위 둘로도 파악이 안 되면 "어떤 작업에 대한 계획서를 만들까요? 작업 내용을 설명해 주세요."라고 질문
+- 충분한 작업 설명을 확보한 후 Step 2로 진행하라.
 
-`$PM` in the task template below refers to the detected package manager.
+---
 
-## Task Structure
+## Step 2: Plan mode로 계획서 생성 + 명확화 반복
 
-```markdown
-### Task N: [Component Name]
+계획서의 각 구현 단계는 **TDD 원칙을 준수**하여 검증을 구현보다 먼저 배치하라:
+- 테스트 프레임워크가 있으면 → 테스트 코드 먼저 작성
+- 테스트 프레임워크가 없으면 → CLI 실행, dry-run 등 검증 방법 명시
+- 비코드 작업이면 → 자체 검증 체크리스트 먼저 정의
 
-**Files:**
-- Create: `exact/path/to/file.ts`
-- Modify: `exact/path/to/existing.ts:123-145`
-- Test: `exact/path/to/tests/file.spec.ts`
+`EnterPlanMode`를 호출하라. Plan mode의 기본 워크플로우가 포함하여 TDD기반 계획서 초안을 작성한다.
 
-**Step 1: Write the failing test**
+초안 작성 후, **ExitPlanMode를 호출하지 말고** 아래 사이클을 **불명확 항목이 없을 때까지** 반복하라:
 
-```typescript
-test("specific behavior", () => {
-  const result = functionUnderTest(input);
-  expect(result).toBe(expected);
-});
-```
+1. **불명확 전수 추출**: 현재 plan 파일의 계획서를 아래 "불명확 판단 기준" 11개 항목에 대해 **하나하나 전부** 대조 검토하라. 발견된 불명확 항목을 모두 나열하라.
+2. **의존성 분석**: 추출된 불명확 항목들 간의 의존 관계를 파악하라. "A의 답변이 정해져야 B를 질문할 수 있다"면 B는 A에 의존한다.
+3. **독립 항목 일괄 질문**: 의존 대상이 없는(또는 의존 대상이 이미 해소된) 항목들을 **모두** AskUserQuestion **한 번**으로 질문하라. 각 항목마다 2-3개 선택지를 제시하되, 하나의 질문 메시지에 번호를 매겨 묶어서 보내라.
+4. **plan 재작성**: 사용자 답변을 **모두** 반영하여 plan 파일의 계획서를 업데이트하라.
+5. **1번으로 돌아가라.** (이전 답변으로 해소된 의존성 덕분에 새로 질문 가능해진 항목들이 다음 라운드의 독립 항목이 된다.)
 
-**Step 2: Run test to verify it fails**
+불명확 항목이 하나도 없다고 판단되면 → **Step 2.5 최종 검증**으로 이동.
 
-Run: `$PM run vitest exact/path/to/tests/file.spec.ts --run`
-Expected: FAIL with "functionUnderTest is not defined"
+### 불명확 판단 기준
 
-**Step 3: Write minimal implementation**
+> **핵심 원칙**: 사용자가 명시하지 않았고, 코드베이스에서 확인되지 않은 것은 **모두 추측/가정으로 간주**하여 불명확 항목으로 취급하라. Claude가 자신있게 작성했더라도 출처가 불분명하면 불명확이다.
 
-```typescript
-function functionUnderTest(input: InputType): OutputType {
-  return expected;
-}
-```
+아래 12개 항목을 **매 검토 시 전부** 대조하라. "해당 없음"이라고 넘기려면 구체적 근거(사용자 발언 또는 코드베이스 확인)가 있어야 한다.
 
-**Step 4: Run test to verify it passes**
+1. **사용자 미명시 가정**: 사용자가 말하지 않았는데 Claude가 채워넣은 결정사항
+2. **구체성 부족**: HOW 없이 "적절히 처리", "필요에 따라" 등의 표현
+3. **범위 모호**: IN/OUT 스코프가 정의되지 않음
+4. **미지정 동작**: 에러, 유효하지 않은 입력, 기본값 등이 지정되지 않음
+5. **알 수 없는 제약조건**: 성능, 호환성, 플랫폼 요구사항이 불분명
+6. **누락된 엣지케이스**: 경계 조건, 동시성, 빈 상태 등
+7. **모호한 파일/함수 참조**: 구체적 경로 없이 "관련 파일을 수정" 등
+8. **불명확한 순서/의존성**: 단계 간 선후 관계 미명시
+9. **추측 표현**: "아마", "~일 수 있음", "TBD", "???" 등
+10. **통합 세부사항 누락**: API 계약, 데이터 형식, 인터페이스 미정의
+11. **실패/롤백 전략 부재**: 실패 시 대응 방안 없음
+12. **검증 방법 미정의**: 구현 단계에 대응하는 검증 방법이 없음
 
-Run: `$PM run vitest exact/path/to/tests/file.spec.ts --run`
-Expected: PASS
+---
 
-**Step 5: Commit**
+## Step 2.5: 최종 검증 (불명확 없음 선언 전 필수)
 
-```bash
-git add exact/path/to/tests/file.spec.ts exact/path/to/file.ts
-git commit -m "feat: add specific feature"
-```
-```
+"불명확 없음"을 선언하기 **직전에 반드시** 아래를 수행하라:
 
-## Test Requirement
+1. 계획서의 **모든 단계를 처음부터 끝까지** 다시 읽으며, 위 12개 기준을 한 번 더 전수 대조하라.
+2. 특히 다음을 집중 확인하라:
+   - Claude가 스스로 결정한 부분 중 사용자 확인을 받지 않은 것이 있는가?
+   - "~한다", "~로 처리한다" 등 단정적으로 쓴 부분의 근거가 사용자 발언 또는 코드베이스에 있는가?
+   - 구체적 파일 경로, 함수명, 데이터 구조가 빠진 곳은 없는가?
+3. 이 검증에서 **하나라도** 불명확 항목이 발견되면 Step 2의 질문 사이클로 돌아가라.
+4. 진짜로 없으면 → Step 3으로 이동.
 
-**Every task that creates or modifies logic MUST include a test.** No exceptions.
+---
 
-- If the logic is testable with unit tests → write a vitest test file. This includes: pure functions, state management, timers/lifecycle logic (use `vi.useFakeTimers()`), event handlers, and state transitions.
-- If the logic is UI-only (visual rendering, Portal placement, CSS animation) → include a manual verification step with exact instructions ("Open the browser, click X, expect Y")
-- The **Files:** section must list the test file: `Test: exact/path/to/tests/file.spec.ts`
-- If you find yourself writing a task with no test step → **STOP and add one**
+## Step 3: 최종 출력
 
-## Remember
-- Exact file paths always
-- Cross-check the design document's file structure — every file listed in the design MUST appear in the plan (create or modify)
-- Complete code in plan (not "add validation")
-- When modifying an existing file, show ALL necessary import additions/changes — not just the appended code
-- Code must compile cleanly — no unused imports or variables
-- Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+모든 불명확 항목이 해소되었으면 `ExitPlanMode`를 호출하라. 완성된 계획서가 사용자에게 자동으로 제시된다.
 
-## Related Skills
+---
 
-- **sd-brainstorm** — prerequisite: creates the design this skill plans from
-- **sd-plan-dev** — executes the plan this skill creates
+## Step 4: 구현 완료 후 안내
 
-## Execution Handoff
+ExitPlanMode 후 사용자가 구현을 승인하면, 계획서에 따라 구현하라. 구현이 완료되면 아래 안내를 출력하라:
 
-After saving the plan, **commit the plan document to git** before proceeding.
+- **코드 수정이 포함된 경우**:
+  ```
+  구현이 완료되었습니다. 다음 단계를 순서대로 실행하는 것을 권장합니다:
+  1. /sd-check — 타입체크 + 린트 + 테스트 검사 및 자동 수정
+  2. /sd-simplify — 변경된 코드 단순화 리뷰
+  3. /sd-commit — 변경사항 커밋
+  ```
 
-Then:
-
-- If in **yolo mode** (user chose "yolo" from sd-brainstorm): Immediately proceed to sd-plan-dev without asking. No confirmation needed.
-- Otherwise: Display this message **in the system's configured language** (detect from the language setting and translate accordingly):
-  **"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
-
-- **REQUIRED SUB-SKILL:** Use sd-plan-dev
-- Fresh fork per task + two-stage review (spec compliance → code quality)
+- **코드 수정이 없는 경우** (설정, 문서 등):
+  ```
+  구현이 완료되었습니다. 커밋하려면 /sd-commit 을 실행하세요.
+  ```

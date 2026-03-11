@@ -1,52 +1,44 @@
 ---
 name: sd-email-analyze
-description: "Use when the user's request involves .eml or .msg files. Triggers: email file analysis, email content extraction, attachment extraction, email summary."
-model: haiku
+description: .eml 또는 .msg 파일과 관련하여 "이메일 파일 분석", "이메일 내용 추출", "첨부파일 추출", "이메일 요약"을 요청할 때 사용.
 ---
 
-# Email Analyzer
+# SD Email Analyze — 이메일 파일 분석 및 내용 추출
 
-## Overview
+`.eml` 및 `.msg`(Outlook) 이메일 파일을 파싱하여 메일 헤더, 본문 텍스트, 인라인 이미지, 첨부파일을 추출하고 분석한다.
 
-Python script that parses `.eml` and `.msg` (Outlook) email files. Extracts mail headers, body text, inline images, and attachments to disk. Content analysis of extracted files is delegated to Claude's Read tool and `sd-document` skill.
+ARGUMENTS: 이메일 파일 경로 (필수). `.eml` 또는 `.msg` 파일 경로를 지정한다.
 
-## When to Use
+---
 
-- User provides a `.eml` or `.msg` file to analyze or summarize
-- Email content needs proper decoding
+## Step 1: 이메일 파일 파싱
 
-## Usage
+ARGUMENTS에서 이메일 파일 경로를 추출하여 아래 명령을 실행하라:
 
 ```bash
-python .claude/skills/sd-email-analyze/email-analyzer.py <email_file_path>
+python .claude/skills/sd-email-analyze/email-analyzer.py <이메일_파일_경로>
 ```
 
-First run auto-installs: `extract-msg`.
+- 최초 실행 시 `extract-msg`를 자동 설치한다.
+- 실행 결과로 마크다운 보고서가 표준 출력되며, `<이메일_파일명>_files/` 디렉토리에 추출된 파일이 저장된다.
 
-### After Running
+### 출력 구조
 
-1. Read the markdown output (mail info, body text, file paths)
-2. **Inline images**: Use **Read** tool on each saved path to view
-3. **Attachments**: Use **Read** tool (images) or **sd-document** skill scripts (DOCX, XLSX, PPTX, PDF)
+1. **메일 정보 테이블**: 제목, 보낸 사람, 받는 사람, 참조, 날짜, 개수
+2. **본문 텍스트**: 일반 텍스트 (일반 텍스트가 없으면 HTML에서 태그 제거)
+3. **인라인 이미지**: 저장된 파일 경로 테이블
+4. **첨부파일**: 저장된 파일 경로 테이블
 
-## Output
+## Step 2: 추출된 파일 분석
 
-- `<email_stem>_files/` directory with all extracted files
-- Markdown report to stdout:
-  1. **Mail info table**: Subject, From, To, Cc, Date, counts
-  2. **Body text**: Plain text (HTML stripped if no plain text)
-  3. **Inline images**: Table with saved file paths
-  4. **Attachments**: Table with saved file paths
+Step 1의 출력에서 추출된 파일 경로를 확인하고 아래를 수행하라:
 
-## Inline Image Handling
+1. **인라인 이미지**: 저장된 각 경로에 **Read** 도구를 사용하여 확인
+2. **첨부파일**: **Read** 도구(이미지) 또는 **sd-document** 스킬 스크립트(DOCX, XLSX, PPTX, PDF) 사용
 
-Two sources extracted:
+### 인라인 이미지 처리
 
-1. **CID images**: MIME parts with Content-ID (`cid:` references in HTML)
-2. **Data URI images**: Base64-encoded images in HTML (`data:image/...;base64,...`)
+두 가지 소스에서 추출된다:
 
-## Common Mistakes
-
-- **Wrong Python**: Ensure `python` points to Python 3.8+
-- **Firewall blocking pip**: First run needs internet for `extract-msg` install
-- **Forgetting inline images**: Always check the "Inline images" section and read each path
+1. **CID 이미지**: Content-ID가 있는 MIME 파트 (HTML의 `cid:` 참조)
+2. **Data URI 이미지**: HTML 내 Base64 인코딩 이미지 (`data:image/...;base64,...`)

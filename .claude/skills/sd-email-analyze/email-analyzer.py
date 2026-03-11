@@ -4,7 +4,6 @@
 import sys
 import os
 import io
-import subprocess
 import email
 import html
 import re
@@ -19,6 +18,7 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 
 def ensure_packages():
     """Auto-install required packages."""
+    import subprocess
     packages = {"extract-msg": "extract_msg"}
     missing = []
     for pip_name, import_name in packages.items():
@@ -33,11 +33,6 @@ def ensure_packages():
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-
-
-ensure_packages()
-
-import extract_msg  # noqa: E402
 
 
 # ── Korean charset helpers ──────────────────────────────────────────
@@ -81,39 +76,38 @@ def _parse_eml(filepath):
 
     body_plain = ""
     body_html = ""
+    attachments = []
+    inline_images = []
+    seen_cids = set()
 
-    if msg.is_multipart():
-        for part in msg.walk():
-            ctype = part.get_content_type()
-            cdisp = part.get_content_disposition()
-            if cdisp == "attachment":
-                continue
-            if ctype == "text/plain" and not body_plain:
-                body_plain = _get_text_eml(part)
-            elif ctype == "text/html" and not body_html:
-                body_html = _get_text_eml(part)
-    else:
+    if not msg.is_multipart():
         ctype = msg.get_content_type()
         if ctype == "text/html":
             body_html = _get_text_eml(msg)
         else:
             body_plain = _get_text_eml(msg)
-
-    attachments = []
-    inline_images = []
-    seen_cids = set()
+        return headers, body_plain, body_html, attachments, inline_images
 
     for part in msg.walk():
+        ctype = part.get_content_type()
+        cdisp = part.get_content_disposition()
         payload = part.get_payload(decode=True)
+
+        # Body extraction (non-attachment text parts)
+        if cdisp != "attachment" and payload is not None:
+            if ctype == "text/plain" and not body_plain:
+                body_plain = _get_text_eml(part)
+            elif ctype == "text/html" and not body_html:
+                body_html = _get_text_eml(part)
+
         if payload is None:
             continue
 
         content_id = (part.get("Content-ID") or "").strip("<> ")
-        ctype = part.get_content_type()
         filename = part.get_filename()
 
-        # Inline image: Content-ID + image type
-        if content_id and ctype.startswith("image/"):
+        # Inline image
+        if _is_inline_image(content_id, ctype):
             if content_id not in seen_cids:
                 seen_cids.add(content_id)
                 ext = _guess_image_ext(ctype, filename)
@@ -126,10 +120,9 @@ def _parse_eml(filepath):
                 })
             continue
 
-        # Regular attachment: has filename
+        # Regular attachment
         if not filename:
             continue
-        cdisp = part.get_content_disposition()
         if cdisp not in ("attachment", "inline", None):
             continue
         attachments.append({
@@ -143,6 +136,9 @@ def _parse_eml(filepath):
 
 
 def _parse_msg(filepath):
+    ensure_packages()
+    import extract_msg
+
     msg = extract_msg.openMsg(filepath)
     try:
         headers = {
@@ -186,7 +182,7 @@ def _parse_msg(filepath):
                 "data": data,
             }
 
-            if cid and mimetype.startswith("image/"):
+            if _is_inline_image(cid, mimetype):
                 entry["content_id"] = cid.strip("<> ")
                 inline_images.append(entry)
             else:
@@ -224,6 +220,25 @@ def _guess_image_ext(content_type, filename=None):
     return mapping.get(content_type, ".bin")
 
 
+def _is_inline_image(content_id, content_type):
+    """Check if a MIME part is an inline image (has Content-ID + image MIME type)."""
+    return bool(content_id) and content_type.startswith("image/")
+
+
+# ── Pre-compiled regexes ───────────────────────────────────────────
+
+_RE_DATA_URI = re.compile(
+    r'<img[^>]+src=["\']data:image/([^;]+);base64,([^"\']+)["\']',
+    re.IGNORECASE,
+)
+_RE_STYLE = re.compile(r"<style[^>]*>.*?</style>", re.DOTALL | re.I)
+_RE_SCRIPT = re.compile(r"<script[^>]*>.*?</script>", re.DOTALL | re.I)
+_RE_BR = re.compile(r"<br\s*/?>", re.I)
+_RE_BLOCK_CLOSE = re.compile(r"</(?:p|div|tr|li)>", re.I)
+_RE_TAG = re.compile(r"<[^>]+>")
+_RE_MULTI_NEWLINE = re.compile(r"\n{3,}")
+
+
 # ── File saving ────────────────────────────────────────────────────
 
 
@@ -232,10 +247,10 @@ def save_files(files, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     result = []
     for f in files:
+        stem = Path(f["filename"]).stem
+        ext = Path(f["filename"]).suffix
         filepath = os.path.join(output_dir, f["filename"])
         if os.path.exists(filepath):
-            stem = Path(filepath).stem
-            ext = Path(filepath).suffix
             n = 1
             while os.path.exists(filepath):
                 filepath = os.path.join(output_dir, f"{stem}_{n}{ext}")
@@ -248,44 +263,41 @@ def save_files(files, output_dir):
 
 def extract_data_uri_images(html_body, output_dir):
     """Extract base64 data URI images embedded in HTML body."""
-    pattern = r'<img[^>]+src=["\']data:image/([^;]+);base64,([^"\']+)["\']'
-    matches = re.findall(pattern, html_body, re.IGNORECASE)
+    matches = _RE_DATA_URI.findall(html_body)
     if not matches:
         return []
 
-    os.makedirs(output_dir, exist_ok=True)
     images = []
     for i, (img_type, b64data) in enumerate(matches, 1):
         try:
             data = base64.b64decode(b64data)
-            ext_map = {"jpeg": ".jpg", "svg+xml": ".svg"}
-            ext = ext_map.get(img_type, f".{img_type}")
-            filename = f"datauri_{i}{ext}"
-            filepath = os.path.join(output_dir, filename)
-            with open(filepath, "wb") as f:
-                f.write(data)
+            content_type = f"image/{img_type}"
+            ext = _guess_image_ext(content_type)
             images.append({
-                "filename": filename,
-                "content_type": f"image/{img_type}",
+                "filename": f"datauri_{i}{ext}",
+                "content_type": content_type,
                 "size": len(data),
-                "saved_path": filepath,
+                "data": data,
             })
         except Exception:
             continue
-    return images
+
+    if not images:
+        return []
+    return save_files(images, output_dir)
 
 
 # ── HTML stripping ──────────────────────────────────────────────────
 
 
 def strip_html(text):
-    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.I)
-    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL | re.I)
-    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
-    text = re.sub(r"</(?:p|div|tr|li)>", "\n", text, flags=re.I)
-    text = re.sub(r"<[^>]+>", "", text)
+    text = _RE_STYLE.sub("", text)
+    text = _RE_SCRIPT.sub("", text)
+    text = _RE_BR.sub("\n", text)
+    text = _RE_BLOCK_CLOSE.sub("\n", text)
+    text = _RE_TAG.sub("", text)
     text = html.unescape(text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = _RE_MULTI_NEWLINE.sub("\n\n", text)
     return text.strip()
 
 
@@ -301,6 +313,23 @@ def fmt_size(n):
 
 
 # ── Markdown report ─────────────────────────────────────────────────
+
+
+def _render_file_table(title, items):
+    """Render a Markdown table of files with #, Filename, Size, Saved path columns."""
+    if not items:
+        return []
+    lines = [
+        f"## {title}\n",
+        "| # | Filename | Size | Saved path |",
+        "|---|--------|------|-----------|",
+    ]
+    for i, item in enumerate(items, 1):
+        lines.append(
+            f"| {i} | {item['filename']} | {fmt_size(item['size'])} | `{item['saved_path']}` |"
+        )
+    lines.append("")
+    return lines
 
 
 def build_report(filepath):
@@ -352,23 +381,8 @@ def build_report(filepath):
     out.append(body.strip() if body else "_(No body)_")
     out.append("")
 
-    # ── Inline images
-    if all_inline:
-        out.append("## Inline Images\n")
-        out.append("| # | Filename | Size | Saved path |")
-        out.append("|---|--------|------|-----------|")
-        for i, img in enumerate(all_inline, 1):
-            out.append(f"| {i} | {img['filename']} | {fmt_size(img['size'])} | `{img['saved_path']}` |")
-        out.append("")
-
-    # ── Attachments
-    if saved_attachments:
-        out.append("## Attachments\n")
-        out.append("| # | Filename | Size | Saved path |")
-        out.append("|---|--------|------|-----------|")
-        for i, a in enumerate(saved_attachments, 1):
-            out.append(f"| {i} | {a['filename']} | {fmt_size(a['size'])} | `{a['saved_path']}` |")
-        out.append("")
+    out.extend(_render_file_table("Inline Images", all_inline))
+    out.extend(_render_file_table("Attachments", saved_attachments))
 
     return "\n".join(out)
 

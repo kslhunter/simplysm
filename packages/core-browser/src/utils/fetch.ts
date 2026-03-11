@@ -1,3 +1,5 @@
+import { bytes } from "@simplysm/core-common";
+
 export interface DownloadProgress {
   receivedLength: number;
   contentLength: number;
@@ -41,25 +43,15 @@ export async function fetchUrlBytes(
 
     // If Content-Length is unknown, collect chunks then merge (chunked encoding)
     const chunks: Uint8Array[] = [];
-    let receivedLength = 0;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
       chunks.push(value);
-      receivedLength += value.length;
     }
 
-    // Merge chunks
-    const result = new Uint8Array(receivedLength);
-    let position = 0;
-    for (const chunk of chunks) {
-      result.set(chunk, position);
-      position += chunk.length;
-    }
-
-    return result;
+    return bytes.concat(chunks);
   } finally {
     reader.releaseLock();
   }

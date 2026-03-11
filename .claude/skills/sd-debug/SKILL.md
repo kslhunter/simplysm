@@ -1,303 +1,113 @@
 ---
 name: sd-debug
-description: "Use when the user reports a bug, error, or unexpected behavior and asks to fix or debug it. Triggers: error messages, stack traces, test failures, build failures, 'why is this broken', 'fix this', 'debug this', unexpected behavior investigation."
+description: "디버그", "debug", "sd-debug", "오류 분석", "에러 원인", "버그 찾기" 등을 요청할 때 사용.
 ---
 
-# Systematic Debugging
+# SD Debug — 오류 원인 분석 및 해결 계획 수립
 
-## Overview
+에러 메시지, 스택 트레이스, 또는 문제 상황 설명을 받아 코드베이스를 심층 분석한 뒤 근본 원인을 진단하고, `/sd-plan` 프로세스로 해결 계획을 수립한다.
 
-Random fixes waste time and create new bugs. Quick patches mask underlying issues.
+ARGUMENTS: 에러 메시지, 스택 트레이스, 또는 문제 상황 설명 (선택). 미지정 시 대화 컨텍스트에서 파악하거나 사용자에게 질문한다.
 
-**Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
+---
 
-**Violating the letter of this process is violating the spirit of debugging.**
+## Step 1: 문제 정보 확보
 
-## The Iron Law
+- 문제 정보를 아래 우선순위로 확보하라:
+  1. **ARGUMENTS**: 스킬 호출 시 함께 전달된 에러 메시지, 스택 트레이스, 또는 문제 설명
+  2. **현재 대화**: ARGUMENTS가 없으면 현재 대화 컨텍스트에서 에러 메시지, 로그, 문제 상황을 파악
+  3. **AskUserQuestion**: 위 둘로도 파악이 안 되면 "어떤 문제를 디버깅할까요? 에러 메시지, 스택 트레이스, 또는 문제 상황을 설명해 주세요."라고 질문
+- 확보한 문제 정보에서 아래를 추출하라:
+  - **에러 유형**: 컴파일 에러 / 런타임 에러 / 타입 에러 / 논리 오류 / 빌드 에러 / 동작 이상 등
+  - **관련 단서**: 파일 경로, 함수명, 라인 번호, 패키지명, 에러 코드 등 코드베이스 탐색에 활용할 키워드
+
+## Step 2: 코드베이스 심층 분석
+
+Step 1에서 확보한 문제 정보와 단서를 바탕으로, 해당 문제의 근본 원인을 파악하기 위해 필요한 조사를 스스로 판단하여 수행하라. Agent 도구(subagent_type: Explore)를 활용하여 코드베이스를 탐색하되, 조사 범위와 방법은 문제의 성격에 따라 자유롭게 결정하라.
+
+### 분석 원칙
+
+> **핵심**: 근본 원인을 완전히 이해하기 전까지 해결 방안을 제시하지 마라. "분석 → 이해 → 해결책" 순서를 반드시 지켜라.
+
+1. **추측 수정 금지**: 코드를 수정해보고 결과를 확인하는 시행착오 방식으로 원인을 찾지 마라. 코드를 읽고 로직을 추적하여 원인을 파악하라.
+2. **우회 금지**: `as` 타입 단언, `any`, `// @ts-ignore`, 하드코딩, 예외 삼킴(`catch` 후 무시) 등으로 증상을 숨기는 방안을 해결책으로 제시하지 마라.
+3. **의도 파악 우선**: 테스트 실패 시, 테스트가 검증하는 의도된 동작과 현재 코드의 실제 동작을 먼저 비교하라. 기능 변경이 의도적이면 테스트를 갱신하고, 의도치 않은 변경이면 코드를 수정하라. 의도를 판단할 수 없으면 사용자에게 질문하라.
+4. **증상과 원인 구분**: 에러 메시지가 나타나는 지점이 원인이 아닐 수 있다. 에러 지점에서 역추적하여 실제 원인을 찾아라.
+
+### 분석 결과 정리
+
+분석이 끝나면 아래 항목들을 정리하라:
+- **에러 발생 지점**: 문제가 발생하는 구체적 코드 위치 (파일경로:라인)
+- **근본 원인**: 왜 이 문제가 발생하는지에 대한 분석
+- **영향 범위**: 이 문제가 영향을 미치는 파일/함수 목록
+- **해결 방안**: 가능한 해결 방법들 (각각 수정 대상 파일 포함)
+
+## Step 3: 진단 결과 종합 및 사용자 확인
+
+Step 2의 분석 결과를 종합하여 아래 형식으로 진단 보고서를 작성하고 사용자에게 제시하라:
 
 ```
-NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
+## 진단 결과
+
+### 문제 요약
+<에러/문제를 한 문장으로 요약>
+
+### 근본 원인
+<근본 원인을 명확하고 구체적으로 설명. 파일 경로와 라인 번호 포함.>
+
+### 영향 범위
+- <영향받는 파일/함수 1>
+- <영향받는 파일/함수 2>
+
+### 해결 방안
+
+1. **<방안 1 제목>**: <설명>
+   - 수정 대상: <파일 경로 목록>
+   - 장점: ...
+   - 단점: ...
+
+2. **<방안 2 제목>**: <설명> (해당 시)
+   - 수정 대상: <파일 경로 목록>
+   - 장점: ...
+   - 단점: ...
+
+### 권장 방안
+<가장 적절한 방안과 그 이유>
 ```
 
-If you haven't completed Phase 1, you cannot propose fixes.
+진단 보고서를 출력한 뒤, AskUserQuestion으로 다음을 질문하라:
 
-## When to Use
+```
+진단 결과를 확인해 주세요.
+1. 진단이 정확하므로 권장 방안으로 계획을 수립한다
+2. 진단이 정확하지만 다른 방안(번호)으로 계획을 수립한다
+3. 진단이 부정확하다 — 추가 정보를 제공하겠다
+```
 
-Use for ANY technical issue:
+- **1번 선택**: 권장 방안을 기반으로 Step 4로 진행하라.
+- **2번 선택**: 사용자가 지정한 방안을 기반으로 Step 4로 진행하라.
+- **3번 선택**: 사용자가 제공한 추가 정보를 반영하여 Step 2로 돌아가라.
 
-- Test failures
-- Bugs in production
-- Unexpected behavior
-- Performance problems
-- Build failures
-- Integration issues
+## Step 4: sd-plan으로 해결 계획 수립
 
-**Use this ESPECIALLY when:**
+사용자가 확인한 진단 결과와 선택된 해결 방안을 작업 설명으로 하여, Skill 도구로 `sd-plan`을 호출하라. args에 아래를 전달하라:
 
-- Under time pressure (emergencies make guessing tempting)
-- "Just one quick fix" seems obvious
-- You've already tried multiple fixes
-- Previous fix didn't work
-- You don't fully understand the issue
+```
+아래 디버깅 진단 결과에 따른 해결 방안을 구현하기 위한 계획을 수립하라:
 
-**Don't skip when:**
+## 문제
+<Step 3의 문제 요약>
 
-- Issue seems simple (simple bugs have root causes too)
-- You're in a hurry (rushing guarantees rework)
-- Manager wants it fixed NOW (systematic is faster than thrashing)
+## 근본 원인
+<Step 3의 근본 원인>
 
-## The Four Phases
+## 해결 방안
+<사용자가 선택한 해결 방안의 상세 내용>
 
-You MUST complete each phase before proceeding to the next.
+## 수정 대상 파일
+<해결 방안의 수정 대상 파일 경로 목록>
+```
 
-### Phase 1: Root Cause Investigation
+## Step 5: 계획 실행
 
-**BEFORE attempting ANY fix:**
-
-1. **Read Error Messages Carefully**
-   - Don't skip past errors or warnings
-   - They often contain the exact solution
-   - Read stack traces completely
-   - Note line numbers, file paths, error codes
-
-2. **Reproduce Consistently**
-   - Can you trigger it reliably?
-   - What are the exact steps?
-   - Does it happen every time?
-   - If not reproducible → gather more data, don't guess
-
-3. **Read the Source Code Directly**
-   - Read the actual code where the bug manifests
-   - Understand what the code does line by line
-   - Walk through the logic with the failing input mentally
-   - Do NOT run `git diff` or `git log` — diffs show WHAT changed, not WHY it's broken
-   - The bug is in the code as it exists NOW; analyze the code as-is
-
-4. **Gather Evidence in Multi-Component Systems**
-
-   **WHEN system has multiple components (CI → build → signing, API → service → database):**
-
-   **BEFORE proposing fixes, add diagnostic instrumentation:**
-
-   ```
-   For EACH component boundary:
-     - Log what data enters component
-     - Log what data exits component
-     - Verify environment/config propagation
-     - Check state at each layer
-
-   Run once to gather evidence showing WHERE it breaks
-   THEN analyze evidence to identify failing component
-   THEN investigate that specific component
-   ```
-
-   **Example (multi-layer system):**
-
-   ```bash
-   # Layer 1: Workflow
-   echo "=== Secrets available in workflow: ==="
-   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
-
-   # Layer 2: Build script
-   echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
-
-   # Layer 3: Signing script
-   echo "=== Keychain state: ==="
-   security list-keychains
-   security find-identity -v
-
-   # Layer 4: Actual signing
-   codesign --sign "$IDENTITY" --verbose=4 "$APP"
-   ```
-
-   **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)
-
-5. **Trace Data Flow**
-
-   **WHEN error is deep in call stack:**
-
-   See `root-cause-tracing.md` in this directory for the complete backward tracing technique.
-
-   **Quick version:**
-   - Where does bad value originate?
-   - What called this with bad value?
-   - Keep tracing up until you find the source
-   - Fix at source, not at symptom
-
-### Phase 2: Pattern Analysis
-
-**Find the pattern before fixing:**
-
-1. **Find Working Examples**
-   - Locate similar working code in same codebase
-   - What works that's similar to what's broken?
-
-2. **Compare Against References**
-   - If implementing pattern, read reference implementation COMPLETELY
-   - Don't skim - read every line
-   - Understand the pattern fully before applying
-
-3. **Identify Differences**
-   - What's different between working and broken?
-   - List every difference, however small
-   - Don't assume "that can't matter"
-
-4. **Understand Dependencies**
-   - What other components does this need?
-   - What settings, config, environment?
-   - What assumptions does it make?
-
-### Phase 3: Hypothesis and Testing
-
-**Scientific method:**
-
-1. **Form Single Hypothesis**
-   - State clearly: "I think X is the root cause because Y"
-   - Write it down
-   - Be specific, not vague
-
-2. **Test Minimally**
-   - Make the SMALLEST possible change to test hypothesis
-   - One variable at a time
-   - Don't fix multiple things at once
-
-3. **Verify Before Continuing**
-   - Did it work? Yes → Phase 4
-   - Didn't work? Form NEW hypothesis
-   - DON'T add more fixes on top
-
-4. **When You Don't Know**
-   - Say "I don't understand X"
-   - Don't pretend to know
-   - Ask for help
-   - Research more
-
-### Phase 4: Implementation
-
-**Fix the root cause, not the symptom:**
-
-1. **Create Failing Test Case**
-   - Simplest possible reproduction
-   - Automated test if possible
-   - One-off test script if no framework
-   - MUST have before fixing
-   - Use the `sd-tdd` skill for writing proper failing tests
-
-2. **Implement Single Fix**
-   - Address the root cause identified
-   - ONE change at a time
-   - No "while I'm here" improvements
-   - No bundled refactoring
-
-3. **Verify Fix**
-   - Test passes now?
-   - No other tests broken?
-   - Issue actually resolved?
-
-4. **If Fix Doesn't Work**
-
-   ```mermaid
-   flowchart TD
-       A{"Fix failed?"} --> B{"Attempts < 3?"}
-       B -->|yes| C["Phase 1: Re-analyze<br>with new information"]
-       B -->|"no (≥3)"| D["STOP: Question Architecture<br>→ Discuss with user first"]
-   ```
-
-   **Signs of architectural problem (≥3 failures):**
-   - Each fix reveals new shared state/coupling/problem in different place
-   - Fixes require "massive refactoring" to implement
-   - Each fix creates new symptoms elsewhere
-
-   **Question fundamentals:** Is this pattern sound? Are we sticking with it through inertia? Should we refactor architecture vs. continue fixing symptoms?
-
-   This is NOT a failed hypothesis - this is a wrong architecture.
-
-## Red Flags - STOP and Follow Process
-
-If you catch yourself thinking:
-
-- "Quick fix for now, investigate later"
-- "Just try changing X and see if it works"
-- "Add multiple changes, run tests"
-- "Skip the test, I'll manually verify"
-- "It's probably X, let me fix that"
-- "I don't fully understand but this might work"
-- "Pattern says X but I'll adapt it differently"
-- "Here are the main problems: [lists fixes without investigation]"
-- Proposing solutions before tracing data flow
-- "Let me check git diff/log to see what changed"
-- **"One more fix attempt" (when already tried 2+)**
-- **Each fix reveals new problem in different place**
-
-**ALL of these mean: STOP. Return to Phase 1.**
-
-**If 3+ fixes failed:** Question the architecture (see Phase 4.5)
-
-## User Signals You're Doing It Wrong
-
-**Watch for these redirections:**
-
-- "Is that not happening?" - You assumed without verifying
-- "Will it show us...?" - You should have added evidence gathering
-- "Stop guessing" - You're proposing fixes without understanding
-- "Ultrathink this" - Question fundamentals, not just symptoms
-- "We're stuck?" (frustrated) - Your approach isn't working
-
-**When you see these:** STOP. Return to Phase 1.
-
-## Common Rationalizations
-
-| Excuse                                       | Reality                                                                 |
-| -------------------------------------------- | ----------------------------------------------------------------------- |
-| "Issue is simple, don't need process"        | Simple issues have root causes too. Process is fast for simple bugs.    |
-| "Emergency, no time for process"             | Systematic debugging is FASTER than guess-and-check thrashing.          |
-| "Just try this first, then investigate"      | First fix sets the pattern. Do it right from the start.                 |
-| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it.                       |
-| "Multiple fixes at once saves time"          | Can't isolate what worked. Causes new bugs.                             |
-| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely.              |
-| "I see the problem, let me fix it"           | Seeing symptoms ≠ understanding root cause.                             |
-| "Let me check git diff to see what changed"  | Diff shows WHAT changed, not WHY it's broken. Read the code as-is.      |
-| "One more fix attempt" (after 2+ failures)   | 3+ failures = architectural problem. Question pattern, don't fix again. |
-
-## Quick Reference
-
-| Phase                 | Key Activities                                            | Success Criteria            |
-| --------------------- | --------------------------------------------------------- | --------------------------- |
-| **1. Root Cause**     | Read errors, reproduce, read source code, gather evidence | Understand WHAT and WHY     |
-| **2. Pattern**        | Find working examples, compare                            | Identify differences        |
-| **3. Hypothesis**     | Form theory, test minimally                               | Confirmed or new hypothesis |
-| **4. Implementation** | Create test, fix, verify                                  | Bug resolved, tests pass    |
-
-## When Process Reveals "No Root Cause"
-
-If systematic investigation reveals issue is truly environmental, timing-dependent, or external:
-
-1. You've completed the process
-2. Document what you investigated
-3. Implement appropriate handling (retry, timeout, error message)
-4. Add monitoring/logging for future investigation
-
-**But:** 95% of "no root cause" cases are incomplete investigation.
-
-## Supporting Techniques
-
-These techniques are part of systematic debugging and available in this directory:
-
-- **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
-- **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
-- **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
-
-**Related skills:**
-
-- **sd-tdd** - For creating failing test case (Phase 4, Step 1)
-- **sd-check** - Verify fix worked before claiming success
-
-## Real-World Impact
-
-From debugging sessions:
-
-- Systematic approach: 15-30 minutes to fix
-- Random fixes approach: 2-3 hours of thrashing
-- First-time fix rate: 95% vs 40%
-- New bugs introduced: Near zero vs common
+sd-plan이 완료되어 확정된 계획서가 나오면, 그 계획서에 따라 코드를 수정하라.

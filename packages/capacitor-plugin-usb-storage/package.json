@@ -15,7 +15,8 @@
   "files": [
     "dist",
     "src",
-    "android"
+    "android",
+    "docs"
   ],
   "dependencies": {
     "@simplysm/core-browser": "workspace:*",

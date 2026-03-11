@@ -15,6 +15,9 @@ export function openFileDialog(options?: {
     input.onchange = () => {
       resolve(input.files != null && input.files.length > 0 ? [...input.files] : undefined);
     };
+    input.addEventListener("cancel", () => {
+      resolve(undefined);
+    });
     input.click();
   });
 }

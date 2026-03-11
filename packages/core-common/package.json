@@ -15,7 +15,8 @@
   "files": [
     "dist",
     "src",
-    "tests"
+    "tests",
+    "docs"
   ],
   "sideEffects": [
     "./src/extensions/arr-ext.ts",
@@ -30,7 +31,7 @@
   "dependencies": {
     "@zip.js/zip.js": "^2.8.23",
     "consola": "^3.4.2",
-    "fast-xml-parser": "^5.4.2",
+    "fast-xml-parser": "^5.5.1",
     "yaml": "^2.8.2"
   }
 }

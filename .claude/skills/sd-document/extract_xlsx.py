@@ -2,36 +2,22 @@
 """Extract data and images from XLSX files with cell positions."""
 
 import sys
-import io
-import os
-import subprocess
-from pathlib import Path
+from _common import (
+    setup_encoding, make_output_paths, print_header, save_image,
+    print_image_summary, run_cli,
+)
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-
-
-def ensure_packages():
-    packages = {"openpyxl": "openpyxl"}
-    for pip_name, import_name in packages.items():
-        try:
-            __import__(import_name)
-        except ImportError:
-            print(f"Installing package: {pip_name}...", file=sys.stderr)
-            subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name],
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+setup_encoding()
 
 
 def extract(file_path):
     from openpyxl import load_workbook
-    from openpyxl.drawing.image import Image as XlImage
 
     wb = load_workbook(file_path, data_only=True)
-    stem = Path(file_path).stem
-    out_dir = Path(file_path).parent / f"{stem}_files"
+    fp, out_dir = make_output_paths(file_path)
     img_idx = 0
 
-    print(f"# {Path(file_path).name}\n")
+    print_header(fp)
 
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
@@ -51,33 +37,26 @@ def extract(file_path):
                     cells.append("")
                 else:
                     cells.append(str(val).strip())
-            print(f"[{row[0].coordinate.split('1')[0]}{row[0].row}] " + " | ".join(cells))
+            print(f"[{row[0].column_letter}{row[0].row}] " + " | ".join(cells))
 
         # Image extraction
-        if ws._images:
-            for img in ws._images:
+        images = getattr(ws, '_images', [])
+        if images:
+            for img in images:
                 img_idx += 1
                 anchor = ""
-                if hasattr(img.anchor, '_from'):
-                    anchor = f" (near {img.anchor._from.col},{img.anchor._from.row})"
-                ext = "png"
-                out_dir.mkdir(parents=True, exist_ok=True)
-                img_path = out_dir / f"img_{img_idx:03d}.{ext}"
-                with open(img_path, "wb") as f:
-                    f.write(img._data())
+                anchor_from = getattr(getattr(img, 'anchor', None), '_from', None)
+                if anchor_from is not None:
+                    anchor = f" (near {anchor_from.col},{anchor_from.row})"
+                data_fn = getattr(img, '_data', None)
+                blob = data_fn() if callable(data_fn) else b""
+                img_path = save_image(out_dir, img_idx, blob, "png")
                 print(f"[IMG]{anchor} {img_path}")
 
         print()
 
-    if img_idx > 0:
-        print(f"---\n{img_idx} image(s) saved: {out_dir}")
-    else:
-        print("---\nNo images")
+    print_image_summary(img_idx, out_dir)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python extract_xlsx.py <file.xlsx>", file=sys.stderr)
-        sys.exit(1)
-    ensure_packages()
-    extract(sys.argv[1])
+    run_cli(extract, "extract_xlsx.py", {"openpyxl": "openpyxl"})

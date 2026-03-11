@@ -2,35 +2,22 @@
 """Extract text, tables, and images from PDF files page by page."""
 
 import sys
-import io
-import subprocess
-from pathlib import Path
+from _common import (
+    setup_encoding, make_output_paths, print_header, save_image,
+    print_image_summary, run_cli, normalize_cell,
+)
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-
-
-def ensure_packages():
-    packages = {"pdfplumber": "pdfplumber", "pypdf": "pypdf"}
-    for pip_name, import_name in packages.items():
-        try:
-            __import__(import_name)
-        except ImportError:
-            print(f"Installing package: {pip_name}...", file=sys.stderr)
-            subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name],
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+setup_encoding()
 
 
 def extract(file_path):
     import pdfplumber
     from pypdf import PdfReader
 
-    stem = Path(file_path).stem
-    out_dir = Path(file_path).parent / f"{stem}_files"
+    fp, out_dir = make_output_paths(file_path)
     img_idx = 0
-    total_text_len = 0
 
-    print(f"# {Path(file_path).name}\n")
+    print_header(fp)
 
     # Text + table extraction (pdfplumber)
     with pdfplumber.open(file_path) as pdf:
@@ -38,17 +25,18 @@ def extract(file_path):
             print(f"## Page {page_num}\n")
 
             text = page.extract_text()
-            if text and text.strip():
-                total_text_len += len(text.strip())
-                print(text.strip())
-                print()
+            if text:
+                stripped = text.strip()
+                if stripped:
+                    print(stripped)
+                    print()
 
             tables = page.extract_tables()
             for t_idx, table in enumerate(tables):
                 if table:
                     print(f"### Table {t_idx + 1}\n")
                     for row in table:
-                        cells = [(c or "").strip().replace("\n", " ") for c in row]
+                        cells = [normalize_cell(c) for c in row]
                         print("| " + " | ".join(cells) + " |")
                     print()
 
@@ -65,38 +53,22 @@ def extract(file_path):
                 filters = obj.get("/Filter", "")
                 if isinstance(filters, list):
                     filters = filters[0] if filters else ""
+                filter_str = str(filters)
                 ext = "png"
-                if "/DCTDecode" in str(filters):
+                if "/DCTDecode" in filter_str:
                     ext = "jpg"
-                elif "/JPXDecode" in str(filters):
+                elif "/JPXDecode" in filter_str:
                     ext = "jp2"
-                out_dir.mkdir(parents=True, exist_ok=True)
-                img_path = out_dir / f"img_{img_idx:03d}.{ext}"
                 try:
-                    img_path.write_bytes(obj.get_data())
-                except Exception:
-                    img_path = out_dir / f"img_{img_idx:03d}.bin"
-                    img_path.write_bytes(obj._data if hasattr(obj, "_data") else b"")
+                    img_path = save_image(out_dir, img_idx, obj.get_data(), ext)
+                except Exception as exc:
+                    print(f"Warning: failed to decode image {img_idx}: {exc}", file=sys.stderr)
+                    img_path = save_image(out_dir, img_idx, obj._data if hasattr(obj, "_data") else b"", "bin")
                 print(f"[IMG] (page={page_num}) {img_path}")
 
-    # OCR notice
-    if total_text_len == 0:
-        print("\n⚠ No text was extracted (may be a scanned PDF).")
-        print("OCR is required:")
-        print("  1. Install Tesseract OCR: https://github.com/tesseract-ocr/tesseract")
-        print("  2. pip install pytesseract pdf2image")
-        print("  3. Extract with pytesseract.image_to_string()")
-
     print()
-    if img_idx > 0:
-        print(f"---\n{img_idx} image(s) saved: {out_dir}")
-    else:
-        print("---\nNo images")
+    print_image_summary(img_idx, out_dir)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python extract_pdf.py <file.pdf>", file=sys.stderr)
-        sys.exit(1)
-    ensure_packages()
-    extract(sys.argv[1])
+    run_cli(extract, "extract_pdf.py", {"pdfplumber": "pdfplumber", "pypdf": "pypdf"})

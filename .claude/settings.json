@@ -1,7 +1,17 @@
 {
-  "respectGitignore": true,
   "statusLine": {
     "type": "command",
-    "command": "node .claude/sd-statusline.js"
-  }
+    "command": "python3 .claude/statusline.py"
+  },
+  "SessionStart": [
+    {
+      "matcher": "startup|resume|clear|compact",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash .claude/sd-session-start.sh"
+        }
+      ]
+    }
+  ]
 }

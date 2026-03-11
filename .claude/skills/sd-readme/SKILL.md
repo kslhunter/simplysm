@@ -1,191 +1,158 @@
 ---
 name: sd-readme
-description: "Sync README.md with source code (explicit invocation only)"
-argument-hint: "<package-name or path> (optional - omit to update all)"
-model: sonnet
+description: "README 문서 생성", "sd-readme" 등을 요청할 때 사용.
 ---
 
-# sd-readme
+# SD Readme — 모노레포 패키지 README 문서 생성기
 
-Sync package README.md with current source code by comparing exports against documentation.
+모노레포의 각 패키지에 대해 README.md 문서를 자동 생성한다. 패키지 규모에 따라 단일 README.md 또는 README.md + docs/*.md 구조로 점진적 공개(Progressive Disclosure) 원칙을 적용한다.
 
-## Purpose
+ARGUMENTS: 패키지명 (선택). 지정하면 해당 패키지만 처리, 미지정 시 전체 패키지 병렬 처리.
 
-README.md is the **sole API documentation source for Claude Code**. When Claude Code works in a consumer app using `@simplysm/*` packages, it reads README.md from `node_modules/` to understand the library API. Claude Code does NOT read JSDoc from source files.
+## 작업 방법
 
-**Therefore: every exported symbol must be documented in README.**
+```mermaid
+flowchart TD
+    A[인자 파싱] --> B{패키지명 지정?}
+    B -- Yes --> C[README.md 생성]
+    B -- No --> D[public 패키지 목록 수집]
+    D --> E[패키지별 Agent 병렬 실행]
+    E -- 각 Agent --> C
+```
 
-## Modes
+### A. 인자 파싱
 
-- **Single package** (`$ARGUMENTS` = package name or path): Update one package's README
-- **Batch** (`$ARGUMENTS` empty): Discover and update all packages in parallel
+스킬 호출 시 전달된 ARGUMENTS에서 패키지명을 추출하라.
 
-## README Writing Rules
+- **패키지명 지정됨** → `packages/` 하위에서 해당 디렉토리를 찾아 바로 **C. README.md 생성**으로 이동.
+- **패키지명 미지정** → **D. public 패키지 목록 수집**으로 이동.
 
-- Written in **English**
-- All code examples must include **import paths**: `import { ... } from "@simplysm/..."`
-- **Every export** from `index.ts` must be documented — including those with `@internal` JSDoc
-- No changelog, version history, or "recently updated" sections
-- Section organization follows `index.ts` `#region` structure
-- Heading levels: `##` for major sections, `###` for sub-sections
+### C. README.md 생성
 
-### Standard Structure
+대상 패키지 하나에 대해 아래를 수행하라.
+
+#### C-1. package.json 분석
+
+`packages/<name>/package.json`을 읽어라:
+
+1. `name` 및 `description`을 확인하라.
+2. `"private": true`이면 해당 패키지를 **건너뛰어라**.
+3. 패키지 진입점 소스코드가 무엇인지 확인하라.
+
+#### C-2. 소스 코드 분석
+
+1. 진입점 파일 및 export를 재귀적으로 모두 읽어, 모든 public API를 수집하라.
+2. JSDoc 주석이 있으면 각 항목의 설명으로 활용하라.
+
+#### C-3. 문서 구조 결정 및 생성
+
+소스 코드의 규모와 논리적 카테고리 수를 보고, 아래 두 가지 중 적절한 구조를 **자율적으로** 판단하라:
+
+- **단일 README.md**: 패키지가 작고 API가 적어 카테고리 분류가 불필요한 경우
+- **README.md + docs/*.md**: 패키지가 크거나 논리적 카테고리가 여러 개인 경우
+
+기존 README.md 또는 docs/ 가 있으면 **덮어쓴다**.
+**영어**로 작성하라.
+
+---
+
+##### 구조 A: 단일 README.md (소규모 패키지)
+
+`packages/<name>/README.md` 파일을 생성하라:
 
 ```markdown
-# @simplysm/{package-name}
+# <package-name from package.json>
 
-{One-line description}
+> <description from package.json>
 
-## Installation
+<패키지의 주요 기능과 목적에 대한 상세 설명을 영어로 작성>
 
-## Main Modules
+## API Reference
 
-### {Category matching index.ts #region}
+### <exportedName>
 
-- Description + code examples per export
-
-## Types
-
-## Dependencies (only when peer deps exist)
+```typescript
+<export 시그니처 코드>
 ```
 
-### docs/ Subfolder Rules
+<해당 API에 대한 설명>
 
-When README exceeds ~500 lines, split detailed documentation into `docs/`:
+---
 
-- README.md becomes an **overview/index** with links: `[functionName](docs/category.md#anchor)`
-- docs/ files contain detailed descriptions, full code examples, parameter tables
-- File organization follows index.ts `#region` (e.g., `docs/types.md`, `docs/utils.md`)
+(... 모든 exported 항목에 대해 반복 ...)
 
-When README is under ~500 lines, keep everything inline.
+## Usage Examples
 
-**If docs/ already exists, maintain and update it. Do not remove an existing docs/ structure.**
+```typescript
+import { ... } from "<package-name>";
 
-## Single Package Mode
-
-### Step 1: Resolve Path
-
-`$ARGUMENTS` may be a package name or path (e.g., `core-common`, `packages/core-common`).
-If not starting with `packages/`, prepend it.
-
-### Step 2: Build Export Map (Source of Truth)
-
-1. Read `<pkg-path>/src/index.ts` — get all exports and their `#region` grouping
-2. For each exported module, read the source file to extract:
-   - Function signatures (params, return type, overloads)
-   - Class public API (constructor, methods, properties)
-   - Type/interface definitions
-   - Default values, options objects
-
-### Step 3: Build Documentation Map
-
-Read `<pkg-path>/README.md` (if exists). If docs/ exists, read those files too.
-Map each documented item to its current documentation content.
-
-### Step 4: Diff and Report
-
-Compare export map (Step 2) against documentation map (Step 3):
-
-| Status      | Meaning                              |
-| ----------- | ------------------------------------ |
-| **ADDED**   | Exported in source but not in README |
-| **REMOVED** | In README but no longer exported     |
-| **CHANGED** | Both exist but API signature differs |
-| **OK**      | Documentation matches source         |
-
-**Report to user before editing:**
-
+// 주요 사용 예제 코드
 ```
-ADDED (3):
-  - strToCamelCase (from utils/str.ts)
-  - objGetChainValueByDepth (from utils/obj.ts)
-  - ZipArchiveProgress type (from zip/sd-zip.ts)
-
-REMOVED (1):
-  - oldFunction (no longer exported)
-
-CHANGED (2):
-  - objMerge: added `deep` parameter
-  - Set.toggle: added `addOrDel` optional parameter
-
-OK: 45 items unchanged
 ```
 
-**Wait for user confirmation before proceeding to edit.**
+---
 
-### Step 5: Apply Updates
+##### 구조 B: README.md + docs/*.md (대규모 패키지)
 
-- **ADDED**: Write documentation matching existing style. Place in the section matching the item's `#region` in index.ts. Include description + code example with import path.
-- **REMOVED**: Delete the documentation entry.
-- **CHANGED**: Update existing entry to match current API. Preserve code examples if still valid.
-- **OK**: Do not touch.
+**README.md** — `packages/<name>/README.md` 파일을 생성하라:
 
-**If README uses docs/ links**: update the corresponding docs/ file, not just README.
+```markdown
+# <package-name from package.json>
 
-### Step 6: Size Check
+> <description from package.json>
 
-After updates, if README exceeds ~500 lines and no docs/ exists:
-suggest splitting to the user (do not auto-split without confirmation).
+<패키지의 주요 기능과 목적에 대한 상세 설명을 영어로 작성>
 
-## Batch Mode
+## Documentation
 
-When `$ARGUMENTS` is empty:
-
-1. Discover all packages: Glob `packages/*/package.json`
-2. Launch **parallel subagents** (`subagent_type: "general-purpose"`, `model: "sonnet"`) — one per package + one for project root:
-
-**Per-package subagent prompt template:**
-
-```
-Update README.md for package {pkg-name} at {pkg-path}.
-
-PURPOSE: README.md is the sole API documentation source for Claude Code.
-Every exported symbol must be documented. Claude Code does NOT read JSDoc.
-
-STEPS:
-1. Read {pkg-path}/src/index.ts — get all exports and #region grouping.
-2. For each export, read the source file for signatures, classes, types.
-3. Read {pkg-path}/README.md (and docs/ if exists).
-4. Compare exports vs documentation:
-   - ADDED (in source, not in README): add documentation with description + code example.
-     Include import path: import { X } from "@simplysm/{pkg-name}"
-   - REMOVED (in README, not in source): delete documentation.
-   - CHANGED (both exist, API differs): update to match current API.
-   - OK: don't touch.
-5. Section organization follows index.ts #region structure.
-6. Write in English. No changelog sections.
-7. If README doesn't exist, create with standard structure:
-   # @simplysm/{pkg-name}
-   {description from package.json}
-   ## Installation
-   ## Main Modules (sections per #region)
-   ## Types
-8. If docs/ subfolder exists, update those files too.
-9. Report: list of ADDED/REMOVED/CHANGED items.
+| Category | Description |
+|----------|-------------|
+| [<Category1>](docs/<category1>.md) | <카테고리 설명 및 주요 항목 나열> |
+| [<Category2>](docs/<category2>.md) | <카테고리 설명 및 주요 항목 나열> |
+| ... | ... |
 ```
 
-**Project root subagent prompt:**
+**docs/*.md** — 각 카테고리별로 `packages/<name>/docs/<category>.md` 파일을 생성하라:
 
+```markdown
+# <Category Name>
+
+## <exportedName>
+
+```typescript
+<export 시그니처 코드>
 ```
-Update the project root README.md at {project-root}/README.md.
-Read CLAUDE.md for project context.
-Compare current README against project structure and packages.
-Edit only sections that are outdated. Write in English.
-Report what was changed.
+
+<해당 API에 대한 설명>
+
+---
+
+(... 이 카테고리의 모든 exported 항목에 대해 반복 ...)
+
+## Usage Examples
+
+```typescript
+import { ... } from "<package-name>";
+
+// 이 카테고리의 주요 사용 예제 코드
+```
 ```
 
-3. Collect all results. Report summary: which READMEs were updated, which had no changes.
+카테고리명과 분류는 소스 코드의 디렉토리 구조, 기능적 유사성 등을 고려하여 자율적으로 결정하라.
 
-## Common Mistakes
+---
 
-| Mistake                               | Fix                                                                 |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc               |
-| Rewriting OK sections                 | Only touch ADDED/REMOVED/CHANGED items                              |
-| Ignoring existing docs/ structure     | If docs/ exists, update those files too                             |
-| Arbitrary section reorganization      | Follow index.ts `#region` structure                                 |
-| Missing import paths in examples      | Always: `import { X } from "@simplysm/..."`                         |
-| Writing in non-English languages      | README must be in English                                           |
-| Adding changelog sections             | Never add version history                                           |
-| Editing before reporting diff         | Always report ADDED/REMOVED/CHANGED and wait for confirmation       |
-| Destroying docs/ link format          | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |
+### D. public 패키지 목록 수집
+
+`packages/*/package.json`을 Glob으로 탐색하되, `private: true`인 패키지는 제외하라.
+
+---
+
+### E. 패키지별 Agent 병렬 실행
+
+남은 각 패키지에 대해 Agent 도구를 사용하여 **병렬로** 다음 프롬프트를 전달하라:
+```
+/sd-readme <패키지명>
+```
+
+모든 subagent가 완료되면 종료.

@@ -1,0 +1,7 @@
+{
+  "respectGitignore": true,
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/sd-statusline.js"
+  }
+}

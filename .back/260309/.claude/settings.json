@@ -1,0 +1,21 @@
+{
+  "respectGitignore": true,
+  "spinnerTipsEnabled": false,
+  "statusLine": {
+    "type": "command",
+    "command": "python .claude/scripts/sd-statusline.py"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/scripts/sd-session-start.py"
+          }
+        ]
+      }
+    ]
+  }
+}

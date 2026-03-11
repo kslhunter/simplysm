@@ -204,8 +204,8 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
     return [];
   }
 
-  // Index map for sorting performance optimization
-  const sortIndexMap = new Map(els.map((el, i) => [el, i] as const));
+  // Set to track remaining elements
+  const remaining = new Set(indexMap.keys());
 
   let observer: IntersectionObserver | undefined;
 
@@ -217,8 +217,8 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
         observer = new IntersectionObserver((entries) => {
           for (const entry of entries) {
             const target = entry.target;
-            if (indexMap.has(target)) {
-              indexMap.delete(target);
+            if (remaining.has(target)) {
+              remaining.delete(target);
               results.push({
                 target,
                 top: entry.boundingClientRect.top,
@@ -229,11 +229,11 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
             }
           }
 
-          if (indexMap.size === 0) {
+          if (remaining.size === 0) {
             observer?.disconnect();
             // Sort in input order
             resolve(
-              results.sort((a, b) => sortIndexMap.get(a.target)! - sortIndexMap.get(b.target)!),
+              results.sort((a, b) => indexMap.get(a.target)! - indexMap.get(b.target)!),
             );
           }
         });

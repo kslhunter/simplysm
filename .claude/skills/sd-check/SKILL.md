@@ -1,71 +1,70 @@
 ---
 name: sd-check
-description: "Typecheck, lint, test verification (explicit invocation only)"
+description: "체크", "check", "sd-check", "타입체크+린트+테스트", "전체 검사" 등을 요청할 때 사용.
 ---
 
-# sd-check
+# SD Check — 자동 검사 및 오류 수정 루프
 
-Run `$PM run check`, fix errors, repeat until clean.
+패키지 매니저를 감지하고 check 스크립트를 실행하여 결과를 확인한 뒤, 코드 오류가 있으면 sd-debug로 근본 원인을 분석·수정하고 재검사하는 과정을 오류가 없을 때까지 반복한다.
 
-## Package Manager Detection
+ARGUMENTS: 타겟 경로 (선택, 복수 가능). 미지정 시 대화 컨텍스트에서 파악하며, 특정 타겟이 없거나 "전체/all"이면 타겟 없이 실행.
 
-Before running any commands, detect the package manager:
-- If `pnpm-lock.yaml` exists in project root → use `pnpm`
-- If `yarn.lock` exists in project root → use `yarn`
-- Otherwise → use `npm`
+---
 
-`$PM` in all commands below refers to the detected package manager.
+## Step 1: 준비 (PM 감지 + 스크립트 확인 + 타겟 결정)
 
-## Usage
+1. **PM 감지**: 프로젝트 루트의 락 파일로 판별하라.
+   - `pnpm-lock.yaml` 존재 → `pnpm`
+   - `yarn.lock` 존재 → `yarn`
+   - `package-lock.json` 존재 → `npm`
+   - 모두 없으면 → `npm` (기본값)
+2. **스크립트 확인**: `package.json`의 `scripts.check` 존재 여부를 확인하라. 없으면 `"check 스크립트가 package.json에 정의되어 있지 않습니다."` 안내 후 **종료**.
+3. **타겟 결정**: 아래 우선순위로 결정하라.
+   1. ARGUMENTS에 명시된 타겟
+   2. 현재 대화 컨텍스트에서 파악 (사용자가 특정 패키지 작업 중인 경우)
+   3. 위 둘 모두 해당 없거나 "전체/all" → 타겟 없이 실행 (전체)
+
+## Step 2: 검사 실행
+
+1. `mkdir -p .tmp/check` (Bash)
+2. 랜덤 해시(6자리 hex)를 생성하라.
+3. Bash로 아래 명령을 실행하라:
+   ```
+   $PM check [targets...] > .tmp/check/{hash}.txt 2>&1; echo "EXIT_CODE:$?" >> .tmp/check/{hash}.txt
+   ```
+   - `$PM` = Step 1에서 감지한 패키지 매니저
+   - `{hash}` = 생성된 랜덤 해시
+   - 타겟이 있으면 명령에 포함, 없으면 생략
+4. Read 도구로 결과 파일(`.tmp/check/{hash}.txt`)을 읽어라.
+
+## Step 3: 결과 분석
+
+결과 파일 내용을 읽고 아래 세 가지 중 하나로 분류하라:
+
+- **성공**: 오류 없이 모든 검사를 통과한 경우 → **Step 5(완료)**로 이동
+- **환경 오류**: 코드 문제가 아닌 환경/인프라 문제로 판단되는 경우 (예: 의존성 미설치, 메모리 부족, 명령어 없음, 네트워크 문제 등) → 사용자에게 해당 오류 내용을 보여주고 **즉시 종료**. 코드 수정을 시도하지 않는다.
+- **코드 오류**: 소스 코드의 타입 에러, 린트 위반, 테스트 실패 등으로 판단되는 경우 → **Step 4**로 이동
+
+> 위 분류는 하드코딩된 패턴 매칭이 아닌, 결과 내용을 읽고 자유롭게 판단한다.
+
+**반복 제한**: 현재 반복 횟수가 5회를 초과하면, 잔여 오류를 사용자에게 보고하고 `"5회 반복 후에도 오류가 남아 있습니다. 남은 오류를 확인해 주세요."` 안내 후 **종료**.
+
+## Step 4: 오류 분석 및 수정 (sd-debug 활용)
+
+Skill 도구로 `sd-debug`를 호출하라. args에 아래 내용을 전달하라:
 
 ```
-$PM run check [path] [--type typecheck|lint|test]
+아래 check 결과의 코드 오류를 분석하라.
+**중요: Step 2(코드베이스 심층 분석) 완료 후 Step 3~5를 건너뛰고, 분석 결과를 바탕으로 바로 코드를 수정하라. 진단 보고서 출력, 사용자 확인, sd-plan 호출 없이 즉시 수정한다.**
+
+<.tmp/check/{hash}.txt 의 오류 내용을 여기에 포함>
 ```
 
-| Example                               | Effect                    |
-| ------------------------------------- | ------------------------- |
-| `/sd-check`                           | Full project, all checks  |
-| `/sd-check packages/core-common`      | Specific path, all checks |
-| `/sd-check test`                      | Tests only, full project  |
-| `/sd-check packages/core-common lint` | Specific path + type      |
+sd-debug 완료 후 → **Step 2**로 복귀 (새 해시로 재검사)
 
-Multiple types: `--type typecheck,lint`. No path = full project. No type = all checks.
+## Step 5: 완료 보고
 
-## Workflow
-
-```mermaid
-flowchart TD
-    A[Run check] --> B{All passed?}
-    B -->|yes| C[Report results → done]
-    B -->|no| D["Fix errors (typecheck → lint → test)"]
-    D --> E{Stuck after 2-3 tries?}
-    E -->|no| A
-    E -->|yes| F[Recommend /sd-debug]
-```
-
-**Run command:** `$PM run check [path] [--type type]` (timeout: 600000)
-
-- **Output capture:** Bash truncates long output. Always redirect to a file and read it:
-  ```bash
-  mkdir -p .tmp && $PM run check [path] [--type type] > .tmp/check-output.txt 2>&1; echo "EXIT:$?"
-  ```
-  Then use the **Read** tool on `.tmp/check-output.txt` to see the full result. Check `EXIT:0` for success or non-zero for failure.
-
-**Fixing errors:**
-- **Before fixing any code**: Read `.claude/refs/sd-code-conventions.md` and check `.claude/rules/sd-refs-linker.md` for additional refs relevant to the affected code area (e.g., `sd-solid.md` for SolidJS, `sd-orm.md` for ORM). Fixing errors does NOT exempt you from following project conventions.
-- Test failures: **MUST** run `git log` to decide — update test or fix source
-- **E2E test failures**: use Playwright MCP to investigate before fixing
-  1. `browser_navigate` to the target URL
-  2. `browser_snapshot` / `browser_take_screenshot` (save to `.tmp/playwright/`) to see page state
-  3. `browser_console_messages` for JS errors
-  4. `browser_network_requests` for failed API calls
-  5. Interact with the page following the test steps to reproduce the failure
-  6. Fix based on observed evidence, not guesswork
-
-## Rules
-
-- **Always re-run ALL checks** after any fix — never assume other checks still pass
-- **Report with evidence** — cite actual numbers (e.g., "0 errors, 47 tests passed"), not "should work"
-- **No build, no dev server** — typecheck + lint + test only
-- **Run Bash directly** — no Task/agent/team overhead
-- **Never run in background** — always run Bash in foreground (do NOT set `run_in_background: true`), wait for result before proceeding
+모든 검사 통과 시 아래를 출력하라:
+- 총 반복 횟수
+- 각 반복에서 수정한 내용 요약
+- 형식: `"✔ 체크 완료: {N}회 만에 모든 검사를 통과했습니다."` + 수정 내역 bullet list
