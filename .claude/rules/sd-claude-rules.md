@@ -5,3 +5,8 @@
 ## 코드 작성 규칙
 
 - YAGNI 원칙 준수
+
+## Playwright 규칙
+
+- Playwright의 모든 output(스크린샷, PDF, 다운로드 등)은 `.tmp/playwright/` 디렉토리에 저장한다.
+
