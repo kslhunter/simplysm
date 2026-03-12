@@ -15,8 +15,7 @@
   "files": [
     "dist",
     "src",
-    "android",
-    "docs"
+    "android"
   ],
   "devDependencies": {
     "@capacitor/core": "^7.6.0"

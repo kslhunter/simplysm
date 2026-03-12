@@ -15,8 +15,7 @@
   "files": [
     "dist",
     "src",
-    "android",
-    "docs"
+    "android"
   ],
   "dependencies": {
     "@simplysm/capacitor-plugin-file-system": "workspace:*",

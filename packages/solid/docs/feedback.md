@@ -7,6 +7,19 @@
 ```typescript
 type NotificationTheme = "info" | "success" | "warning" | "danger";
 
+interface NotificationAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface NotificationOptions {
+  action?: NotificationAction;
+}
+
+interface NotificationUpdateOptions {
+  renotify?: boolean;
+}
+
 interface NotificationContextValue {
   items: Accessor<NotificationItem[]>;
   unreadCount: Accessor<number>;
@@ -27,7 +40,9 @@ interface NotificationContextValue {
 }
 ```
 
-Centralized notification management. Each `info`/`success`/`warning`/`danger` call creates a notification and returns its `id`. Use `error(err)` to display an error object as a danger notification.
+Centralized notification management. Each `info`/`success`/`warning`/`danger` call creates a notification and returns its `id`. Use `error(err)` to display an error object as a danger notification. Maintains up to 50 notifications; older items are removed when exceeded.
+
+Notifications can include an `action` button via the `options` parameter.
 
 ### NotificationBell
 
@@ -66,9 +81,9 @@ interface BusyProviderProps {
 
 Full-screen loading overlay with nestable `show`/`hide` calls (managed with an internal counter). Each `show` must have a matching `hide`.
 
-- `variant="spinner"` — centered spinner (default)
-- `variant="bar"` — top progress bar animation
-- `setProgress(percent)` — display a determinate progress bar (0–100, `undefined` for indeterminate)
+- `variant="spinner"` -- centered spinner (default)
+- `variant="bar"` -- top progress bar animation
+- `setProgress(percent)` -- display a determinate progress bar (0--100, `undefined` for indeterminate)
 
 ### BusyContainer
 
@@ -84,8 +99,8 @@ interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 ```
 
 Local loading overlay for a specific container. Two modes:
-- `busy` — shows overlay while preserving children
-- `ready={false}` — hides children entirely until data is loaded
+- `busy` -- shows overlay while preserving children
+- `ready={false}` -- hides children entirely until data is loaded
 
 ---
 
@@ -122,6 +137,11 @@ import { useNotification, useBusy, BusyContainer } from "@simplysm/solid";
 const notification = useNotification();
 notification.success("Saved", "Record updated successfully");
 notification.error(new Error("Connection failed"));
+
+// Notification with action button
+notification.info("Update available", "A new version is ready", {
+  action: { label: "Refresh", onClick: () => location.reload() },
+});
 
 // Global loading
 const busy = useBusy();

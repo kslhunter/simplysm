@@ -153,7 +153,7 @@ try {
   if (exists) {
     const data = await client.readFile("/remote/file.txt");
   }
-  await client.put(Buffer.from("hello"), "/remote/hello.txt");
+  await client.put(new TextEncoder().encode("hello"), "/remote/hello.txt");
 } finally {
   await client.close();
 }

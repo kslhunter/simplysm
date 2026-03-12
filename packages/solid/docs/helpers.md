@@ -127,24 +127,25 @@ void ripple;
 
 Background, border, and text color utilities mapped to the theme system:
 
-- `bg.default`, `bg.subtle`, `bg.surface` — background colors
-- `border.default`, `border.subtle` — border colors
-- `text.default`, `text.muted`, `text.subtle` — text colors
+- `bg.surface`, `bg.muted`, `bg.subtle` -- background colors
+- `border.default`, `border.subtle` -- border colors
+- `text.default`, `text.muted`, `text.placeholder` -- text colors
 
 ### control.styles
 
-Component sizing utilities:
+Component sizing and state utilities:
 
-- `pad.xs`, `pad.sm`, `pad.md`, `pad.lg`, `pad.xl` — padding by size
-- `gap.xs` ... `gap.xl` — gap by size
-- `ComponentSize` — `"xs" | "sm" | "md" | "lg" | "xl"`
+- `pad.xs`, `pad.sm`, `pad.md`, `pad.lg`, `pad.xl` -- padding by size
+- `gap.xs` ... `gap.xl` -- gap by size
+- `state.disabled` -- disabled state styling
+- `ComponentSize` -- `"xs" | "sm" | "md" | "lg" | "xl"`
 
 ### theme.styles
 
 Semantic theme tokens:
 
-- `SemanticTheme` — `"base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral"`
-- `themeTokens` — maps each theme to `{ solid, subtle, outline, ghost }` Tailwind class sets
+- `SemanticTheme` -- `"base" | "primary" | "info" | "success" | "warning" | "danger"`
+- `themeTokens` -- maps each theme to `{ solid, solidHover, light, text, hoverBg, border }` Tailwind class sets
 
 ---
 

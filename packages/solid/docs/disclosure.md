@@ -31,8 +31,8 @@ interface DropdownProps {
 Dropdown popup anchored to a trigger element. When `position` is provided instead of a trigger, the popup appears at the given absolute coordinates (useful for context menus). `keyboardNav` enables ArrowUp/Down navigation. Default `maxHeight` is 300px.
 
 **Sub-components:**
-- `Dropdown.Trigger` — the element that opens the dropdown on click
-- `Dropdown.Content` — the popup content
+- `Dropdown.Trigger` -- the element that opens the dropdown on click
+- `Dropdown.Content` -- the popup content
 
 ---
 
@@ -62,14 +62,16 @@ interface DialogProps {
 
 Modal dialog with overlay. Supports both declarative (template) and programmatic usage.
 
-- `mode="float"` — centered floating dialog (default)
-- `mode="fill"` — full-screen dialog
-- `beforeClose` — return `false` to prevent closing
-- `resizable` / `draggable` — enable resize handles / drag-to-move
+- `mode="float"` -- centered floating dialog (default)
+- `mode="fill"` -- full-screen dialog
+- `beforeClose` -- return `false` to prevent closing
+- `resizable` / `draggable` -- enable resize handles / drag-to-move (draggable defaults to `true`)
+- `withCloseButton` -- show close button (defaults to `true`)
+- `closeOnEscape` -- close on Escape key (defaults to `true`)
 
 **Sub-components:**
-- `Dialog.Header` — dialog title bar
-- `Dialog.Action` — dialog action buttons area
+- `Dialog.Header` -- dialog title bar
+- `Dialog.Action` -- dialog action buttons area
 
 ### Programmatic API
 
@@ -81,9 +83,14 @@ interface DialogContextValue {
     options?: DialogShowOptions,
   ): Promise<ExtractCloseResult<P> | undefined>;
 }
+
+interface DialogProviderProps {
+  closeOnEscape?: boolean;
+  closeOnInteractOutside?: boolean;
+}
 ```
 
-Use `DialogProvider` and `useDialog()` for programmatic dialog management. The shown component receives a `close(result?)` prop to close the dialog and return a value.
+Use `DialogProvider` and `useDialog()` for programmatic dialog management. The shown component receives a `close(result?)` prop to close the dialog and return a value. `DialogProvider` accepts default options for `closeOnEscape` and `closeOnInteractOutside`.
 
 ```typescript
 const dialog = useDialog();
@@ -110,7 +117,7 @@ interface TabsProps {
 
 Tab navigation. Content rendering is managed externally based on the selected `value`.
 
-**Sub-component:** `Tabs.Tab` — `{ value: string; disabled?: boolean; class?: string; children?: JSX.Element }`
+**Sub-component:** `Tabs.Tab` -- `{ value: string; disabled?: boolean; class?: string; children?: JSX.Element }`
 
 ---
 

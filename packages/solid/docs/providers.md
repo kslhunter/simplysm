@@ -7,7 +7,7 @@ export const ConfigProvider: ParentComponent<{ clientName: string }>;
 export function useConfig(): { clientName: string };
 ```
 
-Application-level configuration. `clientName` identifies the client app.
+Application-level configuration. `clientName` identifies the client app and is used as a storage key prefix.
 
 ---
 
@@ -28,7 +28,7 @@ export const ThemeProvider: ParentComponent;
 export function useTheme(): ThemeContextValue;
 ```
 
-Light/Dark mode management with system preference detection. `cycleMode()` rotates through light → dark → system.
+Light/Dark mode management with system preference detection. `cycleMode()` rotates through light -> system -> dark -> light. The selected mode is persisted via `SyncStorageProvider`.
 
 ---
 
@@ -51,7 +51,7 @@ export const I18nProvider: ParentComponent;
 export function useI18n(): I18nContextValue;
 ```
 
-Internationalization provider. Supports nested dictionary keys and parameter interpolation via `t("key", { name: "John" })`.
+Internationalization provider. Built-in dictionaries for `"en"` and `"ko"`. Supports nested dictionary keys and parameter interpolation via `t("key", { name: "John" })`. The locale is auto-detected from `navigator.language` and persisted via `SyncStorageProvider`. Use `configure()` to add or override dictionaries.
 
 ---
 
@@ -92,7 +92,7 @@ interface LoggerContextValue {
 export const LoggerProvider: ParentComponent;
 ```
 
-Configurable logging provider. Middleware pattern via `configure()`.
+Configurable logging provider. Defaults to a `consola`-based adapter. Middleware pattern via `configure()`.
 
 ---
 
@@ -110,7 +110,7 @@ export const ServiceClientProvider: ParentComponent;
 export function useServiceClient(): ServiceClientContextValue;
 ```
 
-Service communication provider. Manages WebSocket connections to backend services. Multiple named connections supported via `key`.
+Service communication provider. Manages WebSocket connections to backend services. Multiple named connections supported via `key` (defaults to `"default"`). Auto-infers host, port, and SSL from `window.location` when not specified.
 
 ---
 
@@ -142,7 +142,12 @@ export const SharedDataProvider: (props: { children: JSX.Element }) => JSX.Eleme
 export function useSharedData<TSharedData>(): SharedDataValue<TSharedData>;
 ```
 
-Centralized data management for shared lookup data (e.g. code tables). Data is fetched once and shared across all consumers. `emit()` triggers a re-fetch.
+Centralized data management for shared lookup data (e.g. code tables). Data is fetched once and shared across all consumers. `emit()` triggers a re-fetch. Must be used inside `ServiceClientProvider`.
+
+The returned `SharedDataValue` also provides:
+- `wait()` -- wait until all initial fetches complete
+- `busy` -- whether a fetch is in progress
+- `configure()` -- set definitions to start data subscriptions (can only be called once)
 
 ---
 
@@ -155,7 +160,7 @@ export const SystemProvider: ParentComponent<{
 }>;
 ```
 
-Convenience provider that composes `ConfigProvider`, `SyncStorageProvider`, `LoggerProvider`, `ThemeProvider`, `I18nProvider`, `NotificationProvider`, and `BusyProvider` into a single wrapper.
+Convenience provider that composes `ConfigProvider`, `I18nProvider`, `SyncStorageProvider`, `LoggerProvider`, `NotificationProvider`, `ErrorLoggerProvider`, `PwaUpdateProvider`, `ClipboardProvider`, `ThemeProvider`, `ServiceClientProvider`, `SharedDataProvider`, and `BusyProvider` into a single wrapper.
 
 ---
 
@@ -166,14 +171,10 @@ import { SystemProvider, DialogProvider, PrintProvider } from "@simplysm/solid";
 
 // Typical app provider tree
 <SystemProvider clientName="my-app">
-  <ServiceClientProvider>
-    <SharedDataProvider>
-      <DialogProvider>
-        <PrintProvider>
-          <App />
-        </PrintProvider>
-      </DialogProvider>
-    </SharedDataProvider>
-  </ServiceClientProvider>
+  <DialogProvider>
+    <PrintProvider>
+      <App />
+    </PrintProvider>
+  </DialogProvider>
 </SystemProvider>
 ```

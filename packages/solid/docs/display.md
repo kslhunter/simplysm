@@ -34,7 +34,7 @@ import { IconUser } from "@tabler/icons-solidjs";
 
 ```typescript
 interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
-  theme?: "base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral";
+  theme?: "base" | "primary" | "info" | "success" | "warning" | "danger";
 }
 ```
 
@@ -46,7 +46,7 @@ Inline badge/tag with semantic theming.
 
 ```typescript
 interface LinkProps extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
-  theme?: "base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral";
+  theme?: "base" | "primary" | "info" | "success" | "warning" | "danger";
   disabled?: boolean;
 }
 ```
@@ -59,7 +59,7 @@ Styled anchor link with theme and disabled state.
 
 ```typescript
 interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  theme?: "base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral";
+  theme?: "base" | "primary" | "info" | "success" | "warning" | "danger";
 }
 ```
 
@@ -98,13 +98,13 @@ Apache ECharts wrapper. Requires `echarts` as a peer dependency. Set `busy` to s
 ```typescript
 interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
   value: number;
-  theme?: "base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral";
+  theme?: "base" | "primary" | "info" | "success" | "warning" | "danger";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   inset?: boolean;
 }
 ```
 
-Progress bar. `value` is in the range 0–100 (0 = 0%, 100 = 100%). Pass `children` to display custom content instead of the default percentage text.
+Progress bar. `value` is in the range 0--100 (0 = 0%, 100 = 100%). Pass `children` to display custom content instead of the default percentage text.
 
 ---
 

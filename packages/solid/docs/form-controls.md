@@ -4,7 +4,7 @@
 
 ```typescript
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  theme?: "base" | "primary" | "success" | "warning" | "danger" | "danger-light" | "neutral";
+  theme?: "base" | "primary" | "info" | "success" | "warning" | "danger";
   variant?: "solid" | "outline" | "ghost";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   inset?: boolean;
@@ -44,7 +44,7 @@ interface TextInputProps {
 
 Single-line text input with format masking and validation. Use `format` for input masks (e.g. `"XXX-XXXX-XXXX"`).
 
-**Sub-component:** `TextInput.Prefix` — renders content before the input.
+**Sub-component:** `TextInput.Prefix` -- renders content before the input.
 
 ---
 
@@ -75,7 +75,7 @@ interface NumberInputProps {
 
 Numeric input with locale-aware formatting. `useGrouping` enables thousands separators (default: `true`).
 
-**Sub-component:** `NumberInput.Prefix` — renders content before the input.
+**Sub-component:** `NumberInput.Prefix` -- renders content before the input.
 
 ---
 
@@ -231,10 +231,10 @@ Dropdown select with single or multiple selection modes. Supports two usage patt
 Providing `itemSearchText` enables a built-in search input. `itemChildren` enables tree-structured items.
 
 **Sub-components:**
-- `Select.Item` — selectable option (`{ value: TValue; disabled?: boolean }`)
-- `Select.Header` — non-selectable header row
-- `Select.Action` — non-selectable action row
-- `Select.ItemTemplate` — custom item renderer
+- `Select.Item` -- selectable option (`{ value: TValue; disabled?: boolean }`)
+- `Select.Header` -- non-selectable header row
+- `Select.Action` -- non-selectable action row
+- `Select.ItemTemplate` -- custom item renderer
 
 ---
 
@@ -335,7 +335,7 @@ interface CheckboxGroupProps<TValue> {
 
 Group of checkboxes with multi-value binding.
 
-**Sub-component:** `CheckboxGroup.Item` — `{ value: TValue; disabled?: boolean; children?: JSX.Element }`
+**Sub-component:** `CheckboxGroup.Item` -- `{ value: TValue; disabled?: boolean; children?: JSX.Element }`
 
 ---
 
@@ -360,7 +360,7 @@ interface RadioGroupProps<TValue> {
 
 Group of radio buttons with single-value binding.
 
-**Sub-component:** `RadioGroup.Item` — `{ value: TValue; disabled?: boolean; children?: JSX.Element }`
+**Sub-component:** `RadioGroup.Item` -- `{ value: TValue; disabled?: boolean; children?: JSX.Element }`
 
 ---
 
@@ -474,7 +474,7 @@ interface ThemeToggleProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEleme
 }
 ```
 
-Button that cycles through light, dark, and system theme modes.
+Button that cycles through light, system, and dark theme modes.
 
 ---
 

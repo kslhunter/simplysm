@@ -13,8 +13,7 @@
   "files": [
     "dist",
     "src",
-    "tests",
-    "docs"
+    "tests"
   ],
   "sideEffects": false,
   "exports": {
