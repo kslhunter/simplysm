@@ -15,6 +15,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/mcp-playwright/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/service-server/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/sd-claude/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.legacy-packages" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core-common/.cache" />

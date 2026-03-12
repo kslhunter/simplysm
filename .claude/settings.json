@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "python .claude/statusline.py"
+    "command": "python .claude/sd-statusline.py"
   },
   "SessionStart": [
     {

@@ -39,7 +39,7 @@ export function runInstall(): void {
 
     cleanSdEntries(targetDir);
     copySdEntries(sourceDir, targetDir, sourceEntries);
-    setupStatusLine(targetDir);
+    setupSettings(targetDir);
 
     // eslint-disable-next-line no-console
     console.log(`[@simplysm/sd-claude] Installed ${sourceEntries.length} sd-* entries.`);
@@ -144,18 +144,40 @@ function copySdEntries(sourceDir: string, targetDir: string, entries: string[]):
   }
 }
 
-/** Adds statusLine configuration to settings.json. */
-function setupStatusLine(targetDir: string): void {
+/** Ensures statusLine and SessionStart hooks are configured in settings.json. */
+function setupSettings(targetDir: string): void {
   const settingsPath = path.join(targetDir, "settings.json");
-  const sdStatusLineCommand = "node .claude/sd-statusline.js";
 
   let settings: Record<string, unknown> = {};
   if (fs.existsSync(settingsPath)) {
     settings = JSON.parse(fs.readFileSync(settingsPath, "utf-8")) as Record<string, unknown>;
   }
 
-  if (settings["statusLine"] == null) {
-    settings["statusLine"] = { type: "command", command: sdStatusLineCommand };
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+  // statusLine: always overwrite
+  settings["statusLine"] = { type: "command", command: "python .claude/sd-statusline.py" };
+
+  // SessionStart: ensure sd-session-start hook exists with correct config
+  const sdSessionEntry = {
+    matcher: "startup|resume|clear|compact",
+    hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],
+  };
+
+  const sessionStart = settings["SessionStart"] as
+    | Array<{ matcher?: string; hooks?: Array<{ type: string; command: string }> }>
+    | undefined;
+
+  if (sessionStart == null) {
+    settings["SessionStart"] = [sdSessionEntry];
+  } else {
+    const idx = sessionStart.findIndex((entry) =>
+      entry.hooks?.some((hook) => hook.command.includes("sd-session-start")),
+    );
+    if (idx >= 0) {
+      sessionStart[idx] = sdSessionEntry;
+    } else {
+      sessionStart.push(sdSessionEntry);
+    }
   }
+
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
 }
