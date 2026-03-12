@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/sd-claude",
   "version": "13.0.82",
-  "description": "Simplysm Claude Code CLI — asset installer",
+  "description": "Simplysm Claude Code asset installer",
   "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
@@ -10,29 +10,12 @@
     "directory": "packages/sd-claude"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "publishConfig": {
-    "bin": {
-      "sd-claude": "./dist/sd-claude.js"
-    }
-  },
   "files": [
-    "dist",
-    "src",
-    "tests",
     "scripts",
     "claude"
   ],
-  "sideEffects": false,
   "scripts": {
     "postinstall": "node scripts/postinstall.mjs",
     "prepack": "node scripts/sync-claude-assets.mjs"
-  },
-  "dependencies": {
-    "yargs": "^18.0.0"
-  },
-  "devDependencies": {
-    "@types/yargs": "^17.0.35"
   }
 }

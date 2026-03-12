@@ -518,8 +518,6 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   for (const [name, config] of Object.entries(sdConfig.packages)) {
     if (config == null) continue;
-    if (config.target === "scripts") continue;
-
     const pkgConfig = config;
     if (pkgConfig.publish == null) continue;
 

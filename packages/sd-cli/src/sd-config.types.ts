@@ -219,6 +219,8 @@ export interface SdServerPackageConfig {
 export interface SdScriptsPackageConfig {
   /** build target */
   target: "scripts";
+  /** publish configuration */
+  publish?: SdPublishConfig;
 }
 
 /**

@@ -4,6 +4,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { collectSdEntries } from "./sd-entries.mjs";
 
 const cliDir = process.cwd();
 const projectRoot = path.resolve(cliDir, "../..");
@@ -15,31 +16,13 @@ if (fs.existsSync(targetDir)) {
   fs.rmSync(targetDir, { recursive: true });
 }
 
-// sd-* 항목 탐색
-const allEntries = [];
+// sd-* 항목 탐색 및 복사
+const allEntries = collectSdEntries(claudeDir);
 
-// 루트 레벨: sd-*
-for (const name of fs.readdirSync(claudeDir)) {
-  if (name.startsWith("sd-")) {
-    allEntries.push(name);
-  }
-}
-
-// 서브 디렉토리: */sd-*
-for (const dirent of fs.readdirSync(claudeDir, { withFileTypes: true })) {
-  if (!dirent.isDirectory() || dirent.name.startsWith("sd-")) continue;
-  const subPath = path.join(claudeDir, dirent.name);
-  for (const name of fs.readdirSync(subPath)) {
-    if (name.startsWith("sd-")) {
-      allEntries.push(path.join(dirent.name, name));
-    }
-  }
-}
-
-// 복사
 for (const entry of allEntries) {
   const src = path.join(claudeDir, entry);
   const dest = path.join(targetDir, entry);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.cpSync(src, dest, { recursive: true });
 }
 

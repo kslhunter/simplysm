@@ -15,7 +15,7 @@ const config: SdConfigFn = () => ({
     "mcp-playwright": { target: "node", publish: { type: "npm" } },
     "orm-common": { target: "neutral", publish: { type: "npm" } },
     "orm-node": { target: "node", publish: { type: "npm" } },
-    "sd-claude": { target: "node", publish: { type: "npm" } },
+    "sd-claude": { target: "scripts", publish: { type: "npm" } },
     "service-client": { target: "neutral", publish: { type: "npm" } },
     "service-common": { target: "neutral", publish: { type: "npm" } },
     "service-server": { target: "node", publish: { type: "npm" } },
