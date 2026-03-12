@@ -6,7 +6,7 @@
 node_modules
 packages/*/.*
 packages/*/dist
-packages/claude/claude
+packages/sd-claude/claude
 *.~*
 ~*.*
 
