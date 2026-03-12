@@ -78,9 +78,9 @@ description: 이 스킬은 사용자가 "계획 세워줘", "plan 만들어", "s
 
 모든 불명확 항목이 해소되었으면 완성된 계획서를 사용자에게 제시하고, AskUserQuestion으로 구현 승인을 요청하라.
 
-사용자가 승인하면 `.tmp/plans/YYMMDDHHMMSS_{topic}.md`에 계획서를 Write하라.
+사용자가 승인하면 `.tmp/plans/{yyMMddHHmmss}_{topic}.md`에 계획서를 Write하라.
 - 파일명 예시: `260311143052_progress-컴포넌트-추가.md`
-- `YYMMDDHHMMSS`: 현재 시각 (예: 260311143052)
+- `yyMMddHHmmss`: 연월일시분초 (예: 260311143052)
 - `{topic}`: 작업 내용 기반 짧은 케밥케이스 (예: progress-컴포넌트-추가)
 
 ---

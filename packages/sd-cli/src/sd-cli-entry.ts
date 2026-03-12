@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // side-effect: Map/Array prototype extensions (getOrCreate, etc.)
 import "@simplysm/core-common";
@@ -24,17 +25,18 @@ EventEmitter.defaultMaxListeners = 100;
 
 const COMMAND_NAMES = ["lint", "typecheck", "check", "watch", "dev", "build", "device", "init", "publish", "replace-deps"];
 
-function collectYargsHelp(argv: string[]): string {
+async function collectYargsHelp(argv: string[]): Promise<string> {
   const lines: string[] = [];
+
   const orig = console.log;
-  // eslint-disable-next-line no-console
+
   console.log = (...args: unknown[]) => lines.push(args.map(String).join(" "));
   try {
-    createCliParser(argv).exitProcess(false).parse();
+    await createCliParser(argv).exitProcess(false).parse();
   } catch {
     // yargs may throw after help display
   } finally {
-    // eslint-disable-next-line no-console
+  
     console.log = orig;
   }
   return lines.join("\n");
@@ -53,12 +55,12 @@ export function createCliParser(argv: string[]): Argv {
       "$0",
       false,
       () => {},
-      () => {
+      async () => {
         for (const cmdName of COMMAND_NAMES) {
-          const helpText = collectYargsHelp([cmdName, "--help"]);
-          // eslint-disable-next-line no-console
+          const helpText = await collectYargsHelp([cmdName, "--help"]);
+        
           console.log(helpText);
-          // eslint-disable-next-line no-console
+        
           console.log();
         }
       },
