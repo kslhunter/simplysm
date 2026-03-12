@@ -146,18 +146,17 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     editor()?.destroy();
   });
 
-  const getWrapperClass = () =>
-    twMerge(
-      clsx("flex flex-col bg-primary-50 dark:bg-primary-950/30", text.default, "border", border.default, "rounded focus-within:border-primary-500"),
-      local.disabled && clsx(bg.muted, text.muted),
-      local.class,
-    );
-
-  const getContentClass = () =>
-    twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "md"]);
-
   return (
-    <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>
+    <div
+      {...rest}
+      data-rich-text-editor
+      class={twMerge(
+        clsx("flex flex-col bg-primary-50 dark:bg-primary-950/30", text.default, "border", border.default, "rounded focus-within:border-primary-500"),
+        local.disabled && clsx(bg.muted, text.muted),
+        local.class,
+      )}
+      style={local.style}
+    >
       <Show when={editor()}>
         {(instance) => (
           <Show when={!local.disabled}>
@@ -165,7 +164,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
           </Show>
         )}
       </Show>
-      <div ref={editorRef} class={getContentClass()} />
+      <div ref={editorRef} class={twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "md"])} />
     </div>
   );
 };

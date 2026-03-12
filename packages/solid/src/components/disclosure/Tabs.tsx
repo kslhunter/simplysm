@@ -39,21 +39,6 @@ function TabsTabInner(props: TabsTabProps) {
     xl: "px-5 py-3 text-lg",
   };
 
-  const sizeClasses = () => tabSizeClasses[ctx.size() ?? "md"];
-
-  const stateClass = () =>
-    isSelected()
-      ? clsx(
-          "border-b-2 border-primary-500 dark:border-primary-400",
-          themeTokens.primary.text,
-        )
-      : clsx(
-          "border-b-2 border-transparent",
-          text.muted,
-          "hover:border-base-300 hover:text-base-700",
-          "dark:hover:border-base-600 dark:hover:text-base-200",
-        );
-
   return (
     <button
       type="button"
@@ -63,8 +48,18 @@ function TabsTabInner(props: TabsTabProps) {
       tabIndex={props.disabled ? -1 : 0}
       class={twMerge(
         "relative cursor-pointer select-none font-medium transition-colors -mb-px",
-        sizeClasses(),
-        stateClass(),
+        tabSizeClasses[ctx.size() ?? "md"],
+        isSelected()
+          ? clsx(
+              "border-b-2 border-primary-500 dark:border-primary-400",
+              themeTokens.primary.text,
+            )
+          : clsx(
+              "border-b-2 border-transparent",
+              text.muted,
+              "hover:border-base-300 hover:text-base-700",
+              "dark:hover:border-base-600 dark:hover:text-base-200",
+            ),
         props.disabled && "opacity-50 pointer-events-none",
         props.class,
       )}

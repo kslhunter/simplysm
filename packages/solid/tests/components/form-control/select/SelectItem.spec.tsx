@@ -23,6 +23,7 @@ describe("SelectItem component", () => {
         toggleValue,
         closeDropdown: vi.fn(),
         setItemTemplate: vi.fn(),
+        size: () => "md" as const,
       };
 
       const { getByText } = render(() => (
@@ -43,6 +44,7 @@ describe("SelectItem component", () => {
         toggleValue: vi.fn(),
         closeDropdown,
         setItemTemplate: vi.fn(),
+        size: () => "md" as const,
       };
 
       const { getByText } = render(() => (
@@ -63,6 +65,7 @@ describe("SelectItem component", () => {
         toggleValue: vi.fn(),
         closeDropdown,
         setItemTemplate: vi.fn(),
+        size: () => "md" as const,
       };
 
       const { getByText } = render(() => (
@@ -84,6 +87,7 @@ describe("SelectItem component", () => {
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
         setItemTemplate: vi.fn(),
+        size: () => "md" as const,
       };
 
       render(() => (
@@ -106,6 +110,7 @@ describe("SelectItem component", () => {
         toggleValue,
         closeDropdown: vi.fn(),
         setItemTemplate: vi.fn(),
+        size: () => "md" as const,
       };
 
       const { getByText } = render(() => (

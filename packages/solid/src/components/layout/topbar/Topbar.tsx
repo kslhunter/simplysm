@@ -133,8 +133,8 @@ const TopbarInner: ParentComponent<TopbarProps> = (props) => {
   return (
     <header {...rest} data-topbar class={getClassName()}>
       <Show when={sidebarContext}>
-        <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label={i18n.t("topbar.toggleSidebar")}>
-          <Icon icon={IconMenu2} size="1.5em" />
+        <Button variant="ghost" onClick={handleToggle} aria-label={i18n.t("topbar.toggleSidebar")}>
+          <Icon icon={IconMenu2} />
         </Button>
       </Show>
       {local.children}

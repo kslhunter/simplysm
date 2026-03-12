@@ -1,4 +1,5 @@
 import { type Accessor, createSignal } from "solid-js";
+import { json } from "@simplysm/core-common";
 import { useConfig } from "../providers/ConfigContext";
 
 type StorageSetter<TValue> = (
@@ -43,7 +44,7 @@ export function useLocalStorage<TValue>(
   try {
     const item = localStorage.getItem(prefixedKey);
     if (item !== null) {
-      storedValue = JSON.parse(item) as TValue;
+      storedValue = json.parse<TValue>(item);
     }
   } catch {
     // Use initial value on JSON parse failure
@@ -67,7 +68,7 @@ export function useLocalStorage<TValue>(
     if (resolved === undefined) {
       localStorage.removeItem(prefixedKey);
     } else {
-      localStorage.setItem(prefixedKey, JSON.stringify(resolved));
+      localStorage.setItem(prefixedKey, json.stringify(resolved));
     }
 
     return resolved;

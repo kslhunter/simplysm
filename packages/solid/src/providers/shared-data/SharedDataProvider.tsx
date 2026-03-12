@@ -302,7 +302,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       const entry = createSharedDataEntry(name, def, client);
       entries.set(name, entry);
       accessors[name] = entry;
-      void entry.initialize();
     }
   }
 

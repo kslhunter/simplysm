@@ -59,13 +59,6 @@ export interface TextareaProps {
   style?: JSX.CSSProperties;
 }
 
-const textareaBaseClass = clsx(
-  "absolute left-0 top-0",
-  "size-full",
-  "resize-none overflow-hidden",
-  "bg-transparent",
-  text.placeholder,
-);
 
 /**
  * Textarea component
@@ -164,8 +157,6 @@ export const Textarea: Component<TextareaProps> = (props) => {
       "whitespace-pre-wrap break-all",
     );
 
-  const getTextareaClass = () =>
-    twMerge(textareaBaseClass, textAreaSizeClasses[local.size ?? "md"], local.inset && "p-0");
 
   // Whether editable
   const isEditable = () => !local.disabled && !local.readOnly;
@@ -228,7 +219,17 @@ export const Textarea: Component<TextareaProps> = (props) => {
         {contentForHeight()}
       </div>
       <textarea
-        class={getTextareaClass()}
+        class={twMerge(
+          clsx(
+            "absolute left-0 top-0",
+            "size-full",
+            "resize-none overflow-hidden",
+            "bg-transparent",
+            text.placeholder,
+          ),
+          textAreaSizeClasses[local.size ?? "md"],
+          local.inset && "p-0",
+        )}
         value={value()}
         placeholder={local.placeholder}
         title={local.title}

@@ -1,17 +1,24 @@
 {
+  "permissions": {
+    "deny": [
+      "Bash(git worktree*)"
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "python .claude/sd-statusline.py"
   },
-  "SessionStart": [
-    {
-      "matcher": "startup|resume|clear|compact",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "bash .claude/sd-session-start.sh"
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/sd-session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

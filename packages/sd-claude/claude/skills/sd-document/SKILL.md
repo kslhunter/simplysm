@@ -1,109 +1,109 @@
 ---
 name: sd-document
-description: .docx, .xlsx, .pptx, .pdf 파일과 관련하여 "문서 읽기/분석", "파일 내용 추출", "DOCX/XLSX 생성", "고객 문서 검토", "데이터 내보내기"를 요청할때 사용.
+description: Used when requesting "read/analyze documents", "extract file content", "create DOCX/XLSX", "review customer documents", or "export data" related to .docx, .xlsx, .pptx, .pdf files.
 ---
 
-# SD Document — 문서 파일 읽기/쓰기
+# SD Document — Read/Write Document Files
 
-문서 파일(.docx/.xlsx/.pptx/.pdf)을 Python 스크립트로 읽거나 쓴다. 읽기 시 텍스트와 이미지를 위치 정보와 함께 추출하고, 이미지를 파일로 저장한 뒤 Claude Read로 분석한다.
+Reads or writes document files (.docx/.xlsx/.pptx/.pdf) using Python scripts. When reading, extracts text and images along with positional information, saves images to files, and analyzes them with Claude Read.
 
-ARGUMENTS: 문서 파일 경로 (필수). `.docx`, `.xlsx`, `.pptx`, `.pdf` 파일 경로를 지정한다.
+ARGUMENTS: Document file path (required). Specify a `.docx`, `.xlsx`, `.pptx`, or `.pdf` file path.
 
 ---
 
-## Step 1: 작업 방향 결정
+## Step 1: Determine Task Direction
 
-ARGUMENTS에서 파일 경로를 추출하고, 사용자의 요청이 **읽기**(분석/추출)인지 **쓰기**(생성/편집)인지 판단하라.
+Extract the file path from ARGUMENTS and determine whether the user's request is **read** (analyze/extract) or **write** (create/edit).
 
-- **읽기** → Step 2로 이동
-- **쓰기** → Step 4로 이동
+- **Read** → Go to Step 2
+- **Write** → Go to Step 4
 
-### 형식별 지원 현황
+### Format Support Matrix
 
-| 형식 | 읽기 | 쓰기 | 라이브러리 |
-|------|------|------|-----------|
-| DOCX | 가능 | 가능 | `python-docx` |
-| XLSX | 가능 | 가능 | `openpyxl`, `pandas` |
-| PPTX | 가능 | 불가 | `python-pptx` |
-| PDF  | 가능 | 불가 | `pdfplumber`, `pypdf` |
+| Format | Read | Write | Library |
+|--------|------|-------|---------|
+| DOCX | Supported | Supported | `python-docx` |
+| XLSX | Supported | Supported | `openpyxl`, `pandas` |
+| PPTX | Supported | Not supported | `python-pptx` |
+| PDF  | Supported | Not supported | `pdfplumber`, `pypdf` |
 
-누락된 패키지는 첫 스크립트 실행 시 자동 설치된다.
+Missing packages are automatically installed on first script execution.
 
-## Step 2: 문서 읽기 (추출 스크립트 실행)
+## Step 2: Read Document (Run Extraction Script)
 
-파일 확장자에 맞는 추출 스크립트를 실행하라:
+Run the extraction script matching the file extension:
 
 ```bash
-python .claude/skills/sd-document/extract_docx.py <파일경로>
-python .claude/skills/sd-document/extract_xlsx.py <파일경로>
-python .claude/skills/sd-document/extract_pptx.py <파일경로>
-python .claude/skills/sd-document/extract_pdf.py  <파일경로>
+python .claude/skills/sd-document/extract_docx.py <file_path>
+python .claude/skills/sd-document/extract_xlsx.py <file_path>
+python .claude/skills/sd-document/extract_pptx.py <file_path>
+python .claude/skills/sd-document/extract_pdf.py  <file_path>
 ```
 
-### 출력
-- **stdout**: 텍스트 및 위치 정보 (Markdown 형식)
-- **이미지 파일**: `<파일명>_files/` 디렉토리에 저장
+### Output
+- **stdout**: Text and positional information (Markdown format)
+- **Image files**: Saved to `<filename>_files/` directory
 
-### 위치 정보
+### Positional Information
 
-| 형식 | 위치 표현 방식 |
-|------|--------------|
-| DOCX | 문단 흐름 순서 (텍스트-이미지 인라인) |
-| XLSX | 셀 위치 (A1, B2 등) |
-| PPTX | 도형 left/top 좌표 (인치) + 슬라이드 번호 |
-| PDF  | 페이지 번호 |
+| Format | Position Representation |
+|--------|----------------------|
+| DOCX | Paragraph flow order (text-image inline) |
+| XLSX | Cell position (A1, B2, etc.) |
+| PPTX | Shape left/top coordinates (inches) + slide number |
+| PDF  | Page number |
 
-## Step 3: 추출 결과 분석
+## Step 3: Analyze Extraction Results
 
-Step 2의 출력에서 추출된 파일 경로를 확인하고 아래를 수행하라:
+Check the extracted file paths from Step 2 output and perform the following:
 
-1. **이미지**: `_files/` 디렉토리에 저장된 각 이미지를 **Read** 도구로 열어 시각적 분석을 수행
-2. **텍스트**: stdout으로 출력된 텍스트를 사용자의 요청에 맞게 분석/요약
+1. **Images**: Open each image saved in the `_files/` directory with the **Read** tool for visual analysis
+2. **Text**: Analyze/summarize the text output to stdout according to the user's request
 
-## Step 4: 문서 쓰기
+## Step 4: Write Document
 
-사용자의 요청에 따라 Python 스크립트를 작성하여 문서를 생성하거나 편집하라.
+Write a Python script to create or edit documents according to the user's request.
 
 ### DOCX (`python-docx`)
 
-메일 템플릿 및 간단한 보고서용.
+For email templates and simple reports.
 
 ```python
 from docx import Document
 
-doc = Document()                          # 새 문서
-# doc = Document("existing.docx")         # 기존 문서 편집
-doc.add_heading("제목", level=1)
-doc.add_paragraph("본문 내용")
+doc = Document()                          # New document
+# doc = Document("existing.docx")         # Edit existing document
+doc.add_heading("Title", level=1)
+doc.add_paragraph("Body content")
 table = doc.add_table(rows=2, cols=3)
-table.cell(0, 0).text = "항목"
+table.cell(0, 0).text = "Item"
 doc.save("output.docx")
 ```
 
-기존 문서 편집: `Document("existing.docx")`로 열어 `paragraph.text` 교체, `table.cell().text` 수정.
+Edit existing document: Open with `Document("existing.docx")` and replace `paragraph.text`, modify `table.cell().text`.
 
 ### XLSX (`openpyxl`)
 
-데이터와 수식 중심. 서식(색상, 테두리)은 필수가 아님.
+Data and formula focused. Formatting (colors, borders) is not required.
 
 ```python
 from openpyxl import Workbook
 
 wb = Workbook()
 ws = wb.active
-ws["A1"] = "항목"
-ws["B1"] = "수량"
-ws.append(["사과", 10])
-ws.append(["배", 20])
+ws["A1"] = "Item"
+ws["B1"] = "Quantity"
+ws.append(["Apple", 10])
+ws.append(["Pear", 20])
 ws["B4"] = "=SUM(B2:B3)"
 wb.save("output.xlsx")
 ```
 
-기존 파일 편집: `load_workbook("existing.xlsx")`로 열어 수정.
-pandas DataFrame 내보내기: `df.to_excel("output.xlsx", index=False)`
+Edit existing file: Open with `load_workbook("existing.xlsx")` and modify.
+Export pandas DataFrame: `df.to_excel("output.xlsx", index=False)`
 
-## 흔한 실수
+## Common Mistakes
 
-- **문자 인코딩**: 스크립트에 UTF-8 처리가 내장되어 있으므로 항상 스크립트를 통해 추출할 것
-- **이미지 누락**: 추출 후 `_files/` 디렉토리의 이미지를 반드시 읽을 것
-- **XLSX data_only**: `load_workbook(data_only=True)`는 수식을 제거함 — 수식을 유지하려면 `data_only=False` 사용
+- **Character encoding**: Scripts have built-in UTF-8 handling, so always extract through scripts
+- **Missing images**: After extraction, always read images in the `_files/` directory
+- **XLSX data_only**: `load_workbook(data_only=True)` removes formulas — use `data_only=False` to preserve formulas

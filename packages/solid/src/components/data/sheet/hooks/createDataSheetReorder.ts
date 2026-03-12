@@ -37,11 +37,13 @@ export function createDataSheetReorder<TItem>(
     const tableEl = target.closest("table")!;
     const tbody = tableEl.querySelector("tbody")!;
     const rows = Array.from(tbody.rows);
+    const scrollContainer = tableEl.closest<HTMLElement>("[data-sheet-scroll]");
 
     setDragState({ draggingItem: item, targetItem: null, position: null });
 
     startPointerDrag(target, e.pointerId, {
       onMove(ev) {
+        const items = displayItems();
         let foundTarget: TItem | null = null;
         let foundPosition: "before" | "after" | "inside" | null = null;
 
@@ -50,8 +52,8 @@ export function createDataSheetReorder<TItem>(
           const rect = row.getBoundingClientRect();
           if (ev.clientY < rect.top || ev.clientY > rect.bottom) continue;
 
-          if (i >= displayItems().length) break;
-          const flat = displayItems()[i];
+          if (i >= items.length) break;
+          const flat = items[i];
           if (flat.item === item) break;
 
           // Cannot drop to child items of self
@@ -82,8 +84,8 @@ export function createDataSheetReorder<TItem>(
           rows[i].removeAttribute("data-dragging");
           rows[i].removeAttribute("data-drag-over");
 
-          if (i < displayItems().length) {
-            const flat = displayItems()[i];
+          if (i < items.length) {
+            const flat = items[i];
             if (flat.item === item) {
               rows[i].setAttribute("data-dragging", "");
             }
@@ -94,22 +96,20 @@ export function createDataSheetReorder<TItem>(
         }
 
         // before/after indicator
-        const indicatorEl = tableEl
-          .closest("[data-sheet-scroll]")
+        const indicatorEl = scrollContainer
           ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
         if (indicatorEl) {
           if (foundTarget != null && foundPosition != null && foundPosition !== "inside") {
-            const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
+            const targetIdx = items.findIndex((f) => f.item === foundTarget);
             if (targetIdx >= 0) {
               const targetRow = rows[targetIdx];
-              const containerRect = tableEl.closest("[data-sheet-scroll]")!.getBoundingClientRect();
+              const containerRect = scrollContainer!.getBoundingClientRect();
               const rowRect = targetRow.getBoundingClientRect();
-              const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
 
               const top =
                 foundPosition === "before"
-                  ? rowRect.top - containerRect.top + scrollEl.scrollTop
-                  : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
+                  ? rowRect.top - containerRect.top + scrollContainer!.scrollTop
+                  : rowRect.bottom - containerRect.top + scrollContainer!.scrollTop;
 
               indicatorEl.style.display = "block";
               indicatorEl.style.top = `${top}px`;
@@ -134,8 +134,7 @@ export function createDataSheetReorder<TItem>(
           row.removeAttribute("data-dragging");
           row.removeAttribute("data-drag-over");
         }
-        const indicatorEl = tableEl
-          .closest("[data-sheet-scroll]")
+        const indicatorEl = scrollContainer
           ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
         if (indicatorEl) {
           indicatorEl.style.display = "none";

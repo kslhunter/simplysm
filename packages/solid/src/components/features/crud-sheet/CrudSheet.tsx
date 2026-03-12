@@ -369,13 +369,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
   // -- Keyboard Shortcuts --
   createEventListener(document, "keydown", async (e: KeyboardEvent) => {
-    if (!isActiveCrud(crudId)) return;
-    if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
+    if (!e.ctrlKey || !isActiveCrud(crudId)) return;
+    if (e.key === "s" && !isSelectMode()) {
       e.preventDefault();
       e.stopImmediatePropagation();
       formRef?.requestSubmit();
     }
-    if (e.ctrlKey && e.altKey && e.key === "l") {
+    if (e.altKey && e.key === "l") {
       e.preventDefault();
       e.stopImmediatePropagation();
       if (!checkIgnoreChanges()) return;
@@ -402,7 +402,6 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
       <>
         <Show when={canEdit() && local.inlineEdit}>
           <Button
-            size="lg"
             variant="ghost"
             theme="primary"
             onClick={() => formRef?.requestSubmit()}
@@ -411,7 +410,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
             {i18n.t("crudSheet.save")}
           </Button>
         </Show>
-        <Button size="lg" variant="ghost" theme="info" onClick={handleRefresh}>
+        <Button variant="ghost" theme="info" onClick={handleRefresh}>
           <Icon icon={IconRefresh} class="mr-1" />
           {i18n.t("crudSheet.refresh")}
         </Button>

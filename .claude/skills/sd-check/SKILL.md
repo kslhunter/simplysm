@@ -54,7 +54,11 @@ Invoke `sd-debug` via the Skill tool. Pass the following content as args:
 
 ```
 Analyze the code errors from the check results below.
-**Important: After completing Step 2 (in-depth codebase analysis), skip Steps 3-5 and immediately fix the code based on the analysis results. Do not output a diagnostic report, do not wait for user confirmation, and do not invoke sd-plan — apply fixes directly.**
+**Important workflow instructions:**
+1. Perform Steps 1-2 thoroughly — gather problem information and conduct in-depth codebase analysis to identify the root cause. Do NOT skip or rush these steps.
+2. Output the diagnostic report from Step 3, but skip the user confirmation (do not call AskUserQuestion).
+3. Skip Steps 4-5 (do not invoke sd-plan).
+4. Based on the analysis results and diagnostic report, apply fixes directly.
 
 <Include the error content from the check result file here>
 ```

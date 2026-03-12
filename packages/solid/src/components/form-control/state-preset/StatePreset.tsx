@@ -191,33 +191,18 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   // ── Render ──
 
-  const containerClass = () => twMerge(clsx("inline-flex items-center", gap.lg, "flex-wrap"), local.class);
-
-  const resolvedChipClass = () => twMerge(
-    clsx("inline-flex items-center", gap.md, "rounded-full", bg.subtle, text.default, "cursor-default"),
-    chipSizeClasses[local.size ?? "md"],
-  );
-
   const resolvedIconBtnClass = () =>
     twMerge("rounded-full", iconBtnSizeClasses[local.size ?? "md"]);
 
-  const resolvedStarBtnClass = () =>
-    twMerge(
-      clsx("inline-flex cursor-pointer items-center justify-center rounded-full text-warning-500 transition-colors focus:outline-none", themeTokens.warning.hoverBg),
-      starBtnSizeClasses[local.size ?? "md"],
-    );
-
-  const resolvedInputClass = () => twMerge(
-    clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
-    inputSizeClasses[local.size ?? "md"],
-  );
-
   return (
-    <div class={containerClass()} style={local.style}>
+    <div class={twMerge(clsx("inline-flex items-center", gap.lg, "flex-wrap"), local.class)} style={local.style}>
       {/* Star button - add preset */}
       <button
         type="button"
-        class={resolvedStarBtnClass()}
+        class={twMerge(
+          clsx("inline-flex cursor-pointer items-center justify-center rounded-full text-warning-500 transition-colors focus:outline-none", themeTokens.warning.hoverBg),
+          starBtnSizeClasses[local.size ?? "md"],
+        )}
         onClick={handleStartAdd}
         title={i18n.t("statePreset.addPreset")}
       >
@@ -227,7 +212,12 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
       {/* Preset chips */}
       <For each={presets()}>
         {(preset, index) => (
-          <span class={resolvedChipClass()}>
+          <span
+            class={twMerge(
+              clsx("inline-flex items-center", gap.md, "rounded-full", bg.subtle, text.default, "cursor-default"),
+              chipSizeClasses[local.size ?? "md"],
+            )}
+          >
             <button
               type="button"
               class="cursor-pointer hover:underline focus:outline-none"
@@ -266,7 +256,10 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
             requestAnimationFrame(() => el.focus());
           }}
           type="text"
-          class={resolvedInputClass()}
+          class={twMerge(
+            clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
+            inputSizeClasses[local.size ?? "md"],
+          )}
           placeholder={i18n.t("statePreset.namePlaceholder")}
           autocomplete="one-time-code"
           value={inputValue()}

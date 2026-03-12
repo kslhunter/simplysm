@@ -107,16 +107,27 @@ function setupSettings(targetDir) {
   // statusLine: always overwrite
   settings["statusLine"] = { type: "command", command: "python .claude/sd-statusline.py" };
 
+  // Migrate: move root-level SessionStart to hooks.SessionStart
+  if (settings["SessionStart"] != null) {
+    settings["hooks"] = settings["hooks"] ?? {};
+    settings["hooks"]["SessionStart"] = [
+      ...(settings["hooks"]["SessionStart"] ?? []),
+      ...settings["SessionStart"],
+    ];
+    delete settings["SessionStart"];
+  }
+
   // SessionStart: ensure sd-session-start hook exists with correct config
+  settings["hooks"] = settings["hooks"] ?? {};
   const sdSessionEntry = {
     matcher: "startup|resume|clear|compact",
     hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],
   };
 
-  const sessionStart = settings["SessionStart"];
+  const sessionStart = settings["hooks"]["SessionStart"];
 
   if (sessionStart == null) {
-    settings["SessionStart"] = [sdSessionEntry];
+    settings["hooks"]["SessionStart"] = [sdSessionEntry];
   } else {
     const idx = sessionStart.findIndex((entry) =>
       entry.hooks?.some((hook) => hook.command.includes("sd-session-start")),

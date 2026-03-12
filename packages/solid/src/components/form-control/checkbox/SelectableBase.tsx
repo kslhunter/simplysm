@@ -76,20 +76,6 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
     }
   };
 
-  const getWrapperClass = () =>
-    twMerge(
-      checkboxBaseClass,
-      checkboxSizeClasses[local.size ?? "md"],
-      local.inset && checkboxInsetClass,
-      local.inset && checkboxInsetSizeHeightClasses[local.size ?? "md"],
-      local.inline && checkboxInlineClass,
-      local.disabled && checkboxDisabledClass,
-      local.class,
-    );
-
-  const getIndicatorClass = () =>
-    twMerge(indicatorBaseClass, local.config.indicatorShape, checked() && checkedClass);
-
   const errorMsg = createMemo(() => {
     const v = local.checked ?? false;
     if (local.required && !v) return i18n.t("validation.requiredSelection");
@@ -104,12 +90,20 @@ export const SelectableBase: ParentComponent<SelectableBaseProps & { config: Sel
         role={local.config.role}
         aria-checked={checked()}
         tabIndex={local.disabled ? -1 : 0}
-        class={getWrapperClass()}
+        class={twMerge(
+          checkboxBaseClass,
+          checkboxSizeClasses[local.size ?? "md"],
+          local.inset && checkboxInsetClass,
+          local.inset && checkboxInsetSizeHeightClasses[local.size ?? "md"],
+          local.inline && checkboxInlineClass,
+          local.disabled && checkboxDisabledClass,
+          local.class,
+        )}
         style={local.style}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
       >
-        <div class={getIndicatorClass()}>
+        <div class={twMerge(indicatorBaseClass, local.config.indicatorShape, checked() && checkedClass)}>
           <Show when={checked()}>
             {local.config.indicatorContent}
           </Show>

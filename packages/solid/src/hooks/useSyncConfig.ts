@@ -1,4 +1,5 @@
 import { type Accessor, type Setter, createEffect, createSignal, untrack } from "solid-js";
+import { json } from "@simplysm/core-common";
 import { useConfig } from "../providers/ConfigContext";
 import { useSyncStorage } from "../providers/SyncStorageProvider";
 
@@ -49,7 +50,7 @@ export function useSyncConfig<TValue>(
         try {
           const stored = localStorage.getItem(prefixedKey);
           if (stored !== null && writeVersion === versionBefore) {
-            setValue(() => JSON.parse(stored) as TValue);
+            setValue(() => json.parse<TValue>(stored));
           }
         } catch {
           // Ignore parse errors, keep default value
@@ -62,14 +63,14 @@ export function useSyncConfig<TValue>(
       try {
         const stored = await currentAdapter.getItem(prefixedKey);
         if (stored !== null && writeVersion === versionBefore) {
-          setValue(() => JSON.parse(stored) as TValue);
+          setValue(() => json.parse<TValue>(stored));
         }
       } catch {
         // Fall back to localStorage on error
         try {
           const stored = localStorage.getItem(prefixedKey);
           if (stored !== null && writeVersion === versionBefore) {
-            setValue(() => JSON.parse(stored) as TValue);
+            setValue(() => json.parse<TValue>(stored));
           }
         } catch {
           // Ignore parse errors
@@ -84,7 +85,7 @@ export function useSyncConfig<TValue>(
   createEffect(() => {
     if (!ready()) return; // Don't save until storage has been read
     const currentValue = value();
-    const serialized = JSON.stringify(currentValue);
+    const serialized = json.stringify(currentValue);
 
     // Read adapter untracked to avoid re-running save effect when adapter changes
     const currentAdapter = untrack(() => syncStorageCtx?.adapter());

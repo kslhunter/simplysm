@@ -37,20 +37,6 @@ export function createDataSheetExpansion<TItem>(
     }
   }
 
-  function toggleExpandAll(): void {
-    if (!props.itemChildren) return;
-    const indexMap = originalIndexMap();
-    const allExpandable = collectAllExpandable(
-      pagedItems(),
-      props.itemChildren,
-      (item) => indexMap.get(item) ?? -1,
-    );
-    const isAllCurrentlyExpanded = allExpandable.every((item) =>
-      expandedItems().includes(item),
-    );
-    setExpandedItems(isAllCurrentlyExpanded ? [] : allExpandable);
-  }
-
   const flatItems = createMemo((): FlatItem<TItem>[] => {
     const indexMap = originalIndexMap();
     return flattenTree(
@@ -61,16 +47,29 @@ export function createDataSheetExpansion<TItem>(
     );
   });
 
-  const isAllExpanded = createMemo(() => {
-    if (!props.itemChildren) return false;
+  const allExpandable = createMemo(() => {
+    if (!props.itemChildren) return [];
     const indexMap = originalIndexMap();
-    const allExpandable = collectAllExpandable(
+    return collectAllExpandable(
       pagedItems(),
       props.itemChildren,
       (item) => indexMap.get(item) ?? -1,
     );
+  });
+
+  function toggleExpandAll(): void {
+    const items = allExpandable();
+    if (items.length === 0) return;
+    const isAllCurrentlyExpanded = items.every((item) =>
+      expandedItems().includes(item),
+    );
+    setExpandedItems(isAllCurrentlyExpanded ? [] : items);
+  }
+
+  const isAllExpanded = createMemo(() => {
+    const items = allExpandable();
     return (
-      allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item))
+      items.length > 0 && items.every((item) => expandedItems().includes(item))
     );
   });
 

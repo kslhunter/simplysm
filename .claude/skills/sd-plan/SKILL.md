@@ -23,10 +23,18 @@ Receives a task request from the user, generates an initial plan, then iterative
 
 ### 2-1. Draft Creation
 
-Draft the plan. Always follow TDD principles:
-- For code tasks → Write test code first
-- For non-code tasks → Define a self-verification checklist first
-- For code tasks where the project has no test environment set up → Propose verification methods such as CLI or dry-run
+Draft the plan. **Every plan MUST follow the TDD cycle below.** Classify the task, then choose the verification method:
+- Code + test env exists → write failing test files first
+- Code + no test env → define CLI/dry-run verification commands
+- Non-code (config, docs, prompts, SKILL.md, etc.) → define test scenarios executable via Claude Code (e.g., invoke the skill with a sample input and verify the output/behavior)
+
+**Every implementation item in the plan MUST be structured as 4 sub-steps:**
+1. **Write test/scenario** — Write the test code or define the verification scenario
+2. **RED — Confirm failure** — Run the test and confirm it fails (proves the test is valid)
+3. **Implement** — Write the minimum code to make the test pass
+4. **GREEN — Confirm success** — Run the test again and confirm it passes
+
+NEVER skip or merge these sub-steps regardless of task simplicity.
 
 ### 2-2. Clarification Cycle
 
@@ -88,7 +96,13 @@ If the user approves, Write the plan to `.tmp/plans/${TS}_{topic}.md`.
 
 ## Step 4: Post-Implementation Guidance
 
-If the user approves implementation, implement according to the plan. Once implementation is complete, output the following guidance:
+If the user approves implementation, implement according to the plan. **Each implementation item MUST follow the TDD cycle strictly:**
+1. Write the test/scenario first
+2. Run it → confirm it **fails** (RED)
+3. Implement the code
+4. Run it again → confirm it **passes** (GREEN)
+
+**Do NOT proceed to the next item until the current item reaches GREEN.** Once all items are complete, output the following guidance:
 
 - **If code changes are included**:
   ```

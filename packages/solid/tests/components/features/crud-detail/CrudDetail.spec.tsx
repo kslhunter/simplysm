@@ -5,6 +5,7 @@ import { CrudDetailTools } from "../../../../src/components/features/crud-detail
 import { CrudDetailBefore } from "../../../../src/components/features/crud-detail/CrudDetailBefore";
 import { CrudDetailAfter } from "../../../../src/components/features/crud-detail/CrudDetailAfter";
 import { CrudDetail } from "../../../../src/components/features/crud-detail/CrudDetail";
+import { Dialog } from "../../../../src/components/disclosure/Dialog";
 import { ConfigContext, ConfigProvider } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
@@ -472,5 +473,53 @@ describe("CrudDetail button layout by mode", () => {
     expect(container.textContent).not.toContain("Save");
     expect(container.textContent).toContain("Refresh");
     expect(container.textContent).toContain("커스텀도구");
+  });
+});
+
+describe("CrudDetail dialog mode layout", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
+  it("bottom bar's direct parent should not have gap-2 class", async () => {
+    render(() => (
+      <ConfigProvider clientName="test"><I18nProvider>
+        <TestWrapper>
+        <Dialog open={true}>
+          <Dialog.Header>Test</Dialog.Header>
+          <CrudDetail<TestData>
+            load={() =>
+              Promise.resolve({
+                data: { id: 1, name: "홍길동" },
+                info: { isNew: false, isDeleted: false },
+              })
+            }
+            submit={() => Promise.resolve(true)}
+            close={() => {}}
+          >
+            {(ctx) => <div>{ctx.data.name}</div>}
+          </CrudDetail>
+        </Dialog>
+      </TestWrapper>
+      </I18nProvider></ConfigProvider>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Find the bottom bar via Confirm button
+    const confirmBtn = Array.from(document.querySelectorAll("button")).find(
+      (btn) => btn.textContent.includes("Confirm"),
+    );
+    expect(confirmBtn).toBeTruthy();
+
+    const bottomBar = confirmBtn!.closest(".border-t");
+    expect(bottomBar).toBeTruthy();
+
+    // Bottom bar's direct parent should NOT have gap-2 class
+    expect(bottomBar!.parentElement!.classList.contains("gap-2")).toBe(false);
   });
 });

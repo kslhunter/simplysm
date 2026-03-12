@@ -39,10 +39,14 @@ export function createControllableStore<TValue extends object>(options: {
 
   // Wrap setter with a function wrapper to add onChange notification
   const wrappedSet = ((...args: any[]) => {
-    const before = obj.clone(unwrap(store));
-    (rawSet as any)(...args);
-    if (!obj.equal(before, unwrap(store))) {
-      options.onChange()?.(obj.clone(unwrap(store)));
+    if (options.onChange() != null) {
+      const before = obj.clone(unwrap(store));
+      (rawSet as any)(...args);
+      if (!obj.equal(before, unwrap(store))) {
+        options.onChange()!(obj.clone(unwrap(store)));
+      }
+    } else {
+      (rawSet as any)(...args);
     }
   }) as SetStoreFunction<TValue>;
 

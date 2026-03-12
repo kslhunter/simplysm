@@ -1,104 +1,104 @@
 ---
 name: sd-plan
-description: 이 스킬은 사용자가 "계획 세워줘", "plan 만들어", "sd-plan", "구현 계획", "작업 계획" 등을 요청할 때 사용한다.
+description: This skill is used when the user requests "make a plan", "create a plan", "sd-plan", "implementation plan", "work plan", etc.
 ---
 
-# SD Plan — 명확한 계획서 생성
+# SD Plan — Clear Plan Generation
 
-사용자의 작업 요청을 받아 초기 계획서를 생성한 뒤, 불명확한 부분을 반복적으로 검토하고 질문하여 완벽히 명확한 계획서를 만든다.
-
----
-
-## Step 1: 입력 확인
-
-- 작업 설명을 아래 우선순위로 확보하라:
-  1. **작업 요청**: 사용자가 스킬 호출 시 함께 전달한 작업 설명
-  2. **현재 대화**: 작업 요청이 없으면 현재 대화 컨텍스트에서 작업 내용을 파악
-  3. **AskUserQuestion**: 위 둘로도 파악이 안 되면 "어떤 작업에 대한 계획서를 만들까요? 작업 내용을 설명해 주세요."라고 질문
-- 충분한 작업 설명을 확보한 후 Step 2로 진행하라.
+Receives a task request from the user, generates an initial plan, then iteratively reviews and asks questions about unclear parts to produce a perfectly clear plan.
 
 ---
 
-## Step 2: 계획서 생성 + 명확화 반복
+## Step 1: Input Verification
 
-### 2-1. 초안 작성
-
-계획서 초안을 작성하라. 반드시 TDD원칙에 따라 작성하라:
-- 코드 작업이면 → 테스트 코드 먼저 작성
-- 비코드 작업이면 → 자체 검증 체크리스트 먼저 정의
-- 코드 작업이지만 프로젝트 자체에 테스트환경 자체가 구축되어있지 않다면 → CLI, dry-run등의 검증방법 제시
-
-### 2-2. 명확화 사이클
-
-아래를 **불명확 항목이 0개가 될 때까지** 반복하라:
-
-1. **추출**: 계획서를 아래 "불명확 판단 기준" 12개 항목에 전부 대조하여 불명확 항목을 나열하라.
-2. **의존성 분석**: 항목 간 의존 관계를 파악하라. ("A가 정해져야 B를 질문 가능" → B는 A에 의존)
-3. **질문**: 의존 대상이 없는 항목들을 AskUserQuestion 도구 **하나당 단 하나의 질문**만 하라. 각 질문에 2~5개 선택지를 제시하라.
-   - `한건의 설명제시 -> AskUserQuestion` 반복
-4. **반영**: 답변을 모두 반영하여 계획서를 업데이트하고, 1번으로 돌아가라.
-
-불명확 항목 0개 → **Step 2.5 최종 검증**으로 이동.
-
-### 불명확 판단 기준
-
-> **핵심 원칙**: 사용자가 명시하지 않았고, 코드베이스에서 확인되지 않은 것은 **모두 추측/가정으로 간주**하여 불명확 항목으로 취급하라. Claude가 자신있게 작성했더라도 출처가 불분명하면 불명확이다.
-
-아래 12개 항목을 **매 검토 시 전부** 대조하라. "해당 없음"이라고 넘기려면 구체적 근거(사용자 발언 또는 코드베이스 확인)가 있어야 한다.
-
-1. **사용자 미명시 가정**: 사용자가 말하지 않았는데 Claude가 채워넣은 결정사항
-2. **구체성 부족**: HOW 없이 "적절히 처리", "필요에 따라" 등의 표현
-3. **범위 모호**: IN/OUT 스코프가 정의되지 않음
-4. **미지정 동작**: 에러, 유효하지 않은 입력, 기본값 등이 지정되지 않음
-5. **알 수 없는 제약조건**: 성능, 호환성, 플랫폼 요구사항이 불분명
-6. **누락된 엣지케이스**: 경계 조건, 동시성, 빈 상태 등
-7. **모호한 파일/함수 참조**: 구체적 경로 없이 "관련 파일을 수정" 등
-8. **불명확한 순서/의존성**: 단계 간 선후 관계 미명시
-9. **추측 표현**: "아마", "~일 수 있음", "TBD", "???" 등
-10. **통합 세부사항 누락**: API 계약, 데이터 형식, 인터페이스 미정의
-11. **실패/롤백 전략 부재**: 실패 시 대응 방안 없음
-12. **검증 방법 미정의**: 구현 단계에 대응하는 검증 방법이 없음
+- Obtain the task description in the following priority order:
+  1. **Task request**: The task description provided by the user when invoking the skill
+  2. **Current conversation**: If no task request is provided, determine the task from the current conversation context
+  3. **AskUserQuestion**: If neither of the above is sufficient, ask "What task should I create a plan for? Please describe the task."
+- Proceed to Step 2 after obtaining a sufficient task description.
 
 ---
 
-## Step 2.5: 최종 검증 (불명확 없음 선언 전 필수)
+## Step 2: Plan Generation + Clarification Loop
 
-"불명확 없음"을 선언하기 **직전에 반드시** 아래를 수행하라:
+### 2-1. Draft Creation
 
-1. 계획서의 **모든 단계를 처음부터 끝까지** 다시 읽으며, 위 12개 기준을 한 번 더 전수 대조하라.
-2. 특히 다음을 집중 확인하라:
-   - Claude가 스스로 결정한 부분 중 사용자 확인을 받지 않은 것이 있는가?
-   - "~한다", "~로 처리한다" 등 단정적으로 쓴 부분의 근거가 사용자 발언 또는 코드베이스에 있는가?
-   - 구체적 파일 경로, 함수명, 데이터 구조가 빠진 곳은 없는가?
-3. 이 검증에서 **하나라도** 불명확 항목이 발견되면 Step 2의 질문 사이클로 돌아가라.
-4. 진짜로 없으면 → Step 3으로 이동.
+Draft the plan. Always follow TDD principles:
+- For code tasks → Write test code first
+- For non-code tasks → Define a self-verification checklist first
+- For code tasks where the project has no test environment set up → Propose verification methods such as CLI or dry-run
+
+### 2-2. Clarification Cycle
+
+Repeat the following **until there are 0 unclear items**:
+
+1. **Extract**: Compare the plan against all 12 "Ambiguity Criteria" listed below and enumerate all unclear items.
+2. **Dependency analysis**: Identify dependencies between items. ("A must be decided before B can be asked" → B depends on A)
+3. **Ask**: For items with no dependencies, use AskUserQuestion with **exactly one question per tool call**. Provide 2-5 options for each question.
+   - For each item, repeat "present one explanation -> AskUserQuestion"
+4. **Apply**: Incorporate all answers to update the plan, then return to step 1.
+
+0 unclear items → Move to **Step 2.5 Final Verification**.
+
+### Ambiguity Criteria
+
+> **Core principle**: Anything not explicitly stated by the user and not confirmed in the codebase is **treated as speculation/assumption** and classified as an unclear item. Even if Claude wrote it confidently, it is unclear if the source is unverified.
+
+Compare against all 12 items below **during every review**. To skip an item as "not applicable", there must be concrete evidence (user statement or codebase confirmation).
+
+1. **Unstated user assumptions**: Decisions filled in by Claude that the user did not specify
+2. **Lack of specificity**: Expressions like "handle appropriately", "as needed" without explaining HOW
+3. **Ambiguous scope**: IN/OUT scope is not defined
+4. **Unspecified behavior**: Errors, invalid inputs, default values, etc. are not specified
+5. **Unknown constraints**: Performance, compatibility, or platform requirements are unclear
+6. **Missing edge cases**: Boundary conditions, concurrency, empty states, etc.
+7. **Vague file/function references**: "Modify related files" without specific paths
+8. **Unclear ordering/dependencies**: Precedence between steps is not specified
+9. **Speculative expressions**: "Probably", "might be", "TBD", "???", etc.
+10. **Missing integration details**: API contracts, data formats, interfaces are undefined
+11. **No failure/rollback strategy**: No response plan for failures
+12. **Undefined verification methods**: No verification method corresponding to an implementation step
 
 ---
 
-## Step 3: 최종 출력
+## Step 2.5: Final Verification (Required Before Declaring No Ambiguities)
 
-모든 불명확 항목이 해소되었으면 완성된 계획서를 사용자에게 제시하고, AskUserQuestion으로 구현 승인을 요청하라.
+**Immediately before** declaring "no ambiguities", you must perform the following:
 
-사용자가 승인하면 `.tmp/plans/{yyMMddHHmmss}_{topic}.md`에 계획서를 Write하라.
-- 파일명 예시: `260311143052_progress-컴포넌트-추가.md`
-- `yyMMddHHmmss`: 연월일시분초 (예: 260311143052)
-- `{topic}`: 작업 내용 기반 짧은 케밥케이스 (예: progress-컴포넌트-추가)
+1. Re-read **every step of the plan from beginning to end**, comparing against the 12 criteria one more time.
+2. Pay special attention to the following:
+   - Are there any parts that Claude decided on its own without user confirmation?
+   - Do all definitive statements (e.g., "will do X", "will handle as Y") have supporting evidence from user statements or the codebase?
+   - Are there any places missing specific file paths, function names, or data structures?
+3. If **even one** unclear item is found during this verification, return to the question cycle in Step 2.
+4. If truly none remain → Move to Step 3.
 
 ---
 
-## Step 4: 구현 완료 후 안내
+## Step 3: Final Output
 
-사용자가 구현을 승인하면, 계획서에 따라 구현하라. 구현이 완료되면 아래 안내를 출력하라:
+Once all unclear items have been resolved, present the completed plan to the user and request implementation approval via AskUserQuestion.
 
-- **코드 수정이 포함된 경우**:
+If the user approves, Write the plan to `.tmp/plans/${TS}_{topic}.md`.
+- Generate the timestamp first: `TS=$(date +%y%m%d%H%M%S)`
+- Filename example: `260311143052_add-progress-component.md`
+- `{topic}`: Short kebab-case based on the task content (e.g., add-progress-component)
+
+---
+
+## Step 4: Post-Implementation Guidance
+
+If the user approves implementation, implement according to the plan. Once implementation is complete, output the following guidance:
+
+- **If code changes are included**:
   ```
-  구현이 완료되었습니다. 다음 단계를 순서대로 실행하는 것을 권장합니다:
-  1. /sd-check — 타입체크 + 린트 + 테스트 검사 및 자동 수정
-  2. /sd-simplify — 변경된 코드 단순화 리뷰
-  3. /sd-commit — 변경사항 커밋
+  Implementation is complete. It is recommended to run the following steps in order:
+  1. /sd-check — Type check + lint + test inspection and auto-fix
+  2. /sd-simplify — Simplification review of changed code
+  3. /sd-commit — Commit changes
   ```
 
-- **코드 수정이 없는 경우** (설정, 문서 등):
+- **If no code changes are involved** (configuration, documentation, etc.):
   ```
-  구현이 완료되었습니다. 커밋하려면 /sd-commit 을 실행하세요.
+  Implementation is complete. Run /sd-commit to commit the changes.
   ```

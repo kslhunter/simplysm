@@ -402,19 +402,6 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
 
   const maxHeight = () => local.maxHeight ?? 300;
 
-  // Animation class (only transition opacity and transform, not position properties)
-  const animationClass = () => {
-    const base = "transition-[opacity,transform] duration-150 ease-out";
-    const visible = animating();
-    const dir = direction();
-
-    if (visible) {
-      return clsx(base, "translate-y-0 opacity-100");
-    } else {
-      return clsx(base, "opacity-0", dir === "down" ? "-translate-y-1" : "translate-y-1");
-    }
-  };
-
   return (
     <TriggerProvider>
       <ContentProvider>
@@ -452,7 +439,10 @@ const DropdownInner: ParentComponent<DropdownProps> = (props: DropdownProps) => 
                   "shadow-lg dark:shadow-black/30",
                   "rounded-md",
                   "overflow-y-auto",
-                  animationClass(),
+                  "transition-[opacity,transform] duration-150 ease-out",
+                  animating()
+                    ? "translate-y-0 opacity-100"
+                    : clsx("opacity-0", direction() === "down" ? "-translate-y-1" : "translate-y-1"),
                 ),
                 local.class,
               )}

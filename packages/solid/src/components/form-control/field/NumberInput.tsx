@@ -19,13 +19,6 @@ import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { FieldShell } from "./FieldShell";
 import clsx from "clsx";
 
-// NumberInput-specific input style (right-aligned + spinner hidden)
-const numberInputClass = clsx(
-  fieldInputClass,
-  "text-right",
-  "[&::-webkit-outer-spin-button]:appearance-none",
-  "[&::-webkit-inner-spin-button]:appearance-none",
-);
 
 const [NumberInputPrefixSlot, createNumberInputPrefixAccessor] = createSlot<{ children: JSX.Element }>();
 export const NumberInputPrefix = NumberInputPrefixSlot;
@@ -331,7 +324,12 @@ const NumberInputInner = (props: NumberInputProps): JSX.Element => {
         <input
           type="text"
           inputmode="numeric"
-          class={numberInputClass}
+          class={clsx(
+            fieldInputClass,
+            "text-right",
+            "[&::-webkit-outer-spin-button]:appearance-none",
+            "[&::-webkit-inner-spin-button]:appearance-none",
+          )}
           value={displayValue()}
           placeholder={local.placeholder}
           title={local.title}

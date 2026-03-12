@@ -57,7 +57,8 @@ export function createDataSheetSelection<TItem>(
     const selectableItems = displayItems()
       .map((flat) => flat.item)
       .filter((item) => getItemSelectable(item) === true);
-    const isAllSelected = selectableItems.every((item) => selection().includes(item));
+    const selectionSet = new Set(selection());
+    const isAllSelected = selectableItems.every((item) => selectionSet.has(item));
     setSelection(isAllSelected ? [] : selectableItems);
   }
 
@@ -74,13 +75,18 @@ export function createDataSheetSelection<TItem>(
       .filter((item) => getItemSelectable(item) === true);
 
     if (lastClickAction() === "select") {
+      const selectionSet = new Set(selection());
       const newItems = [...selection()];
       for (const item of rangeItems) {
-        if (!newItems.includes(item)) newItems.push(item);
+        if (!selectionSet.has(item)) {
+          newItems.push(item);
+          selectionSet.add(item);
+        }
       }
       setSelection(newItems);
     } else {
-      setSelection(selection().filter((item) => !rangeItems.includes(item)));
+      const rangeSet = new Set(rangeItems);
+      setSelection(selection().filter((item) => !rangeSet.has(item)));
     }
   }
 

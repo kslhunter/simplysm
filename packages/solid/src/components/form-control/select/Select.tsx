@@ -32,6 +32,7 @@ import { TextInput } from "../field/TextInput";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
 import {
   listItemBaseClass,
+  listItemSizeClasses,
   listItemSelectedClass,
   listItemDisabledClass,
   listItemIndentGuideClass,
@@ -65,13 +66,15 @@ export interface SelectContextValue<TValue = unknown> {
 
   /** Register item template */
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
+
+  /** Trigger size */
+  size: Accessor<ComponentSize>;
 }
 
 export const SelectContext = createContext<SelectContextValue>();
-const SelectCtx = SelectContext;
 
 function useSelectContext<TValue = unknown>(): SelectContextValue<TValue> {
-  const context = useContext(SelectCtx);
+  const context = useContext(SelectContext);
   if (!context) {
     throw new Error("useSelectContext can only be used inside Select component");
   }
@@ -90,6 +93,7 @@ const [SelectActionSlot, createActionSlotAccessor] = createSlot<{ children: JSX.
 
 const SelectAction = (props: SelectActionProps) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
+  const ctx = useSelectContext();
 
   const handleClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> = (e) => {
     if (typeof rest.onClick === "function") {
@@ -105,7 +109,15 @@ const SelectAction = (props: SelectActionProps) => {
         {...rest}
         type="button"
         onClick={handleClick}
-        class={twMerge("p-2", themeTokens.base.hoverBg, local.class)}
+        class={twMerge(
+          "inline-flex items-center",
+          pad[ctx.size()],
+          "border",
+          border.default,
+          groupFocusBorderClass,
+          themeTokens.base.hoverBg,
+          local.class,
+        )}
         data-select-action
       >
         {local.children}
@@ -115,6 +127,8 @@ const SelectAction = (props: SelectActionProps) => {
 };
 
 //#endregion
+
+const groupFocusBorderClass = "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400";
 
 const selectAllBtnClass = clsx(
   "text-primary-500",
@@ -186,12 +200,11 @@ const SelectItemInner = <TValue,>(
   const getClassName = () =>
     twMerge(
       listItemBaseClass,
+      listItemSizeClasses[context.size()],
       isSelected() && listItemSelectedClass,
       local.disabled && listItemDisabledClass,
       local.class,
     );
-
-  const getCheckIconClass = () => getListItemSelectedIconClass(isSelected());
 
   return (
     <ItemChildrenProvider>
@@ -209,7 +222,7 @@ const SelectItemInner = <TValue,>(
         onClick={handleClick}
       >
         <Show when={context.multiple() && !hasChildren()}>
-          <Icon icon={IconCheck} class={getCheckIconClass()} />
+          <Icon icon={IconCheck} class={getListItemSelectedIconClass(isSelected())} />
         </Show>
         <span class={listItemContentClass}>{local.children}</span>
       </button>
@@ -440,6 +453,7 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
     toggleValue,
     closeDropdown,
     setItemTemplate,
+    size: () => local.size ?? "md",
   };
 
   // Trigger keyboard handling (only Enter/Space, ArrowUp/Down handled by Dropdown)
@@ -624,7 +638,7 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
                 action() !== undefined &&
                   clsx(
                     "rounded-r-none border-r-0",
-                    "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400",
+                    groupFocusBorderClass,
                   ),
               )}
               style={local.style}
@@ -698,13 +712,13 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
 
   return (
     <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
-      <SelectCtx.Provider value={contextValue as SelectContextValue}>
+      <SelectContext.Provider value={contextValue as SelectContextValue}>
         <HeaderProvider>
           <ActionProvider>
             <SelectInnerRender>{local.children}</SelectInnerRender>
           </ActionProvider>
         </HeaderProvider>
-      </SelectCtx.Provider>
+      </SelectContext.Provider>
     </Invalid>
   );
 };

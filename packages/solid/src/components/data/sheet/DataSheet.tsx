@@ -368,7 +368,6 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     );
 
   // #region Display
-  const displayItems = flatItems;
 
   // #region Selection
   const {
@@ -387,7 +386,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
       get onSelectionChange() { return local.onSelectionChange; },
       get isItemSelectable() { return local.isItemSelectable; },
     },
-    displayItems,
+    flatItems,
   );
 
   // #region AutoSelect
@@ -408,7 +407,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
       get onItemsReorder() { return local.onItemsReorder; },
       get itemChildren() { return local.itemChildren; },
     },
-    displayItems,
+    flatItems,
   );
 
   // #region Keyboard Navigation (move rows with Enter/Shift+Enter)
@@ -428,11 +427,8 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
     if (!tbody) return;
 
     const rows = tbody.rows;
-    const rowIndex = Array.from(rows).indexOf(tr);
-    if (rowIndex < 0) return;
-
-    const cellIndex = Array.from(tr.cells).indexOf(td);
-    if (cellIndex < 0) return;
+    const rowIndex = tr.sectionRowIndex;
+    const cellIndex = td.cellIndex;
 
     const targetRowIndex = e.shiftKey ? rowIndex - 1 : rowIndex + 1;
     if (targetRowIndex < 0 || targetRowIndex >= rows.length) return;
@@ -784,7 +780,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
                         <div class={featureCellClickableClass} onClick={() => toggleSelectAll()}>
                           <Checkbox
                             checked={(() => {
-                              const selectableItems = displayItems()
+                              const selectableItems = flatItems()
                                 .map((flat) => flat.item)
                                 .filter((item) => getItemSelectable(item) === true);
                               return (
@@ -829,7 +825,7 @@ const DataSheetInner = <TItem,>(props: DataSheetProps<TItem>) => {
             {renderSummaryRow()}
           </thead>
           <tbody>
-            <For each={displayItems()}>
+            <For each={flatItems()}>
               {(flat) => (
                 <tr
                   data-selected={selection().includes(flat.item) ? "" : undefined}

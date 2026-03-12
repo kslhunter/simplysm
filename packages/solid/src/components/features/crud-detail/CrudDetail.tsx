@@ -201,7 +201,6 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       <>
         <Show when={showSave()}>
           <Button
-            size="lg"
             variant="ghost"
             theme="primary"
             onClick={() => formRef?.requestSubmit()}
@@ -213,7 +212,6 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={showDelete()}>
           {(_) => (
             <Button
-              size="lg"
               variant="ghost"
               theme="danger"
               onClick={() => void handleToggleDelete()}
@@ -223,7 +221,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             </Button>
           )}
         </Show>
-        <Button size="lg" variant="ghost" theme="info" onClick={() => void handleRefresh()}>
+        <Button variant="ghost" theme="info" onClick={() => void handleRefresh()}>
           <Icon icon={IconRefresh} class="mr-1" />
           {i18n.t("crudDetail.refresh")}
         </Button>
@@ -259,8 +257,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
           <BusyContainer
             ready={ready()}
             busy={busyCount() > 0}
-            class={clsx("flex h-full flex-col gap-2", local.class)}
+            class={clsx("flex h-full flex-col", local.class)}
           >
+            <div class="flex min-h-0 flex-1 flex-col gap-2">
             {/* Toolbar */}
             <Show when={(!isInDialog && !topbarCtx) || tools()}>
               <div class="flex gap-2 pb-0">
@@ -318,6 +317,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
             {/* After (outside form) */}
             <Show when={after()}>{(afterSlot) => afterSlot().children}</Show>
+            </div>
 
             {/* Dialog mode: bottom bar */}
             <Show when={isInDialog && canEdit()}>

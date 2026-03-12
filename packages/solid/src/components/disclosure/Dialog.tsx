@@ -478,70 +478,38 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
     return style;
   };
 
-  // Animation class
-  const animationClass = () => {
-    const base = clsx("transition-[opacity,transform]", "duration-200", "ease-out");
-    if (animating()) {
-      return clsx(base, "translate-y-0 opacity-100");
-    } else {
-      return clsx(base, "-translate-y-4 opacity-0");
-    }
-  };
-
-  // Wrapper class
-  const wrapperClass = () =>
-    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
-    clsx(
-      "fixed bottom-0 left-0 right-0 top-0",
-      "flex flex-col items-center",
-      local.mode !== "fill" && "pt-[calc(3rem+0.5rem)]",
-      local.mode === "float" && "pointer-events-none",
-    );
-
-  // Backdrop class
-  const backdropClass = () =>
-    // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
-    clsx(
-      "absolute bottom-0 left-0 right-0 top-0",
-      "bg-black/30",
-      "dark:bg-black/50",
-      "transition-opacity",
-      "duration-200",
-      "ease-out",
-      animating() ? "opacity-100" : "opacity-0",
-    );
-
-  // Dialog class
-  const dialogBaseClass = () =>
-    clsx(
-      "relative",
-      "mx-auto",
-      "w-fit min-w-[200px]",
-      bg.surface,
-      local.mode === "float"
-        ? clsx("shadow-md dark:shadow-black/30", "border", border.subtle)
-        : "shadow-2xl dark:shadow-black/40",
-      local.mode === "fill" ? "rounded-none border-none" : "rounded-lg",
-      "overflow-hidden",
-      "flex flex-col",
-      "focus:outline-none",
-      local.mode === "float" && "pointer-events-auto",
-      animationClass(),
-    );
-
-  // Header class
-  const headerClass = () =>
-    clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", border.subtle);
-
   return (
     <Show when={mounted()}>
       <Portal>
         <HeaderProvider>
           <ActionProvider>
-          <div ref={setWrapperRef} data-dialog class={wrapperClass()}>
+          <div
+            ref={setWrapperRef}
+            data-dialog
+            // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
+            class={clsx(
+              "fixed bottom-0 left-0 right-0 top-0",
+              "flex flex-col items-center",
+              local.mode !== "fill" && "pt-[calc(3rem+0.5rem)]",
+              local.mode === "float" && "pointer-events-none",
+            )}
+          >
             {/* Backdrop */}
             <Show when={local.mode !== "float"}>
-              <div data-dialog-backdrop class={backdropClass()} onClick={handleBackdropClick} />
+              <div
+                data-dialog-backdrop
+                // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0 not supported in Chrome 84
+                class={clsx(
+                  "absolute bottom-0 left-0 right-0 top-0",
+                  "bg-black/30",
+                  "dark:bg-black/50",
+                  "transition-opacity",
+                  "duration-200",
+                  "ease-out",
+                  animating() ? "opacity-100" : "opacity-0",
+                )}
+                onClick={handleBackdropClick}
+              />
             </Show>
 
             {/* Dialog */}
@@ -554,7 +522,25 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
               aria-modal={local.mode === "float" ? undefined : true}
               aria-labelledby={hasHeader() ? headerId : undefined}
               tabIndex={0}
-              class={twMerge(dialogBaseClass(), local.class)}
+              class={twMerge(
+                clsx(
+                  "relative",
+                  "mx-auto",
+                  "w-fit min-w-[200px]",
+                  bg.surface,
+                  local.mode === "float"
+                    ? clsx("shadow-md dark:shadow-black/30", "border", border.subtle)
+                    : "shadow-2xl dark:shadow-black/40",
+                  local.mode === "fill" ? "rounded-none border-none" : "rounded-lg",
+                  "overflow-hidden",
+                  "flex flex-col",
+                  "focus:outline-none",
+                  local.mode === "float" && "pointer-events-auto",
+                  "transition-[opacity,transform] duration-200 ease-out",
+                  animating() ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0",
+                ),
+                local.class,
+              )}
               style={dialogStyle()}
               onFocus={handleDialogFocus}
               onTransitionEnd={handleTransitionEnd}
@@ -563,7 +549,7 @@ const DialogInner: ParentComponent<DialogProps> = (props) => {
               <Show when={hasHeader()}>
                 <div
                   data-dialog-header
-                  class={clsx(headerClass(), "touch-none")}
+                  class={clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", border.subtle, "touch-none")}
                   style={
                     typeof local.headerStyle === "string"
                       ? mergeStyles(local.headerStyle)

@@ -1,59 +1,59 @@
 ---
 name: sd-simplify
-description: "코드 단순화", "simplify", "sd-simplify", "코드 정제" 등을 요청할 때 사용. 지정한 경로의 코드를 분석 후 계획 수립을 거쳐 수정한다.
+description: Used when requesting "code simplification", "simplify", "sd-simplify", "code refinement", etc. Analyzes code at a specified path, creates a plan, and applies modifications.
 ---
 
-# SD Simplify — 경로 지정 코드 단순화
+# SD Simplify — Path-Specific Code Simplification
 
-지정한 경로의 코드를 내장 `/simplify`로 분석한 뒤, `/sd-plan` 프로세스로 계획을 수립하고 실행한다.
+Analyzes code at a specified path using the built-in `/simplify`, then creates and executes a plan via the `/sd-plan` process.
 
-ARGUMENTS: 대상 경로 (필수). 레포 내 임의 경로를 지정한다.
+ARGUMENTS: Target path (required). Specify any path within the repository.
 
 ---
 
-## Step 1: 인자 확인
+## Step 1: Validate Arguments
 
-1. ARGUMENTS에서 대상 경로를 추출하라.
-2. 경로가 없으면 "대상 경로를 지정해 주세요. 예: `/sd-simplify packages/my-pkg`"라고 안내하고 종료하라.
+1. Extract the target path from ARGUMENTS.
+2. If no path is provided, display the message "Please specify a target path. Example: `/sd-simplify packages/my-pkg`" and stop.
 
-## Step 2: simplify 분석 (수정 금지)
+## Step 2: simplify Analysis (Do Not Modify)
 
-Skill 도구로 `simplify`를 호출하라. args에 아래 지침을 전달하라:
-
-```
-<대상 경로> 경로의 현재 코드베이스를 대상으로 리뷰하라. (최근 변경 코드가 아님)
-단, 코드를 절대 수정하지 마라. 수정할 점 목록만 정리하여 출력하라.
-각 항목은 다음 형식으로 작성하라:
-- **파일경로:라인** — 문제 설명 — 개선 방안
-```
-
-`<대상 경로>` 부분은 Step 1에서 추출한 실제 경로로 치환하라.
-
-## Step 3: sd-plan으로 계획 수립
-
-Step 2에서 도출된 수정할 점 목록을 작업 설명으로 하여, Skill 도구로 `sd-plan`을 호출하라. args에 아래를 전달하라:
+Invoke `simplify` using the Skill tool. Pass the following instructions as args:
 
 ```
-아래는 **LLM이 분석하여 제안한** 코드 개선안이다.
-개선안은 사용자가 명시적으로 요청한 수정이 아니므로, 불명확한 것으로 취급하라.
-
-## 대상
-<대상 경로>
-
-## LLM 제안 개선안
-불명확한 개선안을 사용자에게 질문할 때, 아래 내용을 **반드시 먼저** 제시하여 사용자가 맥락을 파악할 수 있도록 하라.
-
-```
-개선안:
-- 파일경로:라인:
-- 문제 설명:
-- 현재 코드: (해당 부분 코드 발췌)
-- 개선 방안:
+Review the current codebase at the <target path> path. (Not recently changed code)
+Do NOT modify any code. Only compile and output a list of items to fix.
+Write each item in the following format:
+- **file-path:line** — Problem description — Suggested improvement
 ```
 
-<Step 2에서 도출된 수정할 점 목록 전체>
+Replace the `<target path>` placeholder with the actual path extracted in Step 1.
+
+## Step 3: Create a Plan with sd-plan
+
+Using the list of items to fix from Step 2 as the task description, invoke `sd-plan` using the Skill tool. Pass the following as args:
+
+```
+The following are code improvement suggestions **proposed by an LLM analysis**.
+Since these suggestions were not explicitly requested by the user, treat them as unclear.
+
+## Target
+<target path>
+
+## LLM-Suggested Improvements
+When asking the user about unclear suggestions, **always present** the following details first so the user can understand the context.
+
+```
+Suggestion:
+- File path:line:
+- Problem description:
+- Current code: (excerpt of the relevant code)
+- Suggested improvement:
 ```
 
-## Step 4: 계획 실행
+<Full list of items to fix from Step 2>
+```
 
-sd-plan이 완료되어 확정된 계획서가 나오면, 그 계획서에 따라 코드를 수정하라.
+## Step 4: Execute the Plan
+
+Once sd-plan completes and a finalized plan is produced, modify the code according to that plan.

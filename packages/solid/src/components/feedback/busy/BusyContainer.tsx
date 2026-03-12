@@ -72,27 +72,21 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     );
   });
 
-   
-  const screenClass = () =>
-    clsx(
-      "absolute inset-0 z-busy bg-white/70 transition-opacity duration-150 dark:bg-base-900/70",
-      animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
-    );
-
-  // spinner: slide down animation
-  const rectClass = () => {
-    if (currVariant() !== "spinner") return "";
-    return clsx(
-      "transition-transform duration-100",
-      animating() ? "translate-y-0 ease-out" : "-translate-y-full ease-in",
-    );
-  };
-
   return (
     <div ref={containerRef} class={twMerge("relative size-full min-h-[70px] min-w-[70px] overflow-auto", local.class)} {...rest}>
       <Show when={mounted()}>
-        <div class={screenClass()} onTransitionEnd={handleTransitionEnd}>
-          <div class={rectClass()}>
+        <div
+          class={clsx(
+            "absolute inset-0 z-busy bg-white/70 transition-opacity duration-150 dark:bg-base-900/70",
+            animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          )}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          <div
+            class={currVariant() === "spinner"
+              ? clsx("transition-transform duration-100", animating() ? "translate-y-0 ease-out" : "-translate-y-full ease-in")
+              : ""}
+          >
             <Show when={currVariant() === "spinner"}>
               <div class="mx-auto mt-5 size-8 animate-spin rounded-full border-[6px] border-base-200 border-b-primary-500 shadow-md dark:border-base-700 dark:border-b-primary-400" />
             </Show>

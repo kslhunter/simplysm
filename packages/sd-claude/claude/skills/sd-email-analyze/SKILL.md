@@ -1,44 +1,44 @@
 ---
 name: sd-email-analyze
-description: .eml 또는 .msg 파일과 관련하여 "이메일 파일 분석", "이메일 내용 추출", "첨부파일 추출", "이메일 요약"을 요청할 때 사용.
+description: Used when requesting "email file analysis", "email content extraction", "attachment extraction", or "email summary" for .eml or .msg files.
 ---
 
-# SD Email Analyze — 이메일 파일 분석 및 내용 추출
+# SD Email Analyze — Email File Analysis and Content Extraction
 
-`.eml` 및 `.msg`(Outlook) 이메일 파일을 파싱하여 메일 헤더, 본문 텍스트, 인라인 이미지, 첨부파일을 추출하고 분석한다.
+Parses `.eml` and `.msg` (Outlook) email files to extract and analyze mail headers, body text, inline images, and attachments.
 
-ARGUMENTS: 이메일 파일 경로 (필수). `.eml` 또는 `.msg` 파일 경로를 지정한다.
+ARGUMENTS: Email file path (required). Specify a `.eml` or `.msg` file path.
 
 ---
 
-## Step 1: 이메일 파일 파싱
+## Step 1: Parse the Email File
 
-ARGUMENTS에서 이메일 파일 경로를 추출하여 아래 명령을 실행하라:
+Extract the email file path from ARGUMENTS and run the following command:
 
 ```bash
-python .claude/skills/sd-email-analyze/email-analyzer.py <이메일_파일_경로>
+python .claude/skills/sd-email-analyze/email-analyzer.py <email_file_path>
 ```
 
-- 최초 실행 시 `extract-msg`를 자동 설치한다.
-- 실행 결과로 마크다운 보고서가 표준 출력되며, `<이메일_파일명>_files/` 디렉토리에 추출된 파일이 저장된다.
+- On first run, `extract-msg` is automatically installed.
+- The output is a markdown report printed to stdout, and extracted files are saved to the `<email_file_name>_files/` directory.
 
-### 출력 구조
+### Output Structure
 
-1. **메일 정보 테이블**: 제목, 보낸 사람, 받는 사람, 참조, 날짜, 개수
-2. **본문 텍스트**: 일반 텍스트 (일반 텍스트가 없으면 HTML에서 태그 제거)
-3. **인라인 이미지**: 저장된 파일 경로 테이블
-4. **첨부파일**: 저장된 파일 경로 테이블
+1. **Mail Info Table**: Subject, From, To, CC, Date, Count
+2. **Body Text**: Plain text (if plain text is unavailable, HTML tags are stripped)
+3. **Inline Images**: Table of saved file paths
+4. **Attachments**: Table of saved file paths
 
-## Step 2: 추출된 파일 분석
+## Step 2: Analyze Extracted Files
 
-Step 1의 출력에서 추출된 파일 경로를 확인하고 아래를 수행하라:
+Check the extracted file paths from the Step 1 output and perform the following:
 
-1. **인라인 이미지**: 저장된 각 경로에 **Read** 도구를 사용하여 확인
-2. **첨부파일**: **Read** 도구(이미지) 또는 **sd-document** 스킬 스크립트(DOCX, XLSX, PPTX, PDF) 사용
+1. **Inline Images**: Use the **Read** tool to view each saved path
+2. **Attachments**: Use the **Read** tool (for images) or the **sd-document** skill script (for DOCX, XLSX, PPTX, PDF)
 
-### 인라인 이미지 처리
+### Inline Image Processing
 
-두 가지 소스에서 추출된다:
+Images are extracted from two sources:
 
-1. **CID 이미지**: Content-ID가 있는 MIME 파트 (HTML의 `cid:` 참조)
-2. **Data URI 이미지**: HTML 내 Base64 인코딩 이미지 (`data:image/...;base64,...`)
+1. **CID Images**: MIME parts with a Content-ID (referenced via `cid:` in HTML)
+2. **Data URI Images**: Base64-encoded images within HTML (`data:image/...;base64,...`)

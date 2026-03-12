@@ -1,113 +1,122 @@
 ---
 name: sd-debug
-description: "디버그", "debug", "sd-debug", "오류 분석", "에러 원인", "버그 찾기" 등을 요청할 때 사용.
+description: Used when requesting "debug", "sd-debug", "error analysis", "error cause", "find bug", etc.
 ---
 
-# SD Debug — 오류 원인 분석 및 해결 계획 수립
+# SD Debug — Root Cause Analysis and Resolution Planning
 
-에러 메시지, 스택 트레이스, 또는 문제 상황 설명을 받아 코드베이스를 심층 분석한 뒤 근본 원인을 진단하고, `/sd-plan` 프로세스로 해결 계획을 수립한다.
+Receives error messages, stack traces, or problem descriptions, performs in-depth codebase analysis to diagnose the root cause, and formulates a resolution plan via the `/sd-plan` process.
 
-ARGUMENTS: 에러 메시지, 스택 트레이스, 또는 문제 상황 설명 (선택). 미지정 시 대화 컨텍스트에서 파악하거나 사용자에게 질문한다.
+ARGUMENTS: Error message, stack trace, or problem description (optional). If not provided, the skill infers from the conversation context or asks the user.
 
 ---
 
-## Step 1: 문제 정보 확보
+## Step 1: Gather Problem Information
 
-- 문제 정보를 아래 우선순위로 확보하라:
-  1. **ARGUMENTS**: 스킬 호출 시 함께 전달된 에러 메시지, 스택 트레이스, 또는 문제 설명
-  2. **현재 대화**: ARGUMENTS가 없으면 현재 대화 컨텍스트에서 에러 메시지, 로그, 문제 상황을 파악
-  3. **AskUserQuestion**: 위 둘로도 파악이 안 되면 "어떤 문제를 디버깅할까요? 에러 메시지, 스택 트레이스, 또는 문제 상황을 설명해 주세요."라고 질문
-- 확보한 문제 정보에서 아래를 추출하라:
-  - **에러 유형**: 컴파일 에러 / 런타임 에러 / 타입 에러 / 논리 오류 / 빌드 에러 / 동작 이상 등
-  - **관련 단서**: 파일 경로, 함수명, 라인 번호, 패키지명, 에러 코드 등 코드베이스 탐색에 활용할 키워드
+- Gather problem information in the following priority order:
+  1. **ARGUMENTS**: Error message, stack trace, or problem description passed along with the skill invocation
+  2. **Current conversation**: If no ARGUMENTS are provided, identify error messages, logs, or problem context from the current conversation
+  3. **AskUserQuestion**: If neither of the above yields sufficient information, ask: "What problem would you like to debug? Please provide an error message, stack trace, or describe the issue."
+- Extract the following from the gathered problem information:
+  - **Error type**: Compilation error / runtime error / type error / logic error / build error / unexpected behavior, etc.
+  - **Related clues**: Keywords useful for codebase exploration, such as file paths, function names, line numbers, package names, error codes, etc.
 
-## Step 2: 코드베이스 심층 분석
+## Step 2: In-Depth Codebase Analysis
 
-Step 1에서 확보한 문제 정보와 단서를 바탕으로, 해당 문제의 근본 원인을 파악하기 위해 필요한 조사를 스스로 판단하여 수행하라. Agent 도구(subagent_type: Explore)를 활용하여 코드베이스를 탐색하되, 조사 범위와 방법은 문제의 성격에 따라 자유롭게 결정하라.
+Based on the problem information and clues gathered in Step 1, autonomously determine and perform the investigation needed to identify the root cause of the problem. Use the Agent tool (subagent_type: Explore) to explore the codebase, deciding the scope and method of investigation freely based on the nature of the problem.
 
-### 분석 원칙
+### Analysis Principles
 
-> **핵심**: 근본 원인을 완전히 이해하기 전까지 해결 방안을 제시하지 마라. "분석 → 이해 → 해결책" 순서를 반드시 지켜라.
+> **Key rule**: Do not propose solutions until you fully understand the root cause. Always follow the order: "Analyze -> Understand -> Solve."
 
-1. **추측 수정 금지**: 코드를 수정해보고 결과를 확인하는 시행착오 방식으로 원인을 찾지 마라. 코드를 읽고 로직을 추적하여 원인을 파악하라.
-2. **우회 금지**: `as` 타입 단언, `any`, `// @ts-ignore`, 하드코딩, 예외 삼킴(`catch` 후 무시) 등으로 증상을 숨기는 방안을 해결책으로 제시하지 마라.
-3. **의도 파악 우선**: 테스트 실패 시, 테스트가 검증하는 의도된 동작과 현재 코드의 실제 동작을 먼저 비교하라. 기능 변경이 의도적이면 테스트를 갱신하고, 의도치 않은 변경이면 코드를 수정하라. 의도를 판단할 수 없으면 사용자에게 질문하라.
-4. **증상과 원인 구분**: 에러 메시지가 나타나는 지점이 원인이 아닐 수 있다. 에러 지점에서 역추적하여 실제 원인을 찾아라.
+1. **Understand intended behavior first**: Before analyzing the bug, first understand what the problematic code is *supposed* to do. Read the surrounding context, callers, and tests to grasp the original intent. Document this intended behavior explicitly — it becomes the baseline that any fix must preserve.
+2. **No speculative fixes**: Do not attempt to find the cause through trial-and-error by modifying code and checking results. Read the code and trace the logic to identify the cause.
+3. **No workarounds**: Do not propose solutions that mask symptoms, such as `as` type assertions, `any`, `// @ts-ignore`, hardcoding, or swallowing exceptions (ignoring after `catch`).
+4. **Test failure triage**: When tests fail, first compare the intended behavior the test validates against the code's actual behavior. If the behavior change was intentional, update the test; if unintentional, fix the code. If intent cannot be determined, ask the user.
+5. **Distinguish symptoms from causes**: The point where the error message appears may not be the actual cause. Trace back from the error location to find the real cause.
 
-### 분석 결과 정리
+### Organize Analysis Results
 
-분석이 끝나면 아래 항목들을 정리하라:
-- **에러 발생 지점**: 문제가 발생하는 구체적 코드 위치 (파일경로:라인)
-- **근본 원인**: 왜 이 문제가 발생하는지에 대한 분석
-- **영향 범위**: 이 문제가 영향을 미치는 파일/함수 목록
-- **해결 방안**: 가능한 해결 방법들 (각각 수정 대상 파일 포함)
+Once the analysis is complete, organize the following items:
+- **Intended behavior**: What the problematic code is supposed to do (the baseline that must be preserved)
+- **Error location**: The specific code location where the problem occurs (file_path:line)
+- **Root cause**: Analysis of why this problem occurs
+- **Impact scope**: List of files/functions affected by this problem
+- **Resolution options**: Possible solutions (including target files for each)
 
-## Step 3: 진단 결과 종합 및 사용자 확인
+## Step 3: Consolidate Diagnosis and User Confirmation
 
-Step 2의 분석 결과를 종합하여 아래 형식으로 진단 보고서를 작성하고 사용자에게 제시하라:
-
-```
-## 진단 결과
-
-### 문제 요약
-<에러/문제를 한 문장으로 요약>
-
-### 근본 원인
-<근본 원인을 명확하고 구체적으로 설명. 파일 경로와 라인 번호 포함.>
-
-### 영향 범위
-- <영향받는 파일/함수 1>
-- <영향받는 파일/함수 2>
-
-### 해결 방안
-
-1. **<방안 1 제목>**: <설명>
-   - 수정 대상: <파일 경로 목록>
-   - 장점: ...
-   - 단점: ...
-
-2. **<방안 2 제목>**: <설명> (해당 시)
-   - 수정 대상: <파일 경로 목록>
-   - 장점: ...
-   - 단점: ...
-
-### 권장 방안
-<가장 적절한 방안과 그 이유>
-```
-
-진단 보고서를 출력한 뒤, AskUserQuestion으로 다음을 질문하라:
+Consolidate the analysis results from Step 2 into a diagnostic report in the format below and present it to the user:
 
 ```
-진단 결과를 확인해 주세요.
-1. 진단이 정확하므로 권장 방안으로 계획을 수립한다
-2. 진단이 정확하지만 다른 방안(번호)으로 계획을 수립한다
-3. 진단이 부정확하다 — 추가 정보를 제공하겠다
+## Diagnosis Results
+
+### Problem Summary
+<Summarize the error/problem in one sentence>
+
+### Intended Behavior
+<Describe what the problematic code is supposed to do. This is the baseline — any fix must preserve this behavior.>
+
+### Root Cause
+<Explain the root cause clearly and specifically. Include file paths and line numbers.>
+
+### Impact Scope
+- <Affected file/function 1>
+- <Affected file/function 2>
+
+### Resolution Options
+
+1. **<Option 1 title>**: <Description>
+   - Target files: <List of file paths>
+   - Behavioral change: <Does this change any existing behavior? "None — preserves intended behavior" or describe what changes>
+   - Pros: ...
+   - Cons: ...
+
+2. **<Option 2 title>**: <Description> (if applicable)
+   - Target files: <List of file paths>
+   - Behavioral change: <Does this change any existing behavior? "None — preserves intended behavior" or describe what changes>
+   - Pros: ...
+   - Cons: ...
+
+### Recommended Option
+<The most appropriate option and the reasoning>
 ```
 
-- **1번 선택**: 권장 방안을 기반으로 Step 4로 진행하라.
-- **2번 선택**: 사용자가 지정한 방안을 기반으로 Step 4로 진행하라.
-- **3번 선택**: 사용자가 제공한 추가 정보를 반영하여 Step 2로 돌아가라.
-
-## Step 4: sd-plan으로 해결 계획 수립
-
-사용자가 확인한 진단 결과와 선택된 해결 방안을 작업 설명으로 하여, Skill 도구로 `sd-plan`을 호출하라. args에 아래를 전달하라:
+After outputting the diagnostic report, ask the following via AskUserQuestion:
 
 ```
-아래 디버깅 진단 결과에 따른 해결 방안을 구현하기 위한 계획을 수립하라:
-
-## 문제
-<Step 3의 문제 요약>
-
-## 근본 원인
-<Step 3의 근본 원인>
-
-## 해결 방안
-<사용자가 선택한 해결 방안의 상세 내용>
-
-## 수정 대상 파일
-<해결 방안의 수정 대상 파일 경로 목록>
+Please review the diagnosis results.
+1. The diagnosis is accurate — proceed with the recommended option
+2. The diagnosis is accurate, but proceed with a different option (specify number)
+3. The diagnosis is inaccurate — I will provide additional information
 ```
 
-## Step 5: 계획 실행
+- **Option 1 selected**: Proceed to Step 4 based on the recommended option.
+- **Option 2 selected**: Proceed to Step 4 based on the option specified by the user.
+- **Option 3 selected**: Return to Step 2 incorporating the additional information provided by the user.
 
-sd-plan이 완료되어 확정된 계획서가 나오면, 그 계획서에 따라 코드를 수정하라.
+## Step 4: Formulate Resolution Plan via sd-plan
+
+Using the user-confirmed diagnosis and the selected resolution option as the task description, invoke `sd-plan` via the Skill tool. Pass the following in args:
+
+```
+Formulate a plan to implement the resolution based on the following debugging diagnosis:
+
+## Problem
+<Problem summary from Step 3>
+
+## Root Cause
+<Root cause from Step 3>
+
+## Resolution
+<Detailed content of the resolution option selected by the user>
+
+## Target Files
+<List of target file paths from the resolution option>
+```
+
+## Step 5: Execute the Plan
+
+Once sd-plan completes and produces a finalized plan, modify the code according to that plan.
+
+After applying the fix, verify that the intended behavior documented in Step 2 is preserved. Review the changes and confirm they correct the defect without altering what the code is supposed to do.
