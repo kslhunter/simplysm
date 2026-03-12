@@ -7,6 +7,33 @@ description: This skill is used when the user requests "make a plan", "create a 
 
 Receives a task request from the user, generates an initial plan, then iteratively reviews and asks questions about unclear parts to produce a perfectly clear plan.
 
+## MANDATORY RULE — ONE QUESTION PER AskUserQuestion CALL
+
+**Every AskUserQuestion call MUST have exactly 1 item in the `questions` array. NEVER bundle 2+ questions.**
+
+WRONG — bundling multiple questions:
+```
+questions: [
+  { question: "Which API style?" ... },
+  { question: "Which styling approach?" ... },
+  { question: "What default value?" ... }
+]
+```
+
+RIGHT — one question per call, sequential:
+```
+// Call 1
+questions: [{ question: "Which API style?" ... }]
+// Wait for answer → apply → re-extract unclear items
+// Call 2
+questions: [{ question: "Which styling approach?" ... }]
+// Wait for answer → apply → re-extract unclear items
+// Call 3
+questions: [{ question: "What default value?" ... }]
+```
+
+**Violating this rule makes the output unusable. There is NO exception.**
+
 ---
 
 ## Step 1: Input Verification
@@ -23,34 +50,47 @@ Receives a task request from the user, generates an initial plan, then iterative
 
 ### 2-1. Draft Creation
 
-Draft the plan. **Every plan MUST follow the TDD cycle below.** Classify the task, then choose the verification method:
-- Code + test env exists → write failing test files first
-- Code + no test env → define CLI/dry-run verification commands
-- Non-code (config, docs, prompts, SKILL.md, etc.) → define test scenarios executable via Claude Code (e.g., invoke the skill with a sample input and verify the output/behavior)
+Draft the plan. **Every implementation item MUST be structured as 3 sub-steps: RED → Implement → GREEN.** NEVER skip or merge these sub-steps regardless of task simplicity.
 
-**Every implementation item in the plan MUST be structured as 4 sub-steps:**
-1. **Write test/scenario** — Write the test code or define the verification scenario
-2. **RED — Confirm failure** — Run the test and confirm it fails (proves the test is valid)
-3. **Implement** — Write the minimum code to make the test pass
-4. **GREEN — Confirm success** — Run the test again and confirm it passes
+Classify the task first, then apply the matching TDD approach:
 
-NEVER skip or merge these sub-steps regardless of task simplicity.
+**If code + test env exists:**
+1. **RED** — Write a failing test file, run it → confirm FAIL
+2. **Implement** — Write the minimum code to pass
+3. **GREEN** — Run the test → confirm PASS
+
+**If code + no test env:**
+1. **RED** — Define a CLI/dry-run command, run it → confirm FAIL
+2. **Implement** — Write the minimum code to pass
+3. **GREEN** — Run the same command → confirm PASS
+
+**If non-code (config, docs, prompts, SKILL.md, etc.):**
+Prompt/config files cannot be unit-tested. Use **Agent behavioral simulation**: launch an Agent that reads the file and naturally follows its instructions with a sample task. **Do NOT tell the Agent what behavior you are testing** (this biases the result and invalidates the test).
+1. **RED** — `git stash` your changes → launch Agent with a sample task against the **original** file → confirm the Agent's output shows the **problematic** behavior (FAIL)
+2. **Implement** — `git stash pop` to restore changes, then apply your edits
+3. **GREEN** — launch same Agent with the same task against the **modified** file → confirm the Agent's output shows the **desired** behavior (PASS). If FAIL → fix implementation → re-run GREEN until PASS.
 
 ### 2-2. Clarification Cycle
 
-Repeat the following **until there are 0 unclear items**:
+**This is a single-item loop. Each iteration handles exactly ONE unclear item, then restarts from scratch.**
 
-1. **Extract**: Compare the plan against all 12 "Ambiguity Criteria" listed below and enumerate all unclear items.
-2. **Dependency analysis**: Identify dependencies between items. ("A must be decided before B can be asked" → B depends on A)
-3. **Ask**: For items with no dependencies, use AskUserQuestion with **exactly one question per tool call**. Provide 2-5 options for each question.
-   - For each item, repeat "present one explanation -> AskUserQuestion"
-4. **Apply**: Incorporate all answers to update the plan, then return to step 1.
+1. **Extract**: Compare the plan against all 12 "Ambiguity Criteria" below → enumerate unclear items.
+   - 0 unclear items → **STOP this loop. Go to Step 2.5.**
+2. **Dependency analysis**: Identify dependencies. ("A must be decided before B" → B depends on A)
+3. **Ask exactly ONE question**: Pick the single most important item with no unresolved dependencies.
+   a. Present a brief explanation of why this item is unclear.
+   b. Call AskUserQuestion with `questions` array containing **exactly 1 item**. Include 2-5 options.
+   c. **STOP and WAIT** for the user's answer. Do NOT plan, prepare, or output anything about the next question.
+4. **Apply**: Incorporate the answer into the plan.
+5. **RESTART from step 1** — re-extract ALL unclear items from scratch. The previous answer may have resolved multiple items or created new ones. Never assume the remaining questions are still valid.
 
-0 unclear items → Move to **Step 2.5 Final Verification**.
+**NEVER ask 2+ questions before restarting the loop. NEVER plan ahead for "the next question". Each loop iteration = 1 Extract + 1 Question + 1 Answer.**
 
 ### Ambiguity Criteria
 
 > **Core principle**: Anything not explicitly stated by the user and not confirmed in the codebase is **treated as speculation/assumption** and classified as an unclear item. Even if Claude wrote it confidently, it is unclear if the source is unverified.
+>
+> **Exception — implementation details are NOT unclear items**: Technical decisions about HOW to achieve the goal (code placement, internal structure, naming conventions, file organization, etc.) are Claude's engineering judgment. Only user-facing requirements (WHAT behavior the user wants) should be classified as unclear. If the user did not specify it and it is purely a technical approach decision, Claude decides — do NOT ask the user.
 
 Compare against all 12 items below **during every review**. To skip an item as "not applicable", there must be concrete evidence (user statement or codebase confirmation).
 
@@ -96,13 +136,17 @@ If the user approves, Write the plan to `.tmp/plans/${TS}_{topic}.md`.
 
 ## Step 4: Post-Implementation Guidance
 
-If the user approves implementation, implement according to the plan. **Each implementation item MUST follow the TDD cycle strictly:**
-1. Write the test/scenario first
-2. Run it → confirm it **fails** (RED)
-3. Implement the code
-4. Run it again → confirm it **passes** (GREEN)
+If the user approves implementation, implement according to the plan. Follow the TDD approach defined in Step 2-1 for the task type. **Do NOT proceed to the next item until the current item reaches GREEN.**
 
-**Do NOT proceed to the next item until the current item reaches GREEN.** Once all items are complete, output the following guidance:
+### TDD Execution Rules
+
+**RED and GREEN must be actually executed. NEVER skip or substitute them.**
+
+- "User already confirmed the issue" is NOT a valid RED. Run the test yourself.
+- "Needs a separate session to verify" is NOT a valid GREEN. Run the test yourself.
+- If GREEN fails → fix the implementation → re-run GREEN. Repeat until it passes.
+
+Once all items are complete, output the following guidance:
 
 - **If code changes are included**:
   ```
