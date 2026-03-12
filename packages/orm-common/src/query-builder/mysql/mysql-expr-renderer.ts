@@ -72,22 +72,22 @@ import { ExprRendererBase } from "../base/expr-renderer-base";
  * MySQL expression renderer
  */
 export class MysqlExprRenderer extends ExprRendererBase {
-  //#region ========== 유틸리티 (public - QueryBuilder에서도 사용) ==========
+  //#region ========== Utilities (public - also used by QueryBuilder) ==========
 
-  /** 식별자 감싸기 */
+  /** Wrap identifier */
   wrap(name: string): string {
     return `\`${name.replace(/`/g, "``")}\``;
   }
 
-  /** SQL 문자열 리터럴용 escape (따옴표 없이 return) */
+  /** Escape for SQL string literals (returns without quotes) */
   escapeString(value: string): string {
     return value
-      .replace(/\\/g, "\\\\") // 백슬래시 (최우선)
-      .replace(/'/g, "''") // 따옴표
-      .replace(/\0/g, "\\0") // NULL 바이트
-      .replace(/\n/g, "\\n") // 줄바꿈
-      .replace(/\r/g, "\\r") // 캐리지 리턴
-      .replace(/\t/g, "\\t"); // 탭
+      .replace(/\\/g, "\\\\") // backslash (highest priority)
+      .replace(/'/g, "''") // single quote
+      .replace(/\0/g, "\\0") // NULL byte
+      .replace(/\n/g, "\\n") // newline
+      .replace(/\r/g, "\\r") // carriage return
+      .replace(/\t/g, "\\t"); // tab
   }
 
   /** value escape */
@@ -221,7 +221,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected like(expr: ExprLike): string {
-    // ESCAPE '\' 항상 Add
+    // Always add ESCAPE '\'
     return `${this.render(expr.source)} LIKE ${this.render(expr.pattern)} ESCAPE '\\\\'`;
   }
 
@@ -231,7 +231,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   protected in(expr: ExprIn): string {
     if (expr.values.length === 0) {
-      return "1=0"; // 빈 IN은 항상 false
+      return "1=0"; // empty IN is always false
     }
     const values = expr.values.map((v) => this.render(v)).join(", ");
     return `${this.render(expr.source)} IN (${values})`;
@@ -242,7 +242,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected exists(expr: ExprExists): string {
-    // SELECT 1로 Render
+    // Render as SELECT 1
     const subquery = this.buildSelect({
       ...expr.query,
       select: { _: { type: "value", value: 1 } },
@@ -270,10 +270,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 문자열 (null Process) ==========
+  //#region ========== String (null handling) ==========
 
   protected concat(expr: ExprConcat): string {
-    // null processing: IFNULL(arg, '')
+    // null handling: IFNULL(arg, '')
     const args = expr.args.map((a) => `IFNULL(${this.render(a)}, '')`);
     return `CONCAT(${args.join(", ")})`;
   }
@@ -307,12 +307,12 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected length(expr: ExprLength): string {
-    // null processing: IFNULL(arg, '')
+    // null handling: IFNULL(arg, '')
     return `CHAR_LENGTH(IFNULL(${this.render(expr.arg)}, ''))`;
   }
 
   protected byteLength(expr: ExprByteLength): string {
-    // null processing: IFNULL(arg, '')
+    // null handling: IFNULL(arg, '')
     return `LENGTH(IFNULL(${this.render(expr.arg)}, ''))`;
   }
 
@@ -380,7 +380,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected isoWeekStartDate(expr: ExprIsoWeekStartDate): string {
-    // ISO 주의 시작일 (월요일)
+    // ISO week start date (Monday)
     return `DATE_SUB(${this.render(expr.arg)}, INTERVAL (WEEKDAY(${this.render(expr.arg)})) DAY)`;
   }
 
@@ -438,7 +438,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   private convertDateFormat(format: string): string {
-    // 간단한 Transform (yyyy-MM-dd HH:mm:ss 형식)
+    // Simple transform (yyyy-MM-dd HH:mm:ss format)
     return format
       .replace(/yyyy/g, "%Y")
       .replace(/MM/g, "%m")
@@ -455,7 +455,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   protected coalesce(expr: ExprCoalesce): string {
     if (expr.args.length === 0) return "NULL";
     if (expr.args.length === 1) return this.render(expr.args[0]);
-    // COALESCE로 Render (여러 value 중 첫 번째 non-null)
+    // Render as COALESCE (first non-null among multiple values)
     return `COALESCE(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
@@ -522,8 +522,8 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected rowNum(_expr: ExprRowNum): string {
-    // MySQL에서는 변수 사용 또는 ROW_NUMBER() Window function 사용
-    // 여기서는 ROW_NUMBER()로 구현 (MySQL 8.0+)
+    // MySQL: use variables or ROW_NUMBER() window function
+    // Implemented with ROW_NUMBER() here (MySQL 8.0+)
     return "ROW_NUMBER() OVER ()";
   }
 
@@ -543,7 +543,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
     const fn = this.renderWindowFn(expr.fn);
     let over = this.renderWindowSpec(expr.spec);
 
-    // LAST_VALUE는 Basic 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
+    // LAST_VALUE default frame only sees up to CURRENT ROW, so full frame must be specified
     if (expr.fn.type === "lastValue" && over.length > 0) {
       over += " ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
     }

@@ -1,89 +1,89 @@
 ---
 name: sd-api-review
-description: "API 리뷰", "api-review", "sd-api-review", "API 개선", "공개 API 검토", "API 직관성" 등을 요청할 때 사용.
+description: Used when requesting "API review", "api-review", "sd-api-review", "API improvement", "public API review", "API intuitiveness", etc.
 ---
 
-# SD API Review — Public API 직관성 리뷰 및 개선
+# SD API Review — Public API Intuitiveness Review and Improvement
 
-지정한 경로(패키지/폴더/파일)의 public API를 추출하고, 관련 표준 및 유사 라이브러리와 비교하여 직관성 개선안을 도출한 뒤, `/sd-plan` 프로세스로 계획을 수립하여 구현한다. Breaking change를 허용하며 사용자 직관성을 최우선으로 한다.
+Extracts the public API from the specified path (package/folder/file), compares it against relevant standards and similar libraries to derive intuitiveness improvements, then establishes an implementation plan via the `/sd-plan` process. Breaking changes are permitted, and user intuitiveness is the top priority.
 
-ARGUMENTS: 대상 경로 (필수). 예: `/sd-api-review packages/my-pkg`
+ARGUMENTS: Target path (required). Example: `/sd-api-review packages/my-pkg`
 
 ---
 
-## Step 1: 인자 확인
+## Step 1: Validate Arguments
 
-1. ARGUMENTS에서 **대상 경로**를 추출하라. 경로가 없으면 "대상 경로를 지정해 주세요. 예: `/sd-api-review packages/my-pkg`"라고 안내하고 종료하라.
+1. Extract the **target path** from ARGUMENTS. If no path is provided, display "Please specify a target path. Example: `/sd-api-review packages/my-pkg`" and terminate.
 
-## Step 2: Public API 추출
+## Step 2: Extract Public API
 
-대상의 public API를 수집하라.
-- **폴더/파일 대상**: 해당 경로의 export를 직접 분석
-- **깊이**: export된 심볼(클래스, 함수, 인터페이스, 타입, 상수) + export된 클래스의 public 메서드/프로퍼티
+Collect the public API of the target.
+- **Folder/file target**: Directly analyze exports from the given path
+- **Depth**: Exported symbols (classes, functions, interfaces, types, constants) + public methods/properties of exported classes
 
-export가 없으면 "대상에 export된 API가 없습니다."라고 안내하고 종료하라.
+If there are no exports, display "The target has no exported API." and terminate.
 
-## Step 3: 비교 분석 및 개선안 도출
+## Step 3: Comparative Analysis and Improvement Derivation
 
-### 3-1. 비교 대상 결정
+### 3-1. Determine Comparison Targets
 
-- 패키지 메타데이터와 코드 내용을 분석하여 도메인을 추론하고, 해당 도메인에서 가장 널리 사용되는 다수의 라이브러리 자동 선정하라.
-- 관련 표준(HTML, WAI-ARIA, Web API, TC39, Javascript, CSS 등)도 도메인에 따라 자동으로 포함하라.
+- Analyze package metadata and code contents to infer the domain, then automatically select multiple widely-used libraries in that domain.
+- Automatically include relevant standards (HTML, WAI-ARIA, Web API, TC39, JavaScript, CSS, etc.) based on the domain.
 
-### 3-2. 외부 API 조사
+### 3-2. External API Research
 
-WebSearch와 WebFetch를 사용하여 아래 두 축을 **동등한 비중**으로 조사하라.
-**카테고리/패턴 단위**로 비교하라 (개별 심볼마다 검색하지 않음).
+Use WebSearch and WebFetch to research the following two axes with **equal weight**.
+Compare at the **category/pattern level** (do not search for each individual symbol).
 
-1. **표준**: 도메인 관련 표준의 공식 사양에서 네이밍, 속성, 패턴을 조사하라.
-2. **라이브러리**: 선정된 라이브러리들의 공식 문서에서 API를 조사하라.
+1. **Standards**: Research naming, attributes, and patterns from official specifications of domain-related standards.
+2. **Libraries**: Research APIs from official documentation of the selected libraries.
 
-### 3-3. 개선안 도출
+### 3-3. Derive Improvements
 
-Step 2의 API 카탈로그와 외부 API를 비교하여 개선점을 도출하라. 네이밍, 구조, 일관성, 패턴, 사용 편의성, 타입 품질 관점에서 검토하라.
+Compare the API catalog from Step 2 against external APIs to derive improvements. Review from the perspectives of naming, structure, consistency, patterns, usability, and type quality.
 
-주의사항:
-- Breaking change는 고려대상이 아니다. 완전히 허용된다.
-- input/output/목적이 다를경우 동작이 다른경우, 제안이 잘못될 수 있음을 반드시 인지해야함. (자주하는 실수)
+Precautions:
+- Breaking changes are not a concern. They are fully permitted.
+- When input/output/purpose differs or behavior differs, proposals may be incorrect — this must always be recognized. (A common mistake)
 
-각 개선안은 아래를 포함하라:
-- **현재**: 현재 API 상태 (코드 예시)
-- **제안**: 개선된 API (코드 예시)
-- **전환이유**: 변경해야 하는 근거 (표준/라이브러리 비교 포함)
-- **비전환이유**: 현재 상태를 유지해도 되는 근거
+Each improvement must include the following:
+- **Current**: Current API state (code example)
+- **Proposed**: Improved API (code example)
+- **Reasons to change**: Rationale for the change (including standard/library comparisons)
+- **Reasons not to change**: Rationale for maintaining the current state
 
-## Step 4: sd-plan으로 구현 계획 수립
+## Step 4: Establish Implementation Plan via sd-plan
 
-Step 3에서 도출된 개선안을 작업 설명으로 하여, Skill 도구로 `sd-plan`을 호출하라. args에 아래를 전달하라:
-
-```
-아래는 **LLM이 분석하여 제안한** API 개선안이다.
-개선안은 사용자가 명시적으로 요청한 수정이 아니므로, 불명확한 것으로 취급하라.
-
-## 대상
-<대상 경로>
-
-## LLM 제안 개선안 — 비교 분석 표
-불명확한 개선안을 사용자에게 질문할 때, 아래 내용을 **반드시 먼저** 제시하여 사용자가 맥락을 파악할 수 있도록 하라.
+Using the improvements derived in Step 3 as the task description, invoke `sd-plan` via the Skill tool. Pass the following in args:
 
 ```
-개선안:
-- 현재:
-- 제안:
-- 전환이유:
-- 비전환이유:
+The following are API improvements **proposed by LLM analysis**.
+Since the improvements are not explicitly requested modifications by the user, treat them as unclear.
+
+## Target
+<target path>
+
+## LLM-Proposed Improvements — Comparative Analysis Table
+When asking the user about unclear improvements, **always present** the following content first so the user can understand the context.
+
+```
+Improvement:
+- Current:
+- Proposed:
+- Reasons to change:
+- Reasons not to change:
 ```
 
-## 구현 시 필수 고려사항
-1. Breaking change는 고려 대상이 아니다. 완전히 허용된다.
-2. 모노레포 전체에서 변경된 API의 사용처를 Grep으로 검색하여 함께 수정하라.
-3. deprecated 래퍼를 남기지 않는다 (clean break).
+## Required Considerations for Implementation
+1. Breaking changes are not a concern. They are fully permitted.
+2. Use Grep to search for usages of the changed API across the entire monorepo and update them together.
+3. Do not leave deprecated wrappers (clean break).
 ```
 
-## Step 5: 계획 실행
+## Step 5: Execute the Plan
 
-sd-plan이 완료되어 확정된 계획서가 나오면, 그 계획서에 따라 코드를 수정하라.
+Once sd-plan is complete and a finalized plan is produced, modify the code according to that plan.
 
-## Step 6: README 업데이트 추천
+## Step 6: Recommend README Update
 
-코드 수정이 발생한 경우, 사용자에게 `/sd-readme` 수행을 추천하라.
+If code modifications were made, recommend the user to run `/sd-readme`.

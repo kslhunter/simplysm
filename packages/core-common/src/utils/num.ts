@@ -11,7 +11,7 @@
  * @note Strings with decimal points return only the integer part (e.g., '12.34' → 12).
  *       Use {@link parseRoundedInt} if rounding is needed.
  * @note Hyphens (-) in the middle of the string are preserved, which may result in unintended negative numbers.
- *       Example: `"가-123나"` → `-123`
+ *       Example: `"A-123B"` → `-123`
  */
 export function parseInt(text: unknown): number | undefined {
   if (typeof text === "number") return Math.trunc(text);

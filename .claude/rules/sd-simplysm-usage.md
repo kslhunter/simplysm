@@ -1,7 +1,7 @@
-# @simplysm 패키지 문서
+# @simplysm Package Documentation
 
-`@simplysm/*` 패키지의 API 상세 정보, 사용 예시, 컴포넌트 props 등이 필요할 때,
-해당 패키지의 README.md를 읽는다.
+When you need detailed API information, usage examples, or component props for `@simplysm/*` packages,
+read the corresponding package's README.md.
 
-1. 패키지의 README.md를 읽기: `packages/{package-name}/README.md`
-2. README.md에 `docs/` 인덱스(Documentation 테이블)가 있으면, 필요한 카테고리의 `docs/*.md` 파일만 추가로 읽기
+1. Read the package's README.md: `packages/{package-name}/README.md`
+2. If the README.md contains a `docs/` index (Documentation table), read only the relevant category's `docs/*.md` files as needed

@@ -1,69 +1,69 @@
 ---
 name: sd-check
-description: "체크", "check", "sd-check", "타입체크+린트+테스트", "전체 검사" 등을 요청할 때 사용.
+description: Used when requesting "check", "sd-check", "typecheck+lint+test", "full check", etc.
 ---
 
-# SD Check — 자동 검사 및 오류 수정 루프
+# SD Check — Automated Check and Error Fix Loop
 
-패키지 매니저를 감지하고 check 스크립트를 실행하여 결과를 확인한 뒤, 코드 오류가 있으면 sd-debug로 근본 원인을 분석·수정하고 재검사하는 과정을 오류가 없을 때까지 반복한다.
+Detects the package manager, runs the check script, reviews the results, and if there are code errors, invokes sd-debug to analyze the root cause, applies fixes, and re-runs the check. This loop repeats until all errors are resolved.
 
-ARGUMENTS: 타겟 경로 (선택, 복수 가능). 미지정 시 대화 컨텍스트에서 파악하며, 특정 타겟이 없거나 "전체/all"이면 타겟 없이 실행.
+ARGUMENTS: Target paths (optional, multiple allowed). If not specified, determined from the conversation context. If no specific target exists or "all" is specified, run without targets.
 
 ---
 
-## Step 1: 준비 (PM 감지 + 스크립트 확인 + 타겟 결정)
+## Step 1: Preparation (PM Detection + Script Verification + Target Resolution)
 
-1. **PM 감지**: 프로젝트 루트의 락 파일로 판별하라.
-   - `pnpm-lock.yaml` 존재 → `pnpm`
-   - `yarn.lock` 존재 → `yarn`
-   - `package-lock.json` 존재 → `npm`
-   - 모두 없으면 → `npm` (기본값)
-2. **스크립트 확인**: `package.json`의 `scripts.check` 존재 여부를 확인하라. 없으면 `"check 스크립트가 package.json에 정의되어 있지 않습니다."` 안내 후 **종료**.
-3. **타겟 결정**: 아래 우선순위로 결정하라.
-   1. ARGUMENTS에 명시된 타겟
-   2. 현재 대화 컨텍스트에서 파악 (사용자가 특정 패키지 작업 중인 경우)
-   3. 위 둘 모두 해당 없거나 "전체/all" → 타겟 없이 실행 (전체)
+1. **PM Detection**: Determine the package manager from the lock file in the project root.
+   - `pnpm-lock.yaml` exists → `pnpm`
+   - `yarn.lock` exists → `yarn`
+   - `package-lock.json` exists → `npm`
+   - None found → `npm` (default)
+2. **Script Verification**: Check whether `scripts.check` exists in `package.json`. If not, inform the user with `"The check script is not defined in package.json."` and **stop**.
+3. **Target Resolution**: Determine targets in the following priority order.
+   1. Targets explicitly specified in ARGUMENTS
+   2. Inferred from the current conversation context (e.g., user is working on a specific package)
+   3. If neither applies or "all" is specified → run without targets (full check)
 
-## Step 2: 검사 실행
+## Step 2: Run Check
 
 1. `mkdir -p .tmp/check` (Bash)
-2. Bash로 아래 명령을 실행하라:
+2. Run the following command via Bash:
    ```
-   $PM check [targets...] > .tmp/check/{yyMMddHHmmss}.txt 2>&1; echo "EXIT_CODE:$?" >> .tmp/check/{yyMMddHHmmss}.txt
+   TS=$(date +%y%m%d%H%M%S); $PM check [targets...] > .tmp/check/${TS}.txt 2>&1; echo "EXIT_CODE:$?" >> .tmp/check/${TS}.txt
    ```
-   - `$PM` = Step 1에서 감지한 패키지 매니저
-   - `{yyMMddHHmmss}` = 연월일시분초
-   - 타겟이 있으면 명령에 포함, 없으면 생략
-3. Read 도구로 결과 파일(`.tmp/check/{yyMMddHHmmss}.txt`)을 읽어라.
+   - `$PM` = the package manager detected in Step 1
+   - `$TS` = timestamp variable (e.g., `260312143025`)
+   - Include targets in the command if present; omit otherwise
+3. Read the result file (`.tmp/check/${TS}.txt`) using the Read tool.
 
-## Step 3: 결과 분석
+## Step 3: Analyze Results
 
-결과 파일 내용을 읽고 아래 세 가지 중 하나로 분류하라:
+Read the result file content and classify it into one of the following three categories:
 
-- **성공**: 오류 없이 모든 검사를 통과한 경우 → **Step 5(완료)**로 이동
-- **환경 오류**: 코드 문제가 아닌 환경/인프라 문제로 판단되는 경우 (예: 의존성 미설치, 메모리 부족, 명령어 없음, 네트워크 문제 등) → 사용자에게 해당 오류 내용을 보여주고 **즉시 종료**. 코드 수정을 시도하지 않는다.
-- **코드 오류**: 소스 코드의 타입 에러, 린트 위반, 테스트 실패 등으로 판단되는 경우 → **Step 4**로 이동
+- **Success**: All checks passed without errors → proceed to **Step 5 (Completion)**
+- **Environment Error**: The issue is an environment/infrastructure problem rather than a code problem (e.g., missing dependencies, out of memory, command not found, network issues, etc.) → show the error details to the user and **stop immediately**. Do not attempt code fixes.
+- **Code Error**: The issue is a source code problem such as type errors, lint violations, or test failures → proceed to **Step 4**
 
-> 위 분류는 하드코딩된 패턴 매칭이 아닌, 결과 내용을 읽고 자유롭게 판단한다.
+> The classification above should be determined by reading and interpreting the result content freely, not by hardcoded pattern matching.
 
-**반복 제한**: 현재 반복 횟수가 5회를 초과하면, 잔여 오류를 사용자에게 보고하고 `"5회 반복 후에도 오류가 남아 있습니다. 남은 오류를 확인해 주세요."` 안내 후 **종료**.
+**Iteration Limit**: If the current iteration count exceeds 5, report the remaining errors to the user, inform them with `"Errors remain after 5 iterations. Please review the remaining errors."`, and **stop**.
 
-## Step 4: 오류 분석 및 수정 (sd-debug 활용)
+## Step 4: Error Analysis and Fix (Using sd-debug)
 
-Skill 도구로 `sd-debug`를 호출하라. args에 아래 내용을 전달하라:
+Invoke `sd-debug` via the Skill tool. Pass the following content as args:
 
 ```
-아래 check 결과의 코드 오류를 분석하라.
-**중요: Step 2(코드베이스 심층 분석) 완료 후 Step 3~5를 건너뛰고, 분석 결과를 바탕으로 바로 코드를 수정하라. 진단 보고서 출력, 사용자 확인, sd-plan 호출 없이 즉시 수정한다.**
+Analyze the code errors from the check results below.
+**Important: After completing Step 2 (in-depth codebase analysis), skip Steps 3-5 and immediately fix the code based on the analysis results. Do not output a diagnostic report, do not wait for user confirmation, and do not invoke sd-plan — apply fixes directly.**
 
-<.tmp/check/{yyMMddHHmmss}.txt 의 오류 내용을 여기에 포함>
+<Include the error content from the check result file here>
 ```
 
-sd-debug 완료 후 → **Step 2**로 복귀 (새로운 txt로 재검사)
+After sd-debug completes → return to **Step 2** (re-run check with a new txt file)
 
-## Step 5: 완료 보고
+## Step 5: Completion Report
 
-모든 검사 통과 시 아래를 출력하라:
-- 총 반복 횟수
-- 각 반복에서 수정한 내용 요약
-- 형식: `"✔ 체크 완료: {N}회 만에 모든 검사를 통과했습니다."` + 수정 내역 bullet list
+When all checks pass, output the following:
+- Total number of iterations
+- Summary of fixes made in each iteration
+- Format: `"Check complete: all checks passed after {N} iteration(s)."` + bullet list of fix details

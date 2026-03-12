@@ -175,8 +175,8 @@ function collectAllExternals(pkgDir: string, manualExternals?: string[]): string
  *
  * - dist/package.json: include external modules as dependencies (add volta field if volta is used)
  * - dist/mise.toml: specify Node version (only when packageManager === "mise")
- * - dist/openssl.cnf: 레거시 OpenSSL 프로바이더 활성화
- * - dist/pm2.config.cjs: PM2 프로세스 설정 (pm2 옵션이 있을 때만)
+ * - dist/openssl.cnf: enable legacy OpenSSL provider
+ * - dist/pm2.config.cjs: PM2 process configuration (only when pm2 option is present)
  */
 function generateProductionFiles(info: ServerBuildInfo, externals: string[]): void {
   const distDir = path.join(info.pkgDir, "dist");
@@ -202,7 +202,7 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
   }
   fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
 
-  // dist/mise.toml (packageManager === "mise"일 때만)
+  // dist/mise.toml (only when packageManager === "mise")
   if (info.packageManager === "mise") {
     logger.debug("GEN mise.toml...");
     const rootMiseTomlPath = path.join(info.cwd, "mise.toml");

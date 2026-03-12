@@ -66,9 +66,9 @@ export const expr = {
    *
    * Widen to base type matching dataType, remove literal type
    *
-   * @param dataType - Value의 data type ("string", "number", "boolean", "DateTime", "DateOnly", "Time", "Uuid", "Buffer")
-   * @param value - 래핑할 value (undefined allow)
-   * @returns 래핑된 ExprUnit instance
+   * @param dataType - The data type of the value ("string", "number", "boolean", "DateTime", "DateOnly", "Time", "Uuid", "Buffer")
+   * @param value - Value to wrap (undefined allowed)
+   * @returns Wrapped ExprUnit instance
    *
    * @example
    * ```typescript
@@ -271,16 +271,16 @@ export const expr = {
   /**
    * range comparison (BETWEEN)
    *
-   * from/to가 undefined이면 해당 방향은 무제한
+   * If from/to is undefined, that direction is unbounded
    *
    * @param source - Column or expression to compare
-   * @param from - start value (undefined이면 하한 N/A)
-   * @param to - 끝 value (undefined이면 상한 N/A)
+   * @param from - Start value (no lower bound if undefined)
+   * @param to - End value (no upper bound if undefined)
    * @returns WHERE condition expression
    *
    * @example
    * ```typescript
-   * // range 지정
+   * // Specify range
    * db.user().where((u) => [expr.between(u.age, 18, 65)])
    * // WHERE age BETWEEN 18 AND 65
    *
@@ -307,9 +307,9 @@ export const expr = {
   //#region ========== WHERE - NULL check ==========
 
   /**
-   * NULL 체크 (IS NULL)
+   * NULL check (IS NULL)
    *
-   * @param source - 체크할 column 또는 expression
+   * @param source - Column or expression to check
    * @returns WHERE condition expression
    *
    * @example
@@ -330,22 +330,22 @@ export const expr = {
   //#region ========== WHERE - String search ==========
 
   /**
-   * LIKE pattern 매칭
+   * LIKE pattern matching
    *
-   * `%`는 0개 이상의 문자, `_`는 단일 문자와 매칭.
-   * 특수문자는 `\`로 escape됨
+   * `%` matches zero or more characters, `_` matches a single character.
+   * Special characters are escaped with `\`
    *
-   * @param source - 검색할 column 또는 expression
-   * @param pattern - 검색 pattern (%, _ wildcard 사용 가능)
+   * @param source - Column or expression to search
+   * @param pattern - Search pattern (%, _ wildcards available)
    * @returns WHERE condition expression
    *
    * @example
    * ```typescript
-   * // 접두사 검색
+   * // Prefix search
    * db.user().where((u) => [expr.like(u.name, "John%")])
    * // WHERE name LIKE 'John%' ESCAPE '\'
    *
-   * // include 검색
+   * // Contains search
    * db.user().where((u) => [expr.like(u.email, "%@gmail.com")])
    * ```
    */
@@ -361,12 +361,12 @@ export const expr = {
   },
 
   /**
-   * regular expression pattern 매칭
+   * Regular expression pattern matching
    *
-   * DBMS별 regular expression 문법 차이 주의 필요
+   * Note: regex syntax may differ between DBMS implementations
    *
-   * @param source - 검색할 column 또는 expression
-   * @param pattern - regular expression pattern
+   * @param source - Column or expression to search
+   * @param pattern - Regular expression pattern
    * @returns WHERE condition expression
    *
    * @example
@@ -391,10 +391,10 @@ export const expr = {
   //#region ========== WHERE - IN ==========
 
   /**
-   * IN operator - Value 목록과 comparison
+   * IN operator - Compare against a list of values
    *
    * @param source - Column or expression to compare
-   * @param values - 비교할 value 목록
+   * @param values - List of values to compare against
    * @returns WHERE condition expression
    *
    * @example
@@ -412,14 +412,14 @@ export const expr = {
   },
 
   /**
-   * IN (SELECT ...) - Subquery 결과와 comparison
+   * IN (SELECT ...) - Compare against subquery results
    *
-   * Subquery는 반드시 단일 column만 SELECT해야 함
+   * The subquery must SELECT only a single column
    *
    * @param source - Column or expression to compare
-   * @param query - 단일 column을 반환하는 Queryable
+   * @param query - Queryable that returns a single column
    * @returns WHERE condition expression
-   * @throws {Error} Subquery가 단일 column이 아닌 경우
+   * @throws {Error} When the subquery does not return a single column
    *
    * @example
    * ```typescript
@@ -450,16 +450,16 @@ export const expr = {
   },
 
   /**
-   * EXISTS (SELECT ...) - Subquery result 존재 여부 확인
+   * EXISTS (SELECT ...) - Check if subquery returns any rows
    *
-   * Subquery가 하나 이상의 행을 반환하면 true
+   * Returns true if the subquery returns one or more rows
    *
-   * @param query - 존재 여부를 확인할 Queryable
+   * @param query - Queryable to check for existence
    * @returns WHERE condition expression
    *
    * @example
    * ```typescript
-   * // 주문이 있는 사용자 조회
+   * // Query users who have orders
    * db.user().where((u) => [
    *   expr.exists(
    *     db.order().where((o) => [expr.eq(o.userId, u.id)])
@@ -469,7 +469,7 @@ export const expr = {
    * ```
    */
   exists(query: Queryable<any, any>): WhereExprUnit {
-    const { select: _, ...queryDefWithoutSelect } = query.getSelectQueryDef(); // EXISTS는 SELECT 절 불필요, 패킷 절약
+    const { select: _, ...queryDefWithoutSelect } = query.getSelectQueryDef(); // EXISTS does not need SELECT clause, saves packet size
     return new WhereExprUnit({
       type: "exists",
       query: queryDefWithoutSelect,
@@ -481,10 +481,10 @@ export const expr = {
   //#region ========== WHERE - Logical operators ==========
 
   /**
-   * NOT operator - Condition 부정
+   * NOT operator - Negate a condition
    *
-   * @param arg - 부정할 condition
-   * @returns 부정된 WHERE condition expression
+   * @param arg - Condition to negate
+   * @returns Negated WHERE condition expression
    *
    * @example
    * ```typescript
@@ -500,12 +500,12 @@ export const expr = {
   },
 
   /**
-   * AND operator - 모든 condition 충족
+   * AND operator - All conditions must be satisfied
    *
-   * 여러 조건을 AND로 결합. where() 메서드에 배열로 전달하면 automatic으로 AND applied
+   * Combines multiple conditions with AND. Passing an array to where() automatically applies AND
    *
-   * @param conditions - AND로 결합할 condition 목록
-   * @returns 결합된 WHERE condition expression
+   * @param conditions - List of conditions to combine with AND
+   * @returns Combined WHERE condition expression
    *
    * @example
    * ```typescript
@@ -529,10 +529,10 @@ export const expr = {
   },
 
   /**
-   * OR operator - 하나 이상의 condition 충족
+   * OR operator - At least one condition must be satisfied
    *
-   * @param conditions - OR로 결합할 condition 목록
-   * @returns 결합된 WHERE condition expression
+   * @param conditions - List of conditions to combine with OR
+   * @returns Combined WHERE condition expression
    *
    * @example
    * ```typescript
@@ -557,15 +557,15 @@ export const expr = {
 
   //#endregion
 
-  //#region ========== SELECT - 문자열 ==========
+  //#region ========== SELECT - String ==========
 
   /**
-   * 문자열 연결 (CONCAT)
+   * String concatenation (CONCAT)
    *
-   * NULL 값은 빈 문자열로 processing됨 (DBMS별 automatic Transform)
+   * NULL values are treated as empty strings (auto-transformed per DBMS)
    *
-   * @param args - 연결할 문자열들
-   * @returns 연결된 문자열 expression
+   * @param args - Strings to concatenate
+   * @returns Concatenated string expression
    *
    * @example
    * ```typescript
@@ -583,11 +583,11 @@ export const expr = {
   },
 
   /**
-   * 문자열 왼쪽에서 지정 길이만큼 추출 (LEFT)
+   * Extract specified length from the left of a string (LEFT)
    *
-   * @param source - original string
-   * @param length - 추출할 문자 수
-   * @returns 추출된 문자열 expression
+   * @param source - Original string
+   * @param length - Number of characters to extract
+   * @returns Extracted string expression
    *
    * @example
    * ```typescript
@@ -606,11 +606,11 @@ export const expr = {
   },
 
   /**
-   * 문자열 오른쪽에서 지정 길이만큼 추출 (RIGHT)
+   * Extract specified length from the right of a string (RIGHT)
    *
-   * @param source - original string
-   * @param length - 추출할 문자 수
-   * @returns 추출된 문자열 expression
+   * @param source - Original string
+   * @param length - Number of characters to extract
+   * @returns Extracted string expression
    *
    * @example
    * ```typescript
@@ -629,10 +629,10 @@ export const expr = {
   },
 
   /**
-   * 문자열 양쪽 공백 Remove (TRIM)
+   * Remove whitespace from both sides of a string (TRIM)
    *
-   * @param source - original string
-   * @returns 공백이 제거된 문자열 expression
+   * @param source - Original string
+   * @returns String expression with whitespace removed
    *
    * @example
    * ```typescript
@@ -650,14 +650,14 @@ export const expr = {
   },
 
   /**
-   * 문자열 왼쪽 패딩 (LPAD)
+   * Left padding (LPAD)
    *
-   * 지정 길이가 될 때까지 왼쪽에 fillString loop Add
+   * Repeatedly adds fillString on the left until the target length is reached
    *
-   * @param source - original string
-   * @param length - 목표 길이
-   * @param fillString - 패딩에 사용할 문자열
-   * @returns 패딩된 문자열 expression
+   * @param source - Original string
+   * @param length - Target length
+   * @param fillString - String to use for padding
+   * @returns Padded string expression
    *
    * @example
    * ```typescript
@@ -682,12 +682,12 @@ export const expr = {
   },
 
   /**
-   * 문자열 치환 (REPLACE)
+   * String replacement (REPLACE)
    *
-   * @param source - original string
-   * @param from - 찾을 문자열
-   * @param to - 대체할 문자열
-   * @returns 치환된 문자열 expression
+   * @param source - Original string
+   * @param from - String to find
+   * @param to - Replacement string
+   * @returns Replaced string expression
    *
    * @example
    * ```typescript
@@ -711,10 +711,10 @@ export const expr = {
   },
 
   /**
-   * 문자열 대문자 Transform (UPPER)
+   * Convert string to uppercase (UPPER)
    *
-   * @param source - original string
-   * @returns 대문자로 Transform된 문자열 expression
+   * @param source - Original string
+   * @returns Uppercase string expression
    *
    * @example
    * ```typescript
@@ -732,10 +732,10 @@ export const expr = {
   },
 
   /**
-   * 문자열 소문자 Transform (LOWER)
+   * Convert string to lowercase (LOWER)
    *
-   * @param source - original string
-   * @returns 소문자로 Transform된 문자열 expression
+   * @param source - Original string
+   * @returns Lowercase string expression
    *
    * @example
    * ```typescript
@@ -753,10 +753,10 @@ export const expr = {
   },
 
   /**
-   * 문자열 길이 (문자 수)
+   * String length (character count)
    *
-   * @param source - original string
-   * @returns 문자 수
+   * @param source - Original string
+   * @returns Character count
    *
    * @example
    * ```typescript
@@ -774,12 +774,12 @@ export const expr = {
   },
 
   /**
-   * 문자열 바이트 길이
+   * String byte length
    *
-   * UTF-8 환경에서 한글은 3바이트
+   * In UTF-8, CJK characters are 3 bytes each
    *
-   * @param source - original string
-   * @returns 바이트 수
+   * @param source - Original string
+   * @returns Byte count
    *
    * @example
    * ```typescript
@@ -797,19 +797,19 @@ export const expr = {
   },
 
   /**
-   * 문자열 일부 추출 (SUBSTRING)
+   * Extract part of a string (SUBSTRING)
    *
-   * SQL 표준에 따라 1-based index 사용
+   * Uses 1-based index per SQL standard
    *
-   * @param source - original string
-   * @param start - start 위치 (1부터 start)
-   * @param length - 추출할 길이 (생략 시 끝까지)
-   * @returns 추출된 문자열 expression
+   * @param source - Original string
+   * @param start - Start position (starting from 1)
+   * @param length - Length to extract (to the end if omitted)
+   * @returns Extracted string expression
    *
    * @example
    * ```typescript
    * db.user().select((u) => ({
-   *   // "Hello World"에서 Index 1부터 5글자: "Hello"
+   *   // From "Hello World", 5 characters starting at index 1: "Hello"
    *   prefix: expr.substring(u.name, 1, 5),
    * }))
    * // SELECT SUBSTRING(name, 1, 5) AS prefix
@@ -829,13 +829,13 @@ export const expr = {
   },
 
   /**
-   * 문자열 내 위치 찾기 (LOCATE/CHARINDEX)
+   * Find position within a string (LOCATE/CHARINDEX)
    *
-   * 1-based index return, 없으면 0 return
+   * Returns 1-based index, or 0 if not found
    *
-   * @param source - 검색할 문자열
-   * @param search - 찾을 문자열
-   * @returns 위치 (1부터 start, 없으면 0)
+   * @param source - String to search in
+   * @param search - String to find
+   * @returns Position (starting from 1, 0 if not found)
    *
    * @example
    * ```typescript
@@ -859,10 +859,10 @@ export const expr = {
   //#region ========== SELECT - Number ==========
 
   /**
-   * 절대값 (ABS)
+   * Absolute value (ABS)
    *
-   * @param source - 원본 Number
-   * @returns 절대값 expression
+   * @param source - Original number
+   * @returns Absolute value expression
    *
    * @example
    * ```typescript
@@ -880,11 +880,11 @@ export const expr = {
   },
 
   /**
-   * 반올림 (ROUND)
+   * Round (ROUND)
    *
-   * @param source - 원본 Number
-   * @param digits - 소수점 이하 자릿수
-   * @returns 반올림된 Number expression
+   * @param source - Original number
+   * @param digits - Number of decimal places
+   * @returns Rounded number expression
    *
    * @example
    * ```typescript
@@ -904,10 +904,10 @@ export const expr = {
   },
 
   /**
-   * 올림 (CEILING)
+   * Ceiling (CEILING)
    *
-   * @param source - 원본 Number
-   * @returns 올림된 Number expression
+   * @param source - Original number
+   * @returns Ceiling number expression
    *
    * @example
    * ```typescript
@@ -926,10 +926,10 @@ export const expr = {
   },
 
   /**
-   * 버림 (FLOOR)
+   * Floor (FLOOR)
    *
-   * @param source - 원본 Number
-   * @returns 버림된 Number expression
+   * @param source - Original number
+   * @returns Floor number expression
    *
    * @example
    * ```typescript
@@ -952,10 +952,10 @@ export const expr = {
   //#region ========== SELECT - Date ==========
 
   /**
-   * 연도 추출 (YEAR)
+   * Extract year (YEAR)
    *
-   * @param source - DateTime 또는 DateOnly expression
-   * @returns 연도 (4자리 Number)
+   * @param source - DateTime or DateOnly expression
+   * @returns Year (4-digit number)
    *
    * @example
    * ```typescript
@@ -975,10 +975,10 @@ export const expr = {
   },
 
   /**
-   * 월 추출 (MONTH)
+   * Extract month (MONTH)
    *
-   * @param source - DateTime 또는 DateOnly expression
-   * @returns 월 (1~12)
+   * @param source - DateTime or DateOnly expression
+   * @returns Month (1~12)
    *
    * @example
    * ```typescript
@@ -998,10 +998,10 @@ export const expr = {
   },
 
   /**
-   * 일 추출 (DAY)
+   * Extract day (DAY)
    *
-   * @param source - DateTime 또는 DateOnly expression
-   * @returns 일 (1~31)
+   * @param source - DateTime or DateOnly expression
+   * @returns Day (1~31)
    *
    * @example
    * ```typescript
@@ -1021,10 +1021,10 @@ export const expr = {
   },
 
   /**
-   * 시 추출 (HOUR)
+   * Extract hour (HOUR)
    *
-   * @param source - DateTime 또는 Time expression
-   * @returns 시 (0~23)
+   * @param source - DateTime or Time expression
+   * @returns Hour (0~23)
    *
    * @example
    * ```typescript
@@ -1044,10 +1044,10 @@ export const expr = {
   },
 
   /**
-   * 분 추출 (MINUTE)
+   * Extract minute (MINUTE)
    *
-   * @param source - DateTime 또는 Time expression
-   * @returns 분 (0~59)
+   * @param source - DateTime or Time expression
+   * @returns Minute (0~59)
    *
    * @example
    * ```typescript
@@ -1067,10 +1067,10 @@ export const expr = {
   },
 
   /**
-   * 초 추출 (SECOND)
+   * Extract second (SECOND)
    *
-   * @param source - DateTime 또는 Time expression
-   * @returns 초 (0~59)
+   * @param source - DateTime or Time expression
+   * @returns Second (0~59)
    *
    * @example
    * ```typescript
@@ -1090,12 +1090,12 @@ export const expr = {
   },
 
   /**
-   * ISO 주차 추출
+   * Extract ISO week number
    *
-   * ISO 8601 기준 주차 (월요일 start, 1~53)
+   * ISO 8601 week number (starts Monday, 1~53)
    *
    * @param source - DateOnly expression
-   * @returns ISO 주차 번호
+   * @returns ISO week number
    *
    * @example
    * ```typescript
@@ -1115,19 +1115,19 @@ export const expr = {
   },
 
   /**
-   * ISO 주 시작일 (월요일)
+   * ISO week start date (Monday)
    *
-   * 해당 Date가 속한 주의 월요일 return
+   * Returns the Monday of the week the given date belongs to
    *
    * @param source - DateOnly expression
-   * @returns 주의 start Date (월요일)
+   * @returns Week start date (Monday)
    *
    * @example
    * ```typescript
    * db.order().select((o) => ({
    *   weekStart: expr.isoWeekStartDate(o.orderDate),
    * }))
-   * // 2024-01-10 (수) → 2024-01-08 (월)
+   * // 2024-01-10 (Wed) → 2024-01-08 (Mon)
    * ```
    */
   isoWeekStartDate<T extends DateOnly | undefined>(source: ExprUnit<T>): ExprUnit<T> {
@@ -1138,12 +1138,12 @@ export const expr = {
   },
 
   /**
-   * ISO 연월 (해당 월의 1일)
+   * ISO year-month (first day of the month)
    *
-   * 해당 Date의 월 첫째 날 return
+   * Returns the first day of the month for the given date
    *
    * @param source - DateOnly expression
-   * @returns 월의 첫째 날
+   * @returns First day of the month
    *
    * @example
    * ```typescript
@@ -1161,12 +1161,12 @@ export const expr = {
   },
 
   /**
-   * Date 차이 계산 (DATEDIFF)
+   * Calculate date difference (DATEDIFF)
    *
-   * @param unit - 단위 ("year", "month", "day", "hour", "minute", "second")
-   * @param from - start Date
-   * @param to - 끝 Date
-   * @returns 차이 value (to - from)
+   * @param unit - Unit ("year", "month", "day", "hour", "minute", "second")
+   * @param from - Start date
+   * @param to - End date
+   * @returns Difference value (to - from)
    *
    * @example
    * ```typescript
@@ -1190,12 +1190,12 @@ export const expr = {
   },
 
   /**
-   * Date 더하기 (DATEADD)
+   * Add to date (DATEADD)
    *
-   * @param unit - 단위 ("year", "month", "day", "hour", "minute", "second")
-   * @param source - 원본 Date
-   * @param value - 더할 value (음수 가능)
-   * @returns 계산된 Date
+   * @param unit - Unit ("year", "month", "day", "hour", "minute", "second")
+   * @param source - Original date
+   * @param value - Value to add (negative allowed)
+   * @returns Calculated date
    *
    * @example
    * ```typescript
@@ -1219,13 +1219,13 @@ export const expr = {
   },
 
   /**
-   * Date 포맷 (DATE_FORMAT)
+   * Date format (DATE_FORMAT)
    *
-   * DBMS별로 포맷 문자열 규칙이 다를 수 있음
+   * Format string rules may differ between DBMS implementations
    *
    * @param source - Date expression
-   * @param format - 포맷 문자열 (예: "%Y-%m-%d")
-   * @returns 포맷된 문자열 expression
+   * @param format - Format string (e.g., "%Y-%m-%d")
+   * @returns Formatted string expression
    *
    * @example
    * ```typescript
@@ -1252,12 +1252,12 @@ export const expr = {
   //#region ========== SELECT - Condition ==========
 
   /**
-   * NULL 대체 (COALESCE/IFNULL)
+   * NULL replacement (COALESCE/IFNULL)
    *
-   * 첫 번째 non-null 값을 return. 마지막 인자가 non-nullable이면 결과도 non-nullable
+   * Returns the first non-null value. If the last argument is non-nullable, the result is also non-nullable
    *
-   * @param args - Inspect할 값들 (마지막은 Default value)
-   * @returns 첫 번째 non-null value
+   * @param args - Values to inspect (last is default value)
+   * @returns First non-null value
    *
    * @example
    * ```typescript
@@ -1270,18 +1270,18 @@ export const expr = {
   coalesce,
 
   /**
-   * 특정 값이면 NULL return (NULLIF)
+   * Return NULL if value matches (NULLIF)
    *
-   * source === value 이면 NULL return, 아니면 source return
+   * Returns NULL if source === value, otherwise returns source
    *
-   * @param source - 원본 value
-   * @param value - 비교할 value
-   * @returns NULL 또는 원본 value
+   * @param source - Original value
+   * @param value - Value to compare
+   * @returns NULL or original value
    *
    * @example
    * ```typescript
    * db.user().select((u) => ({
-   *   // 빈 문자열을 NULL로 Transform
+   *   // Convert empty string to NULL
    *   bio: expr.nullIf(u.bio, ""),
    * }))
    * // SELECT NULLIF(bio, '') AS bio
@@ -1299,11 +1299,11 @@ export const expr = {
   },
 
   /**
-   * WHERE 표현식을 boolean으로 Transform
+   * Transform WHERE expression to boolean
    *
-   * SELECT 절에서 condition 결과를 boolean column으로 사용할 때 사용
+   * Used when condition results should be used as a boolean column in SELECT clause
    *
-   * @param condition - Transform할 condition
+   * @param condition - Condition to transform
    * @returns boolean expression
    *
    * @example
@@ -1324,7 +1324,7 @@ export const expr = {
   /**
    * CASE WHEN expression builder
    *
-   * 체이닝 방식으로 condition 분기를 구성
+   * Build conditional branches using method chaining
    *
    * @returns SwitchExprBuilder instance
    *
@@ -1345,12 +1345,12 @@ export const expr = {
   },
 
   /**
-   * 단순 IF condition (삼항 operator)
+   * Simple IF condition (ternary operator)
    *
    * @param condition - Condition
-   * @param then - Condition이 참일 때 value
-   * @param else_ - Condition이 거짓일 때 value
-   * @returns 조건부 value expression
+   * @param then - Value when condition is true
+   * @param else_ - Value when condition is false
+   * @returns Conditional value expression
    *
    * @example
    * ```typescript
@@ -1366,7 +1366,7 @@ export const expr = {
     else_: ExprInput<T>,
   ): ExprUnit<T> {
     const allValues = [then, else_];
-    // 1. ExprUnit에서 dataType 찾기
+    // 1. Find dataType from ExprUnit
     const exprUnit = allValues.find((v): v is ExprUnit<T> => v instanceof ExprUnit);
     if (exprUnit) {
       return new ExprUnit(exprUnit.dataType, {
@@ -1377,7 +1377,7 @@ export const expr = {
       });
     }
 
-    // 2. non-null 리터럴에서 추론
+    // 2. Infer from non-null literal
     const nonNullLiteral = allValues.find((v) => v != null) as ColumnPrimitive;
     if (nonNullLiteral == null) {
       throw new Error("At least one of if's then/else must be non-null.");
@@ -1394,21 +1394,21 @@ export const expr = {
   //#endregion
 
   //#region ========== SELECT - Aggregate ==========
-  // SUM, AVG, MAX등의 집계는 모든 값이 NULL이거나 행이 없을 때만 NULL return (값이 NULL인 행은 무시함)
+  // Aggregates like SUM, AVG, MAX return NULL only when all values are NULL or no rows exist (rows with NULL values are ignored)
 
   /**
-   * row 수 카운트 (COUNT)
+   * Count rows (COUNT)
    *
-   * @param arg - 카운트할 column (생략 시 전체 row 수)
-   * @param distinct - true면 중복 Remove
-   * @returns row 수
+   * @param arg - Column to count (all rows if omitted)
+   * @param distinct - If true, remove duplicates
+   * @returns Row count
    *
    * @example
    * ```typescript
-   * // 전체 row 수
+   * // Total row count
    * db.user().select(() => ({ total: expr.count() }))
    *
-   * // 중복 Remove 카운트
+   * // Distinct count
    * db.order().select((o) => ({
    *   uniqueCustomers: expr.count(o.customerId, true),
    * }))
@@ -1423,12 +1423,12 @@ export const expr = {
   },
 
   /**
-   * 합계 (SUM)
+   * Sum (SUM)
    *
-   * NULL 값은 무시됨. 모든 값이 NULL이면 NULL return
+   * NULL values are ignored. Returns NULL if all values are NULL
    *
-   * @param arg - 합계를 구할 Number column
-   * @returns 합계 (또는 NULL)
+   * @param arg - Number column to sum
+   * @returns Sum (or NULL)
    *
    * @example
    * ```typescript
@@ -1446,12 +1446,12 @@ export const expr = {
   },
 
   /**
-   * 평균 (AVG)
+   * Average (AVG)
    *
-   * NULL 값은 무시됨. 모든 값이 NULL이면 NULL return
+   * NULL values are ignored. Returns NULL if all values are NULL
    *
-   * @param arg - 평균을 구할 Number column
-   * @returns 평균 (또는 NULL)
+   * @param arg - Number column to average
+   * @returns Average (or NULL)
    *
    * @example
    * ```typescript
@@ -1469,12 +1469,12 @@ export const expr = {
   },
 
   /**
-   * 최대값 (MAX)
+   * Maximum value (MAX)
    *
-   * NULL 값은 무시됨. 모든 값이 NULL이면 NULL return
+   * NULL values are ignored. Returns NULL if all values are NULL
    *
-   * @param arg - 최대값을 구할 column
-   * @returns 최대값 (또는 NULL)
+   * @param arg - Column to find maximum of
+   * @returns Maximum value (or NULL)
    *
    * @example
    * ```typescript
@@ -1492,12 +1492,12 @@ export const expr = {
   },
 
   /**
-   * 최소값 (MIN)
+   * Minimum value (MIN)
    *
-   * NULL 값은 무시됨. 모든 값이 NULL이면 NULL return
+   * NULL values are ignored. Returns NULL if all values are NULL
    *
-   * @param arg - 최소값을 구할 column
-   * @returns 최소값 (또는 NULL)
+   * @param arg - Column to find minimum of
+   * @returns Minimum value (or NULL)
    *
    * @example
    * ```typescript
@@ -1519,10 +1519,10 @@ export const expr = {
   //#region ========== SELECT - Other ==========
 
   /**
-   * 여러 value 중 최대값 (GREATEST)
+   * Greatest value among multiple values (GREATEST)
    *
-   * @param args - 비교할 값들
-   * @returns 최대값
+   * @param args - Values to compare
+   * @returns Greatest value
    *
    * @example
    * ```typescript
@@ -1540,10 +1540,10 @@ export const expr = {
   },
 
   /**
-   * 여러 value 중 최소값 (LEAST)
+   * Least value among multiple values (LEAST)
    *
-   * @param args - 비교할 값들
-   * @returns 최소값
+   * @param args - Values to compare
+   * @returns Least value
    *
    * @example
    * ```typescript
@@ -1561,9 +1561,9 @@ export const expr = {
   },
 
   /**
-   * row 번호 (ROW_NUMBER 없이 전체 행에 대한 순번)
+   * Row number (sequential number for all rows without ROW_NUMBER)
    *
-   * @returns row 번호 (1부터 start)
+   * @returns Row number (starting from 1)
    *
    * @example
    * ```typescript
@@ -1580,15 +1580,15 @@ export const expr = {
   },
 
   /**
-   * 난수 Generate (RAND/RANDOM)
+   * Generate random number (RAND/RANDOM)
    *
-   * 0~1 사이의 난수 return. ORDER BY에서 랜덤 정렬용으로 주로 사용
+   * Returns a random number between 0 and 1. Mainly used for random ordering in ORDER BY
    *
-   * @returns 0~1 사이의 난수
+   * @returns Random number between 0 and 1
    *
    * @example
    * ```typescript
-   * // 랜덤 sorting
+   * // Random sorting
    * db.user().orderBy(() => expr.random()).limit(10)
    * ```
    */
@@ -1601,9 +1601,9 @@ export const expr = {
   /**
    * type transformation (CAST)
    *
-   * @param source - Transform할 expression
-   * @param targetType - 대상 data type
-   * @returns Transform된 expression
+   * @param source - Expression to transform
+   * @param targetType - Target data type
+   * @returns Transformed expression
    *
    * @example
    * ```typescript
@@ -1625,12 +1625,12 @@ export const expr = {
   },
 
   /**
-   * 스칼라 Subquery - SELECT 절에서 단일 value return Subquery
+   * Scalar Subquery - Subquery that returns a single value in SELECT clause
    *
-   * Subquery는 반드시 단일 row, 단일 column을 반환해야 함
+   * The subquery must return exactly one row and one column
    *
    * @param dataType - Data type of the returned value
-   * @param queryable - 스칼라 값을 반환하는 Queryable
+   * @param queryable - Queryable that returns a scalar value
    * @returns Subquery result expression
    *
    * @example
@@ -1662,12 +1662,12 @@ export const expr = {
   //#region ========== SELECT - Window Functions ==========
 
   /**
-   * ROW_NUMBER() - 파티션 내 row 번호
+   * ROW_NUMBER() - Row number within a partition
    *
-   * 각 파티션 내에서 1부터 시작하는 sequential 번호 부여
+   * Assigns sequential numbers starting from 1 within each partition
    *
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns row 번호 (1부터 start)
+   * @returns Row number (starting from 1)
    *
    * @example
    * ```typescript
@@ -1690,10 +1690,10 @@ export const expr = {
   },
 
   /**
-   * RANK() - 파티션 내 순위 (동점 시 같은 순위, 다음 순위 건너뜀)
+   * RANK() - Rank within a partition (ties get same rank, next rank is skipped)
    *
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns 순위 (동점 후 건너뜀: 1, 1, 3)
+   * @returns Rank (skips after ties: 1, 1, 3)
    *
    * @example
    * ```typescript
@@ -1714,10 +1714,10 @@ export const expr = {
   },
 
   /**
-   * DENSE_RANK() - 파티션 내 밀집 순위 (동점 시 같은 순위, 다음 순위 유지)
+   * DENSE_RANK() - Dense rank within a partition (ties get same rank, next rank is consecutive)
    *
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns 밀집 순위 (동점 후 연속: 1, 1, 2)
+   * @returns Dense rank (consecutive after ties: 1, 1, 2)
    *
    * @example
    * ```typescript
@@ -1738,15 +1738,15 @@ export const expr = {
   },
 
   /**
-   * NTILE(n) - 파티션을 n개 그룹으로 split
+   * NTILE(n) - Split partition into n groups
    *
-   * @param n - 분할할 그룹 수
+   * @param n - Number of groups to split into
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns 그룹 번호 (1 ~ n)
+   * @returns Group number (1 ~ n)
    *
    * @example
    * ```typescript
-   * // 상위 25%를 찾기 위한 사분위 split
+   * // Quartile split to find top 25%
    * db.user().select((u) => ({
    *   name: u.name,
    *   quartile: expr.ntile(4, {
@@ -1764,12 +1764,12 @@ export const expr = {
   },
 
   /**
-   * LAG() - 이전 행의 value 참조
+   * LAG() - Reference value from a previous row
    *
-   * @param column - column to reference
+   * @param column - Column to reference
    * @param spec - Window spec (partitionBy, orderBy)
-   * @param options - offset (Basic 1), default (이전 행이 없을 때 Default value)
-   * @returns 이전 행의 value (또는 Default value/NULL)
+   * @param options - offset (default 1), default (default value when no previous row)
+   * @returns Previous row's value (or default value/NULL)
    *
    * @example
    * ```typescript
@@ -1801,12 +1801,12 @@ export const expr = {
   },
 
   /**
-   * LEAD() - 다음 행의 value 참조
+   * LEAD() - Reference value from a following row
    *
-   * @param column - column to reference
+   * @param column - Column to reference
    * @param spec - Window spec (partitionBy, orderBy)
-   * @param options - offset (Basic 1), default (다음 행이 없을 때 Default value)
-   * @returns 다음 행의 value (또는 Default value/NULL)
+   * @param options - offset (default 1), default (default value when no following row)
+   * @returns Following row's value (or default value/NULL)
    *
    * @example
    * ```typescript
@@ -1838,11 +1838,11 @@ export const expr = {
   },
 
   /**
-   * FIRST_VALUE() - 파티션/프레임의 첫 번째 value
+   * FIRST_VALUE() - First value in the partition/frame
    *
-   * @param column - column to reference
+   * @param column - Column to reference
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns 첫 번째 value
+   * @returns First value
    *
    * @example
    * ```typescript
@@ -1867,11 +1867,11 @@ export const expr = {
   },
 
   /**
-   * LAST_VALUE() - 파티션/프레임의 마지막 value
+   * LAST_VALUE() - Last value in the partition/frame
    *
-   * @param column - column to reference
+   * @param column - Column to reference
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns 마지막 value
+   * @returns Last value
    *
    * @example
    * ```typescript
@@ -1896,15 +1896,15 @@ export const expr = {
   },
 
   /**
-   * SUM() OVER - Window 합계
+   * SUM() OVER - Window sum
    *
-   * @param column - 합계를 구할 column
+   * @param column - Column to sum
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns Window 내 합계
+   * @returns Sum within window
    *
    * @example
    * ```typescript
-   * // 누적 합계
+   * // Running total
    * db.order().select((o) => ({
    *   ...o,
    *   runningTotal: expr.sumOver(o.amount, {
@@ -1923,15 +1923,15 @@ export const expr = {
   },
 
   /**
-   * AVG() OVER - Window 평균
+   * AVG() OVER - Window average
    *
-   * @param column - 평균을 구할 column
+   * @param column - Column to average
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns Window 내 평균
+   * @returns Average within window
    *
    * @example
    * ```typescript
-   * // move 평균
+   * // Moving average
    * db.stock().select((s) => ({
    *   ...s,
    *   movingAvg: expr.avgOver(s.price, {
@@ -1950,11 +1950,11 @@ export const expr = {
   },
 
   /**
-   * COUNT() OVER - Window 카운트
+   * COUNT() OVER - Window count
    *
    * @param spec - Window spec (partitionBy, orderBy)
-   * @param column - 카운트할 column (생략 시 전체 row 수)
-   * @returns Window 내 row 수
+   * @param column - Column to count (all rows if omitted)
+   * @returns Row count within window
    *
    * @example
    * ```typescript
@@ -1975,11 +1975,11 @@ export const expr = {
   },
 
   /**
-   * MIN() OVER - Window 최소값
+   * MIN() OVER - Window minimum
    *
-   * @param column - 최소값을 구할 column
+   * @param column - Column to find minimum of
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns Window 내 최소값
+   * @returns Minimum value within window
    *
    * @example
    * ```typescript
@@ -2003,11 +2003,11 @@ export const expr = {
   },
 
   /**
-   * MAX() OVER - Window 최대값
+   * MAX() OVER - Window maximum
    *
-   * @param column - 최대값을 구할 column
+   * @param column - Column to find maximum of
    * @param spec - Window spec (partitionBy, orderBy)
-   * @returns Window 내 최대값
+   * @returns Maximum value within window
    *
    * @example
    * ```typescript
@@ -2035,9 +2035,9 @@ export const expr = {
   //#region ========== Helper ==========
 
   /**
-   * ExprInput을 Expr로 Transform (내부용)
+   * Transform ExprInput to Expr (internal use)
    *
-   * @param value - Transform할 value
+   * @param value - Value to transform
    * @returns Expr JSON AST
    */
   toExpr(value: ExprInput<ColumnPrimitive>): Expr {
@@ -2049,7 +2049,7 @@ export const expr = {
 
 //#region ========== Internal Helpers ==========
 
-// 여러 value 중 첫 번째 non-null return (COALESCE)
+// Return the first non-null value among multiple values (COALESCE)
 function coalesce<TPrimitive extends ColumnPrimitive>(
   ...args: [
     ExprInput<TPrimitive | undefined>,
@@ -2071,7 +2071,7 @@ function coalesce<TPrimitive extends ColumnPrimitive>(
 
 function createSwitchBuilder<TPrimitive extends ColumnPrimitive>(): SwitchExprBuilder<TPrimitive> {
   const cases: { when: WhereExpr; then: Expr }[] = [];
-  const thenValues: ExprInput<TPrimitive>[] = []; // then 값들 저장
+  const thenValues: ExprInput<TPrimitive>[] = []; // Store then values
 
   return {
     case(condition: WhereExprUnit, then: ExprInput<TPrimitive>): typeof this {
@@ -2084,7 +2084,7 @@ function createSwitchBuilder<TPrimitive extends ColumnPrimitive>(): SwitchExprBu
     },
     default(value: ExprInput<TPrimitive>): ExprUnit<TPrimitive> {
       const allValues = [...thenValues, value];
-      // 1. ExprUnit에서 dataType 찾기
+      // 1. Find dataType from ExprUnit
       const exprUnit = allValues.find((v): v is ExprUnit<TPrimitive> => v instanceof ExprUnit);
       if (exprUnit) {
         return new ExprUnit(exprUnit.dataType, {
@@ -2094,7 +2094,7 @@ function createSwitchBuilder<TPrimitive extends ColumnPrimitive>(): SwitchExprBu
         });
       }
 
-      // 2. non-null 리터럴에서 추론
+      // 2. Infer from non-null literal
       const nonNullLiteral = allValues.find((v) => v != null) as ColumnPrimitive;
       if (nonNullLiteral == null) {
         throw new Error("At least one of switch's case/default must be non-null.");

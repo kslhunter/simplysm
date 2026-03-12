@@ -7,7 +7,7 @@ import type { DbContextBase, DbContextDdlMethods } from "./db-context-def";
 // ============================================
 
 /**
- * 지원하는 Database 방언
+ * Supported Database dialects
  *
  * - `mysql`: MySQL 8.0.14+
  * - `mssql`: Microsoft SQL Server 2012+
@@ -16,9 +16,9 @@ import type { DbContextBase, DbContextDdlMethods } from "./db-context-def";
 export type Dialect = "mysql" | "mssql" | "postgresql";
 
 /**
- * 지원하는 모든 Database 방언 목록
+ * List of all supported Database dialects
  *
- * testing에서 dialect별 Validation 시 사용
+ * Used for per-dialect validation in testing
  *
  * @example
  * ```typescript
@@ -33,14 +33,14 @@ export const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 /**
  * QueryBuilder.build() return type
  *
- * 빌드된 SQL 문자열과 다중 결과셋 processing를 위한 Metadata
+ * Built SQL string and metadata for multiple result set processing
  *
- * @property sql - 빌드된 SQL 문자열
- * @property resultSetIndex - Result를 가져올 결과셋 Index (Basic: 0)
- *   - MySQL INSERT with OUTPUT: 1 (INSERT + SELECT 중 SELECT)
- * @property resultSetStride - 다중 결과에서 N번째마다 결과셋 추출
- *   - 예: index=1, stride=2 → 1, 3, 5, 7... 의 결과셋 return
- *   - MySQL 다중 INSERT: INSERT;SELECT; × N → 1, 3, 5...
+ * @property sql - Built SQL string
+ * @property resultSetIndex - Result set index to fetch results from (default: 0)
+ *   - MySQL INSERT with OUTPUT: 1 (SELECT from INSERT + SELECT)
+ * @property resultSetStride - Extract every Nth result set from multiple results
+ *   - Example: index=1, stride=2 -> returns result sets 1, 3, 5, 7...
+ *   - MySQL multiple INSERT: INSERT;SELECT; x N -> 1, 3, 5...
  */
 export interface QueryBuildResult {
   sql: string;
@@ -51,10 +51,10 @@ export interface QueryBuildResult {
 /**
  * Transaction isolation level
  *
- * - `READ_UNCOMMITTED`: commit되지 않은 data read 가능 (Dirty Read)
- * - `READ_COMMITTED`: commit된 data만 read (default)
- * - `REPEATABLE_READ`: Transaction 내 동일 query 동일 result 보장
- * - `SERIALIZABLE`: 완전 serialize (가장 엄격)
+ * - `READ_UNCOMMITTED`: Can read uncommitted data (Dirty Read)
+ * - `READ_COMMITTED`: Read only committed data (default)
+ * - `REPEATABLE_READ`: Guarantees same query returns same result within transaction
+ * - `SERIALIZABLE`: Full serialization (most strict)
  */
 export type IsolationLevel =
   | "READ_UNCOMMITTED"
@@ -63,20 +63,20 @@ export type IsolationLevel =
   | "SERIALIZABLE";
 
 // ============================================
-// DataRecord - Result data type (재귀적, 중첩 allow)
+// DataRecord - Result data type (recursive, nesting allowed)
 // ============================================
 
 /**
  * Query result data record type
  *
- * 재귀적 structure로 중첩 관계(include) result 표현
+ * Represents nested relation (include) results with recursive structure
  *
  * @example
  * ```typescript
- * // 단순 레코드
+ * // Simple record
  * type User = { id: number; name: string; }
  *
- * // 중첩 relationship include
+ * // Nested relation include
  * type UserWithPosts = {
  *   id: number;
  *   name: string;
@@ -94,14 +94,14 @@ export type DataRecord = {
 // ============================================
 
 /**
- * DbContext 실행기 interface
+ * DbContext executor interface
  *
- * 실제 DB 연결과 Execute query을 담당
- * NodeDbContextExecutor (서버) 또는 SdOrmServiceClientDbContextExecutor (클라이언트) 구현
+ * Responsible for actual DB connection and query execution
+ * Implemented by NodeDbContextExecutor (server) or SdOrmServiceClientDbContextExecutor (client)
  *
  * @example
  * ```typescript
- * // 서버 측 구현 예시
+ * // Server-side implementation example
  * class NodeDbContextExecutor implements IDbContextExecutor {
  *   async connect(): Promise<void> {
  *     await this.connection.connect();
@@ -110,43 +110,43 @@ export type DataRecord = {
  * }
  * ```
  *
- * @see {@link DbContext} DbContextused in
+ * @see {@link DbContext} Used in DbContext
  */
 export interface DbContextExecutor {
   /**
-   * DB 연결 수립
+   * Establish DB connection
    */
   connect(): Promise<void>;
 
   /**
-   * DB 연결 end
+   * Close DB connection
    */
   close(): Promise<void>;
 
   /**
-   * Transaction start
+   * Begin transaction
    *
-   * @param isolationLevel - isolation level (Select)
+   * @param isolationLevel - Isolation level (optional)
    */
   beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
 
   /**
-   * Transaction commit
+   * Commit transaction
    */
   commitTransaction(): Promise<void>;
 
   /**
-   * Transaction rollback
+   * Rollback transaction
    */
   rollbackTransaction(): Promise<void>;
 
   /**
-   * QueryDef array 실행
+   * Execute QueryDef array
    *
    * @template T - Result record type
-   * @param defs - Execute할 QueryDef array
-   * @param resultMetas - Result Transform을 위한 Metadata (Select)
-   * @returns 각 QueryDef별 result 배열의 array
+   * @param defs - QueryDef array to execute
+   * @param resultMetas - Metadata for result transformation (optional)
+   * @returns Array of result arrays per QueryDef
    */
   executeDefs<T = DataRecord>(
     defs: QueryDef[],
@@ -155,12 +155,12 @@ export interface DbContextExecutor {
 }
 
 /**
- * Query result Transform을 위한 Metadata
+ * Metadata for query result transformation
  *
- * SELECT 결과를 TypeScript 객체로 Transform 시 사용
+ * Used when transforming SELECT results into TypeScript objects
  *
- * @property columns - Column명 → ColumnPrimitiveStr Mapping
- * @property joins - JOIN 별칭 → 단일/array 여부
+ * @property columns - Column name -> ColumnPrimitiveStr mapping
+ * @property joins - JOIN alias -> single/array indicator
  */
 export interface ResultMeta {
   columns: Record<string, ColumnPrimitiveStr>;
@@ -174,10 +174,10 @@ export interface ResultMeta {
 /**
  * Database migration definition
  *
- * schema 변경을 version control
+ * Version-control schema changes
  *
- * @property name - Migration 고유 이름 (타임스탬프 권장)
- * @property up - Migration 실행 function
+ * @property name - Unique Migration name (timestamp recommended)
+ * @property up - Migration execution function
  *
  * @example
  * ```typescript
@@ -200,7 +200,7 @@ export interface ResultMeta {
  * ];
  * ```
  *
- * @see {@link DbContext.initialize} migration 실행
+ * @see {@link DbContext.initialize} migration execution
  */
 export interface Migration {
   name: string;

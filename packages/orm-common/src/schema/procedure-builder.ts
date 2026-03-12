@@ -5,13 +5,13 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
 // ============================================
 
 /**
- * 저장 Procedure definition builder
+ * Stored Procedure definition builder
  *
- * Fluent API를 통해 Procedure의 파라미터, return type, 본문을 definition
- * DbContext의 executable()과 함께 사용하여 type 안전한 Procedure 호출
+ * Define Procedure parameters, return type, and body via Fluent API
+ * Use with DbContext's executable() for type-safe Procedure invocation
  *
- * @template TParams - 파라미터 Column definition type
- * @template TReturns - return Column definition type
+ * @template TParams - Parameter Column definition type
+ * @template TReturns - Return Column definition type
  *
  * @example
  * ```typescript
@@ -28,12 +28,12 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  *   }))
  *   .body("SELECT id, name, email FROM User WHERE id = userId");
  *
- * // DbContextused in
+ * // Used in DbContext
  * class MyDb extends DbContext {
  *   readonly getUserById = executable(this, GetUserById);
  * }
  *
- * // 호출
+ * // Invocation
  * const users = await db.getUserById({ userId: 1n }).execute();
  * ```
  *
@@ -44,20 +44,20 @@ export class ProcedureBuilder<
   TParams extends ColumnBuilderRecord,
   TReturns extends ColumnBuilderRecord,
 > {
-  /** 파라미터 definition (type for inference) */
+  /** Parameter definition (type for inference) */
   readonly $params!: TParams;
   /** return type definition (type for inference) */
   readonly $returns!: TReturns;
 
   /**
    * @param meta - Procedure Metadata
-   * @param meta.name - Procedure 이름
-   * @param meta.description - Procedure description (주석)
-   * @param meta.database - Database 이름
-   * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
-   * @param meta.params - 파라미터 definition
-   * @param meta.returns - return type definition
-   * @param meta.query - Procedure 본문 SQL
+   * @param meta.name - Procedure name
+   * @param meta.description - Procedure description (comment)
+   * @param meta.database - Database name
+   * @param meta.schema - Schema name (MSSQL/PostgreSQL)
+   * @param meta.params - Parameter definition
+   * @param meta.returns - Return type definition
+   * @param meta.query - Procedure body SQL
    */
   constructor(
     readonly meta: {
@@ -74,7 +74,7 @@ export class ProcedureBuilder<
   /**
    * Procedure set description
    *
-   * @param desc - Procedure description (DDL Comment으로 사용)
+   * @param desc - Procedure description (used as DDL Comment)
    * @returns new ProcedureBuilder instance
    */
   description(desc: string): ProcedureBuilder<TParams, TReturns> {
@@ -84,7 +84,7 @@ export class ProcedureBuilder<
   /**
    * Database set name
    *
-   * @param db - Database 이름
+   * @param db - Database name
    * @returns new ProcedureBuilder instance
    *
    * @example
@@ -101,7 +101,7 @@ export class ProcedureBuilder<
    *
    * MSSQL, PostgreSQLused in
    *
-   * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
+   * @param schema - Schema name (MSSQL: dbo, PostgreSQL: public)
    * @returns new ProcedureBuilder instance
    */
   schema(schema: string): ProcedureBuilder<TParams, TReturns> {
@@ -109,13 +109,13 @@ export class ProcedureBuilder<
   }
 
   /**
-   * 파라미터 definition
+   * Parameter definition
    *
-   * Procedure 입력 파라미터 definition
-   * DBMS별 파라미터 문법 차이 주의 (MSSQL: @param, MySQL/PostgreSQL: param)
+   * Define Procedure input parameters
+   * Note DBMS-specific parameter syntax differences (MSSQL: @param, MySQL/PostgreSQL: param)
    *
-   * @template T - 새 파라미터 definition type
-   * @param fn - Column factory를 받아 파라미터 정의를 반환하는 function
+   * @template T - New parameter definition type
+   * @param fn - Function that receives a Column factory and returns parameter definitions
    * @returns new ProcedureBuilder instance
    *
    * @example
@@ -134,12 +134,12 @@ export class ProcedureBuilder<
   }
 
   /**
-   * return type definition
+   * Return type definition
    *
-   * Procedure return result Column definition
+   * Define Procedure return result columns
    *
-   * @template T - 새 return type definition
-   * @param fn - Column factory를 받아 return Column definition를 반환하는 function
+   * @template T - New return type definition
+   * @param fn - Function that receives a Column factory and returns Column definitions
    * @returns new ProcedureBuilder instance
    *
    * @example
@@ -160,14 +160,14 @@ export class ProcedureBuilder<
   }
 
   /**
-   * Procedure 본문 SQL 설정
+   * Set Procedure body SQL
    *
-   * DBMS별 SQL 문법 차이 주의:
-   * - MySQL: 파라미터명 그대로 (userId)
-   * - MSSQL: @ 접두사 (@userId)
-   * - PostgreSQL: RETURN QUERY 필요
+   * Note DBMS-specific SQL syntax differences:
+   * - MySQL: parameter name as-is (userId)
+   * - MSSQL: @ prefix (@userId)
+   * - PostgreSQL: RETURN QUERY required
    *
-   * @param sql - Procedure 본문 SQL
+   * @param sql - Procedure body SQL
    * @returns new ProcedureBuilder instance
    *
    * @example
@@ -193,16 +193,16 @@ export class ProcedureBuilder<
 // ============================================
 
 /**
- * Procedure builder Generate factory function
+ * Procedure builder factory function
  *
- * ProcedureBuilder를 생성하여 Fluent API로 저장 Procedure schema definition
+ * Creates a ProcedureBuilder for defining stored Procedure schema via Fluent API
  *
- * @param name - Procedure 이름
+ * @param name - Procedure name
  * @returns ProcedureBuilder instance
  *
  * @example
  * ```typescript
- * // Basic 사용
+ * // Basic usage
  * const GetUserById = Procedure("GetUserById")
  *   .database("mydb")
  *   .params((c) => ({
@@ -215,7 +215,7 @@ export class ProcedureBuilder<
  *   }))
  *   .body("SELECT id, name, email FROM User WHERE id = userId");
  *
- * // 파라미터 없는 Procedure
+ * // Procedure without parameters
  * const GetAllActiveUsers = Procedure("GetAllActiveUsers")
  *   .database("mydb")
  *   .returns((c) => ({

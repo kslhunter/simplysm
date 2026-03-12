@@ -1,126 +1,126 @@
 ---
 name: sd-readme
-description: "README 문서 생성", "sd-readme" 등을 요청할 때 사용.
+description: Used when requesting "README documentation generation", "sd-readme", etc.
 ---
 
-# SD Readme — 모노레포 패키지 README 문서 생성기
+# SD Readme — Monorepo Package README Documentation Generator
 
-모노레포의 각 패키지에 대해 README.md 문서를 자동 생성한다. 패키지 규모에 따라 단일 README.md 또는 README.md + docs/*.md 구조로 점진적 공개(Progressive Disclosure) 원칙을 적용한다.
+Automatically generates README.md documentation for each package in the monorepo. Applies Progressive Disclosure principles by choosing either a single README.md or a README.md + docs/*.md structure depending on the package size.
 
-ARGUMENTS: 패키지명 (선택). 지정하면 해당 패키지만 처리, 미지정 시 전체 패키지 병렬 처리.
+ARGUMENTS: Package name (optional). If specified, only that package is processed; if omitted, all packages are processed in parallel.
 
-## 작업 방법
+## Workflow
 
 ```mermaid
 flowchart TD
-    A[인자 파싱] --> B{패키지명 지정?}
-    B -- Yes --> C[README.md 생성]
-    B -- No --> D[public 패키지 목록 수집]
-    D --> E[패키지별 Agent 병렬 실행]
-    E -- 각 Agent --> C
+    A[Parse arguments] --> B{Package name specified?}
+    B -- Yes --> C[Generate README.md]
+    B -- No --> D[Collect public package list]
+    D --> E[Run Agent per package in parallel]
+    E -- Each Agent --> C
 ```
 
-### A. 인자 파싱
+### A. Parse Arguments
 
-스킬 호출 시 전달된 ARGUMENTS에서 패키지명을 추출하라.
+Extract the package name from the ARGUMENTS passed when invoking the skill.
 
-- **패키지명 지정됨** → `packages/` 하위에서 해당 디렉토리를 찾아 바로 **C. README.md 생성**으로 이동.
-- **패키지명 미지정** → **D. public 패키지 목록 수집**으로 이동.
+- **Package name specified** → Find the corresponding directory under `packages/` and proceed directly to **C. Generate README.md**.
+- **Package name not specified** → Proceed to **D. Collect public package list**.
 
-### C. README.md 생성
+### C. Generate README.md
 
-대상 패키지 하나에 대해 아래를 수행하라.
+Perform the following for a single target package.
 
-#### C-1. package.json 분석
+#### C-1. Analyze package.json
 
-`packages/<name>/package.json`을 읽어라:
+Read `packages/<name>/package.json`:
 
-1. `name` 및 `description`을 확인하라.
-2. `"private": true`이면 해당 패키지를 **건너뛰어라**.
-3. 패키지 진입점 소스코드가 무엇인지 확인하라.
+1. Check the `name` and `description` fields.
+2. If `"private": true`, **skip** this package.
+3. Identify the package entry point source code.
 
-#### C-2. 소스 코드 분석
+#### C-2. Analyze Source Code
 
-1. 진입점 파일 및 export를 재귀적으로 모두 읽어, 모든 public API를 수집하라.
-2. JSDoc 주석이 있으면 각 항목의 설명으로 활용하라.
+1. Recursively read the entry point file and all exports to collect every public API.
+2. If JSDoc comments exist, use them as descriptions for each item.
 
-#### C-3. 문서 구조 결정 및 생성
+#### C-3. Determine Document Structure and Generate
 
-소스 코드의 규모와 논리적 카테고리 수를 보고, 아래 두 가지 중 적절한 구조를 **자율적으로** 판단하라:
+Examine the source code size and the number of logical categories, then **autonomously** decide which of the two structures below is appropriate:
 
-- **단일 README.md**: 패키지가 작고 API가 적어 카테고리 분류가 불필요한 경우
-- **README.md + docs/*.md**: 패키지가 크거나 논리적 카테고리가 여러 개인 경우
+- **Single README.md**: When the package is small, has few APIs, and category classification is unnecessary
+- **README.md + docs/*.md**: When the package is large or has multiple logical categories
 
-기존 README.md 또는 docs/가 있으면 기존 내용을 기반으로 **변경된 부분만 수정**하라. 기존 문서가 없으면 새로 생성하라.
-구조가 변경되는 경우(B→A) 불필요해진 `docs/` 디렉토리를 삭제하라.
-**영어**로 작성하라.
+If an existing README.md or docs/ directory exists, **modify only the changed parts** based on the existing content. If no existing documentation exists, create it from scratch.
+If the structure changes (B to A), delete the now-unnecessary `docs/` directory.
+Write in **English**.
 
-#### C-4. package.json files 필드 관리
+#### C-4. Manage package.json files Field
 
-`docs/` 디렉토리 생성·삭제 시 `package.json`의 `files` 배열을 함께 업데이트하라:
+When creating or deleting the `docs/` directory, update the `files` array in `package.json` accordingly:
 
-- **구조 B 적용 시**: `files`에 `"docs"` 항목이 없으면 추가하라.
-- **구조 A 적용 시**: `files`에 `"docs"` 항목이 있으면 제거하라.
+- **When applying Structure B**: If the `files` array does not contain `"docs"`, add it.
+- **When applying Structure A**: If the `files` array contains `"docs"`, remove it.
 
 ---
 
-##### 구조 A: 단일 README.md (소규모 패키지)
+##### Structure A: Single README.md (Small Packages)
 
-`packages/<name>/README.md` 파일을 생성하라:
+Create the `packages/<name>/README.md` file:
 
 ```markdown
 # <package-name from package.json>
 
 > <description from package.json>
 
-<패키지의 주요 기능과 목적에 대한 상세 설명을 영어로 작성>
+<Write a detailed description of the package's main features and purpose in English>
 
 ## API Reference
 
 ### <exportedName>
 
 ```typescript
-<export 시그니처 코드>
+<export signature code>
 ```
 
-<해당 API에 대한 설명>
+<Description of this API>
 
 ---
 
-(... 모든 exported 항목에 대해 반복 ...)
+(... Repeat for all exported items ...)
 
 ## Usage Examples
 
 ```typescript
 import { ... } from "<package-name>";
 
-// 주요 사용 예제 코드
+// Main usage example code
 ```
 ```
 
 ---
 
-##### 구조 B: README.md + docs/*.md (대규모 패키지)
+##### Structure B: README.md + docs/*.md (Large Packages)
 
-**README.md** — `packages/<name>/README.md` 파일을 생성하라:
+**README.md** — Create the `packages/<name>/README.md` file:
 
 ```markdown
 # <package-name from package.json>
 
 > <description from package.json>
 
-<패키지의 주요 기능과 목적에 대한 상세 설명을 영어로 작성>
+<Write a detailed description of the package's main features and purpose in English>
 
 ## Documentation
 
 | Category | Description |
 |----------|-------------|
-| [<Category1>](docs/<category1>.md) | <카테고리 설명 및 주요 항목 나열> |
-| [<Category2>](docs/<category2>.md) | <카테고리 설명 및 주요 항목 나열> |
+| [<Category1>](docs/<category1>.md) | <Category description and list of key items> |
+| [<Category2>](docs/<category2>.md) | <Category description and list of key items> |
 | ... | ... |
 ```
 
-**docs/*.md** — 각 카테고리별로 `packages/<name>/docs/<category>.md` 파일을 생성하라:
+**docs/*.md** — Create a `packages/<name>/docs/<category>.md` file for each category:
 
 ```markdown
 # <Category Name>
@@ -128,39 +128,39 @@ import { ... } from "<package-name>";
 ## <exportedName>
 
 ```typescript
-<export 시그니처 코드>
+<export signature code>
 ```
 
-<해당 API에 대한 설명>
+<Description of this API>
 
 ---
 
-(... 이 카테고리의 모든 exported 항목에 대해 반복 ...)
+(... Repeat for all exported items in this category ...)
 
 ## Usage Examples
 
 ```typescript
 import { ... } from "<package-name>";
 
-// 이 카테고리의 주요 사용 예제 코드
+// Main usage example code for this category
 ```
 ```
 
-카테고리명과 분류는 소스 코드의 디렉토리 구조, 기능적 유사성 등을 고려하여 자율적으로 결정하라.
+Determine category names and classifications autonomously, considering the source code directory structure, functional similarity, etc.
 
 ---
 
-### D. public 패키지 목록 수집
+### D. Collect Public Package List
 
-`packages/*/package.json`을 Glob으로 탐색하되, `private: true`인 패키지는 제외하라.
+Use Glob to search `packages/*/package.json`, excluding packages with `private: true`.
 
 ---
 
-### E. 패키지별 Agent 병렬 실행
+### E. Run Agent Per Package in Parallel
 
-남은 각 패키지에 대해 Agent 도구를 사용하여 **병렬로** 다음 프롬프트를 전달하라:
+For each remaining package, use the Agent tool to pass the following prompt **in parallel**:
 ```
-/sd-readme <패키지명>
+/sd-readme <package-name>
 ```
 
-모든 subagent가 완료되면 종료.
+Terminate once all subagents have completed.

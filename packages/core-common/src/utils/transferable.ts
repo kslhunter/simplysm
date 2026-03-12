@@ -63,7 +63,7 @@ function encodeImpl(
 ): unknown {
   if (obj == null) return obj;
 
-  // 객체 타입 processing: 순환 감지 + 캐시
+  // Object type processing: circular reference detection + cache
   if (typeof obj === "object") {
     // Circular reference detection (object in current recursion stack)
     if (ancestors.has(obj)) {

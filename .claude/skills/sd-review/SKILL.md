@@ -1,65 +1,65 @@
 ---
 name: sd-review
-description: "버그 리뷰", "bug review", "sd-review", "코드 리뷰", "버그 찾기" 등을 요청할 때 사용. 지정한 경로의 코드에서 잠재적 버그를 분석한 뒤 계획 수립을 거쳐 수정한다.
+description: Used when requesting "bug review", "sd-review", "code review", "find bugs", etc. Analyzes code at the specified path for potential bugs, then creates a plan and applies fixes.
 ---
 
-# SD Review — 잠재적 버그 탐지
+# SD Review — Potential Bug Detection
 
-지정한 경로의 코드를 읽고 잠재적 버그를 분석한 뒤, `/sd-plan` 프로세스로 계획을 수립하고 실행한다.
+Reads the code at the specified path, analyzes it for potential bugs, then creates and executes a plan via the `/sd-plan` process.
 
-ARGUMENTS: 대상 경로 (필수). 레포 내 임의 경로를 지정한다.
+ARGUMENTS: Target path (required). Specify any path within the repo.
 
 ---
 
-## Step 1: 인자 확인
+## Step 1: Validate Arguments
 
-1. ARGUMENTS에서 대상 경로를 추출하라.
-2. 경로가 없으면 "대상 경로를 지정해 주세요. 예: `/sd-review packages/my-pkg`"라고 안내하고 종료하라.
+1. Extract the target path from ARGUMENTS.
+2. If no path is provided, display "Please specify a target path. Example: `/sd-review packages/my-pkg`" and stop.
 
-## Step 2: 버그 분석 (수정 금지)
+## Step 2: Bug Analysis (Do Not Modify Code)
 
-대상 경로의 코드를 읽고 아래 5가지 관점에서 잠재적 버그를 찾아라.
-코드를 절대 수정하지 마라. 발견 항목 목록만 정리하여 출력하라.
+Read the code at the target path and search for potential bugs from the following 5 perspectives.
+Do not modify the code under any circumstances. Only compile and output a list of findings.
 
-**분석 관점:**
-1. **로직/정확성** — 잘못된 조건, off-by-one, 잘못된 연산자, 의도와 다른 분기
-2. **Null/Undefined 안전성** — 누락된 null 체크, optional chaining 미사용, 타입 단언 오용
-3. **에러 처리** — 삼켜진 에러, 누락된 catch, 부적절한 에러 전파
-4. **엣지 케이스** — 빈 배열/문자열, 경계값, 동시성/race condition, 누락된 await
-5. **리소스 관리** — 닫히지 않은 연결, 이벤트 리스너 누수, 메모리 릭 패턴
+**Analysis Perspectives:**
+1. **Logic/Correctness** — Incorrect conditions, off-by-one errors, wrong operators, unintended branching
+2. **Null/Undefined Safety** — Missing null checks, unused optional chaining, misuse of type assertions
+3. **Error Handling** — Swallowed errors, missing catch blocks, improper error propagation
+4. **Edge Cases** — Empty arrays/strings, boundary values, concurrency/race conditions, missing await
+5. **Resource Management** — Unclosed connections, event listener leaks, memory leak patterns
 
-각 항목은 다음 형식으로 작성하라:
+Write each finding in the following format:
 ```
-- **파일경로:라인** — 문제 설명 — 개선 방안
-```
-
-발견 항목이 없으면 "잠재적 버그가 발견되지 않았습니다."라고 안내하고 종료하라.
-
-## Step 3: sd-plan으로 계획 수립
-
-Step 2에서 도출된 발견 항목 목록을 작업 설명으로 하여, Skill 도구로 `sd-plan`을 호출하라. args에 아래를 전달하라:
-
-```
-아래는 **LLM이 분석하여 제안한** 잠재적 버그 수정안이다.
-수정안은 사용자가 명시적으로 요청한 수정이 아니므로, 불명확한 것으로 취급하라.
-
-## 대상
-<대상 경로>
-
-## LLM 제안 수정안
-불명확한 수정안을 사용자에게 질문할 때, 아래 내용을 **반드시 먼저** 제시하여 사용자가 맥락을 파악할 수 있도록 하라.
-
-```
-수정안:
-- 파일경로:라인:
-- 문제 설명:
-- 현재 코드: (해당 부분 코드 발췌)
-- 개선 방안:
+- **filepath:line** — Problem description — Suggested fix
 ```
 
-<Step 2에서 도출된 발견 항목 목록 전체>
+If no findings are discovered, display "No potential bugs were found." and stop.
+
+## Step 3: Create Plan via sd-plan
+
+Using the list of findings from Step 2 as the task description, invoke `sd-plan` via the Skill tool. Pass the following as args:
+
+```
+The following are potential bug fixes **analyzed and suggested by the LLM**.
+Since these fixes were not explicitly requested by the user, treat them as uncertain.
+
+## Target
+<target path>
+
+## LLM-Suggested Fixes
+When asking the user about uncertain fixes, **always present** the following information first so the user can understand the context.
+
+```
+Fix:
+- Filepath:line:
+- Problem description:
+- Current code: (excerpt of the relevant code)
+- Suggested fix:
 ```
 
-## Step 4: 계획 실행
+<Full list of findings from Step 2>
+```
 
-sd-plan이 완료되어 확정된 계획서가 나오면, 그 계획서에 따라 코드를 수정하라.
+## Step 4: Execute Plan
+
+Once sd-plan completes and produces a finalized plan, apply the code modifications according to that plan.

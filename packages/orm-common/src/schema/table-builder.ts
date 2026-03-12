@@ -19,11 +19,11 @@ import {
 /**
  * Database Table definition builder
  *
- * Fluent API를 통해 Table의 column, PK, Index, 관계를 definition
- * DbContext에서 queryable()과 함께 사용하여 type 안전한 query 작성
+ * Define Table columns, PK, indexes, and relations via Fluent API
+ * Use with DbContext's queryable() for type-safe query composition
  *
  * @template TColumns - Column definition record type
- * @template TRelations - relationship definition record type
+ * @template TRelations - Relation definition record type
  *
  * @example
  * ```typescript
@@ -39,7 +39,7 @@ import {
  *   .primaryKey("id")
  *   .indexes((i) => [i.index("email").unique()]);
  *
- * // DbContextused in
+ * // Used in DbContext
  * class MyDb extends DbContext {
  *   readonly user = queryable(this, User);
  * }
@@ -54,27 +54,27 @@ export class TableBuilder<
 > {
   /** Column definition (type for inference) */
   readonly $columns!: TColumns;
-  /** relationship definition (type for inference) */
+  /** Relation definition (type for inference) */
   readonly $relations!: TRelations;
 
-  /** 전체 Type inference (column + relationship) */
+  /** Full Type inference (column + relation) */
   readonly $inferSelect!: InferColumns<TColumns> & InferDeepRelations<TRelations>;
-  /** column만 Type inference */
+  /** Column-only Type inference */
   readonly $inferColumns!: InferColumns<TColumns>;
-  /** INSERT용 Type inference (autoIncrement exclude, nullable/default는 optional) */
+  /** INSERT Type inference (autoIncrement excluded, nullable/default are optional) */
   readonly $inferInsert!: InferInsertColumns<TColumns>;
-  /** UPDATE용 Type inference (모든 field optional) */
+  /** UPDATE Type inference (all fields optional) */
   readonly $inferUpdate!: InferUpdateColumns<TColumns>;
 
   /**
    * @param meta - Table Metadata
-   * @param meta.name - Table 이름
-   * @param meta.description - Table description (주석)
-   * @param meta.database - Database 이름
-   * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
+   * @param meta.name - Table name
+   * @param meta.description - Table description (comment)
+   * @param meta.database - Database name
+   * @param meta.schema - Schema name (MSSQL/PostgreSQL)
    * @param meta.columns - Column definition
    * @param meta.primaryKey - PK column array
-   * @param meta.relations - relationship definition
+   * @param meta.relations - Relation definition
    * @param meta.indexes - Index definition
    */
   constructor(
@@ -94,7 +94,7 @@ export class TableBuilder<
   /**
    * Table set description
    *
-   * @param desc - Table description (DDL Comment으로 사용)
+   * @param desc - Table description (used as DDL Comment)
    * @returns new TableBuilder instance
    */
   description(desc: string) {
@@ -104,7 +104,7 @@ export class TableBuilder<
   /**
    * Database set name
    *
-   * @param db - Database 이름
+   * @param db - Database name
    * @returns new TableBuilder instance
    *
    * @example
@@ -119,9 +119,9 @@ export class TableBuilder<
   /**
    * schema set name
    *
-   * MSSQL, PostgreSQLused in
+   * Used in MSSQL, PostgreSQL
    *
-   * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
+   * @param schema - Schema name (MSSQL: dbo, PostgreSQL: public)
    * @returns new TableBuilder instance
    *
    * @example
@@ -138,10 +138,10 @@ export class TableBuilder<
   /**
    * Column definition
    *
-   * column factory를 통해 type 안전한 Column definition
+   * Type-safe Column definition through column factory
    *
-   * @template TNewColumnDefs - 새 Column definition type
-   * @param fn - Column factory를 받아 Column definition를 반환하는 function
+   * @template TNewColumnDefs - New Column definition type
+   * @param fn - Function that receives a Column factory and returns Column definitions
    * @returns new TableBuilder instance
    *
    * @example
@@ -165,19 +165,19 @@ export class TableBuilder<
   }
 
   /**
-   * Primary Key 설정
+   * Primary Key configuration
    *
-   * @param columns - PK를 구성할 column name들 (복합 PK 가능)
+   * @param columns - Column names composing the PK (composite PK supported)
    * @returns new TableBuilder instance
    *
    * @example
    * ```typescript
-   * // 단일 PK
+   * // Single PK
    * const User = Table("User")
    *   .columns((c) => ({ id: c.bigint() }))
    *   .primaryKey("id");
    *
-   * // 복합 PK
+   * // Composite PK
    * const UserRole = Table("UserRole")
    *   .columns((c) => ({
    *     userId: c.bigint(),
@@ -196,7 +196,7 @@ export class TableBuilder<
   /**
    * Index definition
    *
-   * @param fn - Index factory를 받아 Index 배열을 반환하는 function
+   * @param fn - Function that receives an Index factory and returns an Index array
    * @returns new TableBuilder instance
    *
    * @example
@@ -225,12 +225,12 @@ export class TableBuilder<
   }
 
   /**
-   * relationship definition
+   * Relation definition
    *
-   * FK, 역참조 등 Table 간 relationship 설정
+   * Set up FK, reverse-references, and other inter-Table relations
    *
-   * @template T - relationship definition type
-   * @param fn - relationship factory를 받아 relationship 정의를 반환하는 function
+   * @template T - Relation definition type
+   * @param fn - Function that receives a relation factory and returns relation definitions
    * @returns new TableBuilder instance
    *
    * @example
@@ -243,7 +243,7 @@ export class TableBuilder<
    *   }))
    *   .primaryKey("id")
    *   .relations((r) => ({
-   *     // FK relationship (N:1)
+   *     // FK relation (N:1)
    *     author: r.foreignKey(["authorId"], () => User),
    *   }));
    *
@@ -254,13 +254,13 @@ export class TableBuilder<
    *   }))
    *   .primaryKey("id")
    *   .relations((r) => ({
-   *     // 역참조 (1:N)
+   *     // Reverse-reference (1:N)
    *     posts: r.foreignKeyTarget(() => Post, "author"),
    *   }));
    * ```
    *
    * @see {@link ForeignKeyBuilder} FK builder
-   * @see {@link ForeignKeyTargetBuilder} FK 역참조 builder
+   * @see {@link ForeignKeyTargetBuilder} FK reverse-reference builder
    */
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TColumns & string>>) => T,
@@ -277,16 +277,16 @@ export class TableBuilder<
 // ============================================
 
 /**
- * Table builder Generate factory function
+ * Table builder factory function
  *
- * TableBuilder를 생성하여 Fluent API로 Table schema definition
+ * Creates a TableBuilder for defining Table schema via Fluent API
  *
- * @param name - Table 이름
+ * @param name - Table name
  * @returns TableBuilder instance
  *
  * @example
  * ```typescript
- * // Basic 사용
+ * // Basic usage
  * const User = Table("User")
  *   .database("mydb")
  *   .columns((c) => ({
@@ -297,7 +297,7 @@ export class TableBuilder<
  *   .primaryKey("id")
  *   .indexes((i) => [i.index("email").unique()]);
  *
- * // relationship include
+ * // With relations
  * const Post = Table("Post")
  *   .database("mydb")
  *   .columns((c) => ({

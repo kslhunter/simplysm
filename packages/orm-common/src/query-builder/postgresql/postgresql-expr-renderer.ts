@@ -72,14 +72,14 @@ import { ExprRendererBase } from "../base/expr-renderer-base";
  * PostgreSQL expression renderer
  */
 export class PostgresqlExprRenderer extends ExprRendererBase {
-  //#region ========== 유틸리티 (public - QueryBuilder에서도 사용) ==========
+  //#region ========== Utilities (public - also used by QueryBuilder) ==========
 
-  /** 식별자 감싸기 */
+  /** Wrap identifier */
   wrap(name: string): string {
     return `"${name.replace(/"/g, '""')}"`;
   }
 
-  /** SQL 문자열 리터럴용 escape (따옴표 없이 return) */
+  /** Escape for SQL string literals (returns without quotes) */
   escapeString(value: string): string {
     return value.replace(/'/g, "''");
   }
@@ -176,7 +176,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   //#region ========== comparison (null-safe) ==========
 
   protected eq(expr: ExprEq): string {
-    // PostgreSQL: null-safe equal (IS NOT DISTINCT FROM operator 사용)
+    // PostgreSQL: null-safe equal (uses IS NOT DISTINCT FROM operator)
     const left = this.render(expr.source);
     const right = this.render(expr.target);
     return `${left} IS NOT DISTINCT FROM ${right}`;
@@ -217,7 +217,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected like(expr: ExprLike): string {
-    // ESCAPE '\' 항상 Add
+    // Always add ESCAPE '\'
     return `${this.render(expr.source)} LIKE ${this.render(expr.pattern)} ESCAPE '\\'`;
   }
 
@@ -228,7 +228,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   protected in(expr: ExprIn): string {
     if (expr.values.length === 0) {
-      return "FALSE"; // 빈 IN은 항상 false
+      return "FALSE"; // empty IN is always false
     }
     const values = expr.values.map((v) => this.render(v)).join(", ");
     return `${this.render(expr.source)} IN (${values})`;
@@ -239,7 +239,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected exists(expr: ExprExists): string {
-    // SELECT 1로 Render
+    // Render as SELECT 1
     const subquery = this.buildSelect({
       ...expr.query,
       select: { _: { type: "value", value: 1 } },
@@ -267,10 +267,10 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 문자열 (null Process) ==========
+  //#region ========== String (null handling) ==========
 
   protected concat(expr: ExprConcat): string {
-    // PostgreSQL: || 연산자와 COALESCE 사용
+    // PostgreSQL: uses || operator with COALESCE
     const args = expr.args.map((a) => `COALESCE(${this.render(a)}, '')`);
     return args.join(" || ");
   }
@@ -304,12 +304,12 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected length(expr: ExprLength): string {
-    // PostgreSQL: LENGTH() (null Process)
+    // PostgreSQL: LENGTH() (null handling)
     return `LENGTH(COALESCE(${this.render(expr.arg)}, ''))`;
   }
 
   protected byteLength(expr: ExprByteLength): string {
-    // PostgreSQL: OCTET_LENGTH() (null Process)
+    // PostgreSQL: OCTET_LENGTH() (null handling)
     return `OCTET_LENGTH(COALESCE(${this.render(expr.arg)}, ''))`;
   }
 
@@ -378,7 +378,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   protected isoWeekStartDate(expr: ExprIsoWeekStartDate): string {
     const src = this.render(expr.arg);
-    // ISO 주의 시작일 (월요일)
+    // ISO week start date (Monday)
     return `DATE_TRUNC('week', ${src})::DATE`;
   }
 
@@ -511,13 +511,13 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   protected greatest(expr: ExprGreatest): string {
     if (expr.args.length === 0) throw new Error("greatest requires at least one argument.");
-    // PostgreSQL: GREATEST 네이티브 지원
+    // PostgreSQL: native GREATEST support
     return `GREATEST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
   protected least(expr: ExprLeast): string {
     if (expr.args.length === 0) throw new Error("least requires at least one argument.");
-    // PostgreSQL: LEAST 네이티브 지원
+    // PostgreSQL: native LEAST support
     return `LEAST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
@@ -541,7 +541,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     const fn = this.renderWindowFn(expr.fn);
     let over = this.renderWindowSpec(expr.spec);
 
-    // LAST_VALUE는 Basic 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
+    // LAST_VALUE default frame only sees up to CURRENT ROW, so full frame must be specified
     if (expr.fn.type === "lastValue" && over.length > 0) {
       over += " ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
     }

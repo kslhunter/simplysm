@@ -224,12 +224,12 @@ describe("sd-cli", () => {
 
       const output = logSpy.mock.calls.map((c) => c.join(" ")).join("\n");
 
-      // 모든 커맨드명이 출력에 포함
+      // All command names are included in the output
       for (const cmd of ["lint", "typecheck", "check", "watch", "dev", "build", "device", "init", "publish", "replace-deps"]) {
         expect(output).toContain(cmd);
       }
 
-      // 각 커맨드 고유 옵션이 출력에 포함
+      // Each command's unique options are included in the output
       expect(output).toContain("--fix");
       expect(output).toContain("--timing");
       expect(output).toContain("--no-build");

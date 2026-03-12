@@ -5,7 +5,7 @@ import { MysqlQueryBuilder } from "./mysql/mysql-query-builder";
 import { PostgresqlQueryBuilder } from "./postgresql/postgresql-query-builder";
 
 /**
- * Dialect에 맞는 QueryBuilder instance Generate
+ * Generate a QueryBuilder instance matching the given Dialect
  */
 export function createQueryBuilder(dialect: Dialect): QueryBuilderBase {
   switch (dialect) {

@@ -39,20 +39,20 @@ import { MysqlExprRenderer } from "./mysql-expr-renderer";
 /**
  * MySQL QueryBuilder
  *
- * MySQL 특이사항:
- * - OUTPUT 미지원: multi-statement 패턴으로 우회 (INSERT + SET @var + SELECT)
- * - INSERT OUTPUT: LAST_INSERT_ID()로 AI column 조회, 비-AI는 record에서 PK 추출
- * - UPDATE/UPSERT OUTPUT: WHERE condition이 변경될 수 있으므로 PK를 먼저 임시 Table에 저장 후 SELECT
- * - DELETE OUTPUT: Delete 전 output columns를 임시 Table에 저장
- * - switchFk: 전역 설정 (SET FOREIGN_KEY_CHECKS), Table 파라미터 무시됨
- * - FK Add 시 Index automatic 생성됨
+ * MySQL specifics:
+ * - No OUTPUT support: workaround via multi-statement pattern (INSERT + SET @var + SELECT)
+ * - INSERT OUTPUT: uses LAST_INSERT_ID() for AI column, extracts PK from record for non-AI
+ * - UPDATE/UPSERT OUTPUT: saves PK to temp table first since WHERE condition may change after UPDATE, then SELECT
+ * - DELETE OUTPUT: saves output columns to temp table before delete
+ * - switchFk: global setting (SET FOREIGN_KEY_CHECKS), table parameter is ignored
+ * - Index is automatically created when adding FK
  */
 export class MysqlQueryBuilder extends QueryBuilderBase {
   protected expr = new MysqlExprRenderer((def) => this.select(def).sql);
 
-  //#region ========== 유틸리티 ==========
+  //#region ========== Utilities ==========
 
-  /** Table명 Render (MySQL: schema 무시, database.table만 사용) */
+  /** Render table name (MySQL: ignores schema, uses database.table only) */
   protected tableName(obj: QueryDefObjectName): string {
     if (obj.database != null) {
       return `${this.expr.wrap(obj.database)}.${this.expr.wrap(obj.name)}`;
@@ -60,7 +60,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     return this.expr.wrap(obj.name);
   }
 
-  /** LIMIT 절 Render */
+  /** Render LIMIT clause */
   protected renderLimit(limit: [number, number] | undefined, top: number | undefined): string {
     if (limit != null) {
       const [offset, count] = limit;
@@ -75,15 +75,15 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const alias = this.expr.wrap(join.as);
 
-    // LATERAL JOIN 필요 여부 감지
+    // Detect if LATERAL JOIN is needed
     if (this.needsLateral(join)) {
-      // from이 배열(UNION ALL)이면 renderFrom(join.from),
-      // 그 외(orderBy, top, select 등)면 renderFrom(join)으로 Subquery Generate
+      // If from is an array (UNION ALL), use renderFrom(join.from),
+      // otherwise (orderBy, top, select, etc.) use renderFrom(join) to generate subquery
       const from = Array.isArray(join.from) ? this.renderFrom(join.from) : this.renderFrom(join);
       return ` LEFT OUTER JOIN LATERAL ${from} AS ${alias} ON TRUE`;
     }
 
-    // 일반 JOIN
+    // Normal JOIN
     const from = this.renderFrom(join.from);
     const where =
       join.where != null && join.where.length > 0
@@ -128,7 +128,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // LOCK
     if (def.lock) {
-      // MySQL에서는 SELECT ... FOR UPDATE (마지막에 붙임)
+      // MySQL: SELECT ... FOR UPDATE (appended at the end)
     }
 
     // JOINs
@@ -171,7 +171,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const columns = Object.keys(def.records[0]);
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
 
-    // OUTPUT 불필요: 단순 배치 INSERT
+    // No OUTPUT needed: simple batch INSERT
     if (def.output == null) {
       const valuesList = def.records.map((record) => {
         const values = columns.map((c) => this.expr.escapeValue(record[c]));
@@ -180,9 +180,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql: `INSERT INTO ${table} (${colList}) VALUES ${valuesList.join(", ")}` };
     }
 
-    // OUTPUT 필요: multi-statement로 INSERT + SELECT 실행
-    // Result셋: [INSERT결과, SELECT결과, INSERT결과, SELECT결과, ...]
-    // → resultSetIndex=1, resultSetStride=2 로 SELECT 결과만 추출
+    // OUTPUT needed: execute INSERT + SELECT via multi-statement
+    // Result sets: [INSERT result, SELECT result, INSERT result, SELECT result, ...]
+    // → Extract only SELECT results with resultSetIndex=1, resultSetStride=2
     const output = def.output;
     const outputCols = output.columns.map((c) => this.expr.wrap(c)).join(", ");
     const statements: string[] = [];
@@ -191,7 +191,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       const values = columns.map((c) => this.expr.escapeValue(record[c])).join(", ");
       statements.push(`INSERT INTO ${table} (${colList}) VALUES (${values})`);
 
-      // PK로 SELECT (aiColName이면 LAST_INSERT_ID() 사용)
+      // SELECT by PK (uses LAST_INSERT_ID() for aiColName)
       const whereForSelect = output.pkColNames.map((pk) => {
         const wrappedPk = this.expr.wrap(pk);
         if (pk === output.aiColName) {
@@ -216,23 +216,23 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
     const values = columns.map((c) => this.expr.escapeValue(def.record[c])).join(", ");
 
-    // existsSelectQuery를 SELECT 1 AS _ 형태로 Render
+    // Render existsSelectQuery as SELECT 1 AS _
     const existsQuerySql = this.select({
       ...def.existsSelectQuery,
       select: { _: { type: "value", value: 1 } },
     }).sql;
 
-    // OUTPUT 불필요: 단순 INSERT IF NOT EXISTS
+    // No OUTPUT needed: simple INSERT IF NOT EXISTS
     if (def.output == null) {
       const sql = `INSERT INTO ${table} (${colList}) SELECT ${values} WHERE NOT EXISTS (${existsQuerySql})`;
       return { sql };
     }
 
-    // OUTPUT 필요: multi-statement (INSERT + SET @affected + SELECT)
+    // OUTPUT needed: multi-statement (INSERT + SET @affected + SELECT)
     const output = def.output;
     const outputCols = output.columns.map((c) => this.expr.wrap(c)).join(", ");
 
-    // OUTPUT을 위한 SELECT WHERE condition
+    // SELECT WHERE condition for OUTPUT
     const whereForSelect = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
       if (pk === output.aiColName) {
@@ -241,14 +241,14 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return `${wrappedPk} = ${this.expr.escapeValue(def.record[pk])}`;
     });
 
-    // multi-statement: INSERT → SET @affected → SELECT (삽입된 경우만 Result)
+    // multi-statement: INSERT → SET @affected → SELECT (result only if inserted)
     const statements = [
       `INSERT INTO ${table} (${colList}) SELECT ${values} WHERE NOT EXISTS (${existsQuerySql})`,
       `SET @sd_affected = ROW_COUNT()`,
       `SELECT ${outputCols} FROM ${table} WHERE ${whereForSelect.join(" AND ")} AND @sd_affected > 0`,
     ];
 
-    // results[0]=INSERT, results[1]=SET(빈결과), results[2]=SELECT
+    // results[0]=INSERT, results[1]=SET(empty result), results[2]=SELECT
     return { sql: statements.join(";\n"), resultSetIndex: 2 };
   }
 
@@ -256,7 +256,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const selectSql = this.select(def.recordsSelectQuery).sql;
 
-    // INSERT INTO SELECT에서 columns 추출
+    // Extract columns from INSERT INTO SELECT
     const selectDef = def.recordsSelectQuery;
     const colList =
       selectDef.select != null
@@ -265,15 +265,15 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
             .join(", ")
         : "*";
 
-    // OUTPUT 불필요: 단순 INSERT INTO SELECT
+    // No OUTPUT needed: simple INSERT INTO SELECT
     if (def.output == null) {
       return { sql: `INSERT INTO ${table} (${colList}) ${selectSql}` };
     }
 
-    // OUTPUT 필요: multi-statement
+    // OUTPUT needed: multi-statement
     const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
 
-    // PK가 AI일 때: LAST_INSERT_ID() + ROW_COUNT() range 조회
+    // When PK is AI: query range via LAST_INSERT_ID() + ROW_COUNT()
     if (def.output.aiColName != null) {
       const aiCol = this.expr.wrap(def.output.aiColName);
 
@@ -283,14 +283,14 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
         `SELECT ${outputCols} FROM ${table} WHERE ${aiCol} >= @sd_first_id AND ${aiCol} < @sd_first_id + @sd_count`,
       ];
 
-      // results[0]=INSERT, results[1]=SET(빈결과), results[2]=SELECT
+      // results[0]=INSERT, results[1]=SET(empty result), results[2]=SELECT
       return { sql: statements.join(";\n"), resultSetIndex: 2 };
     }
 
-    // PK가 AI 아님: 임시 Table로 PK 저장 후 조회
+    // PK is not AI: save PKs to temp table then query
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
-    // recordsSelectQuery에서 PK column만 추출한 SELECT Generate
+    // Generate SELECT extracting only PK columns from recordsSelectQuery
     const pkSelectDef: SelectQueryDef = {
       ...def.recordsSelectQuery,
       select: Object.fromEntries(
@@ -299,7 +299,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     };
     const pkSelectSql = this.select(pkSelectDef).sql;
 
-    // 임시 Table의 PK로 target에서 SELECT
+    // SELECT from target using PK from temp table
     const pkConditions = def.output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
       return `${table}.${wrappedPk} = ${tempTableName}.${wrappedPk}`;
@@ -329,7 +329,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       ([col, expr]) => `${alias}.${this.expr.wrap(col)} = ${this.expr.render(expr)}`,
     );
 
-    // OUTPUT 불필요: 단순 UPDATE
+    // No OUTPUT needed: simple UPDATE
     if (def.output == null) {
       let sql = `UPDATE ${table} AS ${alias}`;
       sql += this.renderJoins(def.joins);
@@ -341,11 +341,11 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql };
     }
 
-    // OUTPUT 필요: multi-statement (임시table에 PK 저장 + UPDATE + SELECT + DROP)
+    // OUTPUT needed: multi-statement (save PK to temp table + UPDATE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
-    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
+    // Save target PKs to temp table (since WHERE condition may change after UPDATE)
     const pkSelectCols = def.output.pkColNames
       .map((pk) => `${alias}.${this.expr.wrap(pk)} AS ${this.expr.wrap(pk)}`)
       .join(", ");
@@ -360,14 +360,14 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     updateSql += this.renderWhere(def.where);
     if (def.top != null) updateSql += ` LIMIT ${def.top}`;
 
-    // 임시 Table의 PK로 SELECT (변경된 value 조회)
+    // SELECT using PK from temp table (query updated values)
     const pkConditions = def.output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
       return `${alias}.${wrappedPk} = ${tempTableName}.${wrappedPk}`;
     });
     const selectSql = `SELECT ${outputCols} FROM ${table} AS ${alias}, ${tempTableName} WHERE ${pkConditions.join(" AND ")}`;
 
-    // 임시 Drop table
+    // Drop temp table
     const dropSql = `DROP TEMPORARY TABLE ${tempTableName}`;
 
     const statements = [createTempSql, updateSql, selectSql, dropSql];
@@ -382,7 +382,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const alias = this.expr.wrap(def.as);
 
-    // OUTPUT 불필요: 단순 DELETE
+    // No OUTPUT needed: simple DELETE
     if (def.output == null) {
       let sql = `DELETE ${alias} FROM ${table} AS ${alias}`;
       sql += this.renderJoins(def.joins);
@@ -393,25 +393,25 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql };
     }
 
-    // OUTPUT 필요: multi-statement (Delete 전 임시table에 저장 + DELETE + SELECT + DROP)
+    // OUTPUT needed: multi-statement (save to temp table before delete + DELETE + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => `${alias}.${this.expr.wrap(c)}`).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
-    // Delete 전 임시 Table에 저장
+    // Save to temp table before delete
     let createTempSql = `CREATE TEMPORARY TABLE ${tempTableName} AS SELECT ${outputCols} FROM ${table} AS ${alias}`;
     createTempSql += this.renderJoins(def.joins);
     createTempSql += this.renderWhere(def.where);
 
-    // DELETE 실행
+    // Execute DELETE
     let deleteSql = `DELETE ${alias} FROM ${table} AS ${alias}`;
     deleteSql += this.renderJoins(def.joins);
     deleteSql += this.renderWhere(def.where);
     if (def.top != null) deleteSql += ` LIMIT ${def.top}`;
 
-    // 임시 Table에서 result return
+    // Return results from temp table
     const selectSql = `SELECT * FROM ${tempTableName}`;
 
-    // 임시 Drop table
+    // Drop temp table
     const dropSql = `DROP TEMPORARY TABLE ${tempTableName}`;
 
     const statements = [createTempSql, deleteSql, selectSql, dropSql];
@@ -427,7 +427,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const alias = this.expr.wrap(def.existsSelectQuery.as);
     const existsQuerySql = this.select(def.existsSelectQuery).sql;
 
-    // UPDATE SET part (alias.column 형태)
+    // UPDATE SET part (alias.column format)
     const updateSetParts = Object.entries(def.updateRecord).map(
       ([col, e]) => `${alias}.${this.expr.wrap(col)} = ${this.expr.render(e)}`,
     );
@@ -437,16 +437,16 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const insertColList = insertColumns.map((c) => this.expr.wrap(c)).join(", ");
     const insertValues = insertColumns.map((c) => this.expr.render(def.insertRecord[c])).join(", ");
 
-    // WHERE condition 추출 (existsSelectQuery의 where)
+    // Extract WHERE condition (from existsSelectQuery's where)
     const whereCondition =
       def.existsSelectQuery.where != null && def.existsSelectQuery.where.length > 0
         ? this.expr.renderWhere(def.existsSelectQuery.where)
         : "1=1";
 
-    // OUTPUT 불필요: multi-statement (UPDATE + INSERT WHERE NOT EXISTS)
+    // No OUTPUT needed: multi-statement (UPDATE + INSERT WHERE NOT EXISTS)
     if (def.output == null) {
-      // UPDATE: 존재하면 UPDATE 됨
-      // INSERT SELECT WHERE NOT EXISTS: 존재 안하면 INSERT 됨
+      // UPDATE: updates if exists
+      // INSERT SELECT WHERE NOT EXISTS: inserts if not exists
       const statements = [
         `UPDATE ${table} AS ${alias} SET ${updateSetParts.join(", ")} WHERE ${whereCondition}`,
         `INSERT INTO ${table} (${insertColList}) SELECT ${insertValues} WHERE NOT EXISTS (${existsQuerySql})`,
@@ -454,22 +454,22 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return { sql: statements.join(";\n") };
     }
 
-    // OUTPUT 필요: multi-statement (CREATE TEMP + UPDATE + INSERT + SELECT + DROP)
+    // OUTPUT needed: multi-statement (CREATE TEMP + UPDATE + INSERT + SELECT + DROP)
     const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.generate().toString().replace(/-/g, ""));
 
-    // UPDATE 대상 PK를 임시 Table에 저장 (UPDATE 후 WHERE condition이 달라질 수 있으므로)
+    // Save target PKs to temp table (since WHERE condition may change after UPDATE)
     const pkSelectCols = def.output.pkColNames.map((pk) => this.expr.wrap(pk)).join(", ");
     const createTempSql = `CREATE TEMPORARY TABLE ${tempTableName} AS SELECT ${pkSelectCols} FROM ${table} AS ${alias} WHERE ${whereCondition}`;
 
-    // UPDATE (존재하면 Update)
+    // UPDATE (update if exists)
     const updateSql = `UPDATE ${table} AS ${alias} SET ${updateSetParts.join(", ")} WHERE ${whereCondition}`;
 
     // INSERT (NOT EXISTS Pattern)
     const insertSql = `INSERT INTO ${table} (${insertColList}) SELECT ${insertValues} WHERE NOT EXISTS (${existsQuerySql})`;
 
-    // SELECT: UPDATE result 또는 INSERT result 조회 (UNION ALL로 합침)
-    // UPDATE 케이스: temp Table의 PK로 조회
+    // SELECT: query UPDATE result or INSERT result (merged with UNION ALL)
+    // UPDATE case: query by PK from temp table
     const output = def.output;
     const updatePkConditions = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
@@ -477,7 +477,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     });
     const selectUpdateSql = `SELECT ${outputCols} FROM ${table} WHERE ${updatePkConditions.join(" AND ")}`;
 
-    // INSERT 케이스: insertRecord의 PK로 조회 (AI면 LAST_INSERT_ID(), 임시 Table이 비어있을 때만)
+    // INSERT case: query by PK from insertRecord (LAST_INSERT_ID() for AI, only when temp table is empty)
     const insertPkConditions = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
       if (pk === output.aiColName) {
@@ -544,7 +544,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected truncate(def: TruncateQueryDef): QueryBuildResult {
-    // MySQL: TRUNCATE는 AUTO_INCREMENT automatic 리셋
+    // MySQL: TRUNCATE automatically resets AUTO_INCREMENT
     return { sql: `TRUNCATE TABLE ${this.tableName(def.table)}` };
   }
 
@@ -608,7 +608,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
   protected renameColumn(def: RenameColumnQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
-    // MySQL 8.0+: RENAME COLUMN 지원
+    // MySQL 8.0+: RENAME COLUMN supported
     return {
       sql: `ALTER TABLE ${table} RENAME COLUMN ${this.expr.wrap(def.column)} TO ${this.expr.wrap(def.newName)}`,
     };
@@ -635,7 +635,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const targetTable = this.tableName(fk.targetTable);
     const targetCols = fk.targetPkColumns.map((c) => this.expr.wrap(c)).join(", ");
 
-    // MySQL은 FK Add 시 automatic으로 Index 생성하므로 별도 IDX 불필요
+    // MySQL automatically creates index when adding FK, so no separate index needed
     return {
       sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(fk.name)} FOREIGN KEY (${fkCols}) REFERENCES ${targetTable} (${targetCols})`,
     };
@@ -676,7 +676,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected createProc(def: CreateProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
 
-    // params processing
+    // Process params
     const paramList =
       def.params
         ?.map((p) => {
@@ -719,9 +719,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   //#region ========== Utils ==========
 
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
-    // MySQL: 모든 Table DROP (MySQL에서 database와 schema는 동의어)
-    // information_schema에서 Table 목록 조회 후 DROP
-    // SQL Injection 방지: 식별자 유효성 Validation
+    // MySQL: DROP all tables (in MySQL, database and schema are synonymous)
+    // Query table list from information_schema then DROP
+    // SQL injection prevention: identifier validation
     if (!/^[a-zA-Z0-9_]+$/.test(def.database)) {
       throw new Error(`Invalid database name: ${def.database}`);
     }
@@ -741,14 +741,14 @@ SET FOREIGN_KEY_CHECKS = 1`,
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
-    // MySQL: database와 schema는 동의어
+    // MySQL: database and schema are synonymous
     const dbName = this.expr.escapeString(def.database);
     return {
       sql: `SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'`,
     };
   }
 
-  /** MySQL은 전역 설정만 지원 (table 파라미터 무시됨) */
+  /** MySQL only supports global setting (table parameter is ignored) */
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {
     return def.enabled
       ? { sql: "SET FOREIGN_KEY_CHECKS = 1" }

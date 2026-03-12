@@ -22,9 +22,9 @@ export default defineConfig({
     coverage: {
       reportsDirectory: "./.coverage",
     },
-    // 여기에 projects 배열로 정의
+    // Define as projects array here
     projects: [
-      // 단위 테스트 (packages 내 테스트)
+      // Unit tests (tests within packages)
       {
         extends: true,
         test: {
@@ -33,7 +33,7 @@ export default defineConfig({
           testTimeout: 30000,
         },
       },
-      // E2E 테스트 (Docker + dev 서버 필요)
+      // E2E tests (requires Docker + dev server)
       {
         extends: true,
         test: {

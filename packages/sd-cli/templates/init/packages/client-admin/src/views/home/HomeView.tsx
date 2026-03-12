@@ -25,7 +25,7 @@ function HomeContent(props: RouteSectionProps) {
 
   const titleChain = () => {
     const chain = appStructure.getTitleChainByHref(location.pathname);
-    // 최상위 그룹(홈) 제외
+    // Exclude the top-level group (home)
     return chain.length > 1 ? chain.slice(1) : chain;
   };
 

@@ -16,7 +16,7 @@ describe("E2E", () => {
     ctx.page = await context.newPage();
     ctx.page.setDefaultTimeout(500);
 
-    // 브라우저 콘솔 에러 → 테스트 콘솔에 출력
+    // Output browser console errors to test console
     ctx.page.on("pageerror", (err) => {
       console.error(`[PAGE_ERROR] ${err.message}`);
     });

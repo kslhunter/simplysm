@@ -10,8 +10,8 @@ import type { DataRecord } from "../../types/db";
 /**
  * Column definition builder
  *
- * Fluent API를 통해 column의 type, nullable, autoIncrement, default, description을 definition
- * TableBuilder.columns()used in
+ * Define column type, nullable, autoIncrement, default, and description via Fluent API
+ * Used in TableBuilder.columns()
  *
  * @template TValue - Column value type
  * @template TMeta - Column Metadata type
@@ -24,7 +24,7 @@ import type { DataRecord } from "../../types/db";
  *     name: c.varchar(100),                     // varchar(100), required
  *     email: c.varchar(200).nullable(),         // varchar(200), nullable
  *     status: c.varchar(20).default("active"),  // varchar(20), default value
- *     createdAt: c.datetime().description("생성일시"),
+ *     createdAt: c.datetime().description("created datetime"),
  *   }));
  * ```
  *
@@ -38,9 +38,9 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   constructor(readonly meta: TMeta) {}
 
   /**
-   * Auto Increment 설정
+   * Auto Increment configuration
    *
-   * INSERT 시 Auto increment. INSERT용 Type inference에서 optional로 processing
+   * Auto increments on INSERT. Treated as optional in INSERT Type inference
    *
    * @returns new ColumnBuilder instance
    *
@@ -54,9 +54,9 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   }
 
   /**
-   * Nullable 설정
+   * Nullable configuration
    *
-   * Allow NULL. value 타입에 undefined Add
+   * Allow NULL. Adds undefined to the value type
    *
    * @returns new ColumnBuilder instance
    *
@@ -70,9 +70,9 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   }
 
   /**
-   * Default value 설정
+   * Default value configuration
    *
-   * INSERT 시 value 미지정 시 사용. INSERT용 Type inference에서 optional로 processing
+   * Used when no value is specified on INSERT. Treated as optional in INSERT Type inference
    *
    * @param value - Default value
    * @returns new ColumnBuilder instance
@@ -92,12 +92,12 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
   /**
    * column set description
    *
-   * @param desc - Column description (DDL Comment으로 사용)
+   * @param desc - Column description (used as DDL Comment)
    * @returns new ColumnBuilder instance
    *
    * @example
    * ```typescript
-   * createdAt: c.datetime().description("레코드 Generate 일시")
+   * createdAt: c.datetime().description("record creation datetime")
    * ```
    */
   description(desc: string): ColumnBuilder<TValue, TMeta & { description: string }> {
@@ -110,12 +110,12 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
 // ============================================
 
 /**
- * Column builder factory Generate
+ * Column builder factory creation
  *
- * TableBuilder.columns()used in하는 Column type factory
- * 모든 Basic data type에 대한 builder Generate method 제공
+ * Column type factory used in TableBuilder.columns()
+ * Provides builder creation methods for all basic data types
  *
- * @returns Column type별 builder Generate 메서드를 포함한 object
+ * @returns Object containing builder creation methods for each Column type
  *
  * @example
  * ```typescript
@@ -126,12 +126,12 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
  *     count: c.int(),
  *     price: c.decimal(10, 2),
  *
- *     // 문자열 type
+ *     // String type
  *     name: c.varchar(100),
  *     code: c.char(10),
  *     content: c.text(),
  *
- *     // Date/시간 type
+ *     // Date/time type
  *     createdAt: c.datetime(),
  *     birthDate: c.date(),
  *     startTime: c.time(),
@@ -166,7 +166,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * FLOAT column (4 bytes, 단정밀도 부동소수점)
+     * FLOAT column (4 bytes, single-precision floating point)
      *
      * @returns ColumnBuilder instance
      */
@@ -175,7 +175,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * DOUBLE column (8 bytes, 배정밀도 부동소수점)
+     * DOUBLE column (8 bytes, double-precision floating point)
      *
      * @returns ColumnBuilder instance
      */
@@ -184,10 +184,10 @@ export function createColumnFactory() {
     },
 
     /**
-     * DECIMAL column (고정 소수점)
+     * DECIMAL column (fixed-point)
      *
-     * @param precision - 전체 자릿수
-     * @param scale - 소수점 이하 자릿수 (Select)
+     * @param precision - Total number of digits
+     * @param scale - Number of digits after the decimal point (optional)
      * @returns ColumnBuilder instance
      *
      * @example
@@ -206,9 +206,9 @@ export function createColumnFactory() {
     },
 
     /**
-     * VARCHAR column (가변 길이 문자열)
+     * VARCHAR column (variable-length string)
      *
-     * @param length - 최대 길이
+     * @param length - Maximum length
      * @returns ColumnBuilder instance
      *
      * @example
@@ -223,9 +223,9 @@ export function createColumnFactory() {
     },
 
     /**
-     * CHAR column (고정 길이 문자열)
+     * CHAR column (fixed-length string)
      *
-     * @param length - 고정 길이
+     * @param length - Fixed length
      * @returns ColumnBuilder instance
      *
      * @example
@@ -240,7 +240,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * TEXT column (대용량 문자열)
+     * TEXT column (large text)
      *
      * @returns ColumnBuilder instance
      */
@@ -249,9 +249,9 @@ export function createColumnFactory() {
     },
 
     /**
-     * BINARY column (바이너리 data)
+     * BINARY column (binary data)
      *
-     * DBMS별: MySQL=LONGBLOB, MSSQL=VARBINARY(MAX), PostgreSQL=BYTEA
+     * Per DBMS: MySQL=LONGBLOB, MSSQL=VARBINARY(MAX), PostgreSQL=BYTEA
      *
      * @returns ColumnBuilder instance
      */
@@ -262,7 +262,7 @@ export function createColumnFactory() {
     /**
      * BOOLEAN column
      *
-     * DBMS별: MySQL=TINYINT(1), MSSQL=BIT, PostgreSQL=BOOLEAN
+     * Per DBMS: MySQL=TINYINT(1), MSSQL=BIT, PostgreSQL=BOOLEAN
      *
      * @returns ColumnBuilder instance
      */
@@ -271,7 +271,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * DATETIME column (Date + 시간)
+     * DATETIME column (date + time)
      *
      * @returns ColumnBuilder instance
      */
@@ -280,7 +280,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * DATE column (Date만)
+     * DATE column (date only)
      *
      * @returns ColumnBuilder instance
      */
@@ -289,7 +289,7 @@ export function createColumnFactory() {
     },
 
     /**
-     * TIME column (시간만)
+     * TIME column (time only)
      *
      * @returns ColumnBuilder instance
      */
@@ -300,7 +300,7 @@ export function createColumnFactory() {
     /**
      * UUID column
      *
-     * DBMS별: MySQL=BINARY(16), MSSQL=UNIQUEIDENTIFIER, PostgreSQL=UUID
+     * Per DBMS: MySQL=BINARY(16), MSSQL=UNIQUEIDENTIFIER, PostgreSQL=UUID
      *
      * @returns ColumnBuilder instance
      */
@@ -311,22 +311,22 @@ export function createColumnFactory() {
 }
 
 // ============================================
-// ColumnDefRecord - Column builder 레코드
+// ColumnDefRecord - Column builder record
 // ============================================
 
 /**
  * Column builder record type
  *
- * TableBuilder.columns()의 return 타입으로 사용
+ * Used as the return type of TableBuilder.columns()
  */
 export type ColumnBuilderRecord = Record<string, ColumnBuilder<ColumnPrimitive, ColumnMeta>>;
 
 // ============================================
-// Infer - Type inference 유틸리티
+// Infer - Type inference utilities
 // ============================================
 
 /**
- * Column builder 레코드에서 실제 value Type inference
+ * Infer actual value types from a Column builder record
  *
  * @template T - Column builder record type
  *
@@ -341,7 +341,7 @@ export type InferColumns<TBuilders extends ColumnBuilderRecord> = {
 };
 
 /**
- * Column builder 레코드에서 expression 입력 Type inference
+ * Infer expression input types from a Column builder record
  *
  * @template T - Column builder record type
  */
@@ -350,9 +350,9 @@ export type InferColumnExprs<TBuilders extends ColumnBuilderRecord> = {
 };
 
 /**
- * INSERT 시 required column key 추출
+ * Extract required column keys for INSERT
  *
- * autoIncrement, nullable, default가 없는 column만 required
+ * Only columns without autoIncrement, nullable, or default are required
  *
  * @template T - Column builder record type
  */
@@ -369,9 +369,9 @@ export type RequiredInsertKeys<TBuilders extends ColumnBuilderRecord> = {
 }[keyof TBuilders];
 
 /**
- * INSERT 시 optional column key 추출
+ * Extract optional column keys for INSERT
  *
- * autoIncrement, nullable, default가 있는 column은 optional
+ * Columns with autoIncrement, nullable, or default are optional
  *
  * @template T - Column builder record type
  */
@@ -381,9 +381,9 @@ export type OptionalInsertKeys<TBuilders extends ColumnBuilderRecord> = Exclude<
 >;
 
 /**
- * INSERT용 Type inference
+ * INSERT Type inference
  *
- * required column은 required, optional column은 Partial
+ * Required columns are required, optional columns are Partial
  *
  * @template T - Column builder record type
  *
@@ -400,9 +400,9 @@ export type InferInsertColumns<TBuilders extends ColumnBuilderRecord> = Pick<
   Partial<Pick<InferColumns<TBuilders>, OptionalInsertKeys<TBuilders>>>;
 
 /**
- * UPDATE용 Type inference
+ * UPDATE Type inference
  *
- * 모든 column이 optional
+ * All columns are optional
  *
  * @template T - Column builder record type
  */
@@ -411,7 +411,7 @@ export type InferUpdateColumns<TBuilders extends ColumnBuilderRecord> = Partial<
 >;
 
 /**
- * data 레코드에서 Column builder 레코드로 Transform
+ * Transform from data record to Column builder record
  *
  * @template TData - data record type
  */

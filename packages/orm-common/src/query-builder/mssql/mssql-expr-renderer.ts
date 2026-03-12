@@ -72,19 +72,19 @@ import { ExprRendererBase } from "../base/expr-renderer-base";
  * MSSQL expression renderer
  */
 export class MssqlExprRenderer extends ExprRendererBase {
-  //#region ========== 유틸리티 (public - QueryBuilder에서도 사용) ==========
+  //#region ========== Utilities (public - also used by QueryBuilder) ==========
 
-  /** 식별자 감싸기 */
+  /** Wrap identifier */
   wrap(name: string): string {
     return `[${name.replace(/]/g, "]]")}]`;
   }
 
-  /** SQL 문자열 리터럴용 escape (따옴표 없이 return) */
+  /** Escape for SQL string literals (returns without quotes) */
   escapeString(value: string): string {
     return value.replace(/'/g, "''");
   }
 
-  /** value escape */
+  /** Value escape */
   escapeValue(value: unknown): string {
     if (value == null) {
       return "NULL";
@@ -217,18 +217,18 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected like(expr: ExprLike): string {
-    // ESCAPE '\' 항상 Add
+    // Always add ESCAPE '\'
     return `${this.render(expr.source)} LIKE ${this.render(expr.pattern)} ESCAPE '\\'`;
   }
 
   protected regexp(_expr: ExprRegexp): string {
-    // MSSQL은 REGEXP 미지원 - LIKE pattern이나 CLR 사용 필요
+    // MSSQL does not support REGEXP - needs LIKE pattern or CLR
     throw new Error("MSSQL does not natively support REGEXP.");
   }
 
   protected in(expr: ExprIn): string {
     if (expr.values.length === 0) {
-      return "1=0"; // 빈 IN은 항상 false
+      return "1=0"; // empty IN is always false
     }
     const values = expr.values.map((v) => this.render(v)).join(", ");
     return `${this.render(expr.source)} IN (${values})`;
@@ -239,7 +239,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected exists(expr: ExprExists): string {
-    // SELECT 1로 Render
+    // Render as SELECT 1
     const subquery = this.buildSelect({
       ...expr.query,
       select: { _: { type: "value", value: 1 } },
@@ -267,10 +267,10 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   //#endregion
 
-  //#region ========== 문자열 (null Process) ==========
+  //#region ========== String (null handling) ==========
 
   protected concat(expr: ExprConcat): string {
-    // MSSQL 2012+: CONCAT 함수는 NULL을 automatic으로 빈 문자열로 processing
+    // MSSQL 2012+: CONCAT function automatically treats NULL as empty string
     const args = expr.args.map((a) => this.render(a)).join(", ");
     return `CONCAT(${args})`;
   }
@@ -308,12 +308,12 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected length(expr: ExprLength): string {
-    // MSSQL: LEN() (null Process)
+    // MSSQL: LEN() (null handling)
     return `LEN(ISNULL(${this.render(expr.arg)}, N''))`;
   }
 
   protected byteLength(expr: ExprByteLength): string {
-    // MSSQL: DATALENGTH() (null Process)
+    // MSSQL: DATALENGTH() (null handling)
     return `DATALENGTH(ISNULL(${this.render(expr.arg)}, N''))`;
   }
 
@@ -321,7 +321,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     if (expr.length != null) {
       return `SUBSTRING(${this.render(expr.source)}, ${this.render(expr.start)}, ${this.render(expr.length)})`;
     }
-    // MSSQL: length 없으면 끝까지
+    // MSSQL: if no length, go to end
     return `SUBSTRING(${this.render(expr.source)}, ${this.render(expr.start)}, LEN(${this.render(expr.source)}))`;
   }
 
@@ -384,9 +384,9 @@ export class MssqlExprRenderer extends ExprRendererBase {
 
   protected isoWeekStartDate(expr: ExprIsoWeekStartDate): string {
     const src = this.render(expr.arg);
-    // ISO 주의 시작일 (월요일) - @@DATEFIRST 무관하게 항상 월요일 return
-    // 원리: DATEDIFF(DAY, 0, date)는 1900-01-01(월요일)부터의 일수
-    // (일수 + 6) % 7 + 1 = 1(월), 2(화), ..., 7(일)
+    // ISO week start date (Monday) - always returns Monday regardless of @@DATEFIRST
+    // Principle: DATEDIFF(DAY, 0, date) is the number of days from 1900-01-01 (Monday)
+    // (days + 6) % 7 + 1 = 1(Mon), 2(Tue), ..., 7(Sun)
     const weekDay = `((DATEDIFF(DAY, 0, ${src}) + 6) % 7 + 1)`;
     return `DATEADD(DAY, 1 - ${weekDay}, CAST(${src} AS DATE))`;
   }
@@ -434,7 +434,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   private convertDateFormat(format: string): string {
-    // MSSQL FORMAT 함수용 (동일한 포맷 사용)
+    // For MSSQL FORMAT function (uses the same format)
     return format;
   }
 
@@ -504,7 +504,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   protected greatest(expr: ExprGreatest): string {
     if (expr.args.length === 0) throw new Error("greatest requires at least one argument.");
     if (expr.args.length === 1) return this.render(expr.args[0]);
-    // MSSQL 2012+: VALUES + MAX 방식
+    // MSSQL 2012+: VALUES + MAX approach
     const values = expr.args.map((a) => `(${this.render(a)})`).join(", ");
     return `(SELECT MAX(v) FROM (VALUES ${values}) AS t(v))`;
   }
@@ -512,7 +512,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   protected least(expr: ExprLeast): string {
     if (expr.args.length === 0) throw new Error("least requires at least one argument.");
     if (expr.args.length === 1) return this.render(expr.args[0]);
-    // MSSQL 2012+: VALUES + MIN 방식
+    // MSSQL 2012+: VALUES + MIN approach
     const values = expr.args.map((a) => `(${this.render(a)})`).join(", ");
     return `(SELECT MIN(v) FROM (VALUES ${values}) AS t(v))`;
   }
@@ -537,7 +537,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     const fn = this.renderWindowFn(expr.fn);
     let over = this.renderWindowSpec(expr.spec);
 
-    // LAST_VALUE는 Basic 프레임이 CURRENT ROW까지만 보므로 전체 프레임 명시 필요
+    // LAST_VALUE default frame only sees up to CURRENT ROW, so full frame must be specified
     if (expr.fn.type === "lastValue" && over.length > 0) {
       over += " ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
     }

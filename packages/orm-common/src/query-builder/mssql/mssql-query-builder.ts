@@ -41,9 +41,9 @@ import { MssqlExprRenderer } from "./mssql-expr-renderer";
 export class MssqlQueryBuilder extends QueryBuilderBase {
   protected expr = new MssqlExprRenderer((def) => this.select(def).sql);
 
-  //#region ========== 유틸리티 ==========
+  //#region ========== Utilities ==========
 
-  /** Table명 Render */
+  /** Render table name */
   protected tableName(obj: QueryDefObjectName): string {
     const parts: string[] = [];
     if (obj.database != null) {
@@ -58,7 +58,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     return parts.join(".");
   }
 
-  /** OFFSET...FETCH 절 Render */
+  /** Render OFFSET...FETCH clause */
   protected renderLimit(limit: [number, number] | undefined): string {
     if (limit == null) return "";
     const [offset, count] = limit;
@@ -68,15 +68,15 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const alias = this.expr.wrap(join.as);
 
-    // LATERAL JOIN 필요 여부 감지 → MSSQL은 OUTER APPLY 사용
+    // Detect if LATERAL JOIN is needed → MSSQL uses OUTER APPLY
     if (this.needsLateral(join)) {
-      // from이 배열(UNION ALL)이면 renderFrom(join.from),
-      // 그 외(orderBy, top, select 등)면 renderFrom(join)으로 Subquery Generate
+      // If from is an array (UNION ALL), use renderFrom(join.from),
+      // otherwise (orderBy, top, select, etc.) use renderFrom(join) to generate subquery
       const from = Array.isArray(join.from) ? this.renderFrom(join.from) : this.renderFrom(join);
       return ` OUTER APPLY ${from} AS ${alias}`;
     }
 
-    // 일반 JOIN
+    // Normal JOIN
     const from = this.renderFrom(join.from);
     const where =
       join.where != null && join.where.length > 0
@@ -122,7 +122,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       const from = this.renderFrom(def.from);
       sql += ` FROM ${from} AS ${this.expr.wrap(def.as)}`;
 
-      // LOCK (ROWLOCK으로 row 수준 락 강제 - MySQL/PostgreSQL FOR UPDATE와 동일 Behavior)
+      // LOCK (force row-level lock with ROWLOCK - same behavior as MySQL/PostgreSQL FOR UPDATE)
       if (def.lock) {
         sql += " WITH (UPDLOCK, ROWLOCK)";
       }
@@ -165,14 +165,14 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = "";
 
-    // IDENTITY_INSERT ON (AI column에 explicit value 삽입 시)
+    // IDENTITY_INSERT ON (when inserting explicit values into AI column)
     if (def.overrideIdentity) {
       sql += `SET IDENTITY_INSERT ${table} ON;\n`;
     }
 
     sql += `INSERT INTO ${table} (${colList})`;
 
-    // OUTPUT (MSSQL 네이티브 지원)
+    // OUTPUT (MSSQL native support)
     if (def.output != null) {
       const outputCols = def.output.columns.map((c) => `INSERTED.${this.expr.wrap(c)}`).join(", ");
       sql += ` OUTPUT ${outputCols}`;
@@ -191,7 +191,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       sql += `;\nSET IDENTITY_INSERT ${table} OFF;`;
     }
 
-    // overrideIdentity 시: SET ON → results[0], INSERT → results[1], SET OFF → results[2]
+    // With overrideIdentity: SET ON → results[0], INSERT → results[1], SET OFF → results[2]
     return { sql, resultSetIndex: def.overrideIdentity ? 1 : undefined };
   }
 
@@ -202,7 +202,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
     const values = columns.map((c) => this.expr.escapeValue(def.record[c])).join(", ");
 
-    // existsSelectQuery를 SELECT 1 AS _ 형태로 Render
+    // Render existsSelectQuery as SELECT 1 AS _
     const existsQuerySql = this.select({
       ...def.existsSelectQuery,
       select: { _: { type: "value", value: 1 } },
@@ -210,7 +210,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `INSERT INTO ${table} (${colList})`;
 
-    // OUTPUT (MSSQL: OUTPUT은 SELECT 앞에 위치해야 함)
+    // OUTPUT (MSSQL: OUTPUT must be placed before SELECT)
     if (def.output != null) {
       const outputCols = def.output.columns.map((c) => `INSERTED.${this.expr.wrap(c)}`).join(", ");
       sql += ` OUTPUT ${outputCols}`;
@@ -225,7 +225,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const selectSql = this.select(def.recordsSelectQuery).sql;
 
-    // INSERT INTO SELECT에서 columns 추출
+    // Extract columns from INSERT INTO SELECT
     const selectDef = def.recordsSelectQuery;
     const colList =
       selectDef.select != null
@@ -310,7 +310,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   //#region ========== DML - UPSERT ==========
 
   protected upsert(def: UpsertQueryDef): QueryBuildResult {
-    // MSSQL: MERGE 사용
+    // MSSQL: Use MERGE
     const table = this.tableName(def.table);
     const alias = this.expr.wrap(def.existsSelectQuery.as);
     const existsWhere = def.existsSelectQuery.where;
@@ -389,14 +389,14 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected renameTable(def: RenameTableQueryDef): QueryBuildResult {
-    // MSSQL: sp_rename 사용
+    // MSSQL: Use sp_rename
     const tableName = this.expr.escapeString(this.tableName(def.table));
     const newName = this.expr.escapeString(def.newName);
     return { sql: `EXEC sp_rename '${tableName}', '${newName}'` };
   }
 
   protected truncate(def: TruncateQueryDef): QueryBuildResult {
-    // MSSQL: TRUNCATE는 IDENTITY automatic 리셋
+    // MSSQL: TRUNCATE automatically resets IDENTITY
     return { sql: `TRUNCATE TABLE ${this.tableName(def.table)}` };
   }
 
@@ -447,13 +447,13 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       colSql += " NOT NULL";
     }
 
-    // MSSQL: ALTER COLUMN (IDENTITY와 DEFAULT는 별도 processing 필요)
+    // MSSQL: ALTER COLUMN (IDENTITY and DEFAULT require separate handling)
     return { sql: `ALTER TABLE ${table} ALTER COLUMN ${colSql}` };
   }
 
   protected renameColumn(def: RenameColumnQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
-    // MSSQL: sp_rename 사용
+    // MSSQL: Use sp_rename
     const tableCol = this.expr.escapeString(`${table}.${def.column}`);
     const newName = this.expr.escapeString(def.newName);
     return { sql: `EXEC sp_rename '${tableCol}', '${newName}', 'COLUMN'` };
@@ -487,7 +487,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(fk.name)} FOREIGN KEY (${fkCols}) REFERENCES ${targetTable} (${targetCols})`;
 
-    // MSSQL/PostgreSQL: FK용 Index 별도 Generate 필요
+    // MSSQL/PostgreSQL: separate index generation needed for FK
     const idxName = `IDX_${def.table.name}_${fk.name.replace(/^FK_/, "")}`;
     sql += `;\nCREATE INDEX ${this.expr.wrap(idxName)} ON ${table} (${fkCols});`;
 
@@ -530,7 +530,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   protected createProc(def: CreateProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
 
-    // params processing
+    // Process params
     const paramList =
       def.params
         ?.map((p) => {
@@ -574,7 +574,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   //#region ========== Utils ==========
 
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
-    // SQL Injection 방지: 식별자 유효성 Validation
+    // SQL injection prevention: identifier validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
       throw new Error(`Invalid database name: ${def.database}`);
     }
@@ -590,22 +590,22 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 DECLARE @sql NVARCHAR(MAX);
 SET @sql = N'';
 
--- FK constraint Delete
+-- Drop FK constraints
 SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_object_id)) + '.' + QUOTENAME(OBJECT_NAME(parent_object_id)) + N' DROP CONSTRAINT ' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.foreign_keys
 WHERE OBJECT_SCHEMA_NAME(parent_object_id) = '${schema}';
 
--- Drop table
+-- Drop tables
 SELECT @sql = @sql + N'DROP TABLE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.tables
 WHERE SCHEMA_NAME(schema_id) = '${schema}';
 
--- Drop view
+-- Drop views
 SELECT @sql = @sql + N'DROP VIEW ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.views
 WHERE schema_id = SCHEMA_ID('${schema}');
 
--- Procedure Delete
+-- Drop procedures
 SELECT @sql = @sql + N'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(name) + N';' + CHAR(13)
 FROM ${db}.sys.procedures
 WHERE SCHEMA_NAME(schema_id) = '${schema}';
@@ -615,7 +615,7 @@ EXEC sp_executesql @sql;`,
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
-    // SQL Injection 방지: 식별자 유효성 Validation
+    // SQL injection prevention: identifier validation
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
       throw new Error(`Invalid database name: ${def.database}`);
     }
@@ -626,7 +626,7 @@ EXEC sp_executesql @sql;`,
 
     const dbName = this.expr.escapeString(def.database);
     const schema = this.expr.escapeString(schemaName);
-    // MSSQL: database 존재 확인 후 schema 확인 (동적 SQL 사용)
+    // MSSQL: check database existence then check schema (using dynamic SQL)
     return {
       sql: `DECLARE @result NVARCHAR(MAX) = NULL;
 IF EXISTS (SELECT 1 FROM sys.databases WHERE name = '${dbName}')

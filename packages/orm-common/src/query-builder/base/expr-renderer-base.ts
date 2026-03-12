@@ -68,12 +68,12 @@ import type {
 import type { SelectQueryDef } from "../../types/query-def";
 
 /**
- * Expr → SQL Render 추상 Basic class
+ * Expr → SQL Render abstract base class
  *
  * Base principles:
  * - Implement only 100% identical logic across all dialects (dispatch)
  * - If different at all, make it abstract
- * - Method명은 expr.type과 동일 (동적 dispatch 가능)
+ * - Method names match expr.type (enables dynamic dispatch)
  */
 export abstract class ExprRendererBase {
   constructor(protected buildSelect: (def: SelectQueryDef) => string) {}
@@ -81,20 +81,20 @@ export abstract class ExprRendererBase {
   //#region ========== Public Utilities ==========
 
   /**
-   * 식별자 감싸기 (table명, column명 등)
+   * Wrap identifier (table name, column name, etc.)
    * MySQL: `name`, MSSQL: [name], PostgreSQL: "name"
    */
   abstract wrap(name: string): string;
 
   /**
-   * SQL 문자열 리터럴용 escape
-   * 동적 SQL이나 System query에서 문자열 값으로 사용될 때 호출
-   * 예: WHERE schema_name = 'escaped_value'
+   * Escape for SQL string literals
+   * Called when used as a string value in dynamic SQL or system queries
+   * e.g.: WHERE schema_name = 'escaped_value'
    */
   abstract escapeString(value: string): string;
 
   /**
-   * value escape (타입에 따라 적절한 SQL 리터럴로 Transform)
+   * Value escape (transform to appropriate SQL literal based on type)
    */
   abstract escapeValue(value: unknown): string;
 
@@ -150,7 +150,7 @@ export abstract class ExprRendererBase {
 
   //#endregion
 
-  //#region ========== Abstract - 문자열 (null processing required) ==========
+  //#region ========== Abstract - String (null processing required) ==========
 
   protected abstract concat(expr: ExprConcat): string;
   protected abstract left(expr: ExprLeft): string;

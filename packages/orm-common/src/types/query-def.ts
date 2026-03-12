@@ -1,15 +1,15 @@
 import type { ColumnPrimitive, DataType } from "./column";
 import type { Expr, WhereExpr } from "./expr";
 
-//#region ========== 공통 ==========
+//#region ========== Common ==========
 
 /**
- * DB object 이름 (table, View, Procedure 등)
+ * DB object name (table, View, Procedure, etc.)
  *
- * DBMS별 네임스페이스:
- * - MySQL: `database.name` (schema 무시)
- * - MSSQL: `database.schema.name` (schema Default value: dbo)
- * - PostgreSQL: `schema.name` (database는 connection용)
+ * DBMS-specific namespaces:
+ * - MySQL: `database.name` (schema ignored)
+ * - MSSQL: `database.schema.name` (schema defaults to dbo)
+ * - PostgreSQL: `schema.name` (database is for connection only)
  */
 export interface QueryDefObjectName {
   database?: string;
@@ -22,9 +22,9 @@ export interface QueryDefObjectName {
 //#region ========== DML ==========
 
 /**
- * CUD query의 OUTPUT 절 definition
+ * CUD query OUTPUT clause definition
  *
- * INSERT/UPDATE/DELETE 후 반환값 definition
+ * Define return values after INSERT/UPDATE/DELETE
  */
 export interface CudOutputDef {
   columns: string[];
@@ -36,19 +36,19 @@ export interface CudOutputDef {
  * SELECT Query definition
  *
  * @property type - Query type ("select")
- * @property from - FROM 절 (table/Subquery)
- * @property as - Table 별칭
- * @property select - SELECT 절 column Mapping
- * @property distinct - DISTINCT 여부
+ * @property from - FROM clause (table/Subquery)
+ * @property as - Table alias
+ * @property select - SELECT clause column mapping
+ * @property distinct - Whether DISTINCT
  * @property top - TOP N (MSSQL)
- * @property lock - 락 여부
+ * @property lock - Whether to lock
  * @property where - WHERE condition array
  * @property joins - JOIN definition array
- * @property orderBy - ORDER BY [column, 방향] array
+ * @property orderBy - ORDER BY [column, direction] array
  * @property limit - LIMIT [offset, count]
  * @property groupBy - GROUP BY expression array
  * @property having - HAVING condition array
- * @property with - recursive CTE definition
+ * @property with - Recursive CTE definition
  */
 export interface SelectQueryDef {
   type: "select";
@@ -70,19 +70,19 @@ export interface SelectQueryDef {
 /**
  * JOIN Query definition
  *
- * SelectQueryDef 확장 + isSingle flag
+ * SelectQueryDef extension + isSingle flag
  */
 export interface SelectQueryDefJoin extends SelectQueryDef {
-  /** 단일 result 여부 (1:1 relationship) */
+  /** Whether single result (1:1 relation) */
   isSingle?: boolean;
 }
 
 /**
  * INSERT Query definition
  *
- * @property records - Insert할 레코드 array
- * @property overrideIdentity - IDENTITY_INSERT Enable 여부
- * @property output - OUTPUT 절 definition
+ * @property records - Record array to insert
+ * @property overrideIdentity - Whether to enable IDENTITY_INSERT
+ * @property output - OUTPUT clause definition
  */
 export interface InsertQueryDef {
   type: "insert";
@@ -93,9 +93,9 @@ export interface InsertQueryDef {
 }
 
 /**
- * 조건부 INSERT Query definition
+ * Conditional INSERT Query definition
  *
- * 존재하지 않는 경우에만 삽입
+ * Insert only if not exists
  */
 export interface InsertIfNotExistsQueryDef {
   type: "insertIfNotExists";
@@ -109,7 +109,7 @@ export interface InsertIfNotExistsQueryDef {
 /**
  * INSERT INTO SELECT Query definition
  *
- * Subquery 결과를 삽입
+ * Insert subquery results
  */
 export interface InsertIntoQueryDef {
   type: "insertInto";
@@ -122,8 +122,8 @@ export interface InsertIntoQueryDef {
 /**
  * UPDATE Query definition
  *
- * @property record - Update할 column/value Mapping
- * @property joins - UPDATE JOIN (지원 시)
+ * @property record - Column/value mapping to update
+ * @property joins - UPDATE JOIN (when supported)
  */
 export interface UpdateQueryDef {
   type: "update";
@@ -170,7 +170,7 @@ export interface UpsertQueryDef {
 
 //#region ========== Utils ==========
 
-/** FK constraint Enable/Disable */
+/** FK constraint enable/disable */
 export interface SwitchFkQueryDef {
   type: "switchFk";
   table: QueryDefObjectName;
@@ -181,7 +181,7 @@ export interface SwitchFkQueryDef {
 
 //#region ========== DDL - Schema ==========
 
-/** Clear schema (모든 object Delete) */
+/** Clear schema (delete all objects) */
 export interface ClearSchemaQueryDef {
   type: "clearSchema";
   database: string;
@@ -249,7 +249,7 @@ export interface DropColumnQueryDef {
   column: string;
 }
 
-/** MODIFY COLUMN (type/property Change) */
+/** MODIFY COLUMN (type/property change) */
 export interface ModifyColumnQueryDef {
   type: "modifyColumn";
   table: QueryDefObjectName;
@@ -385,13 +385,13 @@ export interface SchemaExistsQueryDef {
 
 //#endregion
 
-//#region ========== DDL type 상수 ==========
+//#region ========== DDL type constants ==========
 
 /**
- * DDL QueryDef union (컴파일 타임 Validation용)
+ * DDL QueryDef union (for compile-time validation)
  *
  * @remarks
- * switchFk는 DDL이 아니므로 exclude (transaction 내 사용 가능)
+ * switchFk is excluded because it is not DDL (can be used within transactions)
  */
 type DdlQueryDef =
   | ClearSchemaQueryDef
@@ -415,13 +415,13 @@ type DdlQueryDef =
   | DropProcQueryDef;
 
 /**
- * DDL (Data Definition Language) type 상수
+ * DDL (Data Definition Language) type constants
  *
- * Transaction 내 DDL 차단 및 DDL type Validation에 사용
- * satisfies 키워드로 DdlQueryDef와의 synchronous화를 컴파일 타임에 Validation
+ * Used for blocking DDL within transactions and DDL type validation
+ * Uses satisfies keyword for compile-time synchronization with DdlQueryDef
  *
  * @remarks
- * switchFk는 DDL이 아니므로 exclude (transaction 내 사용 가능)
+ * switchFk is excluded because it is not DDL (can be used within transactions)
  */
 export const DDL_TYPES = [
   "clearSchema",
@@ -450,10 +450,10 @@ export type DdlType = (typeof DDL_TYPES)[number];
 
 //#endregion
 
-//#region ========== 통합 Union Type ==========
+//#region ========== Combined Union Type ==========
 
 /**
- * 모든 Query definition union type
+ * All Query definition union type
  *
  * DML (SELECT/INSERT/UPDATE/DELETE/UPSERT) +
  * DDL (Table/Column/PK/FK/Index/View/Procedure) +

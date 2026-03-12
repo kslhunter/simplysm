@@ -2,18 +2,18 @@ import type { ColumnPrimitive, DataType } from "./column";
 import type { SelectQueryDef } from "./query-def";
 
 /**
- * Date 연산 단위
+ * Date operation unit
  *
- * dateDiff, dateAdd 등 Date functionused in
+ * Used in Date functions like dateDiff, dateAdd, etc.
  */
 export type DateUnit = "year" | "month" | "day" | "hour" | "minute" | "second";
 
 //#region ========== value expression ==========
 
 /**
- * column 참조 expression
+ * Column reference expression
  *
- * @property path - Column 경로 (table별칭.column명 등)
+ * @property path - Column path (e.g. tableAlias.columnName)
  */
 export interface ExprColumn {
   type: "column";
@@ -21,9 +21,9 @@ export interface ExprColumn {
 }
 
 /**
- * 리터럴 value expression
+ * Literal value expression
  *
- * @property value - Column 프리미티브 value
+ * @property value - Column primitive value
  */
 export interface ExprValue {
   type: "value";
@@ -33,8 +33,8 @@ export interface ExprValue {
 /**
  * Raw SQL expression
  *
- * @property sql - SQL 문자열 (파라미터는 {0}, {1}로 표시)
- * @property params - 파라미터 expression array
+ * @property sql - SQL string (parameters denoted as {0}, {1})
+ * @property params - Parameter expression array
  */
 export interface ExprRaw {
   type: "raw";
@@ -44,9 +44,9 @@ export interface ExprRaw {
 
 //#endregion
 
-//#region ========== comparison 연산 (WHERE용) ==========
+//#region ========== Comparison operations (for WHERE) ==========
 
-/** 동등 comparison (=) - NULL-safe */
+/** Equality comparison (=) - NULL-safe */
 export interface ExprEq {
   type: "eq";
   source: Expr;
@@ -81,7 +81,7 @@ export interface ExprLte {
   target: Expr;
 }
 
-/** range comparison (BETWEEN from AND to) */
+/** Range comparison (BETWEEN from AND to) */
 export interface ExprBetween {
   type: "between";
   source: Expr;
@@ -89,41 +89,41 @@ export interface ExprBetween {
   to?: Expr;
 }
 
-/** NULL 검사 (IS NULL) */
+/** NULL check (IS NULL) */
 export interface ExprIsNull {
   type: "null";
   arg: Expr;
 }
 
-/** pattern 매칭 (LIKE) */
+/** Pattern matching (LIKE) */
 export interface ExprLike {
   type: "like";
   source: Expr;
   pattern: Expr;
 }
 
-/** regular expression 매칭 (REGEXP) */
+/** Regular expression matching (REGEXP) */
 export interface ExprRegexp {
   type: "regexp";
   source: Expr;
   pattern: Expr;
 }
 
-/** value 목록 include 검사 (IN) */
+/** Value list inclusion check (IN) */
 export interface ExprIn {
   type: "in";
   source: Expr;
   values: Expr[];
 }
 
-/** Subquery result include 검사 (IN subquery) */
+/** Subquery result inclusion check (IN subquery) */
 export interface ExprInQuery {
   type: "inQuery";
   source: Expr;
   query: SelectQueryDef;
 }
 
-/** Subquery 존재 검사 (EXISTS) */
+/** Subquery existence check (EXISTS) */
 export interface ExprExists {
   type: "exists";
   query: SelectQueryDef;
@@ -131,21 +131,21 @@ export interface ExprExists {
 
 //#endregion
 
-//#region ========== logic 연산 ==========
+//#region ========== Logical operations ==========
 
-/** logic 부정 (NOT) */
+/** Logical negation (NOT) */
 export interface ExprNot {
   type: "not";
   arg: WhereExpr;
 }
 
-/** logic 곱 (AND) */
+/** Logical conjunction (AND) */
 export interface ExprAnd {
   type: "and";
   conditions: WhereExpr[];
 }
 
-/** logic 합 (OR) */
+/** Logical disjunction (OR) */
 export interface ExprOr {
   type: "or";
   conditions: WhereExpr[];
@@ -155,33 +155,33 @@ export interface ExprOr {
 
 //#region ========== String function ==========
 
-/** 문자열 연결 (CONCAT) */
+/** String concatenation (CONCAT) */
 export interface ExprConcat {
   type: "concat";
   args: Expr[];
 }
 
-/** 왼쪽 N자 추출 (LEFT) */
+/** Extract left N characters (LEFT) */
 export interface ExprLeft {
   type: "left";
   source: Expr;
   length: Expr;
 }
 
-/** 오른쪽 N자 추출 (RIGHT) */
+/** Extract right N characters (RIGHT) */
 export interface ExprRight {
   type: "right";
   source: Expr;
   length: Expr;
 }
 
-/** 좌우 공백 Remove (TRIM) */
+/** Remove leading and trailing whitespace (TRIM) */
 export interface ExprTrim {
   type: "trim";
   arg: Expr;
 }
 
-/** 왼쪽 패딩 (LPAD) */
+/** Left padding (LPAD) */
 export interface ExprPadStart {
   type: "padStart";
   source: Expr;
@@ -189,7 +189,7 @@ export interface ExprPadStart {
   fillString: Expr;
 }
 
-/** 문자열 치환 (REPLACE) */
+/** String replacement (REPLACE) */
 export interface ExprReplace {
   type: "replace";
   source: Expr;
@@ -197,31 +197,31 @@ export interface ExprReplace {
   to: Expr;
 }
 
-/** 대문자 Transform (UPPER) */
+/** Uppercase transform (UPPER) */
 export interface ExprUpper {
   type: "upper";
   arg: Expr;
 }
 
-/** 소문자 Transform (LOWER) */
+/** Lowercase transform (LOWER) */
 export interface ExprLower {
   type: "lower";
   arg: Expr;
 }
 
-/** 문자 길이 (CHAR_LENGTH) */
+/** Character length (CHAR_LENGTH) */
 export interface ExprLength {
   type: "length";
   arg: Expr;
 }
 
-/** 바이트 길이 (LENGTH/DATALENGTH) */
+/** Byte length (LENGTH/DATALENGTH) */
 export interface ExprByteLength {
   type: "byteLength";
   arg: Expr;
 }
 
-/** part 문자열 (SUBSTRING) */
+/** Substring (SUBSTRING) */
 export interface ExprSubstring {
   type: "substring";
   source: Expr;
@@ -229,7 +229,7 @@ export interface ExprSubstring {
   length?: Expr;
 }
 
-/** 문자열 위치 (LOCATE/CHARINDEX/POSITION) */
+/** String position (LOCATE/CHARINDEX/POSITION) */
 export interface ExprIndexOf {
   type: "indexOf";
   source: Expr;
@@ -240,26 +240,26 @@ export interface ExprIndexOf {
 
 //#region ========== Number function ==========
 
-/** 절대값 (ABS) */
+/** Absolute value (ABS) */
 export interface ExprAbs {
   type: "abs";
   arg: Expr;
 }
 
-/** 반올림 (ROUND) */
+/** Rounding (ROUND) */
 export interface ExprRound {
   type: "round";
   arg: Expr;
   digits: number;
 }
 
-/** 올림 (CEIL) */
+/** Ceiling (CEIL) */
 export interface ExprCeil {
   type: "ceil";
   arg: Expr;
 }
 
-/** 내림 (FLOOR) */
+/** Floor (FLOOR) */
 export interface ExprFloor {
   type: "floor";
   arg: Expr;
@@ -269,61 +269,61 @@ export interface ExprFloor {
 
 //#region ========== Date function ==========
 
-/** 연도 추출 (YEAR) */
+/** Year extraction (YEAR) */
 export interface ExprYear {
   type: "year";
   arg: Expr;
 }
 
-/** 월 추출 (MONTH) */
+/** Month extraction (MONTH) */
 export interface ExprMonth {
   type: "month";
   arg: Expr;
 }
 
-/** 일 추출 (DAY) */
+/** Day extraction (DAY) */
 export interface ExprDay {
   type: "day";
   arg: Expr;
 }
 
-/** 시간 추출 (HOUR) */
+/** Hour extraction (HOUR) */
 export interface ExprHour {
   type: "hour";
   arg: Expr;
 }
 
-/** 분 추출 (MINUTE) */
+/** Minute extraction (MINUTE) */
 export interface ExprMinute {
   type: "minute";
   arg: Expr;
 }
 
-/** 초 추출 (SECOND) */
+/** Second extraction (SECOND) */
 export interface ExprSecond {
   type: "second";
   arg: Expr;
 }
 
-/** ISO 주차 (WEEK) */
+/** ISO week number (WEEK) */
 export interface ExprIsoWeek {
   type: "isoWeek";
   arg: Expr;
 }
 
-/** ISO 주 시작일 */
+/** ISO week start date */
 export interface ExprIsoWeekStartDate {
   type: "isoWeekStartDate";
   arg: Expr;
 }
 
-/** ISO 연월 (YYYYMM 형식) */
+/** ISO year-month (YYYYMM format) */
 export interface ExprIsoYearMonth {
   type: "isoYearMonth";
   arg: Expr;
 }
 
-/** Date 차이 (DATEDIFF) */
+/** Date difference (DATEDIFF) */
 export interface ExprDateDiff {
   type: "dateDiff";
   unit: DateUnit;
@@ -331,7 +331,7 @@ export interface ExprDateDiff {
   to: Expr;
 }
 
-/** Date 연산 (DATEADD) */
+/** Date arithmetic (DATEADD) */
 export interface ExprDateAdd {
   type: "dateAdd";
   unit: DateUnit;
@@ -339,7 +339,7 @@ export interface ExprDateAdd {
   value: Expr;
 }
 
-/** Date 포맷 (FORMAT/DATE_FORMAT) */
+/** Date format (FORMAT/DATE_FORMAT) */
 export interface ExprFormatDate {
   type: "formatDate";
   source: Expr;
@@ -348,22 +348,22 @@ export interface ExprFormatDate {
 
 //#endregion
 
-//#region ========== condition ==========
+//#region ========== Conditional ==========
 
-/** NULL 대체 (COALESCE - 첫 번째 non-null return) */
+/** NULL replacement (COALESCE - returns first non-null) */
 export interface ExprCoalesce {
   type: "coalesce";
   args: Expr[];
 }
 
-/** 조건부 NULL (NULLIF - source === value 이면 NULL) */
+/** Conditional NULL (NULLIF - returns NULL if source === value) */
 export interface ExprNullIf {
   type: "nullIf";
   source: Expr;
   value: Expr;
 }
 
-/** 조건을 값으로 Transform (boolean → 0/1) */
+/** Transform condition to value (boolean -> 0/1) */
 export interface ExprIs {
   type: "is";
   condition: WhereExpr;
@@ -386,34 +386,34 @@ export interface ExprIf {
 
 //#endregion
 
-//#region ========== aggregation ==========
+//#region ========== Aggregation ==========
 
-/** 레코드 수 (COUNT) */
+/** Record count (COUNT) */
 export interface ExprCount {
   type: "count";
   arg?: Expr;
   distinct?: boolean;
 }
 
-/** 합계 (SUM) */
+/** Sum (SUM) */
 export interface ExprSum {
   type: "sum";
   arg: Expr;
 }
 
-/** 평균 (AVG) */
+/** Average (AVG) */
 export interface ExprAvg {
   type: "avg";
   arg: Expr;
 }
 
-/** 최대값 (MAX) */
+/** Maximum value (MAX) */
 export interface ExprMax {
   type: "max";
   arg: Expr;
 }
 
-/** 최소값 (MIN) */
+/** Minimum value (MIN) */
 export interface ExprMin {
   type: "min";
   arg: Expr;
@@ -423,29 +423,29 @@ export interface ExprMin {
 
 //#region ========== Other ==========
 
-/** 최대값 selection (GREATEST) */
+/** Maximum value selection (GREATEST) */
 export interface ExprGreatest {
   type: "greatest";
   args: Expr[];
 }
 
-/** 최소값 selection (LEAST) */
+/** Minimum value selection (LEAST) */
 export interface ExprLeast {
   type: "least";
   args: Expr[];
 }
 
-/** row 번호 (ROW_NUMBER 단순 Version) */
+/** Row number (simple ROW_NUMBER version) */
 export interface ExprRowNum {
   type: "rowNum";
 }
 
-/** 난수 (RAND/RANDOM) */
+/** Random number (RAND/RANDOM) */
 export interface ExprRandom {
   type: "random";
 }
 
-/** type transformation (CAST) */
+/** Type cast (CAST) */
 export interface ExprCast {
   type: "cast";
   source: Expr;
@@ -479,7 +479,7 @@ export interface WinFnNtile {
   n: number;
 }
 
-/** LAG() - 이전 row value */
+/** LAG() - Previous row value */
 export interface WinFnLag {
   type: "lag";
   column: Expr;
@@ -487,7 +487,7 @@ export interface WinFnLag {
   default?: Expr;
 }
 
-/** LEAD() - 다음 row value */
+/** LEAD() - Next row value */
 export interface WinFnLead {
   type: "lead";
   column: Expr;
@@ -540,7 +540,7 @@ export interface WinFnMax {
 /**
  * Window function union type
  *
- * 순위, 탐색, aggregation Window function
+ * Ranking, navigation, and aggregation Window functions
  */
 export type WinFn =
   | WinFnRowNumber
@@ -558,10 +558,10 @@ export type WinFn =
   | WinFnMax;
 
 /**
- * Window 스펙 (OVER 절)
+ * Window specification (OVER clause)
  *
- * @property partitionBy - PARTITION BY expression 목록
- * @property orderBy - ORDER BY [column, 방향] 목록
+ * @property partitionBy - PARTITION BY expression list
+ * @property orderBy - ORDER BY [column, direction] list
  */
 export interface WinSpec {
   partitionBy?: Expr[];
@@ -571,7 +571,7 @@ export interface WinSpec {
 /**
  * Window expression
  *
- * Window function + Window 스펙 composition
+ * Window function + Window specification composition
  */
 export interface ExprWindow {
   type: "window";
@@ -583,7 +583,7 @@ export interface ExprWindow {
 
 //#region ========== System ==========
 
-/** 스칼라 Subquery */
+/** Scalar Subquery */
 export interface ExprSubquery {
   type: "subquery";
   queryDef: SelectQueryDef;
@@ -594,10 +594,10 @@ export interface ExprSubquery {
 //#region ========== Union Types ==========
 
 /**
- * WHERE 절에 사용되는 expression (boolean return)
+ * Expression used in WHERE clause (returns boolean)
  *
- * comparison 연산 + logic 연산의 union type
- * where(), having() 등used in
+ * Union type of comparison operations + logical operations
+ * Used in where(), having(), etc.
  */
 export type WhereExpr =
   // Comparison
@@ -620,12 +620,12 @@ export type WhereExpr =
   | ExprOr;
 
 /**
- * 모든 expression union type
+ * All expression union type
  *
- * value, 문자열, Number, Date, condition, aggregation, Window 등 모든 expression
- * select(), orderBy() 등used in
+ * All expressions including value, string, number, date, conditional, aggregation, window, etc.
+ * Used in select(), orderBy(), etc.
  *
- * @see {@link WhereExpr} WHERE 절 전용 expression
+ * @see {@link WhereExpr} WHERE clause-specific expression
  */
 export type Expr =
   // Value

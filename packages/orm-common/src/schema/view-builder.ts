@@ -14,12 +14,12 @@ import {
 /**
  * Database View definition builder
  *
- * Fluent API를 통해 View의 query, 관계를 definition
- * DbContext에서 queryable()과 함께 사용하여 type 안전한 query 작성
+ * Define View query and relations via Fluent API
+ * Use with DbContext's queryable() for type-safe query composition
  *
  * @template TDbContext - DbContext type
  * @template TData - View data record type
- * @template TRelations - relationship definition record type
+ * @template TRelations - Relation definition record type
  *
  * @example
  * ```typescript
@@ -38,7 +38,7 @@ import {
  *       }))
  *   );
  *
- * // DbContextused in
+ * // Used in DbContext
  * class MyDb extends DbContext {
  *   readonly userSummary = queryable(this, UserSummary);
  * }
@@ -52,19 +52,19 @@ export class ViewBuilder<
   TData extends DataRecord,
   TRelations extends RelationBuilderRecord,
 > {
-  /** relationship definition (type for inference) */
+  /** Relation definition (type for inference) */
   readonly $relations!: TRelations;
-  /** 전체 Type inference */
+  /** Full Type inference */
   readonly $inferSelect!: TData;
 
   /**
    * @param meta - View Metadata
-   * @param meta.name - View 이름
-   * @param meta.description - View description (주석)
-   * @param meta.database - Database 이름
-   * @param meta.schema - Schema 이름 (MSSQL/PostgreSQL)
+   * @param meta.name - View name
+   * @param meta.description - View description (comment)
+   * @param meta.database - Database name
+   * @param meta.schema - Schema name (MSSQL/PostgreSQL)
    * @param meta.viewFn - View Query definition function
-   * @param meta.relations - relationship definition
+   * @param meta.relations - Relation definition
    */
   constructor(
     readonly meta: {
@@ -80,7 +80,7 @@ export class ViewBuilder<
   /**
    * View set description
    *
-   * @param desc - View description (DDL Comment으로 사용)
+   * @param desc - View description (used as DDL Comment)
    * @returns new ViewBuilder instance
    */
   description(desc: string): ViewBuilder<TDbContext, TData, TRelations> {
@@ -90,7 +90,7 @@ export class ViewBuilder<
   /**
    * Database set name
    *
-   * @param db - Database 이름
+   * @param db - Database name
    * @returns new ViewBuilder instance
    *
    * @example
@@ -105,9 +105,9 @@ export class ViewBuilder<
   /**
    * schema set name
    *
-   * MSSQL, PostgreSQLused in
+   * Used in MSSQL, PostgreSQL
    *
-   * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
+   * @param schema - Schema name (MSSQL: dbo, PostgreSQL: public)
    * @returns new ViewBuilder instance
    */
   schema(schema: string): ViewBuilder<TDbContext, TData, TRelations> {
@@ -117,11 +117,11 @@ export class ViewBuilder<
   /**
    * View Query definition
    *
-   * SELECT query를 통해 View의 data 소스 definition
+   * Define the View's data source through a SELECT query
    *
    * @template TViewData - View data type
    * @template TDb - DbContext type
-   * @param viewFn - DbContext를 받아 Queryable을 반환하는 function
+   * @param viewFn - Function that receives a DbContext and returns a Queryable
    * @returns new ViewBuilder instance
    *
    * @example
@@ -146,12 +146,12 @@ export class ViewBuilder<
   }
 
   /**
-   * relationship definition
+   * Relation definition
    *
-   * 다른 Table/View와의 relationship 설정
+   * Set up relations with other Tables/Views
    *
-   * @template T - relationship definition type
-   * @param fn - relationship factory를 받아 relationship 정의를 반환하는 function
+   * @template T - Relation definition type
+   * @param fn - Function that receives a relation factory and returns relation definitions
    * @returns new ViewBuilder instance
    *
    * @example
@@ -164,13 +164,13 @@ export class ViewBuilder<
    * ```
    *
    * @see {@link ForeignKeyBuilder} FK builder
-   * @see {@link ForeignKeyTargetBuilder} FK 역참조 builder
+   * @see {@link ForeignKeyTargetBuilder} FK reverse-reference builder
    */
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TData & string>>) => T,
   ): ViewBuilder<TDbContext, TData & InferDeepRelations<T>, TRelations> {
-    // TypeScript의 generic Type inference 한계로 인해 캐스팅 불가피
-    // TRelations type 파라미터와 새로 생성되는 relationship type T 간의 type 불일치 해결
+    // Casting is unavoidable due to TypeScript generic type inference limitations
+    // Resolves type mismatch between TRelations type parameter and newly created relation type T
     return new ViewBuilder({
       ...this.meta,
       relations: fn(createRelationFactory<this, keyof TData & string>(() => this)),
@@ -183,16 +183,16 @@ export class ViewBuilder<
 // ============================================
 
 /**
- * View builder Generate factory function
+ * View builder factory function
  *
- * ViewBuilder를 생성하여 Fluent API로 View schema definition
+ * Creates a ViewBuilder for defining View schema via Fluent API
  *
- * @param name - View 이름
+ * @param name - View name
  * @returns ViewBuilder instance
  *
  * @example
  * ```typescript
- * // Basic 사용
+ * // Basic usage
  * const ActiveUsers = View("ActiveUsers")
  *   .database("mydb")
  *   .query((db: MyDb) =>

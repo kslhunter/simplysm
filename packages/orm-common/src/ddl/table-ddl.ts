@@ -14,7 +14,7 @@ import type { DbContextBase } from "../types/db-context-def";
 import { obj } from "@simplysm/core-common";
 
 /**
- * Builder를 CREATE QueryDef로 Transform
+ * Transform Builder to CREATE QueryDef
  *
  * @param db - DbContext instance
  * @param builder - Table/View/Procedure builder

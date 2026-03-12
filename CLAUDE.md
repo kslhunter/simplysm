@@ -1,81 +1,81 @@
 # Simplysm
 
-pnpm 모노레포. 패키지 경로: `packages/*`, 테스트: `tests/*`
+pnpm monorepo. Packages: `packages/*`, Tests: `tests/*`
 
-## 명령어
+## Commands
 
-모든 명령어는 내부적으로 `pnpm sd-cli <명령>`을 실행한다. 모든 명령에 `--debug` 플래그 사용 가능.
-`[targets..]`를 지정하지 않으면 `sd.config.ts`에 정의된 전체 패키지 대상으로 실행된다.
-타겟은 패키지 경로로 지정한다 (예: `packages/core-common`, `tests/orm`).
+All commands internally run `pnpm sd-cli <command>`. All commands support the `--debug` flag.
+If `[targets..]` is not specified, all packages defined in `sd.config.ts` are targeted.
+Targets are specified by package path (e.g., `packages/core-common`, `tests/orm`).
 
-### 개발
-
-```bash
-pnpm dev [targets..]                     # client+server 패키지 개발 모드 실행
-pnpm dev packages/solid-demo             # 특정 패키지만 dev 모드
-pnpm dev -o key=value                    # sd.config.ts에 옵션 전달
-
-pnpm watch [targets..]                   # 라이브러리 패키지 빌드 워치 모드
-pnpm watch packages/core-common          # 특정 패키지만 워치
-```
-
-### 빌드 & 배포
+### Development
 
 ```bash
-pnpm build [targets..]                   # 프로덕션 빌드
-pnpm build packages/solid                # 특정 패키지만 빌드
+pnpm dev [targets..]                     # Run client+server packages in dev mode
+pnpm dev packages/solid-demo             # Dev mode for a specific package
+pnpm dev -o key=value                    # Pass options to sd.config.ts
 
-pnpm pub [targets..]                     # 빌드 후 배포 (npm/sftp)
-pnpm pub --no-build                      # 빌드 생략하고 배포만
-pnpm pub --dry-run                       # 실제 배포 없이 시뮬레이션
-pnpm pub:no-build                        # --no-build 단축 명령
+pnpm watch [targets..]                   # Watch mode for library package builds
+pnpm watch packages/core-common          # Watch a specific package
 ```
 
-### 코드 품질 검사
+### Build & Deploy
 
 ```bash
-# 타입 체크
-pnpm typecheck [targets..]               # TypeScript 타입 체크
-pnpm typecheck packages/core-common      # 특정 패키지만
+pnpm build [targets..]                   # Production build
+pnpm build packages/solid                # Build a specific package
 
-# 린트
-pnpm lint [targets..]                    # ESLint + Stylelint 실행
-pnpm lint:fix [targets..]               # 린트 자동 수정 (--fix)
-pnpm lint --timing                       # 규칙별 실행 시간 출력
-
-# 통합 검사 (typecheck + lint + test 병렬 실행)
-pnpm check [targets..]                   # 전체 검사
-pnpm check packages/core-common          # 특정 패키지만
-pnpm check --type typecheck,lint         # 검사 종류 선택 (typecheck,lint,test 중 콤마 구분)
-
-# 테스트
-pnpm vitest [targets..]                  # vitest 워치 모드
-pnpm vitest run [targets..]              # 테스트 1회 실행
-pnpm vitest run packages/core-common     # 특정 패키지만 테스트
+pnpm pub [targets..]                     # Build and deploy (npm/sftp)
+pnpm pub --no-build                      # Deploy only, skip build
+pnpm pub --dry-run                       # Simulate without actual deployment
+pnpm pub:no-build                        # Shorthand for --no-build
 ```
 
-### 기타
+### Code Quality
 
 ```bash
-pnpm sd-cli device -p <패키지명>          # Android 디바이스에서 앱 실행
-pnpm sd-cli device -p my-app -u <URL>    # 개발 서버 URL 직접 지정
-pnpm sd-cli replace-deps                 # sd.config.ts의 replaceDeps 설정에 따라 node_modules를 로컬 소스로 심볼릭 링크
-pnpm sd-cli init                         # 새 프로젝트 초기화
+# Type check
+pnpm typecheck [targets..]               # TypeScript type check
+pnpm typecheck packages/core-common      # Specific package only
+
+# Lint
+pnpm lint [targets..]                    # Run ESLint + Stylelint
+pnpm lint:fix [targets..]               # Auto-fix lint issues (--fix)
+pnpm lint --timing                       # Show per-rule execution time
+
+# Combined check (typecheck + lint + test in parallel)
+pnpm check [targets..]                   # Run all checks
+pnpm check packages/core-common          # Specific package only
+pnpm check --type typecheck,lint         # Select check types (comma-separated: typecheck, lint, test)
+
+# Test
+pnpm vitest [targets..]                  # vitest watch mode
+pnpm vitest run [targets..]              # Run tests once
+pnpm vitest run packages/core-common     # Test a specific package
 ```
 
-## 패키지 target 종류 (sd.config.ts)
+### Miscellaneous
 
-| target | 설명 |
-|--------|------|
-| node | Node.js 전용 라이브러리 |
-| browser | 브라우저 전용 라이브러리 |
-| neutral | Node/브라우저 공용 라이브러리 |
-| client | 클라이언트 앱 (dev/build 시 Vite 사용) |
-| server | 서버 앱 (PM2 배포) |
+```bash
+pnpm sd-cli device -p <package-name>     # Run app on Android device
+pnpm sd-cli device -p my-app -u <URL>    # Specify dev server URL directly
+pnpm sd-cli replace-deps                 # Symlink node_modules to local sources per replaceDeps in sd.config.ts
+pnpm sd-cli init                         # Initialize a new project
+```
 
-## 아키텍처
+## Package Target Types (sd.config.ts)
 
-의존 방향: 위 → 아래. `core-common`은 내부 의존 없는 leaf 패키지.
+| target | Description |
+|--------|-------------|
+| node | Node.js-only library |
+| browser | Browser-only library |
+| neutral | Universal library (Node + browser) |
+| client | Client app (uses Vite for dev/build) |
+| server | Server app (deployed via PM2) |
+
+## Architecture
+
+Dependency direction: top → bottom. `core-common` is a leaf package with no internal dependencies.
 
 ```
 Apps:       solid-demo (client) / solid-demo-server (server)
@@ -87,26 +87,26 @@ Core:       core-common (neutral) / core-browser / core-node
 Tools:      sd-cli, lint, excel, storage, sd-claude, mcp-playwright
 ```
 
-## 통합 테스트
+## Integration Tests
 
-`tests/` 폴더에 위치. `pnpm vitest run tests/orm` 등으로 실행.
+Located in the `tests/` folder. Run with `pnpm vitest run tests/orm`, etc.
 
-- `tests/orm` — DB 커넥션, DbContext, 이스케이프 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
-- `tests/service` — 서비스 클라이언트-서버 통신 테스트.
+- `tests/orm` — DB connection, DbContext, and escape tests (MySQL, PostgreSQL, MSSQL). Requires Docker.
+- `tests/service` — Service client-server communication tests.
 
-## Import 경로 별칭
+## Import Path Aliases
 
-tsconfig paths로 `@simplysm/패키지명`이 `packages/패키지명/src/index.ts`에 매핑된다.
+tsconfig paths map `@simplysm/<package-name>` to `packages/<package-name>/src/index.ts`.
 
-## 코딩 규칙
+## Coding Conventions
 
-- `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
-- `console.*` 금지 (테스트 파일 제외), `===` 필수 (`== null`만 허용)
-- `if (str)` 금지 → `str !== ""` 명시 비교 (`strict-boolean-expressions`, nullable boolean/object는 허용)
-- `Buffer` 금지 → `Uint8Array`, `events`/`eventemitter3` 금지 → `@simplysm/core-common`의 `EventEmitter`
-- 미사용 변수 `_` 접두사 허용 (예: `_unused`), 미사용 import 자동 제거
-- `readonly` 선호 (`prefer-readonly`), index signature는 bracket notation (`noPropertyAccessFromIndexSignature`)
-- Promise는 반드시 `await`하거나 명시적으로 처리 (`no-floating-promises`), Error 객체만 throw 가능 (`only-throw-error`)
-- SolidJS: props 구조 분해 금지, `.map()` 대신 `<For>`, `className` 금지 → `class` 사용
-- Tailwind: 클래스 순서 자동 정렬, 커스텀 클래스 금지, 충돌 클래스 금지, shorthand 사용
-- Prettier: 100자, 2칸 스페이스, 세미콜론, trailing comma, LF
+- `import type` required (`verbatimModuleSyntax`), `#private` forbidden → use `private` keyword
+- `console.*` forbidden (except test files), `===` required (`== null` is the only exception)
+- `if (str)` forbidden → use explicit comparison `str !== ""` (`strict-boolean-expressions`; nullable boolean/object allowed)
+- `Buffer` forbidden → use `Uint8Array`, `events`/`eventemitter3` forbidden → use `EventEmitter` from `@simplysm/core-common`
+- Unused variables allowed with `_` prefix (e.g., `_unused`), unused imports auto-removed
+- Prefer `readonly` (`prefer-readonly`), use bracket notation for index signatures (`noPropertyAccessFromIndexSignature`)
+- Promises must be `await`ed or explicitly handled (`no-floating-promises`), only Error objects can be thrown (`only-throw-error`)
+- SolidJS: no props destructuring, use `<For>` instead of `.map()`, `className` forbidden → use `class`
+- Tailwind: auto-sort class order, no custom classes, no conflicting classes, use shorthand
+- Prettier: 100 chars, 2-space indent, semicolons, trailing commas, LF

@@ -1,12 +1,16 @@
-## 요청 수행 규칙
+## Request Handling Rules
 
-- 사용자가 명시적으로 수정을 요청하지 않은 경우, 코드를 절대 수정하지 않는다. (질문등에 대해 자의적 판단 금지)
+- Never modify code unless the user explicitly requests changes. (No autonomous decisions in response to questions, etc.)
 
-## 코드 작성 규칙
+## Code Writing Rules
 
-- YAGNI 원칙 준수
+- Follow the YAGNI principle.
 
-## Playwright 규칙
+## Playwright Rules
 
-- Playwright의 모든 output(스크린샷, PDF, 다운로드 등)은 `.tmp/playwright/` 디렉토리에 저장한다.
+- All Playwright output (screenshots, PDFs, downloads, etc.) must be saved to the `.tmp/playwright/` directory.
+
+## Documentation Rules for LLMs
+
+- Write in English. (including code comments)
 

@@ -46,7 +46,7 @@ export async function initialize(
 
   const force = options?.force ?? false;
 
-  // 1. DB 존재 확인
+  // 1. Check DB existence
   for (const dbName of dbNames) {
     const schemaExistsDef = getSchemaExistsQueryDef(dbName, db.schema);
     const result = await db.executeDefs([schemaExistsDef]);
@@ -57,7 +57,7 @@ export async function initialize(
   }
 
   if (force) {
-    // 2. force: dbs 전체 Initialize
+    // 2. force: initialize all dbs
     for (const dbName of dbNames) {
       const clearDef = getClearSchemaQueryDef({ database: dbName, schema: db.schema });
       await db.executeDefs([clearDef]);
@@ -69,7 +69,7 @@ export async function initialize(
       await db._migration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
     }
   } else {
-    // 3. Migration 기반 Initialize
+    // 3. Migration-based initialize
     let appliedMigrations: { code: string }[] | undefined;
     try {
       appliedMigrations = await db._migration().execute();
@@ -102,13 +102,13 @@ export async function initialize(
 }
 
 /**
- * 전체 object Generate (table/View/Procedure/FK/Index)
+ * Generate all objects (table/view/procedure/FK/index)
  */
 async function createAllObjects(
   db: DbContextBase,
   def: DbContextDef<any, any, any>,
 ): Promise<void> {
-  // 1. Table/View/Procedure Generate
+  // 1. Generate Table/View/Procedure
   const builders = getBuilders(def);
   const createDefs: QueryDef[] = [];
   for (const builder of builders) {
@@ -118,7 +118,7 @@ async function createAllObjects(
     await db.executeDefs(createDefs);
   }
 
-  // 2. FK Generate (TableBuilder만)
+  // 2. Generate FK (TableBuilder only)
   const tables = builders.filter((b) => b instanceof TableBuilder);
   const addFkDefs: QueryDef[] = [];
   for (const table of tables) {
@@ -136,7 +136,7 @@ async function createAllObjects(
     await db.executeDefs(addFkDefs);
   }
 
-  // 3. Index Generate (TableBuilder만)
+  // 3. Generate Index (TableBuilder only)
   const createIndexDefs: QueryDef[] = [];
   for (const table of tables) {
     const indexes = table.meta.indexes;
@@ -153,7 +153,7 @@ async function createAllObjects(
 }
 
 /**
- * DbContext의 모든 Builder 수집 (Table/View/Procedure)
+ * Collect all builders from DbContext (Table/View/Procedure)
  */
 function getBuilders(
   def: DbContextDef<any, any, any>,
@@ -186,8 +186,8 @@ function getBuilders(
 }
 
 /**
- * ForeignKeyTarget/RelationKeyTarget 관계의 유효성 Validation
- * - targetTableFn()이 반환하는 Table에 relationName에 해당하는 FK/RelationKey가 있는지 확인
+ * Validate ForeignKeyTarget/RelationKeyTarget relations
+ * - Checks if the table returned by targetTableFn() has a FK/RelationKey matching the relationName
  */
 export function validateRelations(def: DbContextDef<any, any, any>): void {
   const builders = getBuilders(def);
@@ -211,8 +211,8 @@ export function validateRelations(def: DbContextDef<any, any, any>): void {
 
       if (!(fkRel instanceof ForeignKeyBuilder) && !(fkRel instanceof RelationKeyBuilder)) {
         throw new Error(
-          `Invalid relation target: ${table.meta.name}.${relName}이 참조하는 ` +
-            `'${fkRelName}'이(가) ${targetTable.meta.name}의 유효한 ForeignKey/RelationKey가 아닙니다.`,
+          `Invalid relation target: '${fkRelName}' referenced by ${table.meta.name}.${relName} ` +
+            `is not a valid ForeignKey/RelationKey in ${targetTable.meta.name}.`,
         );
       }
     }
@@ -220,9 +220,9 @@ export function validateRelations(def: DbContextDef<any, any, any>): void {
 }
 
 /**
- * Table N/A 에러인지 확인
+ * Check if the error indicates a table does not exist
  *
- * DBMS별 error code/메시지 pattern:
+ * DBMS-specific error code/message patterns:
  * - MySQL: errno 1146 (ER_NO_SUCH_TABLE), "Table 'xxx' doesn't exist"
  * - MSSQL: number 208, "Invalid object name 'xxx'"
  * - PostgreSQL: code "42P01", "relation \"xxx\" does not exist"
@@ -230,13 +230,13 @@ export function validateRelations(def: DbContextDef<any, any, any>): void {
 function isTableNotExistsError(err: unknown): boolean {
   if (err == null) return false;
 
-  // error code로 우선 확인 (multilingual 환경에서도 안정적)
+  // Check error code first (reliable even in multilingual environments)
   const errObj = err as Record<string, unknown>;
   if (errObj["errno"] === 1146) return true; // MySQL ER_NO_SUCH_TABLE
   if (errObj["number"] === 208) return true; // MSSQL
   if (errObj["code"] === "42P01") return true; // PostgreSQL
 
-  // 폴백: 메시지 매칭 (multilingual 환경에서 불안정할 수 있음)
+  // Fallback: message matching (may be unreliable in multilingual environments)
   const message = err instanceof Error ? err.message : String(err);
   const lowerMessage = message.toLowerCase();
 

@@ -50,7 +50,7 @@ describe("DataSheet", () => {
     ));
 
     const headerRows = container.querySelectorAll("thead tr");
-    // 2 rows: first row has "기본정보"(colspan=2) + "이메일"(rowspan=2), second row has "이름" + "나이"
+    // 2 rows: first row has "기본정보" (colspan=2) + "이메일" (rowspan=2), second row has "이름" + "나이"
     expect(headerRows.length).toBeGreaterThanOrEqual(2);
 
     const firstRowThs = headerRows[0].querySelectorAll("th");
