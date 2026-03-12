@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/service-server",
-  "version": "13.0.81",
+  "version": "13.0.82",
   "description": "Simplysm package - service module (server)",
   "author": "simplysm",
   "license": "Apache-2.0",
