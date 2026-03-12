@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/orm",
   "sideEffects": false,
-  "version": "13.0.82",
+  "version": "13.0.83",
   "description": "Simplysm packages - ORM integration tests",
   "author": "김석래",
   "repository": {
