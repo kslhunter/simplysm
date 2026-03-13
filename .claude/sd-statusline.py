@@ -218,8 +218,11 @@ def main():
     model = format_model(model_id) if model_id else "?"
 
     # Extract context %
-    ctx_pct = stdin_data.get("context_window", {}).get("used_percentage")
-    ctx_str = f"{ctx_pct}%" if ctx_pct is not None else "?"
+    ctx_window = stdin_data.get("context_window")
+    if ctx_window is not None:
+        ctx_str = f"{ctx_window.get('used_percentage') or 0}%"
+    else:
+        ctx_str = "?"
 
     # Read cached usage data
     cache = read_cache()

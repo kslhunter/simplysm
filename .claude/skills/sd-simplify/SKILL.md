@@ -24,7 +24,12 @@ Invoke `simplify` using the Skill tool. Pass the following instructions as args:
 Review the current codebase at the <target path> path. (Not recently changed code)
 Do NOT modify any code. Only compile and output a list of items to fix.
 Write each item in the following format:
-- **file-path:line** — Problem description — Suggested improvement
+- **file-path:line**
+  - Current code: (excerpt of the relevant code)
+  - Problem description:
+  - Suggested improvement:
+  - Reasons to change: Rationale for applying the improvement
+  - Reasons not to change: Rationale for keeping the current code
 ```
 
 Replace the `<target path>` placeholder with the actual path extracted in Step 1.
@@ -46,9 +51,11 @@ When asking the user about unclear suggestions, **always present** the following
 ```
 Suggestion:
 - File path:line:
-- Problem description:
 - Current code: (excerpt of the relevant code)
+- Problem description:
 - Suggested improvement:
+- Reasons to change:
+- Reasons not to change:
 ```
 
 <Full list of items to fix from Step 2>

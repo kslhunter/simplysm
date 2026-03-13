@@ -30,7 +30,12 @@ Do not modify the code under any circumstances. Only compile and output a list o
 
 Write each finding in the following format:
 ```
-- **filepath:line** — Problem description — Suggested fix
+- **filepath:line**
+  - Current code: (excerpt of the relevant code)
+  - Problem description:
+  - Suggested fix:
+  - Reasons to fix: Rationale for applying the fix
+  - Reasons not to fix: Rationale for keeping the current code
 ```
 
 If no findings are discovered, display "No potential bugs were found." and stop.
@@ -52,9 +57,11 @@ When asking the user about uncertain fixes, **always present** the following inf
 ```
 Fix:
 - Filepath:line:
-- Problem description:
 - Current code: (excerpt of the relevant code)
+- Problem description:
 - Suggested fix:
+- Reasons to fix:
+- Reasons not to fix:
 ```
 
 <Full list of findings from Step 2>

@@ -46,7 +46,7 @@ try {
   console.warn("[@simplysm/sd-claude] postinstall warning:", err.message);
 }
 
-/** Finds the project root from INIT_CWD or node_modules path. */
+/** Finds the project root from INIT_CWD, node_modules path, or cwd. */
 function findProjectRoot(dirname) {
   if (process.env["INIT_CWD"] != null) {
     return process.env["INIT_CWD"];
@@ -55,7 +55,12 @@ function findProjectRoot(dirname) {
   const sep = path.sep;
   const marker = sep + "node_modules" + sep;
   const idx = dirname.indexOf(marker);
-  return idx !== -1 ? dirname.substring(0, idx) : undefined;
+  if (idx !== -1) {
+    return dirname.substring(0, idx);
+  }
+
+  // Fallback to cwd for manual CLI invocation (e.g., npx sd-claude postinstall)
+  return process.cwd();
 }
 
 /** Checks if this is the simplysm monorepo with the same major version. */

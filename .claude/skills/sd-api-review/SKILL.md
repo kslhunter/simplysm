@@ -83,7 +83,3 @@ Improvement:
 ## Step 5: Execute the Plan
 
 Once sd-plan is complete and a finalized plan is produced, modify the code according to that plan.
-
-## Step 6: Recommend README Update
-
-If code modifications were made, recommend the user to run `/sd-readme`.

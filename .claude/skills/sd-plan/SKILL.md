@@ -146,17 +146,20 @@ If the user approves implementation, implement according to the plan. Follow the
 - "Needs a separate session to verify" is NOT a valid GREEN. Run the test yourself.
 - If GREEN fails → fix the implementation → re-run GREEN. Repeat until it passes.
 
-Once all items are complete, output the following guidance:
+Once all items are complete, output the following guidance. Include only the items whose conditions are met, numbered sequentially:
 
-- **If code changes are included**:
-  ```
-  Implementation is complete. It is recommended to run the following steps in order:
-  1. /sd-check — Type check + lint + test inspection and auto-fix
-  2. /sd-simplify — Simplification review of changed code
-  3. /sd-commit — Commit changes
-  ```
+| Condition | Recommendation |
+|-----------|----------------|
+| Code changes exist | `/sd-check` — Type check + lint + test inspection and auto-fix |
+| Code changes exist | `/sd-simplify` — Simplification review of changed code |
+| Public API changed (exports, public methods/properties, component props, etc.) | `/sd-readme` — Update README documentation |
+| Always | `/sd-commit` — Commit changes |
 
-- **If no code changes are involved** (configuration, documentation, etc.):
-  ```
-  Implementation is complete. Run /sd-commit to commit the changes.
-  ```
+Example (all conditions met):
+```
+Implementation is complete. It is recommended to run the following steps in order:
+1. /sd-check — Type check + lint + test inspection and auto-fix
+2. /sd-simplify — Simplification review of changed code
+3. /sd-readme — Update README documentation
+4. /sd-commit — Commit changes
+```
