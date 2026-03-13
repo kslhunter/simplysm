@@ -6,6 +6,11 @@
 
 - Follow the YAGNI principle.
 
+## Git Rules
+
+- Never use `git stash`.
+- Never use `git worktree`.
+
 ## Playwright Rules
 
 - All Playwright output (screenshots, PDFs, downloads, etc.) must be saved to the `.tmp/playwright/` directory.

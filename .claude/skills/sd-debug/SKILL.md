@@ -115,8 +115,4 @@ Formulate a plan to implement the resolution based on the following debugging di
 <List of target file paths from the resolution option>
 ```
 
-## Step 5: Execute the Plan
-
-Once sd-plan completes and produces a finalized plan, modify the code according to that plan.
-
-After applying the fix, verify that the intended behavior documented in Step 2 is preserved. Review the changes and confirm they correct the defect without altering what the code is supposed to do.
+Once sd-plan completes, follow its post-completion guidance.

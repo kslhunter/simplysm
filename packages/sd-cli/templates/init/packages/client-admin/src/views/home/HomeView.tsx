@@ -36,8 +36,8 @@ function HomeContent(props: RouteSectionProps) {
     },
     {
       title: "로그아웃",
-      onClick: () => {
-        auth.logout();
+      onClick: async () => {
+        await auth.logout();
         navigate("/login", { replace: true });
       },
     },

@@ -8,7 +8,7 @@ import {
   useLogger,
   useSyncStorage,
 } from "@simplysm/solid";
-import { DateTime, env, jsonStringify } from "@simplysm/core-common";
+import { DateTime, env, json } from "@simplysm/core-common";
 import { expr } from "@{{projectName}}/db-main";
 import { App } from "./App";
 
@@ -85,7 +85,7 @@ function AppRoot() {
       }
 
       try {
-        const message = data.map((d) => (typeof d === "string" ? d : jsonStringify(d))).join(" ");
+        const message = data.map((d) => (typeof d === "string" ? d : json.stringify(d))).join(" ");
 
         await appService.orm.connect(async (db) => {
           await db._log().insert([

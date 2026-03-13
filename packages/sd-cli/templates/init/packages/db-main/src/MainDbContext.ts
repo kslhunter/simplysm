@@ -1,10 +1,12 @@
 import { defineDbContext, type DbContextInstance } from "@simplysm/orm-common";
-import { Employee } from "./tables/Employee";
-import { Role } from "./tables/Role";
-import { RolePermission } from "./tables/RolePermission";
-import { EmployeeConfig } from "./tables/EmployeeConfig";
-import { _Log } from "./tables/_Log";
-import { _DataLog } from "./tables/_DataLog";
+// base
+import { Employee } from "./tables/base/Employee";
+import { Role } from "./tables/base/Role";
+import { RolePermission } from "./tables/base/RolePermission";
+import { EmployeeConfig } from "./tables/base/EmployeeConfig";
+// system
+import { _Log } from "./tables/system/_Log";
+import { _DataLog } from "./tables/system/_DataLog";
 
 export const MainDbContext = defineDbContext({
   tables: {

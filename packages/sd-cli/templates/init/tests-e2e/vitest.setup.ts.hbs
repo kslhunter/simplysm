@@ -8,7 +8,7 @@ import { chromium } from "playwright";
 import type { TestProject } from "vitest/node";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, "../..");
+const rootDir = path.resolve(__dirname, "..");
 
 const DB_CONFIG = {
   dialect: "postgresql" as const,

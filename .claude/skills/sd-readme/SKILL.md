@@ -52,6 +52,7 @@ Examine the source code size and the number of logical categories, then **autono
 - **README.md + docs/*.md**: When the package is large or has multiple logical categories
 
 If an existing README.md or docs/ directory exists, **modify only the changed parts** based on the existing content. If no existing documentation exists, create it from scratch.
+When updating existing documentation, verify each existing section against the current source code. **Preserve all content that has backing evidence in the source code** (behavioral descriptions, usage patterns, rendering mode distinctions, etc.), even if it does not directly correspond to an exported API name. Only remove content whose source code backing no longer exists. Existing descriptions may be refined for accuracy, but substantive content backed by code must not be deleted.
 If the structure changes (B to A), delete the now-unnecessary `docs/` directory.
 Write in **English**.
 

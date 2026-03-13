@@ -9,7 +9,7 @@ import {
 import { useServiceClient } from "@simplysm/solid";
 import {
   createOrmClientConnector,
-  type RemoteService,
+  type ServiceProxy,
   type ServiceClient,
 } from "@simplysm/service-client";
 import type {
@@ -20,9 +20,9 @@ import type {
 import { MainDbContext, type MainDbContext as MainDbContextType } from "@{{projectName}}/db-main";
 
 export interface IAppServiceClient {
-  auth: RemoteService<AuthServiceMethods>;
-  dev: RemoteService<DevServiceMethods>;
-  employee: RemoteService<EmployeeServiceMethods>;
+  auth: ServiceProxy<AuthServiceMethods>;
+  dev: ServiceProxy<DevServiceMethods>;
+  employee: ServiceProxy<EmployeeServiceMethods>;
   sc: ServiceClient;
   orm: {
     connect: <R>(

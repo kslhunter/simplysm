@@ -3,7 +3,10 @@ import type { SdConfigFn } from "@simplysm/sd-cli";
 const dbPort = Number(process.env["DB_PORT"] ?? 5432);
 const dbDatabase = process.env["DB_DATABASE"] ?? "{{projectName}}";
 
-const config: SdConfigFn = () => ({
+const config: SdConfigFn = ({ dev }) => ({
+  replaceDeps: {
+    "@simplysm/*": "../simplysm/packages/*",
+  },
   packages: {
     "db-main": { target: "neutral" },
     "client-admin": {
@@ -16,14 +19,23 @@ const config: SdConfigFn = () => ({
       pm2: {},
       configs: {
         orm: {
-          default: {
-            dialect: "postgresql",
-            host: "localhost",
-            port: dbPort,
-            username: "postgres",
-            password: "1234",
-            database: dbDatabase,
-          },
+          default: dev
+            ? {
+                dialect: "postgresql",
+                host: "localhost",
+                port: dbPort,
+                username: "postgres",
+                password: "1234",
+                database: dbDatabase,
+              }
+            : {
+                dialect: "postgresql",
+                host: "localhost",
+                port: 5432,
+                username: "postgres",
+                password: "TODO",
+                database: "{{projectName}}",
+              },
         },
         auth: {
           jwtSecret: "{{jwtSecret}}",

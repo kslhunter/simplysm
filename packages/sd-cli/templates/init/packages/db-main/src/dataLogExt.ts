@@ -6,7 +6,7 @@ import {
   queryable,
   type TableBuilder,
 } from "@simplysm/orm-common";
-import { _DataLog } from "./tables/_DataLog";
+import { _DataLog } from "./tables/system/_DataLog";
 
 // ── Type Declarations ──
 

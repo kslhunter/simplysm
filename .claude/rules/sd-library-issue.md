@@ -5,3 +5,5 @@ Source code for `@simplysm/*` packages can be found in `node_modules/@simplysm/`
 **Report facts only — do not suggest fixes or include code location hints. Do not auto-submit the issue — only display the text.**
 
 The issue body must NEVER include internal analysis of library code (class names, variable names, style properties, inheritance chains, etc.). Only describe user-observable symptoms.
+
+**IMPORTANT: The issue report (title, all sections, and all text) MUST be written in the same language as the conversation, following Claude Code's configured language setting. Do NOT default to English.**

@@ -61,6 +61,4 @@ Suggestion:
 <Full list of items to fix from Step 2>
 ```
 
-## Step 4: Execute the Plan
-
-Once sd-plan completes and a finalized plan is produced, modify the code according to that plan.
+Once sd-plan completes, follow its post-completion guidance.

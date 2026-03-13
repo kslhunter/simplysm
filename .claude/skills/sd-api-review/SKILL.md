@@ -80,6 +80,4 @@ Improvement:
 3. Do not leave deprecated wrappers (clean break).
 ```
 
-## Step 5: Execute the Plan
-
-Once sd-plan is complete and a finalized plan is produced, modify the code according to that plan.
+Once sd-plan completes, follow its post-completion guidance.

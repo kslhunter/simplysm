@@ -3,11 +3,12 @@ import { createSignal } from "solid-js";
 import { useLocalStorage } from "@simplysm/solid";
 import { useAppService } from "./AppServiceProvider";
 import type { IAuthData } from "@{{projectName}}/server";
+import { AuthChangeEvent } from "../events/AuthChangeEvent";
 
 interface IAuthContextValue {
   authInfo: Accessor<IAuthData | undefined>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   tryReloadAuth: () => Promise<boolean>;
 }
 
@@ -18,6 +19,26 @@ export const AuthProvider: ParentComponent = (props) => {
   const [authInfo, setAuthInfo] = createSignal<IAuthData>();
   const [token, setToken] = useLocalStorage<string | undefined>("auth-token");
 
+  let listenerKey: string | undefined;
+
+  const registerAuthEvent = async (employeeId: number) => {
+    await unregisterAuthEvent();
+    listenerKey = await appService.sc.addListener(
+      AuthChangeEvent,
+      { employeeId },
+      async () => {
+        await tryReloadAuth();
+      },
+    );
+  };
+
+  const unregisterAuthEvent = async () => {
+    if (listenerKey != null) {
+      await appService.sc.removeListener(listenerKey);
+      listenerKey = undefined;
+    }
+  };
+
   const login = async (email: string, password: string) => {
     const result = await appService.auth.login(email, password);
 
@@ -26,9 +47,11 @@ export const AuthProvider: ParentComponent = (props) => {
     await appService.sc.auth(newToken);
 
     setAuthInfo(authData);
+    await registerAuthEvent(authData.employeeId);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await unregisterAuthEvent();
     setToken(undefined);
     setAuthInfo(undefined);
   };
@@ -47,11 +70,13 @@ export const AuthProvider: ParentComponent = (props) => {
       await appService.sc.auth(newToken);
 
       setAuthInfo(authData);
+      await registerAuthEvent(authData.employeeId);
 
       return true;
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn("Failed to reload auth:", err);
+      await unregisterAuthEvent();
       setToken(undefined);
       return false;
     }

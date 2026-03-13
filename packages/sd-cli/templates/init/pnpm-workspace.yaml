@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - tests/*
+  - tests-e2e
 
 onlyBuiltDependencies:
   - "@simplysm/sd-claude"

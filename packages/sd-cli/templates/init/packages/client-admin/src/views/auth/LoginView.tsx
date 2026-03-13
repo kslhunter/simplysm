@@ -67,11 +67,11 @@ export function LoginView() {
     >
       <div class={"max-w-sm"}>
         {/* Logo */}
-        <div class={clsx("flex justify-center", "mb-4", "animate-fade-in")}>
+        <div class={clsx("flex justify-center", "mb-4", "animate-[fade-in_0.6s_ease-out_both]")}>
           <img src="assets/logo.png" alt="logo" class="scale-75" />
         </div>
 
-        <Card class={clsx("rounded-2xl p-8", "animate-fade-in [animation-delay:0.3s]")}>
+        <Card class={clsx("rounded-2xl p-8", "animate-[fade-in_0.6s_ease-out_both] [animation-delay:0.3s]")}>
           {/* Form */}
           <form onSubmit={handleSubmit}>
             <FormGroup class={"w-full"}>
@@ -83,7 +83,7 @@ export function LoginView() {
                   required
                   lazyValidation
                   size="lg"
-                  autocomplete="employeename"
+                  autocomplete="username"
                   value={data.email}
                   onValueChange={(v) => setData("email", v)}
                 >
@@ -116,7 +116,7 @@ export function LoginView() {
                   variant="solid"
                   class="w-full"
                   type="submit"
-                  size="xl"
+                  size="lg"
                   disabled={busyCount() > 0}
                 >
                   로그인

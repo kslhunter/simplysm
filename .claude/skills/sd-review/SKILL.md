@@ -67,6 +67,4 @@ Fix:
 <Full list of findings from Step 2>
 ```
 
-## Step 4: Execute Plan
-
-Once sd-plan completes and produces a finalized plan, apply the code modifications according to that plan.
+Once sd-plan completes, follow its post-completion guidance.
