@@ -1,8 +1,7 @@
+import { fileURLToPath } from "url";
 import simplysmPreset from "@simplysm/solid/tailwind.config";
 
-const __dirname = new URL(".", import.meta.url).pathname
-  .replace(/^\/[^/]+\/@fs/, "") // Remove Vite virtual paths
-  .replace(/index\.ts$/, ""); // Remove index.ts path during re-export
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 export default {
   darkMode: "class",

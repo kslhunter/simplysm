@@ -1,10 +1,12 @@
 import { render } from "solid-js/web";
 import { HashRouter, Navigate, Route } from "@solidjs/router";
-import { For, lazy } from "solid-js";
+import { For } from "solid-js";
 import { App } from "./App";
-import { Home } from "./pages/Home";
-import { NotFoundPage } from "./pages/NotFoundPage";
-import { AppStructureProvider, useAppStructure } from "./appStructure";
+import { HomeView } from "./views/home/HomeView";
+import { NotFoundView } from "./views/not-found/NotFoundView";
+import { LoginView } from "./views/auth/LoginView";
+import { MobileLayoutDemoView } from "./views/mobile/MobileLayoutDemoView";
+import { AppStructureProvider, useAppStructure } from "./providers/AppStructureProvider";
 import "./main.css";
 
 function HomeRoutes() {
@@ -22,16 +24,13 @@ render(
       <HashRouter>
         <Route path="/" component={App}>
           {/* Routes outside Home layout */}
-          <Route path="/login" component={lazy(() => import("./pages/LoginPage"))} />
-          <Route
-            path="/mobile-layout-demo"
-            component={lazy(() => import("./pages/mobile/MobileLayoutDemoPage"))}
-          />
+          <Route path="/login" component={LoginView} />
+          <Route path="/mobile-layout-demo" component={MobileLayoutDemoView} />
           {/* Inside Home layout */}
-          <Route path="/home" component={Home}>
+          <Route path="/home" component={HomeView}>
             <Route path="/" component={() => <Navigate href="/home/main" />} />
             <HomeRoutes />
-            <Route path="/*" component={NotFoundPage} />
+            <Route path="/*" component={NotFoundView} />
           </Route>
           {/* Root redirect */}
           <Route path="/" component={() => <Navigate href="/login" />} />

@@ -348,6 +348,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
 
     setSelectedKeys(merged);
     setSelection(newSelection);
+
+    // Auto-confirm for single selection mode in dialog
+    if (isInDialog && local.selectionMode === "single" && newSelection.length > 0) {
+      local.onSelect?.({
+        items: newSelection,
+        keys: [...merged],
+      });
+    }
   }
 
   function clearSelection() {

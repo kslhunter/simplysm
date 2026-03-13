@@ -216,7 +216,6 @@ const MenuContext = createContext<MenuContextValue>();
  */
 const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   const [local, rest] = splitProps(props, ["menus", "class"]);
-  const i18n = useI18n();
 
   const location = useLocation();
 
@@ -252,9 +251,9 @@ const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   return (
     <MenuContext.Provider value={{ initialOpenItems }}>
       <div {...rest} data-sidebar-menu class={getClassName()}>
-        <div class={clsx("px-4 py-2 text-xs font-bold", text.muted, "uppercase tracking-wider")}>{i18n.t("sidebarMenu.menu")}</div>
+        <div class={clsx("px-3.5 py-1 text-sm font-bold", text.muted, "uppercase tracking-wider")}>MENU</div>
         <List inset>
-          <For each={local.menus}>{(menu) => <MenuItem menu={menu} size="lg" />}</For>
+          <For each={local.menus}>{(menu) => <MenuItem menu={menu} />}</For>
         </List>
       </div>
     </MenuContext.Provider>

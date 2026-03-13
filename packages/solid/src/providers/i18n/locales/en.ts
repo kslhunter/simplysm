@@ -83,6 +83,8 @@ export default {
   },
   permissionTable: {
     permissionItem: "Permission Item",
+    use: "Use",
+    edit: "Edit",
   },
   crudSheet: {
     save: "Save",
@@ -179,9 +181,6 @@ export default {
   },
   numpad: {
     enter: "ENT",
-  },
-  sidebarMenu: {
-    menu: "MENU",
   },
   validation: {
     required: "This is a required field",

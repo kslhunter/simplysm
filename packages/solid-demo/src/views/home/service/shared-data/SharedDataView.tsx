@@ -1,0 +1,190 @@
+import { type Component, createSignal, For, onMount, onCleanup, Show } from "solid-js";
+import {
+  useNotification,
+  useServiceClient,
+  useSharedData,
+  Table,
+  BusyContainer,
+  Tag,
+} from "@simplysm/solid";
+
+interface IDemoUser {
+  id: number;
+  name: string;
+  department: string;
+}
+
+interface IDemoCompany {
+  id: number;
+  name: string;
+  ceo: string;
+}
+
+type DemoSharedData = {
+  user: IDemoUser;
+  company: IDemoCompany;
+};
+
+const SharedDataDemo: Component = () => {
+  const shared = useSharedData<DemoSharedData>();
+
+  return (
+    <div class="space-y-8">
+      {/* Busy state */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Busy State</h2>
+        <Tag theme={shared.busy() ? "warning" : "success"}>
+          {shared.busy() ? "Loading..." : "Load completed"}
+        </Tag>
+      </section>
+
+      {/* User list - items() */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">User — items()</h2>
+        <Table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Department</th>
+            </tr>
+          </thead>
+          <tbody>
+            <For each={shared.user.items()}>
+              {(user) => (
+                <tr>
+                  <td>{user.id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.department}</td>
+                </tr>
+              )}
+            </For>
+          </tbody>
+        </Table>
+      </section>
+
+      {/* Company list - items() */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Company — items()</h2>
+        <Table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>회사명</th>
+              <th>대표</th>
+            </tr>
+          </thead>
+          <tbody>
+            <For each={shared.company.items()}>
+              {(company) => (
+                <tr>
+                  <td>{company.id}</td>
+                  <td>{company.name}</td>
+                  <td>{company.ceo}</td>
+                </tr>
+              )}
+            </For>
+          </tbody>
+        </Table>
+      </section>
+
+      {/* get() single lookup */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          get() — O(1) 단일 조회
+        </h2>
+        <div class="space-y-2">
+          <div>
+            <code class="text-sm">shared.user.get(1)</code>
+            <span class="ml-2">=</span>
+            <pre class="mt-1 inline-block rounded bg-base-100 px-3 py-1 text-sm dark:bg-base-800">
+              {JSON.stringify(shared.user.get(1))}
+            </pre>
+          </div>
+          <div>
+            <code class="text-sm">shared.company.get(2)</code>
+            <span class="ml-2">=</span>
+            <pre class="mt-1 inline-block rounded bg-base-100 px-3 py-1 text-sm dark:bg-base-800">
+              {JSON.stringify(shared.company.get(2))}
+            </pre>
+          </div>
+          <div>
+            <code class="text-sm">shared.user.get(999)</code>
+            <span class="ml-2">=</span>
+            <pre class="mt-1 inline-block rounded bg-base-100 px-3 py-1 text-sm dark:bg-base-800">
+              {JSON.stringify(shared.user.get(999))}
+            </pre>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+const ConnectedSharedDataDemo: Component = () => {
+  const serviceClient = useServiceClient();
+  const notification = useNotification();
+  const sharedData = useSharedData<DemoSharedData>();
+
+  const [connected, setConnected] = createSignal(false);
+
+  onMount(async () => {
+    try {
+      await serviceClient.connect(undefined, { port: 40081 });
+
+      sharedData.configure(() => ({
+        user: {
+          fetch: async (changeKeys) => {
+            const client = serviceClient.get();
+            return (await client.send("SharedDataDemoService", "getUsers", [
+              changeKeys,
+            ])) as IDemoUser[];
+          },
+          getKey: (item) => item.id,
+          orderBy: [[(item) => item.name, "asc"]],
+        },
+        company: {
+          fetch: async (changeKeys) => {
+            const client = serviceClient.get();
+            return (await client.send("SharedDataDemoService", "getCompanies", [
+              changeKeys,
+            ])) as IDemoCompany[];
+          },
+          getKey: (item) => item.id,
+          orderBy: [[(item) => item.name, "asc"]],
+        },
+      }));
+
+      setConnected(true);
+    } catch (err) {
+      notification.danger("Connection failed", String(err));
+    }
+  });
+
+  onCleanup(async () => {
+    if (serviceClient.isConnected()) {
+      await serviceClient.close();
+    }
+  });
+
+  return (
+    <Show
+      when={connected()}
+      fallback={
+        <BusyContainer busy={true}>
+          <div class="h-32" />
+        </BusyContainer>
+      }
+    >
+      <SharedDataDemo />
+    </Show>
+  );
+};
+
+export function SharedDataView() {
+  return (
+    <div class="space-y-8 p-4">
+      <ConnectedSharedDataDemo />
+    </div>
+  );
+}

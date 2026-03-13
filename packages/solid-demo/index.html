@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.ico" />
     <title>@simplysm/solid Demo</title>
-
+    <script>
+      (function () {
+        var theme = localStorage.getItem("solid-demo.theme");
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
     <style>
       * {
         box-sizing: border-box;
@@ -28,27 +37,97 @@
         height: 100%;
         width: 100%;
         gap: 24px;
-        background: linear-gradient(to bottom right, #eff6ff, #dbeafe);
-        padding-bottom: 256px;
+        background: #f9fafb;
+        padding-bottom: 128px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .dark .app-busy {
+        background: #18181b;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .app-busy {
+          background: #18181b;
+        }
+
+        .app-busy-spinner::before {
+          border-top-color: #3b82f6;
+          border-right-color: #2563eb;
+        }
+
+        .app-busy-spinner::after {
+          border-bottom-color: #60a5fa;
+          border-left-color: #3b82f6;
+        }
       }
 
       .app-busy img {
         width: auto;
-        height: 64px;
+        position: relative;
+        z-index: 1;
+        margin-bottom: 32px;
       }
 
       .app-busy-spinner {
-        width: 32px;
-        height: 32px;
-        border: 4px solid #e5e7eb;
-        border-top-color: #6b7280;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        width: 48px;
+        height: 48px;
+        position: relative;
+        z-index: 1;
       }
 
-      @keyframes spin {
-        to {
+      .app-busy-spinner::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        border-top-color: #60a5fa;
+        border-right-color: #3b82f6;
+        animation: spinClockwise 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+      }
+
+      .dark .app-busy-spinner::before {
+        border-top-color: #3b82f6;
+        border-right-color: #2563eb;
+      }
+
+      .app-busy-spinner::after {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        border-bottom-color: #93c5fd;
+        border-left-color: #60a5fa;
+        animation: spinCounterClockwise 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+      }
+
+      .dark .app-busy-spinner::after {
+        border-bottom-color: #60a5fa;
+        border-left-color: #3b82f6;
+      }
+
+      @keyframes spinClockwise {
+        0% {
+          transform: rotate(0deg);
+          opacity: 1;
+        }
+        100% {
           transform: rotate(360deg);
+          opacity: 1;
+        }
+      }
+
+      @keyframes spinCounterClockwise {
+        0% {
+          transform: rotate(0deg);
+          opacity: 0.8;
+        }
+        100% {
+          transform: rotate(-360deg);
+          opacity: 0.8;
         }
       }
     </style>

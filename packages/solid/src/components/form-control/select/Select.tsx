@@ -38,7 +38,10 @@ import {
   listItemIndentGuideClass,
   listItemContentClass,
   getListItemSelectedIconClass,
+  listItemBasePadLeft,
+  LIST_ITEM_INDENT_SIZE,
 } from "../../data/list/ListItem.styles";
+import { useListContext } from "../../data/list/ListContext";
 
 void ripple;
 
@@ -108,6 +111,7 @@ const SelectAction = (props: SelectActionProps) => {
       <button
         {...rest}
         type="button"
+        use:ripple={!rest.disabled}
         onClick={handleClick}
         class={twMerge(
           "inline-flex items-center",
@@ -177,9 +181,11 @@ export interface SelectItemProps<TValue = unknown> extends Omit<
 const SelectItemInner = <TValue,>(
   props: SelectItemProps<TValue> & { children?: JSX.Element },
 ) => {
-  const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
+  const [local, rest] = splitProps(props, ["children", "class", "style", "value", "disabled"]);
 
   const context = useSelectContext<TValue>();
+  const listContext = useListContext();
+  const level = listContext.level;
 
   const [childrenSlot, ItemChildrenProvider] = createItemChildrenSlotAccessor();
   const hasChildren = () => childrenSlot() !== undefined;
@@ -206,6 +212,13 @@ const SelectItemInner = <TValue,>(
       local.class,
     );
 
+  const indentPaddingLeft = level >= 1
+    ? `${listItemBasePadLeft[context.size()] + level * LIST_ITEM_INDENT_SIZE}rem`
+    : undefined;
+
+  const getGuideLeft = () =>
+    `${listItemBasePadLeft[context.size()] + level * LIST_ITEM_INDENT_SIZE + LIST_ITEM_INDENT_SIZE * 0.5}rem`;
+
   return (
     <ItemChildrenProvider>
       <button
@@ -213,6 +226,7 @@ const SelectItemInner = <TValue,>(
         type="button"
         use:ripple={useRipple()}
         class={getClassName()}
+        style={{ ...(local.style as JSX.CSSProperties), "padding-left": indentPaddingLeft }}
         data-select-item
         data-list-item
         role="option"
@@ -228,9 +242,9 @@ const SelectItemInner = <TValue,>(
       </button>
       <Show when={hasChildren()}>
         <Collapse open={true}>
-          <div class="flex">
-            <div class={listItemIndentGuideClass} />
-            <List inset class="flex-1">
+          <div class="relative">
+            <div class={listItemIndentGuideClass} style={{ left: getGuideLeft() }} />
+            <List inset>
               {childrenSlot()!.children}
             </List>
           </div>
@@ -622,7 +636,7 @@ const SelectInnerComponent = <TValue,>(props: SelectProps<TValue>) => {
       local.multiple === true && !local.hideSelectAll && local.items !== undefined;
 
     return (
-      <div {...rest} data-select class={clsx("group", local.inset ? "flex" : "inline-flex")}>
+      <div {...rest} data-select class={clsx("group", local.inset ? "flex" : "inline-flex", "[&>[data-dropdown-trigger]]:flex")}>
         <Dropdown disabled={local.disabled} open={open()} onOpenChange={setOpen} keyboardNav>
           <Dropdown.Trigger>
             <div

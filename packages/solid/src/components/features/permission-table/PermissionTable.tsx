@@ -288,7 +288,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
       </DataSheet.Column>
       <For each={allPerms()}>
         {(perm) => (
-          <DataSheet.Column key={`perm-${perm}`} header={perm} sortable={false} resizable={false}>
+          <DataSheet.Column key={`perm-${perm}`} header={(() => { const key = `permissionTable.${perm}`; const translated = i18n.t(key); return translated === key ? perm : translated; })()} sortable={false} resizable={false}>
             {(ctx) => {
               const item = ctx.item as AppPerm;
               return (

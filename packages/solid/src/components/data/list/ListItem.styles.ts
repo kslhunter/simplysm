@@ -40,8 +40,20 @@ export const listItemDisabledClass = clsx("pointer-events-none cursor-auto opaci
 // Readonly state
 export const listItemReadonlyClass = clsx("cursor-auto select-text hover:bg-transparent");
 
-// Indent guide (for nested items)
-export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l", border.default);
+// Indent guide (for nested items, absolutely positioned)
+export const listItemIndentGuideClass = clsx("absolute inset-y-0 border-l", border.default);
+
+// Base left padding per size (rem) for indent calculation
+export const listItemBasePadLeft: Record<ComponentSize, number> = {
+  xs: 0.25,
+  sm: 0.375,
+  md: 0.5,
+  lg: 0.75,
+  xl: 1,
+};
+
+// Indent size per nesting level (rem)
+export const LIST_ITEM_INDENT_SIZE = 1.5;
 
 // Item content area
 export const listItemContentClass = clsx("flex flex-1 flex-row", "items-center gap-1", "text-left");

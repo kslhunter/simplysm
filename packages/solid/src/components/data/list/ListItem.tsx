@@ -23,6 +23,8 @@ import {
   listItemIndentGuideClass,
   listItemContentClass,
   getListItemSelectedIconClass,
+  listItemBasePadLeft,
+  LIST_ITEM_INDENT_SIZE,
 } from "./ListItem.styles";
 import type { ComponentSize } from "../../../styles/control.styles";
 
@@ -153,6 +155,13 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
 
   const getSelectedIconClassName = () => getListItemSelectedIconClass(local.selected ?? false);
 
+  const indentPaddingLeft = level > 1
+    ? `${listItemBasePadLeft[local.size ?? "md"] + (level - 1) * LIST_ITEM_INDENT_SIZE}rem`
+    : undefined;
+
+  const getGuideLeft = () =>
+    `${listItemBasePadLeft[local.size ?? "md"] + (level - 1) * LIST_ITEM_INDENT_SIZE + LIST_ITEM_INDENT_SIZE * 0.5}rem`;
+
   return (
     <ChildrenProvider>
       <button
@@ -160,7 +169,7 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
         type="button"
         use:ripple={useRipple()}
         class={getHeaderClassName()}
-        style={local.style}
+        style={{ ...(local.style as JSX.CSSProperties), "padding-left": indentPaddingLeft }}
         data-list-item
         role="treeitem"
         aria-expanded={hasChildren() ? openState() : undefined}
@@ -187,9 +196,9 @@ const ListItemInner: ParentComponent<ListItemProps> = (props) => {
       </button>
       <Show when={hasChildren()}>
         <Collapse open={openState()} data-collapsed={!openState() || undefined}>
-          <div class="flex">
-            <div class={listItemIndentGuideClass} />
-            <List inset class="flex-1">
+          <div class="relative">
+            <div class={listItemIndentGuideClass} style={{ left: getGuideLeft() }} />
+            <List inset>
               {childrenSlot()!.children}
             </List>
           </div>

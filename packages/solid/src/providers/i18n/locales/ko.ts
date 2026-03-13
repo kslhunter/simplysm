@@ -83,6 +83,8 @@ export default {
   },
   permissionTable: {
     permissionItem: "권한 항목",
+    use: "사용",
+    edit: "편집",
   },
   crudSheet: {
     save: "저장",
@@ -179,9 +181,6 @@ export default {
   },
   numpad: {
     enter: "입력",
-  },
-  sidebarMenu: {
-    menu: "메뉴",
   },
   validation: {
     required: "필수 입력 항목입니다",
