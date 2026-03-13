@@ -9,8 +9,8 @@ export class XmlConvert {
       parseAttributeValue: false,
       parseTagValue: false,
       textNodeName: "_",
-      isArray: (tagName: string, jPath: string, isLeafNode: boolean, isAttribute: boolean) => {
-        return !isAttribute && jPath.split(".").length > 1;
+      isArray: (tagName: string, jPath: unknown, isLeafNode: boolean, isAttribute: boolean) => {
+        return !isAttribute && typeof jPath === "string" && jPath.split(".").length > 1;
       },
     }).parse(str);
     return options?.stripTagPrefix ? this._stripTagPrefix(result) : result;

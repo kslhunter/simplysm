@@ -304,6 +304,10 @@ export class SdCliProject {
         });
 
         this._logging(messages, logger);
+
+        if (messages.some((m) => m.severity === "error")) {
+          throw new Error("빌드 중 오류가 있습니다.");
+        }
       } catch (err) {
         await SdProcess.spawnAsync("git", ["checkout", "."]);
         throw err;
