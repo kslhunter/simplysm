@@ -168,14 +168,14 @@ Checkbox or radio button with label.
 | --------------- | ----------------------------------------------------- | ----------- | ---------------------------- |
 | `value` (model) | `boolean`                                             | —           | Checked state                |
 | `disabled`      | `boolean`                                             | `false`     | Disabled state               |
-| `readonly`      | `boolean`                                             | `false`     | Readonly state               |
 | `radio`         | `boolean`                                             | `false`     | Render as radio button style |
 | `inline`        | `boolean`                                             | `false`     | Inline display               |
 | `inset`         | `boolean`                                             | `false`     | Inset style                  |
 | `size`          | `"sm" \| "lg"`                                        | —           | Size variant                 |
+| `theme`         | `"primary" \| "secondary" \| ... \| "white"`          | —           | Color theme                  |
 | `icon`          | `string`                                              | tablerCheck | Custom check icon            |
 | `contentStyle`  | `string`                                              | —           | Style for label content      |
-| `canChangeFn`   | `Signal<(v: boolean) => boolean \| Promise<boolean>>` | —           | Guard before change          |
+| `canChangeFn`   | `(v: boolean) => boolean \| Promise<boolean>`         | `() => true`| Guard before change          |
 
 ---
 
@@ -192,9 +192,9 @@ Group of checkbox items bound to an array of values.
 </sd-checkbox-group>
 ```
 
-**SdCheckboxGroupControl inputs:** `value` (model, `T[]`), `disabled`, `readonly`
+**SdCheckboxGroupControl inputs:** `value` (model, `T[]`), `disabled`
 
-**SdCheckboxGroupItemControl inputs:** `value: T` (required), `disabled`, `readonly`
+**SdCheckboxGroupItemControl inputs:** `value: T` (required), `inline`
 
 ---
 
@@ -209,7 +209,7 @@ Toggle switch (on/off).
 <sd-switch [(value)]="isDark" [inset]="true" />
 ```
 
-**Key inputs:** `value` (model, `boolean`), `disabled`, `readonly`, `inset`, `size`
+**Key inputs:** `value` (model, `boolean`), `disabled`, `inset`, `size`
 
 ---
 
@@ -330,15 +330,22 @@ Wraps form fields and handles native form submission.
 
 ## SdDateRangePicker
 
-Date range picker with two date inputs.
+Date range picker with period type selection. Supports day, month, and range modes. In "day" mode, `to` is auto-synced to `from`. In "month" mode, `to` is auto-calculated to the end of the month.
 
 **Selector:** `sd-date-range-picker`
 
 ```html
-<sd-date-range-picker [(fromValue)]="startDate" [(toValue)]="endDate" />
+<sd-date-range-picker [(from)]="startDate" [(to)]="endDate" [(periodType)]="period" />
 ```
 
-**Key inputs:** `fromValue` (model), `toValue` (model), `disabled`, `readonly`, `required`
+**Inputs:**
+
+| Input        | Type                                     | Default   | Description               |
+| ------------ | ---------------------------------------- | --------- | ------------------------- |
+| `periodType` | `"일" \| "월" \| "범위"` (model)          | `"범위"`  | Period selection mode     |
+| `from`       | `DateOnly` (model)                       | —         | Start date                |
+| `to`         | `DateOnly` (model)                       | —         | End date                  |
+| `required`   | `boolean`                                | `false`   | Required validation       |
 
 ---
 
@@ -358,15 +365,25 @@ On-screen numeric keypad for touch input.
 
 ## SdRangeControl
 
-Range slider input.
+A from-to range input that renders two `SdTextfieldControl` instances side by side with a `~` separator. The `to` field enforces a minimum value equal to the current `from` value.
 
 **Selector:** `sd-range`
 
 ```html
-<sd-range [(value)]="opacity" [min]="0" [max]="100" />
+<sd-range [type]="'number'" [(from)]="minPrice" [(to)]="maxPrice" />
+<sd-range [type]="'date'" [(from)]="startDate" [(to)]="endDate" [required]="true" />
 ```
 
-**Key inputs:** `value` (model, `number`), `min`, `max`, `step`, `disabled`
+**Inputs:**
+
+| Input        | Type                      | Description                    |
+| ------------ | ------------------------- | ------------------------------ |
+| `type`       | `keyof TSdTextfieldTypes` | Input type (required)          |
+| `from`       | model                     | Start value                    |
+| `to`         | model                     | End value (min clamped to from)|
+| `inputStyle` | `string`                  | Inline style for both inputs   |
+| `required`   | `boolean`                 | Required validation            |
+| `disabled`   | `boolean`                 | Disabled state                 |
 
 ---
 
