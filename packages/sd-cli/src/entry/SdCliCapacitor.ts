@@ -26,6 +26,7 @@ export class SdCliCapacitor {
     this._logger.debug(`실행 명령: ${cmd + " " + args.join(" ")}`);
     const msg = await SdProcess.spawnAsync(cmd, args, {
       cwd,
+      shell: true,
       env: {
         FORCE_COLOR: "1", // chalk, supports-color 계열
         CLICOLOR_FORCE: "1", // 일부 Unix 도구

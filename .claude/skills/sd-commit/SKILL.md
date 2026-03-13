@@ -1,89 +1,63 @@
 ---
 name: sd-commit
-description: Use when creating git commits — for staging and committing changed files with conventional commit messages, either for context-relevant files only (default) or all uncommitted changes at once (all mode).
-argument-hint: "[all]"
-allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git commit:*)
-model: haiku
+description: Used when requesting "commit", "sd-commit", etc.
 ---
 
-# sd-commit
+# SD Commit — Analyze Changes and Commit
 
-## Overview
+Stage changes, analyze the diff to generate a commit message, and commit.
 
-Stages and commits changes using Conventional Commits format. Two modes: **default** (context-relevant files, single commit) and **all** (all changed files, split by intent if needed).
+ARGUMENTS: `all` (optional). If specified, target all changes; if omitted, target only files modified during the current conversation.
 
-## Mode
+---
 
-- **Default mode** (no arguments): Stage files relevant to the current conversation context. Always a **single commit**.
-- **"all" mode** (`$ARGUMENTS` is "all"): Target **all** changed/untracked files. May produce multiple commits.
+## Step 1: Parse Arguments and Stage
 
-## File Selection Rules
+Check whether `all` is present in ARGUMENTS.
 
-**NEVER arbitrarily exclude files.** The ONLY valid reason to exclude a file is:
+- **`all`**: Stage all changes in the working tree (modified, deleted, and new files).
+- **Not `all` or no arguments**: Stage only files that were modified or created via the Edit or Write tools during the current conversation. Review the conversation context and extract the list of those files.
 
-- It is in `.gitignore`
-- It is completely unrelated to the conversation context (default mode only)
+## Step 2: Check for Changes
 
-**Do NOT exclude files based on:**
+If there are no staged changes, inform the user "No changes to commit." and **stop**.
 
-- File type or extension (e.g., `.styles.ts`, `.config.ts`)
-- Folder name or path (e.g., `node_modules` is handled by `.gitignore`)
-- Personal judgment about importance or "cleanliness"
-- Assumption that generated/config/style files are unimportant
+## Step 3: Generate Commit Message and Commit
 
-**When in doubt, INCLUDE the file.** Over-inclusion is always better than silent exclusion.
+Analyze the staged diff and generate a commit message according to the rules below, then commit.
 
-## Context
+### Commit Message Rules
 
-- Current status: !`git status`
-- Current diff: !`git diff HEAD`
-- Current branch: !`git branch --show-current`
-- Recent commits: !`git log --oneline -10`
+- **Conventional Commits** format: prefix + description
+  - prefix examples: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `test`, `perf`, `ci`, `build`
+- **subject** (first line): Summary of changes. 70 characters or fewer.
+- **body**: After a blank line, list the key changes. If changes span multiple topics, group them with `[prefix]` tags per topic.
+- Include `Co-Authored-By: Claude <noreply@anthropic.com>` at the end.
 
-## Commit Message Format
-
+Single-topic example:
 ```
-type(scope): short description
+feat: Add user authentication logic
+
+- Implement JWT token verification in AuthService
+- Add form validation to the login page
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-| Field         | Values                                                                       |
-| ------------- | ---------------------------------------------------------------------------- |
-| `type`        | `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf` |
-| `scope`       | package name or area (e.g., `solid`, `core-common`, `orm-node`)              |
-| `description` | imperative, lowercase, no period at end                                      |
+Multi-topic example:
+```
+chore: Add authentication feature and fix payment error
 
-Examples:
+[feat] User authentication
+- Implement JWT token verification in AuthService
+- Add form validation to the login page
 
-- `feat(solid): add Select component`
-- `fix(orm-node): handle null values in bulk insert`
-- `docs: update README with new API examples`
+[fix] Payment module
+- Fix retry logic on payment failure
 
-Use a HEREDOC for multi-line messages when needed.
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
 
-## Commit Strategy (all mode only)
+## Step 4: Output Result
 
-Group by **intent/purpose**, not by package.
-
-**Single commit** — all changes share the same intent:
-
-- Version bumps across packages → `chore: bump version to x.y.z`
-- One feature spanning multiple packages → single `feat`
-- Dependency updates across packages → single `chore`
-
-**Split commits** — changes have different intents:
-
-- Version bump + unrelated bug fix → `chore` + `fix`
-- New feature + unrelated refactor → two commits
-- `docs` changes + independent `feat` changes → two commits
-
-## Execution
-
-**Default mode:** `git add <context-relevant files>` → `git commit`
-
-**All mode:**
-
-1. Decide: single or split.
-2. Single: `git add .` → `git commit`.
-3. Split: group by logical unit, commit in dependency order (foundations first). Per group: `git add <files>` → `git commit`.
-
-Call multiple tools in one response when possible. Do not use other tools or output other text.
+After the commit is complete, show the full commit message to the user.

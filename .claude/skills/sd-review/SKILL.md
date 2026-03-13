@@ -1,114 +1,65 @@
 ---
 name: sd-review
-description: Use when performing a comprehensive code review of a package or path for bugs, security issues, code quality, DX, and simplification opportunities
+description: Used when requesting "bug review", "sd-review", "code review", "find bugs", etc. Analyzes code at the specified path for potential bugs, then creates a plan and applies fixes.
 ---
 
-# sd-review
+# SD Review — Potential Bug Detection
 
-## Overview
+Reads the code at the specified path, analyzes it for potential bugs, then creates and executes a plan via the `/sd-plan` process.
 
-Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
+ARGUMENTS: Target path (required). Specify any path within the repo.
 
-Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
+---
 
-## Usage
+## Step 1: Validate Arguments
 
-- `/sd-review packages/solid` — review source code at the given path
-- `/sd-review` — if no argument, ask the user for the target path
+1. Extract the target path from ARGUMENTS.
+2. If no path is provided, display "Please specify a target path. Example: `/sd-review packages/my-pkg`" and stop.
 
-## When to Use
+## Step 2: Bug Analysis (Do Not Modify Code)
 
-- Before merging major features or after significant refactoring
-- When assessing overall code quality of a package
-- When onboarding to unfamiliar code and want a quality overview
+Read the code at the target path and search for potential bugs from the following 5 perspectives.
+Do not modify the code under any circumstances. Only compile and output a list of findings.
 
-**When NOT to use:**
+**Analysis Perspectives:**
+1. **Logic/Correctness** — Incorrect conditions, off-by-one errors, wrong operators, unintended branching
+2. **Null/Undefined Safety** — Missing null checks, unused optional chaining, misuse of type assertions
+3. **Error Handling** — Swallowed errors, missing catch blocks, improper error propagation
+4. **Edge Cases** — Empty arrays/strings, boundary values, concurrency/race conditions, missing await
+5. **Resource Management** — Unclosed connections, event listener leaks, memory leak patterns
 
-- Single-file or trivial changes (typo, config tweak)
-- When you need code modifications (sd-review is analysis-only)
-
-## Target Selection
-
-- With argument: `/sd-review packages/solid` — review source code at the given path
-- Without argument: ask the user for the target path
-
-**Important:** Review ALL source files under the target path. Do not use git status or git diff to limit scope.
-
-## Reviewer Agents
-
-Run subagents in parallel via the Task tool:
-
-| Agent Type             | Role                                                | Condition                                                  |
-| ---------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| `sd-code-reviewer`     | Bugs, security, logic errors, convention issues     | Always                                                     |
-| `sd-code-simplifier`   | Complexity, duplication, readability issues         | Always                                                     |
-| `sd-api-reviewer`      | DX/usability, naming, type hints                    | Always                                                     |
-| `sd-security-reviewer` | ORM SQL injection, input validation vulnerabilities | When target path contains ORM queries or service endpoints |
-
-## Workflow
-
-### Step 1: Code Analysis via sd-explore
-
-Invoke the `sd-explore` skill via the Skill tool to analyze the target path:
-
+Write each finding in the following format:
 ```
-Skill: sd-explore
-**Args:** <target-path>
+- **filepath:line** — Problem description — Suggested fix
 ```
 
-This runs in a **separate context**, so it does not consume the main context window. The analysis covers:
+If no findings are discovered, display "No potential bugs were found." and stop.
 
-- Feature Discovery: entry points, core files, module boundaries
-- Code Flow Tracing: call chains, data transformations, state changes
-- Architecture Analysis: abstraction layers, design patterns, dependency graph
-- Implementation Details: error handling, public API surface, performance
+## Step 3: Create Plan via sd-plan
 
-### Step 2: Dispatch Analysis to Reviewers
+Using the list of findings from Step 2 as the task description, invoke `sd-plan` via the Skill tool. Pass the following as args:
 
-Run subagents **in parallel** via the Task tool. Include the sd-explore analysis results in each subagent's prompt:
+```
+The following are potential bug fixes **analyzed and suggested by the LLM**.
+Since these fixes were not explicitly requested by the user, treat them as uncertain.
 
-- **sd-code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
-- **sd-code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
-- **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
-- **sd-security-reviewer** _(conditional)_: If the sd-explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
+## Target
+<target path>
 
-### Step 3: Verify Issues
+## LLM-Suggested Fixes
+When asking the user about uncertain fixes, **always present** the following information first so the user can understand the context.
 
-After collecting results from all 3 subagents, verify each issue against the actual code:
+```
+Fix:
+- Filepath:line:
+- Problem description:
+- Current code: (excerpt of the relevant code)
+- Suggested fix:
+```
 
-- **Valid**: the issue is real → include in the report
-- **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
-- **Invalid — intentional pattern**: by-design architectural decision
-- **Invalid — misread**: the reviewer misinterpreted the code
+<Full list of findings from Step 2>
+```
 
-### Step 4: Final Report
+## Step 4: Execute Plan
 
-Compile only **verified findings** into a comprehensive report.
-
-### Report Structure
-
-| Section                          | Priority | Source                                                          |
-| -------------------------------- | -------- | --------------------------------------------------------------- |
-| **Architecture Summary**         | —        | sd-explore analysis                                             |
-| **Critical Issues**              | P0       | Bugs, security vulnerabilities                                  |
-| **Security Issues**              | P0       | SQL injection, input validation (when sd-security-reviewer ran) |
-| **Quality Issues**               | P1       | Logic errors, missing error handling, performance               |
-| **DX/Usability Issues**          | P2       | API intuitiveness, naming, type hints                           |
-| **Simplification Opportunities** | P3       | Complexity removal, duplicate code, abstractions                |
-| **Convention Issues**            | P4       | Project convention mismatches                                   |
-
-Each issue includes **file:line**, **description**, and **suggestion**.
-
-Optionally include an **Invalid Findings Summary** appendix showing which findings were filtered out and why.
-
-## Common Mistakes
-
-| Mistake                              | Fix                                                 |
-| ------------------------------------ | --------------------------------------------------- |
-| Using git diff to limit review scope | Review ALL source files under target path           |
-| Skipping verification step           | Always verify subagent findings against actual code |
-| Reporting unverified issues          | Only include verified findings in final report      |
-
-## Completion Criteria
-
-Present the comprehensive report to the user. No code modifications.
+Once sd-plan completes and produces a finalized plan, apply the code modifications according to that plan.

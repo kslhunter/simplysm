@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "12.16.27",
+  "version": "12.16.28",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -14,8 +14,8 @@
     "packages/*"
   ],
   "volta": {
-    "node": "20.19.6",
-    "yarn": "4.12.0"
+    "node": "20.20.0",
+    "yarn": "4.13.0"
   },
   "scripts": {
     "check": "yarn run _sd-cli_ check",
@@ -31,14 +31,14 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@simplysm/sd-claude": "^13.0.62",
-    "@types/node": "^20.19.33",
+    "@simplysm/sd-claude": "^13.0.84",
+    "@types/node": "^20.19.37",
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.3",
+    "eslint": "^9.39.4",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   }
 }

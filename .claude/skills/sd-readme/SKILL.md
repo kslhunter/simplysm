@@ -1,191 +1,166 @@
 ---
 name: sd-readme
-description: Use when updating a package README.md to reflect recent code changes, or when asked to sync README with current implementation, or when creating a new package README from scratch
-argument-hint: "<package-name or path> (optional - omit to update all)"
-model: sonnet
+description: Used when requesting "README documentation generation", "sd-readme", etc.
 ---
 
-# sd-readme
+# SD Readme — Monorepo Package README Documentation Generator
 
-Sync package README.md with current source code by comparing exports against documentation.
+Automatically generates README.md documentation for each package in the monorepo. Applies Progressive Disclosure principles by choosing either a single README.md or a README.md + docs/*.md structure depending on the package size.
 
-## Purpose
+ARGUMENTS: Package name (optional). If specified, only that package is processed; if omitted, all packages are processed in parallel.
 
-README.md is the **sole API documentation source for Claude Code**. When Claude Code works in a consumer app using `@simplysm/*` packages, it reads README.md from `node_modules/` to understand the library API. Claude Code does NOT read JSDoc from source files.
+## Workflow
 
-**Therefore: every exported symbol must be documented in README.**
+```mermaid
+flowchart TD
+    A[Parse arguments] --> B{Package name specified?}
+    B -- Yes --> C[Generate README.md]
+    B -- No --> D[Collect public package list]
+    D --> E[Run Agent per package in parallel]
+    E -- Each Agent --> C
+```
 
-## Modes
+### A. Parse Arguments
 
-- **Single package** (`$ARGUMENTS` = package name or path): Update one package's README
-- **Batch** (`$ARGUMENTS` empty): Discover and update all packages in parallel
+Extract the package name from the ARGUMENTS passed when invoking the skill.
 
-## README Writing Rules
+- **Package name specified** → Find the corresponding directory under `packages/` and proceed directly to **C. Generate README.md**.
+- **Package name not specified** → Proceed to **D. Collect public package list**.
 
-- Written in **English**
-- All code examples must include **import paths**: `import { ... } from "@simplysm/..."`
-- **Every export** from `index.ts` must be documented — including those with `@internal` JSDoc
-- No changelog, version history, or "recently updated" sections
-- Section organization follows `index.ts` `#region` structure
-- Heading levels: `##` for major sections, `###` for sub-sections
+### C. Generate README.md
 
-### Standard Structure
+Perform the following for a single target package.
+
+#### C-1. Analyze package.json
+
+Read `packages/<name>/package.json`:
+
+1. Check the `name` and `description` fields.
+2. If `"private": true`, **skip** this package.
+3. Identify the package entry point source code.
+
+#### C-2. Analyze Source Code
+
+1. Recursively read the entry point file and all exports to collect every public API.
+2. If JSDoc comments exist, use them as descriptions for each item.
+
+#### C-3. Determine Document Structure and Generate
+
+Examine the source code size and the number of logical categories, then **autonomously** decide which of the two structures below is appropriate:
+
+- **Single README.md**: When the package is small, has few APIs, and category classification is unnecessary
+- **README.md + docs/*.md**: When the package is large or has multiple logical categories
+
+If an existing README.md or docs/ directory exists, **modify only the changed parts** based on the existing content. If no existing documentation exists, create it from scratch.
+If the structure changes (B to A), delete the now-unnecessary `docs/` directory.
+Write in **English**.
+
+#### C-4. Manage package.json files Field
+
+When creating or deleting the `docs/` directory, update the `files` array in `package.json` accordingly:
+
+- **When applying Structure B**: If the `files` array does not contain `"docs"`, add it.
+- **When applying Structure A**: If the `files` array contains `"docs"`, remove it.
+
+---
+
+##### Structure A: Single README.md (Small Packages)
+
+Create the `packages/<name>/README.md` file:
 
 ```markdown
-# @simplysm/{package-name}
+# <package-name from package.json>
 
-{One-line description}
+> <description from package.json>
 
-## Installation
+<Write a detailed description of the package's main features and purpose in English>
 
-## Main Modules
+## API Reference
 
-### {Category matching index.ts #region}
+### <exportedName>
 
-- Description + code examples per export
-
-## Types
-
-## Dependencies (only when peer deps exist)
+```typescript
+<export signature code>
 ```
 
-### docs/ Subfolder Rules
+<Description of this API>
 
-When README exceeds ~500 lines, split detailed documentation into `docs/`:
+---
 
-- README.md becomes an **overview/index** with links: `[functionName](docs/category.md#anchor)`
-- docs/ files contain detailed descriptions, full code examples, parameter tables
-- File organization follows index.ts `#region` (e.g., `docs/types.md`, `docs/utils.md`)
+(... Repeat for all exported items ...)
 
-When README is under ~500 lines, keep everything inline.
+## Usage Examples
 
-**If docs/ already exists, maintain and update it. Do not remove an existing docs/ structure.**
+```typescript
+import { ... } from "<package-name>";
 
-## Single Package Mode
-
-### Step 1: Resolve Path
-
-`$ARGUMENTS` may be a package name or path (e.g., `core-common`, `packages/core-common`).
-If not starting with `packages/`, prepend it.
-
-### Step 2: Build Export Map (Source of Truth)
-
-1. Read `<pkg-path>/src/index.ts` — get all exports and their `#region` grouping
-2. For each exported module, read the source file to extract:
-   - Function signatures (params, return type, overloads)
-   - Class public API (constructor, methods, properties)
-   - Type/interface definitions
-   - Default values, options objects
-
-### Step 3: Build Documentation Map
-
-Read `<pkg-path>/README.md` (if exists). If docs/ exists, read those files too.
-Map each documented item to its current documentation content.
-
-### Step 4: Diff and Report
-
-Compare export map (Step 2) against documentation map (Step 3):
-
-| Status      | Meaning                              |
-| ----------- | ------------------------------------ |
-| **ADDED**   | Exported in source but not in README |
-| **REMOVED** | In README but no longer exported     |
-| **CHANGED** | Both exist but API signature differs |
-| **OK**      | Documentation matches source         |
-
-**Report to user before editing:**
-
+// Main usage example code
 ```
-ADDED (3):
-  - strToCamelCase (from utils/str.ts)
-  - objGetChainValueByDepth (from utils/obj.ts)
-  - ZipArchiveProgress type (from zip/sd-zip.ts)
-
-REMOVED (1):
-  - oldFunction (no longer exported)
-
-CHANGED (2):
-  - objMerge: added `deep` parameter
-  - Set.toggle: added `addOrDel` optional parameter
-
-OK: 45 items unchanged
 ```
 
-**Wait for user confirmation before proceeding to edit.**
+---
 
-### Step 5: Apply Updates
+##### Structure B: README.md + docs/*.md (Large Packages)
 
-- **ADDED**: Write documentation matching existing style. Place in the section matching the item's `#region` in index.ts. Include description + code example with import path.
-- **REMOVED**: Delete the documentation entry.
-- **CHANGED**: Update existing entry to match current API. Preserve code examples if still valid.
-- **OK**: Do not touch.
+**README.md** — Create the `packages/<name>/README.md` file:
 
-**If README uses docs/ links**: update the corresponding docs/ file, not just README.
+```markdown
+# <package-name from package.json>
 
-### Step 6: Size Check
+> <description from package.json>
 
-After updates, if README exceeds ~500 lines and no docs/ exists:
-suggest splitting to the user (do not auto-split without confirmation).
+<Write a detailed description of the package's main features and purpose in English>
 
-## Batch Mode
+## Documentation
 
-When `$ARGUMENTS` is empty:
-
-1. Discover all packages: Glob `packages/*/package.json`
-2. Launch **parallel subagents** (`subagent_type: "general-purpose"`, `model: "sonnet"`) — one per package + one for project root:
-
-**Per-package subagent prompt template:**
-
-```
-Update README.md for package {pkg-name} at {pkg-path}.
-
-PURPOSE: README.md is the sole API documentation source for Claude Code.
-Every exported symbol must be documented. Claude Code does NOT read JSDoc.
-
-STEPS:
-1. Read {pkg-path}/src/index.ts — get all exports and #region grouping.
-2. For each export, read the source file for signatures, classes, types.
-3. Read {pkg-path}/README.md (and docs/ if exists).
-4. Compare exports vs documentation:
-   - ADDED (in source, not in README): add documentation with description + code example.
-     Include import path: import { X } from "@simplysm/{pkg-name}"
-   - REMOVED (in README, not in source): delete documentation.
-   - CHANGED (both exist, API differs): update to match current API.
-   - OK: don't touch.
-5. Section organization follows index.ts #region structure.
-6. Write in English. No changelog sections.
-7. If README doesn't exist, create with standard structure:
-   # @simplysm/{pkg-name}
-   {description from package.json}
-   ## Installation
-   ## Main Modules (sections per #region)
-   ## Types
-8. If docs/ subfolder exists, update those files too.
-9. Report: list of ADDED/REMOVED/CHANGED items.
+| Category | Description |
+|----------|-------------|
+| [<Category1>](docs/<category1>.md) | <Category description and list of key items> |
+| [<Category2>](docs/<category2>.md) | <Category description and list of key items> |
+| ... | ... |
 ```
 
-**Project root subagent prompt:**
+**docs/*.md** — Create a `packages/<name>/docs/<category>.md` file for each category:
 
+```markdown
+# <Category Name>
+
+## <exportedName>
+
+```typescript
+<export signature code>
 ```
-Update the project root README.md at {project-root}/README.md.
-Read CLAUDE.md for project context.
-Compare current README against project structure and packages.
-Edit only sections that are outdated. Write in English.
-Report what was changed.
+
+<Description of this API>
+
+---
+
+(... Repeat for all exported items in this category ...)
+
+## Usage Examples
+
+```typescript
+import { ... } from "<package-name>";
+
+// Main usage example code for this category
+```
 ```
 
-3. Collect all results. Report summary: which READMEs were updated, which had no changes.
+Determine category names and classifications autonomously, considering the source code directory structure, functional similarity, etc.
 
-## Common Mistakes
+---
 
-| Mistake                               | Fix                                                                 |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc               |
-| Rewriting OK sections                 | Only touch ADDED/REMOVED/CHANGED items                              |
-| Ignoring existing docs/ structure     | If docs/ exists, update those files too                             |
-| Arbitrary section reorganization      | Follow index.ts `#region` structure                                 |
-| Missing import paths in examples      | Always: `import { X } from "@simplysm/..."`                         |
-| Writing in Korean                     | README must be in English                                           |
-| Adding changelog sections             | Never add version history                                           |
-| Editing before reporting diff         | Always report ADDED/REMOVED/CHANGED and wait for confirmation       |
-| Destroying docs/ link format          | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |
+### D. Collect Public Package List
+
+Use Glob to search `packages/*/package.json`, excluding packages with `private: true`.
+
+---
+
+### E. Run Agent Per Package in Parallel
+
+For each remaining package, use the Agent tool to pass the following prompt **in parallel**:
+```
+/sd-readme <package-name>
+```
+
+Terminate once all subagents have completed.

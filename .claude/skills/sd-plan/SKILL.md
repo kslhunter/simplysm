@@ -1,156 +1,104 @@
 ---
 name: sd-plan
-description: Use when you have a spec or requirements for a multi-step task, before touching code
-model: opus
+description: This skill is used when the user requests "make a plan", "create a plan", "sd-plan", "implementation plan", "work plan", etc.
 ---
 
-# Turning Designs Into Implementation Plans
+# SD Plan — Clear Plan Generation
 
-## Overview
-
-Turn a design doc into a step-by-step implementation plan through codebase exploration. Write bite-sized tasks assuming the implementing engineer has zero context — exact file paths, complete code, precise commands.
-
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
-
-## The Process
-
-**Exploring the codebase:**
-
-- Read the design doc, then explore relevant files, patterns, dependencies
-- Ask questions one at a time as they arise during planning, with your recommendation
-- Don't batch questions upfront — real questions emerge while deep in the details
-
-**Ask about anything you're not 100% confident about.** Examples:
-
-- Dependency choices (add library vs implement directly)
-- Conflicts with existing codebase patterns
-- Implementation choices the design didn't specify
-- Ambiguous behavior or edge cases
-- Migration concerns (breaking changes, compatibility)
-- If in doubt, ask. The cost of asking is low; the cost of a wrong assumption is high.
-
-**Don't ask — just decide:**
-
-- Internal details covered by project conventions (file naming, export patterns)
-- YAGNI decisions (not mentioned = don't add)
-- Implementation details with only one reasonable option
-
-**Writing the plan:**
-
-- Break into independent tasks
-- Include exact file paths, complete code, exact commands with expected output
-- Never write "add validation" — write the actual validation code
-
-## Plan Document Format
-
-**Header:**
-
-```markdown
-# [Feature Name] Implementation Plan
-
-> **For Claude:** REQUIRED SUB-SKILL: Use sd-plan-dev to implement this plan task-by-task.
-
-**Goal:** [One sentence]
-
-**Architecture:** [2-3 sentences]
-
-**Tech Stack:** [Key technologies/libraries]
+Receives a task request from the user, generates an initial plan, then iteratively reviews and asks questions about unclear parts to produce a perfectly clear plan.
 
 ---
-```
 
-**Each task (TDD steps):**
+## Step 1: Input Verification
 
-````markdown
-### Task N: [Component Name]
+- Obtain the task description in the following priority order:
+  1. **Task request**: The task description provided by the user when invoking the skill
+  2. **Current conversation**: If no task request is provided, determine the task from the current conversation context
+  3. **AskUserQuestion**: If neither of the above is sufficient, ask "What task should I create a plan for? Please describe the task."
+- Proceed to Step 2 after obtaining a sufficient task description.
 
-**Files:**
+---
 
-- Create: `exact/path/to/file.ts`
-- Modify: `exact/path/to/existing.ts:123-145`
-- Test: `exact/path/to/test.spec.ts`
+## Step 2: Plan Generation + Clarification Loop
 
-**Step 1: Write the failing test**
+### 2-1. Draft Creation
 
-```typescript
-test("specific behavior", () => {
-  const result = fn(input);
-  expect(result).toBe(expected);
-});
-```
+Draft the plan. Always follow TDD principles:
+- For code tasks → Write test code first
+- For non-code tasks → Define a self-verification checklist first
+- For code tasks where the project has no test environment set up → Propose verification methods such as CLI or dry-run
 
-**Step 2: Run test to verify it fails**
+### 2-2. Clarification Cycle
 
-Run: `npx vitest exact/path/to/test.spec.ts --project=node`
-Expected: FAIL with "fn is not defined"
+Repeat the following **until there are 0 unclear items**:
 
-**Step 3: Write minimal implementation**
+1. **Extract**: Compare the plan against all 12 "Ambiguity Criteria" listed below and enumerate all unclear items.
+2. **Dependency analysis**: Identify dependencies between items. ("A must be decided before B can be asked" → B depends on A)
+3. **Ask**: For items with no dependencies, use AskUserQuestion with **exactly one question per tool call**. Provide 2-5 options for each question.
+   - For each item, repeat "present one explanation -> AskUserQuestion"
+4. **Apply**: Incorporate all answers to update the plan, then return to step 1.
 
-```typescript
-export function fn(input: string): string {
-  return expected;
-}
-```
+0 unclear items → Move to **Step 2.5 Final Verification**.
 
-**Step 4: Run test to verify it passes**
+### Ambiguity Criteria
 
-Run: `npx vitest exact/path/to/test.spec.ts --project=node`
-Expected: PASS
+> **Core principle**: Anything not explicitly stated by the user and not confirmed in the codebase is **treated as speculation/assumption** and classified as an unclear item. Even if Claude wrote it confidently, it is unclear if the source is unverified.
 
-**Step 5: Commit**
+Compare against all 12 items below **during every review**. To skip an item as "not applicable", there must be concrete evidence (user statement or codebase confirmation).
 
-```bash
-git add exact/path/to/file.ts exact/path/to/test.spec.ts
-git commit -m "feat: add specific feature"
-```
-````
+1. **Unstated user assumptions**: Decisions filled in by Claude that the user did not specify
+2. **Lack of specificity**: Expressions like "handle appropriately", "as needed" without explaining HOW
+3. **Ambiguous scope**: IN/OUT scope is not defined
+4. **Unspecified behavior**: Errors, invalid inputs, default values, etc. are not specified
+5. **Unknown constraints**: Performance, compatibility, or platform requirements are unclear
+6. **Missing edge cases**: Boundary conditions, concurrency, empty states, etc.
+7. **Vague file/function references**: "Modify related files" without specific paths
+8. **Unclear ordering/dependencies**: Precedence between steps is not specified
+9. **Speculative expressions**: "Probably", "might be", "TBD", "???", etc.
+10. **Missing integration details**: API contracts, data formats, interfaces are undefined
+11. **No failure/rollback strategy**: No response plan for failures
+12. **Undefined verification methods**: No verification method corresponding to an implementation step
 
-## After the Plan
+---
 
-Save the plan, then present workflow paths. Check git status first. Display in the **system's configured language**:
+## Step 2.5: Final Verification (Required Before Declaring No Ambiguities)
 
-```
-Plan complete! Here's how to proceed:
+**Immediately before** declaring "no ambiguities", you must perform the following:
 
---- Path A: With branch isolation (recommended for features/large changes) ---
+1. Re-read **every step of the plan from beginning to end**, comparing against the 12 criteria one more time.
+2. Pay special attention to the following:
+   - Are there any parts that Claude decided on its own without user confirmation?
+   - Do all definitive statements (e.g., "will do X", "will handle as Y") have supporting evidence from user statements or the codebase?
+   - Are there any places missing specific file paths, function names, or data structures?
+3. If **even one** unclear item is found during this verification, return to the question cycle in Step 2.
+4. If truly none remain → Move to Step 3.
 
-1. /sd-worktree add <name>  — Create a worktree branch
-2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-3. /sd-check                — Verify (modified + dependents)
-4. /sd-commit               — Commit
-5. /sd-worktree merge       — Merge back to main
-6. /sd-worktree clean       — Remove worktree
+---
 
---- Path B: Direct on current branch (quick fixes/small changes) ---
+## Step 3: Final Output
 
-1. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-2. /sd-check                — Verify (modified + dependents)
-3. /sd-commit               — Commit
+Once all unclear items have been resolved, present the completed plan to the user and request implementation approval via AskUserQuestion.
 
-You can start from any step or skip steps as needed.
+If the user approves, Write the plan to `.tmp/plans/${TS}_{topic}.md`.
+- Generate the timestamp first: `TS=$(date +%y%m%d%H%M%S)`
+- Filename example: `260311143052_add-progress-component.md`
+- `{topic}`: Short kebab-case based on the task content (e.g., add-progress-component)
 
-💡 "Path A: yolo" or "Path B: yolo" to auto-run all steps
+---
 
-⚠️ You have uncommitted changes. To use Path A, run `/sd-commit all` first.
-```
+## Step 4: Post-Implementation Guidance
 
-- The `⚠️` line only when uncommitted changes exist
-- **Recommend one** based on scope (1 sentence why)
-- Do NOT auto-proceed. Wait for user's choice.
+If the user approves implementation, implement according to the plan. Once implementation is complete, output the following guidance:
 
-**Yolo mode:** Execute all steps sequentially.
+- **If code changes are included**:
+  ```
+  Implementation is complete. It is recommended to run the following steps in order:
+  1. /sd-check — Type check + lint + test inspection and auto-fix
+  2. /sd-simplify — Simplification review of changed code
+  3. /sd-commit — Commit changes
+  ```
 
-- Each `/sd-*` step MUST be invoked via the Skill tool
-- NEVER execute underlying commands (git, npm, etc.) directly, even if you know what the skill does internally
-- If a step fails, stop and report — do not attempt manual recovery
-
-**Yolo sd-check:** NEVER check only modified packages. Trace reverse dependencies and include all affected paths.
-
-## Key Principles
-
-- **One question at a time** — Ask inline during planning, not batched upfront
-- **Exact everything** — File paths, complete code, commands with expected output
-- **Bite-sized steps** — Each step is one action (2-5 minutes)
-- **TDD always** — Test first, implement second, commit third
-- **DRY, YAGNI** — No unnecessary features, no repetition
-- **REQUIRED SUB-SKILL:** sd-plan-dev (fresh fork per task + two-stage review)
+- **If no code changes are involved** (configuration, documentation, etc.):
+  ```
+  Implementation is complete. Run /sd-commit to commit the changes.
+  ```
