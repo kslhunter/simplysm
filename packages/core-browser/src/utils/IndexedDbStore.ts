@@ -82,7 +82,7 @@ export class IndexedDbStore {
     }
 
     // Wait for transaction completion
-    return await new Promise<TResult>((resolve, reject) => {
+    return new Promise<TResult>((resolve, reject) => {
       if (hasFnError) {
         tx.onabort = () => {
           reject(fnError);

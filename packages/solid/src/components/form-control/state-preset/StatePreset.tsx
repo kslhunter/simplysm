@@ -232,7 +232,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
           }}
           type="text"
           class={twMerge(
-            clsx("inline-flex items-center leading-normal rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
+            clsx("inline-flex items-center rounded-full leading-normal", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
             sizeClasses[resolvedSize()],
           )}
           placeholder={i18n.t("statePreset.namePlaceholder")}

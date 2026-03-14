@@ -5,11 +5,11 @@ function createMockReader(chunks: Uint8Array[]) {
   let index = 0;
   const releaseLock = vi.fn();
   const reader = {
-    read: vi.fn(async () => {
+    read: vi.fn(() => {
       if (index < chunks.length) {
-        return { done: false as const, value: chunks[index++] };
+        return Promise.resolve({ done: false as const, value: chunks[index++] });
       }
-      return { done: true as const, value: undefined };
+      return Promise.resolve({ done: true as const, value: undefined });
     }),
     releaseLock,
   };

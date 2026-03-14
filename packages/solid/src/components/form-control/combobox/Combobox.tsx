@@ -277,7 +277,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
 
   // Selected value management (controlled/uncontrolled pattern)
   const [getValue, setInternalValue] = createControllableSignal<TValue | undefined>({
-    value: () => local.value as TValue | undefined,
+    value: () => local.value,
     onChange: () => local.onValueChange as ((value: TValue | undefined) => void) | undefined,
   });
 
@@ -416,7 +416,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
           class={clsx("min-w-0 flex-1 bg-transparent outline-none", text.placeholder)}
           value={query()}
           placeholder={currentValue === undefined ? local.placeholder : undefined}
-          size={currentValue === undefined && local.placeholder ? local.placeholder.length : undefined}
+          size={currentValue === undefined && local.placeholder != null && local.placeholder !== "" ? local.placeholder.length : undefined}
           disabled={local.disabled}
           autocomplete="one-time-code"
           onInput={handleInput}

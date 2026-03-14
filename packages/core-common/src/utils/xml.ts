@@ -28,8 +28,8 @@ export function parse(str: string, options?: { stripTagPrefix?: boolean }): unkn
     parseTagValue: false,
     textNodeName: "_",
     htmlEntities: true,
-    isArray: (_tagName: string, jPath: string, _isLeafNode: boolean, isAttribute: boolean) => {
-      return !isAttribute && jPath.split(".").length > 1;
+    isArray: (_tagName: string, jPath: unknown, _isLeafNode: boolean, isAttribute: boolean) => {
+      return !isAttribute && typeof jPath === "string" && jPath.split(".").length > 1;
     },
   }).parse(str) as unknown;
   return options?.stripTagPrefix ? stripTagPrefix(result) : result;

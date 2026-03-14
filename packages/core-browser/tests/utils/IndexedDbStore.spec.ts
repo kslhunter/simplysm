@@ -85,7 +85,7 @@ describe("IndexedDbStore", () => {
     store = createStore();
 
     await expect(
-      store.withStore(STORE_NAME, "readwrite", async () => {
+      store.withStore(STORE_NAME, "readwrite", () => {
         throw new Error("intentional error");
       }),
     ).rejects.toThrow("intentional error");

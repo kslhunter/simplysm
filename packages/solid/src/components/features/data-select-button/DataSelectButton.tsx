@@ -235,7 +235,7 @@ export function DataSelectButton<
         local.dialog as Component<SelectDialogBaseProps<TKey>>,
         showProps as Omit<SelectDialogBaseProps<TKey>, "close">,
         local.dialogOptions,
-      )) as DataSelectDialogResult<TKey> | undefined;
+      ));
 
       if (result) {
         const newKeys = result.selectedKeys;

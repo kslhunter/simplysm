@@ -148,5 +148,5 @@ ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 저장이 완료되면 다음을 출력한다:
 
 ```
-CLAUDE.md가 생성되었습니다. 커밋하려면 /commit을 실행하세요.
+CLAUDE.md가 생성되었습니다. 커밋하려면 /sd-commit을 실행하세요.
 ```

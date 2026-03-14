@@ -19,10 +19,19 @@ argument-hint: "[all]"
 
 ## 2. 정보 수집
 
+### `all` 인자인 경우
+
+1. Bash로 `git add -A`를 실행하여 모든 변경사항을 먼저 staging한다
+2. 이후 다음 명령어를 Bash로 **병렬 실행**한다:
+   - `git status` (staging 결과 확인, `-uall` 플래그 금지)
+   - `git diff --staged` (staging된 전체 변경사항 확인)
+
+### 인자 없음인 경우
+
 다음 명령어를 Bash로 **병렬 실행**한다:
 
 - `git status` (untracked 파일 확인, `-uall` 플래그 금지)
-- `git diff` (unstaged 변경사항) — `all`이면 생략 가능 (5단계에서 staging 후 `git diff --staged`로 확인)
+- `git diff` (unstaged 변경사항)
 - `git diff --staged` (staged 변경사항)
 
 ## 3. 변경사항 분석
@@ -105,7 +114,7 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 
 ### Staging
 
-- `all` 인자: Bash로 `git add -A`를 실행한다
+- `all` 인자: 2단계에서 이미 staging 완료. 추가 작업 없음
 - 인자 없음: 시크릿 파일을 제외한 변경 파일을 `git add {파일1} {파일2} ...`로 일괄 staging한다
 
 ### 커밋

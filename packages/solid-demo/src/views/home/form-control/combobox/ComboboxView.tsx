@@ -79,10 +79,11 @@ export function ComboboxView() {
           When allowsCustomValue is true, you can enter values not in the list by pressing Enter.
         </p>
         <div class="flex flex-col items-start gap-3">
-          <Combobox
+          <Combobox<string | Fruit>
             loadItems={filterFruits}
             placeholder="Search or enter directly"
             allowsCustomValue
+            parseCustomValue={(text) => text}
             value={customValue()}
             onValueChange={setCustomValue}
             renderValue={(v: string | Fruit) =>
@@ -127,7 +128,7 @@ export function ComboboxView() {
           placeholder="Enter fruit name"
           allowsCustomValue
           parseCustomValue={(text) => ({ id: 0, name: text, emoji: "🆕" })}
-          renderValue={(v) => (
+          renderValue={(v: Fruit) => (
             <>
               {v.emoji} {v.name}
             </>
