@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Extract text, tables, and images from PDF files page by page."""
 
-import sys
+import struct
+import logging
 from _common import (
     setup_encoding, make_output_paths, print_header, save_image,
     print_image_summary, run_cli, normalize_cell,
@@ -40,35 +41,26 @@ def extract(file_path):
                         print("| " + " | ".join(cells) + " |")
                     print()
 
-    # Image extraction (pypdf)
+    # Image extraction (pypdf page.images API)
+    logging.getLogger("pypdf").setLevel(logging.ERROR)
     reader = PdfReader(file_path)
     for page_num, page in enumerate(reader.pages, 1):
-        if "/XObject" not in (page.get("/Resources") or {}):
-            continue
-        xobjects = page["/Resources"]["/XObject"].get_object()
-        for obj_name in xobjects:
-            obj = xobjects[obj_name].get_object()
-            if obj.get("/Subtype") == "/Image":
-                img_idx += 1
-                filters = obj.get("/Filter", "")
-                if isinstance(filters, list):
-                    filters = filters[0] if filters else ""
-                filter_str = str(filters)
-                ext = "png"
-                if "/DCTDecode" in filter_str:
-                    ext = "jpg"
-                elif "/JPXDecode" in filter_str:
-                    ext = "jp2"
-                try:
-                    img_path = save_image(out_dir, img_idx, obj.get_data(), ext)
-                except Exception as exc:
-                    print(f"Warning: failed to decode image {img_idx}: {exc}", file=sys.stderr)
-                    img_path = save_image(out_dir, img_idx, obj._data if hasattr(obj, "_data") else b"", "bin")
-                print(f"[IMG] (page={page_num}) {img_path}")
+        for img in page.images:
+            data = img.data
+            # Filter small mask/decorative images by checking PNG IHDR dimensions
+            if data[:4] == b'\x89PNG' and len(data) >= 24:
+                w = struct.unpack('>I', data[16:20])[0]
+                h = struct.unpack('>I', data[20:24])[0]
+                if w <= 4 or h <= 4:
+                    continue
+            ext = img.name.rsplit('.', 1)[-1] if '.' in img.name else "png"
+            img_idx += 1
+            img_path = save_image(out_dir, img_idx, data, ext)
+            print(f"[IMG] (page={page_num}) {img_path}")
 
     print()
     print_image_summary(img_idx, out_dir)
 
 
 if __name__ == "__main__":
-    run_cli(extract, "extract_pdf.py", {"pdfplumber": "pdfplumber", "pypdf": "pypdf"})
+    run_cli(extract, "extract_pdf.py", {"pdfplumber": "pdfplumber", "pypdf": "pypdf", "Pillow": "PIL"})

@@ -157,10 +157,10 @@ export function copyElement(event: ClipboardEvent): void {
   const target = event.target;
   if (clipboardData == null || !(target instanceof Element)) return;
 
-  const firstInputEl = target.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+  const firstInputEl = target.findFirst<HTMLInputElement | HTMLTextAreaElement>(
     "input, textarea",
   );
-  if (firstInputEl != null) {
+  if (firstInputEl !== undefined) {
     clipboardData.setData("text/plain", firstInputEl.value);
     event.preventDefault();
   }

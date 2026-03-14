@@ -35,7 +35,7 @@ export function SidebarView() {
         <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Sidebar.Container>
             <Sidebar>
-              <div class="p-2 px-4 font-bold">LOGO</div>
+              <div>LOGO</div>
               <Sidebar.User
                 name="Hong Gildong"
                 description="hong@example.com"
@@ -50,13 +50,11 @@ export function SidebarView() {
             <main class="h-full overflow-auto p-4">
               <div class="mb-4 flex items-center gap-4">
                 <SidebarToggleButton />
-                <span class="font-medium">Content Area</span>
+                <span>Content Area</span>
               </div>
-              <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                <p class="text-sm text-base-600 dark:text-base-400">
-                  Click the sidebar menu to navigate to that path.
-                </p>
-              </div>
+              <p>
+                Click the sidebar menu to navigate to that path.
+              </p>
             </main>
           </Sidebar.Container>
         </div>
@@ -71,19 +69,17 @@ export function SidebarView() {
         <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Sidebar.Container>
             <Sidebar>
-              <div class="p-2 px-4 font-bold">LOGO</div>
+              <div>LOGO</div>
               <Sidebar.Menu menus={sampleMenuItems} />
             </Sidebar>
             <main class="h-full overflow-auto p-4">
               <div class="mb-4 flex items-center gap-4">
                 <SidebarToggleButton />
-                <span class="font-medium">Control State with Toggle Button</span>
+                <span>Control State with Toggle Button</span>
               </div>
-              <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                <p class="text-sm text-base-600 dark:text-base-400">
-                  Clicking the toggle button calls useSidebar().setToggle().
-                </p>
-              </div>
+              <p>
+                Clicking the toggle button calls useSidebar().setToggle().
+              </p>
             </main>
           </Sidebar.Container>
         </div>
@@ -95,18 +91,16 @@ export function SidebarView() {
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* None */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">None</p>
+            <p>None</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                   <Sidebar.Menu menus={sampleMenuItems} />
                 </Sidebar>
                 <main class="h-full overflow-auto p-4">
                   <SidebarToggleButton />
-                  <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">No SidebarUser</p>
-                  </div>
+                  <p>No SidebarUser</p>
                 </main>
               </Sidebar.Container>
             </div>
@@ -114,21 +108,19 @@ export function SidebarView() {
 
           {/* Basic (no menu) */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Basic (No Menu)</p>
+            <p>Basic (No Menu)</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                   <Sidebar.User name="Hong Gildong" description="hong@example.com" />
                   <Sidebar.Menu menus={sampleMenuItems} />
                 </Sidebar>
                 <main class="h-full overflow-auto p-4">
                   <SidebarToggleButton />
-                  <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">
-                      Show user information only without menu
-                    </p>
-                  </div>
+                  <p>
+                    Show user information only without menu
+                  </p>
                 </main>
               </Sidebar.Container>
             </div>
@@ -136,11 +128,11 @@ export function SidebarView() {
 
           {/* With menu */}
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">With Menu</p>
+            <p>With Menu</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                   <Sidebar.User
                     name="Hong Gildong"
                     description="admin@example.com"
@@ -153,11 +145,9 @@ export function SidebarView() {
                 </Sidebar>
                 <main class="h-full overflow-auto p-4">
                   <SidebarToggleButton />
-                  <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">
-                      Click to show dropdown menu
-                    </p>
-                  </div>
+                  <p>
+                    Click to show dropdown menu
+                  </p>
                 </main>
               </Sidebar.Container>
             </div>

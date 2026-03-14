@@ -1,7 +1,4 @@
 {
-  "permissions": {
-    "deny": ["Bash(git worktree*)", "Bash(git stash*)"]
-  },
   "statusLine": {
     "type": "command",
     "command": "python .claude/sd-statusline.py"

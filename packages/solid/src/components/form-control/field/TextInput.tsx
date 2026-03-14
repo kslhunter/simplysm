@@ -5,9 +5,9 @@ import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
   fieldGapClasses,
   fieldInputClass,
-  type FieldSize,
   getFieldWrapperClass,
 } from "./Field.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { FieldShell } from "./FieldShell";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
@@ -41,7 +41,7 @@ export interface TextInputProps {
   readOnly?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Borderless style */
   inset?: boolean;
@@ -286,6 +286,7 @@ const TextInputInner = (props: TextInputProps) => {
           class={fieldInputClass}
           value={inputValue()}
           placeholder={local.placeholder}
+          size={local.placeholder?.length}
           title={local.title}
           autocomplete={local.autocomplete ?? "one-time-code"}
           onInput={handleInput}

@@ -23,7 +23,7 @@ export class IndexedDbVirtualFs {
   async deleteByPrefix(keyPrefix: string): Promise<boolean> {
     return this._db.withStore(this._storeName, "readwrite", async (store) => {
       return new Promise((resolve, reject) => {
-        const req = store.openCursor();
+        const req = store.openCursor(IDBKeyRange.bound(keyPrefix, keyPrefix + "\uffff"));
         let found = false;
         req.onsuccess = () => {
           const cursor = req.result;
@@ -46,7 +46,7 @@ export class IndexedDbVirtualFs {
   async listChildren(prefix: string): Promise<{ name: string; isDirectory: boolean }[]> {
     return this._db.withStore(this._storeName, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
-        const req = store.openCursor();
+        const req = store.openCursor(IDBKeyRange.bound(prefix, prefix + "\uffff"));
         const map = new Map<string, boolean>();
         req.onsuccess = () => {
           const cursor = req.result;

@@ -3,8 +3,6 @@ import { twMerge } from "tailwind-merge";
 import { type ComponentSize, gap, pad } from "../../../styles/control.styles";
 import { border, text } from "../../../styles/base.styles";
 
-export type FieldSize = ComponentSize;
-
 // ── Form Field Common Surface (background + text + border + focus) ──
 export const fieldSurface = clsx(
   "bg-primary-50 dark:bg-primary-950/30",
@@ -23,7 +21,7 @@ export const fieldBaseClass = clsx(
 );
 
 // Size-specific styles
-export const fieldSizeClasses: Record<FieldSize, string> = {
+export const fieldSizeClasses: Record<ComponentSize, string> = {
   md: clsx("h-field", pad.md),
   xs: clsx("h-field-xs", pad.xs),
   sm: clsx("h-field-sm", pad.sm),
@@ -41,7 +39,7 @@ export const fieldInsetClass = clsx(
 );
 
 // Inset heights (excluding 2px border)
-export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
+export const fieldInsetSizeHeightClasses: Record<ComponentSize, string> = {
   md: clsx`h-field-inset`,
   xs: clsx`h-field-inset-xs`,
   sm: clsx`h-field-inset-sm`,
@@ -56,7 +54,7 @@ export const fieldDisabledClass = clsx("bg-base-100 text-base-500 dark:bg-base-8
 export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface);
 
 // Textarea size-specific styles (h-field-* removed)
-export const textAreaSizeClasses: Record<FieldSize, string> = {
+export const textAreaSizeClasses: Record<ComponentSize, string> = {
   md: pad.md,
   xs: pad.xs,
   sm: pad.sm,
@@ -74,7 +72,7 @@ export const fieldInputClass = clsx(
 );
 
 // Prefix icon gap classes (replaces nested ternary)
-export const fieldGapClasses: Record<FieldSize, string> = {
+export const fieldGapClasses: Record<ComponentSize, string> = {
   md: gap.md,
   xs: gap.xs,
   sm: gap.sm,
@@ -84,7 +82,7 @@ export const fieldGapClasses: Record<FieldSize, string> = {
 
 // Shared wrapper class generation function
 export function getFieldWrapperClass(options: {
-  size?: FieldSize;
+  size?: ComponentSize;
   disabled?: boolean;
   inset?: boolean;
   includeCustomClass?: string | false;
@@ -103,7 +101,7 @@ export function getFieldWrapperClass(options: {
 
 // Textarea-specific wrapper class generation function
 export function getTextareaWrapperClass(options: {
-  size?: FieldSize;
+  size?: ComponentSize;
   disabled?: boolean;
   inset?: boolean;
   includeCustomClass?: string | false;

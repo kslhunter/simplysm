@@ -1,100 +1,81 @@
 ---
 name: sd-plan-dev
-description: Used when requesting "execute plan", "sd-plan-dev", "implement plan", "run plan", etc.
+description: 구현계획서를 기반으로 TDD 방식의 실제 구현을 수행. 사용자가 구현계획서 기반의 코드 구현을 요청할 때 사용
+argument-hint: "<plan 파일 경로>"
 ---
 
-# SD Plan Dev — Parallel Implementation Executor
+# sd-plan-dev: 구현 실행
 
-Reads an implementation plan file, analyzes dependencies and file overlap between items, and executes independent items in parallel using subagents. Each subagent implements its item following TDD and runs a check. After all items complete, runs a simplification pass on all changed code.
+구현계획서(plan)를 기반으로 TDD 사이클(RED → GREEN → Refactor)을 실행하여 실제 구현을 수행한다.
 
-ARGUMENTS: Path to a `_plan.md` file (optional). If not provided, inferred from conversation context or asked.
+## 1. 인자 파싱
 
----
+`$ARGUMENTS`를 분석하여 plan을 결정한다.
 
-## Step 1: Obtain Plan File
+### 1-1. plan 파일 경로
 
-- Obtain the plan file path in the following priority order:
-  1. **ARGUMENTS**: File path provided when invoking the skill
-  2. **Current conversation**: Identify the most recently mentioned `_plan.md` file path
-  3. **AskUserQuestion**: Ask "Which plan file should I execute? Please provide the file path."
-- Read the plan file and parse all items with their `Depends on` and `Target files` metadata.
+`$ARGUMENTS`에 `.md`로 끝나는 경로가 포함된 경우:
+- 해당 파일을 Read한다
 
----
+### 1-2. 인자 없음
 
-## Step 2: Build Execution Graph
+`$ARGUMENTS`가 비어있으면:
+- 현재 대화 맥락에서 plan 내용을 파악한다
+- 대화에도 plan이 없으면 다음을 출력하고 종료한다:
+  > 구현계획서가 없습니다. 먼저 `/sd-plan`을 실행하여 계획을 수립하세요.
 
-### 2-1. Parse Dependencies
+## 2. 작업 파악 및 실행 전략
 
-For each item in the plan, extract:
-- **Item number/name**
-- **Depends on**: List of items that must complete before this item can start
-- **Target files**: List of file paths this item will create or modify
+plan에서 작업 목록을 파악한다.
 
-### 2-2. Determine Parallel Groups
+### 단일 작업
+작업이 1개이면 바로 3단계(TDD 사이클)로 진행한다.
 
-An item is eligible for parallel execution when:
-1. **All dependencies are resolved** (all items in `Depends on` have completed successfully)
-2. **No file overlap** with any currently running item (no shared paths in `Target files`)
+### 다중 작업
+작업이 2개 이상이면:
+1. plan의 `## 작업 의존성` 섹션을 확인한다 (없으면 모든 작업을 독립으로 간주)
+2. **의존성 없는 독립 작업**: Agent tool로 병렬 실행한다. 각 작업을 별도 subagent에 위임하여 동시에 TDD 사이클을 수행한다
+3. **의존성 있는 작업**: 의존 순서대로 순차 실행한다. 선행 작업 완료 후 후행 작업을 시작한다
+4. 독립 작업과 의존 작업이 혼합된 경우: 독립 작업끼리는 병렬, 의존 체인은 순차로 조합하여 실행한다
 
-Group items into execution batches:
-- **Batch 1**: All items with no dependencies and no file overlap with each other
-- **Batch 2**: Items whose dependencies were in Batch 1, with no file overlap among themselves
-- Continue until all items are scheduled
+## 3. TDD 사이클 실행
 
-If two independent items share target files, they MUST run sequentially (add to separate batches).
+각 작업에 대해 plan의 TDD 계획을 따라 실행한다.
 
----
+### RED Phase: 실패하는 테스트 작성 및 실행
 
-## Step 3: Execute Items
+plan의 RED Phase에 명시된 테스트 전략에 따라 분기한다:
 
-### TDD Execution Rules
+**vitest 테스트인 경우:**
+- plan의 테스트 시나리오에 따라 vitest 테스트 파일을 작성한다
+- Bash로 `vitest run {테스트 파일}` 실행하여 실패를 확인한다
 
-**RED and GREEN must be actually executed. NEVER skip or substitute them.**
+**subagent 테스트인 경우 (LLM용 문서, 테스트 환경 없는 코드 등):**
+- plan의 테스트 시나리오에 따라 `_test.md` 파일을 작성한다
+  - plan 파일 기반: plan 파일과 동일 디렉토리. plan이 `{R번호}_plan.md`이면 `{R번호}_test.md`, `plan.md`이면 `test.md`
+  - 현재 대화 기반 (파일 경로 없음): plan에 참조 spec 경로가 있으면 해당 디렉토리에 저장. 없으면 `.tmp/plans/` 하위에 새 디렉토리 생성
+  - 형식: 테스트별 입력/기대출력 쌍
+- Agent tool로 subagent를 생성하여 테스트를 실행하고 실패를 확인한다
 
-- "User already confirmed the issue" is NOT a valid RED. Run the test yourself.
-- "Needs a separate session to verify" is NOT a valid GREEN. Run the test yourself.
-- If GREEN fails → fix the implementation → re-run GREEN. Repeat until it passes.
+**테스트 생략인 경우:**
+- RED Phase를 건너뛰고 GREEN Phase로 바로 진행한다
 
-### Execution Loop
+### GREEN Phase: 최소 구현
 
-For each batch:
+plan의 GREEN Phase에 명시된 구현 계획에 따라 최소한의 구현을 수행한다 (YAGNI 원칙).
+- 구현 후 테스트를 재실행하여 통과를 확인한다
+- vitest: Bash로 재실행
+- subagent 테스트: Agent tool로 재실행
+- 테스트 생략인 경우: 구현만 수행
 
-1. **Launch parallel subagents**: For each item in the batch, launch an Agent with `run_in_background: true`.
-   - Each subagent receives the full item description from the plan (RED → Implement → GREEN steps).
-   - Each subagent executes:
-     1. **TDD**: Follow the item's RED → Implement → GREEN steps exactly
-     2. **Check**: Run `/sd-check` on the item's target files/packages
+### Refactor Phase
 
-2. **Wait for all subagents in the batch to complete.**
+`/simplify` 수행하여 품질을 개선한다.
+- `/simplify` 완료 후 테스트를 재실행하여 통과를 확인한다
+- 리팩터링으로 테스트가 깨지면 수정 후 재확인한다
 
-3. **Move to next batch**: Update the dependency graph (mark completed items) and launch the next eligible batch.
+## 4. 완료 안내
 
-4. **Repeat** until all items are complete.
-
-### Single-Item Optimization
-
-If the plan has only 1 item, or all items are sequential (linear dependency chain), execute them directly without subagent overhead.
-
----
-
-## Step 4: Simplification Pass
-
-After all items are complete, run `/simplify` on all changed code to review for reuse, quality, and efficiency improvements.
-
----
-
-## Step 5: Post-Completion Guidance
-
-Output the following guidance. Include only the items whose conditions are met, numbered sequentially:
-
-| Condition | Recommendation |
-|-----------|----------------|
-| Public API changed (exports, public methods/properties, component props, etc.) | `/sd-readme` — Update README documentation |
-| Always | `/sd-commit` — Commit changes |
-
-Example:
-```
-All items implemented successfully. Recommended next steps:
-1. /sd-readme — Update README documentation
-2. /sd-commit — Commit changes
-```
+모든 작업의 TDD 사이클이 완료되면 다음을 출력한다:
+- 전체 작업의 구현 결과 요약 (작업별 상태)
+- 커밋 안내: "커밋하지 않습니다. 필요 시 `/commit`을 실행하세요."

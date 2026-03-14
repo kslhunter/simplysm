@@ -3,9 +3,8 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { type FieldSize } from "../field/Field.styles";
 import { text } from "../../../styles/base.styles";
-import { gap } from "../../../styles/control.styles";
+import { type ComponentSize, gap } from "../../../styles/control.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
@@ -38,7 +37,7 @@ export interface DateRangePickerProps {
   disabled?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Custom class */
   class?: string;
@@ -169,7 +168,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         required
         disabled={local.disabled}
         size={local.size}
-        inset
+        class="min-w-0"
       >
         <Select.Item value={"day" as DateRangePeriodType}>
           {i18n.t("dateRangePicker.day")}
@@ -189,6 +188,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
             unit={periodType() === "month" ? "month" : "date"}
             value={from()}
             onValueChange={handleFromChange}
+            required={local.required}
             disabled={local.disabled}
             size={local.size}
           />
@@ -198,6 +198,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
           unit="date"
           value={from()}
           onValueChange={handleFromChange}
+          required={local.required}
           disabled={local.disabled}
           size={local.size}
         />
@@ -207,6 +208,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
           value={to()}
           onValueChange={handleToChange}
           min={from()}
+          required={local.required}
           disabled={local.disabled}
           size={local.size}
         />

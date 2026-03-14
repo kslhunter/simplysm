@@ -40,13 +40,12 @@ export function DropdownView() {
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
-              <ul class="py-1">
+              <ul>
                 <For each={menuItems}>
                   {(item) => (
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => {
                         setBasicSelected(item);
                       }}
@@ -75,23 +74,22 @@ export function DropdownView() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Context Menu</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">Right-click in the area below.</p>
         <div
-          class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-50 dark:border-base-600 dark:bg-base-800"
+          class="h-32"
           onContextMenu={handleContextMenu}
         >
-          <span class="text-base-500 dark:text-base-400">Right-click area</span>
+          <span>Right-click area</span>
         </div>
         {contextSelected() != null && (
           <p class="mt-2 text-sm text-base-600 dark:text-base-400">Selected: {contextSelected()}</p>
         )}
         <Dropdown position={contextPosition()} open={contextOpen()} onOpenChange={setContextOpen}>
           <Dropdown.Content>
-            <ul class="py-1">
+            <ul>
               <For each={menuItems}>
                 {(item) => (
                   <li
                     role="menuitem"
                     tabIndex={0}
-                    class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                     onClick={() => {
                       setContextSelected(item);
                       setContextOpen(false);
@@ -126,13 +124,12 @@ export function DropdownView() {
             </Button>
           </Dropdown.Trigger>
           <Dropdown.Content>
-            <ul class="py-1">
+            <ul>
               <For each={menuItems}>
                 {(item) => (
                   <li
                     role="menuitem"
                     tabIndex={0}
-                    class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                   >
                     {item}
                   </li>
@@ -157,13 +154,12 @@ export function DropdownView() {
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
-              <ul class="py-1">
+              <ul>
                 <For each={longMenuItems}>
                   {(item) => (
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => {
                         setMaxHeightSelected(item);
                       }}

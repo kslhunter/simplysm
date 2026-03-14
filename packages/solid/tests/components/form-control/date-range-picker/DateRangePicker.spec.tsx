@@ -115,6 +115,62 @@ describe("DateRangePicker component", () => {
     });
   });
 
+  describe("required prop propagation", () => {
+    it("propagates required to child DatePickers in range mode", () => {
+      const { container } = render(() => (
+        <ConfigProvider clientName="test"><I18nProvider>
+          <DateRangePicker periodType="range" required />
+        </I18nProvider></ConfigProvider>
+      ));
+      const wrapper = container.querySelector("[data-date-range-picker]");
+      const dateFields = wrapper?.querySelectorAll("[data-date-field]");
+
+      // range mode has 2 DatePickers (from + to)
+      expect(dateFields?.length).toBe(2);
+
+      // Each DatePicker's hidden input should have the required validation message
+      dateFields?.forEach((field) => {
+        const hiddenInput = field.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+        expect(hiddenInput).toBeTruthy();
+        expect(hiddenInput.validationMessage).toBe("This is a required field");
+      });
+    });
+
+    it("propagates required to child DatePicker in day mode", () => {
+      const { container } = render(() => (
+        <ConfigProvider clientName="test"><I18nProvider>
+          <DateRangePicker periodType="day" required />
+        </I18nProvider></ConfigProvider>
+      ));
+      const wrapper = container.querySelector("[data-date-range-picker]");
+      const dateFields = wrapper?.querySelectorAll("[data-date-field]");
+
+      // day mode has 1 DatePicker
+      expect(dateFields?.length).toBe(1);
+
+      const hiddenInput = dateFields?.[0].querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput).toBeTruthy();
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
+    });
+
+    it("propagates required to child DatePicker in month mode", () => {
+      const { container } = render(() => (
+        <ConfigProvider clientName="test"><I18nProvider>
+          <DateRangePicker periodType="month" required />
+        </I18nProvider></ConfigProvider>
+      ));
+      const wrapper = container.querySelector("[data-date-range-picker]");
+      const dateFields = wrapper?.querySelectorAll("[data-date-field]");
+
+      // month mode has 1 DatePicker
+      expect(dateFields?.length).toBe(1);
+
+      const hiddenInput = dateFields?.[0].querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput).toBeTruthy();
+      expect(hiddenInput.validationMessage).toBe("This is a required field");
+    });
+  });
+
   describe("from change - 'range' mode", () => {
     it("calls onToChange(from) when from > to", () => {
       const onFromChange = vi.fn();

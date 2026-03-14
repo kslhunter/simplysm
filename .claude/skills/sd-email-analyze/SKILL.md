@@ -1,44 +1,54 @@
 ---
 name: sd-email-analyze
-description: Used when requesting "email file analysis", "email content extraction", "attachment extraction", or "email summary" for .eml or .msg files.
+description: 이메일 파일(.eml/.msg)을 분석하여 헤더, 본문, 인라인 이미지, 첨부파일을 추출. 사용자가 .eml/.msg 파일의 내용 확인이나 분석을 요청할 때 사용
+argument-hint: "<이메일 파일 경로>"
 ---
 
-# SD Email Analyze — Email File Analysis and Content Extraction
+# sd-email-analyze: 이메일 파일 분석 및 내용 추출
 
-Parses `.eml` and `.msg` (Outlook) email files to extract and analyze mail headers, body text, inline images, and attachments.
+`.eml` 및 `.msg`(Outlook) 이메일 파일을 파싱하여 메일 헤더, 본문, 인라인 이미지, 첨부파일을 추출하고 분석한다.
 
-ARGUMENTS: Email file path (required). Specify a `.eml` or `.msg` file path.
+## 1. 인자 파싱
 
----
+`$ARGUMENTS`에서 이메일 파일 경로를 추출한다.
+- `$ARGUMENTS`가 비어있으면 현재 대화 맥락에서 이메일 파일 경로를 파악한다. 대화 맥락도 없으면 AskUserQuestion으로 파일 경로를 요청한다
+- 지원 형식: `.eml`, `.msg`
+- 파일이 존재하지 않거나 지원하지 않는 확장자이면 AskUserQuestion으로 올바른 경로를 요청한다
 
-## Step 1: Parse the Email File
+## 2. 이메일 파일 파싱
 
-Extract the email file path from ARGUMENTS and run the following command:
+다음 명령을 실행하여 이메일 파일을 파싱한다:
 
 ```bash
-python .claude/skills/sd-email-analyze/email-analyzer.py <email_file_path>
+python ${CLAUDE_SKILL_DIR}/email-analyzer.py <이메일_파일_경로>
 ```
 
-- On first run, `extract-msg` is automatically installed.
-- The output is a markdown report printed to stdout, and extracted files are saved to the `<email_file_name>_files/` directory.
+- 최초 실행 시 `extract-msg` 패키지가 자동 설치된다
+- 출력은 마크다운 리포트(stdout)이며, 추출된 파일은 `<이메일_파일명>_files/` 디렉토리에 저장된다
 
-### Output Structure
+### 출력 구조
 
-1. **Mail Info Table**: Subject, From, To, CC, Date, Count
-2. **Body Text**: Plain text (if plain text is unavailable, HTML tags are stripped)
-3. **Inline Images**: Table of saved file paths
-4. **Attachments**: Table of saved file paths
+| 섹션 | 내용 |
+|------|------|
+| Email Info | Subject, From, To, CC, Date, 첨부파일 수 |
+| Body | 본문 텍스트 (plain text 우선, 없으면 HTML 스트립) |
+| Inline Images | 저장된 인라인 이미지 파일 경로 테이블 |
+| Attachments | 저장된 첨부파일 경로 테이블 |
 
-## Step 2: Analyze Extracted Files
+## 3. 추출 파일 분석
 
-Check the extracted file paths from the Step 1 output and perform the following:
+2단계 출력의 파일 경로를 확인하고 다음을 수행한다. 인라인 이미지 확인과 첨부파일 분석은 독립적이므로 가능한 한 병렬로 수행한다.
 
-1. **Inline Images**: Use the **Read** tool to view each saved path
-2. **Attachments**: Use the **Read** tool (for images) or the **sd-document** skill script (for DOCX, XLSX, PPTX, PDF)
+### 인라인 이미지
 
-### Inline Image Processing
+Read 도구로 각 저장 경로의 이미지를 확인한다.
 
-Images are extracted from two sources:
+### 첨부파일
 
-1. **CID Images**: MIME parts with a Content-ID (referenced via `cid:` in HTML)
-2. **Data URI Images**: Base64-encoded images within HTML (`data:image/...;base64,...`)
+- 이미지 파일: Read 도구로 확인
+- 문서 파일(DOCX, XLSX, PPTX, PDF): `/sd-document` 스킬로 분석
+
+## 4. 완료 안내
+
+분석이 완료되면 다음을 출력한다:
+- 3단계에서 수행한 파일별 분석 결과 요약 (2단계에서 이미 출력된 이메일 기본 정보는 반복하지 않는다)

@@ -32,13 +32,8 @@ def print_header(file_path: Path):
     print(f"# {file_path.name}\n")
 
 
-_created_dirs: set[Path] = set()
-
-
 def save_image(out_dir: Path, img_idx: int, blob: bytes, ext: str) -> Path:
-    if out_dir not in _created_dirs:
-        out_dir.mkdir(parents=True, exist_ok=True)
-        _created_dirs.add(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     img_path = out_dir / f"img_{img_idx:03d}.{ext}"
     img_path.write_bytes(blob)
     return img_path

@@ -1,73 +1,157 @@
 ---
 name: sd-check
-description: Used when requesting "check", "sd-check", "typecheck+lint+test", "full check", etc.
+description: typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정. 사용자가 코드 품질 검사 및 자동 수정을 요청할 때 사용
+argument-hint: "[targets..]"
 ---
 
-# SD Check — Automated Check and Error Fix Loop
+# sd-check: 코드 품질 검사 및 자동 수정
 
-Detects the package manager, runs the check script, reviews the results, and if there are code errors, invokes sd-debug to analyze the root cause, applies fixes, and re-runs the check. This loop repeats until all errors are resolved.
+typecheck, lint(fix), 단위test를 순차적으로 실행하고, 발견된 에러를 자동으로 수정한다. 세 Phase는 상호 보완적 관계(test 수정 → typecheck 위반, typecheck 수정 → lint 위반 등)이므로, 전체 사이클을 반복하여 수렴시킨다.
 
-ARGUMENTS: Target paths (optional, multiple allowed). If not specified, determined from the conversation context. If no specific target exists or "all" is specified, run without targets.
+## 1. 인자 파싱
 
----
+`$ARGUMENTS`에서 targets를 파싱한다.
 
-## Step 1: Preparation (PM Detection + Script Verification + Target Resolution)
+- `targets`는 공백으로 구분된 경로 또는 패키지 목록 (예: `packages/core-common packages/solid`)
+- targets가 비어있으면 인자 없이 명령어를 실행한다 (프로젝트 기본 동작에 위임)
 
-1. **PM Detection**: Determine the package manager from the lock file in the project root.
-   - `pnpm-lock.yaml` exists → `pnpm`
-   - `yarn.lock` exists → `yarn`
-   - `package-lock.json` exists → `npm`
-   - None found → `npm` (default)
-2. **Script Verification**: Check whether `scripts.check` exists in `package.json`. If not, inform the user with `"The check script is not defined in package.json."` and **stop**.
-3. **Target Resolution**: Determine targets in the following priority order.
-   1. Targets explicitly specified in ARGUMENTS
-   2. Inferred from the current conversation context (e.g., user is working on a specific package)
-   3. If neither applies or "all" is specified → run without targets (full check)
+## 2. 명령어 탐지
 
-## Step 2: Run Check
+프로젝트 루트의 CLAUDE.md와 루트의 package.json을 분석하여 4개 명령어를 파악한다.
 
-1. `mkdir -p .tmp/check` (Bash)
-2. Run the following command via Bash:
-   ```
-   TS=$(date +%y%m%d%H%M%S); $PM check [targets...] > .tmp/check/${TS}.txt 2>&1; echo "EXIT_CODE:$?" >> .tmp/check/${TS}.txt
-   ```
-   - `$PM` = the package manager detected in Step 1
-   - `$TS` = timestamp variable (e.g., `260312143025`)
-   - Include targets in the command if present; omit otherwise
-3. Read the result file (`.tmp/check/${TS}.txt`) using the Read tool.
+### 탐지 순서
 
-## Step 3: Analyze Results
+1. **CLAUDE.md 우선 탐색**: 프로젝트 루트의 CLAUDE.md를 Read하여 각 Phase에 해당하는 명령어를 찾는다
+2. **package.json 보조 탐색**: CLAUDE.md에서 찾지 못한 명령어는 루트 package.json의 scripts 섹션에서 탐색한다
+3. **전체 미탐지 처리**: 4개 Phase 모두 명령어를 탐지하지 못하면 "검사 명령어를 찾을 수 없습니다. CLAUDE.md 또는 package.json에 typecheck/lint/test 명령어를 확인해주세요."를 출력하고 종료한다
 
-Read the result file content and classify it into one of the following three categories:
+### 탐지 대상
 
-- **Success**: All checks passed without errors → proceed to **Step 5 (Completion)**
-- **Environment Error**: The issue is an environment/infrastructure problem rather than a code problem (e.g., missing dependencies, out of memory, command not found, network issues, etc.) → show the error details to the user and **stop immediately**. Do not attempt code fixes.
-- **Code Error**: The issue is a source code problem such as type errors, lint violations, or test failures → proceed to **Step 4**
+| Phase | CLAUDE.md 키워드 | package.json scripts 키워드 |
+|-------|-----------------|---------------------------|
+| typecheck | typecheck, 타입 검사, tsc | `typecheck`, `type-check`, `tsc` |
+| lint:fix | lint:fix, lint --fix, 린트 수정 | `lint:fix`, 또는 lint 스크립트에 `--fix` 추가 |
+| lint | lint, 린트 검사 | `lint` |
+| test | test, vitest, jest, 단위 테스트 | `test`, `vitest`, `jest` |
 
-> The classification above should be determined by reading and interpreting the result content freely, not by hardcoded pattern matching.
+### targets 지원 판단
 
-**Iteration Limit**: If the current iteration count exceeds 5, report the remaining errors to the user, inform them with `"Errors remain after 5 iterations. Please review the remaining errors."`, and **stop**.
+- CLAUDE.md에서 해당 명령어 설명에 `[targets..]`, `[패키지]`, `[경로]` 등의 인자 형식이 기술되어 있으면 targets를 지원하는 것으로 판단한다
+- package.json에서만 탐지된 명령어는 targets 미지원으로 간주한다
+- targets를 지원하지 않는 명령어에는 targets를 전달하지 않는다
 
-## Step 4: Error Analysis and Fix (Using sd-debug)
+### 탐지 결과 표시
 
-Invoke `sd-debug` via the Skill tool. Pass the following content as args:
+명령어 탐지 후 실행 전에 다음을 사용자에게 표시한다:
 
 ```
-Analyze the code errors from the check results below.
-**Important workflow instructions:**
-1. Perform Steps 1-2 thoroughly — gather problem information and conduct in-depth codebase analysis to identify the root cause. Do NOT skip or rush these steps.
-2. Output the diagnostic report from Step 3, but skip the user confirmation (do not call AskUserQuestion).
-3. Skip Steps 4-5 (do not invoke sd-plan).
-4. Based on the analysis results and diagnostic report, apply fixes directly.
+## 탐지된 명령어
 
-<Include the error content from the check result file here>
+| Phase | 명령어 | targets 지원 |
+|-------|-------|-------------|
+| typecheck | {명령어 또는 ⏭️ 미탐지} | {Yes/No} |
+| lint:fix | {명령어 또는 ⏭️ 미탐지} | {Yes/No} |
+| lint | {명령어 또는 ⏭️ 미탐지} | {Yes/No} |
+| test | {명령어 또는 ⏭️ 미탐지} | {Yes/No} |
 ```
 
-After sd-debug completes → return to **Step 2** (re-run check with a new txt file)
+## 3. 이중 루프 실행
 
-## Step 5: Completion Report
+### 외부 루프 (전체 사이클, 최대 3회)
 
-When all checks pass, output the following:
-- Total number of iterations
-- Summary of fixes made in each iteration
-- Format: `"Check complete: all checks passed after {N} iteration(s)."` + bullet list of fix details
+한 사이클은 다음 3개 Phase를 순차 실행한다. 사이클마다 `수정 발생 여부`를 추적한다.
+
+#### Phase 1 — typecheck
+
+1. 탐지된 typecheck 명령어를 Bash로 실행한다 (targets 지원 시 targets 전달)
+2. 에러가 없으면 → Phase 2로 진행
+3. 에러가 있으면 → 내부 수정-재검사 루프 (4절)
+
+#### Phase 2 — lint:fix
+
+1. 탐지된 lint:fix 명령어를 Bash로 실행한다 (자동 수정 적용)
+2. 탐지된 lint 명령어를 Bash로 실행하여 남은 에러를 확인한다
+3. 에러가 없으면 → Phase 3로 진행
+4. 에러가 있으면 → 내부 수정-재검사 루프 (4절)
+
+lint:fix가 미탐지이고 lint만 탐지된 경우, lint만 실행한다. 에러가 있으면 내부 수정-재검사 루프 (4절)로 진입한다.
+lint:fix와 lint 둘 다 미탐지이면 Phase 2 전체를 건너뛴다.
+
+#### Phase 3 — test
+
+1. 탐지된 test 명령어를 Bash로 실행한다 (targets 지원 시 targets 전달)
+2. 에러가 없으면 → 사이클 종료 판정
+3. 에러가 있으면 → 내부 수정-재검사 루프 (4절)
+
+#### 외부 루프 종료 조건
+
+- 사이클 전체에서 **수정이 하나도 없었으면** 종료 (수렴 완료)
+- 최대 3회 사이클 도달 시 종료 (남은 에러 보고)
+
+## 4. 내부 수정-재검사 루프
+
+각 Phase에서 에러가 발견되면 다음을 **최대 3회** 반복한다:
+
+1. **에러 분석**: 명령어 출력에서 에러 메시지, 파일 경로, 라인 번호를 파싱한다
+2. **코드 읽기**: 에러가 발생한 파일을 Read 도구로 읽는다
+3. **코드 수정**: Edit 도구로 에러의 근본 원인을 수정한다 (5절의 수정 원칙 필수 준수)
+4. **재검사**: 해당 Phase의 명령어를 Bash로 다시 실행한다
+5. **결과 확인**:
+   - 에러 0 → Phase 통과, 다음 Phase로
+   - 에러 남음 + 이전 반복 대비 에러 수가 감소하지 않음 → 남은 에러를 기록하고 다음 Phase로 진행 (조기 종료)
+   - 에러 남음 + 에러 수 감소 + 반복 횟수 < 3 → 1번으로 돌아감
+   - 에러 남음 + 반복 횟수 = 3 → 남은 에러를 기록하고 다음 Phase로 진행
+
+수정이 발생하면 외부 루프의 `수정 발생 여부`를 true로 기록한다.
+
+**명령어 실행 자체 실패 처리:** `command not found`, 타임아웃 등 코드 에러가 아닌 환경 문제로 명령어가 실패하면, 내부 루프에 진입하지 않고 에러 메시지를 사용자에게 보고한 뒤 다음 Phase로 진행한다.
+
+## 5. 수정 원칙 — 편법/우회방법 절대 금지
+
+sd-check는 에러를 자동 수정하므로, "빨리 에러를 없애려는" 편법 유혹이 가장 큰 스킬이다. 반드시 **"왜 이 에러가 발생하는가?"를 근원까지 추적**하여 원인 자체를 제거해야 한다.
+
+### 절대 하지 말 것
+
+- `@ts-ignore`, `@ts-expect-error` 추가로 타입 에러 무시
+- `eslint-disable`, `eslint-disable-next-line` 추가로 lint 에러 무시
+- `try-catch`로 에러를 삼켜서 테스트 통과시키기
+- `as any`, `as unknown as T` 등 타입 단언으로 타입 에러 회피
+- 테스트 기대값을 실제 결과에 맞춰 변경 (테스트 의도를 훼손)
+- 테스트 케이스를 삭제하거나 `.skip` 처리
+- 조건문/플래그 변수를 추가하여 문제 경로를 우회
+
+### 올바른 수정 방향
+
+- 타입 에러 → 타입 정의, 인터페이스, 함수 시그니처를 올바르게 수정
+- lint 에러 → 코딩 규칙에 맞게 코드 구조를 변경
+- 테스트 실패 → 구현 코드의 로직을 수정하여 기대 동작을 달성
+- CLAUDE.md에 코딩룰이 있으면 반드시 준수
+
+## 6. 완료 안내
+
+모든 사이클이 완료되면 결과를 요약하여 출력한다:
+
+```
+## sd-check 결과
+
+- 전체 사이클: N회 실행
+- 최종 상태: ✅ 전체 통과 / ⚠️ 미해결 에러 있음
+
+| Phase | 상태 | 초기 에러 | 수정된 에러 | 남은 에러 |
+|-------|------|----------|-----------|----------|
+| typecheck | ✅/⚠️/⏭️ | N | N | N |
+| lint | ✅/⚠️/⏭️ | N | N | N |
+| test | ✅/⚠️/⏭️ | N | N | N |
+
+### 수정된 파일
+- {파일 경로}: {변경 내용 요약}
+
+### 미해결 에러 (있는 경우)
+- {에러 내용}
+```
+
+- ✅: 에러 0으로 통과
+- ⚠️: 반복 후에도 에러 남음
+- ⏭️: 명령어 미탐지로 건너뜀
+
+커밋 안내: "커밋하지 않습니다. 필요 시 `/commit`을 실행하세요."

@@ -143,7 +143,7 @@ describe("Combobox component", () => {
             onValueChange={handleChange}
             allowsCustomValue
             parseCustomValue={(text) => text}
-            renderValue={(v) => <>{v}</>}
+            renderValue={(v: string) => <>{v}</>}
           />
         </I18nProvider></ConfigProvider>
       ));
@@ -178,7 +178,7 @@ describe("Combobox component", () => {
       expect(handleChange).toHaveBeenCalledWith({ name: "테스트", custom: true });
     });
 
-    it("sets undefined when allowsCustomValue is true without parseCustomValue", async () => {
+    it("uses query text as value when allowsCustomValue is true without parseCustomValue", async () => {
       const onValueChange = vi.fn();
       const { container, getByRole } = render(() => (
         <ConfigProvider clientName="test"><I18nProvider>
@@ -196,7 +196,7 @@ describe("Combobox component", () => {
       fireEvent.keyDown(getByRole("combobox"), { key: "Enter" });
 
       await waitFor(() => {
-        expect(onValueChange).toHaveBeenCalledWith(undefined);
+        expect(onValueChange).toHaveBeenCalledWith("custom text");
       });
     });
   });

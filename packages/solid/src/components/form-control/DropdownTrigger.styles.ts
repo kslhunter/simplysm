@@ -5,7 +5,7 @@ import { type ComponentSize, gap, pad } from "../../styles/control.styles";
 
 export const triggerBaseClass = clsx(
   "inline-flex items-center gap-2",
-  "w-40",
+  "min-w-40",
   "border",
   border.default,
   "rounded",

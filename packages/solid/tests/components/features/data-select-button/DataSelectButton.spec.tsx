@@ -395,9 +395,8 @@ describe("DataSelectButton", () => {
       />
     ));
 
-    const trigger = container.querySelector("[role='combobox']") as HTMLElement;
-    expect(trigger.getAttribute("aria-disabled")).toBe("true");
-    expect(trigger.tabIndex).toBe(-1);
+    const trigger = container.querySelector("button[data-trigger]") as HTMLButtonElement;
+    expect(trigger.disabled).toBe(true);
   });
 
   it("sets required aria attribute", () => {
@@ -412,11 +411,67 @@ describe("DataSelectButton", () => {
       />
     ));
 
-    const trigger = container.querySelector("[role='combobox']") as HTMLElement;
+    const trigger = container.querySelector("button[data-trigger]") as HTMLElement;
     expect(trigger.getAttribute("aria-required")).toBe("true");
   });
 
-  it("opens dialog on Enter key press", async () => {
+  it("trigger is a button element with aria-haspopup='dialog'", () => {
+    const load = createTestLoad();
+    const { container } = renderWithDialog(() => (
+      <DataSelectButton
+        load={load}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [] }}
+        renderItem={(item: TestItem) => <span>{item.name}</span>}
+      />
+    ));
+
+    const trigger = container.querySelector("button[data-trigger]") as HTMLButtonElement;
+    expect(trigger).not.toBeNull();
+    expect(trigger.tagName).toBe("BUTTON");
+    expect(trigger.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(trigger.getAttribute("type")).toBe("button");
+  });
+
+  it("aria-expanded changes dynamically with dialog open state", async () => {
+    const load = createTestLoad();
+
+    const { container } = renderWithDialog(() => (
+      <DataSelectButton
+        load={load}
+        dialog={TestDialogComponent}
+        dialogProps={{ confirmKeys: [1] }}
+        renderItem={(item: TestItem) => <span>{item.name}</span>}
+      />
+    ));
+
+    const trigger = container.querySelector("button[data-trigger]") as HTMLButtonElement;
+
+    // Initially false
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    // Open dialog via search button
+    const searchBtn = container.querySelector("[data-search-button]") as HTMLButtonElement;
+    searchBtn.click();
+
+    // While dialog is open, aria-expanded should be true
+    await vi.waitFor(() => {
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    });
+
+    // Confirm dialog to close it
+    const confirmBtn = document.querySelector(
+      "[data-testid='dialog-confirm']",
+    ) as HTMLButtonElement;
+    confirmBtn.click();
+
+    // After dialog closes, aria-expanded should be false again
+    await vi.waitFor(() => {
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    });
+  });
+
+  it("opens dialog on trigger click", async () => {
     const load = createTestLoad();
     const onValueChange = vi.fn();
 
@@ -430,8 +485,8 @@ describe("DataSelectButton", () => {
       />
     ));
 
-    const trigger = container.querySelector("[role='combobox']") as HTMLElement;
-    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    const trigger = container.querySelector("button[data-trigger]") as HTMLElement;
+    trigger.click();
 
     await vi.waitFor(() => {
       const confirmBtn = document.querySelector(

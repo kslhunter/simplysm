@@ -1,7 +1,8 @@
 import { type Component, createMemo, type JSX, splitProps } from "solid-js";
 import { Time } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { type FieldSize, fieldInputClass, getFieldWrapperClass } from "./Field.styles";
+import { fieldInputClass, getFieldWrapperClass } from "./Field.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { FieldShell } from "./FieldShell";
 
@@ -27,7 +28,7 @@ export interface TimePickerProps {
   readOnly?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Borderless style */
   inset?: boolean;

@@ -9,11 +9,11 @@ import {
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlot } from "../../../helpers/createSlot";
 import {
-  type FieldSize,
   fieldInputClass,
   fieldGapClasses,
   getFieldWrapperClass,
 } from "./Field.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
 import { FieldShell } from "./FieldShell";
@@ -49,7 +49,7 @@ export interface NumberInputProps {
   readOnly?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Borderless style */
   inset?: boolean;
@@ -332,6 +332,7 @@ const NumberInputInner = (props: NumberInputProps): JSX.Element => {
           )}
           value={displayValue()}
           placeholder={local.placeholder}
+          size={local.placeholder?.length}
           title={local.title}
           autocomplete="one-time-code"
           onInput={handleInput}

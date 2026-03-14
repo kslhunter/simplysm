@@ -1,133 +1,111 @@
 ---
 name: sd-spec
-description: Used when requesting "requirements specification", "sd-spec", "requirement analysis", "requirement clarification", etc.
+description: 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성. 사용자가 요구분석/spec 작성을 요청할 때 사용
+argument-hint: "<topic>"
 ---
 
-# SD Spec — Requirements Specification
+# sd-spec: 요구분석서 작성
 
-Receives a task request from the user, clarifies requirements through iterative questioning, and produces a structured requirements specification document.
+사용자 요청과 코드베이스를 분석하여 최대한 상세한 요구분석서(`_spec.md`)를 작성한다.
 
-## MANDATORY RULE — ONE QUESTION PER AskUserQuestion CALL
+## 1. topic 파싱
 
-**Every AskUserQuestion call MUST have exactly 1 item in the `questions` array. NEVER bundle 2+ questions.**
+`$ARGUMENTS`에서 topic을 추출한다.
+- `$ARGUMENTS`가 비어있으면 현재 대화 맥락에서 topic을 파악한다. 대화 맥락도 없으면 AskUserQuestion으로 topic을 요청한다
+- topic을 영문 kebab-case로 변환한다 (예: "ORM 마이그레이션" → `orm-migration`, "사용자 인증" → `user-auth`)
+- 특수문자(`#`, `/`, `\`, `(`, `)`, `.` 등)는 제거하거나 `-`로 치환한다 (예: "DB 연동 (v2.0)" → `db-connection-v2-0`)
+- 이미 kebab-case이면 그대로 사용한다
 
-WRONG — bundling multiple questions:
+## 2. 코드베이스 분석
+
+topic과 관련된 코드베이스를 분석한다.
+- Agent tool (subagent_type: Explore)을 활용하여 관련 파일, 패키지, 의존성을 탐색한다
+- 필요에 따라 Glob, Grep, Read 등을 직접 사용할 수도 있다
+- 분석 결과로 현재 상태, 관련 코드/패키지, 기존 구현 방식을 파악한다
+
+## 3. 반복적 명확화 질문
+
+코드베이스 분석과 사용자 요청을 종합하여 불명확한 점을 파악한다.
+불명확한 점이 있으면 다음 프로세스를 반복한다:
+
+1. 질문 대상에 대한 **자세한 설명을 텍스트로 먼저 출력**한다
+   - 선택지 각각의 장단점, 트레이드오프를 설명한다
+   - 현재 코드베이스의 맥락을 반영한 설명을 제공한다
+2. AskUserQuestion을 **1개만** 호출한다 (한번에 하나씩만 질문)
+3. 답변을 반영하여 추가 분석을 수행한다
+4. 불명확한 점이 더 있으면 1번으로 돌아간다
+
+충분한 정보가 모였다고 판단하면 질문을 종료하고 문서 작성으로 넘어간다.
+
+## 4. 요구분석서 작성
+
+### 기본 섹션 (항상 포함)
+
+다음 기본 섹션을 반드시 포함하여 작성한다:
+
+```markdown
+# 요구분석서: {topic 설명}
+
+## 개요
+
+기능의 목적과 배경을 기술한다.
+
+## 현재 상태
+
+코드베이스 분석 결과를 기술한다.
+- 관련 기존 코드/패키지
+- 현재 구현 방식
+- 관련 의존성
+
+## 요구사항
+
+### R1. {요구사항 제목}
+
+{상세 내용}
+
+### R2. {요구사항 제목}
+
+{상세 내용}
+
+## 영향 범위
+
+| 경로 | 변경 내용 |
+|------|----------|
+| {파일/패키지 경로} | {변경 설명} |
 ```
-questions: [
-  { question: "Which API style?" ... },
-  { question: "Which styling approach?" ... },
-  { question: "What default value?" ... }
-]
-```
 
-RIGHT — one question per call, sequential:
-```
-// Call 1
-questions: [{ question: "Which API style?" ... }]
-// Wait for answer → apply → re-extract unclear items
-// Call 2
-questions: [{ question: "Which styling approach?" ... }]
-// Wait for answer → apply → re-extract unclear items
-// Call 3
-questions: [{ question: "What default value?" ... }]
-```
+### R 번호 부여 기준
 
-**Violating this rule makes the output unusable. There is NO exception.**
+- 독립적으로 구현계획(plan)을 수립할 수 있는 단위로 R 번호를 부여한다
+- 하나의 R 항목은 하나의 `/sd-plan` 호출로 처리 가능한 크기여야 한다
 
----
+### 추가 섹션 (점진적 공개)
 
-## Step 1: Input Verification
+요구사항의 특성을 판단하여 해당하는 참조 파일만 Read하고, 그 양식에 따라 추가 섹션을 작성한다.
+관련 없는 참조 파일은 읽지 않는다.
 
-- Obtain the task description in the following priority order:
-  1. **Task request**: The task description provided by the user when invoking the skill
-  2. **Current conversation**: If no task request is provided, determine the task from the current conversation context
-  3. **AskUserQuestion**: If neither of the above is sufficient, ask "What task should I create a requirements specification for? Please describe the task."
-- Proceed to Step 2 after obtaining a sufficient task description.
+| 요구사항 특성 | 참조 파일 |
+|-------------|----------|
+| UI/화면 관련 | `${CLAUDE_SKILL_DIR}/sections/ui.md` |
+| API/엔드포인트 관련 | `${CLAUDE_SKILL_DIR}/sections/api.md` |
+| DB/테이블/스키마 관련 | `${CLAUDE_SKILL_DIR}/sections/db.md` |
+| 프로세스/흐름 관련 | `${CLAUDE_SKILL_DIR}/sections/process.md` |
+| 아키텍처/패키지 구조 관련 | `${CLAUDE_SKILL_DIR}/sections/architecture.md` |
 
----
+여러 특성이 해당되면 여러 참조 파일을 읽고 각각의 추가 섹션을 모두 포함한다.
 
-## Step 2: Requirement Clarification
+## 5. 파일 저장
 
-### 2-1. Determine Requirement Type and Read Templates
+- 디렉토리: `.tmp/plans/{yyMMddHHmmss}_{topic}/`
+  - `yyMMddHHmmss`는 현재 시간 (Bash `date +%y%m%d%H%M%S`로 생성)
+  - `{topic}`은 1단계에서 변환한 kebab-case topic
+- 파일명: `spec.md`
+- 전체 경로: `.tmp/plans/{yyMMddHHmmss}_{topic}/spec.md`
+- 디렉토리가 없으면 먼저 생성한다
 
-Classify the task into one or more types:
+## 6. 완료 안내
 
-| Type | When to use |
-|------|-------------|
-| process | Workflow, state machine, multi-step procedure |
-| ui | UI component, page, visual element |
-| api | REST endpoint, service interface, data contract |
-| bug-fix | Error correction, unexpected behavior fix |
-| data | ETL, data migration, transformation pipeline |
-| refactoring | Code restructuring without behavior change |
-
-Read the following template files using the Read tool:
-1. **Always**: `refs/req-common.md` (from this skill's directory)
-2. **Per type**: `refs/req-{type}.md` for each applicable type
-3. **No match**: If none of the types apply, use common sections only
-4. **Multiple types**: Read all applicable templates and merge sections (deduplicate overlapping content)
-
-### 2-2. Draft Requirements Specification
-
-Using the template sections from 2-1, draft the requirements specification. Fill in each section based on the task description and conversation context.
-
-### 2-3. Requirement Clarification Cycle
-
-**This is a single-item loop. Each iteration handles exactly ONE unclear item, then restarts from scratch.**
-
-1. **Extract**: Compare the requirements specification against all 7 "Requirement Ambiguity Criteria" below → enumerate unclear items.
-   - 0 unclear items → **STOP this loop. Go to Step 2-4.**
-2. **Dependency analysis**: Identify dependencies. ("A must be decided before B" → B depends on A)
-3. **Ask exactly ONE question**: Pick the single most important item with no unresolved dependencies.
-   a. Present a brief explanation of why this item is unclear.
-   b. Call AskUserQuestion with `questions` array containing **exactly 1 item**. Include 2-5 options.
-   c. **STOP and WAIT** for the user's answer. Do NOT plan, prepare, or output anything about the next question.
-4. **Apply**: Incorporate the answer into the requirements specification.
-5. **RESTART from step 1** — re-extract ALL unclear items from scratch. The previous answer may have resolved multiple items or created new ones. Never assume the remaining questions are still valid.
-
-**NEVER ask 2+ questions before restarting the loop. NEVER plan ahead for "the next question". Each loop iteration = 1 Extract + 1 Question + 1 Answer.**
-
-### Requirement Ambiguity Criteria
-
-> **Core principle**: Anything not explicitly stated by the user and not confirmed in the codebase is **treated as speculation/assumption** and classified as an unclear item. Even if Claude wrote it confidently, it is unclear if the source is unverified.
-
-Compare against all 7 items below **during every review**. To skip an item as "not applicable", there must be concrete evidence (user statement or codebase confirmation).
-
-1. **Unstated user assumptions**: Decisions filled in by Claude that the user did not specify
-2. **Lack of specificity**: Expressions like "handle appropriately", "as needed" without explaining HOW
-3. **Ambiguous scope**: IN/OUT scope is not defined
-4. **Unspecified behavior**: Errors, invalid inputs, default values, etc. are not specified
-5. **Unknown constraints**: Performance, compatibility, or platform requirements are unclear
-6. **Missing edge cases**: Boundary conditions, concurrency, empty states, etc.
-7. **Speculative expressions**: "Probably", "might be", "TBD", "???", etc.
-
-### 2-4. Final Requirement Verification
-
-**Immediately before** declaring "no ambiguities", perform the following:
-
-1. Re-read **every section of the requirements specification**, comparing against the 7 criteria one more time.
-2. Pay special attention to:
-   - Are there any parts that Claude decided on its own without user confirmation?
-   - Do all definitive statements have supporting evidence from user statements or the codebase?
-3. If **even one** unclear item is found, return to the clarification cycle in Step 2-3.
-4. If truly none remain → Move to Step 2-5.
-
-### 2-5. Output Requirements Specification
-
-Present the completed requirements specification to the user and request approval via AskUserQuestion.
-
-- If approved: Save to `.tmp/plans/${TS}_{topic}_req.md`
-  - Generate timestamp first: `TS=$(date +%y%m%d%H%M%S)`
-  - `{topic}`: Short kebab-case based on the task content (e.g., user-registration)
-- If rejected: Incorporate the user's feedback and return to Step 2-3.
-
----
-
-## Step 3: Post-Completion Guidance
-
-Once the requirements specification is saved, output the following:
-
-```
-Requirements specification is complete. Next step:
-1. /sd-plan — Create an implementation plan based on this specification
-```
+문서 작성이 완료되면 다음을 출력한다:
+- 완성된 문서의 파일 경로
+- 사용자에게 직접 문서를 확인할 것을 권장
+- 다음 단계 안내: "다음 단계로 `/sd-plan`을 실행하세요."

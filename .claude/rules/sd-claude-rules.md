@@ -1,23 +1,15 @@
-## Request Handling Rules
+# 사용자의 질문
 
-- Never modify code unless the user explicitly requests changes. (No autonomous decisions in response to questions, etc.)
+- 사용자가 선택에 대한 고민을 물어보면, 각 선택에 대해 10점만점의 점수를 매겨 사용자에게 판단을 돕는다.
+- 사용자의 질문을 바로 수정하지 않는다. 질문에 대한 답을 하고 사용자의 명시적 수정요청을 기다린다.
 
-## Code Writing Rules
+# 문제해결
 
-- Follow the YAGNI principle.
+**핵심 원칙 — 편법/우회방법 절대 금지:**
+- 증상을 숨기는 해결이 아닌, 원인 자체를 제거하는 방향으로 분석한다
+- 예: `setTimeout` 추가, `try-catch`로 에러 무시, 플래그 변수로 조건 우회 등은 편법이다
+- 반드시 "왜 이 문제가 발생하는가?"를 근원까지 추적한다
 
-## Git Rules
+# AskUserQuestion 도구 사용
 
-- Never use `git stash`.
-- Never use `git worktree`.
-
-## Playwright Rules
-
-- All Playwright output (screenshots, PDFs, downloads, etc.) must be saved to the `.tmp/playwright/` directory.
-- When using Playwright MCP tools with a `filename` parameter, always prefix the filename with `.tmp/playwright/` (e.g., `filename: ".tmp/playwright/my-screenshot.png"`).
-- Never pass a bare filename without the `.tmp/playwright/` path prefix.
-
-## Documentation Rules for LLMs
-
-- Write in English. (including code comments)
-
+`AskUserQuestion` 도구사용전에 무조건 `---`를 마지막 라인에 출력할 것.

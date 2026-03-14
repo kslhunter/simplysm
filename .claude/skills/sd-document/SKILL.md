@@ -1,109 +1,115 @@
 ---
 name: sd-document
-description: Used when requesting "read/analyze documents", "extract file content", "create DOCX/XLSX", "review customer documents", or "export data" related to .docx, .xlsx, .pptx, .pdf files.
+description: 문서 파일(.docx/.xlsx/.pptx/.pdf)을 읽어 분석하거나, 새 문서를 생성. 사용자가 워드/엑셀/PPT/PDF 파일의 분석이나 생성을 요청할 때 사용
+argument-hint: "<문서 파일 경로>"
 ---
 
-# SD Document — Read/Write Document Files
+# sd-document: 문서 파일 읽기/쓰기
 
-Reads or writes document files (.docx/.xlsx/.pptx/.pdf) using Python scripts. When reading, extracts text and images along with positional information, saves images to files, and analyzes them with Claude Read.
+문서 파일(.docx/.xlsx/.pptx/.pdf)을 Python 스크립트로 읽어 텍스트와 이미지를 추출하거나, 새 문서를 생성한다.
 
-ARGUMENTS: Document file path (required). Specify a `.docx`, `.xlsx`, `.pptx`, or `.pdf` file path.
+## 1. 인자 파싱
 
----
+`$ARGUMENTS`에서 문서 파일 경로를 추출한다.
+- `$ARGUMENTS`가 비어있으면 현재 대화 맥락에서 `.docx`, `.xlsx`, `.pptx`, `.pdf` 파일 경로를 찾는다. 대화 맥락도 없으면 AskUserQuestion으로 파일 경로를 요청한다
+- 지원 확장자(`.docx`, `.xlsx`, `.pptx`, `.pdf`)가 아니면 "지원하지 않는 파일 형식입니다"를 안내하고 종료한다
 
-## Step 1: Determine Task Direction
+## 2. 작업 방향 결정
 
-Extract the file path from ARGUMENTS and determine whether the user's request is **read** (analyze/extract) or **write** (create/edit).
+사용자의 요청이 **읽기**(분석/추출)인지 **쓰기**(생성)인지 **편집**(기존 파일 수정)인지 판단한다.
 
-- **Read** → Go to Step 2
-- **Write** → Go to Step 4
+- **읽기** → 3단계로 이동
+- **쓰기** → 5단계로 이동
+- **편집** → 3단계로 먼저 이동하여 기존 내용을 파악한 뒤, 5단계에서 수정 스크립트를 작성한다
 
-### Format Support Matrix
+### 포맷별 지원 현황
 
-| Format | Read | Write | Library |
-|--------|------|-------|---------|
-| DOCX | Supported | Supported | `python-docx` |
-| XLSX | Supported | Supported | `openpyxl`, `pandas` |
-| PPTX | Supported | Not supported | `python-pptx` |
-| PDF  | Supported | Not supported | `pdfplumber`, `pypdf` |
+| 포맷 | 읽기 | 쓰기 | 라이브러리 |
+|------|------|------|-----------|
+| DOCX | 지원 | 지원 | `python-docx` |
+| XLSX | 지원 | 지원 | `openpyxl`, `pandas` |
+| PPTX | 지원 | 미지원 | `python-pptx` |
+| PDF  | 지원 | 미지원 | `pdfplumber`, `pypdf` |
 
-Missing packages are automatically installed on first script execution.
+누락 패키지는 스크립트 최초 실행 시 자동 설치된다.
 
-## Step 2: Read Document (Run Extraction Script)
+## 3. 읽기: 추출 스크립트 실행
 
-Run the extraction script matching the file extension:
+파일 확장자에 맞는 추출 스크립트를 Bash로 실행한다:
 
 ```bash
-python .claude/skills/sd-document/extract_docx.py <file_path>
-python .claude/skills/sd-document/extract_xlsx.py <file_path>
-python .claude/skills/sd-document/extract_pptx.py <file_path>
-python .claude/skills/sd-document/extract_pdf.py  <file_path>
+python ${CLAUDE_SKILL_DIR}/extract_docx.py <파일경로>
+python ${CLAUDE_SKILL_DIR}/extract_xlsx.py <파일경로>
+python ${CLAUDE_SKILL_DIR}/extract_pptx.py <파일경로>
+python ${CLAUDE_SKILL_DIR}/extract_pdf.py  <파일경로>
 ```
 
-### Output
-- **stdout**: Text and positional information (Markdown format)
-- **Image files**: Saved to `<filename>_files/` directory
+### 출력
 
-### Positional Information
+- **stdout**: 텍스트 및 위치 정보 (Markdown 형식)
+- **이미지 파일**: `<파일명>_files/` 디렉토리에 저장
 
-| Format | Position Representation |
-|--------|----------------------|
-| DOCX | Paragraph flow order (text-image inline) |
-| XLSX | Cell position (A1, B2, etc.) |
-| PPTX | Shape left/top coordinates (inches) + slide number |
-| PDF  | Page number |
+### 위치 정보
 
-## Step 3: Analyze Extraction Results
+| 포맷 | 위치 표현 |
+|------|----------|
+| DOCX | 문단 흐름 순서 (텍스트-이미지 인라인) |
+| XLSX | 셀 위치 (A1, B2 등) |
+| PPTX | Shape 좌표 (left/top 인치) + 슬라이드 번호 |
+| PDF  | 페이지 번호 |
 
-Check the extracted file paths from Step 2 output and perform the following:
+## 4. 읽기: 추출 결과 분석
 
-1. **Images**: Open each image saved in the `_files/` directory with the **Read** tool for visual analysis
-2. **Text**: Analyze/summarize the text output to stdout according to the user's request
+3단계 출력에서 추출된 파일 경로를 확인하고 다음을 수행한다:
 
-## Step 4: Write Document
+1. **이미지**: `_files/` 디렉토리에 저장된 각 이미지를 **Read** 도구로 열어 시각적 분석
+2. **텍스트**: stdout에 출력된 텍스트를 사용자 요청에 맞게 분석/요약
 
-Write a Python script to create or edit documents according to the user's request.
+분석 완료 후 종료한다.
+
+## 5. 쓰기: 문서 생성/편집
+
+사용자 요청에 따라 Python 스크립트를 작성하여 문서를 생성하거나 편집한다.
+PPTX, PDF 쓰기는 미지원이므로 요청 시 안내한다.
 
 ### DOCX (`python-docx`)
-
-For email templates and simple reports.
 
 ```python
 from docx import Document
 
-doc = Document()                          # New document
-# doc = Document("existing.docx")         # Edit existing document
-doc.add_heading("Title", level=1)
-doc.add_paragraph("Body content")
+doc = Document()                          # 새 문서
+# doc = Document("existing.docx")         # 기존 문서 편집
+doc.add_heading("제목", level=1)
+doc.add_paragraph("본문 내용")
 table = doc.add_table(rows=2, cols=3)
-table.cell(0, 0).text = "Item"
+table.cell(0, 0).text = "항목"
 doc.save("output.docx")
 ```
 
-Edit existing document: Open with `Document("existing.docx")` and replace `paragraph.text`, modify `table.cell().text`.
+기존 문서 편집: `Document("existing.docx")`로 열어 `paragraph.text`, `table.cell().text`를 수정한다.
 
 ### XLSX (`openpyxl`)
 
-Data and formula focused. Formatting (colors, borders) is not required.
+데이터와 수식 중심. 서식(색상, 테두리)은 필수가 아니다.
 
 ```python
 from openpyxl import Workbook
 
 wb = Workbook()
 ws = wb.active
-ws["A1"] = "Item"
-ws["B1"] = "Quantity"
-ws.append(["Apple", 10])
-ws.append(["Pear", 20])
+ws["A1"] = "항목"
+ws["B1"] = "수량"
+ws.append(["사과", 10])
+ws.append(["배", 20])
 ws["B4"] = "=SUM(B2:B3)"
 wb.save("output.xlsx")
 ```
 
-Edit existing file: Open with `load_workbook("existing.xlsx")` and modify.
-Export pandas DataFrame: `df.to_excel("output.xlsx", index=False)`
+기존 파일 편집: `load_workbook("existing.xlsx")`로 열어 수정한다.
+pandas DataFrame 내보내기: `df.to_excel("output.xlsx", index=False)`
 
-## Common Mistakes
+## 6. 주의사항
 
-- **Character encoding**: Scripts have built-in UTF-8 handling, so always extract through scripts
-- **Missing images**: After extraction, always read images in the `_files/` directory
-- **XLSX data_only**: `load_workbook(data_only=True)` removes formulas — use `data_only=False` to preserve formulas
+- **문자 인코딩**: 스크립트에 UTF-8 처리가 내장되어 있으므로 반드시 스크립트를 통해 추출한다
+- **이미지 누락**: 추출 후 `_files/` 디렉토리의 이미지를 반드시 Read한다
+- **XLSX data_only**: `load_workbook(data_only=True)`는 수식을 제거한다. 수식 보존이 필요하면 `data_only=False`를 사용한다

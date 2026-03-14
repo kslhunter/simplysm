@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Extract data and images from XLSX files with cell positions."""
 
-import sys
 from _common import (
     setup_encoding, make_output_paths, print_header, save_image,
     print_image_summary, run_cli,
@@ -24,12 +23,11 @@ def extract(file_path):
         print(f"## Sheet: {sheet_name}\n")
 
         # Data extraction
-        rows = list(ws.iter_rows(values_only=False))
-        if not rows:
+        if ws.max_row is None or ws.max_row == 0:
             print("(empty sheet)\n")
             continue
 
-        for row in rows:
+        for row in ws.iter_rows(values_only=False):
             cells = []
             for cell in row:
                 val = cell.value

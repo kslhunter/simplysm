@@ -1,7 +1,7 @@
 .tmp
 .coverage
-.playwright-mcp
-.worktrees
+__pycache__
+.claude/worktrees
 
 .cache
 node_modules

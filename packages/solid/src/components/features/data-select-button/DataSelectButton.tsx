@@ -149,7 +149,6 @@ export function DataSelectButton<
     "onValueChange",
     "load",
     "dialog",
-    "dialogProps",
     "dialogOptions",
     "renderItem",
     "multiple",
@@ -174,9 +173,9 @@ export function DataSelectButton<
   // Controlled/uncontrolled pattern
   type ValueType = TKey | TKey[] | undefined;
   const [getValue, setValue] = createControllableSignal<ValueType>({
-    value: () => local.value,
+    value: () => local.value as ValueType,
     onChange: () => local.onValueChange as ((v: ValueType) => void) | undefined,
-  } as Parameters<typeof createControllableSignal<ValueType>>[0]);
+  });
 
   // Track keys for loading
   const [loadKeys, setLoadKeys] = createSignal<TKey[]>(normalizeKeys(local.value));
@@ -216,27 +215,38 @@ export function DataSelectButton<
     return local.validate?.(v);
   });
 
+  // Dialog open state for aria-expanded
+  const [isDialogOpen, setIsDialogOpen] = createSignal(false);
+
   // Open dialog
   const handleOpenDialog = async () => {
     if (local.disabled) return;
 
-    const result = (await dialog.show(
-      local.dialog,
-      {
-        ...((local as any).dialogProps ?? {}),
+    setIsDialogOpen(true);
+    try {
+      const dialogProps =
+        (props as { dialogProps?: Record<string, unknown> }).dialogProps ?? {};
+      const showProps = {
+        ...dialogProps,
         selectionMode: local.multiple ? "multiple" : "single",
         selectedKeys: normalizeKeys(getValue()) as (string | number)[],
-      },
-      local.dialogOptions,
-    )) as DataSelectDialogResult<TKey> | undefined;
+      } as Omit<TDialogProps, "close">;
+      const result = (await dialog.show(
+        local.dialog as Component<SelectDialogBaseProps<TKey>>,
+        showProps as Omit<SelectDialogBaseProps<TKey>, "close">,
+        local.dialogOptions,
+      )) as DataSelectDialogResult<TKey> | undefined;
 
-    if (result) {
-      const newKeys = result.selectedKeys;
-      if (local.multiple) {
-        setValue(newKeys);
-      } else {
-        setValue(newKeys.length > 0 ? newKeys[0] : undefined);
+      if (result) {
+        const newKeys = result.selectedKeys;
+        if (local.multiple) {
+          setValue(newKeys);
+        } else {
+          setValue(newKeys.length > 0 ? newKeys[0] : undefined);
+        }
       }
+    } finally {
+      setIsDialogOpen(false);
     }
   };
 
@@ -283,23 +293,17 @@ export function DataSelectButton<
   return (
     <Invalid message={errorMsg()} variant="border" lazyValidation={local.lazyValidation}>
       <div data-data-select-button class="group inline-flex items-center">
-        <div
-          role="combobox"
+        <button
+          type="button"
+          data-trigger
           aria-haspopup="dialog"
-          aria-expanded={false}
-          aria-disabled={local.disabled || undefined}
+          aria-expanded={isDialogOpen()}
           aria-required={local.required || undefined}
-          tabIndex={local.disabled ? -1 : 0}
-          class={triggerClassName()}
-          onKeyDown={(e) => {
-            if (local.disabled) return;
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              void handleOpenDialog();
-            }
-          }}
+          disabled={local.disabled || undefined}
+          class={twMerge("appearance-none font-inherit text-inherit text-left", triggerClassName())}
+          onClick={() => void handleOpenDialog()}
         >
-          <div class="flex-1 truncate">{renderSelectedDisplay()}</div>
+          <div class="flex-1 whitespace-nowrap">{renderSelectedDisplay()}</div>
           <div class={clsx("flex items-center", gap.sm)}>
             <Show when={clearable()}>
               <button
@@ -318,7 +322,10 @@ export function DataSelectButton<
                 type="button"
                 data-search-button
                 class={twMerge(actionButtonClass, text.muted, "hover:text-primary-500")}
-                onClick={() => void handleOpenDialog()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleOpenDialog();
+                }}
                 tabIndex={-1}
                 aria-label={i18n.t("dataSelectButton.search")}
               >
@@ -326,7 +333,7 @@ export function DataSelectButton<
               </button>
             </Show>
           </div>
-        </div>
+        </button>
       </div>
     </Invalid>
   );

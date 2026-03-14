@@ -137,7 +137,9 @@ const ComboboxItem: ParentComponent<ComboboxItemProps> = <TValue,>(
 //#endregion
 
 // Props definition
-export interface ComboboxProps<TValue = unknown> {
+
+/** Base props shared by all Combobox variants */
+interface ComboboxBaseProps<TValue> {
   /** Currently selected value */
   value?: TValue;
 
@@ -149,12 +151,6 @@ export interface ComboboxProps<TValue = unknown> {
 
   /** Debounce delay (default: 300ms) */
   debounceMs?: number;
-
-  /** Allow custom values */
-  allowsCustomValue?: boolean;
-
-  /** Custom value parsing function */
-  parseCustomValue?: (text: string) => TValue;
 
   /** Function to render selected value (required) */
   renderValue: (value: TValue) => JSX.Element;
@@ -190,6 +186,29 @@ export interface ComboboxProps<TValue = unknown> {
   children?: JSX.Element;
 }
 
+/** Custom value with parser: TValue can be anything */
+interface ComboboxCustomParserProps<TValue> extends ComboboxBaseProps<TValue> {
+  allowsCustomValue: true;
+  parseCustomValue: (text: string) => TValue;
+}
+
+/** Custom value without parser: TValue MUST be string */
+interface ComboboxCustomStringProps extends ComboboxBaseProps<string> {
+  allowsCustomValue: true;
+  parseCustomValue?: undefined;
+}
+
+/** No custom value (default) */
+interface ComboboxDefaultProps<TValue> extends ComboboxBaseProps<TValue> {
+  allowsCustomValue?: false;
+  parseCustomValue?: undefined;
+}
+
+export type ComboboxProps<TValue = unknown> =
+  | ComboboxCustomParserProps<TValue>
+  | ComboboxCustomStringProps
+  | ComboboxDefaultProps<TValue>;
+
 /**
  * Combobox component
  *
@@ -220,8 +239,15 @@ export interface ComboboxProps<TValue = unknown> {
  * </Combobox>
  * ```
  */
+/** Internal props used after splitProps — collapses the discriminated union for runtime use */
+interface ComboboxInternalProps<TValue> extends ComboboxBaseProps<TValue> {
+  allowsCustomValue?: boolean;
+  parseCustomValue?: (text: string) => TValue;
+  children?: JSX.Element;
+}
+
 const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
-  const [local, rest] = splitProps(props as ComboboxProps<TValue> & { children?: JSX.Element }, [
+  const [local, rest] = splitProps(props as ComboboxInternalProps<TValue>, [
     "children",
     "class",
     "style",
@@ -251,9 +277,9 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
 
   // Selected value management (controlled/uncontrolled pattern)
   const [getValue, setInternalValue] = createControllableSignal<TValue | undefined>({
-    value: () => local.value,
-    onChange: () => local.onValueChange,
-  } as Parameters<typeof createControllableSignal<TValue | undefined>>[0]);
+    value: () => local.value as TValue | undefined,
+    onChange: () => local.onValueChange as ((value: TValue | undefined) => void) | undefined,
+  });
 
   // Debounce queue (created once on mount, debounceMs only used as initial value)
   const debounceQueue = new DebounceQueue(local.debounceMs ?? 300);
@@ -270,7 +296,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
 
   // Select value
   const selectValue = (value: TValue) => {
-    setInternalValue(value as any);
+    setInternalValue(value);
     setQuery("");
     setOpen(false);
   };
@@ -346,9 +372,8 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
       if (local.parseCustomValue) {
         selectValue(local.parseCustomValue(query()));
       } else {
-        setInternalValue(undefined as any);
-        setQuery("");
-        setOpen(false);
+        // TValue is string when parseCustomValue is not provided (enforced by type system)
+        selectValue(query() as TValue);
       }
     }
   };
@@ -391,6 +416,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
           class={clsx("min-w-0 flex-1 bg-transparent outline-none", text.placeholder)}
           value={query()}
           placeholder={currentValue === undefined ? local.placeholder : undefined}
+          size={currentValue === undefined && local.placeholder ? local.placeholder.length : undefined}
           disabled={local.disabled}
           autocomplete="one-time-code"
           onInput={handleInput}
@@ -399,7 +425,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
     }
 
     // Show value if selected and dropdown is closed
-    return <div class="truncate">{local.renderValue(currentValue)}</div>;
+    return <div class="whitespace-nowrap">{local.renderValue(currentValue)}</div>;
   };
 
   // Render items
@@ -454,7 +480,7 @@ const ComboboxInner = <TValue,>(props: ComboboxProps<TValue>) => {
                 style={local.style}
                 onKeyDown={handleTriggerKeyDown}
               >
-                <div class="flex-1 overflow-hidden whitespace-nowrap">{renderDisplayContent()}</div>
+                <div class="flex-1 whitespace-nowrap">{renderDisplayContent()}</div>
                 <div class={chevronWrapperClass}>
                   <Show
                     when={busyCount() > 0}

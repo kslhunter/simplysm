@@ -32,7 +32,7 @@
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",
     "consola": "^3.4.2",
-    "esbuild": "^0.27.3",
+    "esbuild": "^0.27.4",
     "esbuild-plugin-solid": "^0.6.0",
     "eslint": "^9.39.4",
     "execa": "^9.6.1",
@@ -48,7 +48,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
-    "vite-plugin-solid": "^2.11.10",
+    "vite-plugin-solid": "^2.11.11",
     "vite-tsconfig-paths": "^6.1.1",
     "yargs": "^18.0.0"
   },

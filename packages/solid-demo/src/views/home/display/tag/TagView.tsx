@@ -29,25 +29,25 @@ export function TagView() {
       {/* Use Cases */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Use Cases</h2>
-        <div class="space-y-4">
-          <div class="flex items-center gap-2">
-            <span class="font-bold">Status:</span>
+        <div>
+          <div>
+            Status:
             <Tag theme="success">Completed</Tag>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold">Status:</span>
+          <div>
+            Status:
             <Tag theme="warning">Pending</Tag>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold">Status:</span>
+          <div>
+            Status:
             <Tag theme="danger">Error</Tag>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold">Version:</span>
+          <div>
+            Version:
             <Tag theme="info">v1.0.0</Tag>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold">Category:</span>
+          <div>
+            Category:
             <Tag theme="primary">Announcement</Tag>
             <Tag theme="base">General</Tag>
           </div>
@@ -57,44 +57,26 @@ export function TagView() {
       {/* In a List */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">In a List</h2>
-        <div class="divide-y divide-base-200 rounded border border-base-200 dark:divide-base-700 dark:border-base-700">
-          <div class="flex items-center justify-between p-3">
+        <div>
+          <div>
             <span>User registration completed</span>
             <Tag theme="success">Completed</Tag>
           </div>
-          <div class="flex items-center justify-between p-3">
+          <div>
             <span>Payment processing in progress</span>
             <Tag theme="warning">In Progress</Tag>
           </div>
-          <div class="flex items-center justify-between p-3">
+          <div>
             <span>Server error occurred</span>
             <Tag theme="danger">Failed</Tag>
           </div>
-          <div class="flex items-center justify-between p-3">
+          <div>
             <span>New feature deployed</span>
             <Tag theme="info">New</Tag>
           </div>
         </div>
       </section>
 
-      {/* Custom Styling */}
-      <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Custom Styling</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          You can apply additional styles using the class prop.
-        </p>
-        <div class="flex flex-wrap items-center gap-2">
-          <Tag theme="primary" class="text-lg">
-            Large Tag
-          </Tag>
-          <Tag theme="success" class="rounded-full px-3">
-            Round Tag
-          </Tag>
-          <Tag theme="info" class="font-bold">
-            Bold Tag
-          </Tag>
-        </div>
-      </section>
     </div>
   );
 }

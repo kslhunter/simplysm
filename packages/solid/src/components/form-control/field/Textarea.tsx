@@ -4,7 +4,8 @@ import { twMerge } from "tailwind-merge";
 import { text } from "../../../styles/base.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
-import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
+import { textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
+import type { ComponentSize } from "../../../styles/control.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { FieldShell } from "./FieldShell";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
@@ -29,7 +30,7 @@ export interface TextareaProps {
   readOnly?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Borderless style */
   inset?: boolean;

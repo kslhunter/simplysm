@@ -23,9 +23,8 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import type { FieldSize } from "../field/Field.styles";
 import { bg, border, text } from "../../../styles/base.styles";
-import { pad } from "../../../styles/control.styles";
+import { type ComponentSize, pad } from "../../../styles/control.styles";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface RichTextEditorProps {
@@ -39,7 +38,7 @@ export interface RichTextEditorProps {
   disabled?: boolean;
 
   /** Size */
-  size?: FieldSize;
+  size?: ComponentSize;
 
   /** Custom class */
   class?: string;
@@ -49,7 +48,7 @@ export interface RichTextEditorProps {
 }
 
 // Editor content size-based style
-const editorContentSizeClasses: Record<FieldSize, string> = {
+const editorContentSizeClasses: Record<ComponentSize, string> = {
   md: clsx(pad.xl, "min-h-32"),
   xs: clsx(pad.xs, "min-h-12"),
   sm: clsx(pad.sm, "min-h-24"),
@@ -151,7 +150,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
       {...rest}
       data-rich-text-editor
       class={twMerge(
-        clsx("flex flex-col bg-primary-50 dark:bg-primary-950/30", text.default, "border", border.default, "rounded focus-within:border-primary-500"),
+        clsx("flex flex-col", text.default, "border", border.default, "rounded focus-within:border-primary-500"),
         local.disabled && clsx(bg.muted, text.muted),
         local.class,
       )}
@@ -164,7 +163,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
           </Show>
         )}
       </Show>
-      <div ref={editorRef} class={twMerge("outline-none prose prose-sm max-w-none dark:prose-invert", editorContentSizeClasses[local.size ?? "md"])} />
+      <div ref={editorRef} class={twMerge("outline-none prose prose-sm max-w-none dark:prose-invert bg-primary-50 dark:bg-primary-950/30", editorContentSizeClasses[local.size ?? "md"])} />
     </div>
   );
 };

@@ -1,146 +1,125 @@
 ---
 name: sd-plan
-description: This skill is used when requesting "make a plan", "create a plan", "sd-plan", "implementation plan", "work plan", etc.
+description: 요구분석서 또는 점검 결과를 기반으로 TDD 방식의 구현계획서를 작성. 사용자가 구현계획/plan 작성을 요청할 때 사용
+argument-hint: "<spec/audit 파일 경로 [R번호]> 또는 <간단한 요구사항>"
 ---
 
-# SD Plan — Implementation Plan Generation
+# sd-plan: 구현계획서 작성
 
-Receives a task description (from a requirements specification file, calling skill findings, or direct user input), investigates the codebase, clarifies implementation details, and produces an implementation plan with dependency information.
+요구분석서(spec) 또는 점검 결과(audit)를 기반으로 TDD 방식의 세부 구현 계획을 수립한다.
 
-## MANDATORY RULE — ONE QUESTION PER AskUserQuestion CALL
+## 1. 인자 파싱
 
-**Every AskUserQuestion call MUST have exactly 1 item in the `questions` array. NEVER bundle 2+ questions.**
+`$ARGUMENTS`를 분석하여 호출 방식을 결정한다.
 
-WRONG — bundling multiple questions:
+### 1-1. spec/audit 파일 경로 (+ 선택적 R번호)
+
+`$ARGUMENTS`에 `.md`로 끝나는 경로가 포함된 경우:
+- 해당 파일을 Read한다
+- 경로 뒤에 `R숫자` 또는 숫자만 있으면 해당 R항목만 대상으로 한다
+  - 예: `.tmp/plans/260314143000_example/spec.md R2` → R2만 대상
+  - 예: `.tmp/plans/260314143000_example/spec.md 3` → R3만 대상
+- 경로만 있으면 전체 요구사항을 대상으로 한다
+
+### 1-2. 인자 없음
+
+`$ARGUMENTS`가 비어있으면:
+- 현재 대화 맥락에서 spec/audit 내용을 파악한다
+- 대화에도 spec/audit가 없으면 AskUserQuestion으로 spec 또는 review 파일 경로, 또는 요구사항을 요청한다
+
+### 1-3. 간단한 요구사항 텍스트
+
+위 조건에 해당하지 않으면 (`.md` 경로가 아닌 일반 텍스트):
+- spec/audit 없이 해당 텍스트를 요구사항으로 직접 사용한다
+- 이 경우 spec/audit 참조 없이 바로 plan을 수립한다
+
+## 2. 요구사항 분석 및 작업 계획
+
+요구사항을 독립적 기능 단위로 작업을 분리하고, 각 작업의 유형을 분류하여 테스트 전략을 결정한다.
+- 각 작업은 하나의 독립적인 TDD 사이클로 처리할 수 있는 크기여야 한다
+- 작업 간 의존성이 있으면 의존성을 명시한다
+
+**작업 유형별 테스트 전략:**
+
+| 작업 유형 | 테스트 전략 |
+|----------|-----------|
+| 코드 작업 (로직) | 프로젝트 테스트 환경(vitest) 확인 → 있으면 테스트 코드 작성 계획 |
+| 코드 작업 (로직, 테스트 환경 없음) | subagent를 통한 직접 테스트 방안 계획 (sd-plan-dev에서 `_test.md` 작성) |
+| 코드 작업 (비로직, 텍스트 변경 등) | 테스트 생략 가능 |
+| 비코드 작업 (LLM용 문서) | subagent를 통한 테스트 방안 계획 (sd-plan-dev에서 `_test.md` 작성) |
+| 비코드 작업 (일반 문서) | 테스트 생략 가능 |
+
+**테스트 시나리오 작성 원칙:**
+- 테스트는 **상태(정적)가 아닌 동작**을 검증한다
+  - 상태 (X): "파일에 특정 텍스트가 적혀있는지 확인" → 정적 검사에 불과
+  - 현상 (O): "실행했을 때 기대한 동작이 나타나는지 확인" → 실제 동작 검증
+- 예: LLM용 문서 테스트 시 "SKILL.md에 '테스트 재실행' 문구가 있는지"가 아니라 "LLM이 SKILL.md를 따라 실행했을 때 실제로 테스트를 재실행하는지"를 검증한다
+
+## 3. 구현계획서 초안 작성
+
+분석 결과를 바탕으로 아래 고정 구조의 구현계획서 초안을 작성한다.
+불명확한 부분이 있더라도 최선의 판단으로 초안을 완성한다.
+
+```markdown
+# 구현계획서: {제목}
+
+**참조 문서:** `{참조 문서 경로}` {R번호}
+**대상:** `{대상 파일/패키지 경로}` {신규 작성/수정}
+**작업 유형:** {유형} → {테스트 전략 요약}
+
+## 작업 분석
+
+{요구사항을 기능 단위로 분리한 결과}
+
+## TDD 계획
+
+### RED Phase: {테스트 파일명} 작성 및 실패 확인
+
+{테스트 시나리오 목록}
+
+### GREEN Phase: {구현 대상} 작성
+
+{구현 계획 상세}
+
+구현 후 테스트 재실행하여 통과 확인
+
+### Refactor Phase
+
+`/simplify` 수행하여 품질 개선 → 테스트 재실행하여 통과 확인
 ```
-questions: [
-  { question: "Which API style?" ... },
-  { question: "Which styling approach?" ... },
-  { question: "What default value?" ... }
-]
-```
 
-RIGHT — one question per call, sequential:
-```
-// Call 1
-questions: [{ question: "Which API style?" ... }]
-// Wait for answer → apply → re-extract unclear items
-// Call 2
-questions: [{ question: "Which styling approach?" ... }]
-// Wait for answer → apply → re-extract unclear items
-// Call 3
-questions: [{ question: "What default value?" ... }]
-```
+**참조 문서 표기 규칙:**
+- spec/audit 파일 경로로 호출된 경우: `**참조 문서:** {경로} {R번호}` 형식으로 상단에 명시
+- 현재 대화의 spec/audit인 경우: `**참조 문서:** 현재 대화의 spec/audit` 으로 명시
+- spec/audit 없이 호출된 경우: `**참조 문서:**` 줄 생략
 
-**Violating this rule makes the output unusable. There is NO exception.**
+**다중 작업인 경우:**
+- 작업별로 `## 작업 1: {제목}`, `## 작업 2: {제목}` ... 으로 구분하고 각 작업 내에 작업 유형, TDD 계획 포함
+- 작업 간 의존성이 있으면 `## 작업 의존성` 섹션에 명시
 
----
+## 4. 초안 기반 검토 질문
 
-## Step 1: Input Verification
+초안은 사용자에게 출력하지 않는다 (최종본이 파일로 저장되므로 대화창 출력은 불필요).
+불명확하거나 확인이 필요한 부분이 있으면 다음 프로세스를 반복한다:
 
-- Obtain the task description in the following priority order:
-  1. **File path**: If a `_req.md` file path is provided in args, read the file as the task input
-  2. **Task request**: Direct task description provided by the user or calling skill
-  3. **Current conversation**: If no args are provided, determine the task from the current conversation context
-  4. **AskUserQuestion**: If none of the above is sufficient, ask "What task should I create an implementation plan for? Please describe the task or provide a requirements specification file path."
-- Proceed to Step 2 after obtaining a sufficient task description.
+1. 초안의 특정 부분을 인용하며 **자세한 설명을 텍스트로 먼저 출력**한다
+   - "초안에서 X를 Y로 계획했는데, Z 방식도 고려할 수 있습니다" 형식으로 구체적으로 질문한다
+   - 선택지 각각의 장단점, 트레이드오프를 설명한다
+2. AskUserQuestion을 **1개만** 호출한다 (한번에 하나씩만 질문)
+3. 답변을 반영하여 초안을 수정한다
+4. 추가 확인이 필요하면 1번으로 돌아간다
 
----
+불명확한 점이 없거나 충분히 확인되면 질문을 종료하고 파일 저장으로 넘어간다.
 
-## Step 2: Implementation Clarification
+## 5. 파일 저장
 
-### 2-1. Investigate Codebase
+- spec/audit 파일 기반 호출: 해당 문서와 동일 디렉토리에 저장. 전체면 `plan.md`, 특정 R항목이면 `{R번호}_plan.md` (예: `R2_plan.md`)
+- 현재 대화의 spec/audit 기반이고 파일 경로가 있는 경우: 해당 문서와 동일 디렉토리에 저장. 파일명 규칙 동일
+- spec/audit 없이 호출된 경우: 새 디렉토리 `.tmp/plans/{yyMMddHHmmss}_{topic}/plan.md` 생성 (`yyMMddHHmmss`는 Bash `date +%y%m%d%H%M%S`, `{topic}`은 영문 kebab-case)
 
-Before drafting the implementation plan, investigate the codebase to understand:
-- Existing patterns and conventions relevant to the task
-- File structure and organization
-- Related existing code that will be modified or extended
-- Available utilities, frameworks, and libraries
+## 6. 완료 안내
 
-Use the Explore agent or direct Glob/Grep/Read tools as appropriate.
-
-### 2-2. Draft Implementation Plan
-
-**Every implementation item MUST include the following metadata:**
-- **Depends on**: List of item numbers this item depends on (or "none")
-- **Target files**: List of specific file paths this item will create or modify
-
-**Every implementation item MUST be structured as 3 sub-steps: RED → Implement → GREEN.** NEVER skip or merge these sub-steps regardless of task simplicity.
-
-Classify the task first, then apply the matching TDD approach:
-
-**If code + test env exists:**
-1. **RED** — Write a failing test file, run it → confirm FAIL
-2. **Implement** — Write the minimum code to pass
-3. **GREEN** — Run the test → confirm PASS
-
-**If code + no test env:**
-1. **RED** — Define a CLI/dry-run command, run it → confirm FAIL
-2. **Implement** — Write the minimum code to pass
-3. **GREEN** — Run the same command → confirm PASS
-
-**If non-code (config, docs, prompts, SKILL.md, etc.):**
-Prompt/config files cannot be unit-tested. Use **Agent behavioral simulation**: launch an Agent that reads the file and naturally follows its instructions with a sample task. **Do NOT tell the Agent what behavior you are testing** (this biases the result and invalidates the test).
-1. **RED** — Launch Agent with a sample task against the **current** file → confirm the Agent's output shows the **problematic** behavior (FAIL)
-2. **Implement** — Apply your edits
-3. **GREEN** — Launch same Agent with the same task against the **modified** file → confirm the Agent's output shows the **desired** behavior (PASS). If FAIL → fix implementation → re-run GREEN until PASS.
-
-### 2-3. Implementation Clarification Cycle
-
-**This is a single-item loop. Each iteration handles exactly ONE unclear item, then restarts from scratch.**
-
-1. **Extract**: Compare the implementation plan against all 5 "Implementation Ambiguity Criteria" below → enumerate unclear items.
-   - 0 unclear items → **STOP this loop. Go to Step 2-4.**
-2. **Dependency analysis**: Identify dependencies.
-3. **Resolve the top item**:
-   a. **First, investigate the codebase** to try to resolve the ambiguity (read files, search patterns, check conventions).
-   b. If investigation resolves it → apply the finding and RESTART from step 1.
-   c. If **2+ equally viable approaches remain** after investigation → ask the user via AskUserQuestion (same rules: 1 question, 2-5 options).
-   d. **STOP and WAIT** for the answer.
-4. **Apply**: Incorporate the finding or answer.
-5. **RESTART from step 1** — re-extract ALL unclear items from scratch.
-
-**NEVER ask 2+ questions before restarting the loop.**
-
-### Implementation Ambiguity Criteria
-
-> **Core principle**: Investigate the codebase first. Ask the user only when 2+ equally viable approaches remain after investigation.
-
-1. **Vague file/function references**: Implementation targets are not specific (search codebase to identify exact locations)
-2. **Unclear ordering/dependencies**: Precedence between implementation steps is not determined
-3. **Missing integration details**: API contracts, data formats, or interfaces needed for implementation are undefined
-4. **No failure/rollback strategy**: No response plan for implementation failures
-5. **Undefined verification methods**: No RED/GREEN verification method corresponding to an implementation step
-
-### 2-4. Final Implementation Verification
-
-**Immediately before** declaring "no ambiguities", perform the following:
-
-1. Re-read **every step of the implementation plan**, comparing against the 5 criteria one more time.
-2. Pay special attention to:
-   - Are there any implementation decisions without codebase evidence?
-   - Are there specific file paths, function names, and data structures for all implementation targets?
-   - Does every item have a concrete RED and GREEN verification?
-   - Does every item have `Depends on` and `Target files` filled in?
-3. If **even one** unclear item is found, return to the clarification cycle in Step 2-3.
-4. If truly none remain → Move to Step 2-5.
-
-### 2-5. Output Implementation Plan
-
-Present the completed implementation plan to the user and request approval via AskUserQuestion.
-
-- If approved: Save to `.tmp/plans/${TS}_{topic}_plan.md`
-  - Generate timestamp first: `TS=$(date +%y%m%d%H%M%S)`
-  - `{topic}`: Short kebab-case based on the task content
-- If rejected: Incorporate the user's feedback and return to Step 2-3.
-
----
-
-## Step 3: Post-Completion Guidance
-
-Once the implementation plan is saved, output the following:
-
-```
-Implementation plan is complete. Next step:
-1. /sd-plan-dev — Execute the plan (parallel implementation)
-```
+문서 작성이 완료되면 다음을 출력한다:
+- 완성된 문서의 파일 경로
+- 사용자에게 직접 문서를 확인할 것을 권장
+- 다음 단계 안내: "다음 단계로 `/sd-plan-dev`를 실행하세요."

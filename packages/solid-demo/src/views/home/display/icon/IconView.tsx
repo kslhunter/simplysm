@@ -71,23 +71,23 @@ export function IconView() {
         <div class="flex items-end gap-4">
           <div class="flex flex-col items-center gap-1">
             <Icon icon={IconStar} size="1em" />
-            <span class="text-xs text-base-500">1em</span>
+            <span>1em</span>
           </div>
           <div class="flex flex-col items-center gap-1">
             <Icon icon={IconStar} size="1.25em" />
-            <span class="text-xs text-base-500">1.25em</span>
+            <span>1.25em</span>
           </div>
           <div class="flex flex-col items-center gap-1">
             <Icon icon={IconStar} size="1.5em" />
-            <span class="text-xs text-base-500">1.5em</span>
+            <span>1.5em</span>
           </div>
           <div class="flex flex-col items-center gap-1">
             <Icon icon={IconStar} size="2em" />
-            <span class="text-xs text-base-500">2em</span>
+            <span>2em</span>
           </div>
           <div class="flex flex-col items-center gap-1">
             <Icon icon={IconStar} size="3em" />
-            <span class="text-xs text-base-500">3em</span>
+            <span>3em</span>
           </div>
         </div>
       </section>
@@ -116,9 +116,9 @@ export function IconView() {
         <div class="grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
           <For each={icons}>
             {(item) => (
-              <div class="flex flex-col items-center gap-1 rounded p-2 hover:bg-base-100 dark:hover:bg-base-700">
+              <div class="flex flex-col items-center gap-1">
                 <Icon icon={item.icon} size="1.5em" />
-                <span class="text-xs text-base-500">{item.name}</span>
+                <span>{item.name}</span>
               </div>
             )}
           </For>

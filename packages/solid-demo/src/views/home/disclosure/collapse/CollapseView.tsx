@@ -23,9 +23,9 @@ export function CollapseView() {
             {collapseOpen() ? "Close" : "Open"} Content
           </Button>
           <Collapse id="basic-collapse" open={collapseOpen()}>
-            <div class="rounded-lg border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+            <div>
               <p>This is the collapsible content.</p>
-              <p class="mt-2 text-sm text-base-600 dark:text-base-400">
+              <p>
                 The content smoothly animates when toggling.
               </p>
             </div>
@@ -49,9 +49,7 @@ export function CollapseView() {
               Section 1 {multiOpen1() ? "▲" : "▼"}
             </Button>
             <Collapse id="multi-collapse-1" open={multiOpen1()}>
-              <div class="rounded-b-lg border border-t-0 border-base-200 bg-white p-4 dark:border-base-700 dark:bg-base-800">
-                <p>Content of Section 1</p>
-              </div>
+              <p>Content of Section 1</p>
             </Collapse>
           </div>
           <div>
@@ -64,9 +62,7 @@ export function CollapseView() {
               Section 2 {multiOpen2() ? "▲" : "▼"}
             </Button>
             <Collapse id="multi-collapse-2" open={multiOpen2()}>
-              <div class="rounded-b-lg border border-t-0 border-base-200 bg-white p-4 dark:border-base-700 dark:bg-base-800">
-                <p>Content of Section 2</p>
-              </div>
+              <p>Content of Section 2</p>
             </Collapse>
           </div>
         </div>
@@ -86,9 +82,7 @@ export function CollapseView() {
             {initiallyOpen() ? "Close" : "Open"}
           </Button>
           <Collapse id="initially-open-collapse" open={initiallyOpen()}>
-            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <p>This collapse starts in the open state.</p>
-            </div>
+            <p>This collapse starts in the open state.</p>
           </Collapse>
         </div>
       </section>

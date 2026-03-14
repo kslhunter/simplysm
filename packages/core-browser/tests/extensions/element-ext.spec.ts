@@ -152,6 +152,40 @@ describe("Element prototype extensions", () => {
     });
   });
 
+  describe("findFirstFocusableChild", () => {
+    it("returns first focusable child element", () => {
+      container.innerHTML = `<span>text</span><button id="btn">click</button>`;
+
+      const result = container.findFirstFocusableChild();
+
+      expect(result?.id).toBe("btn");
+    });
+
+    it("returns undefined when no focusable child exists", () => {
+      container.innerHTML = `<span>text</span><div>no focusable</div>`;
+
+      const result = container.findFirstFocusableChild();
+
+      expect(result).toBeUndefined();
+    });
+
+    it("returns depth-first order element", () => {
+      container.innerHTML = `<div><button id="deep">deep</button></div><button id="shallow">shallow</button>`;
+
+      const result = container.findFirstFocusableChild();
+
+      expect(result?.id).toBe("deep");
+    });
+
+    it("recognizes tabindex attribute as focusable", () => {
+      container.innerHTML = `<div tabindex="0" id="tab">focusable</div>`;
+
+      const result = container.findFirstFocusableChild();
+
+      expect(result?.id).toBe("tab");
+    });
+  });
+
   describe("isOffsetElement", () => {
     it("position: relative is an offset element", () => {
       container.style.position = "relative";

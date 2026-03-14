@@ -89,11 +89,9 @@ function UserPageSimulation() {
     </div>
   ));
   return (
-    <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-      <p class="text-sm text-base-600 dark:text-base-400">
-        This page registers Save/Delete buttons via useTopbarActions
-      </p>
-    </div>
+    <p>
+      This page registers Save/Delete buttons via useTopbarActions
+    </p>
   );
 }
 
@@ -111,12 +109,10 @@ export function TopbarView() {
         <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Topbar.Container>
             <Topbar>
-              <h1 class="m-0 text-base">Page Title</h1>
+              <h1>Page Title</h1>
             </Topbar>
             <div class="flex-1 overflow-auto p-4">
-              <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                <p class="text-sm text-base-600 dark:text-base-400">Main Content Area</p>
-              </div>
+              <p>Main Content Area</p>
             </div>
           </Topbar.Container>
         </div>
@@ -132,37 +128,33 @@ export function TopbarView() {
         </p>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Standalone Use (No Toggle Button)</p>
+            <p>Standalone Use (No Toggle Button)</p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Topbar.Container>
                 <Topbar>
-                  <h1 class="m-0 text-base">No Toggle Button</h1>
+                  <h1>No Toggle Button</h1>
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">No SidebarContext</p>
-                  </div>
+                  <p>No SidebarContext</p>
                 </div>
               </Topbar.Container>
             </div>
           </div>
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+            <p>
               Use Inside SidebarContainer (With Toggle Button)
             </p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                 </Sidebar>
                 <Topbar.Container>
                   <Topbar>
-                    <h1 class="m-0 text-base">Toggle Button Auto-displayed</h1>
+                    <h1>Toggle Button Auto-displayed</h1>
                   </Topbar>
                   <div class="flex-1 overflow-auto p-4">
-                    <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                      <p class="text-sm text-base-600 dark:text-base-400">With SidebarContext</p>
-                    </div>
+                    <p>With SidebarContext</p>
                   </div>
                 </Topbar.Container>
               </Sidebar.Container>
@@ -179,22 +171,20 @@ export function TopbarView() {
         </p>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Simple Menu (2 Levels)</p>
+            <p>Simple Menu (2 Levels)</p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Topbar.Container>
                 <Topbar>
                   <Topbar.Menu menus={simpleMenus} />
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">Try clicking the menu</p>
-                  </div>
+                  <p>Try clicking the menu</p>
                 </div>
               </Topbar.Container>
             </div>
           </div>
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+            <p>
               Nested Menu (3+ Levels, With Icons)
             </p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
@@ -203,11 +193,9 @@ export function TopbarView() {
                   <Topbar.Menu menus={nestedMenus} />
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">
-                      Check Administration → System → Advanced Settings
-                    </p>
-                  </div>
+                  <p>
+                    Check Administration → System → Advanced Settings
+                  </p>
                 </div>
               </Topbar.Container>
             </div>
@@ -223,37 +211,33 @@ export function TopbarView() {
         </p>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Basic (Name Only)</p>
+            <p>Basic (Name Only)</p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Topbar.Container>
                 <Topbar>
-                  <h1 class="m-0 text-base">Title</h1>
+                  <h1>Title</h1>
                   <div class="flex-1" />
                   <Topbar.User>Hong Gildong</Topbar.User>
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">Show name only without menu</p>
-                  </div>
+                  <p>Show name only without menu</p>
                 </div>
               </Topbar.Container>
             </div>
           </div>
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">With Menu</p>
+            <p>With Menu</p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Topbar.Container>
                 <Topbar>
-                  <h1 class="m-0 text-base">Title</h1>
+                  <h1>Title</h1>
                   <div class="flex-1" />
                   <Topbar.User menus={userMenus}>Hong Gildong</Topbar.User>
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">
-                      Click to show Profile/Logout menu
-                    </p>
-                  </div>
+                  <p>
+                    Click to show Profile/Logout menu
+                  </p>
                 </div>
               </Topbar.Container>
             </div>
@@ -271,13 +255,13 @@ export function TopbarView() {
         </p>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+            <p>
               Sidebar Open (toggled=false)
             </p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                   <Sidebar.User
                     name="Hong Gildong"
                     description="hong@example.com"
@@ -290,43 +274,39 @@ export function TopbarView() {
                 </Sidebar>
                 <Topbar.Container>
                   <Topbar>
-                    <h1 class="m-0 text-base">Page</h1>
+                    <h1>Page</h1>
                     <div class="flex-1" />
                     <Topbar.User menus={userMenus}>Hong Gildong</Topbar.User>
                   </Topbar>
                   <div class="flex-1 overflow-auto p-4">
-                    <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                      <p class="text-sm text-base-600 dark:text-base-400">
-                        Try clicking the toggle button
-                      </p>
-                    </div>
+                    <p>
+                      Try clicking the toggle button
+                    </p>
                   </div>
                 </Topbar.Container>
               </Sidebar.Container>
             </div>
           </div>
           <div>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+            <p>
               Sidebar Closed (toggled=true)
             </p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
                 <Sidebar>
-                  <div class="p-2 px-4 font-bold">LOGO</div>
+                  <div>LOGO</div>
                   <Sidebar.Menu menus={sidebarMenus} />
                 </Sidebar>
                 <Topbar.Container>
                   <Topbar>
-                    <h1 class="m-0 text-base">Page</h1>
+                    <h1>Page</h1>
                     <div class="flex-1" />
                     <Topbar.User menus={userMenus}>Hong Gildong</Topbar.User>
                   </Topbar>
                   <div class="flex-1 overflow-auto p-4">
-                    <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                      <p class="text-sm text-base-600 dark:text-base-400">
-                        Try clicking the toggle button
-                      </p>
-                    </div>
+                    <p>
+                      Try clicking the toggle button
+                    </p>
                   </div>
                 </Topbar.Container>
               </Sidebar.Container>
@@ -361,7 +341,7 @@ export function TopbarView() {
         <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
           <Topbar.Container>
             <Topbar>
-              <h1 class="m-0 text-base">User Management</h1>
+              <h1>User Management</h1>
               <Topbar.Actions />
               <div class="flex-1" />
               <Topbar.User>Hong Gildong</Topbar.User>

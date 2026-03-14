@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Extract text and images from PPTX files with per-slide coordinates."""
 
-import sys
 from _common import (
     setup_encoding, make_output_paths, print_header, save_image,
     ext_from_content_type, print_image_summary, run_cli,

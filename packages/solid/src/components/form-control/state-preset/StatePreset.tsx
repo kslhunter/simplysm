@@ -9,7 +9,6 @@ import { useNotification } from "../../feedback/notification/NotificationProvide
 import { Icon } from "../../display/Icon";
 import { bg, text } from "../../../styles/base.styles";
 import { type ComponentSize, gap, pad } from "../../../styles/control.styles";
-import { themeTokens } from "../../../styles/theme.styles";
 import { Button } from "../Button";
 import { useI18n } from "../../../providers/i18n/I18nProvider";
 
@@ -20,52 +19,32 @@ interface StatePresetItem<TValue> {
   state: TValue;
 }
 
-type StatePresetSize = ComponentSize;
-
 export interface StatePresetProps<TValue> {
   storageKey: string;
   value: TValue;
   onValueChange: (value: TValue) => void;
-  size?: StatePresetSize;
+  size?: ComponentSize;
   class?: string;
   style?: JSX.CSSProperties;
 }
 
 // ── Style constants ──
 
-const chipSizeClasses: Record<StatePresetSize, string> = {
+const sizeClasses: Record<ComponentSize, string> = {
   md: pad.md,
-  xs: clsx(pad.xs, "text-sm"),
+  xs: pad.xs,
   sm: pad.sm,
   lg: pad.lg,
-  xl: clsx(pad.xl, "text-lg"),
+  xl: pad.xl,
 };
 
-const iconBtnSizeClasses: Record<StatePresetSize, string> = {
-  md: "p-0.5",
-  xs: "p-0",
-  sm: "p-0.5",
-  lg: "p-1",
-  xl: "p-1.5",
+const iconSizeMap: Record<ComponentSize, string> = {
+  xs: "0.875em",
+  sm: "1em",
+  md: "1.25em",
+  lg: "1.5em",
+  xl: "1.75em",
 };
-
-const starBtnSizeClasses: Record<StatePresetSize, string> = {
-  md: "p-1",
-  xs: "p-0",
-  sm: "p-0.5",
-  lg: "p-1.5",
-  xl: "p-2",
-};
-
-const inputSizeClasses: Record<StatePresetSize, string> = {
-  md: clsx(pad.md, "w-24"),
-  xs: clsx("w-16", pad.xs, "text-sm"),
-  sm: clsx(pad.sm, "w-20"),
-  lg: clsx(pad.lg, "w-32"),
-  xl: clsx(pad.xl, "w-36 text-lg"),
-};
-
-const iconSize = "0.85em";
 
 // ── Component ──
 
@@ -191,31 +170,29 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   // ── Render ──
 
-  const resolvedIconBtnClass = () =>
-    twMerge("rounded-full", iconBtnSizeClasses[local.size ?? "md"]);
+  const resolvedSize = () => local.size ?? "md";
 
   return (
     <div class={twMerge(clsx("inline-flex items-center", gap.lg, "flex-wrap"), local.class)} style={local.style}>
       {/* Star button - add preset */}
-      <button
-        type="button"
-        class={twMerge(
-          clsx("inline-flex cursor-pointer items-center justify-center rounded-full text-warning-500 transition-colors focus:outline-none", themeTokens.warning.hoverBg),
-          starBtnSizeClasses[local.size ?? "md"],
-        )}
+      <Button
+        size={local.size}
+        variant="ghost"
+        class="rounded-full text-warning-500"
         onClick={handleStartAdd}
         title={i18n.t("statePreset.addPreset")}
       >
-        <Icon icon={IconStar} size={iconSize} />
-      </button>
+        {"\u200B"}
+        <Icon icon={IconStar} size={iconSizeMap[resolvedSize()]} />
+      </Button>
 
       {/* Preset chips */}
       <For each={presets()}>
         {(preset, index) => (
           <span
             class={twMerge(
-              clsx("inline-flex items-center", gap.md, "rounded-full", bg.subtle, text.default, "cursor-default"),
-              chipSizeClasses[local.size ?? "md"],
+              clsx("inline-flex items-center", gap.md, "rounded-full border border-transparent", bg.subtle, text.default, "cursor-default"),
+              sizeClasses[resolvedSize()],
             )}
           >
             <button
@@ -226,24 +203,22 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
             >
               {preset.name}
             </button>
-            <Button
-              variant="ghost"
-              size="xs"
-              class={resolvedIconBtnClass()}
+            <button
+              type="button"
+              class="cursor-pointer rounded-full opacity-50 hover:opacity-100 focus:outline-none"
               onClick={() => handleOverwrite(index())}
               title={i18n.t("statePreset.overwrite")}
             >
-              <Icon icon={IconDeviceFloppy} size={iconSize} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="xs"
-              class={resolvedIconBtnClass()}
+              <Icon icon={IconDeviceFloppy} size={iconSizeMap[resolvedSize()]} />
+            </button>
+            <button
+              type="button"
+              class="cursor-pointer rounded-full opacity-50 hover:opacity-100 focus:outline-none"
               onClick={() => handleDelete(index())}
               title={i18n.t("statePreset.deletePreset")}
             >
-              <Icon icon={IconX} size={iconSize} />
-            </Button>
+              <Icon icon={IconX} size={iconSizeMap[resolvedSize()]} />
+            </button>
           </span>
         )}
       </For>
@@ -257,8 +232,8 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
           }}
           type="text"
           class={twMerge(
-            clsx("rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
-            inputSizeClasses[local.size ?? "md"],
+            clsx("inline-flex items-center leading-normal rounded-full", bg.subtle, text.default, "border border-transparent focus:outline-none focus:ring-1 focus:ring-primary-400", text.placeholder),
+            sizeClasses[resolvedSize()],
           )}
           placeholder={i18n.t("statePreset.namePlaceholder")}
           autocomplete="one-time-code"
