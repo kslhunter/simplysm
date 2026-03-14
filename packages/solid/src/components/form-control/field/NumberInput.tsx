@@ -332,7 +332,7 @@ const NumberInputInner = (props: NumberInputProps): JSX.Element => {
           )}
           value={displayValue()}
           placeholder={local.placeholder}
-          size={local.placeholder?.length}
+
           title={local.title}
           autocomplete="one-time-code"
           onInput={handleInput}

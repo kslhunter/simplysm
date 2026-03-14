@@ -43,7 +43,7 @@ const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inline"]);
 
   const getClassName = () => twMerge(
-    local.inline ? "inline-flex flex-row flex-wrap items-center gap-2" : "inline-flex flex-col gap-2",
+    local.inline ? "inline-flex flex-row flex-wrap items-center gap-x-2 gap-y-1" : "inline-flex flex-col gap-2",
     local.class,
   );
 

@@ -26,7 +26,7 @@
     "sd-cli": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
     "sd-claude": "tsx packages/sd-claude/src/sd-claude.ts",
     "reinstall": "pnpm install --force",
-    "postinstall": "playwright install"
+    "postinstall": "playwright install && playwright-cli install --skills"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
@@ -48,7 +48,8 @@
     "vite": "^7.3.1",
     "vite-plugin-solid": "^2.11.11",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "@playwright/cli": "^0.1.1"
   },
   "dependencies": {
     "esbuild-plugin-solid": "^0.6.0"

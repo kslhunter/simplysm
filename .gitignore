@@ -1,4 +1,6 @@
 .tmp
+.plans
+.playwright
 .coverage
 __pycache__
 .claude/worktrees

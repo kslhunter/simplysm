@@ -12,7 +12,6 @@ const config: SdConfigFn = () => ({
     "core-node": { target: "node", publish: { type: "npm" } },
     "lint": { target: "node", publish: { type: "npm" } },
     "excel": { target: "neutral", publish: { type: "npm" } },
-    "mcp-playwright": { target: "node", publish: { type: "npm" } },
     "orm-common": { target: "neutral", publish: { type: "npm" } },
     "orm-node": { target: "node", publish: { type: "npm" } },
     "sd-claude": { target: "scripts", publish: { type: "npm" } },

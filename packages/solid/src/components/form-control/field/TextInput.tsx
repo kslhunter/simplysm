@@ -286,7 +286,7 @@ const TextInputInner = (props: TextInputProps) => {
           class={fieldInputClass}
           value={inputValue()}
           placeholder={local.placeholder}
-          size={local.placeholder?.length}
+
           title={local.title}
           autocomplete={local.autocomplete ?? "one-time-code"}
           onInput={handleInput}

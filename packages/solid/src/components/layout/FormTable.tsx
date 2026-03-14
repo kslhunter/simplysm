@@ -11,7 +11,7 @@ export interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellEl
 
 const FormTableRow: ParentComponent<JSX.HTMLAttributes<HTMLTableRowElement>> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
-  return <tr class={twMerge("[&>*:last-child]:pr-0 last:[&>*]:pb-0", local.class)} {...rest}>{local.children}</tr>;
+  return <tr class={twMerge("[&>td:last-child]:pr-0 [&:last-child>*]:pb-0", local.class)} {...rest}>{local.children}</tr>;
 };
 
 const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
@@ -26,9 +26,9 @@ const FormTableItem: ParentComponent<FormTableItemProps> = (props) => {
   return (
     <>
       <Show when={local.label}>
-        <th class="w-0 whitespace-nowrap pb-1 pl-1 pr-1.5 text-right align-middle">{local.label}</th>
+        <th class="w-0 whitespace-nowrap pb-1 pr-2 text-right align-middle">{local.label}</th>
       </Show>
-      <td class={twMerge("pb-1 pr-1.5 align-middle", local.class)} colspan={effectiveColspan()} {...rest}>
+      <td class={twMerge("pb-1 pr-2 align-middle", local.class)} colspan={effectiveColspan()} {...rest}>
         {local.children}
       </td>
     </>
