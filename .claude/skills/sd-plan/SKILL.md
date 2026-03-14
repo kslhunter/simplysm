@@ -85,7 +85,7 @@ argument-hint: "<spec/audit 파일 경로 [R번호]> 또는 <간단한 요구사
 
 ### Refactor Phase
 
-`/simplify` 수행하여 품질 개선 → 테스트 재실행하여 통과 확인
+`/simplify` 하여 품질 개선 → 테스트 재실행하여 통과 확인
 ```
 
 **참조 문서 표기 규칙:**

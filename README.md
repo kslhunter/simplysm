@@ -1,177 +1,181 @@
 # Simplysm
 
-A TypeScript full-stack framework monorepo.
-Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service communication, Excel processing, and more.
+SolidJS + TypeScript 기반 풀스택 엔터프라이즈 애플리케이션 프레임워크. 타입 안전한 ORM, RPC 서비스, UI 컴포넌트, 빌드 도구를 하나의 monorepo에서 제공한다.
 
-## Design Philosophy
+## 설계 철학
 
-- **Standard patterns first** -- Leverage idiomatic TypeScript/JavaScript/SolidJS patterns to minimize the learning curve.
-- **Explicit and predictable code** -- Favor explicit code over implicit behavior.
-- **Incremental learning** -- Each package is independently usable; learn and adopt only what you need.
+- **타입 안전성 우선**: ORM 쿼리부터 RPC 호출, UI 이벤트까지 TypeScript 제네릭으로 컴파일 타임 검증
+- **플랫폼 중립 코어**: `core-common`, `orm-common`, `service-common`은 Node.js/브라우저 모두에서 동작
+- **불변 패턴**: DateTime, DateOnly, Table 빌더 등 핵심 타입은 불변 설계
+- **최소 의존성**: 가능한 한 표준 API 사용 (`EventTarget`, `Uint8Array`, `IndexedDB`)
 
-## Packages
+## 패키지
 
-### Core
+### 코어
 
-| Package | Target | Description |
-|---------|--------|-------------|
-| [`@simplysm/core-common`](packages/core-common) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`, `LazyGcMap`), error classes |
-| [`@simplysm/core-browser`](packages/core-browser) | browser | Browser-specific extensions |
-| [`@simplysm/core-node`](packages/core-node) | node | Node.js utilities (filesystem, worker threads) |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/core-common](packages/core-common) | neutral | 플랫폼 중립 유틸리티 — DateTime, EventEmitter, 객체/문자열/JSON/ZIP 유틸리티, 배열 확장 |
+| [@simplysm/core-browser](packages/core-browser) | browser | 브라우저 유틸리티 — DOM 확장, IndexedDB 추상화, 파일 다운로드 |
+| [@simplysm/core-node](packages/core-node) | node | Node.js 유틸리티 — 파일시스템, 파일 감시, Worker 스레드 |
 
 ### ORM
 
-| Package | Target | Description |
-|---------|--------|-------------|
-| [`@simplysm/orm-common`](packages/orm-common) | neutral | ORM query builder, table schema definitions |
-| [`@simplysm/orm-node`](packages/orm-node) | node | DB connectors (MySQL, MSSQL, PostgreSQL) |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/orm-common](packages/orm-common) | neutral | ORM 핵심 — 스키마 정의, 타입 안전 쿼리 빌더, 표현식, DDL, MySQL/PostgreSQL/MSSQL 방언 |
+| [@simplysm/orm-node](packages/orm-node) | node | ORM Node.js 실행기 — DB 연결, 커넥션 풀, 벌크 인서트 |
 
-### Service
+### 서비스
 
-| Package | Target | Description |
-|---------|--------|-------------|
-| [`@simplysm/service-common`](packages/service-common) | neutral | Service protocol, type definitions |
-| [`@simplysm/service-client`](packages/service-client) | neutral | WebSocket client |
-| [`@simplysm/service-server`](packages/service-server) | node | Fastify-based HTTP/WebSocket server |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/service-common](packages/service-common) | neutral | 서비스 프로토콜 — 바이너리 프로토콜, 메시지 타입, 이벤트 정의 |
+| [@simplysm/service-client](packages/service-client) | neutral | WebSocket RPC 클라이언트 — 자동 재연결, 이벤트 구독, 파일 전송 |
+| [@simplysm/service-server](packages/service-server) | node | Fastify 서비스 서버 — WebSocket/HTTP RPC, JWT 인증, 이벤트 브로드캐스트 |
 
 ### UI
 
-| Package | Target | Description |
-|---------|--------|-------------|
-| [`@simplysm/solid`](packages/solid) | browser | SolidJS UI components + Tailwind CSS |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/solid](packages/solid) | browser | SolidJS + Tailwind CSS UI 라이브러리 — 100+ 컴포넌트, 테마, i18n, CRUD |
 
-### Tools
+### 모바일 (Capacitor)
 
-| Package                                               | Target | Description |
-|-------------------------------------------------------|--------|-------------|
-| [`@simplysm/sd-cli`](packages/sd-cli)                 | node   | Build, lint, typecheck CLI tool |
-| [`@simplysm/sd-claude`](packages/sd-claude)           | node   | Claude Code CLI — asset installer (auto-installs via postinstall) |
-| [`@simplysm/lint`](packages/lint)                     | node   | Lint config (ESLint) |
-| [`@simplysm/excel`](packages/excel)                   | neutral | Excel (.xlsx) read/write |
-| [`@simplysm/storage`](packages/storage)               | node   | FTP/SFTP client |
-| [`@simplysm/mcp-playwright`](packages/mcp-playwright) | node   | MCP server — multi-session Playwright proxy (`sd-mcp-playwright`) |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/capacitor-plugin-auto-update](packages/capacitor-plugin-auto-update) | browser | APK 자동 업데이트 |
+| [@simplysm/capacitor-plugin-broadcast](packages/capacitor-plugin-broadcast) | browser | Android 브로드캐스트 리시버 |
+| [@simplysm/capacitor-plugin-file-system](packages/capacitor-plugin-file-system) | browser | 파일시스템 접근 (Android + Web 가상 FS) |
+| [@simplysm/capacitor-plugin-usb-storage](packages/capacitor-plugin-usb-storage) | browser | USB Mass Storage 읽기 |
 
-### Capacitor Plugins
+### 도구
 
-| Package | Description |
-|---------|-------------|
-| [`@simplysm/capacitor-plugin-auto-update`](packages/capacitor-plugin-auto-update) | Auto update |
-| [`@simplysm/capacitor-plugin-broadcast`](packages/capacitor-plugin-broadcast) | Broadcast |
-| [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system) | File system |
-| [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage) | USB storage |
+| 패키지 | 타겟 | 설명 |
+|--------|------|------|
+| [@simplysm/sd-cli](packages/sd-cli) | node | 빌드/개발/린트/배포 CLI 도구 |
+| [@simplysm/lint](packages/lint) | node | ESLint 설정 및 커스텀 규칙 |
+| [@simplysm/excel](packages/excel) | neutral | Excel (.xlsx) 읽기/쓰기 |
+| [@simplysm/storage](packages/storage) | node | FTP/FTPS/SFTP 원격 스토리지 |
+| [@simplysm/sd-claude](packages/sd-claude) | scripts | Claude Code 에셋 설치/동기화 |
 
-### Demo Apps (private, not published)
+## 시작하기
 
-| Package | Description |
-|---------|-------------|
-| [`solid-demo`](packages/solid-demo) | SolidJS component demo app (Vite client, `pnpm dev`) |
-| [`solid-demo-server`](packages/solid-demo-server) | Server-side companion for the SolidJS demo app |
+### 사전 요구사항
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
+- Node.js (ESNext 지원 버전)
 - pnpm
+- Docker (통합 테스트용 — MySQL, PostgreSQL, MSSQL 컨테이너)
 
-### Installation
+### 설치
 
 ```bash
+git clone https://github.com/kslhunter/simplysm.git
+cd simplysm
 pnpm install
 ```
 
-### Development
+### 개발
 
 ```bash
-# Watch mode (library build + .d.ts generation, file change detection)
-pnpm watch
-
-# Dev mode (client: Vite dev server, server: build)
-pnpm dev
-
-# Specific package only
-pnpm watch solid
-pnpm build solid
+pnpm dev                                 # 전체 패키지 개발 모드
+pnpm dev packages/solid-demo             # 특정 패키지만 개발 모드
+pnpm watch packages/core-common          # 라이브러리 빌드 watch 모드
 ```
 
-### Build
+### 빌드
 
 ```bash
-pnpm build
+pnpm build                               # 전체 프로덕션 빌드
+pnpm build packages/solid                # 특정 패키지만 빌드
 ```
 
-### Lint & Typecheck
+### 코드 품질 검사
 
 ```bash
-pnpm lint
-pnpm lint:fix
-pnpm typecheck
+pnpm typecheck                           # TypeScript 타입 검사
+pnpm lint                                # ESLint + Stylelint
+pnpm lint:fix                            # 린트 이슈 자동 수정
+pnpm check                               # 전체 검사 (타입 + 린트 + 테스트 병렬)
+pnpm vitest                              # vitest watch 모드
 ```
 
-### Test
-
-Tests are powered by [Vitest](https://vitest.dev/).
+### 테스트
 
 ```bash
-pnpm vitest                     # all
-pnpm vitest --project=node      # Node.js environment
-pnpm vitest --project=browser   # browser environment
-pnpm vitest --project=solid     # SolidJS components
-pnpm vitest --project=orm       # ORM integration tests (requires Docker DB)
-pnpm vitest --project=service   # Service integration tests
-pnpm vitest --project=bank      # Bank integration tests (requires network)
-pnpm vitest packages/core-common                                              # package tests
-pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node       # single file
-pnpm vitest -t "DateTime" --project=node                                      # filter by test name
+pnpm vitest tests/orm                    # ORM 통합 테스트 (Docker 필요)
+pnpm vitest tests/service                # 서비스 통합 테스트
 ```
 
-## Architecture
+## 아키텍처
 
-### Dependency Layers
+의존 방향: 위 → 아래. `core-common`은 내부 의존성이 없는 리프 패키지이다.
 
 ```
-core-common (lowest level, common utilities)
-    ↑
-core-browser / core-node (environment-specific extensions)
-    ↑
-orm-common / service-common (domain-specific common)
-    ↑
-orm-node / service-server / service-client (implementations)
-    ↑
-solid (UI components)
+앱:       solid-demo (client) ─── solid-demo-server (server)
+            │                        │
+UI:       solid (browser)          service-server (node)
+            │                        │
+서비스:   service-client (neutral)  service-common (neutral)
+            │                        │
+ORM:      orm-common (neutral) ─── orm-node (node)
+            │
+코어:     core-common (neutral) ─── core-browser (browser) / core-node (node)
 ```
 
-### Build Targets
+### 빌드 타겟
 
-| Target | Description |
-|--------|-------------|
-| `node` | Node.js only (no DOM) |
-| `browser` | Browser only (includes DOM) |
-| `neutral` | Node.js / browser shared |
-| `client` | Vite dev server for development |
+| 타겟 | 설명 | 빌더 |
+|------|------|------|
+| `neutral` | Node.js + 브라우저 공용 라이브러리 | esbuild |
+| `browser` | 브라우저 전용 라이브러리 | esbuild |
+| `node` | Node.js 전용 라이브러리 | esbuild |
+| `client` | SPA 클라이언트 앱 | Vite |
+| `server` | 서버 앱 (PM2/Volta) | esbuild |
+| `scripts` | 빌드 스크립트 전용 | esbuild |
 
-## Usage Examples
+## 사용 예제
 
-### ORM Table Definition
+### ORM 쿼리
 
 ```typescript
-import { Table } from "@simplysm/orm-common";
+import { defineDbContext, Table, expr } from "@simplysm/orm-common";
+import { createOrm } from "@simplysm/orm-node";
 
-const User = Table("User")
-  .database("mydb")
-  .columns((c) => ({
-    id: c.bigint().autoIncrement(),
-    name: c.varchar(100),
-  }))
+const User = Table("user")
+  .columns((c) => ({ id: c.int().autoIncrement(), name: c.varchar(100) }))
   .primaryKey("id");
+
+const MyDb = defineDbContext({ tables: { user: User } });
+const orm = createOrm(MyDb, { dialect: "mysql", host: "localhost", username: "root", password: "", database: "mydb" });
+
+await orm.connect(async (db) => {
+  await db.user().insert([{ name: "Alice" }]);
+  const users = await db.user().where((c) => [expr.like(c.name, "A%")]).execute();
+});
 ```
 
-### Service Communication
+### RPC 서비스
 
-- `ServiceServer`: Fastify-based HTTP/WebSocket server
-- `ServiceClient`: WebSocket client with RPC calls
-- `ServiceProtocol`: Automatic chunking/merging for large messages
+```typescript
+// 서버
+import { createServiceServer, defineService } from "@simplysm/service-server";
 
-## License
+const UserService = defineService("User", () => ({
+  async findAll() { return [{ id: 1, name: "Alice" }]; },
+}));
 
-[Apache-2.0](LICENSE)
+const server = createServiceServer({ rootPath: ".", port: 3000, services: [UserService] });
+await server.listen();
+
+// 클라이언트
+import { createServiceClient } from "@simplysm/service-client";
+
+const client = createServiceClient("app", { host: "localhost", port: 3000 });
+await client.connect();
+const users = await client.getService<UserServiceType>("User").findAll();
+```
+
+## 라이선스
+
+Apache-2.0
