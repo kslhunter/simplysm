@@ -32,6 +32,7 @@ argument-hint: "<요청 내용> | --help"
 | sd-spec | 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성 | 요구분석, 요구사항, spec, 기능 정의 |
 | sd-check | typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정 | 품질 검사, check, typecheck, lint, 코드 검사, 자동 수정 |
 | sd-test | 테스트 대상에 대해 작업 유형별 TDD 테스트를 독립 수행 | 테스트, 테스트 작성, 유닛 테스트 |
+| sd-review | spec/plan 문서와 구현을 비교하여 완성도를 검증 | 리뷰, review, 검증, 충족, 완성도, 구현 검토 |
 | sd-commit | 변경사항을 분석하여 [type] scope 형식의 커밋 메시지를 생성하고 커밋 | 커밋, commit, 변경사항 저장, git commit |
 
 키워드 힌트는 참고용이며, 최종 판단은 요청의 전체 맥락과 의도를 기준으로 한다.
@@ -99,6 +100,13 @@ argument-hint: "<요청 내용> | --help"
                    |
                    v
             코드 + 테스트
+                   |
+                   v
+             /sd-review
+          (구현 완성도 검증)
+                   |
+                   v
+            review.md (미충족 시)
 ```
 
 ### 독립 스킬
@@ -141,6 +149,7 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-test` | 독립 TDD 테스트 | `/sd-test packages/core-common/src/utils.ts` |
 | `/sd-readme` | README.md 생성 | `/sd-readme packages/core-common` |
 | `/sd-init` | CLAUDE.md 생성 | `/sd-init` |
+| `/sd-review` | 구현 완성도 검증 | `/sd-review .tasks/login` |
 | `/sd-commit` | 커밋 메시지 생성 + 커밋 | `/sd-commit` |
 | `/sd-document` | 문서 읽기/쓰기 | `/sd-document report.xlsx` |
 | `/sd-email-analyze` | 이메일 분석 | `/sd-email-analyze mail.eml` |
