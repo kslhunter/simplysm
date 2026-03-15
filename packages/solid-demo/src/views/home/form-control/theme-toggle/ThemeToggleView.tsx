@@ -1,4 +1,4 @@
-import { ThemeToggle, Card, Alert } from "@simplysm/solid";
+import { Alert, Card, pad, ThemeToggle } from "@simplysm/solid";
 
 export function ThemeToggleView() {
   return (
@@ -41,16 +41,16 @@ export function ThemeToggleView() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Theme Modes</h2>
         <div class="space-y-4">
-          <Card>
-            <h3>Light Mode</h3>
+          <Card class={pad["lg"]}>
+            <h3 class={"font-bold"}>Light Mode</h3>
             <p>Bright background with dark text</p>
           </Card>
-          <Card>
-            <h3>System Setting</h3>
+          <Card class={pad["lg"]}>
+            <h3 class={"font-bold"}>System Setting</h3>
             <p>Auto-switch based on OS setting</p>
           </Card>
-          <Card>
-            <h3>Dark Mode</h3>
+          <Card class={pad["lg"]}>
+            <h3 class={"font-bold"}>Dark Mode</h3>
             <p>Dark background with bright text</p>
           </Card>
         </div>
@@ -61,7 +61,8 @@ export function ThemeToggleView() {
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Usage Notes</h2>
         <Alert theme="info">
           <p class="mb-2">
-            <strong>ThemeProvider Required:</strong> ThemeToggle must be used within the ThemeProvider context.
+            <strong>ThemeProvider Required:</strong> ThemeToggle must be used within the
+            ThemeProvider context.
           </p>
           <p>Theme settings are stored in localStorage and persist across page refreshes.</p>
         </Alert>

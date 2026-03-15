@@ -53,6 +53,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/mcp-playwright/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees" />
       <excludeFolder url="file://$MODULE_DIR$/.playwright" />
+      <excludeFolder url="file://$MODULE_DIR$/.plans" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

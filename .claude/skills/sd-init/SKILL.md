@@ -145,8 +145,8 @@ ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 
 ## 6. 완료 안내
 
-저장이 완료되면 다음을 출력한다:
+저장이 완료되면 생성/업데이트된 파일 경로를 출력한다.
 
-```
-CLAUDE.md가 생성되었습니다. 커밋하려면 /sd-commit을 실행하세요.
-```
+## 7. 커밋
+
+수정된 파일이 있으면 `/sd-commit`을 실행하여 자동 커밋한다.
