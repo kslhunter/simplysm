@@ -205,8 +205,7 @@ argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호>"
 - 사용자에게 직접 문서를 확인할 것을 권장
 - 다음 단계 안내:
   ```
-  /sd-plan                          # 전체 요구사항으로 구현계획 수립
-  /sd-plan {spec 경로}              # 특정 spec 파일로 구현계획 수립
-  /sd-plan {spec 경로} R1           # 특정 R항목만 구현계획 수립
-  /sd-spec {spec 경로} R1           # 특정 R항목을 상세 spec으로 분리
+  /sd-plan {spec경로}              # 구현계획 수립
+  /sd-plan {spec경로} R1           # 특정 R항목만 구현계획 수립
+  /sd-spec {spec경로} R1           # 특정 R항목을 상세 spec으로 분리
   ```

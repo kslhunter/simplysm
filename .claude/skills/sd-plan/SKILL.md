@@ -154,6 +154,6 @@ argument-hint: "<spec/audit 파일 경로 [R번호]> 또는 <간단한 요구사
 - 사용자에게 직접 문서를 확인할 것을 권장
 - 다음 단계 안내:
   ```
-  /sd-plan-dev
-  /sd-plan-dev --worktree   # 별도 worktree에서 격리 실행
+  /sd-plan-dev {plan경로}
+  /sd-plan-dev {plan경로} --worktree   # 별도 worktree에서 격리 실행
   ```
