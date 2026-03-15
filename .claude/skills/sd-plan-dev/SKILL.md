@@ -112,7 +112,7 @@ worktree subagent 완료 후 반환된 branch를 순차적으로 merge한다.
 **정상 흐름:**
 1. `git merge {branch}` 실행
 2. merge 완료 후 worktree를 정리한다
-3. 성공 시 다음 branch merge (또는 5단계로 진행)
+3. 성공 시 다음 branch merge (또는 5단계로 진행하여 자가검토 수행)
 
 **conflict 발생 시:**
 1. `git merge --abort` 실행하여 working directory를 깨끗한 상태로 복원
@@ -120,7 +120,22 @@ worktree subagent 완료 후 반환된 branch를 순차적으로 merge한다.
 3. AskUserQuestion으로 "직접 merge하세요" 안내 + "완료" 옵션 제시
 4. 사용자가 "완료" 선택 시 worktree를 정리하고 다음 branch merge 계속
 
-## 5. 완료 안내
+## 5. 자가검토
 
-모든 작업의 TDD 사이클이 완료되면 다음을 출력한다:
+모든 작업의 TDD 사이클이 완료되면 plan 원문과 실제 구현 결과를 대조한다.
+
+1. plan 원문을 다시 읽는다
+2. 각 작업별로 다음을 대조한다:
+   - RED Phase의 테스트 시나리오가 모두 작성·실행되었는지
+   - GREEN Phase의 구현 항목이 모두 구현되었는지
+3. 누락 항목이 있으면 (최대 2회 반복):
+   - 해당 항목만 추가 구현한다 (전체 TDD 사이클 불필요)
+   - `/sd-commit`으로 commit한다
+   - 1번으로 돌아가 다시 대조한다
+4. 2회 반복 후에도 누락이 남아있으면 남은 항목을 사용자에게 보고한다
+5. 모든 항목이 충족되면 6단계로 진행한다
+
+## 6. 완료 안내
+
+모든 작업의 TDD 사이클과 자가검토가 완료되면 다음을 출력한다:
 - 전체 작업의 구현 결과 요약 (작업별 상태)
