@@ -170,5 +170,4 @@ argument-hint: "<입력 문서 경로 [R번호]> 또는 <간단한 요구사항>
 - 다음 단계 안내:
   ```
   /sd-plan-dev {plan경로}
-  /sd-plan-dev {plan경로} --worktree   # 별도 worktree에서 격리 실행
   ```
