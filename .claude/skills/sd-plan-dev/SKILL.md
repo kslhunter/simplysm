@@ -61,7 +61,7 @@ plan에서 작업 목록을 파악하고 스케줄링을 결정한다.
 
 ## 3. TDD 사이클 실행
 
-각 작업에 대해 plan의 TDD 계획을 따라 실행한다.
+2단계에서 결정한 스케줄링에 따라 **모든 작업**에 대해 아래 TDD 사이클을 수행한다.
 
 ### RED Phase: 실패하는 테스트 작성 및 실행
 
@@ -100,6 +100,10 @@ plan의 GREEN Phase에 명시된 구현 계획에 따라 최소한의 구현을 
 TDD 사이클(RED → GREEN → Refactor) 완료 후 1회 commit한다.
 - 작업 하나 = commit 하나
 - `--worktree` 사용 여부와 관계없이 동일하게 적용한다
+
+### 다음 작업 전이
+
+Commit 완료 후, 스케줄링에 따라 남은 작업이 있으면 해당 작업의 TDD 사이클(RED → GREEN → Refactor → Commit)을 반복한다. 모든 작업이 완료되면 5단계로 진행한다.
 
 ## 4. worktree merge (`--worktree` 활성 시)
 
