@@ -74,7 +74,7 @@ plan의 RED Phase에 명시된 테스트 전략에 따라 분기한다:
 **subagent 테스트인 경우 (LLM용 문서, 테스트 환경 없는 코드 등):**
 - plan의 테스트 시나리오에 따라 `_test.md` 파일을 작성한다
   - plan 파일 기반: plan 파일과 동일 디렉토리. plan이 `{R번호}_plan.md`이면 `{R번호}_test.md`, `plan.md`이면 `test.md`
-  - 현재 대화 기반 (파일 경로 없음): plan에 참조 spec 경로가 있으면 해당 디렉토리에 저장. 없으면 `.tmp/plans/` 하위에 새 디렉토리 생성
+  - 현재 대화 기반 (파일 경로 없음): plan에 참조 spec 경로가 있으면 해당 디렉토리에 저장. 없으면 `.tasks/` 하위에 새 디렉토리 생성
   - 형식: 테스트별 입력/기대출력 쌍
 - Agent tool로 subagent를 생성하여 테스트를 실행하고 실패를 확인한다
 

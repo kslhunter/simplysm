@@ -17,8 +17,8 @@ argument-hint: "<spec/audit 파일 경로 [R번호]> 또는 <간단한 요구사
 `$ARGUMENTS`에 `.md`로 끝나는 경로가 포함된 경우:
 - 해당 파일을 Read한다
 - 경로 뒤에 `R숫자` 또는 숫자만 있으면 해당 R항목만 대상으로 한다
-  - 예: `.plans/260314143000_example/spec.md R2` → R2만 대상
-  - 예: `.plans/260314143000_example/spec.md 3` → R3만 대상
+  - 예: `.tasks/260314143000_example/spec.md R2` → R2만 대상
+  - 예: `.tasks/260314143000_example/spec.md 3` → R3만 대상
 - 경로만 있으면 전체 요구사항을 대상으로 한다
 
 ### 1-2. 인자 없음
@@ -115,11 +115,15 @@ argument-hint: "<spec/audit 파일 경로 [R번호]> 또는 <간단한 요구사
 
 - spec/audit 파일 기반 호출: 해당 문서와 동일 디렉토리에 저장. 전체면 `plan.md`, 특정 R항목이면 `{R번호}_plan.md` (예: `R2_plan.md`)
 - 현재 대화의 spec/audit 기반이고 파일 경로가 있는 경우: 해당 문서와 동일 디렉토리에 저장. 파일명 규칙 동일
-- spec/audit 없이 호출된 경우: 새 디렉토리 `.plans/{yyMMddHHmmss}_{topic}/plan.md` 생성 (`yyMMddHHmmss`는 Bash `date +%y%m%d%H%M%S`, `{topic}`은 영문 kebab-case)
+- spec/audit 없이 호출된 경우: 새 디렉토리 `.tasks/{yyMMddHHmmss}_{topic}/plan.md` 생성 (`yyMMddHHmmss`는 Bash `date +%y%m%d%H%M%S`, `{topic}`은 영문 kebab-case)
 
 ## 6. 완료 안내
 
 문서 작성이 완료되면 다음을 출력한다:
 - 완성된 문서의 파일 경로
 - 사용자에게 직접 문서를 확인할 것을 권장
-- 다음 단계 안내: "다음 단계로 `/sd-plan-dev`를 실행하세요."
+- 다음 단계 안내:
+  ```
+  /sd-plan-dev
+  /sd-plan-dev --worktree   # 별도 worktree에서 격리 실행
+  ```

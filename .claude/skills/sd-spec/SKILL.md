@@ -125,11 +125,11 @@ topic과 관련된 코드베이스를 분석한다.
 
 ## 5. 파일 저장
 
-- 디렉토리: `.plans/{yyMMddHHmmss}_{topic}/`
+- 디렉토리: `.tasks/{yyMMddHHmmss}_{topic}/`
   - `yyMMddHHmmss`는 현재 시간 (Bash `date +%y%m%d%H%M%S`로 생성)
   - `{topic}`은 1단계에서 변환한 kebab-case topic
 - 파일명: `spec.md`
-- 전체 경로: `.plans/{yyMMddHHmmss}_{topic}/spec.md`
+- 전체 경로: `.tasks/{yyMMddHHmmss}_{topic}/spec.md`
 - 디렉토리가 없으면 먼저 생성한다
 
 ## 6. 완료 안내

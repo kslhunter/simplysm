@@ -1,5 +1,5 @@
 .tmp
-.plans
+.tasks
 .playwright
 .coverage
 __pycache__

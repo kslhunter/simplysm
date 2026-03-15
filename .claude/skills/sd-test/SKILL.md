@@ -75,7 +75,7 @@ sd-plan의 테스트 전략 결정과 sd-plan-dev의 TDD 사이클 실행을 통
 
 1. 대상 파일과 추가 컨텍스트를 분석하여 테스트 시나리오를 작성한다
 2. `test.md` 파일을 작성한다
-   - 저장 위치: `.plans/{yyMMddHHmmss}_{topic}/test.md` (Bash `date +%y%m%d%H%M%S`, topic은 대상 파일명 기반 kebab-case)
+   - 저장 위치: `.tasks/{yyMMddHHmmss}_{topic}/test.md` (Bash `date +%y%m%d%H%M%S`, topic은 대상 파일명 기반 kebab-case)
    - 형식:
      ```markdown
      ## 테스트 1: {테스트 제목}
@@ -110,4 +110,7 @@ GREEN Phase에서 대상 파일을 수정한 경우에만 수행한다.
 TDD 사이클이 완료되면 다음을 출력한다:
 - 테스트 결과 요약 (통과/수정됨)
 - 수정된 파일 목록
-- 커밋 안내: "커밋하지 않습니다. 필요 시 `/sd-commit`을 실행하세요."
+
+## 9. 커밋
+
+수정된 파일이 있으면 `/sd-commit`을 실행하여 자동 커밋한다.

@@ -94,7 +94,7 @@ argument-hint: "<문제 현상 설명>"
 채택된 방안을 debug.md로 저장한다.
 
 **파일 경로:**
-- 디렉토리: `.plans/{yyMMddHHmmss}_{topic}/`
+- 디렉토리: `.tasks/{yyMMddHHmmss}_{topic}/`
   - `yyMMddHHmmss`는 현재 시간 (Bash `date +%y%m%d%H%M%S`로 생성)
   - `{topic}`은 1단계에서 변환한 kebab-case topic
 - 파일명: `debug.md`

@@ -135,8 +135,8 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-spec` | 요구분석서 작성 | `/sd-spec 로그인 기능 추가` |
 | `/sd-audit` | 병렬 코드 점검 | `/sd-audit packages/core-common` |
 | `/sd-debug` | 버그 원인 분석 | `/sd-debug 로그인 시 500 에러 발생` |
-| `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .plans/.../spec.md` |
-| `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .plans/.../plan.md` |
+| `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .tasks/.../spec.md` |
+| `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .tasks/.../plan.md` |
 | `/sd-check` | 코드 품질 검사 + 자동 수정 | `/sd-check packages/core-common` |
 | `/sd-test` | 독립 TDD 테스트 | `/sd-test packages/core-common/src/utils.ts` |
 | `/sd-readme` | README.md 생성 | `/sd-readme packages/core-common` |
