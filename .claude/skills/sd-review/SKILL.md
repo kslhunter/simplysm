@@ -100,11 +100,15 @@ Agent tool (subagent_type: Explore)로 각 검증 항목의 구현 여부를 판
 
 ### 4-2. 파일 저장 (미충족 항목이 있을 때만)
 
-미충족 항목이 하나라도 있으면 `review.md`를 생성한다. 동일 위치에 기존 review.md가 있으면 덮어쓴다.
+미충족 항목이 하나라도 있으면 `review.md`를 생성한다.
 
-**저장 위치:**
-- 디렉토리 입력 → 해당 디렉토리
-- 파일 나열 → 첫 번째 파일의 디렉토리
+**저장 위치:** `.tasks/{yyMMddHHmmss}_{topic}/review.md`
+- `yyMMddHHmmss`는 현재 시간 (Bash `date +%y%m%d%H%M%S`로 생성)
+- topic 추출: 입력 문서의 task 디렉토리 이름에서 타임스탬프 접두사(`yyMMddHHmmss_`)를 제외한 부분에 `-review` 접미사를 붙인다
+  - 예: 입력이 `.tasks/260315120000_feature/spec.md`이면 topic은 `feature-review`
+  - 예: 입력이 `.tasks/260315120000_db-migration/`이면 topic은 `db-migration-review`
+- 입력이 `.tasks/` 하위가 아닌 경우: 입력 경로의 마지막 디렉토리명에 `-review`를 붙인다
+- 디렉토리가 없으면 먼저 생성한다
 
 **review.md 구조:**
 
@@ -124,13 +128,10 @@ Agent tool (subagent_type: Explore)로 각 검증 항목의 구현 여부를 판
 
 ## 다음 단계
 
-- `/sd-plan-dev {plan경로}` — {plan이 있는 미충족 항목 설명}
-- `/sd-plan {spec경로} R번호` — {plan이 없는 미충족 항목 설명}
+`/sd-plan {이 review.md의 경로}`
 ```
 
 ### 4-3. 완료 안내
 
 - **전체 충족**: 전체 통과 메시지를 출력한다
-- **미충족 존재**: review.md 경로를 안내하고, 사용자에게 직접 문서를 확인할 것을 권장하며, 다음 단계를 출력한다:
-  - plan이 있는 미충족 항목: `/sd-plan-dev {plan경로}`
-  - plan이 없는 미충족 항목: `/sd-plan {spec경로} R번호`
+- **미충족 존재**: review.md 경로를 안내하고, 사용자에게 직접 문서를 확인할 것을 권장하며, 다음 단계를 출력한다: `/sd-plan {review.md경로}`
