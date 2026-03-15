@@ -1,6 +1,6 @@
 import { Table } from "../schema/table-builder";
 
-export const _Migration = Table("_Migration")
+export const _Migration = Table("_migration")
   .columns((c) => ({
     code: c.varchar(255),
   }))
