@@ -1,5 +1,6 @@
 .tmp
-.plans
+.tasks
+.playwright
 .coverage
 __pycache__
 .claude/worktrees
@@ -8,18 +9,24 @@ __pycache__
 node_modules
 packages/*/.*
 packages/*/dist
+packages/sd-claude/claude
 *.~*
 ~*.*
 
-# TypeScript compile outputs (excluded from source directories)
+signCert.der
+signPri.key
+
+# TypeScript 컴파일 결과물 (소스 디렉토리에서 제외)
 packages/*/src/**/*.js
 packages/*/src/**/*.js.map
 packages/*/src/**/*.d.ts
+!packages/*/src/env.d.ts
 packages/*/src/**/*.d.ts.map
 
 packages/*/tests/**/*.js
 packages/*/tests/**/*.js.map
 packages/*/tests/**/*.d.ts
+!packages/*/tests/vitest-env.d.ts
 packages/*/tests/**/*.d.ts.map
 
 tests/**/*.js
