@@ -13,3 +13,9 @@
 # AskUserQuestion 도구 사용
 
 `AskUserQuestion` 도구사용전에 무조건 `---`를 마지막 라인에 출력할 것.
+
+# Compaction Rules
+
+`/compact`수행 시, 항상 보존할 것:
+- 수정된 파일의 전체 경로 목록
+- 에러 메시지 원문

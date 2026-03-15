@@ -32,6 +32,7 @@ argument-hint: "<요청 내용> | --help"
 | sd-spec | 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성 | 요구분석, 요구사항, spec, 기능 정의 |
 | sd-check | typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정 | 품질 검사, check, typecheck, lint, 코드 검사, 자동 수정 |
 | sd-test | 테스트 대상에 대해 작업 유형별 TDD 테스트를 독립 수행 | 테스트, 테스트 작성, 유닛 테스트 |
+| sd-commit | 변경사항을 분석하여 [type] scope 형식의 커밋 메시지를 생성하고 커밋 | 커밋, commit, 변경사항 저장, git commit |
 
 키워드 힌트는 참고용이며, 최종 판단은 요청의 전체 맥락과 의도를 기준으로 한다.
 
@@ -113,6 +114,8 @@ argument-hint: "<요청 내용> | --help"
 
 /sd-document ──────> .docx/.xlsx/.pptx/.pdf 읽기/쓰기
 
+/sd-commit ────────> 변경사항 분석 + [type] scope 커밋 메시지 생성 + 커밋
+
 /sd-email-analyze ─> .eml/.msg 분석 > 첨부파일 추출
                          |
                          v
@@ -132,12 +135,13 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-spec` | 요구분석서 작성 | `/sd-spec 로그인 기능 추가` |
 | `/sd-audit` | 병렬 코드 점검 | `/sd-audit packages/core-common` |
 | `/sd-debug` | 버그 원인 분석 | `/sd-debug 로그인 시 500 에러 발생` |
-| `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .tmp/plans/.../spec.md` |
-| `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .tmp/plans/.../plan.md` |
+| `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .plans/.../spec.md` |
+| `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .plans/.../plan.md` |
 | `/sd-check` | 코드 품질 검사 + 자동 수정 | `/sd-check packages/core-common` |
 | `/sd-test` | 독립 TDD 테스트 | `/sd-test packages/core-common/src/utils.ts` |
 | `/sd-readme` | README.md 생성 | `/sd-readme packages/core-common` |
 | `/sd-init` | CLAUDE.md 생성 | `/sd-init` |
+| `/sd-commit` | 커밋 메시지 생성 + 커밋 | `/sd-commit` |
 | `/sd-document` | 문서 읽기/쓰기 | `/sd-document report.xlsx` |
 | `/sd-email-analyze` | 이메일 분석 | `/sd-email-analyze mail.eml` |
 | `/sd-use` | 자동 스킬 매칭 | `/sd-use 로그인 버그 좀 봐줘` |

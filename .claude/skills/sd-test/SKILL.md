@@ -75,7 +75,7 @@ sd-plan의 테스트 전략 결정과 sd-plan-dev의 TDD 사이클 실행을 통
 
 1. 대상 파일과 추가 컨텍스트를 분석하여 테스트 시나리오를 작성한다
 2. `test.md` 파일을 작성한다
-   - 저장 위치: `.tmp/plans/{yyMMddHHmmss}_{topic}/test.md` (Bash `date +%y%m%d%H%M%S`, topic은 대상 파일명 기반 kebab-case)
+   - 저장 위치: `.plans/{yyMMddHHmmss}_{topic}/test.md` (Bash `date +%y%m%d%H%M%S`, topic은 대상 파일명 기반 kebab-case)
    - 형식:
      ```markdown
      ## 테스트 1: {테스트 제목}

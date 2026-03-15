@@ -92,7 +92,7 @@ argument-hint: "<점검 대상 또는 범위>"
 승인된 건들을 audit.md로 저장한다.
 
 **파일 경로:**
-- 디렉토리: `.tmp/plans/{yyMMddHHmmss}_{topic}/`
+- 디렉토리: `.plans/{yyMMddHHmmss}_{topic}/`
   - `yyMMddHHmmss`는 현재 시간 (Bash `date +%y%m%d%H%M%S`로 생성)
   - `{topic}`은 1단계에서 변환한 kebab-case topic
 - 파일명: `audit.md`
