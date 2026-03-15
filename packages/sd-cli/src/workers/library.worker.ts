@@ -14,7 +14,9 @@ import {
   getTypecheckEnvFromTarget,
   writeChangedOutputFiles,
 } from "../utils/esbuild-config";
-import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
+
+applyDebugLevel();
 
 //#region Types
 

@@ -33,7 +33,7 @@
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^20.19.37",
-    "@vanilla-extract/vite-plugin": "^5.1.5",
+    "@vanilla-extract/vite-plugin": "^5.2.0",
     "@vitest/browser": "^4.1.0",
     "@vitest/browser-playwright": "^4.1.0",
     "@vitest/coverage-v8": "^4.1.0",

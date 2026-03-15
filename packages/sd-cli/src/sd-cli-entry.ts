@@ -77,7 +77,10 @@ export function createCliParser(argv: string[]): Argv {
       global: true,
     })
     .middleware((args) => {
-      if (args.debug) consola.level = LogLevels.debug;
+      if (args.debug) {
+        consola.level = LogLevels.debug;
+        process.env["SD_DEBUG"] = "true";
+      }
     })
     .command(
       "lint [targets..]",

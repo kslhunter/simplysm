@@ -4,7 +4,7 @@ import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import net from "net";
 import { pathToFileURL } from "url";
-import { registerCleanupHandlers } from "../utils/worker-utils";
+import { registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils";
 
 //#region Types
 
@@ -39,6 +39,8 @@ export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
 }
 
 //#endregion
+
+applyDebugLevel();
 
 const logger = consola.withTag("sd:cli:server-runtime:worker");
 
@@ -109,8 +111,13 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
  */
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
+    const startTime = performance.now();
+
     // Import main.js (must export a server instance)
+    logger.debug("[start] Importing main.js...");
+    let stepStart = performance.now();
     const module = await import(pathToFileURL(info.mainJsPath).href);
+    logger.debug(`[start] main.js imported (${Math.round(performance.now() - stepStart)}ms)`);
     const server = module.server;
 
     if (server == null) {
@@ -121,15 +128,28 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
     serverInstance = server;
 
     // Find available port (auto-increment on port conflict)
+    logger.debug("[start] Finding available port...");
+    stepStart = performance.now();
     const originalPort = server.options.port;
     const availablePort = await findAvailablePort(originalPort);
     if (availablePort !== originalPort) {
       logger.info(`Port ${originalPort} in use, changing to ${availablePort}`);
       server.options.port = availablePort;
     }
+    logger.debug(
+      `[start] Port ${String(availablePort)} available (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Configure Vite proxy (only if clientPorts exists)
-    for (const [name, port] of Object.entries(info.clientPorts)) {
+    const clientEntries = Object.entries(info.clientPorts);
+    if (clientEntries.length > 0) {
+      logger.debug(
+        `[start] Configuring ${String(clientEntries.length)} Vite proxy(s)...`,
+      );
+      stepStart = performance.now();
+    }
+    for (const [name, port] of clientEntries) {
+      logger.debug(`[start] Registering proxy: /${name} -> http://127.0.0.1:${String(port)}`);
       await server.fastify.register(proxy, {
         prefix: `/${name}`,
         upstream: `http://127.0.0.1:${port}`,
@@ -137,9 +157,21 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
         websocket: true,
       });
     }
+    if (clientEntries.length > 0) {
+      logger.debug(
+        `[start] Proxies configured (${Math.round(performance.now() - stepStart)}ms)`,
+      );
+    }
 
     // Start server
+    logger.debug("[start] Starting server listen...");
+    stepStart = performance.now();
     await server.listen();
+    logger.debug(`[start] Server listening (${Math.round(performance.now() - stepStart)}ms)`);
+
+    logger.debug(
+      `[start] Total runtime startup: ${Math.round(performance.now() - startTime)}ms`,
+    );
 
     sender.send("serverReady", { port: server.options.port });
   } catch (err) {

@@ -5,6 +5,9 @@ import { createRequire } from "module";
 import type esbuild from "esbuild";
 import { solidPlugin } from "esbuild-plugin-solid";
 import type { TypecheckEnv } from "./tsconfig";
+import { consola } from "consola";
+
+const logger = consola.withTag("sd:cli:esbuild-config");
 
 /**
  * Write only changed files from esbuild outputFiles to disk
@@ -65,6 +68,8 @@ export interface ServerEsbuildOptions {
   env?: Record<string, string>;
   /** External modules to exclude from bundle */
   external?: string[];
+  /** Dev mode: skip minification for faster builds */
+  dev?: boolean;
 }
 
 /**
@@ -102,7 +107,7 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     bundle: false,
     write: false,
     tsconfigRaw: {
-      compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"],
+      compilerOptions: toEsbuildTsconfigRaw(options.compilerOptions),
     },
     logLevel: "silent",
     plugins,
@@ -130,7 +135,7 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     entryPoints: options.entryPoints,
     outdir: path.join(options.pkgDir, "dist"),
     format: "esm",
-    minify: true,
+    minify: options.dev !== true,
     platform: "node",
     target: "node20",
     bundle: true,
@@ -140,10 +145,62 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     external: options.external,
     define,
     tsconfigRaw: {
-      compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"],
+      compilerOptions: toEsbuildTsconfigRaw(options.compilerOptions),
     },
     logLevel: "silent",
   };
+}
+
+// TypeScript ScriptTarget enum → esbuild target string
+const TARGET_MAP: Record<number, string> = {
+  0: "es3", 1: "es5", 2: "es2015", 3: "es2016", 4: "es2017",
+  5: "es2018", 6: "es2019", 7: "es2020", 8: "es2021", 9: "es2022",
+  10: "es2023", 11: "es2024", 99: "esnext",
+};
+
+// TypeScript JsxEmit enum → esbuild jsx string
+const JSX_MAP: Record<number, string> = {
+  1: "preserve", 2: "react", 3: "react-native", 4: "react-jsx", 5: "react-jsxdev",
+};
+
+// TypeScript ModuleKind enum → string
+const MODULE_MAP: Record<number, string> = {
+  0: "none", 1: "commonjs", 2: "amd", 3: "umd", 4: "system",
+  5: "es2015", 6: "es2020", 7: "es2022", 99: "esnext",
+  100: "node16", 199: "nodenext",
+};
+
+// TypeScript ModuleResolutionKind enum → string
+const MODULE_RESOLUTION_MAP: Record<number, string> = {
+  1: "node10", 2: "node16", 3: "nodenext", 100: "bundler",
+};
+
+/**
+ * Convert TypeScript's ts.CompilerOptions to esbuild-compatible tsconfigRaw compilerOptions.
+ *
+ * TypeScript uses numeric enum values (e.g., target: 99) while esbuild expects
+ * string values (e.g., "esnext"). This converts known enum fields and passes
+ * everything else through as-is.
+ */
+function toEsbuildTsconfigRaw(
+  compilerOptions: Record<string, unknown>,
+): esbuild.TsconfigRaw["compilerOptions"] {
+  const result = { ...compilerOptions };
+
+  if (typeof result["target"] === "number") {
+    result["target"] = TARGET_MAP[result["target"] as number] ?? "esnext";
+  }
+  if (typeof result["jsx"] === "number") {
+    result["jsx"] = JSX_MAP[result["jsx"] as number];
+  }
+  if (typeof result["module"] === "number") {
+    result["module"] = MODULE_MAP[result["module"] as number];
+  }
+  if (typeof result["moduleResolution"] === "number") {
+    result["moduleResolution"] = MODULE_RESOLUTION_MAP[result["moduleResolution"] as number];
+  }
+
+  return result as esbuild.TsconfigRaw["compilerOptions"];
 }
 
 /**
@@ -183,6 +240,7 @@ function scanDependencyTree(
   try {
     pkgJsonPath = req.resolve(`${pkgName}/package.json`);
   } catch {
+    logger.debug(`[scanDependencyTree] Could not resolve: ${pkgName}`);
     return;
   }
 
@@ -196,7 +254,13 @@ function scanDependencyTree(
   }
 
   // Recursively traverse sub-dependencies
-  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+  const subDeps = Object.keys(pkgJson.dependencies ?? {});
+  if (subDeps.length > 0) {
+    logger.debug(
+      `[scanDependencyTree] ${pkgName}: traversing ${String(subDeps.length)} sub-dependencies`,
+    );
+  }
+  for (const dep of subDeps) {
     scanDependencyTree(dep, depDir, external, visited, collector);
   }
 }
@@ -212,7 +276,12 @@ export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
   const visited = new Set<string>();
 
   const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
-  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+  const deps = Object.keys(pkgJson.dependencies ?? {});
+  logger.debug(
+    `[optionalPeerDeps] Scanning ${String(deps.length)} top-level dependencies...`,
+  );
+
+  for (const dep of deps) {
     scanDependencyTree(dep, pkgDir, external, visited, (_pkgName, depDir, depPkgJson) => {
       const found: string[] = [];
       if (depPkgJson.peerDependenciesMeta != null) {
@@ -232,6 +301,9 @@ export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
     });
   }
 
+  logger.debug(
+    `[optionalPeerDeps] Done: visited ${String(visited.size)} packages, found ${String(external.size)} externals`,
+  );
   return [...external];
 }
 
@@ -250,7 +322,12 @@ export function collectNativeModuleExternals(pkgDir: string): string[] {
   const visited = new Set<string>();
 
   const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
-  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+  const deps = Object.keys(pkgJson.dependencies ?? {});
+  logger.debug(
+    `[nativeModules] Scanning ${String(deps.length)} top-level dependencies...`,
+  );
+
+  for (const dep of deps) {
     scanDependencyTree(dep, pkgDir, external, visited, (pkgName, depDir, _pkgJson) => {
       const found: string[] = [];
       // Detect native modules by checking for binding.gyp
@@ -261,6 +338,9 @@ export function collectNativeModuleExternals(pkgDir: string): string[] {
     });
   }
 
+  logger.debug(
+    `[nativeModules] Done: visited ${String(visited.size)} packages, found ${String(external.size)} externals`,
+  );
   return [...external];
 }
 

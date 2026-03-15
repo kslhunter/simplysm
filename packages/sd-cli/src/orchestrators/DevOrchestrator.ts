@@ -611,6 +611,7 @@ export class DevOrchestrator {
     resolveServerStep: (serverName: string, resultKey: string, result: BuildResult) => void,
     viteClientReadyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
   ): Promise<void> {
+    const runtimeStartTime = performance.now();
     this._logger.debug(`[${serverName}] _startServerRuntime: ${mainJsPath}`);
     const updatedBuild = this._serverBuildWorkers.get(serverName)!;
     updatedBuild.mainJsPath = mainJsPath;
@@ -619,10 +620,15 @@ export class DevOrchestrator {
     const existingRuntime = this._serverRuntimeWorkers.get(serverName);
     if (existingRuntime != null) {
       this._logger.info(`[${serverName}] Restarting server...`);
+      const terminateStart = performance.now();
       await existingRuntime.terminate();
+      this._logger.debug(
+        `[${serverName}] Previous runtime terminated (${Math.round(performance.now() - terminateStart)}ms)`,
+      );
     }
 
     // Create and start new Server Runtime Worker
+    this._logger.debug(`[${serverName}] Creating runtime worker...`);
     const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
     this._serverRuntimeWorkers.set(serverName, runtimeWorker);
 
@@ -635,7 +641,11 @@ export class DevOrchestrator {
       `[${serverName}] Waiting for clients: ${String(clientReadyPromises.length)} total`,
     );
     if (clientReadyPromises.length > 0) {
+      const waitStart = performance.now();
       await Promise.all(clientReadyPromises);
+      this._logger.debug(
+        `[${serverName}] Clients ready (${Math.round(performance.now() - waitStart)}ms)`,
+      );
     }
 
     // Collect client ports for this server
@@ -645,6 +655,9 @@ export class DevOrchestrator {
         serverClientPorts[clientName] = this._clientPorts[clientName];
       }
     }
+    this._logger.debug(
+      `[${serverName}] Client ports: ${JSON.stringify(serverClientPorts)}`,
+    );
 
     // Server Runtime event handlers
     runtimeWorker.on("serverReady", (readyData) => {
@@ -672,6 +685,9 @@ export class DevOrchestrator {
     // Start Server Runtime
     // If worker crashes, it terminates without emitting "serverReady"/"error" events,
     // so catch promise rejection to prevent hanging
+    this._logger.debug(
+      `[${serverName}] Starting runtime worker... (setup took ${Math.round(performance.now() - runtimeStartTime)}ms)`,
+    );
     runtimeWorker
       .start({
         mainJsPath,

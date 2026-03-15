@@ -16,7 +16,7 @@ import {
   collectNativeModuleExternals,
   writeChangedOutputFiles,
 } from "../utils/esbuild-config";
-import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
 import { collectDeps } from "../utils/package-utils";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 
@@ -101,6 +101,8 @@ export interface ServerWorkerEvents extends Record<string, unknown> {
 
 //#region Resource Management
 
+applyDebugLevel();
+
 const logger = consola.withTag("sd:cli:server:worker");
 
 /** esbuild build context (to be cleaned up) */
@@ -151,8 +153,20 @@ async function cleanup(): Promise<void> {
  * 3. Manually specified in sd.config.ts
  */
 function collectAllExternals(pkgDir: string, manualExternals?: string[]): string[] {
+  logger.debug("[externals] Scanning optional peer deps...");
+  let stepStart = performance.now();
   const optionalPeerDeps = collectUninstalledOptionalPeerDeps(pkgDir);
+  logger.debug(
+    `[externals] Optional peer deps done: ${String(optionalPeerDeps.length)} found (${Math.round(performance.now() - stepStart)}ms)`,
+  );
+
+  logger.debug("[externals] Scanning native modules...");
+  stepStart = performance.now();
   const nativeModules = collectNativeModuleExternals(pkgDir);
+  logger.debug(
+    `[externals] Native modules done: ${String(nativeModules.length)} found (${Math.round(performance.now() - stepStart)}ms)`,
+  );
+
   const manual = manualExternals ?? [];
 
   const merged = [...new Set([...optionalPeerDeps, ...nativeModules, ...manual])];
@@ -307,20 +321,39 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 
   try {
     // Parse tsconfig
+    logger.debug("[build] Parsing tsconfig...");
+    let stepStart = performance.now();
     const parsedConfig = parseRootTsconfig(info.cwd);
+    logger.debug(`[build] tsconfig parsed (${Math.round(performance.now() - stepStart)}ms)`);
+
+    stepStart = performance.now();
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
+    logger.debug(
+      `[build] Found ${String(entryPoints.length)} source files (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Server target is node environment
+    logger.debug("[build] Getting compiler options...");
+    stepStart = performance.now();
     const compilerOptions = await getCompilerOptionsForPackage(
       parsedConfig.options,
       "node",
       info.pkgDir,
     );
+    logger.debug(
+      `[build] Compiler options ready (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Collect all externals (optional peer deps + native modules + manual)
+    logger.debug("[build] Collecting externals...");
+    stepStart = performance.now();
     const external = collectAllExternals(info.pkgDir, info.externals);
+    logger.debug(
+      `[build] Collected ${String(external.length)} externals (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // One-time esbuild
+    logger.debug("[build] Creating esbuild options...");
     const esbuildOptions = createServerEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,
@@ -329,17 +362,30 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       external,
     });
 
+    logger.debug("[build] Running esbuild...");
+    stepStart = performance.now();
     const result = await esbuild.build(esbuildOptions);
+    logger.debug(`[build] esbuild done (${Math.round(performance.now() - stepStart)}ms)`);
 
     // Generate .config.json
     const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
     fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
 
     // Copy public/ to dist/ (production build: no public-dev)
+    logger.debug("[build] Copying public files...");
+    stepStart = performance.now();
     await copyPublicFiles(info.pkgDir, false);
+    logger.debug(
+      `[build] Public files copied (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Generate production files (package.json, mise.toml, openssl.cnf, pm2.config.cjs)
+    logger.debug("[build] Generating production files...");
+    stepStart = performance.now();
     generateProductionFiles(info, external);
+    logger.debug(
+      `[build] Production files generated (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     const errors = result.errors.map((e) => e.text);
     const warnings = result.warnings.map((w) => w.text);
@@ -368,26 +414,53 @@ async function createAndBuildContext(
   isFirstBuild: boolean,
   resolveFirstBuild?: () => void,
 ): Promise<esbuild.BuildContext> {
+  const contextStart = performance.now();
+
+  logger.debug("[context] Parsing tsconfig...");
+  let stepStart = performance.now();
   const parsedConfig = parseRootTsconfig(info.cwd);
+  logger.debug(`[context] tsconfig parsed (${Math.round(performance.now() - stepStart)}ms)`);
+
+  stepStart = performance.now();
   const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
+  logger.debug(
+    `[context] Found ${String(entryPoints.length)} source files (${Math.round(performance.now() - stepStart)}ms)`,
+  );
+
+  logger.debug("[context] Getting compiler options...");
+  stepStart = performance.now();
   const compilerOptions = await getCompilerOptionsForPackage(
     parsedConfig.options,
     "node",
     info.pkgDir,
   );
+  logger.debug(
+    `[context] Compiler options ready (${Math.round(performance.now() - stepStart)}ms)`,
+  );
 
   const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
+
+  logger.debug("[context] Collecting externals...");
+  stepStart = performance.now();
   const external = collectAllExternals(info.pkgDir, info.externals);
+  logger.debug(
+    `[context] Collected ${String(external.length)} externals (${Math.round(performance.now() - stepStart)}ms)`,
+  );
+
+  logger.debug("[context] Creating esbuild options (dev mode, minify disabled)...");
   const baseOptions = createServerEsbuildOptions({
     pkgDir: info.pkgDir,
     entryPoints,
     compilerOptions,
     env: info.env,
     external,
+    dev: true,
   });
 
   let isBuildFirstTime = isFirstBuild;
 
+  logger.debug("[context] Creating esbuild context...");
+  stepStart = performance.now();
   const context = await esbuild.context({
     ...baseOptions,
     metafile: true,
@@ -396,14 +469,43 @@ async function createAndBuildContext(
       {
         name: "watch-notify",
         setup(pluginBuild) {
+          let consecutiveStarts = 0;
+
           pluginBuild.onStart(() => {
-            sender.send("buildStart", {});
+            consecutiveStarts++;
+            logger.debug(`[esbuild] onStart (#${String(consecutiveStarts)})`);
+
+            if (consecutiveStarts > 3) {
+              // esbuild context.rebuild() silently retries on build errors (esbuild bug).
+              // Stop the retry loop and diagnose via esbuild.build().
+              void context.dispose().catch(() => {});
+
+              void esbuild
+                .build(baseOptions)
+                .catch((err: unknown) => {
+                  sender.send("build", {
+                    success: false,
+                    mainJsPath,
+                    errors: [errNs.message(err)],
+                  });
+                })
+                .finally(() => {
+                  resolveFirstBuild?.();
+                });
+            } else {
+              sender.send("buildStart", {});
+            }
           });
 
           pluginBuild.onEnd(async (result) => {
+            consecutiveStarts = 0;
+
             // Save metafile
             if (result.metafile != null) {
               lastMetafile = result.metafile;
+              logger.debug(
+                `[esbuild] Metafile: ${String(Object.keys(result.metafile.inputs).length)} inputs, ${String(Object.keys(result.metafile.outputs).length)} outputs`,
+              );
             }
 
             const errors = result.errors.map((e) => e.text);
@@ -413,7 +515,11 @@ async function createAndBuildContext(
             // Write output files and check for changes
             let hasOutputChange = false;
             if (success && result.outputFiles != null) {
+              const writeStart = performance.now();
               hasOutputChange = await writeChangedOutputFiles(result.outputFiles);
+              logger.debug(
+                `[esbuild] Output files written: changed=${String(hasOutputChange)}, count=${String(result.outputFiles.length)} (${Math.round(performance.now() - writeStart)}ms)`,
+              );
             }
 
             if (isBuildFirstTime && success) {
@@ -442,8 +548,33 @@ async function createAndBuildContext(
       },
     ],
   });
+  logger.debug(
+    `[context] esbuild context created (${Math.round(performance.now() - stepStart)}ms)`,
+  );
 
-  await context.rebuild();
+  logger.debug("[context] Running initial rebuild...");
+  stepStart = performance.now();
+  const progressTimer = setInterval(() => {
+    logger.debug(
+      `[esbuild] Still building... (${Math.round((performance.now() - stepStart) / 1000)}s elapsed)`,
+    );
+  }, 5000);
+  try {
+    await context.rebuild();
+  } catch {
+    // context.rebuild() may reject with "Cannot rebuild" when disposed
+    // from onStart guard. The real error is reported via esbuild.build()
+    // fallback in onStart, so we suppress this rejection.
+  } finally {
+    clearInterval(progressTimer);
+  }
+  logger.debug(
+    `[context] Initial rebuild done (${Math.round(performance.now() - stepStart)}ms)`,
+  );
+
+  logger.debug(
+    `[context] Total context setup: ${Math.round(performance.now() - contextStart)}ms`,
+  );
 
   return context;
 }
@@ -457,6 +588,9 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
   guardStartWatch();
 
   try {
+    const watchStart = performance.now();
+    logger.debug("[startWatch] Starting watch setup...");
+
     // Promise to wait for first build completion
     let resolveFirstBuild!: () => void;
     const firstBuildPromise = new Promise<void>((resolve) => {
@@ -464,16 +598,36 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     });
 
     // Create initial esbuild context and build
+    logger.debug("[startWatch] Creating initial esbuild context...");
+    let stepStart = performance.now();
     esbuildContext = await createAndBuildContext(info, true, resolveFirstBuild);
+    logger.debug(
+      `[startWatch] Initial context created (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Wait for first build completion
+    logger.debug("[startWatch] Waiting for first build completion...");
+    stepStart = performance.now();
     await firstBuildPromise;
+    logger.debug(
+      `[startWatch] First build completed (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Watch public/ and public-dev/ (dev mode includes public-dev)
+    logger.debug("[startWatch] Setting up public file watcher...");
+    stepStart = performance.now();
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
+    logger.debug(
+      `[startWatch] Public watcher ready (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     // Collect watch paths based on dependencies
+    logger.debug("[startWatch] Collecting dependencies for watch paths...");
+    stepStart = performance.now();
     const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
+    logger.debug(
+      `[startWatch] Deps collected: workspace=${String(workspaceDeps.length)}, replace=${String(replaceDeps.length)} (${Math.round(performance.now() - stepStart)}ms)`,
+    );
 
     const watchPaths: string[] = [];
 
@@ -496,7 +650,15 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     }
 
     // Start FsWatcher
+    logger.debug(`[startWatch] Starting FsWatcher with ${String(watchPaths.length)} paths...`);
+    stepStart = performance.now();
     srcWatcher = await FsWatcher.watch(watchPaths);
+    logger.debug(
+      `[startWatch] FsWatcher ready (${Math.round(performance.now() - stepStart)}ms)`,
+    );
+    logger.debug(
+      `[startWatch] Total watch setup: ${Math.round(performance.now() - watchStart)}ms`,
+    );
 
     // Handle file changes
     srcWatcher.onChange({ delay: 300 }, async (changes) => {

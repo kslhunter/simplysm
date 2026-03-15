@@ -11,7 +11,9 @@ import {
   type TypecheckEnv,
 } from "../utils/tsconfig";
 import { serializeDiagnostic, type SerializedDiagnostic } from "../utils/typecheck-serialization";
-import { createOnceGuard, registerCleanupHandlers } from "../utils/worker-utils";
+import { createOnceGuard, registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils";
+
+applyDebugLevel();
 
 //#region Types
 

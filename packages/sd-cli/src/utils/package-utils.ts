@@ -1,6 +1,9 @@
 import path from "path";
 import fs from "fs";
+import { consola } from "consola";
 import type { SdPackageConfig } from "../sd-config.types";
+
+const logger = consola.withTag("sd:cli:package-utils");
 
 /**
  * Walk up from import.meta.dirname to find package.json and return package root
@@ -25,6 +28,8 @@ export function collectDeps(
   cwd: string,
   replaceDepsConfig?: Record<string, string>,
 ): DepsResult {
+  const startTime = performance.now();
+  logger.debug("[collectDeps] Starting dependency collection...");
   const rootPkgJsonPath = path.join(cwd, "package.json");
   const rootPkgJson = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")) as { name: string };
   const scopeMatch = rootPkgJson.name.match(/^(@[^/]+)\//);
@@ -80,6 +85,9 @@ export function collectDeps(
   }
 
   traverse(pkgDir);
+  logger.debug(
+    `[collectDeps] Done: workspace=${String(workspaceDeps.length)}, replace=${String(replaceDeps.length)} (${Math.round(performance.now() - startTime)}ms)`,
+  );
   return { workspaceDeps, replaceDeps };
 }
 
