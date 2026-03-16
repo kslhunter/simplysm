@@ -33,6 +33,7 @@ argument-hint: "<요청 내용> | --help"
 | sd-check | typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정 | 품질 검사, check, typecheck, lint, 코드 검사, 자동 수정 |
 | sd-test | 테스트 대상에 대해 작업 유형별 TDD 테스트를 독립 수행 | 테스트, 테스트 작성, 유닛 테스트 |
 | sd-review | spec/plan 문서와 구현을 비교하여 완성도를 검증 | 리뷰, review, 검증, 충족, 완성도, 구현 검토 |
+| sd-simplify | 수정된 코드를 reuse·quality·efficiency 관점으로 검토하고 개선 | 리팩터, simplify, 품질 개선, clean code |
 | sd-commit | 변경사항을 분석하여 [type] scope 형식의 커밋 메시지를 생성하고 커밋 | 커밋, commit, 변경사항 저장, git commit |
 
 키워드 힌트는 참고용이며, 최종 판단은 요청의 전체 맥락과 의도를 기준으로 한다.
@@ -122,6 +123,8 @@ argument-hint: "<요청 내용> | --help"
 
 /sd-document ──────> .docx/.xlsx/.pptx/.pdf 읽기/쓰기
 
+/sd-simplify ─────> reuse·quality·efficiency 관점 코드 검토 + 수정
+
 /sd-commit ────────> 변경사항 분석 + [type] scope 커밋 메시지 생성 + 커밋
 
 /sd-email-analyze ─> .eml/.msg 분석 > 첨부파일 추출
@@ -153,6 +156,7 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-commit` | 커밋 메시지 생성 + 커밋 | `/sd-commit` |
 | `/sd-document` | 문서 읽기/쓰기 | `/sd-document report.xlsx` |
 | `/sd-email-analyze` | 이메일 분석 | `/sd-email-analyze mail.eml` |
+| `/sd-simplify` | 코드 품질 검토 및 개선 | `/sd-simplify src/utils.ts src/helper.ts` |
 | `/sd-use` | 자동 스킬 매칭 | `/sd-use 로그인 버그 좀 봐줘` |
 | `/sd-use --help` | 이 가이드 표시 | `/sd-use --help` |
 ````
