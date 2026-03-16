@@ -82,8 +82,10 @@ sd-plan의 테스트 전략 결정과 sd-plan-dev의 TDD 사이클 실행을 통
      **입력:** {subagent에게 실행시킬 지시}
      **기대 결과:** {검증 기준}
      ```
-3. Agent tool로 subagent를 생성하여 테스트를 실행한다
-   - subagent에게 전달할 내용: 대상 파일 경로, test.md 경로, "test.md의 각 테스트를 실행하고 PASS/FAIL을 판정하라"는 지시
+3. Agent tool로 **테스트별 독립 subagent**를 병렬로 생성하여 실행한다
+   - 각 테스트(`## 테스트 N`)마다 별도 subagent를 호출한다 (단일 메시지에서 병렬 호출)
+   - subagent에게 전달할 내용: 대상 파일 경로, 해당 테스트 1건의 입력과 기대 결과, "테스트를 실행하고 PASS/FAIL을 판정하라"는 지시
+   - 하나의 subagent에 여러 테스트를 전달하지 않는다 (컨텍스트 격리)
 
 **이미 모든 테스트가 통과하면 (vitest/subagent 공통):**
 
@@ -107,7 +109,7 @@ sd-plan의 테스트 전략 결정과 sd-plan-dev의 TDD 사이클 실행을 통
 테스트 실패 항목에 대해 대상 파일을 수정한다.
 - 수정 후 테스트를 재실행한다
   - vitest: Bash로 `vitest run {테스트 파일}` 재실행
-  - subagent: Agent tool로 subagent 재실행
+  - subagent: Agent tool로 테스트별 독립 subagent를 병렬로 재실행
 - 여전히 실패하면 다시 수정 → 재테스트를 반복한다
 - 최대 3회 반복한다. 3회 시도 후에도 실패하면 실패 원인을 분석하여 사용자에게 보고하고 중단한다
 

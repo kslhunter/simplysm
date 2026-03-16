@@ -79,7 +79,10 @@ plan의 RED Phase에 명시된 테스트 전략에 따라 분기한다:
     **입력:** {subagent에게 실행시킬 지시}
     **기대 결과:** {검증 기준}
     ```
-- Agent tool로 subagent를 생성하여 테스트를 실행하고 실패를 확인한다
+- Agent tool로 **테스트별 독립 subagent**를 병렬로 생성하여 실행하고 실패를 확인한다
+  - 각 테스트(`## 테스트 N`)마다 별도 subagent를 호출한다 (단일 메시지에서 병렬 호출)
+  - subagent에게 전달할 내용: 대상 파일 경로, 해당 테스트 1건의 입력과 기대 결과, "테스트를 실행하고 PASS/FAIL을 판정하라"는 지시
+  - 하나의 subagent에 여러 테스트를 전달하지 않는다 (컨텍스트 격리)
 
 **테스트 생략인 경우:**
 - RED Phase를 건너뛰고 GREEN Phase로 바로 진행한다
@@ -89,7 +92,7 @@ plan의 RED Phase에 명시된 테스트 전략에 따라 분기한다:
 plan의 GREEN Phase에 명시된 구현 계획에 따라 최소한의 구현을 수행한다 (YAGNI 원칙).
 - 구현 후 테스트를 재실행하여 통과를 확인한다
 - vitest: Bash로 재실행
-- subagent 테스트: Agent tool로 재실행
+- subagent 테스트: Agent tool로 테스트별 독립 subagent를 병렬로 재실행
 - 테스트 생략인 경우: 구현만 수행
 
 **구현 중 불확실한 부분 처리:**
