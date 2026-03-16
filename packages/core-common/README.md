@@ -21,7 +21,7 @@ npm install @simplysm/core-common
 |---------|------|
 | [타입](docs/types.md) | DateTime, DateOnly, Time, Uuid, LazyGcMap 등 불변 타입 |
 | [유틸리티](docs/utilities.md) | obj, str, num, bytes, json, xml, zip 등 네임스페이스 유틸리티 |
-| [기능](docs/features.md) | EventEmitter, DebounceQueue, SerialQueue, 에러 클래스, 확장 메서드 |
+| [기능](docs/features.md) | EventEmitter, DebounceQueue, SerialQueue, 에러 클래스, 확장 메서드, env |
 
 ## 빠른 시작
 
