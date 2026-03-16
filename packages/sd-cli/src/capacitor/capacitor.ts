@@ -39,6 +39,8 @@ export class Capacitor {
   private static readonly _ANDROID_KEYSTORE_FILE_NAME = "android.keystore";
   private static readonly _LOCK_FILE_NAME = ".capacitor.lock";
   private static readonly _logger = consola.withTag("sd:cli:capacitor");
+  private static readonly _utf8Decoder = new TextDecoder("utf-8", { fatal: true });
+  private static readonly _fallbackDecoder = new TextDecoder("euc-kr");
 
   private readonly _capPath: string;
   private readonly _platforms: string[];
@@ -92,10 +94,17 @@ export class Capacitor {
   }
 
   /**
-   * Resolve binary path from .capacitor/node_modules/.bin/
+   * Execute a Capacitor CLI command via npx
    */
-  private _capBin(name: string): string {
-    return path.resolve(this._capPath, "node_modules/.bin", name);
+  private async _execCap(args: string[]): Promise<string> {
+    return this._exec("npx", ["cap", ...args], this._capPath);
+  }
+
+  /**
+   * Execute capacitor-assets CLI command via npx
+   */
+  private async _execCapAssets(args: string[]): Promise<string> {
+    return this._exec("npx", ["capacitor-assets", ...args], this._capPath);
   }
 
   /**
@@ -103,9 +112,28 @@ export class Capacitor {
    */
   private async _exec(cmd: string, args: string[], cwd: string): Promise<string> {
     Capacitor._logger.debug(`executed command: ${cmd} ${args.join(" ")}`);
-    const { stdout: result } = await execa(cmd, args, { cwd });
-    Capacitor._logger.debug(`execution result: ${result}`);
-    return result;
+
+    const result = await execa(cmd, args, { cwd, reject: false, encoding: "buffer" });
+    const stdout = Capacitor._decodeOutput(result.stdout);
+
+    if (result.exitCode !== 0) {
+      const stderr = Capacitor._decodeOutput(result.stderr);
+      throw new Error(`${cmd} ${args.join(" ")} failed (exit ${result.exitCode}): ${stderr || stdout}`);
+    }
+
+    Capacitor._logger.debug(`execution result: ${stdout}`);
+    return stdout;
+  }
+
+  /**
+   * Decode command output (UTF-8 first, fallback to EUC-KR for Windows CP949)
+   */
+  private static _decodeOutput(bytes: Uint8Array): string {
+    try {
+      return Capacitor._utf8Decoder.decode(bytes);
+    } catch {
+      return Capacitor._fallbackDecoder.decode(bytes);
+    }
   }
 
   /**
@@ -193,9 +221,9 @@ export class Capacitor {
 
       // 6. Synchronize web assets
       if (changed) {
-        await this._exec(this._capBin("cap"), ["sync"], this._capPath);
+        await this._execCap(["sync"]);
       } else {
-        await this._exec(this._capBin("cap"), ["copy"], this._capPath);
+        await this._execCap(["copy"]);
       }
     } finally {
       await this._releaseLock();
@@ -212,7 +240,7 @@ export class Capacitor {
       const buildType = this._config.debug ? "debug" : "release";
 
       for (const platform of this._platforms) {
-        await this._exec(this._capBin("cap"), ["copy", platform], this._capPath);
+        await this._execCap(["copy", platform]);
 
         if (platform === "android") {
           await this._buildAndroid(outPath, buildType);
@@ -236,10 +264,10 @@ export class Capacitor {
     }
 
     for (const platform of this._platforms) {
-      await this._exec(this._capBin("cap"), ["copy", platform], this._capPath);
+      await this._execCap(["copy", platform]);
 
       try {
-        await this._exec(this._capBin("cap"), ["run", platform], this._capPath);
+        await this._execCap(["run", platform]);
       } catch (err) {
         if (platform === "android") {
           try {
@@ -277,20 +305,18 @@ export class Capacitor {
    */
   private async _initCap(): Promise<boolean> {
     const depChanged = await this._setupNpmConf();
-    if (!depChanged) return false;
+    const nodeModulesExists = await fsx.exists(path.resolve(this._capPath, "node_modules"));
+
+    if (!depChanged && nodeModulesExists) return false;
 
     // pnpm install
-    const installResult = await this._exec("pnpm", ["install"], this._capPath);
-    Capacitor._logger.debug(`pnpm install completed: ${installResult}`);
+    const installResult = await this._exec("npm", ["install"], this._capPath);
+    Capacitor._logger.debug(`npm install completed: ${installResult}`);
 
     // F12: cap init idempotency - execute only when capacitor.config.ts does not exist
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
     if (!(await fsx.exists(configPath))) {
-      await this._exec(
-        this._capBin("cap"),
-        ["init", this._config.appName, this._config.appId],
-        this._capPath,
-      );
+      await this._execCap(["init", this._config.appId, this._config.appId]);
     }
 
     // Create default www/index.html
@@ -437,7 +463,7 @@ export default config;
         continue;
       }
 
-      await this._exec(this._capBin("cap"), ["add", platform], this._capPath);
+      await this._execCap(["add", platform]);
     }
   }
 
@@ -482,17 +508,13 @@ export default config;
           })
           .toFile(logoPath);
 
-        await this._exec(
-          this._capBin("capacitor-assets"),
-          [
-            "generate",
-            "--iconBackgroundColor",
-            "#ffffff",
-            "--splashBackgroundColor",
-            "#ffffff",
-          ],
-          this._capPath,
-        );
+        await this._execCapAssets([
+          "generate",
+          "--iconBackgroundColor",
+          "#ffffff",
+          "--splashBackgroundColor",
+          "#ffffff",
+        ]);
       } catch (err) {
         Capacitor._logger.warn(
           `icon generation failed: ${err instanceof Error ? err.message : err}. Using default icon.`,

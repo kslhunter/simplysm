@@ -95,8 +95,8 @@ export class Electron {
     // 1. Create package.json
     await this._setupPackageJson(srcPath);
 
-    // 2. pnpm install
-    await this._exec("pnpm", ["install"], srcPath);
+    // 2. npm install
+    await this._exec("npm", ["install"], srcPath);
 
     // 3. Rebuild native modules
     const reinstallDeps = this._config.reinstallDependencies ?? [];
