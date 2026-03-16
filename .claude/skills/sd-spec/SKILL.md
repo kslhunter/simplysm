@@ -1,7 +1,7 @@
 ---
 name: sd-spec
 description: 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성. 사용자가 요구분석/spec 작성을 요청할 때 사용
-argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호>"
+argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호> 또는 <migration.md 경로 M번호>"
 ---
 
 # sd-spec: 요구분석서 작성
@@ -26,7 +26,17 @@ argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호>"
 - 대화에도 spec이 없으면 AskUserQuestion으로 spec 파일 경로를 요청한다
 - 해당 spec을 Read하고 R항목의 내용을 추출한다. 해당 R번호가 존재하지 않으면 AskUserQuestion으로 올바른 R번호를 확인한다
 
-### 1-3. topic (신규 spec 모드)
+### 1-3. migration.md 경로 + M번호 (마이그레이션 spec 모드)
+
+`$ARGUMENTS`에 `migration.md`로 끝나는 경로가 포함되고, 뒤에 `M숫자` 패턴이 따라오는 경우:
+- 해당 migration.md를 Read한다
+- 지정된 M항목(`#### M{숫자}. {제목}`)의 내용을 추출한다 (여러 M번호 지정 가능)
+- M항목의 "유형", "원본 위치", "현재 대응", "설명" 정보를 기반으로 요구분석서를 작성한다
+- 해당 M번호가 존재하지 않으면 AskUserQuestion으로 올바른 M번호를 확인한다
+- 예: `/sd-spec .tasks/260316_my-app-migration/migration.md M3`
+- 예: `/sd-spec .tasks/260316_my-app-migration/migration.md M1 M5`
+
+### 1-4. topic (신규 spec 모드)
 
 위 조건에 해당하지 않으면 기존 신규 spec 작성 모드로 진입한다:
 - `$ARGUMENTS`가 비어있으면 현재 대화 맥락에서 topic을 파악한다. 대화 맥락도 없으면 AskUserQuestion으로 topic을 요청한다
@@ -85,6 +95,16 @@ argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호>"
 # 요구분석서: {R항목 제목의 상세 설명}
 
 **참조 문서:** `{상위 spec 경로}` {R번호}
+```
+
+이하 섹션 구조(개요, 현재 상태, 요구사항, 영향 범위)는 신규 spec 모드와 동일하다.
+
+**마이그레이션 spec 모드**에서는 문서 상단에 참조 문서를 추가한다:
+
+```markdown
+# 요구분석서: {M항목 제목들의 종합 설명}
+
+**참조 문서:** `{migration.md 경로}` {M번호들}
 ```
 
 이하 섹션 구조(개요, 현재 상태, 요구사항, 영향 범위)는 신규 spec 모드와 동일하다.
@@ -188,6 +208,15 @@ argument-hint: "<topic> 또는 <spec 경로 R번호> 또는 <R번호>"
 - 파일명: `spec.md`
 - 전체 경로: `{상위 spec 디렉토리}/{R번호}/spec.md`
   - 예: 상위 spec이 `.tasks/260315_example/spec.md`이고 R1이면 → `.tasks/260315_example/R1/spec.md`
+- 디렉토리가 없으면 먼저 생성한다
+
+### 마이그레이션 spec 모드
+
+- 디렉토리: migration.md와 동일 디렉토리 하위에 `{M번호}/` (복수 M이면 `{M번호}_{M번호}/`)
+- 파일명: `spec.md`
+- 전체 경로: `{migration.md 디렉토리}/{M번호}/spec.md`
+  - 예: migration.md가 `.tasks/260316_my-app-migration/migration.md`이고 M3이면 → `.tasks/260316_my-app-migration/M3/spec.md`
+  - 예: M1과 M5이면 → `.tasks/260316_my-app-migration/M1_M5/spec.md`
 - 디렉토리가 없으면 먼저 생성한다
 
 **저장 구조 예시:**
