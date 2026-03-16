@@ -96,6 +96,12 @@ sidebar.setToggle(true);  // 열기/닫기 토글
 - `toggle=false` (기본): 데스크탑(640px+)에서 열림, 모바일(640px-)에서 닫힘
 - `toggle=true`: 데스크탑에서 닫힘, 모바일에서 오버레이로 열림
 
+하위 메뉴 기본 펼침:
+```tsx
+<Sidebar.Menu menus={menus} defaultOpen />
+```
+- `defaultOpen`: 모든 하위 메뉴를 처음부터 펼친 상태로 렌더링한다. 기본값 `false`.
+
 ---
 
 ## Topbar
