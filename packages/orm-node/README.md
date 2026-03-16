@@ -28,8 +28,8 @@ createOrm()                  -- 최상위 팩토리 (ORM 인스턴스)
 ```
 
 - `createOrm` -- `@simplysm/orm-common`의 `DbContext`와 DB 연결을 결합하는 고수준 API
-- `NodeDbContextExecutor` -- `QueryDef` → SQL 변환 및 실행을 담당하는 어댑터
-- `createDbConn` -- DB 연결 인스턴스를 생성
+- `NodeDbContextExecutor` -- `QueryDef` -> SQL 변환 및 실행을 담당하는 어댑터
+- `createDbConn` -- DB 연결 인스턴스를 생성하는 팩토리
 - `MysqlDbConn` / `PostgresqlDbConn` / `MssqlDbConn` -- 각 DBMS별 실제 연결 구현
 
 ## 주요 사용법
@@ -54,6 +54,7 @@ const MyDb = defineDbContext({
 });
 
 // 2. ORM 인스턴스 생성
+// database는 필수 -- config 또는 options 중 하나에 반드시 지정해야 한다.
 const orm = createOrm(MyDb, {
   dialect: "mysql",
   host: "localhost",
@@ -95,6 +96,7 @@ const orm = createOrm(MyDb, config, {
 ```typescript
 import { createDbConn } from "@simplysm/orm-node";
 
+// createDbConn은 연결 객체만 생성한다. connect()를 호출해야 실제 연결이 수립된다.
 const conn = await createDbConn(config);
 await conn.connect();
 
@@ -138,6 +140,8 @@ function createOrm<TDef extends DbContextDef<any, any, any>>(
 ): Orm<TDef>;
 ```
 
+`database`는 `options.database` -> `config.database` 순서로 결정되며, 둘 다 없으면 에러가 발생한다. `schema`도 같은 우선순위로 결정된다.
+
 **`Orm<TDef>` 인터페이스:**
 
 | 속성/메서드 | 타입 | 설명 |
@@ -157,7 +161,7 @@ function createOrm<TDef extends DbContextDef<any, any, any>>(
 
 ### `createDbConn(config): Promise<DbConn>`
 
-DB 연결 인스턴스를 생성하여 반환한다. 반환된 객체에 `connect()`를 호출해야 실제 연결이 수립된다.
+DB 연결 인스턴스를 생성하여 반환한다. 반환된 객체에 `connect()`를 호출해야 실제 연결이 수립된다. 드라이버 모듈은 호출 시 lazy import된다.
 
 ```typescript
 function createDbConn(config: DbConnConfig): Promise<DbConn>;
@@ -207,6 +211,7 @@ type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConf
 | `password` | `string` | 비밀번호 |
 | `database?` | `string` | 데이터베이스명 |
 | `defaultIsolationLevel?` | `IsolationLevel` | 기본 격리 수준 |
+
 **MSSQL/PostgreSQL 전용:**
 
 | 필드 | 타입 | 설명 |
@@ -237,8 +242,8 @@ class NodeDbContextExecutor implements DbContextExecutor {
 
 **`executeDefs` 동작:**
 - `QueryDef`를 dialect에 맞는 SQL로 변환 (`createQueryBuilder`)
-- `resultMetas`가 모두 `undefined`이면 → 결과 없는 쿼리로 판단하여 단일 배치 실행
-- `ResultMeta`가 있으면 → `parseQueryResult`로 타입 변환 적용
+- `resultMetas`가 모두 `undefined`이면 -> 결과 없는 쿼리로 판단하여 단일 배치 실행
+- `ResultMeta`가 있으면 -> `parseQueryResult`로 타입 변환 적용
 
 ### DB 연결 구현 클래스
 
@@ -250,9 +255,15 @@ class NodeDbContextExecutor implements DbContextExecutor {
 
 모두 `EventEmitter<{ close: void }>`를 상속하고 `DbConn`을 구현한다. 드라이버 모듈은 `createDbConn` 호출 시 lazy import된다.
 
+**DBMS별 참고 사항:**
+- MySQL: `username`이 `"root"`인 경우 특정 database에 바인딩하지 않고 연결한다 (관리 작업용).
+- MySQL: `charset`은 `utf8mb4`로 고정, `multipleStatements`가 활성화되어 있다.
+- PostgreSQL: 기본 포트 `5432`가 자동 적용된다.
+- MSSQL: `trustServerCertificate: true`로 설정된다.
+
 ### `getDialectFromConfig(config): Dialect`
 
-config에서 `Dialect`를 추출한다. `"mssql-azure"` → `"mssql"`로 변환된다.
+config에서 `Dialect`를 추출한다. `"mssql-azure"` -> `"mssql"`로 변환된다.
 
 ```typescript
 function getDialectFromConfig(config: DbConnConfig): Dialect;
@@ -267,9 +278,11 @@ function getDialectFromConfig(config: DbConnConfig): Dialect;
 | `DB_CONN_ERRORS.NOT_CONNECTED` | `"'Connection' is not connected."` | 미연결 에러 메시지 |
 | `DB_CONN_ERRORS.ALREADY_CONNECTED` | `"'Connection' is already connected."` | 중복 연결 에러 메시지 |
 
+연결 유휴 시 자동 종료: 마지막 쿼리 실행 후 `DB_CONN_DEFAULT_TIMEOUT * 2` (20분) 동안 활동이 없으면 연결이 자동으로 닫힌다.
+
 ### IsolationLevel 타입
 
-`@simplysm/orm-common`에서 제공하는 트랜잭션 격리 수준이다.
+`@simplysm/orm-common`에서 제공하는 트랜잭션 격리 수준이다. `isolationLevel`을 지정하지 않으면 `config.defaultIsolationLevel`이 사용되고, 이것도 없으면 `READ_UNCOMMITTED`가 기본값이다.
 
 ```typescript
 type IsolationLevel = "READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE";

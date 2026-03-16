@@ -155,18 +155,17 @@ async sendByConfig(configName: string, options: SmtpClientSendByDefaultOption): 
 ```typescript
 interface SmtpClientSendOption {
   host: string;
-  port: number;
+  port?: number;
   secure?: boolean;
   user?: string;
   pass?: string;
   from: string;
-  to: string | string[];
-  cc?: string | string[];
-  bcc?: string | string[];
+  to: string;
+  cc?: string;
+  bcc?: string;
   subject: string;
-  html?: string;
-  text?: string;
-  attachments?: Array<{ filename: string; content: Uint8Array }>;
+  html: string;
+  attachments?: SmtpClientSendAttachment[];
 }
 ```
 
@@ -174,13 +173,23 @@ interface SmtpClientSendOption {
 
 ```typescript
 interface SmtpClientSendByDefaultOption {
-  to: string | string[];
-  cc?: string | string[];
-  bcc?: string | string[];
+  to: string;
+  cc?: string;
+  bcc?: string;
   subject: string;
-  html?: string;
-  text?: string;
-  attachments?: Array<{ filename: string; content: Uint8Array }>;
+  html: string;
+  attachments?: SmtpClientSendAttachment[];
+}
+```
+
+### SmtpClientSendAttachment
+
+```typescript
+interface SmtpClientSendAttachment {
+  filename: string;
+  content?: string | Uint8Array;
+  path?: any;
+  contentType?: string;
 }
 ```
 

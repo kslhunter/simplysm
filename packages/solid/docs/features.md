@@ -358,6 +358,46 @@ function UserDetail(props: { close?: (result?: boolean) => void; userId: number 
 const result = await dialog.open(UserDetail, { userId: 123 });
 ```
 
+### CrudDetail Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `load` | `() => Promise<{ data: TData; info: CrudDetailInfo }>` | 데이터 로드 함수 (필수) |
+| `children` | `(ctx: CrudDetailContext<TData>) => JSX.Element` | 폼 렌더링 (필수) |
+| `submit` | `(data: TData) => Promise<boolean \| undefined>` | 저장 함수 |
+| `toggleDelete` | `(del: boolean) => Promise<boolean \| undefined>` | 삭제/복원 토글 |
+| `editable` | `boolean` | 편집 가능 여부 |
+| `deletable` | `boolean` | 삭제 가능 여부 |
+| `data` | `TData` | 제어 모드: 외부 데이터 |
+| `onDataChange` | `(data: TData) => void` | 제어 모드: 데이터 변경 콜백 |
+| `close` | `(result?: boolean) => void` | Dialog 모드 활성화 |
+| `class` | `string` | CSS 클래스 |
+
+### CrudDetailInfo
+
+```typescript
+interface CrudDetailInfo {
+  isNew: boolean;           // 신규 레코드 여부
+  isDeleted: boolean;       // 삭제 상태
+  lastModifiedAt?: DateTime; // 최종 수정 일시
+  lastModifiedBy?: string;  // 최종 수정자
+}
+```
+
+### CrudDetailContext
+
+```typescript
+interface CrudDetailContext<TData> {
+  data: TData;                        // 현재 데이터 (store)
+  setData: SetStoreFunction<TData>;   // 데이터 수정 (SolidJS store setter)
+  info: () => CrudDetailInfo;         // 상세 정보
+  busy: () => boolean;                // 로딩 중 여부
+  hasChanges: () => boolean;          // 변경사항 존재 여부
+  save: () => Promise<void>;          // 저장 실행
+  refresh: () => Promise<void>;       // 데이터 새로고침
+}
+```
+
 ### CrudDetail 서브 컴포넌트
 
 | 컴포넌트 | 설명 |

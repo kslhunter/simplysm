@@ -137,8 +137,8 @@ interface BroadcastPlugin {
 
 - **패키지:** `kr.co.simplysm.capacitor.broadcast`
 - **플러그인명:** `Broadcast`
-- `subscribe`: `RETURN_CALLBACK` 방식 (call.setKeepAlive), UUID 기반 receiver ID 관리
-- extras 타입 지원: `String`, `Integer`, `Long`, `Double`, `Boolean`, `JSONArray`(-> String[]), `JSONObject`(-> Bundle)
-- Intent -> JSON 변환: `Bundle`의 모든 키를 순회하며 타입별 변환 (`Parcelable` -> `toString()` 포함)
+- `subscribe`: `RETURN_CALLBACK` 방식 (`call.setKeepAlive`), UUID 기반 receiver ID 관리
+- **전송 시 extras 타입 (JSON -> Intent):** `String`, `Integer`, `Long`, `Double`, `Boolean`, `JSONArray`(-> `String[]`), `JSONObject`(-> `Bundle`)
+- **수신 시 extras 타입 (Intent -> JSON):** `String`, `Integer`, `Long`, `Double`, `Float`(-> `Double`), `Boolean`, `Bundle`(-> 재귀 변환), `String[]`, `int[]`, `Parcelable`(-> `toString()`), `Parcelable[]`, 기타(-> `toString()`)
 - Android 13+: `RECEIVER_EXPORTED` 플래그 사용
 - `handleOnDestroy`에서 모든 receiver 자동 해제

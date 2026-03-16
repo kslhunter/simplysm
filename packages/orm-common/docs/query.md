@@ -29,6 +29,61 @@ const hasAdmin = await db.user()
   .exists();
 ```
 
+### Queryable API
+
+#### 실행 메서드
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `execute` | `() => Promise<TData[]>` | SELECT 실행, 결과 배열 반환 |
+| `single` | `() => Promise<TData \| undefined>` | 단건 반환 (2건 이상이면 throw) |
+| `first` | `() => Promise<TData \| undefined>` | 첫 번째 결과 반환 |
+| `count` | `(fn?) => Promise<number>` | 행 수 반환. distinct/groupBy 이후에는 wrap() 필요 |
+| `exists` | `() => Promise<boolean>` | 데이터 존재 여부 |
+
+#### 조건 메서드 (체이닝)
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `where` | `(fn: (cols) => WhereExprUnit[]) => Queryable` | WHERE 조건 (여러 번 호출 시 AND 결합) |
+| `search` | `(fn: (cols) => ExprUnit[], text: string) => Queryable` | 텍스트 검색 |
+| `orderBy` | `(fn: (cols) => ExprUnit, dir?) => Queryable` | 정렬 (기본 ASC, 여러 번 호출 가능) |
+| `top` | `(count: number) => Queryable` | 상위 N건 (ORDER BY 없이 사용 가능) |
+| `limit` | `(skip: number, take: number) => Queryable` | 페이징 (ORDER BY 필수) |
+| `select` | `(fn: (cols) => Record) => Queryable` | 컬럼 선택/변환 |
+| `distinct` | `() => Queryable` | 중복 제거 |
+| `lock` | `() => Queryable` | FOR UPDATE 잠금 |
+| `groupBy` | `(fn: (cols) => ExprUnit[]) => Queryable` | 그룹화 |
+| `having` | `(fn: (cols) => WhereExprUnit[]) => Queryable` | 그룹 필터링 |
+
+#### JOIN 메서드
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `join` | `(as, fn: (qr, cols) => Queryable) => Queryable` | LEFT JOIN (1:N, 배열) |
+| `joinSingle` | `(as, fn: (qr, cols) => Queryable) => Queryable` | LEFT JOIN (N:1, 단일 객체) |
+| `include` | `(fn: (item) => PathProxy) => Queryable` | 관계 기반 자동 JOIN |
+
+#### 서브쿼리/유틸리티
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `wrap` | `() => Queryable` | 서브쿼리로 래핑 |
+| `Queryable.union` | `(...queries) => Queryable` | UNION (최소 2개) |
+| `recursive` | `(fn: (cte) => Queryable) => Queryable` | 재귀 CTE |
+
+#### CUD 메서드
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `insert` | `(records, outputColumns?) => Promise` | INSERT (1000건 단위 자동 분할) |
+| `insertIfNotExists` | `(record, outputColumns?) => Promise` | 조건부 INSERT |
+| `insertInto` | `(targetTable, outputColumns?) => Promise` | INSERT INTO ... SELECT |
+| `update` | `(fn: (cols) => Record, outputColumns?) => Promise` | UPDATE |
+| `delete` | `(outputColumns?) => Promise` | DELETE |
+| `upsert` | `(updateFn, insertFn?, outputColumns?) => Promise` | UPSERT (UPDATE or INSERT) |
+| `switchFk` | `(enabled: boolean) => Promise<void>` | FK 제약조건 on/off |
+
 ### 필터링 (WHERE)
 
 ```typescript
@@ -60,7 +115,7 @@ db.user()
   .search((c) => [c.name, c.email], "John +admin -withdrawn")
 ```
 
-검색 문법: `term`(OR), `+term`(AND 필수), `-term`(NOT 제외), `"exact"`(정확히), `wild*`(접두사). 내부적으로 `parseSearchQuery()`를 사용하여 SQL LIKE 패턴으로 변환한다.
+검색 문법: `term`(OR), `+term`(AND 필수), `-term`(NOT 제외), `"exact"`(정확히 + 필수), `wild*`(접두사). 내부적으로 `parseSearchQuery()`를 사용하여 SQL LIKE 패턴으로 변환한다.
 
 ### 정렬 (ORDER BY)
 
@@ -252,6 +307,12 @@ await db.user()
   .where((c) => [expr.eq(c.id, 1)])
   .update((c) => ({ name: expr.val("string", "Alice2") }));
 
+// 기존 값 참조
+await db.product()
+  .update((p) => ({
+    price: expr.mul(p.price, expr.val("number", 1.1)),
+  }));
+
 // OUTPUT으로 변경된 데이터 반환
 const updated = await db.user()
   .where((c) => [expr.eq(c.id, 1)])
@@ -320,15 +381,25 @@ await db.connect(async () => {
 });
 ```
 
+### Executable API
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `execute` | `(params) => Promise<TReturns[][]>` | 프로시저 실행 |
+| `getExecProcQueryDef` | `(params?) => QueryDef` | QueryDef만 생성 (실행 안 함) |
+
 ---
 
 ## expr -- 표현식 빌더
+
+방언 독립적인 SQL 표현식을 생성한다. JSON AST(Expr)를 생성하며, QueryBuilder가 각 DBMS(MySQL, MSSQL, PostgreSQL)에 맞게 변환한다.
 
 ### 값/조건
 
 | 함수 | 설명 |
 |------|------|
 | `expr.val(type, value)` | 리터럴 값 |
+| `expr.col(type, alias, key)` | 컬럼 참조 |
 | `expr.raw(type)\`sql\`` | Raw SQL (태그 템플릿) |
 | `expr.eq(a, b)` | `=` (NULL 안전) |
 | `expr.gt(a, b)` | `>` |
@@ -449,6 +520,29 @@ expr.maxOver(c.amount, { partitionBy: [c.dept] })
 
 ---
 
+## ExprUnit / WhereExprUnit
+
+Queryable 콜백에서 컬럼 참조 시 자동으로 `ExprUnit`으로 래핑된다.
+
+```typescript
+// ExprUnit<TPrimitive> -- 타입 안전한 표현식 래퍼
+class ExprUnit<TPrimitive extends ColumnPrimitive> {
+  readonly dataType: ColumnPrimitiveStr;
+  readonly expr: Expr;
+  get n(): ExprUnit<NonNullable<TPrimitive>>;  // nullable 제거
+}
+
+// WhereExprUnit -- WHERE 절용 표현식 래퍼
+class WhereExprUnit {
+  readonly expr: WhereExpr;
+}
+
+// ExprInput -- ExprUnit 또는 리터럴 값을 받는 입력 타입
+type ExprInput<TPrimitive> = ExprUnit<TPrimitive> | TPrimitive;
+```
+
+---
+
 ## 검색 파서
 
 사용자 검색 문법을 SQL LIKE 패턴으로 변환.
@@ -464,6 +558,87 @@ parseSearchQuery('apple +fruit -rotten "green apple" wild*');
 // }
 ```
 
+### parseSearchQuery API
+
+```
+parseSearchQuery(searchText: string): ParsedSearchQuery
+
+interface ParsedSearchQuery {
+  or: string[];    // OR 조건 (LIKE 패턴)
+  must: string[];  // AND 필수 조건 (LIKE 패턴)
+  not: string[];   // NOT 제외 조건 (LIKE 패턴)
+}
+```
+
 문법: `term`(OR), `+term`(AND 필수), `-term`(NOT 제외), `"exact"`(정확히 + 필수), `wild*`(접두사)
 
 이스케이프: `\\` (리터럴 `\`), `\*` (리터럴 `*`), `\%` (리터럴 `%`), `\"` (리터럴 `"`), `\+` (리터럴 `+`), `\-` (리터럴 `-`)
+
+---
+
+## QueryBuilder
+
+QueryDef(JSON AST)를 DBMS별 SQL 문자열로 변환한다.
+
+```typescript
+import { createQueryBuilder } from "@simplysm/orm-common";
+import type { Dialect } from "@simplysm/orm-common";
+
+const builder = createQueryBuilder("mysql");  // "mysql" | "mssql" | "postgresql"
+const result = builder.build(queryDef);
+// result.sql -> SQL 문자열
+```
+
+### createQueryBuilder API
+
+```
+createQueryBuilder(dialect: Dialect): QueryBuilderBase
+```
+
+| 방언 | 구현 클래스 |
+|------|-----------|
+| `"mysql"` | `MysqlQueryBuilder` |
+| `"mssql"` | `MssqlQueryBuilder` |
+| `"postgresql"` | `PostgresqlQueryBuilder` |
+
+---
+
+## parseQueryResult
+
+DB 쿼리 결과를 ResultMeta 기반으로 TypeScript 객체로 변환한다. 타입 파싱과 JOIN 결과 중첩을 처리한다.
+
+```typescript
+import { parseQueryResult } from "@simplysm/orm-common";
+
+// 단순 타입 파싱
+const raw = [{ id: "1", createdAt: "2026-01-07T10:00:00.000Z" }];
+const meta = { columns: { id: "number", createdAt: "DateTime" }, joins: {} };
+const result = await parseQueryResult(raw, meta);
+// [{ id: 1, createdAt: DateTime(...) }]
+
+// JOIN 결과 중첩
+const raw2 = [
+  { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
+  { id: 1, name: "User1", "posts.id": 11, "posts.title": "Post2" },
+];
+const meta2 = {
+  columns: { id: "number", name: "string", "posts.id": "number", "posts.title": "string" },
+  joins: { posts: { isSingle: false } },
+};
+const result2 = await parseQueryResult(raw2, meta2);
+// [{ id: 1, name: "User1", posts: [{ id: 10, title: "Post1" }, { id: 11, title: "Post2" }] }]
+```
+
+### parseQueryResult API
+
+```
+parseQueryResult<TRecord>(
+  rawResults: Record<string, unknown>[],
+  meta: ResultMeta,
+): Promise<TRecord[] | undefined>
+
+interface ResultMeta {
+  columns: Record<string, ColumnPrimitiveStr>;
+  joins: Record<string, { isSingle: boolean }>;
+}
+```

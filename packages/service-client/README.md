@@ -53,8 +53,12 @@ const result = await client.send("User", "findById", [1]);
 
 // 진행률 콜백과 함께 호출
 const result = await client.send("User", "exportData", [], {
-  request: (state) => console.log(`요청 전송: ${state.completedSize}/${state.totalSize}`),
-  response: (state) => console.log(`응답 수신: ${state.completedSize}/${state.totalSize}`),
+  request: (state) => {
+    // state.completedSize / state.totalSize 로 진행률 계산
+  },
+  response: (state) => {
+    // state.completedSize / state.totalSize 로 진행률 계산
+  },
 });
 ```
 

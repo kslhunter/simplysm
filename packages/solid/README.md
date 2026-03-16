@@ -15,7 +15,7 @@ npm install @simplysm/solid
 
 | 카테고리 | 설명 |
 |---------|------|
-| [폼 컨트롤](docs/form-controls.md) | TextInput, NumberInput, Select, Combobox, DatePicker, DateRangePicker, Checkbox, RadioGroup, CheckboxGroup, ColorPicker, RichTextEditor, Numpad, StatePreset 등 |
+| [폼 컨트롤](docs/form-controls.md) | Button, TextInput, NumberInput, Select, Combobox, DatePicker, DateRangePicker, Checkbox, RadioGroup, CheckboxGroup, ColorPicker, RichTextEditor, Numpad, StatePreset 등 |
 | [레이아웃 & 데이터](docs/layout-data.md) | FormGroup, FormTable, Sidebar, Topbar, Table, DataSheet, List, Calendar, Kanban, Pagination 등 |
 | [디스플레이 & 피드백](docs/display-feedback.md) | Card, Alert, Icon, Link, Tag, Barcode, Echarts, Dialog, Dropdown, Collapse, Tabs, Notification, Busy, Progress, Print 등 |
 | [프로바이더 & 훅](docs/providers-hooks.md) | SystemProvider, ThemeProvider, I18nProvider, SharedDataProvider, useDialog, useBusy, useNotification, createAppStructure 등 |
@@ -119,25 +119,38 @@ Tailwind 클래스 프리셋. 테마 일관성을 위해 사용한다.
 import { bg, border, text, pad, gap, themeTokens } from "@simplysm/solid";
 
 // 배경색
-bg.surface   // 흰색 / 다크: base-900
-bg.muted     // base-100 / 다크: base-800
-bg.subtle    // base-200 / 다크: base-700
+bg.surface   // bg-white dark:bg-base-900
+bg.muted     // bg-base-100 dark:bg-base-800
+bg.subtle    // bg-base-200 dark:bg-base-700
 
 // 테두리색
-border.default  // base-200 / 다크: base-700
+border.default  // border-base-200 dark:border-base-700
 
 // 텍스트색
-text.default     // base-900 / 다크: base-100
-text.muted       // base-400 / 다크: base-500
+text.default     // text-base-900 dark:text-base-100
+text.muted       // text-base-400 dark:text-base-500
 text.placeholder // placeholder 전용
 
 // 패딩/갭 프리셋
+pad.xs  // px-1 py-0
+pad.sm  // px-1.5 py-0.5
 pad.md  // px-2 py-1
+pad.lg  // px-3 py-2
+pad.xl  // px-4 py-3
+
+gap.xs  // gap-0
+gap.sm  // gap-0.5
 gap.md  // gap-1
+gap.lg  // gap-1.5
+gap.xl  // gap-2
 
 // 테마 토큰 (semantic theme별 solid/light/text/hoverBg/border)
-themeTokens.primary.solid    // bg-primary-500 text-white
-themeTokens.danger.text      // text-danger-600 dark:text-danger-400
+themeTokens.primary.solid      // bg-primary-500 text-white
+themeTokens.primary.solidHover // hover:bg-primary-600 dark:hover:bg-primary-400
+themeTokens.primary.light      // bg-primary-100 text-primary-900
+themeTokens.primary.text       // text-primary-600 dark:text-primary-400
+themeTokens.primary.hoverBg    // hover:bg-primary-100 dark:hover:bg-primary-800/30
+themeTokens.primary.border     // border-primary-300 dark:border-primary-600
 ```
 
 ### 라이트/다크 테마

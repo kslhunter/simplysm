@@ -133,7 +133,7 @@ type ServiceClientMessage =
 | 타입 | name 필드 | 방향 | 설명 |
 |------|-----------|------|------|
 | `ServiceRequestMessage` | `` `${service}.${method}` `` | C->S | RPC 호출. body: `unknown[]` (파라미터 배열) |
-| `ServiceResponseMessage` | `"response"` | S->C | RPC 응답. body: `unknown` (결과값) |
+| `ServiceResponseMessage` | `"response"` | S->C | RPC 응답. body?: `unknown` (결과값, 선택) |
 | `ServiceErrorMessage` | `"error"` | S->C | 에러. body: `{ name, message, code, stack?, detail?, cause? }` |
 | `ServiceAuthMessage` | `"auth"` | C->S | 인증. body: `string` (Bearer 토큰) |
 | `ServiceProgressMessage` | `"progress"` | 양방향 | 청크 진행률. body: `{ totalSize, completedSize }` |

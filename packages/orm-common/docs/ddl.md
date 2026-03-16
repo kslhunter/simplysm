@@ -19,6 +19,15 @@ await db.connectWithoutTransaction(async () => {
 });
 ```
 
+### initialize API
+
+```
+db.initialize(options?: {
+  dbs?: string[];      // 초기화할 DB 목록 (생략 시 전체)
+  force?: boolean;     // true이면 기존 스키마 삭제 후 재생성
+}): Promise<void>
+```
+
 ## 테이블 DDL
 
 ```typescript
@@ -95,6 +104,49 @@ await db.switchFk({ name: "user" }, false); // FK 비활성화
 await db.switchFk({ name: "user" }, true);  // FK 활성화
 ```
 
+## DDL 메서드 API
+
+### 테이블/뷰/프로시저
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `createTable` | `(table: TableBuilder) => Promise<void>` | 테이블 생성 |
+| `dropTable` | `(table: QueryDefObjectName) => Promise<void>` | 테이블 삭제 |
+| `renameTable` | `(table: QueryDefObjectName, newName: string) => Promise<void>` | 테이블 이름 변경 |
+| `createView` | `(view: ViewBuilder) => Promise<void>` | 뷰 생성 |
+| `dropView` | `(view: QueryDefObjectName) => Promise<void>` | 뷰 삭제 |
+| `createProc` | `(proc: ProcedureBuilder) => Promise<void>` | 프로시저 생성 |
+| `dropProc` | `(proc: QueryDefObjectName) => Promise<void>` | 프로시저 삭제 |
+
+### 컬럼
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `addColumn` | `(table, columnName, column: ColumnBuilder) => Promise<void>` | 컬럼 추가 |
+| `dropColumn` | `(table, column: string) => Promise<void>` | 컬럼 삭제 |
+| `modifyColumn` | `(table, columnName, column: ColumnBuilder) => Promise<void>` | 컬럼 수정 |
+| `renameColumn` | `(table, column, newName) => Promise<void>` | 컬럼 이름 변경 |
+
+### 키/인덱스
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `addPrimaryKey` | `(table, columns: string[]) => Promise<void>` | PK 추가 |
+| `dropPrimaryKey` | `(table) => Promise<void>` | PK 삭제 |
+| `addForeignKey` | `(table, relationName, relationDef) => Promise<void>` | FK 추가 |
+| `dropForeignKey` | `(table, relationName) => Promise<void>` | FK 삭제 |
+| `addIndex` | `(table, indexBuilder) => Promise<void>` | 인덱스 추가 |
+| `dropIndex` | `(table, columns: string[]) => Promise<void>` | 인덱스 삭제 |
+
+### 스키마
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `schemaExists` | `(database, schema?) => Promise<boolean>` | 스키마 존재 여부 |
+| `clearSchema` | `(params: { database, schema? }) => Promise<void>` | 스키마 내 모든 테이블 삭제 |
+| `truncate` | `(table) => Promise<void>` | 테이블 TRUNCATE |
+| `switchFk` | `(table, enabled: boolean) => Promise<void>` | FK 제약조건 on/off |
+
 ## 연결 & 트랜잭션
 
 ```typescript
@@ -120,6 +172,14 @@ await db.connectWithoutTransaction(async () => {
   });
 });
 ```
+
+### 연결 API
+
+| 메서드 | 시그니처 | 설명 |
+|--------|---------|------|
+| `connect` | `(fn, isolationLevel?) => Promise<T>` | 자동 트랜잭션 (connect -> begin -> fn -> commit/rollback -> close) |
+| `connectWithoutTransaction` | `(fn) => Promise<T>` | 트랜잭션 없이 연결 (DDL용) |
+| `transaction` | `(fn, isolationLevel?) => Promise<T>` | 수동 트랜잭션 (connectWithoutTransaction 내에서) |
 
 격리 수준: `"READ_UNCOMMITTED"`, `"READ_COMMITTED"`, `"REPEATABLE_READ"`, `"SERIALIZABLE"`
 
@@ -163,6 +223,15 @@ const MyDb = defineDbContext({
 });
 ```
 
+### Migration 인터페이스
+
+```typescript
+interface Migration {
+  name: string;
+  up: (db: DbContextBase & DbContextDdlMethods) => Promise<void>;
+}
+```
+
 실행된 마이그레이션은 `_migration` 테이블에 기록된다.
 
 ```typescript
@@ -184,6 +253,17 @@ import { DbTransactionError, DbErrorCode } from "@simplysm/orm-common";
 // - LOCK_TIMEOUT: 잠금 타임아웃
 ```
 
+### DbTransactionError API
+
+```typescript
+class DbTransactionError extends Error {
+  readonly name: "DbTransactionError";
+  readonly code: DbErrorCode;
+  readonly originalError?: unknown;
+  constructor(code: DbErrorCode, message: string, originalError?: unknown);
+}
+```
+
 ## QueryDef 생성기
 
 DDL 메서드 외에도 `get*QueryDef()` 메서드로 QueryDef만 생성할 수 있다 (직접 실행하지 않음).
@@ -193,3 +273,28 @@ const def = db.getCreateTableQueryDef(User);
 const def2 = db.getAddColumnQueryDef({ name: "user" }, "phone", c.varchar(20));
 // ... 등. 모든 DDL 메서드에 대응하는 get*QueryDef() 메서드가 있다.
 ```
+
+| 생성기 | 대응 DDL 메서드 |
+|--------|---------------|
+| `getCreateTableQueryDef` | `createTable` |
+| `getCreateViewQueryDef` | `createView` |
+| `getCreateProcQueryDef` | `createProc` |
+| `getCreateObjectQueryDef` | Table/View/Procedure 자동 판별 |
+| `getDropTableQueryDef` | `dropTable` |
+| `getRenameTableQueryDef` | `renameTable` |
+| `getDropViewQueryDef` | `dropView` |
+| `getDropProcQueryDef` | `dropProc` |
+| `getAddColumnQueryDef` | `addColumn` |
+| `getDropColumnQueryDef` | `dropColumn` |
+| `getModifyColumnQueryDef` | `modifyColumn` |
+| `getRenameColumnQueryDef` | `renameColumn` |
+| `getAddPrimaryKeyQueryDef` | `addPrimaryKey` |
+| `getDropPrimaryKeyQueryDef` | `dropPrimaryKey` |
+| `getAddForeignKeyQueryDef` | `addForeignKey` |
+| `getAddIndexQueryDef` | `addIndex` |
+| `getDropForeignKeyQueryDef` | `dropForeignKey` |
+| `getDropIndexQueryDef` | `dropIndex` |
+| `getClearSchemaQueryDef` | `clearSchema` |
+| `getSchemaExistsQueryDef` | `schemaExists` |
+| `getTruncateQueryDef` | `truncate` |
+| `getSwitchFkQueryDef` | `switchFk` |

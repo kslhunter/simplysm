@@ -8,7 +8,7 @@ sd-cli의 내부 아키텍처 상세 문서.
 
 ```
 sd-cli.ts (런처)
-  ├─ 개발 모드 (.ts): CPU 어피니티 설정 → sd-cli-entry.ts 직접 import
+  ├─ 개발 모드 (.ts): CPU 어피니티 설정 -> sd-cli-entry.ts 직접 import
   └─ 프로덕션 모드 (.js):
        1. replaceDeps 실행 (모듈 캐시 전 심링크 설정)
        2. 새 프로세스에서 sd-cli-entry.ts 실행 (모듈 캐시 리셋)
@@ -42,8 +42,8 @@ export function createCliParser(argv: string[]): Argv
 **라이브러리 빌드** (`createLibraryEsbuildOptions`):
 - `bundle: false` (개별 파일 트랜스파일)
 - `format: "esm"`, `sourcemap: true`
-- `platform`: node → `"node"`, browser/neutral → `"browser"`
-- `target`: node → `"node20"`, browser/neutral → `"chrome84"`
+- `platform`: node -> `"node"`, browser/neutral -> `"browser"`
+- `target`: node -> `"node20"`, browser/neutral -> `"chrome84"`
 - solid-js 의존성 감지 시 `esbuild-plugin-solid` 자동 적용
 - 출력 후 ESM import 경로에 `.js` 확장자 자동 추가
 
@@ -81,13 +81,13 @@ initialize()
   ├─ 패키지 분류 (build/client/server)
   └─ 환경 변수 준비 (VER, DEV)
 
-start() → boolean (에러 여부)
+start() -> boolean (에러 여부)
   ├─ Phase 1: Clean (dist 폴더 삭제)
   └─ Phase 2: Lint + Build (병렬)
        ├─ Lint Worker
-       ├─ buildPackages → Library Worker + DTS Worker (병렬)
-       ├─ clientPackages → Client Worker + DTS Worker (병렬) + Capacitor/Electron
-       └─ serverPackages → Server Worker
+       ├─ buildPackages -> Library Worker + DTS Worker (병렬)
+       ├─ clientPackages -> Client Worker + DTS Worker (병렬) + Capacitor/Electron
+       └─ serverPackages -> Server Worker
 
 shutdown()
 ```
@@ -108,12 +108,12 @@ start()
   │   ├─ standalone (server가 number이거나 서버가 dev 대상 아님)
   │   └─ server-connected (server가 string이고 서버가 dev 대상)
   ├─ 서버 Build Worker 시작
-  │   └─ build 이벤트 → Server Runtime Worker 시작
-  │       └─ Vite 클라이언트 ready 대기 → 프록시 포트 전달
+  │   └─ build 이벤트 -> Server Runtime Worker 시작
+  │       └─ Vite 클라이언트 ready 대기 -> 프록시 포트 전달
   └─ Capacitor 초기화
 
-awaitTermination() → SIGINT/SIGTERM 대기
-shutdown() → 모든 Worker 종료
+awaitTermination() -> SIGINT/SIGTERM 대기
+shutdown() -> 모든 Worker 종료
 ```
 
 서버-클라이언트 프록시 연결:
@@ -140,8 +140,8 @@ start()
   ├─ DtsBuilder.startWatch()
   └─ 초기 빌드 완료 대기
 
-awaitTermination() → SIGINT/SIGTERM 대기
-shutdown() → 빌더 종료 + watcher 정리
+awaitTermination() -> SIGINT/SIGTERM 대기
+shutdown() -> 빌더 종료 + watcher 정리
 ```
 
 ## 빌더
@@ -179,7 +179,7 @@ esbuild 기반 JS 컴파일. Worker 키: `{패키지명}:build`.
 
 TypeScript .d.ts 파일 생성. Worker 키: `{패키지명}:dts`.
 
-- 환경 결정: node → `"node"`, browser/neutral/client → `"browser"`
+- 환경 결정: node -> `"node"`, browser/neutral/client -> `"browser"`
 
 ## Worker 스레드
 

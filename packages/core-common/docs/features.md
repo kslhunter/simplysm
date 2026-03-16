@@ -329,3 +329,15 @@ import { env } from "@simplysm/core-common";
 env.DEV;    // boolean -- 개발 모드 여부 (process.env.DEV를 JSON.parse)
 env.VER;    // string | undefined -- 버전 문자열 (process.env.VER)
 ```
+
+### `__DEV__` 글로벌 상수
+
+빌드 시점에 치환되는 글로벌 상수. 라이브러리 빌드에서는 치환되지 않고, 클라이언트/서버 빌드에서 `define: { '__DEV__': 'true/false' }`로 치환된다.
+
+```typescript
+declare const __DEV__: boolean;
+
+if (__DEV__) {
+  // 개발 모드 전용 로직
+}
+```

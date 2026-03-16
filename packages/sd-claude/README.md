@@ -101,12 +101,14 @@ INIT_CWD 환경변수 → node_modules 경로에서 역추적 → process.cwd()
 | 파일 | 설명 |
 |---|---|
 | `sd-claude-rules.md` | 질문 응답/문제해결 원칙 (편법 금지, 근본 원인 추적) |
+| `sd-library-issue.md` | `@simplysm/*` 라이브러리 버그 발견 시 이슈 리포트 작성 규칙 |
 | `sd-readme.md` | `@simplysm/*` 패키지 사용 시 README.md 참조 규칙 |
 
 **Skills (`.claude/skills/`):**
 
 | 스킬 | 설명 |
 |---|---|
+| `sd-apk-decompile` | APK 디컴파일 (JADX + Apktool + dex2jar/CFR) |
 | `sd-audit` | 코드베이스 점검 및 개선 사항 도출 |
 | `sd-check` | typecheck + lint(fix) + 단위test 순차 수행 및 자동 수정 |
 | `sd-commit` | `[type] scope` 형식의 커밋 메시지 생성 및 커밋 |
@@ -114,9 +116,12 @@ INIT_CWD 환경변수 → node_modules 경로에서 역추적 → process.cwd()
 | `sd-document` | `.docx/.xlsx/.pptx/.pdf` 파일 분석 및 생성 |
 | `sd-email-analyze` | `.eml/.msg` 이메일 파일 분석 (헤더/본문/첨부파일 추출) |
 | `sd-init` | 프로젝트 설정 분석 후 `CLAUDE.md` 자동 생성 |
+| `sd-migration` | 원본/현재 코드베이스 비교 분석 후 마이그레이션 대상 목록 생성 |
 | `sd-plan` | 요구분석서/점검 결과 기반 TDD 구현계획서 작성 |
 | `sd-plan-dev` | 구현계획서 기반 TDD 방식 실제 구현 수행 |
 | `sd-readme` | LLM 인덱싱용 `README.md` 및 `docs/` 생성 |
+| `sd-review` | spec/plan 문서와 구현 비교하여 완성도 검증 |
+| `sd-simplify` | 수정된 코드를 reuse/quality/efficiency 관점으로 검토 및 개선 |
 | `sd-spec` | 사용자 요청과 코드베이스 분석 후 요구분석서 작성 |
 | `sd-test` | TDD 테스트 작성 및 실행 |
 | `sd-use` | 요청 내용에 적합한 `sd-*` 스킬 자동 매칭 및 실행 |

@@ -12,7 +12,14 @@ npm install @simplysm/service-server
 
 **내부 의존성:** `@simplysm/core-common`, `@simplysm/core-node`, `@simplysm/orm-common`, `@simplysm/orm-node`, `@simplysm/service-common`
 
-## 서버 생성 및 실행
+## 문서
+
+| 카테고리 | 설명 |
+|---------|------|
+| [내장 서비스](docs/builtin-services.md) | OrmService, AutoUpdateService, SmtpClientService 메서드 시그니처 |
+| [전송 계층 및 프로토콜](docs/transport-protocol.md) | WebSocket 핸들러, ServiceSocket, HTTP 핸들러, 프로토콜 래퍼 |
+
+## 빠른 시작
 
 ```typescript
 import { createServiceServer, defineService, auth } from "@simplysm/service-server";
@@ -30,6 +37,8 @@ await server.listen();
 await server.close();
 ```
 
+## 서버 설정
+
 ### ServiceServerOptions
 
 ```typescript
@@ -45,6 +54,40 @@ interface ServiceServerOptions {
   };
   services: ServiceDefinition[];  // 등록할 서비스 목록
 }
+```
+
+### ServiceServer
+
+```typescript
+class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
+  ready: void;
+  close: void;
+}> {
+  isOpen: boolean;
+  readonly fastify: FastifyInstance;
+  readonly options: ServiceServerOptions;
+
+  constructor(options: ServiceServerOptions);
+  async listen(): Promise<void>;
+  async close(): Promise<void>;
+
+  // 이벤트 브로드캐스트
+  async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void>;
+  async emitEvent<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
+  ): Promise<void>;
+
+  // JWT 인증
+  async signAuthToken(payload: AuthTokenPayload<TAuthInfo>): Promise<string>;
+  async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>>;
+}
+
+// 팩토리 함수
+function createServiceServer<TAuthInfo = unknown>(
+  options: ServiceServerOptions,
+): ServiceServer<TAuthInfo>;
 ```
 
 ## 서비스 정의
@@ -86,6 +129,38 @@ const MixedService = defineService("Mixed", (ctx) => ({
 
 // 클라이언트 타입 공유용
 export type UserServiceType = ServiceMethods<typeof UserService>;
+```
+
+### defineService
+
+```typescript
+function defineService<TMethods extends Record<string, (...args: any[]) => any>>(
+  name: string,
+  factory: (ctx: ServiceContext) => TMethods,
+): ServiceDefinition<TMethods>;
+```
+
+### ServiceDefinition
+
+```typescript
+interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> {
+  name: string;
+  factory: (ctx: ServiceContext) => TMethods;
+  authPermissions?: string[];
+}
+```
+
+### ServiceMethods (타입 유틸리티)
+
+`ServiceDefinition`에서 메서드 시그니처를 추출하는 타입. 클라이언트-서버 간 타입 공유에 사용한다.
+
+```typescript
+type ServiceMethods<TDefinition> =
+  TDefinition extends ServiceDefinition<infer M> ? M : never;
+
+// 사용 예시
+export type UserServiceType = ServiceMethods<typeof UserService>;
+// 클라이언트: client.getService<UserServiceType>("User");
 ```
 
 ### auth 래퍼
@@ -272,7 +347,7 @@ import { SmtpClientService } from "@simplysm/service-server";
 `rootPath/.config.json`에서 설정을 읽는다. LRU 캐시(1시간 만료, 10분 GC 주기)와 파일 감시로 자동 리로드된다.
 
 ```typescript
-const dbConfig = await ctx.getConfig<DbConfig>("orm.main");
+const dbConfig = await ctx.getConfig<DbConfig>("orm");
 ```
 
 클라이언트별 설정이 있으면 (`rootPath/www/{clientName}/.config.json`) 루트 설정에 머지된다.
@@ -287,8 +362,3 @@ server.on("close", () => { /* 서버 종료 완료 */ });
 ## Graceful Shutdown
 
 SIGINT/SIGTERM 시그널 수신 시 자동으로 graceful shutdown을 수행한다. 10초 타임아웃 후 강제 종료.
-
-## 상세 API 레퍼런스
-
-- [내장 서비스 상세](docs/builtin-services.md) -- OrmService, AutoUpdateService, SmtpClientService 메서드 시그니처
-- [전송 계층 및 프로토콜](docs/transport-protocol.md) -- WebSocket 핸들러, ServiceSocket, 프로토콜 래퍼

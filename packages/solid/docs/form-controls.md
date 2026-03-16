@@ -14,11 +14,13 @@ import { Button } from "@simplysm/solid";
 
 | Prop | 타입 | 기본값 | 설명 |
 |------|------|--------|------|
-| `theme` | `"base" \| "primary" \| "success" \| "warning" \| "danger"` | `"base"` | 색상 테마 |
-| `variant` | `"solid" \| "outline" \| "ghost"` | `"solid"` | 스타일 변형 |
+| `theme` | `SemanticTheme` | `"base"` | 색상 테마 |
+| `variant` | `"solid" \| "outline" \| "ghost"` | `"outline"` | 스타일 변형 |
 | `size` | `ComponentSize` | `"md"` | 크기 |
-| `inset` | `boolean` | `false` | 테두리 없음 |
+| `inset` | `boolean` | `false` | 테두리/라운드 없음 |
 | `disabled` | `boolean` | `false` | 비활성화 |
+
+`<button>` HTML 속성을 모두 상속한다. `type` 기본값은 `"button"`.
 
 ---
 
@@ -39,39 +41,96 @@ import { TextInput } from "@simplysm/solid";
 |------|------|------|
 | `value` | `string` | 값 |
 | `onValueChange` | `(v: string) => void` | 변경 콜백 |
-| `type` | `"text" \| "password" \| "email"` | 입력 타입 |
+| `type` | `"text" \| "password" \| "email"` | 입력 타입 (기본: `"text"`) |
 | `format` | `string` | 형식 마스크 (예: `"XXX-XXXX-XXXX"`) |
-| `size`, `inset`, `disabled`, `readOnly`, `required` | | 공통 |
-| `minLength`, `maxLength`, `pattern` | | 유효성 |
-| `validate` | `(v: string) => string \| undefined` | 커스텀 유효성 |
+| `placeholder` | `string` | 플레이스홀더 |
+| `title` | `string` | 툴팁 |
+| `autocomplete` | `string` | autocomplete 속성 (기본: `"one-time-code"`) |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `readOnly` | `boolean` | 읽기 전용 |
+| `required` | `boolean` | 필수 입력 |
+| `minLength` | `number` | 최소 길이 |
+| `maxLength` | `number` | 최대 길이 |
+| `pattern` | `string \| RegExp` | 입력 패턴 (정규식) |
+| `validate` | `(v: string) => string \| undefined` | 커스텀 유효성 검증 |
 | `lazyValidation` | `boolean` | blur 시 검증 |
+
+### 서브 컴포넌트
+
+| 컴포넌트 | 설명 |
+|----------|------|
+| `TextInput.Prefix` | 입력 필드 앞에 표시할 접두사 슬롯 |
 
 ---
 
 ## NumberInput
 
 ```tsx
+import { NumberInput } from "@simplysm/solid";
+
 <NumberInput value={amount()} onValueChange={setAmount} min={0} max={100} />
 <NumberInput value={price()} onValueChange={setPrice} useGrouping minimumFractionDigits={2} />
+
+// 접두사 슬롯
+<NumberInput value={price()} onValueChange={setPrice}>
+  <NumberInput.Prefix>$</NumberInput.Prefix>
+</NumberInput>
 ```
 
 | Prop | 타입 | 설명 |
 |------|------|------|
 | `value` | `number` | 값 |
 | `onValueChange` | `(v: number \| undefined) => void` | 변경 콜백 |
-| `useGrouping` | `boolean` | 천단위 구분자 (기본: true) |
+| `useGrouping` | `boolean` | 천단위 구분자 (기본: `true`) |
 | `minimumFractionDigits` | `number` | 최소 소수점 자릿수 |
-| `min`, `max` | `number` | 범위 |
+| `placeholder` | `string` | 플레이스홀더 |
+| `title` | `string` | 툴팁 |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `readOnly` | `boolean` | 읽기 전용 |
+| `required` | `boolean` | 필수 입력 |
+| `min` | `number` | 최솟값 |
+| `max` | `number` | 최댓값 |
+| `validate` | `(v: number \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
+
+### 서브 컴포넌트
+
+| 컴포넌트 | 설명 |
+|----------|------|
+| `NumberInput.Prefix` | 입력 필드 앞에 표시할 접두사 슬롯 |
 
 ---
 
 ## Textarea
 
 ```tsx
+import { Textarea } from "@simplysm/solid";
+
 <Textarea value={memo()} onValueChange={setMemo} minRows={3} />
 ```
 
 Alt+Enter로 줄바꿈. `minRows`로 최소 높이 설정.
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `string` | 값 |
+| `onValueChange` | `(v: string) => void` | 변경 콜백 |
+| `placeholder` | `string` | 플레이스홀더 |
+| `title` | `string` | 툴팁 |
+| `minRows` | `number` | 최소 행 수 (기본: `1`) |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `readOnly` | `boolean` | 읽기 전용 |
+| `required` | `boolean` | 필수 입력 |
+| `minLength` | `number` | 최소 길이 |
+| `maxLength` | `number` | 최대 길이 |
+| `validate` | `(v: string) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
 
 ---
 
@@ -87,28 +146,64 @@ import { DatePicker } from "@simplysm/solid";
 
 | Prop | 타입 | 설명 |
 |------|------|------|
-| `value` | `DateOnly` | 값 |
+| `value` | `DateOnly` | 값 (`@simplysm/core-common`의 `DateOnly`) |
 | `onValueChange` | `(v: DateOnly \| undefined) => void` | 변경 콜백 |
 | `unit` | `"year" \| "month" \| "date"` | 선택 단위 (기본: `"date"`) |
-| `min`, `max` | `DateOnly` | 범위 제한 |
+| `min` | `DateOnly` | 최소 날짜 |
+| `max` | `DateOnly` | 최대 날짜 |
+| `title` | `string` | 툴팁 |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `readOnly` | `boolean` | 읽기 전용 |
+| `required` | `boolean` | 필수 입력 |
+| `validate` | `(v: DateOnly \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
 
 ---
 
 ## DateTimePicker
 
 ```tsx
+import { DateTimePicker } from "@simplysm/solid";
+
 <DateTimePicker value={dt()} onValueChange={setDt} unit="minute" />
 ```
 
-`unit`: `"minute"` (기본) 또는 `"second"`
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `DateTime` | 값 (`@simplysm/core-common`의 `DateTime`) |
+| `onValueChange` | `(v: DateTime \| undefined) => void` | 변경 콜백 |
+| `unit` | `"minute" \| "second"` | 시간 단위 (기본: `"minute"`) |
+| `min` | `DateTime` | 최소 일시 |
+| `max` | `DateTime` | 최대 일시 |
+| `title` | `string` | 툴팁 |
+| `size`, `inset`, `disabled`, `readOnly`, `required` | | 공통 |
+| `validate` | `(v: DateTime \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
 
 ---
 
 ## TimePicker
 
 ```tsx
+import { TimePicker } from "@simplysm/solid";
+
 <TimePicker value={time()} onValueChange={setTime} />
+<TimePicker value={time()} onValueChange={setTime} unit="second" />
 ```
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `Time` | 값 (`@simplysm/core-common`의 `Time`) |
+| `onValueChange` | `(v: Time \| undefined) => void` | 변경 콜백 |
+| `unit` | `"minute" \| "second"` | 시간 단위 (기본: `"minute"`) |
+| `min` | `Time` | 최소 시간 |
+| `max` | `Time` | 최대 시간 |
+| `title` | `string` | 툴팁 |
+| `size`, `inset`, `disabled`, `readOnly`, `required` | | 공통 |
+| `validate` | `(v: Time \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
 
 ---
 
@@ -153,6 +248,8 @@ const [to, setTo] = createSignal<DateOnly>();
 ## Checkbox / Radio
 
 ```tsx
+import { Checkbox, Radio, RadioGroup } from "@simplysm/solid";
+
 <Checkbox checked={active()} onCheckedChange={setActive}>활성</Checkbox>
 <Checkbox checked={agreed()} onCheckedChange={setAgreed} required>약관 동의</Checkbox>
 
@@ -161,6 +258,32 @@ const [to, setTo] = createSignal<DateOnly>();
   <Radio value="user">사용자</Radio>
 </RadioGroup>
 ```
+
+### Checkbox Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `checked` | `boolean` | 체크 상태 |
+| `onCheckedChange` | `(v: boolean) => void` | 변경 콜백 |
+| `disabled` | `boolean` | 비활성화 |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `inline` | `boolean` | 인라인 배치 |
+| `required` | `boolean` | 필수 체크 |
+| `validate` | `(v: boolean) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
+
+### RadioGroup Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `TValue` | 선택 값 |
+| `onValueChange` | `(v: TValue) => void` | 변경 콜백 |
+| `disabled` | `boolean` | 비활성화 |
+| `inline` | `boolean` | 가로 배치 |
+| `inset` | `boolean` | 테두리 없음 |
+| `required` | `boolean` | 필수 선택 |
+| `validate` | `(v: TValue \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
 
 ---
 
@@ -188,13 +311,15 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
 | `inline` | `boolean` | 가로 배치 |
 | `inset` | `boolean` | 테두리 없음 |
 | `required` | `boolean` | 최소 1개 선택 필수 |
-| `validate` | `(v: TValue[]) => string \| undefined` | 커스텀 유효성 |
+| `validate` | `(v: TValue[]) => string \| undefined` | 커스텀 유효성 검증 |
 
 ---
 
 ## Select
 
 ```tsx
+import { Select } from "@simplysm/solid";
+
 // 단일 선택 (items 모드)
 <Select
   value={selected()}
@@ -224,10 +349,9 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
 />
 
 // Children 모드
-<Select value={v()} onValueChange={setV}>
+<Select value={v()} onValueChange={setV} renderValue={(v) => <span>{v}</span>}>
   <Select.Item value="a">옵션 A</Select.Item>
   <Select.Item value="b">옵션 B</Select.Item>
-  <Select.Header>그룹 헤더</Select.Header>
 </Select>
 
 // ItemTemplate (items 모드에서 드롭다운 렌더링 커스터마이징)
@@ -237,7 +361,13 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
   </Select.ItemTemplate>
 </Select>
 
-// Action (드롭다운 하단 커스텀 액션)
+// Header (드롭다운 상단 커스텀 영역)
+<Select value={v()} onValueChange={setV} renderValue={(v) => <span>{v}</span>}>
+  <Select.Header><div>그룹 헤더</div></Select.Header>
+  <Select.Item value="a">옵션 A</Select.Item>
+</Select>
+
+// Action (트리거 옆 커스텀 액션 버튼)
 <Select items={users} renderValue={(u) => <span>{u.name}</span>}>
   <Select.Action onClick={handleSearch}>
     <Icon icon={IconSearch} />
@@ -245,18 +375,58 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
 </Select>
 ```
 
+### Select Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `TValue \| TValue[]` | 선택 값 (multiple 시 배열) |
+| `onValueChange` | `(v) => void` | 변경 콜백 |
+| `multiple` | `boolean` | 다중 선택 모드 |
+| `items` | `TValue[]` | 아이템 배열 (items 모드) |
+| `itemChildren` | `(item, index, depth) => TValue[] \| undefined` | 트리 자식 접근자 |
+| `renderValue` | `(v: TValue) => JSX.Element` | 선택된 값 렌더링 |
+| `itemSearchText` | `(item: TValue) => string` | 검색 텍스트 추출 (설정 시 검색 입력 표시) |
+| `isItemHidden` | `(item: TValue) => boolean` | 아이템 숨김 여부 |
+| `tagDirection` | `"horizontal" \| "vertical"` | 다중 선택 태그 방향 |
+| `hideSelectAll` | `boolean` | 전체 선택 버튼 숨김 (다중 선택) |
+| `placeholder` | `string` | 플레이스홀더 |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `required` | `boolean` | 필수 선택 |
+| `validate` | `(v: unknown) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
+
+### 서브 컴포넌트
+
+| 컴포넌트 | 설명 |
+|----------|------|
+| `Select.Item` | 드롭다운 선택 항목. props: `value`, `disabled` |
+| `Select.Item.Children` | 중첩 아이템 슬롯 (트리 구조) |
+| `Select.ItemTemplate` | items 모드에서 드롭다운 아이템 렌더링 커스터마이징 |
+| `Select.Header` | 드롭다운 상단 커스텀 영역 |
+| `Select.Action` | 트리거 옆 커스텀 액션 버튼 |
+
 ---
 
 ## Combobox
 
+비동기 검색 기반 자동완성 컴포넌트.
+
 ```tsx
+import { Combobox } from "@simplysm/solid";
+
 <Combobox
   value={user()}
   onValueChange={setUser}
   loadItems={async (query) => await searchUsers(query)}
   renderValue={(u) => <span>{u.name}</span>}
   debounceMs={300}
-/>
+>
+  <Combobox.ItemTemplate>
+    {(item) => <span>{item.name} ({item.email})</span>}
+  </Combobox.ItemTemplate>
+</Combobox>
 
 // 커스텀 값 허용
 <Combobox
@@ -265,13 +435,48 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
   loadItems={loadItems}
   renderValue={(v) => <span>{v.name}</span>}
 />
+
+// Children 모드
+<Combobox loadItems={loadItems} renderValue={(v) => v.name}>
+  <For each={items()}>
+    {(item) => <Combobox.Item value={item}>{item.name}</Combobox.Item>}
+  </For>
+</Combobox>
 ```
+
+### Combobox Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `value` | `TValue` | 선택 값 |
+| `onValueChange` | `(v: TValue) => void` | 변경 콜백 |
+| `loadItems` | `(query: string) => TValue[] \| Promise<TValue[]>` | 아이템 검색 함수 (필수) |
+| `renderValue` | `(v: TValue) => JSX.Element` | 선택된 값 렌더링 (필수) |
+| `debounceMs` | `number` | 검색 디바운스 (기본: `300`) |
+| `allowsCustomValue` | `boolean` | 커스텀 값 입력 허용 |
+| `parseCustomValue` | `(text: string) => TValue` | 텍스트를 값으로 변환 |
+| `placeholder` | `string` | 플레이스홀더 |
+| `size` | `ComponentSize` | 크기 |
+| `inset` | `boolean` | 테두리 없음 |
+| `disabled` | `boolean` | 비활성화 |
+| `required` | `boolean` | 필수 선택 |
+| `validate` | `(v: TValue \| undefined) => string \| undefined` | 커스텀 유효성 검증 |
+| `lazyValidation` | `boolean` | blur 시 검증 |
+
+### 서브 컴포넌트
+
+| 컴포넌트 | 설명 |
+|----------|------|
+| `Combobox.Item` | 드롭다운 선택 항목. props: `value`, `disabled` |
+| `Combobox.ItemTemplate` | 아이템 렌더링 커스터마이징 |
 
 ---
 
 ## ColorPicker
 
 ```tsx
+import { ColorPicker } from "@simplysm/solid";
+
 <ColorPicker value={color()} onValueChange={setColor} />
 // value: "#RRGGBB" 형식
 ```
@@ -283,6 +488,8 @@ const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
 Tiptap 기반 리치 텍스트 에디터. 서식, 텍스트 스타일, 정렬, 테이블, 이미지, 하이라이트 도구 포함.
 
 ```tsx
+import { RichTextEditor } from "@simplysm/solid";
+
 <RichTextEditor value={html()} onValueChange={setHtml} />
 ```
 
@@ -356,6 +563,8 @@ const [filterState, setFilterState] = createSignal({ status: "active", keyword: 
 라이트/다크/시스템 모드 전환 버튼.
 
 ```tsx
+import { ThemeToggle } from "@simplysm/solid";
+
 <ThemeToggle />
 ```
 

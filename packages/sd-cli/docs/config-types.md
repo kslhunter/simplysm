@@ -26,7 +26,7 @@ interface SdConfig {
 replaceDeps: {
   "@simplysm/*": "../simplysm/packages/*"
 }
-// @simplysm/core-common → ../simplysm/packages/core-common 으로 심링크
+// @simplysm/core-common -> ../simplysm/packages/core-common 으로 심링크
 ```
 
 ## SdConfigFn / SdConfigParams
@@ -42,6 +42,16 @@ interface SdConfigParams {
 ```
 
 ## 패키지 설정 타입
+
+### SdPackageConfig (유니온)
+
+```typescript
+type SdPackageConfig =
+  | SdBuildPackageConfig
+  | SdClientPackageConfig
+  | SdServerPackageConfig
+  | SdScriptsPackageConfig;
+```
 
 ### SdBuildPackageConfig
 
@@ -112,7 +122,7 @@ interface SdServerPackageConfig {
 | `env` | `Record<string, string>` | `process.env.KEY` 치환 값 |
 | `publish` | `SdPublishConfig` | 배포 설정 |
 | `configs` | `Record<string, unknown>` | 런타임 설정 (`dist/.config.json`에 기록) |
-| `externals` | `string[]` | esbuild 번들에서 제외할 외부 모듈 |
+| `externals` | `string[]` | esbuild 번들에서 제외할 외부 모듈 (binding.gyp 자동 감지 외 추가분) |
 | `pm2` | `object` | PM2 설정 (`dist/pm2.config.cjs` 생성) |
 | `packageManager` | `"volta" \| "mise"` | 패키지 매니저 설정 파일 생성 |
 

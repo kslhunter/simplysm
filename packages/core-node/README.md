@@ -50,6 +50,7 @@ fsx.rmSync("/path/to/target");
 // 복사 (필터 지원)
 // 필터는 자식 경로에만 적용, 최상위 sourcePath는 필터링 대상이 아님
 // 디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 내용을 건너뜀
+// sourcePath가 존재하지 않으면 아무 동작 없이 반환
 await fsx.copy(src, dst, (absPath) => !absPath.includes("node_modules"));
 fsx.copySync(src, dst);
 
@@ -61,6 +62,7 @@ const config = await fsx.readJson<Config>("/path/config.json"); // JSON 파싱 (
 // 쓰기 (부모 디렉토리 자동 생성)
 await fsx.write("/path/to/file.txt", content);              // string | Uint8Array
 await fsx.writeJson("/path/to/config.json", data, { space: 2 });
+// writeJson의 options: { replacer?, space? }
 
 // 디렉토리 읽기
 const entries = await fsx.readdir("/path/to/dir");          // string[]
@@ -132,6 +134,12 @@ const watcher = await FsWatcher.watch([
   "/project/lib/**/*.js", // glob 패턴
 ]);
 
+// chokidar 옵션 전달 가능 (ignoreInitial은 내부적으로 항상 true로 설정됨)
+const watcher2 = await FsWatcher.watch(["/project/src"], {
+  depth: 2,
+  ignored: /node_modules/,
+});
+
 // 변경 이벤트 핸들러 등록
 // delay ms 동안 이벤트를 모아 한 번에 콜백 호출
 watcher.onChange({ delay: 300 }, (changes: FsWatcherChangeInfo[]) => {
@@ -149,6 +157,7 @@ await watcher.close();
 - `add` + `change` -> `add` (생성 직후 수정은 생성으로 처리)
 - `add` + `unlink` -> 제거 (생성 후 즉시 삭제는 무변경)
 - `unlink` + `add` -> `add` (삭제 후 재생성은 생성으로 처리)
+- `unlink` + `change` -> `add` (삭제 후 변경은 생성으로 처리)
 - `unlinkDir` + `addDir` -> `addDir`
 - 그 외 -> 마지막 이벤트로 덮어쓰기
 
@@ -209,11 +218,12 @@ await worker.terminate();
 ```
 
 **특징:**
-- `.ts` 파일은 tsx를 통해 자동 실행 (개발 환경)
+- `.ts` 파일은 tsx를 통해 자동 실행 (개발 환경), `.js` 파일은 직접 Worker 생성 (프로덕션)
 - UUID 기반 요청 추적으로 동시 요청 지원
 - Worker 크래시 시 대기 중인 모든 요청 자동 reject
 - Worker 내 `process.stdout.write`는 메인 스레드로 자동 전달
 - `@simplysm/core-common`의 `transfer`를 사용하여 메시지 직렬화
+- `file://` URL 경로와 절대 경로 모두 지원
 
 ---
 
@@ -227,9 +237,9 @@ await worker.terminate();
 | `existsSync` | `(targetPath: string) => boolean` | 동기 버전 |
 | `mkdir` | `(targetPath: string) => Promise<void>` | 디렉토리 재귀 생성 |
 | `mkdirSync` | `(targetPath: string) => void` | 동기 버전 |
-| `rm` | `(targetPath: string) => Promise<void>` | 삭제 (재시도 포함) |
+| `rm` | `(targetPath: string) => Promise<void>` | 삭제 (6회 재시도, 500ms 간격) |
 | `rmSync` | `(targetPath: string) => void` | 동기 버전 (재시도 없음) |
-| `copy` | `(src, dst, filter?) => Promise<void>` | 파일/디렉토리 복사 |
+| `copy` | `(src, dst, filter?) => Promise<void>` | 파일/디렉토리 복사 (async 시 병렬 처리) |
 | `copySync` | `(src, dst, filter?) => void` | 동기 버전 |
 | `read` | `(targetPath: string) => Promise<string>` | UTF-8 텍스트 읽기 |
 | `readSync` | `(targetPath: string) => string` | 동기 버전 |
@@ -247,8 +257,8 @@ await worker.terminate();
 | `statSync` | `(targetPath: string) => fs.Stats` | 동기 버전 |
 | `lstat` | `(targetPath: string) => Promise<fs.Stats>` | 파일 정보 (심링크 자체) |
 | `lstatSync` | `(targetPath: string) => fs.Stats` | 동기 버전 |
-| `glob` | `(pattern, options?) => Promise<string[]>` | Glob 패턴 검색 (절대 경로 반환) |
-| `globSync` | `(pattern, options?) => string[]` | 동기 버전 |
+| `glob` | `(pattern, options?: GlobOptions) => Promise<string[]>` | Glob 패턴 검색 (절대 경로 반환) |
+| `globSync` | `(pattern, options?: GlobOptions) => string[]` | 동기 버전 |
 | `clearEmptyDirectory` | `(dirPath: string) => Promise<void>` | 빈 디렉토리 재귀 삭제 |
 | `findAllParentChildPaths` | `(childGlob, fromPath, rootPath?) => Promise<string[]>` | 상위 디렉토리 탐색 |
 | `findAllParentChildPathsSync` | `(childGlob, fromPath, rootPath?) => string[]` | 동기 버전 |
@@ -268,7 +278,7 @@ await worker.terminate();
 
 | 멤버 | 시그니처 | 설명 |
 |------|----------|------|
-| `static watch` | `(paths: string[], options?) => Promise<FsWatcher>` | 감시 시작 (ready까지 대기) |
+| `static watch` | `(paths: string[], options?: ChokidarOptions) => Promise<FsWatcher>` | 감시 시작 (ready까지 대기) |
 | `onChange` | `(opt: { delay?: number }, cb) => this` | 변경 이벤트 핸들러 등록 (체이닝 가능) |
 | `close` | `() => Promise<void>` | 감시 종료 |
 

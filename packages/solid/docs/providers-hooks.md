@@ -38,14 +38,23 @@ const theme = useTheme();
 theme.mode();           // "light" | "dark" | "system"
 theme.resolvedTheme();  // "light" | "dark" (OS 설정 반영)
 theme.setMode("dark");
-theme.cycleMode();      // light → system → dark → light
+theme.cycleMode();      // light -> system -> dark -> light
 ```
+
+### useTheme 반환 타입
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `mode()` | `ThemeMode` | 현재 테마 모드 (`"light" \| "dark" \| "system"`) |
+| `setMode(mode)` | `(mode: ThemeMode) => void` | 테마 모드 설정 |
+| `resolvedTheme()` | `ResolvedTheme` | 실제 적용된 테마 (`"light" \| "dark"`) |
+| `cycleMode()` | `() => void` | 다음 모드로 순환 |
 
 ---
 
 ## I18nProvider
 
-다국어 지원. 한국어(ko), 영어(en) 내장.
+다국어 지원. 한국어(ko), 영어(en) 내장. 브라우저 언어 자동 감지.
 
 ```tsx
 import { I18nProvider, useI18n } from "@simplysm/solid";
@@ -69,6 +78,15 @@ i18n.configure({
   },
 });
 ```
+
+### useI18n 반환 타입
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `t(key, params?)` | `(key: string, params?: Record<string, string>) => string` | 번역 조회 |
+| `locale()` | `Accessor<string>` | 현재 로케일 |
+| `setLocale(locale)` | `(locale: string) => void` | 로케일 변경 |
+| `configure(options)` | `(options: I18nConfigureOptions) => void` | 사전 확장/설정 |
 
 ---
 
@@ -159,41 +177,111 @@ await sharedData.wait();
 
 ### createControllableSignal
 
-제어/비제어 컴포넌트 패턴 구현.
+제어/비제어 컴포넌트 패턴 구현. `onChange`가 제공되면 제어 모드, 없으면 비제어 모드.
 
 ```typescript
 import { createControllableSignal } from "@simplysm/solid";
 
 const [value, setValue] = createControllableSignal({
-  value: () => props.value,
+  value: () => props.value ?? "",
   onChange: () => props.onValueChange,
 });
+
+// 함수형 setter 지원
+setValue((prev) => prev + "!");
+```
+
+```typescript
+// 시그니처
+function createControllableSignal<TValue>(options: {
+  value: Accessor<TValue>;
+  onChange: Accessor<((value: TValue) => void) | undefined>;
+}): [Accessor<TValue>, (newValue: TValue | ((prev: TValue) => TValue)) => TValue];
 ```
 
 ### createControllableStore
 
-객체 상태용 제어/비제어 패턴.
+객체 상태용 제어/비제어 패턴. SolidJS store 기반.
+
+```typescript
+import { createControllableStore } from "@simplysm/solid";
+
+const [items, setItems] = createControllableStore<Item[]>({
+  value: () => props.items ?? [],
+  onChange: () => props.onItemsChange,
+});
+
+// SetStoreFunction 오버로드 모두 지원
+setItems(0, "name", "Alice");
+setItems(reconcile(newItems));
+```
+
+```typescript
+// 시그니처
+function createControllableStore<TValue extends object>(options: {
+  value: () => TValue;
+  onChange: () => ((value: TValue) => void) | undefined;
+}): [TValue, SetStoreFunction<TValue>];
+```
 
 ### createIMEHandler
 
-IME(한글 등) 입력 처리.
+IME(한글 등) 입력 처리. 조합 중 DOM 재생성을 방지한다.
 
 ```typescript
-const ime = createIMEHandler();
-// ime.handleCompositionStart()
-// ime.handleCompositionEnd()
-// ime.handleInput()
-// ime.composingValue()
+import { createIMEHandler } from "@simplysm/solid";
+
+const ime = createIMEHandler((value) => setValue(value));
+
+// 이벤트 핸들러
+onCompositionStart={ime.handleCompositionStart}
+onInput={(e) => ime.handleInput(e.currentTarget.value, e.isComposing)}
+onCompositionEnd={(e) => ime.handleCompositionEnd(e.currentTarget.value)}
+
+// 조합 중 값 (display 용)
+ime.composingValue()
+
+// 조합 강제 완료
+ime.flushComposition()
+```
+
+### createMountTransition
+
+마운트/언마운트 시 애니메이션 상태를 관리한다.
+
+```typescript
+import { createMountTransition } from "@simplysm/solid";
+
+const { mounted, animating, unmount } = createMountTransition(() => isVisible());
+
+// mounted: DOM에 마운트 여부
+// animating: 진입/퇴장 애니메이션 중 여부
+// unmount: 언마운트 트리거
 ```
 
 ### useLocalStorage
 
-반응형 localStorage.
+반응형 localStorage. `ConfigProvider`의 `clientName`을 키 접두사로 사용한다.
 
 ```typescript
 import { useLocalStorage } from "@simplysm/solid";
 
-const [theme, setTheme] = useLocalStorage("theme", "light");
+const [token, setToken] = useLocalStorage<string>("auth-token");
+
+setToken("abc123");     // 저장
+token();                // "abc123"
+setToken(undefined);    // 삭제
+
+// 함수형 setter
+setToken((prev) => prev ? prev + "-updated" : "new-token");
+```
+
+```typescript
+// 시그니처
+function useLocalStorage<TValue>(
+  key: string,
+  initialValue?: TValue,
+): [Accessor<TValue | undefined>, StorageSetter<TValue>];
 ```
 
 ### useSyncConfig
@@ -201,28 +289,26 @@ const [theme, setTheme] = useLocalStorage("theme", "light");
 클라이언트명 접두사 붙은 localStorage 동기화.
 
 ```typescript
+import { useSyncConfig } from "@simplysm/solid";
+
 const [config, setConfig] = useSyncConfig("my-setting", defaultValue);
 ```
 
 ### useLogger
 
 ```typescript
+import { useLogger } from "@simplysm/solid";
+
 const logger = useLogger();
 ```
 
 ### useRouterLink
 
 ```typescript
+import { useRouterLink } from "@simplysm/solid";
+
 const navigate = useRouterLink();
 navigate("/users");
-```
-
-### createMountTransition
-
-마운트 애니메이션 상태 관리.
-
-```typescript
-const { mounted, animating, unmount } = createMountTransition(() => isVisible());
 ```
 
 ---
@@ -285,6 +371,33 @@ app.allFlatPerms;       // 모든 권한 목록 (관리용)
 app.perms;              // 타입 안전한 권한 객체 (app.perms.admin.users.use)
 
 app.getTitleChainByHref("/admin/users");  // ["관리", "사용자 관리"]
+```
+
+### AppStructureItem 타입
+
+```typescript
+// 그룹 항목 (children 보유)
+interface AppStructureGroupItem<TModule> {
+  code: string;
+  title: string;
+  icon?: Component<IconProps>;
+  modules?: TModule[];
+  requiredModules?: TModule[];
+  children: AppStructureItem<TModule>[];
+}
+
+// 리프 항목 (페이지 컴포넌트)
+interface AppStructureLeafItem<TModule> {
+  code: string;
+  title: string;
+  icon?: Component<IconProps>;
+  modules?: TModule[];
+  requiredModules?: TModule[];
+  component?: Component;
+  perms?: ("use" | "edit")[];
+  subPerms?: AppStructureSubPerm<TModule>[];
+  isNotMenu?: boolean;
+}
 ```
 
 ### AppStructure 반환 타입
@@ -355,13 +468,18 @@ themeTokens.primary.border     // border-primary-300 ...
 
 ### ripple
 
-Material Design 스타일 리플 효과.
+Material Design 스타일 리플 효과. 포인터 다운 시 클릭 위치에서 원형 리플이 확산된다.
 
 ```tsx
 import { ripple } from "@simplysm/solid";
+void ripple; // TypeScript directive 등록
 
-<button use:ripple>클릭</button>
+<button use:ripple={!props.disabled}>클릭</button>
 ```
+
+- `prefers-reduced-motion: reduce` 설정 시 리플 비활성화
+- 내부적으로 `overflow: hidden` 컨테이너를 생성하여 부모 요소에 영향 없음
+- `static` 포지션인 경우 자동으로 `relative`로 변경 (cleanup 시 복원)
 
 ---
 
@@ -384,28 +502,15 @@ mergeStyles("color: red", "font-size: 14px"); // "color: red; font-size: 14px"
 ```typescript
 import { createSlot } from "@simplysm/solid";
 
-// 슬롯 정의
+// 1. 슬롯 정의
 const [MySlot, createMySlotAccessor] = createSlot<{ children: JSX.Element }>();
 
-// 컴포넌트 내부에서 슬롯 접근
+// 2. 컴포넌트 내부에서 슬롯 접근
 const [slotValue, SlotProvider] = createMySlotAccessor();
 
-// 사용
+// 3. 사용
 <SlotProvider>
   <MySlot><span>슬롯 내용</span></MySlot>
-  {/* slotValue()로 접근 */}
+  {/* slotValue()?.children 으로 접근 */}
 </SlotProvider>
-```
-
-### startPointerDrag
-
-포인터 드래그 인터랙션 관리. 포인터 캡처를 설정하고 move/end 이벤트를 관리한다.
-
-```typescript
-import { startPointerDrag } from "@simplysm/solid";
-
-startPointerDrag(element, event.pointerId, {
-  onMove: (e) => { /* 드래그 중 */ },
-  onEnd: (e) => { /* 드래그 종료 */ },
-});
 ```
