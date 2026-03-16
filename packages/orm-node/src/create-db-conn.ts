@@ -72,7 +72,7 @@ function getOrCreatePool(config: DbConnConfig): {
         },
       },
       {
-        min: config.pool?.min ?? 1,
+        min: config.pool?.min ?? 0,
         max: config.pool?.max ?? 10,
         acquireTimeoutMillis: config.pool?.acquireTimeoutMillis ?? 30000,
         idleTimeoutMillis: config.pool?.idleTimeoutMillis ?? 30000,
