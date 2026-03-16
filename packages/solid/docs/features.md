@@ -39,7 +39,7 @@ const result = await dialog.open(UserList);
 
 ## CrudSheet
 
-DataSheet 기반 CRUD 기능 통합 컴포넌트. 인라인/다이얼로그 편집, 검색, Excel 가져오기/내보내기, 배치 작업을 지원한다.
+DataSheet 기반 CRUD 기능 통합 컴포넌트. 인라인/다이얼로그 편집, 검색, Excel 가져오기/내보내기, 선택 모드, 배치 작업을 지원한다.
 
 편집 방식은 `inlineEdit`과 `dialogEdit` 중 하나를 선택한다 (동시 사용 불가).
 
@@ -80,6 +80,7 @@ function ProductSheet(props: { close?: (result?: boolean) => void }) {
       dialogEdit={{
         editItem: (item) => dialog.open(ProductDetail, { item }),
         deleteItems: (items) => deleteProducts(items),
+        restoreItems: (items) => restoreProducts(items),
       }}
     >
       <CrudSheet.Column header="상품명" key="name" editTrigger>
@@ -90,14 +91,240 @@ function ProductSheet(props: { close?: (result?: boolean) => void }) {
 }
 ```
 
+### CrudSheet Props
+
+| Prop | 타입 | 설명 |
+|------|------|------|
+| `search` | `(filter, page, sorts) => Promise<SearchResult<TItem>>` | 데이터 조회 함수. `page`가 `undefined`면 전체 조회 (Excel 등) |
+| `getItemKey` | `(item: TItem) => string \| number \| undefined` | 아이템 고유 키 반환 |
+| `close` | `() => void` | Dialog 모드 활성화. 전달 시 Dialog 헤더에 새로고침 버튼 표시 |
+| `inlineEdit` | `InlineEditConfig<TItem>` | 인라인 편집 설정 (`dialogEdit`과 동시 사용 불가) |
+| `dialogEdit` | `DialogEditConfig<TItem>` | 다이얼로그 편집 설정 (`inlineEdit`과 동시 사용 불가) |
+| `editable` | `boolean` | 편집 버튼 표시 여부 (기본값: `true`) |
+| `isItemEditable` | `(item: TItem) => boolean` | 아이템별 편집 가능 여부 (dialogEdit의 editTrigger 링크에 적용) |
+| `isItemDeletable` | `(item: TItem) => boolean` | 아이템별 삭제 가능 여부 (삭제 버튼/링크 비활성화) |
+| `isItemDeleted` | `(item: TItem) => boolean` | 아이템 삭제 상태 확인 (취소선 표시) |
+| `isItemSelectable` | `(item: TItem) => boolean \| string` | 아이템별 선택 가능 여부 |
+| `filterInitial` | `TFilter` | 필터 초기값 |
+| `items` | `TItem[]` | 제어 모드: 외부에서 아이템 배열 전달 |
+| `onItemsChange` | `(items: TItem[]) => void` | 제어 모드: 아이템 변경 콜백 |
+| `storageKey` | `string` | DataSheet 컬럼 너비 등 상태 저장 키 |
+| `lastModifiedAtProp` | `string` | 자동 "최종수정일시" 컬럼 추가 (DateTime 타입, hidden) |
+| `lastModifiedByProp` | `string` | 자동 "수정자" 컬럼 추가 (string 타입, hidden) |
+| `excel` | `ExcelConfig<TItem>` | Excel 가져오기/내보내기 설정 |
+| `selectionMode` | `"single" \| "multiple"` | 선택 모드 활성화 |
+| `selectedKeys` | `(string \| number)[]` | 제어 모드: 선택된 키 배열 |
+| `onSelectedKeysChange` | `(keys) => void` | 제어 모드: 선택 변경 콜백 |
+| `onSelect` | `(result: SelectResult<TItem>) => void` | 선택 확인 콜백 (single 모드는 클릭 시 자동 호출) |
+| `onSubmitComplete` | `() => void` | 저장 완료 후 콜백 |
+| `hideAutoTools` | `boolean` | 자동 생성 툴바 버튼 숨기기 |
+| `class` | `string` | CSS 클래스 |
+
+### 설정 타입
+
+```typescript
+// 인라인 편집 설정
+interface InlineEditConfig<TItem> {
+  submit: (diffs: ArrayOneWayDiffResult<TItem>[]) => Promise<void>;
+  newItem: () => TItem;
+  deleteProp?: keyof TItem & string;   // 삭제 플래그 프로퍼티 (예: "isDeleted")
+  diffsExcludes?: string[];            // diff 비교 제외 프로퍼티
+}
+
+// 다이얼로그 편집 설정
+interface DialogEditConfig<TItem> {
+  editItem: (item?: TItem) => Promise<boolean | undefined>;   // 등록(item 없음)/수정 다이얼로그
+  deleteItems?: (items: TItem[]) => Promise<boolean>;          // 선택 항목 삭제
+  restoreItems?: (items: TItem[]) => Promise<boolean>;         // 선택 항목 복원
+}
+
+// Excel 설정
+interface ExcelConfig<TItem> {
+  download: (items: TItem[]) => Promise<void>;   // 전체 데이터 다운로드
+  upload?: (file: File) => Promise<void>;        // .xlsx 파일 업로드
+}
+
+// 조회 결과
+interface SearchResult<TItem> {
+  items: TItem[];
+  pageCount?: number;   // 페이지 수 (미설정 시 페이징 없음)
+}
+
+// 선택 결과
+interface SelectResult<TItem> {
+  items: TItem[];
+  keys: (string | number)[];
+}
+```
+
+### 선택 모드
+
+`selectionMode`를 설정하면 체크박스 컬럼이 자동 추가된다. Dialog 모드에서 사용하면 선택 전용 UI로 전환된다.
+
+```tsx
+// 다중 선택 (제어 모드)
+const [selectedKeys, setSelectedKeys] = createSignal<number[]>([]);
+
+<CrudSheet
+  search={searchFn}
+  getItemKey={(item) => item.id}
+  selectionMode="multiple"
+  selectedKeys={selectedKeys()}
+  onSelectedKeysChange={setSelectedKeys}
+>
+  <CrudSheet.Column key="name" header="이름">
+    {(ctx) => <div>{ctx.item.name}</div>}
+  </CrudSheet.Column>
+</CrudSheet>
+
+// Dialog에서 단일 선택 (클릭 시 자동 확정)
+<CrudSheet
+  close={props.close}
+  search={searchFn}
+  getItemKey={(item) => item.id}
+  selectionMode="single"
+  onSelect={(result) => props.close?.({ selectedKeys: result.keys })}
+>
+  ...
+</CrudSheet>
+```
+
+### Excel 가져오기/내보내기
+
+```tsx
+<CrudSheet
+  search={searchFn}
+  getItemKey={(item) => item.id}
+  excel={{
+    download: async (items) => {
+      // items는 전체 데이터 (페이징 무시하고 재조회)
+      await exportToExcel(items);
+    },
+    upload: async (file) => {
+      // .xlsx 파일 업로드 후 자동 새로고침
+      await importFromExcel(file);
+    },
+  }}
+>
+  ...
+</CrudSheet>
+```
+
+### 키보드 단축키
+
+| 단축키 | 동작 |
+|--------|------|
+| `Ctrl+S` | 저장 (인라인 편집 모드) |
+| `Ctrl+Alt+L` | 새로고침 |
+
+활성화 조건: 해당 CrudSheet 영역에 포커스/클릭이 있어야 한다 (다중 CrudSheet 환경에서 충돌 방지).
+
 ### CrudSheet 서브 컴포넌트
 
 | 컴포넌트 | 설명 |
 |----------|------|
 | `CrudSheet.Column` | 컬럼 정의. `editTrigger`로 dialogEdit 시 클릭 편집 링크 표시 |
-| `CrudSheet.Filter` | 검색 필터 영역 |
-| `CrudSheet.Tools` | 커스텀 툴바 버튼 (`CrudSheetContext` 전달) |
+| `CrudSheet.Filter` | 검색 필터 영역. render prop으로 `(filter, setFilter)` 전달 |
+| `CrudSheet.Tools` | 커스텀 툴바 버튼. render prop으로 `CrudSheetContext` 전달 |
 | `CrudSheet.Header` | 시트 상단 커스텀 헤더 영역 |
+
+### CrudSheet.Column
+
+`DataSheetColumn`의 모든 props를 상속하며, 추가로 `editTrigger`와 CRUD 전용 셀 컨텍스트를 제공한다.
+
+```tsx
+<CrudSheet.Column<TItem>
+  key="name"              // 컬럼 식별 키 (정렬, 저장에 사용)
+  header="이름"           // 헤더 텍스트 또는 JSX
+  editTrigger             // dialogEdit 시 클릭 편집 링크 표시
+  fixed                   // 고정 컬럼
+  hidden                  // 기본 숨김 (사용자가 토글 가능)
+  collapse                // 접기 가능
+  width="150px"           // 초기 너비
+  sortable={true}         // 정렬 가능 (기본: true)
+  resizable={true}        // 리사이즈 가능 (기본: true)
+  summary={(items) => items.reduce((sum, item) => sum + item.amount, 0)}
+>
+  {(ctx) => (
+    // ctx: CrudSheetCellContext<TItem>
+    // ctx.item: 현재 아이템
+    // ctx.index: 배열 인덱스
+    // ctx.row: 행 번호
+    // ctx.depth: 트리 깊이
+    // ctx.setItem(key, value): 인라인 편집 시 값 변경
+    <TextInput value={ctx.item.name} onValueChange={(v) => ctx.setItem("name", v)} />
+  )}
+</CrudSheet.Column>
+```
+
+### CrudSheet.Filter
+
+검색 필터 영역. render prop으로 현재 `filter` 상태와 `setFilter` (SolidJS store setter)를 전달한다. 검색 버튼은 자동 생성된다.
+
+```tsx
+<CrudSheet.Filter<{ searchText?: string; status?: string }>>
+  {(filter, setFilter) => (
+    <>
+      <FormGroup.Item label="검색어">
+        <TextInput value={filter.searchText ?? ""} onValueChange={(v) => setFilter("searchText", v)} />
+      </FormGroup.Item>
+      <FormGroup.Item label="상태">
+        <Select
+          value={filter.status}
+          onValueChange={(v) => setFilter("status", v)}
+          items={["active", "inactive"]}
+        />
+      </FormGroup.Item>
+    </>
+  )}
+</CrudSheet.Filter>
+```
+
+### CrudSheet.Tools
+
+커스텀 툴바 버튼. render prop으로 `CrudSheetContext`를 전달하여 내부 상태 접근 및 액션 호출이 가능하다.
+
+```tsx
+<CrudSheet.Tools<TItem>>
+  {(ctx) => (
+    <>
+      <Button size="sm" onClick={() => void handleCustomAction(ctx.selection())}>
+        커스텀 액션 ({ctx.selection().length}건)
+      </Button>
+      <Show when={ctx.hasChanges()}>
+        <span class="text-warning-500">변경사항 있음</span>
+      </Show>
+    </>
+  )}
+</CrudSheet.Tools>
+```
+
+#### CrudSheetContext API
+
+| 멤버 | 타입 | 설명 |
+|------|------|------|
+| `items()` | `TItem[]` | 현재 페이지 아이템 목록 |
+| `selection()` | `TItem[]` | 현재 선택된 아이템 목록 |
+| `page()` | `number` | 현재 페이지 번호 |
+| `sorts()` | `SortingDef[]` | 현재 정렬 정의 |
+| `busy()` | `boolean` | 로딩 중 여부 |
+| `hasChanges()` | `boolean` | 변경사항 존재 여부 (인라인 편집) |
+| `save()` | `Promise<void>` | 저장 실행 |
+| `refresh()` | `Promise<void>` | 데이터 새로고침 |
+| `addItem()` | `void` | 행 추가 (인라인 편집) |
+| `clearSelection()` | `void` | 선택 초기화 |
+| `setPage(page)` | `void` | 페이지 변경 |
+| `setSorts(sorts)` | `void` | 정렬 변경 |
+
+### CrudSheet.Header
+
+시트 상단에 커스텀 헤더 영역을 추가한다.
+
+```tsx
+<CrudSheet.Header>
+  <div class="p-2 text-lg font-bold">사용자 관리</div>
+</CrudSheet.Header>
+```
 
 ---
 
