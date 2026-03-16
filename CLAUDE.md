@@ -73,6 +73,10 @@ ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 - `tests/orm` — DB 연결, DbContext, escape 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
 - `tests/service` — 서비스 클라이언트-서버 통신 테스트.
 
+## Claude Code 설정
+
+`.claude/` 디렉토리(rules, skills, hooks)는 이 프로젝트에서 직접 작성·관리한다. 작성된 내용은 `@simplysm/sd-claude` 패키지를 통해 다른 프로젝트에 복사·배포된다.
+
 ## 코딩룰
 
 - `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용

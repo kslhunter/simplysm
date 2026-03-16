@@ -186,9 +186,9 @@ export class Capacitor {
 
       // 6. Synchronize web assets
       if (changed) {
-        await this._exec("npx", ["cap", "sync"], this._capPath);
+        await this._exec("pnpm", ["exec", "cap", "sync"], this._capPath);
       } else {
-        await this._exec("npx", ["cap", "copy"], this._capPath);
+        await this._exec("pnpm", ["exec", "cap", "copy"], this._capPath);
       }
     } finally {
       await this._releaseLock();
@@ -205,7 +205,7 @@ export class Capacitor {
       const buildType = this._config.debug ? "debug" : "release";
 
       for (const platform of this._platforms) {
-        await this._exec("npx", ["cap", "copy", platform], this._capPath);
+        await this._exec("pnpm", ["exec", "cap", "copy", platform], this._capPath);
 
         if (platform === "android") {
           await this._buildAndroid(outPath, buildType);
@@ -229,10 +229,10 @@ export class Capacitor {
     }
 
     for (const platform of this._platforms) {
-      await this._exec("npx", ["cap", "copy", platform], this._capPath);
+      await this._exec("pnpm", ["exec", "cap", "copy", platform], this._capPath);
 
       try {
-        await this._exec("npx", ["cap", "run", platform], this._capPath);
+        await this._exec("pnpm", ["exec", "cap", "run", platform], this._capPath);
       } catch (err) {
         if (platform === "android") {
           try {
@@ -266,7 +266,7 @@ export class Capacitor {
   //#region Private - Initialization
 
   /**
-   * Basic Capacitor project initialization (package.json, npm install, cap init)
+   * Basic Capacitor project initialization (package.json, pnpm install, cap init)
    */
   private async _initCap(): Promise<boolean> {
     const depChanged = await this._setupNpmConf();
@@ -280,8 +280,8 @@ export class Capacitor {
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
     if (!(await fsx.exists(configPath))) {
       await this._exec(
-        "npx",
-        ["cap", "init", this._config.appName, this._config.appId],
+        "pnpm",
+        ["exec", "cap", "init", this._config.appName, this._config.appId],
         this._capPath,
       );
     }
@@ -430,7 +430,7 @@ export default config;
         continue;
       }
 
-      await this._exec("npx", ["cap", "add", platform], this._capPath);
+      await this._exec("pnpm", ["exec", "cap", "add", platform], this._capPath);
     }
   }
 
@@ -476,8 +476,9 @@ export default config;
           .toFile(logoPath);
 
         await this._exec(
-          "npx",
+          "pnpm",
           [
+            "exec",
             "@capacitor/assets",
             "generate",
             "--iconBackgroundColor",

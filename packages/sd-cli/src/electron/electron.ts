@@ -79,7 +79,7 @@ export class Electron {
    * Initialize Electron project
    *
    * 1. Create .electron/src/package.json
-   * 2. Run npm install
+   * 2. Run pnpm install
    * 3. Run electron-rebuild (rebuild native modules)
    */
   async initialize(): Promise<void> {
@@ -88,13 +88,13 @@ export class Electron {
     // 1. Create package.json
     await this._setupPackageJson(srcPath);
 
-    // 2. npm install
-    await this._exec("npm", ["install"], srcPath);
+    // 2. pnpm install
+    await this._exec("pnpm", ["install"], srcPath);
 
     // 3. Rebuild native modules
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     if (reinstallDeps.length > 0) {
-      await this._exec("npx", ["electron-rebuild"], srcPath);
+      await this._exec("pnpm", ["exec", "electron-rebuild"], srcPath);
     }
   }
 
@@ -128,7 +128,7 @@ export class Electron {
    *
    * 1. Bundle electron-main.ts with esbuild
    * 2. Create dist/electron/package.json
-   * 3. Run npx electron .
+   * 3. Run pnpm exec electron .
    */
   async run(url?: string): Promise<void> {
     const electronRunPath = path.resolve(this._pkgPath, "dist/electron");
@@ -154,7 +154,7 @@ export class Electron {
       runEnv["ELECTRON_DEV_URL"] = url;
     }
 
-    await this._exec("npx", ["electron", "."], electronRunPath, runEnv);
+    await this._exec("pnpm", ["exec", "electron", "."], electronRunPath, runEnv);
   }
 
   //#endregion
@@ -300,8 +300,8 @@ export class Electron {
     await fsx.writeJson(configFilePath, builderConfig, { space: 2 });
 
     await this._exec(
-      "npx",
-      ["electron-builder", "--win", "--config", configFilePath],
+      "pnpm",
+      ["exec", "electron-builder", "--win", "--config", configFilePath],
       this._pkgPath,
     );
   }
