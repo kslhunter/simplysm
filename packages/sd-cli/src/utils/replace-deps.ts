@@ -3,6 +3,8 @@ import path from "path";
 import { glob } from "glob";
 import { consola } from "consola";
 import { fsx, pathx, FsWatcher } from "@simplysm/core-node";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 /**
  * Match glob patterns from replaceDeps config with target package list
@@ -258,6 +260,24 @@ export async function setupReplaceDeps(
   }
 
   logger.success(`Replaced ${setupCount} dependencies`);
+
+  // Run postinstall scripts from replaced packages
+  for (const { targetName, resolvedSourcePath, actualTargetPath } of entries) {
+    const sourcePkgJsonPath = path.join(resolvedSourcePath, "package.json");
+    try {
+      const pkgJson = JSON.parse(await fs.promises.readFile(sourcePkgJsonPath, "utf-8"));
+      const postinstall = pkgJson.scripts?.postinstall as string | undefined;
+      if (postinstall == null) continue;
+
+      logger.start(`Running postinstall for ${targetName}`);
+      await promisify(exec)(postinstall, { cwd: actualTargetPath });
+      logger.success(`postinstall done: ${targetName}`);
+    } catch (err) {
+      logger.error(
+        `postinstall failed (${targetName}): ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
 }
 
 /**
