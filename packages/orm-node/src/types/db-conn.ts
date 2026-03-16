@@ -121,27 +121,6 @@ export interface DbConn extends EventEmitter<{ close: void }> {
 // ============================================
 
 /**
- * Connection pool configuration
- *
- * @remarks
- * Default values for each setting:
- * - min: 1 (minimum connection count)
- * - max: 10 (maximum connection count)
- * - acquireTimeoutMillis: 30000 (connection acquisition timeout)
- * - idleTimeoutMillis: 30000 (idle connection timeout)
- */
-export interface DbPoolConfig {
-  /** Minimum connection count (default: 1) */
-  min?: number;
-  /** Maximum connection count (default: 10) */
-  max?: number;
-  /** Connection acquisition timeout (milliseconds, default: 30000) */
-  acquireTimeoutMillis?: number;
-  /** Idle connection timeout (milliseconds, default: 30000) */
-  idleTimeoutMillis?: number;
-}
-
-/**
  * DB connection configuration type (branching by dialect)
  */
 export type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConfig;
@@ -157,7 +136,6 @@ export interface MysqlDbConnConfig {
   password: string;
   database?: string;
   defaultIsolationLevel?: IsolationLevel;
-  pool?: DbPoolConfig;
 }
 
 /**
@@ -172,7 +150,6 @@ export interface MssqlDbConnConfig {
   database?: string;
   schema?: string;
   defaultIsolationLevel?: IsolationLevel;
-  pool?: DbPoolConfig;
 }
 
 /**
@@ -187,7 +164,6 @@ export interface PostgresqlDbConnConfig {
   database?: string;
   schema?: string;
   defaultIsolationLevel?: IsolationLevel;
-  pool?: DbPoolConfig;
 }
 
 /**

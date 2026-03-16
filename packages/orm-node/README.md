@@ -16,22 +16,20 @@ npm install pg pg-copy-streams     # PostgreSQL
 npm install tedious                # MSSQL / Azure SQL
 ```
 
-**의존성:** `@simplysm/core-common`, `@simplysm/orm-common`, `generic-pool`, `consola`
+**의존성:** `@simplysm/core-common`, `@simplysm/orm-common`, `consola`
 
 ## 아키텍처 개요
 
 ```
 createOrm()                  -- 최상위 팩토리 (ORM 인스턴스)
   └─ NodeDbContextExecutor   -- DbContextExecutor 구현체
-       └─ createDbConn()     -- 커넥션 풀에서 PooledDbConn 획득
-            └─ PooledDbConn  -- 풀 래퍼
-                 └─ MysqlDbConn / PostgresqlDbConn / MssqlDbConn  -- 실제 연결
+       └─ createDbConn()     -- DB 연결 생성
+            └─ MysqlDbConn / PostgresqlDbConn / MssqlDbConn  -- 실제 연결
 ```
 
 - `createOrm` -- `@simplysm/orm-common`의 `DbContext`와 DB 연결을 결합하는 고수준 API
 - `NodeDbContextExecutor` -- `QueryDef` → SQL 변환 및 실행을 담당하는 어댑터
-- `createDbConn` -- `generic-pool` 기반 커넥션 풀에서 연결을 획득
-- `PooledDbConn` -- 풀에서 빌린 물리 연결을 감싸는 래퍼 (반환 시 자동 롤백)
+- `createDbConn` -- DB 연결 인스턴스를 생성
 - `MysqlDbConn` / `PostgresqlDbConn` / `MssqlDbConn` -- 각 DBMS별 실제 연결 구현
 
 ## 주요 사용법
@@ -159,7 +157,7 @@ function createOrm<TDef extends DbContextDef<any, any, any>>(
 
 ### `createDbConn(config): Promise<DbConn>`
 
-커넥션 풀에서 DB 연결을 획득하여 반환한다. 동일 config에 대해 풀이 공유된다.
+DB 연결 인스턴스를 생성하여 반환한다. 반환된 객체에 `connect()`를 호출해야 실제 연결이 수립된다.
 
 ```typescript
 function createDbConn(config: DbConnConfig): Promise<DbConn>;
@@ -209,8 +207,6 @@ type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConf
 | `password` | `string` | 비밀번호 |
 | `database?` | `string` | 데이터베이스명 |
 | `defaultIsolationLevel?` | `IsolationLevel` | 기본 격리 수준 |
-| `pool?` | `DbPoolConfig` | 커넥션 풀 설정 |
-
 **MSSQL/PostgreSQL 전용:**
 
 | 필드 | 타입 | 설명 |
@@ -219,17 +215,6 @@ type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConf
 
 **MSSQL 특수 dialect:**
 - `"mssql-azure"`: Azure SQL용. `encrypt: true`가 자동 적용됨.
-
-### `DbPoolConfig` 인터페이스
-
-```typescript
-interface DbPoolConfig {
-  min?: number;                    // 최소 연결 수 (기본: 1)
-  max?: number;                    // 최대 연결 수 (기본: 10)
-  acquireTimeoutMillis?: number;   // 획득 타임아웃 (기본: 30초)
-  idleTimeoutMillis?: number;      // 유휴 타임아웃 (기본: 30초)
-}
-```
 
 ### `NodeDbContextExecutor`
 
@@ -254,21 +239,6 @@ class NodeDbContextExecutor implements DbContextExecutor {
 - `QueryDef`를 dialect에 맞는 SQL로 변환 (`createQueryBuilder`)
 - `resultMetas`가 모두 `undefined`이면 → 결과 없는 쿼리로 판단하여 단일 배치 실행
 - `ResultMeta`가 있으면 → `parseQueryResult`로 타입 변환 적용
-
-### `PooledDbConn`
-
-`generic-pool`의 풀에서 물리 연결을 빌려 사용하는 래퍼 클래스.
-
-```typescript
-class PooledDbConn extends EventEmitter<{ close: void }> implements DbConn {
-  constructor(pool: Pool<DbConn>, initialConfig: DbConnConfig, getLastCreateError?: () => Error | undefined);
-}
-```
-
-**특징:**
-- `connect()`: 풀에서 물리 연결 획득
-- `close()`: 트랜잭션 진행 중이면 자동 롤백 후 풀에 반환 (실제 연결은 닫지 않음)
-- 물리 연결이 끊기면 `close` 이벤트 자동 전파
 
 ### DB 연결 구현 클래스
 

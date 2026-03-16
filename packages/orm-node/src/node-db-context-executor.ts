@@ -28,8 +28,6 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
   /**
    * Establish DB connection
-   *
-   * Acquires connection from connection pool and activates the connection state.
    */
   async connect(): Promise<void> {
     this._conn = await createDbConn(this._config);
@@ -38,8 +36,6 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
   /**
    * Close DB connection
-   *
-   * Returns connection to the connection pool.
    *
    * @throws {Error} When not connected
    */

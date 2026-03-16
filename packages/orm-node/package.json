@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/orm-node",
-  "version": "13.0.93",
+  "version": "13.0.94",
   "description": "Simplysm package - ORM module (node)",
   "author": "simplysm",
   "license": "Apache-2.0",
@@ -21,8 +21,7 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "@simplysm/orm-common": "workspace:*",
-    "consola": "^3.4.2",
-    "generic-pool": "^3.9.0"
+    "consola": "^3.4.2"
   },
   "devDependencies": {
     "@types/pg": "^8.18.0",
