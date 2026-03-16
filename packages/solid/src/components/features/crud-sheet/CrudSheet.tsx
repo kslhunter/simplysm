@@ -1,5 +1,6 @@
 import {
   createEffect,
+  createMemo,
   createSignal,
   createUniqueId,
   For,
@@ -10,6 +11,7 @@ import {
 } from "solid-js";
 import { createStore, produce, reconcile } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import type { DateTime } from "@simplysm/core-common";
 import { obj } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
@@ -77,6 +79,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     "dialogEdit",
     "excel",
     "selectionMode",
+    "selectedKeys",
+    "onSelectedKeysChange",
     "onSelect",
     "hideAutoTools",
     "close",
@@ -128,7 +132,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   const [ready, setReady] = createSignal(false);
 
   const [selection, setSelection] = createSignal<TItem[]>([]);
-  const [selectedKeys, setSelectedKeys] = createSignal<Set<string | number>>(new Set());
+  const [selectedKeys, setSelectedKeys] = createControllableSignal<(string | number)[]>({
+    value: () => local.selectedKeys ?? [],
+    onChange: () => local.onSelectedKeysChange,
+  });
+  const selectedKeysSet = createMemo(() => new Set(selectedKeys()));
 
   let formRef: HTMLFormElement | undefined;
 
@@ -146,8 +154,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   // -- Key-based selection: restore selection when items change --
   createEffect(() => {
     const currentItems = items;
-    const keys = selectedKeys();
-    if (keys.size === 0) {
+    const keysSet = selectedKeysSet();
+    if (keysSet.size === 0) {
       if (selection().length > 0) {
         setSelection([]);
       }
@@ -155,7 +163,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
     }
     const restored = currentItems.filter((item) => {
       const key = local.getItemKey(item);
-      return key != null && keys.has(key);
+      return key != null && keysSet.has(key);
     });
     setSelection(restored);
   });
@@ -346,7 +354,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
       merged.add(key); // Add current page selection
     }
 
-    setSelectedKeys(merged);
+    setSelectedKeys([...merged]);
     setSelection(newSelection);
 
     // Auto-confirm for single selection mode in dialog
@@ -359,14 +367,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, unknown>>(
   }
 
   function clearSelection() {
-    setSelectedKeys(new Set<string | number>());
+    setSelectedKeys([]);
     setSelection([]);
   }
 
   function handleSelectConfirm() {
     local.onSelect?.({
       items: selection(),
-      keys: [...selectedKeys()],
+      keys: selectedKeys(),
     });
   }
 

@@ -94,6 +94,8 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, unknown>> {
   onItemsChange?: (items: TItem[]) => void;
   excel?: ExcelConfig<TItem>;
   selectionMode?: "single" | "multiple";
+  selectedKeys?: (string | number)[];
+  onSelectedKeysChange?: (keys: (string | number)[]) => void;
   onSelect?: (result: SelectResult<TItem>) => void;
   onSubmitComplete?: () => void;
   hideAutoTools?: boolean;

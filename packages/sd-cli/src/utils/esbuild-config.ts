@@ -188,16 +188,16 @@ function toEsbuildTsconfigRaw(
   const result = { ...compilerOptions };
 
   if (typeof result["target"] === "number") {
-    result["target"] = TARGET_MAP[result["target"] as number] ?? "esnext";
+    result["target"] = TARGET_MAP[result["target"]] ?? "esnext";
   }
   if (typeof result["jsx"] === "number") {
-    result["jsx"] = JSX_MAP[result["jsx"] as number];
+    result["jsx"] = JSX_MAP[result["jsx"]];
   }
   if (typeof result["module"] === "number") {
-    result["module"] = MODULE_MAP[result["module"] as number];
+    result["module"] = MODULE_MAP[result["module"]];
   }
   if (typeof result["moduleResolution"] === "number") {
-    result["moduleResolution"] = MODULE_RESOLUTION_MAP[result["moduleResolution"] as number];
+    result["moduleResolution"] = MODULE_RESOLUTION_MAP[result["moduleResolution"]];
   }
 
   return result as esbuild.TsconfigRaw["compilerOptions"];

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
@@ -458,5 +458,120 @@ describe("CrudSheet dialog mode", () => {
 
     await new Promise((r) => setTimeout(r, 100));
     expect(container.textContent).not.toContain("Confirm");
+  });
+});
+
+describe("CrudSheet selectedKeys controllable", () => {
+  beforeEach(() => {
+    localStorage.setItem("test.i18n-locale", JSON.stringify("en"));
+  });
+
+  afterEach(() => {
+    localStorage.removeItem("test.i18n-locale");
+  });
+
+  const searchFn = () =>
+    Promise.resolve({
+      items: [
+        { id: 1, name: "홍길동", isDeleted: false },
+        { id: 2, name: "김철수", isDeleted: false },
+        { id: 3, name: "이영희", isDeleted: false },
+      ],
+      pageCount: 1,
+    });
+
+  it("controlled: selectedKeys prop sets initial selection", async () => {
+    const { container } = render(() => (
+      <ConfigProvider clientName="test"><I18nProvider>
+        <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          selectionMode="multiple"
+          selectedKeys={[1, 3]}
+          onSelectedKeysChange={() => {}}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+      </I18nProvider></ConfigProvider>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const checkboxes = container.querySelectorAll('[role="checkbox"]');
+    // Header checkbox + 3 row checkboxes = 4 total
+    // Row checkboxes: index 1 (id=1, checked), index 2 (id=2, unchecked), index 3 (id=3, checked)
+    const rowCheckboxes = Array.from(checkboxes).slice(1);
+    expect(rowCheckboxes[0].getAttribute("aria-checked")).toBe("true");
+    expect(rowCheckboxes[1].getAttribute("aria-checked")).toBe("false");
+    expect(rowCheckboxes[2].getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("controlled: onSelectedKeysChange is called when row checkbox is clicked", async () => {
+    const onKeysChange = vi.fn();
+
+    const { container } = render(() => (
+      <ConfigProvider clientName="test"><I18nProvider>
+        <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          selectionMode="multiple"
+          selectedKeys={[]}
+          onSelectedKeysChange={onKeysChange}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+      </I18nProvider></ConfigProvider>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Click the first row's checkbox cell (the clickable div wrapping the checkbox)
+    const checkboxCells = container.querySelectorAll('[role="checkbox"]');
+    const firstRowCheckboxCell = checkboxCells[1].parentElement;
+    firstRowCheckboxCell?.click();
+
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(onKeysChange).toHaveBeenCalled();
+    expect(onKeysChange.mock.calls[0][0]).toContain(1);
+  });
+
+  it("uncontrolled: selection works without selectedKeys prop", async () => {
+    const { container } = render(() => (
+      <ConfigProvider clientName="test"><I18nProvider>
+        <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          selectionMode="multiple"
+          onSelect={() => {}}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+      </I18nProvider></ConfigProvider>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Click the first row's checkbox cell
+    const checkboxCells = container.querySelectorAll('[role="checkbox"]');
+    const firstRowCheckboxCell = checkboxCells[1].parentElement;
+    firstRowCheckboxCell?.click();
+
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Checkbox should be checked (internal state)
+    expect(checkboxCells[1].getAttribute("aria-checked")).toBe("true");
   });
 });
