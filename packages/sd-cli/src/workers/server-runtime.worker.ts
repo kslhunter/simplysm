@@ -14,6 +14,7 @@ import { registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils"
 export interface ServerRuntimeStartInfo {
   mainJsPath: string;
   clientPorts: Record<string, number>;
+  env?: Record<string, string>;
 }
 
 /**
@@ -112,6 +113,13 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
     const startTime = performance.now();
+
+    // Inject environment variables into process.env before importing main.js
+    if (info.env != null) {
+      for (const [key, value] of Object.entries(info.env)) {
+        process.env[key] = value;
+      }
+    }
 
     // Import main.js (must export a server instance)
     logger.debug("[start] Importing main.js...");

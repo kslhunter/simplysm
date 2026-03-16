@@ -498,7 +498,7 @@ export class DevOrchestrator {
     };
 
     // Register Server Build Worker event handlers
-    for (const { name } of this._serverPackages) {
+    for (const { name, config } of this._serverPackages) {
       const serverBuild = this._serverBuildWorkers.get(name)!;
 
       serverBuild.worker.on("buildStart", () => {
@@ -540,6 +540,7 @@ export class DevOrchestrator {
           serverRuntimePromises,
           resolveServerStep,
           viteClientReadyPromises,
+          { ...this._baseEnv, ...config.env },
         ).catch((err: unknown) => {
           const message = errNs.message(err);
           this._logger.error(`[${name}] Error starting Server Runtime:`, message);
@@ -610,6 +611,7 @@ export class DevOrchestrator {
     serverRuntimePromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
     resolveServerStep: (serverName: string, resultKey: string, result: BuildResult) => void,
     viteClientReadyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
+    env?: Record<string, string>,
   ): Promise<void> {
     const runtimeStartTime = performance.now();
     this._logger.debug(`[${serverName}] _startServerRuntime: ${mainJsPath}`);
@@ -692,6 +694,7 @@ export class DevOrchestrator {
       .start({
         mainJsPath,
         clientPorts: serverClientPorts,
+        env,
       })
       .catch((err: unknown) => {
         const message = errNs.message(err);
