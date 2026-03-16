@@ -180,11 +180,17 @@ export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement
    * Menu items array
    */
   menus: AppMenu[];
+  /**
+   * When true, all nested menu lists are expanded on initial render.
+   * @default false
+   */
+  defaultOpen?: boolean;
 }
 
 // Internal Context: share initial open state
 interface MenuContextValue {
   initialOpenItems: Accessor<Set<AppMenu>>;
+  defaultOpen: boolean;
 }
 
 const MenuContext = createContext<MenuContextValue>();
@@ -215,7 +221,7 @@ const MenuContext = createContext<MenuContextValue>();
  * ```
  */
 const SidebarMenu: Component<SidebarMenuProps> = (props) => {
-  const [local, rest] = splitProps(props, ["menus", "class"]);
+  const [local, rest] = splitProps(props, ["menus", "class", "defaultOpen"]);
 
   const location = useLocation();
 
@@ -249,7 +255,7 @@ const SidebarMenu: Component<SidebarMenuProps> = (props) => {
   const getClassName = () => twMerge("flex-1 overflow-y-auto", local.class);
 
   return (
-    <MenuContext.Provider value={{ initialOpenItems }}>
+    <MenuContext.Provider value={{ initialOpenItems, defaultOpen: local.defaultOpen ?? false }}>
       <div {...rest} data-sidebar-menu class={getClassName()}>
         <div class={clsx("px-3.5 py-1 text-sm font-bold", text.muted, "uppercase tracking-wider")}>MENU</div>
         <List inset>
@@ -281,7 +287,7 @@ const MenuItem: Component<MenuItemProps> = (props) => {
   // Calculate open state (compare by object reference)
   const shouldBeOpen = () => menuContext.initialOpenItems().has(props.menu);
 
-  const [open, setOpen] = createSignal(false);
+  const [open, setOpen] = createSignal(menuContext.defaultOpen);
 
   // Update open state in response to pathname change
   createEffect(() => {
