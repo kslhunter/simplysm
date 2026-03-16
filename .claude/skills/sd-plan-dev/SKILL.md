@@ -6,7 +6,7 @@ argument-hint: "<plan 파일 경로>"
 
 # sd-plan-dev: 구현 실행
 
-구현계획서(plan)를 기반으로 TDD 사이클(RED → GREEN → Refactor)을 실행하여 실제 구현을 수행한다.
+구현계획서(plan)를 기반으로 TDD 사이클(RED → GREEN → Refactor → Commit)을 실행하여 실제 구현을 수행한다.
 
 ## 1. 인자 파싱
 
@@ -52,7 +52,7 @@ plan에서 작업 목록을 파악하고 스케줄링을 결정한다.
 
 결정된 스케줄링에 따라 실행한다:
 - 단일 작업: 바로 3단계(TDD 사이클)로 진행
-- 병렬 실행: Agent tool로 각 작업을 별도 subagent에 위임하여 동시에 TDD 사이클 수행
+- 병렬 실행: Agent tool로 각 작업을 별도 subagent에 위임하여 동시에 TDD 사이클(RED → GREEN → Refactor → Commit) 수행
 - 순차 실행: 선행 작업 완료 후 후행 작업 시작
 
 ## 3. TDD 사이클 실행
@@ -113,8 +113,10 @@ plan의 GREEN Phase에 명시된 구현 계획에 따라 최소한의 구현을 
 
 ### Commit Phase
 
-TDD 사이클(RED → GREEN → Refactor) 완료 후 1회 commit한다.
-- 작업 하나 = commit 하나
+**각 작업의 TDD 사이클(RED → GREEN → Refactor) 완료 직후, 다음 작업으로 넘어가기 전에 반드시 커밋한다.**
+
+- `/sd-commit`을 실행하여 해당 작업에서 수정한 파일을 커밋한다
+- 작업 하나 = commit 하나. 여러 작업을 몰아서 한번에 커밋하지 않는다
 
 ### 다음 작업 전이
 
