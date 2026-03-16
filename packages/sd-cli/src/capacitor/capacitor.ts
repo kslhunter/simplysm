@@ -78,7 +78,7 @@ export class Capacitor {
     if (typeof config.appName !== "string" || config.appName.trim() === "") {
       throw new CapacitorConfigError("capacitor.appName is required.");
     }
-    if (!/^[a-zA-Z0-9 \-]+$/.test(config.appName)) {
+    if (!/^[\p{L}\p{N} \-]+$/u.test(config.appName)) {
       throw new CapacitorConfigError(`capacitor.appName contains invalid characters: ${config.appName}`);
     }
     if (config.platform != null) {
