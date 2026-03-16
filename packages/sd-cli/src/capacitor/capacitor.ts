@@ -92,6 +92,13 @@ export class Capacitor {
   }
 
   /**
+   * Resolve binary path from .capacitor/node_modules/.bin/
+   */
+  private _capBin(name: string): string {
+    return path.resolve(this._capPath, "node_modules/.bin", name);
+  }
+
+  /**
    * Execute command (with logging)
    */
   private async _exec(cmd: string, args: string[], cwd: string): Promise<string> {
@@ -186,9 +193,9 @@ export class Capacitor {
 
       // 6. Synchronize web assets
       if (changed) {
-        await this._exec("pnpm", ["exec", "cap", "sync"], this._capPath);
+        await this._exec(this._capBin("cap"), ["sync"], this._capPath);
       } else {
-        await this._exec("pnpm", ["exec", "cap", "copy"], this._capPath);
+        await this._exec(this._capBin("cap"), ["copy"], this._capPath);
       }
     } finally {
       await this._releaseLock();
@@ -205,7 +212,7 @@ export class Capacitor {
       const buildType = this._config.debug ? "debug" : "release";
 
       for (const platform of this._platforms) {
-        await this._exec("pnpm", ["exec", "cap", "copy", platform], this._capPath);
+        await this._exec(this._capBin("cap"), ["copy", platform], this._capPath);
 
         if (platform === "android") {
           await this._buildAndroid(outPath, buildType);
@@ -229,10 +236,10 @@ export class Capacitor {
     }
 
     for (const platform of this._platforms) {
-      await this._exec("pnpm", ["exec", "cap", "copy", platform], this._capPath);
+      await this._exec(this._capBin("cap"), ["copy", platform], this._capPath);
 
       try {
-        await this._exec("pnpm", ["exec", "cap", "run", platform], this._capPath);
+        await this._exec(this._capBin("cap"), ["run", platform], this._capPath);
       } catch (err) {
         if (platform === "android") {
           try {
@@ -280,8 +287,8 @@ export class Capacitor {
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
     if (!(await fsx.exists(configPath))) {
       await this._exec(
-        "pnpm",
-        ["exec", "cap", "init", this._config.appName, this._config.appId],
+        this._capBin("cap"),
+        ["init", this._config.appName, this._config.appId],
         this._capPath,
       );
     }
@@ -430,7 +437,7 @@ export default config;
         continue;
       }
 
-      await this._exec("pnpm", ["exec", "cap", "add", platform], this._capPath);
+      await this._exec(this._capBin("cap"), ["add", platform], this._capPath);
     }
   }
 
@@ -476,10 +483,8 @@ export default config;
           .toFile(logoPath);
 
         await this._exec(
-          "pnpm",
+          this._capBin("capacitor-assets"),
           [
-            "exec",
-            "@capacitor/assets",
             "generate",
             "--iconBackgroundColor",
             "#ffffff",
