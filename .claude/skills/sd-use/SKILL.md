@@ -22,8 +22,8 @@ argument-hint: "<요청 내용> | --help"
 | 스킬 | 설명 | 키워드 힌트 |
 |------|------|------------|
 | sd-debug | 문제(버그, 에러, 비정상 동작)의 근본 원인을 분석하고 해결책을 제시 | 버그, 에러, 오류, 안됨, 무한루프, 크래시, 실패, 문제 |
-| sd-document | 문서 파일(.docx/.xlsx/.pptx/.pdf)을 읽어 분석하거나 새 문서를 생성 | .docx, .xlsx, .pptx, .pdf, 문서 읽기, 문서 생성, 보고서, 엑셀 |
-| sd-email-analyze | 이메일 파일(.eml/.msg)을 분석하여 헤더, 본문, 첨부파일을 추출 | .eml, .msg, 이메일, 메일 분석 |
+| sd-doc-extract | 문서/이메일 파일(.docx/.xlsx/.xlsb/.pptx/.pdf/.eml/.msg)을 재귀적으로 해체하여 추출 | .docx, .xlsx, .xlsb, .pptx, .pdf, .eml, .msg, 문서 읽기, 이메일, 메일 분석 |
+| sd-doc-write | 문서 파일(.docx/.xlsx)을 생성하거나 편집 | 문서 생성, 보고서, 엑셀 만들기, 워드 작성 |
 | sd-init | 프로젝트 설정 파일을 분석하여 CLAUDE.md를 자동 생성 | CLAUDE.md, 프로젝트 초기화, init |
 | sd-plan | 요구분석서 또는 리뷰 결과를 기반으로 TDD 방식의 구현계획서를 작성 | 구현계획, plan, 계획 수립, spec 기반 |
 | sd-plan-dev | 구현계획서를 기반으로 TDD 방식의 실제 구현을 수행 | 구현 실행, plan-dev, 계획 실행, TDD 실행 |
@@ -123,16 +123,13 @@ argument-hint: "<요청 내용> | --help"
 
 /sd-init ──────────> CLAUDE.md 자동 생성
 
-/sd-document ──────> .docx/.xlsx/.pptx/.pdf 읽기/쓰기
+/sd-doc-extract ───> .docx/.xlsx/.xlsb/.pptx/.pdf/.eml/.msg 재귀 해체
+
+/sd-doc-write ────> .docx/.xlsx 생성/편집
 
 /sd-simplify ─────> 코드 리팩터링 (중복 제거, 네이밍 개선, 구조 분리)
 
 /sd-commit ────────> 변경사항 분석 + [type] scope 커밋 메시지 생성 + 커밋
-
-/sd-email-analyze ─> .eml/.msg 분석 > 첨부파일 추출
-                         |
-                         v
-                     /sd-document (문서 첨부파일)
 
 /sd-apk-decompile ─> APK 디컴파일 (JADX + Apktool + dex2jar/CFR)
 
@@ -163,8 +160,8 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-init` | CLAUDE.md 생성 | `/sd-init` |
 | `/sd-review` | 구현 완성도 검증 | `/sd-review .tasks/login` |
 | `/sd-commit` | 커밋 메시지 생성 + 커밋 | `/sd-commit` |
-| `/sd-document` | 문서 읽기/쓰기 | `/sd-document report.xlsx` |
-| `/sd-email-analyze` | 이메일 분석 | `/sd-email-analyze mail.eml` |
+| `/sd-doc-extract` | 문서/이메일 재귀 해체 | `/sd-doc-extract report.pptx` |
+| `/sd-doc-write` | 문서 생성/편집 | `/sd-doc-write output.xlsx` |
 | `/sd-simplify` | 코드 리팩터링 | `/sd-simplify src/utils.ts` |
 | `/sd-apk-decompile` | APK 디컴파일 | `/sd-apk-decompile app.apk` |
 | `/sd-migration` | 마이그레이션 분석 | `/sd-migration /d/projects/old-app` |

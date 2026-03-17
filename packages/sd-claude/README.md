@@ -113,8 +113,8 @@ INIT_CWD 환경변수 → node_modules 경로에서 역추적 → process.cwd()
 | `sd-check` | typecheck + lint(fix) + 단위test 순차 수행 및 자동 수정 |
 | `sd-commit` | `[type] scope` 형식의 커밋 메시지 생성 및 커밋 |
 | `sd-debug` | 버그/에러의 근본 원인 분석 및 `debug.md` 저장 |
-| `sd-document` | `.docx/.xlsx/.pptx/.pdf` 파일 분석 및 생성 |
-| `sd-email-analyze` | `.eml/.msg` 이메일 파일 분석 (헤더/본문/첨부파일 추출) |
+| `sd-doc-extract` | `.docx/.xlsx/.xlsb/.pptx/.pdf/.eml/.msg` 재귀 해체 및 추출 |
+| `sd-doc-write` | `.docx/.xlsx` 문서 생성 및 편집 |
 | `sd-init` | 프로젝트 설정 분석 후 `CLAUDE.md` 자동 생성 |
 | `sd-migration` | 원본/현재 코드베이스 비교 분석 후 마이그레이션 대상 목록 생성 |
 | `sd-plan` | 요구분석서/점검 결과 기반 TDD 구현계획서 작성 |
