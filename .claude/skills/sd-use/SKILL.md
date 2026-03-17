@@ -31,7 +31,7 @@ argument-hint: "<요청 내용> | --help"
 | sd-audit | 코드베이스를 여러 관점에서 병렬로 점검하고 승인된 결과를 문서로 저장 | 점검, 감사, 개선점, 문제점 |
 | sd-spec | 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성 | 요구분석, 요구사항, spec, 기능 정의 |
 | sd-check | typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정 | 품질 검사, check, typecheck, lint, 코드 검사, 자동 수정 |
-| sd-tdd | TDD 전체 사이클(RED → GREEN → Refactor → Commit)을 독립 또는 plan 기반으로 실행 | 테스트, TDD, 테스트 작성, 유닛 테스트 |
+| sd-ref-tdd | TDD 방법론 가이드. 직접 호출하여 TDD를 수행하거나 다른 스킬이 참조 | 테스트, TDD, 테스트 작성, 유닛 테스트 |
 | sd-review | spec/plan 문서와 구현을 비교하여 완성도를 검증 | 리뷰, review, 검증, 충족, 완성도, 구현 검토 |
 | sd-simplify | 외부 동작을 유지하면서 코드의 내부 구조를 개선 | 리팩터링, simplify, 중복 제거, 구조 개선 |
 | sd-commit | 변경사항을 분석하여 [type] scope 형식의 커밋 메시지를 생성하고 커밋 | 커밋, commit, 변경사항 저장, git commit |
@@ -117,7 +117,7 @@ argument-hint: "<요청 내용> | --help"
 ```
 /sd-check ─────────> typecheck + lint(fix) + test 순차 실행 + 자동 수정
 
-/sd-tdd ───────────> TDD 사이클 실행 (RED > GREEN > Refactor > Commit)
+/sd-ref-tdd ───────> TDD 방법론 가이드 (직접 호출 또는 다른 스킬이 참조)
 
 /sd-readme ────────> README.md + docs/ 생성
 
@@ -155,7 +155,7 @@ argument-hint: "<요청 내용> | --help"
 | `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .tasks/.../spec.md` |
 | `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .tasks/.../plan.md` |
 | `/sd-check` | 코드 품질 검사 + 자동 수정 | `/sd-check packages/core-common` |
-| `/sd-tdd` | TDD 사이클 실행 | `/sd-tdd packages/core-common/src/utils.ts` |
+| `/sd-ref-tdd` | TDD 방법론 가이드 | `/sd-ref-tdd packages/core-common/src/utils.ts` |
 | `/sd-readme` | README.md 생성 | `/sd-readme packages/core-common` |
 | `/sd-init` | CLAUDE.md 생성 | `/sd-init` |
 | `/sd-review` | 구현 완성도 검증 | `/sd-review .tasks/login` |
