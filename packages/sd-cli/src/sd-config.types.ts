@@ -214,13 +214,27 @@ export interface SdServerPackageConfig {
 }
 
 /**
- * Scripts-only package configuration (excluded from watch/typecheck)
+ * Watch hook configuration for scripts packages
+ */
+export interface SdWatchHookConfig {
+  /** glob patterns to watch (relative to package directory) */
+  target: string[];
+  /** command to execute on change */
+  cmd: string;
+  /** command arguments */
+  args?: string[];
+}
+
+/**
+ * Scripts-only package configuration (excluded from watch/typecheck unless watch hook is configured)
  */
 export interface SdScriptsPackageConfig {
   /** build target */
   target: "scripts";
   /** publish configuration */
   publish?: SdPublishConfig;
+  /** watch hook configuration (when set, package is included in watch mode) */
+  watch?: SdWatchHookConfig;
 }
 
 /**

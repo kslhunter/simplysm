@@ -14,7 +14,15 @@ const config: SdConfigFn = () => ({
     "excel": { target: "neutral", publish: { type: "npm" } },
     "orm-common": { target: "neutral", publish: { type: "npm" } },
     "orm-node": { target: "node", publish: { type: "npm" } },
-    "sd-claude": { target: "scripts", publish: { type: "npm" } },
+    "sd-claude": {
+      target: "scripts",
+      publish: { type: "npm" },
+      watch: {
+        target: ["../../.claude/rules/sd-*", "../../.claude/skills/sd-*", "../../.claude/hooks/sd-*"],
+        cmd: "node",
+        args: ["scripts/sync-claude-assets.mjs"],
+      },
+    },
     "service-client": { target: "neutral", publish: { type: "npm" } },
     "service-common": { target: "neutral", publish: { type: "npm" } },
     "service-server": { target: "node", publish: { type: "npm" } },

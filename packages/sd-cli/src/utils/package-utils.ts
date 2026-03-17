@@ -107,8 +107,8 @@ export function filterPackagesByTargets(
   for (const [name, config] of Object.entries(packages)) {
     if (config == null) continue;
 
-    // Exclude scripts target from watch/dev targets
-    if (config.target === "scripts") continue;
+    // Exclude scripts target unless watch hook is configured
+    if (config.target === "scripts" && config.watch == null) continue;
 
     // If targets is empty, include all packages
     if (targets.length === 0) {

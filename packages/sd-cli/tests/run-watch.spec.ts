@@ -38,4 +38,39 @@ describe("filterPackagesByTargets", () => {
     expect(result["core-node"]).toEqual({ target: "node" });
   });
 
+  it("includes scripts target when watch option is present", () => {
+    const packagesWithWatch: Record<string, SdPackageConfig | undefined> = {
+      ...mockPackages,
+      "claude-with-watch": {
+        target: "scripts",
+        watch: {
+          target: ["../../.claude/rules/sd-*"],
+          cmd: "node",
+          args: ["scripts/sync.mjs"],
+        },
+      },
+    };
+    const result = filterPackagesByTargets(packagesWithWatch, []);
+
+    expect(result["claude-with-watch"]).toBeDefined();
+    expect(result["claude"]).toBeUndefined(); // scripts without watch still excluded
+  });
+
+  it("includes scripts+watch target when specified in targets", () => {
+    const packagesWithWatch: Record<string, SdPackageConfig | undefined> = {
+      ...mockPackages,
+      "claude-with-watch": {
+        target: "scripts",
+        watch: {
+          target: ["../../.claude/rules/sd-*"],
+          cmd: "node",
+        },
+      },
+    };
+    const result = filterPackagesByTargets(packagesWithWatch, ["claude-with-watch"]);
+
+    expect(Object.keys(result)).toHaveLength(1);
+    expect(result["claude-with-watch"]).toBeDefined();
+  });
+
 });
