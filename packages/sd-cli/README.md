@@ -226,6 +226,81 @@ interface SdConfigParams {
 | `server` | 서버 앱 (Fastify) | esbuild (bundle: true, minify) |
 | `scripts` | 스크립트 전용 (빌드/watch 제외) | 없음 |
 
+### 라이브러리 패키지 옵션 (node/browser/neutral)
+
+```typescript
+"ui-lib": {
+  target: "browser",
+  publish: { type: "npm" },
+  copySrc: ["**/*.css"],  // src/에서 dist/로 복사할 파일 glob 패턴
+}
+```
+
+### 클라이언트 패키지 옵션 (client)
+
+```typescript
+"my-client": {
+  target: "client",
+  server: "my-server",            // 서버 패키지명 (프록시 연결) 또는 Vite 포트 번호
+  env: { API_URL: "https://..." },  // process.env 치환 값
+  configs: { theme: "dark" },     // 런타임 설정 (dist/.config.json)
+  publish: { type: "sftp", host: "example.com", path: "/app/www", user: "deploy" },
+  capacitor: {                    // 모바일 앱 (Capacitor)
+    appId: "com.example.app",
+    appName: "MyApp",
+    icon: "resources/icon.png",
+    plugins: { SplashScreen: { launchAutoHide: false } },
+    platform: {
+      android: {
+        sdkVersion: 34,
+        bundle: true,             // true: AAB, false: APK
+        sign: { keystore: "release.keystore", storePassword: "...", alias: "key", password: "..." },
+        permissions: [{ name: "CAMERA" }],
+        intentFilters: [{ action: "android.intent.action.VIEW" }],
+      },
+    },
+  },
+  electron: {                     // 데스크톱 앱 (Electron)
+    appId: "com.example.myapp",
+    portable: false,              // true: portable .exe, false: NSIS 설치
+    installerIcon: "resources/icon.ico",
+    reinstallDependencies: ["better-sqlite3"],
+    env: { NODE_ENV: "production" },
+  },
+}
+```
+
+### 서버 패키지 옵션 (server)
+
+```typescript
+"my-server": {
+  target: "server",
+  env: { DB_HOST: "localhost" },  // process.env 치환 값
+  configs: { port: 8080 },       // 런타임 설정 (dist/.config.json)
+  externals: ["better-sqlite3"],  // esbuild 번들에서 제외할 모듈
+  pm2: {                          // PM2 설정 (dist/pm2.config.cjs 생성)
+    name: "my-app",
+    ignoreWatchPaths: ["logs/**"],
+  },
+  packageManager: "volta",        // "volta" | "mise" - 패키지 매니저 설정 파일 생성
+  publish: { type: "sftp", host: "example.com", path: "/srv/pm2/my-app", user: "deploy" },
+}
+```
+
+### 스크립트 패키지 옵션 (scripts)
+
+```typescript
+"my-scripts": {
+  target: "scripts",
+  publish: { type: "npm" },
+  watch: {                        // 파일 변경 감시 hook
+    target: ["../../src/**/*.ts"],  // 감시할 glob 패턴 (패키지 기준 상대 경로)
+    cmd: "node",
+    args: ["scripts/generate.mjs"],
+  },
+}
+```
+
 ### 배포 설정 (publish)
 
 각 패키지의 `publish` 필드로 배포 방식을 지정한다.
