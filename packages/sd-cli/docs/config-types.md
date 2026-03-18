@@ -134,6 +134,43 @@ interface SdServerPackageConfig {
 interface SdScriptsPackageConfig {
   target: "scripts";
   publish?: SdPublishConfig;
+  watch?: SdWatchHookConfig;
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `target` | `"scripts"` | 고정값 |
+| `publish` | `SdPublishConfig` | 배포 설정 |
+| `watch` | `SdWatchHookConfig` | 파일 변경 감시 및 커맨드 실행 설정 |
+
+### SdWatchHookConfig
+
+`scripts` 타겟 패키지에서 특정 파일 변경 시 커맨드를 실행하는 hook 설정.
+
+```typescript
+interface SdWatchHookConfig {
+  target: string[];
+  cmd: string;
+  args?: string[];
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `target` | `string[]` | 감시할 glob 패턴 배열 (패키지 디렉토리 기준 상대 경로) |
+| `cmd` | `string` | 파일 변경 시 실행할 명령어 |
+| `args` | `string[]` | 명령어 인자 |
+
+```typescript
+// 예시
+"sd-claude": {
+  target: "scripts",
+  watch: {
+    target: ["../../.claude/**/sd-*", "../../.claude/**/sd-*/**"],
+    cmd: "node",
+    args: ["scripts/sync-claude-assets.mjs"],
+  },
 }
 ```
 
