@@ -3,6 +3,7 @@ name: sd-apk-decompile
 description: |
   APK 파일을 소스코드 분석이 가능한 수준으로 디컴파일하는 스킬.
   /sd-apk-decompile을 입력하거나, "APK 디컴파일", "APK 분석", "APK 소스 추출" 등을 요청할 때 사용한다.
+model: haiku
 ---
 
 # sd-apk-decompile: APK 디컴파일

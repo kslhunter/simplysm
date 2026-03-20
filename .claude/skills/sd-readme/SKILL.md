@@ -3,6 +3,7 @@ name: sd-readme
 description: |
   monorepo 각 패키지의 public API를 분석하여 LLM이 읽을 수 있는 README.md와 docs/ 문서를 자동 생성하는 스킬.
   /sd-readme를 입력하거나, "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
+model: sonnet
 ---
 
 # sd-readme: 패키지 README/docs 생성

@@ -71,7 +71,7 @@ Slice 목록과 각 Slice에 매핑된 Scenario를 사용자에게 표시한다.
 
 ### 각 Scenario의 진행
 
-Scenario를 vitest로 검증할 수 있으면 Double Loop TDD로, 불가능하면 `.spec.md` 수동 테스트 문서로 처리한다. 판단은 Acceptance Test를 작성하려는 시점에 한다 — 실제 하드웨어에서만 동작을 확인할 수 있어 mock이 무의미한 경우(USB, NFC, Capacitor 플러그인 등)에만 `.spec.md`로 전환한다.
+Scenario를 vitest로 검증할 수 있으면 Double Loop TDD로, 불가능하면 `.spec.md` 수동 테스트 문서로 처리한다. 판단은 Acceptance Test를 작성하려는 시점에 한다 — 실제 하드웨어에서만 동작을 확인할 수 있어 mock이 무의미한 경우(USB, NFC, 하드웨어 버튼 등)에만 `.spec.md`로 전환한다.
 
 #### vitest로 검증 가능한 Scenario: Double Loop TDD
 

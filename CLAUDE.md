@@ -27,8 +27,13 @@ TypeScript 5.9, SolidJS 1.9, Vite 7, Vitest 4, ESLint 9, Prettier 3, Tailwind CS
 | `storage` | node | 스토리지 유틸리티 |
 | `sd-cli` | node | 모노레포 빌드/개발 CLI |
 | `lint` | node | ESLint 플러그인/설정 |
-| `sd-claude` | scripts | Claude Code 스킬/에셋 |
+| `sd-claude` | scripts | Claude Code 스킬/에셋 배포 패키지 |
 | `capacitor-plugin-*` | browser | Capacitor 네이티브 플러그인 (4개) |
+
+> **WARNING — `packages/sd-claude/claude/` 는 읽지 마라.**
+> 이 폴더는 npm publish 시 `.claude/`에서 복사되는 배포용 스냅샷이다. 구버전이며 정본이 아니다.
+> 스킬·룰·에셋의 정본(source of truth)은 항상 **`.claude/`** 폴더이다.
+> 스킬 내용을 확인할 때 `packages/sd-claude/claude/`를 절대 참조하지 않는다.
 
 ## 명령어
 
