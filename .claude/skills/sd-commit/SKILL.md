@@ -14,7 +14,7 @@ description: |
 ## 프로세스
 
 ```
-Step 1: 전체 스테이징 → Step 2: Diff 분석 → Step 3: 메시지 작성 → Step 4: 확인 및 커밋
+Step 1: 전체 스테이징 → Step 2: Diff 분석 → Step 3: 메시지 작성 → Step 4: 커밋
 ```
 
 ## Step 1: 전체 변경사항 스테이징
@@ -82,13 +82,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 6. **Co-Authored-By**: 항상 빈 줄로 구분하여 마지막에 추가한다
 7. **단일 타입 단축**: 모든 변경이 같은 타입이고 같은 scope인 경우, 제목에 타입을 직접 포함할 수 있다. 예: `[feat] solid: 버튼 컴포넌트 추가`
 
-## Step 4: 확인 및 커밋
-
-1. 완성된 커밋 메시지를 사용자에게 표시한다
-2. `AskUserQuestion`으로 사용자 확인을 요청한다 (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다):
-   - "Commit" — 표시된 메시지로 진행
-   - "Edit" — 사용자가 메시지를 수정
-3. 확인 후, HEREDOC을 사용하여 커밋을 생성한다:
+## Step 4: 커밋
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -97,22 +91,4 @@ EOF
 )"
 ```
 
-4. 커밋 후 `git status`를 실행하여 성공을 확인한다
-5. 커밋 해시와 요약을 사용자에게 표시한다
-
-## 출력 예시
-
-`packages/solid/src/Button.ts` (신규 파일), `packages/solid/src/Input.ts` (신규 파일), `packages/core-common/src/StringUtil.ts` (버그 수정)에 변경이 있는 경우:
-
-```
-solid, core-common 변경
-
-[feat] solid
-- Button 컴포넌트 추가
-- Input 컴포넌트 추가
-
-[fix] core-common
-- StringUtil 타입 에러 수정
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
+커밋 후 커밋된 메시지를 그대로 출력한다.
