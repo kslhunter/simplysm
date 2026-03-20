@@ -188,3 +188,4 @@ function add(a: number, b: number): number {
 - [ ] `any` 타입으로 타입 에러를 우회하지 않았다
 - [ ] 테스트를 `.skip`하거나 삭제하지 않았다
 - [ ] `try-catch`로 런타임 에러를 무시하지 않았다
+- [ ] check 스크립트(`scripts/`, 설정 파일) 자체를 수정하지 않았다

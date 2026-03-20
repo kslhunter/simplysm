@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # sd-tdd: TDD 개발 (4단계)
 
-Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 코드를 구현한다. 외부 루프에서 Gherkin Scenario를 Acceptance Test로, 내부 루프에서 Unit TDD(Red-Green-Refactor)를 수행한다.
+Feature 문서(요구명세 + 구현계획)를 기반으로 코드를 구현한다. 각 Scenario를 `[Isolated]`(vitest로 검증 가능)과 `[E2E]`(실제 브라우저+서버 필요)로 분류하여, `[Isolated]`는 Double Loop TDD로, `[E2E]`는 E2E 시나리오 .md + playwright-cli로 검증한다.
 
 4단계 개발 프로세스:
 1. 분해 (`/sd-wbs`)
@@ -17,18 +17,24 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 ## 입력과 산출물
 
 - **입력:** Feature 문서 (요구명세 + 구현계획) + 코드베이스
-- **산출물:** 테스트된 코드 + WBS 체크박스 갱신 (`[x]`)
+- **산출물:** 테스트된 코드 + E2E 시나리오 .md (`[E2E]` 해당 시) + WBS 체크박스 갱신 (`[x]`)
 
 ## 프로세스 흐름
 
 ```
 1. Feature 문서 읽기 + 코드베이스 탐색
-2. Slice 순서대로 Double Loop TDD 진행
-   → 각 Scenario: Acceptance Test 작성 (Red)
-     → 내부 루프: Unit Test Red → Green → Refactor (반복)
-     → Acceptance Test 통과 (Green)
+2. 각 Scenario를 [Isolated] / [E2E]로 분류 → 사용자 확인
+3. Slice 순서대로 진행
+   → [Isolated] Scenario: Double Loop TDD
+     → Acceptance Test 작성 (Red)
+       → 내부 루프: Unit Test Red → Green → Refactor (반복)
+       → Acceptance Test 통과 (Green)
+   → [E2E] Scenario: E2E 시나리오
+     → e2e/ 에 시나리오 .md 작성
+     → 사용자에게 서버 시작 + URL 요청
+     → playwright-cli로 검증
    → Slice 완료
-3. 모든 Slice 완료 → WBS 체크박스 갱신
+4. 모든 Slice 완료 → WBS 체크박스 갱신
 ```
 
 ## Step 1: Feature 문서 읽기 + 코드베이스 탐색
@@ -44,6 +50,8 @@ Feature 문서에는 다음 두 섹션이 **전제 조건**으로 필요하다:
 - `## 요구명세` — Gherkin Scenarios
 - `## 구현계획` — Tech Design Doc + Vertical Slices
 
+Feature 문서에 `## 참조 자료` 섹션이 있으면 함께 읽는다. wbs.md 링크가 있으면 해당 wbs.md의 참조 자료 섹션을 Read 도구로 읽는다. 참조 자료의 구체적 정보(업무 규칙, 데이터 형식, 기술 제약 등)를 구현에 반영한다.
+
 둘 중 하나라도 섹션 자체가 없으면 **즉시 중단한다 — 이것은 우회할 수 없는 하드 스톱이다.** 누락 사실을 사용자에게 알리고 이전 단계(`/sd-spec` 또는 `/sd-plan`) 실행을 안내한 뒤 종료한다. 구현계획을 자동 생성하거나 "간단히 만들고 진행"하는 것은 금지다 — 구현계획은 반드시 `/sd-plan` 단계에서 사용자 확인을 거쳐 만들어야 한다. 섹션이 통째로 없는 것은 "역방향 피드백"의 대상이 아니다 — 이전 단계에서 만들어야 할 산출물이기 때문이다.
 
 ### 코드베이스 탐색
@@ -55,17 +63,35 @@ Feature 문서에는 다음 두 섹션이 **전제 조건**으로 필요하다:
 - 기존 테스트 구조와 컨벤션 (테스트 프레임워크, 파일 위치, 네이밍 패턴)
 - 관련 의존성과 설정
 
-### 현재 상태 확인
+### 시나리오 분류
 
-Slice 목록과 각 Slice에 매핑된 Scenario를 사용자에게 표시한다. 이미 구현된 부분이 있으면 현재 진행 상태를 파악하여 알린다.
+기본적으로 모든 Scenario를 vitest + mock/stub으로 테스트한다 (`[Isolated]`). vitest로 충분히 검증할 수 없는 Scenario만 E2E로 분류한다 (`[E2E]`).
 
-## Step 2: Double Loop TDD
+- **`[Isolated]`** (기본) — vitest + mock/stub으로 테스트 가능하다. 서버 통신이 포함되어도 mock으로 대체할 수 있으면 이 분류이다. 대부분의 Scenario가 여기에 해당한다.
+- **`[E2E]`** (예외) — vitest로 검증이 불가능하여 실제 브라우저 + 실행 중인 서버가 필요하다. 다음과 같은 경우에만 해당한다:
+  - 여러 페이지에 걸친 실제 브라우저 네비게이션 흐름
+  - CSS/레이아웃 등 시각적 렌더링 검증
+  - OAuth 리다이렉트, 파일 다운로드 등 브라우저 고유 동작
+  - 전체 시스템을 관통하는 통합 검증이 mock으로는 부족한 경우
+
+분류 결과를 Slice 목록과 함께 사용자에게 표시하고 확인받는다:
+
+```
+Slice 1: 업무 CRUD 기본
+  - Scenario: 제목 입력하여 업무 생성 성공 → [Isolated] (서버 API를 mock)
+  - Scenario: 주문 완료 후 PDF 다운로드 → [E2E] (브라우저 다운로드 동작)
+→ 이 분류가 맞나요?
+```
+
+이미 구현된 부분이 있으면 현재 진행 상태를 파악하여 알린다.
+
+## Step 2: Scenario별 테스트 진행
 
 ### 외부 루프: Slice → Scenario
 
-구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리한다.
+구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리하되, 분류에 따라 다른 방식을 적용한다.
 
-### 각 Scenario의 진행
+### [Isolated] Scenario: Double Loop TDD
 
 **1. Acceptance Test 작성 (Red)**
 
@@ -88,10 +114,35 @@ Acceptance Test를 통과시키기 위해 **반드시 Unit Test를 별도로 작
 
 Acceptance Test가 통과하면 다음 Scenario로 진행한다.
 
+### [E2E] Scenario: E2E 시나리오
+
+**1. E2E 시나리오 .md 작성**
+
+Gherkin Scenario의 Given/When/Then을 자연어 E2E 시나리오로 변환하여 프로젝트 루트의 `e2e/` 디렉토리에 .md 파일로 작성한다.
+
+- 파일 경로: `e2e/{feature-id}-{scenario-name}.md`
+- 사용자 행동과 기대 결과를 구체적으로 기술한다
+- 검증할 UI 요소, 입력값, 예상 응답 등을 포함한다
+
+**2. 구현 코드 작성**
+
+시나리오를 통과시키기 위해 필요한 서버/클라이언트 코드를 구현한다.
+
+**3. 서버 URL 요청**
+
+사용자에게 서버를 시작하고 접속 URL을 알려달라고 요청한다.
+
+- LLM이 직접 dev 서버를 시작하지 않는다 (`pnpm dev`, `npm start` 등 실행 금지)
+- 사용자가 URL을 제공할 때까지 playwright-cli 실행을 보류한다
+
+**4. playwright-cli로 검증**
+
+사용자가 URL을 제공하면, E2E 시나리오 .md를 읽고 playwright-cli로 시나리오를 실행하여 검증한다. 검증 실패 시 구현 코드를 수정하고 다시 검증한다. 통과하면 다음 Scenario로 진행한다.
+
 ### Slice 완료
 
 Slice의 모든 Scenario가 통과하면:
-1. 전체 테스트 스위트를 실행하여 회귀가 없는지 확인한다
+1. `[Isolated]` Scenario가 있었다면 전체 테스트 스위트를 실행하여 회귀가 없는지 확인한다
 2. Feature 문서와 같은 디렉토리의 `progress.md`를 갱신한다 (current_slice, attempt_count 등)
 3. 다음 Slice로 진행한다
 
@@ -119,9 +170,10 @@ TDD 진행 중 **이미 존재하는** 요구명세나 구현계획의 내용에
 
 ## 핵심 원칙
 
-1. **테스트 먼저** — 구현 코드보다 테스트를 항상 먼저 작성한다. 테스트 없이 코드를 작성하지 않는다.
+1. **테스트 먼저** — `[Isolated]`는 구현 코드보다 테스트를 항상 먼저 작성한다. `[E2E]`는 E2E 시나리오 .md를 먼저 작성한다.
 2. **최소 구현** — 테스트를 통과시키는 최소한의 코드만 작성한다. 미래 요구사항을 미리 구현하지 않는다 (YAGNI).
 3. **작은 단계** — 한 번에 하나의 Unit Test만 추가한다. 큰 도약을 하지 않는다.
 4. **리팩토링은 Green일 때** — 모든 테스트가 통과하는 상태에서만 리팩토링한다.
 5. **기존 컨벤션 준수** — 프로젝트의 기존 테스트 패턴, 파일 구조, 코딩 스타일을 따른다.
 6. **코드가 source of truth** — 문서에 구현 상세를 중복 기록하지 않는다.
+7. **서버는 사용자가 관리** — `[E2E]` 시나리오에서 LLM이 직접 dev 서버를 시작하지 않는다. 사용자에게 서버 시작과 URL을 요청한다.

@@ -62,7 +62,7 @@
   - [ ] eval workspace에 `_history/` 디렉토리를 생성했다
   - [ ] Eval 실행 후 FAIL이 발생했을 때 프롬프트 개선 후보(candidate)를 2개 이상 출력에 포함했다
   - [ ] 각 candidate에 변경 사항 설명이 출력에 포함되었다
-  - [ ] 사용자에게 후보 선택을 요청했다 (AskUserQuestion 호출 시도)
+  - [ ] 사용자에게 후보 선택을 요청했다 (AskUserQuestion 호출 시도 또는 텍스트로 질문 출력)
 
 ## 안티패턴 Eval
 

@@ -37,6 +37,7 @@ Feature 정보를 다음 우선순위로 결정한다:
 
 1. Feature Breakdown에서 미완료(`[ ]`) Feature 목록을 사용자에게 보여준다
 2. 사용자가 Feature를 선택하면, 해당 Feature의 불릿 항목(범위 힌트)을 seed로 사용한다
+3. wbs.md에 `## 참조 자료` 섹션이 있으면 해당 내용을 읽고 Metacognitive Preamble과 Example Mapping의 추가 seed로 활용한다. 참조 자료에 파일 경로가 기록되어 있으면 해당 파일을 Read 도구로 읽는다
 
 ### 대화 맥락이나 자연어 설명으로 Feature를 결정한 경우
 
@@ -160,62 +161,90 @@ Feature: {Feature번호} {Feature이름}
 
 ### 문서 구조
 
+**wbs.md에서 Feature를 선택한 경우:**
+
 ```markdown
 # Feature {번호} {이름}
+
+## 참조 자료
+
+- [wbs.md]({wbs.md 상대 경로})
 
 ## 요구명세
 
 {Gherkin Scenarios}
 ```
 
-`## 구현계획` 섹션은 3단계(sd-plan)에서 추가된다. 이 스킬에서는 `## 요구명세` 섹션만 작성한다.
+wbs.md에 이미 참조 자료가 있으므로, Feature 문서에는 wbs.md 링크만 기록한다.
 
-## 산출물 예시
+**wbs.md 없이 독립 실행한 경우 (자연어 입력, 대화 맥락):**
 
 ```markdown
-# Feature 1.1 업무 생성/편집
+# Feature {번호} {이름}
+
+## 참조 자료
+
+{대화에서 수집한 구체적 정보 — sd-wbs의 참조 자료 작성 규칙과 동일}
 
 ## 요구명세
 
-Feature: 1.1 업무 생성/편집
+{Gherkin Scenarios}
+```
 
-Background:
-Given 로그인한 사용자가 업무 생성 화면에 있다
+다음 단계(`/sd-plan`)가 별도 세션에서 실행되어도 정보가 유실되지 않도록, 대화에서 수집한 구체적 정보를 기록한다. 기록 대상과 작성 원칙은 sd-wbs의 `### 참조 자료` 작성 규칙을 따른다.
 
-Rule: 업무 생성 시 제목은 필수
+`## 구현계획` 섹션은 3단계(sd-plan)에서 추가된다. 이 스킬에서는 `## 요구명세`와 `## 참조 자료` 섹션만 작성한다.
 
-    Scenario: 제목을 입력하여 업무 생성 성공
-      Given 제목에 "신규 기능 개발"을 입력한다
-      And 설명에 "로그인 기능 구현"을 입력한다
-      When 저장 버튼을 클릭한다
-      Then 업무가 생성된다
-      And 업무 목록에 "신규 기능 개발"이 표시된다
+## 산출물 예시
 
-    Scenario: 제목 없이 업무 생성 실패
-      Given 제목을 비워둔다
-      When 저장 버튼을 클릭한다
-      Then "제목을 입력해주세요" 에러가 표시된다
-      And 업무가 생성되지 않는다
+**wbs.md에서 Feature를 선택한 경우:**
 
-Rule: 담당자를 지정할 수 있다
+```markdown
+# Feature 1.1 입고 처리
 
-    Scenario: 담당자 1명 지정
-      Given 업무 생성 화면에서 제목을 입력한다
-      When 담당자에 "홍길동"을 선택한다
-      And 저장 버튼을 클릭한다
-      Then 업무의 담당자가 "홍길동"으로 설정된다
+## 참조 자료
 
-    Scenario: 담당자 여러 명 지정
-      Given 업무 생성 화면에서 제목을 입력한다
-      When 담당자에 "홍길동", "김철수"를 선택한다
-      And 저장 버튼을 클릭한다
-      Then 업무의 담당자가 "홍길동", "김철수"로 설정된다
+- [wbs.md](./wbs.md)
 
-Rule: 첨부파일을 추가할 수 있다
+## 요구명세
 
-    Scenario: 첨부파일 1개 추가
-      Given 업무 생성 화면에서 제목을 입력한다
-      When "설계서.pdf" 파일을 첨부한다
-      And 저장 버튼을 클릭한다
-      Then 업무에 "설계서.pdf"가 첨부된다
+Feature: 1.1 입고 처리
+
+  Background:
+    Given 로그인한 창고 담당자가 입고 처리 화면에 있다
+
+  Rule: 바코드 스캔으로 입고한다
+    (Scenarios 생략)
+
+  Rule: 수량 불일치 시 입고 보류로 전환한다
+    (Scenarios 생략)
+```
+
+**wbs.md 없이 독립 실행한 경우:**
+
+```markdown
+# Feature 1.1 사용자 로그인
+
+## 참조 자료
+
+### 인증 방식
+- 이메일/비밀번호 기반 로그인
+- 소셜 로그인: Google, Kakao 지원
+
+### 보안 규칙
+- 로그인 5회 실패 시 계정 잠금
+- 비밀번호 찾기 기능 필요
+
+## 요구명세
+
+Feature: 1.1 사용자 로그인
+
+  Background:
+    Given 사용자가 로그인 화면에 있다
+
+  Rule: 이메일/비밀번호로 로그인한다
+    (Scenarios 생략)
+
+  Rule: 5회 실패 시 계정이 잠긴다
+    (Scenarios 생략)
 ```

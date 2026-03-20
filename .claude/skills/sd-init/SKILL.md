@@ -132,7 +132,7 @@ UI:       solid (SolidJS + Tailwind)
 서비스:   service-server (Fastify) / service-client / service-common
 ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 코어:     core-common (중립) / core-browser / core-node
-도구:     sd-cli, lint, excel, storage, sd-claude, mcp-playwright
+도구:     sd-cli, lint, excel, storage, sd-claude
 ```
 
 ## 통합 테스트
