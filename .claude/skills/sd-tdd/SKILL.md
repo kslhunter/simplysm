@@ -17,16 +17,18 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 ## 입력과 산출물
 
 - **입력:** Feature 문서 (요구명세 + 구현계획) + 코드베이스
-- **산출물:** 테스트된 코드 + WBS 체크박스 갱신 (`[x]`)
+- **산출물:** 테스트된 코드 + 수동 테스트 문서 (`.spec.md`, 해당 시) + WBS 체크박스 갱신 (`[x]`)
 
 ## 프로세스 흐름
 
 ```
 1. Feature 문서 읽기 + 코드베이스 탐색
 2. Slice 순서대로 Double Loop TDD 진행
-   → 각 Scenario: Acceptance Test 작성 (Red)
-     → 내부 루프: Unit Test Red → Green → Refactor (반복)
-     → Acceptance Test 통과 (Green)
+   → 각 Scenario:
+     vitest로 검증 가능 → Acceptance Test 작성 (Red)
+       → 내부 루프: Unit Test Red → Green → Refactor (반복)
+       → Acceptance Test 통과 (Green)
+     vitest로 검증 불가 → .spec.md 수동 테스트 문서 작성
    → Slice 완료
 3. 모든 Slice 완료 → WBS 체크박스 갱신
 ```
@@ -69,6 +71,10 @@ Slice 목록과 각 Slice에 매핑된 Scenario를 사용자에게 표시한다.
 
 ### 각 Scenario의 진행
 
+Scenario를 vitest로 검증할 수 있으면 Double Loop TDD로, 불가능하면 `.spec.md` 수동 테스트 문서로 처리한다. 판단은 Acceptance Test를 작성하려는 시점에 한다 — 실제 하드웨어에서만 동작을 확인할 수 있어 mock이 무의미한 경우(USB, NFC, Capacitor 플러그인 등)에만 `.spec.md`로 전환한다.
+
+#### vitest로 검증 가능한 Scenario: Double Loop TDD
+
 **1. Acceptance Test 작성 (Red)**
 
 Gherkin Scenario의 Given/When/Then을 프로젝트 테스트 프레임워크의 Acceptance Test로 변환한다.
@@ -89,6 +95,34 @@ Acceptance Test를 통과시키기 위해 **반드시 Unit Test를 별도로 작
 **3. Acceptance Test 통과 확인 (Green)**
 
 Acceptance Test가 통과하면 다음 Scenario로 진행한다.
+
+#### vitest로 검증 불가능한 Scenario: 수동 테스트 문서 (.spec.md)
+
+실제 하드웨어에서만 동작을 확인할 수 있어 mock이 무의미한 Scenario는 `.spec.md` 파일로 수동 테스트 절차를 문서화한다.
+
+**1. `.spec.md` 작성**
+
+`.spec.ts` 파일과 같은 디렉토리에, 같은 네이밍 규칙으로 `.spec.md` 파일을 생성한다.
+
+형식:
+
+```markdown
+# {Scenario 제목}
+
+## 전제 조건
+- {테스트 전 필요한 상태/환경}
+
+## 수행 절차
+1. {사용자가 수행할 단계}
+2. ...
+
+## 기대 결과
+- {관찰되어야 하는 결과}
+```
+
+**2. 구현 코드 작성**
+
+Scenario를 충족하기 위한 코드를 구현한다. 자동 테스트는 없지만, 구현 코드 자체는 작성해야 한다.
 
 ### Slice 완료
 
