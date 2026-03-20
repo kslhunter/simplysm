@@ -54,3 +54,4 @@
 - [ ] Example Mapping 없이 바로 Gherkin을 작성한다
 - [ ] Metacognitive Preamble (VERIFIED/INFERRED/ASSUMED 분류) 없이 바로 Example Mapping을 작성한다
 - [ ] Confidence Tag([VERIFIED], [INFERRED], [ASSUMED]) 없이 Example Mapping을 작성한다
+- [ ] 하나의 AskUserQuestion에 여러 결정사항을 한꺼번에 포함하여 질문한다

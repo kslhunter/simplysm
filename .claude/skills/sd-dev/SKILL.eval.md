@@ -3,10 +3,10 @@
 ## 행동 Eval
 
 ### 시나리오 1: Feature 문서 없음 → Phase 1 (sd-spec) 시작
-- 입력: "/sd-dev .tasks/test-project/1.1-업무생성편집.md"
+- 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
   - `.tasks/test-project/wbs.md` 존재 — Feature Breakdown에 `- [ ] 1.1 업무 생성/편집` 포함
-  - `.tasks/test-project/1.1-업무생성편집.md` 파일은 존재하지 않음
+  - `.tasks/test-project/1.1-task-create-edit.md` 파일은 존재하지 않음
 - 체크리스트:
   - [ ] 지정된 경로의 Feature 문서를 Read 시도했다
   - [ ] 상태 탐지 결과를 출력에 포함했다 ("Feature 문서 없음" 또는 "Phase 1" 언급)
@@ -14,9 +14,9 @@
   - [ ] sd-spec 프로세스를 시작했다 (Metacognitive Preamble 또는 Example Mapping 시도)
 
 ### 시나리오 2: 요구명세만 있는 Feature 문서 → Phase 2 (sd-plan) 시작
-- 입력: "/sd-dev .tasks/test-project/1.1-업무생성편집.md"
+- 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
-  - `.tasks/test-project/1.1-업무생성편집.md` — `## 요구명세` 섹션(Gherkin Scenarios) 포함, `## 구현계획` 없음
+  - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세` 섹션(Gherkin Scenarios) 포함, `## 구현계획` 없음
 - 체크리스트:
   - [ ] Feature 문서를 Read 도구로 읽었다
   - [ ] 상태 탐지 결과를 출력에 포함했다 ("요구명세만 있음" 또는 "Phase 2" 언급)
@@ -24,9 +24,9 @@
   - [ ] sd-plan 프로세스를 시작했다 (코드베이스 탐색 또는 Metacognitive Preamble 시도)
 
 ### 시나리오 3: 요구명세 + 구현계획 있는 Feature 문서 → Phase 3 (sd-tdd) 시작
-- 입력: "/sd-dev .tasks/test-project/1.1-업무생성편집.md"
+- 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
-  - `.tasks/test-project/1.1-업무생성편집.md` — `## 요구명세`(Gherkin)와 `## 구현계획`(Tech Design Doc + Vertical Slices) 모두 포함
+  - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세`(Gherkin)와 `## 구현계획`(Tech Design Doc + Vertical Slices) 모두 포함
 - 체크리스트:
   - [ ] Feature 문서를 Read 도구로 읽었다
   - [ ] 상태 탐지 결과를 출력에 포함했다 ("요구명세 + 구현계획 있음" 또는 "Phase 3" 언급)
@@ -45,9 +45,9 @@
   - [ ] sd-spec 프로세스를 시작했다 (Metacognitive Preamble 또는 Example Mapping 시도)
 
 ### 시나리오 5: progress.md 존재 시 세부 상태 복원
-- 입력: "/sd-dev .tasks/test-project/1.1-업무생성편집.md"
+- 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
-  - `.tasks/test-project/1.1-업무생성편집.md` — `## 요구명세` + `## 구현계획` (Slice 3개) 포함
+  - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세` + `## 구현계획` (Slice 3개) 포함
   - `.tasks/test-project/progress.md` — `phase: tdd`, `current_slice: 2` 기록
   - `src/models/task.ts` — Slice 1에서 생성된 Task 모델 파일 (간단한 interface + 생성 함수)
   - `src/api/tasks.ts` — Slice 1에서 생성된 API 라우트 파일 (POST /api/tasks 핸들러)

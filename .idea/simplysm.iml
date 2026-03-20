@@ -52,7 +52,6 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/lint/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/mcp-playwright/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees" />
-      <excludeFolder url="file://$MODULE_DIR$/.playwright" />
       <excludeFolder url="file://$MODULE_DIR$/.plans" />
       <excludeFolder url="file://$MODULE_DIR$/.tasks" />
     </content>

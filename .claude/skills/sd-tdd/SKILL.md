@@ -38,7 +38,7 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 Feature 문서 경로를 다음 우선순위로 결정한다:
 1. 사용자가 경로를 지정했으면 그것을 사용한다
 2. 대화 맥락에서 경로를 알 수 있으면 그것을 사용한다
-3. 둘 다 없으면 AskUserQuestion으로 사용자에게 물어본다
+3. 둘 다 없으면 AskUserQuestion으로 사용자에게 물어본다 (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다)
 
 Feature 문서에는 다음 두 섹션이 **전제 조건**으로 필요하다:
 - `## 요구명세` — Gherkin Scenarios

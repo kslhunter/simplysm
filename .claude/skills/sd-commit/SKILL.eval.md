@@ -30,7 +30,7 @@
 ### 시나리오 3: 루트 레벨 + 패키지 혼합 변경
 
 - 입력: "/sd-commit"
-- 사전조건: git repo에 package.json (chore 변경), packages/solid/src/App.ts (refactor 변경) 존재
+- 사전조건: git repo에 package.json (chore 변경), packages/solid/src/App.ts (refactor 변경: 변수명 리네이밍 등 동작 변경 없는 코드 정리) 존재
 - 체크리스트:
   - [ ] `git add -A`가 실행되었다
   - [ ] 루트 레벨 파일 변경에 대해 적절한 scope가 부여되었다 (빈 scope가 아님)

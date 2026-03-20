@@ -3,10 +3,10 @@
 ## 행동 Eval
 
 ### 시나리오 1: 기본 Double Loop TDD 흐름
-- 입력: "/sd-tdd .tasks/test-project/1.1-계산기-더하기.md"
+- 입력: "/sd-tdd .tasks/test-project/1.1-calculator-add.md"
 - 사전 조건:
-  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.1-계산기-더하기`가 `[ ]`로 표시
-  - `.tasks/test-project/1.1-계산기-더하기.md` — 요구명세(Gherkin 2개 Scenario) + 구현계획(1 Slice, 2 Scenarios 매핑) 포함
+  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.1-calculator-add`가 `[ ]`로 표시
+  - `.tasks/test-project/1.1-calculator-add.md` — 요구명세(Gherkin 2개 Scenario) + 구현계획(1 Slice, 2 Scenarios 매핑) 포함
   - `package.json` — `"test": "node --test"` 스크립트 포함 (설치 불필요)
   - `src/calculator.js` — 빈 Calculator 클래스 (기존 코드)
 - 체크리스트:
@@ -21,9 +21,9 @@
   - [ ] wbs.md에서 해당 Feature의 체크박스를 `[x]`로 갱신했다 (Edit 도구 사용)
 
 ### 시나리오 2: 구현계획 누락 시 이전 단계 안내
-- 입력: "/sd-tdd .tasks/test-project/1.2-계산기-빼기.md"
+- 입력: "/sd-tdd .tasks/test-project/1.2-calculator-subtract.md"
 - 사전 조건:
-  - `.tasks/test-project/1.2-계산기-빼기.md` — `## 요구명세`(Gherkin)만 있고 `## 구현계획` 없음
+  - `.tasks/test-project/1.2-calculator-subtract.md` — `## 요구명세`(Gherkin)만 있고 `## 구현계획` 없음
 - 체크리스트:
   - [ ] Feature 문서를 Read 도구로 읽었다
   - [ ] 구현계획(`## 구현계획`)이 누락되었음을 출력에서 언급했다

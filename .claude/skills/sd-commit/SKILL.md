@@ -85,7 +85,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Step 4: 확인 및 커밋
 
 1. 완성된 커밋 메시지를 사용자에게 표시한다
-2. `AskUserQuestion`으로 사용자 확인을 요청한다:
+2. `AskUserQuestion`으로 사용자 확인을 요청한다 (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다):
    - "Commit" — 표시된 메시지로 진행
    - "Edit" — 사용자가 메시지를 수정
 3. 확인 후, HEREDOC을 사용하여 커밋을 생성한다:

@@ -161,14 +161,9 @@ console.log(greeting);
 `scripts/typecheck.js`:
 
 ```javascript
-const fs = require("fs");
-const content = fs.readFileSync("src/calc.ts", "utf-8");
-// 항상 실패하는 체크 — 수정이 불가능한 에러를 시뮬레이션
-if (!content.includes("MAGIC_IMPOSSIBLE_STRING")) {
-  console.error("src/calc.ts(1,1): error TS9999: Missing required magic string.");
-  process.exit(1);
-}
-console.log("typecheck passed");
+// 항상 실패 — process.exit(1)로 하드코딩
+console.error("src/calc.ts(1,1): error TS9999: Internal compiler error.");
+process.exit(1);
 ```
 
 `src/calc.ts`:
@@ -181,7 +176,7 @@ function add(a: number, b: number): number {
 
 - 입력: "/sd-check"
 - 체크리스트:
-  - [ ] `.tmp/check/` 경로에 로그 파일을 생성했다 (Write 도구 사용 또는 텍스트에서 로그 경로 언급)
+  - [ ] `/tmp/{yyMMddHHmmss}_check.log` 경로에 로그 파일을 생성했다 (Write 도구 사용 또는 텍스트에서 로그 경로 언급)
   - [ ] 수정 시도 이력을 로그에 기록했다 ("시도" 또는 "attempt" 키워드가 출력에 포함)
   - [ ] 동일 수정 반복 또는 해결 불가를 감지하여 루프를 중단했다 (10회 이전에 에스컬레이션)
   - [ ] 사용자에게 상황을 보고했다

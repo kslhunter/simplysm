@@ -21,7 +21,6 @@
 - 체크리스트:
   - [ ] AskUserQuestion을 사용하지 않고 자율적으로 분석하여 WBS를 생성한다
   - [ ] 도메인 지식을 기반으로 합리적인 Goal, Actor, Impact를 자율 도출한다
-  - [ ] 자율적으로 결정한 사항을 `## 가정 사항` 섹션에 명시한다
   - [ ] `.tasks/` 하위에 `{yyMMddHHmmss}_{topic}/wbs.md` 경로로 파일을 생성한다
   - [ ] Impact Mapping에 Goal, Actor, Impact, Deliverable이 모두 포함된다
   - [ ] Feature Breakdown에서 Feature가 의존성 순서로 정렬된다
@@ -34,4 +33,3 @@
 - [ ] MoSCoW 우선순위(Must/Should/Could/Won't)를 사용한다
 - [ ] Feature에 `[ ]` 체크박스가 없다
 - [ ] 산출물 경로가 `.tasks/{yyMMddHHmmss}_{topic}/wbs.md` 형식이 아니다
-- [ ] 모호한 요구사항에서 자율 결정한 가정을 문서에 명시하지 않는다

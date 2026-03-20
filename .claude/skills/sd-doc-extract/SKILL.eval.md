@@ -3,8 +3,8 @@
 ## 행동 Eval
 
 ### 시나리오 1: EML 재귀 추출 (첨부파일 4개 → 각 첨부 재귀 추출)
-- 사전조건: `.claude/skills/sd-doc-extract/eval_assets/WMS기능개발관련요구사항전달및일정확인요청.eml` 파일을 workspace 루트에 복사
-- 입력: "/sd-doc-extract WMS기능개발관련요구사항전달및일정확인요청.eml"
+- 사전조건: `.claude/skills/sd-doc-extract/eval_assets/wms-feature-request.eml` 파일을 workspace 루트에 복사
+- 입력: "/sd-doc-extract wms-feature-request.eml"
 - 체크리스트:
   - [ ] python .claude/skills/sd-doc-extract/extract.py를 Bash로 실행했는가
   - [ ] 실행 시 eml 파일 경로를 인자로 전달했는가

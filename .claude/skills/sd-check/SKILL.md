@@ -49,7 +49,7 @@ description: |
 2. lint → pnpm run lint
 ```
 
-탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다.
+탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다. (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다)
 
 ## Step 2: 순차 실행 & 수정 루프
 

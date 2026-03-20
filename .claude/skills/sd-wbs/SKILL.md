@@ -22,7 +22,7 @@ disable-model-invocation: true
 
 ### 2. 자율 분석
 
-아래 질문 흐름을 따라 Impact Mapping 트리를 구축한다. 불명확한 점은 반드시 사용자에게 질문한다 — 절대 추측하지 않는다.
+아래 질문 흐름을 따라 Impact Mapping 트리를 구축한다. 불명확한 점은 반드시 사용자에게 질문한다 — 절대 추측하지 않는다. 선택지 제시 시 `.claude/rules/sd-option-scoring.md`의 규칙을 따른다.
 
 **질문 흐름:**
 

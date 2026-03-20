@@ -128,8 +128,8 @@ Gherkin Scenarios를 구현 가능한 단위(Slice)로 분할한다.
 
 **질문 방식:**
 - 각 질문에 대해 맥락과 선택지를 제시한다
-- 각 선택지에 장단점/트레이드오프/점수(10점 만점)를 포함한다
-- `---` 구분선 후 AskUserQuestion으로 질문한다
+- `.claude/rules/sd-option-scoring.md`의 규칙을 따른다
+- ASSUMED 항목에 대한 질문 시 `.claude/rules/sd-option-scoring.md`의 규칙(선택지별 장단점/10점 만점 점수 포함, '수행 안 함' 옵션 포함)에 따라 선택지를 제시한다
 
 **반복:**
 - 답변 반영 후 구현계획 갱신
