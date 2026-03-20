@@ -126,6 +126,11 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     );
 
     // Create Vite configuration and build
+    const isCapacitor = info.config.capacitor != null;
+    const outDir = isCapacitor
+      ? path.join(info.pkgDir, ".capacitor", "www")
+      : undefined;
+
     const viteConfig = createViteConfig({
       pkgDir: info.pkgDir,
       name: info.name,
@@ -133,12 +138,15 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       compilerOptions,
       env: info.config.env,
       mode: "build",
+      outDir,
+      base: isCapacitor ? "./" : undefined,
     });
 
     await viteBuild(viteConfig);
 
     // Generate .config.json
-    const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
+    const confDistDir = outDir ?? path.join(info.pkgDir, "dist");
+    const confDistPath = path.join(confDistDir, ".config.json");
     fs.writeFileSync(confDistPath, JSON.stringify(info.config.configs ?? {}, undefined, 2));
 
     return { success: true };

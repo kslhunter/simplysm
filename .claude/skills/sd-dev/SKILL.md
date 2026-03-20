@@ -1,94 +1,77 @@
 ---
 name: sd-dev
-description: 소규모 코드 변경(버그 수정, 소기능 추가)을 Verify-First로 구현한다. TRIGGER when 명시적 코드 구현 요청.
-argument-hint: <요구사항 설명>
+description: |
+  sd-spec → sd-plan → sd-tdd 3단계를 순차 실행하는 통합 개발 프로세스 오케스트레이터.
+  /sd-dev를 입력하거나, "전체 프로세스 시작", "스펙부터 개발까지", "Feature 개발",
+  "처음부터 끝까지", "요구명세부터 TDD까지" 등을 요청할 때 사용한다.
+  Feature 하나를 선택하여 요구명세 → 구현계획 → TDD 개발을 끊김 없이 진행한다.
+  개별 단계만 실행할 때는 sd-spec/sd-plan/sd-tdd를 각각 사용하고,
+  전체 흐름을 한번에 진행할 때 이 스킬을 사용한다.
 ---
 
-# sd-dev: 경량 구현
+# sd-dev: 통합 개발 프로세스
 
-소규모 작업을 spec.md/plan.md 문서 없이 빠르게 구현하는 스킬이다.
-핵심 원칙 두 가지만 유지한다: **Contract를 먼저 정의**하고, **Verify-First로 구현**한다.
+sd-spec → sd-plan → sd-tdd를 순차 진행하는 오케스트레이터. 각 Phase에서 해당 스킬의 SKILL.md를 Read 도구로 읽고 그대로 따른다.
 
-한국어로 응답한다.
+## Phase 0: 상태 탐지
 
-## 기존 파이프라인과의 관계
+Feature 정보를 다음 우선순위로 결정한다:
 
-이 스킬은 3단계 파이프라인(`/sd-spec` → `/sd-plan` → `/sd-plan-dev`)의 **경량 대안**이다.
-- 소규모 작업 → `/sd-dev` (이 스킬)
-- 복잡한 기능, 다수 파일 변경, 병렬 분해 필요 → `/sd-spec` → `/sd-plan` → `/sd-plan-dev`
+1. **인자 지정:** 사용자가 인자로 경로(Feature 문서 또는 wbs.md)를 지정했으면 그것을 사용한다
+2. **대화 맥락 — 경로:** 대화에서 Feature 문서 경로를 알 수 있으면 그것을 사용한다
+3. **대화 맥락 — Feature 설명:** 대화에서 Feature에 대한 논의(기능 설명, 요구사항 등)가 있으면 Phase 1(sd-spec)을 시작하되, 해당 논의 내용을 sd-spec의 seed로 전달한다. Feature가 무엇인지 다시 물어보지 않는다
+4. **위 모두 없으면:** AskUserQuestion으로 사용자에게 물어본다
 
-병렬 Agent를 사용하지 않는다.
+경로가 결정된 경우, Feature 문서와 `progress.md`를 읽어 현재 상태를 파악하고, 탐지 결과를 사용자에게 보여준 뒤 확인받는다.
 
-## 입력
+### Feature 문서 기반 Phase 탐지
 
-`$ARGUMENTS`로 자유 텍스트 요구사항을 받는다.
+| 상태 | 시작 Phase | 읽을 SKILL.md |
+|------|-----------|---------------|
+| Feature 문서 없음 | Phase 1 (sd-spec) | `.claude/skills/sd-spec/SKILL.md` |
+| `## 요구명세`만 있음 | Phase 2 (sd-plan) | `.claude/skills/sd-plan/SKILL.md` |
+| `## 요구명세` + `## 구현계획` 있음 | Phase 3 (sd-tdd) | `.claude/skills/sd-tdd/SKILL.md` |
 
-예시:
-- `/sd-dev 로그인 실패 시 에러 메시지 표시`
-- `/sd-dev 날짜 포맷이 YYYY-MM-DD가 아닌 MM/DD/YYYY로 표시되는 버그`
+### progress.md 기반 세부 상태 복원
 
-## 프로세스
+Feature 문서와 같은 디렉토리에 `progress.md`가 있으면, Phase 내 세부 진행 상태를 복원한다. 예를 들어 Phase 3에서 Slice 2까지 완료했다면, Slice 3부터 재개한다.
 
-### 1단계: 요구사항 분석 및 명확화
+## Phase 전환
 
-`$ARGUMENTS`를 분석하여 요구사항을 파악한다.
+각 Phase 완료 시 즉시 다음 Phase로 진행한다. 사용자에게 진행 여부를 묻지 않는다.
 
-불명확한 부분이 있으면 AskUserQuestion으로 명확화한다. 비즈니스 관점과 기술 관점 모두 질문한다:
-- 비즈니스: "이 기능에서 사용자가 X를 하면 어떤 결과를 기대하시나요?"
-- 기술: "기존 AuthService를 확장할까요, 새로 만들까요?"
+| 전환 | 조건 | 동작 |
+|------|------|------|
+| Phase 1 → 2 | `## 요구명세` 완성 (Gherkin 포함) | 즉시 Phase 2 시작 |
+| Phase 2 → 3 | `## 구현계획` 완성 | 즉시 Phase 3 시작 |
+| Phase 3 완료 | 모든 Slice 완료 | `wbs.md`가 있으면 해당 Feature를 `[x]`로 갱신 |
 
-요구사항이 충분히 명확하면 질문 없이 바로 2단계로 진행한다.
+**Phase 전환 시마다 `progress.md`를 갱신한다.**
 
-### 2단계: Contract 정의
+## progress.md
 
-프로젝트의 기존 파일을 탐색하여 재사용 가능한 코드, 패턴, 컨벤션을 파악한다.
-기존 프로젝트의 코드 패턴과 컨벤션을 따른다.
+Feature 문서와 같은 디렉토리에 `progress.md`를 생성/갱신한다.
 
-산출물의 구조를 Contract으로 정의한다:
-- **새 기능**: 인터페이스, 타입, 함수 시그니처를 정의
-- **버그 수정**: 수정 대상 함수의 기대 입출력을 정의
+### 갱신 시점
 
-Contract를 사용자에게 제시하고 AskUserQuestion으로 확인을 받는다.
-**사용자 확인 없이 구현을 시작하지 않는다.**
+- Phase 전환 시
+- Slice 완료 시 (Phase 3)
+- 에러 발생 시 (last_error 기록)
 
-### 3단계: Verify-First 구현
+### 형식
 
-#### 테스트 환경 판별
+```markdown
+# Progress
 
-프로젝트의 테스트 환경을 확인한다:
-- package.json의 테스트 관련 의존성 (jest, vitest, mocha 등)
-- 기존 테스트 파일 (*.spec.ts, *.test.ts 등)
+- **phase**: spec | plan | tdd
+- **feature_doc**: {Feature 문서 경로}
+- **current_slice**: {현재 Slice 번호}
+- **current_scenario**: {현재 Scenario 제목}
+- **attempt_count**: {현재 Slice의 시도 횟수}
+- **last_error**: {마지막 에러 메시지}
+- **updated_at**: {갱신 시각}
+```
 
-#### 검증 항목의 원칙
+### Feature 완료 시
 
-검증 항목은 반드시 **동작 검증**이어야 한다. "파일이 존재하는가", "섹션이 있는가", "문구가 있는가" 같은 구조 검증이 아니라, **"이 입력을 주면 이 동작을 하는가"**를 검증한다.
-
-예시:
-- ✗ "SKILL.md에 보안 패스 섹션이 있는가" (구조 검증)
-- ✓ "SQL injection이 있는 코드를 입력하면 Security 이슈가 출력되는가" (동작 검증)
-
-#### Red → Green → Refactor 사이클
-
-Contract에서 정의한 검증 항목을 단순한 것부터 하나씩 구현한다:
-
-1. **Red** — 검증 항목이 실패하는 상태를 확인한다.
-   - 테스트 환경 있음: 실패하는 테스트를 작성하고 실행한다.
-   - 테스트 환경 없음: Bash로 실행하여 실패/미동작을 확인한다.
-
-2. **Green** — 검증을 통과시키는 최소한의 구현을 작성하고, 통과를 확인한다.
-
-3. **Refactor** — 검증이 통과하는 상태에서 다음을 순서대로 확인한다:
-   1. 하드코딩/상수 반환 → 일반화
-   2. 3회 이상 중복 → 공통 요소로 추출 (2회는 허용)
-   3. 긴 메서드/추상화 수준 혼재 → 분리
-   4. 불명확한 이름 → 의도를 드러내는 이름으로 변경
-   5. 주변 죽은 코드, 미사용 import → 정리
-   6. 제거해도 검증이 통과하는 코드 → 삭제
-   7. 검증이 여전히 통과하는지 확인. 실패하면 되돌림.
-
-4. **Repeat** — 다음 검증 항목으로 이동하여 1부터 반복한다.
-
-#### 최종 검증
-
-모든 검증 항목 구현 후, 전체를 한번에 실행하여 통과를 확인한다.
-결과를 사용자에게 보고한다.
+모든 Slice가 완료되면 phase를 `done`으로 갱신한다.

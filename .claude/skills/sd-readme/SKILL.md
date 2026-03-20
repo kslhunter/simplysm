@@ -1,213 +1,206 @@
 ---
 name: sd-readme
-description: LLM 인덱싱용 README.md 및 docs/ 생성. 사용자가 패키지의 README.md 생성이나 갱신을 요청할 때 사용
-argument-hint: "[패키지명... | root]"
+description: |
+  monorepo 각 패키지의 public API를 분석하여 LLM이 읽을 수 있는 README.md와 docs/ 문서를 자동 생성하는 스킬.
+  /sd-readme를 입력하거나, "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
 ---
 
-# sd-readme: LLM 인덱싱용 README 생성
+# sd-readme: 패키지 README/docs 생성
 
-프로젝트의 패키지에 대해 LLM 인덱싱에 최적화된 README.md 및 docs/ 문서를 생성하거나 업데이트한다.
+패키지의 `package.json` → 엔트리포인트 → export 체인을 추적하여 public API만 문서화한다.
+npm 배포 후 사용자 프로젝트에서 LLM(Claude Code 등)이 `node_modules/` 안의 README.md를 읽고 API를 이해할 수 있도록 하는 것이 목적이다.
 
-## 1. 인자 파싱
+## 사용법
 
-`$ARGUMENTS`에서 대상 패키지를 결정한다.
-- `$ARGUMENTS`가 비어있으면 → `"private": true`가 아닌 모든 패키지를 대상으로 한다 + **루트 README도 생성한다**
-- `$ARGUMENTS`가 `root`이면 → **루트 README만** 단독 생성한다 (2~4단계를 건너뛰고 5단계로 바로 진행)
-- `$ARGUMENTS`에 패키지명이 있으면 → 해당 패키지만 대상으로 한다 (공백 구분으로 다수 가능, 루트 README는 생성하지 않음)
-  - 패키지명은 디렉토리명 (예: `core-common`), 또는 `package.json`의 `name` 필드 값 (예: `@simplysm/core-common`) 중 어느 것이든 매칭한다
-  - `root`와 패키지명을 혼합할 수 없다 (`root`는 단독으로만 사용)
+```
+/sd-readme [패키지명]
+/sd-readme              ← npm 배포 대상 전체 패키지
+/sd-readme solid        ← packages/solid 만
+```
 
-## 2. 프로젝트 유형 감지
+## Step 1: 대상 패키지 결정
 
-다음 순서로 monorepo 워크스페이스를 감지한다. 하나라도 매칭되면 monorepo로 판단한다:
+### 1-1. 인자가 있으면
 
-1. **pnpm**: `pnpm-workspace.yaml` 파일이 존재하면 `packages` 필드에서 glob 패턴을 추출하여 패키지 디렉토리를 탐색한다
-2. **yarn/npm**: 루트 `package.json`의 `workspaces` 필드를 확인한다
-   - `workspaces`가 배열인 경우: 직접 glob 패턴 목록으로 사용
-   - `workspaces.packages`가 배열인 경우: yarn berry 형식
-3. **단일 패키지**: 위 어느 것도 해당하지 않으면 현재 프로젝트 자체를 대상으로 한다
+`packages/{인자}/package.json`이 존재하는지 확인한다. 없으면 사용자에게 알린다.
+이 경우 root README.md는 **생성하지 않는다** (개별 패키지만 대상).
 
-## 3. 대상 패키지 목록 수집
+### 1-2. 인자가 없으면
 
-- **monorepo**: 2단계에서 감지한 glob 패턴으로 패키지 디렉토리를 탐색한다
-  - 각 디렉토리의 `package.json`을 확인하여 `"private": true`인 패키지는 제외한다
-  - 1단계에서 특정 패키지명이 지정되었으면 해당 패키지만 필터링한다
-- **단일 패키지**: 현재 프로젝트 루트를 유일한 대상으로 한다 (`"private": true`여도 처리한다 — 단일 패키지는 명시적으로 스킬을 호출한 것이므로)
+`packages/` 하위의 모든 패키지를 탐색하여, `package.json`에 `private: true`가 **없는** 패키지만 대상으로 한다.
+이 경우 패키지별 README.md와 함께 **root README.md도 생성한다**.
 
-## 4. 패키지별 README 생성/업데이트
+### 1-3. 대상 목록 표시
 
-각 패키지에 대해 Agent tool을 호출하여 분석부터 파일 작성까지 독립적으로 수행하게 한다. 대상이 여러 개이면 병렬로 호출한다.
+```
+대상 패키지:
+1. @simplysm/core-common (src 35파일)
+2. @simplysm/solid (src 126파일)
+...
+```
 
-각 subagent에 다음 지침을 전달한다:
+## Step 2: 엔트리포인트 & Export 체인 추적
 
-### 4-1. 소스 코드 분석
+각 패키지에 대해 다음을 수행한다.
 
-패키지를 분석한다:
-- `package.json`: name, description, dependencies, peerDependencies
-- `src/` 디렉토리 구조 및 export된 API
-- 주요 클래스/함수/타입의 시그니처와 용도
+### 2-1. 엔트리포인트 찾기
 
-### 4-2. 생성/업데이트 모드 결정
+`package.json`의 `main` 또는 `exports` 필드에서 엔트리포인트 경로를 읽는다.
+`dist/` 경로이면 `src/`로 변환하고 확장자를 소스 확장자(`.ts`, `.tsx`)로 변환한다.
 
-- `README.md`가 없으면 → **생성 모드**: 처음부터 작성
-- `README.md`가 있으면 → **업데이트 모드**: 기존 내용을 읽고, 현재 코드 상태와 비교하여 변경사항만 반영
+```
+main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
+```
 
-### 4-3. 분리 여부 판단 (LLM 자율)
+엔트리포인트 파일이 존재하지 않으면 사용자에게 알리고 해당 패키지를 건너뛴다.
 
-- README.md 하나로 충분하다고 판단되면 → README.md에 모든 내용을 포함
-- 내용이 많아 분리가 필요하다고 판단되면 → README.md에 개요 + docs/ 링크, `docs/{category}.md`에 상세 내용
+### 2-2. Export 체인 재귀 추적
 
-### 4-4. 파일 작성
+엔트리포인트 파일을 Read 도구로 읽고, 아래 패턴을 추적한다:
 
-**README.md 구조 (작은 패키지, docs/ 불필요 시):**
+| 패턴 | 처리 |
+|------|------|
+| `export * from "./path"` | 해당 파일을 재귀적으로 읽어 모든 export를 수집 |
+| `export * as name from "./path"` | namespace export로 기록하고, 해당 파일의 export를 수집 |
+| `export { A, B } from "./path"` | 명시된 항목만 수집 |
+| `export class/function/type/interface/const/enum` | 직접 export로 기록 |
+| `import "./path"` (side-effect import) | 부수효과 모듈로 기록 (prototype extension 등) |
 
-````markdown
-# {패키지명}
+추적 시 상대 경로를 실제 파일 경로로 변환한다. 확장자가 생략된 경우 `.ts`, `.tsx`, `/index.ts`, `/index.tsx` 순서로 탐색한다.
 
-{패키지 설명 - 목적과 핵심 기능}
+### 2-3. 카테고리 수집
 
-## 설치
+엔트리포인트 파일의 `//#region {name}` ~ `//#endregion` 주석을 파싱하여 카테고리를 수집한다.
+region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카테고리로 사용한다.
 
-{설치 방법}
+### 2-4. API 정보 수집
 
-## 주요 기능
+추적된 각 소스 파일을 Read 도구로 읽어, export된 항목의 정보를 수집한다:
 
-### {기능 카테고리 1}
+- **이름**: export 식별자
+- **종류**: class, function, type, interface, const, enum
+- **시그니처**: 타입 파라미터, 매개변수, 반환 타입
+- **JSDoc**: `/** ... */` 주석이 있으면 설명으로 활용
+- **카테고리**: 2-3에서 수집한 region 또는 디렉토리 기반
 
-{사용법, 주요 API 시그니처, 예제 코드}
+파일 수가 많으면(20개 이상) Agent 도구로 파일 그룹별 병렬 분석을 수행한다.
 
-### {기능 카테고리 2}
+## Step 3: 분량 판단 & 문서 구조 결정
 
-{사용법, 주요 API 시그니처, 예제 코드}
-````
+수집된 API 항목 수와 카테고리 수로 문서 구조를 결정한다.
 
-**README.md 구조 (큰 패키지, docs/ 분리 시):**
+| 조건 | 문서 구조 |
+|------|-----------|
+| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | README.md 하나로 완결 |
+| 위 조건에 해당하지 않음 | README.md (개요+목차) + docs/ (카테고리별 분할) |
 
-````markdown
-# {패키지명}
+판단 결과를 사용자에게 표시한다:
 
-{패키지 설명 - 목적과 핵심 기능}
+```
+@simplysm/solid: 12 카테고리, 195 API 항목 → README.md + docs/ 분할
+@simplysm/storage: 2 카테고리, 8 API 항목 → README.md 단독
+```
 
-## 설치
+## Step 4: 문서 생성
 
-{설치 방법}
+### 4-1. README.md 생성 (모든 패키지)
 
-## 문서
+```markdown
+# @simplysm/{package-name}
 
-| 카테고리 | 설명 |
-|---------|------|
-| [{카테고리1}](docs/{category1}.md) | {간단한 설명} |
-| [{카테고리2}](docs/{category2}.md) | {간단한 설명} |
+{package.json의 description. 없으면 엔트리포인트의 export 구조에서 추론하여 한 줄 요약}
 
-## 빠른 시작
+## Installation
 
-{가장 기본적인 사용 예제}
-````
+\`\`\`bash
+npm install @simplysm/{package-name}
+\`\`\`
 
-**docs/{category}.md 구조:**
+## API Overview
 
-````markdown
-# {카테고리명}
+{README 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
+{docs/ 분할인 경우: 카테고리별 요약 테이블 + docs/ 링크}
 
-## {기능/API 1}
+### {Category Name}
 
-{상세 설명, 시그니처, 사용 예제}
+| API | Type | Description |
+|-----|------|-------------|
+| `FunctionName` | function | {JSDoc 첫 줄 또는 시그니처 기반 요약} |
+| `ClassName` | class | {요약} |
 
-## {기능/API 2}
+{docs/ 분할인 경우 각 카테고리 끝에:}
+→ See [docs/{category}.md](./docs/{category}.md) for details.
 
-{상세 설명, 시그니처, 사용 예제}
-````
+## Usage Examples
 
-**내용 작성 원칙:**
-- LLM이 코드 작성 시 참조할 수 있도록 API 시그니처와 사용 예제를 포함한다
-- 사용법/가이드 + API 레퍼런스 하이브리드 형태로 작성한다
-- 점진적 공개: 개요 → 주요 사용법 → 상세 API 순
+{주요 API 1~3개에 대한 사용 예제. 소스 코드의 JSDoc @example이 있으면 활용.
+없으면 시그니처를 기반으로 최소한의 사용 예제를 작성.}
+```
 
-## 5. 루트 README 생성/업데이트
+### 4-2. docs/*.md 생성 (분할 대상 패키지만)
 
-**실행 조건**: 1단계에서 인자가 비어있거나 `root`인 경우에만 실행한다. 패키지명이 지정된 경우 이 단계를 건너뛴다.
+카테고리별로 `packages/{name}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 kebab-case로 변환한다.
 
-### 5-1. 프로젝트 분석
+```markdown
+# {Category Name}
 
-4단계가 실행된 경우, 각 subagent가 분석한 패키지 정보(name, description, dependencies)를 재사용한다. 추가로 다음을 분석한다:
-- 루트 `package.json` (scripts, devDependencies), `pnpm-workspace.yaml` (또는 `workspaces` 설정), 빌드 설정 파일
-- 각 패키지의 `README.md` (존재하는 경우, 첫 섹션)
+## `ExportName`
 
-### 5-2. 생성/업데이트 모드 결정
+{JSDoc 설명. 없으면 시그니처에서 추론한 한 줄 설명.}
 
-4-2와 동일한 방식으로 판단한다 (대상 경로만 루트 `README.md`로 변경).
+\`\`\`typescript
+{export 시그니처 — 소스에서 직접 복사}
+\`\`\`
 
-### 5-3. 파일 작성
+{class인 경우: public 메서드/프로퍼티 목록}
+{function인 경우: 파라미터 + 반환 타입 설명}
+{type/interface인 경우: 주요 필드 설명}
+```
 
-루트 README는 단일 파일로 작성한다 (docs/ 분리 없음).
+### 4-3. root README.md 생성 (인자 없이 실행한 경우만)
 
-**루트 README.md 구조:**
+모든 패키지 README 생성 후 monorepo 루트에 README.md를 생성한다.
 
-````markdown
-# {프로젝트명}
+```markdown
+# {monorepo 프로젝트명}
 
-{프로젝트 설명 - 목적, 핵심 특징}
+{루트 package.json의 description. 없으면 monorepo의 패키지 구성에서 추론하여 한 줄 요약}
 
-## 설계 철학
+## Packages
 
-{프로젝트의 설계 원칙}
+| Package | Description |
+|---------|-------------|
+| [`@simplysm/{name}`](./packages/{name}) | {package.json의 description} |
+| ... | ... |
+```
 
-## 패키지
+**작성 규칙:**
+- `private: true`인 패키지는 테이블에서 **제외**한다
+- 패키지명은 해당 패키지 디렉토리로의 상대 링크를 포함한다
 
-### {카테고리 1}
+### 4-4. 작성 원칙
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [{패키지명}]({경로}) | {타겟} | {설명} |
+- **영어로 작성**한다
+- **소스에서 읽은 내용만** 문서화한다 — 존재하지 않는 파라미터, 반환 타입, 동작을 만들어내지 않는다
+- **시그니처는 소스에서 직접 복사**한다 — 재작성하거나 단순화하지 않는다
+- **JSDoc이 있으면 그대로 활용**한다 — 임의로 재해석하지 않는다
+- **side-effect import는 별도 섹션**으로 문서화한다 (예: "이 패키지는 Array prototype에 메서드를 추가합니다")
 
-## 시작하기
+## Step 5: 결과 보고
 
-### 사전 요구사항
+```markdown
+## sd-readme 결과
 
-{필요한 환경}
+| 패키지 | 구조 | API 항목 수 | 생성 파일 |
+|--------|------|-------------|-----------|
+| @simplysm/core-common | README + docs/ | 52 | README.md, docs/types.md, docs/utils.md, ... |
+| @simplysm/storage | README 단독 | 8 | README.md |
 
-### 설치
+### 생성된 파일 목록
+- README.md (root — 인자 없이 실행한 경우만)
+- packages/core-common/README.md
+- packages/core-common/docs/types.md
+- ...
+```
 
-{설치 방법}
-
-### 개발
-
-{개발 명령어}
-
-### 빌드
-
-{빌드 명령어}
-
-### 테스트
-
-{테스트 명령어}
-
-## 아키텍처
-
-{의존성 레이어, 빌드 타겟 등}
-
-## 사용 예제
-
-{주요 패키지의 기본 사용 예제}
-
-## 라이선스
-
-{라이선스 정보}
-````
-
-**내용 작성 원칙:**
-- 각 패키지 README.md가 존재하면 해당 설명을 요약하여 패키지 목록 테이블에 반영한다
-- 패키지 README.md가 없으면 `package.json`의 description과 소스 코드 분석으로 설명을 작성한다
-- `package.json`의 scripts, 빌드 설정 파일을 참조하여 명령어 섹션을 작성한다
-- 패키지 간 의존 관계를 분석하여 아키텍처 섹션을 작성한다
-- LLM이 코드 작성 시 monorepo 전체 구조를 빠르게 파악할 수 있도록 작성한다
-
-## 6. 완료 안내
-
-모든 패키지 처리가 완료되면 다음을 출력한다:
-- 생성/업데이트된 파일 목록
-- 각 파일의 생성/업데이트 여부
-
-## 7. 커밋
-
-수정된 파일이 있으면 `/sd-commit`을 실행하여 자동 커밋한다.
+package.json의 `files` 필드에 `docs`가 포함되어 있는지 확인하고, 없으면 추가가 필요하다는 안내를 표시한다.

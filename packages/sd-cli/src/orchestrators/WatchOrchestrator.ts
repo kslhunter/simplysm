@@ -95,7 +95,7 @@ export class WatchOrchestrator {
         this._watchHookPackages.push({
           name,
           dir: path.join(this._cwd, "packages", name),
-          config: config as SdScriptsPackageConfig,
+          config: config,
         });
       }
     }

@@ -1,161 +1,217 @@
 ---
 name: sd-spec
-description: 요구사항을 구조화된 명세서(spec.md)로 작성한다. TRIGGER when 새 기능 요구사항 정리 또는 기존 spec 분해 요청.
-argument-hint: <요구사항 설명 또는 기존 spec.md 경로>
+description: Feature의 요구명세를 작성한다.
+disable-model-invocation: true
 ---
 
-# sd-spec: 요구 명세서 작성
+# sd-spec: 요구명세 (2단계)
 
-이 스킬의 목적은 사용자의 요구사항을 **후속 단계(`/sd-plan`)에서 기계적으로 변환 가능한 형태**로 구조화하는 것이다.
-산출물인 spec.md는 사람이 읽기 위한 문서가 아니라, LLM이 구현 계획서로 변환하기 위한 입력이다.
-따라서 모호함을 최소화하고, 모든 규칙에 구체적 시나리오(Given/When/Then)가 있어야 한다.
+Feature의 범위 힌트를 Example Mapping으로 구조화하고, Question 루프로 모호함을 제거한 뒤, Gherkin Scenario로 변환하여 Feature 문서를 생성한다.
 
-한국어로 응답한다.
-
-## AskUserQuestion 사용 규칙
-
-질문이 여러 개일 때 반드시 **한 번에 하나씩** 순차적으로 진행한다:
-1. 하나의 질문에 대한 설명을 출력한다.
-2. `---`를 출력한다.
-3. 하나의 AskUserQuestion을 호출한다.
-4. 답변을 받은 후, 그 답변을 반영하여 다음 질문으로 넘어간다.
-
-앞선 답변이 이후 질문의 내용이나 필요성에 영향을 줄 수 있으므로, 여러 질문을 하나의 AskUserQuestion에 묶지 않는다.
-
-## 전체 프로세스 맥락
-
-이 스킬은 3단계 파이프라인의 첫 번째이다:
-1. **`/sd-spec`** (이 스킬) → 요구 명세서(spec.md) 작성
-2. `/sd-plan` → spec.md를 기반으로 구현 계획서(plan.md) 작성
-3. `/sd-plan-dev` → plan.md를 기반으로 TDD 구현
-
-이 파이프라인에서 각 단계의 산출물은 다음 단계의 입력으로 직접 사용된다.
-spec.md의 Given/When/Then이 → plan.md의 Test List가 되고 → 실제 테스트 코드가 된다.
-이러한 기계적 변환이 가능하려면 spec.md가 충분히 구체적이고 구조적이어야 한다.
-
-## 모드 판별
-
-`$ARGUMENTS`의 내용으로 모드를 결정한다:
-
-- `$ARGUMENTS`가 기존 파일 경로 (`.tasks/`를 포함하거나 `spec.md`로 끝남) → **분해 모드**
-- 그 외 텍스트 → **새 생성 모드**
-
----
-
-## 새 생성 모드
-
-### 1단계: 디렉토리 생성
-
-Bash로 `date +%y%m%d%H%M%S`를 실행하여 타임스탬프를 얻고, 디렉토리를 생성한다:
+## 프로세스 개요
 
 ```
-.tasks/{yyMMddHHmmss}_{topic}/
+Feature 선택
+    ↓
+Metacognitive Preamble (아는 것 / 추론 가능한 것 / 모르는 것 분리)
+    ↓
+Example Mapping 초안 (Confidence Tag 포함)
+    ↓
+ASSUMED 항목 → Question 전환
+    ↓
+Question 있음 → 사용자에게 질문 → 답변 반영 → Example Mapping 갱신 (반복)
+    ↓
+Question 모두 해소 → Gherkin 생성 → Feature 문서 생성
 ```
 
-topic은 요구사항에서 핵심 키워드를 추출하여 영문 kebab-case로 만든다 (예: `order-cancel`, `user-login`).
+## Step 1. 입력 확인
 
-### 2단계: Example Mapping으로 요구사항 구조화
+Feature 정보를 다음 우선순위로 결정한다:
 
-**Example Mapping을 사용하는 이유**: 요구사항을 "규칙 → 구체적 예시" 구조로 분해하면, 빠진 케이스가 구조적으로 드러난다. 규칙만 나열하면 추상적이어서 엣지 케이스를 놓치기 쉽고, 예시만 나열하면 규칙을 도출하기 어렵다. Example Mapping은 이 둘을 연결한다.
+1. **인자 지정:** 사용자가 인자로 경로(wbs.md 또는 Feature 문서)를 지정했으면 그것을 사용한다
+2. **인자에 자연어 설명:** 사용자가 인자로 Feature 설명을 지정했으면 (예: `/sd-spec 로그인 기능`) 그것을 seed로 사용한다
+3. **대화 맥락:** 대화에서 Feature에 대한 논의(기능 설명, 요구사항, 동작 등)가 있으면 그것을 seed로 사용한다. 이미 충분한 정보가 대화에 있으므로 Feature가 무엇인지 다시 물어보지 않는다
+4. **위 모두 없으면:** AskUserQuestion으로 사용자에게 물어본다
 
-4가지 카드로 사고를 구조화한다:
+### 경로/wbs.md가 지정된 경우
 
-| 카드 | 역할 | 이 스킬에서의 의미 |
-|------|------|-------------------|
-| **Story** (Yellow) | 전체 요구사항 | `$ARGUMENTS`에서 추출 |
-| **Rule** (Blue) | 비즈니스 규칙 | 인수 기준. 나중에 spec.md의 ## Rule 섹션이 됨 |
-| **Example** (Green) | 규칙의 구체적 시나리오 | 나중에 Given/When/Then으로 변환됨 |
-| **Question** (Red) | 미결정 사항 | AskUserQuestion으로 해소해야 할 것 |
+1. Feature Breakdown에서 미완료(`[ ]`) Feature 목록을 사용자에게 보여준다
+2. 사용자가 Feature를 선택하면, 해당 Feature의 불릿 항목(범위 힌트)을 seed로 사용한다
 
-#### 진행 방식
+### 대화 맥락이나 자연어 설명으로 Feature를 결정한 경우
 
-1. `$ARGUMENTS`를 분석하여 Rule과 Example을 최대한 도출한다.
-2. 조금이라도 불명확한 부분(Question 카드)은 AskUserQuestion으로 명확화한다. 100% 명확한 것만 확정하고, 1%라도 불명확하면 반드시 질문한다.
+1. 대화/인자에서 추출한 Feature 정보를 그대로 seed로 사용한다
+2. 작업 디렉토리를 결정한다:
+   - `.tasks/` 하위에 기존 작업 디렉토리가 있으면 그것을 사용한다
+   - 없으면 `.tasks/{yyMMddHHmmss}_{topic}/`을 생성한다 (sd-wbs와 동일한 규칙)
+     - `{yyMMddHHmmss}`: **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다**
+     - `{topic}`: Feature 주제를 kebab-case로 (예: `email-login`)
 
-#### 질문의 관점 — 비즈니스/사용자 관점만
+## Step 2. Metacognitive Preamble
 
-이 단계에서의 질문은 **비즈니스와 사용자 경험에 대한 것**이어야 한다.
-기술적 질문(어떤 라이브러리를 쓸지, 어떤 아키텍처를 적용할지)은 `/sd-plan` 단계에서 다룬다.
-이 분리가 중요한 이유는, 기술적 결정이 요구사항에 섞이면 "무엇을 만들지"와 "어떻게 만들지"가 뒤엉켜 양쪽 모두 품질이 떨어지기 때문이다.
+Example Mapping을 작성하기 전에, Feature의 범위 힌트를 바탕으로 먼저 세 가지를 분리한다. 이 단계는 추측을 방지하기 위한 것으로, 모르는 것을 명확히 인식해야 올바른 Question을 도출할 수 있다.
 
-비즈니스/사용자 관점 질문 예시:
-- "이 기능에서 사용자가 X를 하면 어떤 결과를 기대하시나요?"
-- "이 규칙에 예외 케이스가 있나요?"
-- "이 기능의 범위(scope)에 포함/제외되는 것은?"
-- "에러 발생 시 사용자에게 어떻게 안내해야 하나요?"
+| 구분 | 레벨 | 설명 |
+|------|------|------|
+| **아는 것** (VERIFIED) | — | 사용자가 직접 말했거나 문서에 명시된 것 |
+| **추론 가능한 것** (INFERRED) | **High** | 코드베이스에서 동일 패턴을 확인했거나 공식 문서에 근거가 있는 추론. INFERRED로 유지 |
+| | **Medium** | 일반적 도메인 관행이나 유사 사례에 기반한 추론. **→ ASSUMED로 자동 격상** |
+| | **Low** | 약한 유추나 제한적 근거에 기반한 추론. **→ ASSUMED로 자동 격상** |
+| **모르는 것** (ASSUMED) | — | 추측에 해당 — 반드시 Question으로 전환 |
 
-#### 진단 시그널
+INFERRED Medium/Low는 과신 위험이 높으므로, ASSUMED로 격상하여 사용자에게 질문한다. **INFERRED High만 질문 없이 진행**할 수 있다.
 
-대화 중 다음 신호를 감지하면 사용자에게 알린다:
-- **Rule이 7개 이상** → 스펙이 너무 크다. 분해(`/sd-spec`을 기존 spec에 재호출)를 제안한다.
-- **Question이 계속 늘어남** → 요구사항이 아직 충분히 정의되지 않은 상태. 더 탐색이 필요하다.
-- **Rule에 Example이 1개 이하** → 규칙이 추상적이다. 최소 2개의 Example(정상/예외)을 확보한다.
+이 분리 결과를 사용자에게 보여준다. 사용자가 분류를 확인/수정한 뒤 Example Mapping으로 진행한다.
 
-### 3단계: Decision Table (조건 조합이 있을 때)
+## Step 3. Example Mapping
 
-비즈니스 규칙에 **여러 조건의 조합**이 영향을 미치면, Decision Table을 사용한다.
-Decision Table은 모든 조합을 강제로 열거하므로 **빠진 케이스가 즉시 드러난다**.
-예: 회원등급 x 쿠폰사용 x 첫구매 → 할인율.
+범위 힌트를 seed로, 다음 세 가지로 분류한다:
 
-조건이 2개 이하이거나 조합이 결과에 영향을 미치지 않으면 불필요하다.
+- **Rule**: 비즈니스 규칙 (검증 조건, 제약, 정책)
+- **Example**: Rule을 구체적으로 보여주는 사례 (입력 → 기대 결과)
+- **Question**: 확인이 필요한 불확실한 사항
 
-### 4단계: IST 품질 검증
+### Example Mapping 형식
 
-spec.md를 작성하기 전에 IST 기준으로 자가 검증한다.
-IST의 핵심 역할은 **분해 트리거**이다 — 특히 S(Small)가 중요하다.
+Rule별로 그룹화하여 작성한다. 각 항목에 Confidence Tag를 표기한다.
 
-| 기준 | 질문 | 실패 시 |
-|------|------|---------|
-| **I**ndependent | 다른 spec 없이 독립 구현 가능한가? | 의존성을 Dependencies에 명시 |
-| **S**mall | 하나의 `/sd-plan` + `/sd-plan-dev` 세션에서 완결 가능한가? | **분해 필요** — 사용자에게 `/sd-spec`으로 분해를 제안 |
-| **T**estable | 모든 Rule에 검증 가능한 Example이 있는가? | Example 보충을 요청 |
+**ASSUMED 항목의 처리 — 이 규칙을 반드시 따른다:**
+- ASSUMED 항목은 Example Mapping에서 반드시 `- Question:` 항목으로 표기한다
+- ASSUMED를 자체 판단으로 확정하여 `[VERIFIED]`나 `[INFERRED]`로 바꾸지 않는다. 사용자만이 ASSUMED를 확정할 수 있다
+- 이유: Example Mapping은 "현재 확인된 것"과 "아직 확인되지 않은 것"을 분리하는 도구다. ASSUMED를 바로 확정하면 사용자가 검토할 기회를 잃는다. Question은 Step 4(Question 루프)에서 사용자에게 질문한 뒤에만 해소된다
+- "합리적 기본값이 있으니 확정해도 된다"는 판단은 금지한다 — 기본값이 있더라도 `- Question:`으로 남긴 뒤 Step 4에서 사용자에게 확인받는다
 
-### 5단계: spec.md 작성
+```markdown
+### Rule: 제목은 필수 [VERIFIED]
+- Example: 제목 "신규 기능 개발" 입력 → 저장 성공 [VERIFIED]
+- Example: 제목 비움 → "제목을 입력해주세요" 에러 [INFERRED]
 
-`${CLAUDE_SKILL_DIR}/template-spec.md`를 읽고 동일한 형식으로 spec.md를 작성한다.
-
-### 6단계: Verification (요청-문서 정합성 검증)
-
-spec.md 작성 후, 원본 입력(`$ARGUMENTS` + AskUserQuestion에 대한 사용자 답변)과 spec.md를 비교하여 차이점을 찾는다.
-
-검증 항목:
-- **누락**: 원본 입력에 있는데 spec에 없는 내용
-- **추가**: 원본 입력에 없는데 spec에 있는 내용
-
-차이점이 발견되면:
-1. 차이점을 불명확 사항으로 간주하고 AskUserQuestion으로 해소한다.
-2. 답변을 반영하여 spec.md를 수정한다.
-3. 수정된 spec.md를 다시 검증한다.
-
-차이점이 없을 때까지 반복한다 (최대 3회).
-
----
-
-## 분해 모드
-
-기존 spec.md가 너무 클 때, 하위 스펙으로 쪼갠다.
-
-### 왜 분해하는가
-
-스펙이 크면 후속 단계(`/sd-plan`, `/sd-plan-dev`)에서 LLM의 context window 부담이 커져 출력 품질이 떨어진다. 작은 단위로 쪼개면 각 단계가 집중할 수 있고, 병렬 구현도 가능해진다.
-
-### 프로세스
-
-1. 지정된 spec.md를 읽는다.
-2. Rule 그룹을 기준으로 자연스러운 분해 단위를 식별한다.
-3. AskUserQuestion으로 분해 방식을 확인한다 (어떤 Rule들을 묶을지, 각 하위 스펙의 제목).
-4. 하위 디렉토리 + spec.md를 생성한다:
-   - 경로: `{원본 디렉토리}/R1/spec.md`, `R2/spec.md`, ...
-   - 하위 spec.md도 동일한 GWT 형식으로 작성한다.
-
-### 중요한 규칙들
-
-**원본 보존**: 원본 spec.md는 절대 수정하지 않는다. 분해가 잘못되었을 때 되돌리려면 하위 폴더만 삭제하면 되어야 하기 때문이다.
-
-**Parent 링크**: 각 하위 spec.md 상단에 반드시 다음을 포함한다:
+### Rule: 담당자를 지정할 수 있다 [VERIFIED]
+- Example: 담당자 1명 지정 → 성공 [VERIFIED]
+- Example: 담당자 여러 명 지정 → 성공 [INFERRED]
+- Question: 담당자 없이 임시저장 가능한가? [ASSUMED → Question]
+- Question: 담당자 최대 인원 제한이 있는가? [ASSUMED → Question]
 ```
-> Parent: ../spec.md
-```
-이 링크가 있어야 `/sd-plan`이 상위 맥락을 추적할 수 있다.
 
-**leaf 판별**: spec.md가 있는 디렉토리에 `R*/spec.md` 패턴의 하위가 존재하지 않으면 leaf이다. `/sd-plan`은 leaf spec만 입력으로 받는다.
+### Question 도출 기법
+
+아래 기법을 상황에 맞게 적용하여 빠진 Rule/Example을 찾고, 미정의 사항을 Question으로 도출한다. 모든 기법을 항상 적용하는 것이 아니라, Feature의 성격에 맞는 기법을 선택한다. 적용한 기법의 이름을 Example Mapping 출력에 표기한다.
+
+| 기법 | 적용 시점 | 방법 |
+|------|-----------|------|
+| **Decision Table** | 조건 조합이 있을 때 | 조건 조합을 전부 나열하여 비어있는 칸 = Question |
+| **Boundary Value Analysis** | 숫자/범위가 있을 때 | 경계값(최소, 최대, 0, 초과)을 예시로 강제 → 미정의 경계 = Question |
+| **Equivalence Partitioning** | 입력 분류가 있을 때 | 입력 분류를 전부 나열 → 동작 미정의 분류 = Question |
+| **State Transition** | 상태가 있는 Feature | 상태 × 이벤트 조합 나열 → 미정의 전이 = Question |
+| **Perspective-Based Reading** | 최종 검토 시 | 테스터/개발자/사용자 관점에서 각각 검토 → 빠진 것 = Question |
+
+## Step 4. Question 루프
+
+1. Example Mapping의 Question 항목들을 AskUserQuestion으로 사용자에게 제시한다
+2. 답변을 받으면 즉시 Example Mapping을 갱신한다:
+  - ASSUMED → VERIFIED로 변경
+  - 새 Rule/Example이 도출되면 추가
+  - 답변에서 새 Question이 발생하면 추가
+3. Question이 모두 해소될 때까지 반복한다
+4. 모든 Question이 해소되면 즉시 Step 5(Gherkin 생성)로 진행한다
+
+## Step 5. Gherkin 생성
+
+### 작성 규칙
+
+- 각 Example → 하나의 Scenario
+- 각 Rule → Gherkin `Rule:` 키워드로 그룹화
+- 공통 전제조건은 `Background:`에 모은다
+- Gherkin은 스펙 문서 용도다 (테스트 러너로 실행하지 않음)
+
+### Gherkin 형식
+
+```gherkin
+Feature: {Feature번호} {Feature이름}
+
+  Background:
+    Given {공통 전제조건}
+
+  Rule: {Rule 이름}
+
+    Scenario: {Example 이름}
+      Given {전제조건}
+      When {행위}
+      Then {기대 결과}
+
+    Scenario: {Example 이름}
+      Given {전제조건}
+      When {행위}
+      Then {기대 결과}
+```
+
+## Step 6. Feature 문서 생성
+
+### 파일 위치 및 이름
+
+- **위치:** `wbs.md`가 있는 디렉토리 (없으면 Step 1에서 결정한 작업 디렉토리)
+- **파일명:** `{Feature번호}-{Feature이름}.md`
+  - 예: `1.1-업무생성편집.md`, `2.1-개인업무목록조회.md`
+  - Feature 이름에서 공백과 특수문자(`/` 등)를 제거한다
+
+### 문서 구조
+
+```markdown
+# Feature {번호} {이름}
+
+## 요구명세
+
+{Gherkin Scenarios}
+```
+
+`## 구현계획` 섹션은 3단계(sd-plan)에서 추가된다. 이 스킬에서는 `## 요구명세` 섹션만 작성한다.
+
+## 산출물 예시
+
+```markdown
+# Feature 1.1 업무 생성/편집
+
+## 요구명세
+
+Feature: 1.1 업무 생성/편집
+
+Background:
+Given 로그인한 사용자가 업무 생성 화면에 있다
+
+Rule: 업무 생성 시 제목은 필수
+
+    Scenario: 제목을 입력하여 업무 생성 성공
+      Given 제목에 "신규 기능 개발"을 입력한다
+      And 설명에 "로그인 기능 구현"을 입력한다
+      When 저장 버튼을 클릭한다
+      Then 업무가 생성된다
+      And 업무 목록에 "신규 기능 개발"이 표시된다
+
+    Scenario: 제목 없이 업무 생성 실패
+      Given 제목을 비워둔다
+      When 저장 버튼을 클릭한다
+      Then "제목을 입력해주세요" 에러가 표시된다
+      And 업무가 생성되지 않는다
+
+Rule: 담당자를 지정할 수 있다
+
+    Scenario: 담당자 1명 지정
+      Given 업무 생성 화면에서 제목을 입력한다
+      When 담당자에 "홍길동"을 선택한다
+      And 저장 버튼을 클릭한다
+      Then 업무의 담당자가 "홍길동"으로 설정된다
+
+    Scenario: 담당자 여러 명 지정
+      Given 업무 생성 화면에서 제목을 입력한다
+      When 담당자에 "홍길동", "김철수"를 선택한다
+      And 저장 버튼을 클릭한다
+      Then 업무의 담당자가 "홍길동", "김철수"로 설정된다
+
+Rule: 첨부파일을 추가할 수 있다
+
+    Scenario: 첨부파일 1개 추가
+      Given 업무 생성 화면에서 제목을 입력한다
+      When "설계서.pdf" 파일을 첨부한다
+      And 저장 버튼을 클릭한다
+      Then 업무에 "설계서.pdf"가 첨부된다
+```

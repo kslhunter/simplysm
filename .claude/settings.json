@@ -1,7 +1,6 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "python .claude/sd-statusline.py"
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "hooks": {
     "SessionStart": [
@@ -26,7 +25,8 @@
       }
     ]
   },
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  "statusLine": {
+    "type": "command",
+    "command": "python .claude/sd-statusline.py"
   }
 }

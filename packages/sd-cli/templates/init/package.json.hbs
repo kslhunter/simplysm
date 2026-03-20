@@ -16,19 +16,18 @@
     "check": "sd-cli check",
     "test": "vitest run",
     "test:e2e": "vitest run -c vitest-e2e.config.ts",
-    "postinstall": "playwright install && playwright-cli install --skills"
+    "postinstall": "playwright-cli install --skills"
   },
   "devDependencies": {
     "@simplysm/lint": "~13.0.96",
     "@simplysm/sd-cli": "~13.0.96",
     "@simplysm/sd-claude": "~13.0.96",
+    "@playwright/cli": "^0.1.1",
     "@types/node": "^20.19.37",
     "eslint": "^9.39.4",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.0",
-    "@playwright/cli": "^0.1.1",
-    "playwright": "^1.58.2"
   }
 }

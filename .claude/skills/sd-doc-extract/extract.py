@@ -58,7 +58,7 @@ def extract_recursive(file_path: Path, out_dir: Path):
 
         emb_ext = Path(emb["filename"]).suffix.lower()
         if emb_ext in SUPPORTED_EXTENSIONS:
-            sub_out = out_dir / f"{emb_path.stem}_files"
+            sub_out = out_dir / emb_path.stem
             try:
                 extract_recursive(emb_path, sub_out)
                 entry["recursed"] = True
@@ -67,14 +67,16 @@ def extract_recursive(file_path: Path, out_dir: Path):
 
         saved_embedded.append(entry)
 
-    # Generate index.md
+    # Generate {stem}.md index in parent of out_dir
     _generate_index_md(out_dir, file_path, result, saved_images, saved_embedded)
+
 
 
 def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
                        saved_images: list, saved_embedded: list):
-    """Generate index.md summarizing the extraction results."""
+    """Generate {stem}.md in parent of out_dir, summarizing extraction results."""
     lines = []
+    rel_prefix = out_dir.name
 
     # Header
     lines.append(f"# {file_path.name}\n")
@@ -104,7 +106,7 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
         if len(text) > 10000:
             body_path = out_dir / "body.txt"
             body_path.write_text(text, encoding="utf-8")
-            lines.append(f"[body.txt](body.txt) 참조 ({fmt_size(len(text.encode('utf-8')))})\n")
+            lines.append(f"[body.txt]({rel_prefix}/body.txt) 참조 ({fmt_size(len(text.encode('utf-8')))})\n")
         else:
             lines.append(text)
             lines.append("")
@@ -118,21 +120,21 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
         idx = 0
         for img in saved_images:
             idx += 1
-            lines.append(f"| {idx} | {img['filename']} | 이미지 | {fmt_size(img['size'])} |")
+            lines.append(f"| {idx} | [{img['filename']}]({rel_prefix}/{img['filename']}) | 이미지 | {fmt_size(img['size'])} |")
         for emb in saved_embedded:
             idx += 1
             name = emb["filename"]
             if emb["recursed"]:
                 stem = Path(name).stem
-                link = f"[{name}]({stem}_files/index.md)"
+                link = f"[{name}]({rel_prefix}/{stem}.md)"
             else:
-                link = name
+                link = f"[{name}]({rel_prefix}/{name})"
             ext = Path(emb["original_name"]).suffix.lower()
             type_label = _ext_to_type_label(ext)
             lines.append(f"| {idx} | {link} | {type_label} | {fmt_size(emb['size'])} |")
         lines.append("")
 
-    index_path = out_dir / "index.md"
+    index_path = out_dir.parent / f"{out_dir.name}.md"
     index_path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -150,7 +152,7 @@ def _ext_to_type_label(ext: str) -> str:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python extract.py <file>", file=sys.stderr)
+        print("Usage: python extract.py <file> [out_dir]", file=sys.stderr)
         sys.exit(1)
 
     file_path = Path(sys.argv[1])
@@ -164,6 +166,9 @@ if __name__ == "__main__":
         print(f"Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}", file=sys.stderr)
         sys.exit(1)
 
-    out_dir = file_path.parent / f"{file_path.stem}_files"
+    if len(sys.argv) >= 3:
+        out_dir = Path(sys.argv[2])
+    else:
+        out_dir = file_path.parent / file_path.stem
     extract_recursive(file_path, out_dir)
-    print(str(out_dir / "index.md"))
+    print(str(out_dir.parent / f"{out_dir.name}.md"))

@@ -13,7 +13,9 @@
 
 # AskUserQuestion 도구 사용
 
-`AskUserQuestion` 도구사용전에 무조건 `---`를 마지막 라인에 출력할 것.
+- `AskUserQuestion` 도구사용전에 무조건 사용자에게 질문에 대한 자세한 정보를 출력해줄것.
+  - 자세한 정보에는 반드시 각 선택항목에 대한 장단점/트레이드오프/점수(10점만점)를 포함할 것.
+- `AskUserQuestion` 도구사용전에 무조건 `---`를 마지막 라인에 출력할 것.
 
 # Compaction Rules
 

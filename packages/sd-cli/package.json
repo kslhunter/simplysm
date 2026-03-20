@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@fastify/http-proxy": "^11.4.1",
-    "@inquirer/prompts": "^8.3.0",
+    "@fastify/http-proxy": "^11.4.2",
+    "@inquirer/prompts": "^8.3.2",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",

@@ -26,21 +26,20 @@
     "sd-cli": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
     "sd-claude": "tsx packages/sd-claude/src/sd-claude.ts",
     "reinstall": "pnpm install --force",
-    "postinstall": "playwright install && playwright-cli install --skills"
+    "postinstall": "playwright-cli install --skills"
   },
   "devDependencies": {
     "@playwright/cli": "^0.1.1",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^20.19.37",
-    "@vanilla-extract/vite-plugin": "^5.2.0",
+    "@vanilla-extract/vite-plugin": "^5.2.1",
     "@vitest/browser": "^4.1.0",
     "@vitest/browser-playwright": "^4.1.0",
     "@vitest/coverage-v8": "^4.1.0",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "jiti": "^2.6.1",
-    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "solid-js": "^1.9.11",
     "tailwindcss": "^3.4.19",

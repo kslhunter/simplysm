@@ -17,7 +17,7 @@
     "@simplysm/service-client": "workspace:*",
     "@simplysm/service-common": "workspace:*",
     "@simplysm/service-server": "workspace:*",
-    "jose": "^6.2.1",
+    "jose": "^6.2.2",
     "ws": "^8.19.0"
   },
   "devDependencies": {

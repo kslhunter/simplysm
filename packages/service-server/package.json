@@ -35,9 +35,9 @@
     "bufferutil": "^4.1.0",
     "consola": "^3.4.2",
     "fastify": "^5.8.2",
-    "jose": "^6.2.1",
+    "jose": "^6.2.2",
     "mime": "^4.1.0",
-    "nodemailer": "^8.0.2",
+    "nodemailer": "^8.0.3",
     "semver": "^7.7.4",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.19.0"

@@ -34,23 +34,24 @@
     "@solid-primitives/storage": "^4.3.4",
     "@solidjs/router": "^0.15.4",
     "@tabler/icons-solidjs": "^3.40.0",
-    "@tiptap/core": "^3.20.1",
-    "@tiptap/extension-color": "^3.20.1",
-    "@tiptap/extension-highlight": "^3.20.1",
-    "@tiptap/extension-image": "^3.20.1",
-    "@tiptap/extension-table": "^3.20.1",
-    "@tiptap/extension-table-cell": "^3.20.1",
-    "@tiptap/extension-table-header": "^3.20.1",
-    "@tiptap/extension-table-row": "^3.20.1",
-    "@tiptap/extension-text-align": "^3.20.1",
-    "@tiptap/extension-text-style": "^3.20.1",
-    "@tiptap/pm": "^3.20.1",
-    "@tiptap/starter-kit": "^3.20.1",
+    "@tiptap/core": "^3.20.4",
+    "@tiptap/extension-color": "^3.20.4",
+    "@tiptap/extension-highlight": "^3.20.4",
+    "@tiptap/extension-image": "^3.20.4",
+    "@tiptap/extension-table": "^3.20.4",
+    "@tiptap/extension-table-cell": "^3.20.4",
+    "@tiptap/extension-table-header": "^3.20.4",
+    "@tiptap/extension-table-row": "^3.20.4",
+    "@tiptap/extension-text-align": "^3.20.4",
+    "@tiptap/extension-text-style": "^3.20.4",
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/starter-kit": "^3.20.4",
     "bwip-js": "^4.8.0",
     "clsx": "^2.1.1",
     "consola": "^3.4.2",
+    "echarts": "^6.0.0",
     "html-to-image": "^1.11.13",
-    "jspdf": "^4.2.0",
+    "jspdf": "^4.2.1",
     "solid-js": "^1.9.11",
     "solid-tiptap": "^0.8.0",
     "tabbable": "^6.4.0",
@@ -59,13 +60,5 @@
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10"
-  },
-  "peerDependencies": {
-    "echarts": "^6.0.0"
-  },
-  "peerDependenciesMeta": {
-    "echarts": {
-      "optional": true
-    }
   }
 }

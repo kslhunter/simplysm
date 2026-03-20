@@ -18,7 +18,7 @@ const config: SdConfigFn = () => ({
       target: "scripts",
       publish: { type: "npm" },
       watch: {
-        target: ["../../.claude/rules/sd-*", "../../.claude/skills/sd-*", "../../.claude/hooks/sd-*"],
+        target: ["../../.claude/**/sd-*", "../../.claude/**/sd-*/**"],
         cmd: "node",
         args: ["scripts/sync-claude-assets.mjs"],
       },

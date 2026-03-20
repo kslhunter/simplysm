@@ -1,170 +1,82 @@
 ---
 name: sd-use
-description: 사용자의 요청을 분석하여 적절한 sd-* 스킬을 자동으로 매칭하고 즉시 실행.
-argument-hint: "<요청 내용> | --help"
+description: |
+  자연어 요청을 적절한 sd-* 스킬로 라우팅한다.
+  /sd-use를 입력하거나, "sd-use 커밋해줘", "sd-use --help" 등을 요청할 때 사용한다.
 ---
 
-# sd-use: 자동 스킬 라우터
+# sd-use: SD 스킬 라우터
 
-사용자가 어떤 스킬을 써야할지 모를 때, 요청을 분석하여 적절한 sd-* 계열 스킬을 자동으로 매칭하고 즉시 실행한다.
+사용자의 요청을 적절한 sd-* 스킬로 라우팅한다. 개별 sd-* 스킬에 익숙하지 않은 사용자가 원하는 작업을 자연어로 설명하면, sd-use가 가장 적합한 스킬을 선택하여 실행한다.
 
-## 1. 인자 파싱
+## 인자
 
-`$ARGUMENTS`에서 사용자 요청 텍스트를 추출한다.
-- `$ARGUMENTS`가 `--help`이면 바로 **5. 도움말 출력** 단계로 이동한다
-- `$ARGUMENTS`가 비어있으면 현재 대화 맥락에서 요청을 파악한다
-- 대화 맥락도 없으면 AskUserQuestion으로 요청 내용을 질문한다
+| 인자 | 설명 |
+|------|------|
+| `{request}` | 사용자가 원하는 작업의 자연어 설명 |
+| `--help` | 워크플로우 개요 및 스킬 카탈로그 표시 |
 
-## 2. 스킬 매칭
+## 프로세스
 
-사용자 요청의 의도를 분석하여 아래 sd-* 스킬 중 가장 적합한 스킬을 판단한다. sd-use 자신은 매칭 대상에서 제외한다.
+### 1. 입력 파싱
 
-| 스킬 | 설명 | 키워드 힌트 |
-|------|------|------------|
-| sd-debug | 문제(버그, 에러, 비정상 동작)의 근본 원인을 분석하고 해결책을 제시 | 버그, 에러, 오류, 안됨, 무한루프, 크래시, 실패, 문제 |
-| sd-doc-extract | 문서/이메일 파일(.docx/.xlsx/.xlsb/.pptx/.pdf/.eml/.msg)을 재귀적으로 해체하여 추출 | .docx, .xlsx, .xlsb, .pptx, .pdf, .eml, .msg, 문서 읽기, 이메일, 메일 분석 |
-| sd-doc-write | 문서 파일(.docx/.xlsx)을 생성하거나 편집 | 문서 생성, 보고서, 엑셀 만들기, 워드 작성 |
-| sd-init | 프로젝트 설정 파일을 분석하여 CLAUDE.md를 자동 생성 | CLAUDE.md, 프로젝트 초기화, init |
-| sd-plan | 요구분석서 또는 리뷰 결과를 기반으로 TDD 방식의 구현계획서를 작성 | 구현계획, plan, 계획 수립, spec 기반 |
-| sd-plan-dev | 구현계획서를 기반으로 TDD 방식의 실제 구현을 수행 | 구현 실행, plan-dev, 계획 실행, TDD 실행 |
-| sd-readme | LLM 인덱싱용 README.md 및 docs/ 생성 | README, 문서화, 패키지 문서 |
-| sd-audit | 코드베이스를 여러 관점에서 병렬로 점검하고 승인된 결과를 문서로 저장 | 점검, 감사, 개선점, 문제점 |
-| sd-spec | 사용자 요청과 코드베이스를 분석하여 요구분석서를 작성 | 요구분석, 요구사항, spec, 기능 정의 |
-| sd-check | typecheck, lint(fix), 단위test를 순차 수행하고 에러를 자동 수정 | 품질 검사, check, typecheck, lint, 코드 검사, 자동 수정 |
-| sd-ref-tdd | TDD 방법론 가이드. 직접 호출하여 TDD를 수행하거나 다른 스킬이 참조 | 테스트, TDD, 테스트 작성, 유닛 테스트 |
-| sd-review | spec/plan 문서와 구현을 비교하여 완성도를 검증 | 리뷰, review, 검증, 충족, 완성도, 구현 검토 |
-| sd-simplify | 외부 동작을 유지하면서 코드의 내부 구조를 개선 | 리팩터링, simplify, 중복 제거, 구조 개선 |
-| sd-commit | 변경사항을 분석하여 [type] scope 형식의 커밋 메시지를 생성하고 커밋 | 커밋, commit, 변경사항 저장, git commit |
-| sd-apk-decompile | APK 파일을 디컴파일하여 Java 소스, 리소스, 웹 에셋을 추출 | APK, 디컴파일, decompile, 안드로이드 분석 |
-| sd-migration | 원본 코드베이스와 현재 코드베이스를 비교 분석하여 마이그레이션 대상 목록을 생성 | 마이그레이션, migration, 코드 이전, 포팅 |
+- 인자가 없거나 `--help`이면 → **Help 모드**
+- 그 외 → **Route 모드**
 
-키워드 힌트는 참고용이며, 최종 판단은 요청의 전체 맥락과 의도를 기준으로 한다.
+### 2-A. Help 모드
 
-### 매칭 결과 분기
-
-**단일 스킬이 명확히 매칭되는 경우:**
-- 바로 3단계(스킬 실행)로 진행한다
-
-**복수 스킬이 후보인 경우 (판단 어려움):**
-- 후보 스킬들의 설명을 텍스트로 먼저 출력한다
-- AskUserQuestion으로 후보 목록을 제시하여 사용자에게 선택을 요청한다
-- 사용자가 선택한 스킬로 3단계를 진행한다
-
-**매칭 스킬이 없는 경우:**
-- "적합한 스킬을 찾을 수 없습니다."를 출력한 뒤 위 테이블의 스킬 목록을 안내하고 종료한다
-
-## 3. 스킬 안내 출력
-
-스킬을 실행하기 전에 다음 형식으로 안내를 출력한다:
-
-```
-> **`/sd-{매칭된 스킬명}`** — {스킬 설명}
->
-> 유사 스킬: `/sd-{유사1}` (차이점), `/sd-{유사2}` (차이점)
->
-> 다음부터는 `/sd-{매칭된 스킬명} {인자}`로 직접 호출할 수 있습니다.
-```
-
-- 유사 스킬은 위 테이블에서 매칭 스킬과 혼동될 수 있는 스킬 1~2개를 선택한다
-- 각 유사 스킬에 매칭 스킬과의 차이점을 간결히 설명한다
-- 유사 스킬이 없으면 해당 줄을 생략한다
-
-## 4. 스킬 실행
-
-사용자 요청 전체를 인자로 하여 Skill tool로 매칭된 스킬을 호출한다.
-
-## 5. 도움말 출력
-
-`--help` 인자가 주어졌을 때 아래 내용을 그대로 출력하고 종료한다:
+아래 코드 블록을 그대로 출력한 후 종료한다. Skill 도구를 호출하지 않는다.
+마크다운 표나 리스트로 변환하지 않는다. 반드시 단일 코드 블록(``` 안)으로 출력한다.
 
 ````
-## sd-* 스킬 프로세스 다이어그램
+sd-use — SD 스킬 라우터
 
-### 메인 개발 파이프라인
+USAGE
+  /sd-use <request>       자연어 요청을 적절한 스킬로 라우팅
+  /sd-use --help          이 도움말 표시
 
-```
-  /sd-spec          /sd-audit          /sd-debug
-  (요구분석)         (코드점검)          (버그분석)
-      |                 |                  |
-      v                 v                  v
-   spec.md          audit.md           debug.md
-      |                 |                  |
-      +------------ ---+------------------+
-                   v
-               /sd-plan
-             (구현계획 작성)
-                   |
-                   v
-               plan.md
-                   |
-                   v
-             /sd-plan-dev
-          (TDD 방식 구현 수행)
-                   |
-                   v
-            코드 + 테스트
-                   |
-                   v
-             /sd-review
-          (구현 완성도 검증)
-                   |
-                   v
-            review.md (미충족 시)
-```
+FLOWS
+  진입점                             개발 파이프라인
+  sd-wbs    프로젝트 → Feature 분해 ─┐
+  sd-review 코드 리뷰 → 리포트 생성  ├→ sd-spec ──→ sd-plan ──→ sd-tdd
+  sd-debug  에러 → 근본 원인 분석    │  │           │           │
+  (없음)    바로 개발 시작          ─┘  └───────────┴───────────┘
+                                           sd-dev (이 3단계를 순차 실행)
 
-### 독립 스킬
+SKILLS
+  개발
+    sd-dev              Feature 전체 개발 (spec → plan → TDD)
+    sd-wbs              프로젝트를 Feature로 분해
+    sd-spec             단일 Feature 요구명세 작성
+    sd-plan             요구명세 → 구현 계획 작성
+    sd-tdd              구현 계획 → TDD 코드 구현
 
-```
-/sd-check ─────────> typecheck + lint(fix) + test 순차 실행 + 자동 수정
+  품질
+    sd-check            typecheck / lint / test 실행 및 에러 수정
+    sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰
+    sd-debug            버그/에러 근본 원인 분석
 
-/sd-ref-tdd ───────> TDD 방법론 가이드 (직접 호출 또는 다른 스킬이 참조)
+  Git
+    sd-commit           변경사항 스테이징 및 구조화된 커밋 생성
 
-/sd-readme ────────> README.md + docs/ 생성
+  문서
+    sd-readme           패키지 README.md 생성
+    sd-doc-extract      문서에서 텍스트/이미지 추출
 
-/sd-init ──────────> CLAUDE.md 자동 생성
-
-/sd-doc-extract ───> .docx/.xlsx/.xlsb/.pptx/.pdf/.eml/.msg 재귀 해체
-
-/sd-doc-write ────> .docx/.xlsx 생성/편집
-
-/sd-simplify ─────> 코드 리팩터링 (중복 제거, 네이밍 개선, 구조 분리)
-
-/sd-commit ────────> 변경사항 분석 + [type] scope 커밋 메시지 생성 + 커밋
-
-/sd-apk-decompile ─> APK 디컴파일 (JADX + Apktool + dex2jar/CFR)
-
-/sd-migration ────> 원본↔현재 코드베이스 비교 > migration.md 생성
-                         |
-                         v
-                     /sd-spec (M 항목별 요구분석서 작성)
-```
-
-### 라우터
-
-```
-/sd-use ──> 사용자 자연어 요청을 분석하여 위 모든 sd-* 스킬로 자동 매칭
-```
-
-### 스킬 목록
-
-| 스킬 | 설명 | 사용 예시 |
-|------|------|----------|
-| `/sd-spec` | 요구분석서 작성 | `/sd-spec 로그인 기능 추가` |
-| `/sd-audit` | 병렬 코드 점검 | `/sd-audit packages/core-common` |
-| `/sd-debug` | 버그 원인 분석 | `/sd-debug 로그인 시 500 에러 발생` |
-| `/sd-plan` | TDD 구현계획 작성 | `/sd-plan .tasks/.../spec.md` |
-| `/sd-plan-dev` | 구현계획 기반 구현 | `/sd-plan-dev .tasks/.../plan.md` |
-| `/sd-check` | 코드 품질 검사 + 자동 수정 | `/sd-check packages/core-common` |
-| `/sd-ref-tdd` | TDD 방법론 가이드 | `/sd-ref-tdd packages/core-common/src/utils.ts` |
-| `/sd-readme` | README.md 생성 | `/sd-readme packages/core-common` |
-| `/sd-init` | CLAUDE.md 생성 | `/sd-init` |
-| `/sd-review` | 구현 완성도 검증 | `/sd-review .tasks/login` |
-| `/sd-commit` | 커밋 메시지 생성 + 커밋 | `/sd-commit` |
-| `/sd-doc-extract` | 문서/이메일 재귀 해체 | `/sd-doc-extract report.pptx` |
-| `/sd-doc-write` | 문서 생성/편집 | `/sd-doc-write output.xlsx` |
-| `/sd-simplify` | 코드 리팩터링 | `/sd-simplify src/utils.ts` |
-| `/sd-apk-decompile` | APK 디컴파일 | `/sd-apk-decompile app.apk` |
-| `/sd-migration` | 마이그레이션 분석 | `/sd-migration /d/projects/old-app` |
-| `/sd-use` | 자동 스킬 매칭 | `/sd-use 로그인 버그 좀 봐줘` |
-| `/sd-use --help` | 이 가이드 표시 | `/sd-use --help` |
+  도구
+    sd-prompt           스킬/프롬프트 파일 생성·개선
+    sd-init             프로젝트 CLAUDE.md 생성
+    sd-apk-decompile    APK 디컴파일
 ````
+
+### 2-B. Route 모드
+
+중요: 안내 단계(2단계)를 절대 건너뛰지 않는다. 반드시 1→2→3 순서로 실행한다.
+
+1. **선택**: 사용자의 요청을 정확히 하나의 sd-* 스킬에 매칭한다. 의도에 따라 가장 적합한 스킬을 선택한다.
+2. **안내** (필수 — Skill 도구 호출 전에 반드시 수행): 선택된 스킬을 사용자에게 알리는 텍스트 메시지를 출력한다. 예시: `> **sd-commit** 스킬을 실행합니다.`
+3. **실행**: 안내 메시지를 출력한 후에만 Skill 도구를 호출한다. 선택된 스킬 이름과 함께 사용자의 원래 요청을 `args`로 전달한다.
+
+Help 모드의 스킬 카탈로그를 라우팅 참조로 사용한다. 의미론적 이해를 기반으로 사용자의 요청을 가장 적합한 스킬에 매칭한다.
+
+요청이 단일 스킬에 명확하게 매칭되지 않으면, AskUserQuestion을 사용하여 사용자에게 확인한다. 후보 스킬들을 선택지로 제시한다.

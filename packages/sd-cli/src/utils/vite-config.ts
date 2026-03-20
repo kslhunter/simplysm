@@ -293,6 +293,10 @@ export interface ViteConfigOptions {
   replaceDeps?: string[];
   /** Callback when replaceDeps package dist changes */
   onScopeRebuild?: () => void;
+  /** Override build.outDir (e.g. ".capacitor/www" for Capacitor builds) */
+  outDir?: string;
+  /** Override base path (e.g. "./" for Capacitor builds) */
+  base?: string;
 }
 
 /**
@@ -319,7 +323,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
 
   const config: ViteUserConfig = {
     root: pkgDir,
-    base: `/${name}/`,
+    base: options.base ?? `/${name}/`,
     plugins: [
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
@@ -357,6 +361,10 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
 
   // Process.env substitution (applied to both build and dev modes)
   config.define = envDefine;
+
+  if (options.outDir != null) {
+    config.build = { outDir: options.outDir };
+  }
 
   if (mode === "build") {
     config.logLevel = "silent";
