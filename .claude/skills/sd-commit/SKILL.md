@@ -75,7 +75,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### 규칙
 
-1. **제목 줄** (첫 번째 줄): 영향받는 scope를 나열하는 간결한 요약. 72자 이내. 예: `solid, core-common 변경` 또는 `solid 버튼 컴포넌트 추가`
+1. **제목 줄** (첫 번째 줄): 커밋 총괄 간결한 요약. 72자 이내. 예: `solid, core-common 변경` 또는 `solid 버튼 컴포넌트 추가`
 2. 제목 뒤에 **빈 줄**
 3. **본문**: `[type] scope`별로 변경사항을 그룹화한다. 각 그룹 내에서 개별 변경사항을 항목으로 나열한다
 4. **그룹 정렬 순서**: `[feat]` → `[fix]` → `[refactor]` → `[perf]` → `[style]` → `[docs]` → `[test]` → `[chore]`
