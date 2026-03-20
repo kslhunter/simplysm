@@ -44,20 +44,18 @@
   - [ ] `.claude/skills/sd-spec/SKILL.md`를 Read 도구로 읽었다
   - [ ] sd-spec 프로세스를 시작했다 (Metacognitive Preamble 또는 Example Mapping 시도)
 
-### 시나리오 5: progress.md 존재 시 세부 상태 복원
+### 시나리오 5: 구현계획 체크박스로 세부 상태 복원
 - 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
-  - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세` + `## 구현계획` (Slice 3개) 포함
-  - `.tasks/test-project/progress.md` — `phase: tdd`, `current_slice: 2` 기록
+  - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세` + `## 구현계획` (Slice 3개, Slice 1~2는 `[x]`, Slice 3은 `[ ]`) 포함
   - `src/models/task.ts` — Slice 1에서 생성된 Task 모델 파일 (간단한 interface + 생성 함수)
   - `src/api/tasks.ts` — Slice 1에서 생성된 API 라우트 파일 (POST /api/tasks 핸들러)
   - `src/api/tasks.test.ts` — Slice 1의 테스트 파일
 - 체크리스트:
   - [ ] Feature 문서를 Read 도구로 읽었다
-  - [ ] progress.md를 Read 도구로 읽었다
-  - [ ] 상태 탐지 결과에 progress.md 기반 세부 상태를 포함했다 ("Slice 2" 또는 "current_slice" 언급)
+  - [ ] 상태 탐지 결과에 구현계획 체크박스 기반 세부 상태를 포함했다 ("Slice 1~2 완료" 또는 체크박스 상태 언급)
   - [ ] `.claude/skills/sd-tdd/SKILL.md`를 Read 도구로 읽었다
-  - [ ] Slice 2 이후부터 재개하려는 시도를 했다 (Slice 1을 다시 시작하지 않음)
+  - [ ] Slice 3부터 재개하려는 시도를 했다 (Slice 1~2를 다시 시작하지 않음)
 
 ## 안티패턴 Eval
 

@@ -94,7 +94,7 @@ Acceptance Test가 통과하면 다음 Scenario로 진행한다.
 
 Slice의 모든 Scenario가 통과하면:
 1. 전체 테스트 스위트를 실행하여 회귀가 없는지 확인한다
-2. Feature 문서와 같은 디렉토리의 `progress.md`를 갱신한다 (current_slice, attempt_count 등)
+2. Feature 문서 `## 구현계획`에서 해당 Slice의 체크박스를 `[x]`로 갱신한다
 3. 다음 Slice로 진행한다
 
 ## Step 3: Feature 완료
@@ -102,7 +102,6 @@ Slice의 모든 Scenario가 통과하면:
 모든 Slice가 완료되면:
 1. 전체 테스트 스위트를 최종 실행한다
 2. WBS 파일(`wbs.md`)에서 해당 Feature의 `[ ]`를 `[x]`로 갱신한다
-3. `progress.md`의 phase를 `done`으로 갱신한다
 
 ## 역방향 피드백
 
