@@ -1,18 +1,22 @@
-# Events and Types
+# Event Definition
 
-## ServiceEventDef
+## `ServiceEventDef`
 
 Event definition created by `defineEvent()`. `$info` and `$data` are type-only markers (not used at runtime).
 
 ```typescript
 interface ServiceEventDef<TInfo = unknown, TData = unknown> {
   eventName: string;
-  /** Type extraction only (not used at runtime) */
   readonly $info: TInfo;
-  /** Type extraction only (not used at runtime) */
   readonly $data: TData;
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eventName` | `string` | Event name |
+| `$info` | `TInfo` | Type extraction only (listener filter info type) |
+| `$data` | `TData` | Type extraction only (event data type) |
 
 ## `defineEvent`
 
@@ -24,35 +28,24 @@ function defineEvent<TInfo = unknown, TData = unknown>(
 ): ServiceEventDef<TInfo, TData>;
 ```
 
-### Example
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `eventName` | `string` | Event name |
 
-```typescript
-import { defineEvent } from "@simplysm/service-common";
-
-const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
-
-// Server emit
-ctx.socket?.emitEvent(OrderUpdated, { orderId: 123 }, { status: "shipped" });
-
-// Client subscribe
-await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
-  console.log(data.status); // typed as string
-});
-```
-
----
-
-## ServiceUploadResult
+## `ServiceUploadResult`
 
 File upload result. Contains information about a file uploaded to the server.
 
 ```typescript
 interface ServiceUploadResult {
-  /** Storage path on the server */
   path: string;
-  /** Original filename */
   filename: string;
-  /** File size (bytes) */
   size: number;
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `path` | `string` | Storage path on the server |
+| `filename` | `string` | Original filename |
+| `size` | `number` | File size (bytes) |

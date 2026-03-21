@@ -1,45 +1,24 @@
 # Types
 
-TypeScript types for dialects, queries, expressions, columns, and results.
+## `Dialect`
 
-Source: `src/types/db.ts`, `src/types/column.ts`, `src/types/expr.ts`, `src/types/query-def.ts`
-
-## Database Types
-
-Source: `src/types/db.ts`
-
-### Dialect
+Supported database dialects.
 
 ```typescript
 type Dialect = "mysql" | "mssql" | "postgresql";
 ```
 
-- `mysql`: MySQL 8.0.14+
-- `mssql`: Microsoft SQL Server 2012+
-- `postgresql`: PostgreSQL 9.0+
+## `dialects`
 
-### dialects
+List of all supported database dialects.
 
 ```typescript
 const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 ```
 
-### QueryBuildResult
+## `IsolationLevel`
 
-Return type of `QueryBuilderBase.build()`.
-
-```typescript
-interface QueryBuildResult {
-  /** Built SQL string */
-  sql: string;
-  /** Result set index to fetch results from (default: 0) */
-  resultSetIndex?: number;
-  /** Extract every Nth result set from multiple results */
-  resultSetStride?: number;
-}
-```
-
-### IsolationLevel
+Transaction isolation level.
 
 ```typescript
 type IsolationLevel =
@@ -49,9 +28,9 @@ type IsolationLevel =
   | "SERIALIZABLE";
 ```
 
-### DataRecord
+## `DataRecord`
 
-Recursive record type for query results, supporting nested relations.
+Query result data record type. Supports nested relation (include) results with recursive structure.
 
 ```typescript
 type DataRecord = {
@@ -59,9 +38,9 @@ type DataRecord = {
 };
 ```
 
-### DbContextExecutor
+## `DbContextExecutor`
 
-Interface for actual DB connection and query execution. Implemented by `NodeDbContextExecutor` (server) or service client executors.
+DbContext executor interface. Responsible for actual DB connection and query execution.
 
 ```typescript
 interface DbContextExecutor {
@@ -77,20 +56,50 @@ interface DbContextExecutor {
 }
 ```
 
-### ResultMeta
+| Method | Description |
+|--------|-------------|
+| `connect()` | Establish DB connection |
+| `close()` | Close DB connection |
+| `beginTransaction()` | Begin transaction with optional isolation level |
+| `commitTransaction()` | Commit transaction |
+| `rollbackTransaction()` | Rollback transaction |
+| `executeDefs()` | Execute QueryDef array and return results |
 
-Metadata for query result transformation (type parsing and JOIN nesting).
+## `QueryBuildResult`
+
+`QueryBuilder.build()` return type.
+
+```typescript
+interface QueryBuildResult {
+  sql: string;
+  resultSetIndex?: number;
+  resultSetStride?: number;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sql` | `string` | Built SQL string |
+| `resultSetIndex` | `number` | Result set index to fetch results from |
+| `resultSetStride` | `number` | Extract every Nth result set from multiple results |
+
+## `ResultMeta`
+
+Metadata for query result transformation.
 
 ```typescript
 interface ResultMeta {
-  /** Column name -> ColumnPrimitiveStr mapping */
   columns: Record<string, ColumnPrimitiveStr>;
-  /** JOIN alias -> single/array indicator */
   joins: Record<string, { isSingle: boolean }>;
 }
 ```
 
-### Migration
+| Field | Type | Description |
+|-------|------|-------------|
+| `columns` | `Record<string, ColumnPrimitiveStr>` | Column name to type mapping |
+| `joins` | `Record<string, { isSingle: boolean }>` | JOIN alias to single/array indicator |
+
+## `Migration`
 
 Database migration definition.
 
@@ -101,28 +110,14 @@ interface Migration {
 }
 ```
 
-**Example:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | Unique migration name (timestamp recommended) |
+| `up` | `(db) => Promise<void>` | Migration execution function |
 
-```typescript
-const migrations: Migration[] = [
-  {
-    name: "20260105_001_create_user_table",
-    up: async (db) => {
-      await db.createTable(User);
-    },
-  },
-];
-```
+## `DataType`
 
----
-
-## Column Types
-
-Source: `src/types/column.ts`
-
-### DataType
-
-SQL data type definition (discriminated union).
+SQL data type definition.
 
 ```typescript
 type DataType =
@@ -142,9 +137,9 @@ type DataType =
   | { type: "uuid" };
 ```
 
-### ColumnPrimitiveMap
+## `ColumnPrimitiveMap`
 
-TypeScript type name to actual type mapping.
+Column primitive type mapping. TypeScript type name (string) to actual type.
 
 ```typescript
 type ColumnPrimitiveMap = {
@@ -159,14 +154,15 @@ type ColumnPrimitiveMap = {
 };
 ```
 
-### ColumnPrimitiveStr
+## `ColumnPrimitiveStr`
+
+Column primitive type name.
 
 ```typescript
 type ColumnPrimitiveStr = keyof ColumnPrimitiveMap;
-// "string" | "number" | "boolean" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Bytes"
 ```
 
-### ColumnPrimitive
+## `ColumnPrimitive`
 
 All primitive types that can be stored in columns. `undefined` represents NULL.
 
@@ -174,9 +170,39 @@ All primitive types that can be stored in columns. `undefined` represents NULL.
 type ColumnPrimitive = ColumnPrimitiveMap[ColumnPrimitiveStr] | undefined;
 ```
 
-### ColumnMeta
+## `dataTypeStrToColumnPrimitiveStr`
 
-Column metadata generated by `ColumnBuilder`.
+SQL DataType to TypeScript type name mapping.
+
+```typescript
+const dataTypeStrToColumnPrimitiveStr: {
+  int: "number"; bigint: "number"; float: "number"; double: "number"; decimal: "number";
+  varchar: "string"; char: "string"; text: "string";
+  binary: "Bytes"; boolean: "boolean";
+  datetime: "DateTime"; date: "DateOnly"; time: "Time"; uuid: "Uuid";
+};
+```
+
+## `InferColumnPrimitiveFromDataType`
+
+TypeScript type inference from DataType.
+
+```typescript
+type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
+  ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[TDataType["type"]]];
+```
+
+## `inferColumnPrimitiveStr`
+
+Infer `ColumnPrimitiveStr` from a runtime value.
+
+```typescript
+function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr;
+```
+
+## `ColumnMeta`
+
+Column metadata. Generated by `ColumnBuilder` and passed to `TableBuilder`.
 
 ```typescript
 interface ColumnMeta {
@@ -189,123 +215,26 @@ interface ColumnMeta {
 }
 ```
 
-### dataTypeStrToColumnPrimitiveStr
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `ColumnPrimitiveStr` | TypeScript type name |
+| `dataType` | `DataType` | SQL data type |
+| `autoIncrement` | `boolean` | Whether to auto-increment |
+| `nullable` | `boolean` | Whether to allow NULL |
+| `default` | `ColumnPrimitive` | Default value |
+| `description` | `string` | Column description (DDL comment) |
 
-SQL DataType type string to TypeScript type name mapping.
+## `DateUnit`
 
-```typescript
-const dataTypeStrToColumnPrimitiveStr: {
-  int: "number";
-  bigint: "number";
-  float: "number";
-  double: "number";
-  decimal: "number";
-  varchar: "string";
-  char: "string";
-  text: "string";
-  binary: "Bytes";
-  boolean: "boolean";
-  datetime: "DateTime";
-  date: "DateOnly";
-  time: "Time";
-  uuid: "Uuid";
-};
-```
-
-### InferColumnPrimitiveFromDataType
-
-Infer TypeScript type from `DataType`.
-
-```typescript
-type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
-  ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[TDataType["type"]]];
-```
-
-### inferColumnPrimitiveStr (function)
-
-Infer `ColumnPrimitiveStr` from a runtime value.
-
-```typescript
-function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr;
-```
-
----
-
-## Expression Types
-
-Source: `src/types/expr.ts`
-
-### DateUnit
+Date operation unit.
 
 ```typescript
 type DateUnit = "year" | "month" | "day" | "hour" | "minute" | "second";
 ```
 
-### Expr (union type)
+## `QueryDefObjectName`
 
-Discriminated union of all expression AST node types. Used in `select()`, `orderBy()`, etc.
-
-| Category | Types |
-|----------|-------|
-| Value | `ExprColumn`, `ExprValue`, `ExprRaw` |
-| String | `ExprConcat`, `ExprLeft`, `ExprRight`, `ExprTrim`, `ExprPadStart`, `ExprReplace`, `ExprUpper`, `ExprLower`, `ExprLength`, `ExprByteLength`, `ExprSubstring`, `ExprIndexOf` |
-| Numeric | `ExprAbs`, `ExprRound`, `ExprCeil`, `ExprFloor` |
-| Date | `ExprYear`, `ExprMonth`, `ExprDay`, `ExprHour`, `ExprMinute`, `ExprSecond`, `ExprIsoWeek`, `ExprIsoWeekStartDate`, `ExprIsoYearMonth`, `ExprDateDiff`, `ExprDateAdd`, `ExprFormatDate` |
-| Condition | `ExprCoalesce`, `ExprNullIf`, `ExprIs`, `ExprSwitch`, `ExprIf` |
-| Aggregate | `ExprCount`, `ExprSum`, `ExprAvg`, `ExprMax`, `ExprMin` |
-| Other | `ExprGreatest`, `ExprLeast`, `ExprRowNum`, `ExprRandom`, `ExprCast` |
-| Window | `ExprWindow` |
-| System | `ExprSubquery` |
-
-### WhereExpr (union type)
-
-Subset of `Expr` for WHERE clauses (comparison + logical operators).
-
-| Category | Types |
-|----------|-------|
-| Comparison | `ExprEq`, `ExprGt`, `ExprLt`, `ExprGte`, `ExprLte`, `ExprBetween`, `ExprIsNull`, `ExprLike`, `ExprRegexp`, `ExprIn`, `ExprInQuery`, `ExprExists` |
-| Logical | `ExprNot`, `ExprAnd`, `ExprOr` |
-
-### Individual Expr Interfaces
-
-Each expression type is a simple interface with a `type` discriminant:
-
-```typescript
-interface ExprColumn { type: "column"; path: string[]; }
-interface ExprValue { type: "value"; value: ColumnPrimitive; }
-interface ExprRaw { type: "raw"; sql: string; params: Expr[]; }
-interface ExprEq { type: "eq"; source: Expr; target: Expr; }
-interface ExprGt { type: "gt"; source: Expr; target: Expr; }
-// ... etc.
-```
-
-### Window Function Types
-
-```typescript
-type WinFn =
-  | WinFnRowNumber | WinFnRank | WinFnDenseRank | WinFnNtile
-  | WinFnLag | WinFnLead | WinFnFirstValue | WinFnLastValue
-  | WinFnSum | WinFnAvg | WinFnCount | WinFnMin | WinFnMax;
-
-interface WinSpec {
-  partitionBy?: Expr[];
-  orderBy?: [Expr, ("ASC" | "DESC")?][];
-}
-
-interface ExprWindow {
-  type: "window";
-  fn: WinFn;
-  spec: WinSpec;
-}
-```
-
----
-
-## Query Definition Types
-
-Source: `src/types/query-def.ts`
-
-### QueryDefObjectName
+DB object name (table, view, procedure, etc.).
 
 ```typescript
 interface QueryDefObjectName {
@@ -315,32 +244,31 @@ interface QueryDefObjectName {
 }
 ```
 
-DBMS-specific namespaces:
-- MySQL: `database.name` (schema ignored)
-- MSSQL: `database.schema.name` (schema defaults to dbo)
-- PostgreSQL: `schema.name` (database is for connection only)
+| Field | Type | Description |
+|-------|------|-------------|
+| `database` | `string` | Database name |
+| `schema` | `string` | Schema name |
+| `name` | `string` | Object name |
 
-### QueryDef (union type)
+## `QueryDef`
 
-Union of all query definition types:
+All query definition union type. DML + DDL + Utils + Meta.
 
-**DML:** `SelectQueryDef`, `InsertQueryDef`, `InsertIfNotExistsQueryDef`, `InsertIntoQueryDef`, `UpdateQueryDef`, `DeleteQueryDef`, `UpsertQueryDef`
+```typescript
+type QueryDef =
+  | SelectQueryDef | InsertQueryDef | InsertIfNotExistsQueryDef | InsertIntoQueryDef
+  | UpdateQueryDef | DeleteQueryDef | UpsertQueryDef
+  | ClearSchemaQueryDef | CreateTableQueryDef | DropTableQueryDef | RenameTableQueryDef
+  | TruncateQueryDef | AddColumnQueryDef | DropColumnQueryDef | ModifyColumnQueryDef
+  | RenameColumnQueryDef | DropPrimaryKeyQueryDef | AddPrimaryKeyQueryDef
+  | AddForeignKeyQueryDef | DropForeignKeyQueryDef | AddIndexQueryDef | DropIndexQueryDef
+  | CreateViewQueryDef | DropViewQueryDef | CreateProcQueryDef | DropProcQueryDef
+  | ExecProcQueryDef | SwitchFkQueryDef | SchemaExistsQueryDef;
+```
 
-**DDL - Schema:** `ClearSchemaQueryDef`
+## `SelectQueryDef`
 
-**DDL - Table:** `CreateTableQueryDef`, `DropTableQueryDef`, `RenameTableQueryDef`, `TruncateQueryDef`
-
-**DDL - Column:** `AddColumnQueryDef`, `DropColumnQueryDef`, `ModifyColumnQueryDef`, `RenameColumnQueryDef`
-
-**DDL - Constraint:** `DropPrimaryKeyQueryDef`, `AddPrimaryKeyQueryDef`, `AddForeignKeyQueryDef`, `DropForeignKeyQueryDef`, `AddIndexQueryDef`, `DropIndexQueryDef`
-
-**DDL - View/Procedure:** `CreateViewQueryDef`, `DropViewQueryDef`, `CreateProcQueryDef`, `DropProcQueryDef`, `ExecProcQueryDef`
-
-**Utils:** `SwitchFkQueryDef`
-
-**Meta:** `SchemaExistsQueryDef`
-
-### SelectQueryDef
+SELECT query definition.
 
 ```typescript
 interface SelectQueryDef {
@@ -361,7 +289,9 @@ interface SelectQueryDef {
 }
 ```
 
-### SelectQueryDefJoin
+## `SelectQueryDefJoin`
+
+JOIN query definition. Extends `SelectQueryDef` with `isSingle` flag.
 
 ```typescript
 interface SelectQueryDefJoin extends SelectQueryDef {
@@ -369,7 +299,9 @@ interface SelectQueryDefJoin extends SelectQueryDef {
 }
 ```
 
-### InsertQueryDef
+## `InsertQueryDef`
+
+INSERT query definition.
 
 ```typescript
 interface InsertQueryDef {
@@ -381,7 +313,38 @@ interface InsertQueryDef {
 }
 ```
 
-### UpdateQueryDef
+## `InsertIfNotExistsQueryDef`
+
+Conditional INSERT query definition. Insert only if not exists.
+
+```typescript
+interface InsertIfNotExistsQueryDef {
+  type: "insertIfNotExists";
+  table: QueryDefObjectName;
+  record: Record<string, ColumnPrimitive>;
+  existsSelectQuery: SelectQueryDef;
+  overrideIdentity?: boolean;
+  output?: CudOutputDef;
+}
+```
+
+## `InsertIntoQueryDef`
+
+INSERT INTO SELECT query definition. Insert subquery results.
+
+```typescript
+interface InsertIntoQueryDef {
+  type: "insertInto";
+  table: QueryDefObjectName;
+  recordsSelectQuery: SelectQueryDef;
+  overrideIdentity?: boolean;
+  output?: CudOutputDef;
+}
+```
+
+## `UpdateQueryDef`
+
+UPDATE query definition.
 
 ```typescript
 interface UpdateQueryDef {
@@ -397,7 +360,9 @@ interface UpdateQueryDef {
 }
 ```
 
-### DeleteQueryDef
+## `DeleteQueryDef`
+
+DELETE query definition.
 
 ```typescript
 interface DeleteQueryDef {
@@ -412,7 +377,9 @@ interface DeleteQueryDef {
 }
 ```
 
-### UpsertQueryDef
+## `UpsertQueryDef`
+
+UPSERT query definition. INSERT or UPDATE (MERGE pattern).
 
 ```typescript
 interface UpsertQueryDef {
@@ -426,7 +393,9 @@ interface UpsertQueryDef {
 }
 ```
 
-### CudOutputDef
+## `CudOutputDef`
+
+CUD query OUTPUT clause definition.
 
 ```typescript
 interface CudOutputDef {
@@ -436,10 +405,41 @@ interface CudOutputDef {
 }
 ```
 
-### DDL_TYPES
+## `DDL_TYPES`
 
-Constant array of all DDL type strings (for blocking DDL within transactions).
+DDL type constants. Used for blocking DDL within transactions.
 
 ```typescript
-const DDL_TYPES: readonly DdlType[];
+const DDL_TYPES: readonly string[];
+```
+
+## `DdlType`
+
+DDL type union.
+
+```typescript
+type DdlType = (typeof DDL_TYPES)[number];
+```
+
+## Expression Types (Expr)
+
+Union type `Expr` covers all expression types: value (`ExprColumn`, `ExprValue`, `ExprRaw`), string, numeric, date, conditional, aggregate, window, and subquery expressions.
+
+Union type `WhereExpr` covers comparison (`ExprEq`, `ExprGt`, `ExprLt`, `ExprGte`, `ExprLte`, `ExprBetween`, `ExprIsNull`, `ExprLike`, `ExprRegexp`, `ExprIn`, `ExprInQuery`, `ExprExists`) and logical (`ExprNot`, `ExprAnd`, `ExprOr`) expressions.
+
+## Window Types
+
+`WinFn` is a union of all window function types: `WinFnRowNumber`, `WinFnRank`, `WinFnDenseRank`, `WinFnNtile`, `WinFnLag`, `WinFnLead`, `WinFnFirstValue`, `WinFnLastValue`, `WinFnSum`, `WinFnAvg`, `WinFnCount`, `WinFnMin`, `WinFnMax`.
+
+```typescript
+interface WinSpec {
+  partitionBy?: Expr[];
+  orderBy?: [Expr, ("ASC" | "DESC")?][];
+}
+
+interface ExprWindow {
+  type: "window";
+  fn: WinFn;
+  spec: WinSpec;
+}
 ```

@@ -1,6 +1,6 @@
 # @simplysm/capacitor-plugin-usb-storage
 
-Capacitor USB Storage Plugin -- read files from USB mass storage devices on Android.
+Simplysm Package - Capacitor USB Storage Plugin. Provides USB Mass Storage device access on Android via the libaums library, with IndexedDB-based browser emulation.
 
 ## Installation
 
@@ -10,102 +10,86 @@ npm install @simplysm/capacitor-plugin-usb-storage
 
 ## API Overview
 
-### Types
+### USB Storage
 
 | API | Type | Description |
 |-----|------|-------------|
-| `UsbDeviceInfo` | interface | USB device info (name, manufacturer, product, vendor/product IDs) |
-| `UsbDeviceFilter` | interface | USB device filter by `vendorId` and `productId` |
-| `UsbFileInfo` | interface | File entry info (`name`, `isDirectory`) |
+| `UsbStorage` | class | USB storage access plugin (static methods) |
+| `UsbStoragePlugin` | interface | Low-level Capacitor plugin interface for USB storage |
+| `UsbDeviceInfo` | interface | USB device information |
+| `UsbDeviceFilter` | interface | USB device filter (vendor/product ID pair) |
+| `UsbFileInfo` | interface | File/directory entry on USB device |
 
-### Interfaces
+---
 
-| API | Type | Description |
-|-----|------|-------------|
-| `UsbStoragePlugin` | interface | Low-level Capacitor plugin interface for USB storage operations |
+### `UsbDeviceInfo`
 
-### Classes
+| Field | Type | Description |
+|-------|------|-------------|
+| `deviceName` | `string` | Device name |
+| `manufacturerName` | `string` | Manufacturer name |
+| `productName` | `string` | Product name |
+| `vendorId` | `number` | USB vendor ID |
+| `productId` | `number` | USB product ID |
 
-| API | Type | Description |
-|-----|------|-------------|
-| `UsbStorage` | abstract class | USB mass storage device access |
+### `UsbDeviceFilter`
 
-## `UsbDeviceInfo`
+| Field | Type | Description |
+|-------|------|-------------|
+| `vendorId` | `number` | USB vendor ID |
+| `productId` | `number` | USB product ID |
 
-```typescript
-interface UsbDeviceInfo {
-  deviceName: string;
-  manufacturerName: string;
-  productName: string;
-  vendorId: number;
-  productId: number;
-}
-```
+### `UsbFileInfo`
 
-## `UsbDeviceFilter`
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | File or directory name |
+| `isDirectory` | `boolean` | Whether the entry is a directory |
 
-```typescript
-interface UsbDeviceFilter {
-  vendorId: number;
-  productId: number;
-}
-```
+### `UsbStoragePlugin`
 
-## `UsbFileInfo`
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getDevices` | `() => Promise<{ devices: UsbDeviceInfo[] }>` | Get connected USB devices |
+| `requestPermissions` | `(options: UsbDeviceFilter) => Promise<{ granted: boolean }>` | Request USB device permission |
+| `checkPermissions` | `(options: UsbDeviceFilter) => Promise<{ granted: boolean }>` | Check USB device permission |
+| `readdir` | `(options: UsbDeviceFilter & { path: string }) => Promise<{ files: UsbFileInfo[] }>` | Read directory from USB |
+| `readFile` | `(options: UsbDeviceFilter & { path: string }) => Promise<{ data: string \| null }>` | Read file from USB (base64) |
 
-```typescript
-interface UsbFileInfo {
-  name: string;
-  isDirectory: boolean;
-}
-```
+### `UsbStorage`
 
-## `UsbStoragePlugin`
+Abstract class with static methods for USB Mass Storage access.
 
-```typescript
-interface UsbStoragePlugin {
-  getDevices(): Promise<{ devices: UsbDeviceInfo[] }>;
-  requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
-  checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
-  readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>;
-  readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
-}
-```
-
-Low-level Capacitor plugin interface. Use `UsbStorage` static methods instead of calling this directly.
-
-## `UsbStorage`
-
-```typescript
-abstract class UsbStorage {
-  static async getDevices(): Promise<UsbDeviceInfo[]>;
-  static async requestPermissions(filter: UsbDeviceFilter): Promise<boolean>;
-  static async checkPermissions(filter: UsbDeviceFilter): Promise<boolean>;
-  static async readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]>;
-  static async readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined>;
-}
-```
-
-Plugin for interacting with USB storage devices.
-- Android: USB Mass Storage access via libaums library.
-- Browser: IndexedDB-based virtual USB storage emulation.
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getDevices` | `() => Promise<UsbDeviceInfo[]>` | Get list of connected USB devices |
+| `requestPermissions` | `(filter: UsbDeviceFilter) => Promise<boolean>` | Request USB device access permission |
+| `checkPermissions` | `(filter: UsbDeviceFilter) => Promise<boolean>` | Check USB device access permission |
+| `readdir` | `(filter: UsbDeviceFilter, dirPath: string) => Promise<UsbFileInfo[]>` | Read directory contents from USB device |
+| `readFile` | `(filter: UsbDeviceFilter, filePath: string) => Promise<Bytes \| undefined>` | Read file from USB device |
 
 ## Usage Examples
 
-### List USB devices and read files
+### List and read from USB device
 
 ```typescript
 import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
 
+// List connected devices
 const devices = await UsbStorage.getDevices();
-if (devices.length > 0) {
-  const device = devices[0];
-  const filter = { vendorId: device.vendorId, productId: device.productId };
 
+if (devices.length > 0) {
+  const filter = { vendorId: devices[0].vendorId, productId: devices[0].productId };
+
+  // Request permission
   const granted = await UsbStorage.requestPermissions(filter);
+
   if (granted) {
+    // Read directory
     const files = await UsbStorage.readdir(filter, "/");
-    const data = await UsbStorage.readFile(filter, "/readme.txt");
+
+    // Read a file
+    const data = await UsbStorage.readFile(filter, "/document.txt");
   }
 }
 ```

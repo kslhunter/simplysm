@@ -4,10 +4,10 @@ Source: `src/components/form-control/**`
 
 ## `Button`
 
-Standard button component with theme, variant, and size support.
+Styled button component with theme, variant, and size support. Includes ripple effect.
 
-```ts
-interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+```typescript
+export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   theme?: ButtonTheme;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -15,38 +15,59 @@ interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `theme` | `ButtonTheme` | Semantic color theme |
-| `variant` | `ButtonVariant` | Visual variant |
-| `size` | `ButtonSize` | Size scale |
-| `inset` | `boolean` | Borderless inset style |
+| Prop | Type | Description |
+|------|------|-------------|
+| `theme` | `SemanticTheme` | Color theme. Default: `"base"` |
+| `variant` | `"solid" \| "outline" \| "ghost"` | Visual variant. Default: `"outline"` |
+| `size` | `ComponentSize` | Button size. Default: `"md"` |
+| `inset` | `boolean` | Removes border and border-radius for embedded usage |
+
+---
 
 ## `Select`
 
-Single/multi select dropdown. Compound component with Item, Header, Action, ItemTemplate sub-components.
+Dropdown select component supporting single and multiple selection, search filtering, hierarchical items, and custom rendering via slots.
 
-```ts
-type SelectProps<TValue> =
+```typescript
+export type SelectProps<TValue = unknown> =
   | (SelectSingleBaseProps<TValue> & SelectWithItemsPropsBase<TValue>)
   | (SelectSingleBaseProps<TValue> & SelectWithChildrenPropsBase<TValue>)
   | (SelectMultipleBaseProps<TValue> & SelectWithItemsPropsBase<TValue>)
   | (SelectMultipleBaseProps<TValue> & SelectWithChildrenPropsBase<TValue>);
 ```
 
-Discriminated by `multiple` field (boolean) and `items` presence.
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `TValue \| TValue[]` | Currently selected value(s) |
+| `onValueChange` | `(value) => void` | Value change callback |
+| `multiple` | `boolean` | Enable multiple selection mode |
+| `disabled` | `boolean` | Disabled state |
+| `required` | `boolean` | Required input |
+| `placeholder` | `string` | Placeholder text |
+| `size` | `ComponentSize` | Trigger size. Default: `"md"` |
+| `inset` | `boolean` | Borderless style |
+| `validate` | `(value) => string \| undefined` | Custom validation function |
+| `lazyValidation` | `boolean` | Show error only after blur |
+| `itemSearchText` | `(item: TValue) => string` | Search text extraction (shows search input when set) |
+| `isItemHidden` | `(item: TValue) => boolean` | Determine if item is hidden |
+| `items` | `TValue[]` | Items array (items mode) |
+| `itemChildren` | `(item, index, depth) => TValue[] \| undefined` | Child items for tree structure |
+| `renderValue` | `(value: TValue) => JSX.Element` | Custom value renderer (required in children mode) |
+| `tagDirection` | `"horizontal" \| "vertical"` | Multiple selection tag direction |
+| `hideSelectAll` | `boolean` | Hide select all button (multiple mode) |
 
 ### Sub-components
 
-- **`Select.Item<TValue>`** -- Selectable option.
-- **`Select.Header`** -- Custom header in dropdown.
-- **`Select.Action`** -- Action button appended to trigger.
-- **`Select.ItemTemplate`** -- Render template for `items` mode.
+- **`Select.Item`** -- Selectable item in dropdown. Props: `value: TValue`, `disabled?: boolean`
+- **`Select.Item.Children`** -- Nested children slot for hierarchical items
+- **`Select.Header`** -- Custom header slot in dropdown
+- **`Select.Action`** -- Action button appended to trigger
+- **`Select.ItemTemplate`** -- Template function for items mode rendering
 
-### `SelectContext`
+### `SelectContextValue`
 
-```ts
-interface SelectContextValue<TValue = unknown> {
+```typescript
+export interface SelectContextValue<TValue = unknown> {
   multiple: Accessor<boolean>;
   isSelected: (value: TValue) => boolean;
   toggleValue: (value: TValue) => void;
@@ -54,72 +75,80 @@ interface SelectContextValue<TValue = unknown> {
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
   size: Accessor<ComponentSize>;
 }
-
-const SelectContext: Context<SelectContextValue>;
 ```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `multiple` | `Accessor<boolean>` | Whether multi-select is enabled |
-| `isSelected` | `(value: TValue) => boolean` | Check if value is selected |
-| `toggleValue` | `(value: TValue) => void` | Toggle selection of a value |
-| `closeDropdown` | `() => void` | Close the dropdown popup |
-| `setItemTemplate` | `(fn) => void` | Set item render template |
-| `size` | `Accessor<ComponentSize>` | Current size |
 
 ### `SelectItemProps`
 
-```ts
-interface SelectItemProps<TValue = unknown> extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onClick"> {
+```typescript
+export interface SelectItemProps<TValue = unknown> {
   value: TValue;
   disabled?: boolean;
 }
 ```
 
+---
+
 ## `Combobox`
 
-Autocomplete component with async search support. Compound with Item, ItemTemplate.
+Autocomplete component supporting async search, custom value parsing, and item selection.
 
-```ts
-type ComboboxProps<TValue = unknown> =
+```typescript
+export type ComboboxProps<TValue = unknown> =
   | ComboboxCustomParserProps<TValue>
   | ComboboxCustomStringProps
   | ComboboxDefaultProps<TValue>;
 ```
 
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `TValue` | Currently selected value |
+| `onValueChange` | `(value: TValue) => void` | Value change callback |
+| `loadItems` | `(query: string) => TValue[] \| Promise<TValue[]>` | Item load function (required) |
+| `debounceMs` | `number` | Debounce delay. Default: `300` |
+| `renderValue` | `(value: TValue) => JSX.Element` | Render selected value (required) |
+| `disabled` | `boolean` | Disabled state |
+| `required` | `boolean` | Required input |
+| `validate` | `(value) => string \| undefined` | Custom validation |
+| `lazyValidation` | `boolean` | Show error only after blur |
+| `placeholder` | `string` | Placeholder text |
+| `size` | `ComponentSize` | Trigger size |
+| `inset` | `boolean` | Borderless style |
+| `allowsCustomValue` | `boolean` | Allow custom text value |
+| `parseCustomValue` | `(text: string) => TValue` | Parse custom text to TValue |
+
 ### Sub-components
 
-- **`Combobox.Item<TValue>`** -- Selectable item.
-- **`Combobox.ItemTemplate`** -- Render template for loaded items.
+- **`Combobox.Item`** -- Selectable item in dropdown. Props: `value: TValue`, `disabled?: boolean`
+- **`Combobox.ItemTemplate`** -- Template function for item rendering
 
-### `ComboboxContext`
+### `ComboboxContextValue`
 
-```ts
-interface ComboboxContextValue<TValue = unknown> {
+```typescript
+export interface ComboboxContextValue<TValue = unknown> {
   isSelected: (value: TValue) => boolean;
   selectValue: (value: TValue) => void;
   closeDropdown: () => void;
   setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
-
-const ComboboxContext: Context<ComboboxContextValue>;
 ```
 
 ### `ComboboxItemProps`
 
-```ts
-interface ComboboxItemProps<TValue = unknown> extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onClick"> {
+```typescript
+export interface ComboboxItemProps<TValue = unknown> {
   value: TValue;
   disabled?: boolean;
 }
 ```
 
+---
+
 ## `TextInput`
 
-Text input field with format, validation, and IME composition support. Has Prefix sub-component.
+Text input field with format masking, prefix slot, and IME composition handling.
 
-```ts
-interface TextInputProps {
+```typescript
+export interface TextInputProps {
   value?: string;
   onValueChange?: (value: string) => void;
   type?: "text" | "password" | "email";
@@ -143,28 +172,32 @@ interface TextInputProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `value` | `string` | Current text value |
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `string` | Input value |
 | `onValueChange` | `(value: string) => void` | Value change callback |
-| `type` | `"text" \| "password" \| "email"` | HTML input type |
-| `format` | `string` | Display format string |
-| `required` | `boolean` | Required validation |
-| `minLength` | `number` | Minimum character length |
-| `maxLength` | `number` | Maximum character length |
-| `pattern` | `string \| RegExp` | Regex validation pattern |
-| `validate` | `(value: string) => string \| undefined` | Custom validation function; return error message |
-| `lazyValidation` | `boolean` | Show error only after blur |
-| `inset` | `boolean` | Borderless inset style |
+| `type` | `"text" \| "password" \| "email"` | Input type. Default: `"text"` |
+| `format` | `string` | Input format mask (e.g., `"XXX-XXXX-XXXX"`) |
+| `required` | `boolean` | Required input |
+| `minLength` / `maxLength` | `number` | Length constraints |
+| `pattern` | `string \| RegExp` | Input validation pattern |
 
-- **`TextInput.Prefix`** -- Slot for prefix icon/element.
+### Sub-components
+
+- **`TextInput.Prefix`** -- Prefix slot (e.g., icon or currency symbol)
+
+### Standalone Export
+
+- **`TextInputPrefix`** -- The slot component, also accessible via `TextInput.Prefix`
+
+---
 
 ## `NumberInput`
 
-Numeric input with grouping and validation. Has Prefix sub-component.
+Numeric input field with thousand separator, decimal formatting, and prefix slot.
 
-```ts
-interface NumberInputProps {
+```typescript
+export interface NumberInputProps {
   value?: number;
   onValueChange?: (value: number | undefined) => void;
   useGrouping?: boolean;
@@ -186,24 +219,31 @@ interface NumberInputProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `useGrouping` | `boolean` | Enable thousands separator |
+| Prop | Type | Description |
+|------|------|-------------|
+| `useGrouping` | `boolean` | Show thousand separator. Default: `true` |
 | `minimumFractionDigits` | `number` | Minimum decimal places |
-| `min` | `number` | Minimum value |
-| `max` | `number` | Maximum value |
+| `min` / `max` | `number` | Value range constraints |
 
-- **`NumberInput.Prefix`** -- Slot for prefix icon/element.
+### Sub-components
+
+- **`NumberInput.Prefix`** -- Prefix slot
+
+### Standalone Export
+
+- **`NumberInputPrefix`** -- The slot component
+
+---
 
 ## `DatePicker`
 
-Date input supporting year/month/date units.
+Date input field supporting year, month, and date units with `DateOnly` type.
 
-```ts
-interface DatePickerProps {
+```typescript
+export interface DatePickerProps {
   value?: DateOnly;
   onValueChange?: (value: DateOnly | undefined) => void;
-  unit?: DatePickerUnit;
+  unit?: "year" | "month" | "date";
   min?: DateOnly;
   max?: DateOnly;
   title?: string;
@@ -219,15 +259,22 @@ interface DatePickerProps {
 }
 ```
 
+| Prop | Type | Description |
+|------|------|-------------|
+| `unit` | `"year" \| "month" \| "date"` | Date unit. Default: `"date"` |
+| `min` / `max` | `DateOnly` | Date range constraints |
+
+---
+
 ## `DateTimePicker`
 
-DateTime input supporting minute/second units.
+DateTime input field supporting minute and second units with `DateTime` type.
 
-```ts
-interface DateTimePickerProps {
+```typescript
+export interface DateTimePickerProps {
   value?: DateTime;
   onValueChange?: (value: DateTime | undefined) => void;
-  unit?: DateTimePickerUnit;
+  unit?: "minute" | "second";
   min?: DateTime;
   max?: DateTime;
   title?: string;
@@ -243,15 +290,21 @@ interface DateTimePickerProps {
 }
 ```
 
+| Prop | Type | Description |
+|------|------|-------------|
+| `unit` | `"minute" \| "second"` | DateTime unit. Default: `"minute"` |
+
+---
+
 ## `TimePicker`
 
-Time input supporting minute/second units.
+Time input field supporting minute and second units with `Time` type.
 
-```ts
-interface TimePickerProps {
+```typescript
+export interface TimePickerProps {
   value?: Time;
   onValueChange?: (value: Time | undefined) => void;
-  unit?: TimePickerUnit;
+  unit?: "minute" | "second";
   title?: string;
   disabled?: boolean;
   readOnly?: boolean;
@@ -267,12 +320,14 @@ interface TimePickerProps {
 }
 ```
 
+---
+
 ## `Textarea`
 
-Multi-line text input with auto-sizing.
+Auto-resizing textarea with IME composition handling.
 
-```ts
-interface TextareaProps {
+```typescript
+export interface TextareaProps {
   value?: string;
   onValueChange?: (value: string) => void;
   placeholder?: string;
@@ -292,12 +347,18 @@ interface TextareaProps {
 }
 ```
 
+| Prop | Type | Description |
+|------|------|-------------|
+| `minRows` | `number` | Minimum visible rows. Default: `1` |
+
+---
+
 ## `Checkbox`
 
-Checkbox with check mark indicator.
+Checkbox toggle component with square indicator and check icon.
 
-```ts
-interface CheckboxProps {
+```typescript
+export interface CheckboxProps {
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
@@ -312,13 +373,15 @@ interface CheckboxProps {
   children?: JSX.Element;
 }
 ```
+
+---
 
 ## `Radio`
 
-Radio button with circular indicator. Same props as Checkbox.
+Radio button component with circular indicator. Always selects to `true` (cannot deselect).
 
-```ts
-interface RadioProps {
+```typescript
+export interface RadioProps {
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
@@ -334,58 +397,58 @@ interface RadioProps {
 }
 ```
 
+---
+
 ## `CheckboxGroup`
 
-Multi-select checkbox group. Compound with Item sub-component.
+Group component for multi-value checkbox selection.
 
-```ts
-interface CheckboxGroupProps<TValue> {
-  value?: TValue[];
-  onValueChange?: (value: TValue[]) => void;
-  disabled?: boolean;
-  size?: CheckboxSize;
-  inline?: boolean;
-  inset?: boolean;
-  required?: boolean;
-  validate?: (value: TValue[]) => string | undefined;
-  lazyValidation?: boolean;
-  class?: string;
-  style?: JSX.CSSProperties;
-  children?: JSX.Element;
-}
-```
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `TValue[]` | Selected values |
+| `onValueChange` | `(value: TValue[]) => void` | Change callback |
+| `disabled` | `boolean` | Disable all items |
+| `size` | `CheckboxSize` | Size for all items |
+| `inline` | `boolean` | Inline display |
+| `inset` | `boolean` | Inset style |
+| `required` | `boolean` | Required (at least one selected) |
+| `validate` | `(value: TValue[]) => string \| undefined` | Custom validation |
+| `lazyValidation` | `boolean` | Lazy validation |
 
-- **`CheckboxGroup.Item<TValue>`** -- Individual checkbox option within group.
+### Sub-components
+
+- **`CheckboxGroup.Item`** -- Individual item. Props: `value: TValue`, `disabled?: boolean`, `children?: JSX.Element`
+
+---
 
 ## `RadioGroup`
 
-Single-select radio group. Compound with Item sub-component.
+Group component for single-value radio selection.
 
-```ts
-interface RadioGroupProps<TValue> {
-  value?: TValue;
-  onValueChange?: (value: TValue) => void;
-  disabled?: boolean;
-  size?: CheckboxSize;
-  inline?: boolean;
-  inset?: boolean;
-  required?: boolean;
-  validate?: (value: TValue | undefined) => string | undefined;
-  lazyValidation?: boolean;
-  class?: string;
-  style?: JSX.CSSProperties;
-  children?: JSX.Element;
-}
-```
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `TValue` | Selected value |
+| `onValueChange` | `(value: TValue) => void` | Change callback |
+| `disabled` | `boolean` | Disable all items |
+| `size` | `CheckboxSize` | Size for all items |
+| `inline` | `boolean` | Inline display |
+| `inset` | `boolean` | Inset style |
+| `required` | `boolean` | Required |
+| `validate` | `(value: TValue \| undefined) => string \| undefined` | Custom validation |
+| `lazyValidation` | `boolean` | Lazy validation |
 
-- **`RadioGroup.Item<TValue>`** -- Individual radio option within group.
+### Sub-components
+
+- **`RadioGroup.Item`** -- Individual item. Props: `value: TValue`, `disabled?: boolean`, `children?: JSX.Element`
+
+---
 
 ## `ColorPicker`
 
-Native HTML color picker input.
+Color picker input using native `<input type="color">`.
 
-```ts
-interface ColorPickerProps {
+```typescript
+export interface ColorPickerProps {
   value?: string;
   onValueChange?: (value: string | undefined) => void;
   title?: string;
@@ -400,14 +463,14 @@ interface ColorPickerProps {
 }
 ```
 
+---
+
 ## `DateRangePicker`
 
-Date range picker with day/month/range modes.
+Date range picker with period type selector (day/month/range). Automatically adjusts from/to when period type changes.
 
-```ts
-type DateRangePeriodType = "day" | "month" | "range";
-
-interface DateRangePickerProps {
+```typescript
+export interface DateRangePickerProps {
   periodType?: DateRangePeriodType;
   onPeriodTypeChange?: (value: DateRangePeriodType) => void;
   from?: DateOnly;
@@ -422,18 +485,20 @@ interface DateRangePickerProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `periodType` | `DateRangePeriodType` | Period selection mode |
-| `from` | `DateOnly` | Range start date |
-| `to` | `DateOnly` | Range end date |
+### `DateRangePeriodType`
+
+```typescript
+export type DateRangePeriodType = "day" | "month" | "range";
+```
+
+---
 
 ## `RichTextEditor`
 
-TipTap-based rich text editor with toolbar.
+WYSIWYG rich text editor powered by TipTap with toolbar. Supports text alignment, color, highlight, tables, and images.
 
-```ts
-interface RichTextEditorProps {
+```typescript
+export interface RichTextEditorProps {
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
@@ -443,12 +508,14 @@ interface RichTextEditorProps {
 }
 ```
 
+---
+
 ## `Numpad`
 
-Virtual number pad with buttons for numeric input.
+On-screen numpad with digit buttons, clear, backspace, and optional enter/minus buttons.
 
-```ts
-interface NumpadProps {
+```typescript
+export interface NumpadProps {
   value?: number;
   onValueChange?: (value: number | undefined) => void;
   placeholder?: string;
@@ -463,19 +530,14 @@ interface NumpadProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `inputDisabled` | `boolean` | Disable direct text input (keypad only) |
-| `withEnterButton` | `boolean` | Show enter/confirm button |
-| `withMinusButton` | `boolean` | Show minus/negative button |
-| `onEnterButtonClick` | `() => void` | Enter button click callback |
+---
 
 ## `StatePreset`
 
-Save/restore state presets with local storage.
+Save/restore named state presets to sync storage. Displays preset chips with restore, overwrite, and delete actions.
 
-```ts
-interface StatePresetProps<TValue> {
+```typescript
+export interface StatePresetProps<TValue> {
   storageKey: string;
   value: TValue;
   onValueChange: (value: TValue) => void;
@@ -485,106 +547,74 @@ interface StatePresetProps<TValue> {
 }
 ```
 
+---
+
 ## `ThemeToggle`
 
-Theme mode toggle button cycling through light/system/dark.
+Theme toggle button cycling through light, system, dark modes. Must be used inside `ThemeProvider`.
 
-```ts
-interface ThemeToggleProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+```typescript
+export interface ThemeToggleProps extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   size?: ComponentSize;
 }
 ```
 
+---
+
 ## `Invalid`
 
-Validation error indicator wrapper component.
+Validation wrapper that displays error indicators (border highlight or dot) on child elements. Integrates with native form validation via hidden input.
 
-```ts
-interface InvalidProps {
+```typescript
+export interface InvalidProps {
   message?: string;
   variant?: "border" | "dot";
   lazyValidation?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | `string` | Error message to display |
-| `variant` | `"border" \| "dot"` | Visual indicator style |
-| `lazyValidation` | `boolean` | Delay showing error until blur |
+| Prop | Type | Description |
+|------|------|-------------|
+| `message` | `string` | Validation error message. Non-empty means invalid |
+| `variant` | `"border" \| "dot"` | Visual indicator style. Default: `"dot"` |
+| `lazyValidation` | `boolean` | Show error only after the target loses focus |
 
-## Field Style Exports
+---
 
-Shared styling utilities for form field components.
+## Style Exports
 
-```ts
-const fieldSurface: string;
-const fieldBaseClass: string;
-const fieldSizeClasses: Record<ComponentSize, string>;
-const fieldInsetClass: string;
-const fieldInsetSizeHeightClasses: Record<ComponentSize, string>;
-const fieldDisabledClass: string;
-const textAreaBaseClass: string;
-const textAreaSizeClasses: Record<ComponentSize, string>;
-const fieldInputClass: string;
-const fieldGapClasses: Record<ComponentSize, string>;
+### `Field.styles`
 
-function getFieldWrapperClass(options: {
-  size?: ComponentSize;
-  disabled?: boolean;
-  inset?: boolean;
-  includeCustomClass?: string | false;
-  extra?: string | false;
-}): string;
-
-function getTextareaWrapperClass(options: {
-  size?: ComponentSize;
-  disabled?: boolean;
-  inset?: boolean;
-  includeCustomClass?: string | false;
-}): string;
-```
+Shared style constants and utility functions for form field components.
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `fieldSurface` | `string` | Common surface styles for form fields |
-| `fieldBaseClass` | `string` | Base wrapper styles |
-| `fieldSizeClasses` | `Record<ComponentSize, string>` | Size-specific styles |
-| `fieldInsetClass` | `string` | Inset/borderless styles |
-| `fieldInsetSizeHeightClasses` | `Record<ComponentSize, string>` | Inset height styles by size |
-| `fieldDisabledClass` | `string` | Disabled state styles |
-| `textAreaBaseClass` | `string` | Textarea wrapper base styles |
-| `textAreaSizeClasses` | `Record<ComponentSize, string>` | Textarea size-specific styles |
-| `fieldInputClass` | `string` | Input element styles |
-| `fieldGapClasses` | `Record<ComponentSize, string>` | Prefix icon gap styles |
-| `getFieldWrapperClass` | `function` | Generate field wrapper CSS classes |
-| `getTextareaWrapperClass` | `function` | Generate textarea wrapper CSS classes |
+| `fieldSurface` | `string` | Common field surface class |
+| `fieldBaseClass` | `string` | Base wrapper class |
+| `fieldSizeClasses` | `Record<ComponentSize, string>` | Size-specific classes |
+| `fieldInsetClass` | `string` | Inset mode styles |
+| `fieldInsetSizeHeightClasses` | `Record<ComponentSize, string>` | Inset height classes |
+| `fieldDisabledClass` | `string` | Disabled styles |
+| `textAreaBaseClass` | `string` | Textarea base class |
+| `textAreaSizeClasses` | `Record<ComponentSize, string>` | Textarea size classes |
+| `fieldInputClass` | `string` | Inner input element class |
+| `fieldGapClasses` | `Record<ComponentSize, string>` | Gap classes for prefix icons |
+| `getFieldWrapperClass` | `(options) => string` | Generate wrapper class |
+| `getTextareaWrapperClass` | `(options) => string` | Generate textarea wrapper class |
 
-## Checkbox Style Exports
-
-Shared styling utilities for checkbox and radio components.
-
-```ts
-type CheckboxSize = ComponentSize;
-
-const checkboxBaseClass: string;
-const indicatorBaseClass: string;
-const checkedClass: string;
-const checkboxSizeClasses: Record<CheckboxSize, string>;
-const checkboxInsetClass: string;
-const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string>;
-const checkboxInlineClass: string;
-const checkboxDisabledClass: string;
-```
+### `Checkbox.styles`
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `CheckboxSize` | `type` | Alias for ComponentSize |
-| `checkboxBaseClass` | `string` | Wrapper base styles |
-| `indicatorBaseClass` | `string` | Indicator base styles |
-| `checkedClass` | `string` | Checked state styles |
-| `checkboxSizeClasses` | `Record<CheckboxSize, string>` | Size-specific wrapper styles |
-| `checkboxInsetClass` | `string` | Inset mode styles |
-| `checkboxInsetSizeHeightClasses` | `Record<CheckboxSize, string>` | Inset size-specific heights |
-| `checkboxInlineClass` | `string` | Inline display styles |
-| `checkboxDisabledClass` | `string` | Disabled state styles |
+| `CheckboxSize` | `ComponentSize` | Size type alias |
+| `checkboxBaseClass` | `string` | Wrapper base class |
+| `indicatorBaseClass` | `string` | Indicator base class |
+| `checkedClass` | `string` | Checked state class |
+| `checkboxSizeClasses` | `Record<CheckboxSize, string>` | Size classes |
+| `checkboxInsetClass` | `string` | Inset class |
+| `checkboxInsetSizeHeightClasses` | `Record<CheckboxSize, string>` | Inset height classes |
+| `checkboxInlineClass` | `string` | Inline class |
+| `checkboxDisabledClass` | `string` | Disabled class |

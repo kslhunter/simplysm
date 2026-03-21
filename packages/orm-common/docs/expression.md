@@ -1,48 +1,45 @@
 # Expression
 
-Dialect-independent SQL expression builder. Generates JSON AST (`Expr`) instead of SQL strings, which `QueryBuilder` converts to each DBMS dialect.
-
-Source: `src/expr/expr-unit.ts`, `src/expr/expr.ts`
-
-## ExprUnit
+## `ExprUnit`
 
 Type-safe expression wrapper. Tracks expression return type using TypeScript generics.
 
 ```typescript
 class ExprUnit<TPrimitive extends ColumnPrimitive> {
   readonly $infer!: TPrimitive;
-  readonly dataType: ColumnPrimitiveStr;
-  readonly expr: Expr;
-
-  /** Strip undefined from the type (non-null assertion) */
   get n(): ExprUnit<NonNullable<TPrimitive>>;
-
-  constructor(dataType: ColumnPrimitiveStr, expr: Expr);
+  constructor(readonly dataType: ColumnPrimitiveStr, readonly expr: Expr);
 }
 ```
 
-## WhereExprUnit
+| Property | Type | Description |
+|----------|------|-------------|
+| `$infer` | `TPrimitive` | Type inference marker (not used at runtime) |
+| `n` | `ExprUnit<NonNullable<TPrimitive>>` | Non-nullable version of this expression |
+| `dataType` | `ColumnPrimitiveStr` | Column data type name |
+| `expr` | `Expr` | Internal expression AST |
+
+## `WhereExprUnit`
 
 Expression wrapper for WHERE clause conditions.
 
 ```typescript
 class WhereExprUnit {
-  readonly expr: WhereExpr;
-  constructor(expr: WhereExpr);
+  constructor(readonly expr: WhereExpr);
 }
 ```
 
-## ExprInput
+## `ExprInput`
 
-Input type that accepts either an `ExprUnit` or a literal value.
+Input type that accepts `ExprUnit` or literal values.
 
 ```typescript
 type ExprInput<TPrimitive extends ColumnPrimitive> = ExprUnit<TPrimitive> | TPrimitive;
 ```
 
-## SwitchExprBuilder
+## `SwitchExprBuilder`
 
-Builder interface returned by `expr.switch()` for CASE WHEN expressions.
+CASE/WHEN expression builder interface.
 
 ```typescript
 interface SwitchExprBuilder<TPrimitive extends ColumnPrimitive> {
@@ -51,246 +48,187 @@ interface SwitchExprBuilder<TPrimitive extends ColumnPrimitive> {
 }
 ```
 
----
+## `expr`
 
-## expr
+Dialect-independent SQL expression builder. Generates JSON AST (`Expr`) instead of SQL strings, which `QueryBuilder` converts to each DBMS (MySQL, MSSQL, PostgreSQL).
 
-The main expression builder object. All methods return `ExprUnit` or `WhereExprUnit`.
+```typescript
+const expr: {
+  // Value creation
+  val<TStr extends ColumnPrimitiveStr>(dataType: TStr, value): ExprUnit<...>;
+  col<TStr extends ColumnPrimitiveStr>(dataType: ColumnPrimitiveStr, ...path: string[]): ExprUnit<...>;
+  raw<T extends ColumnPrimitiveStr>(dataType: T): (strings: TemplateStringsArray, ...values: ExprInput<ColumnPrimitive>[]) => ExprUnit<...>;
+
+  // Comparison (WHERE)
+  eq<T extends ColumnPrimitive>(source: ExprUnit<T>, target: ExprInput<T>): WhereExprUnit;
+  gt<T extends ColumnPrimitive>(source: ExprUnit<T>, target: ExprInput<T>): WhereExprUnit;
+  lt<T extends ColumnPrimitive>(source: ExprUnit<T>, target: ExprInput<T>): WhereExprUnit;
+  gte<T extends ColumnPrimitive>(source: ExprUnit<T>, target: ExprInput<T>): WhereExprUnit;
+  lte<T extends ColumnPrimitive>(source: ExprUnit<T>, target: ExprInput<T>): WhereExprUnit;
+  between<T extends ColumnPrimitive>(source: ExprUnit<T>, from?: ExprInput<T>, to?: ExprInput<T>): WhereExprUnit;
+  isNull(arg: ExprUnit<ColumnPrimitive>): WhereExprUnit;
+  like(source: ExprUnit<string | undefined>, pattern: ExprInput<string>): WhereExprUnit;
+  regexp(source: ExprUnit<string | undefined>, pattern: ExprInput<string>): WhereExprUnit;
+  in<T extends ColumnPrimitive>(source: ExprUnit<T>, values: ExprInput<T>[]): WhereExprUnit;
+  inQuery<T extends ColumnPrimitive>(source: ExprUnit<T>, query: Queryable<any, any>): WhereExprUnit;
+  exists(query: Queryable<any, any>): WhereExprUnit;
+
+  // Logical
+  not(condition: WhereExprUnit): WhereExprUnit;
+  and(...conditions: WhereExprUnit[]): WhereExprUnit;
+  or(...conditions: WhereExprUnit[]): WhereExprUnit;
+
+  // String
+  concat(...args: ExprInput<string | undefined>[]): ExprUnit<string>;
+  left(source: ExprInput<string | undefined>, length: ExprInput<number>): ExprUnit<string>;
+  right(source: ExprInput<string | undefined>, length: ExprInput<number>): ExprUnit<string>;
+  trim(arg: ExprInput<string | undefined>): ExprUnit<string>;
+  padStart(source: ExprInput<string | undefined>, length: ExprInput<number>, fillString: ExprInput<string>): ExprUnit<string>;
+  replace(source: ExprInput<string | undefined>, from: ExprInput<string>, to: ExprInput<string>): ExprUnit<string>;
+  upper(arg: ExprInput<string | undefined>): ExprUnit<string>;
+  lower(arg: ExprInput<string | undefined>): ExprUnit<string>;
+  length(arg: ExprInput<string | undefined>): ExprUnit<number>;
+  byteLength(arg: ExprInput<string | undefined>): ExprUnit<number>;
+  substring(source: ExprInput<string | undefined>, start: ExprInput<number>, length?: ExprInput<number>): ExprUnit<string>;
+  indexOf(source: ExprInput<string | undefined>, search: ExprInput<string>): ExprUnit<number>;
+
+  // Numeric
+  abs(arg: ExprInput<number | undefined>): ExprUnit<number>;
+  round(arg: ExprInput<number | undefined>, digits: number): ExprUnit<number>;
+  ceil(arg: ExprInput<number | undefined>): ExprUnit<number>;
+  floor(arg: ExprInput<number | undefined>): ExprUnit<number>;
+
+  // Date
+  year(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<number>;
+  month(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<number>;
+  day(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<number>;
+  hour(arg: ExprInput<DateTime | undefined>): ExprUnit<number>;
+  minute(arg: ExprInput<DateTime | undefined>): ExprUnit<number>;
+  second(arg: ExprInput<DateTime | undefined>): ExprUnit<number>;
+  isoWeek(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<number>;
+  isoWeekStartDate(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<DateOnly>;
+  isoYearMonth(arg: ExprInput<DateTime | DateOnly | undefined>): ExprUnit<string>;
+  dateDiff(unit: DateUnit, from: ExprInput<ColumnPrimitive>, to: ExprInput<ColumnPrimitive>): ExprUnit<number>;
+  dateAdd(unit: DateUnit, source: ExprInput<ColumnPrimitive>, value: ExprInput<number>): ExprUnit<DateTime>;
+  formatDate(source: ExprInput<ColumnPrimitive>, format: string): ExprUnit<string>;
+
+  // Conditional
+  coalesce<T extends ColumnPrimitive>(...args: ExprInput<T | undefined>[]): ExprUnit<T>;
+  nullIf<T extends ColumnPrimitive>(source: ExprInput<T>, value: ExprInput<T>): ExprUnit<T | undefined>;
+  is(condition: WhereExprUnit): ExprUnit<number>;
+  switch<T extends ColumnPrimitive>(dataType: ColumnPrimitiveStr): SwitchExprBuilder<T>;
+  if<T extends ColumnPrimitive>(condition: WhereExprUnit, then: ExprInput<T>, elseVal?: ExprInput<T>): ExprUnit<T>;
+
+  // Aggregate
+  count(arg?: ExprUnit<ColumnPrimitive>, distinct?: boolean): ExprUnit<number>;
+  sum(arg: ExprUnit<number | undefined>): ExprUnit<number>;
+  avg(arg: ExprUnit<number | undefined>): ExprUnit<number>;
+  max<T extends ColumnPrimitive>(arg: ExprUnit<T>): ExprUnit<T>;
+  min<T extends ColumnPrimitive>(arg: ExprUnit<T>): ExprUnit<T>;
+
+  // Other
+  greatest<T extends ColumnPrimitive>(...args: ExprInput<T>[]): ExprUnit<T>;
+  least<T extends ColumnPrimitive>(...args: ExprInput<T>[]): ExprUnit<T>;
+  rowNum(): ExprUnit<number>;
+  random(): ExprUnit<number>;
+  cast<TDataType extends DataType>(source: ExprInput<ColumnPrimitive>, targetType: TDataType): ExprUnit<InferColumnPrimitiveFromDataType<TDataType>>;
+
+  // Window
+  window(fn: WinFn, spec?: WinSpecInput): ExprUnit<number>;
+
+  // Subquery
+  subquery<T extends ColumnPrimitive>(query: Queryable<any, any>, selectFn: (q: ...) => ExprUnit<T>): ExprUnit<T>;
+};
+```
 
 ### Value Creation
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `val` | `val<TStr>(dataType: TStr, value: T): ExprUnit` | Wrap literal value as expression |
-| `col` | `col<TStr>(dataType: ColumnPrimitiveStr, ...path: string[]): ExprUnit` | Column reference (internal use) |
-| `raw` | `raw<T>(dataType: T): (strings, ...values) => ExprUnit` | Raw SQL tagged template (escape hatch) |
-
-```typescript
-expr.val("string", "active")
-expr.val("number", 100)
-expr.val("DateTime", DateTime.now())
-
-// Raw SQL
-expr.raw("string")`JSON_EXTRACT(${u.metadata}, '$.email')`
-```
-
-### Comparison Operators (WHERE)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `eq(source, target)` | `<=>` / `IS NULL OR =` | Equality (NULL-safe) |
-| `gt(source, target)` | `>` | Greater than |
-| `lt(source, target)` | `<` | Less than |
-| `gte(source, target)` | `>=` | Greater than or equal |
-| `lte(source, target)` | `<=` | Less than or equal |
-| `between(source, from?, to?)` | `BETWEEN` | Range (undefined = unbounded) |
-
-```typescript
-db.user().where((u) => [
-  expr.eq(u.status, "active"),
-  expr.gte(u.age, 18),
-  expr.between(u.score, 60, 100),
-])
-```
-
-### NULL Check
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `null(source)` | `IS NULL` | Check if value is NULL |
-
-### String Search (WHERE)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `like(source, pattern)` | `LIKE ... ESCAPE '\'` | Pattern matching (`%`, `_` wildcards) |
-| `regexp(source, pattern)` | `REGEXP` | Regular expression matching |
-
-### IN / EXISTS (WHERE)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `in(source, values)` | `IN (...)` | Value list inclusion |
-| `inQuery(source, query)` | `IN (SELECT ...)` | Subquery inclusion (single column) |
-| `exists(query)` | `EXISTS (SELECT ...)` | Subquery existence check |
-
-```typescript
-db.user().where((u) => [
-  expr.in(u.status, ["active", "pending"]),
-  expr.exists(
-    db.order().where((o) => [expr.eq(o.userId, u.id)])
-  ),
-])
-```
-
-### Logical Operators (WHERE)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `not(arg)` | `NOT (...)` | Negate a condition |
-| `and(conditions)` | `... AND ...` | All conditions must be true |
-| `or(conditions)` | `... OR ...` | At least one must be true |
-
-### String Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `concat(...args)` | `CONCAT(...)` | String concatenation (NULL-safe) |
-| `left(source, length)` | `LEFT(...)` | Extract from left |
-| `right(source, length)` | `RIGHT(...)` | Extract from right |
-| `trim(source)` | `TRIM(...)` | Remove whitespace |
-| `padStart(source, length, fill)` | `LPAD(...)` | Left padding |
-| `replace(source, from, to)` | `REPLACE(...)` | String replacement |
-| `upper(source)` | `UPPER(...)` | Uppercase |
-| `lower(source)` | `LOWER(...)` | Lowercase |
-| `length(source)` | `CHAR_LENGTH(...)` | Character count |
-| `byteLength(source)` | `OCTET_LENGTH(...)` | Byte count |
-| `substring(source, start, length?)` | `SUBSTRING(...)` | Extract substring (1-based) |
-| `indexOf(source, search)` | `LOCATE(...)`/`CHARINDEX(...)` | Find position (1-based, 0 if not found) |
-
-```typescript
-db.user().select((u) => ({
-  fullName: expr.concat(u.firstName, " ", u.lastName),
-  initial: expr.left(u.name, 1),
-  email: expr.lower(u.email),
-}))
-```
-
-### Numeric Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `abs(source)` | `ABS(...)` | Absolute value |
-| `round(source, digits)` | `ROUND(...)` | Round to N digits |
-| `ceil(source)` | `CEILING(...)` | Ceiling |
-| `floor(source)` | `FLOOR(...)` | Floor |
-
-### Date Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `year(source)` | `YEAR(...)` | Extract year |
-| `month(source)` | `MONTH(...)` | Extract month (1-12) |
-| `day(source)` | `DAY(...)` | Extract day (1-31) |
-| `hour(source)` | `HOUR(...)` | Extract hour (0-23) |
-| `minute(source)` | `MINUTE(...)` | Extract minute (0-59) |
-| `second(source)` | `SECOND(...)` | Extract second (0-59) |
-| `isoWeek(source)` | `WEEK(..., 3)` | ISO week number (1-53) |
-| `isoWeekStartDate(source)` | (computed) | Monday of the week |
-| `isoYearMonth(source)` | (computed) | First day of the month |
-| `dateDiff(unit, from, to)` | `DATEDIFF(...)` | Date difference |
-| `dateAdd(unit, source, value)` | `DATEADD(...)` | Add to date |
-| `formatDate(source, format)` | `DATE_FORMAT(...)` | Format date as string |
-
-`DateUnit` values: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`
-
-```typescript
-db.user().select((u) => ({
-  age: expr.dateDiff("year", u.birthDate, expr.val("DateOnly", DateOnly.today())),
-  expiresAt: expr.dateAdd("month", u.startDate, 12),
-}))
-```
-
-### Conditional Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `coalesce(...args)` | `COALESCE(...)` | First non-null value |
-| `nullIf(source, value)` | `NULLIF(...)` | Return NULL if equal |
-| `is(condition)` | (computed) | Transform WHERE to boolean column |
-| `switch<T>()` | `CASE WHEN ... END` | CASE WHEN builder |
-| `if(condition, then, else_)` | `IF(...)`/`IIF(...)` | Ternary conditional |
-
-```typescript
-db.user().select((u) => ({
-  displayName: expr.coalesce(u.nickname, u.name, "Guest"),
-  isActive: expr.is(expr.eq(u.status, "active")),
-  grade: expr.switch<string>()
-    .case(expr.gte(u.score, 90), "A")
-    .case(expr.gte(u.score, 80), "B")
-    .default("C"),
-}))
-```
-
-### Aggregate Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `count(arg?, distinct?)` | `COUNT(...)` | Row count |
-| `sum(arg)` | `SUM(...)` | Sum (NULL ignored) |
-| `avg(arg)` | `AVG(...)` | Average (NULL ignored) |
-| `max(arg)` | `MAX(...)` | Maximum value |
-| `min(arg)` | `MIN(...)` | Minimum value |
-
-### Other Functions (SELECT)
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `greatest(...args)` | `GREATEST(...)` | Greatest among values |
-| `least(...args)` | `LEAST(...)` | Least among values |
-| `rowNum()` | (computed) | Row number (no OVER) |
-| `random()` | `RAND()`/`RANDOM()` | Random number (0-1) |
-| `cast(source, targetType)` | `CAST(... AS ...)` | Type conversion |
-| `subquery(dataType, queryable)` | `(SELECT ...)` | Scalar subquery |
-
-```typescript
-db.user().select((u) => ({
-  id: u.id,
-  postCount: expr.subquery("number",
-    db.post()
-      .where((p) => [expr.eq(p.userId, u.id)])
-      .select(() => ({ cnt: expr.count() }))
-  ),
-}))
-```
-
-### Window Functions (SELECT)
-
-All window functions accept a `WinSpecInput`:
-
-```typescript
-interface WinSpecInput {
-  partitionBy?: ExprInput<ColumnPrimitive>[];
-  orderBy?: [ExprInput<ColumnPrimitive>, ("ASC" | "DESC")?][];
-}
-```
-
-| Method | SQL | Description |
-|--------|-----|-------------|
-| `rowNumber(spec)` | `ROW_NUMBER() OVER(...)` | Row number within partition |
-| `rank(spec)` | `RANK() OVER(...)` | Rank (ties skip: 1,1,3) |
-| `denseRank(spec)` | `DENSE_RANK() OVER(...)` | Dense rank (ties consecutive: 1,1,2) |
-| `ntile(n, spec)` | `NTILE(n) OVER(...)` | Split into n groups |
-| `lag(column, spec, options?)` | `LAG() OVER(...)` | Previous row value |
-| `lead(column, spec, options?)` | `LEAD() OVER(...)` | Next row value |
-| `firstValue(column, spec)` | `FIRST_VALUE() OVER(...)` | First value in frame |
-| `lastValue(column, spec)` | `LAST_VALUE() OVER(...)` | Last value in frame |
-| `sumOver(column, spec)` | `SUM() OVER(...)` | Window sum |
-| `avgOver(column, spec)` | `AVG() OVER(...)` | Window average |
-| `countOver(spec, column?)` | `COUNT() OVER(...)` | Window count |
-| `minOver(column, spec)` | `MIN() OVER(...)` | Window minimum |
-| `maxOver(column, spec)` | `MAX() OVER(...)` | Window maximum |
-
-`lag` and `lead` options:
-- `offset?: number` -- default 1
-- `default?: ExprInput<T>` -- default value when no row exists
-
-```typescript
-db.order().select((o) => ({
-  ...o,
-  rowNum: expr.rowNumber({
-    partitionBy: [o.userId],
-    orderBy: [[o.createdAt, "DESC"]],
-  }),
-  runningTotal: expr.sumOver(o.amount, {
-    partitionBy: [o.userId],
-    orderBy: [[o.createdAt, "ASC"]],
-  }),
-}))
-```
-
-### Helper
-
 | Method | Description |
 |--------|-------------|
-| `toExpr(value: ExprInput<ColumnPrimitive>): Expr` | Convert ExprInput to Expr JSON AST (internal use) |
+| `val()` | Wrap literal value as ExprUnit |
+| `col()` | Generate column reference |
+| `raw()` | Raw SQL expression (escape hatch, tagged template literal) |
+
+### Comparison (WHERE)
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `eq()` | `=` | Equality comparison (NULL-safe) |
+| `gt()` | `>` | Greater than |
+| `lt()` | `<` | Less than |
+| `gte()` | `>=` | Greater than or equal |
+| `lte()` | `<=` | Less than or equal |
+| `between()` | `BETWEEN` | Range comparison |
+| `isNull()` | `IS NULL` | NULL check |
+| `like()` | `LIKE` | Pattern matching |
+| `regexp()` | `REGEXP` | Regular expression matching |
+| `in()` | `IN` | Value list inclusion |
+| `inQuery()` | `IN (SELECT)` | Subquery inclusion |
+| `exists()` | `EXISTS` | Subquery existence |
+
+### Logical
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `not()` | `NOT` | Logical negation |
+| `and()` | `AND` | Logical conjunction |
+| `or()` | `OR` | Logical disjunction |
+
+### String Functions
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `concat()` | `CONCAT` | String concatenation |
+| `left()` | `LEFT` | Extract left N characters |
+| `right()` | `RIGHT` | Extract right N characters |
+| `trim()` | `TRIM` | Remove leading/trailing whitespace |
+| `padStart()` | `LPAD` | Left padding |
+| `replace()` | `REPLACE` | String replacement |
+| `upper()` | `UPPER` | Uppercase |
+| `lower()` | `LOWER` | Lowercase |
+| `length()` | `CHAR_LENGTH` | Character length |
+| `byteLength()` | `LENGTH/DATALENGTH` | Byte length |
+| `substring()` | `SUBSTRING` | Substring extraction |
+| `indexOf()` | `LOCATE/CHARINDEX` | Find string position |
+
+### Numeric Functions
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `abs()` | `ABS` | Absolute value |
+| `round()` | `ROUND` | Rounding |
+| `ceil()` | `CEIL` | Ceiling |
+| `floor()` | `FLOOR` | Floor |
+
+### Date Functions
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `year()` | `YEAR` | Extract year |
+| `month()` | `MONTH` | Extract month |
+| `day()` | `DAY` | Extract day |
+| `hour()` | `HOUR` | Extract hour |
+| `minute()` | `MINUTE` | Extract minute |
+| `second()` | `SECOND` | Extract second |
+| `isoWeek()` | `WEEK` | ISO week number |
+| `isoWeekStartDate()` | - | ISO week start date |
+| `isoYearMonth()` | - | ISO year-month (YYYYMM) |
+| `dateDiff()` | `DATEDIFF` | Date difference |
+| `dateAdd()` | `DATEADD` | Date arithmetic |
+| `formatDate()` | `FORMAT/DATE_FORMAT` | Date formatting |
+
+### Aggregate Functions
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `count()` | `COUNT` | Record count |
+| `sum()` | `SUM` | Sum |
+| `avg()` | `AVG` | Average |
+| `max()` | `MAX` | Maximum |
+| `min()` | `MIN` | Minimum |
+
+### Window Functions
+
+| Method | SQL | Description |
+|--------|-----|-------------|
+| `window()` | `OVER(...)` | Window function (rowNumber, rank, denseRank, ntile, lag, lead, firstValue, lastValue, sum, avg, count, min, max) |

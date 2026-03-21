@@ -1,10 +1,8 @@
 # Core
 
-Service definition, context, authentication, and method execution.
+## `ServiceContext`
 
-## ServiceContext
-
-Context object passed to service factory functions.
+Context object passed to service factory functions. Provides access to server, socket, auth info, and configuration.
 
 ```typescript
 interface ServiceContext<TAuthInfo = unknown> {
@@ -14,7 +12,9 @@ interface ServiceContext<TAuthInfo = unknown> {
     clientName: string;
     authTokenPayload?: AuthTokenPayload<TAuthInfo>;
   };
-  legacy?: { clientName?: string };
+  legacy?: {
+    clientName?: string;
+  };
 
   get authInfo(): TAuthInfo | undefined;
   get clientName(): string | undefined;
@@ -23,13 +23,20 @@ interface ServiceContext<TAuthInfo = unknown> {
 }
 ```
 
-**Properties:**
-- `authInfo` -- Authenticated user data (from socket or HTTP auth token)
-- `clientName` -- Client application name (validated for path traversal)
-- `clientPath` -- Resolved client directory path (`{rootPath}/www/{clientName}`)
-- `getConfig(section)` -- Reads config from `.config.json` files (root + client-specific, merged)
+| Property | Type | Description |
+|----------|------|-------------|
+| `server` | `ServiceServer<TAuthInfo>` | Server instance |
+| `socket` | `ServiceSocket` | WebSocket connection (if via WebSocket) |
+| `http` | `object` | HTTP request info (if via HTTP) |
+| `legacy` | `object` | V1 legacy context (auto-update only) |
+| `authInfo` | `TAuthInfo \| undefined` | Authenticated user data |
+| `clientName` | `string \| undefined` | Client name |
+| `clientPath` | `string \| undefined` | Resolved client path on disk |
+| `getConfig()` | `<T>(section) => Promise<T>` | Read config from `.config.json` files |
 
-### `createServiceContext`
+## `createServiceContext`
+
+Create a service context instance.
 
 ```typescript
 function createServiceContext<TAuthInfo = unknown>(
@@ -40,44 +47,9 @@ function createServiceContext<TAuthInfo = unknown>(
 ): ServiceContext<TAuthInfo>;
 ```
 
----
+## `ServiceDefinition`
 
-## Auth Helpers
-
-### `getServiceAuthPermissions`
-
-Read auth permissions from an `auth()`-wrapped function. Returns `undefined` if not wrapped.
-
-```typescript
-function getServiceAuthPermissions(fn: Function): string[] | undefined;
-```
-
-### `auth`
-
-Auth wrapper for service factories and methods.
-
-```typescript
-// Login required (no specific roles)
-function auth<TFunction extends (...args: any[]) => any>(fn: TFunction): TFunction;
-
-// Login required with specific roles
-function auth<TFunction extends (...args: any[]) => any>(
-  permissions: string[],
-  fn: TFunction,
-): TFunction;
-```
-
-**Usage levels:**
-- Service-level: `auth((ctx) => ({ ... }))` -- all methods require login
-- Service-level with roles: `auth(["admin"], (ctx) => ({ ... }))`
-- Method-level: `auth(() => result)` -- this method requires login
-- Method-level with roles: `auth(["admin"], () => result)`
-
----
-
-## Service Definition
-
-### `ServiceDefinition`
+Service definition object. Contains name, factory function, and optional auth permissions.
 
 ```typescript
 interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> {
@@ -87,7 +59,13 @@ interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> 
 }
 ```
 
-### `defineService`
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | Service name |
+| `factory` | `(ctx: ServiceContext) => TMethods` | Factory function that creates method object |
+| `authPermissions` | `string[]` | Required permissions (from `auth()` wrapper) |
+
+## `defineService`
 
 Define a service with a name and factory function.
 
@@ -98,19 +76,37 @@ function defineService<TMethods extends Record<string, (...args: any[]) => any>>
 ): ServiceDefinition<TMethods>;
 ```
 
-**Example:**
-```typescript
-const HealthService = defineService("Health", (ctx) => ({
-  check: () => ({ status: "ok" }),
-}));
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Service name |
+| `factory` | `(ctx: ServiceContext) => TMethods` | Factory function |
 
-const UserService = defineService("User", auth((ctx) => ({
-  getProfile: () => ctx.authInfo,
-  adminOnly: auth(["admin"], () => "admin"),
-})));
+## `auth`
+
+Auth wrapper for service factories and methods. Can be applied at service-level or method-level with optional role requirements.
+
+```typescript
+function auth<TFunction extends (...args: any[]) => any>(fn: TFunction): TFunction;
+function auth<TFunction extends (...args: any[]) => any>(
+  permissions: string[],
+  fn: TFunction,
+): TFunction;
 ```
 
-### `ServiceMethods`
+| Overload | Description |
+|----------|-------------|
+| `auth(fn)` | Require login (any authenticated user) |
+| `auth(["admin"], fn)` | Require specific roles |
+
+## `getServiceAuthPermissions`
+
+Read auth permissions from an `auth()`-wrapped function. Returns `undefined` if not wrapped.
+
+```typescript
+function getServiceAuthPermissions(fn: Function): string[] | undefined;
+```
+
+## `ServiceMethods`
 
 Extract method signatures from a `ServiceDefinition` for client-side type sharing.
 
@@ -119,19 +115,9 @@ type ServiceMethods<TDefinition> =
   TDefinition extends ServiceDefinition<infer M> ? M : never;
 ```
 
-**Example:**
-```typescript
-export type UserServiceType = ServiceMethods<typeof UserService>;
-// Client: client.getService<UserServiceType>("User");
-```
+## `executeServiceMethod`
 
----
-
-## Service Execution
-
-### `executeServiceMethod`
-
-Execute a service method with auth checking.
+Execute a service method with authentication and authorization checks.
 
 ```typescript
 async function executeServiceMethod(
@@ -145,17 +131,3 @@ async function executeServiceMethod(
   },
 ): Promise<unknown>;
 ```
-
-**Behavior:**
-1. Finds the service definition by name
-2. Validates the client name (path traversal guard)
-3. Creates a `ServiceContext`
-4. Invokes the factory to create the method object
-5. Checks auth permissions (method-level first, then service-level fallback)
-6. Executes the method with provided params
-
-Throws:
-- `"Service [name] not found."` if service is not registered
-- `"Method [service.method] not found."` if method does not exist
-- `"Login is required."` if auth is required but no token is present
-- `"Insufficient permissions."` if the user lacks required roles

@@ -4,12 +4,10 @@ Source: `src/components/feedback/**`
 
 ## `Progress`
 
-Animated progress bar with semantic theme.
+Progress bar component with theme colors and custom content support.
 
-```ts
-type ProgressTheme = SemanticTheme;
-
-interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
   value: number;
   theme?: ProgressTheme;
   size?: ComponentSize;
@@ -17,34 +15,56 @@ interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `value` | `number` | Progress percentage (0-100) |
-| `theme` | `ProgressTheme` | Semantic color theme |
-| `size` | `ComponentSize` | Size scale |
-| `inset` | `boolean` | Borderless inset style |
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `number` | Progress value (0-100) |
+| `theme` | `SemanticTheme` | Bar color theme. Default: `"primary"` |
+| `size` | `ComponentSize` | Padding size |
+| `inset` | `boolean` | Borderless transparent background mode |
 
-Renders percentage text or custom children inside the bar.
+### `ProgressTheme`
+
+```typescript
+export type ProgressTheme = SemanticTheme;
+```
+
+---
 
 ## `NotificationProvider`
 
-Notification system provider. Maintains up to 50 notifications with aria-live region for accessibility.
+Provider for the notification system. Maintains up to 50 notifications.
 
-```ts
-const NotificationProvider: ParentComponent;
+### `useNotification`
+
+```typescript
+export function useNotification(): NotificationContextValue;
 ```
 
-### `useNotification()`
+### `NotificationContextValue`
 
-```ts
-type NotificationTheme = "info" | "success" | "warning" | "danger";
-
-interface NotificationAction {
-  label: string;
-  onClick: () => void;
+```typescript
+export interface NotificationContextValue {
+  items: Accessor<NotificationItem[]>;
+  unreadCount: Accessor<number>;
+  latestUnread: Accessor<NotificationItem | undefined>;
+  info: (title: string, message?: string, options?: NotificationOptions) => string;
+  success: (title: string, message?: string, options?: NotificationOptions) => string;
+  warning: (title: string, message?: string, options?: NotificationOptions) => string;
+  danger: (title: string, message?: string, options?: NotificationOptions) => string;
+  error: (err?: any, header?: string) => void;
+  update: (id: string, updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>, options?: NotificationUpdateOptions) => void;
+  remove: (id: string) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  dismissBanner: () => void;
+  clear: () => void;
 }
+```
 
-interface NotificationItem {
+### `NotificationItem`
+
+```typescript
+export interface NotificationItem {
   id: string;
   theme: NotificationTheme;
   title: string;
@@ -53,115 +73,102 @@ interface NotificationItem {
   createdAt: Date;
   read: boolean;
 }
-
-interface NotificationOptions {
-  action?: NotificationAction;
-}
-
-interface NotificationUpdateOptions {
-  renotify?: boolean;
-}
-
-interface NotificationContextValue {
-  items: Accessor<NotificationItem[]>;
-  unreadCount: Accessor<number>;
-  latestUnread: Accessor<NotificationItem | undefined>;
-  info(title: string, message?: string, options?: NotificationOptions): string;
-  success(title: string, message?: string, options?: NotificationOptions): string;
-  warning(title: string, message?: string, options?: NotificationOptions): string;
-  danger(title: string, message?: string, options?: NotificationOptions): string;
-  error(title: string, error: unknown): string;
-  update(id: string, data: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>, options?: NotificationUpdateOptions): void;
-  remove(id: string): void;
-  markAsRead(id: string): void;
-  markAllAsRead(): void;
-  dismissBanner(): void;
-  clear(): void;
-}
-
-const NotificationContext: Context<NotificationContextValue>;
-function useNotification(): NotificationContextValue;
 ```
 
-| Method | Description |
-|--------|-------------|
-| `info()` | Create info notification, returns id |
-| `success()` | Create success notification, returns id |
-| `warning()` | Create warning notification, returns id |
-| `danger()` | Create danger notification, returns id |
-| `error()` | Create error notification from Error object, returns id |
-| `update()` | Update existing notification by id |
-| `remove()` | Remove notification by id |
-| `markAsRead()` | Mark single notification as read |
-| `markAllAsRead()` | Mark all notifications as read |
-| `dismissBanner()` | Dismiss the banner display |
-| `clear()` | Remove all notifications |
+### `NotificationTheme`
+
+```typescript
+export type NotificationTheme = "info" | "success" | "warning" | "danger";
+```
+
+### `NotificationAction`
+
+```typescript
+export interface NotificationAction {
+  label: string;
+  onClick: () => void;
+}
+```
+
+### `NotificationOptions`
+
+```typescript
+export interface NotificationOptions {
+  action?: NotificationAction;
+}
+```
+
+### `NotificationUpdateOptions`
+
+```typescript
+export interface NotificationUpdateOptions {
+  renotify?: boolean;
+}
+```
+
+---
 
 ## `NotificationBell`
 
-Bell icon with unread badge and dropdown notification list.
+Bell icon button that shows unread count badge and dropdown notification list.
 
-```ts
-interface NotificationBellProps {
+```typescript
+export interface NotificationBellProps {
   showBanner?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `showBanner` | `boolean` | Show notification banner |
+| Prop | Type | Description |
+|------|------|-------------|
+| `showBanner` | `boolean` | Show notification banner. Default: `true` |
+
+---
 
 ## `NotificationBanner`
 
-Portal-rendered banner showing latest unread notification with dismiss/action buttons.
+Fixed-position banner showing the latest unread notification with dismiss and action buttons.
 
-```ts
-const NotificationBanner: Component;
-```
+No props (reads from `NotificationContext`).
 
-No props. Must be inside NotificationProvider.
+---
 
 ## `BusyProvider`
 
-Busy overlay provider with nestable show/hide calls.
+Provider for busy overlay state management. Supports nested show/hide calls.
 
-```ts
-type BusyVariant = "spinner" | "bar";
-
-interface BusyProviderProps {
+```typescript
+export interface BusyProviderProps {
   variant?: BusyVariant;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `variant` | `BusyVariant` | Display style (default: "spinner") |
+### `BusyVariant`
 
-### `useBusy()`
+```typescript
+export type BusyVariant = "spinner" | "bar";
+```
 
-```ts
-interface BusyContextValue {
+### `useBusy`
+
+```typescript
+export function useBusy(): BusyContextValue;
+
+export interface BusyContextValue {
   variant: Accessor<BusyVariant>;
   show: (message?: string) => void;
   hide: () => void;
   setProgress: (percent: number | undefined) => void;
 }
-
-function useBusy(): BusyContextValue;
 ```
 
-| Method | Description |
-|--------|-------------|
-| `show()` | Show busy overlay with optional message. Nestable (counter-based). |
-| `hide()` | Hide busy overlay. Must match each show() call. |
-| `setProgress()` | Set progress percentage (undefined = indeterminate) |
+---
 
 ## `BusyContainer`
 
-Standalone busy container with spinner/bar variants, optional progress bar, and keyboard blocking.
+Inline loading overlay component with spinner or progress bar variants.
 
-```ts
-interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+```typescript
+export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   busy?: boolean;
   ready?: boolean;
   variant?: BusyVariant;
@@ -171,59 +178,56 @@ interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `busy` | `boolean` | Show loading overlay |
-| `ready` | `boolean` | If false, children are hidden |
-| `variant` | `BusyVariant` | Spinner or progress bar |
+| Prop | Type | Description |
+|------|------|-------------|
+| `busy` | `boolean` | Show loading overlay (children preserved) |
+| `ready` | `boolean` | If `false`, children hidden and loading shown (initial loading) |
+| `variant` | `BusyVariant` | Display style. Inherits from `BusyProvider` context |
 | `message` | `string` | Loading message text |
-| `progressPercent` | `number` | Progress percentage (0-100) |
+| `progressPercent` | `number` | Progress bar value (0-100) |
+
+---
 
 ## `PrintProvider`
 
-Print/PDF generation provider. Renders factory content off-screen for capture.
+Provider for print-to-printer and print-to-PDF functionality.
 
-```ts
-const PrintProvider: ParentComponent;
-```
+### `usePrint`
 
-### `usePrint()`
+```typescript
+export function usePrint(): PrintContextValue;
 
-```ts
-interface PrintOptions {
-  size?: string;
-  margin?: string;
-}
-
-interface PrintContextValue {
+export interface PrintContextValue {
   toPrinter: (factory: () => JSX.Element, options?: PrintOptions) => Promise<void>;
   toPdf: (factory: () => JSX.Element, options?: PrintOptions) => Promise<Uint8Array>;
 }
-
-function usePrint(): PrintContextValue;
 ```
 
-| Method | Description |
-|--------|-------------|
-| `toPrinter()` | Render content and send to system printer |
-| `toPdf()` | Render content and return PDF as Uint8Array |
+### `PrintOptions`
 
-### `usePrintInstance()`
+```typescript
+export interface PrintOptions {
+  size?: string;
+  margin?: string;
+}
+```
 
-```ts
-interface PrintInstance {
+### `usePrintInstance`
+
+```typescript
+export function usePrintInstance(): PrintInstance | undefined;
+
+export interface PrintInstance {
   ready: () => void;
 }
-
-function usePrintInstance(): PrintInstance | undefined;
 ```
 
-Call `ready()` inside print content to signal that async content has loaded.
+---
 
 ## `Print`
 
-Print content wrapper with page break support.
+Wrapper component for print content with page separation.
 
 ### Sub-components
 
-- **`Print.Page`** -- Page break boundary. Uses `[data-print-page]` attribute for CSS page breaks.
+- **`Print.Page`** -- Individual print page container

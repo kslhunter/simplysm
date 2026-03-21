@@ -4,23 +4,26 @@ Source: `src/helpers/**`
 
 ## `mergeStyles`
 
-Merge CSS style objects and/or strings into a single JSX.CSSProperties object.
+Utility function that merges CSS styles. Supports string, object, and mixed formats. Converts kebab-case CSS strings to camelCase object properties. Later values take precedence.
 
-```ts
-function mergeStyles(...styles: (JSX.CSSProperties | string | undefined)[]): JSX.CSSProperties;
+```typescript
+export function mergeStyles(
+  ...styles: (JSX.CSSProperties | string | undefined)[]
+): JSX.CSSProperties;
 ```
 
-Accepts any combination of style objects and CSS strings. Undefined values are ignored.
+---
 
 ## `createAppStructure`
 
-Create typed app structure with routes, menus, and permissions. Returns a provider component and a hook.
+Factory function for defining app navigation structure with type-safe permission inference. Generates routes, menus, and permission trees from a declarative item definition.
 
-```ts
-function createAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(
+```typescript
+export function createAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(
   getOpts: () => {
     items: TItems;
-    hasPermission: (code: string, perm: string) => boolean;
+    usableModules?: Accessor<TModule[] | undefined>;
+    permRecord?: Accessor<Record<string, boolean> | undefined>;
   },
 ): {
   AppStructureProvider: ParentComponent;
@@ -28,12 +31,37 @@ function createAppStructure<TModule, const TItems extends AppStructureItem<TModu
 };
 ```
 
+### `AppStructure`
+
+```typescript
+export interface AppStructure<TModule> {
+  items: AppStructureItem<TModule>[];
+  usableRoutes: Accessor<AppRoute[]>;
+  usableMenus: Accessor<AppMenu[]>;
+  usableFlatMenus: Accessor<AppFlatMenu[]>;
+  usablePerms: Accessor<AppPerm<TModule>[]>;
+  allFlatPerms: AppFlatPerm<TModule>[];
+  getTitleChainByHref(href: string): string[];
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `usableRoutes` | `Accessor<AppRoute[]>` | Routes filtered by module and permission |
+| `usableMenus` | `Accessor<AppMenu[]>` | Menu tree filtered by module and permission |
+| `usableFlatMenus` | `Accessor<AppFlatMenu[]>` | Flat menu list with title chains |
+| `usablePerms` | `Accessor<AppPerm[]>` | Permission tree filtered by module |
+| `allFlatPerms` | `AppFlatPerm[]` | All permissions flattened (static) |
+| `getTitleChainByHref` | `(href) => string[]` | Get breadcrumb title chain for URL |
+
 ### Input Types
 
-```ts
-type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
+```typescript
+export type AppStructureItem<TModule> =
+  | AppStructureGroupItem<TModule>
+  | AppStructureLeafItem<TModule>;
 
-interface AppStructureGroupItem<TModule> {
+export interface AppStructureGroupItem<TModule> {
   code: string;
   title: string;
   icon?: Component<IconProps>;
@@ -42,7 +70,7 @@ interface AppStructureGroupItem<TModule> {
   children: AppStructureItem<TModule>[];
 }
 
-interface AppStructureLeafItem<TModule> {
+export interface AppStructureLeafItem<TModule> {
   code: string;
   title: string;
   icon?: Component<IconProps>;
@@ -54,7 +82,7 @@ interface AppStructureLeafItem<TModule> {
   isNotMenu?: boolean;
 }
 
-interface AppStructureSubPerm<TModule> {
+export interface AppStructureSubPerm<TModule> {
   code: string;
   title: string;
   modules?: TModule[];
@@ -68,8 +96,8 @@ interface AppStructureSubPerm<TModule> {
 | `code` | `string` | Unique item identifier |
 | `title` | `string` | Display title |
 | `icon` | `Component<IconProps>` | Navigation icon |
-| `modules` | `TModule[]` | Required modules for visibility |
-| `requiredModules` | `TModule[]` | Strictly required modules |
+| `modules` | `TModule[]` | Required modules (any match) |
+| `requiredModules` | `TModule[]` | Strictly required modules (all match) |
 | `children` | `AppStructureItem[]` | Child items (group only) |
 | `component` | `Component` | Page component (leaf only) |
 | `perms` | `("use" \| "edit")[]` | Permission types (leaf only) |
@@ -80,35 +108,20 @@ Discriminated union: items with `children` are groups; items without are leaves.
 
 ### Output Types
 
-```ts
-interface AppStructure<TModule> {
-  items: AppStructureItem<TModule>[];
-  usableRoutes: Accessor<AppRoute[]>;
-  usableMenus: Accessor<AppMenu[]>;
-  usableFlatMenus: Accessor<AppFlatMenu[]>;
-  usablePerms: Accessor<AppPerm<TModule>[]>;
-  allFlatPerms: AppFlatPerm<TModule>[];
-  getTitleChainByHref(href: string): string[];
-}
-
-interface AppRoute {
-  path: string;
-  component: Component;
-}
-
-interface AppMenu {
+```typescript
+export interface AppMenu {
   title: string;
   href?: string;
   icon?: Component<IconProps>;
   children?: AppMenu[];
 }
 
-interface AppFlatMenu {
-  titleChain: string[];
-  href: string;
+export interface AppRoute {
+  path: string;
+  component: Component;
 }
 
-interface AppPerm<TModule = string> {
+export interface AppPerm<TModule = string> {
   title: string;
   href?: string;
   modules?: TModule[];
@@ -116,48 +129,78 @@ interface AppPerm<TModule = string> {
   children?: AppPerm<TModule>[];
 }
 
-interface AppFlatPerm<TModule = string> {
+export interface AppFlatPerm<TModule = string> {
   titleChain: string[];
   code: string;
   modulesChain: TModule[][];
   requiredModulesChain: TModule[][];
 }
+
+export interface AppFlatMenu {
+  titleChain: string[];
+  href: string;
+}
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `usableRoutes` | `Accessor<AppRoute[]>` | Routes filtered by permission |
-| `usableMenus` | `Accessor<AppMenu[]>` | Menu tree filtered by permission |
-| `usableFlatMenus` | `Accessor<AppFlatMenu[]>` | Flat menu list with title chains |
-| `usablePerms` | `Accessor<AppPerm[]>` | Permission tree filtered by permission |
-| `allFlatPerms` | `AppFlatPerm[]` | All permissions flattened |
-| `getTitleChainByHref` | `(href) => string[]` | Get breadcrumb title chain for URL |
+---
 
 ## `createSlot`
 
-Create a single-item slot for compound component patterns.
+Creates a single-occupancy slot pattern for compound components.
 
-```ts
-function createSlot<TItem>(): [SlotComponent, createSlotAccessor];
+```typescript
+export function createSlot<TItem>(): [
+  SlotComponent: (props: TItem) => null,
+  createSlotAccessor: () => [Accessor<TItem | undefined>, ParentComponent],
+];
 ```
 
-Returns a tuple of:
-1. **SlotComponent** -- Component that children use to register slot content.
-2. **createSlotAccessor** -- Function to access the registered slot content.
+Returns a tuple of `[SlotComponent, createSlotAccessor]`:
+- **`SlotComponent`** -- Rendered inside provider to register slot content (throws if slot already occupied)
+- **`createSlotAccessor`** -- Returns `[accessor, Provider]` for reading and providing the slot
+
+---
 
 ## `createSlots`
 
-Create multi-item slots for compound component patterns (e.g., multiple columns).
+Creates a multi-occupancy slot pattern for compound components (multiple items).
 
-```ts
-interface SlotRegistrar<TItem> {
+```typescript
+export function createSlots<TItem>(): [
+  SlotComponent: (props: TItem) => null,
+  createSlotsAccessor: () => [Accessor<TItem[]>, ParentComponent],
+];
+```
+
+### `SlotRegistrar`
+
+```typescript
+export interface SlotRegistrar<TItem> {
   add: (item: TItem) => void;
   remove: (item: TItem) => void;
 }
-
-function createSlots<TItem>(): [SlotComponent, createSlotsAccessor];
 ```
 
-Returns a tuple of:
-1. **SlotComponent** -- Component that children use to register multiple slot items.
-2. **createSlotsAccessor** -- Function to access an array of registered slot items.
+---
+
+## `startPointerDrag`
+
+Sets up pointer capture and manages pointermove/pointerup lifecycle for drag operations.
+
+```typescript
+export function startPointerDrag(
+  target: HTMLElement,
+  pointerId: number,
+  options: {
+    onMove: (e: PointerEvent) => void;
+    onEnd: (e: PointerEvent) => void;
+  },
+): void;
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `target` | `HTMLElement` | Element to capture pointer on |
+| `pointerId` | `number` | Pointer ID from the initiating PointerEvent |
+| `options.onMove` | `(e: PointerEvent) => void` | Called on each pointermove |
+| `options.onEnd` | `(e: PointerEvent) => void` | Called on pointerup or pointercancel |

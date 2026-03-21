@@ -4,7 +4,7 @@ JWT-based authentication utilities using the `jose` library (HS256 algorithm).
 
 ## `AuthTokenPayload`
 
-JWT token payload structure. Extends `JWTPayload` from `jose`.
+JWT token payload with roles and custom data. Extends `JWTPayload` from `jose`.
 
 ```typescript
 interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
@@ -13,9 +13,14 @@ interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `roles` | `string[]` | User roles for permission checking |
+| `data` | `TAuthInfo` | Custom auth data (user info, etc.) |
+
 ## `signJwt`
 
-Sign a JWT token. Tokens expire after 12 hours.
+Sign a JWT token with HS256 algorithm. Token expires in 12 hours.
 
 ```typescript
 async function signJwt<TAuthInfo = unknown>(
@@ -24,9 +29,14 @@ async function signJwt<TAuthInfo = unknown>(
 ): Promise<string>;
 ```
 
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `jwtSecret` | `string` | Secret key for signing |
+| `payload` | `AuthTokenPayload<TAuthInfo>` | Token payload |
+
 ## `verifyJwt`
 
-Verify a JWT token and return the payload.
+Verify and decode a JWT token. Throws on expired or invalid tokens.
 
 ```typescript
 async function verifyJwt<TAuthInfo = unknown>(
@@ -35,13 +45,14 @@ async function verifyJwt<TAuthInfo = unknown>(
 ): Promise<AuthTokenPayload<TAuthInfo>>;
 ```
 
-Throws:
-- `"Token has expired."` if the token is expired
-- `"Invalid token."` for all other verification failures
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `jwtSecret` | `string` | Secret key for verification |
+| `token` | `string` | JWT token string |
 
 ## `decodeJwt`
 
-Decode a JWT token without verification.
+Decode a JWT token without verification (for reading payload only).
 
 ```typescript
 function decodeJwt<TAuthInfo = unknown>(token: string): AuthTokenPayload<TAuthInfo>;

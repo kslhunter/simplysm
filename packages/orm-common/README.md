@@ -1,8 +1,8 @@
 # @simplysm/orm-common
 
-ORM Module (common) -- dialect-independent ORM for MySQL, MSSQL, and PostgreSQL.
+Simplysm Package - ORM Module (common)
 
-Provides schema definition, type-safe query building, expression construction, and query rendering without any direct database dependency. Actual database execution is handled by `@simplysm/orm-node`.
+Dialect-independent ORM for MySQL, MSSQL, and PostgreSQL. Provides schema definition, type-safe query building, expression construction, and query rendering without any direct database dependency. Actual database execution is handled by `@simplysm/orm-node`.
 
 ## Installation
 
@@ -10,145 +10,139 @@ Provides schema definition, type-safe query building, expression construction, a
 npm install @simplysm/orm-common
 ```
 
-## API Reference
+## API Overview
 
 ### Core
+| API | Type | Description |
+|-----|------|-------------|
+| `defineDbContext` | function | Create a DbContext definition (blueprint) |
+| `createDbContext` | function | Create a DbContext instance from definition + executor |
+| `DbContextDef` | interface | DbContext definition (schema metadata, no runtime state) |
+| `DbContextBase` | interface | Internal interface used by Queryable/Executable |
+| `DbContextStatus` | type | Connection status: `"ready" \| "connect" \| "transact"` |
+| `DbContextInstance` | type | Full DbContext instance with accessors and methods |
+| `DbContextConnectionMethods` | interface | connect/connectWithoutTransaction/transaction methods |
+| `DbContextDdlMethods` | interface | DDL execution and QueryDef generation methods |
+| `DbTransactionError` | class | Standardized transaction error with error codes |
+| `DbErrorCode` | enum | Transaction error codes (NO_ACTIVE_TRANSACTION, DEADLOCK, etc.) |
 
-Define and create database contexts with connection/transaction management.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `defineDbContext` | function | Create a DbContext definition (blueprint) from tables, views, procedures, and migrations |
-| `createDbContext` | function | Create a runtime DbContext instance from a definition and executor |
-| `DbContextBase` | interface | Internal interface used by Queryable/Executable (status, database, schema, executeDefs) |
-| `DbContextDef` | interface | DbContext definition holding schema metadata (tables, views, procedures, migrations) |
-| `DbContextInstance` | type | Full runtime instance with queryable accessors, DDL methods, and connection management |
-| `DbContextStatus` | type | `"ready" \| "connect" \| "transact"` |
-| `DbTransactionError` | class | Standardized transaction error with `DbErrorCode` |
-| `DbErrorCode` | enum | `NO_ACTIVE_TRANSACTION`, `TRANSACTION_ALREADY_STARTED`, `DEADLOCK`, `LOCK_TIMEOUT` |
-
-[Detailed documentation](docs/core.md)
+-> See [docs/core.md](./docs/core.md) for details.
 
 ### Queryable / Executable
-
-Build and execute SELECT, INSERT, UPDATE, DELETE, and UPSERT queries with full type safety.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `Queryable` | class | Chaining query builder (select, where, join, include, orderBy, limit, groupBy, etc.) |
-| `queryable` | function | Factory that creates a Queryable getter for a table or view |
-| `getMatchedPrimaryKeys` | function | Match FK columns to target table PK columns |
+| API | Type | Description |
+|-----|------|-------------|
+| `Queryable` | class | Type-safe query builder (SELECT/INSERT/UPDATE/DELETE) |
+| `queryable` | function | Factory to create Queryable accessor for DbContext |
 | `Executable` | class | Stored procedure execution wrapper |
-| `executable` | function | Factory that creates an Executable getter for a procedure |
-| `parseSearchQuery` | function | Parse search text into LIKE patterns (OR / +must / -not) |
-| `ParsedSearchQuery` | interface | Result of `parseSearchQuery` with `or`, `must`, `not` arrays |
+| `executable` | function | Factory to create Executable accessor for DbContext |
+| `parseSearchQuery` | function | Parse search query string to SQL LIKE patterns |
+| `ParsedSearchQuery` | interface | Search query parsing result (or/must/not arrays) |
 
-[Detailed documentation](docs/queryable.md)
+-> See [docs/queryable.md](./docs/queryable.md) for details.
 
 ### Expression
-
-Dialect-independent SQL expression builder producing JSON AST.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `expr` | const | Expression builder with 70+ methods (comparisons, string, math, date, aggregate, window) |
-| `ExprUnit` | class | Type-safe expression wrapper tracking return type via generics |
+| API | Type | Description |
+|-----|------|-------------|
+| `expr` | object | Dialect-independent SQL expression builder |
+| `ExprUnit` | class | Type-safe expression wrapper |
 | `WhereExprUnit` | class | WHERE clause expression wrapper |
-| `ExprInput` | type | Accepts `ExprUnit<T>` or literal `T` |
-| `SwitchExprBuilder` | interface | CASE WHEN builder returned by `expr.switch()` |
+| `ExprInput` | type | Input type accepting ExprUnit or literal |
+| `SwitchExprBuilder` | interface | CASE/WHEN expression builder |
 
-[Detailed documentation](docs/expression.md)
+-> See [docs/expression.md](./docs/expression.md) for details.
 
 ### Schema Builders
+| API | Type | Description |
+|-----|------|-------------|
+| `Table` | function | Table builder factory |
+| `TableBuilder` | class | Table definition builder (columns, PK, indexes, relations) |
+| `View` | function | View builder factory |
+| `ViewBuilder` | class | View definition builder (query, relations) |
+| `Procedure` | function | Procedure builder factory |
+| `ProcedureBuilder` | class | Stored procedure definition builder |
+| `ColumnBuilder` | class | Column definition builder (type, nullable, default) |
+| `createColumnFactory` | function | Column type factory (int, varchar, datetime, etc.) |
+| `IndexBuilder` | class | Index definition builder |
+| `createIndexFactory` | function | Index factory |
+| `ForeignKeyBuilder` | class | FK relation builder (N:1, creates DB constraint) |
+| `ForeignKeyTargetBuilder` | class | FK reverse-reference builder (1:N) |
+| `RelationKeyBuilder` | class | Logical relation builder (N:1, no DB FK) |
+| `RelationKeyTargetBuilder` | class | Logical reverse-reference builder (1:N, no DB FK) |
+| `createRelationFactory` | function | Relation builder factory |
+| `_Migration` | const | Built-in system migration table |
+| `ColumnBuilderRecord` | type | Column builder record type |
+| `RelationBuilderRecord` | type | Relation builder record type |
+| `InferColumns` | type | Infer value types from column builders |
+| `InferColumnExprs` | type | Infer expression input types |
+| `InferInsertColumns` | type | INSERT type inference |
+| `InferUpdateColumns` | type | UPDATE type inference |
+| `RequiredInsertKeys` | type | Required column keys for INSERT |
+| `OptionalInsertKeys` | type | Optional column keys for INSERT |
+| `DataToColumnBuilderRecord` | type | Data record to column builder record |
+| `InferDeepRelations` | type | Deep relation type inference |
+| `ExtractRelationTarget` | type | Extract N:1 relation target type |
+| `ExtractRelationTargetResult` | type | Extract 1:N relation target type |
 
-Define tables, views, procedures, columns, indexes, and relations via fluent API.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `Table` | function | Create a `TableBuilder` for a table |
-| `TableBuilder` | class | Fluent builder: `.database()`, `.columns()`, `.primaryKey()`, `.indexes()`, `.relations()` |
-| `View` | function | Create a `ViewBuilder` for a view |
-| `ViewBuilder` | class | Fluent builder: `.database()`, `.query()`, `.relations()` |
-| `Procedure` | function | Create a `ProcedureBuilder` for a stored procedure |
-| `ProcedureBuilder` | class | Fluent builder: `.database()`, `.params()`, `.returns()`, `.body()` |
-| `ColumnBuilder` | class | Column definition: `.autoIncrement()`, `.nullable()`, `.default()`, `.description()` |
-| `createColumnFactory` | function | Returns column type methods (int, bigint, varchar, text, datetime, etc.) |
-| `IndexBuilder` | class | Index definition: `.name()`, `.unique()`, `.orderBy()`, `.description()` |
-| `createIndexFactory` | function | Returns `{ index(...columns) }` |
-| `ForeignKeyBuilder` | class | N:1 FK relation (creates DB constraint) |
-| `ForeignKeyTargetBuilder` | class | 1:N FK reverse-reference with `.single()` |
-| `RelationKeyBuilder` | class | N:1 logical relation (no DB constraint) |
-| `RelationKeyTargetBuilder` | class | 1:N logical reverse-reference with `.single()` |
-| `createRelationFactory` | function | Returns FK + RelationKey methods (table gets both, view gets RelationKey only) |
-| `_Migration` | const | Built-in system migration table (`_migration` with `code` column) |
-
-[Detailed documentation](docs/schema-builders.md)
+-> See [docs/schema-builders.md](./docs/schema-builders.md) for details.
 
 ### Query Builder
-
-Render `QueryDef` JSON AST to dialect-specific SQL strings.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `createQueryBuilder` | function | Create a dialect-specific QueryBuilder (`"mysql"`, `"mssql"`, `"postgresql"`) |
-| `QueryBuilderBase` | abstract class | Base class with dispatch and common render methods |
-| `ExprRendererBase` | abstract class | Base class for expression-to-SQL rendering |
-| `MysqlQueryBuilder` | class | MySQL implementation |
+| API | Type | Description |
+|-----|------|-------------|
+| `createQueryBuilder` | function | Create dialect-specific QueryBuilder |
+| `QueryBuilderBase` | class | Abstract QueryDef-to-SQL renderer |
+| `ExprRendererBase` | class | Abstract expression-to-SQL renderer |
+| `MysqlQueryBuilder` | class | MySQL query builder |
 | `MysqlExprRenderer` | class | MySQL expression renderer |
-| `MssqlQueryBuilder` | class | MSSQL implementation |
+| `MssqlQueryBuilder` | class | MSSQL query builder |
 | `MssqlExprRenderer` | class | MSSQL expression renderer |
-| `PostgresqlQueryBuilder` | class | PostgreSQL implementation |
+| `PostgresqlQueryBuilder` | class | PostgreSQL query builder |
 | `PostgresqlExprRenderer` | class | PostgreSQL expression renderer |
 
-[Detailed documentation](docs/query-builder.md)
+-> See [docs/query-builder.md](./docs/query-builder.md) for details.
 
 ### Types
-
-TypeScript types for dialects, queries, expressions, columns, and results.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `Dialect` | type | `"mysql" \| "mssql" \| "postgresql"` |
-| `dialects` | const | `["mysql", "mssql", "postgresql"]` |
-| `QueryBuildResult` | interface | `{ sql, resultSetIndex?, resultSetStride? }` |
-| `IsolationLevel` | type | `"READ_UNCOMMITTED" \| "READ_COMMITTED" \| "REPEATABLE_READ" \| "SERIALIZABLE"` |
-| `DataRecord` | type | Recursive record type for query results |
-| `DbContextExecutor` | interface | Executor interface (connect, close, beginTransaction, executeDefs, etc.) |
-| `ResultMeta` | interface | Metadata for result type transformation and JOIN nesting |
-| `Migration` | interface | `{ name, up }` migration definition |
-| `DataType` | type | SQL type union (int, bigint, varchar, decimal, datetime, etc.) |
-| `ColumnPrimitive` | type | All column value types (string, number, boolean, DateTime, DateOnly, Time, Uuid, Bytes, undefined) |
-| `ColumnPrimitiveStr` | type | Type name keys: `"string" \| "number" \| "boolean" \| "DateTime" \| ...` |
-| `ColumnMeta` | interface | Column metadata (type, dataType, autoIncrement, nullable, default, description) |
-| `Expr` | type | Discriminated union of 40+ expression AST node types |
-| `WhereExpr` | type | Subset of Expr for WHERE clauses (comparison + logical) |
-| `QueryDef` | type | Union of all query definition types (DML + DDL + Utils + Meta) |
+| API | Type | Description |
+|-----|------|-------------|
+| `Dialect` | type | Database dialect (`"mysql" \| "mssql" \| "postgresql"`) |
+| `dialects` | const | List of all supported dialects |
+| `IsolationLevel` | type | Transaction isolation level |
+| `DataRecord` | type | Query result data record (supports nesting) |
+| `DbContextExecutor` | interface | DB connection and query executor interface |
+| `QueryBuildResult` | interface | Built SQL string + metadata |
+| `ResultMeta` | interface | Result transformation metadata |
+| `Migration` | interface | Database migration definition |
+| `DataType` | type | SQL data type definition (14 variants) |
+| `ColumnPrimitiveMap` | type | TypeScript type name to actual type mapping |
+| `ColumnPrimitiveStr` | type | Column primitive type name |
+| `ColumnPrimitive` | type | All column-storable primitive types |
+| `ColumnMeta` | interface | Column metadata |
+| `DateUnit` | type | Date operation unit |
+| `QueryDefObjectName` | interface | DB object name (database.schema.name) |
+| `QueryDef` | type | All query definition union type |
 | `SelectQueryDef` | interface | SELECT query definition |
 | `InsertQueryDef` | interface | INSERT query definition |
 | `UpdateQueryDef` | interface | UPDATE query definition |
 | `DeleteQueryDef` | interface | DELETE query definition |
 | `UpsertQueryDef` | interface | UPSERT query definition |
-| `QueryDefObjectName` | interface | `{ database?, schema?, name }` |
+| `DDL_TYPES` | const | DDL type constants |
+| `Expr` | type | All expression union type |
+| `WhereExpr` | type | WHERE clause expression union type |
+| `WinFn` | type | Window function union type |
+| `WinSpec` | interface | Window specification (OVER clause) |
+| `parseQueryResult` | function | Transform raw DB results to typed objects |
+| `inferColumnPrimitiveStr` | function | Infer ColumnPrimitiveStr from runtime value |
+| `dataTypeStrToColumnPrimitiveStr` | const | SQL type to TypeScript type mapping |
 
-[Detailed documentation](docs/types.md)
-
-### Utilities
-
-Result parsing helpers.
-
-| Export | Kind | Description |
-|--------|------|-------------|
-| `parseQueryResult` | function | Transform flat DB results to typed nested objects via `ResultMeta` |
-
-[Detailed documentation](docs/utilities.md)
+-> See [docs/types.md](./docs/types.md) and [docs/utilities.md](./docs/utilities.md) for details.
 
 ## Usage Examples
 
-### 1. Define Schema and DbContext
+### Define Schema and Query
 
 ```typescript
 import { Table, defineDbContext, createDbContext, expr } from "@simplysm/orm-common";
 
+// Define tables
 const User = Table("User")
   .database("mydb")
   .columns((c) => ({
@@ -156,7 +150,6 @@ const User = Table("User")
     name: c.varchar(100),
     email: c.varchar(200).nullable(),
     status: c.varchar(20).default("active"),
-    createdAt: c.datetime(),
   }))
   .primaryKey("id")
   .indexes((i) => [i.index("email").unique()]);
@@ -167,101 +160,33 @@ const Post = Table("Post")
     id: c.bigint().autoIncrement(),
     authorId: c.bigint(),
     title: c.varchar(200),
-    content: c.text(),
   }))
   .primaryKey("id")
   .relations((r) => ({
     author: r.foreignKey(["authorId"], () => User),
   }));
 
+// Define DbContext
 const MyDb = defineDbContext({
   tables: { user: User, post: Post },
 });
 
-// createDbContext requires an executor (from @simplysm/orm-node or service-client)
+// Create instance and query
 const db = createDbContext(MyDb, executor, { database: "mydb" });
-```
 
-### 2. Query with Filters, Joins, and Aggregation
-
-```typescript
 await db.connect(async () => {
-  // Basic query with WHERE
+  // SELECT with WHERE
   const activeUsers = await db.user()
     .where((u) => [expr.eq(u.status, "active")])
     .orderBy((u) => u.name)
     .execute();
 
+  // INSERT
+  await db.user().insert([{ name: "John", email: "john@test.com" }]);
+
   // JOIN with include
-  const postsWithAuthor = await db.post()
+  const posts = await db.post()
     .include((p) => p.author)
-    .execute();
-
-  // Aggregation
-  const stats = await db.post()
-    .select((p) => ({
-      authorId: p.authorId,
-      postCount: expr.count(p.id),
-    }))
-    .groupBy((p) => [p.authorId])
-    .execute();
-});
-```
-
-### 3. Insert, Update, Delete
-
-```typescript
-await db.connect(async () => {
-  // Insert with output
-  const [inserted] = await db.user().insert(
-    [{ name: "Alice", createdAt: DateTime.now() }],
-    ["id"],
-  );
-
-  // Update
-  await db.user()
-    .where((u) => [expr.eq(u.id, inserted.id)])
-    .update((u) => ({
-      status: expr.val("string", "verified"),
-    }));
-
-  // Delete
-  await db.user()
-    .where((u) => [expr.eq(u.status, "deleted")])
-    .delete();
-
-  // Upsert
-  await db.user()
-    .where((u) => [expr.eq(u.email, "alice@test.com")])
-    .upsert(() => ({
-      name: expr.val("string", "Alice"),
-      email: expr.val("string", "alice@test.com"),
-      createdAt: expr.val("DateTime", DateTime.now()),
-    }));
-});
-```
-
-### 4. Text Search
-
-```typescript
-await db.connect(async () => {
-  // Search with OR, +must, -exclude syntax
-  const results = await db.user()
-    .search((u) => [u.name, u.email], "alice +active -deleted")
-    .execute();
-});
-```
-
-### 5. Recursive CTE
-
-```typescript
-await db.connect(async () => {
-  const hierarchy = await db.employee()
-    .where((e) => [expr.null(e.managerId)])
-    .recursive((cte) =>
-      cte.from(Employee)
-        .where((e) => [expr.eq(e.managerId, e.self![0].id)])
-    )
     .execute();
 });
 ```

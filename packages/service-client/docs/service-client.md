@@ -1,28 +1,62 @@
 # ServiceClient
 
-Main client class that orchestrates all service communication modules.
+## `ServiceClient`
+
+Main client class that orchestrates all service communication modules. Extends `EventEmitter`.
 
 ```typescript
-import { ServiceClient, createServiceClient, type ServiceProxy } from "@simplysm/service-client";
+class ServiceClient extends EventEmitter<ServiceClientEvents> {
+  readonly name: string;
+  readonly options: ServiceConnectionOptions;
+  get connected(): boolean;
+  get hostUrl(): string;
+
+  constructor(name: string, options: ServiceConnectionOptions);
+
+  getService<TService>(serviceName: string): ServiceProxy<TService>;
+  connect(): Promise<void>;
+  close(): Promise<void>;
+  send(serviceName: string, methodName: string, params: unknown[], progress?: ServiceProgress): Promise<unknown>;
+  auth(token: string): Promise<void>;
+  addListener<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    info: TInfo,
+    cb: (data: TData) => PromiseLike<void>,
+  ): Promise<string>;
+  removeListener(key: string): Promise<void>;
+  emitEvent<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
+  ): Promise<void>;
+  uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]): Promise<ServiceUploadResult[]>;
+  downloadFileBuffer(relPath: string): Promise<Bytes>;
+}
 ```
 
-## `ServiceProxy<TService>`
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Client name |
+| `options` | `ServiceConnectionOptions` | Connection options |
+| `connected` | `boolean` | Whether connected |
+| `hostUrl` | `string` | HTTP(S) base URL |
 
-Type transformer that wraps all method return types of `TService` with `Promise`.
+| Method | Description |
+|--------|-------------|
+| `getService()` | Create a typed service proxy for calling remote methods |
+| `connect()` | Establish WebSocket connection |
+| `close()` | Close connection |
+| `send()` | Send a service method request |
+| `auth()` | Authenticate with JWT token |
+| `addListener()` | Add event listener |
+| `removeListener()` | Remove event listener |
+| `emitEvent()` | Emit event to matching listeners |
+| `uploadFile()` | Upload files (requires prior auth) |
+| `downloadFileBuffer()` | Download file as binary |
 
-```typescript
-type ServiceProxy<TService> = {
-  [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
-    ? (...args: P) => Promise<Awaited<R>>
-    : never;
-};
-```
+## `ServiceClientEvents`
 
-## Class: `ServiceClient`
-
-Extends `EventEmitter<ServiceClientEvents>`.
-
-### Events
+Events emitted by `ServiceClient`.
 
 ```typescript
 interface ServiceClientEvents {
@@ -33,178 +67,27 @@ interface ServiceClientEvents {
 }
 ```
 
-### Constructor
+## `ServiceProxy`
+
+Type transformer that wraps all method return types of a service with `Promise`.
 
 ```typescript
-constructor(name: string, options: ServiceConnectionOptions)
-```
-
-- `name` -- Client name (used for identification on the server)
-- `options` -- Connection options
-
-### Properties
-
-#### `connected`
-
-```typescript
-get connected(): boolean;
-```
-
-#### `hostUrl`
-
-```typescript
-get hostUrl(): string;
-```
-
-Returns the HTTP(S) URL of the server (e.g., `"https://localhost:3000"`).
-
-### Methods
-
-#### `connect`
-
-Connect to the server via WebSocket.
-
-```typescript
-async connect(): Promise<void>;
-```
-
-#### `close`
-
-Close the WebSocket connection.
-
-```typescript
-async close(): Promise<void>;
-```
-
-#### `auth`
-
-Authenticate with the server using a JWT token.
-
-```typescript
-async auth(token: string): Promise<void>;
-```
-
-#### `getService`
-
-Create a type-safe proxy for calling remote service methods.
-
-```typescript
-getService<TService>(serviceName: string): ServiceProxy<TService>;
-```
-
-**Example:**
-```typescript
-const userService = client.getService<UserServiceType>("User");
-const profile = await userService.getProfile();
-```
-
-#### `send`
-
-Send a raw service method call.
-
-```typescript
-async send(
-  serviceName: string,
-  methodName: string,
-  params: unknown[],
-  progress?: ServiceProgress,
-): Promise<unknown>;
-```
-
-#### `addListener`
-
-Add a server-side event listener.
-
-```typescript
-async addListener<TInfo, TData>(
-  eventDef: ServiceEventDef<TInfo, TData>,
-  info: TInfo,
-  cb: (data: TData) => PromiseLike<void>,
-): Promise<string>;
-```
-
-Returns a listener key (UUID) that can be used with `removeListener`.
-
-#### `removeListener`
-
-Remove a server-side event listener.
-
-```typescript
-async removeListener(key: string): Promise<void>;
-```
-
-#### `emitEvent`
-
-Emit an event to matching server-side listeners.
-
-```typescript
-async emitEvent<TInfo, TData>(
-  eventDef: ServiceEventDef<TInfo, TData>,
-  infoSelector: (item: TInfo) => boolean,
-  data: TData,
-): Promise<void>;
-```
-
-#### `uploadFile`
-
-Upload files to the server. Requires prior authentication via `auth()`.
-
-```typescript
-async uploadFile(
-  files: File[] | FileList | { name: string; data: BlobPart }[],
-): Promise<ServiceUploadResult[]>;
-```
-
-#### `downloadFileBuffer`
-
-Download a file from the server as bytes.
-
-```typescript
-async downloadFileBuffer(relPath: string): Promise<Bytes>;
+type ServiceProxy<TService> = {
+  [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
+    ? (...args: P) => Promise<Awaited<R>>
+    : never;
+};
 ```
 
 ## `createServiceClient`
 
-Factory function.
+Factory function to create a `ServiceClient` instance.
 
 ```typescript
 function createServiceClient(name: string, options: ServiceConnectionOptions): ServiceClient;
 ```
 
-## Example
-
-```typescript
-import { createServiceClient, type ServiceProxy } from "@simplysm/service-client";
-import { defineEvent } from "@simplysm/service-common";
-
-// Define event
-const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
-
-// Create client
-const client = createServiceClient("my-app", {
-  host: "localhost",
-  port: 3000,
-});
-
-// Connect and authenticate
-await client.connect();
-await client.auth(jwtToken);
-
-// Call service
-const orderService = client.getService<OrderServiceType>("Order");
-const orders = await orderService.getAll();
-
-// Listen for events
-const key = await client.addListener(OrderUpdated, { orderId: 123 }, async (data) => {
-  console.log(data.status);
-});
-
-// Track progress
-client.on("request-progress", (state) => {
-  console.log(`Upload: ${state.completedSize}/${state.totalSize}`);
-});
-
-// Cleanup
-await client.removeListener(key);
-await client.close();
-```
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Client name identifier |
+| `options` | `ServiceConnectionOptions` | Connection options |

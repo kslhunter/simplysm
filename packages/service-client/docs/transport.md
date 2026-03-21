@@ -1,12 +1,34 @@
 # Transport
 
-The transport layer handles WebSocket connections and message routing.
+## `SocketProvider`
 
-## SocketProvider
+WebSocket connection provider interface. Manages connection lifecycle, heartbeat, and auto-reconnect.
 
-Low-level WebSocket connection manager with automatic reconnection and heartbeat keep-alive.
+```typescript
+interface SocketProvider {
+  readonly clientName: string;
+  readonly connected: boolean;
+  on<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  off<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  connect(): Promise<void>;
+  close(): Promise<void>;
+  send(data: Bytes): Promise<void>;
+}
+```
 
-### `SocketProviderEvents`
+| Property/Method | Description |
+|-----------------|-------------|
+| `clientName` | Client name identifier |
+| `connected` | Whether WebSocket is currently open |
+| `on()` | Register event listener |
+| `off()` | Remove event listener |
+| `connect()` | Establish WebSocket connection |
+| `close()` | Close connection (graceful shutdown) |
+| `send()` | Send binary data |
+
+## `SocketProviderEvents`
+
+Events emitted by `SocketProvider`.
 
 ```typescript
 interface SocketProviderEvents {
@@ -15,29 +37,9 @@ interface SocketProviderEvents {
 }
 ```
 
-### `SocketProvider`
+## `createSocketProvider`
 
-```typescript
-interface SocketProvider {
-  readonly clientName: string;
-  readonly connected: boolean;
-  on<K extends keyof SocketProviderEvents & string>(
-    type: K,
-    listener: (data: SocketProviderEvents[K]) => void,
-  ): void;
-  off<K extends keyof SocketProviderEvents & string>(
-    type: K,
-    listener: (data: SocketProviderEvents[K]) => void,
-  ): void;
-  connect(): Promise<void>;
-  close(): Promise<void>;
-  send(data: Bytes): Promise<void>;
-}
-```
-
-### `createSocketProvider`
-
-Create a SocketProvider instance.
+Create a WebSocket provider with heartbeat and auto-reconnect.
 
 ```typescript
 function createSocketProvider(
@@ -47,19 +49,33 @@ function createSocketProvider(
 ): SocketProvider;
 ```
 
-**Behavior:**
-- Heartbeat: sends ping every 5s, considers disconnected if no message for 30s
-- Reconnect: retries every 3s up to `maxReconnectCount` times
-- Binary protocol: uses `ArrayBuffer` for data transfer
-- Ping/Pong: `0x01` = ping, `0x02` = pong
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | `string` | WebSocket URL (ws:// or wss://) |
+| `clientName` | `string` | Client name identifier |
+| `maxReconnectCount` | `number` | Max reconnect attempts |
 
----
+## `ServiceTransport`
 
-## ServiceTransport
+Service transport interface. Handles message routing and request/response correlation.
 
-Higher-level transport that handles message encoding/decoding, request-response correlation, and event dispatching.
+```typescript
+interface ServiceTransport {
+  on<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  off<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown>;
+}
+```
 
-### `ServiceTransportEvents`
+| Method | Description |
+|--------|-------------|
+| `on()` | Register event listener (reload, event) |
+| `off()` | Remove event listener |
+| `send()` | Send a client message and await response |
+
+## `ServiceTransportEvents`
+
+Events emitted by `ServiceTransport`.
 
 ```typescript
 interface ServiceTransportEvents {
@@ -68,25 +84,9 @@ interface ServiceTransportEvents {
 }
 ```
 
-### `ServiceTransport`
+## `createServiceTransport`
 
-```typescript
-interface ServiceTransport {
-  on<K extends keyof ServiceTransportEvents & string>(
-    type: K,
-    listener: (data: ServiceTransportEvents[K]) => void,
-  ): void;
-  off<K extends keyof ServiceTransportEvents & string>(
-    type: K,
-    listener: (data: ServiceTransportEvents[K]) => void,
-  ): void;
-  send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown>;
-}
-```
-
-### `createServiceTransport`
-
-Create a ServiceTransport instance.
+Create a service transport instance.
 
 ```typescript
 function createServiceTransport(
@@ -94,9 +94,3 @@ function createServiceTransport(
   protocol: ClientProtocolWrapper,
 ): ServiceTransport;
 ```
-
-**Behavior:**
-- Each `send()` call generates a unique UUID and registers a pending request
-- Incoming messages are correlated by UUID and resolved/rejected accordingly
-- Progress callbacks are invoked for chunked message transfers
-- All pending requests are rejected when the socket disconnects

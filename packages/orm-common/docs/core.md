@@ -1,18 +1,14 @@
 # Core
 
-Database context definition, creation, and lifecycle management.
+## `defineDbContext`
 
-Source: `src/define-db-context.ts`, `src/create-db-context.ts`, `src/types/db-context-def.ts`, `src/errors/db-transaction-error.ts`
-
-## defineDbContext
-
-Create a `DbContextDef` blueprint from tables, views, procedures, and migrations. Automatically includes the `_migration` system table.
+Factory function that creates a DbContext definition (blueprint). Takes table, view, procedure builders and migration definitions. Automatically includes the `_migration` system table.
 
 ```typescript
 function defineDbContext<
-  TTables extends Record<string, TableBuilder<any, any>>,
-  TViews extends Record<string, ViewBuilder<any, any, any>>,
-  TProcedures extends Record<string, ProcedureBuilder<any, any>>,
+  TTables extends Record<string, TableBuilder<any, any>> = {},
+  TViews extends Record<string, ViewBuilder<any, any, any>> = {},
+  TProcedures extends Record<string, ProcedureBuilder<any, any>> = {},
 >(config: {
   tables?: TTables;
   views?: TViews;
@@ -21,32 +17,18 @@ function defineDbContext<
 }): DbContextDef<TTables & { _migration: typeof _Migration }, TViews, TProcedures>;
 ```
 
-**Example:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `config.tables` | `TTables` | Table builder definitions |
+| `config.views` | `TViews` | View builder definitions |
+| `config.procedures` | `TProcedures` | Procedure builder definitions |
+| `config.migrations` | `Migration[]` | Migration definitions |
+
+## `createDbContext`
+
+DbContext instance factory. Takes a `DbContextDef` and `DbContextExecutor` and creates a complete DbContext instance with queryable accessors, DDL methods, and connection/transaction management.
 
 ```typescript
-const MyDb = defineDbContext({
-  tables: { user: User, post: Post },
-  views: { userSummary: UserSummary },
-  procedures: { getUserById: GetUserById },
-  migrations: [
-    { name: "20260101_001_init", up: async (db) => { await db.createTable(User); } },
-  ],
-});
-```
-
-## createDbContext
-
-Create a runtime `DbContextInstance` from a definition and executor. This is the main entry point for database operations.
-
-```typescript
-/**
- * @param def - Definition object created by defineDbContext()
- * @param executor - Query executor (NodeDbContextExecutor, ServiceDbContextExecutor, etc.)
- * @param opt - Database options
- * @param opt.database - Database name
- * @param opt.schema - Schema name (MSSQL: dbo, PostgreSQL: public)
- * @returns A complete DbContext instance
- */
 function createDbContext<TDef extends DbContextDef<any, any, any>>(
   def: TDef,
   executor: DbContextExecutor,
@@ -54,27 +36,42 @@ function createDbContext<TDef extends DbContextDef<any, any, any>>(
 ): DbContextInstance<TDef>;
 ```
 
-The returned instance provides:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `def` | `TDef` | Definition object created by `defineDbContext()` |
+| `executor` | `DbContextExecutor` | Query executor implementation |
+| `opt.database` | `string` | Database name |
+| `opt.schema` | `string` | Schema name (MSSQL: dbo, PostgreSQL: public) |
 
-- **Queryable accessors** -- one per table/view (e.g., `db.user()` returns a `Queryable`)
-- **Executable accessors** -- one per procedure (e.g., `db.getUserById()` returns an `Executable`)
-- **Connection management** -- `connect()`, `connectWithoutTransaction()`, `transaction()`
-- **DDL methods** -- `createTable()`, `dropTable()`, `addColumn()`, `addIndex()`, etc.
-- **Initialization** -- `initialize()` to run migrations
+## `DbContextDef`
 
-**Example:**
+DbContext definition (blueprint). Created by `defineDbContext()`. Contains schema metadata but no runtime state.
 
 ```typescript
-const db = createDbContext(MyDb, executor, { database: "mydb" });
-
-await db.connect(async () => {
-  const users = await db.user().execute();
-});
+interface DbContextDef<
+  TTables extends Record<string, TableBuilder<any, any>>,
+  TViews extends Record<string, ViewBuilder<any, any, any>>,
+  TProcedures extends Record<string, ProcedureBuilder<any, any>> = {},
+> {
+  readonly meta: {
+    readonly tables: TTables;
+    readonly views: TViews;
+    readonly procedures: TProcedures;
+    readonly migrations: Migration[];
+  };
+}
 ```
 
-## DbContextBase
+| Field | Type | Description |
+|-------|------|-------------|
+| `meta.tables` | `TTables` | Table builder definitions |
+| `meta.views` | `TViews` | View builder definitions |
+| `meta.procedures` | `TProcedures` | Procedure builder definitions |
+| `meta.migrations` | `Migration[]` | Migration definitions |
 
-Internal interface satisfied by the DbContext instance. Used by `Queryable`, `Executable`, and `ViewBuilder`.
+## `DbContextBase`
+
+Internal interface used by Queryable, Executable, and ViewBuilder.
 
 ```typescript
 interface DbContextBase {
@@ -94,28 +91,28 @@ interface DbContextBase {
 }
 ```
 
-## DbContextDef
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `DbContextStatus` | Current connection status |
+| `database` | `string \| undefined` | Database name |
+| `schema` | `string \| undefined` | Schema name |
+| `getNextAlias()` | `() => string` | Generate next table alias |
+| `resetAliasCounter()` | `() => void` | Reset alias counter |
+| `executeDefs()` | `(defs, resultMetas?) => Promise<T[][]>` | Execute query definitions |
+| `getQueryDefObjectName()` | `(tableOrView) => QueryDefObjectName` | Get qualified object name |
+| `switchFk()` | `(table, enabled) => Promise<void>` | Enable/disable FK constraints |
 
-Definition (blueprint) created by `defineDbContext()`. Contains schema metadata but no runtime state.
+## `DbContextStatus`
+
+Connection status type.
 
 ```typescript
-interface DbContextDef<
-  TTables extends Record<string, TableBuilder<any, any>>,
-  TViews extends Record<string, ViewBuilder<any, any, any>>,
-  TProcedures extends Record<string, ProcedureBuilder<any, any>>,
-> {
-  readonly meta: {
-    readonly tables: TTables;
-    readonly views: TViews;
-    readonly procedures: TProcedures;
-    readonly migrations: Migration[];
-  };
-}
+type DbContextStatus = "ready" | "connect" | "transact";
 ```
 
-## DbContextInstance
+## `DbContextInstance`
 
-Full runtime type created by `createDbContext`. Combines `DbContextBase`, connection methods, DDL methods, and auto-mapped queryable/executable accessors.
+Full DbContext instance type created by `createDbContext`. Extends `DbContextBase` with queryable accessors for tables/views, executable accessors for procedures, DDL methods, and connection/transaction management.
 
 ```typescript
 type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbContextBase &
@@ -132,64 +129,84 @@ type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbContextBase
   };
 ```
 
-### Connection Methods
+## `DbContextConnectionMethods`
+
+Connection and transaction management methods.
 
 ```typescript
 interface DbContextConnectionMethods {
-  /** Execute within a transaction (auto commit/rollback) */
   connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
-
-  /** Connect without transaction (for DDL or read-only operations) */
   connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult>;
-
-  /** Start a transaction within an already-connected state */
   transaction<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
 }
 ```
 
-### DDL Methods
-
-The instance exposes DDL execution methods and their corresponding QueryDef generators:
-
 | Method | Description |
 |--------|-------------|
-| `createTable(table)` | CREATE TABLE |
-| `dropTable(table)` | DROP TABLE |
-| `renameTable(table, newName)` | RENAME TABLE |
-| `createView(view)` | CREATE VIEW |
-| `dropView(view)` | DROP VIEW |
-| `createProc(procedure)` | CREATE PROCEDURE |
-| `dropProc(procedure)` | DROP PROCEDURE |
-| `addColumn(table, name, column)` | ADD COLUMN |
-| `dropColumn(table, column)` | DROP COLUMN |
-| `modifyColumn(table, name, column)` | MODIFY COLUMN |
-| `renameColumn(table, column, newName)` | RENAME COLUMN |
-| `addPrimaryKey(table, columns)` | ADD PRIMARY KEY |
-| `dropPrimaryKey(table)` | DROP PRIMARY KEY |
-| `addForeignKey(table, name, def)` | ADD FOREIGN KEY |
-| `dropForeignKey(table, name)` | DROP FOREIGN KEY |
-| `addIndex(table, indexBuilder)` | CREATE INDEX |
-| `dropIndex(table, columns)` | DROP INDEX |
-| `clearSchema(params)` | Clear all objects in schema |
-| `schemaExists(database, schema?)` | Check schema existence |
-| `truncate(table)` | TRUNCATE TABLE |
-| `switchFk(table, enabled)` | Enable/disable FK constraints |
+| `connect()` | Execute callback within a transaction (auto commit/rollback) |
+| `connectWithoutTransaction()` | Connect without transaction, execute callback, auto-close |
+| `transaction()` | Start transaction in already-connected state (auto commit/rollback) |
 
-## DbContextStatus
+## `DbContextDdlMethods`
+
+DDL execution methods and QueryDef generators for tables, views, procedures, columns, indexes, foreign keys, and schema operations.
 
 ```typescript
-type DbContextStatus = "ready" | "connect" | "transact";
+interface DbContextDdlMethods {
+  createTable(table: TableBuilder<any, any>): Promise<void>;
+  dropTable(table: QueryDefObjectName): Promise<void>;
+  renameTable(table: QueryDefObjectName, newName: string): Promise<void>;
+  createView(view: ViewBuilder<any, any, any>): Promise<void>;
+  dropView(view: QueryDefObjectName): Promise<void>;
+  createProc(procedure: ProcedureBuilder<any, any>): Promise<void>;
+  dropProc(procedure: QueryDefObjectName): Promise<void>;
+  addColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void>;
+  dropColumn(table: QueryDefObjectName, column: string): Promise<void>;
+  modifyColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void>;
+  renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void>;
+  addPrimaryKey(table: QueryDefObjectName, columns: string[]): Promise<void>;
+  dropPrimaryKey(table: QueryDefObjectName): Promise<void>;
+  addForeignKey(table: QueryDefObjectName, relationName: string, relationDef: ForeignKeyBuilder<any, any>): Promise<void>;
+  addIndex(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void>;
+  dropForeignKey(table: QueryDefObjectName, relationName: string): Promise<void>;
+  dropIndex(table: QueryDefObjectName, columns: string[]): Promise<void>;
+  clearSchema(params: { database: string; schema?: string }): Promise<void>;
+  schemaExists(database: string, schema?: string): Promise<boolean>;
+  truncate(table: QueryDefObjectName): Promise<void>;
+  switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
+  // QueryDef generators (get*QueryDef methods for each DDL operation)
+  getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef;
+  getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef;
+  getCreateProcQueryDef(procedure: ProcedureBuilder<any, any>): QueryDef;
+  getCreateObjectQueryDef(builder: TableBuilder | ViewBuilder | ProcedureBuilder): QueryDef;
+  getDropTableQueryDef(table: QueryDefObjectName): QueryDef;
+  getRenameTableQueryDef(table: QueryDefObjectName, newName: string): QueryDef;
+  getDropViewQueryDef(view: QueryDefObjectName): QueryDef;
+  getDropProcQueryDef(procedure: QueryDefObjectName): QueryDef;
+  getAddColumnQueryDef(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): QueryDef;
+  getDropColumnQueryDef(table: QueryDefObjectName, column: string): QueryDef;
+  getModifyColumnQueryDef(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): QueryDef;
+  getRenameColumnQueryDef(table: QueryDefObjectName, column: string, newName: string): QueryDef;
+  getAddPrimaryKeyQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
+  getDropPrimaryKeyQueryDef(table: QueryDefObjectName): QueryDef;
+  getAddForeignKeyQueryDef(table: QueryDefObjectName, relationName: string, relationDef: ForeignKeyBuilder<any, any>): QueryDef;
+  getAddIndexQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef;
+  getDropForeignKeyQueryDef(table: QueryDefObjectName, relationName: string): QueryDef;
+  getDropIndexQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
+  getClearSchemaQueryDef(params: { database: string; schema?: string }): QueryDef;
+  getSchemaExistsQueryDef(database: string, schema?: string): QueryDef;
+  getTruncateQueryDef(table: QueryDefObjectName): QueryDef;
+  getSwitchFkQueryDef(table: QueryDefObjectName, enabled: boolean): QueryDef;
+}
 ```
 
-Lifecycle: `ready` -> `connect` -> `transact` -> `connect` -> `ready`
+## `DbTransactionError`
 
-## DbTransactionError
-
-Standardized transaction error wrapping DBMS-specific native errors.
+Database transaction error with standardized error codes for DBMS-independent error handling.
 
 ```typescript
 class DbTransactionError extends Error {
-  readonly name = "DbTransactionError";
+  override readonly name = "DbTransactionError";
   constructor(
     public readonly code: DbErrorCode,
     message: string,
@@ -198,7 +215,14 @@ class DbTransactionError extends Error {
 }
 ```
 
-## DbErrorCode
+| Property | Type | Description |
+|----------|------|-------------|
+| `code` | `DbErrorCode` | Standardized error code |
+| `originalError` | `unknown` | Original DBMS error (for debugging) |
+
+## `DbErrorCode`
+
+Transaction-related error codes.
 
 ```typescript
 enum DbErrorCode {
@@ -206,20 +230,5 @@ enum DbErrorCode {
   TRANSACTION_ALREADY_STARTED = "TRANSACTION_ALREADY_STARTED",
   DEADLOCK = "DEADLOCK",
   LOCK_TIMEOUT = "LOCK_TIMEOUT",
-}
-```
-
-**Example:**
-
-```typescript
-try {
-  await executor.rollbackTransaction();
-} catch (err) {
-  if (err instanceof DbTransactionError) {
-    if (err.code === DbErrorCode.NO_ACTIVE_TRANSACTION) {
-      return; // Already rolled back
-    }
-  }
-  throw err;
 }
 ```

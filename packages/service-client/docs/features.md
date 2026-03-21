@@ -1,10 +1,8 @@
 # Features
 
-## EventClient
+## `EventClient`
 
-Client-side event subscription manager. Handles adding/removing event listeners and auto-resubscription on reconnect.
-
-### `EventClient`
+Client-side event management interface. Handles event listener registration, removal, emission, and auto-recovery on reconnect.
 
 ```typescript
 interface EventClient {
@@ -13,38 +11,34 @@ interface EventClient {
     info: TInfo,
     cb: (data: TData) => PromiseLike<void>,
   ): Promise<string>;
-
   removeListener(key: string): Promise<void>;
-
   emit<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
   ): Promise<void>;
-
   resubscribeAll(): Promise<void>;
 }
 ```
 
-### `createEventClient`
+| Method | Description |
+|--------|-------------|
+| `addListener()` | Register an event listener on the server, returns listener key |
+| `removeListener()` | Remove an event listener by key |
+| `emit()` | Emit an event to matching listeners (server-side filtering) |
+| `resubscribeAll()` | Re-register all listeners on reconnect |
+
+## `createEventClient`
+
+Create an event client instance.
 
 ```typescript
 function createEventClient(transport: ServiceTransport): EventClient;
 ```
 
-**Behavior:**
-- `addListener` registers on the server and stores locally for reconnect recovery
-- `removeListener` removes from local map and sends removal request to server
-- `emit` queries the server for matching listener infos, then sends event to matching keys
-- `resubscribeAll` re-registers all local listeners on the server (called on reconnect)
+## `FileClient`
 
----
-
-## FileClient
-
-HTTP-based file upload/download client.
-
-### `FileClient`
+File upload/download client interface.
 
 ```typescript
 interface FileClient {
@@ -56,23 +50,27 @@ interface FileClient {
 }
 ```
 
-### `createFileClient`
+| Method | Description |
+|--------|-------------|
+| `download()` | Download a file by relative path, returns binary data |
+| `upload()` | Upload files via multipart form, returns upload results |
+
+## `createFileClient`
+
+Create a file client instance.
 
 ```typescript
 function createFileClient(hostUrl: string, clientName: string): FileClient;
 ```
 
-**Behavior:**
-- `download` fetches a file via HTTP GET and returns it as `Uint8Array`
-- `upload` sends files via multipart form POST to `/upload` with auth token in headers
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `hostUrl` | `string` | Server base URL (http:// or https://) |
+| `clientName` | `string` | Client name for request headers |
 
----
+## `OrmConnectOptions`
 
-## ORM Features
-
-### `OrmConnectOptions`
-
-Configuration for ORM database connections via the service client.
+ORM connection options for client-side database access.
 
 ```typescript
 interface OrmConnectOptions<TDef extends DbContextDef<any, any, any>> {
@@ -85,9 +83,15 @@ interface OrmConnectOptions<TDef extends DbContextDef<any, any, any>> {
 }
 ```
 
-### `OrmClientConnector`
+| Field | Type | Description |
+|-------|------|-------------|
+| `dbContextDef` | `TDef` | DbContext definition |
+| `connOpt` | `DbConnOptions & { configName: string }` | Connection options with config name |
+| `dbContextOpt` | `{ database: string; schema: string }` | Override database/schema from server config |
 
-Manages ORM database connections through the service client.
+## `OrmClientConnector`
+
+Client-side ORM connector interface. Creates DbContext instances that execute queries via the service protocol.
 
 ```typescript
 interface OrmClientConnector {
@@ -95,7 +99,6 @@ interface OrmClientConnector {
     config: OrmConnectOptions<TDef>,
     callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R>;
-
   connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
     config: OrmConnectOptions<TDef>,
     callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
@@ -103,40 +106,38 @@ interface OrmClientConnector {
 }
 ```
 
-### `createOrmClientConnector`
+| Method | Description |
+|--------|-------------|
+| `connect()` | Connect with transaction (auto commit/rollback) |
+| `connectWithoutTransaction()` | Connect without transaction |
+
+## `createOrmClientConnector`
+
+Create an ORM client connector.
 
 ```typescript
 function createOrmClientConnector(serviceClient: ServiceClient): OrmClientConnector;
 ```
 
-**Behavior:**
-- `connect` creates a database context and executes the callback within a transaction
-- `connectWithoutTransaction` creates a database context without transaction wrapping
-- Foreign key constraint violations are caught and re-thrown with a user-friendly message
+## `OrmClientDbContextExecutor`
 
-### `OrmClientDbContextExecutor`
-
-Implements `DbContextExecutor` by delegating all database operations to the remote `OrmService` via WebSocket.
+Client-side DbContext executor. Implements `DbContextExecutor` by delegating to the ORM service over the service protocol.
 
 ```typescript
 class OrmClientDbContextExecutor implements DbContextExecutor {
-  constructor(client: ServiceClient, opt: DbConnOptions & { configName: string });
+  constructor(
+    private readonly _client: ServiceClient,
+    private readonly _opt: DbConnOptions & { configName: string },
+  );
 
-  async getInfo(): Promise<{ dialect: Dialect; database?: string; schema?: string }>;
-  async connect(): Promise<void>;
-  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
-  async commitTransaction(): Promise<void>;
-  async rollbackTransaction(): Promise<void>;
-  async close(): Promise<void>;
-  async executeDefs<T = Record<string, unknown>>(
-    defs: QueryDef[],
-    options?: (ResultMeta | undefined)[],
-  ): Promise<T[][]>;
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>;
-  async bulkInsert(
-    tableName: string,
-    columnDefs: Record<string, ColumnMeta>,
-    records: Record<string, unknown>[],
-  ): Promise<void>;
+  getInfo(): Promise<{ dialect: Dialect; database?: string; schema?: string }>;
+  connect(): Promise<void>;
+  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
+  commitTransaction(): Promise<void>;
+  rollbackTransaction(): Promise<void>;
+  close(): Promise<void>;
+  executeDefs<T>(defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<T[][]>;
+  executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>;
+  bulkInsert(tableName: string, columnDefs: Record<string, ColumnMeta>, records: Record<string, unknown>[]): Promise<void>;
 }
 ```

@@ -1,6 +1,6 @@
 # @simplysm/storage
 
-Storage Module (node) -- FTP, FTPS, and SFTP storage client with a unified interface and factory pattern.
+Simplysm Package - Storage Module (node). Provides FTP, FTPS, and SFTP storage client implementations with a factory for managed connections.
 
 ## Installation
 
@@ -14,123 +14,90 @@ npm install @simplysm/storage
 
 | API | Type | Description |
 |-----|------|-------------|
-| `StorageProtocol` | type | Protocol type: `"ftp"`, `"ftps"`, `"sftp"` |
-| `StorageConnConfig` | interface | Connection configuration (host, port, user, password) |
-| `FileInfo` | interface | File entry info (`name`, `isFile`) |
-| `StorageClient` | interface | Unified storage client interface |
-
-### Factory
-
-| API | Type | Description |
-|-----|------|-------------|
-| `StorageFactory` | class | Factory that creates and manages storage connections |
+| `StorageConnConfig` | interface | Storage connection configuration |
+| `FileInfo` | interface | File/directory entry information |
+| `StorageClient` | interface | Storage client interface |
+| `StorageProtocol` | type | Protocol type (`"ftp" \| "ftps" \| "sftp"`) |
 
 ### Clients
 
 | API | Type | Description |
 |-----|------|-------------|
-| `FtpStorageClient` | class | FTP/FTPS storage client (basic-ftp) |
-| `SftpStorageClient` | class | SFTP storage client (ssh2-sftp-client) |
+| `FtpStorageClient` | class | FTP/FTPS storage client (uses basic-ftp) |
+| `SftpStorageClient` | class | SFTP storage client (uses ssh2-sftp-client) |
 
-## `StorageProtocol`
+### Factory
 
-```typescript
-type StorageProtocol = "ftp" | "ftps" | "sftp";
-```
+| API | Type | Description |
+|-----|------|-------------|
+| `StorageFactory` | class | Storage client factory with managed connections |
 
-## `StorageConnConfig`
+---
 
-```typescript
-interface StorageConnConfig {
-  host: string;
-  port?: number;
-  user?: string;
-  password?: string;
-}
-```
-
-## `FileInfo`
+### `StorageProtocol`
 
 ```typescript
-interface FileInfo {
-  name: string;
-  isFile: boolean;
-}
+type StorageProtocol = "ftp" | "ftps" | "sftp"
 ```
 
-## `StorageClient`
+### `StorageConnConfig`
 
-```typescript
-interface StorageClient {
-  connect(config: StorageConnConfig): Promise<void>;
-  mkdir(dirPath: string): Promise<void>;
-  rename(fromPath: string, toPath: string): Promise<void>;
-  list(dirPath: string): Promise<FileInfo[]>;
-  readFile(filePath: string): Promise<Bytes>;
-  exists(filePath: string): Promise<boolean>;
-  put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void>;
-  uploadDir(fromPath: string, toPath: string): Promise<void>;
-  remove(filePath: string): Promise<void>;
-  close(): Promise<void>;
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `host` | `string` | Server hostname |
+| `port` | `number?` | Server port |
+| `user` | `string?` | Username |
+| `password` | `string?` | Password (SFTP: if omitted, uses SSH agent + key file) |
 
-## `StorageFactory`
+### `FileInfo`
 
-```typescript
-class StorageFactory {
-  static async connect<R>(
-    type: StorageProtocol,
-    config: StorageConnConfig,
-    fn: (storage: StorageClient) => R | Promise<R>,
-  ): Promise<R>;
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | File or directory name |
+| `isFile` | `boolean` | Whether the entry is a file |
 
-Creates a storage connection, executes the callback, and automatically closes the connection. The connection is closed even if the callback throws an exception. This is the recommended way to use storage clients.
+### `StorageClient`
 
-## `FtpStorageClient`
+Interface implemented by both `FtpStorageClient` and `SftpStorageClient`.
 
-```typescript
-class FtpStorageClient implements StorageClient {
-  constructor(secure?: boolean);
-  async connect(config: StorageConnConfig): Promise<void>;
-  async mkdir(dirPath: string): Promise<void>;
-  async rename(fromPath: string, toPath: string): Promise<void>;
-  async list(dirPath: string): Promise<FileInfo[]>;
-  async readFile(filePath: string): Promise<Bytes>;
-  async exists(filePath: string): Promise<boolean>;
-  async put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void>;
-  async uploadDir(fromPath: string, toPath: string): Promise<void>;
-  async remove(filePath: string): Promise<void>;
-  close(): Promise<void>;
-}
-```
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `connect` | `(config: StorageConnConfig) => Promise<void>` | Connect to server |
+| `mkdir` | `(dirPath: string) => Promise<void>` | Create directory (recursive) |
+| `rename` | `(fromPath: string, toPath: string) => Promise<void>` | Rename file/directory |
+| `list` | `(dirPath: string) => Promise<FileInfo[]>` | List directory contents |
+| `readFile` | `(filePath: string) => Promise<Bytes>` | Read file |
+| `exists` | `(filePath: string) => Promise<boolean>` | Check existence |
+| `put` | `(localPathOrBuffer: string \| Bytes, storageFilePath: string) => Promise<void>` | Upload file (local path or byte data) |
+| `uploadDir` | `(fromPath: string, toPath: string) => Promise<void>` | Upload entire directory |
+| `remove` | `(filePath: string) => Promise<void>` | Delete file |
+| `close` | `() => Promise<void>` | Close connection |
 
-FTP/FTPS storage client. The `secure` constructor parameter controls FTPS mode. Use `StorageFactory.connect` instead of direct usage for automatic connection lifecycle management.
+### `FtpStorageClient`
 
-## `SftpStorageClient`
+Implements `StorageClient` using FTP/FTPS protocol via the `basic-ftp` library.
 
-```typescript
-class SftpStorageClient implements StorageClient {
-  async connect(config: StorageConnConfig): Promise<void>;
-  async mkdir(dirPath: string): Promise<void>;
-  async rename(fromPath: string, toPath: string): Promise<void>;
-  async list(dirPath: string): Promise<FileInfo[]>;
-  async readFile(filePath: string): Promise<Bytes>;
-  async exists(filePath: string): Promise<boolean>;
-  async put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void>;
-  async uploadDir(fromPath: string, toPath: string): Promise<void>;
-  async remove(filePath: string): Promise<void>;
-  async close(): Promise<void>;
-}
-```
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `constructor` | `(secure?: boolean)` | Create client (`true` for FTPS, `false` for FTP) |
 
-SFTP storage client. Supports password authentication and SSH key/agent authentication. Use `StorageFactory.connect` instead of direct usage for automatic connection lifecycle management.
+All `StorageClient` methods are implemented. Using `StorageFactory.connect` is recommended over direct usage.
+
+### `SftpStorageClient`
+
+Implements `StorageClient` using SFTP protocol via the `ssh2-sftp-client` library. Supports password authentication and SSH agent + key file authentication.
+
+All `StorageClient` methods are implemented. Using `StorageFactory.connect` is recommended over direct usage.
+
+### `StorageFactory`
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `connect` | `<R>(type: StorageProtocol, config: StorageConnConfig, fn: (storage: StorageClient) => R \| Promise<R>) => Promise<R>` | Connect, execute callback, auto-close |
 
 ## Usage Examples
 
-### Upload files via StorageFactory (recommended)
+### Using StorageFactory (recommended)
 
 ```typescript
 import { StorageFactory } from "@simplysm/storage";
@@ -140,40 +107,36 @@ await StorageFactory.connect("sftp", {
   user: "deploy",
   password: "secret",
 }, async (storage) => {
-  await storage.mkdir("/var/www/app");
-  await storage.put("/local/dist/bundle.js", "/var/www/app/bundle.js");
+  await storage.uploadDir("./dist", "/var/www/app");
+  const files = await storage.list("/var/www/app");
 });
-// Connection is automatically closed
 ```
 
-### List remote directory
+### Using client directly
 
 ```typescript
-import { StorageFactory } from "@simplysm/storage";
+import { FtpStorageClient } from "@simplysm/storage";
 
-const files = await StorageFactory.connect("ftp", {
-  host: "files.example.com",
-  user: "admin",
-  password: "pass",
-}, async (storage) => {
-  return await storage.list("/uploads");
-});
-
-for (const file of files) {
-  // file.name, file.isFile
+const client = new FtpStorageClient(true); // FTPS
+await client.connect({ host: "ftp.example.com", user: "admin", password: "pass" });
+try {
+  await client.put("./build.zip", "/releases/build.zip");
+  const exists = await client.exists("/releases/build.zip");
+} finally {
+  await client.close();
 }
 ```
 
-### Upload entire directory via FTPS
+### SFTP with SSH key authentication
 
 ```typescript
 import { StorageFactory } from "@simplysm/storage";
 
-await StorageFactory.connect("ftps", {
-  host: "secure.example.com",
+// Omit password to use SSH agent + ~/.ssh/id_ed25519
+await StorageFactory.connect("sftp", {
+  host: "example.com",
   user: "deploy",
-  password: "secret",
 }, async (storage) => {
-  await storage.uploadDir("/local/dist", "/remote/app");
+  await storage.put(fileBytes, "/data/upload.bin");
 });
 ```

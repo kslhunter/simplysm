@@ -57,7 +57,7 @@ export class DateTime {
   /**
    * Parse a string to create DateTime instance
    * Supported formats: 'yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd HH:mm:ss.fff', 'yyyyMMddHHmmss',
-   *   'yyyy-MM-dd AM/PM HH:mm:ss', ISO 8601
+   *   'yyyy-MM-dd AM/PM HH:mm:ss', Korean AM/PM (오전/오후), ISO 8601
    * @throws ArgumentError If unsupported format
    */
   static parse(str: string): DateTime;

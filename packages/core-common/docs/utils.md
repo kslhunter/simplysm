@@ -26,9 +26,13 @@ Deep equality comparison. Supports DateTime, DateOnly, Time, Uuid, Date, RegExp,
 export function equal(source: unknown, target: unknown, options?: EqualOptions): boolean;
 
 export interface EqualOptions {
+  /** List of keys to compare (applies only to top level) */
   topLevelIncludes?: string[];
+  /** List of keys to exclude from comparison (applies only to top level) */
   topLevelExcludes?: string[];
+  /** Whether to ignore array order. O(n^2) complexity when true */
   ignoreArrayIndex?: boolean;
+  /** Whether to do shallow comparison. Only compare 1 level (reference comparison) when true */
   shallow?: boolean;
 }
 ```
@@ -45,7 +49,9 @@ export function merge<TSource, TMergeTarget>(
 ): TSource & TMergeTarget;
 
 export interface MergeOptions {
+  /** Array processing method. "replace": replace with target (default), "concat": merge (deduplicate) */
   arrayProcess?: "replace" | "concat";
+  /** Whether to delete the key when target is null */
   useDelTargetNull?: boolean;
 }
 ```
@@ -67,8 +73,11 @@ export function merge3<
 ): { conflict: boolean; result: O & S & T };
 
 export interface Merge3KeyOptions {
+  /** List of sub-keys to compare (same as equal's topLevelIncludes) */
   keys?: string[];
+  /** List of sub-keys to exclude from comparison */
   excludes?: string[];
+  /** Whether to ignore array order */
   ignoreArrayIndex?: boolean;
 }
 ```
@@ -203,11 +212,32 @@ export function map<TSource extends object, TNewKey extends string, TNewValue>(
 ): Record<TNewKey | Extract<keyof TSource, string>, TNewValue>;
 ```
 
+**Example:**
+
+```typescript
+const colors = { primary: "255, 0, 0", secondary: "0, 255, 0" };
+
+// Transform only values (pass null for key to keep original)
+obj.map(colors, (key, rgb) => [null, `rgb(${rgb})`]);
+// { primary: "rgb(255, 0, 0)", secondary: "rgb(0, 255, 0)" }
+
+// Transform both keys and values
+obj.map(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
+// { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
+```
+
 ### Type utilities from `obj`
 
 ```typescript
-export type UndefToOptional<TObject> = { /* undefined props become optional */ };
-export type OptionalToUndef<TObject> = { /* optional props become required + undefined */ };
+/** Convert properties with undefined to optional */
+export type UndefToOptional<TObject> = {
+  [K in keyof TObject as undefined extends TObject[K] ? K : never]?: TObject[K];
+} & { [K in keyof TObject as undefined extends TObject[K] ? never : K]: TObject[K] };
+
+/** Convert optional properties to required + undefined union */
+export type OptionalToUndef<TObject> = {
+  [K in keyof TObject]-?: {} extends Pick<TObject, K> ? TObject[K] | undefined : TObject[K];
+};
 ```
 
 ---
@@ -227,6 +257,16 @@ export function getKoreanSuffix(
 ): string;
 ```
 
+| Type | With final consonant | Without final consonant |
+|------|---------------------|------------------------|
+| `"을"` | 을 | 를 |
+| `"은"` | 은 | 는 |
+| `"이"` | 이 | 가 |
+| `"와"` | 과 | 와 |
+| `"랑"` | 이랑 | 랑 |
+| `"로"` | 으로 | 로 |
+| `"라"` | 이라 | 라 |
+
 ### `str.replaceFullWidth`
 
 Convert full-width characters to half-width (A-Z, a-z, 0-9, space, parentheses).
@@ -240,6 +280,8 @@ export function replaceFullWidth(str: string): string;
 ```typescript
 export function toPascalCase(str: string): string;
 // "hello-world" -> "HelloWorld"
+// "hello_world" -> "HelloWorld"
+// "hello.world" -> "HelloWorld"
 ```
 
 ### `str.toCamelCase`
@@ -247,6 +289,8 @@ export function toPascalCase(str: string): string;
 ```typescript
 export function toCamelCase(str: string): string;
 // "hello-world" -> "helloWorld"
+// "hello_world" -> "helloWorld"
+// "HelloWorld"  -> "helloWorld"
 ```
 
 ### `str.toKebabCase`
@@ -254,6 +298,7 @@ export function toCamelCase(str: string): string;
 ```typescript
 export function toKebabCase(str: string): string;
 // "HelloWorld" -> "hello-world"
+// "helloWorld" -> "hello-world"
 ```
 
 ### `str.toSnakeCase`
@@ -261,6 +306,7 @@ export function toKebabCase(str: string): string;
 ```typescript
 export function toSnakeCase(str: string): string;
 // "HelloWorld" -> "hello_world"
+// "helloWorld" -> "hello_world"
 ```
 
 ### `str.isNullOrEmpty`
@@ -277,6 +323,7 @@ Insert a string at a specific position.
 
 ```typescript
 export function insert(str: string, index: number, insertString: string): string;
+// insert("Hello World", 5, ",") => "Hello, World"
 ```
 
 ---
@@ -499,6 +546,8 @@ Transferable conversion utility for Worker data transfer. Handles custom types t
 
 Source: `src/utils/transferable.ts`
 
+Supported types: Date, DateTime, DateOnly, Time, Uuid, RegExp, Error (including cause, code, detail), Uint8Array, Array, Map, Set, plain objects.
+
 ### `transfer.encode`
 
 Convert objects using Simplysm types to plain objects for Worker transfer.
@@ -536,7 +585,7 @@ Error utility. Source: `src/utils/error.ts`
 
 ### `err.message`
 
-Extract message from unknown type error.
+Extract message from unknown type error. Returns `message` property for `Error` instances, otherwise `String(err)`.
 
 ```typescript
 export function message(err: unknown): string;

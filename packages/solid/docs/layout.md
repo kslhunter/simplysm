@@ -4,160 +4,174 @@ Source: `src/components/layout/**`
 
 ## `FormGroup`
 
-Vertical or horizontal form field group. Compound with Item sub-component.
+Vertical or inline form field grouping component.
 
-```ts
-interface FormGroupProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface FormGroupProps extends JSX.HTMLAttributes<HTMLDivElement> {
   inline?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `inline` | `boolean` | Horizontal layout instead of vertical |
+| Prop | Type | Description |
+|------|------|-------------|
+| `inline` | `boolean` | Display items horizontally in a row |
 
 ### Sub-components
 
-- **`FormGroup.Item`** -- Labeled form group entry.
+- **`FormGroup.Item`** -- Individual form field with optional label
 
-```ts
-interface FormGroupItemProps {
+```typescript
+export interface FormGroupItemProps extends JSX.HTMLAttributes<HTMLDivElement> {
   label?: JSX.Element;
 }
 ```
+
+---
 
 ## `FormTable`
 
-Table-based form layout. Compound with Row and Item sub-components.
+Table-based form layout with label-value pairs.
 
-```ts
-interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
+```typescript
+export interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 ```
 
 ### Sub-components
 
-- **`FormTable.Row`** -- Table row.
-- **`FormTable.Item`** -- Labeled table cell.
+- **`FormTable.Row`** -- Table row wrapper
+- **`FormTable.Item`** -- Table cell with optional label (`th` + `td`)
 
-```ts
-interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellElement> {
+```typescript
+export interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellElement> {
   label?: JSX.Element;
 }
 ```
 
+---
+
 ## `Sidebar`
 
-Collapsible sidebar navigation panel. Compound with Container, Menu, User sub-components.
+Responsive sidebar navigation with user info and menu sections. Collapses on mobile with overlay backdrop.
 
-```ts
-interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
+```typescript
+export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;
 }
 ```
 
+### Sub-components
+
+- **`Sidebar.Container`** -- Root container providing sidebar context and responsive padding
+- **`Sidebar.Menu`** -- Recursive menu list with pathname-based selection
+- **`Sidebar.User`** -- User info section with optional dropdown menus
+
 ### `Sidebar.Container`
 
-Layout container wrapping Sidebar and content area with position: relative.
-
-```ts
-interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;
 }
 ```
 
 ### `Sidebar.Menu`
 
-Recursive menu rendering with List/ListItem components. Supports route matching for active state.
-
-```ts
-interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+```typescript
+export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   menus: AppMenu[];
   defaultOpen?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `menus` | `AppMenu[]` | Menu tree structure |
-| `defaultOpen` | `boolean` | Expand all menus by default |
+| Prop | Type | Description |
+|------|------|-------------|
+| `menus` | `AppMenu[]` | Menu items array |
+| `defaultOpen` | `boolean` | Expand all nested menus initially. Default: `false` |
 
 ### `Sidebar.User`
 
-User information component with avatar and dropdown menu.
-
-```ts
-interface SidebarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
+```typescript
+export interface SidebarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
   name: string;
   icon?: Component<TablerIconProps>;
   description?: string;
   menus?: SidebarUserMenu[];
 }
+```
 
-interface SidebarUserMenu {
+| Prop | Type | Description |
+|------|------|-------------|
+| `name` | `string` | User name (required) |
+| `icon` | `Component<TablerIconProps>` | Avatar icon. Default: user icon |
+| `description` | `string` | Additional info (email, etc.) |
+| `menus` | `SidebarUserMenu[]` | Dropdown menu items |
+
+### `SidebarUserMenu`
+
+```typescript
+export interface SidebarUserMenu {
   title: string;
   onClick: () => void;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | `string` | User display name |
-| `icon` | `Component<TablerIconProps>` | User avatar icon |
-| `description` | `string` | User description text |
-| `menus` | `SidebarUserMenu[]` | Dropdown menu items |
+### `SidebarContextValue`
 
-### `useSidebar()`
-
-```ts
-interface SidebarContextValue {
+```typescript
+export interface SidebarContextValue {
   toggle: Accessor<boolean>;
   setToggle: Setter<boolean>;
 }
-
-function useSidebar(): SidebarContextValue;
-function useSidebar.optional(): SidebarContextValue | undefined;
 ```
 
-Access sidebar toggle state. The `.optional()` variant returns undefined when not inside a Sidebar.
+### `useSidebar`
+
+Hook to access sidebar toggle state. Also has `useSidebar.optional()` variant.
 
 ### `SM_MEDIA_QUERY`
 
-```ts
-const SM_MEDIA_QUERY: string;  // "(min-width: 640px)"
+```typescript
+export const SM_MEDIA_QUERY = "(min-width: 640px)";
 ```
 
-Media query corresponding to Tailwind `sm:` breakpoint (640px).
+---
 
 ## `Topbar`
 
-Top navigation bar. Automatically shows sidebar toggle button if SidebarContext exists. Compound with Container, Menu, User, Actions sub-components.
+Top navigation bar with sidebar toggle integration, dropdown menus, user section, and dynamic actions.
 
-```ts
-interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
+```typescript
+export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;
 }
 ```
 
+### Sub-components
+
+- **`Topbar.Container`** -- Layout container wrapping Topbar and content, provides actions context
+- **`Topbar.Menu`** -- Dropdown navigation menu (responsive: desktop buttons / mobile hamburger)
+- **`Topbar.User`** -- User information section with optional dropdown
+- **`Topbar.Actions`** -- Renders actions set via `useTopbarActions()`
+
 ### `Topbar.Container`
 
-Layout container wrapping Topbar and content area.
-
-```ts
-interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;
 }
 ```
 
 ### `Topbar.Menu`
 
-Dropdown navigation menu. Items with children show dropdown on click.
-
-```ts
-interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
+```typescript
+export interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
   menus: TopbarMenuItem[];
 }
+```
 
-interface TopbarMenuItem {
+### `TopbarMenuItem`
+
+```typescript
+export interface TopbarMenuItem {
   title: string;
   href?: string;
   icon?: Component<IconProps>;
@@ -165,56 +179,34 @@ interface TopbarMenuItem {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Menu item text |
-| `href` | `string` | Navigation URL |
-| `icon` | `Component<IconProps>` | Menu item icon |
-| `children` | `TopbarMenuItem[]` | Submenu items (renders dropdown) |
-
 ### `Topbar.User`
 
-User information with dropdown menu.
-
-```ts
-interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
+```typescript
+export interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
   menus?: TopbarUserMenu[];
   children: JSX.Element;
 }
+```
 
-interface TopbarUserMenu {
+### `TopbarUserMenu`
+
+```typescript
+export interface TopbarUserMenu {
   title: string;
   onClick: () => void;
 }
 ```
 
-### `Topbar.Actions`
+### `TopbarContextValue`
 
-Displays action elements registered via `useTopbarActions()`.
-
-### `useTopbarActions()`
-
-```ts
-function useTopbarActions(accessor: () => JSX.Element): void;
-```
-
-Register topbar action elements. Must be used inside `Topbar.Container`.
-
-### `useTopbarActionsAccessor()`
-
-```ts
-function useTopbarActionsAccessor(): Accessor<JSX.Element | undefined>;
-```
-
-Read the current topbar actions signal.
-
-### `TopbarContext`
-
-```ts
-interface TopbarContextValue {
+```typescript
+export interface TopbarContextValue {
   actions: Accessor<JSX.Element | undefined>;
   setActions: Setter<JSX.Element | undefined>;
 }
-
-const TopbarContext: Context<TopbarContextValue>;
 ```
+
+### Hooks
+
+- **`useTopbarActions(accessor: () => JSX.Element)`** -- Register dynamic actions for display in Topbar
+- **`useTopbarActionsAccessor()`** -- Read registered actions

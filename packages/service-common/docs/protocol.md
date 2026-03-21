@@ -1,31 +1,58 @@
 # Protocol
 
-Binary protocol V2 for encoding/decoding service messages over WebSocket.
-
 ## `PROTOCOL_CONFIG`
 
 Service protocol configuration constants.
 
 ```typescript
 const PROTOCOL_CONFIG = {
-  /** Max message size (100MB) */
-  MAX_TOTAL_SIZE: 100 * 1024 * 1024,
-  /** Chunking threshold (3MB) */
-  SPLIT_MESSAGE_SIZE: 3 * 1024 * 1024,
-  /** Chunk size (300KB) */
-  CHUNK_SIZE: 300 * 1024,
-  /** GC interval (10s) */
-  GC_INTERVAL: 10 * 1000,
-  /** Incomplete message expiry time (60s) */
-  EXPIRE_TIME: 60 * 1000,
+  MAX_TOTAL_SIZE: 100 * 1024 * 1024,     // Max message size (100MB)
+  SPLIT_MESSAGE_SIZE: 3 * 1024 * 1024,   // Chunking threshold (3MB)
+  CHUNK_SIZE: 300 * 1024,                 // Chunk size (300KB)
+  GC_INTERVAL: 10 * 1000,                // GC interval (10s)
+  EXPIRE_TIME: 60 * 1000,                // Incomplete message expiry (60s)
 } as const;
 ```
 
-## Message Types
+## `ServiceProtocol`
 
-### `ServiceMessage`
+Service protocol interface for encoding/decoding binary messages.
 
-Union of all message types.
+```typescript
+interface ServiceProtocol {
+  encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number };
+  decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T>;
+  dispose(): void;
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `encode()` | Encode a message (auto-split if exceeding 3MB) |
+| `decode()` | Decode a message (auto-reassemble chunked packets) |
+| `dispose()` | Release GC timer and free memory |
+
+## `ServiceMessageDecodeResult`
+
+Message decode result type (union).
+
+```typescript
+type ServiceMessageDecodeResult<TMessage extends ServiceMessage> =
+  | { type: "complete"; uuid: string; message: TMessage }
+  | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
+```
+
+## `createServiceProtocol`
+
+Create a service protocol encoder/decoder. Binary Protocol V2: Header 28 bytes (UUID 16 + TotalSize 8 + Index 4) + JSON body. Auto chunking at 300KB when exceeding 3MB. Max 100MB.
+
+```typescript
+function createServiceProtocol(): ServiceProtocol;
+```
+
+## `ServiceMessage`
+
+Union type of all service messages.
 
 ```typescript
 type ServiceMessage =
@@ -42,7 +69,7 @@ type ServiceMessage =
   | ServiceEventMessage;
 ```
 
-### `ServiceServerMessage`
+## `ServiceServerMessage`
 
 Messages sent from server to client.
 
@@ -54,15 +81,15 @@ type ServiceServerMessage =
   | ServiceEventMessage;
 ```
 
-### `ServiceServerRawMessage`
+## `ServiceServerRawMessage`
 
-Server messages including progress (internal).
+Server messages including progress notifications.
 
 ```typescript
 type ServiceServerRawMessage = ServiceProgressMessage | ServiceServerMessage;
 ```
 
-### `ServiceClientMessage`
+## `ServiceClientMessage`
 
 Messages sent from client to server.
 
@@ -76,9 +103,7 @@ type ServiceClientMessage =
   | ServiceEmitEventMessage;
 ```
 
-### Individual Message Types
-
-#### `ServiceReloadMessage`
+## `ServiceReloadMessage`
 
 Server reload command to client.
 
@@ -92,9 +117,9 @@ interface ServiceReloadMessage {
 }
 ```
 
-#### `ServiceProgressMessage`
+## `ServiceProgressMessage`
 
-Server progress notification for received chunked message.
+Server progress notification for chunked messages.
 
 ```typescript
 interface ServiceProgressMessage {
@@ -106,7 +131,7 @@ interface ServiceProgressMessage {
 }
 ```
 
-#### `ServiceErrorMessage`
+## `ServiceErrorMessage`
 
 Server error notification.
 
@@ -124,40 +149,40 @@ interface ServiceErrorMessage {
 }
 ```
 
-#### `ServiceAuthMessage`
+## `ServiceAuthMessage`
 
 Client authentication message.
 
 ```typescript
 interface ServiceAuthMessage {
   name: "auth";
-  body: string; // JWT token
+  body: string;
 }
 ```
 
-#### `ServiceRequestMessage`
+## `ServiceRequestMessage`
 
 Client service method request.
 
 ```typescript
 interface ServiceRequestMessage {
-  name: `${string}.${string}`; // ${service}.${method}
-  body: unknown[];              // params
+  name: `${string}.${string}`;
+  body: unknown[];
 }
 ```
 
-#### `ServiceResponseMessage`
+## `ServiceResponseMessage`
 
 Server service method response.
 
 ```typescript
 interface ServiceResponseMessage {
   name: "response";
-  body?: unknown; // result
+  body?: unknown;
 }
 ```
 
-#### `ServiceAddEventListenerMessage`
+## `ServiceAddEventListenerMessage`
 
 Client add event listener request.
 
@@ -165,14 +190,14 @@ Client add event listener request.
 interface ServiceAddEventListenerMessage {
   name: "evt:add";
   body: {
-    key: string;    // Listener key (uuid)
-    name: string;   // Event name
-    info: unknown;  // Additional listener info for filtering
+    key: string;
+    name: string;
+    info: unknown;
   };
 }
 ```
 
-#### `ServiceRemoveEventListenerMessage`
+## `ServiceRemoveEventListenerMessage`
 
 Client remove event listener request.
 
@@ -185,9 +210,9 @@ interface ServiceRemoveEventListenerMessage {
 }
 ```
 
-#### `ServiceGetEventListenerInfosMessage`
+## `ServiceGetEventListenerInfosMessage`
 
-Client request event listener info list.
+Client request for event listener info list.
 
 ```typescript
 interface ServiceGetEventListenerInfosMessage {
@@ -198,7 +223,7 @@ interface ServiceGetEventListenerInfosMessage {
 }
 ```
 
-#### `ServiceEmitEventMessage`
+## `ServiceEmitEventMessage`
 
 Client emit event request.
 
@@ -212,7 +237,7 @@ interface ServiceEmitEventMessage {
 }
 ```
 
-#### `ServiceEventMessage`
+## `ServiceEventMessage`
 
 Server event notification.
 
@@ -225,55 +250,3 @@ interface ServiceEventMessage {
   };
 }
 ```
-
-## ServiceProtocol
-
-### Interface
-
-```typescript
-interface ServiceProtocol {
-  /** Encode a message (auto-split if needed) */
-  encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number };
-
-  /** Decode a message (auto-reassemble chunked packets) */
-  decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T>;
-
-  /** Dispose the protocol instance (releases GC timer and frees memory) */
-  dispose(): void;
-}
-```
-
-### `ServiceMessageDecodeResult`
-
-```typescript
-type ServiceMessageDecodeResult<TMessage extends ServiceMessage> =
-  | { type: "complete"; uuid: string; message: TMessage }
-  | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
-```
-
-### `createServiceProtocol`
-
-Create a service protocol encoder/decoder.
-
-```typescript
-function createServiceProtocol(): ServiceProtocol;
-```
-
-**Binary Protocol V2 header structure (28 bytes, Big Endian):**
-
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 16 | UUID (binary) |
-| 16 | 8 | TotalSize (uint64) |
-| 24 | 4 | Index (uint32) |
-
-**Encoding behavior:**
-- Messages are JSON-serialized as `[name, body]` array
-- If total size <= 3MB: single chunk
-- If total size > 3MB: split into 300KB chunks
-- Max total size: 100MB (throws `ArgumentError` if exceeded)
-
-**Decoding behavior:**
-- Returns `"complete"` when all chunks are received
-- Returns `"progress"` when chunks are still being accumulated
-- Incomplete messages expire after 60s (GC runs every 10s)

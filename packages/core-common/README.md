@@ -1,6 +1,6 @@
 # @simplysm/core-common
 
-Core module (common) — platform-neutral core utilities for the Simplysm framework.
+Core module (common) -- platform-neutral core utilities for the Simplysm framework.
 
 Provides error classes, immutable date/time types, prototype extensions, event handling, and utility namespaces that work in both browser and Node.js environments.
 
@@ -14,9 +14,9 @@ npm install @simplysm/core-common
 
 Importing the package entry point (`@simplysm/core-common`) automatically patches `Array`, `Map`, and `Set` prototypes with extension methods. These are declared as side effects in `package.json`:
 
-- `extensions/arr-ext` — Array prototype extensions
-- `extensions/map-ext` — Map prototype extensions
-- `extensions/set-ext` — Set prototype extensions
+- `extensions/arr-ext` -- Array prototype extensions
+- `extensions/map-ext` -- Map prototype extensions
+- `extensions/set-ext` -- Set prototype extensions
 
 If you import only specific modules (e.g., `@simplysm/core-common/dist/types/date-time`), the prototype extensions are **not** applied unless you also import the entry point or the extension modules directly.
 
@@ -57,7 +57,7 @@ If you import only specific modules (e.g., `@simplysm/core-common/dist/types/dat
 | API | Type | Description |
 |-----|------|-------------|
 | `EventEmitter` | class | Type-safe event emitter (EventTarget wrapper) |
-| `DebounceQueue` | class | Async debounce — only the last call executes |
+| `DebounceQueue` | class | Async debounce -- only the last call executes |
 | `SerialQueue` | class | Async serial execution queue |
 
 -> See [docs/features.md](./docs/features.md) for details.
@@ -66,7 +66,7 @@ If you import only specific modules (e.g., `@simplysm/core-common/dist/types/dat
 
 | API | Type | Description |
 |-----|------|-------------|
-| `Array` extensions | prototype | 34 methods — query, transform, diff, sort, mutate |
+| `Array` extensions | prototype | 34 methods -- query, transform, diff, sort, mutate |
 | `Map` extensions | prototype | `getOrCreate`, `update` |
 | `Set` extensions | prototype | `adds`, `toggle` |
 

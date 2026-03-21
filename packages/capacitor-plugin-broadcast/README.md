@@ -1,6 +1,6 @@
 # @simplysm/capacitor-plugin-broadcast
 
-Capacitor Broadcast Plugin -- send and receive Android broadcast intents for industrial device integration (barcode scanners, PDAs, etc.).
+Simplysm Package - Capacitor Broadcast Plugin. Provides Android Broadcast send/receive functionality for industrial device integration (barcode scanners, PDAs, etc.).
 
 ## Installation
 
@@ -10,83 +10,47 @@ npm install @simplysm/capacitor-plugin-broadcast
 
 ## API Overview
 
-### Types
+### Broadcast
 
 | API | Type | Description |
 |-----|------|-------------|
-| `BroadcastResult` | interface | Broadcast result containing `action` and `extras` |
+| `Broadcast` | class | Android Broadcast send/receive plugin (static methods) |
+| `BroadcastPlugin` | interface | Low-level Capacitor plugin interface for broadcast |
+| `BroadcastResult` | interface | Broadcast result data |
 
-### Interfaces
+---
 
-| API | Type | Description |
-|-----|------|-------------|
-| `BroadcastPlugin` | interface | Low-level Capacitor plugin interface for broadcast operations |
+### `BroadcastResult`
 
-### Classes
+| Field | Type | Description |
+|-------|------|-------------|
+| `action` | `string \| undefined` | Broadcast action |
+| `extras` | `Record<string, unknown> \| undefined` | Extra data |
 
-| API | Type | Description |
-|-----|------|-------------|
-| `Broadcast` | abstract class | Android broadcast send/receive operations |
+### `BroadcastPlugin`
 
-## `BroadcastResult`
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `subscribe` | `(options: { filters: string[] }, callback: (result: BroadcastResult) => void) => Promise<{ id: string }>` | Register broadcast receiver |
+| `unsubscribe` | `(options: { id: string }) => Promise<void>` | Unsubscribe a specific broadcast receiver |
+| `unsubscribeAll` | `() => Promise<void>` | Unsubscribe all broadcast receivers |
+| `send` | `(options: { action: string; extras?: Record<string, unknown> }) => Promise<void>` | Send broadcast |
+| `getLaunchIntent` | `() => Promise<BroadcastResult>` | Get launch intent |
+| `addListener` | `(eventName: "newIntent", listenerFunc: (data: BroadcastResult) => void) => Promise<PluginListenerHandle>` | Register listener for new intents |
+| `removeAllListeners` | `() => Promise<void>` | Remove all event listeners |
 
-```typescript
-interface BroadcastResult {
-  /** Broadcast action */
-  action?: string;
-  /** Extra data */
-  extras?: Record<string, unknown>;
-}
-```
+### `Broadcast`
 
-## `BroadcastPlugin`
+Abstract class with static methods for Android Broadcast send/receive.
 
-```typescript
-interface BroadcastPlugin {
-  subscribe(
-    options: { filters: string[] },
-    callback: (result: BroadcastResult) => void,
-  ): Promise<{ id: string }>;
-  unsubscribe(options: { id: string }): Promise<void>;
-  unsubscribeAll(): Promise<void>;
-  send(options: { action: string; extras?: Record<string, unknown> }): Promise<void>;
-  getLaunchIntent(): Promise<BroadcastResult>;
-  addListener(
-    eventName: "newIntent",
-    listenerFunc: (data: BroadcastResult) => void,
-  ): Promise<PluginListenerHandle>;
-  removeAllListeners(): Promise<void>;
-}
-```
-
-Low-level Capacitor plugin interface. Use `Broadcast` static methods instead of calling this directly.
-
-## `Broadcast`
-
-```typescript
-abstract class Broadcast {
-  static async subscribe(
-    filters: string[],
-    callback: (result: BroadcastResult) => void,
-  ): Promise<() => Promise<void>>;
-
-  static async unsubscribeAll(): Promise<void>;
-
-  static async send(options: {
-    action: string;
-    extras?: Record<string, unknown>;
-  }): Promise<void>;
-
-  static async getLaunchIntent(): Promise<BroadcastResult>;
-
-  static async addListener(
-    eventName: "newIntent",
-    callback: (result: BroadcastResult) => void,
-  ): Promise<PluginListenerHandle>;
-
-  static async removeAllListeners(): Promise<void>;
-}
-```
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `subscribe` | `(filters: string[], callback: (result: BroadcastResult) => void) => Promise<() => Promise<void>>` | Register broadcast receiver; returns unsubscribe function |
+| `unsubscribeAll` | `() => Promise<void>` | Unsubscribe all broadcast receivers |
+| `send` | `(options: { action: string; extras?: Record<string, unknown> }) => Promise<void>` | Send broadcast |
+| `getLaunchIntent` | `() => Promise<BroadcastResult>` | Get launch intent |
+| `addListener` | `(eventName: "newIntent", callback: (result: BroadcastResult) => void) => Promise<PluginListenerHandle>` | Register listener for events; returns handle (release with `handle.remove()`) |
+| `removeAllListeners` | `() => Promise<void>` | Remove all event listeners |
 
 ## Usage Examples
 
@@ -99,10 +63,10 @@ const unsub = await Broadcast.subscribe(
   ["com.symbol.datawedge.api.RESULT_ACTION"],
   (result) => {
     // handle result.action, result.extras
-  },
+  }
 );
 
-// Later: unsubscribe
+// Unsubscribe
 await unsub();
 ```
 
@@ -114,20 +78,7 @@ import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
 await Broadcast.send({
   action: "com.symbol.datawedge.api.ACTION",
   extras: {
-    "com.symbol.datawedge.api.SOFT_SCAN_TRIGGER": "TOGGLE_SCANNING",
-  },
+    "com.symbol.datawedge.api.SOFT_SCAN_TRIGGER": "TOGGLE_SCANNING"
+  }
 });
-```
-
-### Listen for new intents
-
-```typescript
-import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
-
-const handle = await Broadcast.addListener("newIntent", (result) => {
-  // handle intent
-});
-
-// Later: remove listener
-await handle.remove();
 ```

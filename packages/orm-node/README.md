@@ -1,11 +1,19 @@
 # @simplysm/orm-node
 
-ORM module (node) -- database connections and ORM integration for MySQL, PostgreSQL, and MSSQL on Node.js.
+Simplysm package - ORM module (node). Provides database connection implementations for MySQL, MSSQL, and PostgreSQL, plus a high-level ORM factory for managing DbContext instances with transaction support.
 
 ## Installation
 
 ```bash
 npm install @simplysm/orm-node
+```
+
+Database drivers are loaded lazily. Install only the driver(s) you need:
+
+```bash
+npm install mysql2          # for MySQL
+npm install tedious         # for MSSQL / Azure SQL
+npm install pg pg-copy-streams  # for PostgreSQL
 ```
 
 ## API Overview
@@ -14,188 +22,158 @@ npm install @simplysm/orm-node
 
 | API | Type | Description |
 |-----|------|-------------|
-| `DB_CONN_CONNECT_TIMEOUT` | const | Connection establishment timeout (10 seconds) |
-| `DB_CONN_DEFAULT_TIMEOUT` | const | Query default timeout (10 minutes) |
-| `DB_CONN_ERRORS` | const | Error message constants (`NOT_CONNECTED`, `ALREADY_CONNECTED`) |
 | `DbConn` | interface | Low-level DB connection interface |
-| `DbConnConfig` | type | Union of all DB connection configs |
+| `DbConnConfig` | type | Union of all connection config types |
 | `MysqlDbConnConfig` | interface | MySQL connection configuration |
-| `MssqlDbConnConfig` | interface | MSSQL/Azure SQL connection configuration |
+| `MssqlDbConnConfig` | interface | MSSQL connection configuration |
 | `PostgresqlDbConnConfig` | interface | PostgreSQL connection configuration |
-| `getDialectFromConfig` | function | Extract `Dialect` from a `DbConnConfig` |
+| `DB_CONN_CONNECT_TIMEOUT` | const | Connection timeout (10 seconds) |
+| `DB_CONN_DEFAULT_TIMEOUT` | const | Query default timeout (10 minutes) |
+| `DB_CONN_ERRORS` | const | Error message constants |
+| `getDialectFromConfig` | function | Extract Dialect from DbConnConfig |
 
 ### Connections
 
 | API | Type | Description |
 |-----|------|-------------|
-| `createDbConn` | function | Factory function to create a DB connection from config |
-| `MysqlDbConn` | class | MySQL connection implementation (mysql2) |
-| `PostgresqlDbConn` | class | PostgreSQL connection implementation (pg) |
-| `MssqlDbConn` | class | MSSQL connection implementation (tedious) |
+| `MysqlDbConn` | class | MySQL connection (uses mysql2/promise) |
+| `MssqlDbConn` | class | MSSQL/Azure SQL connection (uses tedious) |
+| `PostgresqlDbConn` | class | PostgreSQL connection (uses pg) |
+| `createDbConn` | function | DB connection factory function |
 
 ### Core
 
 | API | Type | Description |
 |-----|------|-------------|
-| `OrmOptions` | interface | ORM options (database name, schema override) |
-| `Orm` | interface | ORM instance with `connect` and `connectWithoutTransaction` |
-| `createOrm` | function | Create an ORM instance from a DbContext definition and config |
-| `NodeDbContextExecutor` | class | DbContextExecutor for Node.js environment |
+| `NodeDbContextExecutor` | class | DbContextExecutor for Node.js |
+| `createOrm` | function | ORM factory function |
+| `Orm` | interface | ORM instance type |
+| `OrmOptions` | interface | ORM options (database/schema override) |
 
-## `DbConnConfig`
+---
+
+### `DbConnConfig`
 
 ```typescript
 type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConfig;
 ```
 
-## `MysqlDbConnConfig`
+### `MysqlDbConnConfig`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dialect` | `"mysql"` | Dialect identifier |
+| `host` | `string` | Server hostname |
+| `port` | `number?` | Server port |
+| `username` | `string` | Username |
+| `password` | `string` | Password |
+| `database` | `string?` | Database name |
+| `defaultIsolationLevel` | `IsolationLevel?` | Default transaction isolation level |
+
+### `MssqlDbConnConfig`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dialect` | `"mssql" \| "mssql-azure"` | Dialect identifier |
+| `host` | `string` | Server hostname |
+| `port` | `number?` | Server port |
+| `username` | `string` | Username |
+| `password` | `string` | Password |
+| `database` | `string?` | Database name |
+| `schema` | `string?` | Schema name |
+| `defaultIsolationLevel` | `IsolationLevel?` | Default transaction isolation level |
+
+### `PostgresqlDbConnConfig`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dialect` | `"postgresql"` | Dialect identifier |
+| `host` | `string` | Server hostname |
+| `port` | `number?` | Server port |
+| `username` | `string` | Username |
+| `password` | `string` | Password |
+| `database` | `string?` | Database name |
+| `schema` | `string?` | Schema name |
+| `defaultIsolationLevel` | `IsolationLevel?` | Default transaction isolation level |
+
+### `DbConn`
+
+Interface extending `EventEmitter<{ close: void }>`. Implemented by `MysqlDbConn`, `MssqlDbConn`, and `PostgresqlDbConn`.
+
+| Property/Method | Signature | Description |
+|-----------------|-----------|-------------|
+| `config` | `DbConnConfig` | Connection configuration |
+| `isConnected` | `boolean` | Whether connected |
+| `isInTransaction` | `boolean` | Whether transaction is in progress |
+| `connect` | `() => Promise<void>` | Establish DB connection |
+| `close` | `() => Promise<void>` | Close DB connection |
+| `beginTransaction` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Begin transaction |
+| `commitTransaction` | `() => Promise<void>` | Commit transaction |
+| `rollbackTransaction` | `() => Promise<void>` | Rollback transaction |
+| `execute` | `(queries: string[]) => Promise<Record<string, unknown>[][]>` | Execute SQL query array |
+| `executeParametrized` | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | Execute parameterized query |
+| `bulkInsert` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | Bulk INSERT using native API |
+
+### `createDbConn`
 
 ```typescript
-interface MysqlDbConnConfig {
-  dialect: "mysql";
-  host: string;
-  port?: number;
-  username: string;
-  password: string;
-  database?: string;
-  defaultIsolationLevel?: IsolationLevel;
-}
+function createDbConn(config: DbConnConfig): Promise<DbConn>
 ```
 
-## `MssqlDbConnConfig`
+Factory function that creates a DB connection instance. The returned connection is **not yet connected** -- call `connect()` separately. Database drivers are lazily loaded.
+
+### `getDialectFromConfig`
 
 ```typescript
-interface MssqlDbConnConfig {
-  dialect: "mssql" | "mssql-azure";
-  host: string;
-  port?: number;
-  username: string;
-  password: string;
-  database?: string;
-  schema?: string;
-  defaultIsolationLevel?: IsolationLevel;
-}
+function getDialectFromConfig(config: DbConnConfig): Dialect
 ```
 
-## `PostgresqlDbConnConfig`
+Extracts the `Dialect` from a config. Maps `"mssql-azure"` to `"mssql"`.
 
-```typescript
-interface PostgresqlDbConnConfig {
-  dialect: "postgresql";
-  host: string;
-  port?: number;
-  username: string;
-  password: string;
-  database?: string;
-  schema?: string;
-  defaultIsolationLevel?: IsolationLevel;
-}
-```
+### `OrmOptions`
 
-## `DbConn`
+| Field | Type | Description |
+|-------|------|-------------|
+| `database` | `string?` | Database name (overrides DbConnConfig's database) |
+| `schema` | `string?` | Schema name (MSSQL: dbo, PostgreSQL: public) |
 
-```typescript
-interface DbConn extends EventEmitter<{ close: void }> {
-  config: DbConnConfig;
-  isConnected: boolean;
-  isInTransaction: boolean;
-  connect(): Promise<void>;
-  close(): Promise<void>;
-  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
-  commitTransaction(): Promise<void>;
-  rollbackTransaction(): Promise<void>;
-  execute(queries: string[]): Promise<Record<string, unknown>[][]>;
-  executeParametrized(query: string, params?: unknown[]): Promise<Record<string, unknown>[][]>;
-  bulkInsert(
-    tableName: string,
-    columnMetas: Record<string, ColumnMeta>,
-    records: Record<string, unknown>[],
-  ): Promise<void>;
-}
-```
+### `Orm<TDef>`
 
-## `getDialectFromConfig`
+| Property/Method | Signature | Description |
+|-----------------|-----------|-------------|
+| `dbContextDef` | `TDef` | DbContext definition |
+| `config` | `DbConnConfig` | Connection configuration |
+| `options` | `OrmOptions?` | ORM options |
+| `connect` | `<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>, isolationLevel?: IsolationLevel) => Promise<R>` | Execute callback within a transaction |
+| `connectWithoutTransaction` | `<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>) => Promise<R>` | Execute callback without a transaction |
 
-```typescript
-function getDialectFromConfig(config: DbConnConfig): Dialect;
-```
-
-Returns the `Dialect` for a given config. Maps `"mssql-azure"` to `"mssql"`.
-
-## `createDbConn`
-
-```typescript
-async function createDbConn(config: DbConnConfig): Promise<DbConn>;
-```
-
-Factory function that creates a DB connection. Driver modules (mysql2, pg, tedious) are lazy-loaded. Returns an unconnected instance -- call `connect()` separately.
-
-## `OrmOptions`
-
-```typescript
-interface OrmOptions {
-  database?: string;
-  schema?: string;
-}
-```
-
-## `Orm`
-
-```typescript
-interface Orm<TDef extends DbContextDef<any, any, any>> {
-  readonly dbContextDef: TDef;
-  readonly config: DbConnConfig;
-  readonly options?: OrmOptions;
-  connect<R>(
-    callback: (conn: DbContextInstance<TDef>) => Promise<R>,
-    isolationLevel?: IsolationLevel,
-  ): Promise<R>;
-  connectWithoutTransaction<R>(
-    callback: (conn: DbContextInstance<TDef>) => Promise<R>,
-  ): Promise<R>;
-}
-```
-
-## `createOrm`
+### `createOrm`
 
 ```typescript
 function createOrm<TDef extends DbContextDef<any, any, any>>(
   dbContextDef: TDef,
   config: DbConnConfig,
   options?: OrmOptions,
-): Orm<TDef>;
+): Orm<TDef>
 ```
 
-Node.js ORM factory. Creates an instance that manages DbContext and DB connections with automatic transaction handling.
+### `NodeDbContextExecutor`
 
-## `NodeDbContextExecutor`
-
-```typescript
-class NodeDbContextExecutor implements DbContextExecutor {
-  constructor(config: DbConnConfig);
-  async connect(): Promise<void>;
-  async close(): Promise<void>;
-  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
-  async commitTransaction(): Promise<void>;
-  async rollbackTransaction(): Promise<void>;
-  async executeParametrized(query: string, params?: unknown[]): Promise<Record<string, unknown>[][]>;
-  async bulkInsert(
-    tableName: string,
-    columnMetas: Record<string, ColumnMeta>,
-    records: DataRecord[],
-  ): Promise<void>;
-  async executeDefs<T = DataRecord>(
-    defs: QueryDef[],
-    resultMetas?: (ResultMeta | undefined)[],
-  ): Promise<T[][]>;
-}
-```
-
-DbContextExecutor for Node.js. Handles actual DB connections and query execution including QueryDef-to-SQL conversion.
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `constructor` | `(config: DbConnConfig)` | Create executor with connection config |
+| `connect` | `() => Promise<void>` | Establish DB connection |
+| `close` | `() => Promise<void>` | Close DB connection |
+| `beginTransaction` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Begin transaction |
+| `commitTransaction` | `() => Promise<void>` | Commit transaction |
+| `rollbackTransaction` | `() => Promise<void>` | Rollback transaction |
+| `executeParametrized` | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | Execute parameterized query |
+| `bulkInsert` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: DataRecord[]) => Promise<void>` | Bulk insert |
+| `executeDefs` | `<T>(defs: QueryDef[], resultMetas?: (ResultMeta \| undefined)[]) => Promise<T[][]>` | Execute QueryDef array |
 
 ## Usage Examples
 
-### Create ORM and run queries in a transaction
+### Using createOrm (recommended)
 
 ```typescript
 import { createOrm } from "@simplysm/orm-node";
@@ -214,12 +192,20 @@ const orm = createOrm(MyDb, {
   database: "mydb",
 });
 
-const users = await orm.connect(async (db) => {
-  return await db.user().execute();
+// Execute within a transaction
+await orm.connect(async (db) => {
+  const users = await db.user().execute();
+  return users;
+});
+
+// Execute without a transaction
+await orm.connectWithoutTransaction(async (db) => {
+  const users = await db.user().execute();
+  return users;
 });
 ```
 
-### Use low-level DB connection
+### Using low-level connection
 
 ```typescript
 import { createDbConn } from "@simplysm/orm-node";
@@ -238,12 +224,4 @@ try {
 } finally {
   await conn.close();
 }
-```
-
-### Run without transaction
-
-```typescript
-const result = await orm.connectWithoutTransaction(async (db) => {
-  return await db.user().execute();
-});
 ```

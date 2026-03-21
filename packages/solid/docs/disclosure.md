@@ -4,26 +4,26 @@ Source: `src/components/disclosure/**`
 
 ## `Collapse`
 
-Animated collapse component with smooth height transitions. Prevents FOUC.
+Animated collapsible container using CSS margin-top transition.
 
-```ts
-interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `open` | `boolean` | Whether content is visible (default: false) |
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Whether content is visible. Default: `false` |
 
-Use with `aria-expanded` and `aria-controls` for accessibility.
+---
 
 ## `Dropdown`
 
-Auto-toggling popup with keyboard navigation and outside-click handling. Uses slot pattern with Trigger and Content.
+Popup dropdown component with trigger/content slot pattern. Supports auto-positioning, keyboard navigation, and context menu mode.
 
-```ts
-interface DropdownProps {
+```typescript
+export interface DropdownProps {
   position?: { x: number; y: number };
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -36,26 +36,28 @@ interface DropdownProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `position` | `{ x: number; y: number }` | Absolute positioning for context menus |
+| Prop | Type | Description |
+|------|------|-------------|
+| `position` | `{ x: number; y: number }` | Absolute position for context menu mode |
 | `open` | `boolean` | Popup open state |
-| `onOpenChange` | `(open: boolean) => void` | State change callback |
-| `maxHeight` | `number` | Max popup height in px (default: 300) |
+| `onOpenChange` | `(open: boolean) => void` | Open state change callback |
+| `maxHeight` | `number` | Popup max height in px. Default: `300` |
 | `disabled` | `boolean` | Disable trigger click |
-| `keyboardNav` | `boolean` | Enable ArrowUp/ArrowDown navigation |
+| `keyboardNav` | `boolean` | Enable ArrowUp/ArrowDown keyboard navigation |
 
 ### Sub-components
 
-- **`Dropdown.Trigger`** -- Click target that toggles the popup.
-- **`Dropdown.Content`** -- Popup content rendered in a portal.
+- **`Dropdown.Trigger`** -- Trigger element slot (click toggles popup)
+- **`Dropdown.Content`** -- Popup content slot
+
+---
 
 ## `Dialog`
 
-Draggable, resizable dialog with float/fill modes and auto-stacking. Compound with Header and Action sub-components.
+Modal/float dialog with dragging, 8-directional resizing, automatic z-index management, and slot-based header/action areas.
 
-```ts
-interface DialogProps {
+```typescript
+export interface DialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   withCloseButton?: boolean;
@@ -76,36 +78,58 @@ interface DialogProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `open` | `boolean` | Dialog visibility |
-| `onOpenChange` | `(open: boolean) => void` | Visibility change callback |
-| `withCloseButton` | `boolean` | Show close button in header |
-| `closeOnInteractOutside` | `boolean` | Close on backdrop click |
-| `closeOnEscape` | `boolean` | Close on Escape key |
-| `resizable` | `boolean` | Enable resize handles |
-| `draggable` | `boolean` | Enable title bar drag |
-| `mode` | `"float" \| "fill"` | Float (centered) or fill (full-size) mode |
-| `width` | `number` | Initial width in px |
-| `height` | `number` | Initial height in px |
-| `minWidth` | `number` | Minimum width |
-| `minHeight` | `number` | Minimum height |
-| `position` | `"bottom-right" \| "top-right"` | Anchored position |
-| `headerStyle` | `JSX.CSSProperties \| string` | Header custom style |
-| `beforeClose` | `() => boolean` | Guard function; return false to prevent close |
-| `onCloseComplete` | `() => void` | Called after close animation completes |
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Dialog open state |
+| `onOpenChange` | `(open: boolean) => void` | Open state change callback |
+| `withCloseButton` | `boolean` | Show close button. Default: `true` |
+| `closeOnInteractOutside` | `boolean` | Close on backdrop click. Default: `false` |
+| `closeOnEscape` | `boolean` | Close on ESC key. Default: `true` |
+| `resizable` | `boolean` | Enable 8-directional resizing. Default: `false` |
+| `draggable` | `boolean` | Enable header dragging. Default: `true` |
+| `mode` | `"float" \| "fill"` | Display mode |
+| `width` / `height` | `number` | Initial dimensions in px |
+| `minWidth` / `minHeight` | `number` | Minimum dimensions in px |
+| `position` | `"bottom-right" \| "top-right"` | Absolute position mode |
+| `beforeClose` | `() => boolean` | Close guard (return `false` to cancel) |
+| `onCloseComplete` | `() => void` | Callback after close animation completes |
 
 ### Sub-components
 
-- **`Dialog.Header`** -- Dialog title bar content.
-- **`Dialog.Action`** -- Header action buttons (right side of title bar).
+- **`Dialog.Header`** -- Header slot (enables dragging)
+- **`Dialog.Action`** -- Action slot in header area (before close button)
+
+### `DialogProvider`
+
+Provider for programmatic dialog management via `useDialog().show()`.
+
+```typescript
+export interface DialogProviderProps extends DialogDefaults {}
+
+export interface DialogDefaults {
+  closeOnEscape?: boolean;
+  closeOnInteractOutside?: boolean;
+}
+```
+
+### `useDialog`
+
+```typescript
+export function useDialog(): DialogContextValue;
+
+export interface DialogContextValue {
+  show<P extends Record<string, any>>(
+    component: Component<P>,
+    props: Omit<P, "close">,
+    options?: DialogShowOptions,
+  ): Promise<ExtractCloseResult<P> | undefined>;
+}
+```
 
 ### `DialogShowOptions`
 
-Options for programmatic dialog invocation via `useDialog().show()`.
-
-```ts
-interface DialogShowOptions {
+```typescript
+export interface DialogShowOptions {
   header?: JSX.Element;
   withCloseButton?: boolean;
   closeOnInteractOutside?: boolean;
@@ -123,49 +147,17 @@ interface DialogShowOptions {
 }
 ```
 
-## `DialogProvider`
-
-Programmatic dialog manager with Promise-based API.
-
-```ts
-interface DialogProviderProps extends DialogDefaults {}
-
-interface DialogDefaults {
-  closeOnEscape?: boolean;
-  closeOnInteractOutside?: boolean;
-}
-```
-
 ### `DialogDefaultsContext`
 
-```ts
-const DialogDefaultsContext: Context<Accessor<DialogDefaults>>;
-```
+Context for setting default dialog options across the app.
 
-### `useDialog()`
-
-```ts
-interface DialogContextValue {
-  show<P>(
-    component: Component<P>,
-    props: Omit<P, "close">,
-    options?: DialogShowOptions,
-  ): Promise<ExtractCloseResult<P> | undefined>;
-}
-
-type ExtractCloseResult<P> = /* extracts result type from component's close prop */;
-
-const DialogContext: Context<DialogContextValue>;
-function useDialog(): DialogContextValue;
-```
-
-The `show()` method renders the component in a dialog and returns a Promise that resolves when the dialog closes. The component receives a `close` prop to close the dialog with an optional result value.
+---
 
 ## `Tabs`
 
-Tabbed navigation with keyboard support.
+Tab bar component with underline indicator and keyboard support.
 
-```ts
+```typescript
 interface TabsProps {
   value?: string;
   onValueChange?: (value: string) => void;
@@ -176,15 +168,17 @@ interface TabsProps {
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `value` | `string` | Currently active tab value |
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `string` | Currently selected tab value |
 | `onValueChange` | `(value: string) => void` | Tab change callback |
-| `size` | `ComponentSize` | Size scale |
+| `size` | `ComponentSize` | Tab size |
 
-### `Tabs.Tab`
+### Sub-components
 
-```ts
+- **`Tabs.Tab`** -- Individual tab button
+
+```typescript
 interface TabsTabProps {
   value: string;
   disabled?: boolean;

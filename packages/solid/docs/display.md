@@ -4,125 +4,134 @@ Source: `src/components/display/**`
 
 ## `Barcode`
 
-Barcode/QR code renderer using bwip-js library.
+SVG barcode renderer using bwip-js. Supports 100+ barcode formats.
 
-```ts
-interface BarcodeProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface BarcodeProps extends JSX.HTMLAttributes<HTMLDivElement> {
   type: BarcodeType;
   value?: string;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `type` | `BarcodeType` | Barcode format to render |
+| Prop | Type | Description |
+|------|------|-------------|
+| `type` | `BarcodeType` | Barcode format (e.g., `"qrcode"`, `"code128"`, `"ean13"`) |
 | `value` | `string` | Data to encode |
 
 ### `BarcodeType`
 
-Union type of 111 supported barcode format strings including:
+Union of 100+ barcode format strings including `"qrcode"`, `"code128"`, `"ean13"`, `"datamatrix"`, `"pdf417"`, `"azteccode"`, etc.
 
-```ts
-type BarcodeType =
-  | "code128" | "code39" | "code93"
-  | "ean13" | "ean8" | "ean5" | "ean2"
-  | "upca" | "upce"
-  | "isbn" | "issn" | "ismn"
-  | "qrcode" | "microqrcode" | "datamatrix"
-  | "pdf417" | "micropdf417"
-  | "azteccode" | "maxicode"
-  | "gs1-128" | "itf14"
-  | ... ; // 111 formats total
-```
+---
 
 ## `Card`
 
-Elevated surface card container with shadow and hover effects.
+Surface container with shadow, hover effects, and fade-in animation.
 
-```ts
-interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
+```typescript
+export interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 ```
 
-No additional props. Renders children inside a styled card surface.
+---
 
 ## `Echarts`
 
-Apache ECharts integration with responsive resizing and busy state overlay.
+Apache ECharts wrapper with auto-resize and loading state support.
 
-```ts
-interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
   option: echarts.EChartsOption;
   busy?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Prop | Type | Description |
+|------|------|-------------|
 | `option` | `echarts.EChartsOption` | ECharts configuration object |
 | `busy` | `boolean` | Show loading overlay |
 
+---
+
 ## `Icon`
 
-Tabler icons wrapper with customizable size.
+Wrapper for Tabler Icons with consistent sizing and vertical alignment.
 
-```ts
-interface IconProps extends Omit<TablerIconProps, "size"> {
+```typescript
+export interface IconProps extends Omit<TablerIconProps, "size"> {
   icon: Component<TablerIconProps>;
   size?: string | number;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `icon` | `Component<TablerIconProps>` | Tabler icon component reference |
-| `size` | `string \| number` | Icon size (CSS value or number) |
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `Component<TablerIconProps>` | Tabler icon component |
+| `size` | `string \| number` | Icon size. Default: `"1.25em"` |
+
+---
 
 ## `Tag`
 
-Semantic themed inline tag/badge.
+Inline badge/tag with semantic theme colors.
 
-```ts
-type TagTheme = SemanticTheme;
-
-interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
+```typescript
+export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   theme?: TagTheme;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `theme` | `TagTheme` | Semantic color theme |
+| Prop | Type | Description |
+|------|------|-------------|
+| `theme` | `SemanticTheme` | Color theme. Default: `"base"` |
+
+### `TagTheme`
+
+```typescript
+export type TagTheme = SemanticTheme;
+```
+
+---
 
 ## `Link`
 
-Semantic themed anchor link with disabled state.
+Styled anchor element with theme colors and disabled state.
 
-```ts
-type LinkTheme = SemanticTheme;
-
-interface LinkProps extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
+```typescript
+export interface LinkProps extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
   theme?: LinkTheme;
   disabled?: boolean;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `theme` | `LinkTheme` | Semantic color theme |
-| `disabled` | `boolean` | Disable link interaction |
+| Prop | Type | Description |
+|------|------|-------------|
+| `theme` | `SemanticTheme` | Color theme. Default: `"primary"` |
+| `disabled` | `boolean` | Disabled state |
+
+### `LinkTheme`
+
+```typescript
+export type LinkTheme = SemanticTheme;
+```
+
+---
 
 ## `Alert`
 
-Semantic themed alert box.
+Block-level alert container with semantic theme background.
 
-```ts
-type AlertTheme = SemanticTheme;
-
-interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
+```typescript
+export interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: AlertTheme;
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `theme` | `AlertTheme` | Semantic color theme |
+| Prop | Type | Description |
+|------|------|-------------|
+| `theme` | `SemanticTheme` | Color theme. Default: `"base"` |
+
+### `AlertTheme`
+
+```typescript
+export type AlertTheme = SemanticTheme;
+```

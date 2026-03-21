@@ -129,7 +129,7 @@ export class SerialQueue extends EventEmitter<{ error: SdError }> {
 }
 ```
 
-**Error handling:** Same as `DebounceQueue` — emitted as event if listeners exist, otherwise logged.
+**Error handling:** Same as `DebounceQueue` -- emitted as event if listeners exist, otherwise logged.
 
 **Example:**
 
