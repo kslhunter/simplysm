@@ -85,6 +85,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Step 4: 커밋
 
+사용자에게 확인을 묻지 않고 즉시 커밋한다. `/sd-commit` 실행 자체가 커밋 의사 표시이다.
+
 ```bash
 git commit -m "$(cat <<'EOF'
 {커밋 메시지}
