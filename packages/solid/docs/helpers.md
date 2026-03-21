@@ -1,40 +1,38 @@
 # Helpers
 
-Source: `src/helpers/*.ts`
+Source: `src/helpers/**`
 
-## mergeStyles
+## `mergeStyles`
 
-Utility function that merges CSS styles from multiple sources (objects and strings).
+Merge CSS style objects and/or strings into a single JSX.CSSProperties object.
 
 ```ts
-function mergeStyles(
-  ...styles: (JSX.CSSProperties | string | undefined)[]
-): JSX.CSSProperties;
+function mergeStyles(...styles: (JSX.CSSProperties | string | undefined)[]): JSX.CSSProperties;
 ```
 
-- Object styles are merged with later values taking precedence.
-- String styles are parsed (semicolon-delimited, kebab-case converted to camelCase).
-- `undefined` values are ignored.
+Accepts any combination of style objects and CSS strings. Undefined values are ignored.
 
-## createAppStructure
+## `createAppStructure`
 
-Builds app menus, routes, permissions, and flat menu lists from a declarative structure definition. Supports module-based filtering and permission inference.
+Create typed app structure with routes, menus, and permissions. Returns a provider component and a hook.
 
 ```ts
 function createAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(
-  items: TItems,
-  options: {
-    basePath: string;
-    enabledModules?: TModule[];
-    enabledPerms?: string[];
-    homeCode?: string;
+  getOpts: () => {
+    items: TItems;
+    hasPermission: (code: string, perm: string) => boolean;
   },
-): AppStructure<TModule>;
+): {
+  AppStructureProvider: ParentComponent;
+  useAppStructure: () => AppStructure<TModule> & { perms: InferPerms<TItems> };
+};
 ```
 
 ### Input Types
 
 ```ts
+type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
+
 interface AppStructureGroupItem<TModule> {
   code: string;
   title: string;
@@ -56,10 +54,6 @@ interface AppStructureLeafItem<TModule> {
   isNotMenu?: boolean;
 }
 
-type AppStructureItem<TModule> =
-  | AppStructureGroupItem<TModule>
-  | AppStructureLeafItem<TModule>;
-
 interface AppStructureSubPerm<TModule> {
   code: string;
   title: string;
@@ -68,6 +62,21 @@ interface AppStructureSubPerm<TModule> {
   perms: ("use" | "edit")[];
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `string` | Unique item identifier |
+| `title` | `string` | Display title |
+| `icon` | `Component<IconProps>` | Navigation icon |
+| `modules` | `TModule[]` | Required modules for visibility |
+| `requiredModules` | `TModule[]` | Strictly required modules |
+| `children` | `AppStructureItem[]` | Child items (group only) |
+| `component` | `Component` | Page component (leaf only) |
+| `perms` | `("use" \| "edit")[]` | Permission types (leaf only) |
+| `subPerms` | `AppStructureSubPerm[]` | Sub-permission definitions (leaf only) |
+| `isNotMenu` | `boolean` | Exclude from menu (leaf only) |
+
+Discriminated union: items with `children` are groups; items without are leaves.
 
 ### Output Types
 
@@ -82,11 +91,21 @@ interface AppStructure<TModule> {
   getTitleChainByHref(href: string): string[];
 }
 
+interface AppRoute {
+  path: string;
+  component: Component;
+}
+
 interface AppMenu {
   title: string;
   href?: string;
   icon?: Component<IconProps>;
   children?: AppMenu[];
+}
+
+interface AppFlatMenu {
+  titleChain: string[];
+  href: string;
 }
 
 interface AppPerm<TModule = string> {
@@ -97,16 +116,6 @@ interface AppPerm<TModule = string> {
   children?: AppPerm<TModule>[];
 }
 
-interface AppRoute {
-  path: string;
-  component: Component;
-}
-
-interface AppFlatMenu {
-  titleChain: string[];
-  href: string;
-}
-
 interface AppFlatPerm<TModule = string> {
   titleChain: string[];
   code: string;
@@ -115,43 +124,30 @@ interface AppFlatPerm<TModule = string> {
 }
 ```
 
-## createSlot
+| Field | Type | Description |
+|-------|------|-------------|
+| `usableRoutes` | `Accessor<AppRoute[]>` | Routes filtered by permission |
+| `usableMenus` | `Accessor<AppMenu[]>` | Menu tree filtered by permission |
+| `usableFlatMenus` | `Accessor<AppFlatMenu[]>` | Flat menu list with title chains |
+| `usablePerms` | `Accessor<AppPerm[]>` | Permission tree filtered by permission |
+| `allFlatPerms` | `AppFlatPerm[]` | All permissions flattened |
+| `getTitleChainByHref` | `(href) => string[]` | Get breadcrumb title chain for URL |
 
-Single-item slot pattern for parent-child communication. Used for patterns like `Dialog.Header`, `Select.Header`.
+## `createSlot`
+
+Create a single-item slot for compound component patterns.
 
 ```ts
-function createSlot<TItem>(): [
-  SlotComponent: (props: TItem) => null,
-  createSlotAccessor: () => [Accessor<TItem | undefined>, ParentComponent],
-];
+function createSlot<TItem>(): [SlotComponent, createSlotAccessor];
 ```
 
-Usage pattern:
+Returns a tuple of:
+1. **SlotComponent** -- Component that children use to register slot content.
+2. **createSlotAccessor** -- Function to access the registered slot content.
 
-```tsx
-// 1. Create slot at module level
-const [HeaderSlot, createHeaderAccessor] = createSlot<{ children: JSX.Element }>();
+## `createSlots`
 
-// 2. In parent component
-const [header, HeaderProvider] = createHeaderAccessor();
-
-return (
-  <HeaderProvider>
-    {props.children}
-    <Show when={header()}>{header()!.children}</Show>
-  </HeaderProvider>
-);
-
-// 3. In child usage
-<Parent>
-  <HeaderSlot>My Header Content</HeaderSlot>
-  {/* other content */}
-</Parent>
-```
-
-## createSlots
-
-Multi-item slot pattern. Like `createSlot` but collects an array of items.
+Create multi-item slots for compound component patterns (e.g., multiple columns).
 
 ```ts
 interface SlotRegistrar<TItem> {
@@ -159,10 +155,9 @@ interface SlotRegistrar<TItem> {
   remove: (item: TItem) => void;
 }
 
-function createSlots<TItem>(): [
-  SlotComponent: (props: TItem) => null,
-  createSlotsAccessor: () => [Accessor<TItem[]>, ParentComponent],
-];
+function createSlots<TItem>(): [SlotComponent, createSlotsAccessor];
 ```
 
-Items are collected in order of registration and removed on cleanup.
+Returns a tuple of:
+1. **SlotComponent** -- Component that children use to register multiple slot items.
+2. **createSlotsAccessor** -- Function to access an array of registered slot items.

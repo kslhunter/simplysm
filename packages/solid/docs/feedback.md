@@ -1,79 +1,48 @@
 # Feedback Components
 
-Source: `src/components/feedback/**/*.tsx`
+Source: `src/components/feedback/**`
 
-## Progress
+## `Progress`
 
-Themed progress bar with percentage display.
+Animated progress bar with semantic theme.
 
 ```ts
 type ProgressTheme = SemanticTheme;
 
 interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  value: number;            // 0-100
-  theme?: ProgressTheme;    // default: "primary"
+  value: number;
+  theme?: ProgressTheme;
   size?: ComponentSize;
   inset?: boolean;
 }
 ```
 
-Children override the default percentage text display.
+| Field | Type | Description |
+|-------|------|-------------|
+| `value` | `number` | Progress percentage (0-100) |
+| `theme` | `ProgressTheme` | Semantic color theme |
+| `size` | `ComponentSize` | Size scale |
+| `inset` | `boolean` | Borderless inset style |
 
-## NotificationProvider
+Renders percentage text or custom children inside the bar.
 
-Notification system provider. Maintains up to 50 notifications.
+## `NotificationProvider`
+
+Notification system provider. Maintains up to 50 notifications with aria-live region for accessibility.
 
 ```ts
 const NotificationProvider: ParentComponent;
 ```
 
-### useNotification()
-
-Hook to create and manage notifications.
+### `useNotification()`
 
 ```ts
-function useNotification(): NotificationContextValue;
-
-interface NotificationContextValue {
-  // State
-  items: Accessor<NotificationItem[]>;
-  unreadCount: Accessor<number>;
-  latestUnread: Accessor<NotificationItem | undefined>;
-
-  // Create (returns id)
-  info: (title: string, message?: string, options?: NotificationOptions) => string;
-  success: (title: string, message?: string, options?: NotificationOptions) => string;
-  warning: (title: string, message?: string, options?: NotificationOptions) => string;
-  danger: (title: string, message?: string, options?: NotificationOptions) => string;
-  error: (err?: any, header?: string) => void;
-
-  // Update
-  update: (
-    id: string,
-    updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: NotificationUpdateOptions,
-  ) => void;
-
-  // Delete
-  remove: (id: string) => void;
-
-  // Management
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  dismissBanner: () => void;
-  clear: () => void;
-}
-
-interface NotificationOptions {
-  action?: NotificationAction;
-}
+type NotificationTheme = "info" | "success" | "warning" | "danger";
 
 interface NotificationAction {
   label: string;
   onClick: () => void;
 }
-
-type NotificationTheme = "info" | "success" | "warning" | "danger";
 
 interface NotificationItem {
   id: string;
@@ -84,65 +53,117 @@ interface NotificationItem {
   createdAt: Date;
   read: boolean;
 }
+
+interface NotificationOptions {
+  action?: NotificationAction;
+}
+
+interface NotificationUpdateOptions {
+  renotify?: boolean;
+}
+
+interface NotificationContextValue {
+  items: Accessor<NotificationItem[]>;
+  unreadCount: Accessor<number>;
+  latestUnread: Accessor<NotificationItem | undefined>;
+  info(title: string, message?: string, options?: NotificationOptions): string;
+  success(title: string, message?: string, options?: NotificationOptions): string;
+  warning(title: string, message?: string, options?: NotificationOptions): string;
+  danger(title: string, message?: string, options?: NotificationOptions): string;
+  error(title: string, error: unknown): string;
+  update(id: string, data: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>, options?: NotificationUpdateOptions): void;
+  remove(id: string): void;
+  markAsRead(id: string): void;
+  markAllAsRead(): void;
+  dismissBanner(): void;
+  clear(): void;
+}
+
+const NotificationContext: Context<NotificationContextValue>;
+function useNotification(): NotificationContextValue;
 ```
 
-## NotificationBell
+| Method | Description |
+|--------|-------------|
+| `info()` | Create info notification, returns id |
+| `success()` | Create success notification, returns id |
+| `warning()` | Create warning notification, returns id |
+| `danger()` | Create danger notification, returns id |
+| `error()` | Create error notification from Error object, returns id |
+| `update()` | Update existing notification by id |
+| `remove()` | Remove notification by id |
+| `markAsRead()` | Mark single notification as read |
+| `markAllAsRead()` | Mark all notifications as read |
+| `dismissBanner()` | Dismiss the banner display |
+| `clear()` | Remove all notifications |
 
-Bell icon button with unread badge and dropdown notification list.
+## `NotificationBell`
+
+Bell icon with unread badge and dropdown notification list.
 
 ```ts
 interface NotificationBellProps {
-  showBanner?: boolean;  // show NotificationBanner (default: true)
+  showBanner?: boolean;
 }
 ```
 
-Marks all notifications as read when the dropdown opens.
+| Field | Type | Description |
+|-------|------|-------------|
+| `showBanner` | `boolean` | Show notification banner |
 
-## NotificationBanner
+## `NotificationBanner`
 
-Toast-style notification banner that appears for the latest unread notification. Typically used inside `NotificationBell`.
+Portal-rendered banner showing latest unread notification with dismiss/action buttons.
 
 ```ts
 const NotificationBanner: Component;
 ```
 
-## BusyProvider
+No props. Must be inside NotificationProvider.
 
-Global loading overlay provider. Show/hide is nestable (counter-based).
+## `BusyProvider`
+
+Busy overlay provider with nestable show/hide calls.
 
 ```ts
-interface BusyProviderProps {
-  variant?: BusyVariant;  // default: "spinner"
-}
-
 type BusyVariant = "spinner" | "bar";
+
+interface BusyProviderProps {
+  variant?: BusyVariant;
+}
 ```
 
-### useBusy()
+| Field | Type | Description |
+|-------|------|-------------|
+| `variant` | `BusyVariant` | Display style (default: "spinner") |
 
-Hook to control the loading overlay.
+### `useBusy()`
 
 ```ts
-function useBusy(): BusyContextValue;
-
 interface BusyContextValue {
   variant: Accessor<BusyVariant>;
   show: (message?: string) => void;
   hide: () => void;
   setProgress: (percent: number | undefined) => void;
 }
+
+function useBusy(): BusyContextValue;
 ```
 
-`show`/`hide` calls are stackable: the overlay hides only after all `show` calls have corresponding `hide` calls.
+| Method | Description |
+|--------|-------------|
+| `show()` | Show busy overlay with optional message. Nestable (counter-based). |
+| `hide()` | Hide busy overlay. Must match each show() call. |
+| `setProgress()` | Set progress percentage (undefined = indeterminate) |
 
-## BusyContainer
+## `BusyContainer`
 
-Local loading overlay container. Can be used standalone or inside `BusyProvider`.
+Standalone busy container with spinner/bar variants, optional progress bar, and keyboard blocking.
 
 ```ts
 interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-  busy?: boolean;             // show loading overlay
-  ready?: boolean;            // false = hide children and show overlay (initial loading)
+  busy?: boolean;
+  ready?: boolean;
   variant?: BusyVariant;
   message?: string;
   progressPercent?: number;
@@ -150,61 +171,59 @@ interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 }
 ```
 
-- `busy=true`: overlay shown on top of children.
-- `ready=false`: children hidden, overlay shown.
-- Blocks keyboard input during busy state.
+| Field | Type | Description |
+|-------|------|-------------|
+| `busy` | `boolean` | Show loading overlay |
+| `ready` | `boolean` | If false, children are hidden |
+| `variant` | `BusyVariant` | Spinner or progress bar |
+| `message` | `string` | Loading message text |
+| `progressPercent` | `number` | Progress percentage (0-100) |
 
-## PrintProvider
+## `PrintProvider`
 
-Print and PDF generation provider. Uses off-screen Portal rendering.
+Print/PDF generation provider. Renders factory content off-screen for capture.
 
 ```ts
 const PrintProvider: ParentComponent;
 ```
 
-Requires `BusyProvider` as an ancestor.
-
-### usePrint()
-
-Hook to print content or generate PDF.
+### `usePrint()`
 
 ```ts
-function usePrint(): PrintContextValue;
+interface PrintOptions {
+  size?: string;
+  margin?: string;
+}
 
 interface PrintContextValue {
   toPrinter: (factory: () => JSX.Element, options?: PrintOptions) => Promise<void>;
   toPdf: (factory: () => JSX.Element, options?: PrintOptions) => Promise<Uint8Array>;
 }
 
-interface PrintOptions {
-  size?: string;    // e.g., "A4", "A3 landscape", "100mm 200mm"
-  margin?: string;  // CSS margin, default: "0"
-}
+function usePrint(): PrintContextValue;
 ```
 
-- `toPrinter`: renders content off-screen, then calls `window.print()`.
-- `toPdf`: renders content off-screen, converts to images via `html-to-image`, generates PDF via `jsPDF`.
+| Method | Description |
+|--------|-------------|
+| `toPrinter()` | Render content and send to system printer |
+| `toPdf()` | Render content and return PDF as Uint8Array |
 
-### usePrintInstance()
-
-Hook available inside print content factories. Call `ready()` to signal that async content (e.g., data loading) is complete.
+### `usePrintInstance()`
 
 ```ts
-function usePrintInstance(): PrintInstance | undefined;
-
 interface PrintInstance {
   ready: () => void;
 }
+
+function usePrintInstance(): PrintInstance | undefined;
 ```
 
-## Print
+Call `ready()` inside print content to signal that async content has loaded.
 
-Wrapper for print content.
+## `Print`
 
-```ts
-const Print: ParentComponent;
-```
+Print content wrapper with page break support.
 
 ### Sub-components
 
-- **`Print.Page`** -- Page break boundary. Each `Print.Page` becomes a separate PDF page.
+- **`Print.Page`** -- Page break boundary. Uses `[data-print-page]` attribute for CSS page breaks.

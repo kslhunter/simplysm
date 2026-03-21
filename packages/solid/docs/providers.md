@@ -1,10 +1,10 @@
 # Providers
 
-Source: `src/providers/**/*.tsx`
+Source: `src/providers/**`
 
-## ConfigContext / ConfigProvider
+## `ConfigProvider`
 
-App-level configuration providing the `clientName` used as a prefix for storage keys.
+App-wide configuration provider.
 
 ```ts
 interface AppConfig {
@@ -12,98 +12,169 @@ interface AppConfig {
 }
 
 const ConfigContext: Context<AppConfig>;
-
 function useConfig(): AppConfig;
-
 const ConfigProvider: ParentComponent<{ clientName: string }>;
 ```
 
-## SyncStorageProvider / useSyncStorage
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientName` | `string` | Application identifier used as storage key prefix |
 
-Pluggable storage provider. Components use this adapter for persistent storage (localStorage fallback when no adapter is configured).
+Throws error if `useConfig()` is called outside ConfigProvider.
+
+## `SyncStorageProvider`
+
+Pluggable sync storage provider. Uses localStorage by default.
 
 ```ts
 interface StorageAdapter {
-  getItem: (key: string) => Promise<string | null>;
-  setItem: (key: string, value: string) => Promise<void>;
-  removeItem: (key: string) => Promise<void>;
+  getItem(key: string): string | null | Promise<string | null>;
+  setItem(key: string, value: string): void | Promise<unknown>;
+  removeItem(key: string): void | Promise<void>;
 }
 
 interface SyncStorageContextValue {
-  adapter: Accessor<StorageAdapter | undefined>;
-  configure: (adapter: StorageAdapter | undefined) => void;
+  adapter: Accessor<StorageAdapter>;
+  configure: (fn: (origin: StorageAdapter) => StorageAdapter) => void;
 }
 
 const SyncStorageContext: Context<SyncStorageContextValue>;
-
 function useSyncStorage(): SyncStorageContextValue | undefined;
-
 const SyncStorageProvider: ParentComponent;
 ```
 
-## LoggerProvider
+| Field | Type | Description |
+|-------|------|-------------|
+| `adapter` | `Accessor<StorageAdapter>` | Current storage adapter |
+| `configure` | `(fn) => void` | Replace adapter via transform function |
 
-Logging adapter provider. Allows plugging in custom log writers.
+`useSyncStorage()` returns undefined when not inside a provider.
+
+## `LoggerProvider`
+
+Pluggable log adapter provider. Defaults to consola.
 
 ```ts
 interface LogAdapter {
-  write: (level: "log" | "info" | "warn" | "error", ...args: unknown[]) => void | Promise<void>;
+  write(severity: "error" | "warn" | "info" | "log", ...data: any[]): Promise<void> | void;
 }
 
 interface LoggerContextValue {
-  adapter: Accessor<LogAdapter | undefined>;
+  adapter: Accessor<LogAdapter>;
   configure: (fn: (origin: LogAdapter) => LogAdapter) => void;
 }
 
 const LoggerContext: Context<LoggerContextValue>;
-
 const LoggerProvider: ParentComponent;
 ```
 
-## ThemeContext / ThemeProvider / useTheme
+| Field | Type | Description |
+|-------|------|-------------|
+| `adapter` | `Accessor<LogAdapter>` | Current log adapter |
+| `configure` | `(fn) => void` | Replace adapter via transform function |
 
-Light/dark/system theme management. Persists mode to synced storage.
+## `ThemeProvider`
+
+Theme mode management. Persists to localStorage and toggles `dark` class on `<html>`.
 
 ```ts
 type ThemeMode = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
 
-interface ThemeContextValue {
-  mode: Accessor<ThemeMode>;
-  resolved: Accessor<ResolvedTheme>;
-  setMode: (mode: ThemeMode) => void;
-  cycleMode: () => void;
-}
-
 function useTheme(): ThemeContextValue;
-
 const ThemeProvider: ParentComponent;
 ```
 
-- `cycleMode()`: light -> system -> dark -> light.
-- `resolved`: the actual applied theme after resolving "system" via `prefers-color-scheme`.
+Must be inside ConfigContext. `ResolvedTheme` is determined by OS preference when mode is "system".
 
-## ServiceClientProvider / useServiceClient
+## `ServiceClientProvider`
 
-Service client connection provider for `@simplysm/service-client`.
+WebSocket service client connection management.
 
 ```ts
 interface ServiceClientContextValue {
-  client: Accessor<SdServiceClient | undefined>;
-  connected: Accessor<boolean>;
-  configure: (url: string) => void;
+  connect: (key?: string, options?: Partial<ServiceConnectionOptions>) => Promise<void>;
+  close: (key?: string) => Promise<void>;
+  get: (key?: string) => ServiceClient;
+  isConnected: (key?: string) => boolean;
 }
 
 const ServiceClientContext: Context<ServiceClientContextValue>;
-
 function useServiceClient(): ServiceClientContextValue;
-
 const ServiceClientProvider: ParentComponent;
 ```
 
-## SystemProvider
+| Method | Description |
+|--------|-------------|
+| `connect()` | Establish WebSocket connection (optional key for multiple connections) |
+| `close()` | Close connection |
+| `get()` | Get ServiceClient instance |
+| `isConnected()` | Check connection status |
 
-Composite provider that bundles commonly used providers together.
+Must be inside ConfigProvider and NotificationProvider.
+
+## `SharedDataProvider`
+
+Server-synced shared data with real-time subscriptions.
+
+```ts
+interface SharedDataDefinition<TData> {
+  serviceKey?: string;
+  fetch: (changeKeys?: Array<string | number>) => Promise<TData[]>;
+  getKey: (item: TData) => string | number;
+  orderBy: [(item: TData) => unknown, "asc" | "desc"][];
+  filter?: unknown;
+  itemSearchText?: (item: TData) => string;
+  isItemHidden?: (item: TData) => boolean;
+  getParentKey?: (item: TData) => string | number | undefined;
+}
+
+interface SharedDataAccessor<TData> {
+  items: Accessor<TData[]>;
+  get: (key: string | number | undefined) => TData | undefined;
+  emit: (changeKeys?: Array<string | number>) => Promise<void>;
+  getKey: (item: TData) => string | number;
+  itemSearchText?: (item: TData) => string;
+  isItemHidden?: (item: TData) => boolean;
+  getParentKey?: (item: TData) => string | number | undefined;
+}
+
+type SharedDataValue<TSharedData extends Record<string, unknown>> = {
+  [K in keyof TSharedData]: SharedDataAccessor<TSharedData[K]>;
+} & {
+  wait: () => Promise<void>;
+  busy: Accessor<boolean>;
+  configure: (fn: ...) => void;
+};
+
+function useSharedData<TSharedData extends Record<string, unknown>>(): SharedDataValue<TSharedData>;
+const SharedDataProvider: ParentComponent;
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | `Accessor<TData[]>` | Reactive data items |
+| `get` | `(key) => TData \| undefined` | Get item by key |
+| `emit` | `(changeKeys?) => Promise<void>` | Trigger data refresh |
+| `wait` | `() => Promise<void>` | Wait for initial load |
+| `busy` | `Accessor<boolean>` | Loading state |
+
+Must be inside ServiceClientProvider and NotificationProvider.
+
+### `SharedDataChangeEvent`
+
+```ts
+const SharedDataChangeEvent = defineEvent<
+  { name: string; filter: unknown },
+  (string | number)[] | undefined
+>("SharedDataChangeEvent");
+```
+
+Event emitted on server-side data changes. Event info contains data name and filter; event data is array of changed keys or undefined for full refresh.
+
+## `SystemProvider`
+
+All-in-one provider wrapping ConfigProvider, SyncStorageProvider, LoggerProvider, ThemeProvider, NotificationProvider, BusyProvider, DialogProvider, PrintProvider, and I18nProvider.
 
 ```ts
 const SystemProvider: ParentComponent<{
@@ -112,66 +183,37 @@ const SystemProvider: ParentComponent<{
 }>;
 ```
 
-Internally wraps: `ConfigProvider`, `I18nProvider`, `SyncStorageProvider`, `LoggerProvider`, `ThemeProvider`, `BusyProvider`, `NotificationProvider`, `DialogProvider`, `PrintProvider`, `ErrorLoggerProvider`, `ClipboardProvider`, `PwaUpdateProvider`.
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientName` | `string` | Application identifier |
+| `busyVariant` | `BusyVariant` | Busy overlay style |
 
-## I18nProvider / useI18n
+## `I18nProvider`
 
-Internationalization provider with flat dictionary-based translations.
+Internationalization provider with built-in en/ko dictionaries. Persists locale to localStorage.
 
 ```ts
 interface I18nContextValue {
-  locale: Accessor<string>;
   t: (key: string, params?: Record<string, string>) => string;
+  locale: Accessor<string>;
+  setLocale: (locale: string) => void;
   configure: (options: I18nConfigureOptions) => void;
 }
 
 interface I18nConfigureOptions {
   locale?: string;
-  dict?: Record<string, unknown>;  // nested dict, auto-flattened
-  flatDict?: FlatDict;             // pre-flattened dict
+  dict?: Record<string, Record<string, unknown>>;
 }
 
 type FlatDict = Record<string, string>;
 
 function useI18n(): I18nContextValue;
-
 const I18nProvider: ParentComponent;
 ```
 
-- `t("key", { name: "value" })`: interpolates `{name}` placeholders.
-- `configure()`: merges new dictionaries into existing translations.
-
-## SharedDataProvider / useSharedData
-
-Shared data cache provider. Loads and caches data from service, auto-refreshes on change events.
-
-```ts
-interface SharedDataDefinition<TData> {
-  key: string;
-  loader: () => Promise<TData[]>;
-  getKey: (item: TData) => string | number;
-  getSearchText?: (item: TData) => string;
-  getChildren?: (item: TData, allItems: TData[]) => TData[];
-}
-
-interface SharedDataAccessor<TData> {
-  items: Accessor<TData[]>;
-  loading: Accessor<boolean>;
-  refresh: () => Promise<void>;
-  getByKey: (key: string | number) => TData | undefined;
-}
-
-function useSharedData<TSharedData extends Record<string, unknown>>(): SharedDataValue<TSharedData>;
-
-function SharedDataProvider(props: { children: JSX.Element }): JSX.Element;
-```
-
-### SharedDataChangeEvent
-
-Event emitted when shared data changes, triggering refresh.
-
-```ts
-const SharedDataChangeEvent: EventDefinition<{
-  key: string;
-}>;
-```
+| Method | Description |
+|--------|-------------|
+| `t()` | Translate key with optional parameter substitution |
+| `locale` | Current locale accessor |
+| `setLocale()` | Change locale |
+| `configure()` | Add dictionaries or change locale |

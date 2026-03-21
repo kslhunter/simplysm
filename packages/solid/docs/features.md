@@ -1,10 +1,10 @@
 # Feature Components
 
-Source: `src/components/features/**/*.tsx`
+Source: `src/components/features/**`
 
-## AddressSearchContent
+## `AddressSearchContent`
 
-Korean address search component using Daum Postcode API.
+Korean address search dialog content (Daum Postcode API).
 
 ```ts
 interface AddressSearchResult {
@@ -18,123 +18,196 @@ const AddressSearchContent: Component<{
 }>;
 ```
 
-Designed for use with `useDialog().show()`. Loads the Daum Postcode script on mount.
+| Field | Type | Description |
+|-------|------|-------------|
+| `postNumber` | `string` | Postal code |
+| `address` | `string` | Full address |
+| `buildingName` | `string` | Building name |
 
-## SharedDataSelect
+Use with `useDialog().show(AddressSearchContent, {})` to open as dialog.
 
-Select component bound to a shared data definition. Supports single and multiple modes with the same prop variants as `Select`.
+## `SharedDataSelect`
+
+Select component bound to SharedData. Compound with ItemTemplate and Action sub-components.
 
 ```ts
-type SharedDataSelectProps<TItem, TDataKey extends string> = {
-  dataKey: TDataKey;
-  // ...inherits Select props (value, onValueChange, multiple, etc.)
-  // plus shared data specific:
-  getItemSearchText?: (item: TItem) => string;
-  isItemHidden?: (item: TItem) => boolean;
-};
+type SharedDataSelectProps<TItem, TKey extends string | number = string | number, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps> =
+  | (SharedDataSelectSingleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps>)
+  | (SharedDataSelectMultipleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps>);
 ```
+
+Common props:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | Shared data accessor |
+| `required` | `boolean` | Required validation |
+| `disabled` | `boolean` | Disable interaction |
+| `size` | `ComponentSize` | Trigger size |
+| `inset` | `boolean` | Borderless style |
+| `filterFn` | `(item, index) => boolean` | Item filter function |
+| `dialog` | `Component<TDialogProps>` | Selection dialog component |
+| `dialogOptions` | `DialogShowOptions` | Dialog display options |
+
+Discriminated by `multiple`:
+- `multiple?: false` -- `value?: TKey`, `onValueChange?: (value: TKey | undefined) => void`
+- `multiple: true` -- `value?: TKey[]`, `onValueChange?: (value: TKey[]) => void`
 
 ### Sub-components
 
-- **`SharedDataSelect.ItemTemplate`** -- Render template for items.
+- **`SharedDataSelect.ItemTemplate`** -- Custom render template for items.
+- **`SharedDataSelect.Action`** -- Action button appended to trigger.
 
-## SharedDataSelectButton
+## `SharedDataSelectButton`
 
-Button that opens a shared data selection dialog.
+Button-trigger select bound to SharedData with dialog-based picker.
 
 ```ts
-type SharedDataSelectButtonProps<TItem, TDataKey extends string> = {
-  dataKey: TDataKey;
-  value?: TItem | TItem[];
-  onValueChange?: (value: TItem | TItem[] | undefined) => void;
-  renderValue?: (value: TItem) => JSX.Element;
-  // ...plus button/validation props
-};
+type SharedDataSelectButtonProps<TItem, TDialogProps extends SelectDialogBaseProps = SelectDialogBaseProps> =
+  | (SharedDataSelectButtonSingleProps<TItem, TDialogProps> & DialogPropsField<TDialogProps>)
+  | (SharedDataSelectButtonMultipleProps<TItem, TDialogProps> & DialogPropsField<TDialogProps>);
 ```
 
-## SharedDataSelectList
+Common props:
 
-List component bound to shared data, rendering items from a shared data definition.
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | Shared data accessor |
+| `dialog` | `Component<TDialogProps>` | Selection dialog component |
+| `dialogOptions` | `DialogShowOptions` | Dialog display options |
+| `children` | `(item: TItem) => JSX.Element` | Item rendering function |
+
+Discriminated by `multiple`:
+- `multiple?: false` -- `value?: string | number`, `onValueChange?: (value: string | number | undefined) => void`
+- `multiple: true` -- `value?: (string | number)[]`, `onValueChange?: (value: (string | number)[]) => void`
+
+## `SharedDataSelectList`
+
+List component bound to SharedData with search, pagination, and keyboard navigation. Compound with ItemTemplate and Filter.
 
 ```ts
-interface SharedDataSelectListProps<TItem> {
-  dataKey: string;
-  value?: unknown[];
-  onValueChange?: (value: unknown[]) => void;
-  // ...list configuration props
+interface SharedDataSelectListContextValue {
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
-```
 
-### Sub-components
-
-- **`SharedDataSelectList.ItemTemplate`** -- Render template for list items.
-
-## DataSelectButton
-
-Button that opens a custom data selection dialog. Generic over key type and dialog props.
-
-```ts
-interface DataSelectButtonProps<TKey, TDialogProps> {
-  value?: TKey | TKey[];
-  onValueChange?: (value: TKey | TKey[] | undefined) => void;
-  renderValue?: (value: TKey) => JSX.Element;
-  dialog: Component<TDialogProps>;
-  dialogProps?: Omit<TDialogProps, "close">;
-  multiple?: boolean;
-  disabled?: boolean;
+interface SharedDataSelectListProps<TItem> {
+  data: SharedDataAccessor<TItem>;
+  value?: TItem;
+  onValueChange?: (value: TItem | undefined) => void;
   required?: boolean;
-  size?: ComponentSize;
-  inset?: boolean;
+  disabled?: boolean;
+  filterFn?: (item: TItem, index: number) => boolean;
+  canChange?: (item: TItem | undefined) => boolean | Promise<boolean>;
+  pageSize?: number;
+  header?: JSX.Element;
+  children?: JSX.Element;
   class?: string;
   style?: JSX.CSSProperties;
 }
+```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | Shared data accessor |
+| `value` | `TItem` | Currently selected item |
+| `onValueChange` | `(value: TItem \| undefined) => void` | Selection change callback |
+| `filterFn` | `(item, index) => boolean` | Item filter function |
+| `canChange` | `(item) => boolean \| Promise<boolean>` | Guard before selection change |
+| `pageSize` | `number` | Enable pagination with given page size |
+| `header` | `JSX.Element` | Header content |
+
+### Sub-components
+
+- **`SharedDataSelectList.ItemTemplate`** -- Custom render template for items.
+- **`SharedDataSelectList.Filter`** -- Custom filter content.
+
+## `DataSelectButton`
+
+Button-trigger select with dialog-based picker. Opens a dialog for item selection and displays selected items.
+
+```ts
 interface DataSelectDialogResult<TKey> {
   selectedKeys: TKey[];
 }
 
-interface SelectDialogBaseProps<TKey> {
+interface SelectDialogBaseProps<TKey = string | number> {
   close?: (result?: DataSelectDialogResult<TKey>) => void;
-  initialSelectedKeys?: TKey[];
-  selectionMode?: "single" | "multiple";
+  selectionMode: "single" | "multiple";
+  selectedKeys: TKey[];
 }
+
+type DialogPropsField<P, TKey = string | number> =
+  {} extends UserDialogProps<P, TKey>
+    ? { dialogProps?: UserDialogProps<P, TKey> }
+    : { dialogProps: UserDialogProps<P, TKey> };
+
+type DataSelectButtonProps<TItem, TKey, TDialogProps extends SelectDialogBaseProps<TKey>> =
+  | (DataSelectButtonSingleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps, TKey>)
+  | (DataSelectButtonMultipleProps<TItem, TKey, TDialogProps> & DialogPropsField<TDialogProps, TKey>);
 ```
 
-## CrudSheet
+Common props:
 
-Full-featured CRUD data grid combining DataSheet with search, pagination, sorting, inline/dialog editing, selection, and Excel import/export.
+| Field | Type | Description |
+|-------|------|-------------|
+| `load` | `(keys: TKey[]) => TItem[] \| Promise<TItem[]>` | Load items by keys |
+| `renderItem` | `(item: TItem) => JSX.Element` | Item rendering function |
+| `dialog` | `Component<TDialogProps>` | Selection dialog component |
+| `dialogOptions` | `DialogShowOptions` | Dialog display options |
+| `dialogProps` | `UserDialogProps<TDialogProps>` | Extra props passed to dialog (required if dialog has required props) |
+| `required` | `boolean` | Required validation |
+| `disabled` | `boolean` | Disable interaction |
+| `size` | `ComponentSize` | Trigger size |
+| `inset` | `boolean` | Borderless style |
+| `validate` | `(value) => string \| undefined` | Custom validation |
+| `lazyValidation` | `boolean` | Show error only after blur |
+
+Discriminated by `multiple`:
+- `multiple?: false` -- `value?: TKey`, `onValueChange?: (value: TKey | undefined) => void`
+- `multiple: true` -- `value?: TKey[]`, `onValueChange?: (value: TKey[]) => void`
+
+## `CrudSheet`
+
+Full CRUD data grid with inline or dialog editing, search, pagination, sorting, and Excel export/import. Compound with Column, Filter, Tools, Header.
 
 ```ts
-type CrudSheetProps<TItem, TFilter extends Record<string, unknown>> = {
-  search: (filter: TFilter, page: number | undefined, sorts: SortingDef[]) => Promise<SearchResult<TItem>>;
-  getItemKey: (item: TItem) => string | number | undefined;
-  storageKey?: string;
-  editable?: boolean;
-  isItemEditable?: (item: TItem) => boolean;
-  isItemDeletable?: (item: TItem) => boolean;
-  isItemDeleted?: (item: TItem) => boolean;
-  isItemSelectable?: (item: TItem) => boolean | string;
-  lastModifiedAtProp?: string;
-  lastModifiedByProp?: string;
-  filterInitial?: TFilter;
-  items?: TItem[];
-  onItemsChange?: (items: TItem[]) => void;
-  excel?: ExcelConfig<TItem>;
-  selectionMode?: "single" | "multiple";
-  selectedKeys?: (string | number)[];
-  onSelectedKeysChange?: (keys: (string | number)[]) => void;
-  onSelect?: (result: SelectResult<TItem>) => void;
-  onSubmitComplete?: () => void;
-  hideAutoTools?: boolean;
-  close?: () => void;
-  class?: string;
-  children: JSX.Element;
-} & (
-  | { inlineEdit: InlineEditConfig<TItem>; dialogEdit?: never }
-  | { dialogEdit: DialogEditConfig<TItem>; inlineEdit?: never }
-  | { inlineEdit?: never; dialogEdit?: never }
-);
+type CrudSheetProps<TItem, TFilter extends Record<string, unknown>> =
+  CrudSheetBaseProps<TItem, TFilter> & (
+    | { inlineEdit: InlineEditConfig<TItem>; dialogEdit?: never }
+    | { dialogEdit: DialogEditConfig<TItem>; inlineEdit?: never }
+    | { inlineEdit?: never; dialogEdit?: never }
+  );
+```
 
+Discriminated by edit mode: `inlineEdit` for in-place editing, `dialogEdit` for dialog-based editing, or neither for read-only.
+
+### Base Props
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `search` | `(filter, page, sorts) => Promise<SearchResult<TItem>>` | Data search function |
+| `getItemKey` | `(item: TItem) => string \| number \| undefined` | Item key extractor |
+| `storageKey` | `string` | Key for persisting column config |
+| `editable` | `boolean` | Enable editing |
+| `isItemEditable` | `(item: TItem) => boolean` | Per-item edit check |
+| `isItemDeletable` | `(item: TItem) => boolean` | Per-item delete check |
+| `isItemDeleted` | `(item: TItem) => boolean` | Check if item is soft-deleted |
+| `isItemSelectable` | `(item: TItem) => boolean \| string` | Per-item selection check |
+| `lastModifiedAtProp` | `string` | Property name for last modified timestamp |
+| `lastModifiedByProp` | `string` | Property name for last modified user |
+| `filterInitial` | `TFilter` | Initial filter state |
+| `excel` | `ExcelConfig<TItem>` | Excel export/import config |
+| `selectionMode` | `"single" \| "multiple"` | Selection mode |
+| `selectedKeys` | `(string \| number)[]` | Selected item keys |
+| `onSelectedKeysChange` | `(keys) => void` | Selection change callback |
+| `onSelect` | `(result: SelectResult<TItem>) => void` | Selection event callback |
+| `onSubmitComplete` | `() => void` | Called after save completes |
+| `hideAutoTools` | `boolean` | Hide automatic toolbar buttons |
+| `close` | `() => void` | Close callback (for dialog mode) |
+
+### Edit Config Types
+
+```ts
 interface SearchResult<TItem> {
   items: TItem[];
   pageCount?: number;
@@ -157,18 +230,16 @@ interface ExcelConfig<TItem> {
   download: (items: TItem[]) => Promise<void>;
   upload?: (file: File) => Promise<void>;
 }
+
+interface SelectResult<TItem> {
+  items: TItem[];
+  keys: (string | number)[];
+}
 ```
 
-### Sub-components
-
-- **`CrudSheet.Column<TItem>`** -- Column definition with cell context.
+### `CrudSheetCellContext`
 
 ```ts
-interface CrudSheetColumnProps<TItem> extends Omit<DataSheetColumnProps<TItem>, "children"> {
-  editTrigger?: boolean;
-  children: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;
-}
-
 interface CrudSheetCellContext<TItem> {
   item: TItem;
   index: number;
@@ -178,22 +249,17 @@ interface CrudSheetCellContext<TItem> {
 }
 ```
 
-- **`CrudSheet.Filter<TFilter>`** -- Filter panel slot.
+| Field | Type | Description |
+|-------|------|-------------|
+| `item` | `TItem` | Row data |
+| `index` | `number` | Item index |
+| `row` | `number` | Visual row number |
+| `depth` | `number` | Tree depth |
+| `setItem` | `(key, value) => void` | Modify item field (inline edit) |
+
+### `CrudSheetContext`
 
 ```ts
-interface CrudSheetFilterSlotProps<TFilter> {
-  filter: TFilter;
-  setFilter: SetStoreFunction<TFilter>;
-}
-```
-
-- **`CrudSheet.Tools<TItem>`** -- Toolbar slot with context.
-
-```ts
-interface CrudSheetToolsSlotProps<TItem> {
-  ctx: CrudSheetContext<TItem>;
-}
-
 interface CrudSheetContext<TItem> {
   items(): TItem[];
   selection(): TItem[];
@@ -210,24 +276,18 @@ interface CrudSheetContext<TItem> {
 }
 ```
 
-## CrudDetail
+### Sub-components
 
-CRUD detail form with load, save, delete, and change tracking.
+- **`CrudSheet.Column<TItem>`** -- Column definition (same as DataSheet.Column but with CrudSheetCellContext).
+- **`CrudSheet.Filter`** -- Filter panel slot.
+- **`CrudSheet.Tools`** -- Toolbar slot.
+- **`CrudSheet.Header`** -- Header slot.
+
+## `CrudDetail`
+
+Detail form with load/save/delete lifecycle. Compound with Tools, Before, After.
 
 ```ts
-interface CrudDetailProps<TData extends object> {
-  load: () => Promise<{ data: TData; info: CrudDetailInfo }>;
-  children: (ctx: CrudDetailContext<TData>) => JSX.Element;
-  submit?: (data: TData) => Promise<boolean | undefined>;
-  toggleDelete?: (del: boolean) => Promise<boolean | undefined>;
-  editable?: boolean;
-  deletable?: boolean;
-  data?: TData;
-  onDataChange?: (data: TData) => void;
-  close?: (result?: boolean) => void;
-  class?: string;
-}
-
 interface CrudDetailInfo {
   isNew: boolean;
   isDeleted: boolean;
@@ -244,36 +304,71 @@ interface CrudDetailContext<TData> {
   save: () => Promise<void>;
   refresh: () => Promise<void>;
 }
+
+interface CrudDetailProps<TData extends object> {
+  load: () => Promise<{ data: TData; info: CrudDetailInfo }>;
+  children: (ctx: CrudDetailContext<TData>) => JSX.Element;
+  submit?: (data: TData) => Promise<boolean | undefined>;
+  toggleDelete?: (del: boolean) => Promise<boolean | undefined>;
+  editable?: boolean;
+  deletable?: boolean;
+  data?: TData;
+  onDataChange?: (data: TData) => void;
+  close?: (result?: boolean) => void;
+  class?: string;
+}
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `load` | `() => Promise<{data, info}>` | Load data and metadata |
+| `children` | `(ctx) => JSX.Element` | Render function with CRUD context |
+| `submit` | `(data) => Promise<boolean \| undefined>` | Save handler; return true for success |
+| `toggleDelete` | `(del) => Promise<boolean \| undefined>` | Soft delete/restore handler |
+| `editable` | `boolean` | Enable editing |
+| `deletable` | `boolean` | Enable delete button |
+| `close` | `(result?) => void` | Close callback (injected by DialogProvider in dialog mode) |
 
 ### Sub-components
 
-- **`CrudDetail.Header`** -- Header content slot.
+- **`CrudDetail.Tools`** -- Toolbar slot.
+- **`CrudDetail.Before`** -- Content before the form.
+- **`CrudDetail.After`** -- Content after the form.
 
-## PermissionTable
+## `PermissionTable`
 
-Permission matrix table displaying app permissions with checkboxes.
+Permission matrix table with cascading checkbox changes.
 
 ```ts
 interface PermissionTableProps<TModule = string> {
-  perms: AppPerm<TModule>[];
-  value?: string[];
-  onValueChange?: (value: string[]) => void;
+  items?: AppPerm<TModule>[];
+  value?: Record<string, boolean>;
+  onValueChange?: (value: Record<string, boolean>) => void;
+  modules?: TModule[];
   disabled?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | `AppPerm<TModule>[]` | Permission tree (from createAppStructure) |
+| `value` | `Record<string, boolean>` | Permission state map (code -> enabled) |
+| `onValueChange` | `(value) => void` | State change callback |
+| `modules` | `TModule[]` | Active modules (filters permissions) |
+| `disabled` | `boolean` | Disable all checkboxes |
+
 ### Helper Functions
 
 ```ts
 function collectAllPerms<TModule>(items: AppPerm<TModule>[]): string[];
-function filterByModules<TModule>(items: AppPerm<TModule>[], enabledModules: TModule[]): AppPerm<TModule>[];
-function changePermCheck<TModule>(
-  items: AppPerm<TModule>[],
-  currentPerms: string[],
-  changedPerm: string,
-  checked: boolean,
-): string[];
+function filterByModules<TModule>(items: AppPerm<TModule>[], modules: TModule[] | undefined): AppPerm<TModule>[];
+function changePermCheck<TModule>(value: Record<string, boolean>, item: AppPerm<TModule>, perm: string, checked: boolean): Record<string, boolean>;
 ```
+
+| Function | Description |
+|----------|-------------|
+| `collectAllPerms` | Collect all unique permission type strings from tree |
+| `filterByModules` | Filter permission tree by active modules |
+| `changePermCheck` | Handle cascading checkbox state changes (parent/child propagation) |

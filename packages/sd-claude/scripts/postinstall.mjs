@@ -144,5 +144,25 @@ function setupSettings(targetDir) {
     }
   }
 
+  // SubagentStart: ensure sd-session-start hook exists
+  const sdSubagentEntry = {
+    hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],
+  };
+
+  const subagentStart = settings["hooks"]["SubagentStart"];
+
+  if (subagentStart == null) {
+    settings["hooks"]["SubagentStart"] = [sdSubagentEntry];
+  } else {
+    const idx = subagentStart.findIndex((entry) =>
+      entry.hooks?.some((hook) => hook.command.includes("sd-session-start")),
+    );
+    if (idx >= 0) {
+      subagentStart[idx] = sdSubagentEntry;
+    } else {
+      subagentStart.push(sdSubagentEntry);
+    }
+  }
+
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
 }

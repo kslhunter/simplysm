@@ -162,7 +162,9 @@ npm install @simplysm/solid
 | `CrudSheet.Filter` | Sub-component | Filter panel slot |
 | `CrudSheet.Tools` | Sub-component | Toolbar slot |
 | `CrudDetail` | Component | CRUD detail form |
-| `CrudDetail.Header` | Sub-component | Detail header slot |
+| `CrudDetail.Tools` | Sub-component | Detail toolbar slot |
+| `CrudDetail.Before` | Sub-component | Content before form |
+| `CrudDetail.After` | Sub-component | Content after form |
 | `PermissionTable` | Component | Permission matrix table |
 
 -> See [docs/features.md](./docs/features.md) for details.

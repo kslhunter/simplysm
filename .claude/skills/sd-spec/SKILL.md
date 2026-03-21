@@ -46,7 +46,7 @@ Feature 정보를 다음 우선순위로 결정한다:
    - `.tasks/` 하위에 기존 작업 디렉토리가 있으면 그것을 사용한다
    - 없으면 `.tasks/{yyMMddHHmmss}_{topic}/`을 생성한다 (sd-wbs와 동일한 규칙)
      - `{yyMMddHHmmss}`: **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다**
-     - `{topic}`: Feature 주제를 kebab-case로 (예: `email-login`)
+     - `{topic}`: Feature 주제를 영어 kebab-case로 (예: `email-login`)
 
 ## Step 2. Metacognitive Preamble
 

@@ -1,10 +1,10 @@
 # Display Components
 
-Source: `src/components/display/**/*.tsx`
+Source: `src/components/display/**`
 
-## Barcode
+## `Barcode`
 
-SVG barcode renderer powered by bwip-js.
+Barcode/QR code renderer using bwip-js library.
 
 ```ts
 interface BarcodeProps extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -13,82 +13,116 @@ interface BarcodeProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
-### BarcodeType
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `BarcodeType` | Barcode format to render |
+| `value` | `string` | Data to encode |
 
-Union type of all supported barcode formats. Common values include: `"qrcode"`, `"code128"`, `"ean13"`, `"datamatrix"`, `"pdf417"`, `"azteccode"`, `"code39"`, `"upca"`, `"isbn"`.
+### `BarcodeType`
 
-Full list exported from `src/components/display/Barcode.types.ts` with 100+ formats.
+Union type of 111 supported barcode format strings including:
 
-## Card
+```ts
+type BarcodeType =
+  | "code128" | "code39" | "code93"
+  | "ean13" | "ean8" | "ean5" | "ean2"
+  | "upca" | "upce"
+  | "isbn" | "issn" | "ismn"
+  | "qrcode" | "microqrcode" | "datamatrix"
+  | "pdf417" | "micropdf417"
+  | "azteccode" | "maxicode"
+  | "gs1-128" | "itf14"
+  | ... ; // 111 formats total
+```
 
-Elevated container with shadow and fade-in animation.
+## `Card`
+
+Elevated surface card container with shadow and hover effects.
 
 ```ts
 interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 ```
 
-Applies surface background, rounded corners, shadow with hover/focus-within elevation.
+No additional props. Renders children inside a styled card surface.
 
-## Echarts
+## `Echarts`
 
-Apache ECharts wrapper with reactive option updates and resize handling.
+Apache ECharts integration with responsive resizing and busy state overlay.
 
 ```ts
 interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
   option: echarts.EChartsOption;
-  busy?: boolean;  // shows/hides loading indicator
+  busy?: boolean;
 }
 ```
 
-- Uses SVG renderer.
-- Automatically resizes with container via `ResizeObserver`.
+| Field | Type | Description |
+|-------|------|-------------|
+| `option` | `echarts.EChartsOption` | ECharts configuration object |
+| `busy` | `boolean` | Show loading overlay |
 
-## Icon
+## `Icon`
 
-Tabler icon wrapper using `Dynamic` rendering.
+Tabler icons wrapper with customizable size.
 
 ```ts
 interface IconProps extends Omit<TablerIconProps, "size"> {
   icon: Component<TablerIconProps>;
-  size?: string | number;  // default: "1.25em"
+  size?: string | number;
 }
 ```
 
-Adds `inline` display and vertical alignment.
+| Field | Type | Description |
+|-------|------|-------------|
+| `icon` | `Component<TablerIconProps>` | Tabler icon component reference |
+| `size` | `string \| number` | Icon size (CSS value or number) |
 
-## Tag
+## `Tag`
 
-Themed inline tag/badge with solid background.
+Semantic themed inline tag/badge.
 
 ```ts
 type TagTheme = SemanticTheme;
 
 interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
-  theme?: TagTheme;  // default: "base"
+  theme?: TagTheme;
 }
 ```
 
-## Link
+| Field | Type | Description |
+|-------|------|-------------|
+| `theme` | `TagTheme` | Semantic color theme |
 
-Themed anchor link with hover underline.
+## `Link`
+
+Semantic themed anchor link with disabled state.
 
 ```ts
 type LinkTheme = SemanticTheme;
 
 interface LinkProps extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
-  theme?: LinkTheme;    // default: "primary"
+  theme?: LinkTheme;
   disabled?: boolean;
 }
 ```
 
-## Alert
+| Field | Type | Description |
+|-------|------|-------------|
+| `theme` | `LinkTheme` | Semantic color theme |
+| `disabled` | `boolean` | Disable link interaction |
 
-Themed alert/callout box with light background.
+## `Alert`
+
+Semantic themed alert box.
 
 ```ts
 type AlertTheme = SemanticTheme;
 
 interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  theme?: AlertTheme;  // default: "base"
+  theme?: AlertTheme;
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `theme` | `AlertTheme` | Semantic color theme |

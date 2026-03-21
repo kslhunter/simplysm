@@ -1,29 +1,23 @@
 # Hooks
 
-Source: `src/hooks/*.ts`
+Source: `src/hooks/**`
 
-## useLocalStorage
+## `useLocalStorage`
 
-localStorage-backed reactive signal. Keys are prefixed with `ConfigContext.clientName`.
+localStorage-based reactive signal. Keys are prefixed with clientName from ConfigContext.
 
 ```ts
 function useLocalStorage<TValue>(
   key: string,
   initialValue?: TValue,
 ): [Accessor<TValue | undefined>, StorageSetter<TValue>];
-
-type StorageSetter<TValue> = (
-  value: TValue | undefined | ((prev: TValue | undefined) => TValue | undefined),
-) => TValue | undefined;
 ```
 
-- Always uses localStorage regardless of `SyncStorageProvider`.
-- Used for device-specific data (auth tokens, local state).
-- Setting `undefined` removes the item from localStorage.
+Always uses localStorage regardless of SyncStorageProvider settings.
 
-## useSyncConfig
+## `useSyncConfig`
 
-Storage-synced configuration signal. Uses `SyncStorageProvider` adapter if available, falls back to localStorage.
+Config signal synced to storage. Uses SyncStorageProvider if available, falls back to localStorage.
 
 ```ts
 function useSyncConfig<TValue>(
@@ -32,14 +26,11 @@ function useSyncConfig<TValue>(
 ): [Accessor<TValue>, Setter<TValue>, Accessor<boolean>];
 ```
 
-- Returns `[value, setValue, ready]`.
-- `ready()` becomes `true` after the initial value is loaded from storage.
-- When the adapter changes via `useSyncStorage().configure()`, re-reads from the new adapter.
-- Used for data that should persist and sync across devices (theme, preferences, DataSheet configs).
+Returns `[value, setter, ready]`. The `ready` accessor is false until async storage resolves.
 
-## useLogger
+## `useLogger`
 
-Logging hook with pluggable adapter. Falls back to `consola` if `LoggerProvider` is not present.
+Logger with custom adapter support.
 
 ```ts
 interface Logger {
@@ -53,11 +44,17 @@ interface Logger {
 function useLogger(): Logger;
 ```
 
-`configure` is only usable inside `LoggerProvider`.
+| Method | Description |
+|--------|-------------|
+| `log()` | Log message |
+| `info()` | Info message |
+| `warn()` | Warning message |
+| `error()` | Error message |
+| `configure()` | Replace log adapter |
 
-## createControllableSignal
+## `createControllableSignal`
 
-Signal hook supporting the controlled/uncontrolled pattern. Used extensively by form components.
+Signal hook supporting controlled/uncontrolled pattern (like React's useState with controlled override).
 
 ```ts
 function createControllableSignal<TValue>(options: {
@@ -66,13 +63,11 @@ function createControllableSignal<TValue>(options: {
 }): [Accessor<TValue>, (newValue: TValue | ((prev: TValue) => TValue)) => TValue];
 ```
 
-- When `onChange` is provided: controlled mode, value managed externally.
-- When `onChange` returns `undefined`: uncontrolled mode, uses internal state.
-- Supports functional setter: `setValue(prev => !prev)`.
+When `onChange` is provided, the component is controlled. When undefined, it manages its own internal state.
 
-## createControllableStore
+## `createControllableStore`
 
-Store hook supporting the controlled/uncontrolled pattern. Uses `solid-js/store` for fine-grained reactivity.
+Store hook supporting controlled/uncontrolled pattern for object values.
 
 ```ts
 function createControllableStore<TValue extends object>(options: {
@@ -81,12 +76,9 @@ function createControllableStore<TValue extends object>(options: {
 }): [TValue, SetStoreFunction<TValue>];
 ```
 
-- Supports all `SetStoreFunction` overloads (path-based, produce, reconcile).
-- In controlled mode: calls `onChange` with a deep clone when the store changes.
+## `createIMEHandler`
 
-## createIMEHandler
-
-IME composition handling hook. Delays value commits during IME composition (e.g., Korean input) to prevent DOM recreation and composition breakage.
+IME composition handling hook. Delays value change callbacks during IME composition (e.g., Korean, Japanese, Chinese input).
 
 ```ts
 function createIMEHandler(setValue: (value: string) => void): {
@@ -98,11 +90,15 @@ function createIMEHandler(setValue: (value: string) => void): {
 };
 ```
 
-- During composition: only `composingValue` is updated (for display).
-- On `compositionEnd`: delays `setValue` via `setTimeout(0)`.
-- `flushComposition()`: immediately commits any pending value.
+| Return Field | Description |
+|-------------|-------------|
+| `composingValue` | Current composing text (null when not composing) |
+| `handleCompositionStart` | Attach to `onCompositionStart` |
+| `handleInput` | Attach to `onInput` |
+| `handleCompositionEnd` | Attach to `onCompositionEnd` |
+| `flushComposition` | Force flush pending composition |
 
-## createMountTransition
+## `createMountTransition`
 
 Mount/unmount animation state hook.
 
@@ -114,30 +110,28 @@ function createMountTransition(open: () => boolean): {
 };
 ```
 
-- `open=true`: immediately sets `mounted=true`, then `animating=true` after double `requestAnimationFrame`.
-- `open=false`: immediately sets `animating=false`, then `mounted=false` after `transitionend` or 200ms fallback.
-- Use `mounted()` for DOM rendering, `animating()` for CSS class toggling.
-- Call `unmount()` to manually remove from DOM (e.g., in `onTransitionEnd`).
+| Return Field | Description |
+|-------------|-------------|
+| `mounted` | Whether element should be in DOM |
+| `animating` | Whether animation is in progress |
+| `unmount` | Force unmount immediately |
 
-## useRouterLink
+## `useRouterLink`
 
-Router navigation hook supporting modifier keys (Ctrl+click, Shift+click).
+SPA router navigation handler with modifier key support.
 
 ```ts
 interface RouterLinkOptions {
   href: string;
   state?: Record<string, unknown>;
-  window?: {
-    width?: number;   // default: 800
-    height?: number;  // default: 800
-  };
+  window?: { width?: number; height?: number };
 }
 
-function useRouterLink(): (
-  options: RouterLinkOptions,
-) => (e: MouseEvent | KeyboardEvent) => void;
+function useRouterLink(): (options: RouterLinkOptions) => (e: MouseEvent | KeyboardEvent) => void;
 ```
 
-- Normal click: SPA routing via `useNavigate`.
-- Ctrl/Alt + click: opens in new tab.
-- Shift + click: opens in new window with specified dimensions.
+| Modifier | Behavior |
+|----------|----------|
+| Normal click | SPA navigation via @solidjs/router |
+| Ctrl/Alt + click | Open in new tab |
+| Shift + click | Open in new window (with optional size) |

@@ -3,7 +3,6 @@ name: sd-readme
 description: |
   monorepo 각 패키지의 public API를 분석하여 LLM이 읽을 수 있는 README.md와 docs/ 문서를 자동 생성하는 스킬.
   /sd-readme를 입력하거나, "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
-model: sonnet
 ---
 
 # sd-readme: 패키지 README/docs 생성
@@ -107,6 +106,9 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 **작성 원칙:**
 - **영어로 작성**한다
 - **소스에서 읽은 내용만** 문서화한다 — 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다
+- **모든 export를 빠짐없이 문서화한다** — Step 2에서 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다
+- **interface/type은 필드별 설명 테이블을 포함한다** — 시그니처만 나열하지 않고, 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다 — 필드가 많더라도 모든 필드를 테이블로 나열한다
+- **union type은 discriminant와 각 variant를 설명한다** — discriminated union인 경우, 어떤 필드로 분기되는지와 각 variant를 나열한다
 
 ### 4-1. README.md 생성 (모든 패키지)
 
@@ -159,7 +161,13 @@ npm install @simplysm/{package-name}
 
 {class인 경우: public 메서드/프로퍼티 목록}
 {function인 경우: 파라미터 + 반환 타입 설명}
-{type/interface인 경우: 주요 필드 설명}
+{interface인 경우: 필드별 설명 테이블}
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `fieldName` | `type` | {필드 설명} |
+
+{union type인 경우: discriminant 필드와 각 variant 나열}
 ```
 
 ### 4-3. root README.md 생성 (패키지명 미지정 시)
@@ -182,6 +190,26 @@ npm install @simplysm/{package-name}
 **작성 규칙:**
 - `private: true`인 패키지는 테이블에서 **제외**한다
 - 패키지명은 해당 패키지 디렉토리로의 상대 링크를 포함한다
+
+### 4-4. 완전성 검증
+
+문서 생성 후, Step 2에서 수집한 export 목록과 생성된 문서를 대조한다:
+
+1. export 목록의 각 항목이 README.md 또는 docs/*.md에 존재하는지 확인한다
+2. 누락된 항목이 있으면 해당 API를 문서에 추가한다
+3. 검증 결과를 표시한다:
+
+```
+완전성 검증: 52/52 API 문서화됨
+```
+
+누락이 있는 경우:
+
+```
+완전성 검증: 50/52 API 문서화됨
+누락: MissingType, MissingFunction
+→ 누락된 API를 문서에 추가합니다.
+```
 
 ## Step 5: package.json files 필드 동기화
 

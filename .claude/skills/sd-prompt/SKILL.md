@@ -301,7 +301,7 @@ Eval 실행 전에 SKILL.md(또는 대상 프롬프트)와 Eval 파일을 함께
 ```bash
 (cd ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" && \
 MSYS_NO_PATHCONV=1 claude -p "{eval 시나리오의 입력}" \
-  --output-format stream-json \
+  --output-format text \
   --verbose \
   --dangerously-skip-permissions \
   --append-system-prompt "이것은 Eval 테스트 환경이다. CRITICAL: 현재 작업 디렉토리 외부의 파일을 절대 수정하지 않는다 — eval workspace 오염 방지를 위해 절대 경로로 다른 프로젝트의 파일에 접근하지 않는다. AskUserQuestion 도구를 사용하지 않는다. 선택이 필요한 각 결정사항에 대해: (1) 선택지와 선택을 묻는 질문을 텍스트로 출력하고 (2) 합리적인 기본값을 자동 선택하여 선택 결과를 명시한 뒤 (3) 다음 결정사항으로 넘어간다. 질문이나 선택지를 생략하지 않는다." \

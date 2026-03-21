@@ -1,30 +1,34 @@
-# Layout
+# Layout Components
 
-Source: `src/components/layout/**/*.tsx`
+Source: `src/components/layout/**`
 
-## FormGroup
+## `FormGroup`
 
-Vertical or inline form field group.
+Vertical or horizontal form field group. Compound with Item sub-component.
 
 ```ts
 interface FormGroupProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  inline?: boolean;  // horizontal layout with wrapping
+  inline?: boolean;
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `inline` | `boolean` | Horizontal layout instead of vertical |
+
 ### Sub-components
 
-- **`FormGroup.Item`** -- Labeled form item.
+- **`FormGroup.Item`** -- Labeled form group entry.
 
 ```ts
-interface FormGroupItemProps extends JSX.HTMLAttributes<HTMLDivElement> {
+interface FormGroupItemProps {
   label?: JSX.Element;
 }
 ```
 
-## FormTable
+## `FormTable`
 
-Table-based form layout using `<table>` elements.
+Table-based form layout. Compound with Row and Item sub-components.
 
 ```ts
 interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
@@ -32,8 +36,8 @@ interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 
 ### Sub-components
 
-- **`FormTable.Row`** -- Table row. Extends `JSX.HTMLAttributes<HTMLTableRowElement>`.
-- **`FormTable.Item`** -- Labeled table cell. When `label` is omitted, the cell spans the label column.
+- **`FormTable.Row`** -- Table row.
+- **`FormTable.Item`** -- Labeled table cell.
 
 ```ts
 interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellElement> {
@@ -41,9 +45,9 @@ interface FormTableItemProps extends JSX.TdHTMLAttributes<HTMLTableCellElement> 
 }
 ```
 
-## Sidebar
+## `Sidebar`
 
-Collapsible sidebar panel. Must be used inside `Sidebar.Container`.
+Collapsible sidebar navigation panel. Compound with Container, Menu, User sub-components.
 
 ```ts
 interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
@@ -51,9 +55,9 @@ interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
 }
 ```
 
-### Sidebar.Container
+### `Sidebar.Container`
 
-Layout container that holds the Sidebar and content area. Provides `SidebarContext` for toggle state. Parent element must have height specified (use `h-full`).
+Layout container wrapping Sidebar and content area with position: relative.
 
 ```ts
 interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -61,26 +65,25 @@ interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
-- Desktop (640px+): uses `padding-left` transition to expand/collapse.
-- Mobile (<640px): renders backdrop overlay. Auto-closes on navigation.
+### `Sidebar.Menu`
 
-### Sidebar.Menu
-
-Recursive sidebar menu with route-based selection.
+Recursive menu rendering with List/ListItem components. Supports route matching for active state.
 
 ```ts
 interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   menus: AppMenu[];
-  defaultOpen?: boolean;  // expand all nested menus on initial render (default: false)
+  defaultOpen?: boolean;
 }
 ```
 
-- Parent items of the selected route auto-expand on initial render.
-- External links (containing `://`) open in a new tab.
+| Field | Type | Description |
+|-------|------|-------------|
+| `menus` | `AppMenu[]` | Menu tree structure |
+| `defaultOpen` | `boolean` | Expand all menus by default |
 
-### Sidebar.User
+### `Sidebar.User`
 
-User information area with optional dropdown menu.
+User information component with avatar and dropdown menu.
 
 ```ts
 interface SidebarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
@@ -96,21 +99,38 @@ interface SidebarUserMenu {
 }
 ```
 
-### useSidebar()
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | User display name |
+| `icon` | `Component<TablerIconProps>` | User avatar icon |
+| `description` | `string` | User description text |
+| `menus` | `SidebarUserMenu[]` | Dropdown menu items |
 
-Hook to access sidebar toggle state. Throws if used outside `Sidebar.Container`.
+### `useSidebar()`
 
 ```ts
-function useSidebar(): {
+interface SidebarContextValue {
   toggle: Accessor<boolean>;
   setToggle: Setter<boolean>;
-};
-// Also available: useSidebar.optional() returns undefined if no context
+}
+
+function useSidebar(): SidebarContextValue;
+function useSidebar.optional(): SidebarContextValue | undefined;
 ```
 
-## Topbar
+Access sidebar toggle state. The `.optional()` variant returns undefined when not inside a Sidebar.
 
-Top navigation bar. Automatically shows a sidebar toggle button if used inside `Sidebar.Container`.
+### `SM_MEDIA_QUERY`
+
+```ts
+const SM_MEDIA_QUERY: string;  // "(min-width: 640px)"
+```
+
+Media query corresponding to Tailwind `sm:` breakpoint (640px).
+
+## `Topbar`
+
+Top navigation bar. Automatically shows sidebar toggle button if SidebarContext exists. Compound with Container, Menu, User, Actions sub-components.
 
 ```ts
 interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
@@ -118,9 +138,9 @@ interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
 }
 ```
 
-### Topbar.Container
+### `Topbar.Container`
 
-Vertical layout container wrapping Topbar and content area. Provides `TopbarContext` for actions.
+Layout container wrapping Topbar and content area.
 
 ```ts
 interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -128,9 +148,9 @@ interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
-### Topbar.Menu
+### `Topbar.Menu`
 
-Dropdown navigation menu. Shows desktop buttons on 640px+ and a hamburger menu on mobile.
+Dropdown navigation menu. Items with children show dropdown on click.
 
 ```ts
 interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
@@ -145,9 +165,16 @@ interface TopbarMenuItem {
 }
 ```
 
-### Topbar.User
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Menu item text |
+| `href` | `string` | Navigation URL |
+| `icon` | `Component<IconProps>` | Menu item icon |
+| `children` | `TopbarMenuItem[]` | Submenu items (renders dropdown) |
 
-User information component with optional dropdown menu.
+### `Topbar.User`
+
+User information with dropdown menu.
 
 ```ts
 interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
@@ -161,22 +188,33 @@ interface TopbarUserMenu {
 }
 ```
 
-### Topbar.Actions
+### `Topbar.Actions`
 
-Renders action elements registered by `useTopbarActions()`.
+Displays action elements registered via `useTopbarActions()`.
 
-### useTopbarActions()
-
-Register action elements that appear in the Topbar. Automatically cleaned up on component unmount.
+### `useTopbarActions()`
 
 ```ts
 function useTopbarActions(accessor: () => JSX.Element): void;
 ```
 
-### useTopbarActionsAccessor()
+Register topbar action elements. Must be used inside `Topbar.Container`.
 
-Read the current topbar actions signal.
+### `useTopbarActionsAccessor()`
 
 ```ts
 function useTopbarActionsAccessor(): Accessor<JSX.Element | undefined>;
+```
+
+Read the current topbar actions signal.
+
+### `TopbarContext`
+
+```ts
+interface TopbarContextValue {
+  actions: Accessor<JSX.Element | undefined>;
+  setActions: Setter<JSX.Element | undefined>;
+}
+
+const TopbarContext: Context<TopbarContextValue>;
 ```

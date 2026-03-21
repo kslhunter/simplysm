@@ -22,7 +22,7 @@ Feature 정보를 다음 우선순위로 결정한다:
 3. **대화 맥락 — Feature 설명:** 대화에서 Feature에 대한 논의(기능 설명, 요구사항 등)가 있으면 Phase 1(sd-spec)을 시작하되, 해당 논의 내용을 sd-spec의 seed로 전달한다. Feature가 무엇인지 다시 물어보지 않는다
 4. **위 모두 없으면:** AskUserQuestion으로 사용자에게 물어본다 (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다)
 
-경로가 결정된 경우, Feature 문서를 읽어 현재 상태를 파악하고, 탐지 결과를 사용자에게 보여준 뒤 확인받는다.
+경로가 결정된 경우, Feature 문서를 읽어 현재 상태를 파악하고, 탐지 결과를 사용자에게 보여준 뒤 바로 다음 Phase로 진행한다.
 
 ### Feature 문서 기반 Phase 탐지
 

@@ -1,127 +1,99 @@
-# Styles + Directives
+# Styles & Directives
 
-Source: `src/styles/*.ts`, `src/directives/*.ts`
+Source: `src/styles/**`, `src/directives/**`
 
 ## Base Styles
 
-Source: `src/styles/base.styles.ts`
-
-Design tokens for borders, backgrounds, and text.
+Design tokens for borders, backgrounds, and text colors.
 
 ```ts
-const border = {
-  default: "border-base-200 dark:border-base-700",
-  subtle: "border-base-200 dark:border-base-700",
+const border: {
+  default: string;
+  subtle: string;
 };
 
-const bg = {
-  surface: "bg-white dark:bg-base-900",
-  muted: "bg-base-100 dark:bg-base-800",
-  subtle: "bg-base-200 dark:bg-base-700",
+const bg: {
+  surface: string;
+  muted: string;
+  subtle: string;
 };
 
-const text = {
-  default: "text-base-900 dark:text-base-100",
-  muted: "text-base-400 dark:text-base-500",
-  placeholder: "placeholder:text-base-400 dark:placeholder:text-base-500",
+const text: {
+  default: string;
+  muted: string;
+  placeholder: string;
 };
 ```
 
+| Token | Fields | Description |
+|-------|--------|-------------|
+| `border` | `default`, `subtle` | Border color tokens |
+| `bg` | `surface`, `muted`, `subtle` | Background color tokens |
+| `text` | `default`, `muted`, `placeholder` | Text color tokens |
+
 ## Control Styles
 
-Source: `src/styles/control.styles.ts`
-
-Tokens for interactive component sizing, padding, gaps, and states.
+Design tokens for interactive controls.
 
 ```ts
-const state = {
-  disabled: "pointer-events-none cursor-default opacity-30",
+const state: {
+  disabled: string;
 };
 
 type ComponentSize = "xs" | "sm" | "md" | "lg" | "xl";
 
-const pad: Record<ComponentSize | string, string> = {
-  md: "px-2 py-1",
-  xs: "px-1 py-0",
-  sm: "px-1.5 py-0.5",
-  lg: "px-3 py-2",
-  xl: "px-4 py-3",
-};
-
-const gap: Record<ComponentSize | string, string> = {
-  md: "gap-1",
-  xs: "gap-0",
-  sm: "gap-0.5",
-  lg: "gap-1.5",
-  xl: "gap-2",
-};
+const pad: Record<ComponentSize, string>;
+const gap: Record<ComponentSize, string>;
 ```
+
+| Token | Type | Description |
+|-------|------|-------------|
+| `state.disabled` | `string` | Disabled state CSS classes |
+| `ComponentSize` | type | Size scale union |
+| `pad` | `Record<ComponentSize, string>` | Padding by component size |
+| `gap` | `Record<ComponentSize, string>` | Gap by component size |
 
 ## Theme Styles
 
-Source: `src/styles/theme.styles.ts`
-
-Semantic color tokens for six themes: `primary`, `info`, `success`, `warning`, `danger`, `base`.
+Semantic theme color tokens.
 
 ```ts
 type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
 
 const themeTokens: Record<SemanticTheme, {
-  solid: string;       // solid background + white text
-  solidHover: string;  // hover state for solid
-  light: string;       // light background + dark text
-  text: string;        // text color only
-  hoverBg: string;     // hover background
-  border: string;      // border color
+  solid: string;
+  solidHover: string;
+  light: string;
+  text: string;
+  hoverBg: string;
+  border: string;
 }>;
 ```
 
-Each theme provides six variants:
+Each theme provides these token fields:
 
-| Variant | Usage |
-|---------|-------|
-| `solid` | Tag, Button(solid), Progress bar fill |
-| `solidHover` | Button(solid) hover state |
-| `light` | Alert background |
-| `text` | Link color, Tab selected |
-| `hoverBg` | Button(ghost) hover, List item hover |
-| `border` | Button(outline) border |
-
-Example values for `primary`:
-```
-solid:     "bg-primary-500 text-white"
-solidHover: "hover:bg-primary-600 dark:hover:bg-primary-400"
-light:     "bg-primary-100 text-primary-900 dark:bg-primary-900/40 dark:text-primary-100"
-text:      "text-primary-600 dark:text-primary-400"
-hoverBg:   "hover:bg-primary-100 dark:hover:bg-primary-800/30"
-border:    "border-primary-300 dark:border-primary-600"
-```
+| Field | Description |
+|-------|-------------|
+| `solid` | Solid background color |
+| `solidHover` | Solid background hover color |
+| `light` | Light/subtle background color |
+| `text` | Text color |
+| `hoverBg` | Hover background color |
+| `border` | Border color |
 
 ## Directives
 
-### ripple
+### `ripple`
 
-Directive that adds a material-design-style ripple effect on pointer down.
+Material-style ripple effect directive for interactive elements.
 
 ```ts
 function ripple(el: HTMLElement, accessor: Accessor<boolean>): void;
 ```
 
-Usage in TSX:
-
+Usage:
 ```tsx
 <button use:ripple={!props.disabled}>Click me</button>
 ```
 
-Behavior:
-- Creates an internal ripple container with `overflow: hidden`.
-- Changes element position to `relative` if it is `static` (restored on cleanup).
-- Single ripple mode: removes previous ripple on new click.
-- Respects `prefers-reduced-motion: reduce`.
-- Ripple radius based on distance from click point to farthest corner.
-
-To use the directive, import and void it at the top of your file:
-```tsx
-import { ripple } from "@simplysm/solid";
-void ripple;
-```
+Pass `true` to enable, `false` to disable. Adds a circular ripple animation on pointer down.
