@@ -87,7 +87,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
     logger.start(`Running ${packageName} (electron)...`);
     try {
-      const electron = await Electron.create(pkgDir, clientConfig.electron);
+      const electron = await Electron.create(pkgDir, clientConfig.electron, clientConfig.exclude);
       await electron.run(serverUrl);
       logger.success("Electron execution completed");
     } catch (err) {
@@ -124,7 +124,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
     logger.start(`Running ${packageName} (device)...`);
     try {
-      const cap = await Capacitor.create(pkgDir, clientConfig.capacitor);
+      const cap = await Capacitor.create(pkgDir, clientConfig.capacitor, clientConfig.exclude);
       await cap.runOnDevice(serverUrl);
       logger.success("Device execution completed");
     } catch (err) {

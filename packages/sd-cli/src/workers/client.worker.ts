@@ -140,6 +140,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       mode: "build",
       outDir,
       base: isCapacitor ? "./" : undefined,
+      exclude: info.config.exclude,
     });
 
     await viteBuild(viteConfig);
@@ -198,6 +199,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
       serverPort,
       replaceDeps,
       onScopeRebuild: () => sender.send("scopeRebuild", {}),
+      exclude: info.config.exclude,
     });
 
     // Start Vite dev server

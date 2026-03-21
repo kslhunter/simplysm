@@ -24,7 +24,7 @@
     "consola": "^3.4.2"
   },
   "devDependencies": {
-    "@types/pg": "^8.18.0",
+    "@types/pg": "^8.20.0",
     "@types/pg-copy-streams": "^1.2.5",
     "mysql2": "^3.20.0",
     "pg": "^8.20.0",

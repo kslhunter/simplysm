@@ -62,7 +62,7 @@ Example Mapping을 작성하기 전에, Feature의 범위 힌트를 바탕으로
 
 INFERRED Medium/Low는 과신 위험이 높으므로, ASSUMED로 격상하여 사용자에게 질문한다. **INFERRED High만 질문 없이 진행**할 수 있다.
 
-이 분리 결과를 사용자에게 보여준다. 사용자가 분류를 확인/수정한 뒤 Example Mapping으로 진행한다.
+이 분리 결과를 사용자에게 보여준 뒤, 확인을 묻지 않고 즉시 Example Mapping으로 진행한다.
 
 ## Step 3. Example Mapping
 

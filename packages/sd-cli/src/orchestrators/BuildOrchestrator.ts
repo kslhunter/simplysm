@@ -360,7 +360,7 @@ export class BuildOrchestrator {
         if (config.capacitor != null) {
           const outPath = path.join(pkgDir, "dist");
           try {
-            const cap = await Capacitor.create(pkgDir, config.capacitor);
+            const cap = await Capacitor.create(pkgDir, config.capacitor, config.exclude);
             await cap.initialize();
             await cap.build(outPath);
             results.push({
@@ -385,7 +385,7 @@ export class BuildOrchestrator {
         if (config.electron != null) {
           const outPath = path.join(pkgDir, "dist");
           try {
-            const electron = await Electron.create(pkgDir, config.electron);
+            const electron = await Electron.create(pkgDir, config.electron, config.exclude);
             await electron.initialize();
             await electron.build(outPath);
             results.push({

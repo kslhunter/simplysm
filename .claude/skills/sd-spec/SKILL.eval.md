@@ -7,7 +7,7 @@
 - 사전 조건:
   - `.tasks/test-project/wbs.md` — Impact Mapping + Feature Breakdown 포함 (미완료 Feature 2개 이상)
 - 체크리스트:
-  - [ ] wbs.md를 Read 도구로 읽었다
+  - [ ] 출력이 wbs.md의 내용에 기반한 분석을 포함한다
   - [ ] 미완료(`[ ]`) Feature 목록을 출력에 포함했다
   - [ ] Metacognitive Preamble (VERIFIED/INFERRED/ASSUMED 분류)을 출력에 포함했다
   - [ ] INFERRED 항목에 레벨(High/Medium/Low)이 표기되어 있다
@@ -15,8 +15,8 @@
   - [ ] Example Mapping이 출력에 포함되었다 (Rule, Example 항목이 각각 1개 이상)
   - [ ] Example Mapping의 각 항목에 Confidence Tag([VERIFIED], [INFERRED], [ASSUMED])가 있다
   - [ ] ASSUMED 항목에서 Question이 도출되었다
-  - [ ] 질문을 시도했다 (AskUserQuestion 호출 시도 또는 텍스트 출력)
-  - [ ] Feature 문서 파일이 `.tasks/test-project/` 경로에 생성되었다 (Write 또는 Edit 도구 사용)
+  - [ ] 질문 텍스트가 출력에 포함되었다
+  - [ ] Feature 문서 파일이 `.tasks/test-project/` 경로에 생성되었다
   - [ ] Feature 문서에 `## 요구명세` 섹션이 있다
   - [ ] Feature 문서에 `## 구현계획` 섹션이 없다
 
@@ -40,7 +40,7 @@
     ```
   - Feature Breakdown에 미완료 Feature로 "입고 처리" Feature가 있으며, 범위 힌트에 "바코드 스캔 입고", "입고 보류 처리"가 있다
 - 체크리스트:
-  - [ ] wbs.md를 Read 도구로 읽었다
+  - [ ] 출력이 wbs.md의 내용에 기반한 분석을 포함한다
   - [ ] 참조 자료 섹션의 내용을 Metacognitive Preamble 또는 Example Mapping에서 활용했다 (SKU 코드 형식, 입고 보류, SAP RFC 중 2개 이상이 VERIFIED/INFERRED 분류 또는 Rule/Example에 등장)
   - [ ] Example Mapping에 참조 자료의 구체적 업무 규칙(SKU 코드 형식 AA-000-0000, 입고 보류 상태 전환 중 1개 이상)이 Rule 또는 Example로 반영되었다
   - [ ] Feature 문서 파일이 `.tasks/test-project/` 경로에 생성되었다
@@ -68,7 +68,7 @@
   - `.tasks/` 디렉토리만 존재 (wbs.md 없음, 기존 Feature 문서 없음)
 - 체크리스트:
   - [ ] 대화 맥락에서 Feature 정보(로그인 기능 관련 키워드: 이메일, 비밀번호, 소셜 로그인, 계정 잠금 중 2개 이상)를 추출하여 Example Mapping의 seed로 사용했다
-  - [ ] Feature가 무엇인지 다시 물어보지 않았다 (AskUserQuestion 호출이나 "어떤 기능을 만드시겠습니까?" 류의 질문 텍스트가 없다)
+  - [ ] Feature가 무엇인지 다시 물어보지 않았다 ("어떤 기능을 만드시겠습니까?" 류의 질문 텍스트가 없다)
   - [ ] Metacognitive Preamble (VERIFIED/INFERRED/ASSUMED 분류)을 출력에 포함했다
   - [ ] Example Mapping이 출력에 포함되었다 (Rule 2개 이상, Example 2개 이상)
   - [ ] Example Mapping의 각 항목에 Confidence Tag가 있다
@@ -83,4 +83,5 @@
 - [ ] Example Mapping 없이 바로 Gherkin을 작성한다
 - [ ] Metacognitive Preamble (VERIFIED/INFERRED/ASSUMED 분류) 없이 바로 Example Mapping을 작성한다
 - [ ] Confidence Tag([VERIFIED], [INFERRED], [ASSUMED]) 없이 Example Mapping을 작성한다
-- [ ] 하나의 AskUserQuestion에 여러 결정사항을 한꺼번에 포함하여 질문한다
+- [ ] Metacognitive Preamble 분류 확인을 사용자에게 묻는다 (보여주기만 하고 즉시 진행해야 한다)
+- [ ] 하나의 질문에 여러 결정사항을 한꺼번에 포함하여 질문한다

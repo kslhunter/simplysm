@@ -297,6 +297,8 @@ export interface ViteConfigOptions {
   outDir?: string;
   /** Override base path (e.g. "./" for Capacitor builds) */
   base?: string;
+  /** Packages to exclude from Vite optimizeDeps pre-bundling */
+  exclude?: string[];
 }
 
 /**
@@ -364,6 +366,10 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
 
   if (options.outDir != null) {
     config.build = { outDir: options.outDir };
+  }
+
+  if (options.exclude != null && options.exclude.length > 0) {
+    config.optimizeDeps = { exclude: options.exclude };
   }
 
   if (mode === "build") {

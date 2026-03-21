@@ -337,7 +337,7 @@ export class DevOrchestrator {
         this._logger.start(taskName);
         const pkgDir = path.join(this._cwd, "packages", name);
         try {
-          const cap = await Capacitor.create(pkgDir, config.capacitor!);
+          const cap = await Capacitor.create(pkgDir, config.capacitor!, config.exclude);
           await cap.initialize();
           this._results.set(`${name}:capacitor`, {
             name,

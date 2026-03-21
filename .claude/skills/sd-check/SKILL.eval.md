@@ -176,7 +176,7 @@ function add(a: number, b: number): number {
 
 - 입력: "/sd-check"
 - 체크리스트:
-  - [ ] `/tmp/{yyMMddHHmmss}_check.log` 경로에 로그 파일을 생성했다 (Write 도구 사용 또는 텍스트에서 로그 경로 언급)
+  - [ ] `.tmp/{yyMMddHHmmss}_check.log` 경로에 로그 파일이 생성되었다
   - [ ] 수정 시도 이력을 로그에 기록했다 ("시도" 또는 "attempt" 키워드가 출력에 포함)
   - [ ] 동일 수정 반복 또는 해결 불가를 감지하여 루프를 중단했다 (10회 이전에 에스컬레이션)
   - [ ] 사용자에게 상황을 보고했다

@@ -34,6 +34,7 @@ export class Electron {
     private readonly _pkgPath: string,
     private readonly _config: SdElectronConfig,
     npmConfig: NpmConfig,
+    private readonly _exclude: string[],
   ) {
     this._npmConfig = npmConfig;
     this._electronPath = path.resolve(this._pkgPath, ".electron");
@@ -42,11 +43,15 @@ export class Electron {
   /**
    * Create Electron instance (with configuration validation)
    */
-  static async create(pkgPath: string, config: SdElectronConfig): Promise<Electron> {
+  static async create(
+    pkgPath: string,
+    config: SdElectronConfig,
+    exclude?: string[],
+  ): Promise<Electron> {
     Electron._validateConfig(config);
 
     const npmConfig = await fsx.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
-    return new Electron(pkgPath, config, npmConfig);
+    return new Electron(pkgPath, config, npmConfig, exclude ?? []);
   }
 
   /**
@@ -182,6 +187,16 @@ export class Electron {
       const version = this._npmConfig.dependencies?.[dep];
       if (version != null) {
         dependencies[dep] = version;
+      }
+    }
+
+    // Add exclude packages
+    for (const excludePkg of this._exclude) {
+      if (!(excludePkg in dependencies)) {
+        const version = this._npmConfig.dependencies?.[excludePkg];
+        if (version != null) {
+          dependencies[excludePkg] = version;
+        }
       }
     }
 

@@ -186,6 +186,8 @@ export interface SdClientPackageConfig {
   electron?: SdElectronConfig;
   /** runtime config (written to dist/.config.json during build) */
   configs?: Record<string, unknown>;
+  /** packages to exclude from Vite optimizeDeps and add to Capacitor/Electron package.json */
+  exclude?: string[];
 }
 
 /**

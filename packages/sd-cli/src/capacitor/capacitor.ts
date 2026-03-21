@@ -50,6 +50,7 @@ export class Capacitor {
     private readonly _pkgPath: string,
     private readonly _config: SdCapacitorConfig,
     npmConfig: NpmConfig,
+    private readonly _exclude: string[],
   ) {
     this._platforms = Object.keys(this._config.platform ?? {});
     this._npmConfig = npmConfig;
@@ -59,12 +60,16 @@ export class Capacitor {
   /**
    * Create Capacitor instance (with configuration validation)
    */
-  static async create(pkgPath: string, config: SdCapacitorConfig): Promise<Capacitor> {
+  static async create(
+    pkgPath: string,
+    config: SdCapacitorConfig,
+    exclude?: string[],
+  ): Promise<Capacitor> {
     // F5: validate runtime configuration
     Capacitor._validateConfig(config);
 
     const npmConfig = await fsx.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
-    return new Capacitor(pkgPath, config, npmConfig);
+    return new Capacitor(pkgPath, config, npmConfig, exclude ?? []);
   }
 
   /**
@@ -397,6 +402,15 @@ export class Capacitor {
         const version = mainDeps[plugin] ?? "*";
         capNpmConf.dependencies[plugin] = version;
         Capacitor._logger.debug(`plugin added: ${plugin}@${version}`);
+      }
+    }
+
+    // Add exclude packages
+    for (const excludePkg of this._exclude) {
+      if (!(excludePkg in capNpmConf.dependencies)) {
+        const version = mainDeps[excludePkg] ?? "*";
+        capNpmConf.dependencies[excludePkg] = version;
+        Capacitor._logger.debug(`exclude package added: ${excludePkg}@${version}`);
       }
     }
 

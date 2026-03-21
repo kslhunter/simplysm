@@ -57,7 +57,7 @@ description: |
 
 탐지된 check를 우선순위 순서대로 하나씩 처리한다.
 
-수정 루프 시작 시 `/tmp/{yyMMddHHmmss}_check.log`에 로그 파일을 생성한다. `{yyMMddHHmmss}`는 **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다.** LLM이 직접 생성하면 시분초가 누락되므로 금지한다.
+수정 루프 시작 시 `.tmp/{yyMMddHHmmss}_check-{패키지명}.log`에 로그 파일을 생성한다. `{패키지명}`은 패키지 경로의 마지막 디렉토리명이다 (예: `packages/core-common` → `core-common`). 대상 생략 시(루트 실행)에는 `.tmp/{yyMMddHHmmss}_check.log`로 생성한다. `{yyMMddHHmmss}`는 **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다.** LLM이 직접 생성하면 시분초가 누락되므로 금지한다.
 
 1. check 명령어를 실행한다 (패키지경로 지정 시 해당 디렉토리에서)
 2. 통과(exit 0)하면 다음 check으로 진행
