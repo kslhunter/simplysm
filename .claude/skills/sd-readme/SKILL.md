@@ -187,7 +187,17 @@ npm install @simplysm/{package-name}
 - **JSDoc이 있으면 그대로 활용**한다 — 임의로 재해석하지 않는다
 - **side-effect import는 별도 섹션**으로 문서화한다 (예: "이 패키지는 Array prototype에 메서드를 추가합니다")
 
-## Step 5: 결과 보고
+## Step 5: package.json files 필드 동기화
+
+각 대상 패키지의 `package.json`을 읽어 `files` 배열을 docs/ 존재 여부에 맞게 동기화한다.
+
+| 조건 | 처리 |
+|------|------|
+| docs/ 분할로 생성됨 **그리고** `files`에 `"docs"` 없음 | `"docs"`를 `files` 배열에 추가 |
+| README 단독으로 생성됨 **그리고** `files`에 `"docs"` 있음 | `files` 배열에서 `"docs"` 제거 |
+| 그 외 (이미 일치하거나 `files` 필드 자체가 없음) | 변경 없음 |
+
+## Step 6: 결과 보고
 
 ```markdown
 ## sd-readme 결과
@@ -202,6 +212,8 @@ npm install @simplysm/{package-name}
 - packages/core-common/README.md
 - packages/core-common/docs/types.md
 - ...
-```
 
-package.json의 `files` 필드에 `docs`가 포함되어 있는지 확인하고, 없으면 추가가 필요하다는 안내를 표시한다.
+### package.json files 변경
+- packages/core-common/package.json: `"docs"` 추가
+- packages/storage/package.json: `"docs"` 제거
+```

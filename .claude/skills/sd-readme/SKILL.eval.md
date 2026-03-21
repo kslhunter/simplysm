@@ -24,6 +24,7 @@
   - [ ] 각 docs/*.md에 해당 카테고리의 API 시그니처가 포함됨
   - [ ] src/index.ts에 없는 internal 모듈은 문서화되지 않음
   - [ ] 모든 문서가 영어로 작성됨
+  - [ ] packages/solid/package.json의 `files` 배열에 `"docs"`가 포함됨
 
 ### 시나리오 3: root README 생성 (인자 없이 실행)
 - 사전 조건:
@@ -38,6 +39,7 @@
   - [ ] README.md에 @simplysm/pkg-b가 포함되지 않음 (private이므로)
   - [ ] README.md에 각 패키지의 description이 포함됨
   - [ ] packages/pkg-a/README.md도 함께 생성됨
+  - [ ] packages/pkg-a/package.json의 `files` 필드가 변경되지 않음 (`files` 필드 자체가 없으므로)
 
 ### 시나리오 4: 개별 패키지 지정 시 root 미생성
 - 사전 조건: 시나리오 3과 동일
