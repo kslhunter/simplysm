@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/lint",
-  "version": "13.0.99",
+  "version": "13.0.100",
   "description": "Simplysm package - Lint configuration (ESLint)",
   "author": "simplysm",
   "license": "Apache-2.0",
