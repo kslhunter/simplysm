@@ -24,6 +24,8 @@ export class SdProcess {
         },
       });
 
+      ps.stdin.end();
+
       ps.on("error", (err) => {
         reject(err);
       });
