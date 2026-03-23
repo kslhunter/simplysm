@@ -1,6 +1,7 @@
 // =============================================================
 // Chrome 61+ Polyfills
 // core-js는 feature detection 기반 — 이미 지원하는 기능은 skip
+// sd-cli가 Angular 클라이언트 빌드 시 자동 주입
 // =============================================================
 
 // -- ES2018 --
@@ -39,14 +40,7 @@ import "core-js/actual/structured-clone";
 import "abortcontroller-polyfill/dist/abortcontroller-polyfill-only";
 
 // -- ResizeObserver (Chrome 64+) --
-// 메인 엔트리 대신 dist ESM 빌드를 직접 import하여
-// 패키지의 declare global 타입 선언이 DOM 내장 ResizeObserver 타입과 충돌하는 것을 방지
-import ResizeObserverPolyfill from "resize-observer-polyfill/dist/ResizeObserver.es";
-
+import ResizeObserver from "resize-observer-polyfill";
 if (typeof window !== "undefined" && !("ResizeObserver" in window)) {
-  Object.defineProperty(window, "ResizeObserver", {
-    value: ResizeObserverPolyfill,
-    writable: true,
-    configurable: true,
-  });
+  window.ResizeObserver = ResizeObserver;
 }

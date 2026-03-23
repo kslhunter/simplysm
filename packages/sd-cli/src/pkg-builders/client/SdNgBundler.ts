@@ -326,6 +326,7 @@ export class SdNgBundler {
     const indexHtmlGenerator = new IndexHtmlGenerator({
       indexPath: this._indexHtmlFilePath,
       entrypoints: [
+        ["sd-polyfills", true],
         ["polyfills", true],
         ["styles", false],
         ["main", true],
@@ -487,6 +488,10 @@ export class SdNgBundler {
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
       entryNames: "[dir]/[name]",
       entryPoints: {
+        "sd-polyfills": path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../../../lib/chrome61-polyfills.js",
+        ),
         main: this._mainFilePath,
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts"))
           ? {
