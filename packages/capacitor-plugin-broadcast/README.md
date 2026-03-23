@@ -1,75 +1,117 @@
 # @simplysm/capacitor-plugin-broadcast
 
-Capacitor plugin for sending and receiving Android Broadcasts. Designed for integrating with industrial devices such as barcode scanners and PDAs.
+Capacitor Broadcast Plugin -- Android broadcast send/receive for industrial devices (barcode scanners, PDA, etc.). Provides subscription-based broadcast receiving, broadcast sending with extras, and launch intent retrieval.
 
 ## Installation
 
 ```bash
 npm install @simplysm/capacitor-plugin-broadcast
-npx cap sync
 ```
 
-### Requirements
+## API Overview
 
-- `@capacitor/core` ^7.4.4
+| API | Type | Description |
+|-----|------|-------------|
+| `Broadcast` | Abstract class | Static methods for subscribing to, sending, and managing Android broadcasts |
+| `IBroadcastResult` | Interface | Broadcast result containing action and extras |
+| `IBroadcastPlugin` | Interface | Low-level Capacitor plugin interface for broadcast operations |
 
-### Platform Support
+## API Reference
 
-| Platform | Supported |
-|----------|-----------|
-| Android  | Yes       |
-| Web      | Stub only (shows alert) |
+### `IBroadcastResult`
 
-## API
+Result object received from a broadcast or launch intent.
+
+```typescript
+export interface IBroadcastResult {
+  action?: string;
+  extras?: Record<string, unknown>;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `action` | `string \| undefined` | The broadcast action string |
+| `extras` | `Record<string, unknown> \| undefined` | Extra data attached to the broadcast |
+
+### `IBroadcastPlugin`
+
+Low-level Capacitor plugin interface. Use `Broadcast` instead for a simplified API.
+
+```typescript
+export interface IBroadcastPlugin {
+  subscribe(
+    options: { filters: string[] },
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<{ id: string }>;
+  unsubscribe(options: { id: string }): Promise<void>;
+  unsubscribeAll(): Promise<void>;
+  send(options: { action: string; extras?: Record<string, unknown> }): Promise<void>;
+  getLaunchIntent(): Promise<IBroadcastResult>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `subscribe` | `options: { filters: string[] }, callback` | `Promise<{ id: string }>` | Register a broadcast receiver with action filters |
+| `unsubscribe` | `options: { id: string }` | `Promise<void>` | Remove a specific broadcast receiver by ID |
+| `unsubscribeAll` | -- | `Promise<void>` | Remove all broadcast receivers |
+| `send` | `options: { action, extras? }` | `Promise<void>` | Send a broadcast with action and optional extras |
+| `getLaunchIntent` | -- | `Promise<IBroadcastResult>` | Get the intent that launched the app |
 
 ### `Broadcast`
 
-Static utility class for sending and receiving Android Broadcasts.
+Abstract class with static methods for Android broadcast send/receive. Designed for industrial device integration (barcode scanners, PDA, etc.).
 
-#### `Broadcast.subscribe(filters, callback)`
+```typescript
+export abstract class Broadcast {
+  static async subscribe(
+    filters: string[],
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<() => Promise<void>>;
 
-Registers a broadcast receiver for the specified intent filters. Returns an unsubscribe function.
+  static async unsubscribeAll(): Promise<void>;
 
-| Parameter  | Type                                     | Description                         |
-|------------|------------------------------------------|-------------------------------------|
-| `filters`  | `string[]`                               | Intent action strings to listen for |
-| `callback` | `(result: IBroadcastResult) => void`     | Called when a matching broadcast is received |
+  static async send(options: {
+    action: string;
+    extras?: Record<string, unknown>;
+  }): Promise<void>;
 
-**Returns:** `Promise<() => Promise<void>>` -- an async function that unregisters this receiver when called.
+  static async getLaunchIntent(): Promise<IBroadcastResult>;
+}
+```
 
-```ts
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `subscribe` | `filters: string[], callback: (result: IBroadcastResult) => void` | `Promise<() => Promise<void>>` | Register a broadcast receiver; returns an unsubscribe function |
+| `unsubscribeAll` | -- | `Promise<void>` | Remove all registered broadcast receivers |
+| `send` | `options: { action: string; extras?: Record<string, unknown> }` | `Promise<void>` | Send a broadcast with action and optional extras |
+| `getLaunchIntent` | -- | `Promise<IBroadcastResult>` | Retrieve the intent that launched the application |
+
+## Usage Examples
+
+### Subscribe to broadcasts from a barcode scanner
+
+```typescript
 import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
 
-const unsub = await Broadcast.subscribe(
+const unsubscribe = await Broadcast.subscribe(
   ["com.symbol.datawedge.api.RESULT_ACTION"],
   (result) => {
-    console.log(result.action);
-    console.log(result.extras);
+    console.log("Action:", result.action);
+    console.log("Extras:", result.extras);
   },
 );
 
 // Later, unsubscribe
-await unsub();
+await unsubscribe();
 ```
 
-#### `Broadcast.unsubscribeAll()`
+### Send a broadcast to trigger a scan
 
-Unregisters all active broadcast receivers at once.
+```typescript
+import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
 
-```ts
-await Broadcast.unsubscribeAll();
-```
-
-#### `Broadcast.send(options)`
-
-Sends a broadcast intent.
-
-| Parameter        | Type                          | Description                  |
-|------------------|-------------------------------|------------------------------|
-| `options.action` | `string`                      | Intent action string         |
-| `options.extras` | `Record<string, unknown>` (optional) | Extra data to include in the intent |
-
-```ts
 await Broadcast.send({
   action: "com.symbol.datawedge.api.ACTION",
   extras: {
@@ -77,36 +119,3 @@ await Broadcast.send({
   },
 });
 ```
-
-#### `Broadcast.getLaunchIntent()`
-
-Retrieves the intent that launched the app.
-
-**Returns:** `Promise<IBroadcastResult>`
-
-```ts
-const intent = await Broadcast.getLaunchIntent();
-console.log(intent.action);
-console.log(intent.extras);
-```
-
-### `IBroadcastResult`
-
-Result object returned by `subscribe` callbacks and `getLaunchIntent`.
-
-| Property  | Type                          | Description        |
-|-----------|-------------------------------|--------------------|
-| `action`  | `string` (optional)           | Broadcast action   |
-| `extras`  | `Record<string, unknown>` (optional) | Extra data |
-
-### `IBroadcastPlugin`
-
-Low-level plugin interface registered via `registerPlugin`. Use the `Broadcast` class instead for a simpler API.
-
-| Method             | Signature                                                                                  |
-|--------------------|--------------------------------------------------------------------------------------------|
-| `subscribe`        | `(options: { filters: string[] }, callback: (result: IBroadcastResult) => void) => Promise<{ id: string }>` |
-| `unsubscribe`      | `(options: { id: string }) => Promise<void>`                                               |
-| `unsubscribeAll`   | `() => Promise<void>`                                                                      |
-| `send`             | `(options: { action: string; extras?: Record<string, unknown> }) => Promise<void>`         |
-| `getLaunchIntent`  | `() => Promise<IBroadcastResult>`                                                          |

@@ -1,358 +1,352 @@
-# Core Providers
+# Core - Providers
 
-## SdThemeProvider
+## App Providers
 
-Manages the active visual theme. Persists selection to localStorage.
+### SdAngularConfigProvider
+
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Holds the application-wide configuration. Configured by `provideSdAngular()`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientName` | `string` | Application name, used as localStorage key prefix |
+| `defaultTheme` | `TSdTheme` | Default theme (`"compact"`, `"mobile"`, `"kiosk"`) |
+| `defaultDark` | `boolean` | Default dark mode state |
+
+---
+
+### SdAppStructureProvider
+
+**Type:** `@Injectable({ providedIn: "root" })` (abstract)
+
+Manages the application's menu and permission hierarchy. Subclass this to provide your app's structure.
+
+| Abstract Member | Type | Description |
+|-----------------|------|-------------|
+| `items` | `TSdAppStructureItem<TModule>[]` | Full app structure tree |
+| `usableModules` | `Signal<TModule[] \| undefined>` | Currently available modules |
+| `permRecord` | `Signal<Record<string, boolean> \| undefined>` | Permission key-value record |
+
+| Computed Property | Type | Description |
+|-------------------|------|-------------|
+| `usableMenus` | `Signal<ISdMenu<TModule>[]>` | Filtered menu tree |
+| `usableFlatMenus` | `Signal<ISdFlatMenu<TModule>[]>` | Flattened filtered menu list |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getPermissionsByStructure` | `(items, codeChain?) => ISdPermission[]` | Get permissions for structure items |
+| `getTitleByFullCode` | `(fullCode: string) => string` | Get display title by full code |
+| `getItemChainByFullCode` | `(fullCode: string) => TSdAppStructureItem[]` | Get item chain by full code |
+| `getPermsByFullCode` | `(fullCodes, permKeys) => K[]` | Get active permissions for view codes |
+
+#### usePermsSignal
 
 ```typescript
-import { SdThemeProvider } from "@simplysm/sd-angular";
+function usePermsSignal<K extends string>(
+  viewCodes: string[],
+  keys: K[],
+): Signal<K[]>;
+```
 
-@Component({...})
-class MyComponent {
-  private theme = inject(SdThemeProvider);
+Injection helper that returns a signal of active permission keys for the given view codes.
 
-  switchTheme() {
-    this.theme.theme.set("mobile");
-    this.theme.dark.set(true);
-  }
+---
+
+### SdAppStructureUtils
+
+Static utility class with methods for menu/permission operations on structure items.
+
+| Static Method | Signature | Description |
+|---------------|-----------|-------------|
+| `getTitleByFullCode` | `(items, fullCode) => string` | Formatted title with parent chain |
+| `getPermsByFullCode` | `(items, fullCodes, permKeys, permRecord) => K[]` | Active permissions for codes |
+| `getItemChainByFullCode` | `(items, fullCode) => TSdAppStructureItem[]` | Item chain from root to target |
+| `getMenus` | `(items, codeChain, usableModules, permRecord) => ISdMenu[]` | Filtered menu tree |
+| `getFlatMenus` | `(items, usableModules, permRecord) => ISdFlatMenu[]` | Flattened menu list |
+| `getPermissions` | `(items, codeChain, usableModules) => ISdPermission[]` | Permission tree |
+| `getFlatPermissions` | `(items, usableModules) => ISdFlatPermission[]` | Flattened permission list |
+
+---
+
+### TSdAppStructureItem
+
+```typescript
+type TSdAppStructureItem<TModule = unknown> =
+  | ISdAppStructureGroupItem<TModule>
+  | ISdAppStructureLeafItem<TModule>;
+```
+
+**Group item fields:** `code`, `title`, `modules?`, `requiredModules?`, `icon?`, `children`
+
+**Leaf item fields:** `code`, `title`, `modules?`, `requiredModules?`, `perms?`, `subPerms?`, `icon?`, `isNotMenu?`
+
+---
+
+### ISdMenu
+
+```typescript
+interface ISdMenu<TModule = unknown> {
+  title: string;
+  codeChain: string[];
+  icon: string | undefined;
+  modules: TModule[] | undefined;
+  children: ISdMenu<TModule>[] | undefined;
 }
 ```
 
-**Signals:**
-
-| Signal  | Type                         | Description                                          |
-| ------- | ---------------------------- | ---------------------------------------------------- |
-| `theme` | `SdWritableSignal<TSdTheme>` | Active theme: `"compact"` \| `"mobile"` \| `"kiosk"` |
-| `dark`  | `SdWritableSignal<boolean>`  | Dark mode enabled                                    |
-
-**Type:** `TSdTheme = "compact" | "mobile" | "kiosk"`
-
----
-
-## SdLocalStorageProvider
-
-Type-safe wrapper around `localStorage`. Keys are prefixed with `clientName`.
+### ISdFlatMenu
 
 ```typescript
-import { SdLocalStorageProvider } from "@simplysm/sd-angular";
-
-@Injectable()
-class MyService {
-  private ls = inject(SdLocalStorageProvider<{ "user-pref": UserPref }>);
-
-  save(pref: UserPref) {
-    this.ls.set("user-pref", pref);
-  }
-
-  load(): UserPref | undefined {
-    return this.ls.get("user-pref");
-  }
+interface ISdFlatMenu<TModule = unknown> {
+  titleChain: string[];
+  codeChain: string[];
+  modulesChain: TModule[][];
 }
 ```
 
-**Methods:**
-
-| Method   | Signature                           | Description           |
-| -------- | ----------------------------------- | --------------------- |
-| `set`    | `set<K>(key: K, value: T[K]): void` | Store a value         |
-| `get`    | `get<K>(key: K): T[K] \| undefined` | Retrieve a value      |
-| `remove` | `remove(key: K): void`              | Delete a stored value |
-
-**Helper function:** `injectSdLocalStorage<T>()` — shorthand for `inject(SdLocalStorageProvider<T>)`.
-
----
-
-## SdSystemConfigProvider
-
-Persists component-level configuration. Falls back to `SdLocalStorageProvider` when no remote `fn` is set. Used internally by `SdSheetControl` and `useSdSystemConfigResource`.
+### ISdPermission
 
 ```typescript
-import { SdSystemConfigProvider } from "@simplysm/sd-angular";
-
-@Injectable({ providedIn: "root" })
-class AppInit {
-  private sdSystemConfig = inject(SdSystemConfigProvider);
-
-  setup(serviceClient: SdServiceClient) {
-    this.sdSystemConfig.fn = {
-      async set(key, data) {
-        await serviceClient.callAsync("SystemConfig.set", key, data);
-      },
-      async get(key) {
-        return await serviceClient.callAsync("SystemConfig.get", key);
-      },
-    };
-  }
+interface ISdPermission<TModule = unknown> {
+  title: string;
+  codeChain: string[];
+  modules: TModule[] | undefined;
+  perms: ("use" | "edit")[] | undefined;
+  children: ISdPermission<TModule>[] | undefined;
 }
 ```
 
-**Methods:**
-
-| Method                | Description             |
-| --------------------- | ----------------------- |
-| `setAsync(key, data)` | Persist a config value  |
-| `getAsync(key)`       | Retrieve a config value |
-
----
-
-## SdSystemLogProvider
-
-Logging service. Writes to `console` and optionally calls a custom `writeFn`.
+### ISdFlatPermission
 
 ```typescript
-import { SdSystemLogProvider } from "@simplysm/sd-angular";
-
-const log = inject(SdSystemLogProvider);
-log.writeFn = async (severity, ...data) => {
-  await sendToServer(severity, data);
-};
-await log.writeAsync("error", "Something went wrong", errorDetails);
-```
-
-**Properties / Methods:**
-
-|                                 | Description                                                  |
-| ------------------------------- | ------------------------------------------------------------ |
-| `writeFn`                       | Optional `(severity, ...data) => Promise<void> \| void` hook |
-| `writeAsync(severity, ...data)` | Log to console and call `writeFn`                            |
-
----
-
-## SdSharedDataProvider
-
-Abstract service for managing shared reference data with real-time WebSocket update support. Extend this class to define your application's shared data sets.
-
-```typescript
-import { SdSharedDataProvider, ISharedDataBase, ISharedDataInfo } from "@simplysm/sd-angular";
-
-interface ICategory extends ISharedDataBase<number> {
-  name: string;
-}
-
-@Injectable({ providedIn: "root" })
-class AppSharedDataProvider extends SdSharedDataProvider<{ category: ICategory }> {
-  override initialize() {
-    this.register("category", {
-      serviceKey: "main",
-      getDataAsync: async (changeKeys) => {
-        return await this.client.callAsync("Category.getList", changeKeys);
-      },
-      orderBy: [(item) => item.name, "asc"],
-    });
-  }
+interface ISdFlatPermission<TModule = unknown> {
+  titleChain: string[];
+  codeChain: string[];
+  modulesChain: TModule[][];
 }
 ```
 
-**Key types:**
+---
 
-- `ISharedDataBase<VK>` — base interface all shared data items must implement:
-  - `__valueKey: VK` — unique key
-  - `__searchText: string` — text used for search filtering
-  - `__isHidden: boolean` — whether the item is hidden in selects
-  - `__parentKey?: VK` — optional parent key for tree structures
+### SdSystemConfigProvider
 
-- `ISharedDataInfo<T>` — configuration for one shared data set:
-  - `serviceKey: string` — WebSocket client key
-  - `getDataAsync(changeKeys?)` — fetch function
-  - `orderBy: [(item: T) => any, "asc" | "desc"][]` — ordered list of sort tuples (applied in reverse order)
-  - `filter?` — optional filter object for event matching
+**Type:** `@Injectable({ providedIn: "root" })`
 
-- `ISharedSignal<T>` — extends `Signal<T[]>` with `$get(key)` method
+Typed system configuration storage. Can use either localStorage (default) or a custom remote backend.
 
-**Methods:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `fn` | `{ set, get }` | Optional custom storage backend |
 
-| Method                         | Description                            |
-| ------------------------------ | -------------------------------------- |
-| `register(name, getter)`       | Register a shared data set             |
-| `getSignal(name)`              | Get a reactive signal for the data set |
-| `emitAsync(name, changeKeys?)` | Emit a change event to all subscribers |
-| `wait()`                       | Wait until all pending loads complete  |
-
-**Related event:** `SdSharedDataChangeEvent` — WebSocket event class used internally.
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `setAsync` | `<K>(key: K, data: T[K]) => Promise<void>` | Store a config value |
+| `getAsync` | `(key: string) => Promise<any>` | Retrieve a config value |
 
 ---
 
-## SdServiceClientFactoryProvider
+### SdSystemLogProvider
 
-Manages named `SdServiceClient` WebSocket connections. Handles HMR reload events and shows progress toasts for large requests/responses.
+**Type:** `@Injectable({ providedIn: "root" })`
+
+System log writer. Logs to console and optionally to a custom backend.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `writeFn` | `(severity, ...data) => Promise<void> \| void` | Optional remote log handler |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `writeAsync` | `(severity: "error" \| "warn" \| "log", ...data: any[]) => Promise<void>` | Write a log entry |
+
+---
+
+## Integration Providers
+
+### SdFileDialogProvider
+
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Opens a native file selection dialog.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `showAsync` | `(multiple?: false, accept?: string) => Promise<File \| undefined>` | Single file selection |
+| `showAsync` | `(multiple: true, accept?: string) => Promise<File[] \| undefined>` | Multiple file selection |
+
+---
+
+### SdNavigateWindowProvider
+
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Manages opening routes in new windows or tabs.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `isWindow` | `boolean` (readonly) | Whether the current page is running as a popup window |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `open` | `(navigate: string, params?: Record<string, string>, features?: string) => void` | Open route in new window/tab |
+
+---
+
+### SdPrintProvider
+
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Renders a component for printing or PDF export.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `printAsync` | `(template: ISdPrintInput<T>, options?) => Promise<void>` | Print a component via `window.print()` |
+| `getPdfBufferAsync` | `(template: ISdPrintInput<T>, options?) => Promise<Buffer>` | Generate PDF buffer from a component |
+
+#### ISdPrint
 
 ```typescript
-import { SdServiceClientFactoryProvider } from "@simplysm/sd-angular";
-
-@Injectable()
-class AppInit {
-  private factory = inject(SdServiceClientFactoryProvider);
-
-  async connect() {
-    await this.factory.connectAsync("main", { port: "8080" });
-  }
-
-  getClient() {
-    return this.factory.get("main");
-  }
+interface ISdPrint {
+  initialized: Signal<boolean>;
 }
 ```
 
-**Methods:**
-
-| Method         | Signature                          | Description                 |
-| -------------- | ---------------------------------- | --------------------------- |
-| `connectAsync` | `(key, options?) => Promise<void>` | Open a WebSocket connection |
-| `closeAsync`   | `(key) => Promise<void>`           | Close a connection          |
-| `get`          | `(key) => SdServiceClient`         | Retrieve a connected client |
-
----
-
-## SdAppStructureProvider
-
-Abstract service that defines the application menu tree and permission structure.
+#### ISdPrintInput
 
 ```typescript
-import { SdAppStructureProvider, TSdAppStructureItem } from "@simplysm/sd-angular";
-
-@Injectable({ providedIn: "root" })
-class AppStructureProvider extends SdAppStructureProvider<"sales" | "inventory"> {
-  override items: TSdAppStructureItem<"sales" | "inventory">[] = [
-    {
-      code: "dashboard",
-      title: "Dashboard",
-      perms: ["use"],
-    },
-    {
-      code: "sales",
-      title: "Sales",
-      modules: ["sales"],
-      children: [{ code: "orders", title: "Orders", perms: ["use", "edit"] }],
-    },
-  ];
-
-  override usableModules = $computed(() => this.authService.modules());
-  override permRecord = $computed(() => this.authService.permRecord());
+interface ISdPrintInput<T, X extends keyof any = ""> {
+  type: Type<T>;
+  inputs: Omit<TDirectiveInputSignals<T>, X>;
 }
 ```
 
-**Computed signals (auto-derived):**
+---
 
-| Signal            | Description                                         |
-| ----------------- | --------------------------------------------------- |
-| `usableMenus`     | Filtered menu tree based on modules and permissions |
-| `usableFlatMenus` | Flat array of all visible leaf menus                |
+### SdServiceClientFactoryProvider
 
-**Methods:**
+**Type:** `@Injectable({ providedIn: "root" })`
 
-| Method                                         | Description                               |
-| ---------------------------------------------- | ----------------------------------------- |
-| `getTitleByFullCode(fullCode)`                 | Get display title for a dotted full code  |
-| `getItemChainByFullCode(fullCode)`             | Get the item chain from root to that code |
-| `getPermsByFullCode(fullCodes, permKeys)`      | Get allowed permission keys               |
-| `getPermissionsByStructure(items, codeChain?)` | Get permission definitions                |
+Factory for creating and managing WebSocket service client connections.
 
-**Helper function:** `usePermsSignal(viewCodes, keys)` — inject a computed signal of allowed permission keys.
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `connectAsync` | `(key: string, options?: Partial<ISdServiceConnectionConfig>) => Promise<void>` | Connect to a service server |
+| `closeAsync` | `(key: string) => Promise<void>` | Close a connection |
+| `get` | `(key: string) => SdServiceClient` | Get an active client by key |
 
-**Key types:**
-
-- `TSdAppStructureItem<TModule>` — union of group and leaf items
-- `ISdMenu<TModule>` — resolved menu object with `title`, `codeChain`, `icon`, `modules`, `children`
-- `ISdFlatMenu<TModule>` — flat menu: `{ titleChain, codeChain, modulesChain }`
-- `ISdPermission<TModule>` — permission definition
-- `ISdFlatPermission<TModule>` — flat permission entry: `{ titleChain, codeChain, modulesChain }`
-
-**`SdAppStructureUtils` (static utility class):**
-
-All methods on `SdAppStructureProvider` are implemented as static methods on this exported utility class. Useful for calling outside the DI context.
-
-| Static Method                                                | Description                |
-| ------------------------------------------------------------ | -------------------------- |
-| `getTitleByFullCode(items, fullCode)`                        | Get display title          |
-| `getItemChainByFullCode(items, fullCode)`                    | Get item chain             |
-| `getPermsByFullCode(items, fullCodes, permKeys, permRecord)` | Get allowed perm keys      |
-| `getMenus(items, codeChain, usableModules, permRecord)`      | Get filtered menu tree     |
-| `getFlatMenus(items, usableModules, permRecord)`             | Get flat menu list         |
-| `getPermissions(items, codeChain, usableModules)`            | Get permission definitions |
-| `getFlatPermissions(items, usableModules)`                   | Get flat permission list   |
+Automatically handles:
+- CSS hot reload (swaps stylesheet links)
+- HMR (hot module replacement) on file changes
+- Request/response progress toast notifications
 
 ---
 
-## SdFileDialogProvider
+## Storage Providers
 
-Opens a native file picker dialog programmatically.
+### SdLocalStorageProvider
 
-```typescript
-import { SdFileDialogProvider } from "@simplysm/sd-angular";
+**Type:** `@Injectable({ providedIn: "root" })`
 
-const fileDialog = inject(SdFileDialogProvider);
-
-// Single file
-const file = await fileDialog.showAsync(false, ".xlsx");
-
-// Multiple files
-const files = await fileDialog.showAsync(true, "image/*");
-```
-
-**Methods:**
-
-| Overload                               | Returns                        |
-| -------------------------------------- | ------------------------------ |
-| `showAsync(multiple?: false, accept?)` | `Promise<File \| undefined>`   |
-| `showAsync(multiple: true, accept?)`   | `Promise<File[] \| undefined>` |
-
----
-
-## SdNavigateWindowProvider
-
-Manages navigation to routes, either in the current window, a new tab, or a popup window.
+Typed wrapper around `localStorage`. Keys are prefixed with the `clientName`.
 
 ```typescript
-import { SdNavigateWindowProvider } from "@simplysm/sd-angular";
-
-const navWindow = inject(SdNavigateWindowProvider);
-navWindow.open("/reports/monthly", { id: "42" }, "width=800,height=600");
-```
-
-**Properties / Methods:**
-
-|                                      | Description                                                  |
-| ------------------------------------ | ------------------------------------------------------------ |
-| `isWindow`                           | `boolean` — whether the current window was opened as a popup |
-| `open(navigate, params?, features?)` | Open a route in a new window or tab                          |
-
----
-
-## SdPrintProvider
-
-Renders an Angular component and prints it or exports it as a PDF buffer.
-
-```typescript
-import { SdPrintProvider, ISdPrint } from "@simplysm/sd-angular";
-
-@Component({
-  template: `
-    <div class="page">...</div>
-  `,
-})
-class InvoiceTemplate implements ISdPrint {
-  initialized = $signal(true);
-  invoiceId = input.required<number>();
+class SdLocalStorageProvider<T> {
+  set<K extends keyof T & string>(key: K, value: T[K]): void;
+  get<K extends keyof T & string>(key: K): T[K] | undefined;
+  remove(key: keyof T & string): void;
 }
-
-const printer = inject(SdPrintProvider);
-await printer.printAsync({ type: InvoiceTemplate, inputs: { invoiceId: 42 } });
-
-// Export as PDF
-const buffer = await printer.getPdfBufferAsync(
-  { type: InvoiceTemplate, inputs: { invoiceId: 42 } },
-  { orientation: "landscape" },
-);
 ```
 
-**Methods:**
+#### injectSdLocalStorage
 
-| Method                                  | Description                            |
-| --------------------------------------- | -------------------------------------- |
-| `printAsync(template, options?)`        | Print the component (`window.print()`) |
-| `getPdfBufferAsync(template, options?)` | Render and export as PDF `Buffer`      |
+```typescript
+function injectSdLocalStorage<T>(): SdLocalStorageProvider<T>;
+```
 
-**Interfaces:**
+Typed injection helper for `SdLocalStorageProvider`.
 
-- `ISdPrint` — component must implement `initialized: Signal<boolean>`
-- `ISdPrintInput<T, X extends keyof any = "">` — `{ type: Type<T>; inputs: Omit<TDirectiveInputSignals<T>, X> }`
+---
+
+### SdSharedDataProvider
+
+**Type:** `@Injectable({ providedIn: "root" })` (abstract)
+
+Real-time shared data manager that syncs data across clients via service events. Subclass this and call `register()` in `initialize()`.
+
+| Abstract Method | Signature | Description |
+|-----------------|-----------|-------------|
+| `initialize` | `() => void` | Register shared data sources |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `register` | `(name, getter: ISharedDataInfo<T>) => void` | Register a data source |
+| `getSignal` | `(name) => ISharedSignal<T>` | Get a reactive signal for data |
+| `emitAsync` | `(name, changeKeys?) => Promise<void>` | Notify clients of data changes |
+| `wait` | `() => Promise<void>` | Wait until all loading completes |
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `loadingCount` | `number` | Number of active loading operations |
+
+#### ISharedSignal
+
+```typescript
+interface ISharedSignal<T extends ISharedDataBase<string | number>> extends Signal<T[]> {
+  $get(key: T["__valueKey"] | undefined): T | undefined;
+}
+```
+
+#### ISharedDataInfo
+
+```typescript
+interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
+  serviceKey: string;
+  getDataAsync: (changeKeys?: T["__valueKey"][]) => Promise<T[]>;
+  orderBy: [(data: T) => any, "asc" | "desc"][];
+  filter?: any;
+}
+```
+
+#### ISharedDataBase
+
+```typescript
+interface ISharedDataBase<VK extends string | number> {
+  __valueKey: VK;
+  __searchText: string;
+  __isHidden: boolean;
+  __parentKey?: VK;
+}
+```
+
+#### SdSharedDataChangeEvent
+
+```typescript
+class SdSharedDataChangeEvent extends SdServiceEventListenerBase<
+  { name: string; filter: any },
+  (string | number)[] | undefined
+> {}
+```
+
+---
+
+## Theme Provider
+
+### SdThemeProvider
+
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Manages the active visual theme and dark mode. Automatically applies CSS class to `document.body` and persists to localStorage.
+
+| Signal | Type | Description |
+|--------|------|-------------|
+| `theme` | `SdWritableSignal<TSdTheme>` | Current theme |
+| `dark` | `SdWritableSignal<boolean>` | Dark mode state |
+
+CSS classes applied: `sd-theme-compact`, `sd-theme-mobile`, `sd-theme-kiosk`, `sd-theme-dark`
+
+#### TSdTheme
+
+```typescript
+type TSdTheme = "compact" | "mobile" | "kiosk";
+```

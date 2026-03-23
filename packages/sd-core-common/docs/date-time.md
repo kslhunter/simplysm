@@ -19,39 +19,39 @@ new DateOnly(date: Date)                      // from native Date
 
 ### Static Methods
 
-| Method | Description |
-|---|---|
-| `DateOnly.parse(str)` | Parse from string. Supports ISO 8601 dates and `yyyyMMdd` format. |
-| `DateOnly.getDateByYearWeekSeq(arg, weekStartDay?, minDaysInFirstWeek?)` | Get the start date of a given year/month + week-sequence number. |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `parse` | `static parse(str: string): DateOnly` | Parse from string. Supports ISO 8601 dates and `yyyyMMdd` format. Throws `ArgumentError` on failure. |
+| `getDateByYearWeekSeq` | `static getDateByYearWeekSeq(arg: { year: number; month?: number; weekSeq: number }, weekStartDay?: number, minDaysInFirstWeek?: number): DateOnly` | Get the start date of a given year/month + week-sequence number. |
 
 ### Properties
 
-| Property | Type | Description |
-|---|---|---|
-| `date` | `Date` | Underlying native Date (readonly). |
-| `year` | `number` | Year (get/set). |
-| `month` | `number` | Month, 1-based (get/set). |
-| `day` | `number` | Day of month (get/set). |
-| `tick` | `number` | Millisecond timestamp (get/set). |
-| `week` | `number` | Day of week, 0=Sunday .. 6=Saturday (readonly). |
-| `isValidDate` | `boolean` | Whether the internal Date is valid (readonly). |
+| Property | Type | Access | Description |
+|----------|------|--------|-------------|
+| `date` | `Date` | readonly | Underlying native Date. |
+| `year` | `number` | get/set | Year. |
+| `month` | `number` | get/set | Month, 1-based. |
+| `day` | `number` | get/set | Day of month. |
+| `tick` | `number` | get/set | Millisecond timestamp. Setting snaps to start of day. |
+| `week` | `number` | get | Day of week, 0=Sunday .. 6=Saturday. |
+| `isValidDate` | `boolean` | get | Whether the internal Date is valid (not NaN). |
 
 ### Instance Methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `setYear(year)` | `DateOnly` | New instance with given year. |
-| `setMonth(month)` | `DateOnly` | New instance with given month. Clamps day to last day of target month. |
-| `setDay(day)` | `DateOnly` | New instance with given day. |
-| `addYears(years)` | `DateOnly` | Add years. |
-| `addMonths(months)` | `DateOnly` | Add months. |
-| `addDays(days)` | `DateOnly` | Add days. |
-| `toFormatString(format)` | `string` | Format using C#-style tokens (see [Format Tokens](#format-tokens)). |
-| `toString()` | `string` | Returns `yyyy-MM-dd`. |
-| `getBaseYearMonthSeqForWeekSeq(weekStartDay?, minDaysInFirstWeek?)` | `{ year, monthSeq }` | Base year and month for week-sequence calculation. |
-| `getWeekSeqStartDate(weekStartDay?, minDaysInFirstWeek?)` | `DateOnly` | Start date of the week this date belongs to. |
-| `getWeekSeqOfYear(weekStartDay?, minDaysInFirstWeek?)` | `{ year, weekSeq }` | Year and week-of-year number (1-based). |
-| `getWeekSeqOfMonth(weekStartDay?, minDaysInFirstWeek?)` | `{ year, monthSeq, weekSeq }` | Year, month, and week-of-month number (1-based). |
+| Method | Signature | Returns | Description |
+|--------|-----------|---------|-------------|
+| `setYear` | `setYear(year: number)` | `DateOnly` | New instance with given year. |
+| `setMonth` | `setMonth(month: number)` | `DateOnly` | New instance with given month. Clamps day to last day of target month. Handles overflow/underflow (e.g., month 13 becomes January of next year). |
+| `setDay` | `setDay(day: number)` | `DateOnly` | New instance with given day. |
+| `addYears` | `addYears(years: number)` | `DateOnly` | Add years. |
+| `addMonths` | `addMonths(months: number)` | `DateOnly` | Add months. |
+| `addDays` | `addDays(days: number)` | `DateOnly` | Add days. |
+| `toFormatString` | `toFormatString(format: string)` | `string` | Format using C#-style tokens (see [Format Tokens](#format-tokens)). |
+| `toString` | `toString()` | `string` | Returns `yyyy-MM-dd`. |
+| `getBaseYearMonthSeqForWeekSeq` | `getBaseYearMonthSeqForWeekSeq(weekStartDay?: number, minDaysInFirstWeek?: number)` | `{ year: number; monthSeq: number }` | Base year and month for week-sequence calculation. Default: `weekStartDay=1` (Monday), `minDaysInFirstWeek=4`. |
+| `getWeekSeqStartDate` | `getWeekSeqStartDate(weekStartDay?: number, minDaysInFirstWeek?: number)` | `DateOnly` | Start date of the week this date belongs to. |
+| `getWeekSeqOfYear` | `getWeekSeqOfYear(weekStartDay?: number, minDaysInFirstWeek?: number)` | `{ year: number; weekSeq: number }` | Year and week-of-year number (1-based). |
+| `getWeekSeqOfMonth` | `getWeekSeqOfMonth(weekStartDay?: number, minDaysInFirstWeek?: number)` | `{ year: number; monthSeq: number; weekSeq: number }` | Year, month, and week-of-month number (1-based). |
 
 ---
 
@@ -63,59 +63,59 @@ Full date and time with millisecond precision.
 
 ```ts
 new DateTime()                                // current date+time
-new DateTime(year, month, day, hour?, minute?, second?, millisecond?)
+new DateTime(year: number, month: number, day: number, hour?: number, minute?: number, second?: number, millisecond?: number)
 new DateTime(tick: number)                    // millisecond tick
 new DateTime(date: Date)                      // from native Date
 ```
 
 ### Static Methods
 
-| Method | Description |
-|---|---|
-| `DateTime.parse(str)` | Parse from string. Supports ISO 8601, `yyyy-MM-dd HH:mm:ss[.fff]`, `yyyyMMddHHmmss`, and Korean AM/PM format. |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `parse` | `static parse(str: string): DateTime` | Parse from string. Supports ISO 8601, `yyyy-MM-dd HH:mm:ss[.fff]`, `yyyyMMddHHmmss`, and Korean AM/PM format (`yyyy-MM-dd [AM/PM] HH:mm:ss`). Throws `ArgumentError` on failure. |
 
 ### Properties
 
-| Property | Type | Description |
-|---|---|---|
-| `date` | `Date` | Underlying native Date (readonly). |
-| `year` | `number` | Year (get/set). |
-| `month` | `number` | Month, 1-based (get/set). |
-| `day` | `number` | Day (get/set). |
-| `hour` | `number` | Hour, 0-23 (get/set). |
-| `minute` | `number` | Minute (get/set). |
-| `second` | `number` | Second (get/set). |
-| `millisecond` | `number` | Millisecond (get/set). |
-| `tick` | `number` | Millisecond timestamp (get/set). |
-| `week` | `number` | Day of week (readonly). |
-| `timezoneOffsetMinutes` | `number` | Local timezone offset in minutes (readonly). |
+| Property | Type | Access | Description |
+|----------|------|--------|-------------|
+| `date` | `Date` | readonly | Underlying native Date. |
+| `year` | `number` | get/set | Year. |
+| `month` | `number` | get/set | Month, 1-based. |
+| `day` | `number` | get/set | Day of month. |
+| `hour` | `number` | get/set | Hour, 0-23. |
+| `minute` | `number` | get/set | Minute. |
+| `second` | `number` | get/set | Second. |
+| `millisecond` | `number` | get/set | Millisecond. |
+| `tick` | `number` | get/set | Millisecond timestamp. |
+| `week` | `number` | get | Day of week, 0=Sunday .. 6=Saturday. |
+| `timezoneOffsetMinutes` | `number` | get | Local timezone offset in minutes (positive = east of UTC). |
 
 ### Instance Methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `setYear(year)` | `DateTime` | New instance with given year. |
-| `setMonth(month)` | `DateTime` | New instance with given month. Clamps day to last day of target month. |
-| `setDay(day)` | `DateTime` | New instance with given day. |
-| `setHour(hour)` | `DateTime` | New instance with given hour. |
-| `setMinute(minute)` | `DateTime` | New instance with given minute. |
-| `setSecond(second)` | `DateTime` | New instance with given second. |
-| `setMillisecond(ms)` | `DateTime` | New instance with given millisecond. |
-| `addYears(n)` | `DateTime` | Add years. |
-| `addMonths(n)` | `DateTime` | Add months. |
-| `addDays(n)` | `DateTime` | Add days. |
-| `addHours(n)` | `DateTime` | Add hours. |
-| `addMinutes(n)` | `DateTime` | Add minutes. |
-| `addSeconds(n)` | `DateTime` | Add seconds. |
-| `addMilliseconds(n)` | `DateTime` | Add milliseconds. |
-| `toFormatString(format)` | `string` | Format using C#-style tokens (see [Format Tokens](#format-tokens)). |
-| `toString()` | `string` | Returns ISO-like `yyyy-MM-ddTHH:mm:ss.fffzzz`. |
+| Method | Signature | Returns | Description |
+|--------|-----------|---------|-------------|
+| `setYear` | `setYear(year: number)` | `DateTime` | New instance with given year. |
+| `setMonth` | `setMonth(month: number)` | `DateTime` | New instance with given month. Clamps day to last day of target month. Handles overflow/underflow. |
+| `setDay` | `setDay(day: number)` | `DateTime` | New instance with given day. |
+| `setHour` | `setHour(hour: number)` | `DateTime` | New instance with given hour. |
+| `setMinute` | `setMinute(minute: number)` | `DateTime` | New instance with given minute. |
+| `setSecond` | `setSecond(second: number)` | `DateTime` | New instance with given second. |
+| `setMillisecond` | `setMillisecond(millisecond: number)` | `DateTime` | New instance with given millisecond. |
+| `addYears` | `addYears(years: number)` | `DateTime` | Add years. |
+| `addMonths` | `addMonths(months: number)` | `DateTime` | Add months. |
+| `addDays` | `addDays(days: number)` | `DateTime` | Add days. |
+| `addHours` | `addHours(hours: number)` | `DateTime` | Add hours. |
+| `addMinutes` | `addMinutes(minutes: number)` | `DateTime` | Add minutes. |
+| `addSeconds` | `addSeconds(seconds: number)` | `DateTime` | Add seconds. |
+| `addMilliseconds` | `addMilliseconds(milliseconds: number)` | `DateTime` | Add milliseconds. |
+| `toFormatString` | `toFormatString(format: string)` | `string` | Format using C#-style tokens (see [Format Tokens](#format-tokens)). |
+| `toString` | `toString()` | `string` | Returns ISO-like `yyyy-MM-ddTHH:mm:ss.fffzzz`. |
 
 ---
 
 ## Time
 
-Time-of-day only, with millisecond precision (`HH:mm:ss.fff`). Internally stored as a tick count within a 24-hour range.
+Time-of-day only, with millisecond precision (`HH:mm:ss.fff`). Internally stored as a tick count within a 24-hour range (0 to 86,399,999 ms).
 
 ### Constructors
 
@@ -128,43 +128,72 @@ new Time(date: Date)                          // extract time from Date
 
 ### Static Methods
 
-| Method | Description |
-|---|---|
-| `Time.parse(str)` | Parse from string. Supports `HH:mm:ss[.fff]` and Korean AM/PM format. |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `parse` | `static parse(str: string): Time` | Parse from string. Supports `HH:mm:ss[.fff]`, Korean AM/PM format (`[AM/PM] HH:mm:ss[.fff]`), and falls back to `DateTime.parse` extracting the time component. Throws `ArgumentError` on failure. |
 
 ### Properties
 
-| Property | Type | Description |
-|---|---|---|
-| `hour` | `number` | Hour, 0-23 (get/set). |
-| `minute` | `number` | Minute (get/set). |
-| `second` | `number` | Second (get/set). |
-| `millisecond` | `number` | Millisecond (get/set). |
-| `tick` | `number` | Tick within 24h in milliseconds (get/set). |
+| Property | Type | Access | Description |
+|----------|------|--------|-------------|
+| `hour` | `number` | get/set | Hour, 0-23. |
+| `minute` | `number` | get/set | Minute. |
+| `second` | `number` | get/set | Second. |
+| `millisecond` | `number` | get/set | Millisecond. |
+| `tick` | `number` | get/set | Tick within 24h in milliseconds. Automatically wraps at 24-hour boundary. |
 
 ### Instance Methods
 
-| Method | Returns | Description |
-|---|---|---|
-| `setHour(hour)` | `Time` | New instance with given hour. |
-| `setMinute(minute)` | `Time` | New instance with given minute. |
-| `setSecond(second)` | `Time` | New instance with given second. |
-| `setMillisecond(ms)` | `Time` | New instance with given millisecond. |
-| `addHours(n)` | `Time` | Add hours (wraps at 24h boundary). |
-| `addMinutes(n)` | `Time` | Add minutes. |
-| `addSeconds(n)` | `Time` | Add seconds. |
-| `addMilliseconds(n)` | `Time` | Add milliseconds. |
-| `toFormatString(format)` | `string` | Format using C#-style tokens. |
-| `toString()` | `string` | Returns `HH:mm:ss.fff`. |
+| Method | Signature | Returns | Description |
+|--------|-----------|---------|-------------|
+| `setHour` | `setHour(hour: number)` | `Time` | New instance with given hour. |
+| `setMinute` | `setMinute(minute: number)` | `Time` | New instance with given minute. |
+| `setSecond` | `setSecond(second: number)` | `Time` | New instance with given second. |
+| `setMillisecond` | `setMillisecond(millisecond: number)` | `Time` | New instance with given millisecond. |
+| `addHours` | `addHours(hours: number)` | `Time` | Add hours (wraps at 24h boundary). |
+| `addMinutes` | `addMinutes(minutes: number)` | `Time` | Add minutes. |
+| `addSeconds` | `addSeconds(seconds: number)` | `Time` | Add seconds. |
+| `addMilliseconds` | `addMilliseconds(milliseconds: number)` | `Time` | Add milliseconds. |
+| `toFormatString` | `toFormatString(format: string)` | `string` | Format using C#-style tokens. |
+| `toString` | `toString()` | `string` | Returns `HH:mm:ss.fff`. |
 
 ---
+
+## DateTimeFormatUtils
+
+Static utility class used internally by `DateOnly`, `DateTime`, and `Time` for formatting. Can also be called directly.
+
+```ts
+class DateTimeFormatUtils {
+  static format(
+    format: string,
+    args: {
+      year?: number;
+      month?: number;
+      day?: number;
+      hour?: number;
+      minute?: number;
+      second?: number;
+      millisecond?: number;
+      timezoneOffsetMinutes?: number;
+    },
+  ): string;
+}
+```
+
+### Example
+
+```ts
+DateTimeFormatUtils.format("yyyy/MM/dd", { year: 2026, month: 3, day: 13 });
+// "2026/03/13"
+```
 
 ## Format Tokens
 
 Used by `toFormatString()` on all three classes. Follows [C# custom date/time format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 | Token | Output | Example |
-|---|---|---|
+|-------|--------|---------|
 | `yyyy` | 4-digit year | `2026` |
 | `yy` | 2-digit year | `26` |
 | `MM` | Zero-padded month | `03` |
@@ -187,12 +216,3 @@ Used by `toFormatString()` on all three classes. Follows [C# custom date/time fo
 | `zzz` | Timezone offset `+HH:mm` | `+09:00` |
 | `zz` | Timezone offset `+HH` | `+09` |
 | `z` | Timezone offset `+H` | `+9` |
-
-### DateTimeFormatUtils
-
-The static class `DateTimeFormatUtils` is used internally by all three types. It can also be called directly:
-
-```ts
-DateTimeFormatUtils.format("yyyy/MM/dd", { year: 2026, month: 3, day: 13 });
-// "2026/03/13"
-```

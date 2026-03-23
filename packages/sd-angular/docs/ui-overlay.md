@@ -1,235 +1,189 @@
-# UI: Overlay Components
+# UI - Overlay Components
 
-## SdBusyContainerControl
+## Busy
 
-A container that shows a loading indicator overlay when `busy` is true. Blocks keyboard events while active.
+### SdBusyContainerControl
 
-**Selector:** `sd-busy-container`
+**Type:** `@Component` | **Selector:** `sd-busy-container`
 
-```html
-<sd-busy-container [busy]="isLoading()" [type]="'spinner'" [message]="'Loading...'">
-  <div>Content</div>
-</sd-busy-container>
+Container that shows a loading indicator overlay when busy. Blocks keyboard events while active. Supports multiple animation types.
 
-<!-- With progress bar -->
-<sd-busy-container [busy]="isUploading()" [useProgress]="true" [progressPercent]="uploadProgress()">
-  <div>Content</div>
-</sd-busy-container>
-```
+#### Inputs
 
-**Inputs:**
-
-| Input             | Type                           | Description                            |
-| ----------------- | ------------------------------ | -------------------------------------- |
-| `busy`            | `boolean`                      | Show overlay                           |
-| `message`         | `string`                       | Message shown inside indicator         |
-| `type`            | `"spinner" \| "bar" \| "cube"` | Indicator style (defaults to provider) |
-| `progressPercent` | `number`                       | Progress 0–100 (shows progress bar)    |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `busy` | `boolean \| ""` | No | `false` | Show loading overlay |
+| `message` | `string` | No | -- | Loading message text |
+| `type` | `"spinner" \| "bar" \| "cube"` | No | -- | Animation type |
+| `progressPercent` | `number` | No | -- | Progress bar percentage (0-100) |
 
 ---
 
-## SdBusyProvider
+### SdBusyProvider
 
-Injectable service that manages a global loading overlay and provides a global `type` signal.
+**Type:** `@Injectable({ providedIn: "root" })`
 
-**Usage:**
+Global busy state manager. Manages a global overlay and busy count.
 
-```typescript
-import { inject } from "@angular/core";
-import { SdBusyProvider } from "@simplysm/sd-angular";
+| Signal | Type | Description |
+|--------|------|-------------|
+| `type` | `SdWritableSignal<"spinner" \| "bar" \| "cube">` | Animation type (default: `"bar"`) |
+| `globalBusyCount` | `SdWritableSignal<number>` | Active busy count (overlay shown when > 0) |
 
-class MyComponent {
-  private readonly _busy = inject(SdBusyProvider);
-
-  async load() {
-    this._busy.globalBusyCount.update((v) => v + 1);
-    try {
-      await fetchData();
-    } finally {
-      this._busy.globalBusyCount.update((v) => v - 1);
-    }
-  }
-}
-```
-
-**Signals:**
-
-| Signal            | Type                                           | Description            |
-| ----------------- | ---------------------------------------------- | ---------------------- |
-| `type`            | `WritableSignal<"spinner" \| "bar" \| "cube">` | Global indicator type  |
-| `globalBusyCount` | `WritableSignal<number>`                       | Active loading counter |
+| Property | Type | Description |
+|----------|------|-------------|
+| `containerRef` | `ComponentRef<SdBusyContainerControl>` | Lazy-created global container |
 
 ---
 
-## SdDropdownControl
+## Dropdown
 
-Dropdown trigger that shows/hides `SdDropdownPopupControl` on click or keyboard navigation. Positions the popup relative to the trigger element.
+### SdDropdownControl
 
-**Selector:** `sd-dropdown`
+**Type:** `@Component` | **Selector:** `sd-dropdown`
 
-```html
-<sd-dropdown>
-  <sd-button>Options</sd-button>
-  <sd-dropdown-popup>
-    <sd-list>
-      <sd-list-item (click)="onEdit()">Edit</sd-list-item>
-      <sd-list-item (click)="onDelete()">Delete</sd-list-item>
-    </sd-list>
-  </sd-dropdown-popup>
-</sd-dropdown>
-```
+Dropdown toggle container. Contains a trigger element and a popup content area.
 
-**Inputs:**
+#### Inputs
 
-| Input          | Type      | Description             |
-| -------------- | --------- | ----------------------- |
-| `open` (model) | `boolean` | Dropdown open state     |
-| `disabled`     | `boolean` | Prevent opening         |
-| `contentClass` | `string`  | Class for popup content |
-| `contentStyle` | `string`  | Style for popup content |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `disabled` | `boolean \| ""` | No | `false` | Disable dropdown toggle |
+| `contentClass` | `string` | No | -- | CSS class for popup |
+| `contentStyle` | `string` | No | -- | CSS style for popup |
 
-**Keyboard behavior:** Arrow Down opens, Arrow Up / Escape closes.
+#### Models
+
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `open` | `boolean` | `false` | Dropdown open state |
 
 ---
 
-## SdDropdownPopupControl
+### SdDropdownPopupControl
 
-The popup panel inside `SdDropdownControl`. Renders as a fixed overlay positioned by the parent.
+**Type:** `@Component` | **Selector:** `sd-dropdown-popup`
 
-**Selector:** `sd-dropdown-popup`
+The popup content area for a dropdown. Positioned relative to the trigger element.
 
-No inputs. Must be a direct child of `SdDropdownControl`.
-
----
-
-## ISdModalConfig
-
-Persisted size and position state for a modal. Stored via `SdSystemConfigProvider` when a `key` is set on the modal.
-
-```typescript
-interface ISdModalConfig {
-  position: string;
-  left: string;
-  top: string;
-  right: string;
-  bottom: string;
-  width: string;
-  height: string;
-}
-```
+No inputs.
 
 ---
 
-## SdModalControl
+## Modal
 
-The modal dialog shell. Manages open/close animation, resize, move, header, and close button. Created internally by `SdModalProvider`.
+### SdModalControl
 
-**Selector:** `sd-modal`
+**Type:** `@Component` | **Selector:** `sd-modal`
 
-**Inputs:**
+Modal dialog with backdrop, title bar, resize/move handles, and configurable close behavior.
 
-| Input                 | Type      | Description                          |
-| --------------------- | --------- | ------------------------------------ |
-| `title`               | `string`  | Modal header title                   |
-| `key`                 | `string`  | Persistence key for size/position    |
-| `hideHeader`          | `boolean` | Hide the header                      |
-| `hideCloseButton`     | `boolean` | Hide the X button                    |
-| `useCloseByBackdrop`  | `boolean` | Click backdrop to close              |
-| `useCloseByEscapeKey` | `boolean` | Press Escape to close                |
-| `float`               | `boolean` | Floating (not centered) mode         |
-| `fill`                | `boolean` | Full-width mode                      |
-| `resizable`           | `boolean` | Show resize handles (default `true`) |
-| `movable`             | `boolean` | Drag to move (default `true`)        |
-| `minWidthPx`          | `number`  | Minimum width                        |
-| `minHeightPx`         | `number`  | Minimum height                       |
-| `headerStyle`         | `string`  | Style for header element             |
+#### Inputs
 
----
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `title` | `string` | Yes | -- | Modal title |
+| `key` | `string` | No | -- | Persistence key for position/size |
+| `hideHeader` | `boolean \| ""` | No | `false` | Hide the title bar |
+| `hideCloseButton` | `boolean \| ""` | No | `false` | Hide the X close button |
+| `useCloseByBackdrop` | `boolean \| ""` | No | `false` | Close on backdrop click |
+| `useCloseByEscapeKey` | `boolean \| ""` | No | `false` | Close on Escape key |
+| `resizable` | `boolean \| ""` | No | `false` | Enable resize handles |
+| `movable` | `boolean \| ""` | No | `true` | Enable drag-to-move |
+| `float` | `boolean \| ""` | No | `false` | Float mode (no backdrop) |
+| `fill` | `boolean \| ""` | No | `false` | Fill entire viewport |
+| `actionTplRef` | `TemplateRef<any>` | No | -- | Template for header action buttons |
+| `heightPx` | `number` | No | -- | Initial height in pixels |
+| `widthPx` | `number` | No | -- | Initial width in pixels |
+| `minHeightPx` | `number` | No | -- | Minimum height |
+| `minWidthPx` | `number` | No | -- | Minimum width |
+| `position` | `"bottom-right" \| "top-right"` | No | -- | Position preset |
+| `headerStyle` | `string` | No | -- | CSS style for header |
 
-## SdModalProvider
+#### Models
 
-Injectable service for opening modals imperatively.
-
-**Usage:**
-
-```typescript
-import { inject } from "@angular/core";
-import { SdModalProvider } from "@simplysm/sd-angular";
-
-class MyComponent {
-  private readonly _modal = inject(SdModalProvider);
-
-  async openProductPicker() {
-    const result = await this._modal.showAsync({
-      title: "Select Product",
-      type: ProductSelectModal,
-      inputs: { filter: this.filter },
-    });
-    if (result != null) {
-      this.selectedProduct.set(result);
-    }
-  }
-}
-```
-
-**`showAsync` options:**
-
-| Option                   | Type      | Description                       |
-| ------------------------ | --------- | --------------------------------- |
-| `key`                    | `string`  | Persistence key for size/position |
-| `hideHeader`             | `boolean` | —                                 |
-| `hideCloseButton`        | `boolean` | —                                 |
-| `useCloseByBackdrop`     | `boolean` | —                                 |
-| `useCloseByEscapeKey`    | `boolean` | —                                 |
-| `float`                  | `boolean` | —                                 |
-| `fill`                   | `boolean` | —                                 |
-| `resizable`              | `boolean` | default `true`                    |
-| `movable`                | `boolean` | default `true`                    |
-| `minWidthPx`             | `number`  | —                                 |
-| `minHeightPx`            | `number`  | —                                 |
-| `headerStyle`            | `string`  | —                                 |
-| `noFirstControlFocusing` | `boolean` | Skip auto-focus of first control  |
-
-**Signals:** `modalCount: Signal<number>` — count of open modals.
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `open` | `boolean` | `false` | Modal open state |
 
 ---
 
-## SdActivatedModalProvider
+### SdModalProvider
 
-An injectable provided per-modal-instance. Allows modal content components to access their modal wrapper.
+**Type:** `@Injectable({ providedIn: "root" })`
 
-```typescript
-import { inject } from "@angular/core";
-import { SdActivatedModalProvider } from "@simplysm/sd-angular";
+Programmatic modal management. Creates modals dynamically from component types.
 
-class MyModalContent {
-  private readonly _activatedModal = inject(SdActivatedModalProvider);
-}
-```
+| Signal | Type | Description |
+|--------|------|-------------|
+| `modalCount` | `SdWritableSignal<number>` | Number of currently open modals |
 
-**Signals:** `modalComponent: Signal<SdModalControl | undefined>`, `contentComponent: Signal<T | undefined>`
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `showAsync` | `<T extends ISdModal<any>>(modal: ISdModalInfo<T>, options?) => Promise<O \| undefined>` | Show a modal and wait for result |
 
-**Property:** `canDeactivefn: () => boolean` — guard called before close.
+**Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `key` | `string` | -- | Persistence key |
+| `hideHeader` | `boolean` | `false` | Hide title bar |
+| `hideCloseButton` | `boolean` | `false` | Hide close button |
+| `useCloseByBackdrop` | `boolean` | `false` | Close on backdrop click |
+| `useCloseByEscapeKey` | `boolean` | `false` | Close on Escape |
+| `float` | `boolean` | `false` | Float mode |
+| `minHeightPx` | `number` | -- | Minimum height |
+| `minWidthPx` | `number` | -- | Minimum width |
+| `resizable` | `boolean` | `true` | Enable resize |
+| `movable` | `boolean` | `true` | Enable drag-to-move |
+| `headerStyle` | `string` | -- | Header CSS style |
+| `fill` | `boolean` | `false` | Fill viewport |
+| `noFirstControlFocusing` | `boolean` | `false` | Skip auto-focus first control |
 
 ---
 
-## ISdModal
+### SdModalInstance
 
-Interface that modal content components must implement.
+Class that wraps a programmatically created modal component.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `close` | `EventEmitter<any>` | Emitted when the modal closes |
+
+---
+
+### ISdModal
 
 ```typescript
 interface ISdModal<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
-  actionTplRef?: TemplateRef<any>; // optional header action buttons
+  actionTplRef?: TemplateRef<any>;
 }
 ```
 
+Interface that modal content components must implement.
+
 ---
 
-## ISdModalInfo
+### SdActivatedModalProvider
 
-Input to `SdModalProvider.showAsync` and `SdModalInstance`.
+**Type:** `@Injectable()`
+
+Injected into modal content components. Provides access to the modal wrapper and deactivation control.
+
+| Signal | Type | Description |
+|--------|------|-------------|
+| `modalComponent` | `SdWritableSignal<SdModalControl>` | The modal control reference |
+| `contentComponent` | `SdWritableSignal<T>` | The content component reference |
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `canDeactivefn` | `() => boolean` | `() => true` | Deactivation guard |
+
+---
+
+### ISdModalInfo
 
 ```typescript
 interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
@@ -239,100 +193,79 @@ interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
 }
 ```
 
----
-
-## SdModalInstance
-
-Class representing an open modal instance. Created by `SdModalProvider.showAsync`.
-
-**Event:** `close: EventEmitter<any>` — emitted when the modal closes.
+Configuration object for `SdModalProvider.showAsync()`.
 
 ---
 
-## SdToastContainerControl
+## Toast
 
-The container element appended to `document.body` that holds all toasts. Created internally by `SdToastProvider`.
+### SdToastContainerControl
 
-**Selector:** `sd-toast-container`
+**Type:** `@Component` | **Selector:** `sd-toast-container`
 
-**Inputs:** `overlap: boolean` — when true, remove all existing toasts before showing a new one.
+Container for toast notifications. Positioned fixed at the top of the viewport.
 
----
+#### Inputs
 
-## SdToastControl
-
-An individual toast notification element.
-
-**Selector:** `sd-toast`
-
-**Inputs:**
-
-| Input         | Type                                                                                                | Description       |
-| ------------- | --------------------------------------------------------------------------------------------------- | ----------------- |
-| `open`        | `boolean`                                                                                           | Visible state     |
-| `theme`       | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | Color theme       |
-| `message`     | `string`                                                                                            | Text message      |
-| `useProgress` | `boolean`                                                                                           | Show progress bar |
-| `progress`    | `number`                                                                                            | Progress 0–100    |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `overlap` | `boolean \| ""` | No | `false` | Replace existing toasts instead of stacking |
 
 ---
 
-## SdToastProvider
+### SdToastControl
 
-Injectable service for showing toast notifications.
+**Type:** `@Component` | **Selector:** `sd-toast`
 
-**Usage:**
+Individual toast notification with theme, progress bar, and auto-close.
 
-```typescript
-import { inject } from "@angular/core";
-import { SdToastProvider } from "@simplysm/sd-angular";
+#### Inputs
 
-class MyComponent {
-  private readonly _toast = inject(SdToastProvider);
-
-  async save() {
-    await this._toast.try(async () => {
-      await api.save(this.data);
-      this._toast.success("Saved successfully");
-    });
-  }
-}
-```
-
-**Methods:**
-
-| Method                        | Returns                   | Description                                   |
-| ----------------------------- | ------------------------- | --------------------------------------------- |
-| `info(message, progress?)`    | bindings object           | Show info toast (auto-closes after 3s)        |
-| `success(message, progress?)` | bindings object           | Show success toast                            |
-| `warning(message, progress?)` | bindings object           | Show warning toast                            |
-| `danger(message, progress?)`  | bindings object           | Show danger toast                             |
-| `try(fn, messageFn?)`         | `Promise<R \| undefined>` | Run fn, catch errors and show danger toast    |
-| `notify(toast)`               | bindings object           | Show a custom toast component (5s auto-close) |
-
-**Progress toasts:** Pass `useProgress = true`. The returned bindings object has a `progress` signal you can set (0–100); the toast auto-closes 1s after progress reaches 100.
-
-```typescript
-const toast = this._toast.info("Uploading...", true);
-// ... update progress:
-toast.progress.set(50);
-toast.progress.set(100); // closes after 1s
-```
-
-**Signals:**
-
-| Signal        | Type                       | Description                                 |
-| ------------- | -------------------------- | ------------------------------------------- |
-| `alertThemes` | `WritableSignal<string[]>` | Themes shown as `alert()` instead of toast  |
-| `overlap`     | `WritableSignal<boolean>`  | Remove previous toasts when showing new one |
-
-**Hook:** `beforeShowFn?: (theme) => void` — called before each toast display.
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `open` | `boolean \| ""` | No | `false` | Toast visibility |
+| `useProgress` | `boolean \| ""` | No | `false` | Show progress bar |
+| `theme` | `"info" \| "success" \| "warning" \| "danger"` | No | -- | Color theme |
+| `progress` | `number` | No | `0` | Progress percentage (0-100) |
+| `message` | `string` | No | -- | Toast message text |
 
 ---
 
-## ISdToast
+### SdToastProvider
 
-Interface that custom toast content components must implement to work with `SdToastProvider.notify`.
+**Type:** `@Injectable({ providedIn: "root" })`
+
+Manages toast notifications programmatically. Provides convenience methods for common themes.
+
+| Signal | Type | Description |
+|--------|------|-------------|
+| `alertThemes` | `SdWritableSignal<("info" \| "success" \| "warning" \| "danger")[]>` | Themes that show `alert()` instead of toast |
+| `overlap` | `SdWritableSignal<boolean>` | Replace mode |
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `beforeShowFn` | `(theme) => void` | Hook called before showing |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `info` | `(message: string, useProgress?: boolean) => bindings` | Show info toast |
+| `success` | `(message: string, useProgress?: boolean) => bindings` | Show success toast |
+| `warning` | `(message: string, useProgress?: boolean) => bindings` | Show warning toast |
+| `danger` | `(message: string, useProgress?: boolean) => bindings` | Show danger toast |
+| `notify` | `(toast: ISdToastInput<T>) => bindings` | Show custom toast component |
+| `try` | `<R>(fn, messageFn?) => R \| undefined` | Execute with error toast on failure |
+
+**Return bindings:**
+
+| Binding | Type | Description |
+|---------|------|-------------|
+| `progress` | `WritableSignal<number>` | Progress percentage |
+| `message` | `WritableSignal<string>` | Toast message |
+| `open` | `WritableSignal<boolean>` | Toast visibility |
+
+---
+
+### ISdToast
 
 ```typescript
 interface ISdToast<O> {
@@ -340,32 +273,11 @@ interface ISdToast<O> {
 }
 ```
 
----
-
-## ISdToastInput
-
-Input descriptor for `SdToastProvider.notify`.
+### ISdToastInput
 
 ```typescript
 interface ISdToastInput<T extends ISdToast<any>, X extends keyof any = ""> {
   type: Type<T>;
   inputs: Omit<TDirectiveInputSignals<T>, X>;
 }
-```
-
-```typescript
-import { SdToastProvider, ISdToast, ISdToastInput } from "@simplysm/sd-angular";
-
-@Component({
-  template: `
-    <div>{{ message() }}</div>
-  `,
-})
-class MyToastComponent implements ISdToast<void> {
-  message = input.required<string>();
-  close = output<void | undefined>();
-}
-
-const toast = inject(SdToastProvider);
-toast.notify({ type: MyToastComponent, inputs: { message: "Hello!" } });
 ```

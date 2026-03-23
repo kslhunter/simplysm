@@ -2,24 +2,30 @@
 
 Fluent, chainable query API for building and executing database queries. Each method returns a new `Queryable` instance (immutable chaining pattern).
 
-**Source:** `src/query/queryable/Queryable.ts`
-
 ## Class: Queryable\<D extends DbContext, T\>
 
-### Constructor
+**Source:** `src/query/queryable/Queryable.ts`
+
+### Constructor Overloads
 
 ```typescript
 // Create from a table type
-new Queryable(db, TableClass)
+new Queryable(db: D, tableType: Type<T>, as?: string)
 
-// Create from a table type with alias
-new Queryable(db, TableClass, "alias")
+// Clone an existing Queryable
+new Queryable(db: D, cloneQueryable: Queryable<D, T>)
+
+// Clone with a new entity
+new Queryable(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>)
+
+// Internal: create with explicit entity and defs (for wrapping)
+new Queryable(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef)
 ```
 
 ### Properties
 
 | Property | Type | Description |
-|---|---|---|
+|----------|------|-------------|
 | `db` | `D` | The parent DbContext |
 | `tableType` | `Type<T> \| undefined` | The table model class (undefined after wrapping) |
 | `tableDef` | `ITableDef \| undefined` | Table definition metadata (undefined after wrapping) |
@@ -44,7 +50,7 @@ db.employee.where((e) => [db.qh.greaterThen(e.age, 30), db.qh.equal(e.active, tr
 
 #### search
 
-Adds a text search filter across multiple columns. Supports `==` prefix for regex match, `<>` prefix for regex not-match, and space-separated terms for AND-combined LIKE.
+Adds a text search filter across multiple columns. Supports prefixes: `==` for regex match, `<>` for regex not-match. Space-separated terms produce AND-combined LIKE conditions.
 
 ```typescript
 search(
@@ -65,6 +71,7 @@ db.employee.search((e) => [e.name], "==^J.*n$")  // Regex match
 Projects the query result to a custom shape.
 
 ```typescript
+select<A, B extends TEntityUnwrap<A>>(fwd: (entity: TEntity<T>) => A): Queryable<D, B>
 select<R>(fwd: (entity: TEntity<T>) => TSelectEntity<R>): Queryable<D, R>
 ```
 
@@ -82,7 +89,7 @@ selectByType<A>(tableType: Type<A>): Queryable<D, A>
 
 #### ofType
 
-Casts the queryable to a different type (no runtime effect).
+Casts the queryable to a different type (type-level only, no runtime effect).
 
 ```typescript
 ofType<A>(): Queryable<D, A>
@@ -92,7 +99,7 @@ ofType<A>(): Queryable<D, A>
 
 #### orderBy
 
-Adds an ORDER BY clause. Accepts a lambda or a dot-separated column chain string.
+Adds an ORDER BY clause. Accepts a lambda or a dot-separated column chain string (auto-includes via FK metadata).
 
 ```typescript
 orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T>
@@ -125,7 +132,7 @@ top(count: number): Queryable<D, T>
 
 #### limit
 
-Skips and takes rows (for pagination).
+Skips and takes rows (requires ORDER BY).
 
 ```typescript
 limit(skip: number, take: number): Queryable<D, T>
@@ -133,17 +140,13 @@ limit(skip: number, take: number): Queryable<D, T>
 
 #### sample
 
-Returns a random sample of rows.
+Returns a random sample of rows (MSSQL only via `TABLESAMPLE`).
 
 ```typescript
 sample(rowCount: number): Queryable<D, T>
 ```
 
 ### Distinct
-
-#### distinct
-
-Applies DISTINCT to the query.
 
 ```typescript
 distinct(): Queryable<D, T>
@@ -153,7 +156,7 @@ distinct(): Queryable<D, T>
 
 #### lock
 
-Adds a lock hint to the query (e.g., WITH (UPDLOCK) in MSSQL).
+Adds a lock hint (`WITH (UPDLOCK)` in MSSQL, `FOR UPDATE` in MySQL).
 
 ```typescript
 lock(): Queryable<D, T>
@@ -163,21 +166,15 @@ lock(): Queryable<D, T>
 
 #### groupBy
 
-Groups the query results.
+Groups query results.
 
 ```typescript
 groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T>
 ```
 
-```typescript
-db.employee
-  .select((e) => ({ departmentId: e.departmentId, count: db.qh.count() }))
-  .groupBy((e) => [e.departmentId])
-```
-
 #### having
 
-Adds a HAVING clause (used after groupBy).
+Adds a HAVING clause (used after `groupBy`).
 
 ```typescript
 having(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T>
@@ -187,7 +184,7 @@ having(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>
 
 #### join
 
-Adds a LEFT JOIN that returns an array of matching rows.
+Adds a LEFT JOIN that returns an **array** of matching rows.
 
 ```typescript
 join<A extends string, J, R>(
@@ -205,7 +202,7 @@ db.employee.join(Department, "dept", (jqr, e) =>
 
 #### joinSingle
 
-Adds a LEFT JOIN that returns a single matching row (or undefined).
+Adds a LEFT JOIN that returns a **single** matching row (or undefined).
 
 ```typescript
 joinSingle<A extends string, J, R>(
@@ -217,7 +214,7 @@ joinSingle<A extends string, J, R>(
 
 #### include
 
-Automatically joins a related table via foreign key metadata. Accepts a lambda that navigates the entity's FK properties.
+Automatically joins a related table via foreign key metadata.
 
 ```typescript
 include(arg: (entity: TIncludeEntity<T>) => TIncludeEntity<any> | TIncludeEntity<any>[]): Queryable<D, T>
@@ -269,14 +266,12 @@ unpivot<VC extends string, PC extends string, RT extends TQueryValue>(
 
 #### wrap
 
-Wraps the current query as a subquery (derived table).
+Wraps the current query as a subquery (derived table). Useful for applying operations that require a subquery, such as `countAsync()` after `groupBy()`.
 
 ```typescript
 wrap(): Queryable<D, T>
 wrap<R extends Partial<T>>(tableType: Type<R>): Queryable<D, R>
 ```
-
-Useful for applying operations that require a subquery, such as `countAsync()` after `groupBy()`.
 
 ### Static Methods
 
@@ -287,6 +282,19 @@ Creates a UNION ALL of multiple queryables.
 ```typescript
 static union<ND extends DbContext, NT>(qrs: Queryable<ND, NT>[], as?: string): Queryable<ND, NT>
 ```
+
+### Query Definition Methods
+
+These methods return raw query definition objects (used internally and in advanced scenarios):
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getSelectQueryDef` | `() => ISelectQueryDef & { select: Record<string, TQueryBuilderValue> }` | Build the SELECT query definition |
+| `getInsertQueryDef` | `(obj: TInsertObject<T>, outputColumns: (keyof T)[] \| undefined) => IInsertQueryDef` | Build an INSERT query definition |
+| `getUpdateQueryDef` | `(obj: TUpdateObject<T>, outputColumns: (keyof T)[] \| undefined) => IUpdateQueryDef` | Build an UPDATE query definition |
+| `getDeleteQueryDef` | `(outputColumns: (keyof T)[] \| undefined) => IDeleteQueryDef` | Build a DELETE query definition |
+| `getInsertIfNotExistsQueryDef` | `(insertObj: TInsertObject<T>, outputColumns: (keyof T)[] \| undefined) => IInsertIfNotExistsQueryDef` | Build a conditional INSERT definition |
+| `getUpsertQueryDef` | `(updateObj, insertObj, outputColumns, aiKeyName, pkColNames) => IUpsertQueryDef` | Build an UPSERT definition |
 
 ### Execution Methods
 
@@ -300,7 +308,7 @@ async resultAsync(): Promise<T[]>
 
 #### singleAsync
 
-Executes the query and returns a single result (throws if more than one row).
+Executes the query and returns a single result. Throws if more than one row is returned.
 
 ```typescript
 async singleAsync(): Promise<T | undefined>
@@ -308,7 +316,7 @@ async singleAsync(): Promise<T | undefined>
 
 #### countAsync
 
-Returns the count of rows. Optionally counts distinct values of a column.
+Returns the count of rows. Optionally counts distinct values of a specific column.
 
 ```typescript
 async countAsync(): Promise<number>
@@ -340,6 +348,7 @@ Same as `insertAsync` but disables FK constraint checks during insert.
 
 ```typescript
 async insertWithoutFkCheckAsync(records: TInsertObject<T>[]): Promise<void>
+async insertWithoutFkCheckAsync<OK extends keyof T>(records: TInsertObject<T>[], outputColumns: OK[]): Promise<{[K in OK]: T[K]}[]>
 ```
 
 #### updateAsync
@@ -347,14 +356,8 @@ async insertWithoutFkCheckAsync(records: TInsertObject<T>[]): Promise<void>
 Updates rows matching the current WHERE clause.
 
 ```typescript
-async updateAsync(recordFwd: (entity: TEntity<T>) => TUpdateObject<T>): Promise<void>
+async updateAsync(recordFwd: (entity: TEntity<T>) => TUpdateObject<T> | Promise<TUpdateObject<T>>): Promise<void>
 async updateAsync<OK extends keyof T>(recordFwd: ..., outputColumns: OK[]): Promise<{[K in OK]: T[K]}[]>
-```
-
-```typescript
-await db.employee
-  .where((e) => [db.qh.equal(e.id, 1)])
-  .updateAsync(() => ({ name: "New Name" }));
 ```
 
 #### deleteAsync
@@ -368,17 +371,19 @@ async deleteAsync<OK extends keyof T>(outputColumns: OK[]): Promise<{[K in OK]: 
 
 #### upsertAsync
 
-Inserts or updates (MERGE). Supports separate update and insert expressions.
+Inserts or updates (MERGE). Supports separate update and insert expressions, and optional output columns.
 
 ```typescript
 // Same record for both insert and update
-async upsertAsync(inAndUpsertFwd: (entity: TEntity<T>) => TInsertObject<T>): Promise<void>
+async upsertAsync(inAndUpsertFwd: (entity: TEntity<T>) => TInsertObject<T> | Promise<TInsertObject<T>>): Promise<void>
+async upsertAsync<OK extends keyof T>(inAndUpsertFwd: ..., outputColumns: OK[]): Promise<{[K in OK]: T[K]}[]>
 
 // Separate update and insert records
 async upsertAsync<U extends TUpdateObject<T>>(
-  updateFwd: (entity: TEntity<T>) => U,
-  insertFwd: (updateRecord: U) => TInsertObject<T>,
+  updateFwd: (entity: TEntity<T>) => U | Promise<U>,
+  insertFwd: (updateRecord: U) => TInsertObject<T> | Promise<TInsertObject<T>>,
 ): Promise<void>
+async upsertAsync<U, OK extends keyof T>(updateFwd: ..., insertFwd: ..., outputColumns: OK[]): Promise<{[K in OK]: T[K]}[]>
 ```
 
 #### insertIntoAsync
@@ -411,35 +416,225 @@ async bulkUpsertAsync(records: TInsertObject<T>[]): Promise<void>
 
 These methods accumulate query definitions in `db.prepareDefs` for batch execution via `db.executePreparedAsync()`.
 
-| Method | Description |
-|---|---|
-| `insertPrepare(records)` | Prepare an insert |
-| `insertWithoutFkCheckPrepare(records)` | Prepare an insert without FK checks |
-| `updatePrepare(recordFwd)` | Prepare an update |
-| `deletePrepare()` | Prepare a delete |
-| `upsertPrepare(updateObjOrFwd, insertObjOrFwd?)` | Prepare an upsert |
-| `configIdentityInsert(state)` | Prepare identity insert on/off (MSSQL) |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `insertPrepare` | `(records: TInsertObject<T>[]) => void` | Prepare an insert |
+| `insertWithoutFkCheckPrepare` | `(records: TInsertObject<T>[]) => void` | Prepare an insert without FK checks |
+| `updatePrepare` | `(recordFwd: (entity: TEntity<T>) => TUpdateObject<T>) => void` | Prepare an update |
+| `deletePrepare` | `() => void` | Prepare a delete |
+| `upsertPrepare` | `<U>(updateObjOrFwd: U \| ((entity) => U), insertObjOrFwd?: ...) => void` | Prepare an upsert |
+| `configIdentityInsert` | `(state: "on" \| "off") => void` | Prepare identity insert toggle (MSSQL) |
+
+---
 
 ## Class: QueryUnit\<T\>
 
-Represents a typed SQL expression value. Used as column references and computed values within queries.
-
 **Source:** `src/query/queryable/QueryUnit.ts`
+
+Wraps a typed SQL expression fragment. Used as column references and computed values within queries.
+
+### Constructor
+
+```typescript
+constructor(type: Type<T | WrappedType<T>> | undefined, query: any)
+```
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | `Type<T \| WrappedType<T>> \| undefined` | The TypeScript type of the wrapped value |
+| `query` | `any` (getter) | The underlying SQL expression |
 
 ### Methods
 
-| Method | Return Type | Description |
-|---|---|---|
-| `notNull()` | `QueryUnit<NonNullable<T>>` | Assert the value is non-null (type narrowing only) |
-| `nullable()` | `QueryUnit<T \| undefined>` | Widen the type to nullable (type narrowing only) |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `notNull` | `() => QueryUnit<NonNullable<T>>` | Assert the value is non-null (type narrowing only, no runtime effect) |
+| `nullable` | `() => QueryUnit<T \| undefined>` | Widen the type to nullable (type narrowing only, no runtime effect) |
 
-## Class: StoredProcedure\<D, T\>
+---
 
-Represents a stored procedure that can be executed.
+## Class: StoredProcedure\<D extends DbContext, T\>
 
 **Source:** `src/query/StoredProcedure.ts`
 
+Executes stored procedures defined with the `@Table({ procedure: ... })` decorator.
+
+### Constructor
+
 ```typescript
-const proc = new StoredProcedure(db, MyProcedureClass);
-await proc.execAsync({ param1: "value1", param2: 42 });
+constructor(db: D, tableType: Type<T>)
+```
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `db` | `D` | The parent DbContext |
+| `tableType` | `Type<T>` | The stored procedure's table type |
+
+### Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `execAsync` | `(obj: TInsertObject<T>) => Promise<void>` | Execute the stored procedure with the given parameters |
+
+---
+
+## Entity Type Aliases
+
+**Source:** `src/query/queryable/types.ts`
+
+### TEntityValue\<T\>
+
+A query value or a `QueryUnit` wrapping it.
+
+```typescript
+type TEntityValue<T extends TQueryValue> = T | QueryUnit<T>;
+```
+
+### TEntityValueOrQueryable\<D, T\>
+
+A value, `QueryUnit`, or sub-`Queryable`.
+
+```typescript
+type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> =
+  | TEntityValue<T>
+  | Queryable<D, T>;
+```
+
+### TEntityValueOrQueryableOrArray\<D, T\>
+
+Recursive union including arrays (used for complex WHERE predicates).
+
+```typescript
+type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQueryValue> =
+  | TEntityValueOrQueryable<D, T>
+  | TEntityValueOrQueryableOrArray<D, T>[];
+```
+
+### TEntity\<T\>
+
+Maps an entity type so each column property becomes a `QueryUnit<T>`, arrays become `TEntity<A>[]`, and nested objects become `TEntity<T[K]>`.
+
+```typescript
+type TEntity<T> = {
+  [K in keyof T]-?: T[K] extends TQueryValue
+    ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[]
+      ? TEntity<A>[]
+      : TEntity<T[K]>;
+};
+```
+
+### TSelectEntity\<T\>
+
+Entity shape for select projections (non-required properties remain optional).
+
+```typescript
+type TSelectEntity<T> = {
+  [K in keyof T]: T[K] extends TQueryValue
+    ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[]
+      ? TEntity<A>[]
+      : TEntity<T[K]>;
+};
+```
+
+### TEntityUnwrap\<T\>
+
+Unwraps `QueryUnit` types back to plain values. Nested objects become optional.
+
+```typescript
+type TEntityUnwrap<T> = {
+  [K in keyof T]: T[K] extends QueryUnit<infer A>
+    ? A
+    : T[K] extends (infer A)[]
+      ? TEntityUnwrap<A>[]
+      : T[K] extends TQueryValue
+        ? T[K]
+        : TEntityUnwrap<T[K]> | undefined;
+};
+```
+
+### TIncludeEntity\<T\>
+
+Entity shape for include/join navigation (all properties required).
+
+```typescript
+type TIncludeEntity<T> = {
+  [K in keyof T]-?: T[K] extends TQueryValue
+    ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[]
+      ? TIncludeEntity<A>[]
+      : TIncludeEntity<T[K]>;
+};
+```
+
+### IQueryableDef
+
+Internal queryable definition structure.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `from` | `string \| ISelectQueryDef \| ISelectQueryDef[]` | Source table, subquery, or UNION of subqueries |
+| `join` | `(IJoinQueryDef & { isSingle: boolean })[] \| undefined` | Join definitions with multiplicity |
+| `distinct` | `true \| undefined` | Apply DISTINCT |
+| `where` | `TQueryBuilderValue[] \| undefined` | WHERE conditions |
+| `top` | `number \| undefined` | TOP N limit |
+| `groupBy` | `TQueryBuilderValue[] \| undefined` | GROUP BY expressions |
+| `having` | `TQueryBuilderValue[] \| undefined` | HAVING conditions |
+| `orderBy` | `[TQueryBuilderValue, "ASC" \| "DESC"][] \| undefined` | ORDER BY columns and directions |
+| `limit` | `[number, number] \| undefined` | `[skip, take]` for pagination |
+| `pivot` | `{ valueColumn, pivotColumn, pivotKeys } \| undefined` | PIVOT configuration |
+| `unpivot` | `{ valueColumn, pivotColumn, pivotKeys } \| undefined` | UNPIVOT configuration |
+| `lock` | `boolean \| undefined` | Apply row locking |
+| `sample` | `number \| undefined` | TABLESAMPLE row count |
+
+### TQueryValuePropertyNames\<T\>
+
+Extracts property names whose types are `TQueryValue` and not optional.
+
+```typescript
+type TQueryValuePropertyNames<T> = {
+  [K in keyof T]: undefined extends T[K] ? never : T[K] extends TQueryValue ? K : never;
+}[keyof T];
+```
+
+### TUndefinedPropertyNames\<T\>
+
+Extracts property names whose types include `undefined`.
+
+```typescript
+type TUndefinedPropertyNames<T> = {
+  [K in keyof T]: undefined extends T[K] ? K : never;
+}[keyof T];
+```
+
+### TOnlyQueryValueProperty\<T\>
+
+Picks required query-value properties and makes optional ones `Partial`.
+
+```typescript
+type TOnlyQueryValueProperty<T> = Pick<T, TQueryValuePropertyNames<T>> &
+  Partial<Pick<T, TUndefinedPropertyNames<T>>>;
+```
+
+### TInsertObject\<T\>
+
+Object shape for insert operations: non-optional query-value properties required, optional ones remain optional.
+
+```typescript
+type TInsertObject<T> = TOnlyQueryValueProperty<T>;
+```
+
+### TUpdateObject\<T\>
+
+Object shape for update operations: all query-value properties optional, values can be direct or `QueryUnit` expressions.
+
+```typescript
+type TUpdateObject<T> = TOnlyQueryValueProperty<{
+  [K in keyof T]?: T[K] | QueryUnit<T[K]> | QueryUnit<WrappedType<T[K]>>;
+}>;
 ```

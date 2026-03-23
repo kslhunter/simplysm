@@ -1,209 +1,111 @@
 # @simplysm/cordova-plugin-usb-storage
 
-> **Deprecated** — This package is no longer maintained. Use the Capacitor equivalent instead.
-
-Cordova plugin for interacting with USB mass storage devices on Android. Uses [libaums](https://github.com/magnusja/libaums) under the hood.
-
-## Platform Support
-
-| Platform | Supported |
-|----------|-----------|
-| Android  | Yes       |
-| iOS      | No        |
+Cordova USB Storage Plugin (legacy) -- USB mass storage device interaction for Android via the Cordova bridge. Enumerate connected USB devices, manage access permissions, read directories, and read files from USB mass storage devices. This is the legacy Cordova counterpart to `@simplysm/capacitor-plugin-usb-storage`.
 
 ## Installation
 
 ```bash
-cordova plugin add @simplysm/cordova-plugin-usb-storage
+npm install @simplysm/cordova-plugin-usb-storage
 ```
+
+## API Overview
+
+| API | Type | Description |
+|-----|------|-------------|
+| `CordovaUsbStorage` | Abstract class | Static methods for USB mass storage device interaction via the Cordova bridge |
 
 ## API Reference
 
-All methods are static on the `CordovaUsbStorage` class.
+### `CordovaUsbStorage`
 
-```ts
+Abstract class with static methods for USB mass storage device interaction through the Cordova bridge.
+
+```typescript
+export abstract class CordovaUsbStorage {
+  static async getDevices(): Promise<
+    {
+      deviceName: string;
+      manufacturerName: string;
+      productName: string;
+      vendorId: number;
+      productId: number;
+    }[]
+  >;
+  static async requestPermission(filter: {
+    vendorId: number;
+    productId: number;
+  }): Promise<boolean>;
+  static async hasPermission(filter: {
+    vendorId: number;
+    productId: number;
+  }): Promise<boolean>;
+  static async readdir(
+    filter: { vendorId: number; productId: number },
+    dirPath: string,
+  ): Promise<string[]>;
+  static async read(
+    filter: { vendorId: number; productId: number },
+    filePath: string,
+  ): Promise<Buffer | undefined>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `getDevices` | -- | `Promise<{ deviceName, manufacturerName, productName, vendorId, productId }[]>` | Get a list of connected USB storage devices |
+| `requestPermission` | `filter: { vendorId: number; productId: number }` | `Promise<boolean>` | Request access permission for a USB device; returns whether permission was granted |
+| `hasPermission` | `filter: { vendorId: number; productId: number }` | `Promise<boolean>` | Check if access permission is granted for a USB device |
+| `readdir` | `filter: { vendorId, productId }, dirPath: string` | `Promise<string[]>` | List file and directory names in a directory on the USB device |
+| `read` | `filter: { vendorId, productId }, filePath: string` | `Promise<Buffer \| undefined>` | Read a file from the USB device as a Buffer; returns `undefined` if data is not available |
+
+#### `getDevices` return fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `deviceName` | `string` | System device name |
+| `manufacturerName` | `string` | USB device manufacturer name |
+| `productName` | `string` | USB device product name |
+| `vendorId` | `number` | USB vendor ID |
+| `productId` | `number` | USB product ID |
+
+## Usage Examples
+
+### List USB devices and read a file
+
+```typescript
 import { CordovaUsbStorage } from "@simplysm/cordova-plugin-usb-storage";
-```
 
-### Device Filter
-
-Several methods accept a `filter` parameter to identify a specific USB device:
-
-```ts
-interface DeviceFilter {
-  vendorId: number;
-  productId: number;
-}
-```
-
----
-
-### `CordovaUsbStorage.getDevices()`
-
-Returns a list of connected USB mass storage devices.
-
-```ts
-static async getDevices(): Promise<{
-  deviceName: string;
-  manufacturerName: string;
-  productName: string;
-  vendorId: number;
-  productId: number;
-}[]>
-```
-
-**Example**
-
-```ts
+// Get connected USB devices
 const devices = await CordovaUsbStorage.getDevices();
-for (const device of devices) {
-  console.log(device.productName, device.vendorId, device.productId);
+if (devices.length === 0) {
+  console.log("No USB devices connected");
+  return;
 }
-```
 
----
-
-### `CordovaUsbStorage.requestPermission(filter)`
-
-Requests access permission for a USB device. If permission has already been granted, resolves immediately with `true`.
-
-```ts
-static async requestPermission(filter: {
-  vendorId: number;
-  productId: number;
-}): Promise<boolean>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter.vendorId` | `number` | Vendor ID of the target device |
-| `filter.productId` | `number` | Product ID of the target device |
-
-**Returns** — `true` if permission was granted, `false` otherwise.
-
-**Example**
-
-```ts
-const granted = await CordovaUsbStorage.requestPermission({
-  vendorId: 1234,
-  productId: 5678,
-});
-```
-
----
-
-### `CordovaUsbStorage.hasPermission(filter)`
-
-Checks whether the app already has permission to access the specified USB device.
-
-```ts
-static async hasPermission(filter: {
-  vendorId: number;
-  productId: number;
-}): Promise<boolean>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter.vendorId` | `number` | Vendor ID of the target device |
-| `filter.productId` | `number` | Product ID of the target device |
-
-**Returns** — `true` if permission is currently held.
-
-**Example**
-
-```ts
-const hasPerm = await CordovaUsbStorage.hasPermission({
-  vendorId: 1234,
-  productId: 5678,
-});
-```
-
----
-
-### `CordovaUsbStorage.readdir(filter, dirPath)`
-
-Reads the contents of a directory on the USB storage device.
-
-```ts
-static async readdir(
-  filter: { vendorId: number; productId: number },
-  dirPath: string,
-): Promise<string[]>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter.vendorId` | `number` | Vendor ID of the target device |
-| `filter.productId` | `number` | Product ID of the target device |
-| `dirPath` | `string` | Path to the directory to list |
-
-**Returns** — Array of file and folder names in the directory.
-
-**Throws** — If the app does not have permission for the device.
-
-**Example**
-
-```ts
-const entries = await CordovaUsbStorage.readdir(
-  { vendorId: 1234, productId: 5678 },
-  "/Documents",
-);
-```
-
----
-
-### `CordovaUsbStorage.read(filter, filePath)`
-
-Reads a file from the USB storage device.
-
-```ts
-static async read(
-  filter: { vendorId: number; productId: number },
-  filePath: string,
-): Promise<Buffer | undefined>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter.vendorId` | `number` | Vendor ID of the target device |
-| `filter.productId` | `number` | Product ID of the target device |
-| `filePath` | `string` | Path to the file to read |
-
-**Returns** — A `Buffer` containing the file data, or `undefined` if the file was not found.
-
-**Throws** — If the app does not have permission, or if the path points to a directory.
-
-**Example**
-
-```ts
-const data = await CordovaUsbStorage.read(
-  { vendorId: 1234, productId: 5678 },
-  "/Documents/report.txt",
-);
-if (data !== undefined) {
-  const text = data.toString("utf-8");
-}
-```
-
-## Typical Workflow
-
-```ts
-// 1. Discover devices
-const devices = await CordovaUsbStorage.getDevices();
 const device = devices[0];
+console.log(`Found: ${device.productName} by ${device.manufacturerName}`);
 
-// 2. Request permission
+// Request permission
 const granted = await CordovaUsbStorage.requestPermission({
   vendorId: device.vendorId,
   productId: device.productId,
 });
-if (!granted) {
-  throw new Error("Permission denied");
-}
 
-// 3. Browse and read files
-const filter = { vendorId: device.vendorId, productId: device.productId };
-const entries = await CordovaUsbStorage.readdir(filter, "/");
-const fileData = await CordovaUsbStorage.read(filter, "/" + entries[0]);
+if (granted) {
+  // List root directory
+  const files = await CordovaUsbStorage.readdir(
+    { vendorId: device.vendorId, productId: device.productId },
+    "/",
+  );
+  console.log("Files:", files);
+
+  // Read a file
+  const data = await CordovaUsbStorage.read(
+    { vendorId: device.vendorId, productId: device.productId },
+    "/data.txt",
+  );
+  if (data) {
+    console.log("Content:", data.toString("utf-8"));
+  }
+}
 ```

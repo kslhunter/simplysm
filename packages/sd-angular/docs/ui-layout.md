@@ -1,163 +1,154 @@
-# UI: Layout Components
+# UI - Layout Components
 
-## SdDockContainerControl
+## Dock
 
-Container that positions dock panels absolutely around a central content area. Each `SdDockControl` child is placed on one side; the content area adjusts its padding to fit.
+### SdDockContainerControl
 
-**Selector:** `sd-dock-container`
+**Type:** `@Component` | **Selector:** `sd-dock-container`
 
-```html
-<sd-dock-container>
-  <sd-dock [position]="'top'">
-    <sd-topbar>...</sd-topbar>
-  </sd-dock>
-  <sd-dock [position]="'left'" [resizable]="true" [key]="'sidebar-width'">
-    <sd-sidebar-menu [menus]="menus()" />
-  </sd-dock>
-  <sd-pane>
-    <!-- main content -->
-  </sd-pane>
-</sd-dock-container>
-```
+Container that positions dock panels on sides around a central content area. Each `SdDockControl` child is placed on one side; the content area adjusts its padding dynamically.
 
-**Inputs:** `contentClass: string`
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `contentClass` | `string` | No | -- | CSS class for the content area |
 
 ---
 
-## SdDockControl
+### SdDockControl
 
-A panel docked to one side of a `SdDockContainerControl`. Can be resizable; size is persisted via `SdSystemConfigProvider` when `key` is provided.
+**Type:** `@Component` | **Selector:** `sd-dock`
 
-**Selector:** `sd-dock`
+Dockable panel that sits on a side of `SdDockContainerControl`. Supports resizable handles.
 
-**Inputs:**
+#### Inputs
 
-| Input       | Type                                     | Default | Description              |
-| ----------- | ---------------------------------------- | ------- | ------------------------ |
-| `key`       | `string`                                 | —       | Persistence key for size |
-| `position`  | `"top" \| "bottom" \| "right" \| "left"` | `"top"` | Dock side                |
-| `resizable` | `boolean`                                | `false` | Show resize handle       |
-
----
-
-## SdFlexDirective
-
-Applies flex-row or flex-column class utility.
-
-**Selector:** `sd-flex`, `[sd-flex]`
-
-```html
-<div sd-flex><!-- flex-row --></div>
-<div sd-flex [vertical]="true"><!-- flex-column --></div>
-<span sd-flex [inline]="true"><!-- flex-row-inline --></span>
-```
-
-**Inputs:** `vertical: boolean` (default `false`), `inline: boolean` (default `false`)
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `key` | `string` | No | -- | Persistence key for resized width/height |
+| `position` | `"top" \| "bottom" \| "right" \| "left"` | No | `"top"` | Dock position |
+| `resizable` | `boolean \| ""` | No | `false` | Enable resize handle |
 
 ---
 
-## SdFlexGrowDirective
+## Flex
 
-Applies a flex-grow utility class.
+### SdFlexDirective
 
-**Selector:** `[sd-flex-grow]`
+**Type:** `@Directive` | **Selector:** `sd-flex, [sd-flex]`
 
-```html
-<div [sd-flex-grow]="'fill'"><!-- flex-fill --></div>
-<div [sd-flex-grow]="'auto'"><!-- flex-auto --></div>
-<div [sd-flex-grow]="'min'"><!-- flex-min --></div>
-```
+Applies flexbox layout with optional vertical direction and inline display.
 
-**Input:** `sd-flex-grow: "auto" | "fill" | "min"` (required)
+#### Inputs
 
----
-
-## SdFormBoxDirective
-
-Applies form-box layout (label+control pairs in a column).
-
-**Selector:** `sd-form-box`, `[sd-form-box]`
-
-```html
-<div sd-form-box>
-  <label sd-form-box-item>Name</label>
-  <sd-textfield [(value)]="name" />
-</div>
-```
-
-**Inputs:** `inline: boolean` (default `false`) — uses `form-box-inline` class.
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `vertical` | `boolean \| ""` | No | `false` | Flex direction column |
+| `inline` | `boolean \| ""` | No | `false` | Inline flex display |
 
 ---
 
-## SdFormBoxItemDirective
+### SdFlexGrowDirective
 
-Marks an element as a form-box label item.
+**Type:** `@Directive` | **Selector:** `[sd-flex-grow]`
 
-**Selector:** `sd-form-box-item`, `[sd-form-box-item]`
+Controls how a flex child takes up space.
 
-Applies CSS class `form-box-item`.
+#### Inputs
 
----
-
-## SdFormTableDirective
-
-Applies `form-table` CSS layout (table-based form).
-
-**Selector:** `sd-form-table`, `[sd-form-table]`
-
-```html
-<table sd-form-table>
-  <tr>
-    <th>Label</th>
-    <td><sd-textfield [(value)]="val" /></td>
-  </tr>
-</table>
-```
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `sd-flex-grow` | `"auto" \| "fill" \| "min"` | Yes | -- | Sizing mode: `auto` (content-based), `fill` (flex-grow), `min` (shrink to minimum) |
 
 ---
 
-## SdGridDirective
+## Form Layout
 
-Applies `grid` CSS class for CSS grid layout.
+### SdFormBoxDirective
 
-**Selector:** `sd-grid`, `[sd-grid]`
+**Type:** `@Directive` | **Selector:** `sd-form-box, [sd-form-box]`
 
----
+CSS-based form layout container with label/value pairs. Children use `SdFormBoxItemDirective`.
 
-## SdGridItemDirective
+#### Inputs
 
-Applies grid column span classes.
-
-**Selector:** `sd-grid-item`, `[sd-grid-item]`
-
-```html
-<div sd-grid>
-  <div [sd-grid-item]="true" [colSpan]="6" [colSpanSm]="12">...</div>
-  <div [sd-grid-item]="true" [colSpan]="6">...</div>
-</div>
-```
-
-**Inputs:** `colSpan: number` (default `1`), `colSpanSm: number`, `colSpanXs: number`, `colSpanXxs: number`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `inline` | `boolean \| ""` | No | `false` | Inline layout (horizontal) |
 
 ---
 
-## SdKanbanBoardControl
+### SdFormBoxItemDirective
 
-The outer container for a kanban board. Manages drag-and-drop state and selected card values.
+**Type:** `@Directive` | **Selector:** `sd-form-box-item, [sd-form-box-item]`
 
-**Selector:** `sd-kanban-board`
+Item within a `SdFormBoxDirective`. Provides label and content areas.
 
-```html
-<sd-kanban-board [(selectedValues)]="selected" (drop)="onDrop($event)">
-  <sd-kanban-lane [value]="'todo'">
-    <sd-kanban [value]="item" [draggable]="true">{{ item.title }}</sd-kanban>
-  </sd-kanban-lane>
-</sd-kanban-board>
-```
+No inputs.
 
-**Model:** `selectedValues: T[]`
+---
 
-**Output:** `(drop)` — `ISdKanbanBoardDropInfo<L, T>`
+### SdFormTableDirective
+
+**Type:** `@Directive` | **Selector:** `sd-form-table, [sd-form-table]`
+
+Table-based form layout. Uses HTML `<table>` structure for strict label/value alignment.
+
+No inputs.
+
+---
+
+## Grid
+
+### SdGridDirective
+
+**Type:** `@Directive` | **Selector:** `sd-grid, [sd-grid]`
+
+Responsive CSS grid container. Child items use `SdGridItemDirective` for column span control.
+
+No inputs.
+
+---
+
+### SdGridItemDirective
+
+**Type:** `@Directive` | **Selector:** `sd-grid-item, [sd-grid-item]`
+
+Grid item with responsive column span breakpoints.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `colSpan` | `number` | No | `1` | Column span (default) |
+| `colSpanSm` | `number` | No | -- | Column span at small breakpoint |
+| `colSpanXs` | `number` | No | -- | Column span at extra-small breakpoint |
+| `colSpanXxs` | `number` | No | -- | Column span at extra-extra-small breakpoint |
+
+---
+
+## Kanban
+
+### SdKanbanBoardControl
+
+**Type:** `@Component` | **Selector:** `sd-kanban-board`
+
+Kanban board container that manages lanes and drag-drop between them.
+
+#### Models
+
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `selectedValues` | `T[]` | `[]` | Selected kanban card values |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `drop` | `ISdKanbanBoardDropInfo<L, T>` | Card dropped onto a lane or position |
+
+#### ISdKanbanBoardDropInfo
 
 ```typescript
 interface ISdKanbanBoardDropInfo<L, T> {
@@ -169,105 +160,118 @@ interface ISdKanbanBoardDropInfo<L, T> {
 
 ---
 
-## SdKanbanLaneControl
+### SdKanbanLaneControl
 
-A lane (column) inside `SdKanbanBoardControl`. Accepts drop targets.
+**Type:** `@Component` | **Selector:** `sd-kanban-lane`
 
-**Selector:** `sd-kanban-lane`
+A lane/column within a kanban board. Contains kanban cards.
 
-**Inputs:** `value: L`, `busy: boolean`, `useCollapse: boolean`, `collapse` (model, `boolean`)
+#### Inputs
 
-**Content projection:** `#titleTpl`, `#toolTpl`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `L` | No | -- | Lane value identifier |
+| `busy` | `boolean \| ""` | No | `false` | Show loading indicator |
+| `useCollapse` | `boolean \| ""` | No | `false` | Enable collapse toggle |
 
----
+#### Models
 
-## SdKanbanControl
-
-A single kanban card inside `SdKanbanLaneControl`. Draggable and selectable (with Shift+click).
-
-**Selector:** `sd-kanban`
-
-**Inputs:** `value: T`, `selectable: boolean`, `draggable: boolean`, `contentClass: string`
-
----
-
-## SdCardDirective
-
-Applies `card` CSS class for card-style styling.
-
-**Selector:** `sd-card`, `[sd-card]`
-
-```html
-<div sd-card>Card content</div>
-```
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `collapse` | `boolean` | `false` | Collapsed state |
 
 ---
 
-## SdGapControl
+### SdKanbanControl
 
-Inserts a spacing gap element (horizontal or vertical).
+**Type:** `@Component` | **Selector:** `sd-kanban`
 
-**Selector:** `sd-gap`
+Individual kanban card within a lane.
 
-```html
-<sd-gap [height]="'default'" />
-<sd-gap [width]="'lg'" />
-<sd-gap [heightPx]="20" />
-```
+#### Inputs
 
-**Inputs:** `height`, `width` — size tokens (`"xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl"`), `heightPx: number`, `widthPx: number`, `widthEm: number`
-
----
-
-## SdPaneDirective
-
-Fills its container (applies `fill` class and `display: block`).
-
-**Selector:** `sd-pane`, `[sd-pane]`
-
-```html
-<sd-pane>
-  <!-- fills remaining space -->
-</sd-pane>
-```
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `T` | No | -- | Card value identifier |
+| `selectable` | `boolean \| ""` | No | `false` | Can be selected |
+| `draggable` | `boolean \| ""` | No | `false` | Can be dragged |
+| `contentClass` | `string` | No | -- | CSS class for content |
 
 ---
 
-## SdTableDirective
+## Other Layout
 
-Applies `table` CSS class with `display: table`.
+### SdCardDirective
 
-**Selector:** `sd-table`, `[sd-table]`
+**Type:** `@Directive` | **Selector:** `sd-card, [sd-card]`
 
-```html
-<div sd-table>
-  <div class="tr">...</div>
-</div>
-```
+Card container with border, padding, and background styling.
+
+No inputs.
 
 ---
 
-## SdViewControl
+### SdGapControl
 
-A view container that shows one `SdViewItemControl` at a time based on matched value.
+**Type:** `@Component` | **Selector:** `sd-gap`
 
-**Selector:** `sd-view`
+Spacing element for creating gaps between components.
 
-```html
-<sd-view [value]="activeTab">
-  <sd-view-item [value]="'profile'">Profile content</sd-view-item>
-  <sd-view-item [value]="'settings'">Settings content</sd-view-item>
-</sd-view>
-```
+#### Inputs
 
-**Inputs:** `value: any`, `fill: boolean` (default `false`)
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `height` | `"xxs" \| "xs" \| "sm" \| "default" \| "lg" \| "xl" \| "xxl"` | No | -- | Preset height |
+| `heightPx` | `number` | No | -- | Custom height in pixels |
+| `width` | `"xxs" \| "xs" \| "sm" \| "default" \| "lg" \| "xl" \| "xxl"` | No | -- | Preset width |
+| `widthPx` | `number` | No | -- | Custom width in pixels |
+| `widthEm` | `number` | No | -- | Custom width in em units |
 
 ---
 
-## SdViewItemControl
+### SdPaneDirective
 
-An item inside `SdViewControl`. Shown only when its `value` matches the parent `SdViewControl.value`.
+**Type:** `@Directive` | **Selector:** `sd-pane, [sd-pane]`
 
-**Selector:** `sd-view-item`
+Scrollable content pane with `overflow: auto`.
 
-**Inputs:** `value: any`
+No inputs.
+
+---
+
+### SdTableDirective
+
+**Type:** `@Directive` | **Selector:** `sd-table, [sd-table]`
+
+Styled table container with consistent border and padding styles.
+
+No inputs.
+
+---
+
+### SdViewControl
+
+**Type:** `@Component` | **Selector:** `sd-view`
+
+Container for switchable content views, typically used with `SdTabControl` or programmatic switching.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `any` | No | -- | Active view value |
+| `fill` | `boolean \| ""` | No | `false` | Fill available space |
+
+---
+
+### SdViewItemControl
+
+**Type:** `@Component` | **Selector:** `sd-view-item`
+
+Individual view panel within `SdViewControl`. Visible when its value matches the parent's value.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `any` | No | -- | View item value (matched against parent) |

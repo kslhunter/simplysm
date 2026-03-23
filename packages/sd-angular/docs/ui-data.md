@@ -1,198 +1,187 @@
-# UI: Data Components
+# UI - Data Components
 
-## SdListControl
+## List
 
-A vertical list container.
+### SdListControl
 
-**Selector:** `sd-list`
+**Type:** `@Component` | **Selector:** `sd-list`
 
-```html
-<sd-list [inset]="true">
-  <sd-list-item>Item 1</sd-list-item>
-  <sd-list-item>Item 2</sd-list-item>
-</sd-list>
-```
+Styled vertical list container.
 
-**Inputs:** `inset: boolean` (default `false`) — transparent background when true.
+#### Inputs
 
----
-
-## SdListItemControl
-
-An item inside `SdListControl`. Supports selection, accordion/flat layout, nested lists, and an optional tool template.
-
-**Selector:** `sd-list-item`
-
-```html
-<sd-list-item
-  [selected]="item.id === selectedId"
-  (click)="select(item)"
-  [selectedIcon]="tablerCheck"
->
-  {{ item.name }}
-</sd-list-item>
-
-<!-- Accordion with children -->
-<sd-list-item [layout]="'accordion'">
-  Category
-  <sd-list>
-    <sd-list-item>Child 1</sd-list-item>
-  </sd-list>
-</sd-list-item>
-```
-
-**Inputs:**
-
-| Input          | Type                    | Default       | Description                  |
-| -------------- | ----------------------- | ------------- | ---------------------------- |
-| `open` (model) | `boolean`               | `false`       | Expanded state               |
-| `selectedIcon` | `string`                | —             | SVG icon shown when selected |
-| `selected`     | `boolean`               | `false`       | Selected state               |
-| `layout`       | `"flat" \| "accordion"` | `"accordion"` | Display mode                 |
-| `contentStyle` | `string`                | —             | Inline style for content     |
-| `contentClass` | `string`                | —             | CSS class for content        |
-| `readonly`     | `boolean`               | `false`       | Readonly state               |
-
-**Content projection:**
-
-- Default content — item label
-- `sd-list` — nested child list (triggers accordion behavior)
-- `#toolTpl` — tool template rendered inside the item row
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `inset` | `boolean \| ""` | No | `false` | Remove outer border/padding |
 
 ---
 
-## SdSheetControl
+### SdListItemControl
 
-A full-featured data grid with sortable/resizable columns, column fixing, pagination, row selection, row expansion, keyboard navigation, and optional column configuration.
+**Type:** `@Component` | **Selector:** `sd-list-item`
 
-**Selector:** `sd-sheet`
+List item with accordion (expandable children) or flat layout. Supports selection indicator icons.
 
-```html
-<sd-sheet
-  [key]="'mySheet'"
-  [items]="items()"
-  [trackByFn]="trackByItem"
-  [(selectedItemKeys)]="selectedKeys"
-  [selectMode]="'multi'"
->
-  <sd-sheet-column [key]="'name'" [header]="'Name'" [width]="'200px'">
-    <ng-template [cell]="items()" let-item="item">
-      <div class="p-xs-sm">{{ item.name }}</div>
-    </ng-template>
-  </sd-sheet-column>
-  <sd-sheet-column [key]="'amount'" [header]="'Amount'">
-    <ng-template [cell]="items()" let-item="item">
-      <sd-textfield [type]="'number'" [(value)]="item.amount" [inset]="true" />
-    </ng-template>
-  </sd-sheet-column>
-</sd-sheet>
-```
+#### Inputs
 
-**Key inputs:**
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `selectedIcon` | `string` | No | -- | Icon to display when selected |
+| `selected` | `boolean \| ""` | No | `false` | Whether this item is selected |
+| `layout` | `"flat" \| "accordion"` | No | `"accordion"` | Display layout mode |
+| `contentStyle` | `string` | No | -- | CSS styles for content area |
+| `contentClass` | `string` | No | -- | CSS class for content area |
+| `readonly` | `boolean \| ""` | No | `false` | Prevent interaction |
 
-| Input              | Type                            | Description                          |
-| ------------------ | ------------------------------- | ------------------------------------ |
-| `key`              | `string`                        | Persisted config key                 |
-| `items`            | `T[]`                           | Data rows                            |
-| `trackByFn`        | `(item: T) => any`              | Track function                       |
-| `selectedItemKeys` | `TKey[]` (model)                | Selected row keys                    |
-| `selectMode`       | `"single" \| "multi"`           | Row selection mode                   |
-| `autoSelect`       | `"click" \| undefined`          | Auto-select on click                 |
-| `expandedItemKeys` | `TKey[]` (model)                | Expanded row keys                    |
-| `getItemKeyFn`     | `(item: T) => TKey`             | Row key function                     |
-| `getChildrenFn`    | `(item: T) => T[] \| undefined` | Children for tree rows               |
-| `sortingDefs`      | `ISdSortingDef[]` (model)       | Sort definitions                     |
-| `currentPage`      | `number` (model)                | Pagination current page              |
-| `pageItemCount`    | `number`                        | Items per page (enables pagination)  |
-| `totalItemCount`   | `number`                        | Total item count (for server paging) |
-| `focusMode`        | `"row" \| "cell"`               | Focus highlight mode                 |
-| `inset`            | `boolean`                       | Borderless style                     |
-| `hideConfigBar`    | `boolean`                       | Hide column config bar               |
-| `contentStyle`     | `string`                        | Container style                      |
+#### Models
 
-**Outputs:** `(itemKeydown)` — `ISdSheetItemKeydownEventParam<T>`
-
-**Feature classes (internal):**
-
-- `SdSheetCellAgent` — cell keyboard navigation and edit mode
-- `SdSheetColumnFixingManager` — sticky column left offset tracking
-- `SdSheetDomAccessor` — DOM element lookup by cell address
-- `SdSheetFocusIndicatorRenderer` — renders focus indicator overlay
-- `SdSheetLayoutEngine` — computes header rows and column definitions
-- `SdSheetSelectRowIndicatorRenderer` — renders selection indicator overlay
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `open` | `boolean` | `false` | Accordion expanded state |
 
 ---
 
-## SdSheetColumnDirective
+## Sheet
 
-Defines a column inside `SdSheetControl`.
+### SdSheetControl
 
-**Selector:** `sd-sheet-column`
+**Type:** `@Component` | **Selector:** `sd-sheet`
 
-```html
-<sd-sheet-column [key]="'status'" [header]="['Group', 'Status']" [width]="'80px'" [fixed]="true">
-  <ng-template [cell]="items()" let-item="item" let-edit="edit">
-    @if (edit) {
-    <sd-select [inset]="true" [(value)]="item.status">...</sd-select>
-    } @else { {{ item.status }} }
-  </ng-template>
-</sd-sheet-column>
-```
+Full-featured data grid component with column sorting, resizing, fixing, row selection, tree expansion, pagination, focus management, and persistent configuration.
 
-**Inputs:**
+#### Inputs
 
-| Input             | Type                 | Description               |
-| ----------------- | -------------------- | ------------------------- |
-| `key`             | `string` (required)  | Column identifier         |
-| `fixed`           | `boolean`            | Stick to left             |
-| `header`          | `string \| string[]` | Header text or breadcrumb |
-| `headerStyle`     | `string`             | Style for header cell     |
-| `tooltip`         | `string`             | Tooltip on header         |
-| `width`           | `string`             | Column width (CSS)        |
-| `disableSorting`  | `boolean`            | Hide sort controls        |
-| `disableResizing` | `boolean`            | Prevent column resize     |
-| `hidden`          | `boolean`            | Hide column               |
-| `collapse`        | `boolean`            | Collapsible column        |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `key` | `string` | Yes | -- | Unique key for config persistence |
+| `items` | `T[]` | No | `[]` | Data items to display |
+| `trackByFn` | `(item: T, index: number) => any` | No | `(item) => item` | Track-by function |
+| `hideConfigBar` | `boolean \| ""` | No | `false` | Hide the configuration toolbar |
+| `inset` | `boolean \| ""` | No | `false` | Remove outer border/padding |
+| `contentStyle` | `string` | No | -- | CSS style for content area |
+| `getItemCellClassFn` | `(item: T, colKey: string) => string \| undefined` | No | -- | Per-cell CSS class function |
+| `getItemCellStyleFn` | `(item: T, colKey: string) => string \| undefined` | No | -- | Per-cell CSS style function |
+| `useAutoSort` | `boolean \| ""` | No | `false` | Auto-sort items client-side |
+| `visiblePageCount` | `number` | No | `10` | Number of page buttons to show |
+| `totalPageCount` | `number` | No | `0` | Total number of pages |
+| `itemsPerPage` | `number` | No | -- | Items per page (enables pagination) |
+| `getChildrenFn` | `(item: T, index: number) => T[] \| undefined` | No | -- | Tree child items accessor |
+| `selectMode` | `"single" \| "multi"` | No | -- | Selection mode |
+| `autoSelect` | `"click" \| "focus"` | No | -- | Auto-select trigger |
+| `getItemSelectableFn` | `(item: T) => boolean \| string` | No | -- | Per-item selection guard |
+| `focusMode` | `"row" \| "cell"` | No | `"cell"` | Focus navigation mode |
 
-**Content projection:**
+#### Models
 
-- `ng-template[cell]` — cell template (`SdSheetColumnCellTemplateDirective`)
-- `#headerTpl` — custom header template
-- `#summaryTpl` — summary row template
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `sorts` | `ISdSortingDef[]` | `[]` | Column sort definitions |
+| `currentPage` | `number` | `0` | Current page index |
+| `expandedItems` | `T[]` | `[]` | Expanded tree items |
+| `selectedItems` | `T[]` | `[]` | Selected items |
 
----
+#### Outputs
 
-## SdSheetColumnCellTemplateDirective
-
-Type-guard directive for `ng-template[cell]` inside `SdSheetColumnDirective`.
-
-**Selector:** `ng-template[cell]`
-
-**Input:** `cell: TItem[]` (required)
-
-**Context `SdSheetColumnCellTemplateContext<TItem>`:**
-
-| Variable    | Type      | Description                  |
-| ----------- | --------- | ---------------------------- |
-| `$implicit` | `TItem`   | Row data                     |
-| `item`      | `TItem`   | Row data (alias)             |
-| `index`     | `number`  | Row index                    |
-| `depth`     | `number`  | Tree depth                   |
-| `edit`      | `boolean` | Whether cell is in edit mode |
+| Output | Type | Description |
+|--------|------|-------------|
+| `itemKeydown` | `ISdSheetItemKeydownEventParam<T>` | Keydown on a row |
+| `cellKeydown` | `ISdSheetItemKeydownEventParam<T>` | Keydown on a cell |
 
 ---
 
-## SdSheetConfigModal
+### SdSheetColumnDirective
 
-Internal modal for configuring sheet column visibility, order, width, and fixed state. Used automatically by `SdSheetControl` when `key` is set.
+**Type:** `@Directive` | **Selector:** `sd-sheet-column`
 
-**Selector:** `sd-sheet-config-modal`
+Defines a column within `SdSheetControl`. Contains header configuration, sizing, and the cell template.
 
-Implements `ISdModal<ISdSheetConfig>`. Inputs: `sheetKey`, `controls`, `config`.
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `key` | `string` | Yes | -- | Unique column key |
+| `fixed` | `boolean \| ""` | No | `false` | Fix column to the left |
+| `header` | `string \| string[]` | No | -- | Header text(s) for multi-row headers |
+| `headerStyle` | `string` | No | -- | CSS style for header cell |
+| `tooltip` | `string` | No | -- | Header tooltip text |
+| `width` | `string` | No | -- | Column width (CSS value) |
+| `disableSorting` | `boolean \| ""` | No | `false` | Disable sorting for this column |
+| `disableResizing` | `boolean \| ""` | No | `false` | Disable column resizing |
+| `hidden` | `boolean \| ""` | No | `false` | Hide the column |
+| `collapse` | `boolean \| ""` | No | `false` | Collapse the column |
+
+---
+
+### SdSheetColumnCellTemplateDirective
+
+**Type:** `@Directive` | **Selector:** `ng-template[cell]`
+
+Marks a template as the cell template for a sheet column. The template context provides `$implicit` (the item) and other row metadata.
+
+---
+
+### SdSheetConfigModal
+
+**Type:** `@Component` | **Selector:** `sd-sheet-config-modal`
+
+Modal for configuring sheet column visibility, order, fixed state, and width. Implements `ISdModal<ISdSheetConfig>`.
+
+#### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sheetKey` | `string` | Yes | Sheet key for config persistence |
+| `controls` | `readonly SdSheetColumnDirective<T>[]` | Yes | Column directives to configure |
+| `config` | `ISdSheetConfig \| undefined` | Yes | Current config |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `close` | `ISdSheetConfig \| undefined` | Updated config or undefined if canceled |
+
+---
+
+## Sheet Feature Classes
+
+### SdSheetCellAgent
+
+Manages cell-level interactions within the sheet (focus, edit state).
+
+### SdSheetColumnFixingManager
+
+Manages column fixed/unfixed state and left position calculations.
+
+### SdSheetDomAccessor
+
+Provides DOM query methods for accessing sheet elements (rows, cells, headers).
+
+### SdSheetFocusIndicatorRenderer
+
+Renders the focus indicator overlay on the currently focused cell.
+
+### SdSheetLayoutEngine
+
+Calculates column layouts, header structures, and content positioning.
+
+### SdSheetSelectRowIndicatorRenderer
+
+Renders the selection indicator overlay on selected rows.
 
 ---
 
 ## Sheet Types
+
+### ISdSheetColumnDef
+
+```typescript
+interface ISdSheetColumnDef<T> {
+  control: SdSheetColumnDirective<T>;
+  fixed: boolean;
+  width: string | undefined;
+  headerStyle: string | undefined;
+}
+```
 
 ### ISdSheetConfig
 
@@ -206,17 +195,6 @@ interface ISdSheetConfigColumn {
   width?: string;
   displayOrder?: number;
   hidden?: boolean;
-}
-```
-
-### ISdSheetColumnDef
-
-```typescript
-interface ISdSheetColumnDef<T> {
-  control: SdSheetColumnDirective<T>;
-  fixed: boolean;
-  width: string | undefined;
-  headerStyle: string | undefined;
 }
 ```
 

@@ -6,348 +6,214 @@ Build, check, publish, and deploy tool for Simplysm monorepo projects. Provides 
 
 ```bash
 npm install @simplysm/sd-cli
-# or
-yarn add @simplysm/sd-cli
 ```
 
-## Project Configuration
+This is a CLI-only package with no library API exports. All functionality is accessed through the `sd-cli` command.
 
-sd-cli reads a JavaScript config file (default: `simplysm.js`) at the project root. The file must export a default function that returns an `ISdProjectConfig` object.
+## CLI Overview
 
-```js
-// simplysm.js
-export default (isDev, options) => ({
-  packages: {
-    "my-core": {
-      type: "library",
-      publish: "npm",
-    },
-    "my-server": {
-      type: "server",
-      publish: {
-        type: "sftp",
-        host: "example.com",
-        user: "deploy",
-        pass: process.env.DEPLOY_PASS,
-      },
-    },
-    "my-client": {
-      type: "client",
-      server: "my-server",
-      builder: {
-        web: {},
-        electron: {
-          appId: "com.example.myapp",
-        },
-        capacitor: {
-          appId: "com.example.myapp",
-          appName: "My App",
-          platform: { android: {} },
-        },
-      },
-    },
-  },
-  localUpdates: {
-    "@someorg/*": "C:/libs/someorg/*/dist",
-  },
-  postPublish: [
-    { type: "script", cmd: "echo", args: ["done"] },
-  ],
-});
-```
+| Command | Description |
+|---------|-------------|
+| `local-update` | Performs local library update |
+| `watch` | Watch-builds packages in development mode |
+| `build` | Production build for packages |
+| `check [path]` | Runs typecheck and/or lint |
+| `publish` | Builds and publishes packages to npm |
+| `run-electron <package>` | Launches a watch-built platform as an Electron app |
+| `build-electron-for-dev <package>` | Builds an Electron app for dev testing |
+| `run-cordova <platform> <package> [url]` | Deploys to a Cordova device |
+| `run-capacitor <platform> <package> [url]` | Deploys to a Capacitor device |
+| `commit` | AI-assisted commit message generation, commit, and push |
+| `postinstall` | Runs post-install tasks automatically |
 
-### ISdProjectConfig
+## Global Options
 
-| Property | Type | Description |
-|---|---|---|
-| `packages` | `Record<string, TSdPackageConfig>` | Package name to config mapping. Keys must match workspace directory names. |
-| `localUpdates` | `Record<string, string>` | Glob-to-path mapping for syncing local library builds into `node_modules`. |
-| `postPublish` | `TSdPostPublishConfig[]` | Scripts to run after all packages are published. Supports `%SD_VERSION%` and `%SD_PROJECT_PATH%` placeholders. |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--help`, `-h` | boolean | -- | Show help |
+| `--debug` | boolean | `false` | Enable debug-level logging |
 
-### Package Types
+## CLI Reference
 
-#### Library (`type: "library"`)
+### `local-update`
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `type` | `"library"` | | Package type identifier. |
-| `publish` | `"npm"` | | Publish to npm registry. |
-| `polyfills` | `string[]` | | Modules to include as polyfills. |
-| `index` | `{ excludes?: string[] } \| false` | | Auto-generated `index.ts` config. Set `false` to disable. |
-| `dbContext` | `string` | | Database context class name for auto-generated DB context file. |
-| `forceProductionMode` | `boolean` | | Force production mode regardless of dev/prod flag. |
-
-#### Server (`type: "server"`)
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `type` | `"server"` | | Package type identifier. |
-| `publish` | `ISdLocalDirectoryPublishConfig \| ISdFtpPublishConfig` | | Deploy target configuration. |
-| `externals` | `string[]` | | Modules to exclude from the server bundle. |
-| `configs` | `Record<string, any>` | | Arbitrary config values injected at build time. |
-| `env` | `Record<string, string>` | | Environment variables set during build. |
-| `forceProductionMode` | `boolean` | | Force production mode. |
-| `pm2` | `object` | | PM2 process manager settings (`name`, `ignoreWatchPaths`, `noInterpreter`, `noStartScript`). |
-| `iis` | `object` | | IIS hosting settings (`nodeExeFilePath`). |
-
-#### Client (`type: "client"`)
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `type` | `"client"` | | Package type identifier. |
-| `server` | `string \| { port: number }` | | Server package name to proxy to, or a fixed port. |
-| `publish` | `ISdLocalDirectoryPublishConfig \| ISdFtpPublishConfig` | | Deploy target configuration. |
-| `env` | `Record<string, string>` | | Environment variables set during build. |
-| `configs` | `Record<string, any>` | | Arbitrary config values injected at build time. |
-| `noLazyRoute` | `boolean` | | Disable automatic lazy route generation. |
-| `forceProductionMode` | `boolean` | | Force production mode. |
-| `builder.web` | `ISdClientBuilderWebConfig` | | Web build options (environment variables). |
-| `builder.electron` | `ISdClientBuilderElectronConfig` | | Electron desktop build options. |
-| `builder.capacitor` | `ISdClientBuilderCapacitorConfig` | | Capacitor mobile build options. |
-| `builder.cordova` | `ISdClientBuilderCordovaConfig` | | **(Deprecated)** Cordova mobile build options. |
-
-### Publish Targets
-
-**Local Directory**
-```js
-{ type: "local-directory", path: "C:/deploy/%SD_VERSION%" }
-```
-
-**FTP / FTPS / SFTP**
-```js
-{ type: "sftp", host: "example.com", port: 22, path: "/var/www", user: "deploy", pass: "secret" }
-```
-
-**npm**
-```js
-"npm"
-```
-
-## CLI Commands
-
-All commands support the `--debug` flag for verbose logging and `--config <path>` to specify a config file (default: `simplysm.js`).
-
-### watch
-
-Watch-build all configured packages with incremental compilation.
+Performs local library update using linked packages.
 
 ```bash
-sd-cli watch [options]
+sd-cli local-update [--config <path>] [--options <values...>]
 ```
 
 | Option | Type | Default | Description |
-|---|---|---|---|
-| `--config` | `string` | `simplysm.js` | Config file path. |
-| `--options` | `string[]` | | Custom options passed to the config function. |
-| `--packages` | `string[]` | | Filter to specific packages by name. |
-| `--emitOnly` | `boolean` | `false` | Emit output only (skip type checking). |
-| `--noEmit` | `boolean` | `false` | Type check only (skip output emission). |
+|--------|------|---------|-------------|
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--options` | string[] | -- | Additional option settings |
+
+### `watch`
+
+Watch-builds all or selected packages for development.
 
 ```bash
-# Watch all packages
-sd-cli watch
-
-# Watch a specific package
-sd-cli watch --packages sd-angular
-
-# Emit only (faster, no checks)
-sd-cli watch --emitOnly
-
-# Check only (no emit)
-sd-cli watch --noEmit
-```
-
-### build
-
-Production build for all configured packages. Automatically increments the patch version.
-
-```bash
-sd-cli build [options]
+sd-cli watch [--config <path>] [--packages <names...>] [--emitOnly] [--noEmit] [--options <values...>]
 ```
 
 | Option | Type | Default | Description |
-|---|---|---|---|
-| `--config` | `string` | `simplysm.js` | Config file path. |
-| `--options` | `string[]` | | Custom options passed to the config function. |
-| `--packages` | `string[]` | | Filter to specific packages by name. |
+|--------|------|---------|-------------|
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--packages` | string[] | -- | Specific packages to watch |
+| `--emitOnly` | boolean | `false` | Only emit output (skip checks) |
+| `--noEmit` | boolean | `false` | Only check (skip emit) |
+| `--options` | string[] | -- | Additional option settings |
 
-### check
+### `build`
 
-Run type checking and/or linting on packages.
+Production build for all or selected packages.
 
 ```bash
-sd-cli check [path] [options]
+sd-cli build [--config <path>] [--packages <names...>] [--options <values...>]
 ```
 
 | Option | Type | Default | Description |
-|---|---|---|---|
-| `[path]` | `string` | | Package directory or file path to check. If omitted, checks all packages. |
-| `--config` | `string` | `simplysm.js` | Config file path. |
-| `--options` | `string[]` | | Custom options passed to the config function. |
-| `--type` | `"lint" \| "typecheck"` | *(both)* | Run only lint or only typecheck. |
+|--------|------|---------|-------------|
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--packages` | string[] | -- | Specific packages to build |
+| `--options` | string[] | -- | Additional option settings |
+
+### `check [path]`
+
+Runs typecheck and/or lint on the project or a specific package path.
 
 ```bash
-# Check all packages (typecheck + lint)
-sd-cli check
-
-# Check a specific package
-sd-cli check packages/sd-core-common
-
-# Lint only
-sd-cli check --type lint
-
-# Typecheck only
-sd-cli check --type typecheck
-```
-
-### publish
-
-Build and publish all configured packages. Handles version bumping, git tagging, and deployment to npm / FTP / local directory.
-
-```bash
-sd-cli publish [options]
+sd-cli check [path] [--config <path>] [--type <lint|typecheck>] [--options <values...>]
 ```
 
 | Option | Type | Default | Description |
-|---|---|---|---|
-| `--config` | `string` | `simplysm.js` | Config file path. |
-| `--options` | `string[]` | | Custom options passed to the config function. |
-| `--packages` | `string[]` | | Filter to specific packages by name. |
-| `--noBuild` | `boolean` | `false` | Skip building before publishing (dangerous). |
+|--------|------|---------|-------------|
+| `path` | string | -- | Package path or file path (positional) |
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--type` | `"lint"` \| `"typecheck"` | -- | Check type (omit for both) |
+| `--options` | string[] | -- | Additional option settings |
 
-The publish workflow:
-1. Validates npm/yarn authentication tokens (for npm targets).
-2. Checks for uncommitted git changes.
-3. Increments the patch version across all workspace packages.
-4. Builds all packages.
-5. Creates a git commit and tag for the new version.
-6. Pushes to the remote repository.
-7. Publishes each package to its configured target.
-8. Runs `postPublish` scripts if configured.
+### `publish`
 
-### local-update
-
-Copy local library builds into `node_modules` based on the `localUpdates` config.
+Builds and publishes packages to npm.
 
 ```bash
-sd-cli local-update [options]
+sd-cli publish [--noBuild] [--config <path>] [--packages <names...>] [--options <values...>]
 ```
 
 | Option | Type | Default | Description |
-|---|---|---|---|
-| `--config` | `string` | `simplysm.js` | Config file path. |
-| `--options` | `string[]` | | Custom options passed to the config function. |
+|--------|------|---------|-------------|
+| `--noBuild` | boolean | `false` | Publish without rebuilding |
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--packages` | string[] | -- | Specific packages to publish |
+| `--options` | string[] | -- | Additional option settings |
 
-### run-electron
+### `run-electron <package>`
 
-Launch a watched client package as an Electron desktop app (development mode).
-
-```bash
-sd-cli run-electron <package> [options]
-```
-
-| Option | Type | Description |
-|---|---|---|
-| `<package>` | `string` | Package name (required). |
-| `--config` | `string` | Config file path. |
-| `--options` | `string[]` | Custom options passed to the config function. |
-
-### build-electron-for-dev
-
-Build an Electron installer from a watched client package (development build).
+Launches a watch-built platform as an Electron desktop application.
 
 ```bash
-sd-cli build-electron-for-dev <package> [options]
+sd-cli run-electron <package> [--config <path>] [--options <values...>]
 ```
 
-| Option | Type | Description |
-|---|---|---|
-| `<package>` | `string` | Package name (required). |
-| `--config` | `string` | Config file path. |
-| `--options` | `string[]` | Custom options passed to the config function. |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `package` | string | -- | Package name (required) |
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--options` | string[] | -- | Additional option settings |
 
-### run-cordova *(deprecated)*
+### `build-electron-for-dev <package>`
 
-Deploy a watched client package to a Cordova device.
+Builds an Electron app from a watch-built platform for dev testing.
+
+```bash
+sd-cli build-electron-for-dev <package> [--config <path>] [--options <values...>]
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `package` | string | -- | Package name (required) |
+| `--config` | string | `simplysm.js` | Configuration file path |
+| `--options` | string[] | -- | Additional option settings |
+
+### `run-cordova <platform> <package> [url]`
+
+Deploys a watch-built platform to a Cordova device as a webview app.
 
 ```bash
 sd-cli run-cordova <platform> <package> [url]
 ```
 
 | Option | Type | Description |
-|---|---|---|
-| `<platform>` | `string` | Target platform (e.g., `android`). |
-| `<package>` | `string` | Package name. |
-| `[url]` | `string` | URL to open in the webview. |
+|--------|------|-------------|
+| `platform` | string | Build platform (e.g., `android`) (required) |
+| `package` | string | Package name (required) |
+| `url` | string | URL to open in webview (required) |
 
-### run-capacitor
+### `run-capacitor <platform> <package> [url]`
 
-Deploy a watched client package to a Capacitor device.
+Deploys a watch-built platform to a Capacitor device as a webview app.
 
 ```bash
 sd-cli run-capacitor <platform> <package> [url]
 ```
 
 | Option | Type | Description |
-|---|---|---|
-| `<platform>` | `string` | Target platform (e.g., `android`). |
-| `<package>` | `string` | Package name. |
-| `[url]` | `string` | URL to open in the webview. |
+|--------|------|-------------|
+| `platform` | string | Build platform (e.g., `android`) (required) |
+| `package` | string | Package name (required) |
+| `url` | string | URL to open in webview (required) |
 
-### commit
+### `commit`
 
-Use AI (Claude Haiku) to generate a commit message from staged changes, then commit automatically.
+Uses AI to generate a commit message from current changes, then commits and pushes.
 
 ```bash
 sd-cli commit
 ```
 
-Requires the `ANTHROPIC_API_KEY` environment variable to be set.
+### `postinstall`
 
-### postinstall
-
-Run post-install patches on dependencies. This is typically called automatically after `yarn install`.
+Runs automated post-install tasks. Typically called from `package.json` scripts.
 
 ```bash
 sd-cli postinstall
 ```
 
-## Electron Builder Configuration
+## Usage Examples
 
-The `builder.electron` config for client packages supports:
+### Development workflow
 
-| Property | Type | Description |
-|---|---|---|
-| `appId` | `string` | Application identifier (e.g., `com.example.app`). |
-| `installerIcon` | `string` | Path to the installer icon file (relative to the package). |
-| `portable` | `boolean` | Build a portable `.exe` instead of an NSIS installer. |
-| `postInstallScript` | `string` | Script to run after npm install in the Electron context. |
-| `nsisOptions` | `electronBuilder.NsisOptions` | NSIS installer options (pass-through to electron-builder). |
-| `reinstallDependencies` | `string[]` | Dependencies to reinstall with native rebuild in the Electron context. |
-| `env` | `Record<string, string>` | Environment variables for the Electron build. |
+```bash
+# Watch all packages
+sd-cli watch
 
-## Capacitor Builder Configuration
+# Watch a specific package with debug logging
+sd-cli watch --packages sd-angular --debug
 
-The `builder.capacitor` config for client packages supports:
+# Check only (no output emit)
+sd-cli watch --noEmit
+```
 
-| Property | Type | Description |
-|---|---|---|
-| `appId` | `string` | Application identifier (e.g., `com.example.app`). |
-| `appName` | `string` | Display name of the application. |
-| `plugins` | `Record<string, Record<string, unknown> \| true>` | Capacitor plugins with their configuration. Use `true` for no-config plugins. |
-| `icon` | `string` | Path to the app icon (relative to the package). |
-| `debug` | `boolean` | Build in debug mode. |
-| `platform.android.config` | `Record<string, string>` | Additional Android application manifest attributes. |
-| `platform.android.bundle` | `boolean` | Build an AAB bundle instead of APK. |
-| `platform.android.sign` | `object` | Signing configuration (`keystore`, `storePassword`, `alias`, `password`, `keystoreType`). |
-| `platform.android.sdkVersion` | `number` | Target Android SDK version. |
-| `platform.android.permissions` | `array` | Android permissions (`name`, `maxSdkVersion`, `ignore`). |
-| `platform.android.intentFilters` | `array` | Android intent filters (`action`, `category`). |
-| `env` | `Record<string, string>` | Environment variables. |
-| `browserslist` | `string[]` | Browserslist targets. |
+### Build and publish
 
-## Process Behavior
+```bash
+# Full production build
+sd-cli build
 
-- On Windows, sd-cli automatically configures processor affinity (reserves 1 out of every 4 cores for the OS) and sets process priority to BelowNormal to avoid monopolizing system resources.
-- Node.js is launched with `--max-old-space-size=8192` for large project builds.
-- The `local-update` command runs automatically before other commands in production builds.
+# Build specific packages
+sd-cli build --packages sd-core-common sd-core-node
+
+# Publish without rebuilding
+sd-cli publish --noBuild
+```
+
+### Code quality
+
+```bash
+# Run both typecheck and lint
+sd-cli check
+
+# Lint only on a specific package
+sd-cli check packages/sd-core-common --type lint
+```

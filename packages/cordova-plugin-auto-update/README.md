@@ -1,91 +1,121 @@
 # @simplysm/cordova-plugin-auto-update
 
-> **Deprecated**: This package is no longer maintained. Use the Capacitor equivalent instead.
-
-Cordova plugin for Android APK auto-update. Downloads and installs the latest APK version from a remote server or external storage.
-
-## Platform Support
-
-- **Android only**
+Cordova Auto Update Plugin (legacy) -- APK installation and OTA update for Android. Provides permission management for APK installation, APK install via Cordova bridge, version info retrieval, and a full auto-update flow using `SdServiceClient` or external storage. This is the legacy Cordova counterpart to `@simplysm/capacitor-plugin-auto-update`.
 
 ## Installation
 
 ```bash
-cordova plugin add @simplysm/cordova-plugin-auto-update
+npm install @simplysm/cordova-plugin-auto-update
 ```
 
-The plugin automatically adds the `REQUEST_INSTALL_PACKAGES` permission to `AndroidManifest.xml` and depends on `@simplysm/cordova-plugin-file-system`.
+## API Overview
 
-## API
+| API | Type | Description |
+|-----|------|-------------|
+| `CordovaApkInstaller` | Abstract class | Static methods for APK installation permission management, APK install, and version info |
+| `CordovaAutoUpdate` | Abstract class | Static methods for OTA auto-update flows (server-based and external-storage-based) |
 
-### CordovaAutoUpdate
+## API Reference
 
-Abstract utility class that orchestrates the full auto-update flow: version check, APK download, permission handling, and installation.
+### `CordovaApkInstaller`
 
-#### `static runAsync(opt)`
+Abstract class with static methods for APK installation and permission management via the Cordova bridge.
 
-Performs a server-based auto-update. Connects to a remote service to check for the latest version, downloads the APK if an update is available, and triggers installation.
+```typescript
+export abstract class CordovaApkInstaller {
+  static async hasPermissionManifest(): Promise<boolean>;
+  static async hasPermission(): Promise<boolean>;
+  static async requestPermission(): Promise<void>;
+  static async install(apkUri: string): Promise<void>;
+  static async getVersionInfo(): Promise<{
+    versionName: string;
+    versionCode: string;
+  }>;
+}
+```
 
-| Parameter | Type | Description |
-|---|---|---|
-| `opt.log` | `(messageHtml: string) => void` | Callback to display status/progress messages (HTML) |
-| `opt.serviceClient` | `SdServiceClient` | Service client connected to a server implementing `ISdAutoUpdateService` |
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `hasPermissionManifest` | -- | `Promise<boolean>` | Check if `REQUEST_INSTALL_PACKAGES` is declared in the AndroidManifest |
+| `hasPermission` | -- | `Promise<boolean>` | Check if install packages permission is currently granted |
+| `requestPermission` | -- | `Promise<void>` | Request install permission (navigates to settings screen) |
+| `install` | `apkUri: string` | `Promise<void>` | Install an APK from a content:// URI |
+| `getVersionInfo` | -- | `Promise<{ versionName: string; versionCode: string }>` | Retrieve current app version name and code |
 
-The method compares `process.env["SD_VERSION"]` against the server's latest version. If they differ, it downloads the APK, saves it to app cache storage, and launches the installer. The app freezes after triggering install (or on error) to await restart.
+#### `getVersionInfo` return fields
 
-```ts
+| Field | Type | Description |
+|-------|------|-------------|
+| `versionName` | `string` | Human-readable version name (e.g. `"1.2.3"`) |
+| `versionCode` | `string` | Numeric version code used by Android |
+
+### `CordovaAutoUpdate`
+
+Abstract class providing a complete OTA auto-update flow via the Cordova bridge. Supports server-based update via `SdServiceClient` and external-storage-based update from APK files.
+
+```typescript
+export abstract class CordovaAutoUpdate {
+  static async runAsync(opt: {
+    log: (messageHtml: string) => void;
+    serviceClient: SdServiceClient;
+  }): Promise<void>;
+
+  static async runByExternalStorageAsync(opt: {
+    log: (messageHtml: string) => void;
+    dirPath: string;
+  }): Promise<void>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `runAsync` | `opt: { log, serviceClient }` | `Promise<void>` | Run OTA update: check server version via `SdServiceClient`, download APK, and install |
+| `runByExternalStorageAsync` | `opt: { log, dirPath }` | `Promise<void>` | Run update from external storage: scan `dirPath` for APK files, find latest version via semver, and install |
+
+#### `runAsync` option fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `log` | `(messageHtml: string) => void` | Callback to display status/progress messages (may contain HTML) |
+| `serviceClient` | `SdServiceClient` | Connected service client instance; the server must implement `ISdAutoUpdateService` |
+
+#### `runByExternalStorageAsync` option fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `log` | `(messageHtml: string) => void` | Callback to display status/progress messages (may contain HTML) |
+| `dirPath` | `string` | Relative path within external storage containing versioned APK files (e.g. `1.2.3.apk`) |
+
+## Usage Examples
+
+### Check permission and install an APK
+
+```typescript
+import { CordovaApkInstaller } from "@simplysm/cordova-plugin-auto-update";
+
+const hasPermission = await CordovaApkInstaller.hasPermission();
+if (!hasPermission) {
+  await CordovaApkInstaller.requestPermission();
+}
+
+await CordovaApkInstaller.install("content://com.example.fileprovider/apk/update.apk");
+
+const versionInfo = await CordovaApkInstaller.getVersionInfo();
+console.log(versionInfo.versionName, versionInfo.versionCode);
+```
+
+### Run OTA auto-update from server
+
+```typescript
 import { CordovaAutoUpdate } from "@simplysm/cordova-plugin-auto-update";
+import { SdServiceClient } from "@simplysm/sd-service-client";
+
+const serviceClient = new SdServiceClient("https://my-server.com");
 
 await CordovaAutoUpdate.runAsync({
-  log: (html) => { document.body.innerHTML = html; },
-  serviceClient: myServiceClient,
+  log: (messageHtml) => {
+    document.getElementById("status")!.innerHTML = messageHtml;
+  },
+  serviceClient,
 });
 ```
-
-#### `static runByExternalStorageAsync(opt)`
-
-Performs an update from APK files stored on external storage. Scans a directory for versioned APK files (e.g., `1.2.3.apk`) and installs the highest version if it differs from the current app version.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `opt.log` | `(messageHtml: string) => void` | Callback to display status/progress messages (HTML) |
-| `opt.dirPath` | `string` | Directory path (relative to external storage root) containing versioned APK files |
-
-APK files must be named as `<semver>.apk` (e.g., `1.0.0.apk`). The method uses `semver.maxSatisfying` to determine the latest version.
-
-```ts
-import { CordovaAutoUpdate } from "@simplysm/cordova-plugin-auto-update";
-
-await CordovaAutoUpdate.runByExternalStorageAsync({
-  log: (html) => { document.body.innerHTML = html; },
-  dirPath: "MyApp/updates",
-});
-```
-
-### CordovaApkInstaller
-
-Abstract utility class providing low-level Cordova bridge methods for APK installation and permission management on Android.
-
-#### `static hasPermissionManifest(): Promise<boolean>`
-
-Checks whether the `REQUEST_INSTALL_PACKAGES` permission is declared in the app's `AndroidManifest.xml`.
-
-#### `static hasPermission(): Promise<boolean>`
-
-Checks whether the app currently has runtime permission to install unknown apps. Returns `true` on Android versions below Oreo (API 26).
-
-#### `static requestPermission(): Promise<void>`
-
-Opens the system settings screen for managing unknown app sources, prompting the user to grant install permission. Only effective on Android Oreo (API 26) and above.
-
-#### `static install(apkUri: string): Promise<void>`
-
-Triggers APK installation via an `ACTION_VIEW` intent.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `apkUri` | `string` | Content URI of the APK file (obtain via `CordovaFileSystem.getFileUriAsync`) |
-
-#### `static getVersionInfo(): Promise<{ versionName: string; versionCode: string }>`
-
-Returns the current app's version name and version code from the Android `PackageManager`.

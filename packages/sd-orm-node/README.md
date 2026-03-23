@@ -6,270 +6,308 @@ Node.js ORM module providing database connections and query execution for MSSQL,
 
 ```bash
 npm install @simplysm/sd-orm-node
-# or
-yarn add @simplysm/sd-orm-node
 ```
 
-Install the driver for your target database (all are optional peer dependencies):
+Optional peer dependencies (install based on your database):
+- `tedious` -- for MSSQL/Azure SQL
+- `mysql2` -- for MySQL
+- `sqlite3` -- for SQLite
 
-```bash
-# MSSQL
-npm install tedious
+## API Overview
 
-# MySQL
-npm install mysql2
+| API | Type | Description |
+|-----|------|-------------|
+| `MssqlDbConn` | Class | MSSQL database connection using `tedious` |
+| `MysqlDbConn` | Class | MySQL database connection using `mysql2` |
+| `SqliteDbConn` | Class | SQLite database connection using `sqlite3` |
+| `DbConnFactory` | Class | Factory that creates pooled or direct connections |
+| `NodeDbContextExecutor` | Class | Implements `IDbContextExecutor` for Node.js |
+| `PooledDbConn` | Class | Connection pool wrapper implementing `IDbConn` |
+| `SdOrm` | Class | High-level ORM entry point for typed database access |
 
-# SQLite
-npm install sqlite3
+## API Reference
+
+### `MssqlDbConn`
+
+MSSQL database connection implementing `IDbConn`. Extends `EventEmitter`. Uses the `tedious` driver with configurable timeout (default: 10 minutes).
+
+```typescript
+class MssqlDbConn extends EventEmitter implements IDbConn {
+  isConnected: boolean;
+  isOnTransaction: boolean;
+  readonly config: IDefaultDbConnConf;
+
+  constructor(tedious: typeof import("tedious"), config: IDefaultDbConnConf);
+
+  async connectAsync(): Promise<void>;
+  async closeAsync(): Promise<void>;
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
+  async commitTransactionAsync(): Promise<void>;
+  async rollbackTransactionAsync(): Promise<void>;
+  async executeAsync(queries: string[]): Promise<any[][]>;
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+}
 ```
 
-## Quick Start
+| Method | Description |
+|--------|-------------|
+| `connectAsync()` | Establishes a connection to the MSSQL server |
+| `closeAsync()` | Closes the connection and waits for pending requests |
+| `beginTransactionAsync(isolationLevel?)` | Begins a transaction with optional isolation level (default: `READ_COMMITTED`) |
+| `commitTransactionAsync()` | Commits the current transaction |
+| `rollbackTransactionAsync()` | Rolls back the current transaction |
+| `executeAsync(queries)` | Executes multiple SQL query strings |
+| `executeParametrizedAsync(query, params?)` | Executes a parameterized query with `@p0`, `@p1`, ... placeholders |
+| `bulkInsertAsync(tableName, columnDefs, records)` | Bulk inserts records using `tedious` BulkLoad |
+| `bulkUpsertAsync(...)` | Not supported on MSSQL -- throws an error |
+
+### `MysqlDbConn`
+
+MySQL database connection implementing `IDbConn`. Extends `EventEmitter`. Uses `mysql2/promise` with configurable timeout (default: 5 minutes).
+
+```typescript
+class MysqlDbConn extends EventEmitter implements IDbConn {
+  isConnected: boolean;
+  isOnTransaction: boolean;
+  readonly config: IDefaultDbConnConf;
+
+  constructor(mysql2: typeof import("mysql2/promise"), config: IDefaultDbConnConf);
+
+  async connectAsync(): Promise<void>;
+  async closeAsync(): Promise<void>;
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
+  async commitTransactionAsync(): Promise<void>;
+  async rollbackTransactionAsync(): Promise<void>;
+  async executeAsync(queries: string[]): Promise<any[][]>;
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `connectAsync()` | Connects to MySQL with `utf8mb4` charset and multiple statements enabled |
+| `closeAsync()` | Closes the MySQL connection |
+| `beginTransactionAsync(isolationLevel?)` | Begins a transaction (default: `REPEATABLE_READ`) |
+| `commitTransactionAsync()` | Commits the current transaction |
+| `rollbackTransactionAsync()` | Rolls back the current transaction |
+| `executeAsync(queries)` | Executes multiple SQL query strings |
+| `executeParametrizedAsync(query, params?)` | Executes a parameterized query |
+| `bulkInsertAsync(tableName, columnDefs, records)` | Bulk inserts using generated `INSERT INTO ... VALUES` |
+| `bulkUpsertAsync(tableName, columnDefs, records)` | Bulk upserts using `ON DUPLICATE KEY UPDATE` |
+
+### `SqliteDbConn`
+
+SQLite database connection implementing `IDbConn`. Extends `EventEmitter`. Uses `sqlite3` with configurable timeout (default: 5 minutes).
+
+```typescript
+class SqliteDbConn extends EventEmitter implements IDbConn {
+  isConnected: boolean;
+  isOnTransaction: boolean;
+  readonly config: ISqliteDbConnConf;
+
+  constructor(sqlite3: typeof import("sqlite3"), config: ISqliteDbConnConf);
+
+  async connectAsync(): Promise<void>;
+  async closeAsync(): Promise<void>;
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
+  async commitTransactionAsync(): Promise<void>;
+  async rollbackTransactionAsync(): Promise<void>;
+  async executeAsync(queries: string[]): Promise<any[][]>;
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `connectAsync()` | Opens the SQLite database file in serialized mode |
+| `closeAsync()` | Closes the database file |
+| `beginTransactionAsync(isolationLevel?)` | Begins a transaction (isolation level is ignored for SQLite) |
+| `commitTransactionAsync()` | Commits the current transaction |
+| `rollbackTransactionAsync()` | Rolls back the current transaction |
+| `executeAsync(queries)` | Executes multiple SQL query strings |
+| `executeParametrizedAsync(query, params?)` | Executes a parameterized query |
+| `bulkInsertAsync(tableName, columnDefs, records)` | Bulk inserts using generated `INSERT INTO ... VALUES` |
+| `bulkUpsertAsync(tableName, columnDefs, records)` | Bulk upserts using `ON DUPLICATE KEY UPDATE` |
+
+### `DbConnFactory`
+
+Factory class that creates database connections with automatic pooling for MSSQL and MySQL. SQLite connections are created directly (no pooling).
+
+```typescript
+class DbConnFactory {
+  static async createAsync(config: TDbConnConf): Promise<IDbConn>;
+}
+```
+
+#### `DbConnFactory.createAsync(config)`
+
+Creates and returns a database connection. For MSSQL and MySQL, returns a `PooledDbConn` backed by a `generic-pool` pool (min: 1, max: 10 connections, 30s acquire/idle timeout). For SQLite, returns a direct `SqliteDbConn`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `config` | `TDbConnConf` | Database connection configuration |
+
+**Returns**: `Promise<IDbConn>` -- a connection (pooled or direct).
+
+### `NodeDbContextExecutor`
+
+Implements `IDbContextExecutor` for server-side Node.js usage. Wraps `DbConnFactory` to provide the executor interface expected by `DbContext`.
+
+```typescript
+class NodeDbContextExecutor implements IDbContextExecutor {
+  constructor(config: TDbConnConf);
+
+  async getInfoAsync(): Promise<{
+    dialect: TDbContextOption["dialect"];
+    database?: string;
+    schema?: string;
+  }>;
+  async connectAsync(): Promise<void>;
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
+  async commitTransactionAsync(): Promise<void>;
+  async rollbackTransactionAsync(): Promise<void>;
+  async closeAsync(): Promise<void>;
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async executeDefsAsync(
+    defs: TQueryDef[],
+    options?: (IQueryResultParseOption | undefined)[],
+  ): Promise<any[][]>;
+}
+```
+
+### `PooledDbConn`
+
+Connection pool wrapper that implements `IDbConn`. Acquires a raw connection from the pool on `connectAsync()` and releases it on `closeAsync()`. Automatically detects physical connection drops and emits `"close"` events.
+
+```typescript
+class PooledDbConn extends EventEmitter implements IDbConn {
+  get config(): TDbConnConf;
+  get isConnected(): boolean;
+  get isOnTransaction(): boolean;
+
+  constructor(pool: Pool<IDbConn>, initialConfig: TDbConnConf);
+
+  async connectAsync(): Promise<void>;
+  async closeAsync(): Promise<void>;
+  async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
+  async commitTransactionAsync(): Promise<void>;
+  async rollbackTransactionAsync(): Promise<void>;
+  async executeAsync(queries: string[]): Promise<any[][]>;
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
+}
+```
+
+### `SdOrm`
+
+High-level ORM entry point providing typed access to a `DbContext` subclass. Manages connection lifecycle and transaction handling.
+
+```typescript
+class SdOrm<T extends DbContext> {
+  readonly dbContextType: Type<T>;
+  readonly config: TDbConnConf;
+  readonly dbContextOpt?: Partial<TDbContextOption>;
+
+  constructor(
+    dbContextType: Type<T>,
+    config: TDbConnConf,
+    dbContextOpt?: Partial<TDbContextOption>,
+  );
+
+  async connectAsync<R>(
+    callback: (conn: T) => Promise<R>,
+    isolationLevel?: ISOLATION_LEVEL,
+  ): Promise<R>;
+
+  async connectWithoutTransactionAsync<R>(
+    callback: (conn: T) => Promise<R>,
+  ): Promise<R>;
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `connectAsync(callback, isolationLevel?)` | Opens a connection with a transaction, executes the callback, and commits/rolls back |
+| `connectWithoutTransactionAsync(callback)` | Opens a connection without a transaction and executes the callback |
+
+## Usage Examples
+
+### Using SdOrm (recommended)
 
 ```typescript
 import { SdOrm } from "@simplysm/sd-orm-node";
-import { MyDbContext } from "./MyDbContext"; // your DbContext subclass
+import { MyDbContext } from "./MyDbContext";
 
 const orm = new SdOrm(MyDbContext, {
   dialect: "mysql",
   host: "localhost",
   port: 3306,
   username: "root",
-  password: "secret",
-  database: "mydb",
-});
-
-// Execute within a transaction
-const result = await orm.connectAsync(async (db) => {
-  return await db.executeSingleAsync(/* ... */);
-});
-
-// Execute without a transaction
-await orm.connectWithoutTransactionAsync(async (db) => {
-  // read-only queries, etc.
-});
-```
-
-## API Reference
-
-### `SdOrm<T>`
-
-High-level ORM entry point. Creates `DbContext` instances wired with `NodeDbContextExecutor` and manages connection lifecycle.
-
-```typescript
-const orm = new SdOrm(MyDbContext, config, dbContextOpt?);
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `dbContextType` | `Type<T>` | The `DbContext` subclass constructor |
-| `config` | `TDbConnConf` | Database connection configuration |
-| `dbContextOpt` | `Partial<TDbContextOption>` | Optional overrides for dialect, database, and schema |
-
-#### `connectAsync(callback, isolationLevel?)`
-
-Opens a connection, begins a transaction, executes the callback, then commits (or rolls back on error).
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `callback` | `(conn: T) => Promise<R>` | Callback receiving the connected `DbContext` instance |
-| `isolationLevel` | `ISOLATION_LEVEL` | Optional transaction isolation level |
-
-**Returns:** `Promise<R>` -- the value returned by the callback.
-
-#### `connectWithoutTransactionAsync(callback)`
-
-Opens a connection and executes the callback without wrapping it in a transaction. Useful for read-only operations.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `callback` | `(conn: T) => Promise<R>` | Callback receiving the connected `DbContext` instance |
-
-**Returns:** `Promise<R>` -- the value returned by the callback.
-
----
-
-### `NodeDbContextExecutor`
-
-Implements the `IDbContextExecutor` interface for Node.js. Uses `DbConnFactory` internally to acquire connections. Typically not used directly -- `SdOrm` creates it automatically.
-
-```typescript
-const executor = new NodeDbContextExecutor(config);
-```
-
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `getInfoAsync` | `() => Promise<{ dialect, database?, schema? }>` | Returns dialect and database metadata from the config |
-| `connectAsync` | `() => Promise<void>` | Creates a connection via `DbConnFactory` and connects |
-| `beginTransactionAsync` | `(isolationLevel?) => Promise<void>` | Begins a transaction |
-| `commitTransactionAsync` | `() => Promise<void>` | Commits the current transaction |
-| `rollbackTransactionAsync` | `() => Promise<void>` | Rolls back the current transaction |
-| `closeAsync` | `() => Promise<void>` | Closes the connection |
-| `executeDefsAsync` | `(defs, options?) => Promise<any[][]>` | Builds SQL from query definitions and executes them |
-| `executeParametrizedAsync` | `(query, params?) => Promise<any[][]>` | Executes a parameterized SQL query |
-| `bulkInsertAsync` | `(tableName, columnDefs, records) => Promise<void>` | Bulk inserts records into a table |
-| `bulkUpsertAsync` | `(tableName, columnDefs, records) => Promise<void>` | Bulk upserts records into a table |
-
----
-
-### `DbConnFactory`
-
-Static factory that creates `IDbConn` instances. For MySQL and MSSQL, connections are pooled (via `generic-pool`) and returned as `PooledDbConn` wrappers. SQLite connections are created directly without pooling.
-
-#### `DbConnFactory.createAsync(config)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config` | `TDbConnConf` | Database connection configuration |
-
-**Returns:** `Promise<IDbConn>` -- a `PooledDbConn` for MySQL/MSSQL, or a `SqliteDbConn` for SQLite.
-
-**Pool settings (MySQL / MSSQL):**
-- Min connections: 1
-- Max connections: 10
-- Acquire timeout: 30s
-- Idle timeout: 30s
-- Validates connections on borrow
-
----
-
-### `PooledDbConn`
-
-Connection wrapper that borrows a physical connection from the pool on `connectAsync` and returns it on `closeAsync`. Implements `IDbConn` by delegating all operations to the underlying raw connection. Emits a `"close"` event when the connection is released or the underlying physical connection drops.
-
-All `IDbConn` methods (transaction management, query execution, bulk operations) are delegated to the pooled raw connection.
-
----
-
-### `MssqlDbConn`
-
-MSSQL/Azure SQL connection implementation using [tedious](https://www.npmjs.com/package/tedious). Implements `IDbConn`.
-
-```typescript
-const conn = new MssqlDbConn(tedious, config);
-```
-
-| Feature | Details |
-|---------|---------|
-| Dialect | `"mssql"` or `"mssql-azure"` (enables TLS encryption) |
-| Default timeout | 10 minutes |
-| Auto-close timeout | 20 minutes of inactivity |
-| Bulk insert | Supported via tedious `BulkLoad` |
-| Bulk upsert | Not supported (throws error) |
-| Parameterized queries | Uses `@p0`, `@p1`, ... naming with type inference |
-
----
-
-### `MysqlDbConn`
-
-MySQL connection implementation using [mysql2](https://www.npmjs.com/package/mysql2). Implements `IDbConn`.
-
-```typescript
-const conn = new MysqlDbConn(mysql2, config);
-```
-
-| Feature | Details |
-|---------|---------|
-| Dialect | `"mysql"` |
-| Default timeout | 5 minutes |
-| Auto-close timeout | 10 minutes of inactivity |
-| Charset | `utf8mb4` |
-| Multiple statements | Enabled |
-| Bulk insert | Supported via multi-row `INSERT INTO ... VALUES` |
-| Bulk upsert | Supported via `INSERT ... ON DUPLICATE KEY UPDATE` |
-| Default isolation level | `REPEATABLE_READ` |
-
----
-
-### `SqliteDbConn`
-
-SQLite connection implementation using [sqlite3](https://www.npmjs.com/package/sqlite3). Implements `IDbConn`.
-
-```typescript
-const conn = new SqliteDbConn(sqlite3, config);
-```
-
-| Feature | Details |
-|---------|---------|
-| Dialect | `"sqlite"` |
-| Default timeout | 5 minutes |
-| Auto-close timeout | 10 minutes of inactivity |
-| Connection mode | Serialized (sequential query execution) |
-| Bulk insert | Supported via multi-row `INSERT INTO ... VALUES` |
-| Bulk upsert | Supported via `INSERT ... ON DUPLICATE KEY UPDATE` |
-| Connection pooling | Not used (direct file-based connections) |
-
----
-
-## Configuration Types
-
-### `TDbConnConf`
-
-Union type: `IDefaultDbConnConf | ISqliteDbConnConf`
-
-### `IDefaultDbConnConf` (MSSQL / MySQL)
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `dialect` | `"mysql" \| "mssql" \| "mssql-azure"` | Yes | Database dialect |
-| `host` | `string` | Yes | Server hostname or IP |
-| `port` | `number` | No | Server port |
-| `username` | `string` | Yes | Database username |
-| `password` | `string` | Yes | Database password |
-| `database` | `string` | No | Database name |
-| `schema` | `string` | No | Default schema |
-| `defaultIsolationLevel` | `ISOLATION_LEVEL` | No | Default transaction isolation level |
-
-### `ISqliteDbConnConf` (SQLite)
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `dialect` | `"sqlite"` | Yes | Must be `"sqlite"` |
-| `filePath` | `string` | Yes | Path to the SQLite database file |
-
-### `ISOLATION_LEVEL`
-
-`"READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE"`
-
-## Usage Examples
-
-### MSSQL with transaction
-
-```typescript
-import { SdOrm } from "@simplysm/sd-orm-node";
-
-const orm = new SdOrm(MyDbContext, {
-  dialect: "mssql",
-  host: "db.example.com",
-  port: 1433,
-  username: "sa",
   password: "password",
   database: "mydb",
-  schema: "dbo",
 });
 
-const rows = await orm.connectAsync(async (db) => {
-  return await db.executeSingleAsync(/* query def */);
-}, "READ_COMMITTED");
-```
-
-### SQLite without transaction
-
-```typescript
-import { SdOrm } from "@simplysm/sd-orm-node";
-
-const orm = new SdOrm(MyDbContext, {
-  dialect: "sqlite",
-  filePath: "./data/local.db",
+// With transaction
+const users = await orm.connectAsync(async (db) => {
+  return await db.user.resultAsync();
 });
 
+// Without transaction
 await orm.connectWithoutTransactionAsync(async (db) => {
-  // perform read-only queries
+  const count = await db.user.countAsync();
 });
 ```
 
-### Direct connection usage
-
-When you need low-level access to a database connection:
+### Using DbConnFactory directly
 
 ```typescript
 import { DbConnFactory } from "@simplysm/sd-orm-node";
@@ -277,20 +315,14 @@ import { DbConnFactory } from "@simplysm/sd-orm-node";
 const conn = await DbConnFactory.createAsync({
   dialect: "mysql",
   host: "localhost",
-  port: 3306,
   username: "root",
-  password: "secret",
+  password: "password",
+  database: "mydb",
 });
 
 await conn.connectAsync();
-try {
-  await conn.beginTransactionAsync("REPEATABLE_READ");
-  await conn.executeAsync(["INSERT INTO users (name) VALUES ('Alice')"]);
-  await conn.commitTransactionAsync();
-} catch (err) {
-  await conn.rollbackTransactionAsync();
-  throw err;
-} finally {
-  await conn.closeAsync();
-}
+await conn.beginTransactionAsync();
+const result = await conn.executeAsync(["SELECT * FROM users"]);
+await conn.commitTransactionAsync();
+await conn.closeAsync();
 ```

@@ -1,16 +1,25 @@
-## Request Handling Rules
+# 사용자의 질문
 
-- Never modify code unless the user explicitly requests changes. (No autonomous decisions in response to questions, etc.)
+- 사용자의 질문에 대해 바로 코드수정을 하지 않는다. 질문에 대한 답을 하고 사용자의 명시적 수정요청을 기다린다.
+- 사용자의 질문이 명확하지 않으면 `.claude/rules/sd-option-scoring.md`의 규칙에 따라 명확화 한다. (절대 추측하지 않는다.)
+- 사용자의 질문은 동의를 구하는것이 아님. 무조건적 동의하려하는 습성을 버리고, 비판적으로 받아들일것. 
 
-## Code Writing Rules
+# Compaction Rules
 
-- Follow the YAGNI principle.
+`/compact`수행 시, 항상 보존할 것:
+- 수정된 파일의 전체 경로 목록
+- 에러 메시지 원문
 
-## Playwright Rules
+# Playwright
 
-- All Playwright output (screenshots, PDFs, downloads, etc.) must be saved to the `.tmp/playwright/` directory.
+- playwright 사용시, 사용자가 접속주소를 알려주지 않았다면, 반드시 사용자에게 접속주소를 요청할것. (절대 서버를 강제로 임의 실행하지 말것)
+- /playwright-cli 스킬을 사용할 것
 
-## Documentation Rules for LLMs
+# 문서 작성 규칙
 
-- Write in English. (including code comments)
+이 규칙은 `.md` 파일을 생성하거나 수정할 때 적용한다. 대화 응답이나 코드 주석에는 적용하지 않는다.
 
+- 섹션 제목을 `**bold**`로 표현하지 않는다. 반드시 `# header` 마크다운 헤딩을 사용한다.
+  - 예: `**제목:**` (X) → `# 제목` (O), `**핵심 원칙:**` (X) → `## 핵심 원칙` (O)
+  - bold는 문장 내 강조에만 사용하고, 구조적 섹션 구분에는 절대 사용하지 않는다.
+- 복잡한 프로세스("반복 혹은 분기"가 3건 이상 포함)를 설명할 때는 mermaid 다이어그램으로 overview를 먼저 제시한 뒤 상세 설명을 작성한다.

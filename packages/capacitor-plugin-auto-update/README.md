@@ -1,6 +1,6 @@
 # @simplysm/capacitor-plugin-auto-update
 
-Capacitor 7 plugin for auto-updating Android apps via APK installation. Provides two update strategies: server-based updates through `SdServiceClient` and external storage-based updates from a local directory.
+Capacitor Auto Update Plugin -- APK installation and OTA update for Android/Browser. Manages `REQUEST_INSTALL_PACKAGES` permission, installs APK files via intent, retrieves app version info, and provides a full OTA update flow via `SdServiceClient` or external storage.
 
 ## Installation
 
@@ -8,138 +8,39 @@ Capacitor 7 plugin for auto-updating Android apps via APK installation. Provides
 npm install @simplysm/capacitor-plugin-auto-update
 ```
 
-### Peer Dependencies
+## API Overview
 
-- `@capacitor/core` ^7.0.0
-- `@simplysm/capacitor-plugin-file-system`
+| API | Type | Description |
+|-----|------|-------------|
+| `ApkInstaller` | Abstract class | Static methods for APK installation permission management, APK install, and version info retrieval |
+| `AutoUpdate` | Abstract class | Static methods for OTA auto-update flows (server-based and external-storage-based) |
+| `IApkInstallerPlugin` | Interface | Low-level Capacitor plugin interface for APK installation |
+| `IVersionInfo` | Interface | App version information structure |
 
-### Android Setup
+## API Reference
 
-Register the plugin in your `MainActivity`:
+### `IVersionInfo`
 
-```java
-import kr.co.simplysm.capacitor.apkinstaller.ApkInstallerPlugin;
-
-public class MainActivity extends BridgeActivity {
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    registerPlugin(ApkInstallerPlugin.class);
-    super.onCreate(savedInstanceState);
-  }
-}
-```
-
-The plugin declares `REQUEST_INSTALL_PACKAGES` permission in its `AndroidManifest.xml`.
-
-## API
-
-### `AutoUpdate`
-
-Abstract utility class that orchestrates the full update flow: version check, download, permission handling, and APK installation.
-
-#### `AutoUpdate.runAsync(opt)`
-
-Performs a server-based auto-update. Connects to the server via `SdServiceClient`, compares the current app version (`process.env["SD_VERSION"]`) against the server's latest version, downloads the APK if outdated, and triggers installation.
+App version information returned by `ApkInstaller.getVersionInfo()`.
 
 ```typescript
-await AutoUpdate.runAsync({
-  log: (messageHtml: string) => {
-    // Display progress/status HTML to the user
-  },
-  serviceClient: sdServiceClient,
-});
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `opt.log` | `(messageHtml: string) => void` | Callback to display status messages (may contain HTML) |
-| `opt.serviceClient` | `SdServiceClient` | Connected service client instance. The server must implement `ISdAutoUpdateService`. |
-
-#### `AutoUpdate.runByExternalStorageAsync(opt)`
-
-Performs an update from APK files stored in external storage. Scans the specified directory for APK files named by semver version (e.g., `1.2.3.apk`), selects the highest version, and installs it if newer than the current version.
-
-```typescript
-await AutoUpdate.runByExternalStorageAsync({
-  log: (messageHtml: string) => {
-    // Display progress/status HTML to the user
-  },
-  dirPath: "MyApp/updates",
-});
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `opt.log` | `(messageHtml: string) => void` | Callback to display status messages (may contain HTML) |
-| `opt.dirPath` | `string` | Relative path within external storage containing versioned APK files |
-
-### `ApkInstaller`
-
-Low-level static API wrapping the native Capacitor plugin for APK installation and permission management. On web, all methods resolve with no-op behavior.
-
-#### `ApkInstaller.hasPermissionManifest()`
-
-Checks whether `REQUEST_INSTALL_PACKAGES` is declared in the app's `AndroidManifest.xml`.
-
-```typescript
-const declared: boolean = await ApkInstaller.hasPermissionManifest();
-```
-
-#### `ApkInstaller.hasPermission()`
-
-Checks whether the app currently has permission to install unknown apps (Android 8.0+). Returns `true` on older versions.
-
-```typescript
-const granted: boolean = await ApkInstaller.hasPermission();
-```
-
-#### `ApkInstaller.requestPermission()`
-
-Opens the system settings screen for managing unknown app install sources (Android 8.0+).
-
-```typescript
-await ApkInstaller.requestPermission();
-```
-
-#### `ApkInstaller.install(apkUri)`
-
-Triggers APK installation via `ACTION_VIEW` intent.
-
-```typescript
-await ApkInstaller.install(apkUri);
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `apkUri` | `string` | `content://` URI of the APK file (FileProvider URI) |
-
-#### `ApkInstaller.getVersionInfo()`
-
-Returns the current app's version name and version code.
-
-```typescript
-const info: IVersionInfo = await ApkInstaller.getVersionInfo();
-// info.versionName - e.g., "1.2.3"
-// info.versionCode - e.g., "10"
-```
-
-### Interfaces
-
-#### `IVersionInfo`
-
-```typescript
-interface IVersionInfo {
+export interface IVersionInfo {
   versionName: string;
   versionCode: string;
 }
 ```
 
-#### `IApkInstallerPlugin`
+| Field | Type | Description |
+|-------|------|-------------|
+| `versionName` | `string` | Human-readable version name (e.g. `"1.2.3"`) |
+| `versionCode` | `string` | Numeric version code used by Android |
 
-Low-level Capacitor plugin interface. Use `ApkInstaller` static methods instead of calling this directly.
+### `IApkInstallerPlugin`
+
+Low-level Capacitor plugin interface. Use `ApkInstaller` instead for a simplified API.
 
 ```typescript
-interface IApkInstallerPlugin {
+export interface IApkInstallerPlugin {
   install(options: { uri: string }): Promise<void>;
   hasPermission(): Promise<{ granted: boolean }>;
   requestPermission(): Promise<void>;
@@ -148,10 +49,95 @@ interface IApkInstallerPlugin {
 }
 ```
 
-## Platform Support
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `install` | `options: { uri: string }` | `Promise<void>` | Install an APK from a content:// URI |
+| `hasPermission` | -- | `Promise<{ granted: boolean }>` | Check if install permission is granted |
+| `requestPermission` | -- | `Promise<void>` | Request install permission (opens settings) |
+| `hasPermissionManifest` | -- | `Promise<{ declared: boolean }>` | Check if permission is declared in manifest |
+| `getVersionInfo` | -- | `Promise<IVersionInfo>` | Get current app version info |
 
-| Platform | Behavior |
-|---|---|
-| Android | Full APK installation with permission management |
-| Web | No-op stubs (permission checks return `true`, install shows an alert) |
-| iOS | Not supported |
+### `ApkInstaller`
+
+Abstract class with static methods for APK installation and permission management.
+
+- **Android**: Executes APK install intents, manages `REQUEST_INSTALL_PACKAGES` permission
+- **Browser**: Shows alert and returns normally
+
+```typescript
+export abstract class ApkInstaller {
+  static async hasPermissionManifest(): Promise<boolean>;
+  static async hasPermission(): Promise<boolean>;
+  static async requestPermission(): Promise<void>;
+  static async install(apkUri: string): Promise<void>;
+  static async getVersionInfo(): Promise<IVersionInfo>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `hasPermissionManifest` | -- | `Promise<boolean>` | Check if `REQUEST_INSTALL_PACKAGES` is declared in the AndroidManifest |
+| `hasPermission` | -- | `Promise<boolean>` | Check if install packages permission is currently granted |
+| `requestPermission` | -- | `Promise<void>` | Request install permission (navigates to settings screen) |
+| `install` | `apkUri: string` | `Promise<void>` | Install an APK from a `content://` URI (FileProvider URI) |
+| `getVersionInfo` | -- | `Promise<IVersionInfo>` | Retrieve the current app version name and code |
+
+### `AutoUpdate`
+
+Abstract class providing a complete OTA auto-update flow. Supports two modes: server-based update via `SdServiceClient` and external-storage-based update from APK files on the device.
+
+```typescript
+export abstract class AutoUpdate {
+  static async runAsync(opt: {
+    log: (messageHtml: string) => void;
+    serviceClient: SdServiceClient;
+  }): Promise<void>;
+
+  static async runByExternalStorageAsync(opt: {
+    log: (messageHtml: string) => void;
+    dirPath: string;
+  }): Promise<void>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `runAsync` | `opt: { log, serviceClient }` | `Promise<void>` | Run OTA update: check server version via `SdServiceClient`, download APK, and install |
+| `runByExternalStorageAsync` | `opt: { log, dirPath }` | `Promise<void>` | Run update from external storage: scan `dirPath` for APK files, find latest version via semver, and install |
+
+## Usage Examples
+
+### Check permission and install an APK
+
+```typescript
+import { ApkInstaller } from "@simplysm/capacitor-plugin-auto-update";
+
+// Check if install permission is granted
+const hasPermission = await ApkInstaller.hasPermission();
+if (!hasPermission) {
+  await ApkInstaller.requestPermission();
+}
+
+// Install APK from a content:// URI
+await ApkInstaller.install("content://com.example.fileprovider/apk/update.apk");
+
+// Get current app version
+const versionInfo = await ApkInstaller.getVersionInfo();
+console.log(versionInfo.versionName, versionInfo.versionCode);
+```
+
+### Run OTA auto-update from server
+
+```typescript
+import { AutoUpdate } from "@simplysm/capacitor-plugin-auto-update";
+import { SdServiceClient } from "@simplysm/sd-service-client";
+
+const serviceClient = new SdServiceClient("https://my-server.com");
+
+await AutoUpdate.runAsync({
+  log: (messageHtml) => {
+    document.getElementById("status")!.innerHTML = messageHtml;
+  },
+  serviceClient,
+});
+```

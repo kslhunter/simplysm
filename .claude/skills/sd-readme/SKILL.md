@@ -1,166 +1,291 @@
 ---
 name: sd-readme
-description: Used when requesting "README documentation generation", "sd-readme", etc.
+description: |
+  monorepo 각 패키지의 public API를 분석하여 LLM이 읽을 수 있는 README.md와 docs/ 문서를 자동 생성하는 스킬.
+  /sd-readme를 입력하거나, "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
 ---
 
-# SD Readme — Monorepo Package README Documentation Generator
+# sd-readme: 패키지 README/docs 생성
 
-Automatically generates README.md documentation for each package in the monorepo. Applies Progressive Disclosure principles by choosing either a single README.md or a README.md + docs/*.md structure depending on the package size.
+패키지의 `package.json` → 엔트리포인트 → export 체인을 추적하여 public API만 문서화한다.
+npm 배포 후 사용자 프로젝트에서 LLM(Claude Code 등)이 `node_modules/` 안의 README.md를 읽고 API를 이해할 수 있도록 하는 것이 목적이다.
 
-ARGUMENTS: Package name (optional). If specified, only that package is processed; if omitted, all packages are processed in parallel.
+## 사용법
 
-## Workflow
+```
+/sd-readme [패키지명]
+/sd-readme              ← npm 배포 대상 전체 패키지
+/sd-readme solid        ← packages/solid 만
+```
+
+## 프로세스 흐름
+
+아래 다이어그램이 전체 프로세스의 흐름이다. 각 노드의 상세 설명은 이후 섹션에서 기술한다.
 
 ```mermaid
 flowchart TD
-    A[Parse arguments] --> B{Package name specified?}
-    B -- Yes --> C[Generate README.md]
-    B -- No --> D[Collect public package list]
-    D --> E[Run Agent per package in parallel]
-    E -- Each Agent --> C
+    S1["Step 1: 대상 패키지 결정"]
+    S1 --> CHK_NAME{패키지명 지정?}
+    CHK_NAME -- Yes --> S1_YES["Step 1-1: 지정 패키지 확인"]
+    CHK_NAME -- No --> S1_NO["Step 1-2: 전체 패키지 탐색"]
+    S1_YES --> S1_SHOW["Step 1-3: 대상 목록 표시"]
+    S1_NO --> S1_SHOW
+
+    S1_SHOW --> LOOP_START(["각 대상 패키지에 대해 반복"])
+
+    LOOP_START --> S2["Step 2: 엔트리포인트 & Export 체인 추적"]
+    S2 --> S2_1["Step 2-1: 엔트리포인트 찾기"]
+    S2_1 --> CHK_ENTRY{엔트리포인트 존재?}
+    CHK_ENTRY -- No --> SKIP["사용자에게 알리고 건너뜀"]
+    SKIP --> LOOP_END
+    CHK_ENTRY -- Yes --> S2_2["Step 2-2: Export 체인 재귀 추적"]
+    S2_2 --> S2_3["Step 2-3: 카테고리 수집"]
+    S2_3 --> S2_4["Step 2-4: API 정보 수집"]
+
+    S2_4 --> S3["Step 3: 분량 판단 & 문서 구조 결정"]
+    S3 --> CHK_SIZE{"카테고리 ≤3 AND\nAPI 항목 ≤30?"}
+    CHK_SIZE -- Yes --> MODE_SINGLE["README 단독"]
+    CHK_SIZE -- No --> MODE_SPLIT["README + docs/ 분할"]
+
+    MODE_SINGLE --> S4["Step 4: 문서 생성"]
+    MODE_SPLIT --> S4
+
+    S4 --> S4_1["Step 4-1: README.md 생성"]
+    S4_1 --> CHK_SPLIT{docs/ 분할?}
+    CHK_SPLIT -- Yes --> S4_2["Step 4-2: docs/*.md 생성"]
+    CHK_SPLIT -- No --> S4_4
+    S4_2 --> S4_4["Step 4-4: 완전성 검증"]
+    S4_4 --> CHK_MISS{누락 있음?}
+    CHK_MISS -- Yes --> S4_FIX["누락 API 추가"] --> S4_4
+    CHK_MISS -- No --> S5["Step 5: package.json files 필드 동기화"]
+
+    S5 --> LOOP_END(["다음 패키지"])
+    LOOP_END --> LOOP_START
+
+    LOOP_END --> CHK_ROOT{패키지명 미지정?}
+    CHK_ROOT -- Yes --> S4_3["Step 4-3: root README.md 생성"]
+    CHK_ROOT -- No --> S6["Step 6: 결과 보고"]
+    S4_3 --> S6
 ```
 
-### A. Parse Arguments
+## Step 1: 대상 패키지 결정
 
-Extract the package name from the ARGUMENTS passed when invoking the skill.
+### Step 1-1: 지정 패키지 확인
 
-- **Package name specified** → Find the corresponding directory under `packages/` and proceed directly to **C. Generate README.md**.
-- **Package name not specified** → Proceed to **D. Collect public package list**.
+`packages/{패키지명}/package.json`이 존재하는지 확인한다. 없으면 사용자에게 알린다.
+이 경우 root README.md는 **생성하지 않는다** (개별 패키지만 대상).
 
-### C. Generate README.md
+### Step 1-2: 전체 패키지 탐색
 
-Perform the following for a single target package.
+`packages/` 하위의 모든 패키지를 탐색하여, `package.json`에 `private: true`가 **없는** 패키지만 대상으로 한다.
+이 경우 패키지별 README.md와 함께 **root README.md도 생성한다**.
 
-#### C-1. Analyze package.json
+### Step 1-3: 대상 목록 표시
 
-Read `packages/<name>/package.json`:
+```
+대상 패키지:
+1. @simplysm/core-common (src 35파일)
+2. @simplysm/solid (src 126파일)
+...
+```
 
-1. Check the `name` and `description` fields.
-2. If `"private": true`, **skip** this package.
-3. Identify the package entry point source code.
+## Step 2: 엔트리포인트 & Export 체인 추적
 
-#### C-2. Analyze Source Code
+### Step 2-1: 엔트리포인트 찾기
 
-1. Recursively read the entry point file and all exports to collect every public API.
-2. If JSDoc comments exist, use them as descriptions for each item.
+`package.json`의 `main` 또는 `exports` 필드에서 엔트리포인트 경로를 읽는다.
+`dist/` 경로이면 `src/`로 변환하고 확장자를 소스 확장자(`.ts`, `.tsx`)로 변환한다.
 
-#### C-3. Determine Document Structure and Generate
+```
+main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
+```
 
-Examine the source code size and the number of logical categories, then **autonomously** decide which of the two structures below is appropriate:
+엔트리포인트 파일이 존재하지 않으면 사용자에게 알리고 해당 패키지를 건너뛴다.
 
-- **Single README.md**: When the package is small, has few APIs, and category classification is unnecessary
-- **README.md + docs/*.md**: When the package is large or has multiple logical categories
+### Step 2-2: Export 체인 재귀 추적
 
-If an existing README.md or docs/ directory exists, **modify only the changed parts** based on the existing content. If no existing documentation exists, create it from scratch.
-If the structure changes (B to A), delete the now-unnecessary `docs/` directory.
-Write in **English**.
+엔트리포인트 파일을 Read 도구로 읽고, 아래 패턴을 추적한다:
 
-#### C-4. Manage package.json files Field
+| 패턴 | 처리 |
+|------|------|
+| `export * from "./path"` | 해당 파일을 재귀적으로 읽어 모든 export를 수집 |
+| `export * as name from "./path"` | namespace export로 기록하고, 해당 파일의 export를 수집 |
+| `export { A, B } from "./path"` | 명시된 항목만 수집 |
+| `export class/function/type/interface/const/enum` | 직접 export로 기록 |
+| `import "./path"` (side-effect import) | 부수효과 모듈로 기록 (prototype extension 등) |
 
-When creating or deleting the `docs/` directory, update the `files` array in `package.json` accordingly:
+추적 시 상대 경로를 실제 파일 경로로 변환한다. 확장자가 생략된 경우 `.ts`, `.tsx`, `/index.ts`, `/index.tsx` 순서로 탐색한다.
 
-- **When applying Structure B**: If the `files` array does not contain `"docs"`, add it.
-- **When applying Structure A**: If the `files` array contains `"docs"`, remove it.
+### Step 2-3: 카테고리 수집
 
----
+엔트리포인트 파일의 `//#region {name}` ~ `//#endregion` 주석을 파싱하여 카테고리를 수집한다.
+region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카테고리로 사용한다.
 
-##### Structure A: Single README.md (Small Packages)
+### Step 2-4: API 정보 수집
 
-Create the `packages/<name>/README.md` file:
+추적된 각 소스 파일을 Read 도구로 읽어, export된 항목의 정보를 수집한다:
+
+- **이름**: export 식별자
+- **종류**: class, function, type, interface, const, enum
+- **시그니처**: 타입 파라미터, 매개변수, 반환 타입
+- **JSDoc**: `/** ... */` 주석이 있으면 설명으로 활용
+- **카테고리**: 2-3에서 수집한 region 또는 디렉토리 기반
+
+파일 수가 많으면(20개 이상) Agent 도구로 파일 그룹별 병렬 분석을 수행한다.
+
+## Step 3: 분량 판단 & 문서 구조 결정
+
+수집된 API 항목 수와 카테고리 수로 문서 구조를 결정한다.
+
+| 조건 | 문서 구조 |
+|------|-----------|
+| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | README 단독 |
+| 위 조건에 해당하지 않음 | README.md (개요+목차) + docs/ (카테고리별 분할) |
+
+판단 결과를 사용자에게 표시한다:
+
+```
+@simplysm/solid: 12 카테고리, 195 API 항목 → README.md + docs/ 분할
+@simplysm/storage: 2 카테고리, 8 API 항목 → README.md 단독
+```
+
+## Step 4: 문서 생성
+
+### 작성 원칙
+- **영어로 작성**한다
+- **소스에서 읽은 내용만** 문서화한다 — 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다
+- **모든 export를 빠짐없이 문서화한다** — Step 2에서 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다
+- **interface/type은 필드별 설명 테이블을 포함한다** — 시그니처만 나열하지 않고, 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다 — 필드가 많더라도 모든 필드를 테이블로 나열한다
+- **union type은 discriminant와 각 variant를 설명한다** — discriminated union인 경우, 어떤 필드로 분기되는지와 각 variant를 나열한다
+
+### Step 4-1: README.md 생성 (모든 패키지)
 
 ```markdown
-# <package-name from package.json>
+# @simplysm/{package-name}
 
-> <description from package.json>
+{package.json의 description. 없으면 엔트리포인트의 export 구조에서 추론하여 한 줄 요약}
 
-<Write a detailed description of the package's main features and purpose in English>
+## Installation
 
-## API Reference
+\`\`\`bash
+npm install @simplysm/{package-name}
+\`\`\`
 
-### <exportedName>
+## API Overview
 
-```typescript
-<export signature code>
-```
+{README 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
+{docs/ 분할인 경우: 카테고리별 요약 테이블 + docs/ 링크}
 
-<Description of this API>
+### {Category Name}
 
----
+| API | Type | Description |
+|-----|------|-------------|
+| `FunctionName` | function | {JSDoc 첫 줄 또는 시그니처 기반 요약} |
+| `ClassName` | class | {요약} |
 
-(... Repeat for all exported items ...)
+{docs/ 분할인 경우 각 카테고리 끝에:}
+→ See [docs/{category}.md](./docs/{category}.md) for details.
 
 ## Usage Examples
 
-```typescript
-import { ... } from "<package-name>";
-
-// Main usage example code
-```
+{주요 API 1~3개에 대한 사용 예제. 소스 코드의 JSDoc @example이 있으면 활용.
+없으면 시그니처를 기반으로 최소한의 사용 예제를 작성.}
 ```
 
----
+### Step 4-2: docs/*.md 생성 (분할 대상 패키지만)
 
-##### Structure B: README.md + docs/*.md (Large Packages)
-
-**README.md** — Create the `packages/<name>/README.md` file:
+카테고리별로 `packages/{name}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 영어 kebab-case로 변환한다.
 
 ```markdown
-# <package-name from package.json>
+# {Category Name}
 
-> <description from package.json>
+## `ExportName`
 
-<Write a detailed description of the package's main features and purpose in English>
+{JSDoc 설명. 없으면 시그니처에서 추론한 한 줄 설명.}
 
-## Documentation
+\`\`\`typescript
+{export 시그니처 — 소스에서 직접 복사}
+\`\`\`
 
-| Category | Description |
-|----------|-------------|
-| [<Category1>](docs/<category1>.md) | <Category description and list of key items> |
-| [<Category2>](docs/<category2>.md) | <Category description and list of key items> |
+{class인 경우: public 메서드/프로퍼티 목록}
+{function인 경우: 파라미터 + 반환 타입 설명}
+{interface인 경우: 필드별 설명 테이블}
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `fieldName` | `type` | {필드 설명} |
+
+{union type인 경우: discriminant 필드와 각 variant 나열}
+```
+
+### Step 4-3: root README.md 생성 (패키지명 미지정 시)
+
+모든 패키지 README 생성 후 monorepo 루트에 README.md를 생성한다.
+
+```markdown
+# {monorepo 프로젝트명}
+
+{루트 package.json의 description. 없으면 monorepo의 패키지 구성에서 추론하여 한 줄 요약}
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@simplysm/{name}`](./packages/{name}) | {package.json의 description} |
 | ... | ... |
 ```
 
-**docs/*.md** — Create a `packages/<name>/docs/<category>.md` file for each category:
+#### 작성 규칙
+- `private: true`인 패키지는 테이블에서 **제외**한다
+- 패키지명은 해당 패키지 디렉토리로의 상대 링크를 포함한다
+
+### Step 4-4: 완전성 검증
+
+문서 생성 후, Step 2에서 수집한 export 목록과 생성된 문서를 대조한다:
+
+1. export 목록의 각 항목이 README.md 또는 docs/*.md에 존재하는지 확인한다
+2. 누락된 항목이 있으면 해당 API를 문서에 추가한다
+3. 검증 결과를 표시한다:
+
+```
+완전성 검증: 52/52 API 문서화됨
+```
+
+누락이 있는 경우:
+
+```
+완전성 검증: 50/52 API 문서화됨
+누락: MissingType, MissingFunction
+→ 누락된 API를 문서에 추가합니다.
+```
+
+## Step 5: package.json files 필드 동기화
+
+각 대상 패키지의 `package.json`을 읽어 `files` 배열을 docs/ 존재 여부에 맞게 동기화한다.
+
+| 조건 | 처리 |
+|------|------|
+| docs/ 분할로 생성됨 **그리고** `files`에 `"docs"` 없음 | `"docs"`를 `files` 배열에 추가 |
+| README 단독으로 생성됨 **그리고** `files`에 `"docs"` 있음 | `files` 배열에서 `"docs"` 제거 |
+| 그 외 (이미 일치하거나 `files` 필드 자체가 없음) | 변경 없음 |
+
+## Step 6: 결과 보고
 
 ```markdown
-# <Category Name>
+## sd-readme 결과
 
-## <exportedName>
+| 패키지 | 구조 | API 항목 수 | 생성 파일 |
+|--------|------|-------------|-----------|
+| @simplysm/core-common | README + docs/ | 52 | README.md, docs/types.md, docs/utils.md, ... |
+| @simplysm/storage | README 단독 | 8 | README.md |
 
-```typescript
-<export signature code>
+### 생성된 파일 목록
+- README.md (root — 패키지명 미지정 시)
+- packages/core-common/README.md
+- packages/core-common/docs/types.md
+- ...
+
+### package.json files 변경
+- packages/core-common/package.json: `"docs"` 추가
+- packages/storage/package.json: `"docs"` 제거
 ```
-
-<Description of this API>
-
----
-
-(... Repeat for all exported items in this category ...)
-
-## Usage Examples
-
-```typescript
-import { ... } from "<package-name>";
-
-// Main usage example code for this category
-```
-```
-
-Determine category names and classifications autonomously, considering the source code directory structure, functional similarity, etc.
-
----
-
-### D. Collect Public Package List
-
-Use Glob to search `packages/*/package.json`, excluding packages with `private: true`.
-
----
-
-### E. Run Agent Per Package in Parallel
-
-For each remaining package, use the Agent tool to pass the following prompt **in parallel**:
-```
-/sd-readme <package-name>
-```
-
-Terminate once all subagents have completed.

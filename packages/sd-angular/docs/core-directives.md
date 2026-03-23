@@ -1,219 +1,160 @@
-# Core Directives and Pipes
+# Core - Directives
 
-## Directives
+## SdEventsDirective
 
-### SdEventsDirective
+**Type:** `@Directive` | **Selector:** Multiple event selectors (see below)
 
-Adds support for DOM events with modifiers (capture, passive, once) and custom sd-angular events as Angular output bindings on any element.
+Unified event directive that enables capture, passive, and once event modifiers for Angular templates. Also provides custom events for resize and keyboard commands.
 
-**Selector:** matches any element with the supported event attributes.
+### Supported Event Outputs
 
-**Custom events:**
-
-| Attribute            | Event type       | Description          |
-| -------------------- | ---------------- | -------------------- |
-| `(sdResize)`         | `ISdResizeEvent` | Element size changed |
-| `(sdRefreshCommand)` | `KeyboardEvent`  | Ctrl+Alt+L pressed   |
-| `(sdSaveCommand)`    | `KeyboardEvent`  | Ctrl+S pressed       |
-| `(sdInsertCommand)`  | `KeyboardEvent`  | Ctrl+Insert pressed  |
-
-**Modifier events (selection):**
-
-| Attribute                                                           | Description                 |
-| ------------------------------------------------------------------- | --------------------------- |
-| `(click.capture)`, `(click.once)`, `(click.capture.once)`           | Click with capture/once     |
-| `(scroll.passive)`, `(scroll.capture.passive)`                      | Scroll with passive/capture |
-| `(wheel.passive)`, `(wheel.capture.passive)`                        | Wheel with passive          |
-| `(touchstart.passive)`, `(touchmove.passive)`, `(touchend.passive)` | Touch passive               |
-| `(keydown.capture)`, `(keyup.capture)`                              | Keyboard capture            |
-| `(focus.capture)`, `(blur.capture)`                                 | Focus/blur capture          |
-| `(transitionend.once)`, `(animationend.once)`                       | Animation/transition once   |
-| `(dragover.capture)` etc.                                           | Drag capture events         |
-
----
-
-### SdInvalidDirective
-
-Applies invalid state styling by delegating to `setupInvalid`. Displays a colored dot indicator when the message is non-empty.
-
-**Selector:** `[sd-invalid]`
-
-```html
-<div [sd-invalid]="validationMessage()"></div>
-```
-
-**Input:** `sd-invalid: string` (required) — the validation message. Empty string = valid.
-
----
-
-### SdRippleDirective
-
-Applies a material ripple effect to the host element.
-
-**Selector:** `[sd-ripple]`
-
-```html
-<button [sd-ripple]="true">Click me</button>
-<button [sd-ripple]="!disabled">Click me</button>
-```
-
-**Input:** `sd-ripple: boolean` (required) — whether ripple is enabled.
+| Output | Type | Description |
+|--------|------|-------------|
+| `click.capture` | `OutputEmitterRef<MouseEvent>` | Click event in capture phase |
+| `click.once` | `OutputEmitterRef<MouseEvent>` | Click event, fires once |
+| `click.capture.once` | `OutputEmitterRef<MouseEvent>` | Click capture, fires once |
+| `mousedown.capture` | `OutputEmitterRef<MouseEvent>` | Mousedown in capture phase |
+| `mouseup.capture` | `OutputEmitterRef<MouseEvent>` | Mouseup in capture phase |
+| `mouseover.capture` | `OutputEmitterRef<MouseEvent>` | Mouseover in capture phase |
+| `mouseout.capture` | `OutputEmitterRef<MouseEvent>` | Mouseout in capture phase |
+| `keydown.capture` | `OutputEmitterRef<KeyboardEvent>` | Keydown in capture phase |
+| `keyup.capture` | `OutputEmitterRef<KeyboardEvent>` | Keyup in capture phase |
+| `focus.capture` | `OutputEmitterRef<FocusEvent>` | Focus in capture phase (required since focus doesn't bubble) |
+| `blur.capture` | `OutputEmitterRef<FocusEvent>` | Blur in capture phase |
+| `invalid.capture` | `OutputEmitterRef<Event>` | Invalid in capture phase |
+| `scroll.capture` | `OutputEmitterRef<Event>` | Scroll in capture phase |
+| `scroll.passive` | `OutputEmitterRef<Event>` | Scroll with passive option |
+| `scroll.capture.passive` | `OutputEmitterRef<Event>` | Scroll capture + passive |
+| `wheel.passive` | `OutputEmitterRef<WheelEvent>` | Wheel with passive option |
+| `wheel.capture.passive` | `OutputEmitterRef<WheelEvent>` | Wheel capture + passive |
+| `touchstart.passive` | `OutputEmitterRef<TouchEvent>` | Touchstart with passive |
+| `touchstart.capture.passive` | `OutputEmitterRef<TouchEvent>` | Touchstart capture + passive |
+| `touchmove.passive` | `OutputEmitterRef<TouchEvent>` | Touchmove with passive |
+| `touchmove.capture.passive` | `OutputEmitterRef<TouchEvent>` | Touchmove capture + passive |
+| `touchend.passive` | `OutputEmitterRef<TouchEvent>` | Touchend with passive |
+| `dragover.capture` | `OutputEmitterRef<DragEvent>` | Dragover in capture phase |
+| `dragenter.capture` | `OutputEmitterRef<DragEvent>` | Dragenter in capture phase |
+| `dragleave.capture` | `OutputEmitterRef<DragEvent>` | Dragleave in capture phase |
+| `drop.capture` | `OutputEmitterRef<DragEvent>` | Drop in capture phase |
+| `transitionend.once` | `OutputEmitterRef<TransitionEvent>` | Transition end, fires once |
+| `animationend.once` | `OutputEmitterRef<AnimationEvent>` | Animation end, fires once |
+| `sdResize` | `OutputEmitterRef<ISdResizeEvent>` | Custom resize event |
+| `sdRefreshCommand` | `OutputEmitterRef<KeyboardEvent>` | Ctrl+Alt+L refresh command |
+| `sdSaveCommand` | `OutputEmitterRef<KeyboardEvent>` | Ctrl+S save command |
+| `sdInsertCommand` | `OutputEmitterRef<KeyboardEvent>` | Ctrl+Insert insert command |
 
 ---
 
-### SdRouterLinkDirective
+## SdInvalidDirective
 
-Navigation directive with support for popup windows. Handles Ctrl/Alt/Shift modifier keys for new tab/window behavior.
+**Type:** `@Directive` | **Selector:** `[sd-invalid]`
 
-**Selector:** `[sd-router-link]`
+Attaches a validation indicator to an element. Displays a small colored dot when the validation message is non-empty.
 
-```html
-<div [sd-router-link]="{ link: '/orders/detail', params: { id: '42' } }">Open Order</div>
+### Inputs
 
-<!-- Open in popup window -->
-<div [sd-router-link]="{ link: '/print', window: { width: 900, height: 700 } }">Print</div>
-```
-
-**Input option object:**
-
-| Field          | Type                     | Description            |
-| -------------- | ------------------------ | ---------------------- |
-| `link`         | `string`                 | Route path             |
-| `params?`      | `Record<string, string>` | Route parameters       |
-| `queryParams?` | `Record<string, string>` | Query parameters       |
-| `window?`      | `{ width?, height? }`    | Open in a popup window |
-| `outletName?`  | `string`                 | Named router outlet    |
-
-**Key behavior:**
-
-- Default: navigate in-place
-- Ctrl+click: new tab (background)
-- Alt+click: new tab (focused)
-- Shift+click or `window` set: popup window
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sd-invalid` | `string` | Yes | Validation error message (empty = valid) |
 
 ---
 
-### SdShowEffectDirective
+## SdItemOfTemplateDirective
 
-Applies a reveal animation (fade+translate) when the element scrolls into view.
+**Type:** `@Directive` | **Selector:** `ng-template[itemOf]`
 
-**Selector:** `[sd-show-effect]`
+Provides type-safe template context when iterating over items in templates. Used with `*ngTemplateOutlet`.
 
-```html
-<div [sd-show-effect]="true" [sd-show-effect-type]="'l2r'">...</div>
-```
+### Inputs
 
-**Inputs:**
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `itemOf` | `TItem[]` | Yes | The array of items for type inference |
 
-| Input                 | Type             | Default  | Description              |
-| --------------------- | ---------------- | -------- | ------------------------ |
-| `sd-show-effect`      | `boolean`        | required | Enable/disable animation |
-| `sd-show-effect-type` | `"l2r" \| "t2b"` | `"t2b"`  | Animation direction      |
-
----
-
-### SdItemOfTemplateDirective
-
-Template type-guard directive for `*ngFor`-like contexts. Enables TypeScript type narrowing inside `ng-template`.
-
-**Selector:** `ng-template[itemOf]`
-
-```html
-<ng-template [itemOf]="items" let-item let-index="index">
-  {{ item.name }}
-  <!-- item is typed as the element type of `items` -->
-</ng-template>
-```
-
-**Input:** `itemOf: TItem[]` (required)
-
-**Context `SdItemOfTemplateContext<TItem>`:**
-
-| Variable    | Type     | Description                       |
-| ----------- | -------- | --------------------------------- |
-| `$implicit` | `TItem`  | The item                          |
-| `item`      | `TItem`  | The item (same as $implicit)      |
-| `index`     | `number` | Current index                     |
-| `depth`     | `number` | Tree depth (for hierarchical use) |
-
----
-
-### SdTypedTemplateDirective
-
-Template type-guard directive for strongly typing arbitrary template contexts.
-
-**Selector:** `ng-template[typed]`
-
-```html
-<ng-template #tpl [typed]="myContextType" let-data>
-  {{ data.value }}
-  <!-- data is typed as typeof myContextType -->
-</ng-template>
-```
-
-**Input:** `typed: T` (required) — the context type token (a value whose type matches the template context).
-
----
-
-## Pipes
-
-### FormatPipe
-
-Formats `DateTime`, `DateOnly`, or string values.
-
-**Name:** `format`
-
-```html
-{{ dateValue | format: 'yyyy-MM-dd' }} {{ dateTimeValue | format: 'yyyy-MM-dd HH:mm' }}
-<!-- String masking with X placeholders -->
-{{ '01012345678' | format: 'XXX-XXXX-XXXX' }}
-<!-- Multiple format patterns separated by | -->
-{{ phoneNumber | format: 'XXX-XXX-XXXX|XXX-XXXX-XXXX' }}
-```
-
-**Signature:**
+### SdItemOfTemplateContext
 
 ```typescript
-transform(value: string | DateTime | DateOnly | undefined, format: string): string
-```
-
-For `DateTime`/`DateOnly`: delegates to `.toFormatString(format)`.
-
-For strings: uses `X` as a character placeholder; tries each `|`-separated format pattern matching the value length.
-
----
-
-## Event Manager Plugins
-
-These are Angular `EventManagerPlugin` implementations registered automatically by `provideSdAngular`. They are not used directly but enable the custom event syntax.
-
-| Plugin                        | Custom Event                              | Trigger                                     |
-| ----------------------------- | ----------------------------------------- | ------------------------------------------- |
-| `SdSaveCommandEventPlugin`    | `sdSaveCommand`                           | Ctrl+S                                      |
-| `SdRefreshCommandEventPlugin` | `sdRefreshCommand`                        | Ctrl+Alt+L                                  |
-| `SdInsertCommandEventPlugin`  | `sdInsertCommand`                         | Ctrl+Insert                                 |
-| `SdResizeEventPlugin`         | `sdResize`                                | Element size change (ResizeObserver)        |
-| `SdIntersectionEventPlugin`   | `sdIntersection`                          | Element intersection (IntersectionObserver) |
-| `SdOptionEventPlugin`         | any event + `.capture`/`.passive`/`.once` | Event with options                          |
-| `SdBackbuttonEventPlugin`     | `sdBackbutton`                            | Back button (deprecated)                    |
-
-**Command event behavior:** The save/refresh/insert plugins only fire on the topmost modal if any modals are open; otherwise they fire on the page level.
-
-**`ISdResizeEvent`:**
-
-```typescript
-interface ISdResizeEvent {
-  heightChanged: boolean;
-  widthChanged: boolean;
-  target: Element;
-  contentRect: DOMRectReadOnly;
+interface SdItemOfTemplateContext<TItem> {
+  $implicit: TItem;
+  item: TItem;
+  index: number;
+  depth: number;
 }
 ```
 
-**`ISdIntersectionEvent`:**
+---
 
-```typescript
-interface ISdIntersectionEvent {
-  entry: IntersectionObserverEntry;
-}
-```
+## SdRippleDirective
+
+**Type:** `@Directive` | **Selector:** `[sd-ripple]`
+
+Adds a Material Design ripple effect to the host element on pointer interaction.
+
+### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `sd-ripple` | `boolean \| ""` | Yes | -- | Enable/disable the ripple effect |
+
+---
+
+## SdRouterLinkDirective
+
+**Type:** `@Directive` | **Selector:** `[sd-router-link]`
+
+Enhanced router link that supports opening in new windows/tabs. Modifier keys change behavior:
+- **Click**: Navigate within the app
+- **Ctrl+Click**: Open in new background tab
+- **Alt+Click**: Open in new foreground tab
+- **Shift+Click**: Open in new window
+
+### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sd-router-link` | `object \| undefined` | No | Navigation options (see below) |
+
+**Option object:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `link` | `string` | Route path |
+| `params` | `Record<string, string>` | Route parameters |
+| `window` | `{ width?: number; height?: number }` | New window dimensions |
+| `outletName` | `string` | Named router outlet |
+| `queryParams` | `Record<string, string>` | Query parameters |
+
+### Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `onClick` | `(event: MouseEvent) => Promise<void>` | Handles click with modifier key logic |
+
+---
+
+## SdShowEffectDirective
+
+**Type:** `@Directive` | **Selector:** `[sd-show-effect]`
+
+Applies a reveal animation (fade + translate) when the element becomes visible via IntersectionObserver.
+
+### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `sd-show-effect` | `boolean \| ""` | Yes | -- | Enable/disable the effect |
+| `sd-show-effect-type` | `"l2r" \| "t2b"` | No | `"t2b"` | Animation direction (left-to-right or top-to-bottom) |
+
+---
+
+## SdTypedTemplateDirective
+
+**Type:** `@Directive` | **Selector:** `ng-template[typed]`
+
+Provides a type-safe template context guard. The generic type parameter becomes the template context type.
+
+### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `typed` | `T` | Yes | Type token for context inference |

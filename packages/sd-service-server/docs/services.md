@@ -1,258 +1,265 @@
-# Services
+# Built-in Services
 
-## SdServiceBase
+## SdAutoUpdateService
 
-Abstract base class for all service classes. Provides access to the server instance, socket context, authentication info, and configuration.
+Provides the latest application version information for auto-update clients. Extends `SdServiceBase`. Implements `ISdAutoUpdateService`.
 
-```typescript
-abstract class SdServiceBase<TAuthInfo = any>
-```
-
-### Properties
-
-| Property | Type | Description |
-|---|---|---|
-| `server` | `SdServiceServer<TAuthInfo>` | The server instance (injected by `SdServiceExecutor`). |
-| `socket` | `SdServiceSocket \| undefined` | The v2 WebSocket connection context (set for WebSocket requests). |
-| `v1` | `{ socket: SdServiceSocketV1; request: ISdServiceRequest } \| undefined` | Legacy v1 socket context. |
-| `http` | `{ clientName: string; authTokenPayload?: IAuthTokenPayload } \| undefined` | HTTP request context (set for HTTP API requests). |
-
-### Accessors
-
-#### `authInfo: TAuthInfo | undefined`
-
-Returns the authenticated user's custom data from the JWT payload. Works for both WebSocket and HTTP contexts.
-
-#### `clientName: string | undefined`
-
-Returns the client application name from the request context. Includes path traversal protection (rejects names containing `..`, `/`, or `\`).
-
-#### `clientPath: string | undefined`
-
-Returns the resolved file system path for the current client. Uses `pathProxy` from server options if configured, otherwise resolves to `{rootPath}/www/{clientName}`.
+Scans the `{clientPath}/{platform}/updates/` directory for `.apk` (Android) or `.exe` (Windows) files and returns the highest semver version found.
 
 ### Methods
 
-#### `getConfigAsync<T>(section: string): Promise<T>`
-
-Loads configuration from `.config.json` files. Merges root-level config with client-level config (client config takes precedence).
-
-- Reads `{rootPath}/.config.json` (root config).
-- Reads `{clientPath}/.config.json` (client config, if `clientPath` is available).
-- Returns the value for the specified section key.
-- Throws if the section is not found.
+#### `getLastVersion(platform)`
 
 ```typescript
-class MyService extends SdServiceBase {
-  async doSomething(): Promise<void> {
-    const dbConfig = await this.getConfigAsync<{ host: string; port: number }>("database");
-    // Uses .config.json: { "database": { "host": "localhost", "port": 3306 } }
-  }
-}
+getLastVersion(platform: string):
+  | { version: string; downloadPath: string }
+  | undefined
 ```
+
+Returns the latest available version and its download path for the given platform.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `platform` | `string` | Target platform (e.g. `"android"`, `"windows"`) |
+
+**Returns:** `{ version: string; downloadPath: string } | undefined` -- version info, or `undefined` if no updates directory exists.
 
 ---
 
-## SdServiceExecutor
+## SdCryptoService
 
-Resolves and executes service methods by name. Handles authorization checks and context injection. Used internally by transport handlers.
+Provides SHA-256 HMAC hashing and AES-256-CBC encryption/decryption. Extends `SdServiceBase`. Implements `ISdCryptoService`.
 
-```typescript
-class SdServiceExecutor
-```
+Reads the encryption key from the `"crypto"` section of `.config.json`.
 
 ### Methods
 
-#### `runMethodAsync(def): Promise<any>`
-
-Looks up a service class by name, checks authorization, creates an instance with injected context, and invokes the target method.
+#### `encrypt(data)`
 
 ```typescript
-await executor.runMethodAsync({
-  serviceName: "MyService",
-  methodName: "hello",
-  params: ["world"],
-  socket: serviceSocket,        // WebSocket context (optional)
-  http: { clientName: "app" },  // HTTP context (optional)
-});
+async encrypt(data: string | Buffer): Promise<string>
 ```
 
-Authorization flow:
-1. If `auth` is configured in server options, check for `@Authorize` metadata on the method, then the class.
-2. If no `@Authorize` is found, the method is treated as public.
-3. If `@Authorize()` (empty), only authentication is required.
-4. If `@Authorize(["perm1"])`, the user must have at least one matching permission.
-5. Legacy v1 sockets cannot access `@Authorize`-decorated services.
+Computes a SHA-256 HMAC digest of the input data.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `data` | `string \| Buffer` | Data to hash |
+
+**Returns:** `Promise<string>` -- hex-encoded HMAC digest.
+
+#### `encryptAes(data)`
+
+```typescript
+async encryptAes(data: Buffer): Promise<string>
+```
+
+Encrypts data using AES-256-CBC with a random IV.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `data` | `Buffer` | Data to encrypt |
+
+**Returns:** `Promise<string>` -- encrypted string in `iv:ciphertext` hex format.
+
+#### `decryptAes(encText)`
+
+```typescript
+async decryptAes(encText: string): Promise<Buffer>
+```
+
+Decrypts an AES-256-CBC encrypted string.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `encText` | `string` | Encrypted string in `iv:ciphertext` hex format |
+
+**Returns:** `Promise<Buffer>` -- decrypted data.
 
 ---
 
-## Built-in Services
+## SdOrmService
 
-### SdAutoUpdateService
+Server-side ORM service that manages database connections, transactions, and query execution for remote clients. Extends `SdServiceBase`. Implements `ISdOrmService`. Decorated with `@Authorize()` (requires authentication).
 
-Auto-update service for mobile/desktop clients. Scans update directories for the latest version.
+Uses a `WeakMap` keyed by socket instance to track database connections per client, ensuring automatic cleanup when a socket disconnects.
 
-```typescript
-class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService
-```
+### Methods
 
-#### `getLastVersion(platform: string): { version: string; downloadPath: string } | undefined`
-
-Returns the latest available update for the given platform.
-
-- `platform` - `"android"` (looks for `.apk` files) or other (looks for `.exe` files).
-- Scans `{clientPath}/{platform}/updates/` directory.
-- Uses semver to determine the highest version.
-
----
-
-### SdCryptoService
-
-Cryptographic operations using Node.js `crypto` module. Reads encryption key from the `"crypto"` config section.
+#### `getInfo(opt)`
 
 ```typescript
-class SdCryptoService extends SdServiceBase implements ISdCryptoService
+async getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
+  dialect: TDbContextOption["dialect"];
+  database?: string;
+  schema?: string;
+}>
 ```
 
-Config section (`"crypto"` in `.config.json`):
-```json
-{ "crypto": { "key": "your-32-byte-hex-key" } }
-```
+Returns database dialect and connection metadata.
 
-#### `encrypt(data: string | Buffer): Promise<string>`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `opt` | `TDbConnOptions & { configName: string }` | Connection options with config section name |
 
-One-way HMAC-SHA256 hash. Returns hex-encoded digest.
-
-#### `encryptAes(data: Buffer): Promise<string>`
-
-AES-256-CBC encryption with random IV. Returns `"iv:ciphertext"` hex string.
-
-#### `decryptAes(encText: string): Promise<Buffer>`
-
-Decrypts AES-256-CBC encrypted text. Expects `"iv:ciphertext"` hex format.
-
----
-
-### SdOrmService
-
-Database connection management service. Provides WebSocket-bound database connections with automatic cleanup. Decorated with `@Authorize()` (requires authentication).
+#### `connect(opt)`
 
 ```typescript
-@Authorize()
-class SdOrmService extends SdServiceBase implements ISdOrmService
+async connect(opt: TDbConnOptions & { configName: string }): Promise<number>
 ```
 
-Requires a WebSocket connection (not available over HTTP). Database connections are tracked per-socket using a `WeakMap` and automatically closed when the socket disconnects.
+Creates a database connection and returns its numeric ID. Registers a socket close handler to clean up all connections when the socket disconnects.
 
-Config section (`"orm"` in `.config.json`):
-```json
-{
-  "orm": {
-    "default": {
-      "dialect": "mysql",
-      "host": "localhost",
-      "port": 3306,
-      "username": "root",
-      "password": "pass",
-      "database": "mydb"
-    }
-  }
-}
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `opt` | `TDbConnOptions & { configName: string }` | Connection options with config section name |
+
+**Returns:** `Promise<number>` -- connection ID for subsequent operations.
+
+#### `close(connId)`
+
+```typescript
+async close(connId: number): Promise<void>
 ```
 
-#### `getInfo(opt): Promise<{ dialect, database?, schema? }>`
+Closes a database connection by ID.
 
-Returns dialect and database/schema info for a named config.
+#### `beginTransaction(connId, isolationLevel?)`
 
-#### `connect(opt): Promise<number>`
+```typescript
+async beginTransaction(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void>
+```
 
-Creates a new database connection and returns a connection ID. The connection is tied to the current WebSocket.
+Begins a transaction on the specified connection.
 
-#### `close(connId: number): Promise<void>`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connId` | `number` | Connection ID |
+| `isolationLevel` | `ISOLATION_LEVEL` | Optional isolation level |
 
-Closes a specific database connection.
+#### `commitTransaction(connId)`
 
-#### `beginTransaction(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void>`
-
-Starts a transaction on the connection.
-
-#### `commitTransaction(connId: number): Promise<void>`
+```typescript
+async commitTransaction(connId: number): Promise<void>
+```
 
 Commits the current transaction.
 
-#### `rollbackTransaction(connId: number): Promise<void>`
+#### `rollbackTransaction(connId)`
+
+```typescript
+async rollbackTransaction(connId: number): Promise<void>
+```
 
 Rolls back the current transaction.
 
-#### `executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]>`
+#### `executeParametrized(connId, query, params?)`
+
+```typescript
+async executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]>
+```
 
 Executes a parameterized SQL query.
 
-#### `executeDefs(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]>`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connId` | `number` | Connection ID |
+| `query` | `string` | SQL query string |
+| `params` | `any[]` | Optional query parameters |
 
-Executes query definitions built with `QueryBuilder`. Optimizes by combining queries when no result parsing is needed.
+#### `executeDefs(connId, defs, options?)`
 
-#### `bulkInsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>`
+```typescript
+async executeDefs(
+  connId: number,
+  defs: TQueryDef[],
+  options?: (IQueryResultParseOption | undefined)[],
+): Promise<any[][]>
+```
+
+Executes query definitions, optionally parsing results. When all options are `undefined`, batches queries into a single execution for efficiency.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connId` | `number` | Connection ID |
+| `defs` | `TQueryDef[]` | Query definitions |
+| `options` | `(IQueryResultParseOption \| undefined)[]` | Optional parse options per query |
+
+#### `bulkInsert(connId, tableName, columnDefs, records)`
+
+```typescript
+async bulkInsert(
+  connId: number,
+  tableName: string,
+  columnDefs: IQueryColumnDef[],
+  records: Record<string, any>[],
+): Promise<void>
+```
 
 Performs a bulk insert operation.
 
-#### `bulkUpsert(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connId` | `number` | Connection ID |
+| `tableName` | `string` | Target table name |
+| `columnDefs` | `IQueryColumnDef[]` | Column definitions |
+| `records` | `Record<string, any>[]` | Records to insert |
+
+#### `bulkUpsert(connId, tableName, columnDefs, records)`
+
+```typescript
+async bulkUpsert(
+  connId: number,
+  tableName: string,
+  columnDefs: IQueryColumnDef[],
+  records: Record<string, any>[],
+): Promise<void>
+```
 
 Performs a bulk upsert (insert or update) operation.
 
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connId` | `number` | Connection ID |
+| `tableName` | `string` | Target table name |
+| `columnDefs` | `IQueryColumnDef[]` | Column definitions |
+| `records` | `Record<string, any>[]` | Records to upsert |
+
 ---
 
-### SdSmtpClientService
+## SdSmtpClientService
 
-Email sending service via SMTP using `nodemailer`.
+Sends emails via SMTP using nodemailer. Extends `SdServiceBase`. Implements `ISdSmtpClientService`.
 
-```typescript
-class SdSmtpClientService extends SdServiceBase implements ISdSmtpClientService
-```
+### Methods
 
-#### `send(options: ISmtpClientSendOption): Promise<string>`
-
-Sends an email with explicit SMTP settings. Returns the message ID.
+#### `send(options)`
 
 ```typescript
-await smtpService.send({
-  host: "smtp.example.com",
-  port: 587,
-  secure: false,
-  user: "user@example.com",
-  pass: "password",
-  from: '"Sender" <sender@example.com>',
-  to: "recipient@example.com",
-  subject: "Hello",
-  html: "<p>Hello World</p>",
-});
+async send(options: ISmtpClientSendOption): Promise<string>
 ```
 
-#### `sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string>`
+Sends an email with explicit SMTP configuration.
 
-Sends an email using SMTP settings from the `"smtp"` config section. Only requires recipient, subject, and body.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `options` | `ISmtpClientSendOption` | Full SMTP options including host, port, auth, and mail content |
 
-Config section (`"smtp"` in `.config.json`):
-```json
-{
-  "smtp": {
-    "default": {
-      "senderName": "My App",
-      "senderEmail": "noreply@example.com",
-      "user": "smtp-user",
-      "pass": "smtp-pass",
-      "host": "smtp.example.com",
-      "port": 587,
-      "secure": false
-    }
-  }
-}
-```
+**Returns:** `Promise<string>` -- the message ID.
+
+#### `sendByConfig(configName, options)`
 
 ```typescript
-await smtpService.sendByConfig("default", {
-  to: "recipient@example.com",
-  subject: "Hello",
-  html: "<p>Hello World</p>",
-});
+async sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string>
 ```
+
+Sends an email using SMTP settings from the server's `"smtp"` config section.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `configName` | `string` | Named SMTP configuration key in the `"smtp"` config section |
+| `options` | `ISmtpClientSendByDefaultOption` | Mail content options (recipients, subject, body, etc.) |
+
+**Returns:** `Promise<string>` -- the message ID.
+
+**Throws:** `Error` if the named SMTP configuration is not found.

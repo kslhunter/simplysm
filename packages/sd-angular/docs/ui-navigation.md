@@ -1,255 +1,236 @@
-# UI: Navigation Components
+# UI - Navigation Components
 
-## SdCollapseControl
+## Collapse
 
-Animates content expanding/collapsing by adjusting `margin-top`.
+### SdCollapseControl
 
-**Selector:** `sd-collapse`
+**Type:** `@Component` | **Selector:** `sd-collapse`
 
-```html
-<sd-collapse [open]="isOpen()">
-  <div>Collapsible content</div>
-</sd-collapse>
-```
+Animates content expanding/collapsing using `margin-top` transition. Content is hidden by shifting upward when collapsed.
 
-**Inputs:** `open: boolean` (default `false`)
+#### Inputs
 
----
-
-## SdCollapseIconControl
-
-An icon that rotates when `open` is true (typically a chevron used alongside `SdCollapseControl`).
-
-**Selector:** `sd-collapse-icon`
-
-```html
-<sd-collapse-icon [open]="isOpen()" />
-```
-
-**Inputs:**
-
-| Input        | Type      | Default             | Description                |
-| ------------ | --------- | ------------------- | -------------------------- |
-| `open`       | `boolean` | `false`             | Rotated state              |
-| `icon`       | `string`  | `tablerChevronDown` | SVG icon                   |
-| `openRotate` | `number`  | `90`                | Rotation degrees when open |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `open` | `boolean \| ""` | No | `false` | Whether content is expanded |
 
 ---
 
-## SdPaginationControl
+### SdCollapseIconControl
 
-Pagination bar with first/prev/page/next/last navigation.
+**Type:** `@Component` | **Selector:** `sd-collapse-icon`
 
-**Selector:** `sd-pagination`
+Animated icon that rotates to indicate expand/collapse state.
 
-```html
-<sd-pagination [(currentPage)]="page" [totalPageCount]="totalPages()" [visiblePageCount]="10" />
-```
+#### Inputs
 
-**Inputs:**
-
-| Input              | Type             | Default | Description                      |
-| ------------------ | ---------------- | ------- | -------------------------------- |
-| `currentPage`      | `number` (model) | `0`     | Zero-based current page          |
-| `totalPageCount`   | `number`         | `0`     | Total number of pages            |
-| `visiblePageCount` | `number`         | `10`    | How many page numbers to display |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `icon` | `string` | No | `tablerChevronDown` | Icon SVG string |
+| `open` | `boolean \| ""` | No | `false` | Whether the icon shows "open" state |
+| `openRotate` | `number` | No | `90` | Rotation angle in degrees when open |
 
 ---
 
-## SdSidebarContainerControl
+## Pagination
 
-Container for sidebar + main content layout. Tracks `toggle` state and auto-collapses on navigation.
+### SdPaginationControl
 
-**Selector:** `sd-sidebar-container`
+**Type:** `@Component` | **Selector:** `sd-pagination`
 
-```html
-<sd-sidebar-container>
-  <sd-sidebar>
-    <sd-sidebar-menu [menus]="menus()" />
-  </sd-sidebar>
-  <sd-topbar-container>
-    <sd-topbar>Title</sd-topbar>
-    <sd-pane>Main content</sd-pane>
-  </sd-topbar-container>
-</sd-sidebar-container>
-```
+Page navigation with first/prev/next/last buttons and numbered page links.
 
-**Signals:** `toggle: WritableSignal<boolean>` — controls sidebar visibility.
+#### Inputs
 
----
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `totalPageCount` | `number` | No | `0` | Total number of pages |
+| `visiblePageCount` | `number` | No | `10` | Number of page buttons to show at once |
 
-## SdSidebarControl
+#### Models
 
-The sidebar panel inside `SdSidebarContainerControl`. Reads `toggle` from parent and applies CSS transforms.
-
-**Selector:** `sd-sidebar`
-
-No inputs. Inherits toggle state from `SdSidebarContainerControl`.
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `currentPage` | `number` | `0` | Current page index (0-based) |
 
 ---
 
-## SdSidebarMenuControl
+## Sidebar
 
-Renders a hierarchical menu inside the sidebar. Menus are rendered as `SdListItemControl` items with router navigation.
+### SdSidebarContainerControl
 
-**Selector:** `sd-sidebar-menu`
+**Type:** `@Component` | **Selector:** `sd-sidebar-container`
 
-```html
-<sd-sidebar-menu [menus]="appMenus()" [layout]="'accordion'" />
-```
+Layout container that positions a sidebar alongside the main content area. The sidebar slides in/out and the content area adjusts.
 
-**Inputs:**
+No inputs.
 
-| Input                 | Type                                | Description                         |
-| --------------------- | ----------------------------------- | ----------------------------------- |
-| `menus`               | `ISdSidebarMenu[]`                  | Menu hierarchy                      |
-| `layout`              | `"accordion" \| "flat"`             | Root-level layout (auto if not set) |
-| `getMenuIsSelectedFn` | `(menu: ISdSidebarMenu) => boolean` | Custom selection check              |
+---
 
-**`ISdSidebarMenu`:**
+### SdSidebarControl
+
+**Type:** `@Component` | **Selector:** `sd-sidebar`
+
+The sidebar panel within `SdSidebarContainerControl`. Contains user info, menus, and additional content.
+
+No inputs.
+
+---
+
+### SdSidebarMenuControl
+
+**Type:** `@Component` | **Selector:** `sd-sidebar-menu`
+
+Hierarchical menu tree for sidebar navigation. Supports accordion and flat layouts.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `menus` | `ISdSidebarMenu[]` | No | `[]` | Menu tree items |
+| `layout` | `"accordion" \| "flat"` | No | -- | Display layout |
+| `getMenuIsSelectedFn` | `(menu: ISdSidebarMenu) => boolean` | No | -- | Selection check function |
+
+#### ISdSidebarMenu
 
 ```typescript
 interface ISdSidebarMenu {
   title: string;
-  codeChain: string[]; // Route segments: ['orders', 'list']
-  url?: string; // External URL (opens in new tab)
-  icon?: string; // SVG icon
+  codeChain: string[];
+  url?: string;
+  icon?: string;
   children?: ISdSidebarMenu[];
 }
 ```
 
 ---
 
-## SdSidebarUserControl
+### SdSidebarUserControl
 
-User info panel inside the sidebar with an optional collapsible menu.
+**Type:** `@Component` | **Selector:** `sd-sidebar-user`
 
-**Selector:** `sd-sidebar-user`
+User info section in the sidebar with avatar area and dropdown menu.
 
-```html
-<sd-sidebar-user [userMenu]="userMenu()">
-  <div>John Doe</div>
-  <small>Administrator</small>
-</sd-sidebar-user>
-```
+#### Inputs
 
-**Inputs:** `userMenu: ISidebarUserMenu`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `userMenu` | `ISidebarUserMenu` | No | -- | User menu configuration |
+| `menuTitle` | `string` | No | -- | Menu section title |
+
+#### ISidebarUserMenu
 
 ```typescript
 interface ISidebarUserMenu {
   title: string;
-  menus: { title: string; onClick: () => void }[];
+  menus: {
+    title: string;
+    onClick: () => void;
+  }[];
 }
 ```
 
 ---
 
-## SdTabControl
+## Tab
 
-Tab bar that controls which tab is active via `value` model.
+### SdTabControl
 
-**Selector:** `sd-tab`
+**Type:** `@Component` | **Selector:** `sd-tab`
 
-```html
-<sd-tab [(value)]="activeTab">
-  <sd-tab-item [value]="'info'">Info</sd-tab-item>
-  <sd-tab-item [value]="'history'">History</sd-tab-item>
-</sd-tab>
-```
+Tab bar that manages active tab selection.
 
-**Model:** `value: any`
+#### Models
 
----
-
-## SdTabItemControl
-
-An individual tab button inside `SdTabControl`.
-
-**Selector:** `sd-tab-item`
-
-**Inputs:** `value: any`
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `any` | Currently active tab value |
 
 ---
 
-## SdTabviewControl
+### SdTabItemControl
 
-Combined tab bar + content view. Automatically reads `SdTabviewItemControl` children to build tab headers.
+**Type:** `@Component` | **Selector:** `sd-tab-item`
 
-**Selector:** `sd-tabview`
+Individual tab button within a `SdTabControl`.
 
-```html
-<sd-tabview [(value)]="activeTab">
-  <sd-tabview-item [value]="'summary'" [header]="'Summary'">Summary content</sd-tabview-item>
-  <sd-tabview-item [value]="'details'" [header]="'Details'">Details content</sd-tabview-item>
-</sd-tabview>
-```
+#### Inputs
 
-**Model:** `value: T`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `any` | No | -- | Tab value (matched against parent) |
 
 ---
 
-## SdTabviewItemControl
+### SdTabviewControl
 
-A tab panel inside `SdTabviewControl`. Visible only when selected.
+**Type:** `@Component` | **Selector:** `sd-tabview`
 
-**Selector:** `sd-tabview-item`
+Tabbed view container with integrated tab bar and content switching.
 
-**Inputs:** `value: T` (required), `header: string`
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `T` | Currently active tabview value |
 
 ---
 
-## SdTopbarContainerControl
+### SdTabviewItemControl
 
-Flex column container for topbar + main content layout.
+**Type:** `@Component` | **Selector:** `sd-tabview-item`
 
-**Selector:** `sd-topbar-container`
+Content panel within `SdTabviewControl`. Displays when its value matches the parent's value.
 
-```html
-<sd-topbar-container>
-  <sd-topbar>...</sd-topbar>
-  <sd-pane>Main content</sd-pane>
-</sd-topbar-container>
-```
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `T` | Yes | -- | Tabview item value |
+| `header` | `string` | No | -- | Tab header text |
+
+---
+
+## Topbar
+
+### SdTopbarContainerControl
+
+**Type:** `@Component` | **Selector:** `sd-topbar-container`
+
+Layout container that positions a topbar above the main content area.
 
 No inputs.
 
 ---
 
-## SdTopbarControl
+### SdTopbarControl
 
-Application topbar. Shows a menu toggle button when a `SdSidebarContainerControl` is detected.
+**Type:** `@Component` | **Selector:** `sd-topbar`
 
-**Selector:** `sd-topbar`
+Top navigation bar. Includes a toggle button for sidebars.
 
-```html
-<sd-topbar>
-  <h4>Page Title</h4>
-  <sd-button>Action</sd-button>
-</sd-topbar>
-```
+#### Inputs
 
-**Inputs:** `sidebarContainer: SdSidebarContainerControl` — explicit sidebar reference (optional; auto-detected from parent hierarchy).
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `sidebarContainer` | `SdSidebarContainerControl` | No | -- | Reference to sidebar container for toggle button |
 
 ---
 
-## SdTopbarMenuControl
+### SdTopbarMenuControl
 
-Renders a dropdown navigation menu in the topbar.
+**Type:** `@Component` | **Selector:** `sd-topbar-menu`
 
-**Selector:** `sd-topbar-menu`
+Horizontal menu tree for topbar navigation.
 
-```html
-<sd-topbar-menu [menus]="topbarMenus()" />
-```
+#### Inputs
 
-**Inputs:**
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `menus` | `ISdTopbarMenu[]` | No | `[]` | Menu tree items |
+| `getMenuIsSelectedFn` | `(menu: ISdTopbarMenu) => boolean` | No | -- | Selection check function |
 
-| Input                 | Type                               | Description            |
-| --------------------- | ---------------------------------- | ---------------------- |
-| `menus`               | `ISdTopbarMenu[]`                  | Menu hierarchy         |
-| `getMenuIsSelectedFn` | `(menu: ISdTopbarMenu) => boolean` | Custom selection check |
-
-**`ISdTopbarMenu`:**
+#### ISdTopbarMenu
 
 ```typescript
 interface ISdTopbarMenu {
@@ -263,14 +244,14 @@ interface ISdTopbarMenu {
 
 ---
 
-## SdTopbarUserControl
+### SdTopbarUserControl
 
-User dropdown button in the topbar.
+**Type:** `@Component` | **Selector:** `sd-topbar-user`
 
-**Selector:** `sd-topbar-user`
+User dropdown in the topbar with avatar and menu items.
 
-```html
-<sd-topbar-user [menus]="userMenus()">{{ currentUser().name }}</sd-topbar-user>
-```
+#### Inputs
 
-**Inputs:** `menus: { title: string; onClick: () => void }[]` (required)
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `menus` | `{ title: string; onClick: () => void }[]` | Yes | -- | User menu items |

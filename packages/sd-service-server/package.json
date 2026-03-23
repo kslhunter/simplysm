@@ -27,12 +27,12 @@
     "@simplysm/sd-service-common": "12.16.31",
     "bufferutil": "^4.1.0",
     "fastify": "^5.8.2",
-    "jose": "^6.2.1",
+    "jose": "^6.2.2",
     "mime": "^4.1.0",
     "nodemailer": "^7.0.13",
     "semver": "^7.7.4",
     "utf-8-validate": "^6.0.6",
-    "ws": "^8.19.0"
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "@types/mime": "^4.0.0",

@@ -1,77 +1,132 @@
 # Errors
 
-All custom error classes extend `SdError`, which itself extends the native `Error`.
+Custom error classes that extend `SdError` for structured error hierarchies with support for inner error chaining.
 
 ## SdError
 
-Base error class that supports **error chaining** (inner errors). When constructed with another `Error` as the first argument, the inner error's stack trace is appended.
-
-### Constructors
+Base error class that supports tree-structured error chains via `innerError`. All other custom errors in this package extend `SdError`.
 
 ```ts
-new SdError(...messages: string[])
-new SdError(innerError: Error, ...messages: string[])
-```
+class SdError extends Error {
+  innerError?: Error;
 
-Messages are joined with ` => ` in reverse order (outermost first).
+  constructor(innerError: Error, ...messages: string[]);
+  constructor(...messages: string[]);
+}
+```
 
 ### Properties
 
 | Property | Type | Description |
-|---|---|---|
+|----------|------|-------------|
 | `innerError` | `Error \| undefined` | The wrapped inner error, if provided. |
 | `name` | `string` | Set to the concrete class name (e.g., `"ArgumentError"`). |
-| `stack` | `string` | Includes `---- inner error stack ----` section if an inner error exists. |
-
----
-
-## ArgumentError
-
-Thrown when function arguments are invalid.
+| `stack` | `string` | Includes `---- inner error stack ----` section when an inner error exists. |
 
 ### Constructors
 
+| Signature | Description |
+|-----------|-------------|
+| `new SdError(...messages: string[])` | Creates an error with messages joined in reverse order using ` => `. |
+| `new SdError(innerError: Error, ...messages: string[])` | Wraps an existing error. The inner error's message is prepended, and its stack trace is appended under `---- inner error stack ----`. |
+
+### Example
+
 ```ts
-new ArgumentError(argObj: Record<string, any>)
-new ArgumentError(message: string, argObj: Record<string, any>)
+import { SdError } from "@simplysm/sd-core-common";
+
+try {
+  throw new Error("low-level failure");
+} catch (err) {
+  throw new SdError(err, "high-level operation failed");
+  // message: "low-level failure => high-level operation failed"
+  // stack includes inner error stack trace
+}
 ```
 
-The `argObj` is serialized as YAML and appended to the error message for easy debugging.
+## ArgumentError
 
----
+Error thrown when function arguments are invalid. Formats the argument object as YAML in the error message.
+
+```ts
+class ArgumentError extends SdError {
+  constructor(argObj: Record<string, any>);
+  constructor(message: string, argObj: Record<string, any>);
+}
+```
+
+### Constructors
+
+| Signature | Description |
+|-----------|-------------|
+| `new ArgumentError(argObj)` | Creates an error with the default message and the argument object formatted as YAML. |
+| `new ArgumentError(message, argObj)` | Creates an error with a custom message and the argument object formatted as YAML. |
+
+### Example
+
+```ts
+import { ArgumentError } from "@simplysm/sd-core-common";
+
+function setPort(port: number) {
+  if (port < 0 || port > 65535) {
+    throw new ArgumentError("Invalid port number", { port });
+  }
+}
+```
 
 ## NeverEntryError
 
-Thrown when code reaches a point that should be logically unreachable. Useful as an exhaustiveness check or assertion.
-
-### Constructor
+Error thrown when code reaches a point that should be logically unreachable. Useful for exhaustive switch/case checks and impossible branches.
 
 ```ts
-new NeverEntryError(message?: string)
+class NeverEntryError extends SdError {
+  constructor(message?: string);
+}
 ```
 
----
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `string \| undefined` | Optional additional context about the unreachable code path. |
+
+### Example
+
+```ts
+import { NeverEntryError } from "@simplysm/sd-core-common";
+
+function handleStatus(status: "ok" | "error") {
+  switch (status) {
+    case "ok": return true;
+    case "error": return false;
+    default: throw new NeverEntryError(`Unexpected status: ${status}`);
+  }
+}
+```
 
 ## NotImplementError
 
-Thrown when a method or code path has not yet been implemented.
-
-### Constructor
+Error thrown when a method or feature is not yet implemented.
 
 ```ts
-new NotImplementError(message?: string)
+class NotImplementError extends SdError {
+  constructor(message?: string);
+}
 ```
 
----
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `string \| undefined` | Optional description of what is not implemented. |
 
 ## TimeoutError
 
-Thrown when a wait operation exceeds its timeout.
-
-### Constructor
+Error thrown when an operation exceeds its allowed time limit.
 
 ```ts
-new TimeoutError(millisecond?: number, message?: string)
+class TimeoutError extends SdError {
+  constructor(millisecond?: number, message?: string);
+}
 ```
 
-The `millisecond` value is included in the error message if provided.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `millisecond` | `number \| undefined` | The timeout duration in milliseconds that was exceeded. Included in the error message if provided. |
+| `message` | `string \| undefined` | Optional additional context. |

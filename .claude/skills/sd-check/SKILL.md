@@ -1,69 +1,141 @@
 ---
 name: sd-check
-description: Used when requesting "check", "sd-check", "typecheck+lint+test", "full check", etc.
+description: |
+  Node monorepo의 check 명령어(typecheck, lint, test)를 자동 탐지하여 순차 실행하고,
+  에러를 반복 수정하는 스킬. /sd-check을 입력하거나, "타입체크 돌려줘", "린트 고쳐줘",
+  "체크 돌리고 수정해줘" 등을 요청할 때 사용한다.
 ---
 
-# SD Check — Automated Check and Error Fix Loop
+# sd-check: Check 실행 & 반복 수정
 
-Detects the package manager, runs the check script, reviews the results, and if there are code errors, invokes sd-debug to analyze the root cause, applies fixes, and re-runs the check. This loop repeats until all errors are resolved.
-
-ARGUMENTS: Target paths (optional, multiple allowed). If not specified, determined from the conversation context. If no specific target exists or "all" is specified, run without targets.
-
----
-
-## Step 1: Preparation (PM Detection + Script Verification + Target Resolution)
-
-1. **PM Detection**: Determine the package manager from the lock file in the project root.
-   - `pnpm-lock.yaml` exists → `pnpm`
-   - `yarn.lock` exists → `yarn`
-   - `package-lock.json` exists → `npm`
-   - None found → `npm` (default)
-2. **Script Verification**: Check whether `scripts.check` exists in `package.json`. If not, inform the user with `"The check script is not defined in package.json."` and **stop**.
-3. **Target Resolution**: Determine targets in the following priority order.
-   1. Targets explicitly specified in ARGUMENTS
-   2. Inferred from the current conversation context (e.g., user is working on a specific package)
-   3. If neither applies or "all" is specified → run without targets (full check)
-
-## Step 2: Run Check
-
-1. `mkdir -p .tmp/check` (Bash)
-2. Run the following command via Bash:
-   ```
-   TS=$(date +%y%m%d%H%M%S); $PM check [targets...] > .tmp/check/${TS}.txt 2>&1; echo "EXIT_CODE:$?" >> .tmp/check/${TS}.txt
-   ```
-   - `$PM` = the package manager detected in Step 1
-   - `$TS` = timestamp variable (e.g., `260312143025`)
-   - Include targets in the command if present; omit otherwise
-3. Read the result file (`.tmp/check/${TS}.txt`) using the Read tool.
-
-## Step 3: Analyze Results
-
-Read the result file content and classify it into one of the following three categories:
-
-- **Success**: All checks passed without errors → proceed to **Step 5 (Completion)**
-- **Environment Error**: The issue is an environment/infrastructure problem rather than a code problem (e.g., missing dependencies, out of memory, command not found, network issues, etc.) → show the error details to the user and **stop immediately**. Do not attempt code fixes.
-- **Code Error**: The issue is a source code problem such as type errors, lint violations, or test failures → proceed to **Step 4**
-
-> The classification above should be determined by reading and interpreting the result content freely, not by hardcoded pattern matching.
-
-**Iteration Limit**: If the current iteration count exceeds 5, report the remaining errors to the user, inform them with `"Errors remain after 5 iterations. Please review the remaining errors."`, and **stop**.
-
-## Step 4: Error Analysis and Fix (Using sd-debug)
-
-Invoke `sd-debug` via the Skill tool. Pass the following content as args:
+## 사용법
 
 ```
-Analyze the code errors from the check results below.
-**Important: After completing Step 2 (in-depth codebase analysis), skip Steps 3-5 and immediately fix the code based on the analysis results. Do not output a diagnostic report, do not wait for user confirmation, and do not invoke sd-plan — apply fixes directly.**
-
-<Include the error content from the check result file here>
+/sd-check [패키지경로]
 ```
 
-After sd-debug completes → return to **Step 2** (re-run check with a new txt file)
+- 패키지경로: 해당 디렉토리의 package.json 기준으로 실행. 생략 시 프로젝트 루트.
 
-## Step 5: Completion Report
+## 프로세스 흐름
 
-When all checks pass, output the following:
-- Total number of iterations
-- Summary of fixes made in each iteration
-- Format: `"Check complete: all checks passed after {N} iteration(s)."` + bullet list of fix details
+아래 다이어그램이 전체 프로세스의 흐름이다. 각 노드의 상세 설명은 이후 섹션에서 기술한다.
+
+```mermaid
+flowchart TD
+    S1[Step 1: Check 명령어 탐지] --> S2{다음 카테고리 있음?}
+    S2 -->|없음 — 모든 카테고리 완료| S3[Step 3: 최종 검증]
+    S2 -->|있음| IS_LINT{린트 카테고리?}
+    IS_LINT -->|Yes| LINT_FIX[린트 --fix 실행]
+    LINT_FIX --> RUN
+    IS_LINT -->|No| RUN[Step 2: Check 실행]
+    RUN --> PASS{통과?}
+    PASS -->|Yes| S2
+    PASS -->|No| FIX[에러 분석 & 코드 수정]
+    FIX --> NOOP{이전과 동일한 수정?}
+    NOOP -->|Yes| REPORT_STUCK[사용자에게 보고 & 중단]
+    NOOP -->|No| RETRY{10회 초과?}
+    RETRY -->|Yes| REPORT_LIMIT[사용자에게 보고 & 계속 여부 질문]
+    RETRY -->|No| RUN
+    S3 --> REG{regression?}
+    REG -->|Yes| RUN
+    REG -->|No| S4[Step 4: 결과 보고]
+```
+
+## Step 1: Check 명령어 탐지
+
+### 1-1. 패키지 매니저 감지
+
+프로젝트 루트에서 lock 파일로 패키지 매니저를 결정한다:
+
+| lock 파일 | 실행 명령어 |
+|-----------|------------|
+| `pnpm-lock.yaml` | `pnpm run` |
+| `yarn.lock` | `yarn run` |
+| `bun.lock` 또는 `bun.lockb` | `bun run` |
+| 그 외 | `npm run` |
+
+### 1-2. 스크립트 탐지
+
+대상 디렉토리의 `package.json` → `scripts`에서 아래 패턴에 매칭되는 스크립트를 탐지한다.
+
+| 우선순위 | 스크립트 이름 패턴 | 카테고리 |
+|----------|-------------------|----------|
+| 1 | typecheck, type-check, tsc | 타입 체크 |
+| 2 | lint, eslint | 린트 |
+| 3 | test, jest, vitest, mocha | 테스트 |
+| 4 | check | 일반 체크 |
+
+타입 에러가 린트/테스트에 연쇄 영향을 주므로 위 우선순위 순서대로 실행한다.
+
+### 1-3. 탐지 결과 표시
+
+```
+탐지된 check 스크립트:
+1. typecheck → pnpm run typecheck
+2. lint → pnpm run lint
+```
+
+탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다. (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다)
+
+## 린트 --fix 실행
+
+린트 카테고리는 먼저 `--fix` 플래그를 붙여 실행한다 (예: `pnpm run lint -- --fix`). 자동 수정 가능한 문제를 먼저 해결한 뒤, 다시 일반 린트를 실행하여 남은 에러만 수동 수정한다.
+
+## Step 2: Check 실행
+
+수정 루프 시작 시 `.tmp/{yyMMddHHmmss}_check-{패키지명}.log`에 로그 파일을 생성한다. `{패키지명}`은 패키지 경로의 마지막 디렉토리명이다 (예: `packages/core-common` → `core-common`). 대상 생략 시(루트 실행)에는 `.tmp/{yyMMddHHmmss}_check.log`로 생성한다. `{yyMMddHHmmss}`는 **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다.** LLM이 직접 생성하면 시분초가 누락되므로 금지한다.
+
+check 명령어를 실행한다 (패키지경로 지정 시 해당 디렉토리에서).
+
+## 에러 분석 & 코드 수정
+
+1. 에러 출력에서 파일 경로, 라인 번호, 에러 메시지를 파악한다
+2. **로그 파일을 읽어 이전 시도 이력을 확인한다** — 같은 에러에 대해 이전에 시도한 수정과 그 결과를 참조하여 같은 접근을 반복하지 않는다
+3. 해당 파일을 읽고 에러의 근본 원인을 분석한다
+4. 코드를 수정한다
+5. **수정 내역을 로그 파일에 기록한다** (시도 번호, 에러 요약, 수정 내용, 결과)
+
+### 로그 파일 형식
+
+```markdown
+# sd-check Log
+
+## 시도 1
+- **check**: typecheck
+- **에러**: {에러 메시지 요약}
+- **수정**: {수정한 파일과 변경 내용 요약}
+- **결과**: 성공 | 실패 — {실패 사유}
+```
+
+## Step 3: 최종 검증
+
+모든 check가 개별 통과한 후, 전체를 처음부터 한번 더 실행한다.
+
+regression이 발생하면 (예: lint 수정이 타입 에러를 유발), 해당 check부터 수정 루프를 재개한다.
+
+## Step 4: 결과 보고
+
+```markdown
+## sd-check 결과
+
+| Check | 상태 | 반복 횟수 |
+|-------|------|-----------|
+| typecheck | PASS | 2 |
+| lint | PASS | 1 |
+
+### 수정된 파일
+- src/calc.ts
+- src/utils.ts
+```
+
+실패한 check가 있으면 남은 에러 메시지를 함께 표시한다.
+
+## 수정 원칙
+
+에러를 수정할 때 근본 원인을 해결해야 한다. `.claude/rules/sd-problem-solving.md`의 금지 목록을 따른다.
+
+### 수정 대상 제한
+
+에러 메시지가 가리키는 소스 코드 파일만 수정한다. check 스크립트(`scripts/`, 설정 파일, `Makefile` 등) 자체를 수정하지 않는다 — check 인프라는 프로젝트가 정의한 검증 규칙이므로 변경하면 검증 자체가 무의미해진다. check 인프라에 문제가 있다고 판단되면 수정하지 말고 사용자에게 보고한다.
+
+근본 원인 파악이 어려우면 에러 분석 결과를 사용자에게 보여주고 도움을 요청한다.

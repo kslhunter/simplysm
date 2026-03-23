@@ -1,144 +1,98 @@
-# UI: Visual Components
+# UI - Visual Components
 
 ## SdBarcodeControl
 
-Renders a barcode as inline SVG using the `bwip-js` library.
+**Type:** `@Component` | **Selector:** `sd-barcode`
 
-**Selector:** `sd-barcode`
+Renders a barcode as inline SVG using the `bwip-js` library. Supports 100+ barcode formats.
 
-```html
-<sd-barcode [type]="'code128'" [value]="item.barcode" />
-```
+### Inputs
 
-**Inputs:**
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `type` | `TBarcodeType` | Yes | -- | Barcode format (e.g., `"code128"`, `"qrcode"`, `"ean13"`) |
+| `value` | `string` | No | -- | Barcode data to encode |
 
-| Input   | Type                      | Description     |
-| ------- | ------------------------- | --------------- |
-| `type`  | `TBarcodeType` (required) | Barcode format  |
-| `value` | `string`                  | Value to encode |
-
-Common `TBarcodeType` values: `"code128"`, `"qrcode"`, `"ean13"`, `"pdf417"`, `"azteccode"`, `"datamatrix"`. See full type for all options.
+Supported barcode types include: `auspost`, `azteccode`, `azteccodecompact`, `code128`, `code39`, `code93`, `datamatrix`, `ean13`, `ean8`, `gs1-128`, `interleaved2of5`, `isbn`, `itf14`, `maxicode`, `micropdf417`, `pdf417`, `qrcode`, `upca`, `upce`, and many more.
 
 ---
 
 ## SdCalendarControl
 
-Renders a monthly calendar grid. Each cell shows all items whose date matches that day, rendered via a required item template.
+**Type:** `@Component` | **Selector:** `sd-calendar`
 
-**Selector:** `sd-calendar`
+Calendar view that displays items on their corresponding dates. Supports navigation between months.
 
-```html
-<sd-calendar
-  [items]="events()"
-  [getItemDateFn]="getEventDate"
-  [yearMonth]="selectedMonth()"
-  [weekStartDay]="1"
->
-  <ng-template [itemOf]="events()" let-event>
-    <sd-label [theme]="'primary'">{{ event.title }}</sd-label>
-  </ng-template>
-</sd-calendar>
-```
+### Inputs
 
-```typescript
-getEventDate = (item: IEvent, index: number): DateOnly => item.date;
-```
-
-**Inputs:**
-
-| Input                | Type                                              | Default               | Description                              |
-| -------------------- | ------------------------------------------------- | --------------------- | ---------------------------------------- |
-| `items`              | `T[]` (required)                                  | —                     | Data items to display in cells           |
-| `getItemDateFn`      | `(item: T, index: number) => DateOnly` (required) | —                     | Returns the date for each item           |
-| `yearMonth`          | `DateOnly`                                        | current month (day=1) | Month to display                         |
-| `weekStartDay`       | `number`                                          | `0`                   | 0=Sunday, 1=Monday                       |
-| `minDaysInFirstWeek` | `number`                                          | `1`                   | Minimum days in the first displayed week |
-
-**Content projection:** `ng-template[itemOf]` (required) — cell template for each item (`T`). Uses `SdItemOfTemplateDirective` context.
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `items` | `T[]` | Yes | -- | Items to display on the calendar |
+| `getItemDateFn` | `(item: T, index: number) => DateOnly` | Yes | -- | Function to extract date from item |
+| `yearMonth` | `DateOnly` | No | Current month (1st day) | Displayed year/month |
+| `weekStartDay` | `number` | No | `0` | First day of week (0 = Sunday, 1 = Monday, etc.) |
+| `minDaysInFirstWeek` | `number` | No | `1` | Minimum days in the first week |
 
 ---
 
 ## SdEchartsControl
 
-Renders an Apache ECharts chart. Automatically resizes when the container changes size.
+**Type:** `@Component` | **Selector:** `sd-echarts`
 
-**Selector:** `sd-echarts`
+Apache ECharts wrapper component. Automatically resizes the chart when the container size changes.
 
-```html
-<sd-echarts [option]="chartOption()" [loading]="isLoading()" style="height: 300px;" />
-```
+### Inputs
 
-**Inputs:**
-
-| Input     | Type                               | Description                     |
-| --------- | ---------------------------------- | ------------------------------- |
-| `option`  | `echarts.EChartsOption` (required) | ECharts option object           |
-| `loading` | `boolean`                          | Show built-in loading indicator |
-
-Uses SVG renderer.
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `option` | `echarts.EChartsOption` | Yes | -- | ECharts configuration object |
+| `loading` | `boolean` | No | `false` | Show loading animation |
 
 ---
 
 ## SdLabelControl
 
-A colored badge/label element.
+**Type:** `@Component` | **Selector:** `sd-label`
 
-**Selector:** `sd-label`
+Themed inline text label with optional click state.
 
-```html
-<sd-label [theme]="'success'">Active</sd-label>
-<sd-label [theme]="'danger'" [clickable]="true" (click)="removeTag()">Remove</sd-label>
-<sd-label [color]="'#ff6600'">Custom</sd-label>
-```
+### Inputs
 
-**Inputs:**
-
-| Input       | Type                                                                                                | Description             |
-| ----------- | --------------------------------------------------------------------------------------------------- | ----------------------- |
-| `theme`     | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | Color theme             |
-| `color`     | `string`                                                                                            | Custom background color |
-| `clickable` | `boolean`                                                                                           | Pointer cursor + hover  |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | No | -- | Color theme |
+| `color` | `string` | No | -- | Custom CSS color value |
+| `clickable` | `boolean \| ""` | No | `false` | Show pointer cursor |
 
 ---
 
 ## SdNoteControl
 
-A styled note/callout block.
+**Type:** `@Component` | **Selector:** `sd-note`
 
-**Selector:** `sd-note`
+Themed note/alert box for displaying informational, warning, or error messages.
 
-```html
-<sd-note [theme]="'warning'">Changes will take effect on next login.</sd-note>
-```
+### Inputs
 
-**Inputs:**
-
-| Input   | Type                                                                                                | Default | Description      |
-| ------- | --------------------------------------------------------------------------------------------------- | ------- | ---------------- |
-| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | —       | Color theme      |
-| `size`  | `"sm" \| "lg"`                                                                                      | —       | Size variant     |
-| `inset` | `boolean`                                                                                           | `false` | Borderless style |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | No | -- | Color theme |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `inset` | `boolean \| ""` | No | `false` | Inset style (no outer border) |
 
 ---
 
 ## SdProgressControl
 
-A percentage progress bar.
+**Type:** `@Component` | **Selector:** `sd-progress`
 
-**Selector:** `sd-progress`
+Progress bar with theme and size support.
 
-```html
-<sd-progress [theme]="'primary'" [value]="0.75" />
-<sd-progress [theme]="'success'" [value]="completionRate()" [size]="'sm'" />
-```
+### Inputs
 
-**Inputs:**
-
-| Input   | Type                                                                                                           | Description              |
-| ------- | -------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` (required) | Color theme              |
-| `value` | `number` (required)                                                                                            | Value 0.0–1.0 (fraction) |
-| `size`  | `"sm" \| "lg"`                                                                                                 | Size variant             |
-| `inset` | `boolean`                                                                                                      | Borderless style         |
-
-The value is displayed as a percentage (e.g., `0.75` → `75.00%`).
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | Yes | -- | Color theme |
+| `value` | `number` | Yes | -- | Progress percentage (0-100) |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |

@@ -1,152 +1,153 @@
 # @simplysm/capacitor-plugin-usb-storage
 
-Capacitor plugin for accessing USB Mass Storage devices. Uses the [libaums](https://github.com/magnusja/libaums) library on Android to read files and directories from USB storage.
+Capacitor USB Storage Plugin -- USB mass storage device interaction for Android. Enumerate connected USB devices, manage access permissions, read directories, and read files from USB mass storage devices using the libaums library. Falls back to alert-based stubs on browser.
 
 ## Installation
 
 ```bash
 npm install @simplysm/capacitor-plugin-usb-storage
-npx cap sync
 ```
 
-### Requirements
+## API Overview
 
-- `@capacitor/core` ^7.0.0
+| API | Type | Description |
+|-----|------|-------------|
+| `UsbStorage` | Abstract class | Static methods for USB mass storage device interaction |
+| `IUsbDeviceInfo` | Interface | USB device information (name, manufacturer, IDs) |
+| `IUsbDeviceFilter` | Interface | Filter to identify a USB device by vendor/product ID |
+| `IUsbStoragePlugin` | Interface | Low-level Capacitor plugin interface for USB storage operations |
 
-### Platform Support
-
-| Platform | Supported |
-|----------|-----------|
-| Android  | Yes       |
-| Web      | Stub only (shows alert) |
-
-## API
-
-### `UsbStorage`
-
-Static utility class for interacting with USB Mass Storage devices.
-
-#### `UsbStorage.getDevices()`
-
-Returns a list of connected USB Mass Storage devices.
-
-**Returns:** `Promise<IUsbDeviceInfo[]>`
-
-```ts
-import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
-
-const devices = await UsbStorage.getDevices();
-for (const device of devices) {
-  console.log(device.productName, device.vendorId, device.productId);
-}
-```
-
-#### `UsbStorage.requestPermission(filter)`
-
-Requests access permission for a specific USB device. If permission is already granted, resolves immediately.
-
-| Parameter          | Type     | Description              |
-|--------------------|----------|--------------------------|
-| `filter.vendorId`  | `number` | USB vendor ID            |
-| `filter.productId` | `number` | USB product ID           |
-
-**Returns:** `Promise<boolean>` -- whether permission was granted.
-
-```ts
-const granted = await UsbStorage.requestPermission({
-  vendorId: 1234,
-  productId: 5678,
-});
-```
-
-#### `UsbStorage.hasPermission(filter)`
-
-Checks whether the app already has permission to access a specific USB device.
-
-| Parameter          | Type     | Description              |
-|--------------------|----------|--------------------------|
-| `filter.vendorId`  | `number` | USB vendor ID            |
-| `filter.productId` | `number` | USB product ID           |
-
-**Returns:** `Promise<boolean>` -- whether permission is held.
-
-```ts
-const hasPerm = await UsbStorage.hasPermission({
-  vendorId: 1234,
-  productId: 5678,
-});
-```
-
-#### `UsbStorage.readdir(filter, dirPath)`
-
-Reads the contents of a directory on the USB storage device.
-
-| Parameter          | Type     | Description                        |
-|--------------------|----------|------------------------------------|
-| `filter.vendorId`  | `number` | USB vendor ID                      |
-| `filter.productId` | `number` | USB product ID                     |
-| `dirPath`          | `string` | Path to the directory to list      |
-
-**Returns:** `Promise<string[]>` -- file and folder names in the directory.
-
-```ts
-const files = await UsbStorage.readdir(
-  { vendorId: 1234, productId: 5678 },
-  "/Documents",
-);
-```
-
-#### `UsbStorage.read(filter, filePath)`
-
-Reads a file from the USB storage device. The file data is transferred as base64 from the native layer and returned as a `Buffer`.
-
-| Parameter          | Type     | Description                        |
-|--------------------|----------|------------------------------------|
-| `filter.vendorId`  | `number` | USB vendor ID                      |
-| `filter.productId` | `number` | USB product ID                     |
-| `filePath`         | `string` | Path to the file to read           |
-
-**Returns:** `Promise<Buffer | undefined>` -- file contents as a Buffer, or `undefined` if the file was not found.
-
-```ts
-const data = await UsbStorage.read(
-  { vendorId: 1234, productId: 5678 },
-  "/Documents/report.csv",
-);
-if (data != null) {
-  const text = data.toString("utf-8");
-}
-```
+## API Reference
 
 ### `IUsbDeviceInfo`
 
-Device information returned by `getDevices`.
+Information about a connected USB device.
 
-| Property           | Type     | Description              |
-|--------------------|----------|--------------------------|
-| `deviceName`       | `string` | Android device path      |
-| `manufacturerName` | `string` | Manufacturer name        |
-| `productName`      | `string` | Product name             |
-| `vendorId`         | `number` | USB vendor ID            |
-| `productId`        | `number` | USB product ID           |
+```typescript
+export interface IUsbDeviceInfo {
+  deviceName: string;
+  manufacturerName: string;
+  productName: string;
+  vendorId: number;
+  productId: number;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `deviceName` | `string` | System device name |
+| `manufacturerName` | `string` | USB device manufacturer name |
+| `productName` | `string` | USB device product name |
+| `vendorId` | `number` | USB vendor ID |
+| `productId` | `number` | USB product ID |
 
 ### `IUsbDeviceFilter`
 
-Filter used to identify a specific USB device.
+Filter used to identify a specific USB device by its vendor and product IDs.
 
-| Property    | Type     | Description    |
-|-------------|----------|----------------|
-| `vendorId`  | `number` | USB vendor ID  |
-| `productId` | `number` | USB product ID |
+```typescript
+export interface IUsbDeviceFilter {
+  vendorId: number;
+  productId: number;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `vendorId` | `number` | USB vendor ID to match |
+| `productId` | `number` | USB product ID to match |
 
 ### `IUsbStoragePlugin`
 
-Low-level plugin interface registered via `registerPlugin`. Use the `UsbStorage` class instead for a simpler API.
+Low-level Capacitor plugin interface. Use `UsbStorage` instead for a simplified API.
 
-| Method              | Signature                                                                              |
-|---------------------|----------------------------------------------------------------------------------------|
-| `getDevices`        | `() => Promise<{ devices: IUsbDeviceInfo[] }>`                                         |
-| `requestPermission` | `(options: IUsbDeviceFilter) => Promise<{ granted: boolean }>`                         |
-| `hasPermission`     | `(options: IUsbDeviceFilter) => Promise<{ granted: boolean }>`                         |
-| `readdir`           | `(options: IUsbDeviceFilter & { path: string }) => Promise<{ files: string[] }>`       |
-| `read`              | `(options: IUsbDeviceFilter & { path: string }) => Promise<{ data: string \| null }>`  |
+```typescript
+export interface IUsbStoragePlugin {
+  getDevices(): Promise<{ devices: IUsbDeviceInfo[] }>;
+  requestPermission(options: IUsbDeviceFilter): Promise<{ granted: boolean }>;
+  hasPermission(options: IUsbDeviceFilter): Promise<{ granted: boolean }>;
+  readdir(options: IUsbDeviceFilter & { path: string }): Promise<{ files: string[] }>;
+  read(options: IUsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `getDevices` | -- | `Promise<{ devices: IUsbDeviceInfo[] }>` | List connected USB devices |
+| `requestPermission` | `options: IUsbDeviceFilter` | `Promise<{ granted: boolean }>` | Request access permission for a USB device |
+| `hasPermission` | `options: IUsbDeviceFilter` | `Promise<{ granted: boolean }>` | Check if permission is granted for a USB device |
+| `readdir` | `options: IUsbDeviceFilter & { path }` | `Promise<{ files: string[] }>` | List files in a directory on the USB device |
+| `read` | `options: IUsbDeviceFilter & { path }` | `Promise<{ data: string \| null }>` | Read a file from the USB device as base64 |
+
+### `UsbStorage`
+
+Abstract class with static methods for USB mass storage device interaction.
+
+- **Android**: Uses libaums library for USB Mass Storage access
+- **Browser**: Shows alert and returns empty values
+
+```typescript
+export abstract class UsbStorage {
+  static async getDevices(): Promise<IUsbDeviceInfo[]>;
+  static async requestPermission(filter: { vendorId: number; productId: number }): Promise<boolean>;
+  static async hasPermission(filter: { vendorId: number; productId: number }): Promise<boolean>;
+  static async readdir(
+    filter: { vendorId: number; productId: number },
+    dirPath: string,
+  ): Promise<string[]>;
+  static async read(
+    filter: { vendorId: number; productId: number },
+    filePath: string,
+  ): Promise<Buffer | undefined>;
+}
+```
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `getDevices` | -- | `Promise<IUsbDeviceInfo[]>` | Get a list of connected USB storage devices |
+| `requestPermission` | `filter: { vendorId: number; productId: number }` | `Promise<boolean>` | Request access permission for a USB device; returns whether permission was granted |
+| `hasPermission` | `filter: { vendorId: number; productId: number }` | `Promise<boolean>` | Check if access permission is granted for a USB device |
+| `readdir` | `filter: { vendorId, productId }, dirPath: string` | `Promise<string[]>` | List file and directory names in a directory on the USB device |
+| `read` | `filter: { vendorId, productId }, filePath: string` | `Promise<Buffer \| undefined>` | Read a file from the USB device as a Buffer; returns `undefined` if data is null |
+
+## Usage Examples
+
+### List USB devices and read a file
+
+```typescript
+import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
+
+// Get connected USB devices
+const devices = await UsbStorage.getDevices();
+if (devices.length === 0) {
+  console.log("No USB devices connected");
+  return;
+}
+
+const device = devices[0];
+console.log(`Found: ${device.productName} by ${device.manufacturerName}`);
+
+// Request permission
+const granted = await UsbStorage.requestPermission({
+  vendorId: device.vendorId,
+  productId: device.productId,
+});
+
+if (granted) {
+  // List root directory
+  const files = await UsbStorage.readdir(
+    { vendorId: device.vendorId, productId: device.productId },
+    "/",
+  );
+  console.log("Files:", files);
+
+  // Read a file
+  const data = await UsbStorage.read(
+    { vendorId: device.vendorId, productId: device.productId },
+    "/data.txt",
+  );
+  if (data) {
+    console.log("Content:", data.toString("utf-8"));
+  }
+}
+```

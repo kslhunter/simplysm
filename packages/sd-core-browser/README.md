@@ -10,195 +10,292 @@ Depends on `@simplysm/sd-core-common`.
 npm install @simplysm/sd-core-browser
 ```
 
-## Setup
+## API Overview
 
-Import the package at your application entry point. This registers all prototype extensions on the global `Blob`, `Element`, and `HTMLElement` prototypes.
+### Exported Classes
 
-```ts
-import "@simplysm/sd-core-browser";
-```
+| API | Type | Description |
+|-----|------|-------------|
+| `HtmlElementUtils` | Class | Static utility methods for HTML element measurement |
 
-## API
+### Side-Effect Extensions (auto-applied on import)
 
-### Blob Extensions
+| API | Target | Description |
+|-----|--------|-------------|
+| `Blob.download()` | `Blob` prototype | Downloads the blob as a file |
+| `Element.prependChild()` | `Element` prototype | Inserts a child element at the beginning |
+| `Element.findAll()` | `Element` prototype | Finds all descendant elements matching a selector |
+| `Element.findFirst()` | `Element` prototype | Finds the first descendant element matching a selector |
+| `Element.getParents()` | `Element` prototype | Returns all parent elements up to the root |
+| `Element.findParent()` | `Element` prototype | Finds a parent matching a selector or reference (deprecated) |
+| `Element.isFocusable()` | `Element` prototype | Checks if the element is focusable |
+| `Element.findFocusableAll()` | `Element` prototype | Finds all focusable descendants |
+| `Element.findFocusableFirst()` | `Element` prototype | Finds the first focusable descendant |
+| `Element.findFocusableParent()` | `Element` prototype | Finds the nearest focusable ancestor |
+| `Element.isOffsetElement()` | `Element` prototype | Checks if element has a positioning context |
+| `Element.isVisible()` | `Element` prototype | Checks if element is visible |
+| `Element.copyAsync()` | `Element` prototype | Copies element content to clipboard |
+| `Element.pasteAsync()` | `Element` prototype | Pastes clipboard content into input |
+| `HTMLElement.repaint()` | `HTMLElement` prototype | Forces a repaint on the element |
+| `HTMLElement.getRelativeOffset()` | `HTMLElement` prototype | Gets the offset relative to a parent element |
+| `HTMLElement.scrollIntoViewIfNeeded()` | `HTMLElement` prototype | Scrolls the element if a target is out of view |
 
-Extensions added to the global `Blob` prototype.
+## API Reference
 
-#### `Blob.prototype.download(fileName: string): void`
+### `HtmlElementUtils`
 
-Triggers a browser file download for the blob content.
+Static utility class for HTML element bounds measurement using `IntersectionObserver`.
 
-```ts
-const blob = new Blob(["hello"], { type: "text/plain" });
-blob.download("hello.txt");
-```
-
----
-
-### Element Extensions
-
-Extensions added to the global `Element` prototype.
-
-#### `prependChild<T extends Element>(newChild: T): T`
-
-Inserts a child element before the first existing child. Returns the inserted element.
-
-```ts
-const newEl = document.createElement("div");
-parentEl.prependChild(newEl);
-```
-
-#### `findAll<T extends Element>(selector: string): T[]`
-
-Finds all descendant elements matching the CSS selector. Uses `:scope` internally for correct scoping.
-
-```ts
-const buttons = container.findAll<HTMLButtonElement>("button.primary");
-```
-
-#### `findFirst<T extends Element>(selector: string): T | undefined`
-
-Finds the first descendant element matching the CSS selector, or `undefined` if none found.
-
-```ts
-const input = form.findFirst<HTMLInputElement>("input[name='email']");
-```
-
-#### `getParents(): HTMLElement[]`
-
-Returns an array of all ancestor `HTMLElement` nodes, from the immediate parent up to the root.
-
-```ts
-const ancestors = element.getParents();
-```
-
-#### `findParent(selector: string): HTMLElement | undefined` (deprecated)
-
-Walks up the DOM tree and returns the first parent matching the CSS selector. Use the native `Element.closest()` method instead.
-
-#### `findParent(element: Element): HTMLElement | undefined` (deprecated)
-
-Walks up the DOM tree and returns the first parent that is the given element. Use the native `Element.closest()` method instead.
-
-#### `isFocusable(): boolean`
-
-Returns `true` if the element matches common focusable selectors (links, buttons, inputs, textareas, elements with `tabindex` or `contenteditable`, etc.).
-
-```ts
-if (element.isFocusable()) {
-  (element as HTMLElement).focus();
+```typescript
+class HtmlElementUtils {
+  static async getBoundsAsync(els: HTMLElement[]): Promise<{
+    target: HTMLElement;
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  }[]>;
 }
 ```
 
-#### `findFocusableAll(): TFocusableElement[]`
+#### `getBoundsAsync(els)`
+
+Returns bounding rectangle information for each element using `IntersectionObserver`. This provides an async alternative to `getBoundingClientRect()`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `els` | `HTMLElement[]` | Array of elements to measure |
+
+**Returns**: `Promise` of an array of objects containing `target`, `top`, `left`, `width`, and `height`.
+
+### `Blob.download()`
+
+Downloads the Blob as a file with the specified filename.
+
+```typescript
+interface Blob {
+  download(fileName: string): void;
+}
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fileName` | `string` | The filename for the downloaded file |
+
+### `Element.prependChild()`
+
+Inserts a child element before the first child of this element.
+
+```typescript
+interface Element {
+  prependChild<T extends Element>(newChild: T): T;
+}
+```
+
+### `Element.findAll()`
+
+Finds all descendant elements matching a CSS selector, using `:scope` for relative queries.
+
+```typescript
+interface Element {
+  findAll<T extends Element>(selector: string): T[];
+  findAll(selector: string): Element[];
+}
+```
+
+### `Element.findFirst()`
+
+Finds the first descendant element matching a CSS selector.
+
+```typescript
+interface Element {
+  findFirst<T extends Element>(selector: string): T | undefined;
+  findFirst(selector: string): Element | undefined;
+}
+```
+
+### `Element.getParents()`
+
+Returns an array of all parent `HTMLElement` nodes up to the document root.
+
+```typescript
+interface Element {
+  getParents(): HTMLElement[];
+}
+```
+
+### `Element.findParent()`
+
+> **Deprecated**: Use the built-in `closest()` method instead.
+
+Finds a parent element matching a selector string or element reference.
+
+```typescript
+interface Element {
+  findParent(selector: string): HTMLElement | undefined;
+  findParent(element: Element): HTMLElement | undefined;
+}
+```
+
+### `Element.isFocusable()`
+
+Returns `true` if the element matches standard focusable selectors (links, buttons, inputs, textareas, elements with `tabindex` or `contenteditable`, etc.).
+
+```typescript
+interface Element {
+  isFocusable(): boolean;
+}
+```
+
+### `Element.findFocusableAll()`
 
 Finds all focusable descendant elements.
 
-```ts
-const focusables = container.findFocusableAll();
-```
-
-#### `findFocusableFirst(): TFocusableElement | undefined`
-
-Finds the first focusable descendant element, or `undefined` if none found.
-
-```ts
-const first = dialog.findFocusableFirst();
-first?.focus();
-```
-
-#### `findFocusableParent(): TFocusableElement | undefined`
-
-Walks up the DOM tree and returns the first focusable ancestor, or `undefined` if none found.
-
-```ts
-const focusableParent = element.findFocusableParent();
-```
-
-#### `isOffsetElement(): boolean`
-
-Returns `true` if the element has a CSS `position` value of `relative`, `absolute`, `fixed`, or `sticky`.
-
-```ts
-if (element.isOffsetElement()) {
-  // element participates in offset calculations
+```typescript
+interface Element {
+  findFocusableAll(): TFocusableElement[];
 }
 ```
 
-#### `isVisible(): boolean`
+### `Element.findFocusableFirst()`
+
+Finds the first focusable descendant element.
+
+```typescript
+interface Element {
+  findFocusableFirst(): TFocusableElement | undefined;
+}
+```
+
+### `Element.findFocusableParent()`
+
+Walks up the DOM tree and returns the first focusable ancestor.
+
+```typescript
+interface Element {
+  findFocusableParent(): TFocusableElement | undefined;
+}
+```
+
+### `Element.isOffsetElement()`
+
+Returns `true` if the element's computed position is `relative`, `absolute`, `fixed`, or `sticky`.
+
+```typescript
+interface Element {
+  isOffsetElement(): boolean;
+}
+```
+
+### `Element.isVisible()`
 
 Returns `true` if the element has client rects, is not `visibility: hidden`, and is not `opacity: 0`.
 
-```ts
-if (element.isVisible()) {
-  // element is rendered and visible
+```typescript
+interface Element {
+  isVisible(): boolean;
 }
 ```
 
-#### `copyAsync(): Promise<void>`
+### `Element.copyAsync()`
 
-Copies the element content to the clipboard. If the element contains an `<input>` element, copies its value; otherwise copies the element's `innerHTML`.
+Copies element content to the clipboard. If the element contains an `<input>`, copies its value; otherwise copies `innerHTML`.
 
-```ts
-await cell.copyAsync();
+```typescript
+interface Element {
+  copyAsync(): Promise<void>;
+}
 ```
 
-#### `pasteAsync(): Promise<void>`
+### `Element.pasteAsync()`
 
-Reads text from the clipboard and pastes it into the first `<input>` descendant element.
+Reads text from the clipboard and pastes it into the first `<input>` found within the element.
 
-```ts
-await cell.pasteAsync();
+```typescript
+interface Element {
+  pasteAsync(): Promise<void>;
+}
 ```
 
----
+### `HTMLElement.repaint()`
 
-### HTMLElement Extensions
+Forces a browser repaint by reading `offsetHeight`.
 
-Extensions added to the global `HTMLElement` prototype.
-
-#### `repaint(): void`
-
-Forces a synchronous layout repaint by reading `offsetHeight`.
-
-```ts
-element.repaint();
+```typescript
+interface HTMLElement {
+  repaint(): void;
+}
 ```
 
-#### `getRelativeOffset(parent: HTMLElement | string): { top: number; left: number }`
+### `HTMLElement.getRelativeOffset()`
 
-Calculates the element's offset position relative to a parent element. The parent can be specified as an `HTMLElement` reference or a CSS selector string. Accounts for scroll positions, borders, and CSS transforms.
+Calculates the element's offset relative to a parent element, accounting for scroll position, borders, and CSS transforms.
 
-```ts
-const offset = element.getRelativeOffset(scrollContainer);
-// or
-const offset = element.getRelativeOffset(".scroll-container");
+```typescript
+interface HTMLElement {
+  getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
+  getRelativeOffset(parentSelector: string): { top: number; left: number };
+}
 ```
 
-#### `scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `parentElement` | `HTMLElement` | Direct parent element reference |
+| `parentSelector` | `string` | CSS selector resolved via `closest()` |
 
-Scrolls the element so that the given target position is visible, applying an optional offset. Only scrolls if the target is currently outside the visible scroll area.
+### `HTMLElement.scrollIntoViewIfNeeded()`
 
-```ts
-const targetOffset = child.getRelativeOffset(scrollContainer);
-scrollContainer.scrollIntoViewIfNeeded(targetOffset, { top: 10, left: 0 });
+Scrolls the element so that the given target position is visible, with optional offset.
+
+```typescript
+interface HTMLElement {
+  scrollIntoViewIfNeeded(
+    target: { top: number; left: number },
+    offset?: { top: number; left: number },
+  ): void;
+}
 ```
 
----
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `target` | `{ top: number; left: number }` | -- | Target position to scroll into view |
+| `offset` | `{ top: number; left: number }` | `{ top: 0, left: 0 }` | Offset from viewport edge |
 
-### HtmlElementUtils
+## Usage Examples
 
-A static utility class for HTML element measurement.
+### Measuring element bounds
 
-#### `static getBoundsAsync(els: HTMLElement[]): Promise<{ target: HTMLElement; top: number; left: number; width: number; height: number }[]>`
-
-Uses `IntersectionObserver` to asynchronously measure the bounding rectangles of multiple elements. Returns an array of bound objects with `target`, `top`, `left`, `width`, and `height`.
-
-```ts
+```typescript
 import { HtmlElementUtils } from "@simplysm/sd-core-browser";
 
-const bounds = await HtmlElementUtils.getBoundsAsync([el1, el2, el3]);
+const elements = Array.from(document.querySelectorAll(".item")) as HTMLElement[];
+const bounds = await HtmlElementUtils.getBoundsAsync(elements);
+
 for (const b of bounds) {
-  console.log(b.target, b.top, b.left, b.width, b.height);
+  console.log(`${b.target.id}: top=${b.top}, left=${b.left}, ${b.width}x${b.height}`);
 }
+```
+
+### Downloading a Blob
+
+```typescript
+import "@simplysm/sd-core-browser";
+
+const blob = new Blob(["Hello, World!"], { type: "text/plain" });
+blob.download("hello.txt");
+```
+
+### Finding elements
+
+```typescript
+import "@simplysm/sd-core-browser";
+
+const container = document.getElementById("app")!;
+
+// Find all buttons inside
+const buttons = container.findAll<HTMLButtonElement>("button");
+
+// Find the first focusable element
+const firstFocusable = container.findFocusableFirst();
+firstFocusable?.focus();
 ```

@@ -31,7 +31,6 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
-    "@simplysm/sd-claude": "^13.0.84",
     "@types/node": "^20.19.37",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.4",

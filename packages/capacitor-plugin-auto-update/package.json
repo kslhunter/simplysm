@@ -24,7 +24,7 @@
     "semver": "^7.7.4"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.5.0",
+    "@capacitor/core": "^7.6.0",
     "@simplysm/capacitor-plugin-file-system": "12.16.31",
     "@types/semver": "^7.7.1"
   },

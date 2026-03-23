@@ -32,7 +32,7 @@
     "html-to-image": "^1.11.13",
     "jsbarcode": "^3.12.3",
     "jspdf": "^3.0.4",
-    "marked": "^17.0.4",
+    "marked": "^17.0.5",
     "qrcode": "^1.5.4",
     "quill": "^2.0.3",
     "quill-resize-image": "^1.0.11",
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@capacitor/app": "^7.1.2",
-    "@capacitor/core": "^7.5.0",
+    "@capacitor/core": "^7.6.0",
     "@types/qrcode": "^1.5.6",
     "@types/semver": "^7.7.1"
   },

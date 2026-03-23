@@ -1,31 +1,142 @@
 # @simplysm/eslint-plugin
 
-ESLint plugin providing custom rules and a shared flat config for Simplysm monorepo projects.
+ESLint plugin with custom rules and a shared flat config for Simplysm monorepo projects. Provides a ready-to-use `root` config and 9 custom rules covering TypeScript best practices, Angular template conventions, and Simplysm-specific import restrictions.
 
 ## Installation
 
 ```bash
 npm install @simplysm/eslint-plugin
-# or
-yarn add @simplysm/eslint-plugin
 ```
 
-### Peer Dependencies
+## API Overview
 
-- `eslint` >= 9
-- `typescript` ~5.8
-- `typescript-eslint` >= 8
-- `angular-eslint` >= 20 (for Angular template rules)
+### Plugin Export
 
-## Usage
+| API | Type | Description |
+|-----|------|-------------|
+| `default` | Plugin object | Default export with `configs.root` and 9 custom rules |
 
-### Using the Shared Config
+### Custom Rules
 
-The plugin exports a `root` flat config that includes all recommended rules along with
-third-party plugin configurations (typescript-eslint, angular-eslint, eslint-plugin-import,
-eslint-plugin-unused-imports).
+| Rule | Type | Description |
+|------|------|-------------|
+| `ts-no-throw-not-implement-error` | suggestion | Warns on `NotImplementError` usage |
+| `ts-no-exported-types` | problem | Forbids specified types from being exposed in export APIs or public class members |
+| `ts-no-buffer-in-typedarray-context` | problem | Forbids using `Buffer` where a TypedArray is expected |
+| `ng-template-no-todo-comments` | problem | Warns on TODO comments in Angular HTML templates |
+| `no-subpath-imports-from-simplysm` | problem | Forbids subpath imports from `@simplysm` packages (e.g., `@simplysm/pkg/src/x`) |
+| `ng-template-sd-require-binding-attrs` | problem | Requires binding syntax for attributes on `sd-` prefixed components |
+| `no-hard-private` | problem | Enforces TypeScript `private _` style over ECMAScript `#` private fields (auto-fixable) |
+| `ts-no-unused-injects` | problem | Disallows unused Angular `inject()` fields (auto-fixable) |
+| `ts-no-unused-protected-readonly` | problem | Disallows unused `protected readonly` fields in Angular components (auto-fixable) |
 
-```js
+## API Reference
+
+### Default Export
+
+```typescript
+export default {
+  configs: {
+    root: FlatConfig[]
+  }
+}
+```
+
+The plugin object contains:
+- `configs.root` -- A flat ESLint config array that sets up all recommended rules for Simplysm projects
+
+### `configs.root`
+
+A complete flat ESLint configuration array that includes:
+
+- **Global ignores**: `node_modules/`, `dist/`, `tests/`, `.*`, `_*`
+- **Language globals**: Node.js, ES2021, and browser globals
+- **JS/JSX rules**: `eqeqeq`, `no-console` (warn), `no-shadow`, `require-await`, unused imports enforcement, import dependency checks, and Simplysm rules (`no-subpath-imports-from-simplysm`, `no-hard-private`)
+- **TS/TSX rules**: All JS rules plus TypeScript-specific rules (`strict-boolean-expressions`, `no-floating-promises`, `return-await`, `prefer-readonly`, `typedef`, `no-unnecessary-condition`, etc.), Angular ESLint inline template processing, and additional Simplysm rules (`ts-no-throw-not-implement-error`, `ts-no-unused-injects`, `ts-no-unused-protected-readonly`)
+- **HTML rules**: Angular template parser with `ng-template-no-todo-comments` and `ng-template-sd-require-binding-attrs`
+
+### `ts-no-throw-not-implement-error`
+
+Warns when `NotImplementError` is thrown, flagging unfinished implementations.
+
+```javascript
+"@simplysm/ts-no-throw-not-implement-error": ["warn"]
+```
+
+### `ts-no-exported-types`
+
+Forbids specified types from appearing in exported APIs or public class members, suggesting safer alternatives.
+
+```javascript
+"@simplysm/ts-no-exported-types": ["error", {
+  types: [
+    { ban: "ArrayBuffer", safe: "Buffer", ignoreInGeneric: true },
+    { ban: "Uint8Array", safe: "Buffer" },
+  ]
+}]
+```
+
+### `ts-no-buffer-in-typedarray-context`
+
+Prevents using `Buffer` in contexts where a standard TypedArray (e.g., `Uint8Array`) is expected.
+
+```javascript
+"@simplysm/ts-no-buffer-in-typedarray-context": ["error"]
+```
+
+### `ng-template-no-todo-comments`
+
+Warns on TODO/FIXME comments found in Angular HTML templates.
+
+```javascript
+"@simplysm/ng-template-no-todo-comments": ["warn"]
+```
+
+### `no-subpath-imports-from-simplysm`
+
+Forbids deep subpath imports from `@simplysm` packages. Only the package entry point is allowed.
+
+```javascript
+"@simplysm/no-subpath-imports-from-simplysm": ["error"]
+```
+
+### `ng-template-sd-require-binding-attrs`
+
+Requires binding syntax (`[attr]`, `(event)`, etc.) for attributes on components with `sd-` prefix selectors. Plain HTML attributes like `id`, `class`, `style`, `title`, `tabindex`, `role`, and attributes with `aria-`, `data-`, `sd-` prefixes are allowed.
+
+```javascript
+"@simplysm/ng-template-sd-require-binding-attrs": ["error"]
+```
+
+### `no-hard-private`
+
+Enforces TypeScript `private _` convention over ECMAScript `#` private fields. Auto-fixable.
+
+```javascript
+"@simplysm/no-hard-private": ["error"]
+```
+
+### `ts-no-unused-injects`
+
+Disallows unused Angular `inject()` fields. Auto-fixable -- removes the unused field.
+
+```javascript
+"@simplysm/ts-no-unused-injects": ["error"]
+```
+
+### `ts-no-unused-protected-readonly`
+
+Disallows unused `protected readonly` fields in Angular components. A field is considered "used" if it appears in the class body or the component's template. Auto-fixable.
+
+```javascript
+"@simplysm/ts-no-unused-protected-readonly": ["error"]
+```
+
+## Usage Examples
+
+### Using the root config (recommended)
+
+```javascript
 // eslint.config.js
 import simplysm from "@simplysm/eslint-plugin";
 
@@ -34,19 +145,9 @@ export default [
 ];
 ```
 
-The `root` config applies rules to three file groups:
+### Using individual rules
 
-| Files | Plugins Enabled |
-|---|---|
-| `**/*.js`, `**/*.jsx` | `@simplysm`, `import`, `unused-imports` |
-| `**/*.ts`, `**/*.tsx` | `@simplysm`, `@typescript-eslint`, `@angular-eslint`, `import`, `unused-imports` |
-| `**/*.html` | `@simplysm` (Angular template rules) |
-
-### Using Individual Rules
-
-You can also use the plugin directly and enable specific rules:
-
-```js
+```javascript
 // eslint.config.js
 import simplysm from "@simplysm/eslint-plugin";
 
@@ -56,205 +157,10 @@ export default [
       "@simplysm": simplysm,
     },
     rules: {
-      "@simplysm/no-hard-private": "error",
-      "@simplysm/no-subpath-imports-from-simplysm": "error",
+      "@simplysm/no-hard-private": ["error"],
+      "@simplysm/no-subpath-imports-from-simplysm": ["error"],
+      "@simplysm/ts-no-unused-injects": ["error"],
     },
   },
 ];
 ```
-
-## Rules
-
-### General Rules
-
-#### `no-hard-private`
-
-Enforce TypeScript `private` keyword over ECMAScript `#` private fields.
-
-- **Type:** problem
-- **Fixable:** code
-- **Recommended severity:** `error`
-
-Disallows `#field` syntax and auto-fixes to `private _field`.
-
-```ts
-// Bad
-class Foo {
-  #count = 0;
-  #getValue() { return this.#count; }
-}
-
-// Good
-class Foo {
-  private _count = 0;
-  private _getValue() { return this._count; }
-}
-```
-
-#### `no-subpath-imports-from-simplysm`
-
-Disallow `src` subpath imports from `@simplysm/*` packages.
-
-- **Type:** problem
-- **Recommended severity:** `error`
-
-```ts
-// Bad
-import { something } from "@simplysm/sd-core-common/src/utils";
-
-// Good
-import { something } from "@simplysm/sd-core-common";
-```
-
----
-
-### TypeScript Rules
-
-These rules require type information (`parserOptions.project: true`).
-
-#### `ts-no-throw-not-implement-error`
-
-Warn when `NotImplementError` is thrown, serving as a reminder for unfinished implementations.
-
-- **Type:** suggestion
-- **Recommended severity:** `warn`
-
-```ts
-// Triggers warning
-throw new NotImplementError("feature X");
-```
-
-#### `ts-no-exported-types`
-
-Disallow specified types from being exposed in exported APIs or public class members, suggesting safer alternatives.
-
-- **Type:** problem
-- **Recommended severity:** `error`
-- **Schema:** accepts a `types` array with `ban`, `safe`, and `ignoreInGeneric` options
-
-Checks exported functions, public methods, public properties, and exported variables.
-
-```js
-// eslint.config.js rule example
-"@simplysm/ts-no-exported-types": ["error", {
-  types: [
-    { ban: "ArrayBuffer", safe: "Buffer", ignoreInGeneric: true },
-    { ban: "Uint8Array", safe: "Buffer" },
-  ],
-}]
-```
-
-#### `ts-no-buffer-in-typedarray-context`
-
-Disallow `Buffer` being used directly where a TypedArray is expected. Covers assignments, return statements, function call arguments, object properties, array elements, and conditional expressions.
-
-- **Type:** problem
-- **Recommended severity:** `error`
-
-```ts
-// Bad
-const arr: Uint8Array = Buffer.from([1, 2, 3]);
-
-// Good
-const arr: Uint8Array = new Uint8Array(Buffer.from([1, 2, 3]));
-```
-
-#### `ts-no-unused-injects`
-
-Disallow unused Angular `inject()` fields. Auto-removes the unused field declaration.
-
-- **Type:** problem
-- **Fixable:** code
-- **Recommended severity:** `error`
-
-```ts
-// Bad - myService is never referenced
-class MyComponent {
-  private readonly myService = inject(MyService);
-}
-
-// Good
-class MyComponent {
-  private readonly myService = inject(MyService);
-
-  doWork() {
-    this.myService.execute();
-  }
-}
-```
-
-#### `ts-no-unused-protected-readonly`
-
-Disallow unused `protected readonly` fields in Angular `@Component` classes. Checks both class body usage and inline template references.
-
-- **Type:** problem
-- **Fixable:** code
-- **Recommended severity:** `error`
-
-```ts
-// Bad - cdr is not used in class or template
-@Component({ template: `<div>hello</div>` })
-class MyComponent {
-  protected readonly cdr = inject(ChangeDetectorRef);
-}
-```
-
----
-
-### Angular Template Rules
-
-These rules apply to `.html` files parsed with `angular-eslint/template-parser`.
-
-#### `ng-template-no-todo-comments`
-
-Warn on `TODO:` comments inside HTML templates.
-
-- **Type:** problem
-- **Recommended severity:** `warn`
-
-```html
-<!-- Bad -->
-<!-- TODO: replace with real content -->
-
-<!-- Good (no TODO comments) -->
-<!-- This section displays user info -->
-```
-
-#### `ng-template-sd-require-binding-attrs`
-
-Disallow non-whitelisted plain attributes on components with specified selector prefixes (default: `sd-*`). Requires using Angular property bindings instead.
-
-- **Type:** problem
-- **Fixable:** code
-- **Recommended severity:** `error`
-- **Schema:** accepts `selectorPrefixes`, `allowAttributes`, and `allowAttributePrefixes` options
-
-Default allowed plain attributes: `id`, `class`, `style`, `title`, `tabindex`, `role`.
-Default allowed attribute prefixes: `aria-`, `data-`, `sd-`.
-
-```html
-<!-- Bad -->
-<sd-button color="primary">Click</sd-button>
-
-<!-- Good -->
-<sd-button [color]="'primary'">Click</sd-button>
-```
-
-```js
-// Custom options
-"@simplysm/ng-template-sd-require-binding-attrs": ["error", {
-  selectorPrefixes: ["sd-", "app-"],
-  allowAttributes: ["id", "class", "style"],
-  allowAttributePrefixes: ["aria-", "data-"],
-}]
-```
-
-## Configs
-
-| Config | Description |
-|---|---|
-| `root` | Full flat config with all recommended rules, typescript-eslint, angular-eslint, import, and unused-imports plugins configured |
-
-## License
-
-MIT

@@ -1,84 +1,121 @@
 # Server
 
-## SdServiceServer
+## SdServiceServer\<TAuthInfo\>
 
-Main server class built on Fastify. Manages HTTP routes, WebSocket connections, static file serving, file uploads, and security headers. Extends `EventEmitter`.
-
-```typescript
-class SdServiceServer<TAuthInfo = any> extends EventEmitter
-```
-
-### Type Parameter
-
-- `TAuthInfo` - Custom type for authentication payload data (default: `any`).
+Main server class built on Fastify. Provides WebSocket communication, HTTP API routes, static file serving, file upload, JWT authentication, and real-time event broadcasting. Extends `EventEmitter`.
 
 ### Constructor
 
 ```typescript
-new SdServiceServer(options: ISdServiceServerOptions)
+constructor(readonly options: ISdServiceServerOptions)
 ```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `options` | `ISdServiceServerOptions` | Server configuration |
 
 ### Properties
 
 | Property | Type | Description |
-|---|---|---|
-| `isOpen` | `boolean` | Whether the server is currently listening. |
-| `options` | `ISdServiceServerOptions` | The server configuration passed to the constructor. |
+|----------|------|-------------|
+| `options` | `ISdServiceServerOptions` | Server configuration passed to the constructor |
+| `isOpen` | `boolean` | Whether the server is currently listening |
 
 ### Methods
 
-#### `listenAsync(): Promise<void>`
-
-Starts the server. Registers all Fastify plugins (WebSocket, Helmet, CORS, multipart, static), sets up routes, and begins listening on the configured port. Automatically registers graceful shutdown handlers for `SIGINT` and `SIGTERM`.
-
-Routes registered:
-- `POST/GET /api/:service/:method` - Service method invocation via HTTP.
-- `POST /upload` - Multipart file upload (requires authentication).
-- `GET /` and `GET /ws` - WebSocket endpoints.
-- `/* (wildcard)` - Static file serving with path/port proxy support.
+#### `listenAsync()`
 
 ```typescript
-const server = new SdServiceServer({
-  rootPath: process.cwd(),
-  port: 3000,
-  services: [MyService],
-});
-await server.listenAsync();
+async listenAsync(): Promise<void>
 ```
 
-#### `closeAsync(): Promise<void>`
+Starts the Fastify server with all plugins and routes:
+- Registers `@fastify/websocket`, `@fastify/helmet`, `@fastify/multipart`, `@fastify/middie`, `@fastify/reply-from`, `@fastify/static`, `@fastify/cors`
+- Sets up API route: `POST|GET /api/:service/:method`
+- Sets up upload route: `POST /upload`
+- Sets up WebSocket routes: `/` and `/ws`
+- Sets up wildcard static file handler with path/port proxy support
+- Registers graceful shutdown handlers for `SIGINT` and `SIGTERM`
+- Emits `"ready"` event when listening
 
-Gracefully closes all WebSocket connections and shuts down the Fastify instance. Emits the `"close"` event.
+#### `closeAsync()`
 
-#### `broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>): Promise<void>`
+```typescript
+async closeAsync(): Promise<void>
+```
 
-Sends a reload command to all connected WebSocket clients. Used during development for hot-reload.
+Gracefully shuts down the server. Closes all WebSocket connections (both v1 and v2), closes the Fastify instance, and emits `"close"`.
 
-- `clientName` - Target client application name, or `undefined` for all clients.
-- `changedFileSet` - Set of changed file paths.
+#### `broadcastReloadAsync(clientName, changedFileSet)`
 
-#### `emitEvent<T>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): Promise<void>`
+```typescript
+async broadcastReloadAsync(
+  clientName: string | undefined,
+  changedFileSet: Set<string>,
+): Promise<void>
+```
 
-Broadcasts a server-side event to all subscribed WebSocket clients whose listener info matches the selector.
+Sends a reload notification to all connected WebSocket clients.
 
-- `eventType` - The event listener class (must extend `SdServiceEventListenerBase`).
-- `infoSelector` - Filter function to select which listeners receive the event.
-- `data` - The event data payload.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `clientName` | `string \| undefined` | Target client name filter, or `undefined` for all |
+| `changedFileSet` | `Set<string>` | Set of file paths that changed |
 
-#### `generateAuthTokenAsync(payload: IAuthTokenPayload<TAuthInfo>): Promise<string>`
+#### `emitEvent(eventType, infoSelector, data)`
 
-Generates a signed JWT token from the given payload. Delegates to `SdServiceJwtManager`.
+```typescript
+async emitEvent<T extends SdServiceEventListenerBase<any, any>>(
+  eventType: Type<T>,
+  infoSelector: (item: T["info"]) => boolean,
+  data: T["data"],
+): Promise<void>
+```
 
-#### `verifyAuthTokenAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>>`
+Emits an event to all matching listeners across all connected clients (both v1 and v2).
 
-Verifies and decodes a JWT token. Throws on expired or invalid tokens.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `eventType` | `Type<T>` | Event listener class |
+| `infoSelector` | `(item: T["info"]) => boolean` | Filter function to select target listeners |
+| `data` | `T["data"]` | Event payload |
+
+#### `generateAuthTokenAsync(payload)`
+
+```typescript
+async generateAuthTokenAsync(
+  payload: IAuthTokenPayload<TAuthInfo>,
+): Promise<string>
+```
+
+Generates a signed JWT token with the given payload.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payload` | `IAuthTokenPayload<TAuthInfo>` | Token payload containing permissions and auth data |
+
+**Returns:** `Promise<string>` -- the signed JWT string.
+
+#### `verifyAuthTokenAsync(token)`
+
+```typescript
+async verifyAuthTokenAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>>
+```
+
+Verifies and decodes a JWT token.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `token` | `string` | JWT token string |
+
+**Returns:** `Promise<IAuthTokenPayload<TAuthInfo>>` -- the decoded payload.
 
 ### Events
 
-| Event | Callback | Description |
-|---|---|---|
-| `"ready"` | `() => void` | Emitted after the server starts listening. |
-| `"close"` | `() => void` | Emitted after the server is closed. |
+| Event | Description |
+|-------|-------------|
+| `"ready"` | Emitted when the server starts listening |
+| `"close"` | Emitted when the server shuts down |
 
 ---
 
@@ -108,39 +145,15 @@ interface ISdServiceServerOptions {
 }
 ```
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `rootPath` | `string` | Yes | Root directory for the server. Static files are served from `{rootPath}/www`. |
-| `port` | `number` | Yes | Port number to listen on. |
-| `ssl` | `object` | No | SSL/TLS configuration for HTTPS. |
-| `ssl.pfxBuffer` | `Buffer \| (() => Promise<Buffer> \| Buffer)` | Yes (if `ssl`) | PFX certificate buffer or async factory function. |
-| `ssl.passphrase` | `string` | Yes (if `ssl`) | PFX certificate passphrase. |
-| `auth` | `object` | No | Authentication configuration. Required for JWT-based auth. |
-| `auth.jwtSecret` | `string` | Yes (if `auth`) | Secret key for signing/verifying JWT tokens (HS256). |
-| `pathProxy` | `Record<string, string>` | No | Maps URL path prefixes to local directory paths for static file serving. |
-| `portProxy` | `Record<string, number>` | No | Maps URL path prefixes to local port numbers for reverse proxying. |
-| `services` | `Type<SdServiceBase>[]` | Yes | Array of service classes to register. |
-| `middlewares` | `Function[]` | No | Express-style middleware functions (via `@fastify/middie`). |
+### Fields
 
-### Example
-
-```typescript
-const server = new SdServiceServer({
-  rootPath: "/app",
-  port: 443,
-  ssl: {
-    pfxBuffer: async () => await fs.promises.readFile("/certs/server.pfx"),
-    passphrase: "cert-password",
-  },
-  auth: {
-    jwtSecret: "my-secret-key",
-  },
-  pathProxy: {
-    "admin": "/var/www/admin-app",
-  },
-  portProxy: {
-    "legacy-api": 8080,
-  },
-  services: [MyService, SdOrmService, SdCryptoService, SdSmtpClientService],
-});
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `rootPath` | `string` | Root directory for the server. Static files are served from `rootPath/www` |
+| `port` | `number` | Port number to listen on |
+| `ssl` | `{ pfxBuffer, passphrase }` | Optional SSL/TLS configuration. `pfxBuffer` can be a `Buffer` or an async factory function |
+| `auth` | `{ jwtSecret: string }` | Optional JWT authentication configuration |
+| `pathProxy` | `Record<string, string>` | Maps URL path prefixes to local filesystem directories |
+| `portProxy` | `Record<string, number>` | Maps URL path prefixes to proxy target ports on `127.0.0.1` |
+| `services` | `Type<SdServiceBase>[]` | Array of service classes to register |
+| `middlewares` | `Function[]` | Optional Connect-style middleware functions |

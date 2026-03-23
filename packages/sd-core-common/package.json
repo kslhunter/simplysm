@@ -14,8 +14,8 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@zip.js/zip.js": "^2.8.23",
-    "fast-xml-parser": "^5.5.4",
+    "fast-xml-parser": "^5.5.8",
     "reflect-metadata": "^0.2.2",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.3"
   }
 }

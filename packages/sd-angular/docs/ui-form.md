@@ -1,400 +1,467 @@
-# UI: Form Components
+# UI - Form Components
 
-## SdButtonControl
+## Buttons
 
-Standard button with theme and size variants, ripple effect, and disabled state.
+### SdAdditionalButtonControl
 
-**Selector:** `sd-button`
+**Type:** `@Component` | **Selector:** `sd-additional-button`
 
-```html
-<sd-button (click)="save()" [theme]="'primary'" [size]="'sm'">Save</sd-button>
-<sd-button [type]="'submit'" [theme]="'info'" [inline]="true">Submit</sd-button>
-<sd-button [disabled]="isBusy()" [theme]="'danger'">Delete</sd-button>
-```
+A button with an additional inline action area, used to combine a display value with action buttons (e.g., clear and search buttons in select components).
 
-**Inputs:**
+#### Inputs
 
-| Input         | Type                                                                                                                                                      | Default    | Description                                       |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------- |
-| `type`        | `"button" \| "submit"`                                                                                                                                    | `"button"` | HTML button type                                  |
-| `theme`       | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray" \| "link" \| "link-primary" \| "link-*" \| "link-rev"` | —          | Color theme                                       |
-| `inline`      | `boolean`                                                                                                                                                 | `false`    | Renders as inline-block                           |
-| `inset`       | `boolean`                                                                                                                                                 | `false`    | Borderless inset style                            |
-| `size`        | `"sm" \| "lg"`                                                                                                                                            | —          | Size variant                                      |
-| `disabled`    | `boolean`                                                                                                                                                 | `false`    | Disabled state                                    |
-| `buttonStyle` | `string`                                                                                                                                                  | —          | Additional inline styles for the inner `<button>` |
-| `buttonClass` | `string`                                                                                                                                                  | —          | Additional classes for the inner `<button>`       |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `inset` | `boolean \| ""` | No | `false` | Inset style (no outer border) |
 
 ---
 
-## SdAnchorControl
+### SdAnchorControl
 
-Inline clickable anchor element with theme colors. Does not navigate; use with `(click)` handler.
+**Type:** `@Component` | **Selector:** `sd-anchor`
 
-**Selector:** `sd-anchor`
+Styled anchor/link element with theme support. Adds cursor pointer and optional disabled state.
 
-```html
-<sd-anchor (click)="openModal()" [theme]="'primary'">Open</sd-anchor>
-<sd-anchor [disabled]="!canEdit()">Edit</sd-anchor>
-```
+#### Inputs
 
-**Inputs:**
-
-| Input      | Type                                                                                                | Default     | Description                                     |
-| ---------- | --------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------- |
-| `disabled` | `boolean`                                                                                           | `false`     | Disabled state (opacity + pointer-events: none) |
-| `theme`    | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | `"primary"` | Color theme                                     |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `disabled` | `boolean \| ""` | No | `false` | Disable the anchor |
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "link-primary" \| "link-secondary" \| "link-info" \| "link-success" \| "link-warning" \| "link-danger"` | No | -- | Color theme |
 
 ---
 
-## SdAdditionalButtonControl
+### SdButtonControl
 
-Layout container that puts content on the left and action buttons on the right. Used as the base for select buttons.
+**Type:** `@Component` | **Selector:** `sd-button`
 
-**Selector:** `sd-additional-button`
+Standard button with theme, size variants, inline/inset modes, and ripple effect.
 
-```html
-<sd-additional-button [size]="'sm'">
-  Selected: Alice
-  <sd-anchor [theme]="'danger'" (click)="clear()">X</sd-anchor>
-  <sd-button [inset]="true" (click)="openPicker()">...</sd-button>
-</sd-additional-button>
-```
+#### Inputs
 
-**Inputs:**
-
-| Input   | Type           | Description      |
-| ------- | -------------- | ---------------- |
-| `size`  | `"sm" \| "lg"` | Size variant     |
-| `inset` | `boolean`      | Borderless style |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `type` | `"button" \| "submit"` | No | `"button"` | HTML button type |
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "link-primary" \| "link-secondary" \| "link-info" \| "link-success" \| "link-warning" \| "link-danger"` | No | -- | Color theme |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `disabled` | `boolean \| ""` | No | `false` | Disable the button |
+| `buttonStyle` | `string` | No | -- | CSS style for the inner button |
+| `buttonClass` | `string` | No | -- | CSS class for the inner button |
 
 ---
 
-## SdModalSelectButtonControl
+### SdModalSelectButtonControl
 
-A select button that opens a modal to pick a value. Combines `SdAdditionalButtonControl` with modal integration.
+**Type:** `@Component` | **Selector:** `sd-modal-select-button`
 
-**Selector:** `sd-modal-select-button`
+Button that opens a modal for value selection. Supports single/multi selection modes.
 
-```html
-<sd-modal-select-button
-  [modal]="{ type: ProductSelectModal, inputs: {} }"
-  [(value)]="selectedProductId"
-  [required]="true"
->
-  {{ selectedProduct()?.name }}
-</sd-modal-select-button>
-```
+#### Inputs
 
-**Inputs:**
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `modal` | `TSdSelectModalInfo<ISdSelectModal<T>>` | Yes | -- | Modal configuration |
+| `disabled` | `boolean \| ""` | No | `false` | Disable the button |
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `selectMode` | `"single" \| "multi"` | No | `"single"` | Selection mode |
+| `searchIcon` | `string` | No | `tablerSearch` | Icon for search button |
 
-| Input                   | Type                                    | Description                    |
-| ----------------------- | --------------------------------------- | ------------------------------ |
-| `modal`                 | `TSdSelectModalInfo<ISdSelectModal<T>>` | Modal configuration (required) |
-| `value` (model)         | `TSelectModeValue<K>[M]`                | Selected key(s)                |
-| `selectedItems` (model) | `T[]`                                   | Synced selected item objects   |
-| `disabled`              | `boolean`                               | Disabled state                 |
-| `required`              | `boolean`                               | Required validation            |
-| `inset`                 | `boolean`                               | Borderless style               |
-| `size`                  | `"sm" \| "lg"`                          | Size variant                   |
-| `selectMode`            | `"single" \| "multi"`                   | Selection mode                 |
-| `searchIcon`            | `string` (svg icon)                     | Custom search icon             |
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `TSelectModeValue<K>[M]` | Selected value(s) |
+| `selectedItems` | `T[]` | Selected item objects |
 
 ---
 
-## SdTextfieldControl
+## Choice Controls
 
-Text input that supports multiple input types with validation, formatting, and readonly display.
+### SdCheckboxControl
 
-**Selector:** `sd-textfield`
+**Type:** `@Component` | **Selector:** `sd-checkbox`
 
-```html
-<sd-textfield [type]="'text'" [(value)]="name" [placeholder]="'Enter name'" />
-<sd-textfield [type]="'number'" [(value)]="age" [required]="true" />
-<sd-textfield [type]="'date'" [(value)]="birthday" />
-<sd-textfield [type]="'password'" [(value)]="pwd" />
-<sd-textfield [type]="'email'" [(value)]="email" [disabled]="true" />
-```
+Checkbox with icon, theme, size, and radio mode support.
 
-**Inputs (key selection):**
+#### Inputs
 
-| Input                       | Type                                                                                                  | Description                 |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------- |
-| `type`                      | `"text" \| "number" \| "password" \| "date" \| "datetime" \| "month" \| "email" \| "color" \| "time"` | Input type                  |
-| `value` (model)             | Varies by type                                                                                        | Bound value                 |
-| `placeholder`               | `string`                                                                                              | Placeholder text            |
-| `disabled`                  | `boolean`                                                                                             | Disabled state              |
-| `readonly`                  | `boolean`                                                                                             | Readonly state              |
-| `required`                  | `boolean`                                                                                             | Required validation         |
-| `min` / `max`               | Varies                                                                                                | Min/max constraints         |
-| `inline`                    | `boolean`                                                                                             | Inline display              |
-| `inset`                     | `boolean`                                                                                             | Borderless inset style      |
-| `size`                      | `"sm" \| "lg"`                                                                                        | Size variant                |
-| `inputClass` / `inputStyle` | `string`                                                                                              | Pass-through to `<input>`   |
-| `title`                     | `string`                                                                                              | Tooltip text                |
-| `autocomplete`              | `string`                                                                                              | HTML autocomplete attribute |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `canChangeFn` | `(item: boolean) => boolean \| Promise<boolean>` | No | `() => true` | Guard before value change |
+| `icon` | `string` | No | `tablerCheck` | Check mark icon |
+| `radio` | `boolean \| ""` | No | `false` | Radio button style (round) |
+| `disabled` | `boolean \| ""` | No | `false` | Disable the checkbox |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | No | -- | Color theme |
+| `contentStyle` | `string` | No | -- | CSS style for content area |
+
+#### Models
+
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `value` | `boolean` | `false` | Checked state |
 
 ---
 
-## SdTextareaControl
+### SdCheckboxGroupControl
 
-Multi-line text input.
+**Type:** `@Component` | **Selector:** `sd-checkbox-group`
 
-**Selector:** `sd-textarea`
+Container for checkbox group items. Manages an array of selected values.
 
-```html
-<sd-textarea [(value)]="description" [rows]="5" />
-```
+#### Inputs
 
-**Key inputs:** `value` (model), `placeholder`, `disabled`, `readonly`, `required`, `rows`, `resize`, `inset`, `size`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `disabled` | `boolean \| ""` | No | `false` | Disable all checkboxes |
 
----
+#### Models
 
-## SdCheckboxControl
-
-Checkbox or radio button with label.
-
-**Selector:** `sd-checkbox`
-
-```html
-<sd-checkbox [(value)]="isActive">Active</sd-checkbox>
-<sd-checkbox [(value)]="isAdmin" [radio]="true">Admin</sd-checkbox>
-<sd-checkbox [inline]="true" [(value)]="agreed">I agree</sd-checkbox>
-```
-
-**Inputs:**
-
-| Input           | Type                                                  | Default     | Description                  |
-| --------------- | ----------------------------------------------------- | ----------- | ---------------------------- |
-| `value` (model) | `boolean`                                             | —           | Checked state                |
-| `disabled`      | `boolean`                                             | `false`     | Disabled state               |
-| `radio`         | `boolean`                                             | `false`     | Render as radio button style |
-| `inline`        | `boolean`                                             | `false`     | Inline display               |
-| `inset`         | `boolean`                                             | `false`     | Inset style                  |
-| `size`          | `"sm" \| "lg"`                                        | —           | Size variant                 |
-| `theme`         | `"primary" \| "secondary" \| ... \| "white"`          | —           | Color theme                  |
-| `icon`          | `string`                                              | tablerCheck | Custom check icon            |
-| `contentStyle`  | `string`                                              | —           | Style for label content      |
-| `canChangeFn`   | `(v: boolean) => boolean \| Promise<boolean>`         | `() => true`| Guard before change          |
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `value` | `T[]` | `[]` | Selected values array |
 
 ---
 
-## SdCheckboxGroupControl and SdCheckboxGroupItemControl
+### SdCheckboxGroupItemControl
 
-Group of checkbox items bound to an array of values.
+**Type:** `@Component` | **Selector:** `sd-checkbox-group-item`
 
-**Selectors:** `sd-checkbox-group`, `sd-checkbox-group-item`
+Individual item within a checkbox group.
 
-```html
-<sd-checkbox-group [(value)]="selectedColors">
-  <sd-checkbox-group-item [value]="'red'">Red</sd-checkbox-group-item>
-  <sd-checkbox-group-item [value]="'blue'">Blue</sd-checkbox-group-item>
-</sd-checkbox-group>
-```
+#### Inputs
 
-**SdCheckboxGroupControl inputs:** `value` (model, `T[]`), `disabled`
-
-**SdCheckboxGroupItemControl inputs:** `value: T` (required), `inline`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `T` | Yes | -- | Value this item represents |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
 
 ---
 
-## SdSwitchControl
+### SdStatePresetControl
 
-Toggle switch (on/off).
+**Type:** `@Component` | **Selector:** `sd-state-preset`
 
-**Selector:** `sd-switch`
+Save and load named state presets (e.g., filter configurations). Persists presets to system config.
 
-```html
-<sd-switch [(value)]="isEnabled" />
-<sd-switch [(value)]="isDark" [inset]="true" />
-```
+#### Inputs
 
-**Key inputs:** `value` (model, `boolean`), `disabled`, `inset`, `size`
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `key` | `string` | Yes | -- | Unique key for preset storage |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
 
----
+#### Models
 
-## SdStatePresetControl
-
-Displays a set of named presets that the user can save/load/delete (persisted via `SdSystemConfigProvider`).
-
-**Selector:** `sd-state-preset`
-
-```html
-<sd-state-preset [key]="'orders-filter'" [(value)]="filter" />
-```
-
-**Key inputs:** `key: string` (required), `value` (model, `T`)
+| Model | Type | Description |
+|-------|------|-------------|
+| `state` | `any` | The current state to save/load |
 
 ---
 
-## SdSelectControl
+### SdSwitchControl
 
-Dropdown select with search, multi-select, tree (hierarchical), and custom header/before content.
+**Type:** `@Component` | **Selector:** `sd-switch`
 
-**Selector:** `sd-select`
+Toggle switch control.
 
-```html
-<sd-select [(value)]="selectedId" [items]="users()" [trackByFn]="trackUser">
-  <ng-template [itemOf]="users()" let-item>
-    <sd-select-item [value]="item.id">{{ item.name }}</sd-select-item>
-  </ng-template>
-</sd-select>
+#### Inputs
 
-<!-- Multi-select -->
-<sd-select [(value)]="selectedIds" [selectMode]="'multi'" [items]="categories()">...</sd-select>
-```
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `disabled` | `boolean \| ""` | No | `false` | Disable the switch |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `theme` | `"primary" \| "secondary" \| "info" \| "success" \| "warning" \| "danger" \| "gray" \| "blue-gray"` | No | -- | Color theme |
 
-**Key inputs:**
+#### Models
 
-| Input                            | Type                         | Description                 |
-| -------------------------------- | ---------------------------- | --------------------------- |
-| `value` (model)                  | varies by `selectMode`       | Selected value(s)           |
-| `items`                          | `T[]`                        | All items                   |
-| `trackByFn`                      | `(item: T) => any`           | Track function              |
-| `selectMode`                     | `"single" \| "multi"`        | Selection mode              |
-| `disabled`                       | `boolean`                    | Disabled state              |
-| `required`                       | `boolean`                    | Required validation         |
-| `inset`                          | `boolean`                    | Borderless style            |
-| `inline`                         | `boolean`                    | Inline display              |
-| `size`                           | `"sm" \| "lg"`               | Size variant                |
-| `open` (model)                   | `boolean`                    | Dropdown open state         |
-| `getChildrenFn`                  | `(item) => T[] \| undefined` | Hierarchical children       |
-| `multiSelectionDisplayDirection` | `"vertical" \| "horizontal"` | Multi-select chip direction |
-| `contentClass`                   | `string`                     | Dropdown content class      |
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `value` | `boolean` | `false` | Toggle state |
 
-**Content projection:**
+---
 
-- `ng-template[itemOf]` — item template (with `SdItemOfTemplateDirective`)
-- `ng-template#headerTpl` — header content inside dropdown
-- `ng-template#beforeTpl` — content before item list
-- `sd-select-button` — action buttons (see below)
+## Editor
 
-**Type `TSelectModeValue<K>`:**
+### SdQuillEditorControl
+
+**Type:** `@Component` | **Selector:** `sd-quill-editor`
+
+Rich text editor based on Quill.js.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `disabled` | `boolean \| ""` | No | `false` | Disable editing |
+
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `string` | HTML content |
+
+---
+
+## Input Controls
+
+### SdDateRangePicker
+
+**Type:** `@Component` | **Selector:** `sd-date-range-picker`
+
+Date range picker with configurable period types.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+
+#### Models
+
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `periodType` | `"day" \| "month" \| "range"` | `"range"` | Period selection mode |
+| `from` | `DateOnly` | -- | Start date |
+| `to` | `DateOnly` | -- | End date |
+
+---
+
+### SdNumpadControl
+
+**Type:** `@Component` | **Selector:** `sd-numpad`
+
+Numeric keypad for touch-friendly number input.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `placeholder` | `string` | No | -- | Placeholder text |
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `inputDisabled` | `boolean \| ""` | No | `false` | Disable direct input |
+| `useEnterButton` | `boolean \| ""` | No | `false` | Show enter button |
+| `useMinusButton` | `boolean \| ""` | No | `false` | Show minus/negative button |
+
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `number` | Numeric value |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `enterButtonClick` | `OutputEmitterRef<void>` | Enter button clicked |
+
+---
+
+### SdRangeControl
+
+**Type:** `@Component` | **Selector:** `sd-range`
+
+From-to range input using two `SdTextfieldControl` instances.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `type` | `K extends keyof TSdTextfieldTypes` | Yes | -- | Input type |
+| `inputStyle` | `string` | No | -- | CSS style for inputs |
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `disabled` | `boolean \| ""` | No | `false` | Disable both inputs |
+
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `from` | `TSdTextfieldTypes[K]` | Start value |
+| `to` | `TSdTextfieldTypes[K]` | End value |
+
+---
+
+### SdTextareaControl
+
+**Type:** `@Component` | **Selector:** `sd-textarea`
+
+Auto-growing textarea with validation and theme support.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `placeholder` | `string` | No | -- | Placeholder text |
+| `title` | `string` | No | -- | Title attribute |
+| `minRows` | `number` | No | `1` | Minimum visible rows |
+| `disabled` | `boolean \| ""` | No | `false` | Disable editing |
+| `readonly` | `boolean \| ""` | No | `false` | Read-only mode |
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `validatorFn` | `(value: string \| undefined) => string \| undefined` | No | -- | Custom validator |
+| `theme` | `"primary" \| "secondary" \| ...` | No | -- | Color theme |
+| `inputStyle` | `string` | No | -- | CSS style for input element |
+| `inputClass` | `string` | No | -- | CSS class for input element |
+
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `string` | Text content |
+
+---
+
+### SdTextfieldControl
+
+**Type:** `@Component` | **Selector:** `sd-textfield`
+
+Typed text input supporting multiple data types: text, number, date, time, datetime, password, color, email, and formatted input.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `type` | `K extends keyof TSdTextfieldTypes` | Yes | -- | Input type |
+| `placeholder` | `string` | No | -- | Placeholder text |
+| `title` | `string` | No | -- | Title attribute |
+| `inputStyle` | `string` | No | -- | CSS style for input |
+| `inputClass` | `string` | No | -- | CSS class for input |
+| `disabled` | `boolean \| ""` | No | `false` | Disable editing |
+| `readonly` | `boolean \| ""` | No | `false` | Read-only mode |
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `min` | `TSdTextfieldTypes[K]` | No | -- | Minimum value |
+| `max` | `TSdTextfieldTypes[K]` | No | -- | Maximum value |
+| `minlength` | `number` | No | -- | Minimum length |
+| `maxlength` | `number` | No | -- | Maximum length |
+| `pattern` | `string` | No | -- | Validation pattern |
+| `validatorFn` | `(value) => string \| undefined` | No | -- | Custom validator |
+| `format` | `string` | No | -- | Display format pattern |
+| `step` | `number` | No | -- | Numeric step value |
+| `autocomplete` | `string` | No | -- | Autocomplete attribute |
+| `useNumberComma` | `boolean \| ""` | No | `true` | Format numbers with commas |
+| `minDigits` | `number` | No | -- | Minimum decimal digits |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `theme` | `"primary" \| "secondary" \| ...` | No | -- | Color theme |
+
+#### Models
+
+| Model | Type | Description |
+|-------|------|-------------|
+| `value` | `TSdTextfieldTypes[K]` | Input value |
+
+#### TSdTextfieldTypes
 
 ```typescript
-type TSelectModeValue<K> = {
-  single: K | undefined;
-  multi: K[];
+type TSdTextfieldTypes = {
+  number: number;
+  text: string;
+  password: string;
+  color: string;
+  email: string;
+  format: string;
+  date: DateOnly;
+  month: DateOnly;
+  year: DateOnly;
+  datetime: DateTime;
+  time: Time;
 };
 ```
 
 ---
 
-## SdSelectItemControl
+## Form
 
-An item inside `SdSelectControl`.
+### SdFormControl
 
-**Selector:** `sd-select-item`
+**Type:** `@Component` | **Selector:** `sd-form`
 
-```html
-<sd-select-item [value]="item.id" [hidden]="item.isArchived">{{ item.name }}</sd-select-item>
-```
+Form wrapper that handles native form submission and validation.
 
-**Inputs:** `value: T` (required), `hidden: boolean`
+#### Outputs
 
----
-
-## SdSelectButtonControl
-
-An action button rendered inside `SdSelectControl`.
-
-**Selector:** `sd-select-button`
-
-```html
-<sd-select [items]="items">
-  <sd-select-button (click)="openModal($event)">...</sd-select-button>
-  ...
-</sd-select>
-```
+| Output | Type | Description |
+|--------|------|-------------|
+| `submit` | `OutputEmitterRef<SubmitEvent>` | Form submitted (validation passed) |
+| `invalid` | `OutputEmitterRef<void>` | Form validation failed |
 
 ---
 
-## SdFormControl
+## Select Controls
 
-Wraps form fields and handles native form submission.
+### SdSelectControl
 
-**Selector:** `sd-form`
+**Type:** `@Component` | **Selector:** `sd-select`
 
-```html
-<sd-form (submit)="onSubmit()">
-  <sd-textfield [(value)]="name" [required]="true" />
-  <sd-button [type]="'submit'">Submit</sd-button>
-</sd-form>
+Dropdown select with single/multi selection mode, tree support, and search.
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `required` | `boolean \| ""` | No | `false` | Mark as required |
+| `disabled` | `boolean \| ""` | No | `false` | Disable the control |
+| `items` | `T[]` | No | -- | Items for iteration |
+| `trackByFn` | `(item: T, index: number) => any` | No | `(item) => item` | Track-by function |
+| `getChildrenFn` | `(item, index, depth) => T[]` | No | -- | Tree children accessor |
+| `inline` | `boolean \| ""` | No | `false` | Inline display |
+| `inset` | `boolean \| ""` | No | `false` | Inset style |
+| `size` | `"sm" \| "lg"` | No | -- | Size variant |
+| `selectMode` | `"single" \| "multi"` | No | `"single"` | Selection mode |
+| `contentClass` | `string` | No | -- | CSS class for dropdown |
+| `contentStyle` | `string` | No | -- | CSS style for dropdown |
+| `multiSelectionDisplayDirection` | `"vertical" \| "horizontal"` | No | -- | Multi-select layout |
+| `hideSelectAll` | `boolean \| ""` | No | `false` | Hide "select all" option |
+| `placeholder` | `string` | No | -- | Placeholder text |
+
+#### Models
+
+| Model | Type | Default | Description |
+|-------|------|---------|-------------|
+| `value` | `TSelectModeValue<any>[M]` | -- | Selected value(s) |
+| `open` | `boolean` | `false` | Dropdown open state |
+
+#### TSelectModeValue
+
+```typescript
+type TSelectModeValue<T> = {
+  multi: T[];
+  single: T;
+};
 ```
-
-**Output:** `(submit)` — fires when native form submission is valid.
-
-**Method:** `requestSubmit()` — programmatically triggers validation and submit.
 
 ---
 
-## SdDateRangePicker
+### SdSelectItemControl
 
-Date range picker with period type selection. Supports day, month, and range modes. In "day" mode, `to` is auto-synced to `from`. In "month" mode, `to` is auto-calculated to the end of the month.
+**Type:** `@Component` | **Selector:** `sd-select-item`
 
-**Selector:** `sd-date-range-picker`
+Individual item within a `SdSelectControl` dropdown.
 
-```html
-<sd-date-range-picker [(from)]="startDate" [(to)]="endDate" [(periodType)]="period" />
-```
+#### Inputs
 
-**Inputs:**
-
-| Input        | Type                                     | Default   | Description               |
-| ------------ | ---------------------------------------- | --------- | ------------------------- |
-| `periodType` | `"일" \| "월" \| "범위"` (model)          | `"범위"`  | Period selection mode     |
-| `from`       | `DateOnly` (model)                       | —         | Start date                |
-| `to`         | `DateOnly` (model)                       | —         | End date                  |
-| `required`   | `boolean`                                | `false`   | Required validation       |
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `value` | `any` | No | -- | Value this item represents |
+| `disabled` | `boolean \| ""` | No | `false` | Disable this item |
+| `hidden` | `boolean \| ""` | No | `false` | Hide this item |
 
 ---
 
-## SdNumpadControl
+### SdSelectButtonControl
 
-On-screen numeric keypad for touch input.
+**Type:** `@Component` | **Selector:** `sd-select-button`
 
-**Selector:** `sd-numpad`
-
-```html
-<sd-numpad [(value)]="amount" />
-```
-
-**Key inputs:** `value` (model, `number | undefined`), `disabled`
-
----
-
-## SdRangeControl
-
-A from-to range input that renders two `SdTextfieldControl` instances side by side with a `~` separator. The `to` field enforces a minimum value equal to the current `from` value.
-
-**Selector:** `sd-range`
-
-```html
-<sd-range [type]="'number'" [(from)]="minPrice" [(to)]="maxPrice" />
-<sd-range [type]="'date'" [(from)]="startDate" [(to)]="endDate" [required]="true" />
-```
-
-**Inputs:**
-
-| Input        | Type                      | Description                    |
-| ------------ | ------------------------- | ------------------------------ |
-| `type`       | `keyof TSdTextfieldTypes` | Input type (required)          |
-| `from`       | model                     | Start value                    |
-| `to`         | model                     | End value (min clamped to from)|
-| `inputStyle` | `string`                  | Inline style for both inputs   |
-| `required`   | `boolean`                 | Required validation            |
-| `disabled`   | `boolean`                 | Disabled state                 |
-
----
-
-## SdQuillEditorControl
-
-Rich text editor based on Quill.
-
-**Selector:** `sd-quill-editor`
-
-```html
-<sd-quill-editor [(value)]="htmlContent" />
-```
-
-**Key inputs:** `value` (model, `string | undefined`), `disabled`, `readonly`, `placeholder`
+Button-style display for the selected value within a select control.
