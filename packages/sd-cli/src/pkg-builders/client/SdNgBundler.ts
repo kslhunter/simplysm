@@ -74,7 +74,7 @@ export class SdNgBundler {
     this._mainFilePath = path.resolve(this._opt.pkgPath, "src/main.ts");
     this._tsConfigFilePath = path.resolve(this._opt.pkgPath, "tsconfig.json");
     this._swConfFilePath = path.resolve(this._opt.pkgPath, "ngsw-config.json");
-    this._browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 78"]));
+    this._browserTarget = transformSupportedBrowsersToTargets(browserslist(["Chrome > 61"]));
     this._indexHtmlFilePath = path.resolve(this._opt.pkgPath, "src/index.html");
     this._pkgName = path.basename(this._opt.pkgPath);
     this._baseHref =
