@@ -3,6 +3,7 @@ import * as ts from "typescript";
 import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
 import { SdDepCache } from "../../src/ts-compiler/SdDepCache";
 import { SdDepAnalyzer } from "../../src/ts-compiler/SdDepAnalyzer";
+import { ScopePathSet } from "../../src/ts-compiler/ScopePathSet";
 
 function createMockProgram(sources: Record<string, string>) {
   const fileNames = Object.keys(sources);
@@ -14,6 +15,11 @@ function createMockProgram(sources: Record<string, string>) {
     if (!sourceText) return undefined;
     return ts.createSourceFile(fileName, sourceText, languageVersion);
   };
+  const moduleResolutionCache = ts.createModuleResolutionCache(
+    compilerHost.getCurrentDirectory(),
+    (x) => x,
+  );
+  compilerHost.getModuleResolutionCache = () => moduleResolutionCache;
   const program = ts.createProgram(fileNames, {}, compilerHost);
   return { program, compilerHost };
 }
@@ -22,8 +28,27 @@ function norm(path: string): TNormPath {
   return PathUtils.norm(path);
 }
 
+function getAffectedFileSet(depCache: SdDepCache, modifiedSet: Set<TNormPath>): Set<TNormPath> {
+  const map = depCache.getAffectedFileMap(modifiedSet);
+  const result = new Set<TNormPath>();
+  for (const set of map.values()) {
+    for (const p of set) result.add(p);
+  }
+  return result;
+}
+
+function createCache(dep: SdDepCache) {
+  return {
+    dep,
+    type: new WeakMap<ts.Node, ts.Type | undefined>(),
+    prop: new WeakMap<ts.Type, Map<string, ts.Symbol | undefined>>(),
+    declFiles: new WeakMap<ts.Symbol, TNormPath[]>(),
+    ngOrg: new Map<TNormPath, ts.SourceFile>(),
+  };
+}
+
 describe("DependencyAnalyzer", () => {
-  const scope = PathUtils.norm("/");
+  const scopePathSet = new ScopePathSet([PathUtils.norm("/")]);
   let depCache: SdDepCache;
 
   beforeEach(() => {
@@ -37,9 +62,9 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts")]));
   });
 
@@ -51,21 +76,17 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
       expect(result).toEqual(
-        new Set([
-          norm("/a.ts"),
-          norm("/b.ts"), // a파일이 사라지거나 하면 b가 오류를 뱉어야 하므로
-          norm("/c.ts"),
-        ]),
+        new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]),
       );
     }
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/b.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/b.ts")]));
       expect(result).toEqual(new Set([norm("/b.ts"), norm("/c.ts")]));
     }
   });
@@ -78,21 +99,17 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
       expect(result).toEqual(
-        new Set([
-          norm("/a.ts"),
-          norm("/b.ts"), // a파일이 사라지거나 하면 b가 오류를 뱉어야 하므로
-          norm("/c.ts"),
-        ]),
+        new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]),
       );
     }
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/b.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/b.ts")]));
       expect(result).toEqual(new Set([norm("/b.ts"), norm("/c.ts")]));
     }
   });
@@ -106,15 +123,15 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
       expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]));
     }
 
     {
-      const result = depCache.getAffectedFileSet(new Set([norm("/a_1.ts")]));
+      const result = getAffectedFileSet(depCache, new Set([norm("/a_1.ts")]));
       expect(result).toEqual(new Set([norm("/a_1.ts"), norm("/b.ts")]));
     }
   });
@@ -134,19 +151,17 @@ describe("DependencyAnalyzer", () => {
       `,
       "/c.ts": `
         import { A } from "./a";
-        
+
         function doSomething() {
-          // A.b.c 속성 접근을 통해 B에 간접 의존
           console.log(new A().b.c);
         }
       `,
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    // B가 변경되면 A와 C 모두 영향 받는지 확인
-    const result = depCache.getAffectedFileSet(new Set([norm("/b.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/b.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]));
   });
 
@@ -165,19 +180,17 @@ describe("DependencyAnalyzer", () => {
       `,
       "/c.ts": `
         import { A } from "./a";
-        
+
         function doSomething() {
-          // A['b'].c 속성 접근을 통해 B에 간접 의존
           console.log(new A()['b'].c);
         }
       `,
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    // B가 변경되면 A와 C 모두 영향 받는지 확인
-    const result = depCache.getAffectedFileSet(new Set([norm("/b.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/b.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]));
   });
 
@@ -188,9 +201,9 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts")]));
   });
 
@@ -202,9 +215,9 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts"), norm("/c.ts")]));
   });
 
@@ -215,13 +228,13 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    const result = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
+    const result = getAffectedFileSet(depCache, new Set([norm("/a.ts")]));
     expect(result).toEqual(new Set([norm("/a.ts"), norm("/b.ts")]));
   });
 
-  it("invalidates()는 영향 받은 모든 파일을 캐시에서 제거한다", () => {
+  it("invalidates()는 해당 파일의 자체 분석 데이터를 제거한다", () => {
     const files = {
       "/a.ts": `export const A = 1;`,
       "/b.ts": `import { A } from "./a";`,
@@ -229,13 +242,12 @@ describe("DependencyAnalyzer", () => {
     };
 
     const { program, compilerHost } = createMockProgram(files);
-    SdDepAnalyzer.analyze(program, compilerHost, [scope], depCache);
+    SdDepAnalyzer.analyze(program, compilerHost, scopePathSet, createCache(depCache));
 
-    // invalidate 처리
     depCache.invalidates(new Set([norm("/a.ts")]));
 
-    const affected = depCache.getAffectedFileSet(new Set([norm("/a.ts")]));
-    // 분석 안된 상태이므로, a만 남아야 함
-    expect(affected).toEqual(new Set([norm("/a.ts")]));
+    // a의 자체 분석 데이터가 제거됨 (재분석 필요 상태)
+    expect(depCache["_exportCache"].has(norm("/a.ts"))).toBe(false);
+    expect(depCache["_collectedCache"].has(norm("/a.ts"))).toBe(false);
   });
 });

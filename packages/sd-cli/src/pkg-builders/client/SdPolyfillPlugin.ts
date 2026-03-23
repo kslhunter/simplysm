@@ -1,9 +1,11 @@
 import { Plugin, PluginBuild } from "esbuild";
 import compat from "core-js-compat";
 import { createRequire } from "module";
-import { PathUtils } from "@simplysm/sd-core-node";
+import { fileURLToPath } from "url";
+import path from "path";
 
 const _require = createRequire(import.meta.url);
+const _resolveDir = path.dirname(fileURLToPath(import.meta.url));
 
 const SD_POLYFILL_NS = "sd-polyfill";
 const SD_POLYFILL_FILTER = /^virtual:sd-polyfills$/;
@@ -24,11 +26,11 @@ export function SdPolyfillPlugin(browserslistQuery: string[]): Plugin {
 
         const lines: string[] = [];
 
-        // core-js 모듈 (절대 경로로 resolve하여 소비 프로젝트의 node_modules 의존 제거)
+        // core-js 모듈 (bare specifier + resolveDir로 소비 프로젝트의 node_modules 의존 제거)
         for (const mod of list) {
           try {
-            const absPath = _require.resolve(`core-js/modules/${mod}.js`);
-            lines.push(`import "${PathUtils.posix(absPath)}";`);
+            _require.resolve(`core-js/modules/${mod}.js`);
+            lines.push(`import "core-js/modules/${mod}.js";`);
           } catch {
             // 모듈이 존재하지 않으면 skip (WeakRef 등 polyfill 불가 항목)
           }
@@ -36,18 +38,16 @@ export function SdPolyfillPlugin(browserslistQuery: string[]): Plugin {
 
         // AbortController (Chrome 66+)
         try {
-          const absPath = _require.resolve(
-            "abortcontroller-polyfill/dist/abortcontroller-polyfill-only",
-          );
-          lines.push(`import "${PathUtils.posix(absPath)}";`);
+          _require.resolve("abortcontroller-polyfill/dist/abortcontroller-polyfill-only");
+          lines.push(`import "abortcontroller-polyfill/dist/abortcontroller-polyfill-only";`);
         } catch {
           // skip
         }
 
         // ResizeObserver (Chrome 64+)
         try {
-          const absPath = _require.resolve("resize-observer-polyfill");
-          lines.push(`import RO from "${PathUtils.posix(absPath)}";`);
+          _require.resolve("resize-observer-polyfill");
+          lines.push(`import RO from "resize-observer-polyfill";`);
           lines.push(
             `if (typeof window !== "undefined" && !("ResizeObserver" in window)) { window.ResizeObserver = RO; }`,
           );
@@ -55,7 +55,7 @@ export function SdPolyfillPlugin(browserslistQuery: string[]): Plugin {
           // skip
         }
 
-        return { contents: lines.join("\n"), loader: "js" };
+        return { contents: lines.join("\n"), loader: "js", resolveDir: _resolveDir };
       });
     },
   };

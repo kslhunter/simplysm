@@ -11,5 +11,6 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["**/*.spec.ts"],
+    exclude: ["**/node_modules/**", ".back/**"],
   },
 });

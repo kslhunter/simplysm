@@ -76,9 +76,10 @@ describe("SdExcelWorksheet.addImageAsync integration", () => {
     const drawingElems = wsXml.data.worksheet.drawing;
     expect(drawingElems.some((d: any) => d.$ && d.$["r:id"])).toBeTruthy();
 
-    console.log(path.resolve(process.cwd(), "test.xlsx"));
+    const outDir = path.resolve(__dirname, "../node_modules/.vite-temp");
+    await fs.promises.mkdir(outDir, { recursive: true });
     await fs.promises.writeFile(
-      path.resolve(__dirname, "../node_modules/.vite-temp/test.xlsx"),
+      path.resolve(outDir, "test.xlsx"),
       await wb.getBufferAsync(),
     );
   });

@@ -44,3 +44,5 @@
 - [ ] Outer Loop Refactor를 건너뛰고 바로 다음 Scenario로 진행한다
 - [ ] Outer Loop Refactor에서 프로덕션 코드만 정리하고 테스트 코드를 정리하지 않는다
 - [ ] 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 최종 결과에 남아있다
+- [ ] TDD 중 요구명세·구현계획에 누락·오류를 발견했음에도, Feature 문서의 해당 섹션을 수정하지 않는다
+- [ ] Feature 범위를 변경했음에도 wbs.md를 수정하지 않는다

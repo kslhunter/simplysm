@@ -76,6 +76,18 @@
   - [ ] Feature 문서에 `## 참조 자료` 섹션이 있고, 대화에서 수집한 구체적 정보(이메일/비밀번호, 소셜 로그인, 계정 잠금 중 2개 이상)가 기록되어 있다
   - [ ] Feature 문서에 `## 요구명세` 섹션이 있다
 
+### 시나리오 5: spec 작성 중 Feature 범위 변경 시 WBS 동기화
+- 입력: "/sd-spec .tasks/test-project/wbs.md"
+- 사전 조건:
+  - `.tasks/test-project/wbs.md` — Feature Breakdown에 미완료 Feature 2개:
+    - `[ ] Feature 1.1 사용자 인증` (범위 힌트: 이메일/비밀번호 로그인, 세션 관리, **권한 기반 접근 제어**)
+    - `[ ] Feature 1.2 권한 관리` (범위 힌트: 역할 정의, 역할별 메뉴 접근)
+  - 의도: "권한 기반 접근 제어"는 Feature 1.2의 영역이며, spec 과정에서 이를 인지하고 WBS를 수정해야 함
+- 체크리스트:
+  - [ ] Feature 1.1의 범위에서 "권한 기반 접근 제어"가 Feature 1.2의 영역임을 출력에서 언급했다
+  - [ ] wbs.md의 Feature 1.1 범위 힌트에서 "권한 기반 접근 제어"가 제거되거나 Feature 1.2로 이동에 대한 언급이 있다
+  - [ ] wbs.md 파일이 수정되었다
+
 ## 안티패턴 Eval
 
 - [ ] Feature 문서에 `## 구현계획` 섹션을 작성한다
@@ -85,3 +97,4 @@
 - [ ] Confidence Tag([VERIFIED], [INFERRED], [ASSUMED]) 없이 Example Mapping을 작성한다
 - [ ] Metacognitive Preamble 분류 확인을 사용자에게 묻는다 (보여주기만 하고 즉시 진행해야 한다)
 - [ ] 하나의 질문에 여러 결정사항을 한꺼번에 포함하여 질문한다
+- [ ] Feature 범위를 변경했음에도 wbs.md를 수정하지 않는다

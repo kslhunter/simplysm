@@ -9,6 +9,7 @@ PACKAGES = {"openpyxl": "openpyxl"}
 def extract(file_path):
     ensure_packages(PACKAGES)
     from openpyxl import load_workbook
+    from openpyxl.worksheet.worksheet import Worksheet
 
     wb = load_workbook(file_path, data_only=True)
     text_parts = []
@@ -18,6 +19,10 @@ def extract(file_path):
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
         text_parts.append(f"[Sheet: {sheet_name}]")
+
+        if not isinstance(ws, Worksheet):
+            text_parts.append(f"({type(ws).__name__} — 데이터 없음)")
+            continue
 
         if ws.max_row is None or ws.max_row == 0:
             text_parts.append("(empty sheet)")

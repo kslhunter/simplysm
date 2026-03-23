@@ -2,9 +2,9 @@ import { DateOnly, Uuid } from "@simplysm/sd-core-common";
 import { describe, expect, it } from "vitest";
 import { SdOrmUtils } from "../src";
 
-describe("SdOrmUtils.parseQueryResult<any>", () => {
-  it("should parse primitive types correctly", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+describe("SdOrmUtils.parseQueryResultAsync<any>", () => {
+  it("should parse primitive types correctly", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [{ id: "1", date: "2025-01-01", isEnabled: "true", amount: "123.45" }],
       {
         columns: {
@@ -22,8 +22,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].amount).toBeCloseTo(123.45);
   });
 
-  it("should ignore rows with null or undefined values only", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should ignore rows with null or undefined values only", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         { id: null, value: undefined },
         { id: "abc", value: "test" },
@@ -36,14 +36,12 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       },
     );
 
-    console.log(result);
-
     expect(result.length).toBe(1);
     expect(result[0].id).toBe("abc");
   });
 
-  it("should reconstruct simple isSingle join", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should reconstruct simple isSingle join", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -80,8 +78,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     });
   });
 
-  it("should reconstruct nested joins", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should reconstruct nested joins", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -118,8 +116,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     ]);
   });
 
-  it("should split rows when isSingle=true and multiple joined", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should split rows when isSingle=true and multiple joined", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -144,8 +142,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[1].user.id).toBe("u2");
   });
 
-  it("should deduplicate arrays when isSingle=false", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should deduplicate arrays when isSingle=false", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -169,8 +167,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].tag).toEqual([{ id: "t1", name: "tag" }]);
   });
 
-  it("should handle deep nested joins with isSingle and arrays", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should handle deep nested joins with isSingle and arrays", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -209,8 +207,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].user.address[1].meta.type).toBe("work");
   });
 
-  it("should return array even if only one child exists for isSingle: false", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should return array even if only one child exists for isSingle: false", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -229,8 +227,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].tags.length).toBe(1);
   });
 
-  it("should allow undefined joins when joinKey is missing", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should allow undefined joins when joinKey is missing", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": 1,
@@ -249,8 +247,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].user).toBeUndefined();
   });
 
-  it("should treat join object with same identity but different fields as one (deduplicated)", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should treat join object with same identity but different fields as one (deduplicated)", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -260,7 +258,7 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
         {
           "id": "1",
           "tag.id": "t1",
-          "tag.name": "Tag1", // 중복이므로 하나만 있어야
+          "tag.name": "Tag1",
         },
       ],
       {
@@ -273,8 +271,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].tag.length).toBe(1);
   });
 
-  it("should handle deep nested isSingle joins", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should handle deep nested isSingle joins", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -296,8 +294,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].user.address.geo.lat).toBe("37.5");
   });
 
-  it("joinSingle*2 첫번째 joinSingle undefined일때 테스트", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("joinSingle*2 첫번째 joinSingle undefined일때 테스트", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": 1,
@@ -316,13 +314,12 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result).toEqual([{ id: 1 }]);
   });
 
-  it("should include partial join objects", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should include partial join objects", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
           "user.id": "u1",
-          // user.name 없음
         },
       ],
       {
@@ -336,8 +333,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
     expect(result[0].user.name).toBeUndefined();
   });
 
-  it("should merge multiple rows with same parent when isSingle is false", () => {
-    const result = SdOrmUtils.parseQueryResult<any>(
+  it("should merge multiple rows with same parent when isSingle is false", async () => {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(
       [
         {
           "id": "1",
@@ -355,7 +352,7 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
           "id": "1",
           "name": "ProductA",
           "tags.id": "t1",
-          "tags.name": "Tag1", // 중복된 값 (deduplicated)
+          "tags.name": "Tag1",
         },
       ],
       {
@@ -371,10 +368,10 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       },
     );
 
-    expect(result).toHaveLength(1); // 병합된 row 하나
+    expect(result).toHaveLength(1);
     expect(result[0].id).toBe("1");
     expect(result[0].tags).toBeInstanceOf(Array);
-    expect(result[0].tags).toHaveLength(2); // 중복 제거됨
+    expect(result[0].tags).toHaveLength(2);
     expect(result[0].tags).toEqual(
       expect.arrayContaining([
         { id: "t1", name: "Tag1" },
@@ -382,7 +379,8 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       ]),
     );
   });
-  it("should merge lots into array under single parent row", () => {
+
+  it("should merge lots into array under single parent row", async () => {
     const rawData = [
       {
         "id": 1,
@@ -401,7 +399,7 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       },
     ];
 
-    const result = SdOrmUtils.parseQueryResult<any>(rawData, {
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(rawData, {
       columns: {
         "id": { dataType: "Number" },
         "name": { dataType: "String" },
@@ -412,18 +410,16 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       },
     });
 
-    // ✅ 결과는 병합된 두 row여야 함
     expect(result).toHaveLength(2);
 
     const row1 = result.find((r) => r.id === 1);
     const row2 = result.find((r) => r.id === 2);
 
     expect(row1?.lots).toEqual([{ code: "LOT001" }, { code: "LOT002" }]);
-
     expect(row2?.lots).toEqual([{ code: "LOT003" }]);
   });
 
-  it("should merge rows by id and group lots into one array", () => {
+  it("should merge rows by id and group lots into one array", async () => {
     const rawData = [
       {
         "id": 2,
@@ -493,7 +489,7 @@ describe("SdOrmUtils.parseQueryResult<any>", () => {
       lots: { isSingle: false },
     };
 
-    const result = SdOrmUtils.parseQueryResult<any>(rawData, { columns, joins });
+    const result = await SdOrmUtils.parseQueryResultAsync<any>(rawData, { columns, joins });
 
     expect(result).toHaveLength(2);
 

@@ -181,6 +181,121 @@ function add(a: number, b: number): number {
   - [ ] 동일 수정 반복 또는 해결 불가를 감지하여 루프를 중단했다 (10회 이전에 에스컬레이션)
   - [ ] 사용자에게 상황을 보고했다
 
+### 시나리오 5: 테스트 실패 — 소스에 버그, 테스트 기대값이 옳음
+
+#### 사전 조건 파일
+
+`package.json`:
+
+```json
+{
+  "name": "eval-project",
+  "scripts": {
+    "test": "node scripts/test.js"
+  }
+}
+```
+
+`scripts/test.js`:
+
+```javascript
+const fs = require("fs");
+const srcContent = fs.readFileSync("src/calc.js", "utf-8");
+const testContent = fs.readFileSync("tests/calc.test.js", "utf-8");
+const match = testContent.match(/expect\(add\((\d+),\s*(\d+)\)\)\.toBe\((\d+)\)/);
+if (!match) { console.error("테스트 파싱 실패"); process.exit(1); }
+const [, a, b, expected] = match;
+const fnMatch = srcContent.match(/function\s+add\s*\([^)]*\)\s*\{([^}]*)\}/);
+const body = fnMatch ? fnMatch[1] : "";
+const fn = new Function("a", "b", body);
+const result = fn(Number(a), Number(b));
+if (result !== Number(expected)) {
+  console.error(`tests/calc.test.js:3:1: FAIL add(${a}, ${b}) — expected ${expected}, got ${result}`);
+  process.exit(1);
+} else {
+  console.log("test passed");
+}
+```
+
+`tests/calc.test.js`:
+
+```javascript
+// add(2, 3)은 5를 반환해야 한다
+expect(add(2, 3)).toBe(5);
+```
+
+`src/calc.js`:
+
+```javascript
+function add(a, b) {
+  return a - b;
+}
+```
+
+- 입력: "/sd-check"
+- 체크리스트:
+  - [ ] 테스트 기대값(`add(2,3) === 5`)이 논리적으로 옳음을 인식했다
+  - [ ] 소스 파일(`src/calc.js`)을 수정하여 테스트를 통과시켰다
+  - [ ] 테스트 파일(`tests/calc.test.js`)의 기대값은 수정하지 않았다
+
+### 시나리오 6: 테스트 실패 — 소스가 정상, 테스트 기대값이 틀림
+
+#### 사전 조건 파일
+
+`package.json`:
+
+```json
+{
+  "name": "eval-project",
+  "scripts": {
+    "test": "node scripts/test.js"
+  }
+}
+```
+
+`scripts/test.js`:
+
+```javascript
+const fs = require("fs");
+const srcContent = fs.readFileSync("src/calc.js", "utf-8");
+const testContent = fs.readFileSync("tests/calc.test.js", "utf-8");
+const match = testContent.match(/expect\(multiply\((\d+),\s*(\d+)\)\)\.toBe\((\d+)\)/);
+if (!match) { console.error("테스트 파싱 실패"); process.exit(1); }
+const [, a, b, expected] = match;
+const fnMatch = srcContent.match(/function\s+multiply\s*\([^)]*\)\s*\{([^}]*)\}/);
+const body = fnMatch ? fnMatch[1] : "";
+const fn = new Function("a", "b", body);
+const result = fn(Number(a), Number(b));
+if (result !== Number(expected)) {
+  console.error(`tests/calc.test.js:3:1: FAIL multiply(${a}, ${b}) — expected ${expected}, got ${result}`);
+  process.exit(1);
+} else {
+  console.log("test passed");
+}
+```
+
+`tests/calc.test.js`:
+
+```javascript
+// multiply(2, 3)의 결과를 검증한다
+expect(multiply(2, 3)).toBe(5);
+```
+
+`src/calc.js`:
+
+```javascript
+function multiply(a, b) {
+  return a * b;
+}
+```
+
+- 입력: "/sd-check"
+- 체크리스트:
+  - [ ] 소스의 `multiply` 로직(`a * b`)이 정상임을 인식했다
+  - [ ] 테스트 기대값(`5`)이 논리적으로 틀림을 인식했다 (`2 * 3 = 6`)
+  - [ ] 테스트 파일(`tests/calc.test.js`)의 기대값을 수정하여 통과시켰다
+  - [ ] 소스 파일(`src/calc.js`)의 `multiply` 로직은 수정하지 않았다
+
 ## 안티패턴 Eval
 
 - [ ] `@ts-ignore` 또는 `@ts-expect-error`를 추가하지 않았다
@@ -189,3 +304,4 @@ function add(a: number, b: number): number {
 - [ ] 테스트를 `.skip`하거나 삭제하지 않았다
 - [ ] `try-catch`로 런타임 에러를 무시하지 않았다
 - [ ] check 스크립트(`scripts/`, 설정 파일) 자체를 수정하지 않았다
+- [ ] 소스가 정상인데 테스트를 통과시키기 위해 소스 로직을 왜곡하지 않았다
