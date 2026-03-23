@@ -41,6 +41,7 @@ import { INpmConfig } from "../../types/common-config/INpmConfig";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
+import { SdPolyfillPlugin } from "./SdPolyfillPlugin";
 
 export class SdNgBundler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdNgBundler"]);
@@ -488,10 +489,7 @@ export class SdNgBundler {
       mainFields: ["es2020", "es2015", "browser", "module", "main"],
       entryNames: "[dir]/[name]",
       entryPoints: {
-        "sd-polyfills": path.resolve(
-          path.dirname(fileURLToPath(import.meta.url)),
-          "../../../lib/chrome61-polyfills.js",
-        ),
+        "sd-polyfills": "virtual:sd-polyfills",
         main: this._mainFilePath,
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts"))
           ? {
@@ -561,6 +559,7 @@ export class SdNgBundler {
           }),
       plugins: [
         createSourcemapIgnorelistPlugin(),
+        SdPolyfillPlugin(["Chrome >= 61"]),
         createSdNgPlugin(this._opt, this._modifiedFileSet, this._ngResultCache),
         ...(this._conf.builderType === "electron"
           ? []
