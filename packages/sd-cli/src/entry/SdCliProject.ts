@@ -333,15 +333,15 @@ export class SdCliProject {
     }
 
     logger.debug("배포 시작...");
-    await pkgPaths.parallelAsync(async (pkgPath) => {
+    for (const pkgPath of pkgPaths) {
       const pkgName = path.basename(pkgPath);
       const pkgConf = projConf.packages[pkgName];
-      if (pkgConf?.publish == null) return;
+      if (pkgConf?.publish == null) continue;
 
       logger.debug(`[${pkgName}] 배포 시작...`);
       await this._publishPkgAsync(pkgPath, pkgConf.publish);
       logger.debug(`[${pkgName}] 배포 완료`);
-    });
+    }
 
     if (projConf.postPublish && projConf.postPublish.length > 0) {
       logger.debug("배포후 작업...");

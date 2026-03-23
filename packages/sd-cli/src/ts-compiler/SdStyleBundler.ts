@@ -34,7 +34,7 @@ export class SdStyleBundler {
           futureDeprecations: undefined,
         },
         externalDependencies: [],
-        target: transformSupportedBrowsersToTargets(browserslist(["Chrome > 61"])),
+        target: transformSupportedBrowsersToTargets(browserslist(["Chrome >= 61"])),
         preserveSymlinks: false,
         tailwindConfiguration: undefined,
         postcssConfiguration: undefined,
