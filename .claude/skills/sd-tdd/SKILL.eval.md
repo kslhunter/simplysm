@@ -3,10 +3,10 @@
 ## 행동 Eval
 
 ### 시나리오 1: 기본 Double Loop TDD 흐름
-- 입력: "/sd-tdd .tasks/test-project/1.1-calculator-add.md"
+- 입력: "/sd-tdd .tasks/test-project/1.1-calculator.md"
 - 사전 조건:
-  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.1-calculator-add`가 `[ ]`로 표시
-  - `.tasks/test-project/1.1-calculator-add.md` — 요구명세(Gherkin 3개 Scenario: 덧셈, 뺄셈, 연산 이력) + 구현계획(2 Slices: 덧셈+뺄셈, 연산 이력) 포함. add와 subtract에 이력 기록 로직이 중복되어 Outer Loop Refactor에서 프로덕션 코드 정리가 필요한 구조
+  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.1-calculator`가 `[ ]`로 표시
+  - `.tasks/test-project/1.1-calculator.md` — 요구명세(Gherkin 4개 Scenario: 덧셈, 뺄셈, 곱셈, 연산 이력) + 구현계획(2 Slices: 사칙연산, 연산 이력) 포함. add/subtract/multiply에 이력 기록 로직이 3회 중복되어 Rule of Three 발동으로 Outer Loop Refactor에서 프로덕션 코드 정리(Extract Method)가 필요한 구조
   - `package.json` — `"test": "node --test"` 스크립트 포함 (설치 불필요)
   - `src/calculator.js` — 빈 Calculator 클래스 (기존 코드)
 - 체크리스트:
@@ -19,8 +19,8 @@
   - [ ] 구현 코드가 생성/수정되었다
   - [ ] 테스트가 실행되었다
   - [ ] Acceptance Test 통과 후 Outer Loop Refactor가 수행되었다
-  - [ ] Outer Loop Refactor에서 프로덕션 코드 정리(중복 통합, 네이밍 개선 등)가 수행되었다
-  - [ ] Outer Loop Refactor에서 테스트 코드 정리(scaffolding test 제거, 중복 Unit Test 삭제, 공통 setup 추출 등)가 수행되었다
+  - [ ] Outer Loop Refactor에서 프로덕션 코드 점검이 수행되고 결과가 출력에 기록되었다
+  - [ ] Outer Loop Refactor에서 테스트 코드 점검이 수행되고 결과가 출력에 기록되었다
   - [ ] 최종 테스트 코드에 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 남아있지 않다
   - [ ] wbs.md에서 해당 Feature의 체크박스가 `[x]`로 갱신되었다
 
@@ -34,6 +34,20 @@
   - [ ] `/sd-plan` 실행을 안내하는 메시지를 출력했다
   - [ ] 구현계획 없이 TDD를 진행하지 않았다 (src/ 하위에 새 코드가 생성되지 않음)
 
+### 시나리오 3: TDD 중 구현계획 누락 발견 시 역방향 피드백
+- 입력: "/sd-tdd .tasks/test-project/1.3-calculator-reset.md"
+- 사전 조건:
+  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.3-calculator-reset`이 `[ ]`로 표시
+  - `.tasks/test-project/1.3-calculator-reset.md` — 요구명세에 `reset()` 호출 Scenario 2개가 있으나, 구현계획에 `reset()` 메서드가 누락됨. 구현계획은 `getHistory()`만 언급
+  - `package.json` — `"test": "node --test"` 스크립트 포함
+  - `src/calculator.js` — `add()`, `getHistory()`가 이미 구현된 Calculator 클래스
+- 체크리스트:
+  - [ ] 구현계획에 `reset()` 메서드가 누락되었음을 출력에서 언급했다
+  - [ ] Feature 문서의 `## 구현계획` 섹션이 수정되어 `reset()` 관련 내용이 추가되었다
+  - [ ] 변경 내용과 사유를 출력에서 사용자에게 알렸다
+  - [ ] TDD가 정상 진행되어 `reset()` 기능이 구현되었다
+  - [ ] 테스트가 통과했다
+
 ## 안티패턴 Eval
 
 - [ ] 출력이 Feature 문서의 내용을 반영하지 않은 코드를 포함한다
@@ -46,3 +60,5 @@
 - [ ] 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 최종 결과에 남아있다
 - [ ] TDD 중 요구명세·구현계획에 누락·오류를 발견했음에도, Feature 문서의 해당 섹션을 수정하지 않는다
 - [ ] Feature 범위를 변경했음에도 wbs.md를 수정하지 않는다
+- [ ] 구현 중 새로운 설계 결정이 발생했음에도 Feature 문서의 `### 설계 결정`에 기록하지 않는다
+- [ ] 다른 Feature에 영향을 주는 결정이 발생했음에도 wbs.md의 `### Feature 간 설계 결정`에 기록하지 않는다

@@ -13,6 +13,8 @@
   - [ ] Feature Breakdown에서 Feature가 의존성 순서로 정렬된다 (앞 Feature가 뒤 Feature의 기반)
   - [ ] Feature에 `[ ]` 체크박스가 있다
   - [ ] Feature 하위에 `-` 불릿의 범위 힌트가 있다
+  - [ ] 범위 힌트가 기능적 역할(What)만 기술하고, 기술명/구현방법(How)을 포함하지 않는다
+  - [ ] 범위 힌트가 구체적 항목을 열거하지 않고 범주로 기술한다
   - [ ] 제외 사항에 "알림 기능", "통계 대시보드"가 포함된다
   - [ ] MoSCoW 우선순위(Must/Should/Could/Won't)를 사용하지 않는다
 
