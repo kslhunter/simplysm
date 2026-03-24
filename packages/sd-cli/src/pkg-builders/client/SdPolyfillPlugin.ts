@@ -55,6 +55,14 @@ export function SdPolyfillPlugin(browserslistQuery: string[]): Plugin {
           // skip
         }
 
+        // TransformStream / ReadableStream / WritableStream (Chrome 67+)
+        try {
+          _require.resolve("web-streams-polyfill/polyfill");
+          lines.push(`import "web-streams-polyfill/polyfill";`);
+        } catch {
+          // skip
+        }
+
         return { contents: lines.join("\n"), loader: "js", resolveDir: _resolveDir };
       });
     },

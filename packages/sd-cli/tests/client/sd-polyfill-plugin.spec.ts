@@ -52,6 +52,16 @@ describe("SdPolyfillPlugin", () => {
       }
     });
 
+    it("web-streams-polyfill import에 절대 경로가 포함되지 않는다", () => {
+      const result = captureOnLoad(["Chrome >= 61"]);
+
+      expect(result.contents).toContain("web-streams-polyfill");
+      const wsLines = result.contents.split("\n").filter((l) => l.includes("web-streams-polyfill"));
+      for (const line of wsLines) {
+        expect(line).not.toMatch(/[A-Z]:\//i);
+      }
+    });
+
     it("resolveDir이 설정되어야 한다", () => {
       const result = captureOnLoad(["Chrome >= 61"]);
 
