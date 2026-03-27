@@ -164,6 +164,15 @@ Save and load named state presets (e.g., filter configurations). Persists preset
 |-------|------|-------------|
 | `state` | `any` | The current state to save/load |
 
+#### ISdStatePreset
+
+```typescript
+interface ISdStatePreset {
+  name: string;
+  state: any;
+}
+```
+
 ---
 
 ### SdSwitchControl
@@ -379,6 +388,17 @@ type TSdTextfieldTypes = {
   time: Time;
 };
 ```
+
+#### sdTextfieldTypes
+
+```typescript
+const sdTextfieldTypes: (keyof TSdTextfieldTypes)[] = [
+  "number", "text", "password", "color", "email", "format",
+  "date", "month", "year", "datetime", "time",
+];
+```
+
+A constant array of all valid textfield type keys, useful for iterating or validating type values.
 
 ---
 

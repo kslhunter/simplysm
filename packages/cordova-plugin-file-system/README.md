@@ -1,6 +1,8 @@
 # @simplysm/cordova-plugin-file-system
 
-Cordova File System Plugin (legacy) -- Full file system access for Android via the Cordova bridge. Supports permission management, reading/writing files (string and binary), directory operations, storage path retrieval, and FileProvider URI generation. This is the legacy Cordova counterpart to `@simplysm/capacitor-plugin-file-system`.
+> **Deprecated:** This package is no longer maintained. Migrate to `@simplysm/capacitor-plugin-file-system`.
+
+Cordova File System Plugin (legacy) -- Full file system access for Android via the Cordova bridge. Supports permission management, reading/writing files (string and binary), directory operations, storage path retrieval, and FileProvider URI generation.
 
 ## Installation
 
@@ -53,7 +55,7 @@ export abstract class CordovaFileSystem {
 | `getStoragePathAsync` | `type: string` (see storage types) | `Promise<string>` | Get the absolute path for the specified storage type |
 | `getFileUriAsync` | `filePath: string` | `Promise<string>` | Get a FileProvider content:// URI for a file path |
 | `writeFileAsync` | `filePath: string, data: string \| Buffer` | `Promise<void>` | Write a file; `Buffer` data is base64-encoded, `string` is written as UTF-8 |
-| `readFileStringAsync` | `filePath: string` | `Promise<string>` | Read a file as a UTF-8 string |
+| `readFileStringAsync` | `filePath: string` | `Promise<string>` | Read a file as a UTF-8 string. Throws if file does not exist |
 | `readFileBufferAsync` | `filePath: string` | `Promise<Buffer>` | Read a file as a Buffer |
 | `removeAsync` | `targetPath: string` | `Promise<void>` | Delete a file or directory recursively |
 | `mkdirsAsync` | `targetPath: string` | `Promise<void>` | Create a directory and all parent directories |

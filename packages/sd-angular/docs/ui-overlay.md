@@ -106,6 +106,22 @@ Modal dialog with backdrop, title bar, resize/move handles, and configurable clo
 |-------|------|---------|-------------|
 | `open` | `boolean` | `false` | Modal open state |
 
+#### ISdModalConfig
+
+Configuration persisted per modal key for position and size.
+
+```typescript
+interface ISdModalConfig {
+  position: string;
+  left: string;
+  top: string;
+  right: string;
+  bottom: string;
+  width: string;
+  height: string;
+}
+```
+
 ---
 
 ### SdModalProvider

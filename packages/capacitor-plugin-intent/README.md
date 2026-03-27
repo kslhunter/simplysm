@@ -8,6 +8,10 @@ Capacitor Intent Plugin -- Android intent send/receive for industrial devices (b
 npm install @simplysm/capacitor-plugin-intent
 ```
 
+**Peer dependencies:**
+
+- `@capacitor/core` ^7.4.4
+
 ## API Overview
 
 | API | Type | Description |
@@ -26,7 +30,9 @@ Result object received from an intent or launch intent.
 
 ```typescript
 export interface IIntentResult {
+  /** Intent action */
   action?: string;
+  /** Extra data */
   extras?: Record<string, unknown>;
 }
 ```
@@ -42,11 +48,17 @@ Options for starting an activity and receiving its result.
 
 ```typescript
 export interface IStartActivityForResultOptions {
+  /** Intent action */
   action: string;
+  /** Data URI */
   uri?: string;
+  /** Extra data */
   extras?: Record<string, unknown>;
+  /** Target package name */
   package?: string;
+  /** Target component class name */
   component?: string;
+  /** MIME type */
   type?: string;
 }
 ```
@@ -66,8 +78,11 @@ Result returned from a started activity.
 
 ```typescript
 export interface IActivityResult {
+  /** Activity result code (RESULT_OK = -1, RESULT_CANCELED = 0) */
   resultCode: number;
+  /** Result data URI */
   data?: string;
+  /** Result extras */
   extras?: Record<string, unknown>;
 }
 ```

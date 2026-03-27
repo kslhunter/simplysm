@@ -1,6 +1,8 @@
 # @simplysm/cordova-plugin-usb-storage
 
-Cordova USB Storage Plugin (legacy) -- USB mass storage device interaction for Android via the Cordova bridge. Enumerate connected USB devices, manage access permissions, read directories, and read files from USB mass storage devices. This is the legacy Cordova counterpart to `@simplysm/capacitor-plugin-usb-storage`.
+> **Deprecated:** This package is no longer maintained. Migrate to `@simplysm/capacitor-plugin-usb-storage`.
+
+Cordova USB Storage Plugin (legacy) -- USB mass storage device interaction for Android via the Cordova bridge. Enumerate connected USB devices, manage access permissions, read directories, and read files from USB mass storage devices.
 
 ## Installation
 

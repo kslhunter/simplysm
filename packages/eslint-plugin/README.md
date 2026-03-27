@@ -34,7 +34,7 @@ npm install @simplysm/eslint-plugin
 
 ### Default Export
 
-```typescript
+```javascript
 export default {
   configs: {
     root: FlatConfig[]
@@ -54,6 +54,7 @@ A complete flat ESLint configuration array that includes:
 - **JS/JSX rules**: `eqeqeq`, `no-console` (warn), `no-shadow`, `require-await`, unused imports enforcement, import dependency checks, and Simplysm rules (`no-subpath-imports-from-simplysm`, `no-hard-private`)
 - **TS/TSX rules**: All JS rules plus TypeScript-specific rules (`strict-boolean-expressions`, `no-floating-promises`, `return-await`, `prefer-readonly`, `typedef`, `no-unnecessary-condition`, etc.), Angular ESLint inline template processing, and additional Simplysm rules (`ts-no-throw-not-implement-error`, `ts-no-unused-injects`, `ts-no-unused-protected-readonly`)
 - **HTML rules**: Angular template parser with `ng-template-no-todo-comments` and `ng-template-sd-require-binding-attrs`
+- **vitest.config rules**: Allows devDependencies in vitest config files
 
 ### `ts-no-throw-not-implement-error`
 

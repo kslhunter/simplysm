@@ -1,6 +1,8 @@
 # @simplysm/cordova-plugin-auto-update
 
-Cordova Auto Update Plugin (legacy) -- APK installation and OTA update for Android. Provides permission management for APK installation, APK install via Cordova bridge, version info retrieval, and a full auto-update flow using `SdServiceClient` or external storage. This is the legacy Cordova counterpart to `@simplysm/capacitor-plugin-auto-update`.
+> **Deprecated:** This package is no longer maintained. Migrate to `@simplysm/capacitor-plugin-auto-update`.
+
+Cordova Auto Update Plugin (legacy) -- APK installation and OTA update for Android. Provides permission management for APK installation, APK install via Cordova bridge, version info retrieval, and a full auto-update flow using `SdServiceClient` or external storage.
 
 ## Installation
 

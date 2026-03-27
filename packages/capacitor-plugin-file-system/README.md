@@ -8,6 +8,10 @@ Capacitor File System Plugin -- Full file system access with Android permission 
 npm install @simplysm/capacitor-plugin-file-system
 ```
 
+**Peer dependencies:**
+
+- `@capacitor/core` ^7.4.4
+
 ## API Overview
 
 | API | Type | Description |

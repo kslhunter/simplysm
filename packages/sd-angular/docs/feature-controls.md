@@ -74,6 +74,52 @@ CRUD detail form view with save (Ctrl+S) and refresh (Ctrl+Alt+L) toolbar button
 - `(sdRefreshCommand)` -- Triggers refresh
 - `(sdSaveCommand)` -- Triggers save
 
+### AbsSdDataDetail
+
+**Type:** Abstract `@Directive` base class
+
+Abstract base class for data detail components. Extend this class to implement a CRUD detail view with automatic save/refresh/delete lifecycle.
+
+#### Abstract Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `canUse` | `Signal<boolean>` | Whether user has "use" permission |
+| `canEdit` | `Signal<boolean>` | Whether user has "edit" permission |
+| `load()` | `() => Promise<{ data: T; info: ISdDataDetailDataInfo }>` | Load data and metadata |
+
+#### Optional Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `canDelete` | `Signal<boolean>` | Whether user can delete |
+| `prepareRefreshEffect()` | `() => void` | Effect dependencies for refresh triggers |
+| `toggleDelete(del)` | `(del: boolean) => Promise<R \| undefined>` | Toggle delete/restore |
+| `submit(data)` | `(data: T) => Promise<R \| undefined>` | Submit form data |
+
+#### Provided Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `viewType` | `Signal<TSdViewType>` | Current view type (page/modal/control) |
+| `busyCount` | `SdWritableSignal<number>` | Busy state counter |
+| `busyMessage` | `SdWritableSignal<string \| undefined>` | Busy message |
+| `initialized` | `SdWritableSignal<boolean>` | Initialization state |
+| `data` | `SdWritableSignal<T>` | Current form data |
+| `dataInfo` | `SdWritableSignal<ISdDataDetailDataInfo \| undefined>` | Data metadata |
+| `close` | `OutputEmitterRef<R>` | Close output |
+
+### ISdDataDetailDataInfo
+
+```typescript
+interface ISdDataDetailDataInfo {
+  isNew: boolean;
+  isDeleted: boolean;
+  lastModifiedAt: DateTime | undefined;
+  lastModifiedBy: string | undefined;
+}
+```
+
 ---
 
 ## SdDataSelectButtonControl
@@ -113,6 +159,31 @@ interface ISelectModalOutputResult<T> {
 }
 ```
 
+### AbsSdDataSelectButton
+
+**Type:** Abstract `@Directive` base class
+
+Abstract base class for data select button components. Extend this class to create a button that opens a modal for selecting data items.
+
+#### Abstract Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `modal` | `Signal<TSdSelectModalInfo<ISdSelectModal<any>>>` | Modal configuration |
+| `load(keys)` | `(keys: TKey[]) => Promise<TItem[]> \| TItem[]` | Load items by keys |
+
+#### Provided Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `value` | `ModelSignal<TSelectModeValue<TKey>[TMode]>` | Selected value(s) |
+| `disabled` | `InputSignal<boolean>` | Disabled state |
+| `required` | `InputSignal<boolean>` | Required state |
+| `inset` | `InputSignal<boolean>` | Inset style |
+| `size` | `InputSignal<"sm" \| "lg">` | Size variant |
+| `selectMode` | `InputSignal<TMode>` | Selection mode |
+| `selectedItems` | `SdWritableSignal<TItem[]>` | Currently selected items |
+
 ---
 
 ## SdDataSheetColumnDirective
@@ -141,6 +212,88 @@ Full CRUD data sheet view with toolbar (save, refresh, add, search, upload, down
 
 - `(sdRefreshCommand)` -- Triggers refresh
 - `(sdSaveCommand)` -- Triggers save
+
+### AbsSdDataSheet
+
+**Type:** Abstract `@Directive` base class
+
+Abstract base class for data sheet components. Extend this to implement a CRUD data grid with built-in filter, sort, paginate, inline/modal editing, Excel import/export, and multi-selection support.
+
+#### Abstract Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `canUse` | `Signal<boolean>` | Whether user has "use" permission |
+| `canEdit` | `Signal<boolean>` | Whether user has "edit" permission |
+| `editMode` | `"inline" \| "modal" \| undefined` | Editing mode |
+| `selectMode` | `InputSignal<"single" \| "multi" \| undefined>` | Selection mode (for modal use) |
+| `bindFilter()` | `() => TFilter` | Bind reactive filter values |
+| `itemPropInfo` | `ISdDataSheetItemPropInfo<TItem>` | Property name mappings |
+| `getItemInfoFn` | `(item: TItem) => ISdDataSheetItemInfo<TKey>` | Per-item metadata function |
+| `search(usePagination)` | `(boolean) => Promise<ISdDataSheetSearchResult<TItem>>` | Data search function |
+
+#### Optional Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `hideTool` | `Signal<boolean>` | Hide toolbar |
+| `diffsExcludes` | `string[]` | Properties to exclude from diff tracking |
+| `prepareRefreshEffect()` | `() => void` | Effect dependencies for refresh triggers |
+| `editItem(item?)` | `(item?: TItem) => Promise<boolean \| undefined>` | Open edit modal (modal mode) |
+| `toggleDeleteItems(del)` | `(del: boolean) => Promise<boolean>` | Bulk delete/restore (modal mode) |
+| `newItem()` | `() => Promise<TItem> \| TItem` | Create new item (inline mode) |
+| `submit(diffs)` | `(diffs: TArrayDiffs2Result<TItem>[]) => Promise<boolean>` | Save changes (inline mode) |
+| `downloadExcel(items)` | `(items: TItem[]) => Promise<void>` | Export to Excel |
+| `uploadExcel(file)` | `(file: File) => Promise<void>` | Import from Excel |
+
+#### Provided Members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `viewType` | `Signal<TSdViewType>` | Current view type |
+| `busyCount` | `SdWritableSignal<number>` | Busy counter |
+| `initialized` | `SdWritableSignal<boolean>` | Initialization state |
+| `items` | `SdWritableSignal<TItem[]>` | Current items |
+| `selectedItems` | `SdWritableSignal<TItem[]>` | Selected items |
+| `selectedItemKeys` | `ModelSignal<TKey[]>` | Selected item keys |
+| `page` | `SdWritableSignal<number>` | Current page index |
+| `pageLength` | `SdWritableSignal<number>` | Total page count |
+| `sortingDefs` | `SdWritableSignal<ISdSortingDef[]>` | Sort definitions |
+| `filter` | `SdWritableSignal<TFilter>` | Current filter |
+| `lastFilter` | `SdWritableSignal<TFilter>` | Last applied filter |
+| `close` | `OutputEmitterRef<ISelectModalOutputResult<TItem>>` | Close output (modal mode) |
+| `submitted` | `OutputEmitterRef<boolean>` | Submitted output |
+
+### ISdDataSheetItemPropInfo
+
+```typescript
+interface ISdDataSheetItemPropInfo<I> {
+  isDeleted: (keyof I & string) | undefined;
+  lastModifiedAt: (keyof I & string) | undefined;
+  lastModifiedBy: (keyof I & string) | undefined;
+}
+```
+
+### ISdDataSheetItemInfo
+
+```typescript
+interface ISdDataSheetItemInfo<K> {
+  key: K;
+  canSelect: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+```
+
+### ISdDataSheetSearchResult
+
+```typescript
+interface ISdDataSheetSearchResult<I> {
+  items: I[];
+  pageLength?: number;
+  summary?: Partial<I>;
+}
+```
 
 ---
 

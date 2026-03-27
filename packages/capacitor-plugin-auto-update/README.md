@@ -8,6 +8,11 @@ Capacitor Auto Update Plugin -- APK installation and OTA update for Android/Brow
 npm install @simplysm/capacitor-plugin-auto-update
 ```
 
+**Peer dependencies:**
+
+- `@capacitor/core` ^7.0.0
+- `@simplysm/capacitor-plugin-file-system`
+
 ## API Overview
 
 | API | Type | Description |
@@ -105,6 +110,20 @@ export abstract class AutoUpdate {
 | `runAsync` | `opt: { log, serviceClient }` | `Promise<void>` | Run OTA update: check server version via `SdServiceClient`, download APK, and install |
 | `runByExternalStorageAsync` | `opt: { log, dirPath }` | `Promise<void>` | Run update from external storage: scan `dirPath` for APK files, find latest version via semver, and install |
 
+#### `runAsync` option fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `log` | `(messageHtml: string) => void` | Callback to display status/progress messages (may contain HTML) |
+| `serviceClient` | `SdServiceClient` | Connected service client instance; the server must implement `ISdAutoUpdateService` |
+
+#### `runByExternalStorageAsync` option fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `log` | `(messageHtml: string) => void` | Callback to display status/progress messages (may contain HTML) |
+| `dirPath` | `string` | Relative path within external storage containing versioned APK files (e.g. `1.2.3.apk`) |
+
 ## Usage Examples
 
 ### Check permission and install an APK
@@ -139,5 +158,18 @@ await AutoUpdate.runAsync({
     document.getElementById("status")!.innerHTML = messageHtml;
   },
   serviceClient,
+});
+```
+
+### Run auto-update from external storage
+
+```typescript
+import { AutoUpdate } from "@simplysm/capacitor-plugin-auto-update";
+
+await AutoUpdate.runByExternalStorageAsync({
+  log: (messageHtml) => {
+    document.getElementById("status")!.innerHTML = messageHtml;
+  },
+  dirPath: "updates/myapp",
 });
 ```

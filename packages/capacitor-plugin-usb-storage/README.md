@@ -8,6 +8,10 @@ Capacitor USB Storage Plugin -- USB mass storage device interaction for Android.
 npm install @simplysm/capacitor-plugin-usb-storage
 ```
 
+**Peer dependencies:**
+
+- `@capacitor/core` ^7.0.0
+
 ## API Overview
 
 | API | Type | Description |

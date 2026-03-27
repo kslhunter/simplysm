@@ -118,6 +118,26 @@ Defines a column within `SdSheetControl`. Contains header configuration, sizing,
 
 Marks a template as the cell template for a sheet column. The template context provides `$implicit` (the item) and other row metadata.
 
+#### SdSheetColumnCellTemplateContext
+
+```typescript
+interface SdSheetColumnCellTemplateContext<TItem> {
+  $implicit: TItem;
+  item: TItem;
+  index: number;
+  depth: number;
+  edit: boolean;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `$implicit` | `TItem` | The current row item (also accessible via `let-item`) |
+| `item` | `TItem` | Explicit alias for the current row item |
+| `index` | `number` | Row index in the displayed items |
+| `depth` | `number` | Tree depth level (0 for root items) |
+| `edit` | `boolean` | Whether the cell is in edit mode |
+
 ---
 
 ### SdSheetConfigModal

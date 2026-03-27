@@ -233,6 +233,9 @@ const result = $computed([triggerSignal], async () => {
 | [`SdSharedDataSelectListControl`](docs/feature-controls.md#sdshareddataselectlistcontrol) | Component | `sd-shared-data-select-list` | Shared data select list |
 | [`SdSharedDataSelectControl`](docs/feature-controls.md#sdshareddataselectcontrol) | Component | `sd-shared-data-select` | Shared data dropdown select |
 | [`SdThemeSelectorControl`](docs/feature-controls.md#sdthemeselectorcontrol) | Component | `sd-theme-selector` | Theme picker (compact/mobile/kiosk + dark) |
+| [`AbsSdDataDetail`](docs/feature-controls.md#abssddatadetail) | Abstract Directive | -- | Base class for CRUD detail views |
+| [`AbsSdDataSheet`](docs/feature-controls.md#abssddatasheet) | Abstract Directive | -- | Base class for CRUD data grid views |
+| [`AbsSdDataSelectButton`](docs/feature-controls.md#abssddataselectbutton) | Abstract Directive | -- | Base class for modal select buttons |
 
 [Full documentation](docs/feature-controls.md)
 

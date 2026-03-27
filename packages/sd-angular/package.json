@@ -13,6 +13,12 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./styles.css",
+  "files": [
+    "dist",
+    "docs",
+    "scss",
+    "styles.css"
+  ],
   "dependencies": {
     "@angular/animations": "^20.3.18",
     "@angular/common": "^20.3.18",
