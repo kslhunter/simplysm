@@ -1,5 +1,4 @@
 import { readdirSync, existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -8,7 +7,7 @@ import ngeslint from "angular-eslint";
 import importPlugin from "eslint-plugin-import";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
+const rootDir = process.cwd();
 const packagesDir = path.join(rootDir, "packages");
 const allPackageDirs = [
   rootDir,

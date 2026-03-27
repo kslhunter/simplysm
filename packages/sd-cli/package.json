@@ -12,7 +12,7 @@
   "bin": "./dist/sd-cli.js",
   "type": "module",
   "dependencies": {
-    "@angular/build": "^20.3.21",
+    "@angular/build": "^20.3.22",
     "@angular/compiler": "^20.3.18",
     "@angular/compiler-cli": "^20.3.18",
     "@anthropic-ai/sdk": "^0.78.0",
