@@ -1,2 +1,2 @@
-export * from "./Intent";
 export * from "./IIntentPlugin";
+export * from "./Intent";
