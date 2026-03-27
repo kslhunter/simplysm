@@ -26,7 +26,7 @@
     "@simplysm/sd-orm-node": "12.16.39",
     "@simplysm/sd-service-common": "12.16.39",
     "bufferutil": "^4.1.0",
-    "fastify": "^5.8.2",
+    "fastify": "^5.8.4",
     "jose": "^6.2.2",
     "mime": "^4.1.0",
     "nodemailer": "^7.0.13",

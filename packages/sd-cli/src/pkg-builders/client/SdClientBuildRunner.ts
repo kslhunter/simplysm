@@ -83,6 +83,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
             builderType: builderType,
             builderConfig: this._pkgConf.builder?.[builderType],
             env: this._pkgConf.env,
+            noLazyRoute: this._pkgConf.noLazyRoute,
           }),
       );
     }

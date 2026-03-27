@@ -1,8 +1,6 @@
 ---
 name: sd-use
-description: |
-  자연어 요청을 적절한 sd-* 스킬로 라우팅한다.
-  /sd-use를 입력하거나, "sd-use 커밋해줘", "sd-use --help" 등을 요청할 때 사용한다.
+description: 자연어 요청을 적절한 sd-* 스킬로 라우팅하는 스킬. "sd-use 커밋해줘", "sd-use --help" 등을 요청할 때 사용한다.
 ---
 
 # sd-use: SD 스킬 라우터
@@ -52,7 +50,7 @@ USAGE
 FLOWS
   진입점                             개발 파이프라인
   sd-wbs    프로젝트 → Feature 분해 ─┐
-  sd-review 코드 리뷰 → 리포트 생성  ├→ sd-spec ──→ sd-plan ──→ sd-tdd
+  sd-review 코드 리뷰 → 리포트 생성  ├→ sd-dev-spec → sd-dev-plan → sd-dev-tdd
   sd-debug  에러 → 근본 원인 분석    │  │           │           │
   (없음)    바로 개발 시작          ─┘  └───────────┴───────────┘
                                            sd-dev (이 3단계를 순차 실행)
@@ -60,10 +58,10 @@ FLOWS
 SKILLS
   개발
     sd-dev              Feature 전체 개발 (spec → plan → TDD)
-    sd-wbs              프로젝트를 Feature로 분해
-    sd-spec             단일 Feature 요구명세 작성
-    sd-plan             요구명세 → 구현 계획 작성
-    sd-tdd              구현 계획 → TDD 코드 구현
+    sd-wbs              프로젝트 → Feature 분해 (WBS)
+    sd-dev-spec         단일 Feature 요구명세 작성
+    sd-dev-plan         요구명세 → 구현 계획 작성
+    sd-dev-tdd          구현 계획 → TDD 코드 구현
 
   품질
     sd-check            typecheck / lint / test 실행 및 에러 수정

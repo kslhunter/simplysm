@@ -1,49 +1,11 @@
 ---
 name: sd-prompt
-description: |
-  스킬/프롬프트 파일의 작성·개선을 위한 Eval-Driven Development 스킬.
-  /sd-prompt를 입력하거나, "스킬 만들어줘", "룰 만들어줘", "프롬프트 만들어줘",
-  "스킬 개선", "프롬프트 개선", "Eval 실행", "스킬 테스트" 등을 요청할 때 사용한다.
-  스킬이나 프롬프트 파일의 생성·수정·개선이 필요한 모든 상황에서 이 스킬을 트리거한다.
-  단, skill-creator 스킬과는 다르다. sd-prompt는 이 프로젝트의 sd-* 프로세스 체계 내에서
-  스킬/프롬프트를 개발하는 스킬이다.
+description: 스킬/프롬프트 파일의 작성·개선을 위한 EDD 스킬. "스킬 만들어줘", "룰 만들어줘", "프롬프트 만들어줘", "스킬 개선", "프롬프트 개선", "Eval 실행", "스킬 테스트" 등을 요청할 때 사용한다.
 ---
 
 # sd-prompt: Eval-Driven Prompt Development
 
-스킬(SKILL.md)이나 프롬프트 파일(.md)을 **Eval-Driven**으로 작성하고 개선하는 단일 루프 스킬이다. 산출물 자체가 자연어 프롬프트이므로, 반복적 Eval로 품질을 검증한다.
-
-프롬프트 파일이란 룰(.claude/rules/*.md), 시스템 프롬프트, 커스텀 지시 등 스킬이 아닌 모든 .md 프롬프트를 포함한다.
-
-## `.claude/` 파일 편집 규칙
-
-Claude Code는 `.claude/` 폴더 내 파일에 대해 Edit/Write 도구 사용을 차단한다. sd-prompt는 `.claude/skills/`, `.claude/rules/`, `.claude/evals/` 파일을 편집해야 하므로, **`.claude/` 경로의 파일은 Bash 도구로 편집한다**. `sed`는 같은 텍스트가 여러 곳에 있을 때 의도하지 않은 곳까지 수정하므로 사용하지 않는다.
-
-### 신규 작성 (Write 대체)
-
-```bash
-cat > "{파일 경로}" << 'EOF'
-{파일 내용}
-EOF
-```
-
-### 부분 수정 (Edit 대체)
-
-`python3 -c`로 치환하되, old_string이 파일에 실제로 존재하는지 먼저 확인한다 — 파일이 다른 곳에서 변경되었을 수 있기 때문이다:
-
-```bash
-python3 -c "
-import pathlib, sys
-p = pathlib.Path('{파일 경로}')
-content = p.read_text(encoding='utf-8')
-old = '''{치환 대상 텍스트}'''
-new = '''{치환 후 텍스트}'''
-if old not in content:
-    print(f'ERROR: old_string not found in {p}', file=sys.stderr); sys.exit(1)
-content = content.replace(old, new, 1)
-p.write_text(content, encoding='utf-8')
-"
-```
+프롬프트 파일이란 룰(.claude/rules/*.md), 시스템 프롬프트, 커스텀 지시 등 모든 .md 프롬프트를 포함한다.
 
 ## 산출물 파일 구조
 
@@ -69,34 +31,27 @@ Eval 파일은 코드의 테스트 코드처럼 **영구 보존**한다. 스킬/
 flowchart TD
     S0[Step 0: 상태 탐지 & 진입점 결정]
 
-    S0 -->|아무것도 없음| S1[Step 1: 의도 정의]
-    S0 -->|프롬프트만 있고 Eval 없음| S2[Step 2: Eval 시나리오 정의]
-    S0 -->|프롬프트 + Eval 있음 — 개선| S2
-    S0 -->|프롬프트 + Eval 있음 — Eval 요청| S4_2[Step 4-2: workspace 준비]
-    S0 -->|프롬프트 + Eval 있음 — 리팩토링| S4_2
+    S0 -->|신규| S1[Step 1: 의도 정의]
+    S0 -->|프롬프트 있음| S2[Step 2: Eval 시나리오 정의]
+    S0 -->|Eval/리팩토링 요청| S4[Step 4: Eval 실행 & 판정]
 
     S1 --> S2
     S2 --> S3[Step 3: 프롬프트 작성]
-    S3 --> S4_1[Step 4-1: Eval 품질 평가]
+    S3 --> S4[Step 4: Eval 실행 & 판정]
 
-    S4_1 --> S4_2
-    S4_2 --> S4_3[Step 4-3: claude -p 실행]
-    S4_3 --> S4_4[Step 4-4: Judge 판정]
-    S4_4 --> S4_5[Step 4-5: 결과 표시]
-    S4_5 --> S4_6{Step 4-6: 전체 PASS?}
+    S4 --> GATE{전체 PASS?}
+    GATE -->|No — 원인 A| FIX_P[프롬프트 수정]
+    GATE -->|No — 원인 B| FIX_E[Eval 수정]
+    FIX_P --> S4
+    FIX_E --> S4
 
-    S4_6 -->|No — 원인 A| FIX_P[프롬프트 수정]
-    S4_6 -->|No — 원인 B| FIX_E[Eval 수정]
-    FIX_P --> S4_2
-    FIX_E --> S4_2
-
-    S4_6 -->|Yes — 리팩토링 요청| S5[Step 5: 프롬프트 리팩터링]
-    S4_6 -->|Yes| DONE[완료]
+    GATE -->|Yes — 리팩토링 요청| S5[Step 5: 리팩터링]
+    GATE -->|Yes| DONE[완료]
 
     S5 --> S5_REG{Regression Guard}
     S5_REG -->|PASS| DONE
     S5_REG -->|FAIL — 롤백| S5
-    S5_REG -->|FAIL — 개선 루프| S4_6
+    S5_REG -->|FAIL — 개선 루프| GATE
 ```
 
 ## Step 0: 상태 탐지 & 진입점 결정
@@ -107,22 +62,21 @@ flowchart TD
 1. 스킬: `.claude/skills/{name}/SKILL.md` 존재 여부
 2. 프롬프트: 사용자가 지정한 경로의 .md 파일 존재 여부
 3. Eval: 룰이면 `.claude/evals/{name}.md`, 나머지는 `{대상파일}.eval.md` 존재 여부
+4. 기존 스킬/프롬프트: `.claude/skills/` 및 `.claude/rules/`를 Glob으로 탐색하여 충돌·중복 여부 확인
 
 ### 진입점
 
-| 상태 | 시작 Step                                                    |
-|------|------------------------------------------------------------|
-| 아무것도 없음 (신규) | Step 1 (의도 정의)                                             |
-| 프롬프트만 있고 Eval 없음 | Step 2 (Eval 시나리오 정의)                                      |
-| 프롬프트 + Eval 모두 있음 (개선) | Step 2 (Eval에 새 요구사항 반영 → Step 3 → Step 4)                    |
-| 프롬프트 + Eval 모두 있음 + "Eval" 요청 | Step 4-2 (Pre-flight 없이 바로 workspace 생성 → Eval 실행)            |
-| 프롬프트 + Eval 모두 있음 + "리팩토링" 요청 | Step 4-2 (workspace 생성) → Step 5 (리팩터링, pre-check Eval 없음) |
+| 상태 | 시작 Step |
+|------|-----------|
+| 아무것도 없음 (신규) | Step 1 (의도 정의) |
+| 프롬프트 있음 (Eval 없음 또는 개선) | Step 2 (Eval 시나리오 정의) |
+| 프롬프트 + Eval 있음 (Eval 실행 또는 리팩토링 요청) | Step 4 (Eval 실행 & 판정) |
 
 탐지 결과와 시작 Step을 사용자에게 보여준 뒤 바로 진행한다.
 
 ### 원본 백업
 
-기존 프롬프트가 있는 경우(개선/Eval 요청/리팩토링), Step 0에서 대상 파일의 현재 내용을 변수에 저장해둔다 — Step 3에서 메인을 수정하기 전에 원본을 보존하기 위함. 이후 Step 4-2에서 `_history/org.md`로 기록한다.
+기존 프롬프트가 있는 경우(개선/Eval 요청/리팩토링), Step 0에서 대상 파일의 현재 내용을 읽어 컨텍스트에 보존한다 — 이후 Step 4 실행 절차에서 `_history/org.md`로 기록한다.
 
 ## Step 1: 의도 정의 (Intent)
 
@@ -139,32 +93,23 @@ flowchart TD
 | **품질 기준** | 무엇이 "잘 된" 출력인가 (구체적, 객관적으로) |
 | **기존 스킬/프롬프트 관계** | 충돌하는가, 보완하는가, 독립인가 |
 
-### 1-2. Metacognitive Preamble
+### 1-2. 확인/추측 분류
 
-프롬프트 작성 전에 세 가지를 분리한다:
+프롬프트 작성 전에 두 가지를 분리한다:
 
-| 구분 | 레벨 | 설명 |
+| 구분 | 설명 | 행동 |
 |------|------|------|
-| **아는 것** (VERIFIED) | — | 사용자가 직접 말했거나 문서에 명시된 것 |
-| **추론 가능한 것** (INFERRED) | **High** | **현재 작업 대상 코드베이스**에서 동일 패턴을 확인했거나 공식 문서에 근거가 있는 추론. INFERRED로 유지 |
-| | **Medium** | 일반적 도메인 관행이나 유사 사례에 기반한 추론. **→ ASSUMED로 자동 격상** |
-| | **Low** | 약한 유추나 제한적 근거에 기반한 추론. **→ ASSUMED로 자동 격상** |
-| **모르는 것** (ASSUMED) | — | 사용자가 명시하지 않은 내용·범위·형식·수준은 모두 이에 해당한다 — 반드시 Question으로 전환 |
-
-INFERRED Medium/Low는 과신 위험이 높으므로, ASSUMED로 격상하여 사용자에게 질문한다. **INFERRED High만 질문 없이 진행**할 수 있다.
+| **확인된 것** | 사용자가 직접 말했거나, 현재 코드베이스에서 동일 패턴을 확인한 것 | 그대로 진행 |
+| **추측인 것** | 위에 해당하지 않는 모든 것 — 사용자가 명시하지 않은 내용·범위·형식·수준 | Question으로 전환 |
 
 ### 1-3. Question 루프
 
 선택지 제시 시 `.claude/rules/sd-option-scoring.md`의 규칙을 따른다.
 
-1. ASSUMED 항목을 사용자에게 질문한다
-2. 답변을 반영하여 VERIFIED/INFERRED로 변경한다
+1. 추측 항목을 사용자에게 질문한다
+2. 답변을 반영하여 확인으로 변경한다
 3. 새 Question이 발생하면 추가한다
 4. Question이 모두 해소될 때까지 반복한다
-
-### 1-4. 기존 스킬/프롬프트 탐색
-
-`.claude/skills/` 및 `.claude/rules/`를 Glob으로 탐색하여 기존 목록을 파악한다. 새로 만들 스킬/프롬프트가 기존 것과 충돌하거나 중복되는지 확인하고, 결과를 사용자에게 알린다.
 
 ## Step 2: Eval 시나리오 정의 (Test-First)
 
@@ -211,6 +156,18 @@ Eval은 비대화형(`claude -p`)으로 실행되므로, 특정 도구에 의존
 (O) "분석 결과가 사실에 부합한다"
 ```
 
+#### 4) 프로세스 중심 — 추론 결과가 아닌 규칙 적용 여부를 평가한다
+
+LLM이 특정 형태의 결과를 출력했는지가 아니라, 프로세스/규칙을 따랐는지를 기준으로 작성한다:
+
+```
+(X) "기존 스킬/룰 목록이 출력에 포함되었다"  — 특정 출력 형태를 기대
+(O) "기존 스킬/룰과의 충돌·중복 여부를 확인했다" — 규칙 적용 여부를 평가
+
+(X) "3개의 개선안이 출력에 포함되었다"       — 추론 결과의 수량을 기대
+(O) "FAIL 원인을 분석하고 개선안을 제시했다"  — 프로세스 수행 여부를 평가
+```
+
 ### Eval 파일 형식
 
 Eval 파일 경로는 "산출물 파일 구조" 섹션을 따른다.
@@ -244,6 +201,8 @@ Eval 파일 경로는 "산출물 파일 구조" 섹션을 따른다.
 ```
 
 Eval 시나리오 전문(체크리스트, 안티패턴 포함)을 텍스트로 출력하여 사용자에게 보여준다.
+
+작성 후 SKILL.md(또는 대상 프롬프트)와 Eval 체크리스트 간 정합성을 확인한다 — 유령 참조(삭제/변경된 지시를 참조)나 이름 불일치가 있으면 즉시 수정한다.
 
 ## Step 3: 프롬프트 작성 (Author)
 
@@ -299,230 +258,32 @@ description: |
 
 프롬프트를 작성/수정한 뒤, 변경 내용(무엇을 어떻게 변경했는지)을 사용자에게 출력한다.
 
-## Step 4-1: Eval 품질 평가 (Pre-flight)
+## Step 4: Eval 실행 & 판정
 
-Eval 실행 전에 SKILL.md(또는 대상 프롬프트)와 Eval 파일을 함께 읽고, Eval의 품질을 평가한다.
+### 실행 절차
 
-#### 정합성
-- **누락**: SKILL.md에 추가/변경된 지시가 있는데 Eval 체크리스트에 대응 항목이 없음
-- **유령 참조**: Eval 체크리스트가 SKILL.md에서 이미 삭제/변경된 지시를 참조함
-- **이름 불일치**: SKILL.md의 Step/섹션 이름이 변경되었는데 Eval 시나리오가 옛 이름을 사용함
+`.claude/skills/sd-prompt/references/eval-runner.md`를 읽고 절차에 따라 Eval을 실행한다.
 
-#### 객관성
-- 체크리스트에 주관적 표현("적절한", "필요시", "경우에 따라", "잘 작성된" 등)이 없는가
+### 개선 루프
 
-#### 커버리지
-- SKILL.md의 주요 Step/분기를 Eval 시나리오가 충분히 커버하는가
-
-#### 중복
-- 같은 내용을 다른 표현으로 반복 체크하는 항목이 없는가
-
-#### 입력 현실성
-- Eval 입력이 실제 사용자 발화 패턴을 반영하는가
-
-#### 안티패턴 존재
-- 안티패턴 Eval 섹션이 비어있지 않은가
-
-문제 발견 시 사용자에게 AskUserQuestion으로 확인한다: Eval을 수정할지, SKILL.md를 수정할지, 그대로 진행할지.
-
-문제가 없으면 바로 다음 단계로 진행한다.
-
-## Step 4-2: Eval workspace 준비
-
-Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 메인 원본에서** 하고, workspace는 eval 실행 전에 메인에서 복제하여 생성한다.
-
-```
-.tmp/{yyMMddHHmmss}_eval-{스킬명}/       ← {yyMMddHHmmss}는 반드시 Bash `date +%y%m%d%H%M%S`로 얻는다
-  _history/              ← org + v1,v2,...(Contrastive 분석용). 재구성 시에도 보존
-  {시나리오명}/          ← 시나리오별 작업 디렉토리
-    .claude/             ← 프로젝트 루트의 .claude/ 전체를 복사
-    {사전 조건 파일들}   ← 시나리오별 추가 파일
-```
-
-#### 초기 생성 (첫 Eval 실행 시)
-
-1. workspace 루트 디렉토리를 생성한다.
-2. `_history/` 디렉토리를 생성하고, Step 0에서 저장한 원본을 `_history/org.md`로 기록한다 (Contrastive 분석 기준점).
-3. 시나리오별 디렉토리를 복제한다 (아래 "시나리오 복제" 참조).
-
-#### 재구성 (개선 루프에서 Eval 재실행 시)
-
-1. workspace 내 `_history/`를 **제외**한 모든 디렉토리를 삭제한다.
-2. 시나리오별 디렉토리를 다시 복제한다 (아래 "시나리오 복제" 참조).
-
-이렇게 하면 메인에서 수정한 프롬프트가 매번 깨끗하게 workspace에 반영되고, `_history/`의 이전 버전 이력은 유지된다.
-
-#### 시나리오 복제
-
-각 시나리오에 대해:
-1. 프로젝트 루트의 `.claude/` 폴더를 시나리오 디렉토리에 **통째로 복사**한다.
-2. 시나리오의 사전 조건에 따라 추가 파일을 복사하거나 생성한다.
-3. 시나리오 디렉토리의 `.claude/rules/sd-option-scoring.md`를 eval 버전으로 교체한다 — AskUserQuestion은 eval에서 사용 불가하므로, 지시 충돌을 원천 제거한다:
-   ```bash
-   python3 -c "
-   import pathlib, sys
-   p = pathlib.Path('{시나리오 디렉토리}/.claude/rules/sd-option-scoring.md')
-   content = p.read_text(encoding='utf-8')
-   replacements = [
-       ('\`AskUserQuestion\`으로 질문한다', '선택을 묻는 질문을 텍스트로 출력한 뒤, 합리적인 기본값을 자동 선택하여 선택 결과를 명시한다'),
-       ('사용자 선택 후 다음으로 넘어간다', '자동 선택 후 다음으로 넘어간다'),
-       ('사용자 선택 후, 다음 결정사항으로 넘어간다', '자동 선택 후, 다음 결정사항으로 넘어간다'),
-   ]
-   for old, new in replacements:
-       if old not in content:
-           print(f'ERROR: not found: {old}', file=sys.stderr); sys.exit(1)
-       content = content.replace(old, new)
-   p.write_text(content, encoding='utf-8')
-   "
-   ```
-
-## Step 4-3: 실행 (`claude -p`)
-
-각 시나리오마다 해당 workspace 디렉토리에서 `claude -p`를 실행한다:
-
-```bash
-(cd ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" && \
-MSYS_NO_PATHCONV=1 claude -p "{eval 시나리오의 입력}" \
-  --output-format json \
-  --verbose \
-  --dangerously-skip-permissions \
-  --append-system-prompt "이것은 Eval 테스트 환경이다. CRITICAL: 현재 작업 디렉토리 외부의 파일을 절대 수정하지 않는다 — eval workspace 오염 방지를 위해 절대 경로로 다른 프로젝트의 파일에 접근하지 않는다. AskUserQuestion 도구를 사용하지 않는다. 선택이 필요한 각 결정사항에 대해: (1) 선택지와 선택을 묻는 질문을 텍스트로 출력하고 (2) 합리적인 기본값을 자동 선택하여 선택 결과를 명시한 뒤 (3) 다음 결정사항으로 넘어간다. 질문이나 선택지를 생략하지 않는다." \
-  > run-raw.json 2>&1 && \
-python3 -c "
-import json, sys
-with open('run-raw.json', encoding='utf-8') as f:
-    data = json.load(f)
-# json+verbose → 배열, json만 → 객체
-items = data if isinstance(data, list) else [data]
-texts = []
-for item in items:
-    if item.get('type') == 'assistant':
-        for c in item.get('message', {}).get('content', []):
-            if c.get('type') == 'text':
-                texts.append(c['text'])
-with open('run-output.txt', 'w', encoding='utf-8') as f:
-    f.write('\n\n'.join(texts))
-result_item = next((i for i in items if i.get('type') == 'result'), {})
-with open('run-result.json', 'w', encoding='utf-8') as f:
-    json.dump(result_item, f, ensure_ascii=False, indent=2)
-")
-```
-
-실행 후 3개 파일이 생성된다:
-- `run-raw.json`: 전체 이벤트 (디버깅용)
-- `run-output.txt`: 모든 assistant 텍스트 연결 (Judge가 읽을 파일)
-- `run-result.json`: 메타데이터 — `permission_denials`, `num_turns`, `total_cost_usd` 등
-
-- 여러 시나리오는 병렬로 실행할 수 있다
-
-## Step 4-4: Judge subagent
-
-실행 완료 후, Judge subagent에 workspace 경로와 체크리스트를 전달한다. subagent가 직접 파일을 읽어 판정한다:
-
-```
-다음 Eval 실행 결과를 평가하라:
-
-## workspace 경로
-{.tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}/}
-
-## 평가 대상 파일
-- `run-output.txt`: 모든 assistant 텍스트 출력
-- `run-result.json`: 메타데이터 (permission_denials, num_turns 등)
-- workspace 내 생성된 파일들
-
-## 체크리스트
-{Eval 시나리오의 체크리스트 항목들}
-
-## 안티패턴 체크리스트
-{안티패턴 Eval 항목들}
-
-## 판정 원칙
-- 체크리스트 문구를 **문자 그대로** 판정하라. 체크리스트에 명시되지 않은 추가 요건을 유추하지 않는다.
-- 이 eval은 AskUserQuestion 도구 사용이 금지된 환경에서 실행되었다. AskUserQuestion은 텍스트로 출력되는 환경이므로, 질문에 대한 판단은 출력 여부로 해야한다. 선택지/후보를 텍스트로 제시한 것 자체가 질문 출력에 해당한다 — 별도의 질문 문장("~하시겠습니까?")이 없어도 선택지가 출력되었으면 질문한 것으로 판정한다.
-- **Eval 환경이 곧 정답 환경이다.** Eval은 프롬프트를 검증하기 위해 설계된 환경이므로, "테스트 환경이라서 FAIL"은 논리적으로 성립하지 않는다. FAIL의 원인은 오직 두 가지뿐이다: (1) 프롬프트가 부족하거나, (2) Eval 체크리스트가 부정확하거나. 체크리스트 항목을 충족하지 못했으면 FAIL이다.
-
-위 파일들을 Read 도구로 읽고, 각 체크리스트 항목에 대해:
-1. PASS 또는 FAIL을 판정하라
-2. 판정의 근거(evidence)를 구체적으로 기술하라
-
-결과를 아래 형식으로 출력하라:
-
-| 항목 | 판정 | 근거 |
-|------|------|------|
-| {항목} | PASS/FAIL | {근거} |
-
-통과율: N/M
-
-FAIL 항목이 있으면 아래를 추가로 출력하라:
-
-### FAIL 상세 분석
-각 FAIL 항목에 대해:
-- **항목:** {체크리스트 항목}
-- **기대:** {체크리스트가 요구한 행동}
-- **실제:** {eval 대상이 실제로 한 행동 — run-output.txt에서 관련 부분을 인용}
-- **원인 판별:** (A) 프롬프트가 부족/불명확 또는 (B) Eval 체크리스트가 부정확
-- **판별 근거:** {왜 A 또는 B로 판단했는지}
-```
-
-## Step 4-5: 결과 표시
-
-Judge 결과를 사용자에게 다음 형식으로 표시한다:
-
-```markdown
-## Eval 결과
-
-### 시나리오 1: {이름} — {통과율}
-
-| 항목 | 판정 | 근거 |
-|------|------|------|
-| ... | PASS/FAIL | ... |
-
-### 시나리오 2: {이름} — {통과율}
-...
-
-### 안티패턴 Eval — {통과율}
-...
-
-## 전체 통과율: N/M
-```
-
-## Step 4-6: 개선 루프
-
-### 게이트 규칙
+#### 게이트 규칙
 
 FAIL이 1개라도 있으면 Step 5로 진행할 수 없다.
 
-### FAIL 처리 규칙
+#### FAIL 처리 규칙
 
 FAIL이 존재할 때 허용되는 행동은 두 가지뿐이다 — 이유를 불문하고 수정 없이 다음 단계로 넘어가는 것은 금지한다:
 1. **(A) 프롬프트를 수정**하고 Eval을 재실행한다
 2. **(B) Eval 체크리스트를 수정**하고 Eval을 재실행한다
 
-### FAIL 원인 확인
+#### FAIL 원인 확인
 
 Judge 보고서의 "FAIL 상세 분석"에서 각 FAIL 항목의 원인 판별(A/B)과 실제 행동 인용을 확인한다.
 Judge의 판별에 동의하지 않으면 재판별하되, Judge가 인용한 "실제 행동"을 근거로 판단한다.
 
-### Contrastive 분석
+#### 원인 A — 프롬프트 개선안 생성
 
-`_history/`에 이전 버전이 2개 이상 있으면, 최근 2~3개 버전과 현재 프롬프트를 대조 분석한다:
-
-- 각 버전 간 변경점을 식별한다
-- 어떤 변경이 특정 체크리스트 항목의 PASS/FAIL에 영향을 미쳤는지 패턴을 추출한다
-- 분석 결과를 사용자에게 표시한다
-
-```
-Contrastive 분석 결과:
-- v1→v2: "{변경 내용}" → 시나리오1 항목2가 FAIL→PASS
-- v2→v3: "{변경 내용}" → 시나리오2 항목1이 PASS→FAIL (회귀)
-- 추출 패턴: "{효과적인 표현 패턴 요약}"
-```
-
-이전 버전이 1개 이하이면 이 단계를 건너뛴다.
-
-### 원인 A — Meta-Prompting 개선안 생성
-
-FAIL 항목, Judge 근거, Contrastive 분석 결과(있는 경우)를 종합하여 프롬프트 개선안 3개를 생성한다:
+FAIL 항목과 Judge 근거를 종합하여 프롬프트 개선안을 1개 이상 생성한다:
 
 ```
 ## 개선 후보
@@ -530,56 +291,35 @@ FAIL 항목, Judge 근거, Contrastive 분석 결과(있는 경우)를 종합하
 ### Candidate A: {변경 요약}
 - 변경: {구체적 변경 내용}
 - 기대 효과: {어떤 FAIL을 해결하는가}
-
-### Candidate B: {변경 요약}
-- 변경: {구체적 변경 내용}
-- 기대 효과: {어떤 FAIL을 해결하는가}
-
-### Candidate C: {변경 요약}
-- 변경: {구체적 변경 내용}
-- 기대 효과: {어떤 FAIL을 해결하는가}
 ```
 
-사용자에게 후보를 보여주고 승인/거부/수정을 요청한다. 승인된 candidate로 **메인 프로젝트의 원본**을 수정한다. 수정 전 현재 프롬프트를 workspace의 `_history/v{N}.md`에 백업한다. 수정 후 workspace를 재구성(Step 4-2의 "재구성" 절차)하여 Eval을 재실행한다.
+사용자에게 후보를 보여주고 승인/거부/수정을 요청한다. 승인된 candidate로 **메인 프로젝트의 원본**을 수정한다. 수정 전 현재 프롬프트를 workspace의 `_history/v{N}.md`에 백업한다. 수정 후 workspace를 재구성하여 Eval을 재실행한다.
 
-### 원인 B — Eval 체크리스트 수정
+#### 원인 B — Eval 체크리스트 수정
 
 Eval 체크리스트의 문제점을 사용자에게 보여주고 확인받은 뒤, **메인의 Eval 파일**을 수정한다.
 
-### 개선 원칙
+#### 개선 원칙
 
 Step 3의 작성 원칙(Why 설명, 예시 포함)을 FAIL 항목에 집중 적용한다. 단, **과적합을 방지한다** — 특정 Eval 시나리오에만 맞추지 말고, 일반적으로 통하는 표현으로 개선한다.
 
 ## Step 5: 프롬프트 리팩터링 (Refactor)
 
-전체 Eval PASS 후, 프롬프트의 구조적 품질을 개선한다. 개선 루프에서 누적된 패치를 정리하여, 원하는 결과를 달성하는 최소한의 프롬프트를 찾는다.
+전체 Eval PASS 후, 개선 루프에서 누적된 패치를 정리하여 최소한의 프롬프트를 찾는다.
 
-### 5-1. Prompt Smell 탐지 & 리팩터링 연산
+### Prompt Smell 탐지
 
-프롬프트를 읽으며 다음 Smell을 탐지하고, 대응하는 연산을 적용한다:
+| Smell | 연산 |
+|---|---|
+| **중복 지시** — 같은 내용이 다른 표현으로 반복 | 통합 |
+| **투기적 지시** — 관찰된 실패 없이 추가된 것 | 삭제 |
+| **고아 지시** — Eval이 없는 지시 | 삭제 또는 Eval 추가 |
+| **잔재 지시** — 이전 개선 루프에서 남은 것 | 삭제 |
+| **장황한 표현** | 의미 유지하며 압축 |
+| **용어 불일치** — 같은 개념을 다른 단어로 지칭 | 통일 |
+| **상충 지시** — 서로 모순/충돌 | 우선순위 결정 후 통합 또는 삭제 |
+| **구조 산만** — 관련 지시가 흩어져 있음 | 재배치 |
 
-| Prompt Smell | 설명 | 연산 |
-|---|---|---|
-| **중복 지시** | 같은 내용이 다른 표현으로 반복됨 | 하나로 통합 |
-| **투기적 지시** | 관찰된 실패가 아닌 "혹시 모르니까" 추가된 것 | 삭제 |
-| **고아 지시** | 대응하는 Eval이 없는 지시 | 삭제 또는 Eval 추가 |
-| **잔재 지시** | 이전 개선 루프에서 남은 불필요한 지시 | 삭제 |
-| **장황한 표현** | 더 간결하게 쓸 수 있는 긴 설명 | 의미를 유지하며 압축 |
-| **용어 불일치** | 같은 개념을 다른 단어로 지칭 | 통일 |
-| **상충 지시** | 서로 모순되거나 충돌하는 지시가 공존함 | 우선순위 결정 후 하나로 통합 또는 삭제 |
-| **구조 산만** | 관련 지시가 여러 섹션에 흩어져 있음 | 재배치 |
+### Regression Guard
 
-### 5-2. Regression Guard
-
-리팩터링 후 반드시 Eval을 재실행하여 전체 PASS를 확인한다. TDD에서 Refactor 후 테스트를 돌리는 것과 동일하다.
-
-- **PASS** → 완료
-- **FAIL** → 사용자에게 다음 선택지를 제시한다:
-  - **(A) 롤백**: 해당 리팩터링을 되돌린다
-  - **(B) 개선 루프**: Step 4-6 방식(원인 판별 → Contrastive 분석 → Meta-Prompting 개선안 → 사용자 승인 → 메인 수정 → workspace 재구성 → Eval 재실행)으로 수정한다
-
-### 5-3. 완료 기준
-
-- Prompt Smell이 해소되었다
-- Eval 전체 PASS가 유지된다
-- 메인 원본이 최종 상태이므로 별도의 반영(merge) 절차 없이 완료된다
+리팩터링 후 Eval을 재실행한다. FAIL 시 **(A) 롤백** 또는 **(B) 개선 루프**로 수정한다. Eval 전체 PASS가 유지되면 완료.

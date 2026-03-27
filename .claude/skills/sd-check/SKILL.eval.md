@@ -2,306 +2,66 @@
 
 ## 행동 Eval
 
-### 시나리오 1: 기본 흐름 — 스크립트 탐지 + 에러 수정
-
-#### 사전 조건 파일
-
-`package.json`:
-
-```json
-{
-  "name": "eval-project",
-  "scripts": {
-    "typecheck": "node scripts/typecheck.js",
-    "lint": "node scripts/lint.js",
-    "start": "node index.js"
-  }
-}
-```
-
-`scripts/typecheck.js`:
-
-```javascript
-const fs = require("fs");
-const content = fs.readFileSync("src/calc.ts", "utf-8");
-const errors = [];
-if (/function\s+add\s*\(\s*a\s*[,)]/.test(content) && !/function\s+add\s*\(\s*a\s*:\s*\w+/.test(content)) {
-  errors.push("src/calc.ts(1,18): error TS7006: Parameter 'a' implicitly has an 'any' type.");
-}
-if (/function\s+add\s*\([^)]*b\s*[)]/.test(content) && !/function\s+add\s*\([^)]*b\s*:\s*\w+/.test(content)) {
-  errors.push("src/calc.ts(1,21): error TS7006: Parameter 'b' implicitly has an 'any' type.");
-}
-if (errors.length > 0) {
-  errors.forEach((e) => console.error(e));
-  process.exit(1);
-} else {
-  console.log("typecheck passed");
-}
-```
-
-`scripts/lint.js`:
-
-```javascript
-const fs = require("fs");
-const content = fs.readFileSync("src/calc.ts", "utf-8");
-const lines = content.split("\n");
-const errors = [];
-lines.forEach((line, i) => {
-  if (/\bvar\b/.test(line)) {
-    errors.push(`src/calc.ts:${i + 1}:3: error  Unexpected var, use let or const instead  no-var`);
-  }
-});
-if (errors.length > 0) {
-  errors.forEach((e) => console.error(e));
-  process.exit(1);
-} else {
-  console.log("lint passed");
-}
-```
-
-`src/calc.ts`:
-
-```typescript
-function add(a, b) {
-  var result = a + b;
-  return result;
-}
-```
-
+### 시나리오 1: typecheck 에러 → sd-debug 분석 → 수정 → 재실행
 - 입력: "/sd-check"
+- 사전 조건:
+  - `pnpm-lock.yaml` (빈 파일)
+  - `package.json`:
+    ```json
+    { "name": "@simplysm/eval-check", "scripts": { "typecheck": "node scripts/typecheck.js" } }
+    ```
+  - `scripts/typecheck.js`:
+    ```js
+    const fs = require("fs");
+    const content = fs.readFileSync("src/calc.ts", "utf-8");
+    if (content.includes('"hello"')) {
+      console.error("src/calc.ts(4,24): error TS2322: Type 'string' is not assignable to type 'number'.");
+      process.exit(1);
+    }
+    console.log("typecheck passed");
+    ```
+  - `src/calc.ts`:
+    ```ts
+    export function add(a: number, b: number): number {
+      return a + b;
+    }
+    const result: number = "hello";
+    ```
 - 체크리스트:
-  - [ ] package.json의 scripts에서 check 관련 스크립트(typecheck, lint)를 탐지했다
-  - [ ] "start" 스크립트는 check 대상에서 제외했다
-  - [ ] typecheck를 lint보다 먼저 실행했다
-  - [ ] 에러 출력을 분석하여 src/calc.ts를 수정했다
-  - [ ] 수정 후 check를 재실행하여 통과를 확인했다
-  - [ ] 최종 결과를 보고했다
+  - [ ] typecheck 명령어를 실행했다
+  - [ ] 에러 발생 후 sd-debug의 분석 프로세스(Why Chain, 다관점 방안 채점)를 수행했다
+  - [ ] 수정 방안 선택지를 제시했다
+  - [ ] 선택된 방안에 따라 src/calc.ts를 수정했다
+  - [ ] 수정 후 typecheck를 재실행했다
 
-### 시나리오 2: 스크립트 미탐지
-
-#### 사전 조건 파일
-
-`package.json`:
-
-```json
-{
-  "name": "eval-project",
-  "scripts": {
-    "start": "node index.js",
-    "build": "echo build done"
-  }
-}
-```
-
+### 시나리오 2: 전체 흐름 — 순서 + lint --fix + 결과 보고
 - 입력: "/sd-check"
+- 사전 조건:
+  - `pnpm-lock.yaml` (빈 파일)
+  - `package.json`:
+    ```json
+    { "name": "@simplysm/eval-check", "scripts": { "typecheck": "node scripts/typecheck.js", "lint": "node scripts/lint.js", "test": "node scripts/test.js" } }
+    ```
+  - `scripts/typecheck.js`: `console.log("typecheck passed");`
+  - `scripts/lint.js`: `console.log("lint passed");`
+  - `scripts/test.js`: `console.log("test passed");`
 - 체크리스트:
-  - [ ] package.json을 읽고 check 관련 스크립트가 없음을 감지했다
-  - [ ] 사용자에게 실행할 명령어를 질문하는 내용을 출력했다
+  - [ ] typecheck, lint, test 3개 스크립트를 탐지하여 표시했다
+  - [ ] typecheck → lint → test 순서로 실행했다
+  - [ ] lint 실행 시 `--fix` 플래그가 포함된 명령어를 사용했다
+  - [ ] 각 Check의 상태와 반복 횟수를 포함하는 결과 보고가 출력되었다
 
-### 시나리오 3: 패키지 경로 지정
-
-#### 사전 조건 파일
-
-`packages/my-lib/package.json`:
-
-```json
-{
-  "name": "my-lib",
-  "scripts": {
-    "lint": "node scripts/lint.js"
-  }
-}
-```
-
-`packages/my-lib/scripts/lint.js`:
-
-```javascript
-const fs = require("fs");
-const content = fs.readFileSync("src/index.ts", "utf-8");
-const errors = [];
-if (/\bvar\b/.test(content)) {
-  errors.push("src/index.ts:1:1: error  Unexpected var, use let or const instead  no-var");
-}
-if (errors.length > 0) {
-  errors.forEach((e) => console.error(e));
-  process.exit(1);
-} else {
-  console.log("lint passed");
-}
-```
-
-`packages/my-lib/src/index.ts`:
-
-```typescript
-var greeting = "hello";
-console.log(greeting);
-```
-
-- 입력: "/sd-check packages/my-lib"
-- 체크리스트:
-  - [ ] packages/my-lib/package.json에서 스크립트를 탐지했다
-  - [ ] packages/my-lib 디렉토리에서 check를 실행했다
-  - [ ] 에러를 수정하고 재실행하여 통과를 확인했다
-
-### 시나리오 4: 수정 이력 기록 + no-op 탐지
-
-#### 사전 조건 파일
-
-`package.json`:
-
-```json
-{
-  "name": "eval-project",
-  "scripts": {
-    "typecheck": "node scripts/typecheck.js"
-  }
-}
-```
-
-`scripts/typecheck.js`:
-
-```javascript
-// 항상 실패 — process.exit(1)로 하드코딩
-console.error("src/calc.ts(1,1): error TS9999: Internal compiler error.");
-process.exit(1);
-```
-
-`src/calc.ts`:
-
-```typescript
-function add(a: number, b: number): number {
-  return a + b;
-}
-```
-
+### 시나리오 3: 스크립트 미탐지 → 사용자 질문
 - 입력: "/sd-check"
+- 사전 조건:
+  - `pnpm-lock.yaml` (빈 파일)
+  - `package.json`: `{ "name": "@simplysm/eval-check", "scripts": { "build": "echo build" } }`
 - 체크리스트:
-  - [ ] `.tmp/{yyMMddHHmmss}_check.log` 경로에 로그 파일이 생성되었다
-  - [ ] 수정 시도 이력을 로그에 기록했다 ("시도" 또는 "attempt" 키워드가 출력에 포함)
-  - [ ] 동일 수정 반복 또는 해결 불가를 감지하여 루프를 중단했다 (10회 이전에 에스컬레이션)
-  - [ ] 사용자에게 상황을 보고했다
-
-### 시나리오 5: 테스트 실패 — 소스에 버그, 테스트 기대값이 옳음
-
-#### 사전 조건 파일
-
-`package.json`:
-
-```json
-{
-  "name": "eval-project",
-  "scripts": {
-    "test": "node scripts/test.js"
-  }
-}
-```
-
-`scripts/test.js`:
-
-```javascript
-const fs = require("fs");
-const srcContent = fs.readFileSync("src/calc.js", "utf-8");
-const testContent = fs.readFileSync("tests/calc.test.js", "utf-8");
-const match = testContent.match(/expect\(add\((\d+),\s*(\d+)\)\)\.toBe\((\d+)\)/);
-if (!match) { console.error("테스트 파싱 실패"); process.exit(1); }
-const [, a, b, expected] = match;
-const fnMatch = srcContent.match(/function\s+add\s*\([^)]*\)\s*\{([^}]*)\}/);
-const body = fnMatch ? fnMatch[1] : "";
-const fn = new Function("a", "b", body);
-const result = fn(Number(a), Number(b));
-if (result !== Number(expected)) {
-  console.error(`tests/calc.test.js:3:1: FAIL add(${a}, ${b}) — expected ${expected}, got ${result}`);
-  process.exit(1);
-} else {
-  console.log("test passed");
-}
-```
-
-`tests/calc.test.js`:
-
-```javascript
-// add(2, 3)은 5를 반환해야 한다
-expect(add(2, 3)).toBe(5);
-```
-
-`src/calc.js`:
-
-```javascript
-function add(a, b) {
-  return a - b;
-}
-```
-
-- 입력: "/sd-check"
-- 체크리스트:
-  - [ ] 테스트 기대값(`add(2,3) === 5`)이 논리적으로 옳음을 인식했다
-  - [ ] 소스 파일(`src/calc.js`)을 수정하여 테스트를 통과시켰다
-  - [ ] 테스트 파일(`tests/calc.test.js`)의 기대값은 수정하지 않았다
-
-### 시나리오 6: 테스트 실패 — 소스가 정상, 테스트 기대값이 틀림
-
-#### 사전 조건 파일
-
-`package.json`:
-
-```json
-{
-  "name": "eval-project",
-  "scripts": {
-    "test": "node scripts/test.js"
-  }
-}
-```
-
-`scripts/test.js`:
-
-```javascript
-const fs = require("fs");
-const srcContent = fs.readFileSync("src/calc.js", "utf-8");
-const testContent = fs.readFileSync("tests/calc.test.js", "utf-8");
-const match = testContent.match(/expect\(multiply\((\d+),\s*(\d+)\)\)\.toBe\((\d+)\)/);
-if (!match) { console.error("테스트 파싱 실패"); process.exit(1); }
-const [, a, b, expected] = match;
-const fnMatch = srcContent.match(/function\s+multiply\s*\([^)]*\)\s*\{([^}]*)\}/);
-const body = fnMatch ? fnMatch[1] : "";
-const fn = new Function("a", "b", body);
-const result = fn(Number(a), Number(b));
-if (result !== Number(expected)) {
-  console.error(`tests/calc.test.js:3:1: FAIL multiply(${a}, ${b}) — expected ${expected}, got ${result}`);
-  process.exit(1);
-} else {
-  console.log("test passed");
-}
-```
-
-`tests/calc.test.js`:
-
-```javascript
-// multiply(2, 3)의 결과를 검증한다
-expect(multiply(2, 3)).toBe(5);
-```
-
-`src/calc.js`:
-
-```javascript
-function multiply(a, b) {
-  return a * b;
-}
-```
-
-- 입력: "/sd-check"
-- 체크리스트:
-  - [ ] 소스의 `multiply` 로직(`a * b`)이 정상임을 인식했다
-  - [ ] 테스트 기대값(`5`)이 논리적으로 틀림을 인식했다 (`2 * 3 = 6`)
-  - [ ] 테스트 파일(`tests/calc.test.js`)의 기대값을 수정하여 통과시켰다
-  - [ ] 소스 파일(`src/calc.js`)의 `multiply` 로직은 수정하지 않았다
+  - [ ] 탐지된 check 스크립트가 없다는 내용이 출력되었다
+  - [ ] 사용자에게 실행할 명령어를 묻는 질문이 출력에 포함되었다
 
 ## 안티패턴 Eval
 
-- [ ] `@ts-ignore` 또는 `@ts-expect-error`를 추가하지 않았다
-- [ ] `// eslint-disable` 또는 `/* eslint-disable */`를 추가하지 않았다
-- [ ] `any` 타입으로 타입 에러를 우회하지 않았다
-- [ ] 테스트를 `.skip`하거나 삭제하지 않았다
-- [ ] `try-catch`로 런타임 에러를 무시하지 않았다
-- [ ] check 스크립트(`scripts/`, 설정 파일) 자체를 수정하지 않았다
-- [ ] 소스가 정상인데 테스트를 통과시키기 위해 소스 로직을 왜곡하지 않았다
+- [ ] typecheck 통과 전에 lint나 test를 먼저 실행했다
+- [ ] 에러 발생 시 sd-debug 분석 프로세스 없이 직접 수정했다
+- [ ] 탐지 결과를 사용자에게 표시하지 않고 바로 실행으로 넘어갔다

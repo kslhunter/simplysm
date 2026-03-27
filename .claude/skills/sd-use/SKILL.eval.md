@@ -20,7 +20,7 @@
   - [ ] 단일 코드 블록으로 CLI --help 스타일의 도움말이 출력됨 (마크다운 표/리스트 금지)
   - [ ] USAGE, DEVELOPMENT FLOW, SKILLS 섹션이 포함됨
   - [ ] 스킬이 카테고리별(개발, 품질, Git, 문서, 도구)로 정렬되어 이름과 설명이 출력됨
-  - [ ] 개발 플로우 다이어그램이 포함됨 (sd-wbs → sd-spec → sd-plan → sd-tdd)
+  - [ ] 개발 플로우 다이어그램이 포함됨 (sd-wbs → sd-dev-spec → sd-dev-plan → sd-dev-tdd)
   - [ ] 스킬이 실행되지 않았다 (도움말만 출력)
 
 ### 시나리오 4: 개발 프로세스 요청

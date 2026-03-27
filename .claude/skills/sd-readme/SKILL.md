@@ -1,8 +1,6 @@
 ---
 name: sd-readme
-description: |
-  monorepo 각 패키지의 public API를 분석하여 LLM이 읽을 수 있는 README.md와 docs/ 문서를 자동 생성하는 스킬.
-  /sd-readme를 입력하거나, "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
+description: monorepo 각 패키지의 public API를 분석하여 README.md와 docs/ 문서를 자동 생성하는 스킬. "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
 ---
 
 # sd-readme: 패키지 README/docs 생성
@@ -15,7 +13,7 @@ npm 배포 후 사용자 프로젝트에서 LLM(Claude Code 등)이 `node_module
 ```
 /sd-readme [패키지명]
 /sd-readme              ← npm 배포 대상 전체 패키지
-/sd-readme solid        ← packages/solid 만
+/sd-readme angular      ← packages/angular 만
 ```
 
 ## 프로세스 흐름
@@ -85,7 +83,7 @@ flowchart TD
 ```
 대상 패키지:
 1. @simplysm/core-common (src 35파일)
-2. @simplysm/solid (src 126파일)
+2. @simplysm/angular (src 126파일)
 ...
 ```
 
@@ -145,7 +143,7 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 판단 결과를 사용자에게 표시한다:
 
 ```
-@simplysm/solid: 12 카테고리, 195 API 항목 → README.md + docs/ 분할
+@simplysm/angular: 12 카테고리, 195 API 항목 → README.md + docs/ 분할
 @simplysm/storage: 2 카테고리, 8 API 항목 → README.md 단독
 ```
 

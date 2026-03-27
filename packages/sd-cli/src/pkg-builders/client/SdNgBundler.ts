@@ -475,7 +475,7 @@ export class SdNgBundler {
         ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "ngJitMode": "false",
         "global": "global",
-        "process": "process",
+        // "process": "process",
         "Buffer": "Buffer",
         "process.env.SD_VERSION": JSON.stringify(this._pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this._opt.watch?.dev ? "development" : "production"),
@@ -490,7 +490,7 @@ export class SdNgBundler {
       entryNames: "[dir]/[name]",
       entryPoints: {
         "sd-polyfills": "virtual:sd-polyfills",
-        main: this._mainFilePath,
+        "main": this._mainFilePath,
         ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/polyfills.ts"))
           ? {
               polyfills: path.resolve(this._opt.pkgPath, "src/polyfills.ts"),
@@ -549,8 +549,9 @@ export class SdNgBundler {
         : {
             platform: "browser",
             target: this._browserTarget,
+            ...(this._conf.noLazyRoute ? {} : { supported: { "dynamic-import": true } }),
             format: "esm",
-            splitting: true,
+            splitting: !this._conf.noLazyRoute,
             inject: [
               PathUtils.posix(
                 fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")),
@@ -667,4 +668,5 @@ interface IConf<T extends keyof NonNullable<ISdClientPackageConfig["builder"]>> 
   builderType: T;
   builderConfig: NonNullable<ISdClientPackageConfig["builder"]>[T];
   env: Record<string, string> | undefined;
+  noLazyRoute: boolean | undefined;
 }

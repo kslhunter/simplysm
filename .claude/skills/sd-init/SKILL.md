@@ -1,8 +1,6 @@
 ---
 name: sd-init
-description: |
-  프로젝트의 설정 파일, 스크립트, 코딩 규칙을 분석하여 루트 CLAUDE.md를 생성한다.
-  /sd-init을 입력하거나, "init", "CLAUDE.md 생성", "CLAUDE.md 초기화" 등을 요청할 때 사용한다.
+description: 프로젝트 분석을 통해 루트 CLAUDE.md를 생성하는 스킬. "init", "CLAUDE.md 생성", "CLAUDE.md 초기화" 등을 요청할 때 사용한다.
 ---
 
 # sd-init: CLAUDE.md 생성기
@@ -95,7 +93,7 @@ pnpm 모노레포. 패키지 경로: `packages/*`, 테스트: `tests/*`
 
 ```bash
 pnpm dev [targets..]                     # 클라이언트+서버 패키지를 개발 모드로 실행
-pnpm dev packages/solid-demo             # 특정 패키지를 개발 모드로 실행
+pnpm dev packages/angular-demo            # 특정 패키지를 개발 모드로 실행
 pnpm dev -o key=value                    # sd.config.ts에 옵션 전달
 
 pnpm watch [targets..]                   # 라이브러리 패키지를 watch 빌드
@@ -106,7 +104,7 @@ pnpm watch packages/core-common          # 특정 패키지를 watch
 
 ```bash
 pnpm build [targets..]                   # 프로덕션 빌드
-pnpm build packages/solid                # 특정 패키지 빌드
+pnpm build packages/angular              # 특정 패키지 빌드
 
 pnpm pub [targets..]                     # 빌드 후 배포 (npm/sftp)
 pnpm pub --no-build                      # 빌드 없이 배포만
@@ -129,8 +127,8 @@ pnpm vitest run [targets..]              # 테스트 1회 실행
 의존 방향: 위 → 아래. `core-common`은 내부 의존성 없는 리프 패키지이다.
 
 ```
-앱:       solid-demo (클라이언트) / solid-demo-server (서버)
-UI:       solid (SolidJS + Tailwind)
+앱:       angular-demo (클라이언트) / angular-demo-server (서버)
+UI:       angular (Angular)
 서비스:   service-server (Fastify) / service-client / service-common
 ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 코어:     core-common (중립) / core-browser / core-node
@@ -149,7 +147,7 @@ ORM:      orm-node (MySQL/PostgreSQL/MSSQL) / orm-common
 - `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
 - `console.*` 금지, `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
 - `Buffer` 금지 → `Uint8Array`, `events` 금지 → `@simplysm/core-common`의 `EventEmitter`
-- SolidJS: props 구조분해 금지, `.map()` 대신 `<For>`, `className` 대신 `class`
+- Angular: standalone 컴포넌트 사용, `trackBy` 필수 (`*ngFor`), `OnPush` 변경 감지 전략 권장
 ````
 
 ## 6단계: 기존 CLAUDE.md와 병합

@@ -76,7 +76,7 @@ export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
           ...fastifyHelmet.contentSecurityPolicy.getDefaultDirectives(),
           "default-src": ["'self'", "data:", "blob:", "*"],
           "script-src-attr": ["'unsafe-inline'"], // 인라인 이벤트 핸들러 허용
-          "script-src": ["'self'", "'unsafe-inline'", "data:", "blob:", "*"], // 인라인 스크립트(<script>내용) 허용
+          "script-src": ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", "data:", "blob:", "*"], // 인라인 스크립트(<script>내용) + WASM 허용
           "style-src": ["'self'", "'unsafe-inline'", "data:", "blob:", "*"], // 인라인 스타일 허용
           "img-src": ["'self'", "data:", "blob:", "*"], // 외부 이미지 허용
           "font-src": ["'self'", "data:", "blob:", "*"], // 외부 폰트 허용

@@ -5,6 +5,7 @@ import {
   ElementRef,
   input,
   model,
+  OnDestroy,
   ViewEncapsulation,
 } from "@angular/core";
 import { $effect } from "../../../core/utils/bindings/$effect";
@@ -31,7 +32,7 @@ import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
     <ng-content select="sd-dropdown-popup" />
   `,
 })
-export class SdDropdownControl {
+export class SdDropdownControl implements OnDestroy {
   elRef = injectElementRef<HTMLElement>();
 
   open = model(false);
@@ -45,10 +46,13 @@ export class SdDropdownControl {
     read: ElementRef,
   });
 
+  private _popupEl?: HTMLElement;
+
   constructor() {
     $effect(() => {
       if (this.open()) {
-        document.body.appendChild(this.popupElRef().nativeElement);
+        this._popupEl = this.popupElRef().nativeElement;
+        document.body.appendChild(this._popupEl);
 
         requestAnimationFrame(() => {
           const contentEl = this.elRef.nativeElement;
@@ -73,26 +77,33 @@ export class SdDropdownControl {
           });
         });
       } else {
-        const contentEl = this.elRef.nativeElement;
-        const popupEl = this.popupElRef().nativeElement;
+        const popupEl = this._popupEl;
+        if (popupEl != null) {
+          const contentEl = this.elRef.nativeElement;
 
-        if (popupEl.matches(":focus, :has(*:focus)")) {
-          contentEl.focus();
+          if (popupEl.matches(":focus, :has(*:focus)")) {
+            contentEl.focus();
+          }
+
+          Object.assign(popupEl.style, {
+            top: "",
+            bottom: "",
+            left: "",
+            right: "",
+            minWidth: "",
+            opacity: "",
+            pointerEvents: "",
+            transform: "",
+          });
+          popupEl.remove();
+          this._popupEl = undefined;
         }
-
-        Object.assign(popupEl.style, {
-          top: "",
-          bottom: "",
-          left: "",
-          right: "",
-          minWidth: "",
-          opacity: "",
-          pointerEvents: "",
-          transform: "",
-        });
-        popupEl.remove();
       }
     });
+  }
+
+  ngOnDestroy() {
+    this._popupEl?.remove();
   }
 
   private _openPopup() {

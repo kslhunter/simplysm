@@ -1,12 +1,9 @@
 ---
 name: sd-check
-description: |
-  Node monorepo의 check 명령어(typecheck, lint, test)를 자동 탐지하여 순차 실행하고,
-  에러를 반복 수정하는 스킬. /sd-check을 입력하거나, "타입체크 돌려줘", "린트 고쳐줘",
-  "체크 돌리고 수정해줘" 등을 요청할 때 사용한다.
+description: typecheck, lint, test를 실행하고 에러 발생시 사용자 선택에 따라 해결하는 스킬. "타입체크 돌려줘", "린트 고쳐줘", "체크 돌리고 수정해줘" 등을 요청할 때 사용한다.
 ---
 
-# sd-check: Check 실행 & 반복 수정
+# sd-check: Check 실행 & 에러 수정
 
 ## 사용법
 
@@ -22,26 +19,27 @@ description: |
 
 ```mermaid
 flowchart TD
-    S1[Step 1: Check 명령어 탐지] --> S2{다음 카테고리 있음?}
-    S2 -->|없음 — 모든 카테고리 완료| S3[Step 3: 최종 검증]
-    S2 -->|있음| IS_LINT{린트 카테고리?}
-    IS_LINT -->|Yes| LINT_FIX[린트 --fix 실행]
-    LINT_FIX --> RUN
-    IS_LINT -->|No| RUN[Step 2: Check 실행]
-    RUN --> PASS{통과?}
-    PASS -->|Yes| S2
-    PASS -->|No| FIX[에러 분석 & 코드 수정]
-    FIX --> NOOP{이전과 동일한 수정?}
-    NOOP -->|Yes| REPORT_STUCK[사용자에게 보고 & 중단]
-    NOOP -->|No| RETRY{10회 초과?}
-    RETRY -->|Yes| REPORT_LIMIT[사용자에게 보고 & 계속 여부 질문]
-    RETRY -->|No| RUN
-    S3 --> REG{regression?}
-    REG -->|Yes| RUN
-    REG -->|No| S4[Step 4: 결과 보고]
+    S1[Step 1: 명령어 탐지] --> TC[Step 2: typecheck]
+    TC -- 에러 --> DEBUG_TC[sd-debug 분석 → 사용자 선택]
+    DEBUG_TC --> FIX_TC[수정 후 재실행]
+    FIX_TC --> TC
+    TC -- 통과 --> LINT[Step 3: lint --fix]
+    LINT -- 에러 --> DEBUG_LN[sd-debug 분석 → 사용자 선택]
+    DEBUG_LN --> FIX_LN[수정 후 재실행]
+    FIX_LN --> LINT
+    LINT -- 통과 --> TEST[Step 4: test]
+    TEST -- 에러 --> DEBUG_TS[sd-debug 분석 → 사용자 선택]
+    DEBUG_TS --> FIX_TS[수정 후 재실행]
+    FIX_TS --> TEST
+    TEST -- 통과 --> REG{Step 3~4에서 수정 있었음?}
+    REG -->|Yes| TC
+    REG -->|No| S5[Step 5: 결과 보고]
 ```
 
-## Step 1: Check 명령어 탐지
+- **내부 루프**: 각 Step(2, 3, 4)은 통과될 때까지 에러 분석 → 사용자 선택 → 수정 → 재실행
+- **외부 루프**: Step 3~4에서 코드 수정이 있었으면 Step 2부터 다시
+
+## Step 1: 명령어 탐지
 
 ### 1-1. 패키지 매니저 감지
 
@@ -56,16 +54,15 @@ flowchart TD
 
 ### 1-2. 스크립트 탐지
 
-대상 디렉토리의 `package.json` → `scripts`에서 아래 패턴에 매칭되는 스크립트를 탐지한다.
+1. **Read 도구**로 대상 디렉토리의 `package.json`을 읽는다
+2. `scripts` 객체의 키 목록을 추출한다
+3. 아래 패턴 테이블과 대조하여 각 카테고리에 매칭되는 스크립트 이름을 찾는다
 
-| 우선순위 | 스크립트 이름 패턴 | 카테고리 |
-|----------|-------------------|----------|
-| 1 | typecheck, type-check, tsc | 타입 체크 |
-| 2 | lint, eslint | 린트 |
-| 3 | test, jest, vitest, mocha | 테스트 |
-| 4 | check | 일반 체크 |
-
-타입 에러가 린트/테스트에 연쇄 영향을 주므로 위 우선순위 순서대로 실행한다.
+| Step | 스크립트 이름 패턴 | 카테고리 |
+|------|-------------------|----------|
+| 2 | typecheck, type-check, tsc | 타입 체크 |
+| 3 | lint, eslint | 린트 |
+| 4 | test, jest, vitest, mocha | 테스트 |
 
 ### 1-3. 탐지 결과 표시
 
@@ -73,47 +70,26 @@ flowchart TD
 탐지된 check 스크립트:
 1. typecheck → pnpm run typecheck
 2. lint → pnpm run lint
+3. test → pnpm run test
 ```
 
-탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다. (`.claude/rules/sd-option-scoring.md`의 규칙을 따른다)
+탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다.
 
-## 린트 --fix 실행
+## Step 2: typecheck
 
-린트 카테고리는 먼저 `--fix` 플래그를 붙여 실행한다 (예: `pnpm run lint -- --fix`). 자동 수정 가능한 문제를 먼저 해결한 뒤, 다시 일반 린트를 실행하여 남은 에러만 수동 수정한다.
+typecheck 명령어를 실행한다. 통과하면 Step 3으로 진행한다. 실패하면 "에러 수정 규칙"에 따라 수정하고 재실행한다.
 
-## Step 2: Check 실행
+## Step 3: lint --fix
 
-수정 루프 시작 시 `.tmp/{yyMMddHHmmss}_check-{패키지명}.log`에 로그 파일을 생성한다. `{패키지명}`은 패키지 경로의 마지막 디렉토리명이다 (예: `packages/core-common` → `core-common`). 대상 생략 시(루트 실행)에는 `.tmp/{yyMMddHHmmss}_check.log`로 생성한다. `{yyMMddHHmmss}`는 **반드시 Bash 도구로 `date +%y%m%d%H%M%S`를 실행하여 얻는다.** LLM이 직접 생성하면 시분초가 누락되므로 금지한다.
+`--fix` 플래그를 붙여 린트를 실행한다 (예: `pnpm run lint -- --fix`). 자동 수정 후 남은 에러가 있으면 "에러 수정 규칙"에 따라 수정하고 재실행한다.
 
-check 명령어를 실행한다 (패키지경로 지정 시 해당 디렉토리에서).
+## Step 4: test
 
-## 에러 분석 & 코드 수정
+테스트 명령어를 실행한다. 실패하면 "에러 수정 규칙"에 따라 수정하고 재실행한다.
 
-1. 에러 출력에서 파일 경로, 라인 번호, 에러 메시지를 파악한다
-2. **로그 파일을 읽어 이전 시도 이력을 확인한다** — 같은 에러에 대해 이전에 시도한 수정과 그 결과를 참조하여 같은 접근을 반복하지 않는다
-3. 해당 파일을 읽고 에러의 근본 원인을 분석한다
-4. 코드를 수정한다
-5. **수정 내역을 로그 파일에 기록한다** (시도 번호, 에러 요약, 수정 내용, 결과)
+통과 후, Step 3(린트)~Step 4(테스트)에서 코드 수정이 있었으면 Step 2(typecheck)부터 다시 시작한다. 수정이 없었으면 Step 5로 진행한다.
 
-### 로그 파일 형식
-
-```markdown
-# sd-check Log
-
-## 시도 1
-- **check**: typecheck
-- **에러**: {에러 메시지 요약}
-- **수정**: {수정한 파일과 변경 내용 요약}
-- **결과**: 성공 | 실패 — {실패 사유}
-```
-
-## Step 3: 최종 검증
-
-모든 check가 개별 통과한 후, 전체를 처음부터 한번 더 실행한다.
-
-regression이 발생하면 (예: lint 수정이 타입 에러를 유발), 해당 check부터 수정 루프를 재개한다.
-
-## Step 4: 결과 보고
+## Step 5: 결과 보고
 
 ```markdown
 ## sd-check 결과
@@ -122,39 +98,17 @@ regression이 발생하면 (예: lint 수정이 타입 에러를 유발), 해당
 |-------|------|-----------|
 | typecheck | PASS | 2 |
 | lint | PASS | 1 |
+| test | PASS | 0 |
 
 ### 수정된 파일
 - src/calc.ts
 - src/utils.ts
 ```
 
-실패한 check가 있으면 남은 에러 메시지를 함께 표시한다.
+남은 에러가 있으면 에러 메시지 목록을 함께 표시한다.
 
-## 수정 원칙
+## 에러 수정 규칙
 
-에러를 수정할 때 근본 원인을 해결해야 한다. `.claude/rules/sd-problem-solving.md`의 금지 목록을 따른다.
-
-### 수정 대상 제한
-
-에러 메시지가 가리키는 소스 코드 파일만 수정한다. check 스크립트(`scripts/`, 설정 파일, `Makefile` 등) 자체를 수정하지 않는다 — check 인프라는 프로젝트가 정의한 검증 규칙이므로 변경하면 검증 자체가 무의미해진다. check 인프라에 문제가 있다고 판단되면 수정하지 말고 사용자에게 보고한다.
-
-근본 원인 파악이 어려우면 에러 분석 결과를 사용자에게 보여주고 도움을 요청한다.
-
-### 테스트 실패 시 수정 대상 판단
-
-테스트 실패 시 테스트 코드를 고칠지 소스 코드를 고칠지 아래 순서로 판단한다.
-
-#### 1. 수정 시점 확인
-
-`git diff --name-only`로 이번 작업에서 변경된 파일을 확인한다 (git 환경이 아니면 이 단계를 건너뛴다).
-
-- 실패한 테스트 파일이 **미변경** → 기존에 검증된 명세이므로 **소스를 수정**한다
-- 실패한 테스트 파일이 **변경/신규** → 아래 2단계로 진행한다
-
-#### 2. 논리적 정합성 검증
-
-테스트의 기대값이 논리적으로 옳은지 검증한다.
-
-- 기대값이 옳다 (예: `add(2, 3) === 5`) → **소스를 수정**한다
-- 기대값이 틀리다 (예: `multiply(2, 3) === 5`) → **테스트를 수정**한다
-- 판단이 어렵다 → 사용자에게 질문한다
+1. 에러 출력에서 파일 경로, 라인 번호, 에러 메시지를 파악한다
+2. **`.claude/skills/sd-debug/SKILL.md`를 Read 도구로 읽고, 2~5단계를 수행한다.** 단, 문서 기록(6단계)은 수행하지 않는다.
+3. 사용자가 선택한 방안에 따라 코드를 수정한다
