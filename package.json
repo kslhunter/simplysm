@@ -31,13 +31,14 @@
     "postinstall": "yarn run _sd-cli_ postinstall"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.3.1",
     "@types/node": "^20.19.37",
+    "@vitest/browser-playwright": "^4.1.2",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
-    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.1"
   }
 }

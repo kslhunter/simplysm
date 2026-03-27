@@ -1,9 +1,21 @@
+import { readdirSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import plugin from "../plugin.js";
 import ngeslint from "angular-eslint";
 import importPlugin from "eslint-plugin-import";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
+
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
+const packagesDir = path.join(rootDir, "packages");
+const allPackageDirs = [
+  rootDir,
+  ...readdirSync(packagesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(path.join(packagesDir, d.name, "package.json")))
+    .map((d) => path.join(packagesDir, d.name)),
+];
 
 export default [
   {
@@ -252,7 +264,7 @@ export default [
       "import/no-extraneous-dependencies": [
         "error",
         {
-          devDependencies: ["**/*.spec.ts"],
+          devDependencies: ["**/*.spec.ts", "**/vitest.config.ts"],
         },
       ],
       /*"@simplysm/ts-no-exported-types": [
@@ -319,6 +331,21 @@ export default [
 
       "@simplysm/ng-template-no-todo-comments": "warn",
       "@simplysm/ng-template-sd-require-binding-attrs": ["error"],
+    },
+  },
+  {
+    files: ["**/vitest.config.*"],
+    plugins: {
+      "import": importPlugin,
+    },
+    rules: {
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          devDependencies: true,
+          packageDir: allPackageDirs,
+        },
+      ],
     },
   },
 ];
