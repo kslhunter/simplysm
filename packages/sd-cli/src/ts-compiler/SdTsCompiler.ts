@@ -15,6 +15,7 @@ import { SdStyleBundler } from "./SdStyleBundler";
 import { ISdTsCompilerOptions } from "../types/build/ISdTsCompilerOptions";
 import { ISdTsCompilerResult } from "../types/build/ISdTsCompilerResult";
 import { ScopePathSet } from "./ScopePathSet";
+import { convertOutputToReal } from "./convertOutputToReal";
 
 export class SdTsCompiler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdTsCompiler"]);
@@ -562,9 +563,10 @@ export class SdTsCompiler {
               );
 
               if (PathUtils.isChildPath(sourceFile.fileName, this._opt.pkgPath)) {
-                const real = this._convertOutputToReal(
+                const real = convertOutputToReal(
                   fileName,
                   prepareResult.tsconfig.distPath,
+                  this._opt.pkgPath,
                   text,
                 );
 
@@ -594,26 +596,6 @@ export class SdTsCompiler {
     };
   }
 
-  private _convertOutputToReal(filePath: string, distPath: string, text: string) {
-    let realFilePath = PathUtils.norm(filePath);
-    let realText = text;
-
-    const srcRelBasePath = path.resolve(distPath, path.basename(this._opt.pkgPath), "src");
-
-    if (PathUtils.isChildPath(realFilePath, srcRelBasePath)) {
-      realFilePath = PathUtils.norm(distPath, path.relative(srcRelBasePath, realFilePath));
-
-      // source map 위치 정확히 찾아가기
-      if (filePath.endsWith(".js.map")) {
-        const sourceMapContents = JSON.parse(realText);
-        sourceMapContents.sources[0] = sourceMapContents.sources[0].slice(6); // remove "../../"
-        realText = JSON.stringify(sourceMapContents);
-      }
-    }
-
-    return { filePath: realFilePath, text: realText };
-  }
-
   private _removeOutputDevModeLine(str: string) {
     return str.replace(
       /\(\(\) => \{ \(typeof ngDevMode === "undefined" \|\| ngDevMode\) && i0.ɵsetClassDebugInfo\(.*, \{ className: ".*", filePath: ".*", lineNumber: [0-9]* }\); }\)\(\);/,
@@ -629,7 +611,7 @@ export class SdTsCompiler {
 interface ITsConfigInfo {
   fileNames: string[];
   options: ts.CompilerOptions;
-  distPath: string;
+  distPath: TNormPath;
 }
 
 interface IPrepareResult {
