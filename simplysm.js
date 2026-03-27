@@ -7,7 +7,7 @@ export default () => ({
         excludes: ["src/web/**/*"],
       },
     },
-    "capacitor-plugin-broadcast": {
+    "capacitor-plugin-intent": {
       type: "library",
       publish: "npm",
       index: {

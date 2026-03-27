@@ -23,15 +23,15 @@
   - [ ] 출력이 sd-dev-plan 프로세스에 기반한 진행을 포함한다
   - [ ] sd-dev-plan 프로세스를 시작했다 (코드베이스 탐색 또는 Metacognitive Preamble 시도)
 
-### 시나리오 3: 요구명세 + 구현계획 있는 Feature 문서 → Phase 3 subagent 위임
+### 시나리오 3: 요구명세 + 구현계획 있는 Feature 문서 → Phase 3 (sd-dev-tdd) 시작
 - 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
   - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세`(Gherkin)와 `## 구현계획`(Tech Design Doc + Vertical Slices) 모두 포함
 - 체크리스트:
   - [ ] 출력이 Feature 문서의 내용에 기반한 분석을 포함한다
   - [ ] 상태 탐지 결과를 출력에 포함했다 ("요구명세 + 구현계획 있음" 또는 "Phase 3" 언급)
-  - [ ] Phase 3에서 TDD 프로세스를 별도 컨텍스트(subagent)에 위임했다
-  - [ ] 위임 시 Feature 문서 경로를 전달했다
+  - [ ] 출력이 sd-dev-tdd 프로세스에 기반한 진행을 포함한다
+  - [ ] sd-dev-tdd 프로세스를 시작했다 (코드베이스 탐색 또는 Slice 목록 표시)
 
 ### 시나리오 4: 대화 맥락에 Feature 논의가 있는 상태에서 인자 없이 실행
 - 입력: "로그인 기능을 구현해야 해. 이메일/비밀번호 기반 로그인이고 소셜 로그인(Google, Kakao)도 필요해. 비밀번호 찾기도 있어야 하고.\n\n/sd-dev"
@@ -44,7 +44,7 @@
   - [ ] 출력이 sd-dev-spec 프로세스에 기반한 진행을 포함한다
   - [ ] sd-dev-spec 프로세스를 시작했다 (Metacognitive Preamble 또는 Example Mapping 시도)
 
-### 시나리오 5: 구현계획 체크박스로 세부 상태 복원 → subagent에 재개 정보 전달
+### 시나리오 5: 구현계획 체크박스로 세부 상태 복원 → Slice 3부터 재개
 - 입력: "/sd-dev .tasks/test-project/1.1-task-create-edit.md"
 - 사전 조건:
   - `.tasks/test-project/1.1-task-create-edit.md` — `## 요구명세` + `## 구현계획` (Slice 3개, Slice 1~2는 `[x]`, Slice 3은 `[ ]`) 포함
@@ -54,8 +54,8 @@
 - 체크리스트:
   - [ ] 출력이 Feature 문서의 내용에 기반한 분석을 포함한다
   - [ ] 상태 탐지 결과에 구현계획 체크박스 기반 세부 상태를 포함했다 ("Slice 1~2 완료" 또는 체크박스 상태 언급)
-  - [ ] Phase 3에서 TDD 프로세스를 별도 컨텍스트(subagent)에 위임했다
-  - [ ] 위임 시 Slice 3부터 재개해야 함을 전달했다 (체크박스 상태 정보 포함)
+  - [ ] sd-dev-tdd 프로세스를 시작했다
+  - [ ] Slice 3부터 재개하여 TDD를 진행했다 (Slice 1~2를 다시 수행하지 않음)
 
 ## 안티패턴 Eval
 
@@ -64,4 +64,4 @@
 - [ ] 해당 Phase의 하위 스킬 프로세스와 무관한 방식으로 진행한다
 - [ ] Feature 문서 경로가 입력에 명시되었는데 사용자에게 경로를 다시 물어본다
 - [ ] Phase 전환 시 사용자에게 진행 여부를 물어본다
-- [ ] Phase 3에서 sd-dev-tdd를 메인 컨텍스트에서 직접 수행한다 (subagent에 위임하지 않음)
+- [ ] Phase 3에서 sd-dev-tdd SKILL.md를 읽지 않고 독자적으로 TDD를 수행한다

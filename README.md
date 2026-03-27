@@ -48,7 +48,7 @@ A Yarn 4 monorepo containing 21 packages for building full-stack TypeScript appl
 | Package | Description |
 |---------|-------------|
 | [`@simplysm/capacitor-plugin-auto-update`](./packages/capacitor-plugin-auto-update) | Capacitor plugin - APK installation and OTA auto-update |
-| [`@simplysm/capacitor-plugin-broadcast`](./packages/capacitor-plugin-broadcast) | Capacitor plugin - Android broadcast send/receive for industrial devices |
+| [`@simplysm/capacitor-plugin-intent`](./packages/capacitor-plugin-intent) | Capacitor plugin - Android intent send/receive for industrial devices |
 | [`@simplysm/capacitor-plugin-file-system`](./packages/capacitor-plugin-file-system) | Capacitor plugin - Full file system access with permission management |
 | [`@simplysm/capacitor-plugin-usb-storage`](./packages/capacitor-plugin-usb-storage) | Capacitor plugin - USB mass storage device interaction |
 

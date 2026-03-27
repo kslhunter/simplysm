@@ -1,19 +1,24 @@
-package kr.co.simplysm.capacitor.broadcast;
+package kr.co.simplysm.capacitor.intent;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+
+import androidx.activity.result.ActivityResult;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import org.json.JSONArray;
@@ -26,10 +31,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@CapacitorPlugin(name = "Broadcast")
-public class BroadcastPlugin extends Plugin {
+@CapacitorPlugin(name = "Intent")
+public class IntentPlugin extends Plugin {
 
-    private static final String TAG = "BroadcastPlugin";
+    private static final String TAG = "IntentPlugin";
     private final Map<String, BroadcastReceiver> receivers = new HashMap<>();
 
     @Override
@@ -154,6 +159,76 @@ public class BroadcastPlugin extends Plugin {
             Log.e(TAG, "getLaunchIntent failed", e);
             call.reject("getLaunchIntent failed: " + e.getMessage());
         }
+    }
+
+    @PluginMethod
+    public void startActivityForResult(PluginCall call) {
+        try {
+            String action = call.getString("action");
+            if (action == null) {
+                call.reject("action is required");
+                return;
+            }
+
+            Intent intent = new Intent(action);
+
+            String uri = call.getString("uri");
+            String type = call.getString("type");
+            if (uri != null && type != null) {
+                intent.setDataAndType(Uri.parse(uri), type);
+            } else if (uri != null) {
+                intent.setData(Uri.parse(uri));
+            } else if (type != null) {
+                intent.setType(type);
+            }
+
+            String pkg = call.getString("package");
+            String component = call.getString("component");
+            if (component != null && pkg == null) {
+                call.reject("component requires package");
+                return;
+            }
+            if (pkg != null && component != null) {
+                intent.setComponent(new ComponentName(pkg, component));
+            } else if (pkg != null) {
+                intent.setPackage(pkg);
+            }
+
+            JSObject extras = call.getObject("extras");
+            if (extras != null) {
+                populateExtras(intent, extras);
+            }
+
+            startActivityForResult(call, intent, "onActivityResult");
+        } catch (Exception e) {
+            Log.e(TAG, "startActivityForResult failed", e);
+            call.reject("startActivityForResult failed: " + e.getMessage());
+        }
+    }
+
+    @ActivityCallback
+    private void onActivityResult(PluginCall call, ActivityResult result) {
+        if (call == null) {
+            return;
+        }
+
+        JSObject ret = new JSObject();
+        ret.put("resultCode", result.getResultCode());
+
+        Intent data = result.getData();
+        if (data != null) {
+            String dataString = data.getDataString();
+            if (dataString != null) {
+                ret.put("data", dataString);
+            }
+
+            Bundle extras = data.getExtras();
+            if (extras != null && !extras.isEmpty()) {
+                ret.put("extras", bundleToJson(extras));
+            }
+        }
+
+        call.resolve(ret);
     }
 
     private void populateExtras(Intent intent, JSObject extras) throws JSONException {
