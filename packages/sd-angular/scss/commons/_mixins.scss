@@ -1,6 +1,8 @@
 @use "./variables";
 @use "sass:meta";
 @use "sass:map";
+@use "sass:math";
+@use "sass:color";
 
 @mixin writeVars($value, $prevKey) {
   @if meta.type-of($value) == map {
@@ -10,6 +12,17 @@
       } @else {
         @include writeVars($val, $prevKey + "-" + $key);
       }
+    }
+  } @else if meta.type-of($value) == color {
+    $rgb: color.to-space($value, rgb);
+    $r: math.round(color.channel($rgb, "red", $space: rgb));
+    $g: math.round(color.channel($rgb, "green", $space: rgb));
+    $b: math.round(color.channel($rgb, "blue", $space: rgb));
+    $a: color.alpha($rgb);
+    @if $a < 1 {
+      --#{$prevKey}: rgba(#{$r}, #{$g}, #{$b}, #{$a});
+    } @else {
+      --#{$prevKey}: rgb(#{$r}, #{$g}, #{$b});
     }
   } @else {
     --#{$prevKey}: #{$value};

@@ -81,7 +81,7 @@ export class SdDropdownControl implements OnDestroy {
         if (popupEl != null) {
           const contentEl = this.elRef.nativeElement;
 
-          if (popupEl.matches(":focus, :has(*:focus)")) {
+          if (popupEl.matches(":focus-within")) {
             contentEl.focus();
           }
 
