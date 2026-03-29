@@ -40,6 +40,7 @@ yarn check packages/sd-core-common        # 특정 패키지 경로 체크
 yarn check --type lint                    # 린트만
 yarn check --type typecheck               # 타입체크만
 yarn eslint:fix                           # ESLint 자동 수정
+yarn commit                               # sd-cli 커밋 (메시지 생성 + git commit)
 ```
 
 ### 테스트
@@ -50,7 +51,10 @@ npx vitest run                            # 전체 테스트 1회 실행
 npx vitest run packages/sd-core-common    # 특정 패키지 테스트
 ```
 
-테스트 파일: `**/*.spec.ts`, 환경: Node, globals 활성화, `vite-tsconfig-paths`로 `@simplysm/*` 경로 해석.
+테스트 파일: `packages/*/tests/**/*.spec.ts`, globals 활성화, `tsconfigPaths`로 `@simplysm/*` 경로 해석.
+두 가지 테스트 프로젝트로 구성 (`vitest.config.js`):
+- **node**: sd-angular 제외한 전체 패키지 (environment: node)
+- **sd-angular**: 브라우저 테스트 (Playwright headless chromium)
 
 ## 아키텍처
 
@@ -130,4 +134,4 @@ _logger.log(...);  // debug, log, info, warn, error
 - `prefer-readonly`: 재할당 없는 클래스 멤버에 readonly 강제
 - `@simplysm/ts-no-unused-injects`: 미사용 Angular injection 감지
 - `@simplysm/ts-no-unused-protected-readonly`: 미사용 protected readonly 멤버 감지
-- Prettier: 100자, 2칸 들여쓰기, 세미콜론, trailing comma, LF 줄바꿈
+- Prettier: 100자, 2칸 들여쓰기, 세미콜론, trailing comma, LF, `quoteProps: consistent`, `htmlWhitespaceSensitivity: ignore`

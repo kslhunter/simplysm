@@ -1,5 +1,8 @@
 import * as XLSX from "xlsx";
+import * as cpexcel from "xlsx/dist/cpexcel.full.mjs";
 import { SdExcelReaderWorksheet } from "./SdExcelReaderWorksheet";
+
+XLSX.set_cptable(cpexcel);
 
 export class SdExcelReader {
   private readonly _wb: XLSX.WorkBook;
@@ -22,7 +25,7 @@ export class SdExcelReader {
       if (!Boolean(this._wb.SheetNames[arg])) {
         throw new Error(`${arg + 1}번째 시트를 찾을 수 없습니다.`);
       }
-      return new SdExcelReaderWorksheet(this._wb.Sheets[this._wb.SheetNames[0]]);
+      return new SdExcelReaderWorksheet(this._wb.Sheets[this._wb.SheetNames[arg]]);
     } else {
       if (!this._wb.SheetNames.includes(arg)) {
         throw new Error(`시트'${arg}'를 찾을 수 없습니다.`);

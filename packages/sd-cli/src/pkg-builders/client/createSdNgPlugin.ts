@@ -9,11 +9,13 @@ import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
 import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
 import { ISdTsCompilerResult } from "../../types/build/ISdTsCompilerResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import { transformWorkerPaths } from "../commons/SdWorkerPathPlugin";
 
 export function createSdNgPlugin(
   opt: ISdTsCompilerOptions,
   modifiedFileSet: Set<TNormPath>,
   resultCache: ISdCliNgPluginResultCache,
+  workerOutdir?: string,
 ): esbuild.Plugin {
   let perf: SdCliPerformanceTimer;
   const logger = SdLogger.get(["simplysm", "sd-cli", "createSdNgPlugin"]);
@@ -90,7 +92,13 @@ export function createSdNgPlugin(
           return { contents: output, loader: "js" };
         }
 
-        const contents = emittedFiles?.last()?.text ?? "";
+        const rawContents = emittedFiles?.last()?.text ?? "";
+
+        // 워커 경로 변환 (import.meta.resolve → string literal)
+        const contents =
+          workerOutdir != null
+            ? await transformWorkerPaths(rawContents, args.path, workerOutdir, build.initialOptions, "document.baseURI")
+            : rawContents;
 
         const { sideEffects } = await build.resolve(args.path, {
           kind: "import-statement",
@@ -141,6 +149,15 @@ export function createSdNgPlugin(
           return { errors: [{ text: err?.message ?? String(err) }] };
         }
       });
+
+      if (workerOutdir != null) {
+        build.onLoad({ filter: /\.js$/ }, async (args) => {
+          const source = await FsUtils.readFileAsync(args.path);
+          const transformed = await transformWorkerPaths(source, args.path, workerOutdir, build.initialOptions, "document.baseURI");
+          if (transformed === source) return null;
+          return { contents: transformed, loader: "js" };
+        });
+      }
 
       const otherLoaderFilter = new RegExp(
         "(" +

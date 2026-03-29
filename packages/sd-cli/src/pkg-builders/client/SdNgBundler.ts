@@ -40,7 +40,6 @@ import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResu
 import { INpmConfig } from "../../types/common-config/INpmConfig";
 import { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
-import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 import { SdPolyfillPlugin } from "./SdPolyfillPlugin";
 
 export class SdNgBundler {
@@ -561,11 +560,10 @@ export class SdNgBundler {
       plugins: [
         createSourcemapIgnorelistPlugin(),
         SdPolyfillPlugin(["Chrome >= 61"]),
-        createSdNgPlugin(this._opt, this._modifiedFileSet, this._ngResultCache),
+        createSdNgPlugin(this._opt, this._modifiedFileSet, this._ngResultCache, this._outputPath),
         ...(this._conf.builderType === "electron"
           ? []
           : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
-        SdWorkerPathPlugin(this._outputPath),
         // {
         //   name: "log-circular",
         //   setup(build) {

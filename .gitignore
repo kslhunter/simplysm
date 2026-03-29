@@ -1,4 +1,5 @@
 .claude
+!.claude/**/my-*
 .idea/dictionaries
 .idea/workspace.xml
 .idea/queries
