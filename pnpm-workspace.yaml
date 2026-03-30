@@ -1,0 +1,11 @@
+packages:
+  - packages/*
+  - tests/*
+allowBuilds:
+  bufferutil: true
+  cpu-features: true
+  esbuild: true
+  ssh2: true
+  unrs-resolver: true
+  utf-8-validate: true
+  sharp: true

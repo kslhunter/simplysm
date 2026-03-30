@@ -1,0 +1,29 @@
+{
+  "name": "@simplysm/excel",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 엑셀 (neutral)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/excel"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "docs"
+  ],
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/node": "^20.19.37"
+  },
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "mime": "^4.1.0",
+    "zod": "^4.3.6"
+  }
+}

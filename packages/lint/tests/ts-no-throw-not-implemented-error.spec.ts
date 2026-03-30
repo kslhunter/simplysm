@@ -1,0 +1,245 @@
+import "./vitest.setup";
+import { describe } from "vitest";
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import rule from "../src/rules/ts-no-throw-not-implemented-error";
+
+const ruleTester = new RuleTester();
+
+describe("ts-no-throw-not-implemented-error rule", () => {
+  describe("allowed code (valid)", () => {
+    describe("다른 모듈의 NotImplementedError는 허용됨", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [
+          {
+            code: `
+              class NotImplementedError extends Error {}
+              throw new NotImplementedError();
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("@simplysm/core-common 이외 패키지의 NotImplementedError는 허용됨", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [
+          {
+            code: `
+              import { NotImplementedError } from "other-package";
+              throw new NotImplementedError();
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("usage without import is allowed", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [
+          {
+            code: `
+              declare const NotImplementedError: new (msg?: string) => Error;
+              new NotImplementedError();
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
+  });
+
+  describe("code that should cause errors (invalid)", () => {
+    describe("creating NotImplementedError imported from @simplysm/core-common with new", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              new NotImplementedError();
+            `,
+            errors: [{ messageId: "noThrowNotImplementedError" }],
+          },
+        ],
+      });
+    });
+
+    describe("usage with message", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError("This feature is not yet implemented");
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "This feature is not yet implemented" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("also detects when imported as alias", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError as NIE } from "@simplysm/core-common";
+              new NIE();
+            `,
+            errors: [{ messageId: "noThrowNotImplementedError" }],
+          },
+        ],
+      });
+    });
+
+    describe("multiple usages produce errors for each", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              new NotImplementedError("first");
+              new NotImplementedError("second");
+            `,
+            errors: [
+              { messageId: "noThrowNotImplementedError", data: { text: "first" } },
+              { messageId: "noThrowNotImplementedError", data: { text: "second" } },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("usage with namespace import", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import * as CoreCommon from "@simplysm/core-common";
+              throw new CoreCommon.NotImplementedError();
+            `,
+            errors: [{ messageId: "noThrowNotImplementedError" }],
+          },
+        ],
+      });
+    });
+
+    describe("template literal argument falls back to default message", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(\`dynamic message\`);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("numeric argument falls back to default message", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(123);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("empty string argument falls back to default message", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError("");
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+  });
+
+  describe("namespace import from other packages is allowed", () => {
+    ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+      valid: [
+        {
+          code: `
+            import * as OtherPkg from "other-package";
+            new OtherPkg.NotImplementedError();
+          `,
+        },
+      ],
+      invalid: [],
+    });
+  });
+
+  describe("limitation: re-exported NotImplementedError is not detected", () => {
+    ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+      valid: [
+        {
+          // re-exported from another module is not detected
+          code: `
+            import { NotImplementedError } from "./my-errors";
+            throw new NotImplementedError();
+          `,
+        },
+      ],
+      invalid: [],
+    });
+  });
+
+  describe("limitation: dynamic import is not detected", () => {
+    ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+      valid: [
+        {
+          // dynamic import usage is not detected
+          code: `
+            async function test() {
+              const { NotImplementedError } = await import("@simplysm/core-common");
+              throw new NotImplementedError();
+            }
+          `,
+        },
+      ],
+      invalid: [],
+    });
+  });
+});

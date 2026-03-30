@@ -1,0 +1,77 @@
+# Simplysm
+
+pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 경로: `packages/*`, 통합 테스트: `tests/*`
+
+## 기술 스택
+
+Angular 21, TypeScript 5.9, Fastify 5.8, Vitest, esbuild, ESLint, Prettier
+
+## 명령어
+
+모든 명령어는 내부적으로 `pnpm sd-cli <command>`를 실행한다. `--debug` 플래그는 모든 명령어에서 사용 가능하다.
+`[targets..]`를 생략하면 `sd.config.ts`에 정의된 모든 패키지를 대상으로 한다.
+대상은 패키지명으로 지정한다 (예: `core-common`).
+
+### 개발
+
+```bash
+pnpm dev [targets..]                     # 서버 패키지를 개발 모드로 실행
+pnpm dev -o key=value                    # sd.config.ts에 옵션 전달
+pnpm watch [targets..]                   # 라이브러리 패키지를 watch 빌드
+```
+
+### 빌드 & 배포
+
+```bash
+pnpm build [targets..]                   # 프로덕션 빌드
+pnpm pub [targets..]                     # 빌드 후 배포 (npm/sftp)
+pnpm pub:no-build                        # 빌드 없이 배포만
+pnpm pub --dry-run                       # 실제 배포 없이 시뮬레이션
+```
+
+### 코드 품질
+
+```bash
+pnpm check [targets..]                   # 전체 검사 (typecheck + lint + test 병렬)
+pnpm typecheck [targets..]               # TypeScript 타입 체크
+pnpm lint [targets..]                    # ESLint
+pnpm lint --fix [targets..]              # 린트 자동 수정
+pnpm test [targets..]                    # vitest 1회 실행
+```
+
+## 아키텍처
+
+의존 방향: 위 → 아래. `core-common`은 내부 의존성 없는 리프 패키지이다.
+
+```
+UI:       angular (Angular 21)
+서비스:   service-server (Fastify) / service-client / service-common
+ORM:      orm-node / orm-common
+코어:     core-common (중립) / core-browser / core-node
+유틸:     excel, storage (FTP/SFTP)
+모바일:   capacitor-plugin-* (4개: auto-update, broadcast, file-system, usb-storage)
+도구:     sd-cli (빌드/체크 CLI), lint (ESLint 공유 설정), sd-claude (Claude Code 에셋 동기화)
+```
+
+## 통합 테스트
+
+`tests/`에 위치. targets 없이 전체 패키지 수행하거나 `vitest`명령을 수동으로 구성하여 수행해야 한다.
+
+- `tests/orm` — DB 연결, DbContext 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
+- `tests/service` — 서비스 클라이언트-서버 통신 테스트.
+
+## 코딩 규칙
+
+- `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
+- `console.*` 금지, `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
+- `Buffer` 금지 → `Uint8Array` (복잡한 연산은 `@simplysm/core-common`의 `BytesUtils`), `events`/`eventemitter3` 금지 → `@simplysm/core-common`의 `EventEmitter`
+- `===` 필수 (`null` 비교만 `==` 허용), `require-await` 필수, 미사용 import 자동 제거
+- Prettier: `printWidth: 100`, `quoteProps: consistent`, `htmlWhitespaceSensitivity: ignore`, `endOfLine: lf`
+
+### 브라우저 호환성 (Chrome 61+)
+
+sd-cli의 `browserSupport.browserslist` 설정은 esbuild target으로 변환되어 **문법(syntax)만 다운레벨 컴파일**한다. 최신 문법(`?.`, `??`, `&&=` 등)은 esbuild가 변환하므로 자유롭게 사용 가능하다.
+
+**런타임 API는 esbuild가 폴리필하지 않는다.** 프로토타입 메서드, 전역 함수, 내장 객체의 신규 메서드 등 런타임 API를 사용할 때는 반드시 **Chrome 61에 해당 API가 존재하는지 확인**하고, 존재하지 않으면 사용하지 않는다. 단, 소비 프로젝트에서 `polyfills.ts`로 폴리필 가능한 API(예: `Array.prototype.flat`, `Object.fromEntries` 등 표준 프로토타입 메서드)는 예외로 사용 가능하다. 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
+
+**판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).

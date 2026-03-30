@@ -1,0 +1,28 @@
+{
+  "name": "@simplysm/storage",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 저장소 (node)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/storage"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "basic-ftp": "^5.2.0",
+    "ssh2-sftp-client": "^12.1.1"
+  },
+  "devDependencies": {
+    "@types/ssh2-sftp-client": "^9.0.6"
+  }
+}

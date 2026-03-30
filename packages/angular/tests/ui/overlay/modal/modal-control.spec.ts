@@ -1,0 +1,189 @@
+import { describe, it, expect } from "vitest";
+import { TestBed } from "@angular/core/testing";
+import {
+  SdModalTestControlDefault,
+  SdModalTestNoBackdrop,
+  SdModalTestNoEsc,
+  SdModalTestHideCloseButton,
+  SdModalTestHideHeader,
+} from "./sd-modal-test.fixture";
+import { SdActivatedModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
+
+function setup(component: any) {
+  TestBed.configureTestingModule({ imports: [component] });
+  const fixture = TestBed.createComponent(component);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  return fixture;
+}
+
+function getModal(fixture: any): HTMLElement {
+  return fixture.nativeElement.querySelector("sd-modal") as HTMLElement;
+}
+
+function getBackdrop(modal: HTMLElement): HTMLElement | null {
+  return modal.querySelector("._backdrop");
+}
+
+function getDialog(modal: HTMLElement): HTMLElement | null {
+  return modal.querySelector("._dialog");
+}
+
+function getHeader(modal: HTMLElement): HTMLElement | null {
+  return modal.querySelector("._header");
+}
+
+function getCloseButton(modal: HTMLElement): HTMLElement | null {
+  return modal.querySelector("._close-btn");
+}
+
+function pressKey(el: HTMLElement, key: string): void {
+  el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+}
+
+describe("Feature 3.2 Slice 2: SdModalControl 렌더링 + 닫기", () => {
+  // Acceptance: 배경 클릭 닫기 활성화
+  it("useCloseByBackdrop=true (기본값)이면 배경 클릭 시 closeRequest가 발생한다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+    const backdrop = getBackdrop(modal);
+
+    expect(backdrop).not.toBeNull();
+    backdrop!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(true);
+  });
+
+  // Acceptance: 배경 클릭 닫기 비활성화
+  it("useCloseByBackdrop=false이면 배경 클릭해도 closeRequest가 발생하지 않는다", () => {
+    const fixture = setup(SdModalTestNoBackdrop);
+    const modal = getModal(fixture);
+    const backdrop = getBackdrop(modal);
+
+    expect(backdrop).not.toBeNull();
+    backdrop!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(false);
+  });
+
+  // Acceptance: ESC 키 닫기 활성화
+  it("useCloseByEscapeKey=true (기본값)이면 ESC 키로 closeRequest가 발생한다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+    const dialog = getDialog(modal);
+
+    expect(dialog).not.toBeNull();
+    pressKey(dialog!, "Escape");
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(true);
+  });
+
+  // Acceptance: ESC 키 닫기 비활성화
+  it("useCloseByEscapeKey=false이면 ESC 키를 눌러도 closeRequest가 발생하지 않는다", () => {
+    const fixture = setup(SdModalTestNoEsc);
+    const modal = getModal(fixture);
+    const dialog = getDialog(modal);
+
+    expect(dialog).not.toBeNull();
+    pressKey(dialog!, "Escape");
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(false);
+  });
+
+  // Acceptance: 닫기 버튼 클릭
+  it("닫기 버튼 클릭 시 closeRequest가 발생한다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+    const closeBtn = getCloseButton(modal);
+
+    expect(closeBtn).not.toBeNull();
+    closeBtn!.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(true);
+  });
+
+  // Acceptance: 닫기 버튼 숨김
+  it("hideCloseButton=true이면 닫기 버튼이 표시되지 않는다", () => {
+    const fixture = setup(SdModalTestHideCloseButton);
+    const modal = getModal(fixture);
+    const closeBtn = getCloseButton(modal);
+
+    expect(closeBtn).toBeNull();
+  });
+
+  // Acceptance: 헤더 숨김
+  it("hideHeader=true이면 헤더가 표시되지 않는다", () => {
+    const fixture = setup(SdModalTestHideHeader);
+    const modal = getModal(fixture);
+    const header = getHeader(modal);
+
+    expect(header).toBeNull();
+  });
+
+  // Acceptance: canDeactivefn이 닫기 차단
+  it("canDeactivefn()이 false이면 배경 클릭, ESC, 닫기 버튼 모두 닫기가 차단된다", () => {
+    const activatedModal = new SdActivatedModalProvider();
+    activatedModal.canDeactivefn = () => false;
+
+    TestBed.configureTestingModule({
+      imports: [SdModalTestControlDefault],
+      providers: [{ provide: SdActivatedModalProvider, useValue: activatedModal }],
+    });
+    const fixture = TestBed.createComponent(SdModalTestControlDefault);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const modal = getModal(fixture);
+
+    // 배경 클릭
+    getBackdrop(modal)!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed).toBe(false);
+
+    // ESC 키
+    pressKey(getDialog(modal)!, "Escape");
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed).toBe(false);
+
+    // 닫기 버튼
+    getCloseButton(modal)!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.closed).toBe(false);
+  });
+
+  // Unit: canDeactivefn()이 true이면 닫기가 허용된다
+  it("canDeactivefn()이 true이면 닫기 버튼으로 닫기가 허용된다", () => {
+    const activatedModal = new SdActivatedModalProvider();
+    activatedModal.canDeactivefn = () => true;
+
+    TestBed.configureTestingModule({
+      imports: [SdModalTestControlDefault],
+      providers: [{ provide: SdActivatedModalProvider, useValue: activatedModal }],
+    });
+    const fixture = TestBed.createComponent(SdModalTestControlDefault);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const modal = getModal(fixture);
+    getCloseButton(modal)!.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(true);
+  });
+
+  // Unit: SdActivatedModalProvider가 없어도(optional inject) 닫기가 작동한다
+  it("SdActivatedModalProvider가 없어도 닫기가 정상 작동한다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+
+    getCloseButton(modal)!.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.closed).toBe(true);
+  });
+});

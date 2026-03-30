@@ -1,0 +1,36 @@
+@use "../commons/variables";
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+@for $i from 1 through 12 {
+  .grid-#{$i} {
+    grid-column-end: span #{$i};
+  }
+}
+
+@media (max-width: variables.$breakpoint-sm) {
+  @for $i from 1 through 12 {
+    .grid-sm-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}
+
+@media (max-width: variables.$breakpoint-xs) {
+  @for $i from 1 through 12 {
+    .grid-xs-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}
+
+@media (max-width: variables.$breakpoint-xxs) {
+  @for $i from 1 through 12 {
+    .grid-xxs-#{$i} {
+      grid-column-end: span #{$i};
+    }
+  }
+}

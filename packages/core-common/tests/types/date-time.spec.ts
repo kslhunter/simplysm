@@ -1,0 +1,268 @@
+import { describe, it, expect } from "vitest";
+import { DateTime } from "@simplysm/core-common";
+
+describe("DateTime", () => {
+  describe("constructor", () => {
+    it("default constructor uses current time", () => {
+      const before = Date.now();
+      const dt = new DateTime();
+      const after = Date.now();
+
+      expect(dt.tick).toBeGreaterThanOrEqual(before);
+      expect(dt.tick).toBeLessThanOrEqual(after);
+    });
+
+    it("creates with year, month, day, hour, minute, second, millisecond", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45, 123);
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(15);
+      expect(dt.hour).toBe(10);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+      expect(dt.millisecond).toBe(123);
+    });
+
+    it("creates with tick", () => {
+      const tick = 1710489045123;
+      const dt = new DateTime(tick);
+
+      expect(dt.tick).toBe(tick);
+    });
+
+    it("creates with Date object", () => {
+      const date = new Date(2024, 2, 15, 10, 30, 45, 123);
+      const dt = new DateTime(date);
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(15);
+    });
+
+    it("creates leap year February 29th", () => {
+      const dt = new DateTime(2024, 2, 29);
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(2);
+      expect(dt.day).toBe(29);
+      expect(dt.isValid).toBe(true);
+    });
+  });
+
+  describe("parse()", () => {
+    it("parses ISO 8601 format", () => {
+      const dt = DateTime.parse("2024-03-15T10:30:45.123Z");
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(15);
+    });
+
+    it("parses yyyy-MM-dd HH:mm:ss format", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45");
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(15);
+      expect(dt.hour).toBe(10);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+    });
+
+    it("parses format with milliseconds", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.123");
+
+      expect(dt.millisecond).toBe(123);
+    });
+
+    it("pads 1-digit milliseconds to 100ms unit (ISO 8601)", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.1");
+
+      expect(dt.millisecond).toBe(100);
+    });
+
+    it("pads 2-digit milliseconds to 10ms unit (ISO 8601)", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.01");
+
+      expect(dt.millisecond).toBe(10);
+    });
+
+    it("parses 3-digit milliseconds as-is", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.001");
+
+      expect(dt.millisecond).toBe(1);
+    });
+
+    it("parses yyyyMMddHHmmss format", () => {
+      const dt = DateTime.parse("20240315103045");
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(15);
+      expect(dt.hour).toBe(10);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+    });
+
+    it("parses Korean AM/PM format", () => {
+      const dtAm = DateTime.parse("2024-03-15 오전 10:30:45");
+      expect(dtAm.hour).toBe(10);
+
+      const dtPm = DateTime.parse("2024-03-15 오후 02:30:45");
+      expect(dtPm.hour).toBe(14);
+    });
+
+    it("PM 12:00:00은 정오(12시)", () => {
+      const dt = DateTime.parse("2024-03-15 오후 12:00:00");
+
+      expect(dt.hour).toBe(12);
+      expect(dt.minute).toBe(0);
+      expect(dt.second).toBe(0);
+    });
+
+    it("AM 12:00:00은 자정(0시)", () => {
+      const dt = DateTime.parse("2024-03-15 오전 12:00:00");
+
+      expect(dt.hour).toBe(0);
+      expect(dt.minute).toBe(0);
+      expect(dt.second).toBe(0);
+    });
+
+    it("PM 12:30:45는 오후(12:30:45)", () => {
+      const dt = DateTime.parse("2024-03-15 오후 12:30:45");
+
+      expect(dt.hour).toBe(12);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+    });
+
+    it("AM 12:30:45는 자정 이후(0:30:45)", () => {
+      const dt = DateTime.parse("2024-03-15 오전 12:30:45");
+
+      expect(dt.hour).toBe(0);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+    });
+
+    it("throws error for invalid format", () => {
+      expect(() => DateTime.parse("invalid")).toThrow();
+    });
+  });
+
+  describe("불변성", () => {
+    it("setYear returns new instance", () => {
+      const dt1 = new DateTime(2024, 3, 15);
+      const dt2 = dt1.setYear(2025);
+
+      expect(dt1.year).toBe(2024);
+      expect(dt2.year).toBe(2025);
+      expect(dt1).not.toBe(dt2);
+    });
+
+    it("setMonth returns new instance", () => {
+      const dt1 = new DateTime(2024, 3, 15);
+      const dt2 = dt1.setMonth(6);
+
+      expect(dt1.month).toBe(3);
+      expect(dt2.month).toBe(6);
+    });
+
+    it("setYear clamps February 29 to 28 for non-leap year", () => {
+      const dt1 = new DateTime(2024, 2, 29, 10, 30, 0, 0);
+      const dt2 = dt1.setYear(2025);
+
+      expect(dt2.year).toBe(2025);
+      expect(dt2.month).toBe(2);
+      expect(dt2.day).toBe(28);
+      expect(dt2.hour).toBe(10);
+      expect(dt2.minute).toBe(30);
+    });
+
+    it("addYears clamps February 29 when crossing leap year boundary", () => {
+      const dt1 = new DateTime(2024, 2, 29, 10, 30, 0, 0);
+      const dt2 = dt1.addYears(1);
+
+      expect(dt2.year).toBe(2025);
+      expect(dt2.month).toBe(2);
+      expect(dt2.day).toBe(28);
+      expect(dt2.hour).toBe(10);
+      expect(dt2.minute).toBe(30);
+    });
+
+    it("setMonth adjusts to last day of target month", () => {
+      // January 31st → February (adjusted to 28th or 29th)
+      const dt1 = new DateTime(2024, 1, 31);
+      const dt2 = dt1.setMonth(2);
+
+      expect(dt2.month).toBe(2);
+      expect(dt2.day).toBe(29); // 2024 is leap year
+    });
+
+    it("setMonth(13) returns next year January", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(13);
+
+      expect(result.year).toBe(2025);
+      expect(result.month).toBe(1);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(0) returns previous year December", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(0);
+
+      expect(result.year).toBe(2023);
+      expect(result.month).toBe(12);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(-1) returns previous year November", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(-1);
+
+      expect(result.year).toBe(2023);
+      expect(result.month).toBe(11);
+      expect(result.day).toBe(15);
+    });
+  });
+
+  describe("산술 메서드", () => {
+    it("addDays", () => {
+      const dt1 = new DateTime(2024, 3, 15);
+      const dt2 = dt1.addDays(20);
+
+      expect(dt2.month).toBe(4);
+      expect(dt2.day).toBe(4);
+    });
+
+    it("addMinutes", () => {
+      const dt1 = new DateTime(2024, 3, 15, 10, 30);
+      const dt2 = dt1.addMinutes(45);
+
+      expect(dt2.hour).toBe(11);
+      expect(dt2.minute).toBe(15);
+    });
+  });
+
+  describe("isValid", () => {
+    it("valid datetime returns true", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45);
+      expect(dt.isValid).toBe(true);
+    });
+
+    it("invalid datetime returns false", () => {
+      const dt = new DateTime(NaN);
+      expect(dt.isValid).toBe(false);
+    });
+  });
+
+  describe("toString()", () => {
+    it("returns ISO 8601 format", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45, 123);
+      const str = dt.toString();
+
+      expect(str).toMatch(/^2024-03-15T10:30:45\.123[+-]\d{2}:\d{2}$/);
+    });
+  });
+});

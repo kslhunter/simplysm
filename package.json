@@ -1,0 +1,42 @@
+{
+  "name": "simplysm",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지",
+  "author": "심플리즘",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "watch": "pnpm sd-cli watch",
+    "dev": "pnpm sd-cli dev",
+    "build": "pnpm sd-cli build",
+    "pub": "pnpm sd-cli publish",
+    "pub:no-build": "pnpm sd-cli --no-build",
+    "---": "",
+    "check": "pnpm sd-cli check",
+    "typecheck": "pnpm sd-cli check --type typecheck",
+    "test": "pnpm sd-cli check --type test",
+    "lint": "pnpm sd-cli check --type lint",
+    "----": "",
+    "sd-cli": "tsx packages/sd-cli/src/sd-cli.ts",
+    "postinstall": "playwright-cli install --skills"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.3.1",
+    "@playwright/cli": "^0.1.1",
+    "@vitest/browser-playwright": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.2",
+    "esbuild": "^0.27.4",
+    "eslint": "^9.39.4",
+    "jiti": "^2.6.1",
+    "jsdom": "^29.0.1",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}

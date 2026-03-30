@@ -1,0 +1,237 @@
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  type InputSignal,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  SdModalProvider,
+  type ISdModal,
+  type ISdModalInfo,
+  type ISdModalOptions,
+} from "../../overlay/modal/sd-modal.provider";
+import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
+import type { TSelectModeValue } from "../select/sd-select.control";
+import { SdAnchorControl } from "./sd-anchor.control";
+import { SdButtonControl } from "./sd-button.control";
+import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
+import { NgIcon } from "@ng-icons/core";
+import { tablerSearch, tablerEraser } from "@ng-icons/tabler-icons";
+
+/**
+ * 모달 선택 컴포넌트가 구현해야 하는 인터페이스
+ * ISdModal을 확장하여 selectMode와 selectedItemKeys를 추가한다.
+ */
+export interface ISdSelectModal<T> extends ISdModal<ISelectModalOutputResult<T>> {
+  selectMode: InputSignal<"single" | "multi">;
+  selectedItemKeys: InputSignal<T[]>;
+}
+
+/**
+ * 모달 선택 결과
+ */
+export interface ISelectModalOutputResult<T> {
+  selectedItemKeys: T[];
+  selectedItems: Record<string, unknown>[];
+}
+
+/**
+ * 모달 선택 정보 (selectMode/selectedItemKeys를 제외한 inputs)
+ */
+export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = Omit<
+  ISdModalInfo<T>,
+  "inputs"
+> & {
+  inputs: Omit<
+    TDirectiveInputSignals<T>,
+    "initialized" | "close" | "actionTplRef" | "selectMode" | "selectedItemKeys"
+  >;
+};
+
+@Component({
+  selector: "sd-modal-select-button",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdAnchorControl, SdButtonControl, NgIcon],
+  template: `
+    <div class="_content">
+      <ng-content />
+    </div>
+    <div class="_button">
+      @if (!disabled() && !required() && _hasValue()) {
+        <sd-anchor data-sd-eraser [theme]="'danger'" (click)="onEraseClick()">
+          <ng-icon [svg]="tablerEraser" />
+        </sd-anchor>
+      }
+      @if (!disabled()) {
+        <sd-button [inset]="true" (click)="onSearchClick()">
+          <ng-icon [svg]="tablerSearch" />
+        </sd-button>
+      }
+    </div>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @use "../../../../scss/commons/mixins";
+
+      sd-modal-select-button {
+        display: flex;
+        flex-direction: row;
+        gap: var(--gap-sm);
+        position: relative;
+
+        border: 1px solid var(--trans-light);
+        border-radius: var(--border-radius-default);
+        overflow: hidden;
+
+        > ._content {
+          flex: 1;
+          padding: var(--gap-sm) var(--gap-default);
+        }
+
+        > ._button {
+          display: flex;
+          flex-wrap: nowrap;
+          @include mixins.flex-direction(row);
+
+          > sd-anchor {
+            padding: var(--gap-sm) !important;
+          }
+
+          > sd-button > button {
+            border-left: 1px solid var(--trans-lighter) !important;
+            padding: var(--gap-sm) !important;
+            height: 100%;
+          }
+        }
+
+        &[data-sd-inset="true"] {
+          border-radius: 0;
+          border: none;
+        }
+
+        &[data-sd-size="sm"] {
+          > ._content {
+            padding: var(--gap-xs) var(--gap-default);
+          }
+
+          > ._button {
+            > sd-anchor {
+              padding: var(--gap-xs) var(--gap-sm) !important;
+            }
+
+            > sd-button > button {
+              padding: var(--gap-xs) var(--gap-sm) !important;
+            }
+          }
+        }
+
+        &[data-sd-size="lg"] {
+          > ._content {
+            padding: var(--gap-default) var(--gap-xl);
+          }
+
+          > ._button {
+            > sd-anchor {
+              padding: var(--gap-default) !important;
+            }
+
+            > sd-button > button {
+              padding: var(--gap-default) !important;
+            }
+          }
+        }
+      }
+    `,
+  ],
+  host: {
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-disabled]": "disabled()",
+  },
+})
+export class SdModalSelectButtonControl {
+  private readonly _sdModal = inject(SdModalProvider);
+
+  selectMode = input<"single" | "multi">("single");
+  value = model<TSelectModeValue<any>>();
+  selectedItems = model<Record<string, unknown>[]>([]);
+  disabled = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  modal = input<TSdSelectModalInfo<any>>();
+  modalOptions = input<ISdModalOptions>();
+  size = input<"sm" | "lg">();
+  inset = input(false, { transform: booleanAttribute });
+
+  protected readonly tablerSearch = tablerSearch;
+  protected readonly tablerEraser = tablerEraser;
+
+  _hasValue = computed(() => {
+    const v = this.value();
+    if (v == null) return false;
+    if (Array.isArray(v)) return v.length > 0;
+    return true;
+  });
+
+  constructor() {
+    setupInvalid(() => {
+      if (!this.required()) return "";
+      const v = this.value();
+      if (v == null) return "선택된 항목이 없습니다.";
+      if (Array.isArray(v) && v.length === 0) return "선택된 항목이 없습니다.";
+      return "";
+    });
+  }
+
+  onEraseClick(): void {
+    if (this.selectMode() === "multi") {
+      this.value.set([]);
+    } else {
+      this.value.set(undefined);
+    }
+    this.selectedItems.set([]);
+  }
+
+  async onSearchClick(): Promise<void> {
+    const modalInfo = this.modal();
+    if (modalInfo == null) return;
+
+    const currentValue = this.value();
+    const selectedItemKeys: any[] =
+      this.selectMode() === "multi"
+        ? (currentValue as any[] | undefined) ?? []
+        : currentValue != null
+          ? [currentValue]
+          : [];
+
+    const result = await this._sdModal.showAsync(
+      {
+        title: modalInfo.title,
+        type: modalInfo.type,
+        inputs: {
+          ...modalInfo.inputs,
+          selectMode: this.selectMode(),
+          selectedItemKeys,
+        } as any,
+      },
+      this.modalOptions(),
+    );
+
+    if (result == null) return;
+
+    const typedResult = result as ISelectModalOutputResult<any>;
+
+    if (this.selectMode() === "multi") {
+      this.value.set(typedResult.selectedItemKeys);
+    } else {
+      this.value.set(typedResult.selectedItemKeys[0]);
+    }
+    this.selectedItems.set(typedResult.selectedItems);
+  }
+}

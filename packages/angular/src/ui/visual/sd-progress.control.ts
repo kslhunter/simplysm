@@ -1,0 +1,88 @@
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
+import { PercentPipe } from "@angular/common";
+
+@Component({
+  selector: "sd-progress",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [PercentPipe],
+  host: {
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
+  },
+  template: `
+    <div class="_content tx-right">
+      {{ value() | percent: "1.0-2" }}
+    </div>
+    <div class="_progress" [style.width]="value() * 100 + '%'"></div>
+  `,
+  styles: [
+    /* language=SCSS */ `
+      @use "sass:map";
+
+      @use "../../../scss/commons/variables";
+
+      sd-progress {
+        position: relative;
+        display: block;
+        width: 100%;
+        white-space: nowrap;
+        background: var(--theme-gray-lightest);
+        border: 1px solid var(--theme-gray-lightest);
+        border-radius: var(--border-radius-default);
+        overflow: hidden;
+
+        > ._content {
+          position: relative;
+          z-index: 2;
+          padding: var(--gap-lg) var(--gap-default);
+        }
+
+        > ._progress {
+          position: absolute;
+          z-index: 1;
+          top: 0;
+          left: 0;
+          height: 100%;
+        }
+
+        @each $key, $val in map.get(variables.$vars, theme) {
+          &[data-sd-theme="#{$key}"] > ._progress {
+            background: var(--theme-#{$key}-default);
+          }
+        }
+
+        &[data-sd-size="sm"] > ._content {
+          padding: var(--gap-xs) var(--gap-default);
+        }
+
+        &[data-sd-size="lg"] > ._content {
+          padding: var(--gap-default) var(--gap-xl);
+        }
+
+        &[data-sd-inset="true"] {
+          border-radius: 0;
+          border: none;
+          background: var(--control-color);
+        }
+      }
+    `,
+  ],
+})
+export class SdProgressControl {
+  inset = input(false, { transform: booleanAttribute });
+  size = input<"sm" | "lg">();
+  theme = input.required<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
+
+  value = input.required<number>();
+}

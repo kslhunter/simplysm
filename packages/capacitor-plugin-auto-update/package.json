@@ -1,0 +1,40 @@
+{
+  "name": "@simplysm/capacitor-plugin-auto-update",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - Capacitor 자동 업데이트 플러그인",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/capacitor-plugin-auto-update"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "android"
+  ],
+  "dependencies": {
+    "@simplysm/capacitor-plugin-file-system": "workspace:*",
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "semver": "^7.7.4"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.6.1",
+    "@types/semver": "^7.7.1"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

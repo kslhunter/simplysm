@@ -1,0 +1,186 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import path from "path";
+
+vi.mock("fs/promises", () => ({
+  default: {
+    readFile: vi.fn(),
+    writeFile: vi.fn(),
+    mkdir: vi.fn(),
+  },
+}));
+
+vi.mock("consola", () => ({
+  consola: {
+    withTag: vi.fn(() => ({
+      debug: vi.fn(),
+    })),
+  },
+}));
+
+const { createServerEsbuildOptions, writeChangedOutputFiles } =
+  await import("../../src/utils/esbuild-config");
+
+const { default: mockFs } = await import("fs/promises");
+
+describe("createServerEsbuildOptions", () => {
+  const baseOptions = {
+    pkgDir: "/pkg",
+    entryPoints: ["/pkg/src/index.ts"],
+  };
+
+  it("produces ESM bundle with platform=node and target=node20", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.format).toBe("esm");
+    expect(result.bundle).toBe(true);
+    expect(result.platform).toBe("node");
+    expect(result.target).toBe("node20");
+  });
+
+  it("minifies by default (production build)", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.minify).toBe(true);
+  });
+
+  it("skips minification when dev=true (watch mode)", () => {
+    const result = createServerEsbuildOptions({ ...baseOptions, dev: true });
+    expect(result.minify).toBe(false);
+  });
+
+  it("includes createRequire shim banner for CJS compatibility", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.banner).toBeDefined();
+    expect((result.banner as Record<string, string>)["js"]).toContain("createRequire");
+    expect((result.banner as Record<string, string>)["js"]).toContain("import.meta.url");
+  });
+
+  it("substitutes env vars via define (process.env.KEY → constant)", () => {
+    const result = createServerEsbuildOptions({
+      ...baseOptions,
+      env: { API_URL: "https://api.example.com", NODE_ENV: "production" },
+    });
+    expect(result.define).toEqual({
+      "process.env.API_URL": '"https://api.example.com"',
+      "process.env.NODE_ENV": '"production"',
+    });
+  });
+
+  it("produces empty define when env is not provided", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.define).toEqual({});
+  });
+
+  it("passes external modules to esbuild", () => {
+    const result = createServerEsbuildOptions({
+      ...baseOptions,
+      external: ["bcrypt", "sharp"],
+    });
+    expect(result.external).toEqual(["bcrypt", "sharp"]);
+  });
+
+  it("sets outdir to pkgDir/dist", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.outdir).toBe(path.join("/pkg", "dist"));
+  });
+
+  it("sets tsconfig to pkgDir/tsconfig.json", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.tsconfig).toBe(path.join("/pkg", "tsconfig.json"));
+  });
+});
+
+describe("writeChangedOutputFiles", () => {
+  beforeEach(() => {
+    vi.mocked(mockFs.readFile).mockReset();
+    vi.mocked(mockFs.writeFile).mockReset();
+    vi.mocked(mockFs.mkdir).mockReset();
+    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined as any);
+    vi.mocked(mockFs.writeFile).mockResolvedValue();
+  });
+
+  it("adds .js extension to relative import paths in .js files", async () => {
+    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
+
+    await writeChangedOutputFiles([
+      {
+        path: "/pkg/dist/foo.js",
+        text: 'import { bar } from "./bar";\nexport { baz } from "../utils/baz";',
+      },
+    ] as any);
+
+    expect(mockFs.writeFile).toHaveBeenCalledWith(
+      "/pkg/dist/foo.js",
+      'import { bar } from "./bar.js";\nexport { baz } from "../utils/baz.js";',
+    );
+  });
+
+  it("preserves imports that already have extensions", async () => {
+    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
+
+    await writeChangedOutputFiles([
+      {
+        path: "/pkg/dist/foo.js",
+        text: 'import data from "./data.json";\nimport styles from "./styles.css";\nimport mod from "./native.node";',
+      },
+    ] as any);
+
+    expect(mockFs.writeFile).toHaveBeenCalledWith(
+      "/pkg/dist/foo.js",
+      'import data from "./data.json";\nimport styles from "./styles.css";\nimport mod from "./native.node";',
+    );
+  });
+
+  it("skips writing when transformed content matches existing file", async () => {
+    vi.mocked(mockFs.readFile).mockResolvedValue('import { bar } from "./bar.js";' as any);
+
+    const hasChanges = await writeChangedOutputFiles([
+      {
+        path: "/pkg/dist/foo.js",
+        text: 'import { bar } from "./bar";',
+      },
+    ] as any);
+
+    expect(mockFs.writeFile).not.toHaveBeenCalled();
+    expect(hasChanges).toBe(false);
+  });
+
+  it("writes file and returns true when content changed", async () => {
+    vi.mocked(mockFs.readFile).mockResolvedValue('import { old } from "./old.js";' as any);
+
+    const hasChanges = await writeChangedOutputFiles([
+      {
+        path: "/pkg/dist/foo.js",
+        text: 'import { bar } from "./bar";',
+      },
+    ] as any);
+
+    expect(mockFs.writeFile).toHaveBeenCalled();
+    expect(hasChanges).toBe(true);
+  });
+
+  it("writes new file when existing file does not exist", async () => {
+    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("ENOENT"));
+
+    const hasChanges = await writeChangedOutputFiles([
+      {
+        path: "/pkg/dist/foo.js",
+        text: 'const x = 1;',
+      },
+    ] as any);
+
+    expect(mockFs.mkdir).toHaveBeenCalledWith(path.dirname("/pkg/dist/foo.js"), { recursive: true });
+    expect(mockFs.writeFile).toHaveBeenCalledWith("/pkg/dist/foo.js", "const x = 1;");
+    expect(hasChanges).toBe(true);
+  });
+
+  it("does not transform non-.js files", async () => {
+    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
+
+    const mapContent = '{"version":3,"sources":["./bar"]}';
+    await writeChangedOutputFiles([
+      { path: "/pkg/dist/foo.js.map", text: mapContent },
+    ] as any);
+
+    expect(mockFs.writeFile).toHaveBeenCalledWith("/pkg/dist/foo.js.map", mapContent);
+  });
+});
+

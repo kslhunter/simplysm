@@ -1,0 +1,35 @@
+{
+  "name": "@simplysm/capacitor-plugin-file-system",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - Capacitor 파일 시스템 플러그인",
+  "author": "simplysm",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/capacitor-plugin-file-system"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "android"
+  ],
+  "dependencies": {
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.6.1"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

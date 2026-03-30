@@ -1,0 +1,23 @@
+@use "mixins";
+@use "variables";
+@use "../themes/variables-dark" as dark;
+
+@layer base, theme-variant, utilities;
+
+@layer base {
+  :root {
+    @include mixins.writeVars(variables.$colors, "color");
+    @include mixins.writeVars(variables.$vars, "");
+  }
+}
+
+@layer theme-variant {
+  .sd-theme-dark {
+    @include mixins.writeVars(dark.$vars, "");
+  }
+
+  // D7: opt-out 방식 이미지 반전
+  .sd-theme-dark img:not(.no-invert) {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@simplysm/core-browser",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 코어 (browser)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/core-browser"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "docs"
+  ],
+  "sideEffects": [
+    "./src/extensions/element-ext.ts",
+    "./src/extensions/html-element-ext.ts",
+    "./dist/extensions/element-ext.js",
+    "./dist/extensions/html-element-ext.js"
+  ],
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "tabbable": "^6.4.0"
+  }
+}

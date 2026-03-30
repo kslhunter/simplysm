@@ -1,0 +1,66 @@
+{
+  "name": "@simplysm/angular",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - Angular",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/angular"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/styles.css",
+  "files": [
+    "dist",
+    "src",
+    "scss",
+    "docs"
+  ],
+  "sideEffects": [
+    "./src/index.ts",
+    "./dist/index.js",
+    "./dist/**/*.css"
+  ],
+  "dependencies": {
+    "@angular/animations": "^21.2.6",
+    "@angular/common": "^21.2.6",
+    "@angular/core": "^21.2.6",
+    "@angular/platform-browser": "^21.2.6",
+    "@angular/router": "^21.2.6",
+    "@angular/service-worker": "^21.2.6",
+    "@ng-icons/core": "^33.2.0",
+    "@ng-icons/tabler-icons": "^33.2.0",
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "@tiptap/core": "^3.21.0",
+    "@tiptap/extension-bold": "^3.21.0",
+    "@tiptap/extension-color": "^3.21.0",
+    "@tiptap/extension-document": "^3.21.0",
+    "@tiptap/extension-highlight": "^3.21.0",
+    "@tiptap/extension-image": "^3.21.0",
+    "@tiptap/extension-paragraph": "^3.21.0",
+    "@tiptap/extension-placeholder": "^3.21.0",
+    "@tiptap/extension-text": "^3.21.0",
+    "@tiptap/extension-text-align": "^3.21.0",
+    "@tiptap/extension-text-style": "^3.21.0",
+    "@tiptap/extension-underline": "^3.21.0",
+    "@tiptap/pm": "^3.21.0",
+    "@tiptap/starter-kit": "^3.21.0",
+    "bwip-js": "^4.8.0",
+    "echarts": "^6.0.0",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
+    "rxjs": "^7.8.2",
+    "tabbable": "^6.4.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^21.2.6",
+    "@angular/platform-browser-dynamic": "^21.2.6"
+  },
+  "scripts": {}
+}

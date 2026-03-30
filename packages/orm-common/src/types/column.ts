@@ -1,0 +1,188 @@
+import { DateOnly, DateTime, Time, Uuid, type Bytes } from "@simplysm/core-common";
+
+// ============================================
+// DataType (SQL 타입 정의)
+// ============================================
+
+/**
+ * SQL 데이터 타입 정의
+ *
+ * DBMS 매핑:
+ * - `int`: INT (4 bytes)
+ * - `bigint`: BIGINT (8 bytes)
+ * - `float`: FLOAT/REAL (4 bytes)
+ * - `double`: DOUBLE/FLOAT (8 bytes)
+ * - `decimal`: DECIMAL(precision, scale)
+ * - `varchar`: VARCHAR(length)
+ * - `char`: CHAR(length)
+ * - `text`: TEXT/LONGTEXT
+ * - `binary`: LONGBLOB/VARBINARY(MAX)/BYTEA
+ * - `boolean`: TINYINT(1)/BIT/BOOLEAN
+ * - `datetime`: DATETIME
+ * - `date`: DATE
+ * - `time`: TIME
+ * - `uuid`: BINARY(16)/UNIQUEIDENTIFIER/UUID
+ *
+ * @example
+ * ```typescript
+ * const intType: DataType = { type: "int" };
+ * const decimalType: DataType = { type: "decimal", precision: 10, scale: 2 };
+ * const varcharType: DataType = { type: "varchar", length: 100 };
+ * ```
+ */
+export type DataType =
+  | { type: "int" }
+  | { type: "bigint" }
+  | { type: "float" }
+  | { type: "double" }
+  | { type: "decimal"; precision: number; scale?: number }
+  | { type: "varchar"; length: number }
+  | { type: "char"; length: number }
+  | { type: "text" }
+  | { type: "binary" }
+  | { type: "boolean" }
+  | { type: "datetime" }
+  | { type: "date" }
+  | { type: "time" }
+  | { type: "uuid" };
+
+// ============================================
+// ColumnPrimitive (TypeScript 타입)
+// ============================================
+
+/**
+ * Column 원시 타입 매핑
+ *
+ * TypeScript 타입 이름 (문자열) → 실제 TypeScript 타입 매핑
+ *
+ * @example
+ * ```typescript
+ * type StringType = ColumnPrimitiveMap["string"];  // string
+ * type DateTimeType = ColumnPrimitiveMap["DateTime"];  // DateTime
+ * ```
+ */
+export type ColumnPrimitiveMap = {
+  string: string;
+  number: number;
+  boolean: boolean;
+  DateTime: DateTime;
+  DateOnly: DateOnly;
+  Time: Time;
+  Uuid: Uuid;
+  Bytes: Bytes;
+};
+
+/**
+ * Column 원시 타입 이름 (문자열)
+ *
+ * @example
+ * ```typescript
+ * const typeStr: ColumnPrimitiveStr = "string";  // OK
+ * const typeStr2: ColumnPrimitiveStr = "invalid";  // Error
+ * ```
+ */
+export type ColumnPrimitiveStr = keyof ColumnPrimitiveMap;
+
+/**
+ * Column에 저장 가능한 모든 원시 타입
+ *
+ * undefined는 NULL을 나타냄
+ */
+export type ColumnPrimitive = ColumnPrimitiveMap[ColumnPrimitiveStr] | undefined;
+
+// ============================================
+// DataType ↔ ColumnPrimitive Mapping
+// ============================================
+
+/**
+ * SQL DataType → TypeScript 타입 이름 매핑
+ *
+ * @example
+ * ```typescript
+ * const tsType = dataTypeStrToColumnPrimitiveStr["int"];  // "number"
+ * const tsType2 = dataTypeStrToColumnPrimitiveStr["datetime"];  // "DateTime"
+ * ```
+ */
+export const dataTypeStrToColumnPrimitiveStr = {
+  int: "number" as const,
+  bigint: "number" as const,
+  float: "number" as const,
+  double: "number" as const,
+  decimal: "number" as const,
+  varchar: "string" as const,
+  char: "string" as const,
+  text: "string" as const,
+  binary: "Bytes" as const,
+  boolean: "boolean" as const,
+  datetime: "DateTime" as const,
+  date: "DateOnly" as const,
+  time: "Time" as const,
+  uuid: "Uuid" as const,
+};
+
+/**
+ * DataType으로부터 TypeScript 타입 추론
+ *
+ * @template T - DataType
+ *
+ * @example
+ * ```typescript
+ * type IntType = InferColumnPrimitiveFromDataType<{ type: "int" }>;  // number
+ * type VarcharType = InferColumnPrimitiveFromDataType<{ type: "varchar"; length: 100 }>;  // string
+ * ```
+ */
+export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
+  ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[TDataType["type"]]];
+
+/**
+ * 런타임 값에서 ColumnPrimitiveStr 추론
+ *
+ * @param value - Column 값
+ * @returns ColumnPrimitiveStr 타입 이름
+ * @throws 값 타입이 알 수 없을 때 Error
+ *
+ * @example
+ * ```typescript
+ * inferColumnPrimitiveStr("hello");  // "string"
+ * inferColumnPrimitiveStr(123);  // "number"
+ * inferColumnPrimitiveStr(new DateTime());  // "DateTime"
+ * ```
+ */
+export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr {
+  if (typeof value === "string") return "string";
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "boolean";
+  if (value instanceof DateTime) return "DateTime";
+  if (value instanceof DateOnly) return "DateOnly";
+  if (value instanceof Time) return "Time";
+  if (value instanceof Uuid) return "Uuid";
+  if (value instanceof Uint8Array) return "Bytes";
+  throw new Error(`알 수 없는 값 타입: ${typeof value}`);
+}
+
+// ============================================
+// ColumnMeta
+// ============================================
+
+/**
+ * Column 메타데이터
+ *
+ * ColumnBuilder에서 생성되어 TableBuilder에 전달됨
+ *
+ * @property type - TypeScript 타입 이름 (ColumnPrimitiveStr)
+ * @property dataType - SQL 데이터 타입
+ * @property autoIncrement - 자동 증가 여부
+ * @property nullable - NULL 허용 여부
+ * @property default - 기본값
+ * @property description - Column 설명 (DDL 코멘트)
+ *
+ * @see {@link ColumnBuilder} Column builder
+ */
+export interface ColumnMeta {
+  type: ColumnPrimitiveStr;
+  dataType: DataType;
+  autoIncrement?: boolean;
+  nullable?: boolean;
+  default?: ColumnPrimitive;
+  description?: string;
+}

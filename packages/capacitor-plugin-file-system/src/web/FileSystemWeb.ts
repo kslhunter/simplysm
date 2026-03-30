@@ -1,0 +1,92 @@
+import { WebPlugin } from "@capacitor/core";
+import type { FileInfo, FileSystemPlugin, StorageType } from "../FileSystemPlugin";
+import { VirtualFileSystem } from "./VirtualFileSystem";
+import { bytes } from "@simplysm/core-common";
+
+export class FileSystemWeb extends WebPlugin implements FileSystemPlugin {
+  private readonly _fs = new VirtualFileSystem("capacitor_web_virtual_fs");
+  private readonly _textEncoder = new TextEncoder();
+  private readonly _textDecoder = new TextDecoder();
+
+  async checkPermissions(): Promise<{ granted: boolean }> {
+    return Promise.resolve({ granted: true });
+  }
+
+  async requestPermissions(): Promise<void> {}
+
+  async readdir(options: { path: string }): Promise<{ files: FileInfo[] }> {
+    const entry = await this._fs.getEntry(options.path);
+    if (!entry || entry.kind !== "dir") {
+      throw new Error("디렉토리가 존재하지 않습니다");
+    }
+    const files = await this._fs.listChildren(options.path);
+    return { files };
+  }
+
+  async getStoragePath(options: { type: StorageType }): Promise<{ path: string }> {
+    const storagePath = "/webfs/" + options.type;
+    await this._fs.ensureDir(storagePath);
+    return { path: storagePath };
+  }
+
+  /**
+   * 파일의 Blob URL을 반환합니다.
+   * @warning 반환된 URI는 사용 후 `URL.revokeObjectURL(uri)`를 호출하여 해제해야 합니다.
+   * 해제하지 않으면 메모리 누수가 발생할 수 있습니다.
+   */
+  async getUri(options: { path: string }): Promise<{ uri: string }> {
+    const entry = await this._fs.getEntry(options.path);
+    if (!entry || entry.kind !== "file" || entry.dataBase64 == null) {
+      throw new Error("파일을 찾을 수 없습니다: " + options.path);
+    }
+    const data = bytes.fromBase64(entry.dataBase64);
+    const blob = new Blob([data as BlobPart]);
+    return { uri: URL.createObjectURL(blob) };
+  }
+
+  async writeFile(options: {
+    path: string;
+    data: string;
+    encoding?: "utf8" | "base64";
+  }): Promise<void> {
+    const idx = options.path.lastIndexOf("/");
+    const dir = idx === -1 ? "." : options.path.substring(0, idx) || "/";
+    await this._fs.ensureDir(dir);
+    const dataBase64 =
+      options.encoding === "base64"
+        ? options.data
+        : bytes.toBase64(this._textEncoder.encode(options.data));
+    await this._fs.putEntry({ path: options.path, kind: "file", dataBase64 });
+  }
+
+  async readFile(options: {
+    path: string;
+    encoding?: "utf8" | "base64";
+  }): Promise<{ data: string }> {
+    const entry = await this._fs.getEntry(options.path);
+    if (!entry || entry.kind !== "file" || entry.dataBase64 == null) {
+      throw new Error("파일을 찾을 수 없습니다: " + options.path);
+    }
+    const data =
+      options.encoding === "base64"
+        ? entry.dataBase64
+        : this._textDecoder.decode(bytes.fromBase64(entry.dataBase64));
+    return { data };
+  }
+
+  async remove(options: { path: string }): Promise<void> {
+    const ok = await this._fs.deleteByPrefix(options.path);
+    if (!ok) {
+      throw new Error("삭제에 실패했습니다");
+    }
+  }
+
+  async mkdir(options: { path: string }): Promise<void> {
+    await this._fs.ensureDir(options.path);
+  }
+
+  async exists(options: { path: string }): Promise<{ exists: boolean }> {
+    const entry = await this._fs.getEntry(options.path);
+    return { exists: !!entry };
+  }
+}

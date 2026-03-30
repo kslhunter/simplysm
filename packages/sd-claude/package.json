@@ -1,0 +1,21 @@
+{
+  "name": "@simplysm/sd-claude",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - Claude Code 셋업",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/sd-claude"
+  },
+  "type": "module",
+  "files": [
+    "scripts",
+    "claude"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
+    "prepack": "node scripts/sync.mjs"
+  }
+}

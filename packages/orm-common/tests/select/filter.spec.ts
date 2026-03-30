@@ -1,0 +1,702 @@
+import { describe, expect, it } from "vitest";
+import { createTestDb } from "../setup/TestDbContext";
+import { expr } from "../../src/expr/expr";
+import { createQueryBuilder } from "../../src/query-builder/query-builder";
+import { dialects } from "../setup/test-utils";
+import "../setup/test-utils"; // toMatchSql matcher
+import * as expected from "./filter.expected";
+
+//#region ========== comparison operations ==========
+
+describe("SELECT - WHERE - 비교 연산", () => {
+  describe("eq (equal)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.eq(item.id, 1)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereEq[dialect]);
+    });
+  });
+
+  describe("not eq (not equal)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.eq(item.id, 1))])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereNotEq[dialect]);
+    });
+  });
+
+  describe("gt (greater than)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.gt(item.age, 20)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereGt[dialect]);
+    });
+  });
+
+  describe("gte (greater than or equal)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.gte(item.age, 20)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereGte[dialect]);
+    });
+  });
+
+  describe("lt (less than)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.lt(item.age, 30)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereLt[dialect]);
+    });
+  });
+
+  describe("lte (less than or equal)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.lte(item.age, 30)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereLte[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== NULL check ==========
+
+describe("SELECT - WHERE - NULL 검사", () => {
+  describe("null", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.null(item.email)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereNull[dialect]);
+    });
+  });
+
+  describe("not null", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.null(item.email))])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereNotNull[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== IN ==========
+
+describe("SELECT - WHERE - IN", () => {
+  describe("in", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.in(item.id, [1, 2, 3])])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereIn[dialect]);
+    });
+  });
+
+  describe("not in", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.in(item.id, [1, 2]))])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereNotIn[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== LIKE ==========
+
+describe("SELECT - WHERE - LIKE", () => {
+  describe("like", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.like(item.name, "%Hong%")])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereLike[dialect]);
+    });
+  });
+
+  describe("not like", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.like(item.name, "%Test%"))])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereNotLike[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== logical operations ==========
+
+describe("SELECT - WHERE - 논리 연산", () => {
+  describe("multiple conditions (AND)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.eq(item.isActive, true), expr.gt(item.age, 20)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereMultipleAnd[dialect]);
+    });
+  });
+
+  describe("or condition", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.or([expr.eq(item.age, 20), expr.eq(item.age, 30)])])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereOr[dialect]);
+    });
+  });
+
+  describe("and condition (explicit)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.and([expr.gt(item.age, 20), expr.lt(item.age, 30)])])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereAndExplicit[dialect]);
+    });
+  });
+
+  it("chained where (AND combination)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.eq(item.isActive, true)])
+      .where((item) => [expr.gt(item.age, 20)])
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "User" },
+      where: [
+        {
+          type: "eq",
+          source: { type: "column", path: ["T1", "isActive"] },
+          target: { type: "value", value: true },
+        },
+        {
+          type: "gt",
+          source: { type: "column", path: ["T1", "age"] },
+          target: { type: "value", value: 20 },
+        },
+      ],
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== BETWEEN ==========
+
+describe("SELECT - WHERE - BETWEEN", () => {
+  describe("between", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.between(item.age, 20, 30)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereBetween[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== EXISTS / IN subquery ==========
+
+describe("SELECT - WHERE - EXISTS / IN 서브쿼리", () => {
+  describe("exists", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)]))])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereExists[dialect]);
+    });
+  });
+
+  describe("inQuery (IN subquery)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [
+        expr.inQuery(
+          item.id,
+          db.post().select((p) => ({ userId: p.userId })),
+        ),
+      ])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.whereInQuery[dialect]);
+    });
+  });
+});
+
+//#endregion
+
+//#region ========== SEARCH ==========
+
+describe("SELECT - 검색", () => {
+  it("single keyword - single column", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "Apple")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%apple%" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("multiple keywords (OR)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "사과 바나나")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "or",
+                  conditions: [
+                    {
+                      type: "like",
+                      source: {
+                        type: "lower",
+                        arg: { type: "column", path: ["T1", "title"] },
+                      },
+                      pattern: { type: "value", value: "%사과%" },
+                    },
+                  ],
+                },
+                {
+                  type: "or",
+                  conditions: [
+                    {
+                      type: "like",
+                      source: {
+                        type: "lower",
+                        arg: { type: "column", path: ["T1", "title"] },
+                      },
+                      pattern: { type: "value", value: "%바나나%" },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("phrase search (quotes)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], '"Delicious Fruit"')
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%delicious fruit%" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("wildcard (*)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "test*")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "test%" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("escape (\\*)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "app\\*")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%app*%" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("multiple column search (OR)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title, item.content], "Apple")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%apple%" },
+                },
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "content"] },
+                  },
+                  pattern: { type: "value", value: "%apple%" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("exclusion search (-)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "사과 -바나나")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%사과%" },
+                },
+              ],
+            },
+            {
+              type: "not",
+              arg: {
+                type: "or",
+                conditions: [
+                  {
+                    type: "like",
+                    source: {
+                      type: "lower",
+                      arg: { type: "column", path: ["T1", "title"] },
+                    },
+                    pattern: { type: "value", value: "%바나나%" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("complex search (include, exclude, phrase)", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title, item.content], '사과 "Delicious Fruit" -바나나')
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      where: [
+        {
+          type: "and",
+          conditions: [
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%사과%" },
+                },
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "content"] },
+                  },
+                  pattern: { type: "value", value: "%사과%" },
+                },
+              ],
+            },
+            {
+              type: "or",
+              conditions: [
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "title"] },
+                  },
+                  pattern: { type: "value", value: "%delicious fruit%" },
+                },
+                {
+                  type: "like",
+                  source: {
+                    type: "lower",
+                    arg: { type: "column", path: ["T1", "content"] },
+                  },
+                  pattern: { type: "value", value: "%delicious fruit%" },
+                },
+              ],
+            },
+            {
+              type: "not",
+              arg: {
+                type: "or",
+                conditions: [
+                  {
+                    type: "like",
+                    source: {
+                      type: "lower",
+                      arg: { type: "column", path: ["T1", "title"] },
+                    },
+                    pattern: { type: "value", value: "%바나나%" },
+                  },
+                  {
+                    type: "like",
+                    source: {
+                      type: "lower",
+                      arg: { type: "column", path: ["T1", "content"] },
+                    },
+                    pattern: { type: "value", value: "%바나나%" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("empty search term", () => {
+    const db = createTestDb();
+    const def = db
+      .post()
+      .search((item) => [item.title], "   ")
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+    });
+  });
+});
+
+//#endregion

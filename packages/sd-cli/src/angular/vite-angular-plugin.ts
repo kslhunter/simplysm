@@ -1,0 +1,429 @@
+import type { Plugin, ModuleNode, ViteDevServer } from "vite";
+import type { IncomingMessage, ServerResponse } from "http";
+import { JavaScriptTransformer } from "@angular/build/private";
+import os from "os";
+import path from "path";
+import ts from "typescript";
+import { consola } from "consola";
+import {
+  AngularCompiler,
+  AngularSourceFileCache,
+} from "../utils/angular-compiler.js";
+import { createClientTransformStylesheet } from "./client-transform-stylesheet.js";
+import {
+  LintWithProgramRunner,
+  type LintWithProgramResult,
+} from "../utils/lint-with-program.js";
+import { isWorkspaceDiagnostic } from "../utils/diagnostic-utils.js";
+
+const logger = consola.withTag("sd:cli:angular");
+
+/** sdAngularPlugin 옵션 */
+export interface SdAngularPluginOptions {
+  /** tsconfig.json 경로 */
+  tsconfig: string;
+  /** 개발 모드 */
+  dev: boolean;
+  /** rebuild 시작 콜백 (CLI 상태 보고용) */
+  onBuildStart?: () => void;
+  /** rebuild 완료 콜백 (CLI 상태 보고용) */
+  onBuild?: (result: {
+    success: boolean;
+    errors?: string[];
+    warnings?: string[];
+    lint?: LintWithProgramResult;
+  }) => void;
+  /** Enable lint using ts.Program from compilation */
+  enableLint?: boolean;
+  /** browserslist 타겟 (정규화된 배열) */
+  browserslist?: string[];
+  /** PostCSS 플러그인 배열 */
+  postCssPlugins?: unknown[];
+}
+
+/**
+ * Angular AOT 컴파일을 수행하는 Vite 플러그인.
+ *
+ * AngularCompiler + JavaScriptTransformer를 직접 관리한다.
+ * - buildStart: AngularCompiler 초기화 + 컴파일 + emit
+ * - transform: .ts 파일에 대해 컴파일된 JS 반환 + JavaScriptTransformer 적용
+ * - handleHotUpdate: incremental rebuild + HMR
+ * - buildEnd: 리소스 정리
+ */
+export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
+  let compiler: AngularCompiler | undefined;
+  let sourceFileCache: AngularSourceFileCache | undefined;
+  let jsTransformer: JavaScriptTransformer | undefined;
+  let lintRunner: LintWithProgramRunner | undefined;
+
+  function getOrCreateLintRunner(): LintWithProgramRunner {
+    if (lintRunner == null) {
+      const pkgDir = path.dirname(options.tsconfig);
+      const pkgJsonPath = path.join(pkgDir, "package.json");
+      let pkgName = "unknown";
+      try {
+        const pkgJson = JSON.parse(
+          ts.sys.readFile(pkgJsonPath) ?? "{}",
+        ) as { name?: string };
+        pkgName = pkgJson.name ?? "unknown";
+      } catch {
+        // ignore
+      }
+      lintRunner = new LintWithProgramRunner({
+        cwd: process.cwd(),
+        pkgName,
+      });
+    }
+    return lintRunner;
+  }
+
+  const emittedFiles = new Map<string, string>();
+  const templateUpdates = new Map<string, string>();
+  let hmrLock: Promise<void> = Promise.resolve();
+  const scssDependencies = new Map<string, Set<string>>();
+
+  function createJsTransformer(): JavaScriptTransformer {
+    const maxThreads = Math.max(1, Math.floor((os.cpus().length * 2) / 3));
+    return new JavaScriptTransformer(
+      {
+        sourcemap: options.dev,
+        thirdPartySourcemaps: options.dev,
+        advancedOptimizations: !options.dev,
+        jit: false,
+      },
+      maxThreads,
+    );
+  }
+
+  return {
+    name: "sd-angular",
+    enforce: "pre",
+
+    config() {
+      return {
+        define: {
+          ngDevMode: options.dev ? undefined : "false",
+          ngJitMode: "false",
+          ngHmrMode: options.dev ? undefined : "false",
+        },
+      };
+    },
+
+    async buildStart() {
+      logger.debug("sdAngularPlugin buildStart 시작");
+      // tsconfig 로드
+      const configFile = ts.readConfigFile(options.tsconfig, ts.sys.readFile);
+      const workspaceRoot = path.dirname(options.tsconfig);
+      const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, workspaceRoot);
+      logger.debug(`tsconfig 파싱 완료: ${parsed.fileNames.length}개 파일`);
+
+      // AngularSourceFileCache 생성 (또는 재사용)
+      sourceFileCache ??= new AngularSourceFileCache();
+
+      // SCSS errors 수집용
+      const scssErrors: string[] = [];
+
+      // transformStylesheet 콜백 생성
+      const cwd = process.cwd();
+      const transformStylesheet = createClientTransformStylesheet({
+        loadPaths: [
+          path.join(workspaceRoot, "scss"),
+          path.join(cwd, "node_modules"),
+        ],
+        postCssPlugins: options.postCssPlugins,
+        scssErrors,
+        scssDependencies,
+      });
+
+      // externalStylesheets (client mode에서 stylesheet SHA256 ID 매핑)
+      const externalStylesheets = new Map<string, string>();
+
+      // AngularCompiler 생성
+      compiler = new AngularCompiler({
+        rootNames: parsed.fileNames,
+        compilerOptions: parsed.options,
+        angularCompilerOptions: parsed.raw?.angularCompilerOptions,
+        sourceFileCache,
+        transformStylesheet,
+        externalStylesheets,
+        enableHmr: options.dev,
+        compilerOptionsTransformer: (opts) => ({
+          ...opts,
+          noEmit: false,
+          declaration: false,
+        }),
+      });
+
+      // JavaScriptTransformer 생성
+      jsTransformer ??= createJsTransformer();
+
+      // initialize
+      logger.debug("AngularCompiler 초기화 중...");
+      const initResult = await compiler.initialize();
+      logger.debug(`AngularCompiler 초기화 완료 (affected: ${initResult.affectedFiles.size}개)`);
+
+      // 초기 templateUpdates 수집
+      templateUpdates.clear();
+      if (initResult.templateUpdates != null) {
+        for (const [key, value] of initResult.templateUpdates) {
+          templateUpdates.set(key, value);
+        }
+      }
+
+      // 영향받은 파일 emit + 캐시 (소스 파일 경로를 key로 사용)
+      emittedFiles.clear();
+      for (const result of compiler.emitAffectedFiles()) {
+        emittedFiles.set(normalizePath(result.sourceFileName), result.contents);
+      }
+      logger.debug(`emit 완료: ${emittedFiles.size}개 파일`);
+
+      // 진단 수집 및 보고
+      const diagnosticResult = collectAndFormatDiagnostics(compiler, process.cwd());
+      reportDiagnostics(diagnosticResult);
+
+      // SCSS 에러 보고
+      for (const err of scssErrors) {
+        logger.error(err);
+      }
+
+      // Lint execution (if enabled)
+      let initialLintResult: LintWithProgramResult | undefined;
+      if (options.enableLint === true) {
+        initialLintResult = await getOrCreateLintRunner().lint({
+          program: compiler.getTsProgram(),
+        });
+      }
+
+      // Report initial build results (both dev and prod)
+      options.onBuild?.({
+        success: diagnosticResult.errors.length === 0,
+        errors: diagnosticResult.errors.map((e) => e.message),
+        warnings: diagnosticResult.warnings.map((w) => w.message),
+        lint: initialLintResult,
+      });
+    },
+
+    async handleHotUpdate({
+      file,
+      modules,
+    }: {
+      file: string;
+      modules: ModuleNode[];
+      server: ViteDevServer;
+      timestamp: number;
+      read: () => string | Promise<string>;
+    }): Promise<ModuleNode[] | void> {
+      if (compiler == null || !options.dev) return;
+      if (
+        !file.endsWith(".ts") &&
+        !file.endsWith(".tsx") &&
+        !file.endsWith(".html") &&
+        !file.endsWith(".scss")
+      ) {
+        return;
+      }
+
+      // 경쟁 조건 방지: 이전 HMR 처리 완료 대기
+      const prevLock = hmrLock;
+      let releaseLock!: () => void;
+      hmrLock = new Promise<void>((resolve) => {
+        releaseLock = resolve;
+      });
+      await prevLock;
+
+      options.onBuildStart?.();
+
+      try {
+        // rebuild 시작 시 이전 templateUpdates 정리
+        templateUpdates.clear();
+
+        const updateResult = await compiler.update([file]);
+
+        // templateUpdates 수집
+        if (updateResult.templateUpdates != null) {
+          for (const [key, value] of updateResult.templateUpdates) {
+            templateUpdates.set(key, value);
+          }
+        }
+
+        const affectedPaths: string[] = [];
+        for (const result of compiler.emitAffectedFiles()) {
+          const normalizedPath = normalizePath(result.sourceFileName);
+          emittedFiles.set(normalizedPath, result.contents);
+          affectedPaths.push(normalizedPath);
+        }
+
+        const diagnosticResult = collectAndFormatDiagnostics(compiler, process.cwd());
+        reportDiagnostics(diagnosticResult);
+
+        // Convert affected ts.SourceFile set to file name strings for incremental lint
+        const affectedFileNames = new Set<string>();
+        for (const sf of updateResult.affectedFiles) {
+          affectedFileNames.add(normalizePath(sf.fileName));
+        }
+
+        // Lint execution (if enabled)
+        let lintResult: LintWithProgramResult | undefined;
+        if (options.enableLint === true) {
+          lintResult = await getOrCreateLintRunner().lint({
+            program: compiler.getTsProgram(),
+            affectedFiles: affectedFileNames,
+          });
+        }
+
+        options.onBuild?.({
+          success: diagnosticResult.errors.length === 0,
+          errors: diagnosticResult.errors.map((e) => e.message),
+          warnings: diagnosticResult.warnings.map((w) => w.message),
+          lint: lintResult,
+        });
+
+        const affectedSet = new Set(affectedPaths);
+        return modules.filter(
+          (m) => m.file != null && affectedSet.has(normalizePath(m.file)),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        logger.error(`HMR recompile failed: ${message}`);
+        options.onBuild?.({ success: false, errors: [message] });
+        return;
+      } finally {
+        releaseLock();
+      }
+    },
+
+    async transform(_code, id) {
+      if (!id.endsWith(".ts") && !id.endsWith(".tsx")) return;
+
+      const normalizedId = normalizePath(id);
+      const emittedContent = emittedFiles.get(normalizedId);
+      if (emittedContent == null) return;
+
+      if (jsTransformer == null) {
+        throw new Error("JavaScriptTransformer가 초기화되지 않았습니다");
+      }
+
+      // AOT 메타데이터 제거 + 최적화
+      const transformed = await jsTransformer.transformData(normalizedId, emittedContent, false);
+      const code = new TextDecoder().decode(transformed);
+
+      return { code };
+    },
+
+    async buildEnd() {
+      // dev 모드에서는 compiler/jsTransformer를 유지 (HMR용 incremental compilation)
+      if (!options.dev) {
+        if (jsTransformer != null) {
+          await jsTransformer.close();
+          jsTransformer = undefined;
+        }
+        compiler = undefined;
+        emittedFiles.clear();
+      }
+    },
+
+    configureServer(server: ViteDevServer) {
+      // component-middleware 등록 (HMR template updates 서빙)
+      server.middlewares.use(angularComponentMiddleware(templateUpdates));
+
+      // dev server 종료 시 리소스 정리
+      server.httpServer?.on("close", () => {
+        if (jsTransformer != null) {
+          void jsTransformer
+            .close()
+            .then(() => {
+              jsTransformer = undefined;
+              compiler = undefined;
+              emittedFiles.clear();
+            })
+            .catch((err: unknown) => {
+              logger.error(
+                `Resource dispose failed: ${err instanceof Error ? err.message : String(err)}`,
+              );
+            });
+        }
+      });
+    },
+  };
+}
+
+interface DiagnosticMessage {
+  file?: string;
+  line?: number;
+  message: string;
+}
+
+interface DiagnosticResult {
+  errors: DiagnosticMessage[];
+  warnings: DiagnosticMessage[];
+}
+
+function collectAndFormatDiagnostics(compiler: AngularCompiler, cwd: string): DiagnosticResult {
+  const errors: DiagnosticMessage[] = [];
+  const warnings: DiagnosticMessage[] = [];
+
+  for (const diagnostic of compiler.collectDiagnostics()) {
+    if (!isWorkspaceDiagnostic(diagnostic, cwd)) continue;
+
+    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+    const formatted: DiagnosticMessage = { message };
+
+    if (diagnostic.file != null) {
+      formatted.file = diagnostic.file.fileName;
+      if (diagnostic.start != null) {
+        const pos = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        formatted.line = pos.line + 1;
+      }
+    }
+
+    if (diagnostic.category === ts.DiagnosticCategory.Error) {
+      errors.push(formatted);
+    } else if (diagnostic.category === ts.DiagnosticCategory.Warning) {
+      warnings.push(formatted);
+    }
+  }
+
+  return { errors, warnings };
+}
+
+function angularComponentMiddleware(
+  templateUpdates: Map<string, string>,
+): (req: IncomingMessage, res: ServerResponse, next: () => void) => void {
+  return (req, res, next) => {
+    if (req.url == null || !req.url.startsWith("/@ng/component")) {
+      next();
+      return;
+    }
+
+    const url = new URL(req.url, "http://localhost");
+    const componentId = url.searchParams.get("c") ?? "";
+    const body = templateUpdates.get(encodeURIComponent(componentId)) ?? "";
+
+    res.writeHead(200, {
+      "Content-Type": "text/javascript",
+      "Cache-Control": "no-cache",
+    });
+    res.end(body);
+  };
+}
+
+function normalizePath(p: string): string {
+  return p.replace(/\\/g, "/");
+}
+
+function reportDiagnostics(diagnostics: DiagnosticResult): void {
+  for (const error of diagnostics.errors) {
+    const loc =
+      error.file != null
+        ? `${error.file}${error.line != null ? `:${String(error.line)}` : ""}`
+        : "";
+    logger.error(`${loc !== "" ? `(${loc}) ` : ""}${error.message}`);
+  }
+  for (const warning of diagnostics.warnings) {
+    const loc =
+      warning.file != null
+        ? `${warning.file}${warning.line != null ? `:${String(warning.line)}` : ""}`
+        : "";
+    logger.warn(`${loc !== "" ? `(${loc}) ` : ""}${warning.message}`);
+  }
+}

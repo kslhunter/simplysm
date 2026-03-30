@@ -1,0 +1,39 @@
+{
+  "name": "@simplysm/core-common",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 코어 (common)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/core-common"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "docs"
+  ],
+  "sideEffects": [
+    "./src/extensions/arr-ext.ts",
+    "./src/extensions/map-ext.ts",
+    "./src/extensions/set-ext.ts",
+    "./src/index.ts",
+    "./dist/extensions/arr-ext.js",
+    "./dist/extensions/map-ext.js",
+    "./dist/extensions/set-ext.js",
+    "./dist/index.js"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.19.37"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "^2.8.23",
+    "consola": "^3.4.2",
+    "fast-xml-parser": "^5.5.9",
+    "yaml": "^2.8.3"
+  }
+}

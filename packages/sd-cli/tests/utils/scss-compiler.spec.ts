@@ -1,0 +1,131 @@
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { resolve } from "node:path";
+import fs from "node:fs";
+import { compileScssString, compileScssFile } from "../../src/utils/scss-compiler";
+
+const workspaceRoot = resolve(import.meta.dirname, "../../../..");
+const angularPkgDir = resolve(workspaceRoot, "packages/angular");
+
+// Temp directory for node_modules @use test
+const tmpDir = resolve(import.meta.dirname, "__scss_test_tmp__");
+
+describe("scss-compiler", () => {
+  beforeAll(() => {
+    // Create a temp node_modules-like structure for package @use test
+    const fakeNmDir = resolve(tmpDir, "node_modules/@simplysm/angular/scss/commons");
+    fs.mkdirSync(fakeNmDir, { recursive: true });
+    fs.writeFileSync(
+      resolve(fakeNmDir, "_variables.scss"),
+      "$test-var: red;\n",
+    );
+  });
+
+  afterAll(() => {
+    if (fs.existsSync(tmpDir)) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  describe("compileScssString", () => {
+    it("compiles inline SCSS with variable to CSS", () => {
+      const source = "$color: blue;\n.header { color: $color; }";
+      const containingFile = resolve(angularPkgDir, "src/fake-component.ts");
+      const loadPaths = [
+        resolve(angularPkgDir, "scss"),
+        resolve(workspaceRoot, "node_modules"),
+      ];
+
+      const result = compileScssString(source, containingFile, loadPaths);
+
+      expect(result.css).toContain(".header");
+      expect(result.css).toContain("color: blue");
+      expect(result.dependencies).toBeDefined();
+    });
+
+    // Acceptance: Scenario "순수 CSS 인라인 스타일은 변환 없이 통과한다"
+    it("passes through pure CSS without modification", () => {
+      const source = ".header { color: blue; }";
+      const containingFile = resolve(angularPkgDir, "src/fake-component.ts");
+      const loadPaths: string[] = [];
+
+      const result = compileScssString(source, containingFile, loadPaths);
+
+      expect(result.css).toContain(".header");
+      expect(result.css).toContain("color: blue");
+    });
+
+    // Acceptance: Scenario "인라인 SCSS 구문 에러 시 diagnostics에 에러가 포함된다"
+    it("throws on SCSS syntax error", () => {
+      const source = ".header { color: $undefined-var; }";
+      const containingFile = resolve(angularPkgDir, "src/fake-component.ts");
+      const loadPaths: string[] = [];
+
+      expect(() => compileScssString(source, containingFile, loadPaths)).toThrow();
+    });
+
+    // Acceptance: Scenario "같은 패키지 내 상대 경로 @use를 해석한다"
+    it("resolves relative @use paths within the package", () => {
+      const source = '@use "commons/variables";\n.test { display: block; }';
+      const containingFile = resolve(angularPkgDir, "src/fake-component.ts");
+      const loadPaths = [resolve(angularPkgDir, "scss")];
+
+      const result = compileScssString(source, containingFile, loadPaths);
+
+      expect(result.css).toBeDefined();
+      expect(result.dependencies.length).toBeGreaterThan(0);
+      expect(result.dependencies.some((d) => d.includes("_variables.scss"))).toBe(true);
+    });
+
+    // Acceptance: Scenario "node_modules 패키지 경로 @use를 해석한다"
+    it("resolves node_modules package @use paths", () => {
+      const source =
+        '@use "@simplysm/angular/scss/commons/variables";\n.test { display: block; }';
+      const containingFile = resolve(tmpDir, "src/fake-component.ts");
+      const loadPaths = [resolve(tmpDir, "node_modules")];
+
+      const result = compileScssString(source, containingFile, loadPaths);
+
+      expect(result.css).toBeDefined();
+      expect(result.dependencies.length).toBeGreaterThan(0);
+      expect(
+        result.dependencies.some((d) => d.includes("_variables.scss")),
+      ).toBe(true);
+    });
+
+    // Acceptance: Scenario "해석 실패 시 컴파일 에러가 발생한다"
+    it("throws when @use path cannot be resolved", () => {
+      const source = '@use "nonexistent/module";\n.test { display: block; }';
+      const containingFile = resolve(angularPkgDir, "src/fake-component.ts");
+      const loadPaths: string[] = [];
+
+      expect(() => compileScssString(source, containingFile, loadPaths)).toThrow();
+    });
+  });
+
+  describe("compileScssFile", () => {
+    // Acceptance: Scenario "styleUrls의 .scss 파일이 CSS로 컴파일된다"
+    it("compiles an external SCSS file to CSS", () => {
+      const filePath = resolve(angularPkgDir, "scss/styles.scss");
+      const loadPaths = [resolve(angularPkgDir, "scss")];
+
+      const result = compileScssFile(filePath, loadPaths);
+
+      expect(result.css).toContain("ng-icon");
+      expect(result.dependencies.length).toBeGreaterThan(0);
+    });
+
+    // Unit: dependencies include loaded partial files
+    it("includes loaded partial files in dependencies", () => {
+      const filePath = resolve(angularPkgDir, "scss/styles.scss");
+      const loadPaths = [resolve(angularPkgDir, "scss")];
+
+      const result = compileScssFile(filePath, loadPaths);
+
+      expect(
+        result.dependencies.some(
+          (d) => d.includes("_theme-variables.scss") || d.includes("_styles.scss"),
+        ),
+      ).toBe(true);
+    });
+  });
+});

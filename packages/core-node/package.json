@@ -1,0 +1,33 @@
+{
+  "name": "@simplysm/core-node",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 코어 (node)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/core-node"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "lib",
+    "docs"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "chokidar": "^5.0.0",
+    "consola": "^3.4.2",
+    "glob": "^13.0.6",
+    "minimatch": "^10.2.4",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.37"
+  }
+}

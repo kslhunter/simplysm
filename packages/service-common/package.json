@@ -1,0 +1,28 @@
+{
+  "name": "@simplysm/service-common",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - 서비스 (common)",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/service-common"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "docs"
+  ],
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/node": "^20.19.37"
+  },
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/orm-common": "workspace:*"
+  }
+}
