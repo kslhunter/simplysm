@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -87,6 +88,9 @@ import type { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-even
 })
 export class SdDockControl {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  private _dragCleanup: (() => void) | undefined;
 
   key = input<string>();
   position = input<"top" | "bottom" | "right" | "left">("top");
@@ -97,6 +101,10 @@ export class SdDockControl {
   private readonly _config = useSdSystemConfigResource<{ size?: string }>({ key: this.key });
 
   constructor() {
+    this._destroyRef.onDestroy(() => {
+      this._dragCleanup?.();
+    });
+
     effect(() => {
       const conf = this._config.value();
       if (this.resizable() && conf && conf.size != null) {
@@ -151,8 +159,7 @@ export class SdDockControl {
       e.stopPropagation();
       e.preventDefault();
 
-      document.removeEventListener("mousemove", doDrag);
-      document.removeEventListener("mouseup", stopDrag);
+      this._dragCleanup?.();
 
       if (this.key() != null) {
         const newConf: { size?: string } = {};
@@ -167,5 +174,11 @@ export class SdDockControl {
 
     document.addEventListener("mousemove", doDrag);
     document.addEventListener("mouseup", stopDrag);
+
+    this._dragCleanup = () => {
+      document.removeEventListener("mousemove", doDrag);
+      document.removeEventListener("mouseup", stopDrag);
+      this._dragCleanup = undefined;
+    };
   }
 }

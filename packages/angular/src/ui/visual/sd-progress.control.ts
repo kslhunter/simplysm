@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   ViewEncapsulation,
 } from "@angular/core";
@@ -22,7 +23,7 @@ import { PercentPipe } from "@angular/common";
     <div class="_content tx-right">
       {{ value() | percent: "1.0-2" }}
     </div>
-    <div class="_progress" [style.width]="value() * 100 + '%'"></div>
+    <div class="_progress" [style.width]="_barWidth()"></div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -85,4 +86,6 @@ export class SdProgressControl {
   >();
 
   value = input.required<number>();
+
+  _barWidth = computed(() => Math.min(this.value() * 100, 100) + "%");
 }

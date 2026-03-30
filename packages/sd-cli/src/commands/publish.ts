@@ -2,13 +2,12 @@ import path from "path";
 import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
-import { fsx } from "@simplysm/core-node";
+import { cpx, fsx } from "@simplysm/core-node";
 import { env, json } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { validateTargets } from "../utils/package-utils";
-import { execa } from "execa";
 import { runBuild } from "./build";
 import { parseWorkspaceGlobs } from "../utils/replace-deps";
 import os from "os";
@@ -353,7 +352,7 @@ async function publishPackage(
       logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
     }
 
-    await execa("pnpm", args, { cwd: pkgPath });
+    await cpx.exec("pnpm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
     // 로컬 디렉토리에 복사
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
@@ -560,7 +559,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (publishPackages.some((p) => p.config.type === "npm")) {
     logger.debug("npm 인증 검증 중...");
     try {
-      const { stdout: whoami } = await execa("npm", ["whoami"]);
+      const { stdout: whoami } = await cpx.exec("npm", ["whoami"]);
       if (whoami.trim() === "") {
         throw new Error("npm 로그인 정보를 찾을 수 없습니다.");
       }
@@ -590,13 +589,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (!noBuild && hasGit) {
     logger.debug("git 커밋 상태 확인 중...");
     try {
-      const { stdout: diff } = await execa("git", ["diff", "--name-only"]);
-      const { stdout: stagedDiff } = await execa("git", ["diff", "--cached", "--name-only"]);
+      const { stdout: diff } = await cpx.exec("git", ["diff", "--name-only"]);
+      const { stdout: stagedDiff } = await cpx.exec("git", ["diff", "--cached", "--name-only"]);
 
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude로 자동 커밋 시도 중...");
         try {
-          await execa("claude", [
+          await cpx.exec("claude", [
             "-p",
             "/sd-commit all",
             "--dangerously-skip-permissions",
@@ -684,11 +683,11 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       } else {
         logger.debug("Git commit/tag/push...");
         try {
-          await execa("git", ["add", ..._changedFiles]);
-          await execa("git", ["commit", "-m", `v${version}`]);
-          await execa("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
-          await execa("git", ["push"]);
-          await execa("git", ["push", "--tags"]);
+          await cpx.exec("git", ["add", ..._changedFiles]);
+          await cpx.exec("git", ["commit", "-m", `v${version}`]);
+          await cpx.exec("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
+          await cpx.exec("git", ["push"]);
+          await cpx.exec("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
           logger.error(
@@ -807,7 +806,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
         } else {
           logger.debug(`실행 중: ${cmd} ${args.join(" ")}`);
-          await execa(cmd, args, { cwd });
+          await cpx.exec(cmd, args, { cwd });
         }
       } catch (err) {
         // postPublish 실패 시 경고만 출력 (배포 롤백 불가)

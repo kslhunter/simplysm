@@ -223,15 +223,20 @@
 
 ### Epic 7. 앱 Feature
 
-- [ ] Feature 7.1 앱 컨테이너
+- [x] Feature 7.1 앱 컨테이너
   - 페이지/모달 공통 레이아웃
   - 권한 체크 및 타이틀 관리
   - injectParent 유틸 (1.3에서 이관 — Angular 내부 API 대안 검토 필요)
 
-- [ ] Feature 7.2 데이터 뷰
-  - CRUD 데이터 테이블 뷰
-  - 단일 항목 상세 뷰
-  - 데이터 선택 버튼
+- [ ] Feature 7.2a 데이터 테이블 뷰
+  - SdDataSheetControl: CRUD 데이터 그리드 (조회/필터/정렬/페이지네이션, 인라인·모달 편집, 엑셀 내보내기/가져오기, 항목 선택)
+  - SdDataSheetColumnDirective: 열 정의 (편집 가능 여부 포함)
+
+- [ ] Feature 7.2b 데이터 상세 뷰
+  - SdDataDetailControl: 단일 항목 상세 폼 (조회/저장/삭제/복원)
+
+- [ ] Feature 7.2c 데이터 선택 버튼
+  - SdDataSelectButtonControl: 모달 기반 데이터 선택 (단일/다중, 값 로드/초기화)
 
 - [ ] Feature 7.3 공유 데이터 관리
   - 공유 데이터 선택 (셀렉트, 버튼, 목록 형태)

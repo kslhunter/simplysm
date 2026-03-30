@@ -48,12 +48,12 @@ vi.mock("../../src/utils/replace-deps", () => ({
   parseWorkspaceGlobs: mocks.parseWorkspaceGlobs,
 }));
 
-vi.mock("execa", () => ({
-  execa: mocks.execa,
-}));
-
 vi.mock("@simplysm/core-node", () => ({
   fsx: mocks.fsx,
+  cpx: {
+    exec: mocks.execa,
+    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+  },
 }));
 
 vi.mock("@simplysm/core-common", () => {

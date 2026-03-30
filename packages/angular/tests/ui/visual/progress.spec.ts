@@ -4,6 +4,7 @@ import {
   SdProgressHalfTest,
   SdProgressZeroTest,
   SdProgressFullTest,
+  SdProgressOverflowTest,
 } from "./sd-progress-test.fixture";
 
 describe("Feature 2.6 Slice 2: sd-progress", () => {
@@ -44,6 +45,17 @@ describe("Feature 2.6 Slice 2: sd-progress", () => {
     const bar = host.querySelector("._progress") as HTMLElement;
 
     expect(content.textContent.trim()).toContain("100%");
+    expect(bar.style.width).toBe("100%");
+  });
+
+  it("value=1.5이면 너비가 100%로 제한된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdProgressOverflowTest] })
+      .createComponent(SdProgressOverflowTest);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector("sd-progress") as HTMLElement;
+    const bar = host.querySelector("._progress") as HTMLElement;
+
     expect(bar.style.width).toBe("100%");
   });
 

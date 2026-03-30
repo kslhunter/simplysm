@@ -131,7 +131,7 @@ export class SdListItemControl {
   });
 
   constructor() {
-    setupRipple(() => !this.readonly() && !(this.layout() === "flat" && this.hasChildren()));
+    setupRipple(() => !this.readonly() && this.layout() !== "flat");
   }
 
   onContentClick(): void {

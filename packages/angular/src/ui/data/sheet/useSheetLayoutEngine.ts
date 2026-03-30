@@ -112,6 +112,7 @@ export function useSheetLayoutEngine(options: {
 
           if (canMerge && lastCell != null) {
             lastCell.colspan += 1;
+            spanStartHeaders[row] = headers;
           } else {
             table[row].push({
               text,

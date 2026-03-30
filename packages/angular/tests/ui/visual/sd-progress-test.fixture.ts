@@ -40,3 +40,11 @@ export class SdProgressSizeSmTest {}
   imports: [SdProgressControl],
 })
 export class SdProgressInsetTest {}
+
+@Component({
+  selector: "sd-progress-overflow-test",
+  template: `<sd-progress [value]="1.5" [theme]="'primary'" />`,
+  standalone: true,
+  imports: [SdProgressControl],
+})
+export class SdProgressOverflowTest {}

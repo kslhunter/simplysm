@@ -32,12 +32,12 @@
   - String 핸들러 minlength/maxlength/pattern 타입 확장
   - format 핸들러 regex 이스케이프 보강
 
-- [ ] Feature 1.3 Layout + Navigation 영역 수정 (5건: Medium 3, Low 2)
+- [x] Feature 1.3 Layout + Navigation 영역 수정 (5건: Medium 3, Low 2)
   - 칸반 선택 로직의 selectable 플래그 반영
   - 페이지네이션 경계값 처리
   - 사이드바 백드롭 의도 명확화
 
-- [ ] Feature 1.4 Data + Overlay + Visual 영역 수정 (12건: Critical 1, Medium 6, Low 5)
+- [x] Feature 1.4 Data + Overlay + Visual 영역 수정 (12건: Critical 1, Medium 6, Low 5)
   - 시트 리사이즈 타이밍 처리 개선
   - 시트 헤더 머지·클립보드 로직 수정
   - 모달 z-index 및 이벤트 리스너 관리

@@ -35,8 +35,11 @@ vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: mocks.loadSdConfig,
 }));
 
-vi.mock("execa", () => ({
-  execa: mocks.execa,
+vi.mock("@simplysm/core-node", () => ({
+  cpx: {
+    exec: mocks.execa,
+    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+  },
 }));
 
 vi.mock("../../src/utils/package-utils", async (importOriginal) => {

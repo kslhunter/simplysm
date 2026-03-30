@@ -136,9 +136,10 @@ export class SdKanbanLaneControl<L, T> implements ISdKanbanDropTarget<L, T> {
   toolTplRef = contentChild<any, TemplateRef<void>>("toolTpl", { read: TemplateRef });
   titleTplRef = contentChild<any, TemplateRef<void>>("titleTpl", { read: TemplateRef });
 
-  isAllSelected = computed(() =>
-    this.kanbanControls().length > 0 && this.kanbanControls().every((ctrl) => ctrl.selected()),
-  );
+  isAllSelected = computed(() => {
+    const selectableControls = this.kanbanControls().filter((ctrl) => ctrl.selectable());
+    return selectableControls.length > 0 && selectableControls.every((ctrl) => ctrl.selected());
+  });
 
   dragKanban = computed(() => this._boardControl.dragKanban());
 
@@ -161,6 +162,7 @@ export class SdKanbanLaneControl<L, T> implements ISdKanbanDropTarget<L, T> {
       this._boardControl.selectedValues.update((v) => {
         const r = [...v];
         for (const ctrl of this.kanbanControls()) {
+          if (!ctrl.selectable()) continue;
           if (ctrl.value() == null) continue;
           if (!v.includes(ctrl.value()!)) {
             r.push(ctrl.value()!);
@@ -171,6 +173,7 @@ export class SdKanbanLaneControl<L, T> implements ISdKanbanDropTarget<L, T> {
     } else {
       this._boardControl.selectedValues.update((v) => {
         const kanbanValues = this.kanbanControls()
+          .filter((ctrl) => ctrl.selectable())
           .map((ctrl) => ctrl.value())
           .filter((v2): v2 is T => v2 != null);
         const result = v.filter((item) => !kanbanValues.includes(item));

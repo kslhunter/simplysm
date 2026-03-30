@@ -1,8 +1,7 @@
 import path from "path";
 import fs from "fs";
-import { execaSync } from "execa";
 import esbuild from "esbuild";
-import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
+import { cpx, createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { BuildOutput } from "../engines/types";
@@ -231,7 +230,7 @@ function generateProductionFiles(
     distPkgJson["dependencies"] = resolveLockedVersions(info.cwd, externals);
   }
   if (info.packageManager === "volta") {
-    const nodeVersion = execaSync("node", ["-v"]).stdout.trim();
+    const nodeVersion = cpx.execSync("node", ["-v"]).stdout.trim();
     distPkgJson["volta"] = { node: nodeVersion };
   }
   fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));

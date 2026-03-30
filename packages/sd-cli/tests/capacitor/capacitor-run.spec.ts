@@ -25,6 +25,10 @@ vi.mock("@simplysm/core-node", () => ({
     glob: mockFsxGlob,
     copy: mockFsxCopy,
   },
+  cpx: {
+    exec: mockCpxExec,
+    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+  },
 }));
 
 // env mock
@@ -35,17 +39,15 @@ vi.mock("@simplysm/core-common", () => ({
   }),
 }));
 
-// execa mock — tracks commands and resolves immediately
+// cpx mock (was execa) — tracks commands and resolves immediately
 const execaCalls: { command: string; args: string[] }[] = [];
-let execaFactory: (...args: unknown[]) => Promise<{ stdout: string; stderr: string }> = () =>
-  Promise.resolve({ stdout: "", stderr: "" });
+let execaFactory: (...args: unknown[]) => Promise<{ stdout: string; stderr: string; exitCode: number }> = () =>
+  Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 
-vi.mock("execa", () => ({
-  execa: vi.fn((...args: unknown[]) => {
-    execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
-    return execaFactory(...args);
-  }),
-}));
+const mockCpxExec = vi.fn((...args: unknown[]) => {
+  execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
+  return execaFactory(...args);
+});
 
 const mockFsWriteFile = vi.fn().mockResolvedValue(undefined);
 vi.mock("node:fs", () => ({
@@ -135,7 +137,7 @@ export default config;`;
   mockEnv = { ANDROID_HOME: "C:/Android/Sdk" };
 
   execaCalls.length = 0;
-  execaFactory = () => Promise.resolve({ stdout: "", stderr: "" });
+  execaFactory = () => Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
   mockFsWriteFile.mockReset();
   mockFsWriteFile.mockResolvedValue(undefined);
 }
@@ -195,7 +197,7 @@ describe("Capacitor.run()", () => {
           return Promise.reject(new Error("cap run failed"));
         }
       }
-      return Promise.resolve({ stdout: "", stderr: "" });
+      return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
     };
 
     const cap = await Capacitor.create(PKG_PATH, {

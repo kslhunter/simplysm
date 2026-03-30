@@ -1,4 +1,5 @@
 // 유틸리티
+export * as cpx from "./utils/cp";
 export * as fsx from "./utils/fs";
 export * as pathx from "./utils/path";
 

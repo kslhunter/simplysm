@@ -386,9 +386,6 @@ importers:
       eslint:
         specifier: ^9.39.4
         version: 9.39.4(jiti@2.6.1)
-      execa:
-        specifier: ^9.6.1
-        version: 9.6.1
       glob:
         specifier: ^13.0.6
         version: 13.0.6

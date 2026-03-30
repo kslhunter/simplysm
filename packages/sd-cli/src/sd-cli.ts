@@ -7,7 +7,7 @@
  * .js execution (production): run replaceDeps then spawn sd-cli-entry in new process
  */
 
-import { execa } from "execa";
+import { cpx } from "@simplysm/core-node";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -40,7 +40,7 @@ if (isDev) {
 
   // Phase 2: Run actual CLI in new process (reset module cache)
   const cliEntryFilePath = path.join(__dirname, "sd-cli-entry.js");
-  const subprocess = execa(
+  const subprocess = cpx.exec(
     "node",
     [
       "--max-old-space-size=8192",
@@ -52,7 +52,7 @@ if (isDev) {
   );
   if (subprocess.pid != null) configureAffinityAndPriority(subprocess.pid);
   const result = await subprocess;
-  process.exitCode = result.exitCode ?? 0;
+  process.exitCode = result.exitCode;
 }
 
 /**
@@ -94,8 +94,11 @@ function configureAffinityAndPriority(pid: number): void {
     command = `taskset -p ${mask} ${pid} && renice +10 -p ${pid}`;
   }
 
-  execa({ shell: true })`${command}`.catch((err: Error) => {
+  cpx.exec(command, [], { shell: true }).catch((err: unknown) => {
     // eslint-disable-next-line no-console
-    console.warn("Failed to configure CPU affinity/priority:", err.message);
+    console.warn(
+      "Failed to configure CPU affinity/priority:",
+      err instanceof Error ? err.message : String(err),
+    );
   });
 }

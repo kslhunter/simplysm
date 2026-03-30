@@ -1,4 +1,4 @@
-import { execa } from "execa";
+import { cpx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { executeTypecheck, type TypecheckResult } from "./typecheck";
 import { executeLint, type LintResult } from "./lint";
@@ -34,7 +34,7 @@ async function spawnVitest(targets: string[]): Promise<CheckResult> {
     const args = ["vitest", ...targets, "--run"];
     logger.debug("vitest 실행", { args });
     logger.start("테스트 실행 중...");
-    const result = await execa("pnpm", args, { cwd: process.cwd(), reject: false });
+    const result = await cpx.exec("pnpm", args, { cwd: process.cwd(), reject: false });
     const output = result.stdout + result.stderr;
     const code = result.exitCode;
 

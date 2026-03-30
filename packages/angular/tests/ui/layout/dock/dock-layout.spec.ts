@@ -100,4 +100,26 @@ describe("Feature 2.1 Slice 4: Dock 레이아웃", () => {
 
   // --- Unit Tests ---
 
+  it("DESIGN-004: 리사이즈 드래그 중 컴포넌트 파괴 시 document 리스너가 해제된다", () => {
+    setupTestBed(SdDockTestResizable);
+    const fixture = TestBed.createComponent(SdDockTestResizable);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const resizeBar = fixture.nativeElement.querySelector("._resize-bar") as HTMLElement;
+    const removeSpy = vi.spyOn(document, "removeEventListener");
+
+    // 드래그 시작
+    resizeBar.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 100, clientY: 100 }));
+
+    // 컴포넌트 파괴 (mouseup 없이)
+    fixture.destroy();
+
+    // document에서 mousemove/mouseup 리스너가 해제되었는지 확인
+    const removeCallArgs = removeSpy.mock.calls.map((call) => call[0]);
+    expect(removeCallArgs).toContain("mousemove");
+    expect(removeCallArgs).toContain("mouseup");
+
+    removeSpy.mockRestore();
+  });
 });

@@ -192,8 +192,7 @@ export function useSheetCellAgent(options: {
       }
 
       event.preventDefault();
-      const text = td.textContent;
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(td.textContent);
       return;
     }
 

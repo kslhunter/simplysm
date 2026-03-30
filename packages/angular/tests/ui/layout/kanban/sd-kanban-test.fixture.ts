@@ -144,3 +144,22 @@ export class SdKanbanLaneCollapseTest {
   `,
 })
 export class SdKanbanLaneNoCollapseTest {}
+
+@Component({
+  selector: "sd-kanban-lane-mixed-selectable-test",
+  standalone: true,
+  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  template: `
+    <sd-kanban-board [(selectedValues)]="selectedValues">
+      <sd-kanban-lane [value]="'lane1'">
+        <sd-kanban [value]="'X'" [selectable]="true">Card X</sd-kanban>
+        <sd-kanban [value]="'Y'" [selectable]="true">Card Y</sd-kanban>
+        <sd-kanban [value]="'Z'" [selectable]="false">Card Z not selectable</sd-kanban>
+      </sd-kanban-lane>
+    </sd-kanban-board>
+  `,
+})
+export class SdKanbanLaneMixedSelectableTest {
+  lane = viewChild.required(SdKanbanLaneControl);
+  selectedValues: string[] = [];
+}

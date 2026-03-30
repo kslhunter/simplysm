@@ -384,7 +384,7 @@ export class SdSheetControl<T> {
   // Resizing state
   _isResizing = signal(false);
   _resizeIndicatorLeft = signal(0);
-  private _isOnResizing = false;
+  private _lastResizeEndTimeStamp = 0;
   private _resizingCleanup: (() => void) | null = null;
 
   // Config resource
@@ -478,13 +478,21 @@ export class SdSheetControl<T> {
     getItemSelectableFn: this.getItemSelectableFn,
   });
 
+  private readonly _columnControlMap = computed(() => {
+    const map = new Map<string, SdSheetColumnDirective>();
+    for (const col of this.columnControls()) {
+      map.set(col.key(), col);
+    }
+    return map;
+  });
+
   getColumnCellTpl(key: string) {
-    const col = this.columnControls().find((c) => c.key() === key);
+    const col = this._columnControlMap().get(key);
     return col?.cellTplRef() ?? null;
   }
 
   getColumnSummaryTpl(key: string) {
-    const col = this.columnControls().find((c) => c.key() === key);
+    const col = this._columnControlMap().get(key);
     return col?.summaryTplRef() ?? null;
   }
 
@@ -513,9 +521,8 @@ export class SdSheetControl<T> {
     if (fixedStyle != null) {
       parts.push(fixedStyle);
     }
-    const customStyle = this.getItemCellStyleFn()
-      ? this.getItemCellStyleFn()!(item, colDef.key)
-      : undefined;
+    const styleFn = this.getItemCellStyleFn();
+    const customStyle = styleFn != null ? styleFn(item, colDef.key) : undefined;
     if (customStyle != null) {
       parts.push(customStyle);
     }
@@ -556,7 +563,7 @@ export class SdSheetControl<T> {
   }
 
   onHeaderClick(event: MouseEvent, cell: ISdSheetHeaderDef): void {
-    if (this._isOnResizing) return;
+    if (event.timeStamp - this._lastResizeEndTimeStamp < 50) return;
     if (cell.colDef == null) return;
     if (cell.colDef.disableSorting) return;
     this.sorting.toggle(cell.colDef.key, event.shiftKey);
@@ -642,7 +649,8 @@ export class SdSheetControl<T> {
 
   getDataCellClass(item: T, colDef: ISdSheetColumnDef, r: number, c: number): string | null {
     const parts: string[] = [];
-    const customClass = this.getItemCellClassFn() ? this.getItemCellClassFn()!(item, colDef.key) : undefined;
+    const classFn = this.getItemCellClassFn();
+    const customClass = classFn != null ? classFn(item, colDef.key) : undefined;
     if (customClass != null) {
       parts.push(customClass);
     }
@@ -700,7 +708,6 @@ export class SdSheetControl<T> {
     const startWidth = th.offsetWidth;
 
     this._isResizing.set(true);
-    this._isOnResizing = true;
     this._resizeIndicatorLeft.set(
       th.offsetLeft + th.offsetWidth - container.scrollLeft,
     );
@@ -724,10 +731,7 @@ export class SdSheetControl<T> {
       this._isResizing.set(false);
       this._saveColumnConfig(colDef.key, { width: `${newWidth}px` });
 
-      // Prevent sorting for 300ms after resize
-      setTimeout(() => {
-        this._isOnResizing = false;
-      }, 300);
+      this._lastResizeEndTimeStamp = e.timeStamp;
     };
 
     document.addEventListener("mousemove", onMouseMove);

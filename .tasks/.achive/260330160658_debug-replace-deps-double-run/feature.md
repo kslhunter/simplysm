@@ -2,7 +2,7 @@
 
 ## 참조 자료
 
-- [debug.md](./debug.md)
+- [debug.md](debug.md)
 - 수정 대상: `packages/sd-cli/src/sd-cli.ts` Phase 1 (라인 29-39)
 - 근본 원인: Phase 1이 커맨드 종류와 무관하게 `setupReplaceDeps`를 실행하여, `replace-deps` 커맨드가 Phase 2에서 다시 실행됨
 

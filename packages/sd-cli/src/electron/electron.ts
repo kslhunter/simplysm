@@ -2,9 +2,8 @@ import path from "path";
 import os from "os";
 import fs from "fs";
 import module from "module";
-import { fsx } from "@simplysm/core-node";
+import { cpx, fsx } from "@simplysm/core-node";
 import { consola } from "consola";
-import { execa } from "execa";
 import type { SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../utils/esbuild-config.js";
 
@@ -57,7 +56,7 @@ export class Electron {
     env?: Record<string, string>,
   ): Promise<string> {
     Electron._logger.debug(`실행: ${cmd} ${args.join(" ")}`);
-    const { stdout: result } = await execa(cmd, args, { cwd, env: { ...process.env, ...env } });
+    const { stdout: result } = await cpx.exec(cmd, args, { cwd, env });
     Electron._logger.debug(`결과: ${result}`);
     return result;
   }
@@ -92,12 +91,12 @@ export class Electron {
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     await fsx.mkdir(srcPath);
 
-    let currentElectron: import("execa").ResultPromise | null = null;
+    let currentElectron: cpx.ExecProcess | null = null;
     let isRestarting = false;
     let resolveTermination: (() => void) | null = null;
 
     const spawnElectron = () => {
-      currentElectron = execa(this._localBin("electron"), ["."], {
+      currentElectron = cpx.exec(this._localBin("electron"), ["."], {
         cwd: srcPath,
         stdio: "inherit",
         reject: false,
@@ -121,7 +120,7 @@ export class Electron {
       target: "node20",
       format: "cjs",
       bundle: true,
-      external: ["electron", ...builtinModules, ...reinstallDeps],
+      external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
       banner: { js: envBanner },
       plugins: [
         {
@@ -155,15 +154,22 @@ export class Electron {
     await ctx.watch();
 
     await new Promise<void>((resolve) => {
-      resolveTermination = () => {
+      let disposed = false;
+
+      const cleanup = () => {
+        if (disposed) return;
+        disposed = true;
+        process.removeListener("SIGINT", signalHandler);
+        process.removeListener("SIGTERM", signalHandler);
         void ctx.dispose();
         resolve();
       };
 
+      resolveTermination = cleanup;
+
       const signalHandler = () => {
         if (currentElectron != null) currentElectron.kill();
-        void ctx.dispose();
-        resolve();
+        cleanup();
       };
 
       process.once("SIGINT", signalHandler);
@@ -247,7 +253,7 @@ export class Electron {
       target: "node20",
       format: "cjs",
       bundle: true,
-      external: ["electron", ...builtinModules, ...reinstallDeps],
+      external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
       banner: { js: envBanner },
     });
   }
@@ -295,7 +301,7 @@ export class Electron {
 
     const builderConfig: Record<string, unknown> = {
       appId: this._config.appId,
-      productName: this._npmConfig.description,
+      productName: this._npmConfig.description ?? this._npmConfig.name,
       asar: false,
       win: {
         target: this._config.portable === true ? "portable" : "nsis",
@@ -329,12 +335,13 @@ export class Electron {
     const electronOutPath = path.resolve(outPath, "electron");
     await fsx.mkdir(electronOutPath);
 
-    const description = this._npmConfig.description ?? this._npmConfig.name;
+    const rawName = this._npmConfig.description ?? this._npmConfig.name;
+    const safeName = rawName.replace(/[<>:"/\\|?*]/g, "");
     const version = this._npmConfig.version;
     const isPortable = this._config.portable === true;
 
     // exe 파일 동적 탐색 — Setup 또는 portable exe를 우선 선택
-    const allExeFiles = await fsx.glob("*.exe", { cwd: distPath });
+    const allExeFiles = await fsx.glob(path.resolve(distPath, "*.exe"));
     if (allExeFiles.length === 0) {
       Electron._logger.warn(`빌드 산출물(.exe)을 찾을 수 없습니다: ${distPath}`);
       return;
@@ -343,7 +350,7 @@ export class Electron {
     const sourcePath =
       allExeFiles.find((f) => f.toLowerCase().includes(keyword.toLowerCase())) ?? allExeFiles[0];
 
-    const latestFileName = `${description}${isPortable ? "-portable" : ""}-latest.exe`;
+    const latestFileName = `${safeName}${isPortable ? "-portable" : ""}-latest.exe`;
     await fsx.copy(sourcePath, path.resolve(electronOutPath, latestFileName));
 
     const updatesPath = path.resolve(electronOutPath, "updates");

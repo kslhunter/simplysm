@@ -35,6 +35,8 @@ const mockRunTscPackageBuild = vi.fn(() => ({
   warningCount: 0,
 }));
 
+const mockCpxExecSync = vi.fn().mockReturnValue({ stdout: "v20.11.0", stderr: "", exitCode: 0 });
+
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn((fns: Record<string, Function>) => {
     workerFns = fns as any;
@@ -49,6 +51,10 @@ vi.mock("@simplysm/core-node", () => ({
   },
   pathx: {
     norm: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
+  },
+  cpx: {
+    exec: vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
+    execSync: mockCpxExecSync,
   },
 }));
 
@@ -95,9 +101,6 @@ vi.mock("fs", () => ({
   existsSync: (...args: unknown[]) => mockExistsSync(...(args as [string])),
 }));
 
-vi.mock("execa", () => ({
-  execaSync: vi.fn(() => ({ stdout: "v20.11.0" })),
-}));
 
 // Mock lockfile content for resolveLockedVersion
 let mockLockfileContent = "";

@@ -31,8 +31,13 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
         (f) => f.includes("/src/") || f.includes(".fixture."),
       );
 
+      const angularCompilerOptions = configFile.config?.angularCompilerOptions as
+        | Record<string, unknown>
+        | undefined;
+
       const compilerOptions: ts.CompilerOptions = {
         ...parsedConfig.options,
+        ...(angularCompilerOptions as ts.CompilerOptions | undefined),
         noEmit: false,
         declaration: false,
         declarationMap: false,

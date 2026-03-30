@@ -1,10 +1,9 @@
 import fs from "node:fs";
 import { existsSync } from "node:fs";
 import path from "path";
-import { execa } from "execa";
 import { symlink } from "fs/promises";
 import { createRequire } from "module";
-import { fsx } from "@simplysm/core-node";
+import { cpx, fsx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdCapacitorConfig } from "../sd-config.types.js";
@@ -154,11 +153,11 @@ export class Capacitor {
   }
 
   /**
-   * 명령어 실행 (execa — Windows .cmd 자동 resolve)
+   * 명령어 실행
    */
   private async _exec(command: string, args: string[], cwd: string): Promise<string> {
     Capacitor._logger.debug(`명령어 실행: ${command} ${args.join(" ")}`);
-    const { stdout } = await execa(command, args, { cwd });
+    const { stdout } = await cpx.exec(command, args, { cwd });
     Capacitor._logger.debug(`실행 결과: ${stdout}`);
     return stdout;
   }

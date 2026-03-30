@@ -67,7 +67,7 @@ export class SdPaginationControl {
   visiblePageCount = input(10, { transform: numberAttribute });
 
   private readonly groupIndex = computed(() => {
-    return Math.floor(this.currentPage() / this.visiblePageCount());
+    return Math.floor(this.currentPage() / Math.max(this.visiblePageCount(), 1));
   });
 
   hasPrev = computed(() => {
@@ -82,7 +82,7 @@ export class SdPaginationControl {
     if (totalPageCount === 0) {
       return false;
     }
-    const lastGroupIndex = Math.floor((totalPageCount - 1) / this.visiblePageCount());
+    const lastGroupIndex = Math.floor((totalPageCount - 1) / Math.max(this.visiblePageCount(), 1));
     return this.groupIndex() < lastGroupIndex;
   });
 
@@ -112,7 +112,8 @@ export class SdPaginationControl {
   }
 
   goToPrevGroup(): void {
-    this.currentPage.set((this.groupIndex() - 1) * this.visiblePageCount());
+    if (!this.hasPrev()) return;
+    this.currentPage.set((this.groupIndex() - 1) * Math.max(this.visiblePageCount(), 1));
   }
 
   goToFirst(): void {
@@ -120,6 +121,7 @@ export class SdPaginationControl {
   }
 
   goToLast(): void {
+    if (this.totalPageCount() === 0) return;
     this.currentPage.set(this.totalPageCount() - 1);
   }
 }

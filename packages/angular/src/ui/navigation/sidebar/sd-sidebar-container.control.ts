@@ -87,6 +87,6 @@ export class SdSidebarContainerControl {
   }
 
   onBackdropClick(): void {
-    this.toggle.update((v) => !v);
+    this.toggle.set(false);
   }
 }

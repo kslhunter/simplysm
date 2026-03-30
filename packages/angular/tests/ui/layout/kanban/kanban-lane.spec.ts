@@ -8,6 +8,7 @@ import {
   SdKanbanLaneNoSelectableTest,
   SdKanbanLaneCollapseTest,
   SdKanbanLaneNoCollapseTest,
+  SdKanbanLaneMixedSelectableTest,
 } from "./sd-kanban-test.fixture";
 
 function setupTestBed(component: any) {
@@ -156,5 +157,75 @@ describe("Feature 6.3 Slice 3: SdKanbanLaneControl", () => {
 
     const anchor = fixture.nativeElement.querySelector("sd-anchor");
     expect(anchor).toBeNull();
+  });
+});
+
+describe("LOGIC-013: 칸반 전체선택/해제 selectable 필터링", () => {
+  // --- Acceptance Tests ---
+
+  it("전체선택 시 selectable 칸반만 selectedValues에 추가된다", () => {
+    setupTestBed(SdKanbanLaneMixedSelectableTest);
+    const fixture = TestBed.createComponent(SdKanbanLaneMixedSelectableTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const checkbox = fixture.nativeElement.querySelector("sd-checkbox") as HTMLElement;
+    checkbox.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(fixture.componentInstance.selectedValues).toContain("X");
+    expect(fixture.componentInstance.selectedValues).toContain("Y");
+    expect(fixture.componentInstance.selectedValues).not.toContain("Z");
+  });
+
+  it("selectable 칸반이 모두 선택되면 isAllSelected가 true이다", () => {
+    setupTestBed(SdKanbanLaneMixedSelectableTest);
+    const fixture = TestBed.createComponent(SdKanbanLaneMixedSelectableTest);
+    fixture.componentInstance.selectedValues = ["X", "Y"];
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const lane = fixture.componentInstance.lane();
+    expect(lane.isAllSelected()).toBe(true);
+  });
+
+  it("전체선택 해제 시 해당 lane의 selectable 칸반만 제거된다", () => {
+    setupTestBed(SdKanbanLaneMixedSelectableTest);
+    const fixture = TestBed.createComponent(SdKanbanLaneMixedSelectableTest);
+    fixture.componentInstance.selectedValues = ["X", "Y"];
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const checkbox = fixture.nativeElement.querySelector("sd-checkbox") as HTMLElement;
+    checkbox.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(fixture.componentInstance.selectedValues).not.toContain("X");
+    expect(fixture.componentInstance.selectedValues).not.toContain("Y");
+  });
+
+  // --- Unit Tests ---
+
+  it("selectable 칸반 일부만 선택되면 isAllSelected가 false이다", () => {
+    setupTestBed(SdKanbanLaneMixedSelectableTest);
+    const fixture = TestBed.createComponent(SdKanbanLaneMixedSelectableTest);
+    fixture.componentInstance.selectedValues = ["X"];
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const lane = fixture.componentInstance.lane();
+    expect(lane.isAllSelected()).toBe(false);
+  });
+
+  it("selectable 칸반이 없고 non-selectable만 있으면 체크박스가 표시되지 않는다", () => {
+    setupTestBed(SdKanbanLaneNoSelectableTest);
+    const fixture = TestBed.createComponent(SdKanbanLaneNoSelectableTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const checkbox = fixture.nativeElement.querySelector("sd-checkbox");
+    expect(checkbox).toBeNull();
   });
 });

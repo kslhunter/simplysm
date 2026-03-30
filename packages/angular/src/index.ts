@@ -62,6 +62,10 @@ export {
   type IExpandItemDef,
 } from "./core/utils/useExpandingManager";
 export { useSelectionManager } from "./core/utils/useSelectionManager";
+export { injectParent } from "./core/utils/injectParent";
+
+// features
+export { SdBaseContainerControl } from "./features/base/sd-base-container.control";
 
 // ui/layout
 export { SdDockContainerControl } from "./ui/layout/dock/sd-dock-container.control";

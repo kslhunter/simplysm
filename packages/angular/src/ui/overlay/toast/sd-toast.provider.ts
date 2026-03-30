@@ -201,12 +201,13 @@ export class SdToastProvider {
       const progressSignal = toastRef.instance.progress;
 
       effect(
-        () => {
+        (onCleanup) => {
           const val = progressSignal();
           if (val >= 100) {
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
               this._dismissToast(toastRef);
             }, 1000);
+            onCleanup(() => clearTimeout(timerId));
           }
         },
         { injector: toastRef.injector },
@@ -260,14 +261,19 @@ export class SdToastProvider {
     toastRef.instance.open.set(false);
 
     const el = toastRef.location.nativeElement as HTMLElement;
+    let fallbackId: ReturnType<typeof setTimeout>;
+
     const onTransitionEnd = () => {
+      clearTimeout(fallbackId);
       el.removeEventListener("transitionend", onTransitionEnd);
       this._destroyToast(toastRef);
     };
+
     el.addEventListener("transitionend", onTransitionEnd);
 
     // fallback: transition이 없는 경우 300ms 후 파괴
-    setTimeout(() => {
+    fallbackId = setTimeout(() => {
+      el.removeEventListener("transitionend", onTransitionEnd);
       this._destroyToast(toastRef);
     }, 300);
   }

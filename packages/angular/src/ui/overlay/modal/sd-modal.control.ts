@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -62,6 +63,7 @@ export class SdModalControl {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _activatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _systemConfig = inject(SdSystemConfigProvider, { optional: true });
+  private readonly _destroyRef = inject(DestroyRef);
 
   open = model(false);
   key = input<string | undefined>(undefined);
@@ -147,6 +149,11 @@ export class SdModalControl {
         void this._saveConfig();
       }
     };
+
+    this._destroyRef.onDestroy(() => {
+      document.removeEventListener("mousemove", this._onDocumentMouseMove);
+      document.removeEventListener("mouseup", this._onDocumentMouseUp);
+    });
   }
 
   onResizeMouseDown(event: MouseEvent, dir: string): void {
@@ -262,6 +269,8 @@ export class SdModalControl {
         maxZ = z;
       }
     }
+    const currentZ = parseInt(hostEl.style.zIndex, 10);
+    if (currentZ >= maxZ) return;
     hostEl.style.zIndex = String(maxZ + 1);
   }
 

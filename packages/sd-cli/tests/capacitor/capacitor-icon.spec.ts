@@ -23,6 +23,10 @@ vi.mock("@simplysm/core-node", () => ({
     rm: mockFsxRm,
     glob: mockFsxGlob,
   },
+  cpx: {
+    exec: mockCpxExec,
+    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+  },
 }));
 
 // env mock
@@ -33,14 +37,12 @@ vi.mock("@simplysm/core-common", () => ({
   }),
 }));
 
-// execa mock
+// cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
-vi.mock("execa", () => ({
-  execa: vi.fn((...args: unknown[]) => {
-    execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
-    return Promise.resolve({ stdout: "", stderr: "" });
-  }),
-}));
+const mockCpxExec = vi.fn((...args: unknown[]) => {
+  execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
+  return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
+});
 
 const mockFsWriteFile = vi.fn().mockResolvedValue(undefined);
 vi.mock("node:fs", () => ({

@@ -61,6 +61,45 @@ describe("SdSidebarContainerControl unit", () => {
     expect(inner).toBeTruthy();
   });
 
+  it("CONSIST-002: 백드롭 클릭 시 toggle이 false로 설정된다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [ContainerUnitTest],
+    }).createComponent(ContainerUnitTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const ctrl = fixture.debugElement.children[0]
+      .componentInstance as SdSidebarContainerControl;
+    ctrl.toggle.set(true);
+    expect(ctrl.toggle()).toBe(true);
+
+    const backdrop = fixture.nativeElement.querySelector("._backdrop") as HTMLElement;
+    backdrop.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(ctrl.toggle()).toBe(false);
+  });
+
+  it("CONSIST-002: toggle=false 상태에서 백드롭 클릭해도 false를 유지한다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [ContainerUnitTest],
+    }).createComponent(ContainerUnitTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const ctrl = fixture.debugElement.children[0]
+      .componentInstance as SdSidebarContainerControl;
+    expect(ctrl.toggle()).toBe(false);
+
+    const backdrop = fixture.nativeElement.querySelector("._backdrop") as HTMLElement;
+    backdrop.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(ctrl.toggle()).toBe(false);
+  });
+
   it("Router가 있으면 NavigationStart에서 toggle이 false로 리셋된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [ContainerRouterTest],

@@ -627,7 +627,7 @@ describe("Feature 3.1 Slice 5: 콘텐츠 높이 제한", () => {
     const popupInstance = popupDebug.componentInstance as SdDropdownPopupControl;
     popupInstance.onResize({ widthChanged: true, heightChanged: true } as any);
 
-    expect(popup.style.height).toBe("18.75rem");
+    expect(popup.style.height).toBe("300px");
   });
 
   // Acceptance: 300px 이하이면 자동 크기

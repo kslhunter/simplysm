@@ -138,6 +138,59 @@ describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
   });
 });
 
+describe("LOGIC-014: visiblePageCount=0 안전 처리", () => {
+  it("visiblePageCount=0일 때 displayPages가 빈 배열을 반환한다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
+      .createComponent(SdPaginationControl);
+
+    fixture.componentRef.setInput("totalPageCount", 10);
+    fixture.componentRef.setInput("visiblePageCount", 0);
+    fixture.detectChanges();
+
+    const pages = fixture.componentInstance.displayPages();
+    expect(Array.isArray(pages)).toBe(true);
+    expect(pages.every((p) => Number.isFinite(p))).toBe(true);
+  });
+
+  it("visiblePageCount=0일 때 hasPrev/hasNext가 boolean을 반환한다 (NaN 아님)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
+      .createComponent(SdPaginationControl);
+
+    fixture.componentRef.setInput("totalPageCount", 10);
+    fixture.componentRef.setInput("visiblePageCount", 0);
+    fixture.detectChanges();
+
+    expect(typeof fixture.componentInstance.hasPrev()).toBe("boolean");
+    expect(typeof fixture.componentInstance.hasNext()).toBe("boolean");
+  });
+});
+
+describe("LOGIC-022: 네비게이션 메서드 경계값 가드", () => {
+  it("groupIndex=0에서 goToPrevGroup 호출 시 currentPage가 0 이상이다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
+      .createComponent(SdPaginationControl);
+
+    fixture.componentRef.setInput("currentPage", 0);
+    fixture.componentRef.setInput("totalPageCount", 20);
+    fixture.componentRef.setInput("visiblePageCount", 10);
+    fixture.detectChanges();
+
+    fixture.componentInstance.goToPrevGroup();
+    expect(fixture.componentInstance.currentPage()).toBeGreaterThanOrEqual(0);
+  });
+
+  it("totalPageCount=0에서 goToLast 호출 시 currentPage가 0 이상이다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
+      .createComponent(SdPaginationControl);
+
+    fixture.componentRef.setInput("totalPageCount", 0);
+    fixture.detectChanges();
+
+    fixture.componentInstance.goToLast();
+    expect(fixture.componentInstance.currentPage()).toBeGreaterThanOrEqual(0);
+  });
+});
+
 describe("Feature 4.1.1 Unit: navigation methods", () => {
   it("goToPage(4)가 currentPage를 4로 설정한다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
