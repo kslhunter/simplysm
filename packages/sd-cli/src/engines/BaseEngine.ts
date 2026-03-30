@@ -184,6 +184,7 @@ export abstract class BaseEngine<
 
         if (isInitialBuild) {
           isInitialBuild = false;
+          logger.debug(`[${this._pkg.name}] 초기 빌드 완료 (success: ${event.js.success})`);
           resolve();
         }
       });

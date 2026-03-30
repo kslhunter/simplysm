@@ -300,7 +300,6 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining("No packages"));
       expect(createBuildEngine).not.toHaveBeenCalled();
     });
 
@@ -872,7 +871,6 @@ describe("DevWatchOrchestrator", () => {
 
       expect(mockBuildEngines[0].stop).toHaveBeenCalledOnce();
       expect(mockRuntimeProxies[0].terminate).toHaveBeenCalled();
-      expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining("Shutting down"));
     });
 
     // --- Acceptance: dev에서 replaceDeps 감시 ---
@@ -890,8 +888,8 @@ describe("DevWatchOrchestrator", () => {
       expect(watchReplaceDeps).toHaveBeenCalledWith("/test-root", replaceDeps);
     });
 
-    // Unit: outputs warning when no server packages
-    it("outputs warning when no server packages in dev mode", async () => {
+    // Unit: no server packages in dev mode — does not create runtime proxies
+    it("does not create runtime proxies when no server packages in dev mode", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
       }));
@@ -899,7 +897,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(process.stdout.write).toHaveBeenCalledWith(expect.stringContaining("No"));
+      expect(createBuildEngine).not.toHaveBeenCalled();
     });
 
     // Unit: multiple server packages

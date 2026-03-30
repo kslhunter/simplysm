@@ -17,7 +17,7 @@ vi.mock("consola", () => ({
   },
 }));
 
-const { createServerEsbuildOptions, writeChangedOutputFiles } =
+const { createServerEsbuildOptions, createEnvBanner, writeChangedOutputFiles } =
   await import("../../src/utils/esbuild-config");
 
 const { default: mockFs } = await import("fs/promises");
@@ -53,20 +53,25 @@ describe("createServerEsbuildOptions", () => {
     expect((result.banner as Record<string, string>)["js"]).toContain("import.meta.url");
   });
 
-  it("substitutes env vars via define (process.env.KEY → constant)", () => {
+  it("injects env vars via banner (process.env merge) instead of define", () => {
     const result = createServerEsbuildOptions({
       ...baseOptions,
       env: { API_URL: "https://api.example.com", NODE_ENV: "production" },
     });
-    expect(result.define).toEqual({
-      "process.env.API_URL": '"https://api.example.com"',
-      "process.env.NODE_ENV": '"production"',
-    });
+    const banner = (result.banner as Record<string, string>)["js"];
+    expect(banner).toContain("process.env");
+    expect(banner).toContain("??=");
+    expect(banner).toContain("API_URL");
+    expect(banner).toContain("https://api.example.com");
+    expect(result.define).toBeUndefined();
   });
 
-  it("produces empty define when env is not provided", () => {
+  it("does not include env code in banner when env is not provided", () => {
     const result = createServerEsbuildOptions(baseOptions);
-    expect(result.define).toEqual({});
+    const banner = (result.banner as Record<string, string>)["js"];
+    expect(banner).toContain("createRequire");
+    expect(banner).not.toContain("??=");
+    expect(result.define).toBeUndefined();
   });
 
   it("passes external modules to esbuild", () => {
@@ -85,6 +90,31 @@ describe("createServerEsbuildOptions", () => {
   it("sets tsconfig to pkgDir/tsconfig.json", () => {
     const result = createServerEsbuildOptions(baseOptions);
     expect(result.tsconfig).toBe(path.join("/pkg", "tsconfig.json"));
+  });
+});
+
+describe("createEnvBanner", () => {
+  it("generates process.env merge code with ??= for runtime override", () => {
+    const banner = createEnvBanner({ API_URL: "https://api.example.com", NODE_ENV: "production" });
+    expect(banner).toContain("process.env");
+    expect(banner).toContain("??=");
+    expect(banner).toContain('"API_URL"');
+    expect(banner).toContain('"https://api.example.com"');
+    expect(banner).toContain('"NODE_ENV"');
+    expect(banner).toContain('"production"');
+  });
+
+  it("returns empty string when env is undefined", () => {
+    expect(createEnvBanner()).toBe("");
+  });
+
+  it("returns empty string when env is empty object", () => {
+    expect(createEnvBanner({})).toBe("");
+  });
+
+  it("JSON-encodes special characters in values", () => {
+    const banner = createEnvBanner({ MSG: 'hello "world"' });
+    expect(banner).toContain('\\"world\\"');
   });
 });
 

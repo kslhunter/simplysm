@@ -80,10 +80,10 @@ export class ExcelXmlRelationship implements ExcelXml {
   }
 
   private _getRelId(rel: ExcelRelationshipData): number {
-    const match = /[0-9]+$/.exec(rel.$.Id);
-    if (match == null) {
+    const result = num.parseInt(rel.$.Id);
+    if (result == null) {
       throw new Error(`잘못된 관계 ID 형식: ${rel.$.Id}`);
     }
-    return num.parseInt(match[0])!;
+    return result;
   }
 }

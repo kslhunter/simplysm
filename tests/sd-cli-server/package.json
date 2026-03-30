@@ -1,0 +1,19 @@
+{
+  "name": "@simplysm-test/sd-cli-server",
+  "version": "14.0.6",
+  "description": "심플리즘 패키지 - esbuild banner env 주입 통합 테스트",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "tests/sd-cli-server"
+  },
+  "sideEffects": false,
+  "license": "Apache-2.0",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "esbuild": "^0.27.4"
+  }
+}

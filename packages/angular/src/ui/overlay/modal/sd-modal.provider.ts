@@ -65,7 +65,7 @@ export interface ISdModalOptions {
 export class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
   modalComponent = signal<any>(undefined);
   contentComponent = signal<T | undefined>(undefined);
-  canDeactivefn: () => boolean = () => true;
+  canDeactiveFn: () => boolean = () => true;
 }
 
 /**

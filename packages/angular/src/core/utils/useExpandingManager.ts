@@ -86,9 +86,10 @@ export function useExpandingManager<T>(binding: {
     const itemDef = map.get(item);
     if (itemDef == null) return false;
 
+    const expandedSet = new Set(binding.expandedItems());
     let current = itemDef.parentDef;
     while (current != null) {
-      if (!binding.expandedItems().includes(current.item)) {
+      if (!expandedSet.has(current.item)) {
         return false;
       }
       current = current.parentDef;

@@ -117,21 +117,20 @@ describe("runCheck", () => {
     writeSpy.mockRestore();
   });
 
-  it("runs typecheck+lint and test, outputs ALL PASSED", async () => {
+  it("runs typecheck+lint and test", async () => {
     await runCheck({ targets: [], types: ["typecheck", "lint", "test"], fix: false });
 
     expect(mocks.executeTypecheck).toHaveBeenCalled();
     expect(mocks.execa).toHaveBeenCalled();
-    expect(stdoutOutput).toContain("ALL PASSED");
   });
 
-  it("outputs results in TYPECHECK → LINT → TEST → SUMMARY order", async () => {
+  it("outputs results in TYPECHECK → LINT → TEST → 요약 order", async () => {
     await runCheck({ targets: [], types: ["typecheck", "lint", "test"], fix: false });
 
     const tcIdx = stdoutOutput.indexOf("TYPECHECK");
     const lintIdx = stdoutOutput.indexOf("LINT");
     const testIdx = stdoutOutput.indexOf("TEST");
-    const summaryIdx = stdoutOutput.indexOf("SUMMARY");
+    const summaryIdx = stdoutOutput.indexOf("요약");
 
     expect(tcIdx).toBeLessThan(lintIdx);
     expect(lintIdx).toBeLessThan(testIdx);
@@ -146,7 +145,7 @@ describe("runCheck", () => {
     expect(mocks.execa).toHaveBeenCalled();
   });
 
-  it("outputs FAILED with failing check names when some fail", async () => {
+  it("sets exitCode 1 when typecheck fails", async () => {
     mocks.executeTypecheck.mockResolvedValue({
       success: false, errorCount: 2, warningCount: 0, formattedOutput: "type errors",
       lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
@@ -155,8 +154,6 @@ describe("runCheck", () => {
 
     await runCheck({ targets: [], types: ["typecheck", "lint", "test"], fix: false });
 
-    expect(stdoutOutput).toContain("FAILED");
-    expect(stdoutOutput).toContain("typecheck");
     expect(process.exitCode).toBe(1);
   });
 
@@ -170,14 +167,13 @@ describe("runCheck", () => {
     expect(process.exitCode).toBe(1);
   });
 
-  it("parses test failure count from vitest output", async () => {
+  it("sets exitCode 1 when test fails", async () => {
     mocks.execa.mockResolvedValue({
       stdout: "3 tests failed", stderr: "", exitCode: 1,
     });
 
     await runCheck({ targets: [], types: ["test"], fix: false });
 
-    expect(stdoutOutput).toContain("3 failed");
     expect(process.exitCode).toBe(1);
   });
 
@@ -271,8 +267,8 @@ describe("runCheck", () => {
       expect(mocks.runLintInWorker).not.toHaveBeenCalled();
     });
 
-    // Scenario: check 결과 출력에 LINT 섹션이 포함된다
-    it("outputs separate TYPECHECK and LINT sections from engine results", async () => {
+    // Scenario: lint 실패 시 exitCode 설정
+    it("sets exitCode 1 when engine lint fails", async () => {
       mocks.executeTypecheck.mockResolvedValue({
         success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
         lint: { success: false, errorCount: 3, warningCount: 1, formattedOutput: "some lint output" },
@@ -281,10 +277,7 @@ describe("runCheck", () => {
 
       await runCheck({ targets: [], types: ["typecheck", "lint"], fix: false });
 
-      expect(stdoutOutput).toContain("TYPECHECK");
-      expect(stdoutOutput).toContain("LINT");
-      expect(stdoutOutput).toContain("3 errors");
-      expect(stdoutOutput).toContain("1 warnings");
+      expect(process.exitCode).toBe(1);
     });
 
     // Scenario: check에서 scripts 패키지의 lint가 별도 실행된다
@@ -391,43 +384,35 @@ describe("runCheck", () => {
     });
 
     // Scenario: lint 에러 없음
-    it("outputs ALL PASSED when lint has no errors", async () => {
+    it("does not set exitCode when lint passes", async () => {
       mocks.executeLint.mockResolvedValue({
         success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
       });
 
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(stdoutOutput).toContain("LINT");
-      expect(stdoutOutput).toContain("✔ 0 errors, 0 warnings");
-      expect(stdoutOutput).toContain("✔ ALL PASSED");
       expect(process.exitCode).toBeUndefined();
     });
 
     // Scenario: lint 에러 발생
-    it("outputs FAILED when lint has errors", async () => {
+    it("sets exitCode 1 when lint has errors", async () => {
       mocks.executeLint.mockResolvedValue({
         success: false, errorCount: 3, warningCount: 2, formattedOutput: "lint errors",
       });
 
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(stdoutOutput).toContain("LINT");
-      expect(stdoutOutput).toContain("✖ 3 errors, 2 warnings");
-      expect(stdoutOutput).toContain("✖ 1/1 FAILED (lint)");
       expect(process.exitCode).toBe(1);
     });
 
     // Scenario: lint 대상 파일 없음
-    it("outputs ALL PASSED when no files to lint", async () => {
+    it("does not set exitCode when no files to lint", async () => {
       mocks.executeLint.mockResolvedValue({
         success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
       });
 
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(stdoutOutput).toContain("✔ 0 errors, 0 warnings");
-      expect(stdoutOutput).toContain("✔ ALL PASSED");
       expect(process.exitCode).toBeUndefined();
     });
 

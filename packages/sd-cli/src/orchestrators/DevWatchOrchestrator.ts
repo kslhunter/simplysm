@@ -289,9 +289,16 @@ export class DevWatchOrchestrator {
     }
 
     // Start all engines
-    this._logger.start("초기 빌드 실행 중...");
-    const watchPromises: Array<Promise<void>> = [];
-    watchPromises.push(...this._libraryEngines.map((e) => e.startWatch({ js: true, dts: true, lint: true })));
+    const total = this._libraryEngines.length;
+    this._logger.start(`초기 빌드 실행 중... (${total}개 패키지)`);
+    let completed = 0;
+
+    const watchPromises = this._libraryEngines.map(async (engine, i) => {
+      const pkgName = this._libraryPackages[i].name;
+      await engine.startWatch({ js: true, dts: true, lint: true });
+      completed++;
+      this._logger.info(`  [${completed}/${total}] ${pkgName} 완료`);
+    });
 
     await Promise.allSettled(watchPromises);
     this._logger.success("초기 빌드 실행 완료");

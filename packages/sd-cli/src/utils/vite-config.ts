@@ -82,10 +82,9 @@ export async function createClientViteConfig(
         : [options.browserslist]
       : undefined;
 
-  // define: 환경변수 주입
+  // define: 환경변수 주입 (import.meta.env.KEY → Vite가 bare import.meta.env 객체를 자동 구성)
   const define: Record<string, string> = {};
   if (options.env != null) {
-    define["process.env"] = JSON.stringify(options.env);
     for (const [key, value] of Object.entries(options.env)) {
       define[`import.meta.env.${key}`] = JSON.stringify(value);
     }

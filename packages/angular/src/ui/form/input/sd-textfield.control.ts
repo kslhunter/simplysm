@@ -379,6 +379,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   }
 
   onInputPaste(event: ClipboardEvent): void {
+    event.preventDefault();
     const text = event.clipboardData?.getData("text/plain").trim();
     if (text == null || text === "") {
       this.value.set(undefined);

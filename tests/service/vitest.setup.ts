@@ -44,7 +44,12 @@ export async function setup() {
     services: [TestService],
   });
 
-  await testServer.listen();
+  await Promise.race([
+    testServer.listen(),
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(`[service] Server start timed out after 10s on port ${TEST_PORT}`)), 10_000);
+    }),
+  ]);
   console.log(`[service] Test server started on port ${TEST_PORT}`);
 }
 
@@ -53,7 +58,12 @@ export async function teardown() {
 
   // Close server
   if (testServer?.isOpen === true) {
-    await testServer.close();
+    await Promise.race([
+      testServer.close(),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("[service] Server close timed out after 10s")), 10_000);
+      }),
+    ]);
   }
 
   // Clean up test directory

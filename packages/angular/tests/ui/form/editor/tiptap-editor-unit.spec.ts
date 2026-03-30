@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import {
   SdTiptapEditorDefaultTest,
+  SdTiptapEditorDisabledTest,
   SdTiptapEditorInitialValueTest,
 } from "./sd-tiptap-editor-test.fixture";
 
@@ -65,7 +66,7 @@ describe("FIX-2 Slice 2: DEFAULT_EXTENSIONS에 Underline 포함 (LOGIC-019)", ()
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     // Underline extension should be registered
     const underlineExt = editor.extensionManager.extensions.find(
@@ -81,7 +82,7 @@ describe("FIX-2 Slice 2: DEFAULT_EXTENSIONS에 Underline 포함 (LOGIC-019)", ()
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     editor.commands.setContent("<p>Hello</p>");
     editor.commands.setTextSelection({ from: 1, to: 6 });
@@ -102,11 +103,76 @@ describe("FIX-2 Slice 2: editor DOM 타이밍 (LOGIC-011)", () => {
     expect(container).toBeTruthy();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    expect(editorCtrl.editor).toBeTruthy();
+    expect(editorCtrl.editor()).toBeTruthy();
 
     // The tiptap element should be inside the container
     const tiptapEl = container.querySelector(".tiptap");
     expect(tiptapEl).toBeTruthy();
+  });
+});
+
+// endregion
+
+// region Feature 1.2a Slice 2: Signal 변환 (LOGIC-012, DESIGN-005)
+
+describe("Feature 1.2a Slice 2: editor signal 변환 (LOGIC-012)", () => {
+  it("editor()가 Editor 인스턴스를 반환한다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDefaultTest] })
+      .createComponent(SdTiptapEditorDefaultTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    // editor가 signal이면 editor()로 접근 가능
+    expect(editorCtrl.editor()).toBeTruthy();
+    expect(editorCtrl.editor()!.isEditable).toBe(true);
+  });
+
+  it("disabled=true로 초기화 후 editor 생성 시 editable이 false이다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDisabledTest] })
+      .createComponent(SdTiptapEditorDisabledTest);
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    expect(editorCtrl.editor()).toBeTruthy();
+    expect(editorCtrl.editor()!.isEditable).toBe(false);
+  });
+});
+
+describe("Feature 1.2a Slice 2: activeStates signal 변환 (DESIGN-005)", () => {
+  it("activeStates()가 에디터 상태를 반영한다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDefaultTest] })
+      .createComponent(SdTiptapEditorDefaultTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    const editor = editorCtrl.editor()!;
+
+    editor.commands.setContent("<p>Hello</p>");
+    editor.commands.setTextSelection({ from: 1, to: 6 });
+    editor.commands.toggleBold();
+
+    // activeStates가 signal이면 activeStates()로 접근 가능
+    expect(editorCtrl.activeStates().bold).toBe(true);
+  });
+
+  it("activeColor()가 텍스트 색상을 반영한다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDefaultTest] })
+      .createComponent(SdTiptapEditorDefaultTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    const editor = editorCtrl.editor()!;
+
+    editor.commands.setContent("<p>Hello</p>");
+    editor.commands.setTextSelection({ from: 1, to: 6 });
+    editor.commands.setColor("#ff0000");
+
+    expect(editorCtrl.activeColor()).toBe("#ff0000");
   });
 });
 

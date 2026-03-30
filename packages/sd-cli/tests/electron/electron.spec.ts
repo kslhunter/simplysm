@@ -278,6 +278,25 @@ describe("Electron", () => {
 
       await expect(electron.build("/fake/out")).rejects.toThrow("electron-main.ts");
     });
+
+    it("config.env를 esbuild banner로 주입한다 (ELECTRON_DEV_URL 미포함)", async () => {
+      const { Electron } = await import("../../src/electron/electron.js");
+
+      const electron = await Electron.create(PKG_PATH, {
+        appId: "com.test.app",
+        env: { API_URL: "https://api.example.com" },
+      });
+      await electron.build("/fake/out");
+
+      const callArgs = mockEsbuildBuild.mock.calls[0][0];
+      const banner = callArgs.banner?.js as string;
+      expect(banner).toContain("process.env");
+      expect(banner).toContain("??=");
+      expect(banner).toContain("API_URL");
+      expect(banner).toContain("https://api.example.com");
+      expect(banner).not.toContain("ELECTRON_DEV_URL");
+      expect(callArgs.define).toBeUndefined();
+    });
   });
 
   //#endregion
@@ -440,7 +459,7 @@ describe("Electron", () => {
       return { electronKill, resolveElectron: () => resolveElectron() };
     }
 
-    it("creates esbuild context and spawns Electron on build success", async () => {
+    it("creates esbuild context with banner for env and spawns Electron", async () => {
       const { resolveElectron } = setupExecaForRun();
 
       const { Electron } = await import("../../src/electron/electron.js");
@@ -455,28 +474,20 @@ describe("Electron", () => {
       resolveElectron();
       await runPromise;
 
-      // esbuild.context was called
-      expect(mockEsbuildContext).toHaveBeenCalledWith(
-        expect.objectContaining({
-          platform: "node",
-          target: "node20",
-          format: "cjs",
-          bundle: true,
-          external: expect.arrayContaining(["electron"]),
-        }),
-      );
+      // esbuild.context was called with banner containing ELECTRON_DEV_URL
+      const callArgs = mockEsbuildContext.mock.calls[0][0];
+      const banner = callArgs.banner?.js as string;
+      expect(banner).toContain("process.env");
+      expect(banner).toContain("??=");
+      expect(banner).toContain("ELECTRON_DEV_URL");
+      expect(banner).toContain("http://localhost:4200");
+      expect(callArgs.define).toBeUndefined();
 
-      // Electron was spawned via execa
-      const electronCall = mockExeca.mock.calls.find(
-        (c: any[]) => typeof c[0] === "string" && c[0].includes("electron"),
-      );
-      expect(electronCall).toBeDefined();
-      expect(electronCall![2].env).toEqual(
-        expect.objectContaining({
-          NODE_ENV: "development",
-          ELECTRON_DEV_URL: "http://localhost:4200",
-        }),
-      );
+      expect(callArgs.platform).toBe("node");
+      expect(callArgs.target).toBe("node20");
+      expect(callArgs.format).toBe("cjs");
+      expect(callArgs.bundle).toBe(true);
+      expect(callArgs.external).toContain("electron");
     }, 10_000);
 
     it("throws when electron-main.ts entry point is missing", async () => {
@@ -513,7 +524,7 @@ describe("Electron", () => {
   });
 
   describe("단위: run() 플러그인 동작", () => {
-    it("passes custom env and ELECTRON_DEV_URL to spawned Electron process", async () => {
+    it("passes custom env and ELECTRON_DEV_URL via esbuild banner", async () => {
       let resolveElectron: () => void = () => {};
       mockExeca.mockImplementation((cmd: string) => {
         if (typeof cmd === "string" && cmd.includes("electron")) {
@@ -537,17 +548,13 @@ describe("Electron", () => {
       resolveElectron();
       await runPromise;
 
-      const execaCall = mockExeca.mock.calls.find(
-        (c: any[]) => typeof c[0] === "string" && c[0].includes("electron"),
-      );
-      expect(execaCall).toBeDefined();
-      expect(execaCall![2].env).toEqual(
-        expect.objectContaining({
-          NODE_ENV: "development",
-          ELECTRON_DEV_URL: "http://localhost:5555",
-          CUSTOM_VAR: "test-value",
-        }),
-      );
+      const callArgs = mockEsbuildContext.mock.calls[0][0];
+      const banner = callArgs.banner?.js as string;
+      expect(banner).toContain("ELECTRON_DEV_URL");
+      expect(banner).toContain("http://localhost:5555");
+      expect(banner).toContain("CUSTOM_VAR");
+      expect(banner).toContain("test-value");
+      expect(callArgs.define).toBeUndefined();
     }, 10_000);
 
     it("calls initialize() before starting esbuild context", async () => {

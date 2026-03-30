@@ -1,9 +1,10 @@
-import { ElementRef, inject, type ResourceRef, resource, type Signal } from "@angular/core";
+import { ElementRef, ErrorHandler, inject, type ResourceRef, resource, type Signal } from "@angular/core";
 import { SdSystemConfigProvider } from "../providers/sd-system-config.provider";
 
 export function useSdSystemConfigResource<T>(options: { key: Signal<string | undefined> }) {
   const sdSystemConfig = inject<SdSystemConfigProvider<Record<string, T>>>(SdSystemConfigProvider);
   const elRef = inject(ElementRef);
+  const errorHandler = inject(ErrorHandler);
 
   const elTag = elRef.nativeElement.tagName.toLowerCase();
 
@@ -24,8 +25,10 @@ export function useSdSystemConfigResource<T>(options: { key: Signal<string | und
       res.set(value);
       const key = options.key();
       if (key == null) return;
-      queueMicrotask(async () => {
-        await sdSystemConfig.setAsync(`${elTag}.${key}`, value as T);
+      queueMicrotask(() => {
+        sdSystemConfig.setAsync(`${elTag}.${key}`, value as T).catch((err) => {
+          errorHandler.handleError(err);
+        });
       });
     },
     update(fn: (prev: T | undefined) => T | undefined) {

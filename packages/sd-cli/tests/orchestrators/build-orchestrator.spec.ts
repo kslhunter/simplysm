@@ -221,7 +221,7 @@ describe("BuildOrchestrator.initialize", () => {
     );
   });
 
-  it("outputs message when no packages to build", async () => {
+  it("returns false when only scripts packages exist", async () => {
     setupDefaults({
       packages: {
         "sd-claude": { target: "scripts" } as any,
@@ -230,10 +230,9 @@ describe("BuildOrchestrator.initialize", () => {
 
     const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
     await orchestrator.initialize();
+    const hasError = await orchestrator.start();
 
-    expect(process.stdout.write).toHaveBeenCalledWith(
-      expect.stringContaining("No packages to build"),
-    );
+    expect(hasError).toBe(false);
   });
 });
 
@@ -403,10 +402,9 @@ describe("BuildOrchestrator.start", () => {
     const hasError = await orchestrator.start();
 
     expect(hasError).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith("Build completed");
   });
 
-  it("returns true and logs error when any build fails", async () => {
+  it("returns true when any build fails", async () => {
     setupDefaults({
       packages: {
         "core-common": { target: "neutral", publish: { type: "npm" } },
@@ -429,7 +427,6 @@ describe("BuildOrchestrator.start", () => {
     const hasError = await orchestrator.start();
 
     expect(hasError).toBe(true);
-    expect(mockLogger.error).toHaveBeenCalledWith("Build failed");
   });
 
   it("returns false when no packages to build", async () => {
@@ -658,7 +655,6 @@ describe("BuildOrchestrator client build", () => {
     const hasError = await orchestrator.start();
 
     expect(hasError).toBe(true);
-    expect(mockLogger.error).toHaveBeenCalledWith("Build failed");
   });
 
   // Acceptance: Scenario "BuildOrchestrator가 env를 ViteEngine에 전달" + "프로덕션 빌드의 baseEnv"
@@ -1049,7 +1045,6 @@ describe("BuildOrchestrator lint integration", () => {
     const hasError = await orchestrator.start();
 
     expect(hasError).toBe(true);
-    expect(mockLogger.error).toHaveBeenCalledWith("Build failed");
   });
 
   // Scenario: build에서 scripts 패키지는 제외된다

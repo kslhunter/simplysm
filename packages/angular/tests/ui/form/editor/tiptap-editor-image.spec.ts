@@ -15,7 +15,7 @@ describe("Feature 5.4 Slice 3: 이미지 리사이즈", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     // Insert image via TipTap command (equivalent to paste/drop result)
     editor.commands.setImage({ src: BASE64_IMAGE });
@@ -40,7 +40,7 @@ describe("Feature 5.4 Slice 3: 이미지 리사이즈", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     // Verify image extension is configured with resize enabled
     const imageExt = editor.extensionManager.extensions.find((ext) => ext.name === "image");
@@ -56,7 +56,7 @@ describe("Feature 5.4 Slice 3: 이미지 리사이즈", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     // Insert image with specific dimensions
     editor.commands.setImage({ src: BASE64_IMAGE });

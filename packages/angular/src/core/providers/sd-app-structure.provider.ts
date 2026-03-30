@@ -48,6 +48,9 @@ export abstract class SdAppStructureUtils {
 
   static getTitleByFullCode<TModule>(items: TSdAppStructureItem<TModule>[], fullCode: string) {
     const itemChain = this.getItemChainByFullCode(items, fullCode);
+    if (itemChain.length === 0) {
+      throw new Error(`Item not found for fullCode: ${fullCode}`);
+    }
     const parent = itemChain
       .slice(0, -1)
       .map((item) => item.title)
@@ -72,7 +75,7 @@ export abstract class SdAppStructureUtils {
       else if (
         fullCodes.every((fullCode) => {
           const item = this.getItemChainByFullCode(items, fullCode).last();
-          return !item || !("perms" in item);
+          return item != null && !("perms" in item);
         })
       ) {
         result.push(permKey);

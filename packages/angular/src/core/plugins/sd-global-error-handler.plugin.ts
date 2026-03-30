@@ -12,6 +12,7 @@ import { SdSystemLogProvider } from "../providers/sd-system-log.provider";
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   private readonly _envInjector = inject(EnvironmentInjector);
   private readonly _systemLog = inject(SdSystemLogProvider);
+  private _hasDisplayedError = false;
 
   handleError(event: any) {
     try {
@@ -82,6 +83,9 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   }
 
   private _displayErrorMessage(title: string, param: Record<string, string>) {
+    if (this._hasDisplayedError) return;
+    this._hasDisplayedError = true;
+
     const paramLines = Object.keys(param).map((key) => key + ": " + param[key]);
 
     void this._systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);

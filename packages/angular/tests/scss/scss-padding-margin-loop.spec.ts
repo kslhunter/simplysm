@@ -14,7 +14,7 @@ describe("Feature 1.1 Slice 2: padding/margin/size/position 루프 통합", () =
     style.remove();
   });
 
-  const gapKeys = ["xxs", "xs", "sm", "default", "lg", "xl", "xxl", "0", "auto"];
+  const _gapKeys = ["xxs", "xs", "sm", "default", "lg", "xl", "xxl", "0", "auto"];
 
   describe("Scenario: 분산된 @each 루프를 통합", () => {
     it("padding 클래스가 올바른 CSS 속성을 적용한다", () => {

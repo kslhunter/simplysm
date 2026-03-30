@@ -33,6 +33,9 @@ export class SdRouterLinkDirective {
 
     if (!option) return;
 
+    // Alt+click → 무시 (Chrome 표준: 다운로드, SPA에서는 해당 없음)
+    if (event.altKey) return;
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -47,22 +50,11 @@ export class SdRouterLinkDirective {
         option.params,
         `width=${width},height=${height}`,
       );
-    } else if (event.ctrlKey || event.altKey) {
+    } else if (event.ctrlKey || event.shiftKey) {
       const qp = option.queryParams
         ? "?" + new URLSearchParams(option.queryParams).toString()
         : "";
-      this._navWindow.open(option.link + qp, option.params, "_blank");
-    } else if (event.shiftKey) {
-      const width = option.window?.width ?? 800;
-      const height = option.window?.height ?? 800;
-      const qp = option.queryParams
-        ? "?" + new URLSearchParams(option.queryParams).toString()
-        : "";
-      this._navWindow.open(
-        option.link + qp,
-        option.params,
-        `width=${width},height=${height}`,
-      );
+      this._navWindow.open(option.link + qp, option.params);
     } else if (option.outletName === undefined) {
       await this._router.navigate(
         [option.link, ...(option.params ? [option.params] : [])],

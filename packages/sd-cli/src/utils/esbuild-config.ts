@@ -58,21 +58,28 @@ export interface ServerEsbuildOptions {
 }
 
 /**
+ * Generate a JS banner snippet that merges env vars into process.env at runtime.
+ * Uses ??= so that runtime ENV (e.g. `DEV=false node server.js`) takes precedence
+ * over build-time defaults.
+ */
+export function createEnvBanner(env?: Record<string, string>): string {
+  if (env == null || Object.keys(env).length === 0) return "";
+  return `for(const[__k,__v]of Object.entries(${JSON.stringify(env)})){process.env[__k]??=__v;}`;
+}
+
+/**
  * Create esbuild config for Server build
  *
  * Used for server package builds
  * - bundle: true (single bundle with all dependencies)
  * - minify: true (minify for code protection)
- * - banner: createRequire shim for CJS package require() support
- * - Replace env with define option (process.env.KEY format)
+ * - banner: createRequire shim for CJS package require() support + env injection
  */
 export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbuild.BuildOptions {
-  const define: Record<string, string> = {};
-  if (options.env != null) {
-    for (const [key, value] of Object.entries(options.env)) {
-      define[`process.env.${key}`] = JSON.stringify(value);
-    }
-  }
+  const envBanner = createEnvBanner(options.env);
+  const bannerJs =
+    "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" +
+    envBanner;
 
   return {
     entryPoints: options.entryPoints,
@@ -82,11 +89,8 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     platform: "node",
     target: "node20",
     bundle: true,
-    banner: {
-      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
-    },
+    banner: { js: bannerJs },
     external: options.external,
-    define,
     tsconfig: path.join(options.pkgDir, "tsconfig.json"),
     logLevel: "silent",
   };

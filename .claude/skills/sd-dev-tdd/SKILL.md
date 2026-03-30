@@ -14,7 +14,7 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 ## 입력과 산출물
 
 - **입력:** Feature 문서 (요구명세 + 구현계획) + 코드베이스
-- **산출물:** 테스트된 코드 + 수동 테스트 문서 (`.spec.md`, 해당 시) + WBS 체크박스 갱신 (`[x]`)
+- **산출물:** 테스트된 코드 + 검증 문서 (`.verify.md`, `.spec.md`, 해당 시) + WBS 체크박스 갱신 (`[x]`)
 
 ## 프로세스 흐름
 
@@ -26,9 +26,16 @@ flowchart TD
 
     subgraph S2[Step 2: 각 Slice → 각 Scenario 순회]
         direction TB
-        VJ{자동화 테스트 검증 가능?}
+        DECOMP[검증 항목 분해] --> CLASSIFY
 
-        VJ -->|Yes| A[Step A: Acceptance Test Red]
+        subgraph CLASSIFY[항목별 분류]
+            direction LR
+            AUTO[spec.ts 가능]
+            LLM_V[LLM 검증 가능]
+            MANUAL[수동만 가능]
+        end
+
+        AUTO --> A[Step A: Acceptance Test Red]
         A --> UT[Unit Test Red]
         UT --> IMPL[최소 구현 Green]
         IMPL --> IREF[Refactor]
@@ -38,10 +45,17 @@ flowchart TD
         ACHK -->|Yes| C[Step C: Outer Loop Refactor]
         C --> CRUN[전체 테스트 실행]
         CRUN -->|Fail| C
-        CRUN -->|Pass| DONE[Scenario 완료]
+        CRUN -->|Pass| VER_CHK{.verify.md 있음?}
 
-        VJ -->|No| SPEC[.spec.md + 구현]
-        SPEC --> DONE
+        LLM_V --> VERIFY[.verify.md 작성 + 즉시 검증]
+        MANUAL --> SPECMD[.spec.md 작성]
+
+        VER_CHK -->|Yes| VERIFY
+        VER_CHK -->|No| SPECMD_CHK{.spec.md 있음?}
+        VERIFY --> SPECMD_CHK
+        SPECMD_CHK -->|Yes| SPECMD
+        SPECMD_CHK -->|No| DONE[Scenario 완료]
+        SPECMD --> DONE
     end
 
     S2 -->|모든 Slice 완료| S3[Step 3: WBS 체크박스 갱신]
@@ -87,7 +101,25 @@ Slice 목록과 각 Slice에 매핑된 Scenario를 사용자에게 표시한다.
 
 ## Step 2: Double Loop TDD
 
-구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리한다. Scenario를 자동화 테스트로 검증할 수 있으면 Double Loop TDD(Step A → B → C)로, 불가능하면 `.spec.md` 수동 테스트 문서로 처리한다.
+구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리한다.
+
+**CRITICAL: 판단 단위는 Scenario가 아니라 검증 항목이다.** Scenario에 하드웨어 의존이 하나라도 있다고 Scenario 전체를 수동 테스트로 분류하는 것은 금지다. 먼저 Scenario의 검증 항목을 분해하고, 각 항목별로 분류한다:
+
+| 분류 | 기준 | 산출물 |
+|------|------|--------|
+| **자동 테스트** | import하여 호출·실행·단언 가능 (순수 함수, 상태 변경, 분기 로직 등) | `.spec.ts` → TDD |
+| **LLM 검증** | 자동 테스트는 불가하지만 LLM이 코드 읽기·명령 실행·설정 확인으로 검증 가능 | `.verify.md` → 즉시 수행 |
+| **수동 검증** | 실제 하드웨어·물리적 UI 조작 등 LLM이 절대 수행할 수 없는 항목 | `.spec.md` → 문서화 |
+
+하나의 Scenario에서 3종류가 모두 나올 수 있다. 각 분류에 해당하는 항목이 없으면 해당 파일은 생성하지 않는다.
+
+### 테스트 파일 네이밍 및 배치
+
+- **CRITICAL: Slice/Scenario 번호를 파일명에 사용하지 않는다** — `3.1-bootstrap.spec.ts` (X), `bootstrap.spec.ts` (O)
+- 파일명은 테스트 대상 모듈/클래스/함수 이름을 기반으로 한다
+- 기존 테스트 디렉토리 구조를 따른다 — 프로젝트에 `tests/` 디렉토리가 있으면 그 하위에 소스 구조를 미러링한다 (예: `packages/{pkg}/tests/{category}/{대상}.spec.ts`)
+- 새 패키지라 기존 테스트가 없으면, 같은 모노레포의 다른 패키지 테스트 구조를 참고한다
+- Acceptance Test: `{대상}.acc.spec.ts`, Unit Test: `{대상}.spec.ts`
 
 ### Step A. Acceptance Test 작성 (Red)
 
@@ -146,12 +178,33 @@ Code Smell을 트리거로 판단하고, 대응하는 기법을 적용한다:
 
 점검 결과(수정 내용 또는 "정리 대상 없음")를 출력에 기록한다. 정리 후 전체 테스트를 실행한다. 실패하면 수정하고 재테스트한다. 전체 Pass 후 다음 Scenario로 진행한다.
 
-### 수동 테스트 문서 (.spec.md)
+### LLM 검증 문서 (.verify.md)
 
-실제 하드웨어에서만 동작을 확인할 수 있어 mock이 무의미한 Scenario(USB, NFC, 하드웨어 버튼 등)는 `.spec.md` 파일로 수동 테스트 절차를 문서화하고, 구현 코드를 작성한다.
+자동 테스트(`.spec.ts`)로는 검증할 수 없지만, LLM이 코드 읽기·명령 실행·설정 확인 등으로 직접 검증할 수 있는 항목을 다룬다. 콜백 등록 코드의 정확성, 설정 파일 값, 에러 핸들링 경로 존재 여부, 타입 정합성 등이 해당한다.
+
+**CRITICAL: `.verify.md`는 작성만으로 끝나지 않는다. 작성 후 각 항목을 즉시 수행하고 결과를 기록해야 한다.**
+
+#### 프로세스
+
+1. 검증 항목 중 "LLM 검증" 분류 항목을 `.verify.md`에 체크리스트로 작성한다
+2. 각 항목을 순회하며 **즉시 검증을 수행한다** — 코드를 읽고, 명령을 실행하고, 결과를 확인한다
+3. 검증 결과를 체크리스트에 기록한다 — 통과하면 `[x]`, 문제 발견 시 `[!]`와 함께 내용을 기록하고 코드를 수정한다
 
 ```markdown
-# {Scenario 제목}
+# {Scenario 제목} — LLM 검증
+
+## 검증 항목
+- [x] {항목}: {수행한 검증 내용과 결과}
+- [x] {항목}: {수행한 검증 내용과 결과}
+- [!] {항목}: {발견된 문제} → {수정 내용}
+```
+
+### 수동 테스트 문서 (.spec.md)
+
+실제 하드웨어 연결, 물리적 UI 조작 등 LLM이 절대 수행할 수 없는 항목만 포함한다. **LLM이 코드를 읽거나 명령을 실행하여 확인할 수 있는 항목은 `.spec.md`가 아니라 `.verify.md`에 넣는다.**
+
+```markdown
+# {Scenario 제목} — 수동 검증
 
 ## 전제 조건
 - {테스트 전 필요한 상태/환경}
@@ -166,7 +219,7 @@ Code Smell을 트리거로 판단하고, 대응하는 기법을 적용한다:
 
 ### Slice 완료
 
-Slice의 모든 Scenario가 완료(Step A → B → C 또는 .spec.md)되면:
+Slice의 모든 Scenario가 완료(`.spec.ts` TDD + `.verify.md` 검증 + `.spec.md` 문서화)되면:
 1. 전체 테스트 스위트를 실행하여 회귀가 없는지 확인한다
 2. Feature 문서 `## 구현계획`에서 해당 Slice의 체크박스를 `[x]`로 갱신한다
 

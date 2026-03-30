@@ -23,9 +23,11 @@
   - [ ] Outer Loop Refactor에서 테스트 코드 점검이 수행되고 결과가 출력에 기록되었다
   - [ ] 최종 테스트 코드에 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 남아있지 않다
   - [ ] 테스트가 대상 코드를 실제로 import하여 호출/실행하는 방식으로 작성되었다 (소스 파일을 문자열로 읽어 텍스트 매칭하는 방식이 아님)
+  - [ ] 테스트 파일명에 Slice/Scenario 번호가 사용되지 않았다 (예: `3.1-xxx.spec.ts` 없음)
+  - [ ] Acceptance Test 파일이 `.acc.spec.{ts,js}` (프로젝트 언어에 맞는) 확장자를 사용한다
   - [ ] wbs.md에서 해당 Feature의 체크박스가 `[x]`로 갱신되었다
 
-### 시나리오 2: 구현계획 누락 시 이전 단계 안내
+### 시나리오 2: 구현���획 누락 시 이전 단계 안내
 - 입력: "/sd-dev-tdd .tasks/test-project/1.2-calculator-subtract.md"
 - 사전 조건:
   - `.tasks/test-project/1.2-calculator-subtract.md` — `## 요구명세`(Gherkin)만 있고 `## 구현계획` 없음
@@ -49,6 +51,22 @@
   - [ ] TDD가 정상 진행되어 `reset()` 기능이 구현되었다
   - [ ] 테스트가 통과했다
 
+### 시나리오 4: 하드웨어 의존 Scenario에서 검증 항목별 분류
+- 입력: "/sd-dev-tdd .tasks/test-project/1.4-usb-file-transfer.md"
+- 사전 조건:
+  - `.tasks/test-project/wbs.md` — Feature Breakdown에 `1.4-usb-file-transfer`가 `[ ]`로 표시
+  - `.tasks/test-project/1.4-usb-file-transfer.md` — 요구명세에 "USB 디바이스 연결 시 파일 목록을 표시한다" Scenario 포함. 구현계획에 Slice 1개: USB 파일 전송 (`parseFileList` 순수 함수 + USB 연결 감지 콜백 등록 + 파일 목록 UI 표시). `parseFileList`는 순수 함수로 자동 테스트 가능, USB 연결 감지 콜백 등록은 코드 확인으로 LLM 검증 가능, 실제 USB 연결은 하드웨어 의존
+  - `package.json` — `"test": "node --test"` 스크립트 포함
+  - `src/usb-transfer.js` — 빈 UsbTransfer 클래스 (기존 코드)
+- 체크리스트:
+  - [ ] Scenario의 검증 항목을 항목 단위로 분해했다
+  - [ ] 자동화 테스트 가능한 항목(`parseFileList` 등)에 대해 `.spec.ts` 파일이 생성되고 TDD가 수행되었다
+  - [ ] LLM이 직접 검증할 수 있는 항목에 대해 `.verify.md` 파일이 생성되었다
+  - [ ] `.verify.md`의 각 항목에 대해 LLM이 실제 검증을 수행하고 결과가 `[x]` 또는 `[!]`로 기록되었다
+  - [ ] 하드웨어 의존 항목만 `.spec.md`에 남아있다
+  - [ ] 구현 코드가 작성되었다
+  - [ ] 테스트 파일명에 Slice/Scenario 번호가 사용되지 않았다
+
 ## 안티패턴 Eval
 
 - [ ] 출력이 Feature 문서의 내용을 반영하지 않은 코드를 포함한다
@@ -66,3 +84,7 @@
 - [ ] Feature 범위를 변경했음에도 wbs.md를 수정하지 않는다
 - [ ] 구현 중 새로운 설계 결정이 발생했음에도 Feature 문서의 `### 설계 결정`에 기록하지 않는다
 - [ ] 다른 Feature에 영향을 주는 결정이 발생했음에도 wbs.md의 `### Feature 간 설계 결정`에 기록하지 않는다
+- [ ] Scenario 전체를 하나의 검증 유형으로 일괄 분류한다 (항목별 분해 없이)
+- [ ] `.verify.md`를 작성했으나 LLM이 실제 검증을 수행하지 않았다 (체크리스트가 `[ ]`로 남아있음)
+- [ ] LLM이 코드 읽기·명령 실행으로 검증 가능한 항목을 `.spec.md`에 포함시켰다
+- [ ] 테스트 파일명에 Slice/Scenario 번호를 사용했다 (예: `3.1-bootstrap.spec.ts`)

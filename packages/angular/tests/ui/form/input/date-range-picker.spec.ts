@@ -83,6 +83,57 @@ describe("SdDateRangePicker.handleDatePeriodTypeChanged unit tests", () => {
     expect(ctrl.to()).toEqual(new DateOnly(2024, 3, 1));
   });
 
+  it("'월'로 전환 시 from이 월말(31일)이면 정규화된 1일 기준으로 to를 계산한다", () => {
+    setupTestBed(SdDateRangePickerDefaultTest);
+    const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const ctrl = getPickerControl(fixture);
+    ctrl.from.set(new DateOnly(2024, 1, 31));
+    ctrl.periodType.set("월");
+    ctrl.handleDatePeriodTypeChanged();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(ctrl.from()).toEqual(new DateOnly(2024, 1, 1));
+    expect(ctrl.to()).toEqual(new DateOnly(2024, 1, 31));
+  });
+
+  it("'월' 모드에서 비정규화된 from 변경 시 to가 정규화된 월말이 된다", () => {
+    setupTestBed(SdDateRangePickerDefaultTest);
+    const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const ctrl = getPickerControl(fixture);
+    ctrl.periodType.set("월");
+    // 프로그래밍 방식으로 비정규화된 날짜 설정
+    ctrl.from.set(new DateOnly(2025, 3, 15));
+    ctrl.handleFromDateChanged();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(ctrl.to()).toEqual(new DateOnly(2025, 3, 31));
+  });
+
+  it("비윤년 2월 '월' 전환 시 to가 2월 28일이다", () => {
+    setupTestBed(SdDateRangePickerDefaultTest);
+    const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const ctrl = getPickerControl(fixture);
+    ctrl.from.set(new DateOnly(2025, 2, 10));
+    ctrl.periodType.set("월");
+    ctrl.handleDatePeriodTypeChanged();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(ctrl.from()).toEqual(new DateOnly(2025, 2, 1));
+    expect(ctrl.to()).toEqual(new DateOnly(2025, 2, 28));
+  });
+
   it("윤년 2월 말일을 올바르게 계산한다", () => {
     setupTestBed(SdDateRangePickerDefaultTest);
     const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);

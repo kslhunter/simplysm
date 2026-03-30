@@ -6,6 +6,7 @@ import { fsx } from "@simplysm/core-node";
 import { consola } from "consola";
 import { execa } from "execa";
 import type { SdElectronConfig } from "../sd-config.types.js";
+import { createEnvBanner } from "../utils/esbuild-config.js";
 
 interface NpmConfig {
   name: string;
@@ -80,12 +81,6 @@ export class Electron {
 
     await this.initialize();
 
-    const runEnv: Record<string, string> = {
-      NODE_ENV: "development",
-      ELECTRON_DEV_URL: url,
-      ...this._config.env,
-    };
-
     const esbuild = await import("esbuild");
     const entryPoint = path.resolve(this._pkgPath, "src/electron-main.ts");
 
@@ -104,7 +99,6 @@ export class Electron {
     const spawnElectron = () => {
       currentElectron = execa(this._localBin("electron"), ["."], {
         cwd: srcPath,
-        env: { ...process.env, ...runEnv },
         stdio: "inherit",
         reject: false,
       });
@@ -118,6 +112,8 @@ export class Electron {
       });
     };
 
+    const envBanner = createEnvBanner({ ELECTRON_DEV_URL: url, ...this._config.env });
+
     const ctx = await esbuild.context({
       entryPoints: [entryPoint],
       outfile: path.resolve(srcPath, "electron-main.js"),
@@ -126,6 +122,7 @@ export class Electron {
       format: "cjs",
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps],
+      banner: { js: envBanner },
       plugins: [
         {
           name: "electron-restart",
@@ -241,6 +238,8 @@ export class Electron {
 
     await fsx.mkdir(outDir);
 
+    const envBanner = createEnvBanner(this._config.env);
+
     await esbuild.build({
       entryPoints: [entryPoint],
       outfile: path.resolve(outDir, "electron-main.js"),
@@ -249,6 +248,7 @@ export class Electron {
       format: "cjs",
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps],
+      banner: { js: envBanner },
     });
   }
 

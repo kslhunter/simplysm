@@ -343,7 +343,7 @@ Injectable. Available inside modal content components via DI. Provides access to
 class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
   modalComponent: WritableSignal<any>;
   contentComponent: WritableSignal<T | undefined>;
-  canDeactivefn: () => boolean;
+  canDeactiveFn: () => boolean;
 }
 ```
 

@@ -70,8 +70,9 @@ export class SdDateRangePicker {
     if (this.periodType() === "월") {
       const fromDate = this.from();
       if (fromDate) {
-        this.from.set(fromDate.setDay(1));
-        this.to.set(fromDate.addMonths(1).setDay(1).addDays(-1));
+        const firstOfMonth = fromDate.setDay(1);
+        this.from.set(firstOfMonth);
+        this.to.set(firstOfMonth.addMonths(1).addDays(-1));
       } else {
         this.to.set(undefined);
       }
@@ -83,7 +84,7 @@ export class SdDateRangePicker {
   handleFromDateChanged(): void {
     if (this.periodType() === "월") {
       const fromDate = this.from();
-      this.to.set(fromDate?.addMonths(1).setDay(1).addDays(-1));
+      this.to.set(fromDate?.setDay(1).addMonths(1).addDays(-1));
     } else if (this.periodType() === "일") {
       this.to.set(this.from());
     } else if (

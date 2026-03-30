@@ -71,7 +71,7 @@ export class ExcelXmlSharedString implements ExcelXml {
     if (typeof firstItem === "string") {
       return firstItem;
     }
-    return firstItem._ ?? " ";
+    return firstItem._ ?? "";
   }
 
   private _getHasInnerStyleOnSiTag(si: ExcelXmlSharedStringDataSi): boolean {

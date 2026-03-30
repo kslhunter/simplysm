@@ -1,12 +1,11 @@
 import {defineConfig} from "vitest/config";
 import {playwright} from "@vitest/browser-playwright";
+import tsconfigPaths from "vite-tsconfig-paths";
 import {angularVitestPlugin} from "./packages/sd-cli/src/vitest-plugin";
 import {resolve} from "node:path";
 
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
+  plugins: [tsconfigPaths()],
   define: {
     "process.env.DEV": JSON.stringify("true"),
     "process.env.VER": JSON.stringify("1.0.0-test"),
@@ -84,6 +83,24 @@ export default defineConfig({
           name: "vite-css-hmr",
           environment: "node",
           include: ["tests/vite-css-hmr/**/*.spec.ts"],
+        },
+      },
+      // Integration tests - esbuild banner env injection
+      {
+        extends: true,
+        test: {
+          name: "sd-cli-server",
+          environment: "node",
+          include: ["tests/sd-cli-server/**/*.spec.ts"],
+        },
+      },
+      // Integration tests - Vite define env injection
+      {
+        extends: true,
+        test: {
+          name: "sd-cli-client",
+          environment: "node",
+          include: ["tests/sd-cli-client/**/*.spec.ts"],
         },
       },
       // Integration tests - ORM (requires Docker DB)

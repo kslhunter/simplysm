@@ -43,6 +43,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/angular/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-intent/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/claude" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-client/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-server/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

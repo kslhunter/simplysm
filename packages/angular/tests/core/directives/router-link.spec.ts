@@ -48,36 +48,42 @@ describe("Feature 1.7 Slice 2: 라우터 연동", () => {
       );
     });
 
-    it("Ctrl + 클릭으로 새 탭 열기", async () => {
+    it("Ctrl + 클릭으로 새 탭 열기 (features 없이)", async () => {
       (directive as any).option = () => ({
         link: "/test",
       });
 
       await directive.onClick(new MouseEvent("click", { ctrlKey: true }));
-      expect(mockNavWindow.open).toHaveBeenCalledWith("/test", undefined, "_blank");
+      expect(mockNavWindow.open).toHaveBeenCalledWith("/test", undefined);
     });
 
-    it("Alt + 클릭으로 새 탭 열기", async () => {
+    it("Ctrl+Shift + 클릭으로 새 탭 열기", async () => {
+      (directive as any).option = () => ({
+        link: "/test",
+      });
+
+      await directive.onClick(new MouseEvent("click", { ctrlKey: true, shiftKey: true }));
+      expect(mockNavWindow.open).toHaveBeenCalledWith("/test", undefined);
+    });
+
+    it("Alt + 클릭은 무시된다 (아무 동작 안 함)", async () => {
       (directive as any).option = () => ({
         link: "/test",
       });
 
       await directive.onClick(new MouseEvent("click", { altKey: true }));
-      expect(mockNavWindow.open).toHaveBeenCalledWith("/test", undefined, "_blank");
+      expect(mockNavWindow.open).not.toHaveBeenCalled();
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
     });
 
-    it("Shift + 클릭으로 새 창 열기", async () => {
+    it("Shift + 클릭으로 새 탭 열기 (features 없이)", async () => {
       (directive as any).option = () => ({
         link: "/test",
         window: { width: 1024, height: 768 },
       });
 
       await directive.onClick(new MouseEvent("click", { shiftKey: true }));
-      expect(mockNavWindow.open).toHaveBeenCalledWith(
-        "/test",
-        undefined,
-        "width=1024,height=768",
-      );
+      expect(mockNavWindow.open).toHaveBeenCalledWith("/test", undefined);
     });
 
     it("일반 클릭으로 라우터 네비게이션", async () => {

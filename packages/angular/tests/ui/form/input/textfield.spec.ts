@@ -169,6 +169,95 @@ describe("textfieldTypeHandlers unit tests", () => {
       const errors = textfieldTypeHandlers.format.validate("012", { format: "XXX-XXXX" });
       expect(errors).toContain("문자의 길이가 요구되는 길이와 다릅니다.");
     });
+
+    it("parse — 포맷에 ] 포함 시 올바르게 파싱된다", () => {
+      expect(textfieldTypeHandlers.format.parse("12]34", { format: "XX]XX" })).toBe("1234");
+    });
+
+    it("parse — 포맷에 ^ 포함 시 올바르게 파싱된다", () => {
+      expect(textfieldTypeHandlers.format.parse("12^34", { format: "XX^XX" })).toBe("1234");
+    });
+
+    it("parse — 포맷에 \\ 포함 시 올바르게 파싱된다", () => {
+      expect(textfieldTypeHandlers.format.parse("12\\34", { format: "XX\\XX" })).toBe("1234");
+    });
+
+    it("parse — 포맷에 일반 문자 포함 시 regex shorthand로 해석되지 않는다", () => {
+      // "d"가 \\d(숫자 전체)로 해석되면 숫자까지 제거되어 빈 문자열이 됨
+      expect(textfieldTypeHandlers.format.parse("12d34", { format: "XXdXX" })).toBe("1234");
+    });
+  });
+
+  describe("datetime type validation", () => {
+    it("DateTime 값이 min보다 작으면 에러를 반환한다", () => {
+      const min = new DateTime(2024, 1, 15, 10, 0);
+      const value = new DateTime(2024, 1, 14, 9, 0);
+      const errors = textfieldTypeHandlers.datetime.validate(value, { min });
+      expect(errors.length).toBeGreaterThan(0);
+    });
+
+    it("DateTime 값이 max보다 크면 에러를 반환한다", () => {
+      const max = new DateTime(2024, 12, 31, 23, 59);
+      const value = new DateTime(2025, 1, 1, 0, 0);
+      const errors = textfieldTypeHandlers.datetime.validate(value, { max });
+      expect(errors.length).toBeGreaterThan(0);
+    });
+
+    it("DateTime 값이 min~max 범위 내이면 에러가 없다", () => {
+      const min = new DateTime(2024, 1, 1, 0, 0);
+      const max = new DateTime(2024, 12, 31, 23, 59);
+      const value = new DateTime(2024, 6, 15, 12, 0);
+      const errors = textfieldTypeHandlers.datetime.validate(value, { min, max });
+      expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe("time type validation", () => {
+    it("Time 값이 min보다 작으면 에러를 반환한다", () => {
+      const min = new Time(9, 0);
+      const value = new Time(8, 30);
+      const errors = textfieldTypeHandlers.time.validate(value, { min });
+      expect(errors.length).toBeGreaterThan(0);
+    });
+
+    it("Time 값이 max보다 크면 에러를 반환한다", () => {
+      const max = new Time(18, 0);
+      const value = new Time(18, 30);
+      const errors = textfieldTypeHandlers.time.validate(value, { max });
+      expect(errors.length).toBeGreaterThan(0);
+    });
+
+    it("Time 값이 min~max 범위 내이면 에러가 없다", () => {
+      const min = new Time(9, 0);
+      const max = new Time(18, 0);
+      const value = new Time(12, 0);
+      const errors = textfieldTypeHandlers.time.validate(value, { min, max });
+      expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe("string type validation 확장 (CONSIST-004)", () => {
+    it("email 타입에 minlength 위반 시 에러를 반환한다", () => {
+      const errors = textfieldTypeHandlers.email.validate("abc", { minlength: 5 });
+      expect(errors).toContain("문자의 길이가 5보다 길거나 같아야 합니다.");
+    });
+
+    it("password 타입에 maxlength 위반 시 에러를 반환한다", () => {
+      const errors = textfieldTypeHandlers.password.validate("a".repeat(25), { maxlength: 20 });
+      expect(errors).toContain("문자의 길이가 20보다 짧거나 같아야 합니다.");
+    });
+
+    it("email 타입에 pattern 불일치 시 에러를 반환한다", () => {
+      const errors = textfieldTypeHandlers.email.validate("user@other.com", {
+        pattern: "^[a-z]+@example\\.com$",
+      });
+      expect(errors).toContain("입력 값이 형식에 맞지 않습니다.");
+    });
+
+    it("color 타입은 minlength/maxlength/pattern 검증을 수행하지 않는다", () => {
+      const errors = textfieldTypeHandlers.color.validate("#aabbcc", { minlength: 10 });
+      expect(errors).toHaveLength(0);
+    });
   });
 });
 
@@ -244,6 +333,62 @@ describe("Feature 2.4 Slice 1: sd-textfield string types", () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.value()).toBe("hello");
+  });
+
+  it("붙여넣기 시 브라우저 기본 paste가 차단된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+    const pasteEvent = new ClipboardEvent("paste", {
+      cancelable: true,
+      clipboardData: new DataTransfer(),
+    });
+    pasteEvent.clipboardData!.setData("text/plain", "hello");
+    input.dispatchEvent(pasteEvent);
+
+    expect(pasteEvent.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.value()).toBe("hello");
+  });
+
+  it("파싱 실패 텍스트 붙여넣기 시 기존 값이 유지되고 기본 paste가 차단된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
+      .createComponent(SdTextfieldNumberTest);
+    fixture.componentInstance.value.set(456);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+    const pasteEvent = new ClipboardEvent("paste", {
+      cancelable: true,
+      clipboardData: new DataTransfer(),
+    });
+    pasteEvent.clipboardData!.setData("text/plain", "abc");
+    input.dispatchEvent(pasteEvent);
+    fixture.detectChanges();
+
+    expect(pasteEvent.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.value()).toBe(456);
+    expect(input.value).toBe("456");
+  });
+
+  it("빈 텍스트 붙여넣기 시 모델이 undefined가 되고 기본 paste가 차단된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.componentInstance.value.set("existing");
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+    const pasteEvent = new ClipboardEvent("paste", {
+      cancelable: true,
+      clipboardData: new DataTransfer(),
+    });
+    pasteEvent.clipboardData!.setData("text/plain", "   ");
+    input.dispatchEvent(pasteEvent);
+    fixture.detectChanges();
+
+    expect(pasteEvent.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
   it("기본 상태에서 host의 data-sd-type이 컨트롤 타입이다", () => {

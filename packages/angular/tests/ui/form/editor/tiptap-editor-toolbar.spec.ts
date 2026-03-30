@@ -2,6 +2,47 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdTiptapEditorDefaultTest } from "./sd-tiptap-editor-test.fixture";
 
+describe("Feature 1.2a: Underline 확장 등록", () => {
+  it("텍스트를 선택하고 underline 버튼을 클릭하면 밑줄이 적용된다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDefaultTest] })
+      .createComponent(SdTiptapEditorDefaultTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    const editor = editorCtrl.editor()!;
+
+    editor.commands.setContent("<p>Hello World</p>");
+    editor.commands.setTextSelection({ from: 1, to: 6 });
+
+    const underlineBtn = fixture.nativeElement.querySelector(
+      "sd-tiptap-editor ._toolbar button[data-cmd='underline']",
+    ) as HTMLButtonElement;
+    expect(underlineBtn).toBeTruthy();
+    underlineBtn.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.value()).toContain("<u>Hello</u>");
+  });
+
+  it("밑줄 적용 영역에 커서가 있으면 underline active state가 true이다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTiptapEditorDefaultTest] })
+      .createComponent(SdTiptapEditorDefaultTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const editorCtrl = fixture.componentInstance.editorCtrl()!;
+    const editor = editorCtrl.editor()!;
+
+    editor.commands.setContent("<p><u>Underlined</u> Normal</p>");
+    editor.commands.setTextSelection(3);
+
+    // onTransaction should have fired and updated activeStates
+    expect(editorCtrl.activeStates()["underline"]).toBe(true);
+  });
+});
+
 describe("Feature 5.4 Slice 2: Toolbar + 서식 편집", () => {
   // Scenario: 인라인 서식 적용
   it("텍스트를 선택하고 bold 버튼을 클릭하면 텍스트가 굵게 표시된다", async () => {
@@ -11,7 +52,7 @@ describe("Feature 5.4 Slice 2: Toolbar + 서식 편집", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     // Insert text and select "Hello" (positions 1-6 in ProseMirror doc)
     editor.commands.setContent("<p>Hello World</p>");
@@ -38,7 +79,7 @@ describe("Feature 5.4 Slice 2: Toolbar + 서식 편집", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     editor.commands.setContent("<p>Title Text</p>");
     // Place cursor in the paragraph
@@ -64,7 +105,7 @@ describe("Feature 5.4 Slice 2: Toolbar + 서식 편집", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     editor.commands.setContent("<p><strong>Bold Text</strong></p>");
     // Select all the bold text

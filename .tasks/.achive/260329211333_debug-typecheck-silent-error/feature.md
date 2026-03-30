@@ -2,7 +2,7 @@
 
 ## 참조 자료
 
-- [debug.md](./debug.md) — 근본 원인 분석 및 방안 B 선택
+- [debug.md](debug.md) — 근본 원인 분석 및 방안 B 선택
 - 버그 위치: `packages/sd-cli/src/commands/typecheck.ts:226-228`
 - 엔진 catch 블록: `packages/sd-cli/src/utils/tsc-build.ts:205-208`, `packages/sd-cli/src/utils/ngtsc-build-core.ts:394-397`, `packages/sd-cli/src/workers/server-build.worker.ts:421-426`
 - 결과 출력: `packages/sd-cli/src/commands/check.ts:69-84`

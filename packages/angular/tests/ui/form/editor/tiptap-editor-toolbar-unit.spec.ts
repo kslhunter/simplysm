@@ -10,7 +10,7 @@ describe("Feature 5.4 Slice 2 Unit: Toolbar UI", () => {
     await fixture.whenStable();
 
     const editorCtrl = fixture.componentInstance.editorCtrl()!;
-    const editor = editorCtrl.editor!;
+    const editor = editorCtrl.editor()!;
 
     editor.commands.setContent("<p>Test</p>");
     editor.commands.setTextSelection({ from: 1, to: 5 });

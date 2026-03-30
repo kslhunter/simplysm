@@ -1,24 +1,19 @@
-import "@simplysm/core-common";
-import { ExcelCell } from "./excel-cell";
+import type { ExcelCell } from "./excel-cell";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 import type { ZipCache } from "./utils/zip-cache";
 
 /** Excel 워크시트의 열을 나타내는 클래스. 셀 접근 및 열 너비 설정 기능을 제공한다. */
 export class ExcelCol {
-  private readonly _cellMap = new Map<number, ExcelCell>();
-
   constructor(
     private readonly _zipCache: ZipCache,
     private readonly _targetFileName: string,
     private readonly _c: number,
+    private readonly _cellFactory: (r: number) => ExcelCell,
   ) {}
 
   /** 지정된 행 인덱스의 셀 반환 (0 기반) */
   cell(r: number): ExcelCell {
-    return this._cellMap.getOrCreate(
-      r,
-      new ExcelCell(this._zipCache, this._targetFileName, r, this._c),
-    );
+    return this._cellFactory(r);
   }
 
   /** 열의 모든 셀 반환 */

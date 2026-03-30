@@ -67,6 +67,19 @@ afterEach(() => {
 });
 
 describe("createClientViteConfig", () => {
+  // Acceptance: Scenario "define['process.env'] 제거"
+  it("does not include process.env in define, only import.meta.env keys", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      env: { DEV: "true", VER: "1.0.0" },
+    });
+
+    const define = config.define as Record<string, string>;
+    expect(define).not.toHaveProperty("process.env");
+    expect(define["import.meta.env.DEV"]).toBe('"true"');
+    expect(define["import.meta.env.VER"]).toBe('"1.0.0"');
+  });
+
   // Acceptance: Scenario "browserslist 미설정 시 최신 브라우저 유지"
   it("uses es2022 esbuild target when no browserslist is provided", async () => {
     const config = await createClientViteConfig(createDefaultOptions());

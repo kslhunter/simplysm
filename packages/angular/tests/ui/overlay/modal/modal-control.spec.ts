@@ -125,10 +125,10 @@ describe("Feature 3.2 Slice 2: SdModalControl 렌더링 + 닫기", () => {
     expect(header).toBeNull();
   });
 
-  // Acceptance: canDeactivefn이 닫기 차단
-  it("canDeactivefn()이 false이면 배경 클릭, ESC, 닫기 버튼 모두 닫기가 차단된다", () => {
+  // Acceptance: canDeactiveFn이 닫기 차단
+  it("canDeactiveFn()이 false이면 배경 클릭, ESC, 닫기 버튼 모두 닫기가 차단된다", () => {
     const activatedModal = new SdActivatedModalProvider();
-    activatedModal.canDeactivefn = () => false;
+    activatedModal.canDeactiveFn = () => false;
 
     TestBed.configureTestingModule({
       imports: [SdModalTestControlDefault],
@@ -156,10 +156,10 @@ describe("Feature 3.2 Slice 2: SdModalControl 렌더링 + 닫기", () => {
     expect(fixture.componentInstance.closed).toBe(false);
   });
 
-  // Unit: canDeactivefn()이 true이면 닫기가 허용된다
-  it("canDeactivefn()이 true이면 닫기 버튼으로 닫기가 허용된다", () => {
+  // Unit: canDeactiveFn()이 true이면 닫기가 허용된다
+  it("canDeactiveFn()이 true이면 닫기 버튼으로 닫기가 허용된다", () => {
     const activatedModal = new SdActivatedModalProvider();
-    activatedModal.canDeactivefn = () => true;
+    activatedModal.canDeactiveFn = () => true;
 
     TestBed.configureTestingModule({
       imports: [SdModalTestControlDefault],

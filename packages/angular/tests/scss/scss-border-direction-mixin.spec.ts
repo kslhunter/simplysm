@@ -14,7 +14,7 @@ describe("Feature 1.1 Slice 3: border 방향별 mixin 추출", () => {
     style.remove();
   });
 
-  const directions = [
+  const _directions = [
     { d: "t", dir: "top" },
     { d: "r", dir: "right" },
     { d: "b", dir: "bottom" },

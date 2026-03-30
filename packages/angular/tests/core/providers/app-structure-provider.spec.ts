@@ -120,4 +120,28 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
       expect(result()).toEqual(["use", "edit"]);
     });
   });
+
+  describe("Feature 1.1: 경계값 안전 처리", () => {
+    it("잘못된 fullCode로 getTitleByFullCode 호출 시 에러가 발생한다", () => {
+      expect(() => structure.getTitleByFullCode("nonexistent.code")).toThrow(
+        "Item not found for fullCode: nonexistent.code",
+      );
+    });
+
+    it("잘못된 fullCode로 getPermsByFullCode 호출 시 빈 배열이 반환된다 (권한 거부)", () => {
+      structure.permRecord.set({});
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["nonexistent.code"], ["use", "edit"]),
+      );
+      expect(result()).toEqual([]);
+    });
+
+    it("perms가 없는 item의 fullCode는 모든 권한이 부여된다 (기존 동작 유지)", () => {
+      structure.permRecord.set({});
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["admin.config"], ["use", "edit"]),
+      );
+      expect(result()).toEqual(["use", "edit"]);
+    });
+  });
 });

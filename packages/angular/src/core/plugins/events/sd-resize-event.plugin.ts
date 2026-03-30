@@ -45,6 +45,9 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
     resizeObserver.observe(element);
 
     return (): void => {
+      if (animationFrameId != null) {
+        cancelAnimationFrame(animationFrameId);
+      }
       resizeObserver.disconnect();
     };
   }

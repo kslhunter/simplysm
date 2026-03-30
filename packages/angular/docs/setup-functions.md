@@ -59,7 +59,7 @@ function setupModelHook<T, S extends WritableSignal<T>>(
 
 ## `setupCanDeactivate`
 
-Registers a route or modal can-deactivate guard. When inside a modal, sets `SdActivatedModalProvider.canDeactivefn`. When inside a route, pushes a `CanDeactivateFn` to the route config.
+Registers a route or modal can-deactivate guard. When inside a modal, sets `SdActivatedModalProvider.canDeactiveFn`. When inside a route, pushes a `CanDeactivateFn` to the route config.
 
 ```typescript
 function setupCanDeactivate(fn: () => boolean): void;

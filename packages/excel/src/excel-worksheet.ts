@@ -1,15 +1,20 @@
 import type { Bytes } from "@simplysm/core-common";
 import "@simplysm/core-common";
-import { str } from "@simplysm/core-common";
+import { DateOnly, DateTime, str, Time } from "@simplysm/core-common";
 import mime from "mime";
-import type { ExcelCell } from "./excel-cell";
+import { ExcelCell } from "./excel-cell";
 import { ExcelCol } from "./excel-col";
 import { ExcelRow } from "./excel-row";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelValueType } from "./types";
+import { ExcelUtils } from "./utils/excel-utils";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelXmlContentType } from "./xml/excel-xml-content-type";
 import { ExcelXmlDrawing } from "./xml/excel-xml-drawing";
 import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
+import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
+import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
+import type { ExcelXmlStyle } from "./xml/excel-xml-style";
+import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 
@@ -20,6 +25,7 @@ import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 export class ExcelWorksheet {
   private readonly _rowMap = new Map<number, ExcelRow>();
   private readonly _colMap = new Map<number, ExcelCol>();
+  private readonly _cellMap = new Map<string, ExcelCell>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -51,17 +57,33 @@ export class ExcelWorksheet {
 
   /** 행 객체 반환 (0 기반) */
   row(r: number): ExcelRow {
-    return this._rowMap.getOrCreate(r, new ExcelRow(this._zipCache, this._targetFileName, r));
+    return this._rowMap.getOrCreate(
+      r,
+      new ExcelRow(this._zipCache, this._targetFileName, r, (c) => this._getOrCreateCell(r, c)),
+    );
   }
 
   /** 셀 객체 반환 (0 기반 행/열) */
   cell(r: number, c: number): ExcelCell {
-    return this.row(r).cell(c);
+    return this._getOrCreateCell(r, c);
   }
 
   /** 열 객체 반환 (0 기반) */
   col(c: number): ExcelCol {
-    return this._colMap.getOrCreate(c, new ExcelCol(this._zipCache, this._targetFileName, c));
+    return this._colMap.getOrCreate(
+      c,
+      new ExcelCol(this._zipCache, this._targetFileName, c, (r) => this._getOrCreateCell(r, c)),
+    );
+  }
+
+  private _getOrCreateCell(r: number, c: number): ExcelCell {
+    const key = `${r},${c}`;
+    let cell = this._cellMap.get(key);
+    if (cell === undefined) {
+      cell = new ExcelCell(this._zipCache, this._targetFileName, r, c);
+      this._cellMap.set(key, cell);
+    }
+    return cell;
   }
 
   //#endregion
@@ -222,9 +244,13 @@ export class ExcelWorksheet {
    * @param matrix 2차원 배열 데이터 (행 우선, 인덱스 0이 첫 번째 행)
    */
   async setDataMatrix(matrix: ExcelValueType[][]): Promise<void> {
+    const wsData = await this._getWsData();
+    const ssData = await this._ensureSsData();
+    const styleData = await this._ensureStyleData();
+
     for (let r = 0; r < matrix.length; r++) {
       for (let c = 0; c < matrix[r].length; c++) {
-        await this.cell(r, c).setValue(matrix[r][c]);
+        this._setCellValueSync(wsData, ssData, styleData, { r, c }, matrix[r][c]);
       }
     }
   }
@@ -239,13 +265,23 @@ export class ExcelWorksheet {
       .distinct()
       .filter((item) => !str.isNullOrEmpty(item));
 
+    const wsData = await this._getWsData();
+    const ssData = await this._ensureSsData();
+    const styleData = await this._ensureStyleData();
+
     for (let c = 0; c < headers.length; c++) {
-      await this.cell(0, c).setValue(headers[c]);
+      this._setCellValueSync(wsData, ssData, styleData, { r: 0, c }, headers[c]);
     }
 
     for (let r = 1; r < records.length + 1; r++) {
       for (let c = 0; c < headers.length; c++) {
-        await this.cell(r, c).setValue(records[r - 1][headers[c]]);
+        this._setCellValueSync(
+          wsData,
+          ssData,
+          styleData,
+          { r, c },
+          records[r - 1][headers[c]],
+        );
       }
     }
   }
@@ -397,6 +433,95 @@ export class ExcelWorksheet {
 
   private async _getWbData(): Promise<ExcelXmlWorkbook> {
     return (await this._zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
+  }
+
+  private async _ensureSsData(): Promise<ExcelXmlSharedString> {
+    let ssData = (await this._zipCache.get("xl/sharedStrings.xml")) as
+      | ExcelXmlSharedString
+      | undefined;
+    if (ssData == null) {
+      ssData = new ExcelXmlSharedStringClass();
+      this._zipCache.set("xl/sharedStrings.xml", ssData);
+
+      const typeData = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
+      typeData.add(
+        "/xl/sharedStrings.xml",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
+      );
+
+      const wbRelData = (await this._zipCache.get(
+        "xl/_rels/workbook.xml.rels",
+      )) as ExcelXmlRelationship;
+      wbRelData.add(
+        "sharedStrings.xml",
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
+      );
+    }
+    return ssData;
+  }
+
+  private async _ensureStyleData(): Promise<ExcelXmlStyle> {
+    let styleData = (await this._zipCache.get("xl/styles.xml")) as ExcelXmlStyle | undefined;
+    if (styleData == null) {
+      styleData = new ExcelXmlStyleClass();
+      this._zipCache.set("xl/styles.xml", styleData);
+
+      const typeData = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
+      typeData.add(
+        "/xl/styles.xml",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
+      );
+
+      const wbRelData = (await this._zipCache.get(
+        "xl/_rels/workbook.xml.rels",
+      )) as ExcelXmlRelationship;
+      wbRelData.add(
+        "styles.xml",
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+      );
+    }
+    return styleData;
+  }
+
+  private _setCellValueSync(
+    wsData: ExcelXmlWorksheet,
+    ssData: ExcelXmlSharedString,
+    styleData: ExcelXmlStyle,
+    addr: ExcelAddressPoint,
+    val: ExcelValueType,
+  ): void {
+    if (val === undefined) {
+      wsData.deleteCell(addr);
+    } else if (typeof val === "string") {
+      const ssId = ssData.getIdByString(val) ?? ssData.add(val);
+      wsData.setCellType(addr, "s");
+      wsData.setCellVal(addr, ssId.toString());
+    } else if (typeof val === "boolean") {
+      wsData.setCellType(addr, "b");
+      wsData.setCellVal(addr, val ? "1" : "0");
+    } else if (typeof val === "number") {
+      wsData.setCellType(addr, undefined);
+      wsData.setCellVal(addr, val.toString());
+    } else if (val instanceof DateOnly || val instanceof DateTime || val instanceof Time) {
+      wsData.setCellType(addr, undefined);
+      wsData.setCellVal(addr, ExcelUtils.convertTimeTickToNumber(val.tick).toString());
+
+      const numFmtName =
+        val instanceof DateOnly ? "DateOnly" : val instanceof DateTime ? "DateTime" : "Time";
+      const numFmtId = ExcelUtils.convertNumFmtNameToId(numFmtName).toString();
+
+      let styleId = wsData.getCellStyleId(addr);
+      if (styleId == null) {
+        styleId = styleData.add({ numFmtId });
+      } else {
+        styleId = styleData.addWithClone(styleId, { numFmtId });
+      }
+      wsData.setCellStyleId(addr, styleId);
+    } else {
+      throw new Error(
+        `[${ExcelUtils.stringifyAddr(addr)}] 지원하지 않는 타입: ${typeof val}`,
+      );
+    }
   }
 
   //#endregion

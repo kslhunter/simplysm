@@ -2,7 +2,8 @@ import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: "root" })
 export class SdNavigateWindowProvider {
-  private _beforeUnloadController: AbortController | undefined;
+  private readonly _openedWindows = new Set<Window>();
+  private _beforeUnloadRegistered = false;
 
   get isWindow(): boolean {
     const urlSearchParams = new URLSearchParams(
@@ -19,21 +20,19 @@ export class SdNavigateWindowProvider {
         features,
       );
 
-      // 기존 beforeunload 리스너 제거
-      if (this._beforeUnloadController != null) {
-        this._beforeUnloadController.abort();
+      if (newWindow) {
+        this._openedWindows.add(newWindow);
       }
-      this._beforeUnloadController = new AbortController();
 
-      window.addEventListener(
-        "beforeunload",
-        () => {
-          if (newWindow) {
-            newWindow.close();
+      if (!this._beforeUnloadRegistered) {
+        this._beforeUnloadRegistered = true;
+        window.addEventListener("beforeunload", () => {
+          for (const w of this._openedWindows) {
+            w.close();
           }
-        },
-        { signal: this._beforeUnloadController.signal },
-      );
+          this._openedWindows.clear();
+        });
+      }
     } else {
       window.open(
         `${location.pathname}#${navigate};${new URLSearchParams(params).toString()}`,

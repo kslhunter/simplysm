@@ -3,7 +3,7 @@
 ## 참조 자료
 
 - [wbs.md](./wbs.md)
-- [review.md](../../.tasks/260329202656_review-angular-migration/review.md)
+- [review.md](../.achive/260329202656_review-angular-migration/review.md)
 
 ### 대상 파일
 

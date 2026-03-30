@@ -14,7 +14,7 @@ describe("Feature 1.1 Slice 4: border-radius 방향별 정리", () => {
     style.remove();
   });
 
-  const radiusKeys = ["xs", "sm", "default", "lg", "xl", "xxl"];
+  const _radiusKeys = ["xs", "sm", "default", "lg", "xl", "xxl"];
 
   describe("Scenario: 반복되는 방향별 radius 패턴을 정리", () => {
     it(".bdt-radius-default가 top-right와 top-left radius를 설정한다", () => {

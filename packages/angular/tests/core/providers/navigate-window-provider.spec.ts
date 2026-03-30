@@ -25,19 +25,31 @@ describe("FIX-1 Slice 4: SdNavigateWindowProvider", () => {
     );
   });
 
-  it("open()을 여러 번 호출해도 beforeunload 리스너가 누적되지 않는다", () => {
-    // 첫 번째 open: 새 창 + beforeunload 리스너 등록
-    provider.open("/page1", {}, "width=800");
+  it("여러 팝업을 열면 모두 _openedWindows Set에 추적된다", () => {
+    const mockWindow1 = { close: vi.fn(), closed: false } as unknown as Window;
+    const mockWindow2 = { close: vi.fn(), closed: false } as unknown as Window;
+    windowOpenSpy.mockReturnValueOnce(mockWindow1).mockReturnValueOnce(mockWindow2);
 
-    // 두 번째 open: AbortController로 이전 리스너 제거 후 새 리스너 등록
+    provider.open("/page1", {}, "width=800");
     provider.open("/page2", {}, "width=800");
 
-    // beforeunload 이벤트를 발생시켜 리스너가 몇 번 호출되는지 확인
-    // 직접 확인: beforeunload 이벤트 생성하여 close 호출 횟수 확인
-    // windowOpenSpy는 null을 반환하므로 close는 호출되지 않음
-    // 대신 AbortController가 정상 동작하는지 확인:
-    // provider의 내부 _beforeUnloadController가 존재하고 signal이 aborted가 아닌지 확인
-    expect((provider as any)._beforeUnloadController).toBeDefined();
-    expect((provider as any)._beforeUnloadController.signal.aborted).toBe(false);
+    const openedWindows = (provider as any)._openedWindows as Set<Window>;
+    expect(openedWindows.size).toBe(2);
+    expect(openedWindows.has(mockWindow1)).toBe(true);
+    expect(openedWindows.has(mockWindow2)).toBe(true);
+  });
+
+  it("부모 unload 시 모든 열린 팝업이 닫힌다", () => {
+    const mockWindow1 = { close: vi.fn(), closed: false } as unknown as Window;
+    const mockWindow2 = { close: vi.fn(), closed: false } as unknown as Window;
+    windowOpenSpy.mockReturnValueOnce(mockWindow1).mockReturnValueOnce(mockWindow2);
+
+    provider.open("/page1", {}, "width=800");
+    provider.open("/page2", {}, "width=800");
+
+    window.dispatchEvent(new Event("beforeunload"));
+
+    expect(mockWindow1.close).toHaveBeenCalled();
+    expect(mockWindow2.close).toHaveBeenCalled();
   });
 });

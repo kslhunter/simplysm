@@ -11,6 +11,7 @@ export async function setup() {
   try {
     execaSync("docker", ["compose", "-f", composePath, "up", "-d", "--wait"], {
       stdio: "inherit",
+      timeout: 60_000,
     });
 
     console.log("[orm] Docker containers started, creating MSSQL database...");
@@ -35,7 +36,7 @@ export async function setup() {
           "YourStrong@Passw0rd",
           "-Q",
           "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb",
-        ]);
+        ], { timeout: 10_000 });
         console.log("[orm] MSSQL TestDb created.");
         mssqlReady = true;
         break;
@@ -62,6 +63,7 @@ export function teardown() {
   try {
     execaSync("docker", ["compose", "-f", composePath, "down"], {
       stdio: "inherit",
+      timeout: 30_000,
     });
     console.log("[orm] Docker containers stopped.");
   } catch (err) {

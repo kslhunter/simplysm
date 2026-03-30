@@ -103,7 +103,7 @@ function createStringHandler(type: "text" | "password" | "email" | "color"): ITe
         return errors;
       }
 
-      if (type === "text") {
+      if (type !== "color") {
         const str = value as string;
         if (opts.minlength !== undefined && opts.minlength > str.length) {
           errors.push(`문자의 길이가 ${opts.minlength}보다 길거나 같아야 합니다.`);
@@ -213,10 +213,10 @@ function createFormatHandler(): ITextfieldTypeHandler {
         (v, i, a) => a.indexOf(v) === i,
       );
       if (nonFormatChars != null && nonFormatChars.length > 0) {
-        return raw.replace(
-          new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"),
-          "",
-        );
+        const escaped = nonFormatChars.map((ch) =>
+          ch === "]" || ch === "\\" || ch === "^" || ch === "-" ? "\\" + ch : ch,
+        ).join("");
+        return raw.replace(new RegExp(`[${escaped}]`, "g"), "");
       }
       return raw;
     },
@@ -371,6 +371,16 @@ function createDateTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
 
       if (!(value instanceof DateTime)) {
         errors.push("날짜 및 시간을 입력하세요");
+        return errors;
+      }
+
+      const min = opts.min;
+      const max = opts.max;
+      if (min instanceof DateTime && min.tick > value.tick) {
+        errors.push(`${min}보다 크거나 같아야 합니다.`);
+      }
+      if (max instanceof DateTime && max.tick < value.tick) {
+        errors.push(`${max}보다 작거나 같아야 합니다.`);
       }
 
       return errors;
@@ -415,6 +425,16 @@ function createTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
 
       if (!(value instanceof Time)) {
         errors.push("시간을 입력하세요");
+        return errors;
+      }
+
+      const min = opts.min;
+      const max = opts.max;
+      if (min instanceof Time && min.tick > value.tick) {
+        errors.push(`${min}보다 크거나 같아야 합니다.`);
+      }
+      if (max instanceof Time && max.tick < value.tick) {
+        errors.push(`${max}보다 작거나 같아야 합니다.`);
       }
 
       return errors;

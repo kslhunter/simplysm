@@ -44,9 +44,10 @@ export function setupRipple(enableFn?: () => boolean): void {
       });
       el.appendChild(indicatorEl);
 
-      indicatorEl.ontransitionend = () => {
-        if (indicatorEl !== undefined && getComputedStyle(indicatorEl).opacity === "0") {
+      indicatorEl.ontransitionend = (ev: TransitionEvent) => {
+        if (ev.propertyName === "opacity" && indicatorEl !== undefined) {
           indicatorEl.remove();
+          indicatorEl = undefined;
         }
       };
 

@@ -26,6 +26,11 @@ export function setupInvalid(getInvalidMessage: () => string): void {
     setSafeStyle(renderer, indicatorEl, { display: isInvalid ? "block" : "none" });
   });
 
+  destroyRef.onDestroy(() => {
+    indicatorEl.remove();
+    inputEl.remove();
+  });
+
   const formEl = inputEl.form;
   if (formEl == null) return;
 

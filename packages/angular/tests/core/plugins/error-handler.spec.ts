@@ -100,6 +100,36 @@ describe("FIX-1 Slice 2: 에러 핸들러 강화", () => {
   });
 });
 
+describe("Feature 1.1 Slice 5: 오버레이 중복 방지", () => {
+  let handler: SdGlobalErrorHandlerPlugin;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin }],
+    });
+    handler = TestBed.inject(ErrorHandler) as SdGlobalErrorHandlerPlugin;
+  });
+
+  afterEach(() => {
+    document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
+  });
+
+  it("에러가 연속 발생해도 오버레이가 중복 생성되지 않는다", () => {
+    const destroySpy = vi
+      .spyOn(TestBed.inject(ApplicationRef), "destroy")
+      .mockImplementation(() => {});
+
+    handler.handleError(new Error("first error"));
+    handler.handleError(new Error("second error"));
+
+    const overlays = document.querySelectorAll("div[style*='position: fixed']");
+    expect(overlays.length).toBe(1);
+    expect(overlays[0].textContent).toContain("first error");
+
+    destroySpy.mockRestore();
+  });
+});
+
 describe("Feature 1.8 Slice 3: SdGlobalErrorHandlerPlugin + SdSystemLogProvider 연동", () => {
   let handler: SdGlobalErrorHandlerPlugin;
   let systemLog: SdSystemLogProvider;

@@ -1,4 +1,4 @@
-import { ElementRef, inject, reflectComponentType } from "@angular/core";
+import { DestroyRef, ElementRef, inject, reflectComponentType } from "@angular/core";
 import { ActivatedRoute, type CanDeactivateFn } from "@angular/router";
 import { SdActivatedModalProvider } from "../../../ui/overlay/modal/sd-modal.provider";
 
@@ -8,7 +8,7 @@ export function setupCanDeactivate(fn: () => boolean): void {
   const elRef = inject(ElementRef);
 
   if (activatedModal != null) {
-    activatedModal.canDeactivefn = fn;
+    activatedModal.canDeactiveFn = fn;
     return;
   }
 
@@ -30,5 +30,13 @@ export function setupCanDeactivate(fn: () => boolean): void {
       activatedRoute.routeConfig.canDeactivate = [];
     }
     activatedRoute.routeConfig.canDeactivate.push(canDeactivateFn);
+
+    const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => {
+      const idx = activatedRoute.routeConfig!.canDeactivate!.indexOf(canDeactivateFn);
+      if (idx !== -1) {
+        activatedRoute.routeConfig!.canDeactivate!.splice(idx, 1);
+      }
+    });
   }
 }

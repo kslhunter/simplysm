@@ -9,8 +9,10 @@ import {
   inject,
   input,
   model,
+  signal,
   untracked,
   ViewEncapsulation,
+  type WritableSignal,
 } from "@angular/core";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
 import { Editor, type AnyExtension } from "@tiptap/core";
@@ -41,55 +43,55 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
     @if (!disabled()) {
       <div class="_toolbar">
         <div class="_btn-group">
-          <button type="button" data-cmd="h1" [class._active]="activeStates.h1"
+          <button type="button" data-cmd="h1" [class._active]="activeStates().h1"
                   (click)="execCmd('h1')">H1</button>
-          <button type="button" data-cmd="h2" [class._active]="activeStates.h2"
+          <button type="button" data-cmd="h2" [class._active]="activeStates().h2"
                   (click)="execCmd('h2')">H2</button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bold" [class._active]="activeStates.bold"
+          <button type="button" data-cmd="bold" [class._active]="activeStates().bold"
                   (click)="execCmd('bold')">B</button>
-          <button type="button" data-cmd="italic" [class._active]="activeStates.italic"
+          <button type="button" data-cmd="italic" [class._active]="activeStates().italic"
                   (click)="execCmd('italic')">I</button>
-          <button type="button" data-cmd="underline" [class._active]="activeStates.underline"
+          <button type="button" data-cmd="underline" [class._active]="activeStates().underline"
                   (click)="execCmd('underline')">U</button>
-          <button type="button" data-cmd="strike" [class._active]="activeStates.strike"
+          <button type="button" data-cmd="strike" [class._active]="activeStates().strike"
                   (click)="execCmd('strike')">S</button>
         </div>
         <div class="_btn-group">
           <button type="button" data-cmd="textColor" class="_color-btn"
                   (click)="toggleColorPicker('text')">
-            <span class="_color-indicator" [style.background-color]="activeColor"></span>
+            <span class="_color-indicator" [style.background-color]="activeColor()"></span>
             A
           </button>
           <button type="button" data-cmd="bgColor" class="_color-btn"
                   (click)="toggleColorPicker('bg')">
-            <span class="_color-indicator" [style.background-color]="activeBgColor"></span>
+            <span class="_color-indicator" [style.background-color]="activeBgColor()"></span>
             BG
           </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bulletList" [class._active]="activeStates.bulletList"
+          <button type="button" data-cmd="bulletList" [class._active]="activeStates().bulletList"
                   (click)="execCmd('bulletList')">UL</button>
-          <button type="button" data-cmd="orderedList" [class._active]="activeStates.orderedList"
+          <button type="button" data-cmd="orderedList" [class._active]="activeStates().orderedList"
                   (click)="execCmd('orderedList')">OL</button>
           <button type="button" data-cmd="indent" (click)="execCmd('indent')">→</button>
           <button type="button" data-cmd="outdent" (click)="execCmd('outdent')">←</button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="blockquote" [class._active]="activeStates.blockquote"
+          <button type="button" data-cmd="blockquote" [class._active]="activeStates().blockquote"
                   (click)="execCmd('blockquote')">❝</button>
-          <button type="button" data-cmd="codeBlock" [class._active]="activeStates.codeBlock"
+          <button type="button" data-cmd="codeBlock" [class._active]="activeStates().codeBlock"
                   (click)="execCmd('codeBlock')">&lt;/&gt;</button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="alignLeft" [class._active]="activeStates.alignLeft"
+          <button type="button" data-cmd="alignLeft" [class._active]="activeStates().alignLeft"
                   (click)="execCmd('alignLeft')">≡L</button>
-          <button type="button" data-cmd="alignCenter" [class._active]="activeStates.alignCenter"
+          <button type="button" data-cmd="alignCenter" [class._active]="activeStates().alignCenter"
                   (click)="execCmd('alignCenter')">≡C</button>
-          <button type="button" data-cmd="alignRight" [class._active]="activeStates.alignRight"
+          <button type="button" data-cmd="alignRight" [class._active]="activeStates().alignRight"
                   (click)="execCmd('alignRight')">≡R</button>
-          <button type="button" data-cmd="alignJustify" [class._active]="activeStates.alignJustify"
+          <button type="button" data-cmd="alignJustify" [class._active]="activeStates().alignJustify"
                   (click)="execCmd('alignJustify')">≡J</button>
         </div>
         <div class="_btn-group">
@@ -249,13 +251,13 @@ export class SdTiptapEditorControl {
     "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd",
   ];
 
-  activeStates: Record<string, boolean> = {};
-  activeColor = "";
-  activeBgColor = "";
+  activeStates: WritableSignal<Record<string, boolean>> = signal({});
+  activeColor = signal("");
+  activeBgColor = signal("");
   colorPickerMode: "text" | "bg" | undefined;
 
   /** @internal -- TipTap Editor 인스턴스. 테스트 및 고급 사용자용 */
-  editor: Editor | undefined;
+  editor: WritableSignal<Editor | undefined> = signal(undefined);
   private updatingFromEditor = false;
   private lastExtensions: AnyExtension[] | undefined;
 
@@ -288,17 +290,19 @@ export class SdTiptapEditorControl {
       }
 
       // Sync value to existing editor
-      if (this.editor == null) return;
-      const currentHtml = this.getEditorHtml();
+      const currentEditor = untracked(() => this.editor());
+      if (currentEditor == null) return;
+      const currentHtml = this.getEditorHtmlFrom(currentEditor);
       if (currentHtml === val) return;
-      this.editor.commands.setContent(val ?? "", { emitUpdate: false });
+      currentEditor.commands.setContent(val ?? "", { emitUpdate: false });
     });
 
     // disabled/readonly → editor.setEditable()
     effect(() => {
-      if (this.editor == null) return;
+      const ed = this.editor();
+      if (ed == null) return;
       const editable = !this.disabled() && !this.readonly();
-      this.editor.setEditable(editable);
+      ed.setEditable(editable);
     });
 
     // setupInvalid for form validation
@@ -329,7 +333,7 @@ export class SdTiptapEditorControl {
     const container = this.elRef.nativeElement.querySelector("._editor-container");
     if (container == null) return;
 
-    this.editor = new Editor({
+    this.editor.set(new Editor({
       element: container,
       extensions,
       content: initialContent ?? "",
@@ -343,19 +347,15 @@ export class SdTiptapEditorControl {
       onTransaction: () => {
         this.refreshActiveStates();
       },
-    });
+    }));
   }
 
   private destroyEditor(): void {
-    if (this.editor != null) {
-      this.editor.destroy();
-      this.editor = undefined;
+    const ed = untracked(() => this.editor());
+    if (ed != null) {
+      ed.destroy();
+      this.editor.set(undefined);
     }
-  }
-
-  private getEditorHtml(): string | undefined {
-    if (this.editor == null) return undefined;
-    return this.getEditorHtmlFrom(this.editor);
   }
 
   private getEditorHtmlFrom(editor: Editor): string | undefined {
@@ -365,9 +365,10 @@ export class SdTiptapEditorControl {
   }
 
   execCmd(cmd: string): void {
-    if (this.editor == null) return;
+    const ed = this.editor();
+    if (ed == null) return;
 
-    const chain = this.editor.chain().focus();
+    const chain = ed.chain().focus();
     switch (cmd) {
       case "bold":
         chain.toggleBold().run();
@@ -428,9 +429,10 @@ export class SdTiptapEditorControl {
   }
 
   applyColor(color: string | undefined): void {
-    if (this.editor == null) return;
+    const ed = this.editor();
+    if (ed == null) return;
 
-    const chain = this.editor.chain().focus();
+    const chain = ed.chain().focus();
     if (this.colorPickerMode === "text") {
       if (color !== undefined) {
         chain.setColor(color).run();
@@ -448,27 +450,28 @@ export class SdTiptapEditorControl {
   }
 
   private refreshActiveStates(): void {
-    if (this.editor == null) return;
-    this.activeStates = {
-      bold: this.editor.isActive("bold"),
-      italic: this.editor.isActive("italic"),
-      underline: this.editor.isActive("underline"),
-      strike: this.editor.isActive("strike"),
-      h1: this.editor.isActive("heading", { level: 1 }),
-      h2: this.editor.isActive("heading", { level: 2 }),
-      bulletList: this.editor.isActive("bulletList"),
-      orderedList: this.editor.isActive("orderedList"),
-      blockquote: this.editor.isActive("blockquote"),
-      codeBlock: this.editor.isActive("codeBlock"),
-      alignLeft: this.editor.isActive({ textAlign: "left" }),
-      alignCenter: this.editor.isActive({ textAlign: "center" }),
-      alignRight: this.editor.isActive({ textAlign: "right" }),
-      alignJustify: this.editor.isActive({ textAlign: "justify" }),
-    };
+    const ed = this.editor();
+    if (ed == null) return;
+    this.activeStates.set({
+      bold: ed.isActive("bold"),
+      italic: ed.isActive("italic"),
+      underline: ed.isActive("underline"),
+      strike: ed.isActive("strike"),
+      h1: ed.isActive("heading", { level: 1 }),
+      h2: ed.isActive("heading", { level: 2 }),
+      bulletList: ed.isActive("bulletList"),
+      orderedList: ed.isActive("orderedList"),
+      blockquote: ed.isActive("blockquote"),
+      codeBlock: ed.isActive("codeBlock"),
+      alignLeft: ed.isActive({ textAlign: "left" }),
+      alignCenter: ed.isActive({ textAlign: "center" }),
+      alignRight: ed.isActive({ textAlign: "right" }),
+      alignJustify: ed.isActive({ textAlign: "justify" }),
+    });
 
-    const textColor = this.editor.getAttributes("textStyle")["color"];
-    this.activeColor = typeof textColor === "string" ? textColor : "";
-    const bgColor = this.editor.getAttributes("highlight")["color"];
-    this.activeBgColor = typeof bgColor === "string" ? bgColor : "";
+    const textColor = ed.getAttributes("textStyle")["color"];
+    this.activeColor.set(typeof textColor === "string" ? textColor : "");
+    const bgColor = ed.getAttributes("highlight")["color"];
+    this.activeBgColor.set(typeof bgColor === "string" ? bgColor : "");
   }
 }
