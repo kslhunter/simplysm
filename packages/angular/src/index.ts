@@ -72,6 +72,9 @@ export {
   type IAddress,
 } from "./features/address/sd-address-search.modal";
 
+// features/permission-table
+export { SdPermissionTableControl } from "./features/permission-table/sd-permission-table.control";
+
 // features
 export { SdBaseContainerControl } from "./features/base/sd-base-container.control";
 export {

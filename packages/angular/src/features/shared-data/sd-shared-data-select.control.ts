@@ -255,7 +255,7 @@ export class SdSharedDataSelectControl<
 
   getItemSelectable(item: TItem, _index: number, depth: number): boolean {
     if (!this.hasParentKey()) return true;
-    // depth가 0이면서 자식을 가진 항목(카테고리)은 선택 불가
+    // 트리 구조에서 depth가 0이면서 __parentKey가 있는 항목은 선택 불가
     return depth !== 0 || item.__parentKey == null;
   }
 

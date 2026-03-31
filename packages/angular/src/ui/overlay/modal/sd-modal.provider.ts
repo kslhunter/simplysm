@@ -139,6 +139,19 @@ export class SdModalProvider {
       activatedModal.modalComponent.set(modalRef.instance);
       activatedModal.contentComponent.set(contentRef.instance);
 
+      // 7-1. actionTplRef 브릿지: 컨텐츠 컴포넌트 → 모달 컴포넌트
+      if ("actionTplRef" in contentRef.instance) {
+        let _actionTplRef = contentRef.instance.actionTplRef;
+        Object.defineProperty(contentRef.instance, "actionTplRef", {
+          get: () => _actionTplRef,
+          set: (value: TemplateRef<any> | undefined) => {
+            _actionTplRef = value;
+            modalRef.setInput("actionTplRef", value);
+          },
+          configurable: true,
+        });
+      }
+
       // 8. appRef에 뷰 등록 + body에 삽입
       this._appRef.attachView(contentRef.hostView);
       this._appRef.attachView(modalRef.hostView);

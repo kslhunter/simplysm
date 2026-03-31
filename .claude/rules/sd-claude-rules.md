@@ -31,3 +31,18 @@
 # 실수 지적 및 해결
 
 - 사용자가 실수를 지적했고, 그것을 해결한 경우. 존재하는 CLAUDE.md의 "자주 하는 실수" 섹션에 해당 내용 간략히 기록 (CLAUDE.md파일이 없다면 무시)
+- 
+# 코딩 룰
+
+- 코딩 혹은 코드예제 출력 전, 코드베이스의 기존 패턴을 확인하여 통일성있게 안내한다.
+- 함수 작성 혹은 함수내 기능 추가시 단일 책임 원칙을 따른다. (함수가 이름에서 드러나지 않는 일을 몰래 해선 안됨)
+- `src/`에는 프로덕션 코드만 둔다. 테스트에서만 사용하는 파일(타입 선언, 헬퍼 등)은 `tests/`에 위치시킨다.
+
+## 자주 하는 실수
+
+- **타입체크 명령어**: `npx tsc --noEmit` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용
+- **`as any[]` 캐스팅 후 `??` 방어**: `value as any[]`로 캐스팅하면 TypeScript는 nullable이 아니라고 판단하여 `?? []`에 lint 에러 발생. `value as any[] | undefined`로 캐스팅해야 한다
+- **타입 추론 해제 금지**: 타입 추론을 해제하는 방식의 수정은 절대 금지한다.
+- **불필요한 `as` 캐스팅**: 가드(`target !== "client"` 등)로 타입이 좁혀진 후에는 `as SdClientPackageConfig` 같은 캐스팅 불필요. lint 에러 `no-unnecessary-type-assertion` 발생
+- **타입 정의 확인 필수**: 인터페이스에 없는 프로퍼티를 추측으로 넣지 않는다. 반드시 실제 타입 정의를 읽고 작성한다
+- **클래스 필드 vs prototype**: `Object.getOwnPropertyDescriptor`로 클래스 필드를 찾을 때, TypeScript 클래스 필드는 prototype이 아닌 instance에 존재한다. prototype에서 찾으면 `undefined` 반환

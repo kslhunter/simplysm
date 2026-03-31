@@ -247,7 +247,7 @@
 - [x] Feature 7.4a 외부 서비스 연동 검색
   - SdAddressSearchModal: 다음 우편번호 서비스 연동 주소 검색 모달
 
-- [ ] Feature 7.4b 권한 매트릭스 편집
+- [x] Feature 7.4b 권한 매트릭스 편집
   - SdPermissionTableControl: 계층 구조 권한 테이블 (사용/편집 토글, 부모→자식 전파)
 
 - [ ] Feature 7.4c 다크 모드 전환

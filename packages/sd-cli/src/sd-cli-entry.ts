@@ -23,7 +23,7 @@ EventEmitter.defaultMaxListeners = 100;
 
 consola.options.reporters = [new SdCliReporter()];
 
-const COMMAND_NAMES = ["check", "watch", "dev", "build", "publish", "replace-deps"];
+const COMMAND_NAMES = ["check", "watch", "dev", "device", "build", "publish", "replace-deps"];
 
 async function collectYargsHelp(argv: string[]): Promise<string> {
   const lines: string[] = [];
@@ -181,6 +181,41 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runDev({
           targets: args.targets,
+          options: args.opt,
+        });
+      },
+    )
+    .command(
+      "device",
+      "Run native app on device/desktop",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .options({
+            "package": {
+              type: "string",
+              alias: "p",
+              description: "Client package name to run",
+              demandOption: true,
+            },
+            "url": {
+              type: "string",
+              description: "Dev server URL (auto-detected from sd.config.ts if omitted)",
+            },
+            "opt": {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        const { runDevice } = await import("./commands/device");
+        await runDevice({
+          package: args.package,
+          url: args.url,
           options: args.opt,
         });
       },

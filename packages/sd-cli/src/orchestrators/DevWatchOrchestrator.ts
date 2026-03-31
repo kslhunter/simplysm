@@ -21,7 +21,6 @@ import { SignalHandler } from "../infra/SignalHandler";
 import { createBuildEngine, type BuildEngine, type BuildPackageInfo, type ClientPackageInfo, type ServerPackageInfo } from "../engines/index";
 import { watchCopySrcFiles } from "../utils/copy-src";
 import { Capacitor } from "../capacitor/capacitor";
-import { Electron } from "../electron/electron";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import type { ServerReadyEventData, ErrorEventData } from "../utils/worker-events";
 
@@ -400,45 +399,22 @@ export class DevWatchOrchestrator {
       }
     }
 
-    // Start native apps for client packages with capacitor/electron config
+    // Initialize Capacitor for client packages (device execution is handled by the `device` command)
     for (const { name, config } of this._clientPackages) {
       const port = this._getClientPort(name);
       if (port == null) continue;
 
-      const devServerUrl = `http://localhost:${port}`;
       const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
       if (config.capacitor != null) {
         try {
           const cap = await Capacitor.create(pkgDir, config.capacitor, config.exclude);
           await cap.initialize();
-          await cap.run(devServerUrl);
         } catch (err) {
           this._logger.error(
-            `[${name}] Capacitor 실행 실패: ${errNs.message(err)}`,
+            `[${name}] Capacitor 초기화 실패: ${errNs.message(err)}`,
           );
         }
-      }
-
-      if (config.electron != null) {
-        void (async () => {
-          try {
-            const elc = await Electron.create(pkgDir, config.electron!, config.exclude);
-            await elc.initialize();
-            await elc.run(devServerUrl);
-          } catch (err) {
-            this._logger.error(
-              `[${name}] Electron 실행 실패: ${errNs.message(err)}`,
-            );
-            this._resultCollector.add({
-              name,
-              target: "client",
-              type: "build",
-              status: "error",
-              message: `Electron 실행 실패: ${errNs.message(err)}`,
-            });
-          }
-        })();
       }
     }
 

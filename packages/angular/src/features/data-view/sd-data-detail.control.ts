@@ -145,14 +145,17 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
     if (!this.toggleDelete) return;
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      const result = await this.toggleDelete!(del);
-      if (!result) return;
+    await this._sdToast.try(
+      async () => {
+        const result = await this.toggleDelete!(del);
+        if (!result) return;
 
-      this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+        this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
 
-      this.close.emit(result);
-    });
+        this.close.emit(result);
+      },
+      (err) => this._getOrmDataEditToastErrorMessage(err),
+    );
     this.busyCount.update((v) => v - 1);
   }
 
@@ -172,17 +175,31 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
     }
 
     this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      const result = await this.submit!(this.data());
-      if (!result) return;
+    await this._sdToast.try(
+      async () => {
+        const result = await this.submit!(this.data());
+        if (!result) return;
 
-      this._sdToast.success("저장되었습니다.");
+        this._sdToast.success("저장되었습니다.");
 
-      this.close.emit(result);
+        this.close.emit(result);
 
-      await this.refresh();
-    });
+        await this.refresh();
+      },
+      (err) => this._getOrmDataEditToastErrorMessage(err),
+    );
     this.busyCount.update((v) => v - 1);
+  }
+
+  private _getOrmDataEditToastErrorMessage(err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes("a parent row: a foreign key constraint") ||
+      message.includes("conflicted with the REFERENCE")
+    ) {
+      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
+    }
+    return message;
   }
 }
 
@@ -219,13 +236,13 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
       <ng-template #pageTopbarTpl>
         @if (parent.canEdit() && parent.submit) {
           <sd-button [theme]="'link-primary'" (click)="onSubmitButtonClick()">
-            <ng-icon [svg]="tablerDeviceFloppy" />
+            <ng-icon [svg]="icons.tablerDeviceFloppy" />
             저장
             <small>(CTRL+S)</small>
           </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onRefreshButtonClick()">
-          <ng-icon [svg]="tablerRefresh" />
+          <ng-icon [svg]="icons.tablerRefresh" />
           새로고침
           <small>(CTRL+ALT+L)</small>
         </sd-button>
@@ -238,12 +255,12 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
               @if (parent.viewType() === "control" && parent.canEdit()) {
                 @if (parent.submit) {
                   <sd-button [theme]="'primary'" (click)="onSubmitButtonClick()">
-                    <ng-icon [svg]="tablerDeviceFloppy" />
+                    <ng-icon [svg]="icons.tablerDeviceFloppy" />
                     저장
                     <small>(CTRL+S)</small>
                   </sd-button>
                   <sd-button [theme]="'info'" (click)="onRefreshButtonClick()">
-                    <ng-icon [svg]="tablerRefresh" />
+                    <ng-icon [svg]="icons.tablerRefresh" />
                     새로고침
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
@@ -255,12 +272,12 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
                 ) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button [theme]="'warning'" (click)="onRestoreButtonClick()">
-                      <ng-icon [svg]="tablerRestore" />
+                      <ng-icon [svg]="icons.tablerRestore" />
                       복구
                     </sd-button>
                   } @else {
                     <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
-                      <ng-icon [svg]="tablerEraser" />
+                      <ng-icon [svg]="icons.tablerEraser" />
                       삭제
                     </sd-button>
                   }
@@ -278,7 +295,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
           }
 
           <div class="flex-fill">
-            <sd-form #formCtrl (submit)="onSubmit()">
+            <sd-form #formCtrl (formSubmit)="onSubmit()">
               <ng-template [ngTemplateOutlet]="contentTplRef()" />
             </sd-form>
           </div>
@@ -332,18 +349,18 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
             </div>
           </div>
         </ng-template>
-
-        <ng-template #modalActionTpl>
-          <sd-anchor
-            [theme]="'gray'"
-            class="p-sm-default"
-            (click)="onRefreshButtonClick()"
-            title="새로고침(CTRL+ALT+L)"
-          >
-            <ng-icon [svg]="tablerRefresh" />
-          </sd-anchor>
-        </ng-template>
       }
+
+      <ng-template #modalActionTpl>
+        <sd-anchor
+          [theme]="'gray'"
+          class="p-sm-default"
+          (click)="onRefreshButtonClick()"
+          title="새로고침(CTRL+ALT+L)"
+        >
+          <ng-icon [svg]="icons.tablerRefresh" />
+        </sd-anchor>
+      </ng-template>
     </sd-base-container>
   `,
 })
@@ -385,10 +402,12 @@ export class SdDataDetailControl {
     await this.parent.doSubmit({ permCheck: true });
   }
 
-  protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
-  protected readonly tablerRefresh = tablerRefresh;
-  protected readonly tablerRestore = tablerRestore;
-  protected readonly tablerEraser = tablerEraser;
+  protected readonly icons = {
+    tablerDeviceFloppy,
+    tablerRefresh,
+    tablerRestore,
+    tablerEraser,
+  };
 }
 
 //#endregion

@@ -1373,8 +1373,8 @@ describe("DevWatchOrchestrator", () => {
       });
     }
 
-    // Acceptance: Scenario "Capacitor 디바이스 실행"
-    it("runs Capacitor.create + initialize + run(devServerUrl) after ViteDevServer starts", async () => {
+    // Acceptance: Scenario "Capacitor 초기화만 수행 (run 미호출)"
+    it("runs Capacitor.create + initialize but NOT run in dev mode", async () => {
       setupDefaults(createConfig({
         packages: {
           "my-client": {
@@ -1396,11 +1396,11 @@ describe("DevWatchOrchestrator", () => {
         undefined,
       );
       expect(mockCapacitorInstance.initialize).toHaveBeenCalled();
-      expect(mockCapacitorInstance.run).toHaveBeenCalledWith("http://localhost:4200");
+      expect(mockCapacitorInstance.run).not.toHaveBeenCalled();
     });
 
-    // Acceptance: Scenario "Electron 데스크톱 실행"
-    it("runs Electron.create + initialize + run(devServerUrl) after ViteDevServer starts", async () => {
+    // Acceptance: Scenario "dev 모드에서 Electron 미처리"
+    it("does not run Electron in dev mode even when electron config exists", async () => {
       setupDefaults(createConfig({
         packages: {
           "my-client": {
@@ -1416,17 +1416,13 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(Electron.create).toHaveBeenCalledWith(
-        expect.stringContaining("my-client"),
-        { appId: "com.test.electron" },
-        undefined,
-      );
-      expect(mockElectronInstance.initialize).toHaveBeenCalled();
-      expect(mockElectronInstance.run).toHaveBeenCalledWith("http://localhost:4200");
+      expect(Electron.create).not.toHaveBeenCalled();
+      expect(mockElectronInstance.initialize).not.toHaveBeenCalled();
+      expect(mockElectronInstance.run).not.toHaveBeenCalled();
     });
 
-    // Acceptance: Scenario "Capacitor + Electron 동시 실행"
-    it("runs both Capacitor.run and Electron.run when both are configured", async () => {
+    // Acceptance: Scenario "Capacitor + Electron 동시 설정 시 Capacitor만 초기화"
+    it("initializes Capacitor but ignores Electron when both are configured", async () => {
       setupDefaults(createConfig({
         packages: {
           "my-client": {
@@ -1444,9 +1440,9 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       expect(Capacitor.create).toHaveBeenCalled();
-      expect(mockCapacitorInstance.run).toHaveBeenCalledWith("http://localhost:4200");
-      expect(Electron.create).toHaveBeenCalled();
-      expect(mockElectronInstance.run).toHaveBeenCalledWith("http://localhost:4200");
+      expect(mockCapacitorInstance.initialize).toHaveBeenCalled();
+      expect(mockCapacitorInstance.run).not.toHaveBeenCalled();
+      expect(Electron.create).not.toHaveBeenCalled();
     });
 
     // Acceptance: Scenario "네이티브 설정 없는 dev 모드"
@@ -1466,11 +1462,9 @@ describe("DevWatchOrchestrator", () => {
       expect(Electron.create).not.toHaveBeenCalled();
     });
 
-    // Acceptance: Scenario "dev 모드 종료 시 네��티브 프로세스 정리"
-    // Electron.run() blocks until SIGINT/SIGTERM — cleanup is handled by its internal signal handler.
-    // Capacitor.run() returns after deployment — no cleanup needed.
-    // This scenario verifies that shutdown() completes without error when native apps are running.
-    it("shutdown completes when native apps were launched", async () => {
+    // Acceptance: Scenario "dev 모드 종료 시 Capacitor 초기화 후 정상 종료"
+    // Capacitor.initialize()만 호출되므로 별도 정리 불필요.
+    it("shutdown completes when Capacitor was initialized", async () => {
       setupDefaults(createConfig({
         packages: {
           "my-client": {
@@ -1493,8 +1487,8 @@ describe("DevWatchOrchestrator", () => {
       }
     });
 
-    // Unit: native run error does not crash orchestrator
-    it("logs error but does not crash when Capacitor.run throws", async () => {
+    // Unit: Capacitor.initialize 에러는 로그만 남기고 크래시하지 않음
+    it("logs error but does not crash when Capacitor.initialize throws", async () => {
       setupDefaults(createConfig({
         packages: {
           "my-client": {
@@ -1505,81 +1499,15 @@ describe("DevWatchOrchestrator", () => {
         },
       }));
       setupEngineWithPort(4200);
-      mockCapacitorInstance.run.mockRejectedValue(new Error("device not found"));
+      mockCapacitorInstance.initialize.mockRejectedValue(new Error("init failed"));
 
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
       // Should not throw
       await orchestrator.start();
 
-      expect(mockCapacitorInstance.run).toHaveBeenCalled();
-    });
-
-    // Unit: Electron.run is fire-and-forget (does not block dev mode start)
-    it("does not await Electron.run (fire-and-forget)", async () => {
-      let electronRunResolved = false;
-      mockElectronInstance.run.mockImplementation(() => {
-        return new Promise<void>((resolve) => {
-          // Simulate long-running Electron process — never resolves during test
-          setTimeout(() => {
-            electronRunResolved = true;
-            resolve();
-          }, 10_000);
-        });
-      });
-
-      setupDefaults(createConfig({
-        packages: {
-          "my-client": {
-            target: "client",
-            server: 4200,
-            electron: { appId: "com.test.electron" },
-          },
-        },
-      }));
-      setupEngineWithPort(4200);
-
-      const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
-      await orchestrator.initialize();
-      await orchestrator.start();
-
-      // start() returned without waiting for Electron.run to resolve
-      expect(electronRunResolved).toBe(false);
-      expect(mockElectronInstance.run).toHaveBeenCalled();
-    });
-
-    // Unit: DESIGN-004 — Electron run failure registers error in ResultCollector
-    it("registers error in ResultCollector when Electron.run fails", async () => {
-      mockElectronInstance.run.mockRejectedValue(new Error("electron crashed"));
-
-      setupDefaults(createConfig({
-        packages: {
-          "my-client": {
-            target: "client",
-            server: 4200,
-            electron: { appId: "com.test.electron" },
-          },
-        },
-      }));
-      setupEngineWithPort(4200);
-
-      const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
-      await orchestrator.initialize();
-      await orchestrator.start();
-
-      // Wait a tick for the fire-and-forget async to settle
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      const resultCollector = vi.mocked(ResultCollector).mock.instances[0];
-      expect(resultCollector.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "my-client",
-          target: "client",
-          type: "build",
-          status: "error",
-          message: expect.stringContaining("electron crashed"),
-        }),
-      );
+      expect(mockCapacitorInstance.initialize).toHaveBeenCalled();
+      expect(mockCapacitorInstance.run).not.toHaveBeenCalled();
     });
   });
 

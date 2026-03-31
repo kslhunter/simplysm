@@ -256,12 +256,11 @@ export abstract class AbsSdDataSheet<
     this.pageLength.set(result.pageLength ?? 0);
     this.summaryData.set(result.summary ?? {});
 
+    const selectedKeySet = new Set(
+      this.selectedItems().map((sel) => this.getItemInfoFn(sel).key),
+    );
     this.selectedItems.set(
-      this.items().filter((item) =>
-        this.selectedItems().some(
-          (sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key,
-        ),
-      ),
+      this.items().filter((item) => selectedKeySet.has(this.getItemInfoFn(item).key)),
     );
   }
 
@@ -300,12 +299,11 @@ export abstract class AbsSdDataSheet<
 
         this._sdToast.success("저장되었습니다.");
         await this.refresh();
+        this.submitted.emit(true);
       },
       (err) => this._getOrmDataEditToastErrorMessage(err),
     );
     this.busyCount.update((v) => v - 1);
-
-    this.submitted.emit(true);
   }
 
   doToggleDeleteItem(item: TItem) {
@@ -758,6 +756,17 @@ export abstract class AbsSdDataSheet<
             }
           </div>
         </ng-template>
+
+        <ng-template #modalActionTpl>
+          <sd-anchor
+            [theme]="'gray'"
+            class="p-sm-default"
+            (click)="onRefreshButtonClick()"
+            title="새로고침(CTRL+ALT+L)"
+          >
+            <ng-icon [svg]="icons.tablerRefresh" />
+          </sd-anchor>
+        </ng-template>
       }
     </sd-base-container>
   `,
@@ -781,6 +790,14 @@ export class SdDataSheetControl {
   modalBottomTplRef = contentChild("modalBottomTpl", { read: TemplateRef });
 
   columnControls = contentChildren(SdDataSheetColumnDirective);
+
+  modalActionTplRef = viewChild("modalActionTpl", { read: TemplateRef });
+
+  constructor() {
+    effect(() => {
+      this.parent.actionTplRef = this.modalActionTplRef();
+    });
+  }
 
   protected readonly icons = {
     tablerRefresh,
