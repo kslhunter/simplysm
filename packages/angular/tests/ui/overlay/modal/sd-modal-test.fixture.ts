@@ -11,6 +11,7 @@ import { SdModalControl } from "../../../../src/ui/overlay/modal/sd-modal.contro
   template: `<div class="content">{{ title() }}</div>`,
 })
 export class SdModalTestBasic implements ISdModal<string> {
+  readonly _optionalModalInputs?: "age";
   initialized = signal(false);
   close = output<string | undefined>();
   title = input.required<string>();
@@ -133,6 +134,7 @@ export class SdModalProviderTestHost {
   `,
 })
 export class SdModalTestFocusable implements ISdModal<void> {
+  readonly _optionalModalInputs?: "title";
   initialized = signal(false);
   close = output<void | undefined>();
   title = input("");

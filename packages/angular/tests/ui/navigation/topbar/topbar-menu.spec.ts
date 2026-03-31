@@ -107,7 +107,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
       "sd-dropdown-popup sd-list-item",
     );
     // Find the deepest item (depth 2)
-    const deepItem = Array.from(allListItems).find(
+    const deepItem = (Array.from(allListItems) as HTMLElement[]).find(
       (el) => el.style.paddingLeft === "1.5em",
     );
     expect(deepItem).toBeTruthy();

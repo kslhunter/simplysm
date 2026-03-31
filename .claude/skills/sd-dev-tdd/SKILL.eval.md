@@ -20,8 +20,10 @@
   - [ ] 테스트가 실행되었다
   - [ ] Acceptance Test 통과 후 Outer Loop Refactor가 수행되었다
   - [ ] Outer Loop Refactor에서 프로덕션 코드 점검이 수행되고 결과가 출력에 기록되었다
-  - [ ] Outer Loop Refactor에서 테스트 코드 점검이 수행되고 결과가 출력에 기록되었다
+  - [ ] Outer Loop Refactor에서 테스트 오류 교정(소스 텍스트 매칭·scaffolding 테스트)이 수행되고 결과가 출력에 기록되었다
+  - [ ] Feature 완료(Step 3)에서 최종 테스트 정리가 수행되었다 (중복 Unit Test 삭제, 구현 결합 테스트 전환/삭제, 공통 setup 추출, 네이밍 개선)
   - [ ] 최종 테스트 코드에 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 남아있지 않다
+  - [ ] 최종 테스트 코드에 지속적 회귀 테스트 가치가 없는 테스트(Acceptance Test와 동일 검증을 하는 Unit Test 등)가 남아있지 않다
   - [ ] 테스트가 대상 코드를 실제로 import하여 호출/실행하는 방식으로 작성되었다 (소스 파일을 문자열로 읽어 텍스트 매칭하는 방식이 아님)
   - [ ] 테스트 파일명에 Slice/Scenario 번호가 사용되지 않았다 (예: `3.1-xxx.spec.ts` 없음)
   - [ ] Acceptance Test 파일이 `.acc.spec.{ts,js}` (프로젝트 언어에 맞는) 확장자를 사용한다
@@ -75,7 +77,8 @@
 - [ ] 테스트 파일 작성 전에 구현 코드를 먼저 작성한다
 - [ ] 구현계획이 없는 Feature 문서에 대해 TDD를 진행한다 (코드 작성)
 - [ ] Outer Loop Refactor를 건너뛰고 바로 다음 Scenario로 진행한다
-- [ ] Outer Loop Refactor에서 프로덕션 코드만 정리하고 테스트 코드를 정리하지 않는다
+- [ ] Outer Loop Refactor에서 프로덕션 코드만 정리하고 테스트 오류 교정을 수행하지 않는다
+- [ ] Feature 완료(Step 3)에서 최종 테스트 정리를 수행하지 않고 바로 종료한다
 - [ ] 동작(behavior)이 아닌 구현 세부사항(상태)만 검증하는 테스트가 최종 결과에 남아있다
 - [ ] 소스 코드를 readFileSync/fs로 읽어 문자열 포함 여부(toContain/toMatch)만 확인하는 테스트가 존재한다 — 이는 테스트가 아니라 grep이다
 - [ ] 로직 테스트가 가능한 코드(순수 함수, 분기 로직, 상태 변경)에 대해 실제 호출·실행 없이 소스 텍스트 매칭으로 검증한다

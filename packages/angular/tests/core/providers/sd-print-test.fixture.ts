@@ -11,6 +11,7 @@ import type { ISdPrint } from "../../../src/core/providers/sd-print.provider";
   host: { style: "display: block" },
 })
 export class SdPrintTestBasic implements ISdPrint {
+  readonly _optionalPrintInputs?: "title";
   title = input("기본 제목");
   initialized = signal(true);
 }

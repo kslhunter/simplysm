@@ -22,8 +22,7 @@ vi.mock("../../src/utils/lint-with-program", () => ({
 const mockTsProgram = { getSourceFiles: () => [] };
 
 const mockRunNgtscBuild = vi.fn().mockResolvedValue({
-  js: { success: true },
-  dts: { success: true, diagnostics: [] },
+  build: { success: true, diagnostics: [] },
 });
 
 vi.mock("../../src/utils/ngtsc-build-core", () => ({
@@ -119,8 +118,7 @@ beforeEach(() => {
     formattedOutput: "",
   });
   mockRunNgtscBuild.mockResolvedValue({
-    js: { success: true },
-    dts: { success: true, diagnostics: [] },
+    build: { success: true, diagnostics: [] },
   });
 });
 
@@ -128,8 +126,7 @@ describe("ngtsc-build.worker lint integration (Slice 4)", () => {
   describe("Scenario: ngtsc-build.worker runs lint after typecheck (one-time build)", () => {
     it("returns lint result when lint is enabled", async () => {
       mockRunNgtscBuild.mockResolvedValue({
-        js: { success: true },
-        dts: { success: true, diagnostics: [] },
+        build: { success: true, diagnostics: [] },
         program: mockTsProgram,
       });
 

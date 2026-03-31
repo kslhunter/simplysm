@@ -6,6 +6,9 @@ import "@simplysm/core-common";
 
 export interface ISharedDataBase<TKey extends string | number> {
   __valueKey: TKey;
+  __searchText: string;
+  __isHidden: boolean;
+  __parentKey?: TKey;
 }
 
 export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {

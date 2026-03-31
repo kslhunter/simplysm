@@ -13,6 +13,7 @@ function makeDef(overrides: Partial<ISdSheetColumnDef>): ISdSheetColumnDef {
     hidden: overrides.hidden ?? false,
     collapse: overrides.collapse ?? false,
     disableSorting: overrides.disableSorting ?? false,
+    disableResizing: overrides.disableResizing ?? false,
     ordering: overrides.ordering ?? 0,
   };
 }

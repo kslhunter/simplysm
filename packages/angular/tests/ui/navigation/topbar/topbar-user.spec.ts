@@ -61,7 +61,7 @@ describe("Feature 4.4 Slice 3: SdTopbarUserControl 사용자 메뉴", () => {
       "sd-dropdown-popup sd-list-item ._content",
     );
     expect(listItems.length).toBe(2);
-    listItems[1].click();
+    (listItems[1] as HTMLElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
 

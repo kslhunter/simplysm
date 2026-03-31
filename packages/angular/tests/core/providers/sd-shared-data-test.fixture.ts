@@ -3,8 +3,14 @@ import { SdSharedDataProvider, type ISharedDataBase } from "../../../src/core/pr
 
 export interface ITestUser extends ISharedDataBase<number> {
   __valueKey: number;
+  __searchText: string;
+  __isHidden: boolean;
   name: string;
   sortOrder: number;
+}
+
+export function testUser(key: number, name: string, sortOrder: number): ITestUser {
+  return { __valueKey: key, __searchText: name, __isHidden: false, name, sortOrder };
 }
 
 @Injectable()

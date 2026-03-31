@@ -2,46 +2,57 @@ import { describe, expect, it } from "vitest";
 import path from "path";
 import {
   posix,
-  norm,
+  posixResolve,
   isChildPath,
   changeFileDirectory,
   basenameWithoutExt,
   filterByTargets,
-  type NormPath,
 } from "../../src/utils/path";
 
 describe("path functions", () => {
   //#region posix
 
   describe("posix", () => {
-    it("converts single path argument to POSIX style", () => {
+    it("converts backslashes to forward slashes", () => {
       const result = posix("C:\\Users\\test\\file.txt");
       expect(result).toBe("C:/Users/test/file.txt");
     });
 
-    it("combines multiple path arguments and converts to POSIX style", () => {
-      const result = posix("C:\\Users", "test", "file.txt");
-      expect(result).toBe("C:/Users/test/file.txt");
+    it("leaves forward slashes unchanged", () => {
+      expect(posix("a/b/c")).toBe("a/b/c");
     });
 
+    it("handles mixed separators", () => {
+      expect(posix("a\\b/c\\d")).toBe("a/b/c/d");
+    });
+
+    it("handles empty string", () => {
+      expect(posix("")).toBe("");
+    });
   });
 
   //#endregion
 
-  //#region norm
+  //#region posixResolve
 
-  describe("norm", () => {
-    it("normalizes path and returns NormPath type", () => {
-      const result: NormPath = norm("./test/../file.txt");
-      expect(result).toBe(path.resolve("./test/../file.txt"));
+  describe("posixResolve", () => {
+    it("resolves relative path to absolute POSIX path", () => {
+      const result = posixResolve("./test/../file.txt");
+      expect(result).toBe(path.resolve("./test/../file.txt").replace(/\\/g, "/"));
     });
 
-    it("combines multiple path arguments and normalizes", () => {
+    it("combines multiple path arguments and resolves", () => {
       const basePath = path.resolve("/base");
-      const result = norm(basePath, "sub", "file.txt");
-      expect(result).toBe(path.resolve(basePath, "sub", "file.txt"));
+      const result = posixResolve(basePath, "sub", "file.txt");
+      expect(result).toBe(
+        path.resolve(basePath, "sub", "file.txt").replace(/\\/g, "/"),
+      );
     });
 
+    it("resolves .. segments", () => {
+      const result = posixResolve("/a/b", "..", "c");
+      expect(result).toBe(path.resolve("/a/b", "..", "c").replace(/\\/g, "/"));
+    });
   });
 
   //#endregion
@@ -50,26 +61,26 @@ describe("path functions", () => {
 
   describe("isChildPath", () => {
     it("returns true for child path", () => {
-      const parent = norm("/parent/dir");
-      const child = norm("/parent/dir/child/file.txt");
+      const parent = posixResolve("/parent/dir");
+      const child = posixResolve("/parent/dir/child/file.txt");
       expect(isChildPath(child, parent)).toBe(true);
     });
 
     it("returns false for same path", () => {
-      const parent = norm("/parent/dir");
-      const child = norm("/parent/dir");
+      const parent = posixResolve("/parent/dir");
+      const child = posixResolve("/parent/dir");
       expect(isChildPath(child, parent)).toBe(false);
     });
 
     it("returns false for non-child path", () => {
-      const parent = norm("/parent/dir");
-      const child = norm("/other/dir/file.txt");
+      const parent = posixResolve("/parent/dir");
+      const child = posixResolve("/other/dir/file.txt");
       expect(isChildPath(child, parent)).toBe(false);
     });
 
     it("returns false when only part of parent path matches", () => {
-      const parent = norm("/parent/dir");
-      const child = norm("/parent/directory/file.txt");
+      const parent = posixResolve("/parent/dir");
+      const child = posixResolve("/parent/directory/file.txt");
       expect(isChildPath(child, parent)).toBe(false);
     });
   });
@@ -80,35 +91,35 @@ describe("path functions", () => {
 
   describe("changeFileDirectory", () => {
     it("changes file directory", () => {
-      const file = norm("/source/sub/file.txt");
-      const from = norm("/source");
-      const to = norm("/target");
+      const file = path.resolve("/source/sub/file.txt");
+      const from = path.resolve("/source");
+      const to = path.resolve("/target");
 
       const result = changeFileDirectory(file, from, to);
-      expect(result).toBe(norm("/target/sub/file.txt"));
+      expect(result).toBe(path.resolve("/target/sub/file.txt"));
     });
 
     it("changes directory in nested path", () => {
-      const file = norm("/a/b/c/d/file.txt");
-      const from = norm("/a/b");
-      const to = norm("/x/y");
+      const file = path.resolve("/a/b/c/d/file.txt");
+      const from = path.resolve("/a/b");
+      const to = path.resolve("/x/y");
 
       const result = changeFileDirectory(file, from, to);
-      expect(result).toBe(norm("/x/y/c/d/file.txt"));
+      expect(result).toBe(path.resolve("/x/y/c/d/file.txt"));
     });
 
     it("throws error when file is not inside fromDirectory", () => {
-      const file = norm("/other/path/file.txt");
-      const from = norm("/source");
-      const to = norm("/target");
+      const file = path.resolve("/other/path/file.txt");
+      const from = path.resolve("/source");
+      const to = path.resolve("/target");
 
       expect(() => changeFileDirectory(file, from, to)).toThrow();
     });
 
     it("returns toDirectory when filePath and fromDirectory are the same", () => {
-      const file = norm("/source");
-      const from = norm("/source");
-      const to = norm("/target");
+      const file = path.resolve("/source");
+      const from = path.resolve("/source");
+      const to = path.resolve("/target");
 
       const result = changeFileDirectory(file, from, to);
       expect(result).toBe(to);

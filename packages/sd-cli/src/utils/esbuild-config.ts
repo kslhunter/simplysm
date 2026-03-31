@@ -15,6 +15,7 @@ const logger = consola.withTag("sd:cli:esbuild-config");
  * - Skip writing if content matches existing file to preserve timestamps
  */
 export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<boolean> {
+  logger.debug(`변경된 출력 파일 쓰기 시작 (${outputFiles.length}개)`);
   let hasChanges = false;
   await Promise.all(
     outputFiles.map(async (file) => {
@@ -40,6 +41,7 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
       await fs.writeFile(file.path, finalText);
     }),
   );
+  logger.debug(`변경된 출력 파일 쓰기 완료 (변경: ${String(hasChanges)})`);
   return hasChanges;
 }
 

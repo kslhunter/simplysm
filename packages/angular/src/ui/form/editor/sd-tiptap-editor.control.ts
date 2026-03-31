@@ -24,6 +24,40 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 
+interface TiptapActiveStates {
+  h1: boolean;
+  h2: boolean;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  blockquote: boolean;
+  codeBlock: boolean;
+  alignLeft: boolean;
+  alignCenter: boolean;
+  alignRight: boolean;
+  alignJustify: boolean;
+}
+
+const DEFAULT_ACTIVE_STATES: TiptapActiveStates = {
+  h1: false,
+  h2: false,
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  bulletList: false,
+  orderedList: false,
+  blockquote: false,
+  codeBlock: false,
+  alignLeft: false,
+  alignCenter: false,
+  alignRight: false,
+  alignJustify: false,
+};
+
 const DEFAULT_EXTENSIONS: AnyExtension[] = [
   StarterKit,
   TextStyle,
@@ -251,7 +285,7 @@ export class SdTiptapEditorControl {
     "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd",
   ];
 
-  activeStates: WritableSignal<Record<string, boolean>> = signal({});
+  activeStates: WritableSignal<TiptapActiveStates> = signal(DEFAULT_ACTIVE_STATES);
   activeColor = signal("");
   activeBgColor = signal("");
   colorPickerMode: "text" | "bg" | undefined;

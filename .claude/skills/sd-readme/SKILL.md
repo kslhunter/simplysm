@@ -40,7 +40,10 @@ flowchart TD
     S2_2 --> S2_3["Step 2-3: 카테고리 수집"]
     S2_3 --> S2_4["Step 2-4: API 정보 수집"]
 
-    S2_4 --> S3["Step 3: 분량 판단 & 문서 구조 결정"]
+    S2_4 --> S2B{"package.json에\nstyle 필드 또는\nfiles에 scss/ 존재?"}
+    S2B -- Yes --> S2B_1["Step 2B: 스타일 에셋 분석"]
+    S2B -- No --> S3
+    S2B_1 --> S3["Step 3: 분량 판단 & 문서 구조 결정"]
     S3 --> CHK_SIZE{"카테고리 ≤3 AND\nAPI 항목 ≤30?"}
     CHK_SIZE -- Yes --> MODE_SINGLE["README 단독"]
     CHK_SIZE -- No --> MODE_SPLIT["README + docs/ 분할"]
@@ -131,9 +134,30 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 
 파일 수가 많으면(20개 이상) Agent 도구로 파일 그룹별 병렬 분석을 수행한다.
 
+## Step 2B: 스타일 에셋 분석
+
+`package.json`에 `style` 필드가 있거나, `files` 배열에 `"scss"`가 포함되어 있으면 이 단계를 수행한다. 둘 다 해당하지 않으면 건너뛴다.
+
+### Step 2B-1: SCSS 파일 탐색
+
+`scss/` 디렉토리의 엔트리포인트(`scss/styles.scss` 등)부터 `@use`/`@forward` 체인을 따라가며 모든 SCSS 파일을 수집한다.
+
+### Step 2B-2: 스타일 API 수집
+
+수집된 SCSS 파일을 Read 도구로 읽어, 아래 항목을 추출한다:
+
+| 항목 | 추출 대상 | 예시 |
+|------|-----------|------|
+| CSS 클래스 | 최상위 선택자로 정의된 클래스 (컴포넌트 내부 중첩 제외) | `.flex-row`, `.flex-fill` |
+| CSS 커스텀 프로퍼티 | `:root` 또는 테마 클래스에서 선언된 `--*` 변수 | `--color-primary`, `--font-size` |
+| 테마 | `.sd-theme-*` 등 테마 전환 클래스와 해당 클래스가 오버라이드하는 변수 목록 | `.sd-theme-dark` |
+| 공개 mixin/function | `@mixin`, `@function` 중 `_`로 시작하지 않는 것 (사용자가 `@use`로 호출 가능) | `@mixin flex-direction($dir)` |
+
+각 항목은 카테고리 "Styling"으로 분류하고, 하위 분류(Classes, CSS Custom Properties, Themes, Mixins)로 나눈다.
+
 ## Step 3: 분량 판단 & 문서 구조 결정
 
-수집된 API 항목 수와 카테고리 수로 문서 구조를 결정한다.
+수집된 API 항목 수와 카테고리 수로 문서 구조를 결정한다. Step 2B에서 수집된 스타일 항목도 카테고리·항목 수에 포함한다.
 
 | 조건 | 문서 구조 |
 |------|-----------|
@@ -184,6 +208,18 @@ npm install @simplysm/{package-name}
 {docs/ 분할인 경우 각 카테고리 끝에:}
 → See [docs/{category}.md](./docs/{category}.md) for details.
 
+{Step 2B에서 스타일 항목이 수집된 경우:}
+### Styling
+
+| API | Type | Description |
+|-----|------|-------------|
+| `.flex-row` | CSS class | {설명} |
+| `--color-primary` | CSS custom property | {설명} |
+| `.sd-theme-dark` | theme class | {설명} |
+
+{docs/ 분할인 경우:}
+→ See [docs/styling.md](./docs/styling.md) for details.
+
 ## Usage Examples
 
 {주요 API 1~3개에 대한 사용 예제. 소스 코드의 JSDoc @example이 있으면 활용.
@@ -214,6 +250,39 @@ npm install @simplysm/{package-name}
 | `fieldName` | `type` | {필드 설명} |
 
 {union type인 경우: discriminant 필드와 각 variant 나열}
+```
+
+#### Styling 카테고리 문서 형식 (docs/styling.md)
+
+Step 2B에서 스타일 항목이 수집된 경우, `docs/styling.md`를 아래 형식으로 생성한다:
+
+```markdown
+# Styling
+
+## CSS Classes
+
+| Class | Description |
+|-------|-------------|
+| `.flex-row` | {설명} |
+| `.flex-fill` | {설명} |
+
+## CSS Custom Properties
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `--color-primary` | `#...` | {설명} |
+
+## Themes
+
+### `.sd-theme-dark`
+
+{테마 설명. 오버라이드하는 변수 목록.}
+
+## Mixins / Functions
+
+| Name | Signature | Description |
+|------|-----------|-------------|
+| `flex-direction` | `@mixin flex-direction($dir)` | {설명} |
 ```
 
 ### Step 4-3: root README.md 생성 (패키지명 미지정 시)

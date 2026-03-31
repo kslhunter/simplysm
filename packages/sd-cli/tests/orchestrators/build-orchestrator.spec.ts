@@ -51,6 +51,9 @@ vi.mock("@simplysm/core-node", () => ({
   fsx: {
     rm: vi.fn().mockResolvedValue(undefined),
   },
+  pathx: {
+    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\\/g, "/")),
+  },
 }));
 
 const mockEngines: Array<{
@@ -64,8 +67,7 @@ vi.mock("../../src/engines/index", () => ({
     const engine = {
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn().mockResolvedValue(undefined),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -158,8 +160,7 @@ beforeEach(() => {
     const engine = {
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
 
       }),
       startWatch: vi.fn().mockResolvedValue(undefined),
@@ -413,8 +414,7 @@ describe("BuildOrchestrator.start", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: false,
-        js: { success: false, errors: ["Module not found"], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: false, errors: ["Module not found"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -464,8 +464,7 @@ describe("BuildOrchestrator.start", () => {
           active--;
           return {
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
           };
         }),
         startWatch: vi.fn(),
@@ -498,8 +497,7 @@ describe("BuildOrchestrator.start", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: ["Unused variable"] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: ["Unused variable"], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -606,8 +604,7 @@ describe("BuildOrchestrator client build", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -641,8 +638,7 @@ describe("BuildOrchestrator client build", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: false,
-        js: { success: false, errors: ["Template error"], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: false, errors: ["Template error"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -962,8 +958,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: false,
-        js: { success: false, errors: ["Build error"], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: false, errors: ["Build error"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -1032,8 +1027,7 @@ describe("BuildOrchestrator lint integration", () => {
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
         lint: { success: false, errorCount: 3, warningCount: 0, formattedOutput: "lint errors here" },
       }),
       startWatch: vi.fn(),
@@ -1080,8 +1074,7 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
         lint: { success: false, errorCount: 1, warningCount: 0, formattedOutput: "no-unused-vars" },
       }),
       startWatch: vi.fn(),
@@ -1109,8 +1102,7 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: false,
-        js: { success: false, errors: ["Module not found"], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: false, errors: ["Module not found"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -1126,7 +1118,7 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
     expect(jsCall).toBeDefined();
   });
 
-  it("build에서 DTS 에러는 'dts' 라벨 유지", async () => {
+  it("build에서 빌드 에러는 target 라벨 유지", async () => {
     setupDefaults({
       packages: {
         "core-common": { target: "neutral", publish: { type: "npm" } },
@@ -1135,8 +1127,7 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: false,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: false, errors: ["Type error"], warnings: [], diagnostics: [] },
+        build: { success: false, errors: ["Type error"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -1148,8 +1139,8 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
 
     const { formatBuildMessages } = await import("../../src/utils/output-utils");
     const fmtCalls = vi.mocked(formatBuildMessages).mock.calls;
-    const dtsCall = fmtCalls.find((c) => c[1] === "dts");
-    expect(dtsCall).toBeDefined();
+    const buildCall = fmtCalls.find((c) => c[1] === "neutral");
+    expect(buildCall).toBeDefined();
   });
 
   it("build에서 lint 성공 시 에러 출력 없음", async () => {
@@ -1161,8 +1152,7 @@ describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () =
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
         lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
       }),
       startWatch: vi.fn(),

@@ -25,8 +25,8 @@ describe("formatBuildMessages", () => {
   });
 
   it("handles multiple messages", () => {
-    const result = formatBuildMessages("core", "dts", ["err1", "err2"]);
-    expect(result).toContain("core (dts)");
+    const result = formatBuildMessages("core", "node", ["err1", "err2"]);
+    expect(result).toContain("core (node)");
     expect(result).toContain("→ err1");
     expect(result).toContain("→ err2");
   });
@@ -53,13 +53,13 @@ describe("printErrors", () => {
     expect(consola.error).toHaveBeenCalledOnce();
   });
 
-  it("uses 'dts' as label for dts type errors", () => {
+  it("uses target as label for build type errors", () => {
     const results = new Map<string, BuildResult>([
-      ["core:dts", { name: "core", target: "node", type: "dts", status: "error", message: "type error" }],
+      ["core:build", { name: "core", target: "node", type: "build", status: "error", message: "type error" }],
     ]);
     printErrors(results);
     const callArg = vi.mocked(consola.error).mock.calls[0][0] as string;
-    expect(callArg).toContain("dts");
+    expect(callArg).toContain("node");
   });
 
   it("skips non-error results", () => {

@@ -32,3 +32,8 @@ export type TDirectiveInputSignals<T> = TUndefToOptional<{
     ? V
     : never;
 }>;
+
+/**
+ * 특정 키를 optional로 변환하는 유틸리티 타입
+ */
+export type TWithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

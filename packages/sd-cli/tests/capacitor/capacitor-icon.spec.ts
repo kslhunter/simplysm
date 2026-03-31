@@ -1,3 +1,4 @@
+import path from "path";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 //#region Mocks
@@ -26,6 +27,10 @@ vi.mock("@simplysm/core-node", () => ({
   cpx: {
     exec: mockCpxExec,
     execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+  },
+  pathx: {
+    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
+    posix: (p: string) => p.replace(/\\/g, "/"),
   },
 }));
 

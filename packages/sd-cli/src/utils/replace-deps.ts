@@ -133,7 +133,7 @@ export interface WatchReplaceDepResult {
 async function collectSearchRoots(projectRoot: string): Promise<string[]> {
   const searchRoots = [projectRoot];
 
-  const workspaceYamlPath = path.join(projectRoot, "pnpm-workspace.yaml");
+  const workspaceYamlPath = pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml"));
   try {
     const yamlContent = await fs.promises.readFile(workspaceYamlPath, "utf-8");
     const workspaceGlobs = parseWorkspaceGlobs(yamlContent);
@@ -171,7 +171,7 @@ async function resolveAllReplaceDepEntries(
   const searchRoots = await collectSearchRoots(projectRoot);
 
   for (const searchRoot of searchRoots) {
-    const nodeModulesDir = path.join(searchRoot, "node_modules");
+    const nodeModulesDir = pathx.posix(path.join(searchRoot, "node_modules"));
 
     try {
       await fs.promises.access(nodeModulesDir);
@@ -192,8 +192,8 @@ async function resolveAllReplaceDepEntries(
     const matchedEntries = resolveReplaceDepEntries(replaceDeps, targetNames);
 
     for (const { targetName, sourcePath } of matchedEntries) {
-      const targetPath = path.join(nodeModulesDir, targetName);
-      const resolvedSourcePath = path.resolve(projectRoot, sourcePath);
+      const targetPath = pathx.posix(path.join(nodeModulesDir, targetName));
+      const resolvedSourcePath = pathx.posixResolve(projectRoot, sourcePath);
 
       // Verify source path exists
       try {
@@ -208,7 +208,7 @@ async function resolveAllReplaceDepEntries(
       try {
         const stat = await fs.promises.lstat(targetPath);
         if (stat.isSymbolicLink()) {
-          actualTargetPath = await fs.promises.realpath(targetPath);
+          actualTargetPath = pathx.posix(await fs.promises.realpath(targetPath));
         }
       } catch {
         // If targetPath doesn't exist, use as-is
@@ -263,7 +263,7 @@ export async function setupReplaceDeps(
 
   // Run postinstall scripts from replaced packages
   for (const { targetName, resolvedSourcePath, actualTargetPath } of entries) {
-    const sourcePkgJsonPath = path.join(resolvedSourcePath, "package.json");
+    const sourcePkgJsonPath = pathx.posix(path.join(resolvedSourcePath, "package.json"));
     try {
       const pkgJson = JSON.parse(await fs.promises.readFile(sourcePkgJsonPath, "utf-8"));
       const postinstall = pkgJson.scripts?.postinstall as string | undefined;
@@ -312,7 +312,7 @@ export async function watchReplaceDeps(
     watchedSources.add(entry.resolvedSourcePath);
 
     const excludedPaths = [...EXCLUDED_NAMES].map((name) =>
-      path.join(entry.resolvedSourcePath, name),
+      pathx.posix(path.join(entry.resolvedSourcePath, name)),
     );
 
     const watcher = await FsWatcher.watch([entry.resolvedSourcePath], { followSymlinks: false });
@@ -331,8 +331,8 @@ export async function watchReplaceDeps(
           if (e.resolvedSourcePath !== entry.resolvedSourcePath) continue;
 
           // Calculate relative path from source
-          const relativePath = path.relative(e.resolvedSourcePath, changedPath);
-          const destPath = path.join(e.actualTargetPath, relativePath);
+          const relativePath = pathx.posix(path.relative(e.resolvedSourcePath, changedPath));
+          const destPath = pathx.posix(path.join(e.actualTargetPath, relativePath));
 
           try {
             // Check if source exists
@@ -350,7 +350,7 @@ export async function watchReplaceDeps(
               if (stat.isDirectory()) {
                 await fsx.mkdir(destPath);
               } else {
-                await fsx.mkdir(path.dirname(destPath));
+                await fsx.mkdir(pathx.posix(path.dirname(destPath)));
                 await fsx.copy(changedPath, destPath, replaceDepsCopyFilter);
               }
             } else {

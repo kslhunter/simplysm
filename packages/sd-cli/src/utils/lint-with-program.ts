@@ -1,6 +1,7 @@
 import path from "path";
 import type ts from "typescript";
 import { ESLint } from "eslint";
+import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 
 const logger = consola.withTag("sd:cli:lint-with-program");
@@ -58,11 +59,12 @@ export class LintWithProgramRunner {
    * Includes all workspace source files (cwd scope), excludes .d.ts, node_modules, and Angular shims.
    */
   private _extractFiles(program: ts.Program): string[] {
-    const normalizedCwd = this._cwd.replace(/\\/g, "/");
+    logger.debug(`[${this._pkgName}] 린트 대상 파일 추출 시작`);
+    const normalizedCwd = pathx.posix(this._cwd);
     const files: string[] = [];
 
     for (const sf of program.getSourceFiles()) {
-      const fileName = sf.fileName.replace(/\\/g, "/");
+      const fileName = pathx.posix(sf.fileName);
 
       // Must be within workspace root
       if (!fileName.startsWith(normalizedCwd + "/")) {
@@ -87,6 +89,7 @@ export class LintWithProgramRunner {
       files.push(sf.fileName);
     }
 
+    logger.debug(`[${this._pkgName}] 린트 대상 파일 추출 완료 (${files.length}개)`);
     return files;
   }
 
@@ -103,7 +106,7 @@ export class LintWithProgramRunner {
 
     // When affectedFiles is provided, intersect with extracted files
     if (affectedFiles != null) {
-      files = files.filter((f) => affectedFiles.has(f.replace(/\\/g, "/")));
+      files = files.filter((f) => affectedFiles.has(pathx.posix(f)));
     }
 
     if (files.length === 0) {
@@ -127,6 +130,7 @@ export class LintWithProgramRunner {
 
     // Create new ESLint instance when cache policy changes or on first call
     if (this._eslint == null || this._lastUseCache !== useCache) {
+      logger.debug(`[${this._pkgName}] ESLint 인스턴스 생성 (cache: ${String(useCache)})`);
       // ESLint Flat Config serializes languageOptions via languageOptionsToJSON(),
       // which recurses into parserOptions and throws on ts.Program methods.
       // Adding toJSON() to parserOptions returns a serializable representation

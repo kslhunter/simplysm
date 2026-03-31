@@ -29,8 +29,7 @@ vi.mock("../../src/utils/package-utils", async (importOriginal) => {
     ...actual,
     filterPackagesByTargets: vi.fn(),
     validateTargets: vi.fn(),
-    discoverWorkspacePackages: vi.fn(),
-    mergeTestsPackagesIntoConfig: vi.fn(),
+    buildPathMapFromConfig: vi.fn(),
   };
 });
 
@@ -94,8 +93,7 @@ vi.mock("../../src/engines/index", () => ({
     const engine = {
       run: vi.fn().mockResolvedValue({
         success: true,
-        js: { success: true, errors: [], warnings: [] },
-        dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+        build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn().mockResolvedValue(undefined),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -115,6 +113,12 @@ vi.mock("@simplysm/core-node", () => ({
   },
   Worker: {
     create: vi.fn(),
+  },
+  pathx: {
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\\/g, "/")),
+    isChildPath: vi.fn((child: string, parent: string) => child.startsWith(parent + "/")),
+    filterByTargets: vi.fn((files: string[], targets: string[]) => targets.length === 0 ? files : files),
   },
 }));
 
@@ -156,7 +160,7 @@ vi.mock("../../src/electron/electron", () => ({
 
 const { DevWatchOrchestrator } = await import("../../src/orchestrators/DevWatchOrchestrator");
 const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { filterPackagesByTargets, validateTargets, discoverWorkspacePackages, mergeTestsPackagesIntoConfig } = await import("../../src/utils/package-utils");
+const { filterPackagesByTargets, validateTargets, buildPathMapFromConfig } = await import("../../src/utils/package-utils");
 const { watchReplaceDeps } = await import("../../src/utils/replace-deps");
 const { printErrors, printServers: _printServers } = await import("../../src/utils/output-utils");
 const { createBuildEngine } = await import("../../src/engines/index");
@@ -171,7 +175,7 @@ const { Capacitor } = await import("../../src/capacitor/capacitor");
 const { Electron } = await import("../../src/electron/electron");
 
 import type { SdConfig } from "../../src/sd-config.types";
-import nodePath from "path";
+
 
 // --- Runtime worker mock helper ---
 
@@ -204,16 +208,14 @@ function createConfig(overrides: Partial<SdConfig> = {}): SdConfig {
   return { packages: {}, ...overrides };
 }
 
-function setupDefaults(config: SdConfig, workspacePackages?: Map<string, string>): void {
+function setupDefaults(config: SdConfig): void {
   vi.mocked(loadSdConfig).mockResolvedValue(config);
-  vi.mocked(discoverWorkspacePackages).mockReturnValue(workspacePackages ?? new Map());
-  vi.mocked(mergeTestsPackagesIntoConfig).mockImplementation((configPackages, _wp) => {
-    // Default: no tests packages, just build pathMap from config
+  vi.mocked(buildPathMapFromConfig).mockImplementation((configPackages) => {
     const pathMap = new Map<string, string>();
     for (const name of Object.keys(configPackages)) {
       pathMap.set(name, `packages/${name}`);
     }
-    return { merged: configPackages, pathMap };
+    return pathMap;
   });
   vi.mocked(filterPackagesByTargets).mockImplementation((pkgs) => {
     const result: Record<string, any> = {};
@@ -255,8 +257,7 @@ describe("DevWatchOrchestrator", () => {
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: true,
-          js: { success: true, errors: [], warnings: [] },
-          dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+          build: { success: true, errors: [], warnings: [], diagnostics: [] },
         }),
         startWatch: vi.fn().mockResolvedValue(undefined),
         stop: vi.fn().mockResolvedValue(undefined),
@@ -326,7 +327,7 @@ describe("DevWatchOrchestrator", () => {
 
       // Library engine: startWatch with js+dts
       const libraryEngine = mockBuildEngines.find((e) => e._pkgName === "core-common")!;
-      expect(libraryEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: true });
+      expect(libraryEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
 
       // Scripts+watch: spawn called for hook
       expect(spawn).toHaveBeenCalled();
@@ -363,7 +364,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       for (const engine of mockBuildEngines) {
-        expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: true });
+        expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
       }
     });
 
@@ -483,7 +484,7 @@ describe("DevWatchOrchestrator", () => {
       // Build engine created and started
       expect(createBuildEngine).toHaveBeenCalledTimes(1);
       const libraryEngine = mockBuildEngines.find((e) => e._pkgName === "core-common")!;
-      expect(libraryEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: true });
+      expect(libraryEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
 
       // Watch hook also executed
       expect(spawn).toHaveBeenCalledWith("node", ["sync.mjs"], expect.objectContaining({ shell: true }));
@@ -572,10 +573,10 @@ describe("DevWatchOrchestrator", () => {
 
       const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
       const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as (() => void) | undefined;
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
 
       vi.mocked(printErrors).mockClear();
-      batchHandler?.();
+      batchHandler?.(["test:build"]);
 
       expect(printErrors).toHaveBeenCalledOnce();
     });
@@ -619,7 +620,7 @@ describe("DevWatchOrchestrator", () => {
     function setupEngineWithResult(status: "success" | "error" = "success"): void {
       vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
         const engine = {
-          run: vi.fn().mockResolvedValue({ success: true, js: { success: true, errors: [], warnings: [] }, dts: { success: true, errors: [], warnings: [], diagnostics: [] } }),
+          run: vi.fn().mockResolvedValue({ success: true, build: { success: true, errors: [], warnings: [], diagnostics: [] } }),
           startWatch: vi.fn().mockImplementation(() => {
             options.resultCollector?.add({
               name: pkg.name, target: "server", type: "build", status,
@@ -649,11 +650,9 @@ describe("DevWatchOrchestrator", () => {
         expect.objectContaining({ name: "service-server" }),
         expect.any(Object),
       );
-      expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
-      expect(Worker.create).toHaveBeenCalledTimes(1);
-      expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
-        expect.objectContaining({ env: expect.objectContaining({ VER: "1.0.0", DEV: "true" }) }),
-      );
+      expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+      // Runtime is NOT started during initial build; it starts via batchComplete
+      expect(Worker.create).not.toHaveBeenCalled();
     });
 
     // --- Acceptance: Server 패키지 dev 모드 실행 ---
@@ -833,8 +832,8 @@ describe("DevWatchOrchestrator", () => {
       expect(createBuildEngine).toHaveBeenCalledOnce();
     });
 
-    // --- Acceptance: Server 리빌드 시 runtime 재시작 ---
-    it("restarts runtime on batchComplete with success", async () => {
+    // --- Acceptance: Server batchComplete 시 runtime 시작 ---
+    it("starts runtime on batchComplete with success", async () => {
       setupDefaults(createConfig({
         packages: { "service-server": { target: "server" } },
       }));
@@ -844,17 +843,20 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
+      // No runtime started initially
+      expect(Worker.create).not.toHaveBeenCalled();
+
       // Get batchComplete handler
       const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
       const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as (() => void) | undefined;
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
 
-      batchHandler?.();
-      await new Promise((r) => setTimeout(r, 0));
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
 
-      // Old runtime terminated, new one created
-      expect(mockRuntimeProxies).toHaveLength(2);
-      expect(mockRuntimeProxies[0].terminate).toHaveBeenCalled();
+      // First runtime created via batchComplete
+      expect(mockRuntimeProxies).toHaveLength(1);
+      expect(mockRuntimeProxies[0].start).toHaveBeenCalled();
     });
 
     // --- Acceptance: SIGINT/SIGTERM 시 graceful shutdown (dev mode) ---
@@ -867,6 +869,14 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
       await orchestrator.start();
+
+      // Trigger batchComplete to create runtime first
+      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
+
       await orchestrator.shutdown();
 
       expect(mockBuildEngines[0].stop).toHaveBeenCalledOnce();
@@ -901,7 +911,7 @@ describe("DevWatchOrchestrator", () => {
     });
 
     // Unit: multiple server packages
-    it("creates engines and runtimes for multiple server packages", async () => {
+    it("creates engines for multiple server packages (runtimes start via batchComplete)", async () => {
       setupDefaults(createConfig({
         packages: {
           "service-server": { target: "server" },
@@ -915,7 +925,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       expect(createBuildEngine).toHaveBeenCalledTimes(2);
-      expect(Worker.create).toHaveBeenCalledTimes(2);
+      // Runtimes are NOT started during initial build
+      expect(Worker.create).not.toHaveBeenCalled();
     });
 
     // Unit: skips start when no packages
@@ -961,7 +972,7 @@ describe("DevWatchOrchestrator", () => {
       vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
         const isClient = pkg.config.target === "client";
         const engine: any = {
-          run: vi.fn().mockResolvedValue({ success: true, js: { success: true, errors: [], warnings: [] }, dts: { success: true, errors: [], warnings: [], diagnostics: [] } }),
+          run: vi.fn().mockResolvedValue({ success: true, build: { success: true, errors: [], warnings: [], diagnostics: [] } }),
           startWatch: vi.fn().mockImplementation(() => {
             if (isClient) {
               // Client: simulate Vite serverReady
@@ -999,10 +1010,10 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       const clientEngine = mockBuildEngines.find((e) => e._pkgName === "my-client")!;
-      expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
+      expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
     });
 
-    // --- Acceptance: 서버 연결 클라이언트 ready 대기 후 서버 시작 → clientPorts 전달 ---
+    // --- Acceptance: batchComplete 시 서버 시작 → clientPorts 전달 ---
     it("passes clientPorts to server runtime for connected clients", async () => {
       setupDefaults(createConfig({
         packages: {
@@ -1015,6 +1026,16 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
       await orchestrator.start();
+
+      // Runtime starts via batchComplete, not initial start
+      expect(Worker.create).not.toHaveBeenCalled();
+
+      // Trigger batchComplete
+      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
 
       expect(Worker.create).toHaveBeenCalled();
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
@@ -1037,6 +1058,13 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
       await orchestrator.start();
+
+      // Trigger batchComplete to start server runtime
+      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
 
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1084,6 +1112,13 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
+      // Trigger batchComplete to start server runtime
+      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
+
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
           clientPorts: {},
@@ -1127,15 +1162,28 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Trigger batchComplete
+      // Trigger first batchComplete to start runtime
       const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
       const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as (() => void) | undefined;
-      batchHandler?.();
-      await new Promise((r) => setTimeout(r, 0));
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
+
+      // First runtime created with clientPorts
+      expect(mockRuntimeProxies).toHaveLength(1);
+      expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientPorts: { "my-client": 54321 },
+        }),
+      );
+
+      // Trigger second batchComplete (rebuild)
+      batchHandler?.(["service-server:build"]);
+      await new Promise((r) => setTimeout(r, 200));
 
       // Second runtime start should also have clientPorts
       expect(mockRuntimeProxies).toHaveLength(2);
+      expect(mockRuntimeProxies[0].terminate).toHaveBeenCalled();
       expect(mockRuntimeProxies[1].start).toHaveBeenCalledWith(
         expect.objectContaining({
           clientPorts: { "my-client": 54321 },
@@ -1188,59 +1236,30 @@ describe("DevWatchOrchestrator", () => {
     });
   });
 
-  describe("tests packages inclusion", () => {
-    // Acceptance: tests 패키지는 tests/ 경로로 해석된다
-    it("resolves tests package dir to tests/ path in watch mode", async () => {
-      const wsPackages = new Map([
-        ["core-common", "packages/core-common"],
-        ["orm", "tests/orm"],
-      ]);
-      const mergedPackages = {
-        "core-common": { target: "node" },
-        "orm": { target: "node" },
-      };
-      const pathMap = new Map([
-        ["core-common", "packages/core-common"],
-        ["orm", "tests/orm"],
-      ]);
-
+  describe("tests packages exclusion", () => {
+    // tests 패키지는 watch/dev에서 제외되고, sd.config.ts 패키지만 처리된다
+    it("only processes sd.config.ts packages, excludes tests packages", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
-      }), wsPackages);
-
-      vi.mocked(mergeTestsPackagesIntoConfig).mockReturnValue({
-        merged: mergedPackages as any,
-        pathMap,
-      });
+      }));
 
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Both packages should have BuildEngines created
-      expect(createBuildEngine).toHaveBeenCalledTimes(2);
+      // Only config package should have BuildEngine created
+      expect(createBuildEngine).toHaveBeenCalledTimes(1);
 
-      // tests/orm package should have correct dir
-      const ormCall = vi.mocked(createBuildEngine).mock.calls.find(
-        (c: any[]) => c[0].name === "orm",
-      );
-      expect(ormCall).toBeDefined();
-      expect(ormCall![0]).toEqual(expect.objectContaining({
-        name: "orm",
-        dir: nodePath.join("/test-root", "tests", "orm"),
-      }));
-
-      // packages/core-common should retain packages/ path
       const coreCall = vi.mocked(createBuildEngine).mock.calls.find(
         (c: any[]) => c[0].name === "core-common",
       );
       expect(coreCall![0]).toEqual(expect.objectContaining({
         name: "core-common",
-        dir: nodePath.join("/test-root", "packages", "core-common"),
+        dir: "/test-root/packages/core-common",
       }));
     });
 
-    // Acceptance: sd.config.ts 패키지는 기존 packages/ 경로 유지
+    // sd.config.ts 패키지는 기존 packages/ 경로 유지
     it("preserves packages/ path for sd.config.ts packages", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "neutral" } },
@@ -1253,24 +1272,21 @@ describe("DevWatchOrchestrator", () => {
         (c: any[]) => c[0].name === "core-common",
       );
       expect(coreCall![0]).toEqual(expect.objectContaining({
-        dir: nodePath.join("/test-root", "packages", "core-common"),
+        dir: "/test-root/packages/core-common",
       }));
     });
 
-    // Acceptance: mergeTestsPackagesIntoConfig is called with correct args
-    it("calls mergeTestsPackagesIntoConfig with sdConfig.packages and discovered workspace packages", async () => {
-      const wsPackages = new Map([["core-common", "packages/core-common"]]);
+    // buildPathMapFromConfig이 올바른 인자로 호출된다
+    it("calls buildPathMapFromConfig with sdConfig.packages", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
-      }), wsPackages);
+      }));
 
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(discoverWorkspacePackages).toHaveBeenCalledWith("/test-root");
-      expect(mergeTestsPackagesIntoConfig).toHaveBeenCalledWith(
+      expect(buildPathMapFromConfig).toHaveBeenCalledWith(
         { "core-common": { target: "node" } },
-        wsPackages,
       );
     });
   });
@@ -1336,8 +1352,7 @@ describe("DevWatchOrchestrator", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
           }),
           startWatch: vi.fn().mockImplementation(() => {
             // Simulate server ready with port
@@ -1571,8 +1586,8 @@ describe("DevWatchOrchestrator", () => {
   //#region Slice 4: watch/dev lint 활성화 (Feature 3.2)
 
   describe("lint activation", () => {
-    // Scenario: watch 초기 빌드에서 lint가 실행된다
-    it("passes lint:true to startWatch for library engines in watch mode", async () => {
+    // Scenario: watch 초기 빌드에서 lint 비활성화 (별도 실행으로 분리됨)
+    it("passes lint:false to startWatch for library engines in watch mode", async () => {
       setupDefaults(createConfig({
         packages: {
           "core-common": { target: "node" },
@@ -1585,12 +1600,12 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       for (const engine of mockBuildEngines) {
-        expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: true });
+        expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
       }
     });
 
-    // Scenario: dev 초기 빌드에서 server/client lint가 실행된다
-    it("passes lint:true to startWatch for server and client engines in dev mode", async () => {
+    // Scenario: dev 초기 빌드에서 server/client lint 비활성화
+    it("passes lint:false to startWatch for server and client engines in dev mode", async () => {
       setupDefaults(createConfig({
         packages: {
           "demo-server": { target: "server" },
@@ -1605,8 +1620,8 @@ describe("DevWatchOrchestrator", () => {
       const serverEngine = mockBuildEngines.find((e) => e._pkgName === "demo-server")!;
       const clientEngine = mockBuildEngines.find((e) => e._pkgName === "my-client")!;
 
-      expect(serverEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
-      expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
+      expect(serverEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+      expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
     });
   });
 

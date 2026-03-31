@@ -1,7 +1,6 @@
-import path from "path";
 import { spawn, type ChildProcess } from "child_process";
 import { consola } from "consola";
-import { Worker, type WorkerProxy } from "@simplysm/core-node";
+import { Worker, type WorkerProxy, pathx } from "@simplysm/core-node";
 import { FsWatcher } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import type {
@@ -12,7 +11,7 @@ import type {
   SdServerPackageConfig,
 } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
-import { discoverWorkspacePackages, filterPackagesByTargets, mergeTestsPackagesIntoConfig, validateTargets, classifyWatchPackages, classifyDevPackages } from "../utils/package-utils";
+import { filterPackagesByTargets, validateTargets, classifyWatchPackages, classifyDevPackages, buildPathMapFromConfig } from "../utils/package-utils";
 import { getVersion } from "../utils/build-env";
 import { watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import { printErrors, printServers } from "../utils/output-utils";
@@ -72,6 +71,7 @@ export class DevWatchOrchestrator {
   private _baseEnv: { VER: string; DEV: string } | undefined;
   private readonly _serverRuntimeWorkers = new Map<string, WorkerProxy<typeof ServerRuntimeWorkerModule>>();
   private _printServersTimer: ReturnType<typeof setTimeout> | undefined;
+  private _serverRestartTimer: ReturnType<typeof setTimeout> | undefined;
 
   // Watchers
   private _copySrcWatchers: FsWatcher[] = [];
@@ -107,13 +107,11 @@ export class DevWatchOrchestrator {
       throw err;
     }
 
-    // Discover tests packages and merge into config
-    const workspacePackages = discoverWorkspacePackages(this._cwd);
-    const { merged, pathMap } = mergeTestsPackagesIntoConfig(sdConfig.packages, workspacePackages);
-    this._pathMap = pathMap;
+    // Build pathMap from config packages only (tests packages are excluded from watch/dev)
+    this._pathMap = buildPathMapFromConfig(sdConfig.packages);
 
     // Validate targets
-    validateTargets(this._options.targets, merged);
+    validateTargets(this._options.targets, sdConfig.packages);
 
     // Store replaceDeps for engine creation
     this._replaceDeps = sdConfig.replaceDeps;
@@ -130,7 +128,7 @@ export class DevWatchOrchestrator {
     }
 
     // Filter by targets
-    const allPackages = filterPackagesByTargets(merged, this._options.targets);
+    const allPackages = filterPackagesByTargets(sdConfig.packages, this._options.targets);
 
     // Classify packages based on mode
     if (this._options.mode === "watch") {
@@ -161,12 +159,12 @@ export class DevWatchOrchestrator {
 
     // Batch complete handler
     if (this._options.mode === "watch") {
-      this._rebuildManager.on("batchComplete", () => {
+      this._rebuildManager.on("batchComplete", (_completedKeys) => {
         printErrors(this._resultCollector.toMap());
       });
     } else {
-      this._rebuildManager.on("batchComplete", () => {
-        this._onDevBatchComplete();
+      this._rebuildManager.on("batchComplete", (completedKeys) => {
+        this._onDevBatchComplete(completedKeys);
       });
     }
 
@@ -223,8 +221,10 @@ export class DevWatchOrchestrator {
 
   async start(): Promise<void> {
     if (!this._hasPackages) {
+      this._logger.debug("대상 패키지 없음, start 건너뜀");
       return;
     }
+    this._logger.debug("start 시작");
 
     if (this._options.mode === "watch") {
       await this._startWatchMode();
@@ -244,6 +244,7 @@ export class DevWatchOrchestrator {
     if (!this._hasPackages) {
       return;
     }
+    this._logger.debug("shutdown 시작");
 
     process.stdout.write("⏳ 종료 중...\n");
 
@@ -280,6 +281,7 @@ export class DevWatchOrchestrator {
   // --- Watch mode ---
 
   private async _startWatchMode(): Promise<void> {
+    this._logger.debug("watch 모드 시작");
     // Start copySrc watchers for library packages
     for (const pkg of this._libraryPackages) {
       if (pkg.config.copySrc != null && pkg.config.copySrc.length > 0) {
@@ -295,7 +297,7 @@ export class DevWatchOrchestrator {
 
     const watchPromises = this._libraryEngines.map(async (engine, i) => {
       const pkgName = this._libraryPackages[i].name;
-      await engine.startWatch({ js: true, dts: true, lint: true });
+      await engine.startWatch({ js: true, dts: true, lint: false });
       completed++;
       this._logger.info(`  [${completed}/${total}] ${pkgName} 완료`);
     });
@@ -309,7 +311,7 @@ export class DevWatchOrchestrator {
     // Start watch hook watchers for scripts+watch packages
     for (const pkg of this._watchHookPackages) {
       const watchConfig = pkg.config.watch!;
-      const watchTargets = watchConfig.target.map((t) => path.resolve(pkg.dir, t));
+      const watchTargets = watchConfig.target.map((t) => pathx.posixResolve(pkg.dir, t));
 
       // Run initial hook
       this._runWatchHookCmd(pkg.name, pkg.dir, watchConfig.cmd, watchConfig.args);
@@ -355,14 +357,14 @@ export class DevWatchOrchestrator {
     for (const [name, engine] of this._clientEngines) {
       initialBuildPromises.push({
         name: `${name} (client)`,
-        promise: engine.startWatch({ js: true, dts: false, lint: true }),
+        promise: engine.startWatch({ js: true, dts: false, lint: false }),
       });
     }
 
     for (const [name, engine] of this._serverEngines) {
       initialBuildPromises.push({
         name: `${name} (server)`,
-        promise: engine.startWatch({ js: true, dts: false, lint: true }),
+        promise: engine.startWatch({ js: true, dts: false, lint: false }),
       });
     }
 
@@ -398,34 +400,13 @@ export class DevWatchOrchestrator {
       }
     }
 
-    // Start runtimes for successful initial builds
-    for (const { name, config } of this._serverPackages) {
-      const buildResult = this._resultCollector.get(`${name}:build`);
-      if (buildResult?.status === "success") {
-        const mainJsPath = path.join(this._cwd, "packages", name, "dist", "main.js");
-        const clientPorts = this._collectClientPorts(name);
-        try {
-          await this._startServerRuntime(name, mainJsPath, { ...this._baseEnv, ...config.env }, clientPorts);
-        } catch (err) {
-          this._logger.error(`[${name}] 서버 런타임 시작 실패:`, errNs.message(err));
-          this._resultCollector.add({
-            name,
-            target: "server",
-            type: "server",
-            status: "error",
-            message: errNs.message(err),
-          });
-        }
-      }
-    }
-
     // Start native apps for client packages with capacitor/electron config
     for (const { name, config } of this._clientPackages) {
       const port = this._getClientPort(name);
       if (port == null) continue;
 
       const devServerUrl = `http://localhost:${port}`;
-      const pkgDir = path.join(this._cwd, "packages", name);
+      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
       if (config.capacitor != null) {
         try {
@@ -466,12 +447,28 @@ export class DevWatchOrchestrator {
     printServers(this._resultCollector.toMap(), this._serverClientsMap);
   }
 
-  private _onDevBatchComplete(): void {
+  private _onDevBatchComplete(completedKeys: string[]): void {
+    this._logger.debug(`배치 완료 (${completedKeys.join(", ")})`);
+    const serverBuildKeys = this._serverPackages.map((p) => `${p.name}:build`);
+    if (!completedKeys.some((k) => serverBuildKeys.includes(k))) {
+      printErrors(this._resultCollector.toMap());
+      return;
+    }
+
+    if (this._serverRestartTimer != null) clearTimeout(this._serverRestartTimer);
+    this._serverRestartTimer = setTimeout(() => {
+      this._serverRestartTimer = undefined;
+      void this._restartServers();
+    }, 100);
+  }
+
+  private async _restartServers(): Promise<void> {
+    this._logger.debug("서버 재시작 시작");
     const restartPromises: Array<Promise<void>> = [];
     for (const { name, config } of this._serverPackages) {
       const buildResult = this._resultCollector.get(`${name}:build`);
       if (buildResult?.status === "success") {
-        const mainJsPath = path.join(this._cwd, "packages", name, "dist", "main.js");
+        const mainJsPath = pathx.posixResolve(this._cwd, "packages", name, "dist", "main.js");
         const clientPorts = this._collectClientPorts(name);
         restartPromises.push(
           this._startServerRuntime(name, mainJsPath, { ...this._baseEnv, ...config.env }, clientPorts)
@@ -488,10 +485,10 @@ export class DevWatchOrchestrator {
         );
       }
     }
-    void Promise.all(restartPromises).then(() => {
-      printErrors(this._resultCollector.toMap());
-      this._schedulePrintServers();
-    });
+    await Promise.all(restartPromises);
+    this._logger.debug("서버 재시작 완료");
+    printErrors(this._resultCollector.toMap());
+    this._schedulePrintServers();
   }
 
   private _schedulePrintServers(): void {

@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, inject } from "vitest";
 import { createServiceClient, type ServiceClient } from "@simplysm/service-client";
 import { defineEvent } from "@simplysm/service-common";
 import type { TestServiceMethods, TestAuthInfo } from "./test-service";
 import * as jose from "jose";
 
-const TEST_PORT = 23100;
+const TEST_PORT = inject("servicePort");
 const JWT_SECRET = new TextEncoder().encode("test-secret-key-for-jwt-signing");
 
 /** 테스트 JWT 생성 */

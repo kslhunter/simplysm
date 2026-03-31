@@ -228,23 +228,30 @@
   - 권한 체크 및 타이틀 관리
   - injectParent 유틸 (1.3에서 이관 — Angular 내부 API 대안 검토 필요)
 
-- [ ] Feature 7.2a 데이터 테이블 뷰
+- [x] Feature 7.2a 데이터 테이블 뷰
   - SdDataSheetControl: CRUD 데이터 그리드 (조회/필터/정렬/페이지네이션, 인라인·모달 편집, 엑셀 내보내기/가져오기, 항목 선택)
   - SdDataSheetColumnDirective: 열 정의 (편집 가능 여부 포함)
 
-- [ ] Feature 7.2b 데이터 상세 뷰
+- [x] Feature 7.2b 데이터 상세 뷰
   - SdDataDetailControl: 단일 항목 상세 폼 (조회/저장/삭제/복원)
 
-- [ ] Feature 7.2c 데이터 선택 버튼
+- [x] Feature 7.2c 데이터 선택 버튼
   - SdDataSelectButtonControl: 모달 기반 데이터 선택 (단일/다중, 값 로드/초기화)
 
-- [ ] Feature 7.3 공유 데이터 관리
-  - 공유 데이터 선택 (셀렉트, 버튼, 목록 형태)
+- [x] Feature 7.3 공유 데이터 관리
+  - ISharedDataBase에 __searchText, __isHidden, __parentKey? 추가
+  - SdSharedDataSelectControl: 셀렉트 형태 (검색, 트리, 모달)
+  - SdSharedDataSelectButtonControl: 버튼 형태 (AbsSdDataSelectButton 확장)
+  - SdSharedDataSelectListControl: 목록 형태 (검색, 페이지네이션, 모달)
 
-- [ ] Feature 7.4 부가 기능
-  - 외부 서비스 연동 검색
-  - 권한 매트릭스 편집
-  - 다크 모드 전환
+- [x] Feature 7.4a 외부 서비스 연동 검색
+  - SdAddressSearchModal: 다음 우편번호 서비스 연동 주소 검색 모달
+
+- [ ] Feature 7.4b 권한 매트릭스 편집
+  - SdPermissionTableControl: 계층 구조 권한 테이블 (사용/편집 토글, 부모→자식 전파)
+
+- [ ] Feature 7.4c 다크 모드 전환
+  - SdThemeSelectorControl: 테마 셀렉터 드롭다운 (라이트/다크 전환)
 
 ## 참조 자료
 

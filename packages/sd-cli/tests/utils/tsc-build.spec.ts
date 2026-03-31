@@ -45,6 +45,7 @@ vi.mock("../../src/utils/typecheck-serialization", () => ({
 vi.mock("@simplysm/core-node", () => ({
   pathx: {
     isChildPath: vi.fn((filePath: string, parentDir: string) => filePath.startsWith(parentDir)),
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
   },
 }));
 
@@ -183,7 +184,7 @@ describe("runTscPackageBuild", () => {
     );
   });
 
-  it("typecheck mode uses all package files as rootNames", async () => {
+  it("typecheck mode without includeTests uses only source files as rootNames", async () => {
     const tsModule = await import("typescript");
     const { runTscPackageBuild } = await import("../../src/utils/tsc-build");
 
@@ -193,7 +194,24 @@ describe("runTscPackageBuild", () => {
       output: { js: false, dts: false },
     });
 
-    // createEmitAndSemanticDiagnosticsBuilderProgram(rootNames, options, host)
+    expect(vi.mocked(tsModule.default.createEmitAndSemanticDiagnosticsBuilderProgram)).toHaveBeenCalledWith(
+      [SRC_INDEX, SRC_UTIL],
+      expect.any(Object),
+      expect.any(Object),
+    );
+  });
+
+  it("typecheck mode with includeTests uses all package files as rootNames", async () => {
+    const tsModule = await import("typescript");
+    const { runTscPackageBuild } = await import("../../src/utils/tsc-build");
+
+    runTscPackageBuild({
+      pkgDir: PKG_DIR,
+      cwd: path.resolve("/"),
+      output: { js: false, dts: false },
+      includeTests: true,
+    });
+
     expect(vi.mocked(tsModule.default.createEmitAndSemanticDiagnosticsBuilderProgram)).toHaveBeenCalledWith(
       [SRC_INDEX, SRC_UTIL, TEST_INDEX],
       expect.any(Object),
@@ -459,8 +477,8 @@ describe("runTscPackageBuild", () => {
     );
   });
 
-  // Unit: env suffix is NOT applied in emit mode
-  it("does not add env suffix to tsBuildInfoFile in emit mode", async () => {
+  // Unit: env suffix IS applied in emit mode (distinguishes build artifacts by env)
+  it("adds env suffix to tsBuildInfoFile in emit mode", async () => {
     const { runTscPackageBuild } = await import("../../src/utils/tsc-build");
     runTscPackageBuild({
       pkgDir: PKG_DIR,
@@ -469,7 +487,7 @@ describe("runTscPackageBuild", () => {
       env: "node",
     });
     expect(capturedOptions!.tsBuildInfoFile).toBe(
-      path.join(PKG_DIR, ".cache", "build.tsbuildinfo"),
+      path.join(PKG_DIR, ".cache", "build-node.tsbuildinfo"),
     );
   });
 

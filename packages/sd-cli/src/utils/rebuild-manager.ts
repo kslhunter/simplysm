@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import { consola } from "consola";
 
 interface RebuildManagerEvents {
-  batchComplete: [];
+  batchComplete: [completedKeys: string[]];
 }
 
 export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
@@ -19,6 +19,7 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
   }
 
   registerBuild(key: string, title: string): () => void {
+    this._logger.debug(`빌드 등록: ${key} (${title})`);
     let resolver!: () => void;
     const promise = new Promise<void>((resolve) => {
       resolver = resolve;
@@ -35,6 +36,7 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
 
   private async _runBatch(): Promise<void> {
     if (this._isRunning || this._pendingBuilds.size === 0) {
+      this._logger.debug(`배치 건너뜀 (running: ${String(this._isRunning)}, pending: ${this._pendingBuilds.size})`);
       return;
     }
 
@@ -60,7 +62,7 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
 
     this._logger.success(`리빌드 실행 완료 (${titles})`);
 
-    this.emit("batchComplete");
+    this.emit("batchComplete", Array.from(batchBuilds.keys()));
 
     this._isRunning = false;
 

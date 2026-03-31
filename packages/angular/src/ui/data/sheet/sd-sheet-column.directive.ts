@@ -6,6 +6,14 @@ import {
   TemplateRef,
 } from "@angular/core";
 
+export interface SdSheetCellContext {
+  $implicit: unknown;
+  item: unknown;
+  index: number;
+  depth: number;
+  edit: boolean;
+}
+
 @Directive({
   selector: "sd-sheet-column",
   standalone: true,
@@ -21,6 +29,6 @@ export class SdSheetColumnDirective {
   disableResizing = input(false, { transform: booleanAttribute });
   ordering = input(0);
 
-  cellTplRef = contentChild<TemplateRef<void>>("cellTpl");
+  cellTplRef = contentChild<TemplateRef<SdSheetCellContext>>("cellTpl");
   summaryTplRef = contentChild<TemplateRef<void>>("summaryTpl");
 }

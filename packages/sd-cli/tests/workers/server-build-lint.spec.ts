@@ -87,7 +87,10 @@ vi.mock("@simplysm/core-node", () => ({
     },
   ),
   FsWatcher: { watch: vi.fn() },
-  pathx: { norm: vi.fn((base: string, rel: string) => `${base}/${rel}`) },
+  pathx: {
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\/+/g, "/").replace(/\\/g, "/")),
+  },
 }));
 
 vi.mock("fs", () => ({

@@ -3,6 +3,9 @@ import type { ResultCollector } from "../infra/ResultCollector";
 import type { RebuildManager } from "../utils/rebuild-manager";
 import type { BuildOutput, BuildPackageInfo, EngineResult } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
+import { consola } from "consola";
+
+const logger = consola.withTag("sd:cli:engine:tsc");
 
 /**
  * TscEngine options
@@ -41,6 +44,7 @@ export class TscEngine extends BaseEngine<
   }
 
   protected async _callBuild(output: BuildOutput): Promise<EngineResult> {
+    logger.debug(`[${this._pkg.name}] worker.build 호출`);
     const result = await this._worker!.build({
       name: this._pkg.name,
       config: this._pkg.config,
@@ -50,23 +54,19 @@ export class TscEngine extends BaseEngine<
     });
 
     return {
-      success: result.js.success && result.dts.success,
-      js: {
-        success: result.js.success,
-        errors: result.js.errors ?? [],
-        warnings: result.js.warnings ?? [],
-      },
-      dts: {
-        success: result.dts.success,
-        errors: result.dts.errors ?? [],
-        warnings: [],
-        diagnostics: result.dts.diagnostics,
+      success: result.build.success,
+      build: {
+        success: result.build.success,
+        errors: result.build.errors ?? [],
+        warnings: result.build.warnings ?? [],
+        diagnostics: result.build.diagnostics,
       },
       lint: result.lint,
     };
   }
 
   protected async _callStartWatch(output: BuildOutput): Promise<void> {
+    logger.debug(`[${this._pkg.name}] worker.startWatch 호출`);
     await this._worker!.startWatch({
       name: this._pkg.name,
       config: this._pkg.config,

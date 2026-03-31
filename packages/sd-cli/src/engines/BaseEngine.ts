@@ -15,8 +15,7 @@ const logger = consola.withTag("sd:cli:engine");
 export interface CommonBuildWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
   build: {
-    js: { success: boolean; errors?: string[]; warnings?: string[] };
-    dts: { success: boolean; errors?: string[] };
+    build: { success: boolean; errors?: string[]; warnings?: string[] };
     lint?: LintWithProgramResult;
   };
   error: { message: string };
@@ -132,7 +131,7 @@ export abstract class BaseEngine<
       const workerKey = `${this._pkg.name}:build`;
 
       this._worker!.on("buildStart", () => {
-        if (!isInitialBuild && this._rebuildManager != null) {
+        if (this._rebuildManager != null) {
           resolver = this._rebuildManager.registerBuild(
             workerKey,
             `${this._pkg.name} (${this._getTarget()})`,
@@ -143,29 +142,19 @@ export abstract class BaseEngine<
       this._worker!.on("build", (data) => {
         const event = data;
 
-        if (event.js.warnings != null && event.js.warnings.length > 0) {
-          logger.warn(`${this._pkg.name}: ${event.js.warnings.join(", ")}`);
+        if (event.build.warnings != null && event.build.warnings.length > 0) {
+          logger.warn(`${this._pkg.name}: ${event.build.warnings.join(", ")}`);
         }
 
-        // JS 결과 보고
+        // 빌드 결과 보고
         const buildResult: BuildResult = {
           name: this._pkg.name,
           target: this._getTarget(),
           type: "build",
-          status: event.js.success ? "success" : "error",
-          message: event.js.errors?.join("\n"),
+          status: event.build.success ? "success" : "error",
+          message: event.build.errors?.join("\n"),
         };
         this._resultCollector?.add(buildResult);
-
-        // DTS 결과 보고
-        const dtsResult: BuildResult = {
-          name: this._pkg.name,
-          target: this._getTarget(),
-          type: "dts",
-          status: event.dts.success ? "success" : "error",
-          message: event.dts.errors?.join("\n"),
-        };
-        this._resultCollector?.add(dtsResult);
 
         // 린트 결과 보고 (있는 경우)
         if (event.lint != null) {
@@ -184,7 +173,7 @@ export abstract class BaseEngine<
 
         if (isInitialBuild) {
           isInitialBuild = false;
-          logger.debug(`[${this._pkg.name}] 초기 빌드 완료 (success: ${event.js.success})`);
+          logger.debug(`[${this._pkg.name}] 초기 빌드 완료 (success: ${event.build.success})`);
           resolve();
         }
       });

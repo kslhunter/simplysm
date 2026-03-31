@@ -104,8 +104,10 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       pwa: info.pwa,
     });
 
+    logger.debug(`[${info.name}] Vite server 생성 시작`);
     viteServer = await createServer(viteConfig);
     await viteServer.listen();
+    logger.debug(`[${info.name}] Vite server listen 완료`);
 
     // 실제 포트 감지
     const address = viteServer.httpServer?.address();
@@ -139,11 +141,13 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
  * dev server 중지. Vite server를 정리한다.
  */
 async function stopWatch(): Promise<void> {
+  logger.debug("Vite server 정리 시작");
   const serverToClose = viteServer;
   viteServer = undefined;
   if (serverToClose != null) {
     await serverToClose.close();
   }
+  logger.debug("Vite server 정리 완료");
 }
 
 /**

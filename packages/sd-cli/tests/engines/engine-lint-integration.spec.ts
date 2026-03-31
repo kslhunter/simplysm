@@ -48,8 +48,7 @@ function createMockPkg(): BuildPackageInfo {
 beforeEach(() => {
   vi.clearAllMocks();
   mockWorker.build.mockResolvedValue({
-    js: { success: true },
-    dts: { success: true, diagnostics: [] },
+    build: { success: true, diagnostics: [] },
     lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
   });
   mockWorker.terminate.mockResolvedValue(undefined);
@@ -72,8 +71,7 @@ describe("엔진 lint 통합 (Slice 2)", () => {
   describe("Scenario: EngineResult includes lint field", () => {
     it("run() returns EngineResult with lint field when worker provides it", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true },
-        dts: { success: true, diagnostics: [] },
+        build: { success: true, diagnostics: [] },
         lint: { success: false, errorCount: 3, warningCount: 1, formattedOutput: "lint errors" },
       });
 
@@ -92,8 +90,7 @@ describe("엔진 lint 통합 (Slice 2)", () => {
 
     it("run() returns EngineResult without lint when lint is not in output", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true },
-        dts: { success: true, diagnostics: [] },
+        build: { success: true, diagnostics: [] },
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -114,8 +111,7 @@ describe("엔진 lint 통합 (Slice 2)", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
           lint: { success: false, errorCount: 2, warningCount: 0, formattedOutput: "errors" },
         });
       });
@@ -150,8 +146,7 @@ describe("엔진 lint 통합 (Slice 2)", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
         });
       });
 

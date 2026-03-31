@@ -63,8 +63,7 @@ describe("NgtscEngine", () => {
     // Acceptance: Scenario "run()으로 one-time 빌드를 수행한다"
     it("creates worker, calls build, and returns EngineResult with js/dts", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -80,17 +79,15 @@ describe("NgtscEngine", () => {
         }),
       );
       expect(result.success).toBe(true);
-      expect(result.js.success).toBe(true);
-      expect(result.dts.success).toBe(true);
-      expect(result.dts.diagnostics).toEqual([]);
+      expect(result.build.success).toBe(true);
+      expect(result.build.diagnostics).toEqual([]);
       await engine.stop();
     });
 
     // Acceptance: Scenario "run()에서 dts: false면 .d.ts를 생략한다"
     it("passes dts:false output flag to worker", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -105,10 +102,10 @@ describe("NgtscEngine", () => {
     // Acceptance: Scenario "TypeScript + Angular diagnostics를 통합 수집한다"
     it("includes diagnostics in result from worker", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: {
+        build: {
           success: false,
           errors: ["type error"],
+          warnings: undefined,
           diagnostics: [{ code: 2322, category: 1, messageText: "Type error" }],
         },
       });
@@ -116,19 +113,19 @@ describe("NgtscEngine", () => {
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.dts.success).toBe(false);
-      expect(result.dts.diagnostics).toHaveLength(1);
-      expect(result.dts.diagnostics[0].code).toBe(2322);
+      expect(result.build.success).toBe(false);
+      expect(result.build.diagnostics).toHaveLength(1);
+      expect(result.build.diagnostics[0].code).toBe(2322);
       await engine.stop();
     });
 
     // Acceptance: Scenario "타입 에러가 있어도 빌드 결과를 반환한다"
-    it("returns result even when dts has errors", async () => {
+    it("returns result even when build has errors", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: {
+        build: {
           success: false,
           errors: ["TS2322: Type error"],
+          warnings: undefined,
           diagnostics: [{ code: 2322, category: 1, messageText: "Type error" }],
         },
       });
@@ -137,40 +134,36 @@ describe("NgtscEngine", () => {
       const result = await engine.run({ js: true, dts: true });
 
       expect(result.success).toBe(false);
-      expect(result.js.success).toBe(true);
-      expect(result.dts.success).toBe(false);
-      expect(result.dts.errors).toContain("TS2322: Type error");
+      expect(result.build.success).toBe(false);
+      expect(result.build.errors).toContain("TS2322: Type error");
       await engine.stop();
     });
 
-    // Unit: JS-only failure reflects in overall success
-    it("reflects JS build failure in result", async () => {
+    // Unit: build failure reflects in overall success
+    it("reflects build failure in result", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: false, errors: ["ngtsc compilation error"], warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: false, errors: ["ngtsc compilation error"], warnings: undefined, diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
       expect(result.success).toBe(false);
-      expect(result.js.success).toBe(false);
-      expect(result.js.errors).toEqual(["ngtsc compilation error"]);
-      expect(result.dts.success).toBe(true);
+      expect(result.build.success).toBe(false);
+      expect(result.build.errors).toEqual(["ngtsc compilation error"]);
       await engine.stop();
     });
 
     // Unit: warnings are mapped through
     it("maps worker warnings to EngineResult", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: ["deprecation warning"] },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: true, errors: undefined, warnings: ["deprecation warning"], diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.js.warnings).toEqual(["deprecation warning"]);
+      expect(result.build.warnings).toEqual(["deprecation warning"]);
       await engine.stop();
     });
   });
@@ -179,8 +172,7 @@ describe("NgtscEngine", () => {
     // Acceptance: Scenario "stop()으로 리소스를 정리한다"
     it("terminates worker on stop", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -198,8 +190,7 @@ describe("NgtscEngine", () => {
     // Unit: run mode doesn't call stopWatch
     it("skips stopWatch in run mode", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
       });
 
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -219,8 +210,7 @@ describe("NgtscEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
         });
       });
 
@@ -238,7 +228,7 @@ describe("NgtscEngine", () => {
     });
 
     // Unit: watch mode results reported to ResultCollector
-    it("reports build and dts results separately to ResultCollector", async () => {
+    it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
       mockWorker.startWatch.mockImplementation(() => {
@@ -246,8 +236,7 @@ describe("NgtscEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true, errors: undefined },
-          dts: { success: false, errors: ["type error"] },
+          build: { success: false, errors: ["type error"] },
         });
       });
 
@@ -261,12 +250,9 @@ describe("NgtscEngine", () => {
 
       const addCalls = mockResultCollector.add.mock.calls;
       const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-      const dtsResult = addCalls.find((c: any[]) => c[0].type === "dts");
 
       expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("success");
-      expect(dtsResult).toBeDefined();
-      expect(dtsResult![0].status).toBe("error");
+      expect(buildResult![0].status).toBe("error");
 
       await engine.stop();
     });

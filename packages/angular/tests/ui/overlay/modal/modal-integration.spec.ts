@@ -20,7 +20,7 @@ function mockUrlRoute(path: string) {
 
 // reflectComponentType가 읽는 cmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
 function createTestComponent(selector: string) {
-  const comp: Record<string, unknown> = class {};
+  const comp = class {} as unknown as Record<string, unknown>;
   comp["\u0275cmp"] = { selectors: [[selector]] };
   return comp;
 }

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import path from "path";
 import { symlink } from "fs/promises";
 import { createRequire } from "module";
-import { cpx, fsx } from "@simplysm/core-node";
+import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdCapacitorConfig } from "../sd-config.types.js";
@@ -52,7 +52,7 @@ export class Capacitor {
   ) {
     this._platforms = Object.keys(this._config.platform ?? {});
     this._npmConfig = npmConfig;
-    this._capPath = path.resolve(this._pkgPath, ".capacitor");
+    this._capPath = pathx.posixResolve(this._pkgPath, ".capacitor");
   }
 
   /**
@@ -65,7 +65,7 @@ export class Capacitor {
   ): Promise<Capacitor> {
     Capacitor._validateConfig(config);
 
-    const npmConfig = await fsx.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
+    const npmConfig = await fsx.readJson<NpmConfig>(pathx.posixResolve(pkgPath, "package.json"));
     return new Capacitor(pkgPath, config, npmConfig, exclude ?? []);
   }
 
@@ -170,7 +170,7 @@ export class Capacitor {
    * 동시 실행 방지 잠금 획득
    */
   private async _acquireLock(): Promise<void> {
-    const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
+    const lockPath = pathx.posixResolve(this._capPath, Capacitor._LOCK_FILE_NAME);
     await fsx.mkdir(this._capPath);
     try {
       await fs.promises.writeFile(lockPath, String(process.pid), { flag: "wx" });
@@ -194,7 +194,7 @@ export class Capacitor {
    * 동시 실행 방지 잠금 해제
    */
   private async _releaseLock(): Promise<void> {
-    const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
+    const lockPath = pathx.posixResolve(this._capPath, Capacitor._LOCK_FILE_NAME);
     await fsx.rm(lockPath);
   }
 
@@ -236,7 +236,7 @@ export class Capacitor {
    */
   private async _initCap(): Promise<boolean> {
     const { depChanged, workspacePlugins } = await this._setupNpmConf();
-    const nodeModulesExists = await fsx.exists(path.resolve(this._capPath, "node_modules"));
+    const nodeModulesExists = await fsx.exists(pathx.posixResolve(this._capPath, "node_modules"));
 
     if (!depChanged && nodeModulesExists) {
       // 의존성 미변경이어도 workspace 플러그인 symlink는 항상 갱신
@@ -252,16 +252,16 @@ export class Capacitor {
     await this._linkWorkspacePlugins(workspacePlugins);
 
     // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
-    const configPath = path.resolve(this._capPath, "capacitor.config.ts");
+    const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
     if (!(await fsx.exists(configPath))) {
       await this._execCap(["init", this._config.appId, this._config.appId]);
     }
 
     // 기본 www/index.html 생성
-    const wwwPath = path.resolve(this._capPath, "www");
+    const wwwPath = pathx.posixResolve(this._capPath, "www");
     await fsx.mkdir(wwwPath);
     await fsx.write(
-      path.resolve(wwwPath, "index.html"),
+      pathx.posixResolve(wwwPath, "index.html"),
       "<!DOCTYPE html><html><head></head><body></body></html>",
     );
 
@@ -272,7 +272,7 @@ export class Capacitor {
    * package.json 설정
    */
   private async _setupNpmConf(): Promise<{ depChanged: boolean; workspacePlugins: string[] }> {
-    const projNpmConfigPath = path.resolve(this._findWorkspaceRoot(), "package.json");
+    const projNpmConfigPath = pathx.posixResolve(this._findWorkspaceRoot(), "package.json");
 
     // 루트 package.json 존재 확인
     if (!(await fsx.exists(projNpmConfigPath))) {
@@ -281,7 +281,7 @@ export class Capacitor {
 
     const projNpmConfig = await fsx.readJson<NpmConfig>(projNpmConfigPath);
 
-    const capNpmConfPath = path.resolve(this._capPath, "package.json");
+    const capNpmConfPath = pathx.posixResolve(this._capPath, "package.json");
     const orgCapNpmConf: NpmConfig = (await fsx.exists(capNpmConfPath))
       ? await fsx.readJson<NpmConfig>(capNpmConfPath)
       : { name: "", version: "" };
@@ -371,7 +371,7 @@ export class Capacitor {
    * capacitor.config.ts 생성
    */
   private async _writeCapConf(): Promise<void> {
-    const confPath = path.resolve(this._capPath, "capacitor.config.ts");
+    const confPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
 
     // 플러그인 옵션 생성
     const pluginOptions: Record<string, Record<string, unknown>> = {};
@@ -411,7 +411,7 @@ export default config;
    */
   private async _addPlatforms(): Promise<void> {
     for (const platform of this._platforms) {
-      const platformPath = path.resolve(this._capPath, platform);
+      const platformPath = pathx.posixResolve(this._capPath, platform);
       if (await fsx.exists(platformPath)) {
         Capacitor._logger.debug(`플랫폼이 이미 존재합니다: ${platform}`);
         continue;
@@ -427,7 +427,7 @@ export default config;
   private async _setupIcon(): Promise<void> {
     if (this._config.icon == null) return;
 
-    const iconPath = path.resolve(this._pkgPath, this._config.icon);
+    const iconPath = pathx.posixResolve(this._pkgPath, this._config.icon);
 
     if (!(await fsx.exists(iconPath))) {
       Capacitor._logger.warn(`아이콘 파일을 찾을 수 없습니다: ${iconPath}`);
@@ -447,9 +447,9 @@ export default config;
         .toBuffer();
 
       // 1024x1024 투명 캔버스에 합성
-      const assetsDir = path.resolve(this._capPath, "assets");
+      const assetsDir = pathx.posixResolve(this._capPath, "assets");
       await fsx.mkdir(assetsDir);
-      const logoPath = path.resolve(assetsDir, "logo.png");
+      const logoPath = pathx.posixResolve(assetsDir, "logo.png");
 
       await sharp({
         create: {
@@ -493,7 +493,7 @@ export default config;
    * Android 네이티브 설정 구성
    */
   private async _configureAndroid(): Promise<void> {
-    const androidPath = path.resolve(this._capPath, "android");
+    const androidPath = pathx.posixResolve(this._capPath, "android");
 
     // Android 디렉토리 존재 확인
     if (!(await fsx.exists(androidPath))) {
@@ -510,7 +510,7 @@ export default config;
    * JAVA_HOME 경로 설정 (gradle.properties)
    */
   private async _configureAndroidJavaHomePath(androidPath: string): Promise<void> {
-    const gradlePropsPath = path.resolve(androidPath, "gradle.properties");
+    const gradlePropsPath = pathx.posixResolve(androidPath, "gradle.properties");
 
     if (!(await fsx.exists(gradlePropsPath))) {
       Capacitor._logger.warn(`gradle.properties 파일을 찾을 수 없습니다: ${gradlePropsPath}`);
@@ -555,12 +555,12 @@ export default config;
    * Android SDK 경로 설정 (local.properties)
    */
   private async _configureAndroidSdkPath(androidPath: string): Promise<void> {
-    const localPropsPath = path.resolve(androidPath, "local.properties");
+    const localPropsPath = pathx.posixResolve(androidPath, "local.properties");
 
     const sdkPath = await this._findAndroidSdk();
     if (sdkPath != null) {
       // Gradle 호환: 항상 forward slash 사용
-      await fsx.write(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
+      await fsx.write(localPropsPath, `sdk.dir=${pathx.posix(sdkPath)}\n`);
     } else {
       throw new Error(
         "Android SDK를 찾을 수 없습니다.\n" +
@@ -580,8 +580,8 @@ export default config;
     }
 
     const candidates = [
-      path.resolve((env["LOCALAPPDATA"] as string | undefined) ?? "", "Android/Sdk"),
-      path.resolve((env["HOME"] as string | undefined) ?? "", "Android/Sdk"),
+      pathx.posixResolve((env["LOCALAPPDATA"] as string | undefined) ?? "", "Android/Sdk"),
+      pathx.posixResolve((env["HOME"] as string | undefined) ?? "", "Android/Sdk"),
       "C:/Program Files/Android/Sdk",
       "C:/Android/Sdk",
     ];
@@ -602,7 +602,7 @@ export default config;
    * XML 구조가 변경되면 정규식이 실패할 수 있음.
    */
   private async _configureAndroidManifest(androidPath: string): Promise<void> {
-    const manifestPath = path.resolve(androidPath, "app/src/main/AndroidManifest.xml");
+    const manifestPath = pathx.posixResolve(androidPath, "app/src/main/AndroidManifest.xml");
 
     if (!(await fsx.exists(manifestPath))) {
       throw new Error(`AndroidManifest.xml 파일을 찾을 수 없습니다: ${manifestPath}`);
@@ -674,7 +674,7 @@ export default config;
    * build.gradle 수정 (서명 설정 제외)
    */
   private async _configureAndroidBuildGradle(androidPath: string): Promise<void> {
-    const buildGradlePath = path.resolve(androidPath, "app/build.gradle");
+    const buildGradlePath = pathx.posixResolve(androidPath, "app/build.gradle");
 
     if (!(await fsx.exists(buildGradlePath))) {
       throw new Error(`build.gradle 파일을 찾을 수 없습니다: ${buildGradlePath}`);
@@ -754,7 +754,7 @@ export default config;
    * WebView가 이 URL에서 웹 에셋을 로드하여 Hot Reload가 동작한다.
    */
   private async _updateServerUrl(url: string): Promise<void> {
-    const configPath = path.resolve(this._capPath, "capacitor.config.ts");
+    const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
     let content = await fsx.read(configPath);
 
     if (content.includes("url:")) {
@@ -791,7 +791,7 @@ export default config;
     const signConfig = this._config.platform?.android?.sign;
     if (!isDebug && signConfig != null) {
       await this._configureSigningConfig(
-        path.resolve(this._capPath, "android"),
+        pathx.posixResolve(this._capPath, "android"),
         signConfig,
       );
     } else if (!isDebug) {
@@ -817,16 +817,16 @@ export default config;
     sign: import("../sd-config.types.js").SdCapacitorSignConfig,
   ): Promise<void> {
     // keystore 파일 확인 및 복사
-    const keystoreSrc = path.resolve(this._pkgPath, sign.keystore);
+    const keystoreSrc = pathx.posixResolve(this._pkgPath, sign.keystore);
     if (!(await fsx.exists(keystoreSrc))) {
       throw new Error(`keystore 파일을 찾을 수 없습니다: ${keystoreSrc}`);
     }
 
-    const keystoreDest = path.resolve(androidPath, "app", "android.keystore");
+    const keystoreDest = pathx.posixResolve(androidPath, "app", "android.keystore");
     await fsx.copy(keystoreSrc, keystoreDest);
 
     // build.gradle에 signingConfigs 추가
-    const buildGradlePath = path.resolve(androidPath, "app/build.gradle");
+    const buildGradlePath = pathx.posixResolve(androidPath, "app/build.gradle");
     let content = await fsx.read(buildGradlePath);
 
     // 이미 signingConfigs가 있으면 스킵
@@ -872,11 +872,11 @@ export default config;
       gradleTask = "assembleRelease";
     }
 
-    const androidPath = path.resolve(this._capPath, "android");
+    const androidPath = pathx.posixResolve(this._capPath, "android");
     const isWindows = process.platform === "win32";
     const gradlew = isWindows
-      ? path.resolve(androidPath, "gradlew.bat")
-      : path.resolve(androidPath, "gradlew");
+      ? pathx.posixResolve(androidPath, "gradlew.bat")
+      : pathx.posixResolve(androidPath, "gradlew");
 
     await this._exec(gradlew, [gradleTask, "--no-daemon"], androidPath);
   }
@@ -891,7 +891,7 @@ export default config;
   ): Promise<void> {
     const ext = isBundle ? "aab" : "apk";
     const outputType = isBundle ? "bundle" : "apk";
-    const androidBuildPath = path.resolve(
+    const androidBuildPath = pathx.posixResolve(
       this._capPath,
       "android/app/build/outputs",
       outputType,
@@ -899,7 +899,7 @@ export default config;
     );
 
     // 빌드 산출물 찾기
-    const candidates = await fsx.glob(path.resolve(androidBuildPath, `app-*.${ext}`));
+    const candidates = await fsx.glob(pathx.posixResolve(androidBuildPath, `app-*.${ext}`));
     if (candidates.length === 0) {
       throw new Error(`빌드 산출물을 찾을 수 없습니다: ${androidBuildPath}`);
     }
@@ -907,8 +907,8 @@ export default config;
     const isUnsigned = builtFile.includes("unsigned");
 
     // 출력 디렉토리 생성
-    const androidOutPath = path.resolve(outPath, "android");
-    const updatesPath = path.resolve(androidOutPath, "updates");
+    const androidOutPath = pathx.posixResolve(outPath, "android");
+    const updatesPath = pathx.posixResolve(androidOutPath, "updates");
     await fsx.mkdir(androidOutPath);
     await fsx.mkdir(updatesPath);
 
@@ -918,8 +918,8 @@ export default config;
     const versionedName = `${this._npmConfig.version}.${ext}`;
 
     // 복사
-    await fsx.copy(builtFile, path.resolve(androidOutPath, latestName));
-    await fsx.copy(builtFile, path.resolve(updatesPath, versionedName));
+    await fsx.copy(builtFile, pathx.posixResolve(androidOutPath, latestName));
+    await fsx.copy(builtFile, pathx.posixResolve(updatesPath, versionedName));
   }
 
   //#endregion
@@ -933,13 +933,13 @@ export default config;
   private async _linkWorkspacePlugins(plugins: string[]): Promise<void> {
     if (plugins.length === 0) return;
 
-    const require = createRequire(path.resolve(this._pkgPath, "package.json"));
+    const require = createRequire(pathx.posixResolve(this._pkgPath, "package.json"));
 
     for (const plugin of plugins) {
       const pluginPkgJsonPath = require.resolve(`${plugin}/package.json`);
       const pluginDir = path.dirname(pluginPkgJsonPath);
 
-      const linkPath = path.resolve(this._capPath, "node_modules", ...plugin.split("/"));
+      const linkPath = pathx.posixResolve(this._capPath, "node_modules", ...plugin.split("/"));
 
       // scope 디렉토리 생성 (예: @simplysm/)
       await fsx.mkdir(path.dirname(linkPath));
@@ -964,7 +964,7 @@ export default config;
       if (parent === dir) {
         throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${this._pkgPath}`);
       }
-      if (existsSync(path.join(parent, "pnpm-workspace.yaml"))) {
+      if (existsSync(pathx.posixResolve(parent, "pnpm-workspace.yaml"))) {
         return parent;
       }
       dir = parent;

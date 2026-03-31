@@ -50,7 +50,8 @@ vi.mock("@simplysm/core-node", () => ({
     })),
   },
   pathx: {
-    norm: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    posixResolve: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
   },
   cpx: {
     exec: vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
@@ -212,9 +213,8 @@ describe("server-build.worker build()", () => {
   it("runs esbuild and tsc in parallel for server build", async () => {
     const result = await workerFns["build"](baseBuildInfo);
 
-    expect(result.js.success).toBe(true);
-    expect(result.dts.success).toBe(true);
-    expect(result.mainJsPath).toBe(path.join(baseBuildInfo.pkgDir, "dist", "main.js"));
+    expect(result.build.success).toBe(true);
+    expect(result.mainJsPath).toBe(path.resolve(baseBuildInfo.pkgDir, "dist", "main.js").replace(/\\/g, "/"));
 
     // esbuild was called
     expect(esbuild.build).toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe("server-build.worker build()", () => {
   });
 
   // Acceptance: type error detected
-  it("reports typecheck error in dts field", async () => {
+  it("reports typecheck error in build field", async () => {
     mockRunTscPackageBuild.mockReturnValueOnce({
       success: false,
       errors: ["TS2345: type error"] as any,
@@ -237,14 +237,13 @@ describe("server-build.worker build()", () => {
 
     const result = await workerFns["build"](baseBuildInfo);
 
-    expect(result.js.success).toBe(true);
-    expect(result.dts.success).toBe(false);
-    expect(result.dts.errors).toContain("TS2345: type error");
-    expect(result.dts.diagnostics).toHaveLength(1);
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("TS2345: type error");
+    expect(result.build.diagnostics).toHaveLength(1);
   });
 
   // Acceptance: esbuild error detected
-  it("reports esbuild error in js field", async () => {
+  it("reports esbuild error in build field", async () => {
     vi.mocked(esbuild.build).mockResolvedValueOnce({
       errors: [{ text: "syntax error" }],
       warnings: [],
@@ -253,9 +252,8 @@ describe("server-build.worker build()", () => {
 
     const result = await workerFns["build"](baseBuildInfo);
 
-    expect(result.js.success).toBe(false);
-    expect(result.js.errors).toContain("syntax error");
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("syntax error");
   });
 
   // Unit: .d.ts files are NOT generated (emit=false)
@@ -273,8 +271,8 @@ describe("server-build.worker build()", () => {
 
     const result = await workerFns["build"](baseBuildInfo);
 
-    expect(result.js.success).toBe(false);
-    expect(result.js.errors).toContain("esbuild crash");
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("esbuild crash");
   });
 
   // Unit: tsconfig parsed and passed to tsc
@@ -446,9 +444,9 @@ describe("server-build.worker build()", () => {
     });
 
     const result = await workerFns["build"](baseBuildInfo);
-    expect(result.js.success).toBe(false);
-    expect(result.js.errors[0]).toContain("unknown-dep");
-    expect(result.js.errors[0]).toContain("not found in pnpm-lock.yaml");
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors[0]).toContain("unknown-dep");
+    expect(result.build.errors[0]).toContain("not found in pnpm-lock.yaml");
   });
 
   // Unit: uses locked version for native module externals
@@ -545,13 +543,12 @@ describe("server-build.worker startWatch()", () => {
   });
 
   // Acceptance: initial build with typecheck
-  it("sends build event with js+dts results after initial build", async () => {
+  it("sends build event with build results after initial build", async () => {
     await workerFns["startWatch"](watchInfo);
 
     expect(mockSend).toHaveBeenCalledWith("build", expect.objectContaining({
-      js: expect.objectContaining({ success: true }),
-      dts: expect.objectContaining({ success: true }),
-      mainJsPath: path.join(watchInfo.pkgDir, "dist", "main.js"),
+      build: expect.objectContaining({ success: true }),
+      mainJsPath: path.resolve(watchInfo.pkgDir, "dist", "main.js").replace(/\\/g, "/"),
     }));
   });
 

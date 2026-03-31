@@ -5,6 +5,7 @@ import os from "os";
 import path from "path";
 import ts from "typescript";
 import { consola } from "consola";
+import { pathx } from "@simplysm/core-node";
 import {
   AngularCompiler,
   AngularSourceFileCache,
@@ -151,6 +152,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           ...opts,
           noEmit: false,
           declaration: false,
+          declarationMap: false,
         }),
       });
 
@@ -173,7 +175,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       // 영향받은 파일 emit + 캐시 (소스 파일 경로를 key로 사용)
       emittedFiles.clear();
       for (const result of compiler.emitAffectedFiles()) {
-        emittedFiles.set(normalizePath(result.sourceFileName), result.contents);
+        emittedFiles.set(pathx.posix(result.sourceFileName), result.contents);
       }
       logger.debug(`emit 완료: ${emittedFiles.size}개 파일`);
 
@@ -223,6 +225,17 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         return;
       }
 
+      // Dependency filter: skip if file is not in the TypeScript program
+      const normalizedFile = pathx.posix(file);
+      const programFiles = compiler.getTsProgram().getSourceFiles();
+      const isInProgram = programFiles.some(
+        (sf) => pathx.posix(sf.fileName) === normalizedFile,
+      );
+      if (!isInProgram) {
+        logger.debug(`변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀: ${normalizedFile}`);
+        return;
+      }
+
       // 경쟁 조건 방지: 이전 HMR 처리 완료 대기
       const prevLock = hmrLock;
       let releaseLock!: () => void;
@@ -248,7 +261,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
         const affectedPaths: string[] = [];
         for (const result of compiler.emitAffectedFiles()) {
-          const normalizedPath = normalizePath(result.sourceFileName);
+          const normalizedPath = pathx.posix(result.sourceFileName);
           emittedFiles.set(normalizedPath, result.contents);
           affectedPaths.push(normalizedPath);
         }
@@ -259,7 +272,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         // Convert affected ts.SourceFile set to file name strings for incremental lint
         const affectedFileNames = new Set<string>();
         for (const sf of updateResult.affectedFiles) {
-          affectedFileNames.add(normalizePath(sf.fileName));
+          affectedFileNames.add(pathx.posix(sf.fileName));
         }
 
         // Lint execution (if enabled)
@@ -280,7 +293,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
         const affectedSet = new Set(affectedPaths);
         return modules.filter(
-          (m) => m.file != null && affectedSet.has(normalizePath(m.file)),
+          (m) => m.file != null && affectedSet.has(pathx.posix(m.file)),
         );
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -295,7 +308,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     async transform(_code, id) {
       if (!id.endsWith(".ts") && !id.endsWith(".tsx")) return;
 
-      const normalizedId = normalizePath(id);
+      const normalizedId = pathx.posix(id);
       const emittedContent = emittedFiles.get(normalizedId);
       if (emittedContent == null) return;
 
@@ -405,10 +418,6 @@ function angularComponentMiddleware(
     });
     res.end(body);
   };
-}
-
-function normalizePath(p: string): string {
-  return p.replace(/\\/g, "/");
 }
 
 function reportDiagnostics(diagnostics: DiagnosticResult): void {

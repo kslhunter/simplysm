@@ -1,6 +1,5 @@
-import path from "path";
 import ts from "typescript";
-import { fsx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type {
   SdConfig,
@@ -37,7 +36,7 @@ export interface BuildOrchestratorOptions {
 interface BuildStepResult {
   name: string;
   target: string;
-  type: "js" | "dts" | "lint";
+  type: "build" | "lint";
   success: boolean;
   errors?: string[];
   warnings?: string[];
@@ -101,7 +100,7 @@ export function classifyPackages(
  * Delete dist folders
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
-  await Promise.all(packageNames.map((name) => fsx.rm(path.join(cwd, "packages", name, "dist"))));
+  await Promise.all(packageNames.map((name) => fsx.rm(pathx.posixResolve(cwd, "packages", name, "dist"))));
 }
 
 //#endregion
@@ -227,7 +226,7 @@ export class BuildOrchestrator {
 
     // buildPackages: JS build + dts generation via BuildEngine
     for (const { name, config } of classified.buildPackages) {
-      const pkgDir = path.join(this._cwd, "packages", name);
+      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
       buildTasks.push(async () => {
         this._logger.debug(`[${name}] (${config.target}) 빌드 시작`);
@@ -239,28 +238,18 @@ export class BuildOrchestrator {
         try {
           const engineResult = await engine.run({ js: true, dts: true, lint: true });
 
-          // JS 빌드 결과 처리
+          // 빌드 결과 처리
+          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
           results.push({
             name,
             target: config.target,
-            type: "js",
-            success: engineResult.js.success,
-            errors: engineResult.js.errors.length > 0 ? engineResult.js.errors : undefined,
-            warnings: engineResult.js.warnings.length > 0 ? engineResult.js.warnings : undefined,
-          });
-          if (!engineResult.js.success) state.hasError = true;
-
-          // DTS 결과 처리
-          const diagnostics = engineResult.dts.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: config.target,
-            type: "dts",
-            success: engineResult.dts.success,
-            errors: engineResult.dts.errors.length > 0 ? engineResult.dts.errors : undefined,
+            type: "build",
+            success: engineResult.build.success,
+            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
+            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.dts.success) state.hasError = true;
+          if (!engineResult.build.success) state.hasError = true;
 
           // 린트 결과 처리
           if (engineResult.lint != null) {
@@ -289,7 +278,7 @@ export class BuildOrchestrator {
 
     // serverPackages: JS build + typecheck via BuildEngine
     for (const { name, config } of classified.serverPackages) {
-      const pkgDir = path.join(this._cwd, "packages", name);
+      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
       buildTasks.push(async () => {
         this._logger.debug(`[${name}] (server) 빌드 시작`);
@@ -301,28 +290,18 @@ export class BuildOrchestrator {
         try {
           const engineResult = await engine.run({ js: true, dts: false, lint: true });
 
-          // JS 빌드 결과 처리
+          // 빌드 결과 처리
+          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
           results.push({
             name,
             target: "server",
-            type: "js",
-            success: engineResult.js.success,
-            errors: engineResult.js.errors.length > 0 ? engineResult.js.errors : undefined,
-            warnings: engineResult.js.warnings.length > 0 ? engineResult.js.warnings : undefined,
-          });
-          if (!engineResult.js.success) state.hasError = true;
-
-          // DTS/타입체크 결과 처리
-          const diagnostics = engineResult.dts.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: "server",
-            type: "dts",
-            success: engineResult.dts.success,
-            errors: engineResult.dts.errors.length > 0 ? engineResult.dts.errors : undefined,
+            type: "build",
+            success: engineResult.build.success,
+            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
+            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.dts.success) state.hasError = true;
+          if (!engineResult.build.success) state.hasError = true;
 
           // 린트 결과 처리
           if (engineResult.lint != null) {
@@ -345,7 +324,7 @@ export class BuildOrchestrator {
 
     // clientPackages: Vite production build via ViteEngine (no dts)
     for (const { name, config } of classified.clientPackages) {
-      const pkgDir = path.join(this._cwd, "packages", name);
+      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
       buildTasks.push(async () => {
         this._logger.debug(`[${name}] (client) 빌드 시작`);
@@ -357,28 +336,18 @@ export class BuildOrchestrator {
         try {
           const engineResult = await engine.run({ js: true, dts: false, lint: true });
 
-          // JS 빌드 결과 처리
+          // 빌드 결과 처리
+          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
           results.push({
             name,
             target: "client",
-            type: "js",
-            success: engineResult.js.success,
-            errors: engineResult.js.errors.length > 0 ? engineResult.js.errors : undefined,
-            warnings: engineResult.js.warnings.length > 0 ? engineResult.js.warnings : undefined,
-          });
-          if (!engineResult.js.success) state.hasError = true;
-
-          // DTS 결과 처리
-          const diagnostics = engineResult.dts.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: "client",
-            type: "dts",
-            success: engineResult.dts.success,
-            errors: engineResult.dts.errors.length > 0 ? engineResult.dts.errors : undefined,
+            type: "build",
+            success: engineResult.build.success,
+            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
+            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.dts.success) state.hasError = true;
+          if (!engineResult.build.success) state.hasError = true;
 
           // 린트 결과 처리
           if (engineResult.lint != null) {
@@ -392,9 +361,9 @@ export class BuildOrchestrator {
             if (!engineResult.lint.success) state.hasError = true;
           }
 
-          // 네이티브 빌드 (JS 빌드 성공 시에만 실행)
-          if (engineResult.js.success) {
-            const distPath = path.join(pkgDir, "dist");
+          // 네이티브 빌드 (빌드 성공 시에만 실행)
+          if (engineResult.build.success) {
+            const distPath = pathx.posixResolve(pkgDir, "dist");
             const nativeBuildPromises: Array<Promise<void>> = [];
 
             if (config.capacitor != null) {
@@ -462,7 +431,7 @@ export class BuildOrchestrator {
     // 결과 출력
     const allDiagnostics: ts.Diagnostic[] = [];
     for (const result of results) {
-      const typeLabel = result.type === "dts" ? "dts" : result.type === "lint" ? "lint" : result.target;
+      const typeLabel = result.type === "lint" ? "lint" : result.target;
 
       // 경고 출력
       if (result.warnings != null) {

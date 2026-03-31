@@ -121,7 +121,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
     it("unhandled promise rejection이 ErrorHandler로 전달된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
-      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockReturnValue(false);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
       const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
 
       const event = new PromiseRejectionEvent("unhandledrejection", {
@@ -140,7 +140,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
     it("uncaught error가 ErrorHandler로 전달된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
-      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockReturnValue(false);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
       const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
 
       const event = new ErrorEvent("error", {
@@ -159,7 +159,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
     it("앱 파괴 시 에러 리스너가 정리된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
-      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockReturnValue(false);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
       const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
 
       // TestBed.resetTestingModule()로 환경 파괴 → DestroyRef.onDestroy 실행

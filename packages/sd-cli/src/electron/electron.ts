@@ -1,8 +1,7 @@
-import path from "path";
 import os from "os";
 import fs from "fs";
 import module from "module";
-import { cpx, fsx } from "@simplysm/core-node";
+import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../utils/esbuild-config.js";
@@ -25,7 +24,7 @@ export class Electron {
     private readonly _npmConfig: NpmConfig,
     private readonly _exclude: string[],
   ) {
-    this._electronPath = path.resolve(this._pkgPath, ".electron");
+    this._electronPath = pathx.posixResolve(this._pkgPath, ".electron");
   }
 
   static async create(
@@ -35,7 +34,7 @@ export class Electron {
   ): Promise<Electron> {
     Electron._validateConfig(config);
 
-    const npmConfig = await fsx.readJson<NpmConfig>(path.resolve(pkgPath, "package.json"));
+    const npmConfig = await fsx.readJson<NpmConfig>(pathx.posixResolve(pkgPath, "package.json"));
     return new Electron(pkgPath, config, npmConfig, exclude ?? []);
   }
 
@@ -46,7 +45,7 @@ export class Electron {
   }
 
   private _localBin(name: string): string {
-    return path.resolve(this._pkgPath, "node_modules/.bin", name);
+    return pathx.posixResolve(this._pkgPath, "node_modules/.bin", name);
   }
 
   private async _exec(
@@ -56,7 +55,7 @@ export class Electron {
     env?: Record<string, string>,
   ): Promise<string> {
     Electron._logger.debug(`실행: ${cmd} ${args.join(" ")}`);
-    const { stdout: result } = await cpx.exec(cmd, args, { cwd, env });
+    const { stdout: result } = await cpx.exec(cmd, args, { cwd, env, shell: true });
     Electron._logger.debug(`결과: ${result}`);
     return result;
   }
@@ -64,7 +63,7 @@ export class Electron {
   //#region Public Methods
 
   async initialize(): Promise<void> {
-    const srcPath = path.resolve(this._electronPath, "src");
+    const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     await this._setupPackageJson(srcPath);
     await this._exec("npm", ["install"], srcPath);
@@ -76,12 +75,12 @@ export class Electron {
   }
 
   async run(url: string): Promise<void> {
-    const srcPath = path.resolve(this._electronPath, "src");
+    const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     await this.initialize();
 
     const esbuild = await import("esbuild");
-    const entryPoint = path.resolve(this._pkgPath, "src/electron-main.ts");
+    const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
 
     if (!(await fsx.exists(entryPoint))) {
       throw new Error(`electron-main.ts 파일을 찾을 수 없습니다: ${entryPoint}`);
@@ -115,7 +114,7 @@ export class Electron {
 
     const ctx = await esbuild.context({
       entryPoints: [entryPoint],
-      outfile: path.resolve(srcPath, "electron-main.js"),
+      outfile: pathx.posixResolve(srcPath, "electron-main.js"),
       platform: "node",
       target: "node20",
       format: "cjs",
@@ -178,7 +177,7 @@ export class Electron {
   }
 
   async build(outPath: string): Promise<void> {
-    const srcPath = path.resolve(this._electronPath, "src");
+    const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     await this._bundleMainProcess(srcPath);
     await this._copyWebAssets(outPath, srcPath);
@@ -224,7 +223,7 @@ export class Electron {
       packageJson["scripts"] = { postinstall: this._config.postInstallScript };
     }
 
-    await fsx.writeJson(path.resolve(srcPath, "package.json"), packageJson, { space: 2 });
+    await fsx.writeJson(pathx.posixResolve(srcPath, "package.json"), packageJson, { space: 2 });
   }
 
   //#endregion
@@ -233,7 +232,7 @@ export class Electron {
 
   private async _bundleMainProcess(outDir: string): Promise<void> {
     const esbuild = await import("esbuild");
-    const entryPoint = path.resolve(this._pkgPath, "src/electron-main.ts");
+    const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
 
     if (!(await fsx.exists(entryPoint))) {
       throw new Error(`electron-main.ts 파일을 찾을 수 없습니다: ${entryPoint}`);
@@ -248,7 +247,7 @@ export class Electron {
 
     await esbuild.build({
       entryPoints: [entryPoint],
-      outfile: path.resolve(outDir, "electron-main.js"),
+      outfile: pathx.posixResolve(outDir, "electron-main.js"),
       platform: "node",
       target: "node20",
       format: "cjs",
@@ -267,16 +266,16 @@ export class Electron {
     for (const item of items) {
       if (item === "electron") continue;
 
-      const source = path.resolve(outPath, item);
-      const dest = path.resolve(srcPath, item);
+      const source = pathx.posixResolve(outPath, item);
+      const dest = pathx.posixResolve(srcPath, item);
       await fsx.copy(source, dest);
     }
   }
 
   private static _canCreateSymlink(): boolean {
     const tmpDir = os.tmpdir();
-    const testTarget = path.join(tmpDir, "sd-electron-symlink-test-target.txt");
-    const testLink = path.join(tmpDir, "sd-electron-symlink-test-link.txt");
+    const testTarget = pathx.posixResolve(tmpDir, "sd-electron-symlink-test-target.txt");
+    const testLink = pathx.posixResolve(tmpDir, "sd-electron-symlink-test-link.txt");
 
     try {
       fs.writeFileSync(testTarget, "test");
@@ -297,7 +296,7 @@ export class Electron {
       );
     }
 
-    const distPath = path.resolve(this._electronPath, "dist");
+    const distPath = pathx.posixResolve(this._electronPath, "dist");
 
     const builderConfig: Record<string, unknown> = {
       appId: this._config.appId,
@@ -317,10 +316,10 @@ export class Electron {
     };
 
     if (this._config.installerIcon != null) {
-      builderConfig["icon"] = path.resolve(this._pkgPath, this._config.installerIcon);
+      builderConfig["icon"] = pathx.posixResolve(this._pkgPath, this._config.installerIcon);
     }
 
-    const configFilePath = path.resolve(this._electronPath, "builder-config.json");
+    const configFilePath = pathx.posixResolve(this._electronPath, "builder-config.json");
     await fsx.writeJson(configFilePath, builderConfig, { space: 2 });
 
     await this._exec(
@@ -331,8 +330,8 @@ export class Electron {
   }
 
   private async _copyBuildOutput(outPath: string): Promise<void> {
-    const distPath = path.resolve(this._electronPath, "dist");
-    const electronOutPath = path.resolve(outPath, "electron");
+    const distPath = pathx.posixResolve(this._electronPath, "dist");
+    const electronOutPath = pathx.posixResolve(outPath, "electron");
     await fsx.mkdir(electronOutPath);
 
     const rawName = this._npmConfig.description ?? this._npmConfig.name;
@@ -341,7 +340,7 @@ export class Electron {
     const isPortable = this._config.portable === true;
 
     // exe 파일 동적 탐색 — Setup 또는 portable exe를 우선 선택
-    const allExeFiles = await fsx.glob(path.resolve(distPath, "*.exe"));
+    const allExeFiles = await fsx.glob(pathx.posixResolve(distPath, "*.exe"));
     if (allExeFiles.length === 0) {
       Electron._logger.warn(`빌드 산출물(.exe)을 찾을 수 없습니다: ${distPath}`);
       return;
@@ -351,11 +350,11 @@ export class Electron {
       allExeFiles.find((f) => f.toLowerCase().includes(keyword.toLowerCase())) ?? allExeFiles[0];
 
     const latestFileName = `${safeName}${isPortable ? "-portable" : ""}-latest.exe`;
-    await fsx.copy(sourcePath, path.resolve(electronOutPath, latestFileName));
+    await fsx.copy(sourcePath, pathx.posixResolve(electronOutPath, latestFileName));
 
-    const updatesPath = path.resolve(electronOutPath, "updates");
+    const updatesPath = pathx.posixResolve(electronOutPath, "updates");
     await fsx.mkdir(updatesPath);
-    await fsx.copy(sourcePath, path.resolve(updatesPath, `${version}.exe`));
+    await fsx.copy(sourcePath, pathx.posixResolve(updatesPath, `${version}.exe`));
   }
 
   //#endregion

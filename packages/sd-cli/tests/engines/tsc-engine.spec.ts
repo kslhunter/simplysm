@@ -45,8 +45,7 @@ function createMockPkg(overrides: Partial<BuildPackageInfo> = {}): BuildPackageI
 
 function setupDefaultBuildResult(): void {
   mockWorker.build.mockResolvedValue({
-    js: { success: true, errors: undefined, warnings: undefined },
-    dts: { success: true, errors: undefined, diagnostics: [] },
+    build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
   });
   mockWorker.terminate.mockResolvedValue(undefined);
   mockWorker.stopWatch.mockResolvedValue(undefined);
@@ -77,37 +76,34 @@ describe("TscEngine", () => {
         }),
       );
       expect(result.success).toBe(true);
-      expect(result.js.success).toBe(true);
-      expect(result.dts.success).toBe(true);
+      expect(result.build.success).toBe(true);
       await engine.stop();
     });
 
-    it("maps worker result to EngineResult with js/dts separation", async () => {
+    it("maps worker result to EngineResult with build field", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: ["warn1"] },
-        dts: { success: true, errors: undefined, diagnostics: [{ code: 1, category: 0 }] },
+        build: { success: true, errors: undefined, warnings: ["warn1"], diagnostics: [{ code: 1, category: 0 }] },
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.js.warnings).toEqual(["warn1"]);
-      expect(result.dts.diagnostics).toEqual([{ code: 1, category: 0 }]);
+      expect(result.build.warnings).toEqual(["warn1"]);
+      expect(result.build.diagnostics).toEqual([{ code: 1, category: 0 }]);
       await engine.stop();
     });
 
     it("reflects failure when tsc reports errors", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: false, errors: ["type error"], warnings: undefined },
-        dts: { success: false, errors: ["type error"], diagnostics: [{ code: 2322, category: 1 }] },
+        build: { success: false, errors: ["type error"], warnings: undefined, diagnostics: [{ code: 2322, category: 1 }] },
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
       expect(result.success).toBe(false);
-      expect(result.js.errors).toEqual(["type error"]);
-      expect(result.dts.diagnostics).toHaveLength(1);
+      expect(result.build.errors).toEqual(["type error"]);
+      expect(result.build.diagnostics).toHaveLength(1);
       await engine.stop();
     });
 
@@ -129,8 +125,7 @@ describe("TscEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
         });
       });
 
@@ -144,7 +139,7 @@ describe("TscEngine", () => {
       await engine.stop();
     });
 
-    it("reports build and dts results separately to ResultCollector", async () => {
+    it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
       mockWorker.startWatch.mockImplementation(() => {
@@ -152,8 +147,7 @@ describe("TscEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true, errors: undefined },
-          dts: { success: false, errors: ["type error"] },
+          build: { success: false, errors: ["type error"] },
         });
       });
 
@@ -167,12 +161,9 @@ describe("TscEngine", () => {
 
       const addCalls = mockResultCollector.add.mock.calls;
       const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-      const dtsResult = addCalls.find((c: any[]) => c[0].type === "dts");
 
       expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("success");
-      expect(dtsResult).toBeDefined();
-      expect(dtsResult![0].status).toBe("error");
+      expect(buildResult![0].status).toBe("error");
 
       await engine.stop();
     });
@@ -185,7 +176,7 @@ describe("TscEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });

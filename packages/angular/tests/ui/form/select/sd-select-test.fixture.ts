@@ -4,7 +4,6 @@ import { SdSelectItemControl } from "../../../../src/ui/form/select/sd-select-it
 import { SdFormControl } from "../../../../src/ui/form/sd-form.control";
 import { SdItemOfTemplateDirective } from "../../../../src/core/directives/sd-item-of-template.directive";
 import { SdSelectButtonControl } from "../../../../src/ui/form/select/sd-select-button.control";
-import type { TSelectModeValue } from "../../../../src/ui/form/select/sd-select.control";
 
 @Component({
   selector: "sd-select-single-test",
@@ -66,7 +65,7 @@ export class SdSelectPlaceholderTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectMultiTest {
-  value = signal<TSelectModeValue<string>>([]);
+  value = signal<string[]>([]);
 }
 
 @Component({
@@ -82,7 +81,7 @@ export class SdSelectMultiTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectMultiPreselectedTest {
-  value = signal<TSelectModeValue<string>>(["A", "B"]);
+  value = signal<string[]>(["A", "B"]);
 }
 
 @Component({
@@ -97,7 +96,7 @@ export class SdSelectMultiPreselectedTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectMultiHideSelectAllTest {
-  value = signal<TSelectModeValue<string>>([]);
+  value = signal<string[]>([]);
 }
 
 @Component({
@@ -112,7 +111,7 @@ export class SdSelectMultiHideSelectAllTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectMultiVerticalTest {
-  value = signal<TSelectModeValue<string>>(["A", "B"]);
+  value = signal<string[]>(["A", "B"]);
 }
 
 @Component({
@@ -159,7 +158,7 @@ export class SdSelectHiddenItemTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectMultiMixedStateTest {
-  value = signal<TSelectModeValue<string>>([]);
+  value = signal<string[]>([]);
 }
 
 @Component({
@@ -433,5 +432,5 @@ export class SdSelectKeyboardTest {
   imports: [SdSelectControl, SdSelectItemControl],
 })
 export class SdSelectKeyboardMultiTest {
-  value = signal<TSelectModeValue<string>>([]);
+  value = signal<string[]>([]);
 }

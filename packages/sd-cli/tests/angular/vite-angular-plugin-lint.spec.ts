@@ -19,7 +19,12 @@ vi.mock("../../src/utils/lint-with-program", () => ({
   LintWithProgramRunner: MockLintWithProgramRunner,
 }));
 
-const mockTsProgram = { getSourceFiles: () => [] };
+const mockTsProgram = {
+  getSourceFiles: () => [
+    { fileName: "/workspace/packages/client/src/main.ts" },
+    { fileName: "/workspace/packages/client/src/app.ts" },
+  ],
+};
 
 const mockCompiler = {
   initialize: vi.fn().mockResolvedValue({ affectedFiles: new Set() }),

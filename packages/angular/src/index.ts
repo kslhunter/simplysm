@@ -57,6 +57,8 @@ export { useFullPageCodeSignal } from "./core/utils/useFullPageCodeSignal";
 export { useViewTitleSignal } from "./core/utils/useViewTitleSignal";
 export { useViewTypeSignal, type TSdViewType } from "./core/utils/useViewTypeSignal";
 export { setupCanDeactivate } from "./core/utils/setups/setupCanDeactivate";
+export { setupCumulateSelectedKeys } from "./core/utils/setups/setupCumulateSelectedKeys";
+export { setupCloserWhenSingleSelectionChange } from "./core/utils/setups/setupCloserWhenSingleSelectionChange";
 export {
   useExpandingManager,
   type IExpandItemDef,
@@ -64,8 +66,36 @@ export {
 export { useSelectionManager } from "./core/utils/useSelectionManager";
 export { injectParent } from "./core/utils/injectParent";
 
+// features/address
+export {
+  SdAddressSearchModal,
+  type IAddress,
+} from "./features/address/sd-address-search.modal";
+
 // features
 export { SdBaseContainerControl } from "./features/base/sd-base-container.control";
+export {
+  SdDataSheetControl,
+  AbsSdDataSheet,
+  type ISdDataSheetItemPropInfo,
+  type ISdDataSheetItemInfo,
+  type ISdDataSheetSearchResult,
+} from "./features/data-view/sd-data-sheet.control";
+export { SdDataSheetColumnDirective } from "./features/data-view/sd-data-sheet-column.directive";
+export {
+  SdDataDetailControl,
+  AbsSdDataDetail,
+  type ISdDataDetailDataInfo,
+} from "./features/data-view/sd-data-detail.control";
+export {
+  SdDataSelectButtonControl,
+  AbsSdDataSelectButton,
+} from "./features/data-view/sd-data-select-button.control";
+
+// features/shared-data
+export { SdSharedDataSelectControl } from "./features/shared-data/sd-shared-data-select.control";
+export { SdSharedDataSelectButtonControl } from "./features/shared-data/sd-shared-data-select-button.control";
+export { SdSharedDataSelectListControl } from "./features/shared-data/sd-shared-data-select-list.control";
 
 // ui/layout
 export { SdDockContainerControl } from "./ui/layout/dock/sd-dock-container.control";
@@ -229,4 +259,8 @@ export {
 
 // core/utils
 export { useSortingManager, type ISortingDef } from "./core/utils/useSortingManager";
-export type { TDirectiveInputSignals, TUndefToOptional } from "./core/utils/TDirectiveInputSignals";
+export type {
+  TDirectiveInputSignals,
+  TUndefToOptional,
+  TWithOptional,
+} from "./core/utils/TDirectiveInputSignals";

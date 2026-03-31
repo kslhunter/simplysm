@@ -78,7 +78,7 @@ import { SdGapControl } from "../../layout/sd-gap.control";
   },
 })
 export class SdSelectItemControl<T> {
-  protected readonly _parentControl = inject<SdSelectControl<T>>(
+  protected readonly _parentControl = inject<SdSelectControl<any, T>>(
     forwardRef(() => SdSelectControl),
   );
   private readonly _elRef = inject(ElementRef<HTMLElement>);

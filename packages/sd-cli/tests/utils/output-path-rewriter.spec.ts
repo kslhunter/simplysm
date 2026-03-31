@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import path from "path";
 import { createOutputPathRewriter, adjustMapSources, addJsExtensionToImports, rewriteScssImports } from "../../src/utils/output-path-rewriter";
 
-// Use path.resolve to get platform-correct absolute paths
+// POSIX paths for assertions — after migration, createOutputPathRewriter returns POSIX paths
 const pkgDir = path.resolve("/workspace/packages/my-pkg");
 const distDir = path.resolve(pkgDir, "dist");
+const posixDistDir = distDir.replace(/\\/g, "/");
 
 describe("createOutputPathRewriter", () => {
   const rewrite = createOutputPathRewriter(pkgDir);
@@ -14,7 +15,7 @@ describe("createOutputPathRewriter", () => {
     const result = rewrite(nestedPath, "declare const x: number;");
 
     expect(result).not.toBeNull();
-    expect(result![0]).toBe(path.join(distDir, "index.d.ts"));
+    expect(result![0]).toBe(posixDistDir + "/index.d.ts");
     expect(result![1]).toBe("declare const x: number;");
   });
 
@@ -23,7 +24,7 @@ describe("createOutputPathRewriter", () => {
     const result = rewrite(nestedPath, "declare const y: string;");
 
     expect(result).not.toBeNull();
-    expect(result![0]).toBe(path.join(distDir, "utils", "helper.d.ts"));
+    expect(result![0]).toBe(posixDistDir + "/utils/helper.d.ts");
   });
 
   it("returns null for other packages' nested .d.ts", () => {
@@ -38,7 +39,7 @@ describe("createOutputPathRewriter", () => {
     const result = rewrite(flatPath, "declare const z: boolean;");
 
     expect(result).not.toBeNull();
-    expect(result![0]).toBe(flatPath);
+    expect(result![0]).toBe(flatPath.replace(/\\/g, "/"));
     expect(result![1]).toBe("declare const z: boolean;");
   });
 
@@ -55,7 +56,7 @@ describe("createOutputPathRewriter", () => {
     const result = rewrite(nestedPath, mapContent);
 
     expect(result).not.toBeNull();
-    expect(result![0]).toBe(path.join(distDir, "index.d.ts.map"));
+    expect(result![0]).toBe(posixDistDir + "/index.d.ts.map");
     // Sources path should be adjusted for the new location
     const parsedMap = JSON.parse(result![1]) as { sources: string[] };
     expect(parsedMap.sources).toBeDefined();
@@ -83,7 +84,7 @@ describe("adjustMapSources", () => {
 
     // The absolute source should be the same, just the relative path changes
     const absoluteFromOriginal = path.resolve(original, "..", "..", "..", "src", "index.ts");
-    const expectedRelative = path.relative(target, absoluteFromOriginal);
+    const expectedRelative = path.relative(target, absoluteFromOriginal).replace(/\\/g, "/");
     expect(parsed.sources[0]).toBe(expectedRelative);
   });
 

@@ -15,7 +15,6 @@ import {
   type ISdModalInfo,
   type ISdModalOptions,
 } from "../../overlay/modal/sd-modal.provider";
-import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
 import type { TSelectModeValue } from "../select/sd-select.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdButtonControl } from "./sd-button.control";
@@ -28,30 +27,25 @@ import { tablerSearch, tablerEraser } from "@ng-icons/tabler-icons";
  * ISdModal을 확장하여 selectMode와 selectedItemKeys를 추가한다.
  */
 export interface ISdSelectModal<T> extends ISdModal<ISelectModalOutputResult<T>> {
-  selectMode: InputSignal<"single" | "multi">;
-  selectedItemKeys: InputSignal<T[]>;
+  selectMode: InputSignal<"single" | "multi" | undefined>;
+  selectedItemKeys: InputSignal<any[]>;
 }
 
 /**
  * 모달 선택 결과
  */
 export interface ISelectModalOutputResult<T> {
-  selectedItemKeys: T[];
-  selectedItems: Record<string, unknown>[];
+  selectedItemKeys: any[];
+  selectedItems: T[];
 }
 
 /**
  * 모달 선택 정보 (selectMode/selectedItemKeys를 제외한 inputs)
  */
-export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = Omit<
-  ISdModalInfo<T>,
-  "inputs"
-> & {
-  inputs: Omit<
-    TDirectiveInputSignals<T>,
-    "initialized" | "close" | "actionTplRef" | "selectMode" | "selectedItemKeys"
-  >;
-};
+export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = ISdModalInfo<
+  T,
+  "selectMode" | "selectedItemKeys"
+>;
 
 @Component({
   selector: "sd-modal-select-button",
@@ -71,7 +65,7 @@ export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = Omit<
       }
       @if (!disabled()) {
         <sd-button [inset]="true" (click)="onSearchClick()">
-          <ng-icon [svg]="tablerSearch" />
+          <ng-icon [svg]="searchIcon()" />
         </sd-button>
       }
     </div>
@@ -156,20 +150,27 @@ export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = Omit<
     "[attr.data-sd-disabled]": "disabled()",
   },
 })
-export class SdModalSelectButtonControl {
+export class SdModalSelectButtonControl<
+  T extends object,
+  K,
+  M extends keyof TSelectModeValue<K> = keyof TSelectModeValue<K>,
+> {
   private readonly _sdModal = inject(SdModalProvider);
 
-  selectMode = input<"single" | "multi">("single");
-  value = model<TSelectModeValue<any>>();
-  selectedItems = model<Record<string, unknown>[]>([]);
+  modal = input.required<TSdSelectModalInfo<ISdSelectModal<T>>>();
+
+  value = model<TSelectModeValue<K>[M]>();
+  selectedItems = model<T[]>([]);
+
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
-  modal = input<TSdSelectModalInfo<any>>();
-  modalOptions = input<ISdModalOptions>();
-  size = input<"sm" | "lg">();
   inset = input(false, { transform: booleanAttribute });
+  size = input<"sm" | "lg">();
+  selectMode = input<M>("single" as M);
+  modalOptions = input<ISdModalOptions>();
 
-  protected readonly tablerSearch = tablerSearch;
+  searchIcon = input(tablerSearch);
+
   protected readonly tablerEraser = tablerEraser;
 
   _hasValue = computed(() => {
@@ -190,48 +191,29 @@ export class SdModalSelectButtonControl {
   }
 
   onEraseClick(): void {
-    if (this.selectMode() === "multi") {
-      this.value.set([]);
-    } else {
-      this.value.set(undefined);
-    }
+    this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
     this.selectedItems.set([]);
   }
 
   async onSearchClick(): Promise<void> {
-    const modalInfo = this.modal();
-    if (modalInfo == null) return;
-
-    const currentValue = this.value();
-    const selectedItemKeys: any[] =
-      this.selectMode() === "multi"
-        ? (currentValue as any[] | undefined) ?? []
-        : currentValue != null
-          ? [currentValue]
-          : [];
-
-    const result = await this._sdModal.showAsync(
-      {
-        title: modalInfo.title,
-        type: modalInfo.type,
-        inputs: {
-          ...modalInfo.inputs,
-          selectMode: this.selectMode(),
-          selectedItemKeys,
-        } as any,
+    const modal = this.modal();
+    const result = await this._sdModal.showAsync({
+      ...modal,
+      inputs: {
+        selectMode: this.selectMode(),
+        selectedItemKeys: (this.selectMode() === "multi"
+          ? ((this.value() as any[] | undefined) ?? [])
+          : [this.value()]
+        ).filterExists(),
+        ...modal.inputs,
       },
-      this.modalOptions(),
-    );
+    });
 
-    if (result == null) return;
-
-    const typedResult = result as ISelectModalOutputResult<any>;
-
-    if (this.selectMode() === "multi") {
-      this.value.set(typedResult.selectedItemKeys);
-    } else {
-      this.value.set(typedResult.selectedItemKeys[0]);
+    if (result) {
+      const newValue =
+        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      this.value.set(newValue);
+      this.selectedItems.set(result.selectedItems);
     }
-    this.selectedItems.set(typedResult.selectedItems);
   }
 }

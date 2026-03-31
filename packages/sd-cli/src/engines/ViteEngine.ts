@@ -69,15 +69,10 @@ export class ViteEngine implements BuildEngine {
     logger.debug(`[${this._pkg.name}] ViteEngine.run 완료 (success: ${result.success})`);
     return {
       success: result.success,
-      js: {
+      build: {
         success: result.success,
         errors: result.errors ?? [],
         warnings: result.warnings ?? [],
-      },
-      dts: {
-        success: true,
-        errors: [],
-        warnings: [],
         diagnostics: [],
       },
       lint: result.lint,
@@ -185,22 +180,16 @@ export class ViteEngine implements BuildEngine {
       message: result.errors?.join("\n"),
     };
     this._resultCollector?.add(buildResult);
-
-    const dtsResult: BuildResult = {
-      name: this._pkg.name,
-      target: "client",
-      type: "dts",
-      status: "success",
-    };
-    this._resultCollector?.add(dtsResult);
   }
 
   /**
    * 엔진을 중지하고 리소스를 정리한다
    */
   async stop(): Promise<void> {
+    logger.debug(`[${this._pkg.name}] ViteEngine stop 시작`);
     await stopEngineWorker(this._worker, this._isWatchMode);
     this._worker = undefined;
+    logger.debug(`[${this._pkg.name}] ViteEngine stop 완료`);
   }
 
   /**

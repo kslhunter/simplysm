@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
   SdModalTestControlDefault,
@@ -9,7 +10,7 @@ import {
 } from "./sd-modal-test.fixture";
 import { SdActivatedModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
 
-function setup(component: any) {
+function setup<T>(component: Type<T>) {
   TestBed.configureTestingModule({ imports: [component] });
   const fixture = TestBed.createComponent(component);
   fixture.detectChanges();

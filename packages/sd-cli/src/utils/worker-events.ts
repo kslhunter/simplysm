@@ -51,7 +51,7 @@ export interface BaseWorkerInfo<TEvents extends Record<string, unknown> = Record
 export interface WorkerEventHandlerOptions {
   resultKey: string;
   listrTitle: string;
-  resultType: "build" | "dts";
+  resultType: "build";
 }
 
 /**
@@ -77,6 +77,7 @@ export function registerWorkerEventHandlers(
   results: Map<string, BuildResult>,
   rebuildManager: RebuildManager,
 ): (result: BuildResult) => void {
+  workerEventsLogger.debug(`[${workerInfo.name}] 이벤트 핸들러 등록 (${opts.resultType})`);
   const completeTask = (result: BuildResult): void => {
     results.set(opts.resultKey, result);
     workerInfo.buildResolver?.();

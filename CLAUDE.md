@@ -75,3 +75,9 @@ sd-cli의 `browserSupport.browserslist` 설정은 esbuild target으로 변환되
 **런타임 API는 esbuild가 폴리필하지 않는다.** 프로토타입 메서드, 전역 함수, 내장 객체의 신규 메서드 등 런타임 API를 사용할 때는 반드시 **Chrome 61에 해당 API가 존재하는지 확인**하고, 존재하지 않으면 사용하지 않는다. 단, 소비 프로젝트에서 `polyfills.ts`로 폴리필 가능한 API(예: `Array.prototype.flat`, `Object.fromEntries` 등 표준 프로토타입 메서드)는 예외로 사용 가능하다. 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
 
 **판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).
+
+## 자주 하는 실수
+
+- **타입체크 명령어**: `npx tsc --noEmit` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용
+- **`as any[]` 캐스팅 후 `??` 방어**: `value as any[]`로 캐스팅하면 TypeScript는 nullable이 아니라고 판단하여 `?? []`에 lint 에러 발생. `value as any[] | undefined`로 캐스팅해야 한다
+- **타입 추론 해제 금지**: 타입 추론을 해제하는 방식의 수정은 절대 금지한다.

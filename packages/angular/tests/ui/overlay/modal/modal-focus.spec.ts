@@ -197,7 +197,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     );
     await tick(fixture);
 
-    const modals = Array.from(document.body.querySelectorAll("sd-modal"));
+    const modals = Array.from(document.body.querySelectorAll<HTMLElement>("sd-modal"));
     expect(modals.length).toBe(2);
 
     // B가 나중에 열렸으므로 z-index가 더 높아야 함

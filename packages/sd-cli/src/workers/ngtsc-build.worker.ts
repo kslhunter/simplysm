@@ -1,6 +1,6 @@
 import path from "path";
 import ts from "typescript";
-import { createWorker, FsWatcher } from "@simplysm/core-node";
+import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
@@ -22,6 +22,7 @@ import { LintWithProgramRunner, type LintWithProgramResult } from "../utils/lint
 import {
   parseTsconfig,
   getPackageSourceFiles,
+  getPackageFiles,
   getCompilerOptionsForEnv,
 } from "../utils/tsconfig";
 import { AngularCompiler, AngularSourceFileCache } from "../utils/angular-compiler";
@@ -50,6 +51,7 @@ let fsWatcher: FsWatcher | undefined;
 async function cleanup(): Promise<void> {
   const watcherToClose = fsWatcher;
   fsWatcher = undefined;
+  lastSourceFilePaths = undefined;
 
   if (watcherToClose != null) {
     await watcherToClose.close();
@@ -65,15 +67,17 @@ registerCleanupHandlers(cleanup, logger);
 async function build(info: NgtscBuildInfo): Promise<NgtscBuildResult> {
   logger.debug(`[${info.name}] ngtsc worker build 시작 (pkgDir: ${info.pkgDir})`);
   const { program, ...result } = await runNgtscBuild({ ...info, env: info.output.env });
-  logger.debug(`[${info.name}] ngtsc worker build 완료 (dts.success: ${result.dts.success})`);
+  logger.debug(`[${info.name}] ngtsc worker build 완료 (build.success: ${result.build.success})`);
 
   // Run lint if enabled and program is available
   if (info.output.lint === true && program != null) {
+    logger.debug(`[${info.name}] lint 시작`);
     const lintRunner = new LintWithProgramRunner({
       cwd: info.cwd,
       pkgName: info.name,
     });
     result.lint = await lintRunner.lint({ program });
+    logger.debug(`[${info.name}] lint 완료`);
   }
 
   return result;
@@ -88,7 +92,16 @@ const guardStartWatch = createOnceGuard("startWatch");
 let watchInfo: NgtscBuildInfo | undefined;
 let currentScssDependencies: Map<string, Set<string>> | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
+let lastSourceFilePaths: Set<string> | undefined;
 const sideEffectScssRegistry = new Map<string, SideEffectScssEntry>();
+
+function extractSourceFilePaths(program: ReturnType<AngularCompiler["getTsProgram"]>): Set<string> {
+  const paths = new Set<string>();
+  for (const sf of program.getSourceFiles()) {
+    paths.add(pathx.posix(sf.fileName));
+  }
+  return paths;
+}
 
 /**
  * Perform a watch build (initial or incremental) using AngularCompiler.
@@ -105,8 +118,9 @@ async function performWatchBuild(
   affectedFileNames?: ReadonlySet<string>,
   hasScssChanges = true,
 ): Promise<NgtscCombinedBuildEvent> {
+  logger.debug(`[${info.name}] performWatchBuild 시작`);
   const pkgSrcDir = path.join(info.pkgDir, "src");
-  const normalizedSrcDir = pkgSrcDir.replace(/\\/g, "/");
+  const normalizedSrcDir = pathx.posix(pkgSrcDir);
 
   // Collect diagnostics — workspace scope (no package-level filtering)
   const allDiagnostics = [...compiler.collectDiagnostics()].filter(
@@ -124,7 +138,7 @@ async function performWatchBuild(
   const loadPaths = buildScssLoadPaths(info);
   const emitResults = compiler.emitAffectedFiles({
     sourceFilter: (fileName: string) =>
-      fileName.replace(/\\/g, "/").startsWith(normalizedSrcDir + "/"),
+      pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
   });
   writeEmitResults(emitResults, info.pkgDir, {
     loadPaths,
@@ -146,6 +160,7 @@ async function performWatchBuild(
   // Run lint if enabled
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true) {
+    logger.debug(`[${info.name}] lint 시작`);
     if (watchLintRunner == null) {
       watchLintRunner = new LintWithProgramRunner({
         cwd: info.cwd,
@@ -156,11 +171,12 @@ async function performWatchBuild(
       program: compiler.getTsProgram(),
       affectedFiles: affectedFileNames,
     });
+    logger.debug(`[${info.name}] lint 완료`);
   }
 
+  logger.debug(`[${info.name}] performWatchBuild 완료`);
   return {
-    js: { success: true },
-    dts: {
+    build: {
       success: errorCount === 0 && scssErrors.length === 0 && globalScssErrors.length === 0,
       errors: allErrors.length > 0 ? allErrors : undefined,
     },
@@ -175,17 +191,16 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
   try {
     // Parse tsconfig and prepare compiler options
     const parsedConfig = parseTsconfig(watchInfo.pkgDir);
-    const sourceFiles = getPackageSourceFiles(watchInfo.pkgDir, parsedConfig);
+    const sourceFiles = watchInfo.output.includeTests === true
+      ? getPackageFiles(watchInfo.pkgDir, parsedConfig)
+      : getPackageSourceFiles(watchInfo.pkgDir, parsedConfig);
     const baseOptions =
       watchInfo.env != null
         ? getCompilerOptionsForEnv(parsedConfig.options, watchInfo.env, watchInfo.pkgDir)
         : parsedConfig.options;
     const compilerOptions = buildCompilerOptions(baseOptions, watchInfo.pkgDir, watchInfo.output);
 
-    // Read angularCompilerOptions from root tsconfig
-    const rootTsconfigPath = path.join(watchInfo.cwd, "tsconfig.json");
-    const rootRawConfig = ts.readConfigFile(rootTsconfigPath, ts.sys.readFile);
-    const angularOptions = rootRawConfig.config?.angularCompilerOptions ?? {};
+    const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
 
     // SCSS closure variables
     const scssErrors: string[] = [];
@@ -204,6 +219,7 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
     });
     // Initial build
     await compiler.initialize();
+    lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
     const initialResult = await performWatchBuild(watchInfo, compiler, scssDependencies, scssErrors);
     sender.send("build", initialResult);
 
@@ -215,6 +231,7 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
     );
 
     // Start FsWatcher
+    logger.debug(`[${watchInfo.name}] FsWatcher 시작`);
     const watchPaths = [
       path.join(watchInfo.pkgDir, "src", "**", "*.{ts,scss,css}"),
       path.join(watchInfo.pkgDir, "scss", "**", "*.{scss,css}"),
@@ -234,7 +251,9 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
 
     fsWatcher.onChange({ delay: 300 }, async (changedFiles) => {
       try {
-        sender.send("buildStart", {});
+        const hasFileAddOrRemove = changedFiles.some(
+          (c) => c.event === "add" || c.event === "unlink",
+        );
 
         // Collect modified files (all changed + SCSS dependency reverse-lookup)
         const modifiedFiles = new Set<string>();
@@ -254,6 +273,19 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
           }
         }
 
+        // Dependency filter: skip rebuild if no relevant changes
+        if (!hasFileAddOrRemove && lastSourceFilePaths != null) {
+          const hasRelevantChange = [...modifiedFiles].some((p) =>
+            lastSourceFilePaths!.has(p),
+          );
+          if (!hasRelevantChange) {
+            logger.debug("변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀");
+            return;
+          }
+        }
+
+        sender.send("buildStart", {});
+
         // Clear SCSS errors for fresh rebuild
         scssErrors.length = 0;
         scssDependencies.clear();
@@ -261,10 +293,13 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
         // Incremental rebuild via AngularCompiler.update()
         const updateResult = await compiler.update(modifiedFiles);
 
+        // Update source file paths after rebuild
+        lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
+
         // Convert affected ts.SourceFile set to file name strings for incremental lint
         const affectedFileNames = new Set<string>();
         for (const sf of updateResult.affectedFiles) {
-          affectedFileNames.add(sf.fileName.replace(/\\/g, "/"));
+          affectedFileNames.add(pathx.posix(sf.fileName));
         }
 
         const hasScssChanges = changedFiles.some(

@@ -7,7 +7,7 @@ import {
   type Signal,
   type Type,
 } from "@angular/core";
-import type { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
+import type { TDirectiveInputSignals, TWithOptional } from "../utils/TDirectiveInputSignals";
 import { SdBusyProvider } from "../../ui/overlay/busy/sd-busy.provider";
 import { wait } from "@simplysm/core-common";
 import { jsPDF } from "jspdf";
@@ -15,11 +15,19 @@ import * as htmlToImage from "html-to-image";
 
 export interface ISdPrint {
   initialized: Signal<boolean>;
+  readonly _optionalPrintInputs?: string;
 }
+
+type TSdPrintOptionalKeys<T> = T extends { _optionalPrintInputs?: infer K extends string }
+  ? K
+  : never;
 
 export interface ISdPrintInput<T, X extends keyof any = ""> {
   type: Type<T>;
-  inputs: Omit<TDirectiveInputSignals<T>, X>;
+  inputs: TWithOptional<
+    Omit<TDirectiveInputSignals<T>, "_optionalPrintInputs" | X>,
+    TSdPrintOptionalKeys<T> & keyof Omit<TDirectiveInputSignals<T>, "_optionalPrintInputs" | X>
+  >;
 }
 
 @Injectable({ providedIn: "root" })

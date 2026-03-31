@@ -69,8 +69,7 @@ export interface ServerWatchInfo {
  * Server build result (aligned with LibraryBuildResult + mainJsPath)
  */
 export interface ServerBuildResult {
-  js: { success: boolean; errors?: string[]; warnings?: string[] };
-  dts: { success: boolean; errors?: string[]; diagnostics: SerializedDiagnostic[] };
+  build: { success: boolean; errors?: string[]; warnings?: string[]; diagnostics: SerializedDiagnostic[] };
   lint?: LintWithProgramResult;
   mainJsPath: string;
 }
@@ -79,8 +78,7 @@ export interface ServerBuildResult {
  * Combined build event for watch mode
  */
 export interface ServerCombinedBuildEvent {
-  js: { success: boolean; errors?: string[]; warnings?: string[] };
-  dts: { success: boolean; errors?: string[] };
+  build: { success: boolean; errors?: string[]; warnings?: string[] };
   lint?: LintWithProgramResult;
   mainJsPath: string;
 }
@@ -324,7 +322,7 @@ registerCleanupHandlers(cleanup, logger);
  * One-time build (production)
  */
 async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
-  const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
+  const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
   logger.debug(`[${info.name}] server worker build 시작 (js: ${info.output.js}, dts: ${info.output.dts})`);
 
   try {
@@ -369,6 +367,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       output: { js: false, dts: info.output.dts },
       parsedConfig,
       env: info.output.env,
+      includeTests: info.output.includeTests,
     });
 
     const jsResult = esbuildPromise
@@ -378,11 +377,13 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     // Run lint if enabled and program is available
     let lint: LintWithProgramResult | undefined;
     if (info.output.lint === true && tscResult.program != null) {
+      logger.debug(`[${info.name}] lint 시작`);
       const lintRunner = new LintWithProgramRunner({
         cwd: info.cwd,
         pkgName: info.name,
       });
       lint = await lintRunner.lint({ program: tscResult.program });
+      logger.debug(`[${info.name}] lint 완료`);
     }
 
     // Generate production artifacts only when JS output is requested
@@ -395,16 +396,13 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       generateProductionFiles(info, external);
     }
 
-    logger.debug(`[${info.name}] server worker build 완료 (js: ${jsResult.success}, dts: ${tscResult.success})`);
+    const allErrors = [...(jsResult.errors ?? []), ...(tscResult.errors ?? [])];
+    logger.debug(`[${info.name}] server worker build 완료 (js: ${jsResult.success}, tsc: ${tscResult.success})`);
     return {
-      js: {
-        success: jsResult.success,
-        errors: jsResult.errors,
+      build: {
+        success: jsResult.success && tscResult.success,
+        errors: allErrors.length > 0 ? allErrors : undefined,
         warnings: jsResult.warnings,
-      },
-      dts: {
-        success: tscResult.success,
-        errors: tscResult.errors,
         diagnostics: tscResult.diagnostics,
       },
       lint,
@@ -418,8 +416,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       logger.debug(`[${info.name}] 스택 트레이스:\n${stack}`);
     }
     return {
-      js: { success: false, errors: [message] },
-      dts: { success: false, errors: [message], diagnostics: [] },
+      build: { success: false, errors: [message], diagnostics: [] },
       mainJsPath,
     };
   }
@@ -436,7 +433,8 @@ let watchLintRunner: LintWithProgramRunner | undefined;
  */
 async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
   const info = watchInfo!;
-  const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
+  logger.debug(`[${info.name}] rebuildAll 시작`);
+  const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
   const parsedConfig = parseTsconfig(info.pkgDir);
 
   // esbuild rebuild (async)
@@ -468,11 +466,13 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     output: { js: false, dts: info.output.dts },
     parsedConfig,
     env: info.output.env,
+    includeTests: info.output.includeTests,
   });
 
   // Run lint if enabled and program is available
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true && tscResult.program != null) {
+    logger.debug(`[${info.name}] lint 시작`);
     if (watchLintRunner == null) {
       watchLintRunner = new LintWithProgramRunner({
         cwd: info.cwd,
@@ -483,15 +483,21 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
       program: tscResult.program,
       affectedFiles: tscResult.affectedFiles,
     });
+    logger.debug(`[${info.name}] lint 완료`);
   }
 
   const jsResult = esbuildPromise
     ? await esbuildPromise
     : { success: true, errors: undefined, warnings: undefined };
 
+  const allErrors = [...(jsResult.errors ?? []), ...(tscResult.errors ?? [])];
+  logger.debug(`[${info.name}] rebuildAll 완료`);
   return {
-    js: { success: jsResult.success, errors: jsResult.errors, warnings: jsResult.warnings },
-    dts: { success: tscResult.success, errors: tscResult.errors },
+    build: {
+      success: jsResult.success && tscResult.success,
+      errors: allErrors.length > 0 ? allErrors : undefined,
+      warnings: jsResult.warnings,
+    },
     lint,
     mainJsPath,
   };
@@ -541,6 +547,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     }
 
     // Initial build: esbuild + tsc parallel
+    sender.send("buildStart", {});
     const initialResult = await rebuildAll();
 
     // Write .config.json on first build
@@ -560,17 +567,17 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     // Server package itself + workspace dependency packages source
     const watchDirs = [
       info.pkgDir,
-      ...workspaceDeps.map((d) => path.join(info.cwd, "packages", d)),
+      ...workspaceDeps.map((d) => pathx.posixResolve(info.cwd, "packages", d)),
     ];
     for (const dir of watchDirs) {
-      watchPaths.push(path.join(dir, "src", "**", "*"));
+      watchPaths.push(pathx.posixResolve(dir, "src", "**", "*"));
     }
 
     // ReplaceDeps dependency packages dist
     for (const pkg of replaceDeps) {
-      watchPaths.push(path.join(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"));
+      watchPaths.push(pathx.posixResolve(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"));
       watchPaths.push(
-        path.join(info.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
+        pathx.posixResolve(info.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
       );
     }
 
@@ -627,7 +634,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 
         // Filter by metafile inputs
         const metafileAbsPaths = new Set(
-          Object.keys(lastMetafile.inputs).map((key) => pathx.norm(info.cwd, key)),
+          Object.keys(lastMetafile.inputs).map((key) => pathx.posixResolve(info.cwd, key)),
         );
 
         const hasRelevantChange = changes.some((c) => metafileAbsPaths.has(c.path));

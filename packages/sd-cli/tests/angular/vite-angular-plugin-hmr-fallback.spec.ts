@@ -138,8 +138,8 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Unit: .scss 파일은 위임하지 않고 Angular가 처리한다 (대조군)
-  it("processes .scss files (does NOT delegate to Vite default)", async () => {
+  // Unit: .scss 파일이 TS 프로그램에 없으면 리빌드를 건너뛴다
+  it("skips .scss files not in the TypeScript program", async () => {
     const onBuildStart = vi.fn();
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
@@ -150,6 +150,10 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
     });
 
     await (plugin as any).buildStart?.call({});
+
+    // buildStart 완료 후 초기 빌드 결과 콜백 리셋
+    onBuildStart.mockClear();
+    onBuild.mockClear();
 
     const scssFilePath = path
       .join(FIXTURE_DIR, "src/styles.scss")
@@ -163,12 +167,12 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       read: () => Promise.resolve(""),
     });
 
-    // .scss는 Angular가 처리하므로 undefined가 아닌 배열 반환
-    expect(Array.isArray(result)).toBe(true);
+    // .scss 파일이 TS 프로그램에 없으므로 undefined 반환 (리빌드 건너뜀)
+    expect(result).toBeUndefined();
 
-    // Angular compiler update가 호출되어야 한다
-    expect(onBuildStart).toHaveBeenCalled();
-    expect(onBuild).toHaveBeenCalled();
+    // Angular compiler update가 호출되지 않아야 한다
+    expect(onBuildStart).not.toHaveBeenCalled();
+    expect(onBuild).not.toHaveBeenCalled();
 
     await (plugin as any).buildEnd?.call({});
   });

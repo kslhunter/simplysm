@@ -14,7 +14,10 @@ import {
 } from "@angular/core";
 import { outputToObservable } from "@angular/core/rxjs-interop";
 import { Subscription } from "rxjs";
-import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
+import type {
+  TDirectiveInputSignals,
+  TWithOptional,
+} from "../../../core/utils/TDirectiveInputSignals";
 import { SdModalControl } from "./sd-modal.control";
 import "@simplysm/core-browser";
 
@@ -25,15 +28,24 @@ export interface ISdModal<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
   actionTplRef?: TemplateRef<any>;
+  readonly _optionalModalInputs?: string;
 }
+
+type TSdModalExcludeKeys = "initialized" | "close" | "actionTplRef" | "_optionalModalInputs";
+type TSdModalOptionalKeys<T> = T extends { _optionalModalInputs?: infer K extends string }
+  ? K
+  : never;
 
 /**
  * 모달 생성 시 전달하는 정보
  */
-export interface ISdModalInfo<T extends ISdModal<any>> {
+export interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
   title: string;
   type: Type<T>;
-  inputs: Omit<TDirectiveInputSignals<T>, "initialized" | "close" | "actionTplRef">;
+  inputs: TWithOptional<
+    Omit<TDirectiveInputSignals<T>, TSdModalExcludeKeys | X>,
+    TSdModalOptionalKeys<T> & keyof Omit<TDirectiveInputSignals<T>, TSdModalExcludeKeys | X>
+  >;
 }
 
 /**

@@ -13,18 +13,18 @@ import {
  * @param includeDev Whether to include public-dev/ (true only in dev mode)
  */
 export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Promise<void> {
-  const distDir = path.join(pkgDir, "dist");
+  const distDir = pathx.posix(path.join(pkgDir, "dist"));
   await fsx.mkdir(distDir);
 
   // Copy public/
-  const publicDir = path.join(pkgDir, "public");
+  const publicDir = pathx.posix(path.join(pkgDir, "public"));
   if (await fsx.exists(publicDir)) {
     const files = await fsx.glob("**/*", { cwd: publicDir, absolute: true });
     await Promise.all(
       files.map(async (file) => {
-        const relativePath = path.relative(publicDir, file);
-        const distPath = path.join(distDir, relativePath);
-        await fsx.mkdir(path.dirname(distPath));
+        const relativePath = pathx.posix(path.relative(publicDir, file));
+        const distPath = pathx.posix(path.join(distDir, relativePath));
+        await fsx.mkdir(pathx.posix(path.dirname(distPath)));
         await fsx.copy(file, distPath);
       }),
     );
@@ -32,14 +32,14 @@ export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Prom
 
   // Copy public-dev/ (overlay: overwrites public/)
   if (includeDev) {
-    const publicDevDir = path.join(pkgDir, "public-dev");
+    const publicDevDir = pathx.posix(path.join(pkgDir, "public-dev"));
     if (await fsx.exists(publicDevDir)) {
       const files = await fsx.glob("**/*", { cwd: publicDevDir, absolute: true });
       await Promise.all(
         files.map(async (file) => {
-          const relativePath = path.relative(publicDevDir, file);
-          const distPath = path.join(distDir, relativePath);
-          await fsx.mkdir(path.dirname(distPath));
+          const relativePath = pathx.posix(path.relative(publicDevDir, file));
+          const distPath = pathx.posix(path.join(distDir, relativePath));
+          await fsx.mkdir(pathx.posix(path.dirname(distPath)));
           await fsx.copy(file, distPath);
         }),
       );
@@ -59,9 +59,9 @@ export async function watchPublicFiles(
   pkgDir: string,
   includeDev: boolean,
 ): Promise<FsWatcher | undefined> {
-  const distDir = path.join(pkgDir, "dist");
-  const publicDir = path.join(pkgDir, "public");
-  const publicDevDir = path.join(pkgDir, "public-dev");
+  const distDir = pathx.posix(path.join(pkgDir, "dist"));
+  const publicDir = pathx.posix(path.join(pkgDir, "public"));
+  const publicDevDir = pathx.posix(path.join(pkgDir, "public-dev"));
 
   // Initial copy
   await copyPublicFiles(pkgDir, includeDev);
@@ -69,10 +69,10 @@ export async function watchPublicFiles(
   // Collect watch target paths
   const watchPaths: string[] = [];
   if (await fsx.exists(publicDir)) {
-    watchPaths.push(path.join(publicDir, "**/*"));
+    watchPaths.push(pathx.posix(path.join(publicDir, "**/*")));
   }
   if (includeDev && (await fsx.exists(publicDevDir))) {
-    watchPaths.push(path.join(publicDevDir, "**/*"));
+    watchPaths.push(pathx.posix(path.join(publicDevDir, "**/*")));
   }
 
   if (watchPaths.length === 0) {
@@ -91,22 +91,22 @@ export async function watchPublicFiles(
         sourceDir = publicDir;
       }
 
-      const relPath = path.relative(sourceDir, filePath);
-      const distPath = path.join(distDir, relPath);
+      const relPath = pathx.posix(path.relative(sourceDir, filePath));
+      const distPath = pathx.posix(path.join(distDir, relPath));
 
       if (event === "unlink") {
         // If deleted from public, don't delete if same file exists in public-dev
         if (sourceDir === publicDir && includeDev) {
-          const devOverride = path.join(publicDevDir, relPath);
+          const devOverride = pathx.posix(path.join(publicDevDir, relPath));
           if (await fsx.exists(devOverride)) {
             continue;
           }
         }
         // If deleted from public-dev, restore from public if it exists (fallback restore)
         if (sourceDir === publicDevDir && includeDev) {
-          const publicFallback = path.join(publicDir, relPath);
+          const publicFallback = pathx.posix(path.join(publicDir, relPath));
           if (await fsx.exists(publicFallback)) {
-            await fsx.mkdir(path.dirname(distPath));
+            await fsx.mkdir(pathx.posix(path.dirname(distPath)));
             await fsx.copy(publicFallback, distPath);
             continue;
           }
@@ -115,12 +115,12 @@ export async function watchPublicFiles(
       } else if (event === "add" || event === "change") {
         // If changed in public, skip if same file exists in public-dev (overlay takes priority)
         if (sourceDir === publicDir && includeDev) {
-          const devOverride = path.join(publicDevDir, relPath);
+          const devOverride = pathx.posix(path.join(publicDevDir, relPath));
           if (await fsx.exists(devOverride)) {
             continue;
           }
         }
-        await fsx.mkdir(path.dirname(distPath));
+        await fsx.mkdir(pathx.posix(path.dirname(distPath)));
         await fsx.copy(filePath, distPath);
       }
     }

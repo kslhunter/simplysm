@@ -4,6 +4,7 @@ import { ErrorHandler } from "@angular/core";
 import {
   TestSharedDataProvider,
   type ITestUser,
+  testUser,
 } from "./sd-shared-data-test.fixture";
 import { SdServiceClientFactoryProvider } from "../../../src/core/providers/sd-service-client-factory.provider";
 import "@simplysm/core-common";
@@ -102,8 +103,8 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("register 후 getHandle()을 호출하면 데이터가 비동기 로드되고 SharedDataHandle이 반환된다", async () => {
     const { provider } = setup();
     const mockData: ITestUser[] = [
-      { __valueKey: 1, name: "Alice", sortOrder: 1 },
-      { __valueKey: 2, name: "Bob", sortOrder: 2 },
+      testUser(1, "Alice", 1),
+      testUser(2, "Bob", 2),
     ];
 
     provider.register("users", {
@@ -123,7 +124,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("getHandle()을 다시 호출하면 기존 핸들이 반환된다 (데이터 리로드 없음)", async () => {
     const { provider } = setup();
     let callCount = 0;
-    const mockData: ITestUser[] = [{ __valueKey: 1, name: "Alice", sortOrder: 1 }];
+    const mockData: ITestUser[] = [testUser(1, "Alice", 1)];
 
     provider.register("users", {
       serviceKey: "main",
@@ -152,8 +153,8 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("handle.get(key)으로 단건 조회하면 해당 항목이 반환되고, 없으면 undefined를 반환한다", async () => {
     const { provider } = setup();
     const mockData: ITestUser[] = [
-      { __valueKey: 1, name: "Alice", sortOrder: 1 },
-      { __valueKey: 2, name: "Bob", sortOrder: 2 },
+      testUser(1, "Alice", 1),
+      testUser(2, "Bob", 2),
     ];
 
     provider.register("users", {
@@ -171,8 +172,8 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: register 재호출로 getter 변경
   it("새로운 getter로 register()를 재호출하면 기존 리스너가 초기화되고 새 getter로 리로드된다", async () => {
     const { provider } = setup();
-    const oldData: ITestUser[] = [{ __valueKey: 1, name: "Old", sortOrder: 1 }];
-    const newData: ITestUser[] = [{ __valueKey: 2, name: "New", sortOrder: 1 }];
+    const oldData: ITestUser[] = [testUser(1, "Old", 1)];
+    const newData: ITestUser[] = [testUser(2, "New", 1)];
 
     provider.register("users", {
       serviceKey: "main",
@@ -202,10 +203,10 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("changeKeys 없이 이벤트가 수신되면 전체 데이터를 리로드한다", async () => {
     const { provider } = setup();
     let callCount = 0;
-    const data1: ITestUser[] = [{ __valueKey: 1, name: "Alice", sortOrder: 1 }];
+    const data1: ITestUser[] = [testUser(1, "Alice", 1)];
     const data2: ITestUser[] = [
-      { __valueKey: 1, name: "Alice Updated", sortOrder: 1 },
-      { __valueKey: 2, name: "Bob", sortOrder: 2 },
+      testUser(1, "Alice Updated", 1),
+      testUser(2, "Bob", 2),
     ];
 
     provider.register("users", {
@@ -231,9 +232,9 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("changeKeys로 이벤트가 수신되면 해당 키만 교체하고 재정렬한다", async () => {
     const { provider } = setup();
     const initialData: ITestUser[] = [
-      { __valueKey: 1, name: "Alice", sortOrder: 1 },
-      { __valueKey: 2, name: "Bob", sortOrder: 2 },
-      { __valueKey: 3, name: "Charlie", sortOrder: 3 },
+      testUser(1, "Alice", 1),
+      testUser(2, "Bob", 2),
+      testUser(3, "Charlie", 3),
     ];
 
     let callCount = 0;
@@ -243,7 +244,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
         callCount++;
         if (callCount === 1) return Promise.resolve(initialData);
         // 부분 로드: key 2만 반환
-        return Promise.resolve([{ __valueKey: 2, name: "Bob Updated", sortOrder: 0 }] as ITestUser[]);
+        return Promise.resolve([testUser(2, "Bob Updated", 0)]);
       },
       orderBy: (a, b) => a.sortOrder - b.sortOrder,
     });
@@ -276,7 +277,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
       filter: { group: "admin" },
       getter: () => {
         loadCount++;
-        return Promise.resolve([{ __valueKey: 1, name: "A", sortOrder: 1 }] as ITestUser[]);
+        return Promise.resolve([testUser(1, "A", 1)]);
       },
     });
 
@@ -302,7 +303,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
       getter: async () => {
         // slow loading
         await new Promise((r) => setTimeout(r, 50));
-        return [{ __valueKey: 1, name: "Alice", sortOrder: 1 }] as ITestUser[];
+        return [testUser(1, "Alice", 1)];
       },
     });
 
@@ -318,7 +319,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
     const { provider } = setup();
     provider.register("users", {
       serviceKey: "main",
-      getter: () => Promise.resolve([{ __valueKey: 1, name: "Alice", sortOrder: 1 }] as ITestUser[]),
+      getter: () => Promise.resolve([testUser(1, "Alice", 1)]),
     });
 
     const handle = provider.getHandle("users");

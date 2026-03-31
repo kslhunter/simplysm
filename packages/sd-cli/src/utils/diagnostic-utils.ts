@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { pathx } from "@simplysm/core-node";
 
 /**
  * 워크스페이스 스코프 진단 필터.
@@ -8,8 +9,8 @@ import ts from "typescript";
 export function isWorkspaceDiagnostic(diagnostic: ts.Diagnostic, cwd: string): boolean {
   if (diagnostic.file == null) return true;
 
-  const normalized = diagnostic.file.fileName.replace(/\\/g, "/");
-  const normalizedCwd = cwd.replace(/\\/g, "/").replace(/\/$/, "");
+  const normalized = pathx.posix(diagnostic.file.fileName);
+  const normalizedCwd = pathx.posix(cwd).replace(/\/$/, "");
   return normalized.startsWith(normalizedCwd + "/") && !normalized.includes("/node_modules/");
 }
 

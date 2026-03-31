@@ -1,6 +1,7 @@
 import path from "path";
 import ts from "typescript";
 import { consola } from "consola";
+import { pathx } from "@simplysm/core-node";
 import { parseTsconfig } from "./tsconfig";
 import { serializeDiagnostic, type SerializedDiagnostic } from "./typecheck-serialization";
 
@@ -28,15 +29,15 @@ export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult
   const packagesDir = path.join(cwd, "packages");
 
   const isNonPackageFile = (fileName: string): boolean => {
-    const normalized = path.resolve(fileName);
-    const normalizedPkgDir = path.resolve(packagesDir);
+    const normalized = pathx.posixResolve(fileName);
+    const normalizedPkgDir = pathx.posixResolve(packagesDir);
 
     // Files outside packages/ directory
-    if (!normalized.startsWith(normalizedPkgDir + path.sep)) return true;
+    if (!normalized.startsWith(normalizedPkgDir + "/")) return true;
 
     // Files directly in package root (e.g., packages/{pkg}/file.ts — depth 2)
-    const relative = path.relative(normalizedPkgDir, normalized);
-    return relative.split(path.sep).length === 2;
+    const relative = pathx.posix(path.relative(normalizedPkgDir, normalized));
+    return relative.split("/").length === 2;
   };
 
   const rootFiles = parsedConfig.fileNames.filter(isNonPackageFile);
@@ -54,14 +55,18 @@ export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult
     declarationMap: false,
   };
 
+  logger.debug("incremental 프로그램 생성 시작");
   const host = ts.createIncrementalCompilerHost(options);
   const program = ts.createIncrementalProgram({
     rootNames: rootFiles,
     options,
     host,
   });
+  logger.debug("incremental 프로그램 생성 완료");
 
+  logger.debug("emit 시작");
   program.emit();
+  logger.debug("emit 완료");
 
   const allDiagnostics = [
     ...program.getConfigFileParsingDiagnostics(),

@@ -3,7 +3,13 @@ import {
   SdModalSelectButtonControl,
   type ISdSelectModal,
   type ISelectModalOutputResult,
+  type TSdSelectModalInfo,
 } from "../../../../src/ui/form/button/sd-modal-select-button.control";
+
+export interface ITestModalItem {
+  id: number;
+  name: string;
+}
 
 /**
  * 테스트용 선택 모달 컴포넌트
@@ -13,12 +19,18 @@ import {
   standalone: true,
   template: `<div class="test-select-modal">{{ selectMode() }}</div>`,
 })
-export class TestSelectModalComponent implements ISdSelectModal<number> {
+export class TestSelectModalComponent implements ISdSelectModal<ITestModalItem> {
   initialized = signal(false);
-  close = output<ISelectModalOutputResult<number> | undefined>();
-  selectMode = input<"single" | "multi">("single");
-  selectedItemKeys = input<number[]>([]);
+  close = output<ISelectModalOutputResult<ITestModalItem> | undefined>();
+  selectMode = input<"single" | "multi" | undefined>("single");
+  selectedItemKeys = input<any[]>([]);
 }
+
+const TEST_MODAL_INFO: TSdSelectModalInfo<TestSelectModalComponent> = {
+  title: "항목 선택",
+  type: TestSelectModalComponent,
+  inputs: {},
+};
 
 /**
  * single 모드 기본 테스트 호스트
@@ -40,12 +52,8 @@ export class TestSelectModalComponent implements ISdSelectModal<number> {
 })
 export class SdModalSelectButtonSingleTest {
   value = signal<number | undefined>(undefined);
-  selectedItems = signal<Record<string, unknown>[]>([]);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
+  selectedItems = signal<ITestModalItem[]>([]);
+  modalInfo = TEST_MODAL_INFO;
   displayText = signal("선택하세요");
 }
 
@@ -68,14 +76,10 @@ export class SdModalSelectButtonSingleTest {
   `,
 })
 export class SdModalSelectButtonMultiTest {
-  value = signal<number[] | undefined>(undefined);
-  selectedItems = signal<Record<string, unknown>[]>([]);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
-  displayText = signal("선택하세��");
+  value = signal<number[]>([]);
+  selectedItems = signal<ITestModalItem[]>([]);
+  modalInfo = TEST_MODAL_INFO;
+  displayText = signal("선택하세요");
 }
 
 /**
@@ -98,11 +102,7 @@ export class SdModalSelectButtonMultiTest {
 })
 export class SdModalSelectButtonDisabledTest {
   value = signal<number | undefined>(undefined);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
+  modalInfo = TEST_MODAL_INFO;
 }
 
 /**
@@ -127,11 +127,7 @@ export class SdModalSelectButtonDisabledTest {
 })
 export class SdModalSelectButtonRequiredTest {
   value = signal<number | undefined>(undefined);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
+  modalInfo = TEST_MODAL_INFO;
 }
 
 /**
@@ -154,11 +150,7 @@ export class SdModalSelectButtonRequiredTest {
 })
 export class SdModalSelectButtonErasableTest {
   value = signal<number | undefined>(1);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
+  modalInfo = TEST_MODAL_INFO;
 }
 
 /**
@@ -181,9 +173,5 @@ export class SdModalSelectButtonErasableTest {
 })
 export class SdModalSelectButtonMultiErasableTest {
   value = signal<number[]>([1, 2]);
-  modalInfo = {
-    title: "항목 선택",
-    type: TestSelectModalComponent,
-    inputs: {},
-  };
+  modalInfo = TEST_MODAL_INFO;
 }

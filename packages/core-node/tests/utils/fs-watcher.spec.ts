@@ -51,6 +51,32 @@ describe("SdFsWatcher", () => {
 
   //#endregion
 
+  //#region PosixPath
+
+  describe("PosixPath 경로 형식", () => {
+    const DELAY = 300;
+
+    it("changeInfo.path가 POSIX 슬래시를 사용한다", async () => {
+      watcher = await FsWatcher.watch([testDir]);
+
+      const changesPromise = new Promise<Array<{ event: string; path: string }>>((resolve) => {
+        watcher!.onChange({ delay: DELAY }, (changeInfos) => {
+          resolve(changeInfos.map((c) => ({ event: c.event, path: c.path })));
+        });
+      });
+
+      fs.writeFileSync(path.join(testDir, "posix-test.txt"), "hello");
+
+      const changes = await changesPromise;
+
+      expect(changes.length).toBe(1);
+      expect(changes[0].path).not.toContain("\\");
+      expect(changes[0].path).toContain("/");
+    });
+  });
+
+  //#endregion
+
   //#region Glob Pattern Filtering
 
   describe("glob 패턴 필터링", () => {

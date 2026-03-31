@@ -135,7 +135,7 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
             >
               @if (expanding.hasExpandable()) {
                 <td class="_expand-col">
-                  @if (getItemDef(item)?.hasChildren) {
+                  @if (getItemDef(item).hasChildren) {
                     <sd-anchor (click)="onExpandClick($event, item)">
                       <ng-icon [svg]="isExpanded(item) ? icons.tablerChevronDown : icons.tablerChevronRight" />
                     </sd-anchor>
@@ -351,7 +351,7 @@ export class SdSheetControl<T> {
   inset = input(false, { transform: booleanAttribute });
   contentStyle = input<string>();
   getItemCellClassFn = input<(item: T, colKey: string) => string>();
-  getItemCellStyleFn = input<(item: T, colKey: string) => string>();
+  getItemCellStyleFn = input<(item: T, colKey: string) => string | undefined>();
   hideConfigBar = input(false, { transform: booleanAttribute });
 
   // Outputs
@@ -660,16 +660,16 @@ export class SdSheetControl<T> {
     return parts.length > 0 ? parts.join(" ") : null;
   }
 
-  async onKeydownCapture(event: KeyboardEvent): Promise<void> {
-    await this.cellAgent.handleKeydownCapture(event);
+  async onKeydownCapture(event: Event): Promise<void> {
+    await this.cellAgent.handleKeydownCapture(event as KeyboardEvent);
   }
 
   onDblClick(event: MouseEvent): void {
     this.cellAgent.handleCellDoubleClick(event);
   }
 
-  onBlurCapture(event: FocusEvent): void {
-    this.cellAgent.handleBlurCapture(event);
+  onBlurCapture(event: Event): void {
+    this.cellAgent.handleBlurCapture(event as FocusEvent);
   }
 
   onItemKeydown(event: KeyboardEvent, item: T): void {

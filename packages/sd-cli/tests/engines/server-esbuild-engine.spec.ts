@@ -52,8 +52,7 @@ function createMockPkg(overrides: Partial<ServerPackageInfo> = {}): ServerPackag
 
 function setupDefaultBuildResult(): void {
   mockWorker.build.mockResolvedValue({
-    js: { success: true, errors: undefined, warnings: undefined },
-    dts: { success: true, errors: undefined, diagnostics: [] },
+    build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
     mainJsPath: "/packages/test-server/dist/main.js",
   });
   mockWorker.terminate.mockResolvedValue(undefined);
@@ -91,16 +90,14 @@ describe("ServerEsbuildEngine", () => {
         }),
       );
       expect(result.success).toBe(true);
-      expect(result.js.success).toBe(true);
-      expect(result.dts.success).toBe(true);
+      expect(result.build.success).toBe(true);
       await engine.stop();
     });
 
     // Acceptance: maps ServerBuildResult to EngineResult
-    it("maps worker result to EngineResult with js/dts separation", async () => {
+    it("maps worker result to EngineResult with build field", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: true, errors: undefined, warnings: ["warn1"] },
-        dts: { success: false, errors: ["type error"], diagnostics: [{ code: 2345, category: 1 }] },
+        build: { success: false, errors: ["type error"], warnings: ["warn1"], diagnostics: [{ code: 2345, category: 1 }] },
         mainJsPath: "/packages/test-server/dist/main.js",
       });
 
@@ -108,17 +105,16 @@ describe("ServerEsbuildEngine", () => {
       const result = await engine.run({ js: true, dts: false });
 
       expect(result.success).toBe(false);
-      expect(result.js.warnings).toEqual(["warn1"]);
-      expect(result.dts.success).toBe(false);
-      expect(result.dts.diagnostics).toEqual([{ code: 2345, category: 1 }]);
+      expect(result.build.warnings).toEqual(["warn1"]);
+      expect(result.build.success).toBe(false);
+      expect(result.build.diagnostics).toEqual([{ code: 2345, category: 1 }]);
       await engine.stop();
     });
 
-    // Unit: JS failure
-    it("reflects JS build failure in result", async () => {
+    // Unit: build failure
+    it("reflects build failure in result", async () => {
       mockWorker.build.mockResolvedValue({
-        js: { success: false, errors: ["esbuild error"], warnings: undefined },
-        dts: { success: true, errors: undefined, diagnostics: [] },
+        build: { success: false, errors: ["esbuild error"], warnings: undefined, diagnostics: [] },
         mainJsPath: "/packages/test-server/dist/main.js",
       });
 
@@ -126,9 +122,8 @@ describe("ServerEsbuildEngine", () => {
       const result = await engine.run({ js: true, dts: false });
 
       expect(result.success).toBe(false);
-      expect(result.js.success).toBe(false);
-      expect(result.js.errors).toEqual(["esbuild error"]);
-      expect(result.dts.success).toBe(true);
+      expect(result.build.success).toBe(false);
+      expect(result.build.errors).toEqual(["esbuild error"]);
       await engine.stop();
     });
   });
@@ -141,8 +136,7 @@ describe("ServerEsbuildEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
           mainJsPath: "/packages/test-server/dist/main.js",
         });
       });
@@ -158,7 +152,7 @@ describe("ServerEsbuildEngine", () => {
     });
 
     // Acceptance: reports to ResultCollector
-    it("reports build and dts results separately to ResultCollector", async () => {
+    it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
       mockWorker.startWatch.mockImplementation(() => {
@@ -166,8 +160,7 @@ describe("ServerEsbuildEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true, errors: undefined },
-          dts: { success: false, errors: ["type error"] },
+          build: { success: false, errors: ["type error"] },
           mainJsPath: "/packages/test-server/dist/main.js",
         });
       });
@@ -182,12 +175,9 @@ describe("ServerEsbuildEngine", () => {
 
       const addCalls = mockResultCollector.add.mock.calls;
       const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-      const dtsResult = addCalls.find((c: any[]) => c[0].type === "dts");
 
       expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("success");
-      expect(dtsResult).toBeDefined();
-      expect(dtsResult![0].status).toBe("error");
+      expect(buildResult![0].status).toBe("error");
 
       await engine.stop();
     });
@@ -199,8 +189,7 @@ describe("ServerEsbuildEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
           mainJsPath: "/packages/test-server/dist/main.js",
         });
       });
@@ -228,7 +217,7 @@ describe("ServerEsbuildEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true }, mainJsPath: "x" });
+        buildHandler?.({ build: { success: true }, mainJsPath: "x" });
       });
 
       const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });

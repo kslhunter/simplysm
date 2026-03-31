@@ -35,7 +35,9 @@ flowchart TD
             MANUAL[수동만 가능]
         end
 
-        AUTO --> A[Step A: Acceptance Test Red]
+        AUTO --> S0[Step 0: 기존 테스트 영향 분석]
+        S0 --> S0RED[기존 테스트 선수정 → Red 확인]
+        S0RED --> A[Step A: Acceptance Test Red]
         A --> UT[Unit Test Red]
         UT --> IMPL[최소 구현 Green]
         IMPL --> IREF[Refactor]
@@ -58,7 +60,10 @@ flowchart TD
         SPECMD --> DONE
     end
 
-    S2 -->|모든 Slice 완료| S3[Step 3: WBS 체크박스 갱신]
+    S2 -->|모든 Slice 완료| S3_1[Step 3-1: 최종 테스트 정리]
+    S3_1 --> S3_1RUN[전체 테스트 실행]
+    S3_1RUN -->|Fail| S3_1
+    S3_1RUN -->|Pass| S3_2[Step 3-2: WBS 체크박스 갱신]
 ```
 
 ## Step 1: Feature 문서 읽기 + 코드베이스 탐색
@@ -121,6 +126,23 @@ Slice 목록과 각 Slice에 매핑된 Scenario를 사용자에게 표시한다.
 - 새 패키지라 기존 테스트가 없으면, 같은 모노레포의 다른 패키지 테스트 구조를 참고한다
 - Acceptance Test: `{대상}.acc.spec.ts`, Unit Test: `{대상}.spec.ts`
 
+### Step 0. 기존 테스트 영향 분석 + 선수정
+
+각 Slice 시작 시, 구현 전에 기존 테스트부터 점검한다.
+
+**CRITICAL: 여러 Slice를 한번에 구현하는 것은 금지다.** 반드시 한 Slice씩 Step 0 → A → B → C 사이클을 완료한 뒤 다음 Slice로 진행한다.
+
+#### 절차
+
+1. **영향 범위 탐색** — 이번 Slice에서 변경·추가·삭제할 코드(함수, 클래스, 타입, 인터페이스)를 구현계획에서 식별한다
+2. **기존 테스트 탐색** — 해당 코드를 import하거나 호출하는 기존 테스트 파일을 Grep/Glob으로 찾는다
+3. **영향 판정** — 찾은 테스트 중, 이번 Slice의 변경으로 인해 기대값·시그니처·동작이 달라져야 하는 테스트를 식별한다
+4. **기존 테스트 선수정** — 영향받는 테스트의 기대값을 새 스펙에 맞게 수정한다 (구현은 아직 변경하지 않는다)
+5. **Red 확인** — 수정된 기존 테스트를 실행하여 실패(Red)를 확인한다. 아직 구현이 변경되지 않았으므로 실패해야 한다. 만약 이미 통과하면 테스트 수정이 잘못된 것이므로 재점검한다
+6. 영향받는 기존 테스트가 없으면 "영향받는 기존 테스트 없음"을 기록하고 Step A로 진행한다
+
+이후 Step B에서 구현을 변경하면, 기존 테스트와 새 테스트가 함께 Green이 되어야 한다.
+
 ### Step A. Acceptance Test 작성 (Red)
 
 Gherkin Scenario의 Given/When/Then을 프로젝트 테스트 프레임워크의 Acceptance Test로 변환한다. Gherkin은 스펙 문서용이다 — Cucumber 등 BDD 러너를 사용하지 않고, 프로젝트의 일반 테스트 프레임워크로 작성한다. Scenario 하나를 하나의 test 함수로 변환하되, Scenario 내 여러 When/Then이 있으면 하나의 test 함수 안에서 순차 검증한다(통합 수준). 테스트를 실행하여 실패(Red)를 확인한다.
@@ -167,14 +189,12 @@ Code Smell을 트리거로 판단하고, 대응하는 기법을 적용한다:
 
 해당하는 smell이 없으면 "정리 대상 없음"으로 기록한다.
 
-#### 테스트 코드 점검
+#### 테스트 오류 교정
+
+Step C에서는 명백한 오류만 즉시 교정한다. 가치 판단이 필요한 테스트 정리(중복, 구현 결합, 네이밍 등)는 Feature 완료 시점(Step 3)에서 전체를 보고 수행한다 — Scenario 단위로는 판단이 불완전하기 때문이다.
 
 - **소스 텍스트 매칭 테스트 전환/삭제** — Step A의 CRITICAL 규칙 위반 테스트를 실제 import/호출 방식으로 전환한다. 설정 파일 값 검증만 예외
 - **Scaffolding test 삭제** — 클래스/메서드 존재 확인 등 기대 동작을 인코딩하지 않는 테스트
-- **중복 Unit Test 삭제** — Acceptance Test와 동일한 검증을 중복하는 Unit Test
-- **구현 결합 테스트 전환/삭제** — 내부 상태 값, 메서드 호출 횟수 등 구현 세부사항을 검증하는 테스트
-- **공통 setup 추출** — 중복되는 arrange 코드를 헬퍼/beforeEach로
-- **테스트 네이밍 개선** — 검증하는 동작을 문장처럼 읽히게
 
 점검 결과(수정 내용 또는 "정리 대상 없음")를 출력에 기록한다. 정리 후 전체 테스트를 실행한다. 실패하면 수정하고 재테스트한다. 전체 Pass 후 다음 Scenario로 진행한다.
 
@@ -226,15 +246,28 @@ Slice의 모든 Scenario가 완료(`.spec.ts` TDD + `.verify.md` 검증 + `.spec
 ## Step 3: Feature 완료
 
 모든 Slice가 완료되면:
-1. 전체 테스트 스위트를 최종 실행한다
-2. WBS 파일(`wbs.md`)에서 해당 Feature의 `[ ]`를 `[x]`로 갱신한다
+
+### 3-1. 최종 테스트 정리
+
+Feature 전체의 테스트 코드를 "지속적 회귀 테스트로 남길 가치가 있는가?" 관점에서 정리한다. Step C에서는 명백한 오류만 교정했으므로, 여기서 Feature 전체를 보고 가치 판단을 수행한다.
+
+- **중복 Unit Test 삭제** — Acceptance Test와 동일한 검증을 중복하는 Unit Test, Scenario 간 중복 포함
+- **구현 결합 테스트 전환/삭제** — 내부 상태 값, 메서드 호출 횟수 등 구현 세부사항을 검증하는 테스트
+- **공통 setup 추출** — 중복되는 arrange 코드를 헬퍼/beforeEach로
+- **테스트 네이밍 개선** — 검증하는 동작을 문장처럼 읽히게
+
+정리 후 전체 테스트를 실행하여 회귀가 없는지 확인한다.
+
+### 3-2. WBS 갱신
+
+WBS 파일(`wbs.md`)에서 해당 Feature의 `[ ]`를 `[x]`로 갱신한다
 
 ### 체크박스 갱신 시점 정리
 
 | 시점 | 갱신 대상 | 내용 |
 |------|-----------|------|
 | Slice 완료 | Feature 문서 `## 구현계획` | 해당 Slice `[ ]` → `[x]` |
-| Feature 완료 | `wbs.md` | 해당 Feature `[ ]` → `[x]` |
+| Feature 완료 (Step 3-2) | `wbs.md` | 해당 Feature `[ ]` → `[x]` |
 
 ## 기술적 장벽 처리
 

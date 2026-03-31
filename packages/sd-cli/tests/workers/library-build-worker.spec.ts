@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import path from "path";
 
 //#region Mocks
 
@@ -9,13 +10,16 @@ let mockSend: ReturnType<typeof vi.fn>;
 const mockOnChange = vi.fn();
 const mockWatcherClose = vi.fn();
 
-// tsc build mock
+// tsc build mock — default includes program with /pkg/src/index.ts
 const mockRunTscPackageBuild = vi.fn(() => ({
   success: true,
   errors: undefined,
   diagnostics: [],
   errorCount: 0,
   warningCount: 0,
+  program: {
+    getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
+  },
 }));
 
 vi.mock("@simplysm/core-node", () => ({
@@ -30,16 +34,21 @@ vi.mock("@simplysm/core-node", () => ({
       close: mockWatcherClose,
     })),
   },
+  pathx: {
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    posixResolve: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
+  },
 }));
 
 vi.mock("@simplysm/core-common", () => ({
   err: { message: (e: any) => e?.message ?? String(e) },
 }));
 
+const mockDebug = vi.fn();
 vi.mock("consola", () => ({
   consola: {
     withTag: vi.fn(() => ({
-      debug: vi.fn(),
+      debug: mockDebug,
       warn: vi.fn(),
     })),
   },
@@ -71,6 +80,9 @@ beforeEach(async () => {
     diagnostics: [],
     errorCount: 0,
     warningCount: 0,
+    program: {
+      getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
+    },
   });
   mockCollectDeps.mockReturnValue({ workspaceDeps: [], replaceDeps: [] });
   // Re-import to get fresh workerFns
@@ -91,8 +103,7 @@ describe("library-build.worker build()", () => {
   it("runs tsc with output flags and returns combined result", async () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: true, dts: true } });
 
-    expect(result.js.success).toBe(true);
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(true);
     expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
       expect.objectContaining({ output: { js: true, dts: true } }),
     );
@@ -102,8 +113,7 @@ describe("library-build.worker build()", () => {
   it("passes dts-only output to tsc", async () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: false, dts: true } });
 
-    expect(result.js.success).toBe(true);
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(true);
     expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
       expect.objectContaining({ output: { js: false, dts: true } }),
     );
@@ -113,28 +123,30 @@ describe("library-build.worker build()", () => {
   it("runs typecheck only when both false", async () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: false, dts: false } });
 
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(true);
     expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
       expect.objectContaining({ output: { js: false, dts: false } }),
     );
   });
 
-  // Unit: tsc failure reflects in both js and dts results
-  it("reports failure in both js and dts when tsc fails", async () => {
+  // Unit: tsc failure reflects in build result
+  it("reports failure in build when tsc fails", async () => {
     mockRunTscPackageBuild.mockReturnValueOnce({
       success: false,
       errors: ["TS2345: type error"] as any,
       diagnostics: [{ code: 2345, category: 1 }] as any,
       errorCount: 1,
       warningCount: 0,
+      program: {
+        getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
+      },
     });
 
     const result = await workerFns["build"]({ ...buildInfo, output: { js: true, dts: true } });
 
-    expect(result.js.success).toBe(false);
-    expect(result.js.errors).toContain("TS2345: type error");
-    expect(result.dts.success).toBe(false);
-    expect(result.dts.diagnostics).toHaveLength(1);
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("TS2345: type error");
+    expect(result.build.diagnostics).toHaveLength(1);
   });
 
   // Acceptance: env from BuildOutput is passed through to runTscPackageBuild
@@ -168,8 +180,7 @@ describe("library-build.worker startWatch()", () => {
     await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
 
     expect(mockSend).toHaveBeenCalledWith("build", expect.objectContaining({
-      js: expect.objectContaining({ success: true }),
-      dts: expect.objectContaining({ success: true }),
+      build: expect.objectContaining({ success: true }),
     }));
   });
 
@@ -194,12 +205,11 @@ describe("library-build.worker startWatch()", () => {
     const onChangeCallback = mockOnChange.mock.calls[0][1];
     mockSend.mockClear();
 
-    await onChangeCallback();
+    await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
 
     expect(mockSend).toHaveBeenCalledWith("buildStart", {});
     expect(mockSend).toHaveBeenCalledWith("build", expect.objectContaining({
-      js: expect.objectContaining({ success: true }),
-      dts: expect.objectContaining({ success: true }),
+      build: expect.objectContaining({ success: true }),
     }));
   });
 
@@ -221,7 +231,7 @@ describe("library-build.worker startWatch()", () => {
     const onChangeCallback = mockOnChange.mock.calls[0][1];
     mockSend.mockClear();
 
-    await onChangeCallback();
+    await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
 
     expect(mockSend).toHaveBeenCalledWith("error", { message: "tsc crash" });
   });
@@ -273,10 +283,93 @@ describe("library-build.worker startWatch()", () => {
     const onChangeCallback = mockOnChange.mock.calls[0][1];
     mockRunTscPackageBuild.mockClear();
 
-    await onChangeCallback();
+    await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
 
     expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
       expect.objectContaining({ env: "browser" }),
+    );
+  });
+});
+
+describe("library-build.worker startWatch() dependency filter", () => {
+  const createMockProgram = (fileNames: string[]) => ({
+    getSourceFiles: () => fileNames.map((f) => ({ fileName: f })),
+  });
+
+  const buildInfoWithProgram = () => {
+    mockRunTscPackageBuild.mockReturnValue({
+      success: true,
+      errors: undefined,
+      diagnostics: [],
+      errorCount: 0,
+      warningCount: 0,
+      program: createMockProgram(["/pkg/src/index.ts", "/pkg/src/utils.ts"]),
+    });
+  };
+
+  // Acceptance: Skip rebuild when changed file is not in program
+  it("skips rebuild when changed file is not in program source files", async () => {
+    buildInfoWithProgram();
+    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockSend.mockClear();
+
+    await onChangeCallback([{ event: "change", path: "/other/src/unrelated.ts" }]);
+
+    expect(mockSend).not.toHaveBeenCalledWith("buildStart", {});
+    expect(mockSend).not.toHaveBeenCalledWith("build", expect.anything());
+  });
+
+  // Acceptance: Rebuild when changed file is in program
+  it("rebuilds when changed file is in program source files", async () => {
+    buildInfoWithProgram();
+    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockSend.mockClear();
+
+    await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
+
+    expect(mockSend).toHaveBeenCalledWith("buildStart", {});
+    expect(mockSend).toHaveBeenCalledWith("build", expect.anything());
+  });
+
+  // Acceptance: Always rebuild on file add
+  it("always rebuilds on file add event regardless of program", async () => {
+    buildInfoWithProgram();
+    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockSend.mockClear();
+
+    await onChangeCallback([{ event: "add", path: "/pkg/src/brand-new.ts" }]);
+
+    expect(mockSend).toHaveBeenCalledWith("buildStart", {});
+    expect(mockSend).toHaveBeenCalledWith("build", expect.anything());
+  });
+
+  // Acceptance: Always rebuild on file unlink
+  it("always rebuilds on file unlink event regardless of program", async () => {
+    buildInfoWithProgram();
+    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockSend.mockClear();
+
+    await onChangeCallback([{ event: "unlink", path: "/pkg/src/old-file.ts" }]);
+
+    expect(mockSend).toHaveBeenCalledWith("buildStart", {});
+    expect(mockSend).toHaveBeenCalledWith("build", expect.anything());
+  });
+
+  // Acceptance: Debug log when skipping rebuild
+  it("logs debug message when skipping rebuild", async () => {
+    buildInfoWithProgram();
+    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockDebug.mockClear();
+
+    await onChangeCallback([{ event: "change", path: "/other/src/unrelated.ts" }]);
+
+    expect(mockDebug).toHaveBeenCalledWith(
+      expect.stringContaining("빌드에 포함되지 않아 리빌드 건너뜀"),
     );
   });
 });

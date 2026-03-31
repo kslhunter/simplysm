@@ -86,8 +86,7 @@ function createMockEngine() {
   const engine = {
     run: vi.fn().mockResolvedValue({
       success: true,
-      js: { success: true, errors: [], warnings: [] },
-      dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+      build: { success: true, errors: [], warnings: [], diagnostics: [] },
 
     }),
     startWatch: vi.fn(),
@@ -161,7 +160,7 @@ describe("executeTypecheck", () => {
       }),
       expect.any(Object),
     );
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node" });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node", includeTests: true });
   });
 
   it("excludes scripts packages from typecheck", async () => {
@@ -217,8 +216,7 @@ describe("executeTypecheck", () => {
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: false,
-          js: { success: true, errors: [], warnings: [] },
-          dts: { success: false, errors: [], warnings: [], diagnostics: [engineDiag] },
+          build: { success: false, errors: [], warnings: [], diagnostics: [engineDiag] },
     
         }),
         startWatch: vi.fn(),
@@ -260,8 +258,7 @@ describe("executeTypecheck", () => {
           active--;
           return {
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
       
           };
         }),
@@ -341,8 +338,8 @@ describe("executeTypecheck", () => {
 
     const runCalls = mockEngines.map((e) => e.run.mock.calls[0][0]);
     expect(runCalls).toEqual([
-      { js: false, dts: false, env: "node" },
-      { js: false, dts: false, env: "browser" },
+      { js: false, dts: false, env: "node", includeTests: true },
+      { js: false, dts: false, env: "browser", includeTests: true },
     ]);
   });
 
@@ -352,7 +349,7 @@ describe("executeTypecheck", () => {
     await executeTypecheck({ targets: [], options: [] });
 
     expect(mocks.createBuildEngine).toHaveBeenCalledTimes(1);
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node" });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node", includeTests: true });
   });
 
   it("creates 1 task (browser) for browser target", async () => {
@@ -361,7 +358,7 @@ describe("executeTypecheck", () => {
     await executeTypecheck({ targets: [], options: [] });
 
     expect(mocks.createBuildEngine).toHaveBeenCalledTimes(1);
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "browser" });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "browser", includeTests: true });
   });
 
   it("creates 1 task (node) for server target", async () => {
@@ -370,7 +367,7 @@ describe("executeTypecheck", () => {
     await executeTypecheck({ targets: [], options: [] });
 
     expect(mocks.createBuildEngine).toHaveBeenCalledTimes(1);
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node" });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: false, dts: false, env: "node", includeTests: true });
   });
 
   it("passes env to engine.run() for each task", async () => {
@@ -454,8 +451,7 @@ describe("executeTypecheck", () => {
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: false,
-          js: { success: true, errors: [], warnings: [] },
-          dts: { success: false, errors: [], warnings: [], diagnostics: [diag] },
+          build: { success: false, errors: [], warnings: [], diagnostics: [diag] },
     
         }),
         startWatch: vi.fn(),
@@ -511,8 +507,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
             lint: { success: false, errorCount: 2, warningCount: 1, formattedOutput: "lint errors from pkg" },
           }),
           startWatch: vi.fn(),
@@ -567,8 +562,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
             lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
           }),
           startWatch: vi.fn(),
@@ -663,8 +657,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: true, errors: [], warnings: [], diagnostics: [] },
+            build: { success: true, errors: [], warnings: [], diagnostics: [] },
             lint: { success: false, errorCount: 2, warningCount: 1, formattedOutput: "lint err" },
           }),
           startWatch: vi.fn(),
@@ -718,8 +711,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
-            js: { success: true, errors: [], warnings: [] },
-            dts: {
+            build: {
               success: false,
               errors: ["[core-node:node] Something went wrong"],
               warnings: [],
@@ -741,7 +733,7 @@ describe("executeTypecheck", () => {
     });
 
     // Acceptance: Scenario "복수 엔진이 문자열 에러를 반환"
-    it("복수 엔진이 각각 dts.errors에 메시지를 반환하면 모든 에러 메시지가 formattedOutput에 포함된다", async () => {
+    it("복수 엔진이 각각 build.errors에 메시지를 반환하면 모든 에러 메시지가 formattedOutput에 포함된다", async () => {
       setupDefaults({
         "pkg-a": { target: "node" },
         "pkg-b": { target: "node" },
@@ -758,8 +750,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
-            js: { success: true, errors: [], warnings: [] },
-            dts: {
+            build: {
               success: false,
               errors: [errorMessages[idx]],
               warnings: [],
@@ -780,16 +771,15 @@ describe("executeTypecheck", () => {
       expect(result.formattedOutput).toContain("[pkg-b:node] Error in package B");
     });
 
-    // Unit: 단일 엔진이 dts.errors에 복수 메시지를 반환하면 각각 합성 Diagnostic으로 변환된다
-    it("단일 엔진이 dts.errors에 복수 메시지를 담으면 errorCount가 메시지 수와 일치한다", async () => {
+    // Unit: 단일 엔진이 build.errors에 복수 메시지를 반환하면 각각 합성 Diagnostic으로 변환된다
+    it("단일 엔진이 build.errors에 복수 메시지를 담으면 errorCount가 메시지 수와 일치한다", async () => {
       setupDefaults({ "core-node": { target: "node" } });
 
       mocks.createBuildEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
-            js: { success: true, errors: [], warnings: [] },
-            dts: {
+            build: {
               success: false,
               errors: ["Error message 1", "Error message 2", "Error message 3"],
               warnings: [],
@@ -821,8 +811,7 @@ describe("executeTypecheck", () => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
-            js: { success: true, errors: [], warnings: [] },
-            dts: { success: false, errors: [], warnings: [], diagnostics: [diag] },
+            build: { success: false, errors: [], warnings: [], diagnostics: [diag] },
           }),
           startWatch: vi.fn(),
           stop: vi.fn().mockResolvedValue(undefined),

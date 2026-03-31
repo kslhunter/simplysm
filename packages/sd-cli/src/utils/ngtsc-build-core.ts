@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
+import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 
 const logger = consola.withTag("sd:cli:ngtsc-build");
@@ -12,6 +13,7 @@ import type { LintWithProgramResult } from "./lint-with-program";
 import {
   parseTsconfig,
   getPackageSourceFiles,
+  getPackageFiles,
   getCompilerOptionsForEnv,
   type TypecheckEnv,
 } from "./tsconfig";
@@ -34,8 +36,7 @@ export interface NgtscBuildInfo {
 }
 
 export interface NgtscBuildResult {
-  js: { success: boolean; errors?: string[]; warnings?: string[] };
-  dts: { success: boolean; errors?: string[]; diagnostics: SerializedDiagnostic[] };
+  build: { success: boolean; errors?: string[]; warnings?: string[]; diagnostics: SerializedDiagnostic[] };
   lint?: LintWithProgramResult;
 }
 
@@ -45,8 +46,7 @@ export interface NgtscBuildInternalResult extends NgtscBuildResult {
 }
 
 export interface NgtscCombinedBuildEvent {
-  js: { success: boolean; errors?: string[]; warnings?: string[] };
-  dts: { success: boolean; errors?: string[] };
+  build: { success: boolean; errors?: string[]; warnings?: string[] };
   lint?: LintWithProgramResult;
 }
 
@@ -192,6 +192,7 @@ export function writeEmitResults(
   pkgDir: string,
   scss?: SideEffectScssOptions,
 ): void {
+  logger.debug("emit 결과 파일 쓰기 시작");
   const rewritePath = createOutputPathRewriter(pkgDir);
   for (const { filename, contents, sourceFileName } of emitResults) {
     const rewrite = rewritePath(filename, contents);
@@ -241,6 +242,7 @@ export function writeEmitResults(
     fs.mkdirSync(path.dirname(newPath), { recursive: true });
     fs.writeFileSync(newPath, newContent, "utf-8");
   }
+  logger.debug("emit 결과 파일 쓰기 완료");
 }
 
 //#region Side-effect SCSS
@@ -256,6 +258,7 @@ export function compileSideEffectScss(
   scssErrors: string[],
   scssDependencies: Map<string, Set<string>>,
 ): void {
+  logger.debug(`side-effect SCSS 컴파일 시작 (${registry.size}개)`);
   for (const entry of registry.values()) {
     try {
       const result = compileScssFile(entry.scssAbsPath, loadPaths);
@@ -266,6 +269,7 @@ export function compileSideEffectScss(
       scssErrors.push(formatScssError(err, entry.scssAbsPath));
     }
   }
+  logger.debug("side-effect SCSS 컴파일 완료");
 }
 
 //#endregion
@@ -278,6 +282,7 @@ export function compileGlobalScss(
 ): string[] {
   const stylesPath = path.join(pkgDir, "scss", "styles.scss");
   if (!fs.existsSync(stylesPath)) return [];
+  logger.debug("global SCSS 컴파일 시작");
 
   const errors: string[] = [];
   try {
@@ -288,6 +293,7 @@ export function compileGlobalScss(
   } catch (err) {
     errors.push(`Global SCSS error: ${errNs.message(err)}`);
   }
+  logger.debug("global SCSS 컴파일 완료");
   return errors;
 }
 
@@ -302,7 +308,9 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
     logger.debug(`[${info.name}] ngtsc 빌드 시작 (env: ${info.env ?? "none"}, js: ${info.output.js}, dts: ${info.output.dts})`);
 
     const parsedConfig = parseTsconfig(info.pkgDir);
-    const sourceFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
+    const sourceFiles = info.output.includeTests === true
+      ? getPackageFiles(info.pkgDir, parsedConfig)
+      : getPackageSourceFiles(info.pkgDir, parsedConfig);
     logger.debug(`[${info.name}] rootNames: ${sourceFiles.length}개 파일`);
 
     const baseOptions =
@@ -311,12 +319,9 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
         : parsedConfig.options;
     const compilerOptions = buildCompilerOptions(baseOptions, info.pkgDir, info.output);
     const pkgSrcDir = path.join(info.pkgDir, "src");
-    const normalizedSrcDir = pkgSrcDir.replace(/\\/g, "/");
+    const normalizedSrcDir = pathx.posix(pkgSrcDir);
 
-    // Read angularCompilerOptions from root tsconfig
-    const rootTsconfigPath = path.join(info.cwd, "tsconfig.json");
-    const rootRawConfig = ts.readConfigFile(rootTsconfigPath, ts.sys.readFile);
-    const angularOptions = rootRawConfig.config?.angularCompilerOptions ?? {};
+    const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
 
     // SCSS closure variables
     const scssErrors: string[] = [];
@@ -355,7 +360,7 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
     // Emit via AngularCompiler + output-path-rewriting
     const emitResults = compiler.emitAffectedFiles({
       sourceFilter: (fileName: string) =>
-        fileName.replace(/\\/g, "/").startsWith(normalizedSrcDir + "/"),
+        pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
     });
     writeEmitResults(emitResults, info.pkgDir, {
       loadPaths,
@@ -372,14 +377,10 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
     const buildSuccess = errorCount === 0 && scssErrors.length === 0 && globalScssErrors.length === 0;
 
     return {
-      js: {
+      build: {
         success: buildSuccess,
         errors: allErrors.length > 0 ? allErrors : undefined,
         warnings: undefined,
-      },
-      dts: {
-        success: buildSuccess,
-        errors: allErrors.length > 0 ? allErrors : undefined,
         diagnostics: serialized,
       },
       program: compiler.getTsProgram(),
@@ -392,8 +393,7 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
       logger.debug(`[${info.name}] 스택 트레이스:\n${stack}`);
     }
     return {
-      js: { success: false, errors: [message] },
-      dts: { success: false, errors: [message], diagnostics: [] },
+      build: { success: false, errors: [message], diagnostics: [] },
     };
   }
 }

@@ -119,9 +119,8 @@ describe("runNgtscBuild가 AngularCompiler를 사용한다", () => {
     expect(ngtscProgramSpy).not.toHaveBeenCalled();
 
     // 결과 구조 확인
-    expect(result.js).toHaveProperty("success");
-    expect(result.dts).toHaveProperty("success");
-    expect(result.dts).toHaveProperty("diagnostics");
+    expect(result.build).toHaveProperty("success");
+    expect(result.build).toHaveProperty("diagnostics");
   });
 
   it("AngularCompiler 생성자에 transformStylesheet가 전달된다", async () => {

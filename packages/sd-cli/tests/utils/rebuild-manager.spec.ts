@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { RebuildManager } from "../../src/utils/rebuild-manager";
 
 function createManager() {
-  const logger = { start: vi.fn(), success: vi.fn(), error: vi.fn() };
+  const logger = { start: vi.fn(), success: vi.fn(), error: vi.fn(), debug: vi.fn() };
   const manager = new RebuildManager(logger as any);
   return { manager, logger };
 }

@@ -4,7 +4,7 @@
 export interface BuildResult {
   name: string;
   target: string;
-  type: "build" | "dts" | "lint" | "server";
+  type: "build" | "lint" | "server";
   status: "pending" | "building" | "success" | "error" | "running";
   message?: string;
   port?: number;

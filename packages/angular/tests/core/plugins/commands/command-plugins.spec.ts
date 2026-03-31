@@ -17,14 +17,14 @@ describe("Feature 1.5 Slice 2: 커맨드 플러그인", () => {
   describe("SdSaveCommandEventPlugin", () => {
     let plugin: SdSaveCommandEventPlugin;
     let element: HTMLDivElement;
-    let handler: ReturnType<typeof vi.fn>;
+    let handler: ReturnType<typeof vi.fn<(event: Event) => void>>;
     let cleanup: () => void;
 
     beforeEach(() => {
       plugin = injectPlugin(SdSaveCommandEventPlugin);
       element = document.createElement("div");
       document.body.appendChild(element);
-      handler = vi.fn();
+      handler = vi.fn<(event: Event) => void>();
       cleanup = plugin.addEventListener(element, "sdSaveCommand", handler);
     });
 

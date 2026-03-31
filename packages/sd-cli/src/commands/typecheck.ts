@@ -1,6 +1,6 @@
 import ts from "typescript";
-import path from "path";
 import { err as errNs } from "@simplysm/core-common";
+import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
@@ -136,7 +136,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     for (const env of envs) {
       typecheckTasks.push({
         name,
-        dir: path.join(cwd, relPath),
+        dir: pathx.posixResolve(cwd, relPath),
         config: typecheckConfig,
         env,
       });
@@ -182,9 +182,10 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
           js: false,
           dts: false,
           env: task.env,
+          includeTests: true,
           ...(options.lint === true ? { lint: true } : {}),
         });
-        logger.debug(`[${label}] 타입체크 ${result.dts.success ? "완료" : "실패"}`);
+        logger.debug(`[${label}] 타입체크 ${result.build.success ? "완료" : "실패"}`);
         return result;
       } catch (err) {
         const message = errNs.message(err);
@@ -195,8 +196,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
         }
         return {
           success: false,
-          js: { success: true, errors: [], warnings: [] },
-          dts: {
+          build: {
             success: false,
             errors: [`[${label}] ${message}`],
             warnings: [],
@@ -217,14 +217,14 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     for (const settled of results) {
       if (settled.status !== "fulfilled") continue;
       const engineResult = settled.value;
-      const dtsDiags = engineResult.dts.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-      allDiagnostics.push(...dtsDiags);
+      const buildDiags = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
+      allDiagnostics.push(...buildDiags);
       // 역직렬화된 진단 정보에서 에러/경고 수 집계
       // 숫자 카테고리 값 사용 (ts.DiagnosticCategory: Error=1, Warning=0)
-      totalErrorCount += dtsDiags.filter((d) => d.category === 1).length;
-      totalWarningCount += dtsDiags.filter((d) => d.category === 0).length;
-      if (!engineResult.dts.success && dtsDiags.length === 0) {
-        for (const errMsg of engineResult.dts.errors) {
+      totalErrorCount += buildDiags.filter((d) => d.category === 1).length;
+      totalWarningCount += buildDiags.filter((d) => d.category === 0).length;
+      if (!engineResult.build.success && buildDiags.length === 0) {
+        for (const errMsg of engineResult.build.errors) {
           allDiagnostics.push({
             category: 1,
             code: 0,
@@ -234,7 +234,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
             length: undefined,
           });
         }
-        totalErrorCount += engineResult.dts.errors.length || 1;
+        totalErrorCount += engineResult.build.errors.length || 1;
       }
 
       // Lint 결과 수집

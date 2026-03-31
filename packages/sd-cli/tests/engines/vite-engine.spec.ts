@@ -75,10 +75,9 @@ describe("ViteEngine", () => {
         }),
       );
       expect(result.success).toBe(true);
-      expect(result.js.success).toBe(true);
-      expect(result.js.errors).toEqual([]);
-      expect(result.dts.success).toBe(true);
-      expect(result.dts.diagnostics).toEqual([]);
+      expect(result.build.success).toBe(true);
+      expect(result.build.errors).toEqual([]);
+      expect(result.build.diagnostics).toEqual([]);
       await engine.stop();
     });
 
@@ -93,8 +92,8 @@ describe("ViteEngine", () => {
       const result = await engine.run({ js: true, dts: false });
 
       expect(result.success).toBe(false);
-      expect(result.js.success).toBe(false);
-      expect(result.js.errors).toContain("TS2345: Argument of type...");
+      expect(result.build.success).toBe(false);
+      expect(result.build.errors).toContain("TS2345: Argument of type...");
       await engine.stop();
     });
 
@@ -108,7 +107,7 @@ describe("ViteEngine", () => {
       const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: false });
 
-      expect(result.js.warnings).toEqual(["deprecation warning"]);
+      expect(result.build.warnings).toEqual(["deprecation warning"]);
       await engine.stop();
     });
 
@@ -192,8 +191,8 @@ describe("ViteEngine", () => {
       await engine.stop();
     });
 
-    // Unit: dts is always success for client packages
-    it("always returns dts success regardless of build outcome", async () => {
+    // Unit: build failure reflects in result
+    it("reflects build failure in result", async () => {
       mockWorker.build.mockResolvedValue({
         success: false,
         errors: ["error"],
@@ -202,8 +201,7 @@ describe("ViteEngine", () => {
       const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: false });
 
-      expect(result.dts.success).toBe(true);
-      expect(result.dts.diagnostics).toEqual([]);
+      expect(result.build.success).toBe(false);
       await engine.stop();
     });
   });
@@ -268,7 +266,7 @@ describe("ViteEngine", () => {
     });
 
     // Acceptance: Scenario "ResultCollector에 결과 보고"
-    it("reports build and dts results to ResultCollector", async () => {
+    it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
       mockWorker.startWatch.mockResolvedValue({ success: true });
@@ -283,12 +281,9 @@ describe("ViteEngine", () => {
 
       const addCalls = mockResultCollector.add.mock.calls;
       const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-      const dtsResult = addCalls.find((c: any[]) => c[0].type === "dts");
 
       expect(buildResult).toBeDefined();
       expect(buildResult![0].status).toBe("success");
-      expect(dtsResult).toBeDefined();
-      expect(dtsResult![0].status).toBe("success");
 
       await engine.stop();
     });

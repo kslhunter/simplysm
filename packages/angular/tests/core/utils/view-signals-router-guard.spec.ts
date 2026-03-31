@@ -10,7 +10,7 @@ import { setupCanDeactivate } from "../../../src/core/utils/setups/setupCanDeact
 
 // reflectComponentType가 읽는 ɵcmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
 function createTestComponent(selector: string) {
-  const comp: Record<string, unknown> = class {};
+  const comp = class {} as unknown as Record<string, unknown>;
   comp["ɵcmp"] = { selectors: [[selector]] };
   return comp;
 }

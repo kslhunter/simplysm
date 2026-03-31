@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import path from "path";
 
 const mockExists = vi.fn();
 const mockJitiImport = vi.fn();
@@ -6,6 +7,9 @@ const mockJitiImport = vi.fn();
 vi.mock("@simplysm/core-node", () => ({
   fsx: {
     exists: (...args: unknown[]) => mockExists(...args),
+  },
+  pathx: {
+    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
   },
 }));
 

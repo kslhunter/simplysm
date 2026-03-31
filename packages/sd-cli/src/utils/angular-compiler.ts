@@ -2,6 +2,7 @@ import path from "path";
 import { createHash } from "crypto";
 import ts from "typescript";
 import { consola } from "consola";
+import { pathx } from "@simplysm/core-node";
 import { NgtscProgram, OptimizeFor } from "./angular-build";
 import { collectHmrCandidates } from "./hmr-candidates.js";
 
@@ -67,7 +68,7 @@ export class AngularSourceFileCache extends Map<string, ts.SourceFile> {
 
   invalidate(files: Iterable<string>): void {
     for (const file of files) {
-      const normalized = file.replace(/\\/g, "/");
+      const normalized = pathx.posix(file);
       this.delete(normalized);
       this.modifiedFiles.add(normalized);
     }
@@ -312,7 +313,7 @@ export class AngularCompiler {
         }
         const sf = node.getSourceFile();
         let relativePath = path.relative(host.getCurrentDirectory(), sf.fileName);
-        relativePath = relativePath.replace(/\\/g, "/");
+        relativePath = pathx.posix(relativePath);
 
         const updateId = encodeURIComponent(
           `${host.getCanonicalFileName(relativePath)}@${node.name?.text}`,
@@ -352,6 +353,7 @@ export class AngularCompiler {
     angularCompiler: NgCompiler,
     sourceFileCache?: AngularSourceFileCache,
   ): Set<ts.SourceFile> {
+    logger.debug("affected 파일 탐색 시작");
     const affectedFiles = new Set<ts.SourceFile>();
 
     while (true) {
@@ -393,7 +395,7 @@ export class AngularCompiler {
       // modifiedFiles의 경로를 정규화한 Set 생성 (Windows backslash 대응)
       const normalizedModifiedFiles = new Set<string>();
       for (const f of sourceFileCache.modifiedFiles) {
-        normalizedModifiedFiles.add(f.replace(/\\/g, "/"));
+        normalizedModifiedFiles.add(pathx.posix(f));
       }
 
       for (const sourceFile of builderProgram.getSourceFiles()) {
@@ -402,7 +404,7 @@ export class AngularCompiler {
         }
         const resourceDependencies = angularCompiler.getResourceDependencies(sourceFile);
         for (const resourceDep of resourceDependencies) {
-          if (normalizedModifiedFiles.has(resourceDep.replace(/\\/g, "/"))) {
+          if (normalizedModifiedFiles.has(pathx.posix(resourceDep))) {
             this._diagnosticCache.delete(sourceFile);
             affectedFiles.add(sourceFile);
             break;
@@ -411,6 +413,7 @@ export class AngularCompiler {
       }
     }
 
+    logger.debug(`affected 파일 탐색 완료 (${affectedFiles.size}개)`);
     return affectedFiles;
   }
 
@@ -420,6 +423,7 @@ export class AngularCompiler {
     affectedFiles: ReadonlySet<ts.SourceFile>;
     templateUpdates?: Map<string, string>;
   }> {
+    logger.debug("증분 업데이트 시작");
     const sourceFileCache = this._options.sourceFileCache;
     if (sourceFileCache == null) {
       throw new Error("sourceFileCache가 없으면 incremental rebuild를 수행할 수 없습니다");
@@ -432,6 +436,7 @@ export class AngularCompiler {
     if (this._ngtscProgram == null || this._builderProgram == null) {
       throw new Error("initialize()를 먼저 호출해야 합니다");
     }
+    logger.debug("emitAffectedFiles 시작");
 
     const compilerOptions = this._builderProgram.getCompilerOptions();
 
@@ -519,6 +524,7 @@ export class AngularCompiler {
     }
 
     // 7. sourceFilter 적용 후 yield
+    logger.debug(`emitAffectedFiles 완료 (${emitResults.length}개 파일)`);
     for (const result of emitResults) {
       if (options?.sourceFilter != null && !options.sourceFilter(result.sourceFileName)) {
         continue;
@@ -531,6 +537,7 @@ export class AngularCompiler {
     if (this._ngtscProgram == null || this._builderProgram == null) {
       throw new Error("initialize()를 먼저 호출해야 합니다");
     }
+    logger.debug("진단 수집 시작");
 
     const angularCompiler = this._ngtscProgram.compiler;
     const builderProgram = this._builderProgram;

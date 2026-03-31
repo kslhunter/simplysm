@@ -1,13 +1,15 @@
 import consola, { type ConsolaInstance, LogLevels } from "consola";
+import { SdCliReporter } from "./SdCliReporter";
 
 /**
- * Apply debug log level in worker threads
+ * Apply sd-cli reporter and debug log level in worker threads
  *
  * Checks the SD_DEBUG environment variable (set by --debug flag in main process)
  * and applies debug log level to consola in the current worker thread.
  * Must be called at worker module top level.
  */
 export function applyDebugLevel(): void {
+  consola.options.reporters = [new SdCliReporter()];
   if (process.env["SD_DEBUG"] === "true") {
     consola.level = LogLevels.debug;
   }

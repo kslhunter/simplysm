@@ -16,22 +16,12 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
 import { consola, LogLevels } from "consola";
+import { SdCliReporter } from "./utils/SdCliReporter";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
 
-// consola 타임스탬프에 밀리초 포함
-for (const reporter of consola.options.reporters) {
-  const r = reporter as { formatDate?: (date: Date, opts: { date?: boolean }) => string };
-  if (typeof r.formatDate === "function") {
-    const orig = r.formatDate.bind(r);
-    r.formatDate = (date: Date, opts: { date?: boolean }) => {
-      const base = orig(date, opts);
-      if (base === "") return "";
-      return `${base}.${String(date.getMilliseconds()).padStart(3, "0")}`;
-    };
-  }
-}
+consola.options.reporters = [new SdCliReporter()];
 
 const COMMAND_NAMES = ["check", "watch", "dev", "build", "publish", "replace-deps"];
 

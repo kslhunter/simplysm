@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import { consola } from "consola";
 import { SdError } from "@simplysm/core-common";
+import { pathx } from "@simplysm/core-node";
 import type {
   BuildTarget,
   SdBuildPackageConfig,
@@ -36,8 +37,8 @@ export function iteratePackages(
  */
 export function findPackageRoot(startDir: string): string {
   let dir = startDir;
-  while (!fs.existsSync(path.join(dir, "package.json"))) {
-    const parent = path.dirname(dir);
+  while (!fs.existsSync(pathx.posix(path.join(dir, "package.json")))) {
+    const parent = pathx.posix(path.dirname(dir));
     if (parent === dir) throw new Error("package.json not found");
     dir = parent;
   }
@@ -49,13 +50,14 @@ export function findPackageRoot(startDir: string): string {
  * Returns a map of directory name → relative path (e.g., "orm" → "tests/orm").
  */
 export function discoverWorkspacePackages(cwd: string): Map<string, string> {
+  logger.debug("워크스페이스 패키지 탐색 시작");
   const map = new Map<string, string>();
   for (const dir of ["packages", "tests"]) {
-    const baseDir = path.join(cwd, dir);
+    const baseDir = pathx.posix(path.join(cwd, dir));
     if (!fs.existsSync(baseDir)) continue;
     for (const entry of fs.readdirSync(baseDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      if (!fs.existsSync(path.join(baseDir, entry.name, "package.json"))) continue;
+      if (!fs.existsSync(pathx.posix(path.join(baseDir, entry.name, "package.json")))) continue;
       if (map.has(entry.name)) {
         throw new SdError(
           `Duplicate workspace package name: ${entry.name} (${map.get(entry.name)} and ${dir}/${entry.name})`,
@@ -64,6 +66,7 @@ export function discoverWorkspacePackages(cwd: string): Map<string, string> {
       map.set(entry.name, `${dir}/${entry.name}`);
     }
   }
+  logger.debug(`워크스페이스 패키지 탐색 완료 (${map.size}개)`);
   return map;
 }
 
@@ -73,10 +76,24 @@ export function discoverWorkspacePackages(cwd: string): Map<string, string> {
  * Also builds a pathMap (name → relative path) for all packages.
  * Throws SdError if a tests package name collides with an sd.config.ts package name.
  */
+/**
+ * Build pathMap from sd.config.ts packages only (without tests packages).
+ */
+export function buildPathMapFromConfig(
+  configPackages: Record<string, SdPackageConfig | undefined>,
+): Map<string, string> {
+  const pathMap = new Map<string, string>();
+  for (const name of Object.keys(configPackages)) {
+    pathMap.set(name, `packages/${name}`);
+  }
+  return pathMap;
+}
+
 export function mergeTestsPackagesIntoConfig(
   configPackages: Record<string, SdPackageConfig | undefined>,
   workspacePackages: Map<string, string>,
 ): { merged: Record<string, SdPackageConfig | undefined>; pathMap: Map<string, string> } {
+  logger.debug("tests 패키지 병합 시작");
   const pathMap = new Map<string, string>();
   const merged: Record<string, SdPackageConfig | undefined> = { ...configPackages };
 
@@ -99,6 +116,7 @@ export function mergeTestsPackagesIntoConfig(
     pathMap.set(name, relPath);
   }
 
+  logger.debug(`tests 패키지 병합 완료 (총 ${Object.keys(merged).length}개)`);
   return { merged, pathMap };
 }
 
@@ -114,7 +132,7 @@ export function collectDeps(
 ): DepsResult {
   const startTime = performance.now();
   logger.debug("의존성 수집 시작");
-  const rootPkgJsonPath = path.join(cwd, "package.json");
+  const rootPkgJsonPath = pathx.posix(path.join(cwd, "package.json"));
   const rootPkgJson = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")) as { name: string };
   const scopeMatch = rootPkgJson.name.match(/^(@[^/]+)\//);
   const workspaceScope = scopeMatch != null ? scopeMatch[1] : undefined;
@@ -132,7 +150,7 @@ export function collectDeps(
   const visited = new Set<string>();
 
   function traverse(dir: string): void {
-    const pkgJsonPath = path.join(dir, "package.json");
+    const pkgJsonPath = pathx.posix(path.join(dir, "package.json"));
     if (!fs.existsSync(pkgJsonPath)) return;
 
     const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as {
@@ -147,8 +165,8 @@ export function collectDeps(
       // Check for workspace package
       if (workspaceScope != null && dep.startsWith(workspaceScope + "/")) {
         const dirName = dep.slice(workspaceScope.length + 1);
-        const depDir = path.join(cwd, "packages", dirName);
-        if (fs.existsSync(path.join(depDir, "package.json"))) {
+        const depDir = pathx.posix(path.join(cwd, "packages", dirName));
+        if (fs.existsSync(pathx.posix(path.join(depDir, "package.json")))) {
           workspaceDeps.push(dirName);
           traverse(depDir);
           continue;
@@ -159,8 +177,8 @@ export function collectDeps(
       const matched = replaceDepsPatterns.find((p) => p.regex.test(dep));
       if (matched != null) {
         replaceDeps.push(dep);
-        const depNodeModulesDir = path.join(cwd, "node_modules", ...dep.split("/"));
-        if (fs.existsSync(path.join(depNodeModulesDir, "package.json"))) {
+        const depNodeModulesDir = pathx.posix(path.join(cwd, "node_modules", ...dep.split("/")));
+        if (fs.existsSync(pathx.posix(path.join(depNodeModulesDir, "package.json")))) {
           traverse(depNodeModulesDir);
         }
         continue;
@@ -180,7 +198,7 @@ export function collectDeps(
  * in dependencies or peerDependencies.
  */
 export function hasAngularCoreDependency(pkgDir: string): boolean {
-  const pkgJsonPath = path.join(pkgDir, "package.json");
+  const pkgJsonPath = pathx.posix(path.join(pkgDir, "package.json"));
   if (!fs.existsSync(pkgJsonPath)) return false;
   try {
     const content = fs.readFileSync(pkgJsonPath, "utf-8");
@@ -226,6 +244,7 @@ export function filterPackagesByTargets(
   packages: Record<string, SdPackageConfig | undefined>,
   targets: string[],
 ): Record<string, SdPackageConfig> {
+  logger.debug(`패키지 필터링 시작 (targets: ${targets.length > 0 ? targets.join(", ") : "전체"})`);
   const result: Record<string, SdPackageConfig> = {};
 
   for (const [name, config] of Object.entries(packages)) {
@@ -246,6 +265,7 @@ export function filterPackagesByTargets(
     }
   }
 
+  logger.debug(`패키지 필터링 완료 (${Object.keys(result).length}개)`);
   return result;
 }
 
@@ -268,12 +288,13 @@ export function classifyWatchPackages(
   cwd: string,
   pathMap: Map<string, string>,
 ): WatchClassifiedPackages {
+  logger.debug("watch 패키지 분류 시작");
   const libraryPackages: WatchClassifiedPackages["libraryPackages"] = [];
   const watchHookPackages: WatchClassifiedPackages["watchHookPackages"] = [];
 
   for (const { name, config } of iteratePackages(allPackages, [])) {
     const relPath = pathMap.get(name) ?? `packages/${name}`;
-    const pkgDir = path.join(cwd, relPath);
+    const pkgDir = pathx.posix(path.join(cwd, relPath));
     if (isLibraryTarget(config.target)) {
       const buildConfig = config as SdBuildPackageConfig;
       libraryPackages.push({ name, dir: pkgDir, config: buildConfig });
@@ -289,6 +310,7 @@ export function classifyWatchPackages(
     }
   }
 
+  logger.debug(`watch 패키지 분류 완료 (library: ${libraryPackages.length}, watchHook: ${watchHookPackages.length})`);
   return { libraryPackages, watchHookPackages };
 }
 
@@ -307,6 +329,7 @@ export function classifyDevPackages(
   cwd: string,
   pathMap: Map<string, string>,
 ): DevClassifiedPackages {
+  logger.debug("dev 패키지 분류 시작");
   const serverPackages: DevClassifiedPackages["serverPackages"] = [];
   const clientPackages: DevClassifiedPackages["clientPackages"] = [];
   const serverClientsMap = new Map<string, string[]>();
@@ -324,7 +347,7 @@ export function classifyDevPackages(
   // Second pass: classify all packages
   for (const { name, config } of entries) {
     const relPath = pathMap.get(name) ?? `packages/${name}`;
-    const pkgDir = path.join(cwd, relPath);
+    const pkgDir = pathx.posix(path.join(cwd, relPath));
     if (config.target === "server") {
       serverPackages.push({
         name,
@@ -355,6 +378,7 @@ export function classifyDevPackages(
     // Library and scripts packages are excluded from dev mode
   }
 
+  logger.debug(`dev 패키지 분류 완료 (server: ${serverPackages.length}, client: ${clientPackages.length})`);
   return { serverPackages, clientPackages, serverClientsMap };
 }
 

@@ -4,6 +4,7 @@ import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 
 const logger = consola.withTag("sd:cli:tsc-build");
+import { pathx } from "@simplysm/core-node";
 import {
   parseTsconfig,
   getPackageSourceFiles,
@@ -27,6 +28,8 @@ export interface TscPackageBuildOptions {
   parsedConfig?: ts.ParsedCommandLine;
   /** Typecheck environment. When set, adjusts compilerOptions via getCompilerOptionsForEnv(). */
   env?: TypecheckEnv;
+  /** Include tests/ files in typecheck-only mode. Defaults to false. */
+  includeTests?: boolean;
 }
 
 /**
@@ -49,7 +52,7 @@ export interface TscPackageBuildResult {
  * Run TypeScript incremental build for a package.
  *
  * - output.js || output.dts: emit mode (src files only, generates output files)
- * - neither: typecheck only (src + test files, no output)
+ * - neither: typecheck only (src files only by default, src + test files when includeTests=true)
  *
  * Uses tsBuildInfoFile for incremental compilation across runs.
  */
@@ -68,7 +71,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
 
     let rootFiles: string[];
 
-    if (needsEmit) {
+    if (needsEmit || !options.includeTests) {
       rootFiles = getPackageSourceFiles(pkgDir, parsedConfig);
     } else {
       rootFiles = getPackageFiles(pkgDir, parsedConfig);
@@ -79,7 +82,9 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
     const tsBuildInfoFile = path.join(
       pkgDir,
       ".cache",
-      needsEmit ? "build.tsbuildinfo" : `typecheck${envSuffix}.tsbuildinfo`,
+      needsEmit
+        ? `build${output.dts ? "" : "-no-dts"}${envSuffix}.tsbuildinfo`
+        : `typecheck${envSuffix}.tsbuildinfo`,
     );
 
     const compilerOptions: ts.CompilerOptions = {
@@ -148,7 +153,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       const result = builderProgram.getSemanticDiagnosticsOfNextAffectedFile();
       if (result == null) break;
       if ("fileName" in result.affected) {
-        affectedFiles?.add(result.affected.fileName.replace(/\\/g, "/"));
+        affectedFiles?.add(pathx.posix(result.affected.fileName));
       } else {
         // ts.Program returned — global change, treat as full rebuild
         affectedFiles = undefined;

@@ -37,6 +37,8 @@ export interface BuildOutput {
   lint?: boolean;
   /** Typecheck environment. When set, adjusts compilerOptions via getCompilerOptionsForEnv(). */
   env?: TypecheckEnv;
+  /** Include tests/ files in typecheck scope. Only used by check command. */
+  includeTests?: boolean;
 }
 
 /**
@@ -44,12 +46,7 @@ export interface BuildOutput {
  */
 export interface EngineResult {
   success: boolean;
-  js: {
-    success: boolean;
-    errors: string[];
-    warnings: string[];
-  };
-  dts: {
+  build: {
     success: boolean;
     errors: string[];
     warnings: string[];

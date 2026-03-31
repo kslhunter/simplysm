@@ -104,9 +104,19 @@ Gherkin Scenarios를 구현 가능한 단위(Slice)로 분할한다.
 
 #### Slice 형식
 
+각 Slice에는 구현할 함수/메서드 간의 호출 관계를 mermaid 호출 그래프로 포함한다. **명시적 호출뿐 아니라 이벤트 구독(`on`/`subscribe`/`addEventListener`)을 통한 간접 호출도 그래프에 포함한다.** 호출 그래프를 통해 각 함수의 책임과 호출 경로를 명확히 하고, 동일 로직이 여러 경로로 중복 실행되지 않는지 사전에 검증한다.
+
 ```markdown
 #### Slice 1: (제목)
 - **구현 내용:** (이 Slice에서 구현할 것의 요약)
+- **호출 그래프:**
+  ```mermaid
+  flowchart TD
+    A[함수A] --> B[함수B]
+    A --> C[함수C]
+    A --> D[함수D]
+    B -.->|이벤트: onComplete| E[핸들러E]
+  ```
 - **Scenarios:**
   - Scenario: (시나리오 제목 1)
   - Scenario: (시나리오 제목 2)
@@ -114,6 +124,11 @@ Gherkin Scenarios를 구현 가능한 단위(Slice)로 분할한다.
 #### Slice 2: (제목)
 - **구현 내용:** (요약)
 - **의존:** Slice 1
+- **호출 그래프:**
+  ```mermaid
+  flowchart TD
+    ...
+  ```
 - **Scenarios:**
   - Scenario: (시나리오 제목 3)
 ```

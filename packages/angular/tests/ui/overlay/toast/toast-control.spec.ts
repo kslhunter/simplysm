@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdToastTestDefault, SdToastTestProgress } from "./sd-toast-test.fixture";
 
-function setup(component: any) {
+function setup<T>(component: Type<T>) {
   TestBed.configureTestingModule({ imports: [component] });
   const fixture = TestBed.createComponent(component);
   fixture.detectChanges();

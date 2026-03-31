@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
   SdBusyTestDefault,
@@ -6,7 +7,7 @@ import {
   SdBusyTestProgress,
 } from "./sd-busy-test.fixture";
 
-function setup(component: any) {
+function setup<T>(component: Type<T>) {
   TestBed.configureTestingModule({ imports: [component] });
   const fixture = TestBed.createComponent(component);
   fixture.detectChanges();

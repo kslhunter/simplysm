@@ -4,7 +4,7 @@ import consola from "consola";
 import type { EventName } from "chokidar/handler.js";
 import { Minimatch } from "minimatch";
 import path from "path";
-import { type NormPath, norm } from "../utils/path";
+import { type PosixPath, posix } from "../utils/path";
 
 //#region Helpers
 
@@ -46,7 +46,7 @@ export interface FsWatcherChangeInfo {
   /** 변경 이벤트 타입 */
   event: FsWatcherEvent;
   /** 변경된 파일/디렉토리 경로 (정규화됨) */
-  path: NormPath;
+  path: PosixPath;
 }
 
 //#endregion
@@ -113,7 +113,7 @@ export class FsWatcher {
     const watchPaths: string[] = [];
 
     for (const p of paths) {
-      const posixPath = p.replace(/\\/g, "/");
+      const posixPath = posix(p);
       if (GLOB_CHARS_RE.test(posixPath)) {
         this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
         watchPaths.push(extractGlobBase(p));
@@ -167,7 +167,7 @@ export class FsWatcher {
 
       // glob matcher가 존재하면 패턴 필터링 적용
       if (this._globMatchers.length > 0) {
-        const posixFilePath = filePath.replace(/\\/g, "/");
+        const posixFilePath = posix(filePath);
         if (!this._globMatchers.some((m) => m.match(posixFilePath))) return;
       }
 
@@ -211,7 +211,7 @@ export class FsWatcher {
 
         const changeInfos = Array.from(currChangeInfoMap.entries()).map(
           ([changedPath, evt]): FsWatcherChangeInfo => ({
-            path: norm(changedPath),
+            path: posix(changedPath),
             event: evt as FsWatcherEvent,
           }),
         );

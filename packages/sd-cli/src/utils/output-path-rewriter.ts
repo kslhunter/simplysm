@@ -46,7 +46,7 @@ export function adjustMapSources(content: string, originalDir: string, newDir: s
     if (Array.isArray(map.sources)) {
       map.sources = map.sources.map((source) => {
         const absoluteSource = path.resolve(originalDir, source);
-        return path.relative(newDir, absoluteSource);
+        return pathx.posix(path.relative(newDir, absoluteSource));
       });
     }
     return JSON.stringify(map);
@@ -69,19 +69,19 @@ export function createOutputPathRewriter(
   pkgDir: string,
 ): (fileName: string, content: string) => [string, string] | null {
   const pkgName = path.basename(pkgDir);
-  const distDir = pathx.norm(path.join(pkgDir, "dist"));
-  const distPrefix = distDir + path.sep;
+  const distDir = pathx.posixResolve(pkgDir, "dist");
+  const distPrefix = distDir + "/";
   // Nested structure prefix for this package: dist/{pkgName}/src/
-  const ownNestedPrefix = pathx.norm(path.join(distDir, pkgName, "src")) + path.sep;
+  const ownNestedPrefix = pathx.posixResolve(distDir, pkgName, "src") + "/";
 
   return (fileName, content) => {
-    fileName = pathx.norm(fileName);
+    fileName = pathx.posixResolve(fileName);
 
     if (!fileName.startsWith(distPrefix)) return null;
 
     if (fileName.startsWith(ownNestedPrefix)) {
       // Rewrite nested path to flat: dist/{pkgName}/src/... → dist/...
-      const flatPath = path.join(distDir, fileName.slice(ownNestedPrefix.length));
+      const flatPath = pathx.posixResolve(distDir, fileName.slice(ownNestedPrefix.length));
       if (fileName.endsWith(".d.ts.map") || fileName.endsWith(".js.map")) {
         content = adjustMapSources(content, path.dirname(fileName), path.dirname(flatPath));
       }
@@ -90,7 +90,7 @@ export function createOutputPathRewriter(
 
     // Nested output from other packages (dist/{otherPkg}/src/...) → ignore
     const relFromDist = fileName.slice(distPrefix.length);
-    const segments = relFromDist.split(path.sep);
+    const segments = relFromDist.split("/");
     if (segments.length >= 3 && segments[1] === "src") {
       return null;
     }

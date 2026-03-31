@@ -1,5 +1,6 @@
 import type { InlineConfig, PluginOption } from "vite";
 import path from "path";
+import { pathx } from "@simplysm/core-node";
 import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
@@ -227,7 +228,7 @@ export async function createClientViteConfig(
         if (!code.includes("import.meta")) return;
 
         // id(파일 경로)를 Vite 서빙 URL로 변환
-        const relative = path.relative(pkgDir, id).replace(/\\/g, "/");
+        const relative = pathx.posix(path.relative(pkgDir, id));
         const moduleUrl = id.startsWith("/") || id.startsWith("\0")
           ? id // 가상 모듈(/@vite/client 등)은 그대로 사용
           : base + relative;

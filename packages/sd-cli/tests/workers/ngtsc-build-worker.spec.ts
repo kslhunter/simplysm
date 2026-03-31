@@ -32,12 +32,11 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
     });
 
     // Debug: print errors if build failed
-    if (!result.js.success) {
-      console.error("JS errors:", result.js.errors);
-      console.error("DTS errors:", result.dts.errors);
+    if (!result.build.success) {
+      console.error("Build errors:", result.build.errors);
     }
 
-    expect(result.js.success).toBe(true);
+    expect(result.build.success).toBe(true);
 
     // Find the provider file output
     const providerJsPath = resolve(distDir, "core", "providers", "sd-theme-provider.js");
@@ -74,7 +73,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       output: { js: true, dts: true },
     });
 
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(true);
 
     const providerDtsPath = resolve(distDir, "core", "providers", "sd-theme-provider.d.ts");
     expect(fs.existsSync(providerDtsPath)).toBe(true);
@@ -107,7 +106,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       output: { js: true, dts: false },
     });
 
-    expect(result.js.success).toBe(true);
+    expect(result.build.success).toBe(true);
 
     const jsExists = fs.existsSync(resolve(distDir, "core", "providers", "sd-theme-provider.js"));
     expect(jsExists).toBe(true);
@@ -131,8 +130,8 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
     });
 
     // Angular package should compile cleanly
-    expect(result.dts.diagnostics).toBeDefined();
-    expect(Array.isArray(result.dts.diagnostics)).toBe(true);
+    expect(result.build.diagnostics).toBeDefined();
+    expect(Array.isArray(result.build.diagnostics)).toBe(true);
   }, 60_000);
 
   // Acceptance: Scenario "타입 에러가 있어도 빌드 결과를 반환한다"
@@ -146,10 +145,9 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
     });
 
     // Verify result structure completeness
-    expect(result.js).toHaveProperty("success");
-    expect(result.dts).toHaveProperty("success");
-    expect(result.dts).toHaveProperty("diagnostics");
-    expect(Array.isArray(result.dts.diagnostics)).toBe(true);
+    expect(result.build).toHaveProperty("success");
+    expect(result.build).toHaveProperty("diagnostics");
+    expect(Array.isArray(result.build.diagnostics)).toBe(true);
   }, 60_000);
 
   // Acceptance: Scenario "scss/styles.scss가 CSS로 컴파일되어 dist에 출력된다"
@@ -165,7 +163,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       output: { js: true, dts: false },
     });
 
-    expect(result.dts.success).toBe(true);
+    expect(result.build.success).toBe(true);
 
     const stylesCssPath = resolve(distDir, "styles.css");
     expect(fs.existsSync(stylesCssPath)).toBe(true);

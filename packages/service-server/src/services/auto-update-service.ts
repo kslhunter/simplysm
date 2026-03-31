@@ -42,7 +42,7 @@ export const AutoUpdateService = defineService("AutoUpdate", (ctx) => ({
     if (versionItem == null) return undefined;
 
     const downloadPath =
-      "/" + pathx.posix(ctx.clientName ?? "", platform, "updates", versionItem.fileName);
+      "/" + pathx.posix(path.join(ctx.clientName ?? "", platform, "updates", versionItem.fileName));
 
     return {
       version: version.toString(),

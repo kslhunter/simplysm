@@ -1,7 +1,6 @@
-import path from "path";
 import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
-import { fsx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdConfig, SdConfigParams } from "../sd-config.types";
 
@@ -13,7 +12,7 @@ const logger = consola.withTag("sd:cli:sd-config");
  * @throws if sd.config.ts is missing or format is incorrect
  */
 export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
-  const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
+  const sdConfigPath = pathx.posixResolve(params.cwd, "sd.config.ts");
   logger.debug(`sd.config.ts 로드 중: ${sdConfigPath}`);
 
   if (!(await fsx.exists(sdConfigPath))) {

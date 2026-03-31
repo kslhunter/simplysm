@@ -21,7 +21,7 @@ export function formatBuildMessages(name: string, label: string, messages: strin
 export function printErrors(results: Map<string, BuildResult>): void {
   for (const result of results.values()) {
     if (result.status === "error") {
-      const typeLabel = result.type === "dts" ? "dts" : result.type === "lint" ? "lint" : result.target;
+      const typeLabel = result.type === "lint" ? "lint" : result.target;
       if (result.message != null && result.message !== "") {
         consola.error(formatBuildMessages(result.name, typeLabel, [result.message]));
       } else {

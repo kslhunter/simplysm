@@ -23,12 +23,12 @@ describe("ResultCollector", () => {
   it("returns all results via toMap", () => {
     const collector = new ResultCollector();
     collector.add({ name: "core", target: "node", type: "build", status: "success" });
-    collector.add({ name: "core", target: "node", type: "dts", status: "building" });
+    collector.add({ name: "core", target: "node", type: "lint", status: "building" });
 
     const map = collector.toMap();
     expect(map.size).toBe(2);
     expect(map.has("core:build")).toBe(true);
-    expect(map.has("core:dts")).toBe(true);
+    expect(map.has("core:lint")).toBe(true);
   });
 
   it("returns undefined for non-existent key", () => {

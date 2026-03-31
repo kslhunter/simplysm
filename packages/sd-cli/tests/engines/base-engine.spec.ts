@@ -46,8 +46,7 @@ function createMockPkg(overrides: Partial<BuildPackageInfo> = {}): BuildPackageI
 
 function setupDefaultBuildResult(): void {
   mockWorker.build.mockResolvedValue({
-    js: { success: true, errors: undefined, warnings: undefined },
-    dts: { success: true, errors: undefined, diagnostics: [] },
+    build: { success: true, errors: undefined, warnings: undefined, diagnostics: [] },
     lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
   });
   mockWorker.terminate.mockResolvedValue(undefined);
@@ -78,7 +77,7 @@ describe("BaseEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -101,7 +100,7 @@ describe("BaseEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
@@ -114,7 +113,7 @@ describe("BaseEngine", () => {
       await engine.stop();
     });
 
-    it("reports build and dts results separately to ResultCollector", async () => {
+    it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
       mockWorker.startWatch.mockImplementation(() => {
@@ -122,8 +121,7 @@ describe("BaseEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true, errors: undefined },
-          dts: { success: false, errors: ["type error"] },
+          build: { success: false, errors: ["type error"] },
         });
       });
 
@@ -137,13 +135,10 @@ describe("BaseEngine", () => {
 
       const addCalls = mockResultCollector.add.mock.calls;
       const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-      const dtsResult = addCalls.find((c: any[]) => c[0].type === "dts");
 
       expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("success");
+      expect(buildResult![0].status).toBe("error");
       expect(buildResult![0].target).toBe("node");
-      expect(dtsResult).toBeDefined();
-      expect(dtsResult![0].status).toBe("error");
 
       await engine.stop();
     });
@@ -157,7 +152,7 @@ describe("BaseEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({
@@ -182,7 +177,7 @@ describe("BaseEngine", () => {
         "test-pkg (node)",
       );
 
-      buildHandler?.({ js: { success: true }, dts: { success: true } });
+      buildHandler?.({ build: { success: true } });
       expect(mockResolver).toHaveBeenCalled();
 
       await engine.stop();
@@ -209,7 +204,7 @@ describe("BaseEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({
@@ -229,7 +224,7 @@ describe("BaseEngine", () => {
       )?.[1];
 
       buildStartHandler?.({});
-      buildHandler?.({ js: { success: true }, dts: { success: true } });
+      buildHandler?.({ build: { success: true } });
 
       // The resolver should have been called, which resolves the RebuildManager promise
       expect(resolverFn).toBeDefined();
@@ -237,7 +232,7 @@ describe("BaseEngine", () => {
       await engine.stop();
     });
 
-    it("does not call registerBuild on initial buildStart (only on rebuilds)", async () => {
+    it("calls registerBuild on initial buildStart as well as rebuilds", async () => {
       const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
 
       mockWorker.startWatch.mockImplementation(() => {
@@ -251,7 +246,7 @@ describe("BaseEngine", () => {
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
-        buildHandler?.({ js: { success: true }, dts: { success: true } });
+        buildHandler?.({ build: { success: true } });
       });
 
       const engine = new TscEngine({
@@ -262,8 +257,8 @@ describe("BaseEngine", () => {
 
       await engine.startWatch({ js: true, dts: true });
 
-      // registerBuild should NOT have been called for the initial build
-      expect(mockRebuildManager.registerBuild).not.toHaveBeenCalled();
+      // registerBuild should be called for ALL builds including initial
+      expect(mockRebuildManager.registerBuild).toHaveBeenCalledOnce();
 
       await engine.stop();
     });
@@ -276,8 +271,7 @@ describe("BaseEngine", () => {
           (call: any[]) => call[0] === "build",
         )?.[1];
         buildHandler?.({
-          js: { success: true },
-          dts: { success: true },
+          build: { success: true },
         });
       });
 

@@ -24,7 +24,7 @@ import { setupRipple } from "../../../core/utils/setups/setupRipple";
   standalone: true,
   imports: [SdCollapseControl, SdCollapseIconControl, NgTemplateOutlet, NgIcon],
   template: `
-    <div class="_content" tabindex="0" (click)="onContentClick()" (keydown.enter)="onContentClick()">
+    <div class="_content" [style]="contentStyle()" [class]="contentClass()" tabindex="0" (click)="onContentClick()" (keydown.enter)="onContentClick()">
       @if (layout() === "accordion" && hasChildren()) {
         <sd-collapse-icon [open]="open()" />
       }
@@ -119,6 +119,8 @@ export class SdListItemControl {
   selected = input(false, { transform: booleanAttribute });
   selectedIcon = input<string>();
   readonly = input(false, { transform: booleanAttribute });
+  contentStyle = input<string>();
+  contentClass = input<string>();
 
   toolTpl = contentChild<TemplateRef<void>>("toolTpl");
 

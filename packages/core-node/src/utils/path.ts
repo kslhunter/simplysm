@@ -3,14 +3,14 @@ import { ArgumentError } from "@simplysm/core-common";
 
 //#region Types
 
-const NORM = Symbol("NormPath");
+const POSIX = Symbol("PosixPath");
 
 /**
- * 정규화된 경로를 나타내는 브랜드 타입.
- * norm()을 통해서만 생성할 수 있다.
+ * POSIX 스타일(슬래시) 경로를 나타내는 브랜드 타입.
+ * posix() 또는 posixResolve()를 통해서만 생성할 수 있다.
  */
-export type NormPath = string & {
-  [NORM]: never;
+export type PosixPath = string & {
+  [POSIX]: never;
 };
 
 //#endregion
@@ -19,14 +19,24 @@ export type NormPath = string & {
 
 /**
  * POSIX 스타일 경로로 변환한다 (백슬래시 → 슬래시).
+ * 경로 결합이나 resolve는 수행하지 않는다.
  *
  * @example
  * posix("C:\\Users\\test"); // "C:/Users/test"
- * posix("src", "index.ts"); // "src/index.ts"
  */
-export function posix(...args: string[]): string {
-  const resolvedPath = path.join(...args);
-  return resolvedPath.replace(/\\/g, "/");
+export function posix(p: string): PosixPath {
+  return p.replace(/\\/g, "/") as PosixPath;
+}
+
+/**
+ * 절대 경로로 resolve한 뒤 POSIX 스타일로 변환한다.
+ *
+ * @example
+ * posixResolve("/base", "sub", "file.txt"); // "/base/sub/file.txt"
+ * posixResolve("relative/path"); // "D:/cwd/relative/path"
+ */
+export function posixResolve(...args: string[]): PosixPath {
+  return path.resolve(...args).replace(/\\/g, "/") as PosixPath;
 }
 
 /**
@@ -72,8 +82,8 @@ export function basenameWithoutExt(filePath: string): string {
  * childPath가 parentPath의 하위 경로인지 확인한다.
  * 동일한 경로이면 false를 반환한다.
  *
- * 경로는 내부적으로 `norm()`을 사용하여 정규화되며,
- * 플랫폼별 경로 구분자(Windows: `\`, Unix: `/`)를 사용하여 비교한다.
+ * 경로는 내부적으로 `posixResolve()`를 사용하여 정규화되며,
+ * POSIX 슬래시(`/`)를 구분자로 사용하여 비교한다.
  *
  * @example
  * isChildPath("/a/b/c", "/a/b"); // true
@@ -81,32 +91,18 @@ export function basenameWithoutExt(filePath: string): string {
  * isChildPath("/a/b", "/a/b"); // false (동일 경로)
  */
 export function isChildPath(childPath: string, parentPath: string): boolean {
-  const normalizedChild = norm(childPath);
-  const normalizedParent = norm(parentPath);
+  const normalizedChild = posixResolve(childPath);
+  const normalizedParent = posixResolve(parentPath);
 
-  // 동일 경로는 false 반환
   if (normalizedChild === normalizedParent) {
     return false;
   }
 
-  // 부모 경로 + 구분자로 시작하는지 확인
-  const parentWithSep = normalizedParent.endsWith(path.sep)
+  const parentWithSep = normalizedParent.endsWith("/")
     ? normalizedParent
-    : normalizedParent + path.sep;
+    : normalizedParent + "/";
 
   return normalizedChild.startsWith(parentWithSep);
-}
-
-/**
- * 경로를 정규화하여 NormPath로 반환한다.
- * 절대 경로로 변환하고 플랫폼별 구분자로 정규화한다.
- *
- * @example
- * norm("/some/path"); // NormPath
- * norm("relative", "path"); // NormPath (절대 경로로 변환됨)
- */
-export function norm(...paths: string[]): NormPath {
-  return path.resolve(...paths) as NormPath;
 }
 
 /**

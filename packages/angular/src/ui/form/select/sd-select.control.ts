@@ -26,7 +26,10 @@ import { NgIcon } from "@ng-icons/core";
 import { tablerCaretDown } from "@ng-icons/tabler-icons";
 import { tabbable } from "tabbable";
 
-export type TSelectModeValue<T> = T | T[] | undefined;
+export type TSelectModeValue<T> = {
+  multi: T[];
+  single: T;
+};
 
 @Component({
   selector: "sd-select",
@@ -175,9 +178,9 @@ export type TSelectModeValue<T> = T | T[] | undefined;
     "[attr.data-sd-disabled]": "disabled()",
   },
 })
-export class SdSelectControl<T> {
-  selectMode = input<"single" | "multi">("single");
-  value = model<TSelectModeValue<T>>();
+export class SdSelectControl<M extends "single" | "multi", T> {
+  selectMode = input("single" as M);
+  value = model<TSelectModeValue<any>[M]>();
   placeholder = input<string>();
   disabled = input(false, { transform: booleanAttribute });
   inline = input(false, { transform: booleanAttribute });

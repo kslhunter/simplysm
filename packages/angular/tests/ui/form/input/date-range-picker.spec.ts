@@ -426,8 +426,8 @@ describe("Feature 5.2 Slice 2: SdDateRangePicker", () => {
       "sd-range input.sd-invalid-input",
     );
     expect(invalidInputs.length).toBe(2);
-    expect(invalidInputs[0].checkValidity()).toBe(false);
-    expect(invalidInputs[1].checkValidity()).toBe(false);
+    expect((invalidInputs[0] as HTMLInputElement).checkValidity()).toBe(false);
+    expect((invalidInputs[1] as HTMLInputElement).checkValidity()).toBe(false);
   });
 });
 
