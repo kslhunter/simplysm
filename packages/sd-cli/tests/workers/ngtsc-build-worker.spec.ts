@@ -11,14 +11,14 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   beforeAll(() => {
     // Clean dist before tests
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
   });
 
   afterAll(() => {
     // Clean up dist after tests
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
   });
 
@@ -63,7 +63,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   it("outputs .d.ts files with Angular type metadata", async () => {
     // Clean dist and run with dts: true
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
     const result = await runNgtscBuild({
@@ -96,7 +96,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "run()에서 dts: false면 .d.ts를 생략한다"
   it("omits .d.ts when output is {js: true, dts: false}", async () => {
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
     const result = await runNgtscBuild({
@@ -119,7 +119,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "TypeScript + Angular diagnostics를 통합 수집한다"
   it("collects diagnostics from both TypeScript and Angular compiler", async () => {
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
     const result = await runNgtscBuild({
@@ -153,7 +153,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "scss/styles.scss가 CSS로 컴파일되어 dist에 출력된다"
   it("compiles scss/styles.scss to dist/styles.css", async () => {
     if (fs.existsSync(distDir)) {
-      fs.rmSync(distDir, { recursive: true, force: true });
+      fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
     const result = await runNgtscBuild({
