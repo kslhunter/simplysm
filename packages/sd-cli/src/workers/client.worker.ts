@@ -21,6 +21,8 @@ export interface ClientBuildInfo {
   name: string;
   cwd: string;
   pkgDir: string;
+  /** 클라이언트 프레임워크 선택 */
+  framework?: "angular" | "solid";
   /** Vite dev server 포트 (standalone clients with server: number) */
   port?: number;
   /** 빌드 시 치환할 환경변수 */
@@ -203,6 +205,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const polyfills = fs.existsSync(polyfillsPath) ? ["./src/polyfills.ts"] : undefined;
 
     const viteConfig = await createClientViteConfig({
+      framework: info.framework,
       pkgDir: info.pkgDir,
       pkgName,
       mode: "dev",
@@ -245,7 +248,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     sender.send("serverReady", { port: actualPort });
 
     // .config.json 생성
-    writeConfigJson(info.pkgDir, info.configs);
+    writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
 
     return { success: true };
   } catch (err) {
@@ -273,9 +276,10 @@ async function startLegacyWatch(info: ClientBuildInfo): Promise<ClientBuildResul
     const polyfills = fs.existsSync(polyfillsPath) ? ["./src/polyfills.ts"] : undefined;
 
     const viteConfig = await createClientViteConfig({
+      framework: info.framework,
       pkgDir: info.pkgDir,
       pkgName,
-      mode: "build",
+      mode: "dev",
       tsconfigPath,
       serverPort: 0,
       env: info.env,
@@ -297,7 +301,7 @@ async function startLegacyWatch(info: ClientBuildInfo): Promise<ClientBuildResul
     rollupWatcher = watcher;
 
     // .config.json 생성
-    writeConfigJson(info.pkgDir, info.configs);
+    writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
 
     // HTTP 정적 파일 서버 시작
     const name = pkgName.replace(/^@[^/]+\//, "");
@@ -402,6 +406,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     let lintResult: LintWithProgramResult | undefined;
 
     const viteConfig = await createClientViteConfig({
+      framework: info.framework,
       pkgDir: info.pkgDir,
       pkgName,
       mode: "build",

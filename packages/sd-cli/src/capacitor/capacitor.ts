@@ -299,6 +299,17 @@ export class Capacitor {
       Capacitor._logger.debug("cap init 완료");
     }
 
+    // www/index.html placeholder (cap sync/copy에 필요, 이미 존재하면 유지)
+    const wwwPath = pathx.posixResolve(this._capPath, "www");
+    await fsx.mkdir(wwwPath);
+    const wwwIndexPath = pathx.posixResolve(wwwPath, "index.html");
+    if (!(await fsx.exists(wwwIndexPath))) {
+      await fsx.write(
+        wwwIndexPath,
+        "<!DOCTYPE html><html><head></head><body></body></html>",
+      );
+    }
+
     return true;
   }
 

@@ -271,7 +271,7 @@ describe("BuildOrchestrator.start", () => {
 
     // BuildEngine should be created and run() called
     expect(createBuildEngine).toHaveBeenCalledOnce();
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: true, dts: true, lint: true });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
     expect(mockEngines[0].stop).toHaveBeenCalled();
   });
 
@@ -624,7 +624,7 @@ describe("BuildOrchestrator client build", () => {
       expect.any(Object),
     );
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
+    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
     expect(engineMock.stop).toHaveBeenCalled();
   });
 
@@ -852,7 +852,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
     // ViteEngine should have been called
     expect(createBuildEngine).toHaveBeenCalled();
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: true });
+    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
 
     // Capacitor should have been created, initialized, and built
     expect(Capacitor.create).toHaveBeenCalledWith(
@@ -980,8 +980,8 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
 const { runLintInWorker } = await import("../../src/utils/lint-utils");
 
 describe("BuildOrchestrator lint integration", () => {
-  // Scenario: build에서 각 패키지 빌드 시 lint가 함께 실행된다
-  it("passes lint:true to engine.run for all package types", async () => {
+  // build에서 lint를 실행하지 않는다 (lint는 check에서만 실행)
+  it("passes lint:false to engine.run for all package types", async () => {
     setupDefaults({
       packages: {
         "core-common": { target: "neutral", publish: { type: "npm" } },
@@ -994,15 +994,13 @@ describe("BuildOrchestrator lint integration", () => {
     await orchestrator.initialize();
     await orchestrator.start();
 
-    // All 3 engines should receive lint: true
     expect(mockEngines).toHaveLength(3);
     for (const engine of mockEngines) {
       const runArgs = engine.run.mock.calls[0][0];
-      expect(runArgs.lint).toBe(true);
+      expect(runArgs.lint).toBe(false);
     }
   });
 
-  // Scenario: build에서 기존 runLint() 병렬 태스크가 제거된다
   it("does not call runLint (separate lint worker)", async () => {
     setupDefaults({
       packages: {
@@ -1017,32 +1015,7 @@ describe("BuildOrchestrator lint integration", () => {
     expect(runLintInWorker).not.toHaveBeenCalled();
   });
 
-  // Scenario: build lint 에러가 빌드 결과 출력에 포함된다
-  it("sets hasError when lint fails in engine result", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    vi.mocked(createBuildEngine).mockReturnValue({
-      run: vi.fn().mockResolvedValue({
-        success: true,
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-        lint: { success: false, errorCount: 3, warningCount: 0, formattedOutput: "lint errors here" },
-      }),
-      startWatch: vi.fn(),
-      stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    const hasError = await orchestrator.start();
-
-    expect(hasError).toBe(true);
-  });
-
-  // Scenario: build에서 scripts 패키지는 제외된다
-  it("excludes scripts packages (no lint for scripts)", async () => {
+  it("excludes scripts packages", async () => {
     setupDefaults({
       packages: {
         "core-common": { target: "neutral", publish: { type: "npm" } },
@@ -1054,122 +1027,11 @@ describe("BuildOrchestrator lint integration", () => {
     await orchestrator.initialize();
     await orchestrator.start();
 
-    // Only core-common should have engine (scripts excluded)
     expect(mockEngines).toHaveLength(1);
     expect(runLintInWorker).not.toHaveBeenCalled();
   });
 });
 
 //#endregion
-
-//#region Feature 2.1 Slice 3: build typeLabel에 lint 분기 추가
-
-describe("Feature 2.1: build에서 lint 에러가 'lint' 라벨로 출력", () => {
-  it("build에서 lint 에러가 'lint' 라벨로 출력된다", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    vi.mocked(createBuildEngine).mockReturnValue({
-      run: vi.fn().mockResolvedValue({
-        success: true,
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-        lint: { success: false, errorCount: 1, warningCount: 0, formattedOutput: "no-unused-vars" },
-      }),
-      startWatch: vi.fn(),
-      stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    // formatBuildMessages should have been called with "lint" label
-    const { formatBuildMessages } = await import("../../src/utils/output-utils");
-    const fmtCalls = vi.mocked(formatBuildMessages).mock.calls;
-    const lintCall = fmtCalls.find((c) => c[1] === "lint");
-    expect(lintCall).toBeDefined();
-    expect(lintCall![0]).toBe("core-common");
-  });
-
-  it("build에서 JS 빌드 에러는 target 라벨(neutral) 유지", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    vi.mocked(createBuildEngine).mockReturnValue({
-      run: vi.fn().mockResolvedValue({
-        success: false,
-        build: { success: false, errors: ["Module not found"], warnings: [], diagnostics: [] },
-      }),
-      startWatch: vi.fn(),
-      stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    const { formatBuildMessages } = await import("../../src/utils/output-utils");
-    const fmtCalls = vi.mocked(formatBuildMessages).mock.calls;
-    const jsCall = fmtCalls.find((c) => c[1] === "neutral");
-    expect(jsCall).toBeDefined();
-  });
-
-  it("build에서 빌드 에러는 target 라벨 유지", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    vi.mocked(createBuildEngine).mockReturnValue({
-      run: vi.fn().mockResolvedValue({
-        success: false,
-        build: { success: false, errors: ["Type error"], warnings: [], diagnostics: [] },
-      }),
-      startWatch: vi.fn(),
-      stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    const { formatBuildMessages } = await import("../../src/utils/output-utils");
-    const fmtCalls = vi.mocked(formatBuildMessages).mock.calls;
-    const buildCall = fmtCalls.find((c) => c[1] === "neutral");
-    expect(buildCall).toBeDefined();
-  });
-
-  it("build에서 lint 성공 시 에러 출력 없음", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    vi.mocked(createBuildEngine).mockReturnValue({
-      run: vi.fn().mockResolvedValue({
-        success: true,
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-        lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
-      }),
-      startWatch: vi.fn(),
-      stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    // No error log about lint
-    const errorCalls = mockLogger.error.mock.calls;
-    const lintErrorCall = errorCalls.find(
-      (c: unknown[]) => typeof c[0] === "string" && (c[0]).includes("lint"),
-    );
-    expect(lintErrorCall).toBeUndefined();
-  });
-});
 
 //#endregion

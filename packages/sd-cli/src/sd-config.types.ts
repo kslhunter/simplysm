@@ -215,6 +215,8 @@ export interface SdBrowserSupportConfig {
 export interface SdClientPackageConfig {
   /** 빌드 타겟 */
   target: "client";
+  /** 클라이언트 프레임워크 선택. 미지정 시 "angular" */
+  framework?: "angular" | "solid";
   /**
    * 서버 설정
    * - string: 연결할 서버 패키지명 (예: "solid-demo-server")

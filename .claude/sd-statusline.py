@@ -220,6 +220,12 @@ def main():
         if eu.get("is_enabled") and eu.get("used_credits") is not None:
             extra_str = f"${eu['used_credits'] / 100:.2f}"
 
+    # Write rate_limits to cache
+    cache = cache or {}
+    cache["rate_limits"] = rate_limits
+    cache["rate_limits_ts"] = time.time()
+    write_cache_atomic(cache)
+
     # Spawn background fetch if needed
     version = stdin_data.get("version", "2.1.86")
     if should_fetch(cache):

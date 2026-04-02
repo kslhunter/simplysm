@@ -60,6 +60,14 @@ Feature 정보를 다음 우선순위로 결정한다:
 
 경로가 결정된 경우, Feature 문서를 읽어 현재 상태를 파악하고, 탐지 결과를 사용자에게 보여준 뒤 바로 다음 Phase로 진행한다.
 
+### Task 생성 (진행률 표시)
+
+상태 탐지가 완료되어 시작 Phase가 결정되면, **실행할 Phase들만** TaskCreate로 생성한다. 이는 Claude Code UI 하단에 진행률을 표시하기 위한 용도이며, 기존 Feature 문서 체크박스 추적을 대체하지 않는다.
+
+- 시작 Phase부터 Phase 5까지 각각 TaskCreate (상태: `todo`)
+- 각 Phase 시작 시 TaskUpdate (상태: `in_progress`)
+- 각 Phase 완료 시 TaskUpdate (상태: `done`)
+
 ### Feature 문서 기반 Phase 탐지
 
 | 상태 | 시작 Phase | 읽을 SKILL.md |

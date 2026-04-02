@@ -27,9 +27,9 @@ export interface ViteEngineOptions {
 }
 
 /**
- * Angular 클라이언트 패키지용 Vite 기반 빌드 엔진
+ * 클라이언트 패키지용 Vite 기반 빌드 엔진
  *
- * sdAngularPlugin을 통한 Angular AOT 컴파일과 함께
+ * framework 설정에 따라 sdAngularPlugin 또는 solidPlugin을 사용하며,
  * Vite의 createServer/build API를 직접 사용하는 client.worker를 래핑한다.
  */
 export class ViteEngine implements BuildEngine {
@@ -68,6 +68,7 @@ export class ViteEngine implements BuildEngine {
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
+      framework: this._pkg.config.framework,
       env: this._pkg.config.env,
       configs: this._pkg.config.configs,
       browserSupport: this._pkg.config.browserSupport,
@@ -177,6 +178,7 @@ export class ViteEngine implements BuildEngine {
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
+      framework: this._pkg.config.framework,
       port,
       env: this._pkg.config.env,
       configs: this._pkg.config.configs,

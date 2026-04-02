@@ -236,7 +236,7 @@ export class BuildOrchestrator {
         );
 
         try {
-          const engineResult = await engine.run({ js: true, dts: true, lint: true });
+          const engineResult = await engine.run({ js: true, dts: true, lint: false });
 
           // 빌드 결과 처리
           const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
@@ -250,18 +250,6 @@ export class BuildOrchestrator {
             diagnostics,
           });
           if (!engineResult.build.success) state.hasError = true;
-
-          // 린트 결과 처리
-          if (engineResult.lint != null) {
-            results.push({
-              name,
-              target: config.target,
-              type: "lint",
-              success: engineResult.lint.success,
-              errors: engineResult.lint.formattedOutput !== "" ? [engineResult.lint.formattedOutput] : undefined,
-            });
-            if (!engineResult.lint.success) state.hasError = true;
-          }
 
         } finally {
           await engine.stop();
@@ -288,7 +276,7 @@ export class BuildOrchestrator {
         );
 
         try {
-          const engineResult = await engine.run({ js: true, dts: false, lint: true });
+          const engineResult = await engine.run({ js: true, dts: false, lint: false });
 
           // 빌드 결과 처리
           const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
@@ -302,18 +290,6 @@ export class BuildOrchestrator {
             diagnostics,
           });
           if (!engineResult.build.success) state.hasError = true;
-
-          // 린트 결과 처리
-          if (engineResult.lint != null) {
-            results.push({
-              name,
-              target: "server",
-              type: "lint",
-              success: engineResult.lint.success,
-              errors: engineResult.lint.formattedOutput !== "" ? [engineResult.lint.formattedOutput] : undefined,
-            });
-            if (!engineResult.lint.success) state.hasError = true;
-          }
 
         } finally {
           await engine.stop();
@@ -338,7 +314,7 @@ export class BuildOrchestrator {
         );
 
         try {
-          const engineResult = await engine.run({ js: true, dts: false, lint: true });
+          const engineResult = await engine.run({ js: true, dts: false, lint: false });
 
           // 빌드 결과 처리
           const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
@@ -352,18 +328,6 @@ export class BuildOrchestrator {
             diagnostics,
           });
           if (!engineResult.build.success) state.hasError = true;
-
-          // 린트 결과 처리
-          if (engineResult.lint != null) {
-            results.push({
-              name,
-              target: "client",
-              type: "lint",
-              success: engineResult.lint.success,
-              errors: engineResult.lint.formattedOutput !== "" ? [engineResult.lint.formattedOutput] : undefined,
-            });
-            if (!engineResult.lint.success) state.hasError = true;
-          }
 
           // 네이티브 빌드 (빌드 성공 시에만 실행)
           if (engineResult.build.success) {

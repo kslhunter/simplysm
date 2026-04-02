@@ -3,6 +3,7 @@ import path from "path";
 import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
+import solidPlugin from "vite-plugin-solid";
 import {
   sdScopeWatchPlugin,
   type ScopeWatchReplaceDep,
@@ -14,6 +15,8 @@ import { generatePwaIcons } from "./generate-pwa-icons.js";
 
 /** createClientViteConfig 옵션 */
 export interface CreateClientViteConfigOptions {
+  /** 클라이언트 프레임워크 선택. 미지정 시 "angular" */
+  framework?: "angular" | "solid";
   /** 패키지 디렉토리 경로 */
   pkgDir: string;
   /** 패키지명 (예: "@scope/my-client") */
@@ -81,7 +84,7 @@ export async function createClientViteConfig(
     esbuildTarget = browserslistToEsbuild(queries);
   }
 
-  // browserslist 정규화 (Angular 플러그인용)
+  // browserslist 정규화 (Angular 플러그인의 PostCSS 연동용)
   const normalizedBrowserslist =
     options.browserslist != null
       ? Array.isArray(options.browserslist)
@@ -100,23 +103,31 @@ export async function createClientViteConfig(
   // plugins
   const plugins: PluginOption[] = [
     tsconfigPaths({ projects: [options.tsconfigPath] }),
-    sdAngularPlugin({
-      tsconfig: options.tsconfigPath,
-      dev: options.mode === "dev",
-      sourcemap: options.mode === "dev" || options.watch === true,
-      onBuildStart: options.onBuildStart,
-      onBuild: options.onBuild,
-      enableLint: options.enableLint,
-      browserslist: normalizedBrowserslist,
-      postCssPlugins: options.postCssPlugins,
-    }),
   ];
 
-  // PostCSS inline plugin (라이브러리 JS 내 Angular @Component styles)
-  if (options.postCssPlugins != null && options.postCssPlugins.length > 0) {
+  if (options.framework === "solid") {
+    plugins.push(solidPlugin());
+  } else {
     plugins.push(
-      sdPostCssInlinePlugin({ postCssPlugins: options.postCssPlugins }),
+      sdAngularPlugin({
+        tsconfig: options.tsconfigPath,
+        dev: options.mode === "dev",
+        legacyModule: options.legacyModule,
+        sourcemap: options.mode === "dev" || options.watch === true,
+        onBuildStart: options.onBuildStart,
+        onBuild: options.onBuild,
+        enableLint: options.enableLint,
+        browserslist: normalizedBrowserslist,
+        postCssPlugins: options.postCssPlugins,
+      }),
     );
+
+    // PostCSS inline plugin (Angular @Component inline styles 전용)
+    if (options.postCssPlugins != null && options.postCssPlugins.length > 0) {
+      plugins.push(
+        sdPostCssInlinePlugin({ postCssPlugins: options.postCssPlugins }),
+      );
+    }
   }
 
   // replaceDeps HMR (dev 모드 또는 watch 모드)
@@ -297,8 +308,8 @@ export async function createClientViteConfig(
     });
   }
 
-  // build 모드 설정
-  if (options.mode === "build") {
+  // build 모드 설정 (프로덕션 빌드 또는 legacyModule dev)
+  if (options.mode === "build" || options.legacyModule === true) {
     config.build = {
       ...config.build,
       outDir: options.outDir ?? path.join(options.pkgDir, "dist"),

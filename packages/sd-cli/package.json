@@ -53,6 +53,7 @@
   "devDependencies": {
     "@types/semver": "^7.7.1",
     "@types/ssh2": "^1.15.5",
-    "@types/yargs": "^17.0.35"
+    "@types/yargs": "^17.0.35",
+    "vite-plugin-solid": "^2.11.11"
   }
 }

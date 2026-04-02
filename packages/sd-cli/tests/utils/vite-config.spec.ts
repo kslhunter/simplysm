@@ -11,6 +11,11 @@ vi.mock("../../src/angular/vite-angular-plugin.js", () => ({
   sdAngularPlugin: mockSdAngularPlugin,
 }));
 
+const mockSolidPlugin = vi.fn(() => ({ name: "vite-plugin-solid" }));
+vi.mock("vite-plugin-solid", () => ({
+  default: mockSolidPlugin,
+}));
+
 vi.mock("../../src/utils/vite-scope-watch-plugin.js", () => ({
   sdScopeWatchPlugin: vi.fn(() => ({ name: "sd-scope-watch-plugin" })),
 }));
@@ -577,6 +582,55 @@ describe("createClientViteConfig", () => {
     expect(scopePlugin).toBeUndefined();
   });
 
+  // --- framework selection (Feature 1.1: client-framework-selection) ---
+
+  // Acceptance: Scenario "Solid 프레임워크 선택"
+  it("uses solidPlugin when framework is 'solid'", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      framework: "solid",
+    });
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    expect(plugins.find((p) => p.name === "vite-plugin-solid")).toBeDefined();
+    expect(mockSolidPlugin).toHaveBeenCalled();
+    expect(mockSdAngularPlugin).not.toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "framework 미지정 시 기본값"
+  it("uses sdAngularPlugin when framework is not specified", async () => {
+    await createClientViteConfig(createDefaultOptions());
+
+    expect(mockSdAngularPlugin).toHaveBeenCalled();
+    expect(mockSolidPlugin).not.toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "Angular 프레임워크 명시 선택"
+  it("uses sdAngularPlugin when framework is 'angular'", async () => {
+    await createClientViteConfig({
+      ...createDefaultOptions(),
+      framework: "angular",
+    });
+
+    expect(mockSdAngularPlugin).toHaveBeenCalled();
+    expect(mockSolidPlugin).not.toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "Solid 빌드에서 PostCSS inline 플러그인 미적용"
+  it("does not add sdPostCssInlinePlugin when framework is 'solid' even with postCssPlugins", async () => {
+    const fakePlugin = { postcssPlugin: "autoprefixer" };
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      framework: "solid",
+      postCssPlugins: [fakePlugin],
+    });
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    expect(plugins.find((p) => p.name === "sd-postcss-inline")).toBeUndefined();
+    // 하지만 css.postcss는 여전히 설정된다 (외부 CSS 파일용)
+    expect(config.css?.postcss).toEqual({ plugins: [fakePlugin] });
+  });
+
   // Acceptance: Scenario "pwa 필드 미설정 시 기본값"
   it("uses default manifest values from pkgName when pwa is undefined", async () => {
     await createClientViteConfig(createDefaultOptions());
@@ -594,5 +648,50 @@ describe("createClientViteConfig", () => {
         }),
       }),
     );
+  });
+
+  // --- legacyModule dev mode (Feature: fix-legacy-ngdevmode) ---
+
+  // Acceptance: Scenario "legacyModule: true + dev 명령 실행 시 sdAngularPlugin에 dev: true 전달"
+  it("passes dev: true to sdAngularPlugin when mode is dev with legacyModule", async () => {
+    await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      legacyModule: true,
+      watch: true,
+    });
+
+    expect(mockSdAngularPlugin).toHaveBeenCalledWith(
+      expect.objectContaining({ dev: true }),
+    );
+  });
+
+  // Acceptance: Scenario "legacyModule dev에서 build output 설정이 적용된다"
+  it("applies build output settings when mode is dev with legacyModule", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      legacyModule: true,
+      watch: true,
+    });
+
+    expect(config.build?.outDir).toMatch(/my-client[\\/]dist$/);
+    expect(config.build?.watch).toEqual({});
+    expect(config.build?.emptyOutDir).toBe(false);
+    expect(config.build?.minify).toBe(false);
+  });
+
+  // Unit: legacyModule dev에서 PWA가 추가되지 않는다
+  it("does not add VitePWA plugin when mode is dev with legacyModule", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      legacyModule: true,
+      watch: true,
+    });
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    const pwaPlugin = plugins.find((p) => p.name === "vite-plugin-pwa");
+    expect(pwaPlugin).toBeUndefined();
   });
 });

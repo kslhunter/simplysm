@@ -213,6 +213,12 @@ tests/
 └── workers/        ← Worker 모듈 단위 테스트
 ```
 
+## 자주하는 실수
+
+- **build/dev에서 lint 실행 금지**: `BuildOrchestrator`/`DevWatchOrchestrator`에서 `lint: true`로 넘기면 안 된다. lint는 `pnpm check` (lint 커맨드)에서만 실행한다
+
+## Testing
+
 **Worker 모킹 패턴**: Worker Thread를 직접 실행하지 않고 `vi.mock("@simplysm/core-node")`으로 Worker 팩토리를 모킹한다. `vi.mock`은 호이스팅되므로 동적 import(`await import(...)`) 이전에 선언한다:
 
 ```typescript

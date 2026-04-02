@@ -228,9 +228,10 @@ describe("client.worker", () => {
 
       expect(mockCreateClientViteConfig).toHaveBeenCalledWith(
         expect.objectContaining({
-          mode: "build",
+          mode: "dev",
           watch: true,
           pwa: false,
+          legacyModule: true,
         }),
       );
     });

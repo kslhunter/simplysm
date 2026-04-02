@@ -82,9 +82,3 @@ ORM:      orm-node / orm-common
   - 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
 
 **판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).
-
-
-## 자주하는 실수
-
--  `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용
-- **esbuild `dynamic-import: false` 금지**: esbuild가 `import()` → `require()`로 변환하여 브라우저에서 실패. dynamic import는 Rollup `inlineDynamicImports`로 처리해야 하며, esbuild가 건드리면 안 된다

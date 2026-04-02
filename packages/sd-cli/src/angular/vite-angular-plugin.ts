@@ -10,6 +10,7 @@ import {
   AngularCompiler,
   AngularSourceFileCache,
 } from "../utils/angular-compiler.js";
+import { getPackageSourceFiles } from "../utils/tsconfig.js";
 import { createClientTransformStylesheet } from "./client-transform-stylesheet.js";
 import {
   LintWithProgramRunner,
@@ -23,8 +24,10 @@ const logger = consola.withTag("sd:cli:angular");
 export interface SdAngularPluginOptions {
   /** tsconfig.json 경로 */
   tsconfig: string;
-  /** 개발 모드 (HMR, advancedOptimizations 제어) */
+  /** 개발 모드 (ngDevMode, advancedOptimizations 제어) */
   dev: boolean;
+  /** 레거시 모듈 지원 (import.meta 불가로 HMR 비활성화) */
+  legacyModule?: boolean;
   /** 소스맵 생성 여부 (dev와 독립적으로 제어) */
   sourcemap?: boolean;
   /** rebuild 시작 콜백 (CLI 상태 보고용) */
@@ -115,7 +118,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         define: {
           ngDevMode: options.dev ? undefined : "false",
           ngJitMode: "false",
-          ngHmrMode: options.dev ? undefined : "false",
+          ngHmrMode: options.dev && !options.legacyModule ? undefined : "false",
         },
         optimizeDeps: {
           esbuildOptions: {
@@ -169,13 +172,13 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
       // AngularCompiler 생성
       compiler = new AngularCompiler({
-        rootNames: parsed.fileNames,
+        rootNames: getPackageSourceFiles(workspaceRoot, parsed),
         compilerOptions: parsed.options,
         angularCompilerOptions: parsed.raw?.angularCompilerOptions,
         sourceFileCache,
         transformStylesheet,
         externalStylesheets,
-        enableHmr: options.dev,
+        enableHmr: options.dev && !options.legacyModule,
         compilerOptionsTransformer: (opts) => ({
           ...opts,
           noEmit: false,
