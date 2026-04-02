@@ -25,272 +25,66 @@ All commands are run via `pnpm sd-cli <command>`. The `--debug` flag is availabl
 
 ## API Overview
 
-The package exports configuration types for `sd.config.ts`.
+The package exports configuration types for `sd.config.ts` and a Vitest plugin for Angular AOT compilation.
 
-### BuildTarget
+### Config
 
-```typescript
-type BuildTarget = "node" | "browser" | "neutral";
-```
+| API | Type | Description |
+|-----|------|-------------|
+| `BuildTarget` | type | Build target platform: `"node"`, `"browser"`, or `"neutral"` |
+| `SdBuildPackageConfig` | interface | Configuration for buildable packages (node/browser/neutral) |
+| `SdClientPackageConfig` | interface | Configuration for client (Angular/Vite) packages |
+| `SdServerPackageConfig` | interface | Configuration for server (Fastify) packages |
+| `SdScriptsPackageConfig` | interface | Configuration for scripts-only packages (no build output) |
+| `SdWatchHookConfig` | interface | Watch hook for running commands on file changes |
+| `SdPackageConfig` | type | Union of all package configuration types |
+| `SdConfig` | interface | Main configuration object for `sd.config.ts` |
+| `SdConfigParams` | interface | Parameters passed to the `sd.config.ts` function |
+| `SdConfigFn` | type | Type for the default export of `sd.config.ts` |
+| `SdBrowserSupportConfig` | interface | Browser compatibility settings for client packages |
+| `SdCapacitorConfig` | interface | Capacitor mobile build configuration |
+| `SdCapacitorAndroidConfig` | interface | Capacitor Android platform configuration |
+| `SdCapacitorSignConfig` | interface | APK/AAB signing configuration |
+| `SdCapacitorPermission` | interface | Android permission configuration |
+| `SdCapacitorIntentFilter` | interface | Android Intent Filter configuration |
+| `SdElectronConfig` | interface | Electron desktop build configuration |
 
-Build target platform. Built with esbuild.
-
-| Value | Description |
-|---|---|
-| `"node"` | Node.js only package |
-| `"browser"` | Browser only package |
-| `"neutral"` | Node/browser shared package |
+-> See [docs/config.md](./docs/config.md) for details.
 
 ### Publish Configuration Types
 
-#### SdNpmPublishConfig
+| API | Type | Description |
+|-----|------|-------------|
+| `SdPublishConfig` | type | Union of all publish configuration types |
+| `SdNpmPublishConfig` | interface | npm registry publish configuration |
+| `SdLocalDirectoryPublishConfig` | interface | Copy build output to a local directory |
+| `SdStoragePublishConfig` | interface | Upload build output to FTP/FTPS/SFTP server |
+| `SdPostPublishScriptConfig` | interface | Script to run after publish completes |
 
-npm registry publish configuration.
-
-| Field | Type | Description |
-|---|---|---|
-| `type` | `"npm"` | Publish type discriminator |
-
-#### SdPublishConfig
-
-```typescript
-type SdPublishConfig = SdNpmPublishConfig | SdLocalDirectoryPublishConfig | SdStoragePublishConfig;
-```
-
-#### SdLocalDirectoryPublishConfig
-
-Copy build output to a local directory.
-
-| Field | Type | Description |
-|---|---|---|
-| `type` | `"local-directory"` | Publish type discriminator |
-| `path` | `string` | Target path (supports `%VER%`, `%PROJECT%` substitution) |
-
-#### SdStoragePublishConfig
-
-Upload build output to FTP/FTPS/SFTP server.
-
-| Field | Type | Description |
-|---|---|---|
-| `type` | `"ftp" \| "ftps" \| "sftp"` | Protocol |
-| `host` | `string` | Server hostname |
-| `port?` | `number` | Server port |
-| `path?` | `string` | Remote path |
-| `user?` | `string` | Username |
-| `password?` | `string` | Password |
-
-#### SdPostPublishScriptConfig
-
-Script to run after publish completes.
-
-| Field | Type | Description |
-|---|---|---|
-| `type` | `"script"` | Config type discriminator |
-| `cmd` | `string` | Command to execute |
-| `args` | `string[]` | Command arguments (supports `%VER%`, `%PROJECT%` substitution) |
-
-### Package Configuration Types
-
-#### SdBuildPackageConfig
-
-Configuration for buildable packages (node/browser/neutral).
-
-| Field | Type | Description |
-|---|---|---|
-| `target` | `BuildTarget` | Build target |
-| `publish?` | `SdPublishConfig` | Publish configuration |
-| `copySrc?` | `string[]` | Glob patterns for files to copy from `src/` to `dist/` |
-| `watch?` | `SdWatchHookConfig` | Watch hook (runs alongside build engine in watch mode) |
-
-#### SdClientPackageConfig
-
-Configuration for client (Angular/Vite) packages.
-
-| Field | Type | Description |
-|---|---|---|
-| `target` | `"client"` | Fixed value |
-| `server` | `string \| number` | Server package name to connect to, or Vite port number |
-| `env?` | `Record<string, string>` | Environment variables (replaces `process.env` at build time) |
-| `publish?` | `SdPublishConfig` | Publish configuration |
-| `capacitor?` | `SdCapacitorConfig` | Capacitor mobile build configuration |
-| `electron?` | `SdElectronConfig` | Electron desktop build configuration |
-| `configs?` | `Record<string, unknown>` | Runtime config (written to `dist/.config.json`) |
-| `exclude?` | `string[]` | Packages to exclude from Vite optimizeDeps |
-| `browserSupport?` | `SdBrowserSupportConfig` | Browser compatibility settings |
-| `pwa?` | `false \| SdPwaConfig` | PWA configuration (`false` to disable, omit for defaults) |
-
-#### SdServerPackageConfig
-
-Configuration for server (Fastify) packages.
-
-| Field | Type | Description |
-|---|---|---|
-| `target` | `"server"` | Fixed value |
-| `env?` | `Record<string, string>` | Environment variables (replaces `process.env.KEY` with constants) |
-| `publish?` | `SdPublishConfig` | Publish configuration |
-| `configs?` | `Record<string, unknown>` | Runtime config (written to `dist/.config.json`) |
-| `externals?` | `string[]` | Modules excluded from esbuild bundle (in addition to auto-detected native modules) |
-| `pm2?` | `{ name?: string; ignoreWatchPaths?: string[] }` | PM2 config (generates `dist/pm2.config.cjs`) |
-| `packageManager?` | `"volta" \| "mise"` | Package manager (affects mise.toml/volta settings) |
-
-#### SdScriptsPackageConfig
-
-Configuration for scripts-only packages (no build output).
-
-| Field | Type | Description |
-|---|---|---|
-| `target` | `"scripts"` | Fixed value |
-| `publish?` | `SdPublishConfig` | Publish configuration |
-| `watch?` | `SdWatchHookConfig` | Watch hook (when set, package is included in watch mode) |
-
-#### SdWatchHookConfig
-
-Watch hook configuration for running commands on file changes.
-
-| Field | Type | Description |
-|---|---|---|
-| `target` | `string[]` | Glob patterns to watch (relative to package directory) |
-| `cmd` | `string` | Command to execute on change |
-| `args?` | `string[]` | Command arguments |
-
-#### SdPackageConfig
-
-```typescript
-type SdPackageConfig = SdBuildPackageConfig | SdClientPackageConfig | SdServerPackageConfig | SdScriptsPackageConfig;
-```
-
-### Capacitor Configuration Types
-
-#### SdCapacitorConfig
-
-| Field | Type | Description |
-|---|---|---|
-| `appId` | `string` | App ID (e.g., `"com.example.app"`) |
-| `appName` | `string` | App display name |
-| `plugins?` | `Record<string, Record<string, unknown> \| true>` | Capacitor plugin config (key: package name) |
-| `icon?` | `string` | App icon path (relative to package directory) |
-| `debug?` | `boolean` | Debug build flag |
-| `platform?` | `{ android?: SdCapacitorAndroidConfig }` | Per-platform configuration |
-
-#### SdCapacitorAndroidConfig
-
-| Field | Type | Description |
-|---|---|---|
-| `config?` | `Record<string, string>` | AndroidManifest.xml application tag attributes |
-| `bundle?` | `boolean` | Build AAB bundle (`true`) or APK (`false`) |
-| `intentFilters?` | `SdCapacitorIntentFilter[]` | Intent filter configuration |
-| `sign?` | `SdCapacitorSignConfig` | APK/AAB signing configuration |
-| `sdkVersion?` | `number` | Android SDK version (minSdk, targetSdk) |
-| `permissions?` | `SdCapacitorPermission[]` | Additional Android permissions |
-
-#### SdCapacitorSignConfig
-
-| Field | Type | Description |
-|---|---|---|
-| `keystore` | `string` | Keystore file path (relative to package directory) |
-| `storePassword` | `string` | Keystore password |
-| `alias` | `string` | Key alias |
-| `password` | `string` | Key password |
-| `keystoreType?` | `string` | Keystore type (default: `"jks"`) |
-
-#### SdCapacitorPermission
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | `string` | Permission name (e.g., `"CAMERA"`) |
-| `maxSdkVersion?` | `number` | Maximum SDK version |
-| `ignore?` | `string` | `tools:ignore` attribute value |
-
-#### SdCapacitorIntentFilter
-
-| Field | Type | Description |
-|---|---|---|
-| `action?` | `string` | Intent action (e.g., `"android.intent.action.VIEW"`) |
-| `category?` | `string` | Intent category (e.g., `"android.intent.category.DEFAULT"`) |
-
-### Electron Configuration Types
-
-#### SdElectronConfig
-
-| Field | Type | Description |
-|---|---|---|
-| `appId` | `string` | Electron app ID (e.g., `"com.example.myapp"`) |
-| `portable?` | `boolean` | `true` for portable .exe, `false`/unspecified for NSIS installer |
-| `installerIcon?` | `string` | Installer icon path (.ico, relative to package directory) |
-| `reinstallDependencies?` | `string[]` | npm packages to include (native modules, etc.) |
-| `postInstallScript?` | `string` | npm postinstall script |
-| `nsisOptions?` | `Record<string, unknown>` | NSIS installer options |
-| `env?` | `Record<string, string>` | Environment variables for electron-main.ts |
+-> See [docs/publish-configuration-types.md](./docs/publish-configuration-types.md) for details.
 
 ### PWA Configuration Types
 
-#### SdPwaConfig
+| API | Type | Description |
+|-----|------|-------------|
+| `SdPwaConfig` | interface | PWA configuration |
+| `SdPwaManifestConfig` | interface | PWA manifest options (subset of VitePWA manifest) |
+| `SdPwaWorkboxConfig` | interface | PWA workbox service worker options |
 
-| Field | Type | Description |
-|---|---|---|
-| `manifest?` | `SdPwaManifestConfig` | PWA manifest options |
-| `workbox?` | `SdPwaWorkboxConfig` | Workbox service worker options |
+-> See [docs/pwa-configuration-types.md](./docs/pwa-configuration-types.md) for details.
 
-#### SdPwaManifestConfig
+### Vitest Plugin
 
-| Field | Type | Description |
-|---|---|---|
-| `name?` | `string` | App name |
-| `short_name?` | `string` | Short app name |
-| `display?` | `"standalone" \| "fullscreen" \| "minimal-ui" \| "browser"` | Display mode |
-| `theme_color?` | `string` | Theme color |
-| `background_color?` | `string` | Background color |
-| `icons?` | `Array<{ src: string; sizes: string; type?: string }>` | App icons |
+| API | Type | Description |
+|-----|------|-------------|
+| `angularVitestPlugin` | function | Vite plugin for Angular AOT compilation in Vitest |
+| `AngularVitestPluginOptions` | interface | Options for `angularVitestPlugin` |
 
-#### SdPwaWorkboxConfig
+-> See [docs/vitest-plugin.md](./docs/vitest-plugin.md) for details.
 
-| Field | Type | Description |
-|---|---|---|
-| `globPatterns?` | `string[]` | Glob patterns for precaching |
+## Usage Examples
 
-### Browser Support Configuration
-
-#### SdBrowserSupportConfig
-
-| Field | Type | Description |
-|---|---|---|
-| `browserslist?` | `string \| string[]` | Browserslist query (e.g., `"last 2 Chrome versions"`) |
-| `postCss?` | `{ plugins: unknown[] }` | PostCSS plugins configuration |
-| `legacyModule?` | `boolean` | Legacy module support (disables code splitting + replaces `import.meta`) |
-
-### Root Configuration Types
-
-#### SdConfig
-
-The main configuration object for `sd.config.ts`.
-
-| Field | Type | Description |
-|---|---|---|
-| `packages` | `Record<string, SdPackageConfig \| undefined>` | Per-package configuration (key: subdirectory name under `packages/`) |
-| `replaceDeps?` | `Record<string, string>` | Dependency replacement via symlink (key: package glob, value: source path. `*` wildcards are supported) |
-| `postPublish?` | `SdPostPublishScriptConfig[]` | Scripts to run after deployment |
-
-#### SdConfigParams
-
-Parameters passed to the `sd.config.ts` function.
-
-| Field | Type | Description |
-|---|---|---|
-| `cwd` | `string` | Current working directory |
-| `dev` | `boolean` | Development mode flag |
-| `options` | `string[]` | Additional options from CLI `-o` flag |
-
-#### SdConfigFn
-
-```typescript
-type SdConfigFn = (params: SdConfigParams) => SdConfig | Promise<SdConfig>;
-```
-
-The type for the default export of `sd.config.ts`.
-
-## Usage
-
-### sd.config.ts Example
+### sd.config.ts
 
 ```typescript
 import type { SdConfigFn, SdConfigParams } from "@simplysm/sd-cli";
@@ -319,4 +113,15 @@ const config: SdConfigFn = (params: SdConfigParams) => ({
 });
 
 export default config;
+```
+
+### Vitest with Angular
+
+```typescript
+import { angularVitestPlugin } from "@simplysm/sd-cli/vitest-plugin";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  plugins: [angularVitestPlugin({ tsconfig: "./tsconfig.json" })],
+});
 ```

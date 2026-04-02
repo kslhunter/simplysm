@@ -34,7 +34,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
           });
         } else {
           this._displayErrorMessage("처리되지 않은 Promise 거부", {
-            Event: JSON.stringify(event, null, 2),
+            Reason: String(reason),
           });
         }
       } else if (event instanceof ErrorEvent) {
@@ -74,6 +74,9 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err, event);
+
+      document.body.textContent =
+        `[에러 처리 실패]\n원본: ${String(event)}\n2차: ${String(err)}`;
 
       const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
       appRef.destroy();

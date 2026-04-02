@@ -65,6 +65,7 @@ export {
 } from "./core/utils/useExpandingManager";
 export { useSelectionManager } from "./core/utils/useSelectionManager";
 export { injectParent } from "./core/utils/injectParent";
+export { withBusy } from "./core/utils/withBusy";
 
 // features/address
 export {
@@ -175,10 +176,7 @@ export { SdPaginationControl } from "./ui/navigation/pagination/sd-pagination.co
 // ui/navigation/sidebar
 export { SdSidebarContainerControl } from "./ui/navigation/sidebar/sd-sidebar-container.control";
 export { SdSidebarControl } from "./ui/navigation/sidebar/sd-sidebar.control";
-export {
-  SdSidebarMenuControl,
-  type ISdSidebarMenu,
-} from "./ui/navigation/sidebar/sd-sidebar-menu.control";
+export { SdSidebarMenuControl } from "./ui/navigation/sidebar/sd-sidebar-menu.control";
 export {
   SdSidebarUserControl,
   type ISidebarUserMenu,
@@ -187,10 +185,7 @@ export {
 // ui/navigation/topbar
 export { SdTopbarContainerControl } from "./ui/navigation/topbar/sd-topbar-container.control";
 export { SdTopbarControl } from "./ui/navigation/topbar/sd-topbar.control";
-export {
-  SdTopbarMenuControl,
-  type ISdTopbarMenu,
-} from "./ui/navigation/topbar/sd-topbar-menu.control";
+export { SdTopbarMenuControl } from "./ui/navigation/topbar/sd-topbar-menu.control";
 export {
   SdTopbarUserControl,
   type ISdTopbarUserMenu,
@@ -209,6 +204,7 @@ export type {
   ISdSheetConfig,
   ISdSheetHeaderDef,
   ISdSheetItemKeydownEventParam,
+  ISdSheetCellKeydownEventParam,
 } from "./ui/data/sheet/types";
 
 // ui/visual

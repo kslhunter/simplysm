@@ -2,11 +2,11 @@ import consola, { type ConsolaInstance, LogLevels } from "consola";
 import { SdCliReporter } from "./SdCliReporter";
 
 /**
- * Apply sd-cli reporter and debug log level in worker threads
+ * 워커 스레드에서 sd-cli 리포터와 디버그 로그 레벨을 적용한다.
  *
- * Checks the SD_DEBUG environment variable (set by --debug flag in main process)
- * and applies debug log level to consola in the current worker thread.
- * Must be called at worker module top level.
+ * SD_DEBUG 환경변수(메인 프로세스의 --debug 플래그로 설정)를 확인하고
+ * 현재 워커 스레드의 consola에 디버그 로그 레벨을 적용한다.
+ * 워커 모듈 최상위에서 호출해야 한다.
  */
 export function applyDebugLevel(): void {
   consola.options.reporters = [new SdCliReporter()];
@@ -16,14 +16,13 @@ export function applyDebugLevel(): void {
 }
 
 /**
- * Register cleanup handlers for worker process shutdown signals
+ * 워커 프로세스 종료 시그널에 대한 정리 핸들러를 등록한다.
  *
- * Registers SIGINT and SIGTERM handlers to gracefully cleanup resources
- * before process exit. Both handlers execute the cleanup function and
- * exit with code 0.
+ * 프로세스 종료 전 리소스를 정상적으로 정리하기 위해 SIGINT와 SIGTERM 핸들러를 등록한다.
+ * 두 핸들러 모두 정리 함수를 실행하고 코드 0으로 종료한다.
  *
- * @param cleanup - Cleanup function to execute on shutdown (sync or async)
- * @param logger - Consola logger instance for error logging
+ * @param cleanup - 종료 시 실행할 정리 함수 (동기 또는 비동기)
+ * @param logger - 에러 로깅용 consola 로거 인스턴스
  */
 export function registerCleanupHandlers(
   cleanup: () => void | Promise<void>,
@@ -45,10 +44,10 @@ export function registerCleanupHandlers(
 }
 
 /**
- * Create guard to prevent duplicate calls to Worker function
+ * Worker 함수의 중복 호출을 방지하는 가드를 생성한다.
  *
- * @param label - Function name to use in error message
- * @returns Guard function that throws error if called twice
+ * @param label - 에러 메시지에 사용할 함수명
+ * @returns 두 번 호출되면 에러를 던지는 가드 함수
  */
 export function createOnceGuard(label: string): () => void {
   let called = false;

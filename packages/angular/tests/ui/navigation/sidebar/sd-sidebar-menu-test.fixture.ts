@@ -1,9 +1,7 @@
 import { Component, signal } from "@angular/core";
 import { tablerHome } from "@ng-icons/tabler-icons";
-import {
-  SdSidebarMenuControl,
-  type ISdSidebarMenu,
-} from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu.control";
+import { SdSidebarMenuControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu.control";
+import type { ISdMenu } from "../../../../src/ui/navigation/menu-utils";
 
 @Component({
   selector: "sd-sidebar-menu-flat-test",
@@ -12,7 +10,7 @@ import {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuFlatTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "Menu 1", codeChain: ["m1"] },
     { title: "Menu 2", codeChain: ["m2"] },
     { title: "Menu 3", codeChain: ["m3"] },
@@ -26,7 +24,7 @@ export class SidebarMenuFlatTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuAccordionTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "Menu 1", codeChain: ["m1"] },
     { title: "Menu 2", codeChain: ["m2"] },
     { title: "Menu 3", codeChain: ["m3"] },
@@ -41,7 +39,7 @@ export class SidebarMenuAccordionTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuForceLayoutTest {
-  menus = signal<ISdSidebarMenu[]>(
+  menus = signal<ISdMenu[]>(
     Array.from({ length: 10 }, (_, i) => ({
       title: `Menu ${i + 1}`,
       codeChain: [`m${i + 1}`],
@@ -56,7 +54,7 @@ export class SidebarMenuForceLayoutTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuChildrenTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     {
       title: "Parent",
       codeChain: ["parent"],
@@ -75,7 +73,7 @@ export class SidebarMenuChildrenTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuIconTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "With Icon", codeChain: ["icon"], icon: tablerHome },
   ]);
 }
@@ -87,7 +85,7 @@ export class SidebarMenuIconTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuUrlTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "External", codeChain: ["ext"], url: "https://example.com" },
   ]);
 }
@@ -99,7 +97,7 @@ export class SidebarMenuUrlTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuQueryStringTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "QS Page", codeChain: ["module", "page?key=value"] },
   ]);
 }
@@ -111,8 +109,8 @@ export class SidebarMenuQueryStringTest {
   imports: [SdSidebarMenuControl],
 })
 export class SidebarMenuCustomSelectedFnTest {
-  menus = signal<ISdSidebarMenu[]>([
+  menus = signal<ISdMenu[]>([
     { title: "Custom", codeChain: ["custom"] },
   ]);
-  selFn = (_menu: ISdSidebarMenu): boolean => true;
+  selFn = (_menu: ISdMenu): boolean => true;
 }

@@ -13,7 +13,7 @@ export type TypecheckEnv = "node" | "browser";
 const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
 
 /**
- * Extract @types/* package names from package.json devDependencies.
+ * package.json devDependencies에서 @types/* 패키지명을 추출한다.
  */
 export function getTypesFromPackageJson(packageDir: string): string[] {
   const packageJsonPath = path.join(packageDir, "package.json");
@@ -33,10 +33,10 @@ export function getTypesFromPackageJson(packageDir: string): string[] {
 }
 
 /**
- * Adjust compilerOptions for the given typecheck environment.
+ * 지정된 타입체크 환경에 맞게 compilerOptions를 조정한다.
  *
- * - node env: remove browser-related libs (dom, webworker patterns). types unchanged.
- * - browser env: lib unchanged. types set explicitly from devDeps minus "node".
+ * - node 환경: 브라우저 관련 lib(dom, webworker 패턴)을 제거한다. types는 변경 없음.
+ * - browser 환경: lib은 변경 없음. types를 devDeps에서 "node"를 제외하고 명시적으로 설정한다.
  */
 export function getCompilerOptionsForEnv(
   baseOptions: ts.CompilerOptions,
@@ -64,8 +64,10 @@ export function getCompilerOptionsForEnv(
 }
 
 /**
- * Map package target to typecheck environments.
- * neutral/undefined → dual typecheck (node + browser).
+ * 패키지 target을 타입체크 환경으로 매핑한다.
+ * - server → ["node"], client → ["browser"]
+ * - node → ["node"], browser → ["browser"]
+ * - neutral/undefined → 이중 타입체크 (["node", "browser"]).
  */
 export function toTypecheckEnvs(target: string | undefined): TypecheckEnv[] {
   if (target === "node" || target === "server") return ["node"];
@@ -76,7 +78,7 @@ export function toTypecheckEnvs(target: string | undefined): TypecheckEnv[] {
 //#endregion
 
 /**
- * Parse tsconfig.json from the given directory.
+ * 지정된 디렉토리에서 tsconfig.json을 파싱한다.
  */
 export function parseTsconfig(dir: string): ts.ParsedCommandLine {
   const tsconfigPath = path.join(dir, "tsconfig.json");
@@ -98,7 +100,7 @@ export function parseTsconfig(dir: string): ts.ParsedCommandLine {
 }
 
 /**
- * Get source files (under src/) from a package, filtered by the parsed tsconfig.
+ * 패키지에서 소스 파일(src/ 하위)을 파싱된 tsconfig 기준으로 필터링하여 반환한다.
  */
 export function getPackageSourceFiles(
   pkgDir: string,
@@ -111,7 +113,7 @@ export function getPackageSourceFiles(
 }
 
 /**
- * Get all files (src + tests) from a package, filtered by the parsed tsconfig.
+ * 패키지의 모든 파일(src + tests)을 파싱된 tsconfig 기준으로 필터링하여 반환한다.
  */
 export function getPackageFiles(
   pkgDir: string,

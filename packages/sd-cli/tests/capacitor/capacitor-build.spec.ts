@@ -27,8 +27,8 @@ vi.mock("@simplysm/core-node", () => ({
     copy: mockFsxCopy,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -46,7 +46,7 @@ vi.mock("@simplysm/core-common", () => ({
 
 // cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
-const mockCpxExec = vi.fn((...args: unknown[]) => {
+const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
   return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 });
@@ -82,7 +82,9 @@ vi.mock("consola", () => ({
       warn: mockLoggerWarn,
       success: mockLoggerSuccess,
     }),
+    level: 0,
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -270,7 +272,7 @@ describe("Capacitor 빌드", () => {
 
       // cap copy가 gradlew보다 먼저 실행되는지 확인
       const capCopyIndex = execaCalls.findIndex(
-        (c) => c.command === "npx" && c.args.includes("cap") && c.args.includes("copy"),
+        (c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("copy"),
       );
       const gradlewIndex = execaCalls.findIndex((c) => c.command.includes("gradlew"));
       expect(capCopyIndex).toBeGreaterThanOrEqual(0);

@@ -3,6 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { SdNavigateWindowProvider } from "../../../src/core/providers/sd-navigate-window.provider";
 import { SdRouterLinkDirective } from "../../../src/core/directives/sd-router-link.directive";
+import { SdRouterLinkTestHost } from "./sd-router-link-test.fixture";
 
 describe("Feature 1.7 Slice 2: 라우터 연동", () => {
   describe("Rule: SdRouterLinkDirective가 키 조합에 따라 라우팅 모드를 분기한다", () => {
@@ -124,5 +125,34 @@ describe("Feature 1.7 Slice 2: 라우터 연동", () => {
         { queryParams: { page: "1" } },
       );
     });
+  });
+});
+
+describe("Feature 4.3: router-link cursor 조건부 적용", () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [SdRouterLinkTestHost],
+      providers: [
+        { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
+        { provide: SdNavigateWindowProvider, useValue: { isWindow: false, open: vi.fn() } },
+      ],
+    });
+  });
+
+  it("option이 undefined이면 cursor가 pointer가 아니다", () => {
+    const fixture = TestBed.createComponent(SdRouterLinkTestHost);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement.querySelector("div") as HTMLElement;
+    expect(el.style.cursor).not.toBe("pointer");
+  });
+
+  it("option이 설정되면 cursor가 pointer이다", () => {
+    const fixture = TestBed.createComponent(SdRouterLinkTestHost);
+    fixture.componentInstance.linkOption = { link: "/test" };
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement.querySelector("div") as HTMLElement;
+    expect(el.style.cursor).toBe("pointer");
   });
 });

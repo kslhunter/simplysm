@@ -62,6 +62,7 @@ Providers, plugins, directives, pipes, and utility functions that form the frame
 | `useViewTitleSignal` | function | Current view title signal |
 | `useViewTypeSignal` | function | View context type signal (page/modal/control) |
 | `useExpandingManager` | function | Tree expand/collapse state manager |
+| `IExpandItemDef` | interface | Tree node definition (item, depth, hasChildren) |
 | `useSelectionManager` | function | Item selection state manager |
 | `useSortingManager` | function | Multi-column sorting state manager |
 | `injectParent` | function | Finds parent component instance |
@@ -79,10 +80,12 @@ Providers, plugins, directives, pipes, and utility functions that form the frame
 | `ISdPrintInput` | interface | Print template input descriptor |
 | `SdItemOfTemplateContext` | interface | Template context for item iteration |
 | `ISortingDef` | interface | Sort definition (key + direction) |
+| `withBusy` | function | Wraps async function with busy signal increment/decrement |
 | `ISdStatePreset` | interface | Named state preset |
 | `TSdViewType` | type | `"page" \| "modal" \| "control"` |
 | `TDirectiveInputSignals` | type | Extracts input signal value types from component |
 | `TUndefToOptional` | type | Converts undefined-accepting props to optional |
+| `TWithOptional` | type | Converts specified keys to optional |
 
 → See [docs/core.md](./docs/core.md) for details.
 
@@ -93,6 +96,7 @@ High-level feature components: address search, base container, data views, and s
 | API | Type | Description |
 |-----|------|-------------|
 | `SdAddressSearchModal` | component | Korean address search via Daum Postcode widget |
+| `SdPermissionTableControl` | component | Permission matrix table with use/edit checkboxes |
 | `SdBaseContainerControl` | component | Page/modal layout shell with busy state and access restriction |
 | `SdDataSheetControl` | component | Presentation layer for data sheet views |
 | `AbsSdDataSheet` | abstract directive | Base for data sheet screens (CRUD, pagination, sorting) |
@@ -183,10 +187,8 @@ High-level feature components: address search, base container, data views, and s
 | `SdTopbarControl` | component | Top navigation bar |
 | `SdTopbarMenuControl` | component | Horizontal topbar menu |
 | `SdTopbarUserControl` | component | Topbar user dropdown |
-| `ISdSidebarMenu` | interface | Sidebar menu item |
-| `ISidebarUserMenu` | interface | Sidebar user menu |
-| `ISdTopbarMenu` | interface | Topbar menu item |
-| `ISdTopbarUserMenu` | interface | Topbar user menu item |
+| `ISidebarUserMenu` | interface | Sidebar user dropdown menu item |
+| `ISdTopbarUserMenu` | interface | Topbar user dropdown menu item |
 
 → See [docs/ui-navigation.md](./docs/ui-navigation.md) for details.
 
@@ -202,7 +204,8 @@ High-level feature components: address search, base container, data views, and s
 | `ISdSheetColumnDef` | interface | Runtime column definition |
 | `ISdSheetHeaderDef` | interface | Header cell definition |
 | `ISdSheetConfig` | interface | Persisted sheet configuration |
-| `ISdSheetItemKeydownEventParam` | interface | Sheet keydown event payload |
+| `ISdSheetItemKeydownEventParam` | interface | Sheet row keydown event payload |
+| `ISdSheetCellKeydownEventParam` | interface | Sheet cell keydown event payload |
 
 → See [docs/ui-data.md](./docs/ui-data.md) for details.
 

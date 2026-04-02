@@ -5,6 +5,8 @@ import { findTopOpenModalEl } from "./findTopOpenModalEl";
 
 @Injectable({ providedIn: null })
 export class SdInsertCommandEventPlugin extends EventManagerPlugin {
+  private readonly _document = inject(DOCUMENT);
+
   constructor() {
     super(inject(DOCUMENT));
   }
@@ -20,7 +22,7 @@ export class SdInsertCommandEventPlugin extends EventManagerPlugin {
   ): () => void {
     const listener = (event: KeyboardEvent): void => {
       if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
-        const topModal = findTopOpenModalEl();
+        const topModal = findTopOpenModalEl(this._document);
         if (topModal != null && !topModal.contains(element)) return;
 
         event.preventDefault();
@@ -29,10 +31,10 @@ export class SdInsertCommandEventPlugin extends EventManagerPlugin {
       }
     };
 
-    document.addEventListener("keydown", listener);
+    this._document.addEventListener("keydown", listener);
 
     return (): void => {
-      document.removeEventListener("keydown", listener);
+      this._document.removeEventListener("keydown", listener);
     };
   }
 }

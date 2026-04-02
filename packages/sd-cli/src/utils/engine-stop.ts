@@ -1,8 +1,8 @@
 /**
- * Shared stop logic for build engines (BaseEngine, ViteEngine).
+ * 빌드 엔진(BaseEngine, ViteEngine)의 공유 중지 로직.
  *
- * Extracted to avoid duplicating the shutdown timeout + stopWatch race + terminate
- * pattern across engine implementations.
+ * 엔진 구현체 간 shutdown 타임아웃 + stopWatch 경쟁 + terminate
+ * 패턴의 중복을 방지하기 위해 추출하였다.
  */
 
 const SHUTDOWN_TIMEOUT = 3000;
@@ -13,14 +13,13 @@ interface StoppableWorker {
 }
 
 /**
- * Gracefully stop a build engine worker.
+ * 빌드 엔진 워커를 정상적으로 중지한다.
  *
- * In watch mode, attempts `stopWatch()` with a timeout guard so a hung worker
- * does not block shutdown. Then terminates the worker regardless.
+ * watch 모드에서는 타임아웃 가드와 함께 `stopWatch()`를 시도하여
+ * 멈춘 워커가 종료를 차단하지 않도록 한다. 이후 워커를 무조건 종료한다.
  *
- * @param worker - The worker proxy to stop (may be undefined if never started)
- * @param isWatchMode - Whether the engine is in watch mode
- * @returns A cleanup function that nullifies the caller's worker reference
+ * @param worker - 중지할 워커 프록시 (시작하지 않았으면 undefined)
+ * @param isWatchMode - watch 모드 여부
  */
 export async function stopEngineWorker(
   worker: StoppableWorker | undefined,
@@ -33,7 +32,7 @@ export async function stopEngineWorker(
         new Promise<void>((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT)),
       ]);
     } catch {
-      // Continue even if stopWatch fails
+      // stopWatch 실패해도 계속 진행
     }
   }
 

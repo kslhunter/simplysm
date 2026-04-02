@@ -165,6 +165,33 @@ describe("Feature 3.2.1 Slice 3: 드롭다운 모바일 Bottom Sheet", () => {
       expect(getBackdropInBody()).toBeNull();
     });
 
+    it("열린 상태에서 viewport 변경 시 모드가 전환된다", () => {
+      matchMediaMatches = false; // 데스크톱
+
+      setupTestBed(SdDropdownTestDefault);
+      const fixture = TestBed.createComponent(SdDropdownTestDefault);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+      dropdown.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // 데스크톱: backdrop 없음
+      expect(getBackdropInBody()).toBeNull();
+
+      // viewport 변경: mobile로 전환
+      _matchMediaListener?.({ matches: true } as MediaQueryListEvent);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // 모바일: backdrop 표시
+      const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
+      expect(popup.hasAttribute("data-sd-mobile")).toBe(true);
+      expect(getBackdropInBody()).not.toBeNull();
+    });
+
     it("Scenario: 모바일에서 disabled 드롭다운 -> bottom sheet 미표시", () => {
       matchMediaMatches = true; // 모바일
 

@@ -67,6 +67,8 @@ export class IndexedDbVirtualFs {
                   const isDir =
                     segments.length > 1 || (cursor.value as VirtualFsEntry).kind === "dir";
                   map.set(firstSeg, isDir);
+                } else if (segments.length > 1 && !map.get(firstSeg)) {
+                  map.set(firstSeg, true);
                 }
               }
             }
@@ -82,18 +84,29 @@ export class IndexedDbVirtualFs {
     fullKeyBuilder: (path: string) => string,
     dirPath: string,
   ): Promise<void> {
-    if (dirPath === "/") {
-      await this.putEntry(fullKeyBuilder("/"), "dir");
-      return;
-    }
-    const segments = dirPath.split("/").filter(Boolean);
-    let acc = "";
-    for (const seg of segments) {
-      acc += "/" + seg;
-      const existing = await this.getEntry(fullKeyBuilder(acc));
-      if (!existing) {
-        await this.putEntry(fullKeyBuilder(acc), "dir");
+    await this._db.withStore(this._storeName, "readwrite", async (store) => {
+      const resolveReq = <T>(req: IDBRequest<T>): Promise<T> =>
+        new Promise((resolve, reject) => {
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+
+      if (dirPath === "/") {
+        const key = fullKeyBuilder("/");
+        await resolveReq(store.put({ [this._keyField]: key, kind: "dir" }));
+        return;
       }
-    }
+
+      const segments = dirPath.split("/").filter(Boolean);
+      let acc = "";
+      for (const seg of segments) {
+        acc += "/" + seg;
+        const key = fullKeyBuilder(acc);
+        const existing = await resolveReq(store.get(key));
+        if (existing == null) {
+          await resolveReq(store.put({ [this._keyField]: key, kind: "dir" }));
+        }
+      }
+    });
   }
 }

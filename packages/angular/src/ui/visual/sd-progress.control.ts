@@ -87,5 +87,5 @@ export class SdProgressControl {
 
   value = input.required<number>();
 
-  _barWidth = computed(() => Math.min(this.value() * 100, 100) + "%");
+  _barWidth = computed(() => Math.min(Math.max(this.value() * 100, 0), 100) + "%");
 }

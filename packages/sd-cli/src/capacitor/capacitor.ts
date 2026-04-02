@@ -5,7 +5,7 @@ import { symlink } from "fs/promises";
 import { createRequire } from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
 import type { SdCapacitorConfig } from "../sd-config.types.js";
 
 /**
@@ -91,9 +91,7 @@ export class Capacitor {
       const platforms = Object.keys(config.platform);
       for (const p of platforms) {
         if (p !== "android") {
-          throw new CapacitorConfigError(
-            `지원하지 않는 플랫폼입니다: ${p} (현재 android만 지원)`,
-          );
+          throw new CapacitorConfigError(`지원하지 않는 플랫폼입니다: ${p} (현재 android만 지원)`);
         }
       }
     }
@@ -109,47 +107,65 @@ export class Capacitor {
    * 5. cap sync 또는 cap copy 실행
    */
   async initialize(): Promise<void> {
+    Capacitor._logger.debug("initialize 시작");
     await this._acquireLock();
 
     try {
       // 외부 도구 검증
+      Capacitor._logger.debug("외부 도구 검증 시작");
       await this._validateTools();
+      Capacitor._logger.debug("외부 도구 검증 완료");
 
       // 1. Capacitor 프로젝트 초기화
+      Capacitor._logger.debug("Capacitor 프로젝트 초기화 시작");
       const changed = await this._initCap();
+      Capacitor._logger.debug(`Capacitor 프로젝트 초기화 완료 (changed: ${changed})`);
 
       // 2. Capacitor 설정 파일 생성
+      Capacitor._logger.debug("Capacitor 설정 파일 생성 시작");
       await this._writeCapConf();
+      Capacitor._logger.debug("Capacitor 설정 파일 생성 완료");
 
       // 3. 플랫폼 관리 (멱등성: 이미 존재하면 스킵)
+      Capacitor._logger.debug("플랫폼 추가 시작");
       await this._addPlatforms();
+      Capacitor._logger.debug("플랫폼 추가 완료");
 
       // 4. 아이콘 처리
+      Capacitor._logger.debug("아이콘 처리 시작");
       await this._setupIcon();
+      Capacitor._logger.debug("아이콘 처리 완료");
 
       // 5. Android 네이티브 설정 구성
       if (this._platforms.includes("android")) {
+        Capacitor._logger.debug("Android 네이티브 설정 시작");
         await this._configureAndroid();
+        Capacitor._logger.debug("Android 네이티브 설정 완료");
       }
 
       // 6. 웹 에셋 동기화
       if (changed) {
+        Capacitor._logger.debug("cap sync 시작 (의존성 변경됨)");
         await this._execCap(["sync"]);
+        Capacitor._logger.debug("cap sync 완료");
       } else {
+        Capacitor._logger.debug("cap copy 시작");
         await this._execCap(["copy"]);
+        Capacitor._logger.debug("cap copy 완료");
       }
     } finally {
       await this._releaseLock();
+      Capacitor._logger.debug("initialize 완료");
     }
   }
 
   //#region Private - 명령어 실행
 
   /**
-   * Capacitor CLI 명령어를 npx로 실행
+   * Capacitor CLI 명령어를 pnpm exec로 실행
    */
   private async _execCap(args: string[]): Promise<string> {
-    return this._exec("npx", ["cap", ...args], this._capPath);
+    return this._exec("pnpm", ["exec", "cap", ...args], this._capPath);
   }
 
   /**
@@ -157,7 +173,11 @@ export class Capacitor {
    */
   private async _exec(command: string, args: string[], cwd: string): Promise<string> {
     Capacitor._logger.debug(`명령어 실행: ${command} ${args.join(" ")}`);
-    const { stdout } = await cpx.exec(command, args, { cwd });
+    const isDebug = consola.level >= LogLevels.debug;
+    const { stdout } = await cpx.spawn(command, args, {
+      cwd,
+      ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
+    });
     Capacitor._logger.debug(`실행 결과: ${stdout}`);
     return stdout;
   }
@@ -215,6 +235,7 @@ export class Capacitor {
           "2. ANDROID_HOME 또는 ANDROID_SDK_ROOT 환경 변수를 설정하세요.",
       );
     }
+    Capacitor._logger.debug(`Android SDK 경로: ${sdkPath}`);
 
     // Java 확인 (android 플랫폼인 경우에만)
     if (this._platforms.includes("android")) {
@@ -223,6 +244,8 @@ export class Capacitor {
         Capacitor._logger.warn(
           "Java 21을 찾을 수 없습니다. Gradle이 내장 JDK를 사용하거나 빌드가 실패할 수 있습니다.",
         );
+      } else {
+        Capacitor._logger.debug(`Java 21 경로: ${javaPath}`);
       }
     }
   }
@@ -235,26 +258,45 @@ export class Capacitor {
    * Capacitor 프로젝트 기본 초기화 (package.json, npm install, cap init)
    */
   private async _initCap(): Promise<boolean> {
+    Capacitor._logger.debug("package.json 설정 시작");
     const { depChanged, workspacePlugins } = await this._setupNpmConf();
     const nodeModulesExists = await fsx.exists(pathx.posixResolve(this._capPath, "node_modules"));
+    Capacitor._logger.debug(`depChanged: ${depChanged}, nodeModulesExists: ${nodeModulesExists}`);
 
     if (!depChanged && nodeModulesExists) {
       // 의존성 미변경이어도 workspace 플러그인 symlink는 항상 갱신
+      Capacitor._logger.debug("의존성 변경 없음, workspace 플러그인 symlink만 갱신");
       await this._linkWorkspacePlugins(workspacePlugins);
       return false;
     }
 
-    // npm install
-    const installResult = await this._exec("npm", ["install"], this._capPath);
-    Capacitor._logger.debug(`npm install 완료: ${installResult}`);
+    // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
+    const workspaceYamlPath = pathx.posixResolve(this._capPath, "pnpm-workspace.yaml");
+    if (!(await fsx.exists(workspaceYamlPath))) {
+      await fsx.write(workspaceYamlPath, "");
+    }
+    const lockfilePath = pathx.posixResolve(this._capPath, "pnpm-lock.yaml");
+    if (!(await fsx.exists(lockfilePath))) {
+      await fsx.write(lockfilePath, "");
+    }
+
+    // pnpm install + 빌드 스크립트 승인
+    Capacitor._logger.debug("pnpm install 시작");
+    await this._exec("pnpm", ["install"], this._capPath);
+    await this._exec("pnpm", ["approve-builds", "--all"], this._capPath);
+    Capacitor._logger.debug("pnpm install 완료");
 
     // workspace 플러그인 symlink
+    Capacitor._logger.debug("workspace 플러그인 symlink 시작");
     await this._linkWorkspacePlugins(workspacePlugins);
+    Capacitor._logger.debug("workspace 플러그인 symlink 완료");
 
     // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
     const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
     if (!(await fsx.exists(configPath))) {
+      Capacitor._logger.debug("cap init 시작");
       await this._execCap(["init", this._config.appId, this._config.appId]);
+      Capacitor._logger.debug("cap init 완료");
     }
 
     // 기본 www/index.html 생성
@@ -264,6 +306,7 @@ export class Capacitor {
       pathx.posixResolve(wwwPath, "index.html"),
       "<!DOCTYPE html><html><head></head><body></body></html>",
     );
+    Capacitor._logger.debug("www/index.html 생성 완료");
 
     return true;
   }
@@ -465,8 +508,9 @@ export default config;
 
       // capacitor-assets로 모든 해상도 아이콘/스플래시 생성
       await this._exec(
-        "npx",
+        "pnpm",
         [
+          "exec",
           "capacitor-assets",
           "generate",
           "--iconBackgroundColor",
@@ -500,10 +544,29 @@ export default config;
       throw new Error(`Android 프로젝트 디렉토리를 찾을 수 없습니다: ${androidPath}`);
     }
 
+    Capacitor._logger.debug("JAVA_HOME 설정 시작");
     await this._configureAndroidJavaHomePath(androidPath);
+    Capacitor._logger.debug("JAVA_HOME 설정 완료");
+
+    Capacitor._logger.debug("Android SDK 경로 설정 시작");
     await this._configureAndroidSdkPath(androidPath);
+    Capacitor._logger.debug("Android SDK 경로 설정 완료");
+
+    Capacitor._logger.debug("AndroidManifest.xml 설정 시작");
     await this._configureAndroidManifest(androidPath);
+    Capacitor._logger.debug("AndroidManifest.xml 설정 완료");
+
+    Capacitor._logger.debug("루트 build.gradle Kotlin 플러그인 설정 시작");
+    await this._configureAndroidRootBuildGradle(androidPath);
+    Capacitor._logger.debug("루트 build.gradle Kotlin 플러그인 설정 완료");
+
+    Capacitor._logger.debug("build.gradle 설정 시작");
     await this._configureAndroidBuildGradle(androidPath);
+    Capacitor._logger.debug("build.gradle 설정 완료");
+
+    Capacitor._logger.debug("styles.xml 설정 시작");
+    await this._configureAndroidStyles(androidPath);
+    Capacitor._logger.debug("styles.xml 설정 완료");
   }
 
   /**
@@ -574,7 +637,9 @@ export default config;
    * Android SDK 경로 탐색
    */
   private async _findAndroidSdk(): Promise<string | undefined> {
-    const androidHome = (env["ANDROID_HOME"] as string | undefined) ?? (env["ANDROID_SDK_ROOT"] as string | undefined);
+    const androidHome =
+      (env["ANDROID_HOME"] as string | undefined) ??
+      (env["ANDROID_SDK_ROOT"] as string | undefined);
     if (androidHome != null && (await fsx.exists(androidHome))) {
       return androidHome;
     }
@@ -671,6 +736,28 @@ export default config;
   }
 
   /**
+   * 루트 build.gradle에 Kotlin Gradle 플러그인 classpath 추가
+   */
+  private async _configureAndroidRootBuildGradle(androidPath: string): Promise<void> {
+    const rootBuildGradlePath = pathx.posixResolve(androidPath, "build.gradle");
+
+    if (!(await fsx.exists(rootBuildGradlePath))) {
+      Capacitor._logger.warn(`루트 build.gradle 파일을 찾을 수 없습니다: ${rootBuildGradlePath}`);
+      return;
+    }
+
+    let content = await fsx.read(rootBuildGradlePath);
+
+    if (!content.includes("kotlin-gradle-plugin")) {
+      content = content.replace(
+        /classpath 'com\.android\.tools\.build:gradle:[^']+'/,
+        `$&\n        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20'`,
+      );
+      await fsx.write(rootBuildGradlePath, content);
+    }
+  }
+
+  /**
    * build.gradle 수정 (서명 설정 제외)
    */
   private async _configureAndroidBuildGradle(androidPath: string): Promise<void> {
@@ -710,6 +797,35 @@ export default config;
     await fsx.write(buildGradlePath, content);
   }
 
+  /**
+   * styles.xml의 스플래시 테마 parent 변경
+   *
+   * Theme.SplashScreen은 android:windowBackground에 compat_splash_screen을 설정하여
+   * android:background(@drawable/splash)와 이중 표시를 발생시킨다.
+   * installSplashScreen()을 호출하지 않으므로 Theme.SplashScreen 기능이 불필요하다.
+   */
+  private async _configureAndroidStyles(androidPath: string): Promise<void> {
+    const stylesPath = pathx.posixResolve(androidPath, "app/src/main/res/values/styles.xml");
+
+    if (!(await fsx.exists(stylesPath))) {
+      Capacitor._logger.warn(`styles.xml 파일을 찾을 수 없습니다: ${stylesPath}`);
+      return;
+    }
+
+    let content = await fsx.read(stylesPath);
+
+    if (!content.includes('parent="Theme.SplashScreen"')) {
+      return;
+    }
+
+    content = content.replace(
+      'parent="Theme.SplashScreen"',
+      'parent="Theme.AppCompat.DayNight.NoActionBar"',
+    );
+
+    await fsx.write(stylesPath, content);
+  }
+
   //#endregion
 
   //#region Public — 기기 실행
@@ -719,28 +835,35 @@ export default config;
    *
    * 1. capacitor.config.ts에 server.url 설정 (Hot Reload용)
    * 2. cap copy — 웹 에셋 동기화
-   * 3. cap run — 기기에서 앱 실행 (실패 시 adb kill-server 후 1회 재시도)
+   * 3. cap run — 기기에서 앱 실행
    */
   async run(url: string): Promise<void> {
+    Capacitor._logger.debug(`server.url 설정: ${url}`);
     await this._updateServerUrl(url);
 
     for (const platform of this._platforms) {
+      Capacitor._logger.debug(`[${platform}] cap copy 시작`);
       await this._execCap(["copy", platform]);
+      Capacitor._logger.debug(`[${platform}] cap copy 완료`);
 
       try {
+        Capacitor._logger.debug(`[${platform}] cap run 시작`);
         await this._execCap(["run", platform]);
+        Capacitor._logger.debug(`[${platform}] cap run 완료`);
       } catch (err) {
         if (platform === "android") {
-          Capacitor._logger.warn("cap run 실패. adb kill-server 후 재시도합니다.");
+          Capacitor._logger.debug(`[${platform}] adb kill-server 시작`);
           try {
             await this._exec("adb", ["kill-server"], this._capPath);
-          } catch {
-            // adb kill-server 실패는 무시
+            Capacitor._logger.debug(`[${platform}] adb kill-server 완료`);
+          } catch (adbErr) {
+            const adbErrMsg = adbErr instanceof Error ? adbErr.message : String(adbErr);
+            Capacitor._logger.debug(
+              `[${platform}] adb kill-server 실패 (무시): ${adbErrMsg}`,
+            );
           }
-          await this._execCap(["run", platform]);
-        } else {
-          throw err;
         }
+        throw err;
       }
     }
   }
@@ -779,30 +902,40 @@ export default config;
    * 4. 빌드 산출물 복사
    */
   async build(outPath: string): Promise<void> {
+    Capacitor._logger.debug("build 시작");
+
     // 1. 웹 에셋 동기화
+    Capacitor._logger.debug("cap copy 시작");
     await this._execCap(["copy"]);
+    Capacitor._logger.debug("cap copy 완료");
 
     // 2. 빌드 타입 결정
     const isDebug = this._config.debug === true;
     const isBundle = this._config.platform?.android?.bundle === true;
     const buildType = isDebug ? "debug" : "release";
+    Capacitor._logger.debug(`빌드 타입: ${buildType}, bundle: ${isBundle}`);
 
     // 3. 서명 설정
     const signConfig = this._config.platform?.android?.sign;
     if (!isDebug && signConfig != null) {
-      await this._configureSigningConfig(
-        pathx.posixResolve(this._capPath, "android"),
-        signConfig,
-      );
+      Capacitor._logger.debug("서명 설정 시작");
+      await this._configureSigningConfig(pathx.posixResolve(this._capPath, "android"), signConfig);
+      Capacitor._logger.debug("서명 설정 완료");
     } else if (!isDebug) {
       Capacitor._logger.warn("서명 설정이 없어 unsigned 빌드가 생성됩니다.");
     }
 
     // 4. Gradle 빌드
+    Capacitor._logger.debug("Gradle 빌드 시작");
     await this._buildAndroid(buildType, isBundle);
+    Capacitor._logger.debug("Gradle 빌드 완료");
 
     // 5. 빌드 산출물 복사
+    Capacitor._logger.debug("빌드 산출물 복사 시작");
     await this._copyBuildOutput(outPath, buildType, isBundle);
+    Capacitor._logger.debug("빌드 산출물 복사 완료");
+
+    Capacitor._logger.debug("build 완료");
   }
 
   //#endregion
@@ -878,6 +1011,7 @@ export default config;
       ? pathx.posixResolve(androidPath, "gradlew.bat")
       : pathx.posixResolve(androidPath, "gradlew");
 
+    Capacitor._logger.debug(`Gradle 실행: ${gradlew} ${gradleTask}`);
     await this._exec(gradlew, [gradleTask, "--no-daemon"], androidPath);
   }
 
@@ -899,11 +1033,13 @@ export default config;
     );
 
     // 빌드 산출물 찾기
+    Capacitor._logger.debug(`빌드 산출물 탐색: ${androidBuildPath}`);
     const candidates = await fsx.glob(pathx.posixResolve(androidBuildPath, `app-*.${ext}`));
     if (candidates.length === 0) {
       throw new Error(`빌드 산출물을 찾을 수 없습니다: ${androidBuildPath}`);
     }
     const builtFile = candidates[0];
+    Capacitor._logger.debug(`빌드 산출물: ${builtFile}`);
     const isUnsigned = builtFile.includes("unsigned");
 
     // 출력 디렉토리 생성

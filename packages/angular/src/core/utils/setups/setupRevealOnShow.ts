@@ -1,4 +1,4 @@
-import { effect, ElementRef, inject, untracked } from "@angular/core";
+import { computed, effect, ElementRef, inject, untracked } from "@angular/core";
 
 export function setupRevealOnShow(
   optFn?: () => {
@@ -7,10 +7,11 @@ export function setupRevealOnShow(
   },
 ): void {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  const resolvedType = computed(() => optFn?.().type ?? "t2b");
 
   effect((onCleanup) => {
     const el = elRef.nativeElement;
-    const type = untracked(() => optFn?.().type ?? "t2b");
+    const type = resolvedType();
 
     Object.assign(el.style, {
       opacity: "0",

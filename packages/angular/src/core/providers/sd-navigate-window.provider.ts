@@ -6,9 +6,9 @@ export class SdNavigateWindowProvider {
   private _beforeUnloadRegistered = false;
 
   get isWindow(): boolean {
-    const urlSearchParams = new URLSearchParams(
-      location.hash.slice(location.hash.indexOf(";") + 1),
-    );
+    const semicolonIdx = location.hash.indexOf(";");
+    if (semicolonIdx === -1) return false;
+    const urlSearchParams = new URLSearchParams(location.hash.slice(semicolonIdx + 1));
     return urlSearchParams.get("window") === "true";
   }
 

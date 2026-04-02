@@ -1,6 +1,6 @@
 # pathx
 
-Namespace of path manipulation utilities. Provides normalized path types, POSIX conversion, and directory-based filtering.
+Namespace of path manipulation utilities. Provides a branded POSIX path type, path conversion, and directory-based filtering.
 
 Imported as:
 ```typescript
@@ -9,27 +9,39 @@ import { pathx } from "@simplysm/core-node";
 
 ## Types
 
-### NormPath
+### PosixPath
 
 ```ts
-type NormPath = string & { [NORM]: never }
+type PosixPath = string & { [POSIX]: never }
 ```
 
-Branded string type representing a normalized, resolved absolute path. Can only be created via `norm()`.
+Branded string type guaranteeing forward-slash (`/`) separators. Can only be created via `posix()` or `posixResolve()`.
 
 ## Functions
 
 ### posix
 
 ```ts
-function posix(...args: string[]): string
+function posix(p: string): PosixPath
 ```
 
-Convert a path to POSIX style (backslashes replaced with forward slashes). Accepts multiple segments which are joined with `path.join`.
+Convert a path to POSIX style (backslashes replaced with forward slashes). No path resolution or joining is performed.
 
 ```ts
-pathx.posix("C:\\Users\\test");    // "C:/Users/test"
-pathx.posix("src", "index.ts");   // "src/index.ts"
+pathx.posix("C:\\Users\\test"); // "C:/Users/test"
+```
+
+### posixResolve
+
+```ts
+function posixResolve(...args: string[]): PosixPath
+```
+
+Resolve path segments to an absolute path, then convert to POSIX style.
+
+```ts
+pathx.posixResolve("/base", "sub", "file.txt"); // "/base/sub/file.txt"
+pathx.posixResolve("relative/path");            // "D:/cwd/relative/path"
 ```
 
 ### changeFileDirectory
@@ -76,25 +88,12 @@ pathx.basenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
 function isChildPath(childPath: string, parentPath: string): boolean
 ```
 
-Check if `childPath` is a descendant of `parentPath`. Returns `false` for identical paths. Paths are normalized internally via `norm()`.
+Check if `childPath` is a descendant of `parentPath`. Returns `false` for identical paths. Paths are normalized internally via `posixResolve()`.
 
 ```ts
 pathx.isChildPath("/a/b/c", "/a/b"); // true
 pathx.isChildPath("/a/b", "/a/b/c"); // false
 pathx.isChildPath("/a/b", "/a/b");   // false (same path)
-```
-
-### norm
-
-```ts
-function norm(...paths: string[]): NormPath
-```
-
-Normalize and resolve path segments into a `NormPath` (absolute, platform-native separators).
-
-```ts
-pathx.norm("/some/path");          // NormPath
-pathx.norm("relative", "path");   // NormPath (resolved to absolute)
 ```
 
 ### filterByTargets

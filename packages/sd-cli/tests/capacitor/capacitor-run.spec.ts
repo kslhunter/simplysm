@@ -27,8 +27,8 @@ vi.mock("@simplysm/core-node", () => ({
     copy: mockFsxCopy,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -49,7 +49,7 @@ const execaCalls: { command: string; args: string[] }[] = [];
 let execaFactory: (...args: unknown[]) => Promise<{ stdout: string; stderr: string; exitCode: number }> = () =>
   Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 
-const mockCpxExec = vi.fn((...args: unknown[]) => {
+const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
   return execaFactory(...args);
 });
@@ -84,7 +84,9 @@ vi.mock("consola", () => ({
       warn: mockLoggerWarn,
       info: vi.fn(),
     }),
+    level: 0,
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -175,14 +177,14 @@ describe("Capacitor.run()", () => {
 
     // cap copy android + cap run android
     const capCmds = execaCalls.filter(
-      (c) => c.command === "npx" && c.args.includes("cap"),
+      (c) => c.command === "pnpm" && c.args.includes("cap"),
     );
     expect(capCmds.some((c) => c.args.includes("copy") && c.args.includes("android"))).toBe(true);
     expect(capCmds.some((c) => c.args.includes("run") && c.args.includes("android"))).toBe(true);
   });
 
-  // Unit: adb kill-server retry on cap run failure
-  it("retries cap run after adb kill-server on android platform failure", async () => {
+  // Unit: cap run 실패 시 adb kill-server 호출 후 에러를 re-throw한다
+  it("calls adb kill-server and re-throws on android platform cap run failure", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
 
     let capRunCallCount = 0;
@@ -191,16 +193,13 @@ describe("Capacitor.run()", () => {
       const cmdArgs = (args[1] as string[] | undefined) ?? [];
 
       if (
-        cmd === "npx" &&
+        cmd === "pnpm" &&
         cmdArgs.includes("cap") &&
         cmdArgs.includes("run") &&
         cmdArgs.includes("android")
       ) {
         capRunCallCount++;
-        if (capRunCallCount === 1) {
-          // First cap run fails
-          return Promise.reject(new Error("cap run failed"));
-        }
+        return Promise.reject(new Error("cap run failed"));
       }
       return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
     };
@@ -211,16 +210,14 @@ describe("Capacitor.run()", () => {
       platform: { android: {} },
     });
 
-    await cap.run("http://localhost:4200");
+    await expect(cap.run("http://localhost:4200")).rejects.toThrow("cap run failed");
 
-    // adb kill-server should have been called between the two cap run attempts
+    // adb kill-server should have been called
     expect(
       execaCalls.some((c) => c.command === "adb" && c.args.includes("kill-server")),
     ).toBe(true);
-    expect(capRunCallCount).toBe(2);
-    expect(mockLoggerWarn).toHaveBeenCalledWith(
-      expect.stringContaining("adb kill-server"),
-    );
+    // cap run은 한 번만 호출 (재시도 없음)
+    expect(capRunCallCount).toBe(1);
   });
 
   // Unit: _updateServerUrl replaces existing url

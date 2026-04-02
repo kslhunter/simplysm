@@ -40,5 +40,10 @@ describe("Feature 1.7 Slice 1: 독립 유틸리티", () => {
     it("null 또는 undefined 입력 시 빈 문자열", () => {
       expect(pipe.transform(undefined, "yyyy-MM-dd")).toBe("");
     });
+
+    it("format에 X가 없으면 원본 문자열을 반환한다", () => {
+      const result = pipe.transform("123", "---");
+      expect(result).toBe("123");
+    });
   });
 });

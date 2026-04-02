@@ -56,8 +56,13 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
         sdTheme.dark.set(savedDark);
       }
 
+      let prevDark = sdTheme.dark();
       effect(() => {
-        sdLocalStorage.set("sd-theme-dark", sdTheme.dark());
+        const dark = sdTheme.dark();
+        if (dark !== prevDark) {
+          sdLocalStorage.set("sd-theme-dark", dark);
+          prevDark = dark;
+        }
       });
     }),
     provideEnvironmentInitializer(() => {
@@ -102,6 +107,9 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       const swUpdate = inject(SwUpdate, { optional: true });
       const destroyRef = inject(DestroyRef);
       let timerId: ReturnType<typeof setTimeout> | undefined;
+      let failCount = 0;
+      const BASE_INTERVAL = 5 * 60 * 1000;
+      const MAX_INTERVAL = 60 * 60 * 1000;
 
       const updateFn = async () => {
         try {
@@ -118,10 +126,15 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
               }
             }
           }
+          failCount = 0;
         } catch {
-          // checkForUpdate 실패 시 무시하고 다음 폴링 주기에 재시도
+          failCount++;
         } finally {
-          timerId = setTimeout(updateFn, 5 * 60 * 1000);
+          const interval = Math.min(
+            BASE_INTERVAL * Math.pow(2, Math.max(0, failCount - 1)),
+            MAX_INTERVAL,
+          );
+          timerId = setTimeout(updateFn, interval);
         }
       };
       void updateFn();
@@ -146,7 +159,7 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
           event instanceof NavigationCancel ||
           event instanceof NavigationError
         ) {
-          sdBusy.globalBusyCount.update((v) => v - 1);
+          sdBusy.globalBusyCount.update((v) => Math.max(0, v - 1));
         }
       });
     }),

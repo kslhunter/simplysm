@@ -111,6 +111,26 @@ export class SdModalTestHideCloseButton {}
 export class SdModalTestHideHeader {}
 
 /**
+ * movable 모달 테스트
+ */
+@Component({
+  selector: "sd-modal-test-movable",
+  standalone: true,
+  imports: [SdModalControl],
+  template: `
+    <sd-modal [open]="true" [title]="'Test'" [movable]="true" (closeRequest)="onClose()">
+      <div class="modal-body">body content</div>
+    </sd-modal>
+  `,
+})
+export class SdModalTestMovable {
+  closed = false;
+  onClose() {
+    this.closed = true;
+  }
+}
+
+/**
  * SdModalProvider.showAsync 테스트용 호스트 컴포넌트
  */
 @Component({

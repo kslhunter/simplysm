@@ -1,6 +1,12 @@
 import { computed, type Signal } from "@angular/core";
 import type { ISdSheetColumnDef } from "./types";
 
+/**
+ * Fixed column의 left offset을 계산한다.
+ *
+ * **주의:** fixed column의 `width`는 반드시 px 단위여야 정확한 offset이 계산된다.
+ * em, rem, % 등 non-px 단위의 width는 offset 누적에 반영되지 않는다 (0으로 처리).
+ */
 export function useSheetColumnFixing(options: {
   columnDefs: Signal<ISdSheetColumnDef[]>;
 }) {

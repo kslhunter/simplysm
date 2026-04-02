@@ -123,4 +123,40 @@ describe("Feature 1.6 Slice 3: ShowEffect 디렉티브", () => {
 
     expect(mockObserve).toHaveBeenCalledWith(el);
   });
+
+  it("type이 t2b→l2r로 변경되면 effect가 재실행되어 transform이 갱신된다", () => {
+    const type = signal<"l2r" | "t2b">("t2b");
+    TestBed.runInInjectionContext(() => {
+      setupRevealOnShow(() => ({ type: type() }));
+    });
+    TestBed.flushEffects();
+
+    expect(el.style.transform).toBe("translateY(-1em)");
+
+    // type 변경
+    type.set("l2r");
+    TestBed.flushEffects();
+
+    expect(el.style.transform).toBe("translateX(-1em)");
+    // observer가 재생성되어 다시 observe 호출
+    expect(mockObserve).toHaveBeenCalledTimes(2);
+  });
+
+  it("enabled만 변경되면 effect는 재실행되지 않는다", () => {
+    const enabled = signal(true);
+    const type = signal<"l2r" | "t2b">("t2b");
+    TestBed.runInInjectionContext(() => {
+      setupRevealOnShow(() => ({ type: type(), enabled: enabled() }));
+    });
+    TestBed.flushEffects();
+
+    const initialObserveCount = mockObserve.mock.calls.length;
+
+    // enabled만 변경
+    enabled.set(false);
+    TestBed.flushEffects();
+
+    // effect가 재실행되지 않으므로 observe 횟수 동일
+    expect(mockObserve).toHaveBeenCalledTimes(initialObserveCount);
+  });
 });

@@ -7,7 +7,7 @@ import { consola } from "consola";
 const logger = consola.withTag("sd:cli:lint-with-program");
 
 /**
- * Lint result returned by LintWithProgramRunner.lint()
+ * LintWithProgramRunner.lint()가 반환하는 lint 결과
  */
 export interface LintWithProgramResult {
   success: boolean;
@@ -17,7 +17,7 @@ export interface LintWithProgramResult {
 }
 
 /**
- * Options for LintWithProgramRunner constructor
+ * LintWithProgramRunner 생성자 옵션
  */
 export interface LintWithProgramRunnerOptions {
   cwd: string;
@@ -25,22 +25,22 @@ export interface LintWithProgramRunnerOptions {
 }
 
 /**
- * Options for LintWithProgramRunner.lint()
+ * LintWithProgramRunner.lint() 옵션
  */
 export interface LintRunOptions {
   program: ts.Program;
-  /** When provided, only files in this set are linted (intersection with extracted files).
-   *  Used in watch rebuild for incremental lint based on affected files. */
+  /** 제공 시 이 집합의 파일만 lint한다 (추출된 파일과의 교집합).
+   *  watch 재빌드에서 affected 파일 기반 증분 lint에 사용한다. */
   affectedFiles?: ReadonlySet<string>;
 }
 
 /**
- * Runs ESLint using an existing ts.Program (avoids duplicate Program creation).
+ * 기존 ts.Program을 사용하여 ESLint를 실행한다 (중복 Program 생성을 방지).
  *
- * - Extracts source files from program.getSourceFiles() filtered to pkgDir
- * - Excludes .d.ts files and node_modules paths
- * - Injects ts.Program via parserOptions.programs (typescript-eslint)
- * - Reuses ESLint instance across calls (watch mode optimization)
+ * - program.getSourceFiles()에서 pkgDir로 필터링하여 소스 파일을 추출한다
+ * - .d.ts 파일과 node_modules 경로를 제외한다
+ * - parserOptions.programs를 통해 ts.Program을 주입한다 (typescript-eslint)
+ * - 호출 간 ESLint 인스턴스를 재사용한다 (watch 모드 최적화)
  */
 export class LintWithProgramRunner {
   private readonly _cwd: string;
@@ -55,8 +55,8 @@ export class LintWithProgramRunner {
   }
 
   /**
-   * Extract lint target files from ts.Program.
-   * Includes all workspace source files (cwd scope), excludes .d.ts, node_modules, and Angular shims.
+   * ts.Program에서 lint 대상 파일을 추출한다.
+   * 모든 워크스페이스 소스 파일(cwd 범위)을 포함하고 .d.ts, node_modules, Angular shim을 제외한다.
    */
   private _extractFiles(program: ts.Program): string[] {
     logger.debug(`[${this._pkgName}] 린트 대상 파일 추출 시작`);
@@ -66,22 +66,22 @@ export class LintWithProgramRunner {
     for (const sf of program.getSourceFiles()) {
       const fileName = pathx.posix(sf.fileName);
 
-      // Must be within workspace root
+      // 워크스페이스 루트 내에 있어야 함
       if (!fileName.startsWith(normalizedCwd + "/")) {
         continue;
       }
 
-      // Exclude declaration files
+      // 선언 파일 제외
       if (sf.isDeclarationFile) {
         continue;
       }
 
-      // Exclude node_modules
+      // node_modules 제외
       if (fileName.includes("/node_modules/")) {
         continue;
       }
 
-      // Exclude Angular type-check shim files (virtual, not on disk)
+      // Angular 타입체크 shim 파일 제외 (가상 파일, 디스크에 없음)
       if (fileName.endsWith(".ngtypecheck.ts")) {
         continue;
       }
@@ -94,17 +94,17 @@ export class LintWithProgramRunner {
   }
 
   /**
-   * Run ESLint on files from the given ts.Program.
-   * When affectedFiles is provided, only the intersection is linted (watch rebuild).
-   * Creates ESLint instance on first call, reuses on subsequent calls.
+   * 주어진 ts.Program의 파일에 대해 ESLint를 실행한다.
+   * affectedFiles가 제공되면 교집합만 lint한다 (watch 재빌드).
+   * 첫 호출 시 ESLint 인스턴스를 생성하고, 이후 호출에서 재사용한다.
    */
   async lint(options: LintRunOptions): Promise<LintWithProgramResult> {
     const { program, affectedFiles } = options;
 
-    // Extract target files (workspace scope)
+    // 대상 파일 추출 (워크스페이스 범위)
     let files = this._extractFiles(program);
 
-    // When affectedFiles is provided, intersect with extracted files
+    // affectedFiles가 제공되면 추출된 파일과 교집합
     if (affectedFiles != null) {
       files = files.filter((f) => affectedFiles.has(pathx.posix(f)));
     }
@@ -118,23 +118,23 @@ export class LintWithProgramRunner {
       };
     }
 
-    // Update programs reference (mutable array — ESLint reads it on lintFiles)
+    // programs 참조 업데이트 (가변 배열 — ESLint가 lintFiles 시 읽음)
     this._programsRef.length = 0;
     this._programsRef.push(program);
 
-    // Cache policy: affected files-based incremental lint is more accurate than ESLint's
-    // file-content-based cache (which misses dependency changes).
-    // When affectedFiles is provided (watch rebuild), disable cache.
-    // When not provided (one-time build), enable cache for performance.
+    // 캐시 정책: affected 파일 기반 증분 lint가 ESLint의
+    // 파일 내용 기반 캐시(의존성 변경을 놓침)보다 정확하다.
+    // affectedFiles가 제공되면 (watch 재빌드) 캐시를 비활성화한다.
+    // 제공되지 않으면 (일회성 빌드) 성능을 위해 캐시를 활성화한다.
     const useCache = affectedFiles == null;
 
-    // Create new ESLint instance when cache policy changes or on first call
+    // 캐시 정책이 변경되거나 첫 호출 시 새 ESLint 인스턴스 생성
     if (this._eslint == null || this._lastUseCache !== useCache) {
       logger.debug(`[${this._pkgName}] ESLint 인스턴스 생성 (cache: ${String(useCache)})`);
-      // ESLint Flat Config serializes languageOptions via languageOptionsToJSON(),
-      // which recurses into parserOptions and throws on ts.Program methods.
-      // Adding toJSON() to parserOptions returns a serializable representation
-      // while keeping the actual programs array accessible to typescript-eslint.
+      // ESLint Flat Config는 languageOptionsToJSON()을 통해 languageOptions를 직렬화하는데,
+      // parserOptions를 재귀 탐색하면서 ts.Program 메서드에서 예외가 발생한다.
+      // parserOptions에 toJSON()을 추가하여 직렬화 가능한 표현을 반환하면서
+      // typescript-eslint가 실제 programs 배열에 접근할 수 있도록 한다.
       const parserOptions = {
         programs: this._programsRef,
         project: null,
@@ -157,11 +157,11 @@ export class LintWithProgramRunner {
       this._lastUseCache = useCache;
     }
 
-    // Run lint
+    // lint 실행
     logger.debug(`[${this._pkgName}] 린트 시작 (${files.length}개 파일, affected: ${affectedFiles != null})`);
     const results = await this._eslint.lintFiles(files);
 
-    // Aggregate results
+    // 결과 집계
     let errorCount = 0;
     let warningCount = 0;
     for (const r of results) {
@@ -169,7 +169,7 @@ export class LintWithProgramRunner {
       warningCount += r.warningCount;
     }
 
-    // Format output
+    // 출력 포맷팅
     const formatter = await this._eslint.loadFormatter("stylish");
     const formattedOutput = await formatter.format(results);
 

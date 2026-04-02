@@ -1,6 +1,7 @@
 import type { Plugin } from "vite";
 import path from "path";
 import ts from "typescript";
+import { pathx } from "@simplysm/core-node";
 import { NgtscProgram, type AngularLibraryHostExtensions } from "./utils/angular-build";
 import { compileScssString, compileScssFile } from "./utils/scss-compiler";
 
@@ -48,7 +49,7 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
 
       const host = ts.createCompilerHost(compilerOptions);
 
-      // AngularLibraryHostExtensions duck-typing
+      // AngularLibraryHostExtensions 덕 타이핑
       const hostExt = host as ts.CompilerHost & AngularLibraryHostExtensions;
       hostExt.readResource = (fileName: string) => ts.sys.readFile(fileName) ?? "";
 
@@ -95,12 +96,12 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
       const { transformers } = program.compiler.prepareEmit();
       const tsProgram = program.getTsProgram();
 
-      // per-file emit
+      // 파일별 emit
       for (const filePath of sourceFiles) {
         const sf = tsProgram.getSourceFile(filePath);
         if (sf == null) continue;
 
-        currentSourcePath = normalizePath(filePath);
+        currentSourcePath = pathx.posix(filePath);
         tsProgram.emit(sf, host.writeFile, undefined, false, transformers);
       }
     },
@@ -110,7 +111,7 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
         return undefined;
       }
 
-      const compiled = compiledFiles.get(normalizePath(id));
+      const compiled = compiledFiles.get(pathx.posix(id));
       if (compiled == null) {
         return undefined;
       }
@@ -118,8 +119,4 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
       return { code: compiled.js, map: compiled.map };
     },
   };
-}
-
-function normalizePath(p: string): string {
-  return p.replace(/\\/g, "/");
 }

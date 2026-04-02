@@ -62,7 +62,7 @@ Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 
 
 ```bash
 (cd ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" && \
-MSYS_NO_PATHCONV=1 claude -p "{eval 시나리오의 입력}" \
+MSYS_NO_PATHCONV=1 MCP_CONNECTION_NONBLOCKING=true claude -p "{eval 시나리오의 입력}" \
   --output-format json \
   --verbose \
   --dangerously-skip-permissions \

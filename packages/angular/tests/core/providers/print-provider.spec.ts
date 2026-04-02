@@ -10,6 +10,7 @@ import {
   SdPrintTestNoImages,
   SdPrintTestMultiPage,
 } from "./sd-print-test.fixture";
+import { TimeoutError } from "@simplysm/core-common";
 
 let printSpy: ReturnType<typeof vi.spyOn>;
 
@@ -256,6 +257,55 @@ describe("Feature 3.5.1 Slice 1: printAsync + 공통 인프라", () => {
     });
 
     expect(textContent).toContain("테스트 제목");
+  });
+});
+
+describe("Feature 4.2a Slice 1: 인쇄 폴링 타임아웃", () => {
+  // Scenario: 인쇄 템플릿 초기화가 타임아웃되면 에러를 발생시킨다
+  it("initialized()가 30초간 false를 유지하면 TimeoutError가 발생하고 busy가 해제된다", async () => {
+    vi.useFakeTimers();
+    try {
+      setupHost();
+      const provider = TestBed.inject(SdPrintProvider);
+      const busy = TestBed.inject(SdBusyProvider);
+      SdPrintTestDelayed.latestInstance = undefined;
+
+      let rejectedError: unknown;
+      provider
+        .printAsync({ type: SdPrintTestDelayed, inputs: {} })
+        .catch((err) => {
+          rejectedError = err;
+        });
+
+      // 30초(300 × 100ms) 타임아웃 시뮬레이션
+      await vi.advanceTimersByTimeAsync(30_100);
+
+      expect(rejectedError).toBeInstanceOf(TimeoutError);
+      expect(busy.globalBusyCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // Unit: 타임아웃 시 DOM 정리
+  it("타임아웃 발생 시 인쇄 컴포넌트와 스타일이 DOM에서 제거된다", async () => {
+    vi.useFakeTimers();
+    try {
+      setupHost();
+      const provider = TestBed.inject(SdPrintProvider);
+      SdPrintTestDelayed.latestInstance = undefined;
+
+      provider
+        .printAsync({ type: SdPrintTestDelayed, inputs: {} })
+        .catch(() => {});
+
+      await vi.advanceTimersByTimeAsync(30_100);
+
+      const printTemplates = document.body.querySelectorAll("._sd-print-template");
+      expect(printTemplates.length).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

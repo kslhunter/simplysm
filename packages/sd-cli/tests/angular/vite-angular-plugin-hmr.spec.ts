@@ -17,6 +17,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);
@@ -72,6 +73,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);
@@ -101,6 +103,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);
@@ -138,6 +141,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);
@@ -177,6 +181,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);
@@ -220,6 +225,79 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     } as unknown as ServerResponse;
     middleware(mockReq, mockRes, vi.fn());
     expect(body).toBe("");
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Acceptance: base path가 포함된 /@ng/component 요청도 정상 응답한다
+  it("serves /@ng/component requests with base path prefix", async () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    await (plugin as any).buildStart?.call({});
+
+    const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
+      [];
+    const mockServer = {
+      config: { base: "/client-pda/" },
+      middlewares: {
+        use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
+          middlewares.push(fn);
+        },
+      },
+      httpServer: { on: vi.fn() },
+    };
+    (plugin as any).configureServer?.(mockServer);
+
+    const middleware = middlewares[0];
+    // 실제 브라우저에서는 /client-pda/src/services/@ng/component 형태로 요청됨
+    const mockReq = {
+      url: "/client-pda/src/services/@ng/component?c=testId",
+    } as IncomingMessage;
+
+    let statusCode: number | undefined;
+    let headers: Record<string, string> = {};
+    const mockRes = {
+      writeHead(code: number, hdrs: Record<string, string>) {
+        statusCode = code;
+        headers = hdrs;
+      },
+      end: vi.fn(),
+    } as unknown as ServerResponse;
+
+    const next = vi.fn();
+    middleware(mockReq, mockRes, next);
+
+    expect(statusCode).toBe(200);
+    expect(headers["Content-Type"]).toBe("text/javascript");
+    expect(next).not.toHaveBeenCalled();
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Acceptance: base path가 있지만 @ng/component가 아닌 요청은 next()로 통과
+  it("passes through non-/@ng/component requests with base path", async () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    await (plugin as any).buildStart?.call({});
+
+    const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
+      [];
+    const mockServer = {
+      config: { base: "/client-pda/" },
+      middlewares: {
+        use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
+          middlewares.push(fn);
+        },
+      },
+      httpServer: { on: vi.fn() },
+    };
+    (plugin as any).configureServer?.(mockServer);
+
+    const middleware = middlewares[0];
+    const mockReq = { url: "/client-pda/other-path" } as IncomingMessage;
+    const mockRes = {} as ServerResponse;
+    const next = vi.fn();
+
+    middleware(mockReq, mockRes, next);
+    expect(next).toHaveBeenCalled();
 
     await (plugin as any).buildEnd?.call({});
   });

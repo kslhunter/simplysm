@@ -21,7 +21,7 @@ export interface LibraryBuildInfo {
   cwd: string;
   pkgDir: string;
   output: BuildOutput;
-  /** replaceDeps configuration from sd.config.ts */
+  /** sd.config.ts의 replaceDeps 설정 */
   replaceDeps?: Record<string, string>;
 }
 
@@ -73,7 +73,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
   });
   logger.debug(`[${info.name}] library worker build 완료 (success: ${tscResult.success})`);
 
-  // Run lint if enabled and program is available
+  // lint 실행 (활성화 + program 사용 가능 시)
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true && tscResult.program != null) {
     logger.debug(`[${info.name}] lint 시작`);
@@ -102,7 +102,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
 
 const guardStartWatch = createOnceGuard("startWatch");
 
-// Mutable state for watch mode
+// watch 모드용 가변 상태
 let watchInfo: LibraryBuildInfo | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
 let lastSourceFilePaths: Set<string> | undefined;
@@ -128,10 +128,10 @@ async function rebuildAll(): Promise<CombinedBuildEvent> {
     includeTests: info.output.includeTests,
   });
 
-  // Update source file paths for dependency filtering
+  // 의존성 필터링을 위한 소스 파일 경로 업데이트
   lastSourceFilePaths = extractSourceFilePaths(tscResult.program) ?? lastSourceFilePaths;
 
-  // Run lint if enabled and program is available
+  // lint 실행 (활성화 + program 사용 가능 시)
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true && tscResult.program != null) {
     logger.debug(`[${info.name}] lint 시작`);
@@ -160,14 +160,14 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
   watchInfo = info;
 
   try {
-    // Initial build
+    // 초기 빌드
     const initialResult = await rebuildAll();
     sender.send("build", initialResult);
 
-    // Collect workspace dependency paths + replaceDeps
+    // workspace 의존성 경로 + replaceDeps 수집
     const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
 
-    // Start FsWatcher — own src/ + workspace deps' src/ + replaceDeps dist/
+    // FsWatcher 시작 — 자체 src/ + workspace 의존성 src/ + replaceDeps dist/
     logger.debug(`[${info.name}] FsWatcher 시작`);
     const watchPaths = [
       pathx.posixResolve(info.pkgDir, "src", "**", "*.ts"),

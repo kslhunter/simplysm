@@ -130,6 +130,99 @@ describe("Feature 1.1 Slice 5: 오버레이 중복 방지", () => {
   });
 });
 
+describe("Feature 2.3 Slice 1: 에러 핸들러 수정", () => {
+  let handler: SdGlobalErrorHandlerPlugin;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin }],
+    });
+    handler = TestBed.inject(ErrorHandler) as SdGlobalErrorHandlerPlugin;
+  });
+
+  afterEach(() => {
+    document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
+    document.body.textContent = "";
+  });
+
+  describe("Rule: PromiseRejectionEvent의 reason이 primitive 타입일 때 에러 정보를 표시한다", () => {
+    it("reason이 undefined인 경우 에러 오버레이에 'undefined' 텍스트가 포함된다", () => {
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason: undefined,
+        promise: Promise.resolve(),
+      });
+      handler.handleError(event);
+
+      const overlay = document.querySelector("div[style*='position: fixed']");
+      expect(overlay).not.toBeNull();
+      expect(overlay!.textContent).toContain("undefined");
+
+      destroySpy.mockRestore();
+    });
+
+    it("reason이 number인 경우 에러 오버레이에 '42' 텍스트가 포함된다", () => {
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason: 42,
+        promise: Promise.resolve(),
+      });
+      handler.handleError(event);
+
+      const overlay = document.querySelector("div[style*='position: fixed']");
+      expect(overlay).not.toBeNull();
+      expect(overlay!.textContent).toContain("42");
+
+      destroySpy.mockRestore();
+    });
+
+    it("reason이 symbol인 경우 에러 오버레이에 'Symbol(test)' 텍스트가 포함된다", () => {
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason: Symbol("test"),
+        promise: Promise.resolve(),
+      });
+      handler.handleError(event);
+
+      const overlay = document.querySelector("div[style*='position: fixed']");
+      expect(overlay).not.toBeNull();
+      expect(overlay!.textContent).toContain("Symbol(test)");
+
+      destroySpy.mockRestore();
+    });
+  });
+
+  describe("Rule: _displayErrorMessage 실패 시 폴백 에러 메시지를 제공한다", () => {
+    it("DOM append 중 예외 발생 시 document.body에 원본 및 2차 에러 정보가 표시된다", () => {
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const appendSpy = vi.spyOn(document.body, "append").mockImplementation(() => {
+        throw new Error("DOM append failed");
+      });
+
+      handler.handleError(new Error("original error"));
+
+      expect(document.body.textContent).toContain("original error");
+      expect(document.body.textContent).toContain("DOM append failed");
+
+      appendSpy.mockRestore();
+      consoleSpy.mockRestore();
+      destroySpy.mockRestore();
+    });
+  });
+});
+
 describe("Feature 1.8 Slice 3: SdGlobalErrorHandlerPlugin + SdSystemLogProvider 연동", () => {
   let handler: SdGlobalErrorHandlerPlugin;
   let systemLog: SdSystemLogProvider;

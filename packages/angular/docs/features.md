@@ -30,6 +30,31 @@ interface IAddress {
 | `address` | `string \| undefined` | Full road/lot address |
 | `buildingName` | `string \| undefined` | Building name |
 
+## `SdPermissionTableControl`
+
+Matrix table component that displays a hierarchical permission structure with use/edit checkboxes. Groups and leaf items are rendered with depth-based coloring and collapse/expand support.
+
+```typescript
+@Component({ selector: "sd-permission-table" })
+class SdPermissionTableControl<TModule> {
+  value = model<Record<string, boolean>>({});
+  items = input<ISdPermission<TModule>[]>([]);
+  disabled = input(false, { transform: booleanAttribute });
+}
+```
+
+| Input/Model | Type | Description |
+|-------------|------|-------------|
+| `value` | `Record<string, boolean>` | Two-way binding of permission key-value map (e.g., `{ "admin.users.use": true }`) |
+| `items` | `ISdPermission<TModule>[]` | Hierarchical permission tree from `SdAppStructureProvider` |
+| `disabled` | `boolean` | Disables all checkboxes |
+
+Behaviors:
+- Unchecking "use" automatically unchecks "edit" for the same item
+- "edit" checkbox is disabled when "use" is unchecked
+- Checking/unchecking a parent cascades to all children
+- Collapsible groups with depth-based theme coloring (info/warning/success cycle)
+
 ## `SdBaseContainerControl`
 
 Layout shell that wraps a page or modal. Handles busy state, access restriction, and auto-resolves title from app structure or modal context.

@@ -1,0 +1,126 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Package Overview
+
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 4개 rules, 3개 훅 스크립트, 3개 eval 파일을 포함한다.
+
+TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `claude/`는 배포 에셋 디렉토리다.
+
+## Architecture
+
+```
+sd-claude/
+├── claude/               ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
+│   ├── evals/            ← Eval 시나리오 파일 (sd-*.md, 3개)
+│   ├── rules/            ← Claude Code 규칙 파일 (sd-*.md, 4개)
+│   ├── skills/           ← 스킬 파일 디렉토리 (17개 스킬)
+│   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
+│   │   ├── sd-check/          ← typecheck/lint/test 실행
+│   │   ├── sd-claude-docs/    ← CLAUDE.md + README.md 동시 생성
+│   │   ├── sd-commit/         ← 그룹별 커밋 생성
+│   │   ├── sd-debug/          ← 버그 근본 원인 분석
+│   │   ├── sd-deliverable/    ← 매뉴얼·SIT 문서 생성
+│   │   ├── sd-dev/            ← 통합 개발 오케스트레이터
+│   │   ├── sd-dev-plan/       ← 구현계획 작성
+│   │   ├── sd-dev-spec/       ← 요구명세 작성
+│   │   ├── sd-dev-tdd/        ← TDD 개발
+│   │   ├── sd-doc-extract/    ← 문서 파일 텍스트/이미지 추출 (Python)
+│   │   ├── sd-issue/          ← GitHub 이슈 생성
+│   │   ├── sd-outlook/        ← Outlook 메일 검색·다운로드 (Python)
+│   │   ├── sd-prompt/         ← 스킬/프롬프트 파일 작성·개선
+│   │   ├── sd-review/         ← 코드 리뷰 리포트 생성
+│   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
+│   │   └── sd-wbs/            ← WBS Feature 분해
+│   ├── sd-check-write.py ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
+│   ├── sd-session-start.sh ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
+│   └── sd-statusline.py  ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
+└── scripts/
+    ├── sd-entries.mjs    ← sd-* 항목 탐색 유틸리티
+    ├── postinstall.mjs   ← pnpm install 후 .claude/ 설치 로직
+    └── sync.mjs          ← prepack: 루트 .claude/sd-* → claude/ 동기화
+```
+
+## Key Patterns
+
+### 에셋 탐색 규칙 (sd-entries.mjs)
+
+`sd-*` 접두어를 가진 파일/디렉토리만 복사·관리 대상이다. 탐색 깊이는 2단계 고정:
+- 루트 레벨의 `sd-*` 항목
+- 하위 디렉토리 내 `sd-*` 항목 (예: `skills/sd-commit/`, `rules/sd-claude-rules.md`)
+
+```javascript
+// sd-entries.mjs
+export function forEachSdEntry(dir, callback) {
+  for (const dirent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (dirent.name.startsWith("sd-")) {
+      callback(dirent.name);
+    } else if (dirent.isDirectory()) {
+      // 한 단계 더 탐색
+      for (const name of fs.readdirSync(path.join(dir, dirent.name))) {
+        if (name.startsWith("sd-")) {
+          callback(path.join(dirent.name, name));
+        }
+      }
+    }
+  }
+}
+```
+
+### postinstall 설치 흐름
+
+```
+INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
+→ simplysm 모노레포 동일 메이저 버전이면 건너뜀 (자기 자신에게 설치 방지)
+→ cleanSdEntries: 기존 sd-* 항목 삭제
+→ copySdEntries: claude/ → .claude/ 복사
+→ setupSettings: .claude/settings.json에 훅 3종 등록
+```
+
+`postinstall`은 실패해도 `pnpm install`을 차단하지 않는다 — 전체 try-catch로 감싸서 경고만 출력한다.
+
+### settings.json 자동 구성
+
+`setupSettings()`는 `.claude/settings.json`에 아래를 멱등적으로 등록한다:
+
+| 훅 종류 | 조건 | 등록 내용 |
+|---------|------|-----------|
+| `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` |
+| `PreToolUse` | `Write` | `python .claude/sd-check-write.py` |
+| `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` |
+| `statusLine` | — | `python .claude/sd-statusline.py` |
+
+기존 `settings.json`이 있으면 훅 항목을 `findIndex`로 찾아 덮어쓴다. 없으면 추가한다. 루트 레벨에 잘못 위치한 `SessionStart` 키는 `hooks.SessionStart`로 마이그레이션한다.
+
+### prepack 동기화 (sync.mjs)
+
+npm publish/pack 전에 루트 `.claude/`의 `sd-*` 항목을 `claude/`로 복사한다. **소스 오브 트루스는 루트 `.claude/`** 이고, `packages/sd-claude/claude/`는 배포용 스냅샷이다.
+
+```
+루트 .claude/sd-* → packages/sd-claude/claude/sd-*
+```
+
+### 스킬 파일 구조
+
+각 스킬 디렉토리는 다음 파일을 포함한다:
+- `SKILL.md` — 스킬 정의 (YAML frontmatter: `name`, `description`, `model`)
+- `SKILL.eval.md` — Eval 시나리오 (선택)
+- `references/` — 스킬에서 참조하는 참고 문서 (선택)
+
+```markdown
+---
+name: sd-commit
+description: 전체 변경사항에 대한 단일 커밋을 생성하는 스킬. ...
+model: haiku
+---
+```
+
+## sd-statusline.py
+
+Claude Code 상태바에 `폴더 | 모델 | 컨텍스트% | 5h사용량 | 7d사용량 | $추가요금` 형식으로 표시한다.
+
+- `~/.claude/statusline-cache.json`에 API 응답을 캐싱한다 (180초 갱신 주기).
+- OAuth 토큰으로 `https://api.anthropic.com/api/oauth/usage`를 호출하여 추가 크레딧 사용량을 조회한다.
+- 백그라운드 프로세스로 fetch를 비동기 실행한다 (파일 락 사용).
+- Windows/Unix 모두 지원 (`msvcrt` vs `fcntl`).

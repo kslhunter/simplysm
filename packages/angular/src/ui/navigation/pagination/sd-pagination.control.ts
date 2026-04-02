@@ -108,7 +108,7 @@ export class SdPaginationControl {
   }
 
   goToNextGroup(): void {
-    this.currentPage.set((this.groupIndex() + 1) * this.visiblePageCount());
+    this.currentPage.set((this.groupIndex() + 1) * Math.max(this.visiblePageCount(), 1));
   }
 
   goToPrevGroup(): void {

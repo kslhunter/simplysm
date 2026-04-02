@@ -15,25 +15,27 @@ export function useSdSystemConfigResource<T>(options: { key: Signal<string | und
     },
   });
 
+  function set(value: T | undefined) {
+    res.set(value);
+    const key = options.key();
+    if (key == null) return;
+    queueMicrotask(() => {
+      sdSystemConfig.setAsync(`${elTag}.${key}`, value as T).catch((err) => {
+        errorHandler.handleError(err);
+      });
+    });
+  }
+
   return {
     value: res.value,
     isLoading: res.isLoading,
     status: res.status,
     hasValue: () => res.hasValue(),
     reload: () => res.reload(),
-    set(value: T | undefined) {
-      res.set(value);
-      const key = options.key();
-      if (key == null) return;
-      queueMicrotask(() => {
-        sdSystemConfig.setAsync(`${elTag}.${key}`, value as T).catch((err) => {
-          errorHandler.handleError(err);
-        });
-      });
-    },
+    set,
     update(fn: (prev: T | undefined) => T | undefined) {
       const newValue = fn(res.value());
-      this.set(newValue);
+      set(newValue);
     },
   };
 }

@@ -98,6 +98,169 @@ describe("FIX-1 Slice 4: SdSharedDataProvider getter 에러 처리", () => {
   });
 });
 
+describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
+  it("이벤트 콜백에서 getter가 reject되면 에러 핸들러가 호출되고 loadingCount가 정상 복원된다", async () => {
+    mockClient = new MockServiceClient();
+    const errorHandlerSpy = { handleError: vi.fn() };
+
+    TestBed.configureTestingModule({
+      providers: [
+        TestSharedDataProvider,
+        {
+          provide: SdServiceClientFactoryProvider,
+          useValue: { get: () => mockClient },
+        },
+        {
+          provide: ErrorHandler,
+          useValue: errorHandlerSpy,
+        },
+      ],
+    });
+
+    const provider = TestBed.inject(TestSharedDataProvider);
+    let callCount = 0;
+
+    provider.register("users", {
+      serviceKey: "main",
+      getter: () => {
+        callCount++;
+        if (callCount === 1) return Promise.resolve([testUser(1, "Alice", 1)]);
+        return Promise.reject(new Error("event getter failed"));
+      },
+    });
+
+    provider.getHandle("users");
+    await provider.wait();
+    expect(errorHandlerSpy.handleError).not.toHaveBeenCalled();
+
+    // 이벤트 발행 → _onEvent → getter reject
+    await provider.emitAsync("users");
+    await provider.wait();
+
+    expect(errorHandlerSpy.handleError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "event getter failed" }),
+    );
+    expect(provider.loadingCount()).toBe(0);
+  });
+
+  it("부분 업데이트(changeKeys 지정)에서 getter reject 시에도 에러 핸들러가 호출된다", async () => {
+    mockClient = new MockServiceClient();
+    const errorHandlerSpy = { handleError: vi.fn() };
+
+    TestBed.configureTestingModule({
+      providers: [
+        TestSharedDataProvider,
+        {
+          provide: SdServiceClientFactoryProvider,
+          useValue: { get: () => mockClient },
+        },
+        { provide: ErrorHandler, useValue: errorHandlerSpy },
+      ],
+    });
+
+    const provider = TestBed.inject(TestSharedDataProvider);
+    let callCount = 0;
+
+    provider.register("users", {
+      serviceKey: "main",
+      getter: (_changeKeys?: (string | number)[]) => {
+        callCount++;
+        if (callCount === 1) return Promise.resolve([testUser(1, "Alice", 1)]);
+        return Promise.reject(new Error("partial getter failed"));
+      },
+    });
+
+    provider.getHandle("users");
+    await provider.wait();
+
+    await provider.emitAsync("users", [1]);
+    await provider.wait();
+
+    expect(errorHandlerSpy.handleError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "partial getter failed" }),
+    );
+    expect(provider.loadingCount()).toBe(0);
+  });
+
+  it("부분 업데이트에서 서버 key가 string이고 클라이언트 key가 number여도 매칭 성공한다", async () => {
+    const { provider } = setup();
+    const initialData: ITestUser[] = [
+      testUser(1, "Alice", 1),
+      testUser(2, "Bob", 2),
+    ];
+
+    let callCount = 0;
+    provider.register("users", {
+      serviceKey: "main",
+      getter: (_changeKeys?: (string | number)[]) => {
+        callCount++;
+        if (callCount === 1) return Promise.resolve(initialData);
+        return Promise.resolve([testUser(2, "Bob Updated", 2)]);
+      },
+      orderBy: (a, b) => a.sortOrder - b.sortOrder,
+    });
+
+    provider.getHandle("users");
+    await provider.wait();
+    expect(provider.getHandle("users").items().length).toBe(2);
+
+    // string changeKey "2"로 이벤트 발행 (클라이언트의 __valueKey는 number 2)
+    await provider.emitAsync("users", ["2"]);
+    await provider.wait();
+
+    const items = provider.getHandle("users").items();
+    // 중복 없이 2건이어야 한다 (타입 혼재 시 매칭 실패하면 3건)
+    expect(items.length).toBe(2);
+    expect(items.find((i) => i.__valueKey === 2)?.name).toBe("Bob Updated");
+  });
+});
+
+describe("Feature 2.1: concurrent load 방지", () => {
+  it("_loadAndListen 진행 중 register 후 getHandle 재호출 시 중복 로드가 발생하지 않고, 완료 후 자동 재로드한다", async () => {
+    const { provider } = setup();
+    let callCount = 0;
+    const data1: ITestUser[] = [testUser(1, "Old", 1)];
+    const data2: ITestUser[] = [testUser(1, "New", 1)];
+
+    // 첫 번째 getter: 느린 로드 (50ms)
+    provider.register("users", {
+      serviceKey: "main",
+      getter: async () => {
+        callCount++;
+        if (callCount === 1) {
+          await new Promise((r) => setTimeout(r, 50));
+          return data1;
+        }
+        return data2;
+      },
+    });
+
+    // 첫 번째 getHandle → _loadAndListen 시작 (진행 중)
+    provider.getHandle("users");
+
+    // 로드 진행 중 재등록
+    provider.register("users", {
+      serviceKey: "main",
+      getter: () => {
+        callCount++;
+        return Promise.resolve(data2);
+      },
+    });
+
+    // 두 번째 getHandle → 중복 로드가 발생하지 않아야 한다
+    provider.getHandle("users");
+
+    // 전체 완료 대기
+    await provider.wait();
+
+    // 첫 번째 로드 완료 후 needsReload=true → 자동 재로드 → data2가 최종 값
+    const items = provider.getHandle("users").items();
+    expect(items[0].name).toBe("New");
+    // 중복 로드 방지: callCount는 2 (초기 1회 + 자동 재로드 1회). 중복이면 3 이상
+    expect(callCount).toBe(2);
+  });
+});
+
 describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: 데이터 등록 후 첫 조회
   it("register 후 getHandle()을 호출하면 데이터가 비동기 로드되고 SharedDataHandle이 반환된다", async () => {

@@ -53,7 +53,7 @@ export interface BaseEngineOptions<TPkg extends PackageInfo> {
  * 이벤트 처리)이 여기에 위치하며, 서브클래스는 추상 메서드를 통해
  * 워커 경로, 빌드/워치 호출 파라미터, 타겟 결정을 제공한다.
  *
- * ViteEngine은 이 계층에 포함되지 않음 — 워커 이벤트 구조가 다름.
+ * ViteEngine은 이 계층에 포함되지 않음 — serverReady 이벤트, port 관리 등 생명주기가 다름.
  */
 export abstract class BaseEngine<
   TPkg extends PackageInfo,
@@ -188,6 +188,9 @@ export abstract class BaseEngine<
           message: event.message,
         };
         this._resultCollector?.add(result);
+
+        resolver?.();
+        resolver = undefined;
 
         // 에러 경로: 항상 resolve (reject하지 않음) — 호출자가 ResultCollector에서 상태를 확인
         if (isInitialBuild) {

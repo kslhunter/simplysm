@@ -48,3 +48,11 @@ export class SdProgressInsetTest {}
   imports: [SdProgressControl],
 })
 export class SdProgressOverflowTest {}
+
+@Component({
+  selector: "sd-progress-negative-test",
+  template: `<sd-progress [value]="-0.5" [theme]="'primary'" />`,
+  standalone: true,
+  imports: [SdProgressControl],
+})
+export class SdProgressNegativeTest {}

@@ -10,6 +10,7 @@ import {
   model,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -319,6 +320,8 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
 
     // Mirror selected item's contentHTML to the trigger display area
+    // PERF-004: item.value() reads are untracked to reduce signal subscriptions from O(N) to O(K).
+    // _itemControls() already tracks item additions/removals, value() tracks selection changes.
     effect(() => {
       const items = this._itemControls();
       const currentValue = this.value();
@@ -335,14 +338,14 @@ export class SdSelectControl<M extends "single" | "multi", T> {
           return;
         }
 
+        const selectedItems = untracked(() => items.filter((item) => arr.includes(item.value())));
+
         const separator = this.multiSelectionDisplayDirection() === "vertical" ? "<br>" : ", ";
         const htmlParts: string[] = [];
-        for (const item of items) {
-          if (arr.includes(item.value())) {
-            const html = item.contentHTML();
-            if (html !== "") {
-              htmlParts.push(html);
-            }
+        for (const item of selectedItems) {
+          const html = item.contentHTML();
+          if (html !== "") {
+            htmlParts.push(html);
           }
         }
         if (htmlParts.length > 0) {
@@ -353,16 +356,17 @@ export class SdSelectControl<M extends "single" | "multi", T> {
         return;
       }
 
-      for (const item of items) {
-        if (item.value() === currentValue) {
-          const html = item.contentHTML();
-          if (html !== "") {
-            this._selectedItemContentHTML.set(html);
-          }
-          return;
+      const selectedItem = untracked(() => items.find((item) => item.value() === currentValue));
+      if (selectedItem != null) {
+        const html = selectedItem.contentHTML();
+        if (html !== "") {
+          this._selectedItemContentHTML.set(html);
+        } else {
+          this._selectedItemContentHTML.set(undefined);
         }
+      } else {
+        this._selectedItemContentHTML.set(undefined);
       }
-      this._selectedItemContentHTML.set(undefined);
     });
   }
 

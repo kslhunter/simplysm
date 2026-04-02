@@ -34,6 +34,7 @@ interface ISharedDataEntry<T extends ISharedDataBase<string | number>> {
   handle: SharedDataHandle<T>;
   listenerKey?: string;
   needsReload: boolean;
+  isLoading: boolean;
 }
 
 @Injectable()
@@ -77,6 +78,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
         itemsSignal,
         handle,
         needsReload: true,
+        isLoading: false,
       });
     }
   }
@@ -87,7 +89,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
       throw new Error(`등록되지 않은 공유 데이터: ${name as string}`);
     }
 
-    if (entry.needsReload) {
+    if (entry.needsReload && !entry.isLoading) {
       entry.needsReload = false;
       this._loadAndListen(name as string, entry);
     }
@@ -117,6 +119,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
   }
 
   private _loadAndListen(name: string, entry: ISharedDataEntry<any>): void {
+    entry.isLoading = true;
     this.loadingCount.update((v) => v + 1);
 
     // 비동기 로드
@@ -142,6 +145,11 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
       })
       .finally(() => {
         this.loadingCount.update((v) => v - 1);
+        entry.isLoading = false;
+        if (entry.needsReload) {
+          entry.needsReload = false;
+          this._loadAndListen(name, entry);
+        }
       });
   }
 
@@ -162,9 +170,10 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
         const newItems = await entry.info.getter(changeKeys);
         const currentItems = entry.itemsSignal();
 
-        // 변경된 키를 제거하고 새 항목 추가
+        // 변경된 키를 제거하고 새 항목 추가 (String 변환으로 타입 혼재 방지)
+        const changeKeySet = new Set(changeKeys.map(String));
         const filtered = currentItems.filter(
-          (item: any) => !changeKeys.includes(item.__valueKey),
+          (item: any) => !changeKeySet.has(String(item.__valueKey)),
         );
         const merged = [...filtered, ...newItems];
 
@@ -175,6 +184,8 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
 
         entry.itemsSignal.set(merged);
       }
+    } catch (err) {
+      this._errorHandler.handleError(err);
     } finally {
       this.loadingCount.update((v) => v - 1);
     }

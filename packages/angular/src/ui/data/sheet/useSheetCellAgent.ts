@@ -20,11 +20,11 @@ export function useSheetCellAgent(options: {
   }
 
   function _enterEditMode(r: number, c: number): void {
-    const cell = options.domAccessor.getCell(r, c);
-    if (cell == null) return;
     editModeCellAddr.set({ r, c });
-    // Focus first focusable child after edit mode is set
+    // Re-query DOM inside queueMicrotask to avoid stale reference after Angular re-render
     queueMicrotask(() => {
+      const cell = options.domAccessor.getCell(r, c);
+      if (cell == null) return;
       const focusable = cell.findFirstFocusableChild();
       if (focusable !== undefined) {
         focusable.focus();
@@ -181,6 +181,7 @@ export function useSheetCellAgent(options: {
 
     // Ctrl+C (copy)
     if (event.key === "c" && event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (!("clipboard" in navigator)) return;
       const td = _getClosestDataCell(target);
       if (td == null) return;
       if (td !== target) return; // Only when td itself is focused
@@ -198,6 +199,7 @@ export function useSheetCellAgent(options: {
 
     // Ctrl+V (paste)
     if (event.key === "v" && event.ctrlKey && !event.altKey && !event.shiftKey) {
+      if (!("clipboard" in navigator)) return;
       const td = _getClosestDataCell(target);
       if (td == null) return;
       if (td !== target) return; // Only when td itself is focused

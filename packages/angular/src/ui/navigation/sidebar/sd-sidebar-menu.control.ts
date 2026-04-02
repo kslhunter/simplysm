@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from "@angular/core";
 import { useFullPageCodeSignal } from "../../../core/utils/useFullPageCodeSignal";
 import {
+  type ISdMenu,
   getMenuRouterLinkOption as menuRouterLinkOption,
   getIsMenuSelected as menuIsSelected,
 } from "../menu-utils";
@@ -90,40 +91,32 @@ import { NgIcon } from "@ng-icons/core";
   ],
 })
 export class SdSidebarMenuControl {
-  menus = input<ISdSidebarMenu[]>([]);
+  menus = input<ISdMenu[]>([]);
   layout = input<"accordion" | "flat">();
-  getMenuIsSelectedFn = input<(menu: ISdSidebarMenu) => boolean>();
+  getMenuIsSelectedFn = input<(menu: ISdMenu) => boolean>();
 
   fullPageCode = useFullPageCodeSignal();
 
   rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
 
   getMenuRouterLinkOption(
-    menu: ISdSidebarMenu,
+    menu: ISdMenu,
   ): { link: string; queryParams: Record<string, string> | undefined } | undefined {
     return menuRouterLinkOption(menu);
   }
 
-  getIsMenuSelected(menu: ISdSidebarMenu): boolean {
+  getIsMenuSelected(menu: ISdMenu): boolean {
     return menuIsSelected(menu, this.fullPageCode(), this.getMenuIsSelectedFn());
   }
 
-  onMenuClick(menu: ISdSidebarMenu): void {
+  onMenuClick(menu: ISdMenu): void {
     if (menu.url != null) {
       window.open(menu.url, "_blank");
     }
   }
 
   protected readonly itemTemplateType!: {
-    menus: ISdSidebarMenu[];
+    menus: ISdMenu[];
     depth: number;
   };
-}
-
-export interface ISdSidebarMenu {
-  title: string;
-  codeChain: string[];
-  url?: string;
-  icon?: string;
-  children?: ISdSidebarMenu[];
 }

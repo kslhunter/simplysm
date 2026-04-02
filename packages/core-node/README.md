@@ -1,6 +1,6 @@
 # @simplysm/core-node
 
-Node.js-specific core utilities for the Simplysm framework. Provides enhanced file system operations, path utilities, file watching, and a type-safe worker thread abstraction.
+Node.js-specific core utilities for the Simplysm framework. Provides enhanced file system operations, child process execution, path utilities, file watching, and a type-safe worker thread abstraction.
 
 ## Installation
 
@@ -48,18 +48,37 @@ Namespace `fsx` -- Enhanced file system functions (sync and async pairs).
 
 > See [docs/fsx.md](./docs/fsx.md) for details.
 
+### Utilities / cpx
+
+Namespace `cpx` -- Child process execution utilities.
+
+| API | Type | Description |
+|-----|------|-------------|
+| `ExecOptions` | interface | Options for `exec` |
+| `ExecSyncOptions` | type | Options for `execSync` (same as `ExecOptions` without `reject`) |
+| `ExecResult` | interface | Result of a child process execution |
+| `ExecProcess` | class | `PromiseLike<ExecResult>` wrapper with `kill()` support |
+| `exec` | function | Spawn a child process (async, returns `ExecProcess`) |
+| `execSync` | function | Spawn a child process (sync) |
+| `codePageToEncoding` | function | Convert Windows code page number to encoding name |
+| `getSystemEncoding` | function | Detect system console encoding (cached) |
+| `resetEncodingCache` | function | Clear the cached system encoding |
+| `decodeBytes` | function | Decode `Uint8Array` output with system encoding fallback |
+
+> See [docs/cpx.md](./docs/cpx.md) for details.
+
 ### Utilities / pathx
 
 Namespace `pathx` -- Path manipulation utilities.
 
 | API | Type | Description |
 |-----|------|-------------|
-| `NormPath` | type | Branded string type for normalized paths |
+| `PosixPath` | type | Branded string type for POSIX-style paths |
 | `posix` | function | Convert path to POSIX style (backslash to slash) |
+| `posixResolve` | function | Resolve to absolute path and convert to POSIX style |
 | `changeFileDirectory` | function | Change a file's parent directory |
 | `basenameWithoutExt` | function | Get filename without extension |
 | `isChildPath` | function | Check if a path is a child of another |
-| `norm` | function | Normalize and resolve path to `NormPath` |
 | `filterByTargets` | function | Filter file paths by target directory prefixes |
 
 > See [docs/pathx.md](./docs/pathx.md) for details.
@@ -110,15 +129,32 @@ await fsx.copy("/src", "/dest", (p) => !p.endsWith(".tmp"));
 const tsFiles = await fsx.glob("/project/src/**/*.ts");
 ```
 
+### Child process execution
+
+```typescript
+import { cpx } from "@simplysm/core-node";
+
+// Await result
+const result = await cpx.exec("git", ["status"], { cwd: "/project" });
+// result: { stdout, stderr, exitCode }
+
+// Kill a running process
+const proc = cpx.exec("long-running-cmd", []);
+proc.kill();
+
+// Inherit stdio, don't reject on non-zero exit
+await cpx.exec("make", ["build"], { stdio: "inherit", reject: false });
+```
+
 ### Path utilities
 
 ```typescript
 import { pathx } from "@simplysm/core-node";
 
 const p = pathx.posix("C:\\Users\\test"); // "C:/Users/test"
+const abs = pathx.posixResolve("./relative"); // absolute PosixPath
 const name = pathx.basenameWithoutExt("file.spec.ts"); // "file.spec"
 const isChild = pathx.isChildPath("/a/b/c", "/a/b"); // true
-const norm = pathx.norm("/some/path"); // NormPath
 ```
 
 ### File watcher

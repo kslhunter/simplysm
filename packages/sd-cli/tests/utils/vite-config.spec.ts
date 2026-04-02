@@ -221,8 +221,8 @@ describe("createClientViteConfig", () => {
 
   // --- legacyModule (Feature 1.1) ---
 
-  // Acceptance: Scenario "legacyModule을 활성화한다"
-  it("enables inlineDynamicImports and import.meta plugin when legacyModule is true", async () => {
+  // Acceptance: Scenario "legacyModule 활성화 시 inlineDynamicImports만 설정한다"
+  it("enables inlineDynamicImports without import.meta plugin when legacyModule is true", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       legacyModule: true,
@@ -230,26 +230,22 @@ describe("createClientViteConfig", () => {
 
     // inlineDynamicImports가 활성화된다
     expect((config.build as any)?.rollupOptions?.output?.inlineDynamicImports).toBe(true);
-    // import.meta 치환 플러그인이 활성화된다
-    const plugins = config.plugins as Array<{ name: string }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-    expect(legacyPlugin).toBeDefined();
-  });
-
-  // Acceptance: Scenario "legacyModule을 설정하지 않는다"
-  it("does not set inlineDynamicImports or import.meta plugin when legacyModule is not set", async () => {
-    const config = await createClientViteConfig(createDefaultOptions());
-
-    // 코드 분할이 기본 동작한다
-    expect(config.build?.rollupOptions).toBeUndefined();
-    // import.meta가 그대로 유지된다
+    // import.meta 치환 플러그인이 없다 (esbuild target이 자동 치환)
     const plugins = config.plugins as Array<{ name: string }>;
     const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
     expect(legacyPlugin).toBeUndefined();
   });
 
-  // Acceptance: Scenario "기존 splitting 옵션을 legacyModule로 마이그레이션한다"
-  it("legacyModule: true provides inlineDynamicImports plus import.meta plugin (splitting replacement)", async () => {
+  // Acceptance: Scenario "legacyModule 미설정 시 코드 분할이 기본 동작한다"
+  it("does not set inlineDynamicImports when legacyModule is not set", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    // 코드 분할이 기본 동작한다
+    expect(config.build?.rollupOptions).toBeUndefined();
+  });
+
+  // Acceptance: Scenario "legacyModule: true는 inlineDynamicImports를 활성화한다"
+  it("legacyModule: true provides inlineDynamicImports (splitting replacement)", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       legacyModule: true,
@@ -257,95 +253,32 @@ describe("createClientViteConfig", () => {
 
     // 기존 splitting: false와 동일한 inlineDynamicImports 동작
     expect((config.build as any)?.rollupOptions?.output?.inlineDynamicImports).toBe(true);
-    // 추가로 import.meta 치환이 활성화된다
-    const plugins = config.plugins as Array<{ name: string }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-    expect(legacyPlugin).toBeDefined();
   });
 
-  // Unit: enforce: "post" 설정 확인 (D4)
-  it("sd-legacy-import-meta plugin has enforce: post", async () => {
+  // --- legacyModule esbuild.supported override (Feature 1.4) ---
+
+  // Acceptance: Scenario "legacyModule: true일 때 esbuild.supported에 import-meta/dynamic-import false 설정"
+  it("sets esbuild.supported to disable import-meta and dynamic-import when legacyModule is true", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       legacyModule: true,
     });
 
-    const plugins = config.plugins as Array<{ name: string; enforce?: string }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-    expect(legacyPlugin?.enforce).toBe("post");
+    const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
+    expect(esbuildOpts?.["supported"]).toEqual(
+      expect.objectContaining({
+        "import-meta": false,
+        "dynamic-import": false,
+      }),
+    );
   });
 
-  // Acceptance: Scenario "사용자 코드의 import.meta.url을 치환한다"
-  it("sd-legacy-import-meta plugin replaces import.meta.url with module URL", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
+  // Acceptance: Scenario "legacyModule 미설정 시 esbuild.supported 변경 없음"
+  it("does not set esbuild.supported when legacyModule is not specified", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
 
-    const plugins = config.plugins as Array<{ name: string; enforce?: string; transform?: Function }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-    expect(legacyPlugin).toBeDefined();
-
-    const code = 'const url = import.meta.url;';
-    const id = "/packages/my-client/src/app.ts";
-    const result = legacyPlugin!.transform!(code, id);
-
-    expect(result).toBeDefined();
-    expect(result.code).toContain(JSON.stringify(id));
-    expect(result.code).not.toContain("import.meta");
-  });
-
-  // Acceptance: Scenario "Vite가 주입한 import.meta.hot을 치환한다"
-  it("sd-legacy-import-meta plugin replaces import.meta.hot injected by Vite", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
-
-    const plugins = config.plugins as Array<{ name: string; transform?: Function }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-
-    const code = 'import.meta.hot = createHotContext("/src/app.ts");';
-    const id = "/packages/my-client/src/app.ts";
-    const result = legacyPlugin!.transform!(code, id);
-
-    expect(result).toBeDefined();
-    expect(result.code).not.toContain("import.meta");
-  });
-
-  // Acceptance: Scenario "/@vite/client의 import.meta를 치환한다"
-  it("sd-legacy-import-meta plugin replaces import.meta in /@vite/client", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
-
-    const plugins = config.plugins as Array<{ name: string; transform?: Function }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-
-    const code = 'const base = import.meta.url;';
-    const id = "/@vite/client";
-    const result = legacyPlugin!.transform!(code, id);
-
-    expect(result).toBeDefined();
-    expect(result.code).not.toContain("import.meta");
-  });
-
-  // Acceptance: Scenario "import.meta가 없는 모듈은 변환하지 않는다"
-  it("sd-legacy-import-meta plugin returns undefined for modules without import.meta", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
-
-    const plugins = config.plugins as Array<{ name: string; transform?: Function }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-
-    const code = 'const x = 1 + 2;';
-    const id = "/packages/my-client/src/utils.ts";
-    const result = legacyPlugin!.transform!(code, id);
-
-    expect(result).toBeUndefined();
+    const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
+    expect(esbuildOpts?.["supported"]).toBeUndefined();
   });
 
   // --- PWA (Feature 5.2) ---
@@ -503,6 +436,127 @@ describe("createClientViteConfig", () => {
         manifest: expect.not.objectContaining({ icons: expect.anything() }),
       }),
     );
+  });
+
+  // --- watch option (Feature 1.2: legacy dev mode) ---
+
+  // Acceptance: Scenario "watch: true 시 build.watch 설정 및 emptyOutDir: false"
+  it("sets build.watch and emptyOutDir: false when watch is true in build mode", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "build",
+      watch: true,
+    });
+
+    expect(config.build?.watch).toEqual({});
+    expect(config.build?.emptyOutDir).toBe(false);
+    expect(config.logLevel).toBeUndefined();
+  });
+
+  // Acceptance: Scenario "watch: true + replaceDeps 시 sdScopeWatchPlugin 포함"
+  it("includes sdScopeWatchPlugin when watch is true with replaceDeps in build mode", async () => {
+    const { sdScopeWatchPlugin } = await import("../../src/utils/vite-scope-watch-plugin");
+
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "build",
+      watch: true,
+      replaceDeps: [{ packageName: "@scope/core", sourcePath: "/packages/core" }],
+    });
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    const scopePlugin = plugins.find((p) => p.name === "sd-scope-watch-plugin");
+    expect(scopePlugin).toBeDefined();
+    expect(sdScopeWatchPlugin).toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "watch 미설정 시 기존 build 동작 유지"
+  it("sets emptyOutDir: true and logLevel: silent when watch is not set in build mode", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    expect(config.build?.emptyOutDir).toBe(true);
+    expect(config.logLevel).toBe("silent");
+    expect(config.build?.watch).toBeUndefined();
+  });
+
+  // Unit: watch: true without replaceDeps does not add sdScopeWatchPlugin
+  it("does not add sdScopeWatchPlugin in watch mode without replaceDeps", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "build",
+      watch: true,
+    });
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    const scopePlugin = plugins.find((p) => p.name === "sd-scope-watch-plugin");
+    expect(scopePlugin).toBeUndefined();
+  });
+
+  // Unit: watch: true still sets outDir
+  it("sets outDir in watch mode", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "build",
+      watch: true,
+    });
+
+    expect(config.build?.outDir).toContain("my-client");
+    expect(config.build?.outDir).toMatch(/dist$/);
+  });
+
+  // --- exclude (Feature 1.1: vite-exclude-passthrough) ---
+
+  // Acceptance: Scenario "exclude에 패키지를 지정하면 pre-bundling에서 제외된다"
+  it("sets optimizeDeps.exclude when exclude is provided", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      exclude: ["jeep-sqlite"],
+    });
+
+    expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite"]);
+  });
+
+  // Acceptance: Scenario "exclude 미설정 시 기존 동작과 동일하다"
+  it("does not set optimizeDeps.exclude when exclude is not provided", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+    });
+
+    expect(config.optimizeDeps?.exclude).toBeUndefined();
+  });
+
+  // Acceptance: Scenario "exclude와 replaceDeps가 모두 있으면 둘 다 제외된다"
+  it("sets optimizeDeps.exclude from exclude while sdScopeWatchPlugin handles replaceDeps", async () => {
+    const { sdScopeWatchPlugin } = await import("../../src/utils/vite-scope-watch-plugin");
+
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      exclude: ["jeep-sqlite"],
+      replaceDeps: [{ packageName: "@scope/core", sourcePath: "/packages/core" }],
+    });
+
+    // Base config에 exclude 설정
+    expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite"]);
+    // sdScopeWatchPlugin도 호출됨 (replaceDeps용 exclude는 plugin이 처리)
+    expect(sdScopeWatchPlugin).toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "exclude만 있고 replaceDeps가 없으면 exclude만 제외된다"
+  it("sets optimizeDeps.exclude from exclude when no replaceDeps", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
+      exclude: ["jeep-sqlite"],
+    });
+
+    expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite"]);
+    // sdScopeWatchPlugin은 호출되지 않음
+    const plugins = config.plugins as Array<{ name: string }>;
+    const scopePlugin = plugins.find((p) => p.name === "sd-scope-watch-plugin");
+    expect(scopePlugin).toBeUndefined();
   });
 
   // Acceptance: Scenario "pwa 필드 미설정 시 기본값"

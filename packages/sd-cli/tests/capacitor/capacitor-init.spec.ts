@@ -26,8 +26,8 @@ vi.mock("@simplysm/core-node", () => ({
     copy: mockFsxCopy,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -43,7 +43,7 @@ vi.mock("@simplysm/core-common", () => ({
 }));
 
 const execaCalls: { command: string; args: string[] }[] = [];
-const mockCpxExec = vi.fn((...args: unknown[]) => {
+const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
   return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 });
@@ -71,8 +71,10 @@ const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
 vi.mock("consola", () => ({
   consola: {
+    level: 0,
     withTag: () => ({ debug: mockLoggerDebug, warn: mockLoggerWarn }),
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -130,6 +132,22 @@ function setupDefaultMocks() {
     }
     if (p.includes("gradle.properties")) {
       return "org.gradle.jvmargs=-Xmx2048m";
+    }
+    if (p.includes("styles.xml")) {
+      return `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+    </style>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+    </style>
+</resources>`;
     }
     return "";
   });
@@ -197,7 +215,7 @@ describe("Capacitor 초기화", () => {
     setupDefaultMocks();
   });
 
-  it("최초 초기화: npm install, cap init, cap add android를 실행한다", async () => {
+  it("최초 초기화: pnpm install, cap init, cap add android를 실행한다", async () => {
     let androidAdded = false;
     mockFsxExists.mockImplementation((p: string) => {
       const n = p.replace(/\\/g, "/");
@@ -220,18 +238,18 @@ describe("Capacitor 초기화", () => {
     });
     await cap.initialize();
 
-    expect(execaCalls.some((c) => c.command === "npm" && c.args.includes("install"))).toBe(true);
+    expect(execaCalls.some((c) => c.command === "pnpm" && c.args.includes("install"))).toBe(true);
     expect(
-      execaCalls.some((c) => c.command === "npx" && c.args.includes("cap") && c.args.includes("init")),
+      execaCalls.some((c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("init")),
     ).toBe(true);
     expect(
       execaCalls.some(
-        (c) => c.command === "npx" && c.args.includes("cap") && c.args.includes("add"),
+        (c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("add"),
       ),
     ).toBe(true);
   });
 
-  it("재초기화: 설정 미변경 시 npm install을 건너뛴다", async () => {
+  it("재초기화: 설정 미변경 시 pnpm install을 건너뛴다", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
     const cap = await Capacitor.create(PKG_PATH, {
       appId: "com.test.app",
@@ -240,10 +258,10 @@ describe("Capacitor 초기화", () => {
     });
     await cap.initialize();
 
-    expect(execaCalls.some((c) => c.command === "npm" && c.args.includes("install"))).toBe(false);
+    expect(execaCalls.some((c) => c.command === "pnpm" && c.args.includes("install"))).toBe(false);
   });
 
-  it("플러그인 추가: package.json에 플러그인을 추가하고 npm install을 실행한다", async () => {
+  it("플러그인 추가: package.json에 플러그인을 추가하고 pnpm install을 실행한다", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
 
     // 클라이언트 패키지의 deps에 플러그인 포함
@@ -529,6 +547,98 @@ describe("Android 네이티브 설정", () => {
         call[1].includes("android.intent.action.VIEW"),
     );
     expect(manifestWrite).toBeDefined();
+  });
+
+  it("styles.xml의 Theme.SplashScreen parent를 Theme.AppCompat.DayNight.NoActionBar로 변경한다", async () => {
+    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+    const cap = await Capacitor.create(PKG_PATH, {
+      appId: "com.test.app",
+      appName: "Test App",
+      platform: { android: {} },
+    });
+    await cap.initialize();
+
+    const writeCalls = mockFsxWrite.mock.calls;
+    const stylesWrite = writeCalls.find(
+      (call) =>
+        typeof call[0] === "string" &&
+        call[0].includes("styles.xml") &&
+        typeof call[1] === "string" &&
+        call[1].includes('parent="Theme.AppCompat.DayNight.NoActionBar"'),
+    );
+    expect(stylesWrite).toBeDefined();
+    // android:background는 유지
+    expect((stylesWrite![1] as string)).toContain("@drawable/splash");
+    // Theme.SplashScreen은 제거됨
+    expect((stylesWrite![1] as string)).not.toContain('parent="Theme.SplashScreen"');
+  });
+
+  it("이미 변경된 styles.xml은 재변경하지 않는다", async () => {
+    mockFsxRead.mockImplementation((p: string) => {
+      if (p.includes("styles.xml")) {
+        return `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:background">@drawable/splash</item>
+    </style>
+</resources>`;
+      }
+      if (p.includes("AndroidManifest.xml")) {
+        return '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n<application>\n<activity android:name=".MainActivity">\n</activity>\n</application>\n</manifest>';
+      }
+      if (p.includes("build.gradle")) {
+        return `android {
+    defaultConfig {
+        versionCode 1
+        versionName "1.0"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+    }
+    buildTypes { release { } }
+}`;
+      }
+      if (p.includes("gradle.properties")) {
+        return "org.gradle.jvmargs=-Xmx2048m";
+      }
+      return "";
+    });
+
+    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+    const cap = await Capacitor.create(PKG_PATH, {
+      appId: "com.test.app",
+      appName: "Test App",
+      platform: { android: {} },
+    });
+    await cap.initialize();
+
+    const writeCalls = mockFsxWrite.mock.calls;
+    const stylesWrite = writeCalls.find(
+      (call) =>
+        typeof call[0] === "string" &&
+        call[0].includes("styles.xml"),
+    );
+    expect(stylesWrite).toBeUndefined();
+  });
+
+  it("styles.xml이 없으면 warn을 출력한다", async () => {
+    mockFsxExists.mockImplementation((p: string) => {
+      const n = p.replace(/\\/g, "/");
+      if (n.includes(".capacitor.lock")) return false;
+      if (n.includes("styles.xml")) return false;
+      return true;
+    });
+
+    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+    const cap = await Capacitor.create(PKG_PATH, {
+      appId: "com.test.app",
+      appName: "Test App",
+      platform: { android: {} },
+    });
+    await cap.initialize();
+
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.stringContaining("styles.xml"),
+    );
   });
 
   it("application 태그에 커스텀 속성을 추가한다", async () => {

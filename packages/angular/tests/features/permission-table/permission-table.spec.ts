@@ -23,6 +23,20 @@ describe("Feature 7.4b: sd-permission-table unit", () => {
     expect(secondRowBeforeTds.length).toBe(2); // depth 1 → 2개
   });
 
+  it("_changePermCheck — value에 use가 없으면 edit 설정이 무시된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.children[0].componentInstance;
+    const func1Item = table.items()[0].children[0];
+    const value: Record<string, boolean> = {}; // use 미설정
+
+    (table)._changePermCheck(value, func1Item, "edit", true);
+
+    expect(value["moduleA.func1.edit"]).toBeUndefined();
+  });
+
   it("arr — 요청한 길이만큼의 인덱스 배열을 반환한다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
       .createComponent(SdPermissionTableTwoLevelTest);
@@ -31,6 +45,30 @@ describe("Feature 7.4b: sd-permission-table unit", () => {
     const table = fixture.debugElement.children[0].componentInstance;
     expect(table.arr(3)).toEqual([0, 1, 2]);
     expect(table.arr(0)).toEqual([]);
+  });
+
+  it("arr — 같은 길이로 반복 호출하면 동일 참조를 반환한다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.children[0].componentInstance;
+    const first = table.arr(3);
+    const second = table.arr(3);
+    expect(first).toBe(second); // 참조 동일성 (===)
+  });
+
+  it("arr — 다른 길이는 다른 배열이지만 각각 캐싱된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.children[0].componentInstance;
+    const three = table.arr(3);
+    const five = table.arr(5);
+    expect(three).not.toBe(five);
+    expect(table.arr(3)).toBe(three);
+    expect(table.arr(5)).toBe(five);
   });
 
   it("자식이 있는 항목에는 collapse icon이 표시되고 자식 없는 항목에는 표시되지 않는다", () => {

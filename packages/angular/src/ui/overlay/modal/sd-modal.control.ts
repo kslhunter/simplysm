@@ -116,9 +116,13 @@ export class SdModalControl {
       const h = this.heightPx();
       if (w !== undefined) {
         dialogEl.style.width = `${w}px`;
+      } else {
+        dialogEl.style.width = "";
       }
       if (h !== undefined) {
         dialogEl.style.height = `${h}px`;
+      } else {
+        dialogEl.style.height = "";
       }
     });
 
@@ -161,14 +165,20 @@ export class SdModalControl {
     const dialogEl = this._getDialogEl();
     if (dialogEl === null) return;
 
+    const dialogRect = dialogEl.getBoundingClientRect();
+    const parentRect = (dialogEl.offsetParent as HTMLElement | null)?.getBoundingClientRect() ?? {
+      left: 0,
+      top: 0,
+    };
+
     this._resizeState = {
       dir,
       startX: event.clientX,
       startY: event.clientY,
       startWidth: dialogEl.offsetWidth,
       startHeight: dialogEl.offsetHeight,
-      startLeft: dialogEl.offsetLeft,
-      startTop: dialogEl.offsetTop,
+      startLeft: dialogRect.left - parentRect.left,
+      startTop: dialogRect.top - parentRect.top,
     };
     document.addEventListener("mousemove", this._onDocumentMouseMove);
     document.addEventListener("mouseup", this._onDocumentMouseUp);
@@ -182,11 +192,17 @@ export class SdModalControl {
     const dialogEl = this._getDialogEl();
     if (dialogEl === null) return;
 
+    const dialogRect = dialogEl.getBoundingClientRect();
+    const parentRect = (dialogEl.offsetParent as HTMLElement | null)?.getBoundingClientRect() ?? {
+      left: 0,
+      top: 0,
+    };
+
     this._dragState = {
       startX: event.clientX,
       startY: event.clientY,
-      startLeft: dialogEl.offsetLeft,
-      startTop: dialogEl.offsetTop,
+      startLeft: dialogRect.left - parentRect.left,
+      startTop: dialogRect.top - parentRect.top,
     };
     document.addEventListener("mousemove", this._onDocumentMouseMove);
     document.addEventListener("mouseup", this._onDocumentMouseUp);
@@ -269,7 +285,7 @@ export class SdModalControl {
         maxZ = z;
       }
     }
-    const currentZ = parseInt(hostEl.style.zIndex, 10);
+    const currentZ = parseInt(hostEl.style.zIndex !== "" ? hostEl.style.zIndex : "0", 10);
     if (currentZ >= maxZ) return;
     hostEl.style.zIndex = String(maxZ + 1);
   }

@@ -44,7 +44,12 @@ export function sdScopeWatchPlugin(options: SdScopeWatchPluginOptions): Plugin {
 
       const watchPaths: string[] = [];
       for (const dep of options.replaceDeps) {
-        const distDir = path.join(dep.sourcePath, "dist");
+        const distDir = path.join(
+          options.pkgDir,
+          "node_modules",
+          ...dep.packageName.split("/"),
+          "dist",
+        );
         if (fs.existsSync(distDir)) {
           watchPaths.push(distDir);
         }

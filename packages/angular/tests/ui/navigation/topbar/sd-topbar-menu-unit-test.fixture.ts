@@ -1,8 +1,6 @@
 import { Component, signal } from "@angular/core";
-import {
-  SdTopbarMenuControl,
-  type ISdTopbarMenu,
-} from "../../../../src/ui/navigation/topbar/sd-topbar-menu.control";
+import { SdTopbarMenuControl } from "../../../../src/ui/navigation/topbar/sd-topbar-menu.control";
+import type { ISdMenu } from "../../../../src/ui/navigation/menu-utils";
 
 @Component({
   selector: "sd-topbar-menu-unit-test",
@@ -11,5 +9,5 @@ import {
   imports: [SdTopbarMenuControl],
 })
 export class TopbarMenuUnitTest {
-  menus = signal<ISdTopbarMenu[]>([]);
+  menus = signal<ISdMenu[]>([]);
 }

@@ -32,6 +32,11 @@ export interface ISdSheetConfig {
 
 export interface ISdSheetItemKeydownEventParam<T> {
   item: T;
-  key?: string;
+  event: KeyboardEvent;
+}
+
+export interface ISdSheetCellKeydownEventParam<T> {
+  item: T;
+  key: string;
   event: KeyboardEvent;
 }

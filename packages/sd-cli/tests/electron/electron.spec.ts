@@ -23,8 +23,8 @@ vi.mock("@simplysm/core-node", () => ({
     glob: mockFsxGlob,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -33,7 +33,7 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 // cpx mock (was execa)
-const mockCpxExec = vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
+const mockCpxSpawn = vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
 
 // esbuild mock
 const mockEsbuildBuild = vi.fn().mockResolvedValue({});
@@ -75,7 +75,9 @@ vi.mock("consola", () => ({
       warn: mockLoggerWarn,
       info: mockLoggerInfo,
     }),
+    level: 0,
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -105,7 +107,7 @@ function setupDefaultMocks() {
     }
     return Promise.resolve([]);
   });
-  mockCpxExec.mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
+  mockCpxSpawn.mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
   mockEsbuildBuild.mockResolvedValue({});
 }
 
@@ -179,7 +181,7 @@ describe("Electron", () => {
 
       expect(findElectronPackageJson()).toBeDefined();
 
-      const execaCalls = mockCpxExec.mock.calls;
+      const execaCalls = mockCpxSpawn.mock.calls;
       expect(
         execaCalls.find((c) => c[0] === "npm" && (c[1] as string[]).includes("install")),
       ).toBeDefined();
@@ -196,7 +198,7 @@ describe("Electron", () => {
       const electron = await Electron.create(PKG_PATH, { appId: "com.test.app" });
       await electron.initialize();
 
-      const rebuildCall = mockCpxExec.mock.calls.find(
+      const rebuildCall = mockCpxSpawn.mock.calls.find(
         (c) => typeof c[0] === "string" && c[0].includes("electron-rebuild"),
       );
       expect(rebuildCall).toBeUndefined();
@@ -453,7 +455,7 @@ describe("Electron", () => {
       const electronKill = vi.fn();
       let resolveElectron: () => void = () => {};
 
-      mockCpxExec.mockImplementation((cmd: string) => {
+      mockCpxSpawn.mockImplementation((cmd: string) => {
         if (typeof cmd === "string" && cmd.includes("electron")) {
           // Electron process: create a deferred promise we can resolve externally
           const p = new Promise<void>((resolve) => {
@@ -535,7 +537,7 @@ describe("Electron", () => {
   describe("단위: run() 플러그인 동작", () => {
     it("passes custom env and ELECTRON_DEV_URL via esbuild banner", async () => {
       let resolveElectron: () => void = () => {};
-      mockCpxExec.mockImplementation((cmd: string) => {
+      mockCpxSpawn.mockImplementation((cmd: string) => {
         if (typeof cmd === "string" && cmd.includes("electron")) {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
@@ -568,7 +570,7 @@ describe("Electron", () => {
 
     it("calls initialize() before starting esbuild context", async () => {
       let resolveElectron: () => void = () => {};
-      mockCpxExec.mockImplementation((cmd: string) => {
+      mockCpxSpawn.mockImplementation((cmd: string) => {
         if (typeof cmd === "string" && cmd.includes("electron")) {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
@@ -588,7 +590,7 @@ describe("Electron", () => {
       await runPromise;
 
       // initialize calls npm install -> execa should have been called with npm install
-      const npmInstallCall = mockCpxExec.mock.calls.find(
+      const npmInstallCall = mockCpxSpawn.mock.calls.find(
         (c: any[]) => c[0] === "npm" && (c[1] as string[]).includes("install"),
       );
       expect(npmInstallCall).toBeDefined();

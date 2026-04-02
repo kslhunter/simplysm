@@ -14,10 +14,10 @@ export interface DeviceOptions {
 }
 
 /**
- * Run native app on device/desktop.
+ * 네이티브 앱을 디바이스/데스크톱에서 실행한다.
  *
- * - Electron config takes priority over Capacitor when both are present.
- * - If --url is not provided, auto-generates from sd.config.ts server port.
+ * - Electron 설정이 Capacitor보다 우선한다.
+ * - --url이 제공되지 않으면 sd.config.ts의 서버 포트로 자동 생성한다.
  */
 export async function runDevice(options: DeviceOptions): Promise<void> {
   const cwd = process.cwd();
@@ -34,7 +34,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   const clientConfig = pkgConfig;
   const pkgDir = pathx.posixResolve(cwd, "packages", options.package);
 
-  // Determine server URL
+  // 서버 URL 결정
   let serverUrl = options.url;
   if (serverUrl == null) {
     if (typeof clientConfig.server === "number") {
@@ -46,7 +46,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     }
   }
 
-  // Electron takes priority over Capacitor (v13 behavior)
+  // Electron이 Capacitor보다 우선
   if (clientConfig.electron != null) {
     logger.start(`${options.package} (electron) 실행 중...`);
     const electron = await Electron.create(pkgDir, clientConfig.electron, clientConfig.exclude);

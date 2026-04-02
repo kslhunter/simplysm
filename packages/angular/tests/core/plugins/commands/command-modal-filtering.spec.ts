@@ -33,13 +33,13 @@ describe("findTopOpenModalEl", () => {
   });
 
   it("모달이 없으면 null을 반환한다", () => {
-    expect(findTopOpenModalEl()).toBeNull();
+    expect(findTopOpenModalEl(document)).toBeNull();
   });
 
   it("열린 모달이 하나면 해당 모달을 반환한다", () => {
     const modal = createOpenModal(4001);
     cleanupModals.push(modal);
-    expect(findTopOpenModalEl()).toBe(modal);
+    expect(findTopOpenModalEl(document)).toBe(modal);
   });
 
   it("data-sd-open 없는 모달은 무시한다", () => {
@@ -48,7 +48,7 @@ describe("findTopOpenModalEl", () => {
     document.body.appendChild(closedModal);
     cleanupModals.push(closedModal);
 
-    expect(findTopOpenModalEl()).toBeNull();
+    expect(findTopOpenModalEl(document)).toBeNull();
   });
 
   it("여러 모달 중 zIndex가 가장 큰 모달을 반환한다", () => {
@@ -57,7 +57,7 @@ describe("findTopOpenModalEl", () => {
     const modalC = createOpenModal(4002);
     cleanupModals.push(modalA, modalB, modalC);
 
-    expect(findTopOpenModalEl()).toBe(modalB);
+    expect(findTopOpenModalEl(document)).toBe(modalB);
   });
 });
 

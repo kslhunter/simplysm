@@ -2,7 +2,7 @@ import os from "os";
 import fs from "fs";
 import module from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
 import type { SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../utils/esbuild-config.js";
 
@@ -55,7 +55,13 @@ export class Electron {
     env?: Record<string, string>,
   ): Promise<string> {
     Electron._logger.debug(`실행: ${cmd} ${args.join(" ")}`);
-    const { stdout: result } = await cpx.exec(cmd, args, { cwd, env, shell: true });
+    const isDebug = consola.level >= LogLevels.debug;
+    const { stdout: result } = await cpx.spawn(cmd, args, {
+      cwd,
+      env,
+      shell: true,
+      ...(isDebug ? { stdio: "inherit" } : {}),
+    });
     Electron._logger.debug(`결과: ${result}`);
     return result;
   }
@@ -63,18 +69,28 @@ export class Electron {
   //#region Public Methods
 
   async initialize(): Promise<void> {
+    Electron._logger.debug("initialize 시작");
     const srcPath = pathx.posixResolve(this._electronPath, "src");
 
+    Electron._logger.debug("package.json 설정 시작");
     await this._setupPackageJson(srcPath);
+    Electron._logger.debug("package.json 설정 완료");
+
+    Electron._logger.debug("npm install 시작");
     await this._exec("npm", ["install"], srcPath);
+    Electron._logger.debug("npm install 완료");
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     if (reinstallDeps.length > 0) {
+      Electron._logger.debug(`electron-rebuild 시작 (${reinstallDeps.join(", ")})`);
       await this._exec(this._localBin("electron-rebuild"), [], srcPath);
+      Electron._logger.debug("electron-rebuild 완료");
     }
+    Electron._logger.debug("initialize 완료");
   }
 
   async run(url: string): Promise<void> {
+    Electron._logger.debug(`run 시작 (url: ${url})`);
     const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     await this.initialize();
@@ -90,12 +106,13 @@ export class Electron {
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     await fsx.mkdir(srcPath);
 
-    let currentElectron: cpx.ExecProcess | null = null;
+    let currentElectron: cpx.SpawnProcess | null = null;
     let isRestarting = false;
     let resolveTermination: (() => void) | null = null;
 
     const spawnElectron = () => {
-      currentElectron = cpx.exec(this._localBin("electron"), ["."], {
+      Electron._logger.debug("Electron 프로세스 시작");
+      currentElectron = cpx.spawn(this._localBin("electron"), ["."], {
         cwd: srcPath,
         stdio: "inherit",
         reject: false,
@@ -112,6 +129,7 @@ export class Electron {
 
     const envBanner = createEnvBanner({ ELECTRON_DEV_URL: url, ...this._config.env });
 
+    Electron._logger.debug("esbuild context 생성 시작");
     const ctx = await esbuild.context({
       entryPoints: [entryPoint],
       outfile: pathx.posixResolve(srcPath, "electron-main.js"),
@@ -131,8 +149,11 @@ export class Electron {
                 return;
               }
 
+              Electron._logger.debug("esbuild 번들링 완료");
+
               if (currentElectron != null) {
                 isRestarting = true;
+                Electron._logger.debug("기존 Electron 프로세스 종료 시작");
                 currentElectron.kill();
                 try {
                   await currentElectron;
@@ -149,8 +170,11 @@ export class Electron {
         },
       ],
     });
+    Electron._logger.debug("esbuild context 생성 완료");
 
+    Electron._logger.debug("esbuild watch 시작");
     await ctx.watch();
+    Electron._logger.debug("esbuild watch 시작 완료, 종료 대기 중");
 
     await new Promise<void>((resolve) => {
       let disposed = false;
@@ -158,6 +182,7 @@ export class Electron {
       const cleanup = () => {
         if (disposed) return;
         disposed = true;
+        Electron._logger.debug("cleanup 시작");
         process.removeListener("SIGINT", signalHandler);
         process.removeListener("SIGTERM", signalHandler);
         void ctx.dispose();
@@ -167,6 +192,7 @@ export class Electron {
       resolveTermination = cleanup;
 
       const signalHandler = () => {
+        Electron._logger.debug("시그널 수신, Electron 종료 중");
         if (currentElectron != null) currentElectron.kill();
         cleanup();
       };
@@ -174,15 +200,30 @@ export class Electron {
       process.once("SIGINT", signalHandler);
       process.once("SIGTERM", signalHandler);
     });
+    Electron._logger.debug("run 완료");
   }
 
   async build(outPath: string): Promise<void> {
+    Electron._logger.debug("build 시작");
     const srcPath = pathx.posixResolve(this._electronPath, "src");
 
+    Electron._logger.debug("메인 프로세스 번들링 시작");
     await this._bundleMainProcess(srcPath);
+    Electron._logger.debug("메인 프로세스 번들링 완료");
+
+    Electron._logger.debug("웹 에셋 복사 시작");
     await this._copyWebAssets(outPath, srcPath);
+    Electron._logger.debug("웹 에셋 복사 완료");
+
+    Electron._logger.debug("electron-builder 실행 시작");
     await this._runElectronBuilder(srcPath);
+    Electron._logger.debug("electron-builder 실행 완료");
+
+    Electron._logger.debug("빌드 산출물 복사 시작");
     await this._copyBuildOutput(outPath);
+    Electron._logger.debug("빌드 산출물 복사 완료");
+
+    Electron._logger.debug("build 완료");
   }
 
   //#endregion
@@ -245,6 +286,7 @@ export class Electron {
 
     const envBanner = createEnvBanner(this._config.env);
 
+    Electron._logger.debug(`esbuild 번들링: ${entryPoint}`);
     await esbuild.build({
       entryPoints: [entryPoint],
       outfile: pathx.posixResolve(outDir, "electron-main.js"),
@@ -322,6 +364,7 @@ export class Electron {
     const configFilePath = pathx.posixResolve(this._electronPath, "builder-config.json");
     await fsx.writeJson(configFilePath, builderConfig, { space: 2 });
 
+    Electron._logger.debug(`electron-builder 설정: ${configFilePath}`);
     await this._exec(
       this._localBin("electron-builder"),
       ["--win", "--config", configFilePath],
@@ -340,6 +383,7 @@ export class Electron {
     const isPortable = this._config.portable === true;
 
     // exe 파일 동적 탐색 — Setup 또는 portable exe를 우선 선택
+    Electron._logger.debug(`빌드 산출물 탐색: ${distPath}`);
     const allExeFiles = await fsx.glob(pathx.posixResolve(distPath, "*.exe"));
     if (allExeFiles.length === 0) {
       Electron._logger.warn(`빌드 산출물(.exe)을 찾을 수 없습니다: ${distPath}`);
@@ -348,6 +392,7 @@ export class Electron {
     const keyword = isPortable ? "portable" : "Setup";
     const sourcePath =
       allExeFiles.find((f) => f.toLowerCase().includes(keyword.toLowerCase())) ?? allExeFiles[0];
+    Electron._logger.debug(`빌드 산출물: ${sourcePath}`);
 
     const latestFileName = `${safeName}${isPortable ? "-portable" : ""}-latest.exe`;
     await fsx.copy(sourcePath, pathx.posixResolve(electronOutPath, latestFileName));

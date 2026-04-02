@@ -9,31 +9,31 @@ import { registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils"
 //#region Types
 
 /**
- * Server runtime start info
+ * 서버 런타임 시작 정보
  */
 export interface ServerRuntimeStartInfo {
   mainJsPath: string;
-  /** Client Vite dev server ports for @fastify/http-proxy registration */
+  /** @fastify/http-proxy 등록을 위한 Client Vite dev server 포트 */
   clientPorts?: Record<string, number>;
   env?: Record<string, string>;
 }
 
 /**
- * Server ready event
+ * 서버 준비 완료 이벤트
  */
 export interface ServerRuntimeReadyEvent {
   port: number;
 }
 
 /**
- * Error event
+ * 에러 이벤트
  */
 export interface ServerRuntimeErrorEvent {
   message: string;
 }
 
 /**
- * Worker event types
+ * 워커 이벤트 타입
  */
 export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
   serverReady: ServerRuntimeReadyEvent;
@@ -46,11 +46,11 @@ applyDebugLevel();
 
 const logger = consola.withTag("sd:cli:server-runtime:worker");
 
-/** Server instance (to be cleaned up) */
+/** 서버 인스턴스 (정리 대상) */
 let serverInstance: { close: () => Promise<void> } | undefined;
 
 /**
- * Clean up resources
+ * 리소스 정리
  */
 async function cleanup(): Promise<void> {
   const server = serverInstance;
@@ -60,15 +60,15 @@ async function cleanup(): Promise<void> {
   }
 }
 
-// Catch runtime errors that occur after server listen() and send them as a custom "error" event
-// (Without this handler, the worker will crash but dev.ts's buildResolver won't be called, causing listr to hang)
+// 서버 listen() 이후 발생하는 런타임 에러를 잡아 커스텀 "error" 이벤트로 전송
+// (이 핸들러 없이는 워커가 크래시해도 빌드 Promise가 resolve되지 않아 프로세스가 중단될 수 있다)
 process.on("uncaughtException", (err) => {
   logger.error("서버 런타임 미처리 에러", err);
   sender.send("error", {
     message: errNs.message(err),
   });
-  // Allow event to be sent before exit
-  setTimeout(() => process.exit(1), 100);
+  // 이벤트 전송 후 종료할 수 있도록 대기
+  setTimeout(() => process.exit(1), 500);
 });
 
 process.on("unhandledRejection", (reason) => {
@@ -76,14 +76,14 @@ process.on("unhandledRejection", (reason) => {
   sender.send("error", {
     message: errNs.message(reason),
   });
-  // Allow event to be sent before exit
-  setTimeout(() => process.exit(1), 100);
+  // 이벤트 전송 후 종료할 수 있도록 대기
+  setTimeout(() => process.exit(1), 500);
 });
 
 registerCleanupHandlers(cleanup, logger);
 
 /**
- * Check if a port is available for use
+ * 포트가 사용 가능한지 확인한다
  */
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -97,7 +97,7 @@ function isPortAvailable(port: number): Promise<boolean> {
 }
 
 /**
- * Find and return an available port starting from the specified port
+ * 지정된 포트부터 사용 가능한 포트를 찾아 반환한다
  */
 async function findAvailablePort(startPort: number, maxRetries = 20): Promise<number> {
   for (let i = 0; i < maxRetries; i++) {
@@ -112,21 +112,21 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
 }
 
 /**
- * Start Server Runtime
- * Import main.js, then listen
+ * 서버 런타임 시작
+ * main.js를 import한 후 listen 수행
  */
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
     const startTime = performance.now();
 
-    // Inject environment variables into process.env before importing main.js
+    // main.js import 전에 환경변수를 process.env에 주입
     if (info.env != null) {
       for (const [key, value] of Object.entries(info.env)) {
         process.env[key] = value;
       }
     }
 
-    // Import main.js (must export a server instance)
+    // main.js import (서버 인스턴스를 export해야 함)
     logger.debug("main.js 임포트 중...");
     let stepStart = performance.now();
     const module = await import(pathToFileURL(info.mainJsPath).href);
@@ -137,10 +137,10 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
       throw new Error("main.js must export a server instance.");
     }
 
-    // Save server instance (for cleanup)
+    // 서버 인스턴스 저장 (정리용)
     serverInstance = server;
 
-    // Register client proxies (before listen)
+    // 클라이언트 프록시 등록 (listen 전)
     if (info.clientPorts != null && Object.keys(info.clientPorts).length > 0) {
       for (const [name, port] of Object.entries(info.clientPorts)) {
         logger.debug(`프록시 등록: /${name} → http://127.0.0.1:${String(port)}`);
@@ -153,7 +153,7 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
       }
     }
 
-    // Find available port (auto-increment on port conflict)
+    // 사용 가능한 포트 탐색 (포트 충돌 시 자동 증가)
     logger.debug("사용 가능한 포트 탐색 중...");
     stepStart = performance.now();
     const originalPort = server.options.port;

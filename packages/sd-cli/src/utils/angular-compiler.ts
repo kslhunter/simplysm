@@ -242,7 +242,7 @@ export class AngularCompiler {
       if (options.externalStylesheets == null || hasTemplateExtension(resolvedPath)) {
         return resolvedPath;
       }
-      // stylesheet with externalStylesheets (client mode)
+      // externalStylesheets를 사용한 스타일시트 처리 (클라이언트 모드)
       let externalId = options.externalStylesheets.get(resolvedPath);
       if (externalId === undefined) {
         externalId = createHash("sha256").update(resolvedPath).digest("hex");
@@ -331,7 +331,7 @@ export class AngularCompiler {
       }
     }
 
-    // 11. findAffectedFiles + 12. 리소스 의존성 기반 diagnosticCache 무효화
+    // 11. findAffectedFiles (내부에서 리소스 의존성 기반 diagnosticCache 무효화도 수행)
     const affectedFiles = this._findAffectedFiles(
       builderProgram,
       angularProgram.compiler,
@@ -378,10 +378,10 @@ export class AngularCompiler {
         break;
       }
       if ("fileName" in result.affected) {
-        // ts.SourceFile — single file change
+        // ts.SourceFile — 단일 파일 변경
         affectedFiles.add(result.affected);
       } else {
-        // ts.Program — global scope change, treat all source files as affected
+        // ts.Program — 전역 스코프 변경, 모든 소스 파일을 affected로 처리
         for (const sourceFile of builderProgram.getSourceFiles()) {
           if (!angularCompiler.ignoreForDiagnostics.has(sourceFile)) {
             affectedFiles.add(sourceFile);
@@ -557,7 +557,7 @@ export class AngularCompiler {
     yield* ngOptionDiags;
     yield* tsOptionDiags;
 
-    // 2. Syntactic
+    // 2. Global
     yield* builderProgram.getGlobalDiagnostics();
 
     // 3. 파일별 루프

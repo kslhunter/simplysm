@@ -232,24 +232,24 @@ export async function read(targetPath: string): Promise<string> {
 }
 
 /**
- * 파일을 Buffer로 읽는다.
+ * 파일을 Uint8Array로 읽는다.
  * @param targetPath - 읽을 파일 경로
  */
-export function readBufferSync(targetPath: string): Buffer {
+export function readBytesSync(targetPath: string): Uint8Array {
   try {
-    return fs.readFileSync(targetPath);
+    return new Uint8Array(fs.readFileSync(targetPath));
   } catch (err) {
     throw new SdError(err, targetPath);
   }
 }
 
 /**
- * 파일을 Buffer로 읽는다 (비동기).
+ * 파일을 Uint8Array로 읽는다 (비동기).
  * @param targetPath - 읽을 파일 경로
  */
-export async function readBuffer(targetPath: string): Promise<Buffer> {
+export async function readBytes(targetPath: string): Promise<Uint8Array> {
   try {
-    return await fs.promises.readFile(targetPath);
+    return new Uint8Array(await fs.promises.readFile(targetPath));
   } catch (err) {
     throw new SdError(err, targetPath);
   }
@@ -540,13 +540,11 @@ export async function findAllParentChildPaths(
   fromPath: string,
   rootPath?: string,
 ): Promise<string[]> {
-  const resultPaths: string[] = [];
+  const dirs: string[] = [];
 
   let current = fromPath;
   while (current) {
-    const potential = path.resolve(current, childGlob);
-    const globResults = await glob(potential);
-    resultPaths.push(...globResults);
+    dirs.push(current);
 
     if (current === rootPath) break;
 
@@ -555,7 +553,11 @@ export async function findAllParentChildPaths(
     current = next;
   }
 
-  return resultPaths;
+  const results = await Promise.all(
+    dirs.map((dir) => glob(path.resolve(dir, childGlob))),
+  );
+
+  return results.flat();
 }
 
 //#endregion

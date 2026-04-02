@@ -62,32 +62,3 @@ export class SdDropdownTestScrollable {}
 })
 export class SdDropdownTestWithFocusable {}
 
-@Component({
-  selector: "sd-dropdown-test-tall-content",
-  standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
-  template: `
-    <sd-dropdown>
-      trigger
-      <sd-dropdown-popup>
-        <div class="tall-content" style="height: 500px;">tall content</div>
-      </sd-dropdown-popup>
-    </sd-dropdown>
-  `,
-})
-export class SdDropdownTestTallContent {}
-
-@Component({
-  selector: "sd-dropdown-test-short-content",
-  standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
-  template: `
-    <sd-dropdown>
-      trigger
-      <sd-dropdown-popup>
-        <div class="short-content" style="height: 250px;">short content</div>
-      </sd-dropdown-popup>
-    </sd-dropdown>
-  `,
-})
-export class SdDropdownTestShortContent {}

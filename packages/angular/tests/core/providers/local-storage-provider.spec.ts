@@ -43,5 +43,12 @@ describe("Feature 1.9 Slice 1: 파일 다이얼로그 + 로컬 스토리지", ()
 
       expect(localStorage.getItem("test-app.theme")).toBeNull();
     });
+
+    it("손상된 JSON이 저장된 경우 get()은 SyntaxError 대신 undefined를 반환한다", () => {
+      localStorage.setItem("test-app.theme", "{broken");
+
+      const result = provider.get("theme");
+      expect(result).toBeUndefined();
+    });
   });
 });

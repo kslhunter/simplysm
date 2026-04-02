@@ -1,12 +1,12 @@
 import os from "os";
 
 /**
- * Run task functions with limited concurrency.
- * Uses a shared index pattern — each worker consumes the next available task.
+ * 제한된 동시성으로 태스크 함수를 실행한다.
+ * 공유 인덱스 패턴을 사용 — 각 워커가 다음 사용 가능한 태스크를 소비한다.
  *
- * @param tasks Array of async task functions to execute
- * @param concurrency Maximum number of tasks running simultaneously
- * @returns Array of PromiseSettledResult in the same order as input tasks
+ * @param tasks 실행할 비동기 태스크 함수 배열
+ * @param concurrency 동시에 실행할 최대 태스크 수
+ * @returns 입력 태스크와 동일한 순서의 PromiseSettledResult 배열
  */
 export async function runWithConcurrency<T>(
   tasks: Array<() => Promise<T>>,
@@ -35,8 +35,8 @@ export async function runWithConcurrency<T>(
 }
 
 /**
- * Get max concurrency based on CPU cores.
- * Uses 7/8 of available cores (minimum 1).
+ * CPU 코어 수 기반으로 최대 동시성을 반환한다.
+ * 사용 가능한 코어의 7/8을 사용한다 (최소 1).
  */
 export function getMaxConcurrency(): number {
   return Math.max(Math.floor((os.cpus().length * 7) / 8), 1);

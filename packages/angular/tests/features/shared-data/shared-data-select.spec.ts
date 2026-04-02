@@ -39,6 +39,73 @@ describe("SdSharedDataSelectControl", () => {
     setupTestBed();
   });
 
+  //#region Unit Tests — 드롭다운 닫힘 시 searchText 초기화
+
+  describe("드롭다운 닫힘 시 searchText 초기화", () => {
+    it("초기 실행 시 searchText를 변경하지 않는다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A")]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      // 초기 상태에서 searchText는 undefined (변경 없음)
+      expect(ctrl.searchText()).toBeUndefined();
+    });
+
+    it("드롭다운이 열릴 때 searchText를 변경하지 않는다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A")]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      ctrl.searchText.set("test");
+
+      // 드롭다운 열기
+      const selectCtrl = (ctrl as any)._selectCtrl();
+      if (selectCtrl != null) {
+        selectCtrl.dropdownOpen.set(true);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      }
+
+      // 검색어가 유지되어야 한다
+      expect(ctrl.searchText()).toBe("test");
+    });
+
+    it("드롭다운이 닫힐 때 searchText를 초기화한다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A")]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+
+      // 드롭다운 열기
+      const selectCtrl = (ctrl as any)._selectCtrl();
+      if (selectCtrl != null) {
+        selectCtrl.dropdownOpen.set(true);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      }
+
+      ctrl.searchText.set("test");
+
+      // 드롭다운 닫기
+      if (selectCtrl != null) {
+        selectCtrl.dropdownOpen.set(false);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      }
+
+      // 검색어가 초기화되어야 한다
+      expect(ctrl.searchText()).toBeUndefined();
+    });
+  });
+
+  //#endregion
+
   //#region Unit Tests — rootDisplayItems
 
   describe("rootDisplayItems", () => {

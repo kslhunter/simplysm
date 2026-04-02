@@ -865,6 +865,25 @@ Converts properties whose type includes `undefined` to optional properties.
 type TUndefToOptional<T> = /* { a: string; b: number | undefined } → { a: string; b?: number } */;
 ```
 
+## `TWithOptional`
+
+Converts specified keys of a type to optional.
+
+```typescript
+type TWithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+```
+
+## `withBusy`
+
+Wraps an async function with a busy signal increment/decrement. Increments `busyCount` before execution and decrements in `finally`.
+
+```typescript
+async function withBusy(
+  busyCount: WritableSignal<number>,
+  fn: () => Promise<void>,
+): Promise<void>;
+```
+
 ## `setupModelHook`
 
 Intercepts a `WritableSignal.set` to guard value changes with a sync/async predicate.

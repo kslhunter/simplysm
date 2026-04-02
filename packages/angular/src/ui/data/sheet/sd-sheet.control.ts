@@ -35,6 +35,7 @@ import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import type {
   ISdSheetColumnDef,
+  ISdSheetCellKeydownEventParam,
   ISdSheetConfig,
   ISdSheetHeaderDef,
   ISdSheetItemKeydownEventParam,
@@ -356,7 +357,7 @@ export class SdSheetControl<T> {
 
   // Outputs
   itemKeydown = output<ISdSheetItemKeydownEventParam<T>>();
-  cellKeydown = output<ISdSheetItemKeydownEventParam<T>>();
+  cellKeydown = output<ISdSheetCellKeydownEventParam<T>>();
 
   // Models
   selectedItems = model<T[]>([]);
@@ -496,41 +497,49 @@ export class SdSheetControl<T> {
     return col?.summaryTplRef() ?? null;
   }
 
-  getHeaderCellStyle(cell: ISdSheetHeaderDef) {
-    const parts: string[] = [];
-    if (cell.colDef != null) {
-      const baseStyle = this._getColDefStyle(cell.colDef);
-      if (baseStyle != null) {
-        parts.push(baseStyle);
-      }
-      const fixedStyle = this._getFixedStyle(cell.colDef);
-      if (fixedStyle != null) {
-        parts.push(fixedStyle);
-      }
+  // Pre-computed column styles: header/footer (fixed z-index:3)
+  private readonly _headerColumnStyles = computed(() => {
+    const map = new Map<string, string | null>();
+    for (const colDef of this.layout.columnDefs()) {
+      const parts: string[] = [];
+      const colStyle = this._getColDefStyle(colDef);
+      if (colStyle != null) parts.push(colStyle);
+      const fixedStyle = this._getFixedStyle(colDef, 3, "var(--theme-secondary-lightest)");
+      if (fixedStyle != null) parts.push(fixedStyle);
+      map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
     }
-    return parts.length > 0 ? parts.join("; ") : null;
+    return map;
+  });
+
+  // Pre-computed column styles: body (fixed z-index:1)
+  private readonly _dataColumnBaseStyles = computed(() => {
+    const map = new Map<string, string | null>();
+    for (const colDef of this.layout.columnDefs()) {
+      const parts: string[] = [];
+      const colStyle = this._getColDefStyle(colDef);
+      if (colStyle != null) parts.push(colStyle);
+      const fixedStyle = this._getFixedStyle(colDef);
+      if (fixedStyle != null) parts.push(fixedStyle);
+      map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
+    }
+    return map;
+  });
+
+  getHeaderCellStyle(cell: ISdSheetHeaderDef) {
+    if (cell.colDef == null) return null;
+    return this._headerColumnStyles().get(cell.colDef.key) ?? null;
   }
 
   getCellStyle(item: T, colDef: ISdSheetColumnDef) {
-    const parts: string[] = [];
-    const baseStyle = this._getColDefStyle(colDef);
-    if (baseStyle != null) {
-      parts.push(baseStyle);
-    }
-    const fixedStyle = this._getFixedStyle(colDef);
-    if (fixedStyle != null) {
-      parts.push(fixedStyle);
-    }
+    const baseStyle = this._dataColumnBaseStyles().get(colDef.key) ?? null;
     const styleFn = this.getItemCellStyleFn();
     const customStyle = styleFn != null ? styleFn(item, colDef.key) : undefined;
-    if (customStyle != null) {
-      parts.push(customStyle);
-    }
-    return parts.length > 0 ? parts.join("; ") : null;
+    if (baseStyle != null && customStyle != null) return `${baseStyle}; ${customStyle}`;
+    return customStyle ?? baseStyle ?? null;
   }
 
   getFixedCellStyle(colDef: ISdSheetColumnDef) {
-    return this._getFixedStyle(colDef);
+    return this._getFixedStyle(colDef, 3);
   }
 
   getSelectableTooltip(item: T): string | null {
@@ -593,8 +602,11 @@ export class SdSheetControl<T> {
     return this.expanding.def(item);
   }
 
+  // PERF-005: Set-based lookup for O(1) isExpanded check
+  private readonly _expandedSet = computed(() => new Set(this.expandedItems()));
+
   isExpanded(item: T): boolean {
-    return this.expandedItems().includes(item);
+    return this._expandedSet().has(item);
   }
 
   getAriaExpanded(item: T): string | null {
@@ -617,34 +629,25 @@ export class SdSheetControl<T> {
   }
 
   private _getColDefStyle(colDef: { width: string | undefined; collapse: boolean }): string | null {
-    const parts: string[] = [];
-    if (colDef.width != null) {
-      parts.push(`width: ${colDef.width}`);
-      parts.push(`min-width: ${colDef.width}`);
-      parts.push(`max-width: ${colDef.width}`);
-    }
     if (colDef.collapse) {
-      parts.push("padding: 0");
-      parts.push("width: 0");
-      parts.push("min-width: 0");
-      parts.push("max-width: 0");
-      parts.push("overflow: hidden");
-      parts.push("border: none");
+      return "padding: 0; width: 0; min-width: 0; max-width: 0; overflow: hidden; border: none";
     }
-    return parts.length > 0 ? parts.join("; ") : null;
+    if (colDef.width != null) {
+      return `width: ${colDef.width}; min-width: ${colDef.width}; max-width: ${colDef.width}`;
+    }
+    return null;
   }
 
-  private _getFixedStyle(colDef: ISdSheetColumnDef): string | null {
+  private _getFixedStyle(
+    colDef: ISdSheetColumnDef,
+    zIndex: number = 1,
+    background: string = "var(--control-color)",
+  ): string | null {
     const fixedLeftMap = this.fixing.fixedLeftMap();
     const leftValue = fixedLeftMap.get(colDef.key);
     if (leftValue == null) return null;
 
-    const parts: string[] = [];
-    parts.push("position: sticky");
-    parts.push(`left: ${leftValue}px`);
-    parts.push("z-index: 1");
-    parts.push("background: var(--control-color)");
-    return parts.join("; ");
+    return `position: sticky; left: ${leftValue}px; z-index: ${zIndex}; background: ${background}`;
   }
 
   getDataCellClass(item: T, colDef: ISdSheetColumnDef, r: number, c: number): string | null {

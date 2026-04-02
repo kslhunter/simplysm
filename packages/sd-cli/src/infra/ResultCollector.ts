@@ -1,5 +1,5 @@
 /**
- * Build result status
+ * 빌드 결과 상태
  */
 export interface BuildResult {
   name: string;
@@ -11,17 +11,17 @@ export interface BuildResult {
 }
 
 /**
- * Class that collects and manages build results
+ * 빌드 결과를 수집·관리하는 클래스
  *
- * Manages build results from multiple Builders at a central location and
- * provides filtering and output functionality by status.
+ * 여러 Builder의 빌드 결과를 중앙에서 관리하며,
+ * 상태별 필터링 및 출력 기능을 제공한다.
  */
 export class ResultCollector {
   private readonly _results = new Map<string, BuildResult>();
 
   /**
-   * Add result
-   * @param result build result
+   * 결과를 추가한다
+   * @param result 빌드 결과
    */
   add(result: BuildResult): void {
     const key = `${result.name}:${result.type}`;
@@ -29,15 +29,15 @@ export class ResultCollector {
   }
 
   /**
-   * Get result by key
-   * @param key result key (e.g., "core-common:build")
+   * 키로 결과를 조회한다
+   * @param key 결과 키 (예: "core-common:build")
    */
   get(key: string): BuildResult | undefined {
     return this._results.get(key);
   }
 
   /**
-   * Return internal Map (for backward compatibility)
+   * 내부 Map을 반환한다 (외부 접근용)
    */
   toMap(): Map<string, BuildResult> {
     return this._results;

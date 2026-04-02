@@ -9,6 +9,7 @@ import {
   inject,
   input,
   model,
+  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdownPopupControl } from "./sd-dropdown-popup.control";
@@ -44,7 +45,7 @@ export class SdDropdownControl {
   private _popupEl?: HTMLElement;
   private _mouseoverEl?: HTMLElement;
   private _backdropEl?: HTMLElement;
-  private _isMobile: boolean;
+  private readonly _isMobile;
   private readonly _mql: MediaQueryList;
 
   constructor() {
@@ -52,10 +53,10 @@ export class SdDropdownControl {
 
     // $breakpoint-mobile (SCSS 변수 참조 불가, 값 동기화 필요)
     this._mql = window.matchMedia("(max-width: 520px)");
-    this._isMobile = this._mql.matches;
+    this._isMobile = signal(this._mql.matches);
 
     const onMqlChange = (e: MediaQueryListEvent) => {
-      this._isMobile = e.matches;
+      this._isMobile.set(e.matches);
     };
     this._mql.addEventListener("change", onMqlChange);
     destroyRef.onDestroy(() => {
@@ -68,7 +69,7 @@ export class SdDropdownControl {
         this._popupEl = popupEl;
         document.body.appendChild(popupEl);
 
-        if (this._isMobile) {
+        if (this._isMobile()) {
           popupEl.setAttribute("data-sd-mobile", "");
 
           const backdrop = document.createElement("div");
@@ -196,26 +197,22 @@ export class SdDropdownControl {
 
     contentEl.repaint();
 
-    const windowOffset = contentEl.getRelativeOffset(document.body);
+    const rect = contentEl.getBoundingClientRect();
 
-    const isPlaceBottom = window.innerHeight < windowOffset.top * 2;
-    const isPlaceRight = window.innerWidth < windowOffset.left * 2;
+    const isPlaceBottom = window.innerHeight < rect.top * 2;
+    const isPlaceRight = window.innerWidth < rect.left * 2;
 
     const gap = 2;
-    const topPos = isPlaceBottom ? undefined : windowOffset.top + contentEl.offsetHeight + gap;
-    const bottomPos = isPlaceBottom ? window.innerHeight - windowOffset.top : undefined;
-    const leftPos = isPlaceRight ? undefined : windowOffset.left;
-    const rightPos = isPlaceRight
-      ? window.innerWidth - windowOffset.left - contentEl.offsetWidth
-      : undefined;
+    const topPos = isPlaceBottom ? undefined : rect.bottom + gap;
+    const bottomPos = isPlaceBottom ? window.innerHeight - rect.top : undefined;
+    const leftPos = isPlaceRight ? undefined : rect.left;
+    const rightPos = isPlaceRight ? window.innerWidth - rect.right : undefined;
 
     // Calculate available space for popup
     const availableHeight = isPlaceBottom
-      ? windowOffset.top - gap
-      : window.innerHeight - (windowOffset.top + contentEl.offsetHeight + gap);
-    const availableWidth = isPlaceRight
-      ? windowOffset.left + contentEl.offsetWidth
-      : window.innerWidth - windowOffset.left;
+      ? rect.top - gap
+      : window.innerHeight - rect.bottom - gap;
+    const availableWidth = isPlaceRight ? rect.right : window.innerWidth - rect.left;
 
     Object.assign(popupEl.style, {
       top: topPos !== undefined ? topPos + "px" : "",
@@ -233,7 +230,7 @@ export class SdDropdownControl {
   }
 
   private _onDocumentScrollCapture(event: Event): void {
-    if (this._isMobile) return;
+    if (this._isMobile()) return;
 
     const contentEl = this._elRef.nativeElement;
     if ((event.target as Element).contains(contentEl)) {
@@ -299,6 +296,9 @@ export class SdDropdownControl {
         left: "",
         right: "",
         minWidth: "",
+        maxHeight: "",
+        maxWidth: "",
+        overflow: "",
         opacity: "",
         pointerEvents: "",
         transform: "",

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
@@ -7,6 +7,7 @@ import {
   SdModalTestNoEsc,
   SdModalTestHideCloseButton,
   SdModalTestHideHeader,
+  SdModalTestMovable,
 } from "./sd-modal-test.fixture";
 import { SdActivatedModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
 
@@ -188,3 +189,81 @@ describe("Feature 3.2 Slice 2: SdModalControl 렌더링 + 닫기", () => {
     expect(fixture.componentInstance.closed).toBe(true);
   });
 });
+
+// region Feature 3.2 Slice 2: 모달 좌표 및 z-index
+
+describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
+  // Acceptance: drag 초기 위치가 getBoundingClientRect 기반이다
+  it("drag 시작 시 getBoundingClientRect 기반 초기 위치를 사용한다", () => {
+    const fixture = setup(SdModalTestMovable);
+    const modal = getModal(fixture);
+    const dialog = getDialog(modal)!;
+    const header = getHeader(modal)!;
+
+    // dialog.offsetLeft는 jsdom에서 0이지만, getBoundingClientRect는 mock 가능
+    vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue({
+      top: 200, left: 150, bottom: 400, right: 550, width: 400, height: 200,
+      x: 150, y: 200, toJSON: () => ({}),
+    });
+    // offsetParent mock
+    Object.defineProperty(dialog, "offsetParent", { value: modal, configurable: true });
+    vi.spyOn(modal, "getBoundingClientRect").mockReturnValue({
+      top: 0, left: 0, bottom: 768, right: 1024, width: 1024, height: 768,
+      x: 0, y: 0, toJSON: () => ({}),
+    });
+
+    // drag: (200, 100) → (300, 150)
+    header.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: 200, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: 300, clientY: 150, bubbles: true }),
+    );
+    document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    fixture.detectChanges();
+
+    // startLeft=150 (rect.left - parentRect.left), dx=100 → 250
+    // startTop=200 (rect.top - parentRect.top), dy=50 → 250
+    expect(dialog.style.left).toBe("250px");
+    expect(dialog.style.top).toBe("250px");
+  });
+
+  // Acceptance: zIndex 미설정 모달에 focus 시 기본값 할당
+  it("zIndex 미설정 모달에 focus하면 4001이 할당된다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+    const dialog = getDialog(modal)!;
+
+    // zIndex 미설정 상태
+    expect(modal.style.zIndex).toBe("");
+
+    // focus 이벤트 발생
+    dialog.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // NaN이 아닌 유효한 zIndex가 설정되어야 한다
+    const z = parseInt(modal.style.zIndex, 10);
+    expect(Number.isNaN(z)).toBe(false);
+    expect(z).toBe(4001);
+  });
+
+  // Unit: zIndex가 이미 최대이면 값이 변경되지 않는다 (early-return)
+  it("zIndex가 이미 최대이면 값이 변경되지 않는다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+    const dialog = getDialog(modal)!;
+
+    // 이미 최대 z-index 설정
+    modal.style.zIndex = "9999";
+
+    dialog.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // early-return으로 zIndex가 변경되지 않아야 한다
+    expect(modal.style.zIndex).toBe("9999");
+  });
+});
+
+// endregion

@@ -34,7 +34,7 @@ async function spawnVitest(targets: string[]): Promise<CheckResult> {
     const args = ["vitest", ...targets, "--run"];
     logger.debug("vitest 실행", { args });
     logger.start("테스트 실행 중...");
-    const result = await cpx.exec("pnpm", args, { cwd: process.cwd(), reject: false });
+    const result = await cpx.spawn("pnpm", args, { cwd: process.cwd(), reject: false });
     const output = result.stdout + result.stderr;
     const code = result.exitCode;
 
@@ -188,7 +188,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
   const results = await Promise.allSettled(tasks);
   logger.success("체크 실행 완료");
 
-  // 결과 수집 (flatten arrays from executeTypecheck)
+  // 결과 수집 (executeTypecheck 배열 평탄화)
   const checkResults: CheckResult[] = results.flatMap((r) => {
     if (r.status === "fulfilled") {
       const value = r.value;
@@ -211,7 +211,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
     process.stdout.write(formatSection(result));
   }
 
-  // SUMMARY
+  // 요약
   const failed = checkResults.filter((r) => !r.success);
   const totalErrors = checkResults.reduce((sum, r) => sum + r.errorCount, 0);
   const totalWarnings = checkResults.reduce((sum, r) => sum + r.warningCount, 0);

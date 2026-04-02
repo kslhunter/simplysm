@@ -34,7 +34,7 @@ export interface SdAngularPluginOptions {
     warnings?: string[];
     lint?: LintWithProgramResult;
   }) => void;
-  /** Enable lint using ts.Program from compilation */
+  /** 컴파일의 ts.Program을 사용하여 lint 실행 */
   enableLint?: boolean;
   /** browserslist 타겟 (정규화된 배열) */
   browserslist?: string[];
@@ -68,7 +68,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         ) as { name?: string };
         pkgName = pkgJson.name ?? "unknown";
       } catch {
-        // ignore
+        // 무시
       }
       lintRunner = new LintWithProgramRunner({
         cwd: process.cwd(),
@@ -82,6 +82,12 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
   const templateUpdates = new Map<string, string>();
   let hmrLock: Promise<void> = Promise.resolve();
   const scssDependencies = new Map<string, Set<string>>();
+
+  // Pre-bundle transformer: optimizeDeps의 esbuild 단계에서 Angular Linker 실행
+  const prebundleTransformer = new JavaScriptTransformer(
+    { sourcemap: options.dev, jit: false, thirdPartySourcemaps: options.dev },
+    1,
+  );
 
   function createJsTransformer(): JavaScriptTransformer {
     const maxThreads = Math.max(1, Math.floor((os.cpus().length * 2) / 3));
@@ -106,6 +112,24 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           ngDevMode: options.dev ? undefined : "false",
           ngJitMode: "false",
           ngHmrMode: options.dev ? undefined : "false",
+        },
+        optimizeDeps: {
+          esbuildOptions: {
+            plugins: [
+              {
+                name: "angular-vite-optimize-deps",
+                setup(build: { onLoad: Function }) {
+                  build.onLoad(
+                    { filter: /\.[cm]?js$/ },
+                    async (args: { path: string }) => ({
+                      contents: await prebundleTransformer.transformFile(args.path),
+                      loader: "js" as const,
+                    }),
+                  );
+                },
+              },
+            ],
+          },
         },
       };
     },
@@ -188,7 +212,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         logger.error(err);
       }
 
-      // Lint execution (if enabled)
+      // lint 실행 (활성화된 경우)
       let initialLintResult: LintWithProgramResult | undefined;
       if (options.enableLint === true) {
         initialLintResult = await getOrCreateLintRunner().lint({
@@ -196,7 +220,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         });
       }
 
-      // Report initial build results (both dev and prod)
+      // 초기 빌드 결과 보고 (dev, prod 공통)
       options.onBuild?.({
         success: diagnosticResult.errors.length === 0,
         errors: diagnosticResult.errors.map((e) => e.message),
@@ -218,14 +242,13 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       if (compiler == null || !options.dev) return;
       if (
         !file.endsWith(".ts") &&
-        !file.endsWith(".tsx") &&
         !file.endsWith(".html") &&
         !file.endsWith(".scss")
       ) {
         return;
       }
 
-      // Dependency filter: skip if file is not in the TypeScript program
+      // 의존성 필터: TypeScript program에 포함되지 않은 파일은 건너뜀
       const normalizedFile = pathx.posix(file);
       const programFiles = compiler.getTsProgram().getSourceFiles();
       const isInProgram = programFiles.some(
@@ -269,13 +292,13 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         const diagnosticResult = collectAndFormatDiagnostics(compiler, process.cwd());
         reportDiagnostics(diagnosticResult);
 
-        // Convert affected ts.SourceFile set to file name strings for incremental lint
+        // 영향받은 ts.SourceFile 집합을 파일명 문자열로 변환 (incremental lint용)
         const affectedFileNames = new Set<string>();
         for (const sf of updateResult.affectedFiles) {
           affectedFileNames.add(pathx.posix(sf.fileName));
         }
 
-        // Lint execution (if enabled)
+        // lint 실행 (활성화된 경우)
         let lintResult: LintWithProgramResult | undefined;
         if (options.enableLint === true) {
           lintResult = await getOrCreateLintRunner().lint({
@@ -306,21 +329,23 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     },
 
     async transform(_code, id) {
-      if (!id.endsWith(".ts") && !id.endsWith(".tsx")) return;
+      if (jsTransformer == null) return;
 
-      const normalizedId = pathx.posix(id);
-      const emittedContent = emittedFiles.get(normalizedId);
-      if (emittedContent == null) return;
+      let code = _code;
 
-      if (jsTransformer == null) {
-        throw new Error("JavaScriptTransformer가 초기화되지 않았습니다");
+      // Phase 1: TS 컴파일 — .ts 파일은 AngularCompiler가 emit한 JS로 교체
+      if (id.endsWith(".ts")) {
+        const normalizedId = pathx.posix(id);
+        const emittedContent = emittedFiles.get(normalizedId);
+        if (emittedContent == null) return;
+        code = emittedContent;
+      } else if (!id.endsWith(".mjs") && !id.endsWith(".js")) {
+        return;
       }
 
-      // AOT 메타데이터 제거 + 최적화
-      const transformed = await jsTransformer.transformData(normalizedId, emittedContent, false);
-      const code = new TextDecoder().decode(transformed);
-
-      return { code };
+      // Phase 2: JS 변환 — Angular Linker로 partial → full AOT 링킹 + 최적화
+      const transformed = await jsTransformer.transformData(pathx.posix(id), code, false);
+      return { code: new TextDecoder().decode(transformed) };
     },
 
     async buildEnd() {
@@ -330,6 +355,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           await jsTransformer.close();
           jsTransformer = undefined;
         }
+        await prebundleTransformer.close();
         compiler = undefined;
         emittedFiles.clear();
       }
@@ -337,24 +363,24 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
     configureServer(server: ViteDevServer) {
       // component-middleware 등록 (HMR template updates 서빙)
-      server.middlewares.use(angularComponentMiddleware(templateUpdates));
+      server.middlewares.use(angularComponentMiddleware(templateUpdates, server.config.base));
 
       // dev server 종료 시 리소스 정리
       server.httpServer?.on("close", () => {
-        if (jsTransformer != null) {
-          void jsTransformer
-            .close()
-            .then(() => {
-              jsTransformer = undefined;
-              compiler = undefined;
-              emittedFiles.clear();
-            })
-            .catch((err: unknown) => {
-              logger.error(
-                `Resource dispose failed: ${err instanceof Error ? err.message : String(err)}`,
-              );
-            });
-        }
+        void Promise.all([
+          jsTransformer?.close(),
+          prebundleTransformer.close(),
+        ])
+          .catch((err: unknown) => {
+            logger.error(
+              `Resource dispose failed: ${err instanceof Error ? err.message : String(err)}`,
+            );
+          })
+          .finally(() => {
+            jsTransformer = undefined;
+            compiler = undefined;
+            emittedFiles.clear();
+          });
       });
     },
   };
@@ -401,15 +427,22 @@ function collectAndFormatDiagnostics(compiler: AngularCompiler, cwd: string): Di
 
 function angularComponentMiddleware(
   templateUpdates: Map<string, string>,
+  basePath: string,
 ): (req: IncomingMessage, res: ServerResponse, next: () => void) => void {
   return (req, res, next) => {
-    if (req.url == null || !req.url.startsWith("/@ng/component")) {
+    const rawUrl = req.url ?? "";
+    const parsedUrl = new URL(rawUrl, "http://localhost");
+    const pathname = decodeURIComponent(parsedUrl.pathname);
+    const strippedPathname =
+      basePath !== "/" && pathname.startsWith(basePath)
+        ? pathname.slice(basePath.length - 1)
+        : pathname;
+    if (!strippedPathname.includes("/@ng/component")) {
       next();
       return;
     }
 
-    const url = new URL(req.url, "http://localhost");
-    const componentId = url.searchParams.get("c") ?? "";
+    const componentId = parsedUrl.searchParams.get("c") ?? "";
     const body = templateUpdates.get(encodeURIComponent(componentId)) ?? "";
 
     res.writeHead(200, {

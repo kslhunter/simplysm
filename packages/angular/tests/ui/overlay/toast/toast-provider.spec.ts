@@ -238,6 +238,128 @@ describe("Feature 3.3 Slice 2: SdToastProvider 기본 + 프로그래스", () => 
   });
 });
 
+// region Feature 3.2 Slice 3: 토스트 dismiss 중복 방지 + overlap 반응적 바인딩
+
+describe("Feature 3.2 Slice 3: 토스트 auto-dismiss 중복 방지 (LOGIC-031)", () => {
+  // Acceptance: hover/leave 반복 후에도 dismiss가 1회만 발생한다
+  it("hover → leave → hover → leave 반복 후 dismiss가 1회만 발생한다", () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = setupHost();
+      const provider = TestBed.inject(SdToastProvider);
+
+      provider.info("반복 테스트");
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(1);
+
+      const toast = getToastsInBody()[0];
+
+      // 3초 타이머 만료 전에 hover/leave 반복
+      toast.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      vi.advanceTimersByTime(3000); // hover 중이라 dismissPending
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(1);
+
+      // leave → 1초 dismiss 스케줄
+      toast.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+
+      // 즉시 다시 hover
+      toast.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      vi.advanceTimersByTime(1000); // hover 중이라 다시 dismissPending
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(1);
+
+      // 최종 leave
+      toast.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      vi.advanceTimersByTime(1000);
+      flushSync(fixture);
+
+      // transitionend
+      if (getToastsInBody().length > 0) {
+        getToastsInBody()[0].dispatchEvent(new Event("transitionend"));
+      }
+      flushSync(fixture);
+
+      expect(getToastsInBody().length).toBe(0);
+
+      // 추가 타이머가 있어도 에러 없이 처리
+      vi.advanceTimersByTime(5000);
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // Unit: dismiss 후 추가 dismissAfterDelay가 스케줄되어도 무시된다
+  it("dismiss 후 추가 타이머가 실행되어도 중복 dismiss가 발생하지 않는다", () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = setupHost();
+      const provider = TestBed.inject(SdToastProvider);
+
+      provider.info("중복 방지");
+      flushSync(fixture);
+
+      const toast = getToastsInBody()[0];
+
+      // hover
+      toast.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      vi.advanceTimersByTime(3000); // dismissPending = true
+      flushSync(fixture);
+
+      // leave → dismiss 스케줄
+      toast.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+
+      // 다시 hover 후 leave (추가 dismissAfterDelay 스케줄)
+      toast.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      toast.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+
+      // 첫 번째 dismiss 실행
+      vi.advanceTimersByTime(1000);
+      flushSync(fixture);
+      if (getToastsInBody().length > 0) {
+        getToastsInBody()[0].dispatchEvent(new Event("transitionend"));
+      }
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(0);
+
+      // 두 번째 타이머가 실행되어도 에러 없음
+      vi.advanceTimersByTime(1000);
+      flushSync(fixture);
+      expect(getToastsInBody().length).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("Feature 3.2 Slice 3: 토스트 overlap 반응적 바인딩 (LOGIC-032)", () => {
+  // Acceptance: overlap 변경이 컨테이너에 반응적으로 반영된다
+  it("overlap signal 변경 시 컨테이너의 overlap input이 즉시 갱신된다", async () => {
+    const fixture = setupHost();
+    const provider = TestBed.inject(SdToastProvider);
+    provider.overlap.set(false);
+
+    provider.info("첫 토스트");
+    await tick(fixture);
+
+    const container = document.body.querySelector("sd-toast-container") as HTMLElement;
+    expect(container).not.toBeNull();
+    // 초기 overlap=false
+    expect(container.getAttribute("data-sd-overlap")).toBeNull();
+
+    // overlap을 true로 변경 — effect가 반응적으로 갱신해야 한다
+    provider.overlap.set(true);
+    await tick(fixture);
+
+    // 새 토스트를 표시하지 않아도 컨테이너의 overlap이 갱신되어야 한다
+    expect(container.getAttribute("data-sd-overlap")).not.toBeNull();
+  });
+});
+
+// endregion
+
 // region FIX-2 Slice 3: toast dismiss 중복 방지 (DESIGN-003)
 
 describe("FIX-2 Slice 3: toast dismiss 중복 방지 (DESIGN-003)", () => {

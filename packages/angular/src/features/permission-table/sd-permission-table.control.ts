@@ -152,7 +152,7 @@ import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
           <td class="_title">
             @if (item.children && item.children.length > 0) {
               <sd-anchor (click)="onPermCollapseToggle(item)">
-                <sd-collapse-icon [open]="getIsPermCollapsed(item)" />
+                <sd-collapse-icon [open]="!getIsPermCollapsed(item)" />
                 {{ item.title }}
               </sd-anchor>
             } @else {
@@ -221,10 +221,129 @@ export class SdPermissionTableControl<TModule> {
     return this._getDepthLength(this.items(), 0);
   });
 
+  private readonly _permExistsCache = computed(() => {
+    const cache = new Map<string, boolean>();
+    const walk = (item: ISdPermission<TModule>, type: "use" | "edit"): boolean => {
+      const key = item.codeChain.join(".") + "." + type;
+      const cached = cache.get(key);
+      if (cached !== undefined) return cached;
+
+      if (item.perms) {
+        const result = item.perms.includes(type);
+        cache.set(key, result);
+        return result;
+      }
+      let result = false;
+      if (item.children) {
+        for (const child of item.children) {
+          if (walk(child, type)) {
+            result = true;
+          }
+        }
+      }
+      cache.set(key, result);
+      return result;
+    };
+
+    for (const item of this.items()) {
+      walk(item, "use");
+      walk(item, "edit");
+    }
+    return cache;
+  });
+
+  private readonly _permCheckedCache = computed(() => {
+    const cache = new Map<string, boolean>();
+    const value = this.value();
+
+    const walk = (item: ISdPermission<TModule>, type: "use" | "edit"): boolean => {
+      const key = item.codeChain.join(".") + "." + type;
+      const cached = cache.get(key);
+      if (cached !== undefined) return cached;
+
+      if (item.perms) {
+        const permCode = item.codeChain.join(".");
+        const result = value[permCode + "." + type] ?? false;
+        cache.set(key, result);
+        return result;
+      }
+      let result = false;
+      if (item.children) {
+        for (const child of item.children) {
+          if (walk(child, type)) {
+            result = true;
+          }
+        }
+      }
+      cache.set(key, result);
+      return result;
+    };
+
+    for (const item of this.items()) {
+      walk(item, "use");
+      walk(item, "edit");
+    }
+    return cache;
+  });
+
+  private readonly _editDisabledCache = computed(() => {
+    const cache = new Map<string, boolean>();
+    const isDisabled = this.disabled();
+    const existsCache = this._permExistsCache();
+    const checkedCache = this._permCheckedCache();
+
+    const walk = (item: ISdPermission<TModule>): boolean => {
+      const key = item.codeChain.join(".");
+      const cached = cache.get(key);
+      if (cached !== undefined) return cached;
+
+      if (isDisabled) {
+        cache.set(key, true);
+        return true;
+      }
+
+      if (item.perms) {
+        const useExists = existsCache.get(key + ".use") ?? false;
+        const useChecked = checkedCache.get(key + ".use") ?? false;
+        const result = useExists && !useChecked;
+        cache.set(key, result);
+        return result;
+      }
+
+      if (item.children) {
+        for (const child of item.children) {
+          walk(child);
+        }
+        const result = item.children.every(
+          (child) =>
+            !(existsCache.get(child.codeChain.join(".") + ".edit") ?? false) ||
+            (cache.get(child.codeChain.join(".")) ?? false),
+        );
+        cache.set(key, result);
+        return result;
+      }
+
+      cache.set(key, false);
+      return false;
+    };
+
+    for (const item of this.items()) {
+      walk(item);
+    }
+    return cache;
+  });
+
+  private readonly _arrCache = new Map<number, number[]>();
+
   arr(len: number): number[] {
-    return Array(len)
-      .fill(0)
-      .map((_, i) => i);
+    let cached = this._arrCache.get(len);
+    if (cached == null) {
+      cached = Array(len)
+        .fill(0)
+        .map((_, i) => i);
+      this._arrCache.set(len, cached);
+    }
+    return cached;
   }
 
   getIsPermCollapsed(item: ISdPermission<TModule>): boolean {
@@ -235,59 +354,16 @@ export class SdPermissionTableControl<TModule> {
     return item.children?.mapMany((child) => [child, ...this.getAllChildren(child)]) ?? [];
   }
 
-  getEditDisabled(item: ISdPermission<TModule>) {
-    if (this.disabled()) {
-      return true;
-    }
-
-    if (item.perms) {
-      if (this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
-        return true;
-      }
-    } else {
-      if (
-        item.children?.every(
-          (child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child),
-        )
-      ) {
-        return true;
-      }
-    }
-
-    return false;
+  getEditDisabled(item: ISdPermission<TModule>): boolean {
+    return this._editDisabledCache().get(item.codeChain.join(".")) ?? false;
   }
 
   getIsPermExists(item: ISdPermission<TModule>, type: "use" | "edit"): boolean {
-    if (item.perms) {
-      return item.perms.includes(type);
-    }
-
-    if (item.children) {
-      for (const child of item.children) {
-        if (this.getIsPermExists(child, type)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return this._permExistsCache().get(item.codeChain.join(".") + "." + type) ?? false;
   }
 
   getIsPermChecked(item: ISdPermission<TModule>, type: "use" | "edit"): boolean {
-    if (item.perms) {
-      const permCode = item.codeChain.join(".");
-      return this.value()[permCode + "." + type] ?? false;
-    }
-
-    if (item.children) {
-      for (const child of item.children) {
-        if (this.getIsPermChecked(child, type)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return this._permCheckedCache().get(item.codeChain.join(".") + "." + type) ?? false;
   }
 
   onPermCollapseToggle(item: ISdPermission<TModule>) {
@@ -329,7 +405,7 @@ export class SdPermissionTableControl<TModule> {
         type === "edit" &&
         val &&
         this.getIsPermExists(item, "use") &&
-        !this.getIsPermChecked(item, "use")
+        !(value[permCode + ".use"] ?? false)
       ) {
         // use가 체크되지 않은 상태에서 edit 체크 시도 → 무시
       } else {

@@ -162,6 +162,25 @@ function setupSettings(targetDir) {
     }
   }
 
+  // PreToolUse: ensure sd-check-git hook exists for Bash tool
+  const sdGitEntry = {
+    matcher: "Bash",
+    hooks: [{ type: "command", command: "python .claude/sd-check-git.py" }],
+  };
+
+  if (settings["hooks"]["PreToolUse"] == null) {
+    settings["hooks"]["PreToolUse"] = [sdGitEntry];
+  } else {
+    const gitIdx = settings["hooks"]["PreToolUse"].findIndex((entry) =>
+      entry.hooks?.some((hook) => hook.command.includes("sd-check-git")),
+    );
+    if (gitIdx >= 0) {
+      settings["hooks"]["PreToolUse"][gitIdx] = sdGitEntry;
+    } else {
+      settings["hooks"]["PreToolUse"].push(sdGitEntry);
+    }
+  }
+
   // SubagentStart: ensure sd-session-start hook exists
   const sdSubagentEntry = {
     hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],

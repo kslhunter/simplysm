@@ -9,20 +9,30 @@ export class SdFileDialogProvider {
     return new Promise<File[] | File | undefined>((resolve) => {
       let inputEl: HTMLInputElement | undefined = document.createElement("input");
 
+      function cleanup(): void {
+        if (inputEl) {
+          document.body.removeChild(inputEl);
+          inputEl = undefined;
+        }
+      }
+
       inputEl.type = "file";
       inputEl.multiple = multiple ?? false;
       if (accept !== undefined) {
         inputEl.accept = accept;
       }
       inputEl.onchange = (event: Event): void => {
-        if (inputEl) {
-          document.body.removeChild(inputEl);
-          inputEl = undefined;
-        }
-
+        cleanup();
         const files = (event.target as HTMLInputElement).files!;
         resolve(multiple ? Array.from(files) : files[0]);
       };
+
+      // cancel 이벤트 (Chrome 77+)
+      inputEl.addEventListener("cancel", () => {
+        cleanup();
+        resolve(undefined);
+      });
+
       inputEl.style.opacity = "0";
       inputEl.style.position = "fixed";
       inputEl.style.top = "0";
@@ -32,16 +42,15 @@ export class SdFileDialogProvider {
       inputEl.focus();
       inputEl.click();
 
+      // focus 폴백 (Chrome 61-76)
       setTimeout(() => {
         if (inputEl == null) return;
         inputEl.onfocus = async (): Promise<void> => {
           await wait.time(1000);
           if (inputEl) {
-            document.body.removeChild(inputEl);
-            inputEl = undefined;
+            cleanup();
+            resolve(undefined);
           }
-
-          resolve(undefined);
         };
       });
     });

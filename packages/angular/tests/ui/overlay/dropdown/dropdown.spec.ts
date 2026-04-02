@@ -7,11 +7,8 @@ import {
   SdDropdownTestDisabled,
   SdDropdownTestScrollable,
   SdDropdownTestWithFocusable,
-  SdDropdownTestTallContent,
-  SdDropdownTestShortContent,
 } from "./sd-dropdown-test.fixture";
 import { SdDropdownControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown.control";
-import { SdDropdownPopupControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown-popup.control";
 import "@simplysm/core-browser";
 
 function setupTestBed(component: any) {
@@ -602,87 +599,106 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
   });
 });
 
-describe("Feature 3.1 Slice 5: 콘텐츠 높이 제한", () => {
-  // Acceptance: 300px 초과 시 300px로 제한
-  it("콘텐츠 높이가 300px 초과이면 팝업 높이가 300px로 제한된다", () => {
-    setupTestBed(SdDropdownTestTallContent);
-    const fixture = TestBed.createComponent(SdDropdownTestTallContent);
+// region Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 리셋
+
+describe("Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 리셋", () => {
+  // Acceptance: 스크롤된 상태에서 팝업이 viewport 기준으로 배치된다
+  it("getRelativeOffset가 아닌 getBoundingClientRect 기준으로 팝업이 배치된다", () => {
+    setupTestBed(SdDropdownTestDefault);
+    const fixture = TestBed.createComponent(SdDropdownTestDefault);
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+    Object.defineProperty(dropdown, "offsetHeight", { value: 30, configurable: true });
+    Object.defineProperty(dropdown, "offsetWidth", { value: 200, configurable: true });
+
+    // getBoundingClientRect는 viewport 기준 {top: 100}을 반환
+    vi.spyOn(dropdown, "getBoundingClientRect").mockReturnValue({
+      top: 100, left: 50, bottom: 130, right: 250, width: 200, height: 30, x: 50, y: 100,
+      toJSON: () => ({}),
+    });
+    // getRelativeOffset는 document 기준 {top: 600}을 반환 (scroll 포함)
+    (dropdown as any).getRelativeOffset = () => ({ top: 600, left: 350 });
+
     dropdown.click();
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    const innerDiv = popup.querySelector("div") as HTMLElement;
+    expect(popup).not.toBeNull();
 
-    // clientHeight를 500px로 모킹하여 onResize 직접 호출
-    Object.defineProperty(innerDiv, "clientHeight", { value: 500, configurable: true });
-
-    const popupDebug = fixture.debugElement.query(
-      (de) => de.componentInstance instanceof SdDropdownPopupControl,
-    );
-    const popupInstance = popupDebug.componentInstance as SdDropdownPopupControl;
-    popupInstance.onResize({ widthChanged: true, heightChanged: true } as any);
-
-    expect(popup.style.height).toBe("300px");
+    // viewport 기준이면 top=100이므로 isPlaceBottom=false → top 스타일 사용
+    // document 기준이면 top=600이므로 isPlaceBottom=true → bottom 스타일 사용
+    expect(popup.style.top).toBe("132px"); // rect.bottom(130) + gap(2)
+    expect(popup.style.bottom).toBe("");
+    expect(popup.style.left).toBe("50px"); // rect.left
+    expect(popup.style.right).toBe("");
   });
 
-  // Acceptance: 300px 이하이면 자동 크기
-  it("콘텐츠 높이가 300px 이하이면 팝업 높이가 자동이다", () => {
-    setupTestBed(SdDropdownTestShortContent);
-    const fixture = TestBed.createComponent(SdDropdownTestShortContent);
+  // Acceptance: 팝업 닫힘 시 maxHeight/maxWidth/overflow가 리셋된다
+  it("팝업 닫힘 시 maxHeight, maxWidth, overflow 인라인 스타일이 리셋된다", () => {
+    setupTestBed(SdDropdownTestDefault);
+    const fixture = TestBed.createComponent(SdDropdownTestDefault);
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+
+    // 열기
     dropdown.click();
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    const innerDiv = popup.querySelector("div") as HTMLElement;
+    expect(popup).not.toBeNull();
+    // _updatePopupPosition에서 설정된 스타일 확인
+    expect(popup.style.overflow).toBe("auto");
 
-    // clientHeight를 250px로 모킹하여 onResize 직접 호출
-    Object.defineProperty(innerDiv, "clientHeight", { value: 250, configurable: true });
+    // 닫기
+    dropdown.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
 
-    const popupDebug = fixture.debugElement.query(
-      (de) => de.componentInstance instanceof SdDropdownPopupControl,
-    );
-    const popupInstance = popupDebug.componentInstance as SdDropdownPopupControl;
-    popupInstance.onResize({ widthChanged: true, heightChanged: true } as any);
-
-    expect(popup.style.height).toBe("");
+    // _removePopup에서 리셋되어야 하는 스타일
+    expect(popup.style.maxHeight).toBe("");
+    expect(popup.style.maxWidth).toBe("");
+    expect(popup.style.overflow).toBe("");
   });
 
-  // Unit: 정확히 300px이면 제한하지 않는다 (경계값)
-  it("콘텐츠 높이가 정확히 300px이면 높이를 제한하지 않는다", () => {
-    setupTestBed(SdDropdownTestShortContent);
-    const fixture = TestBed.createComponent(SdDropdownTestShortContent);
+  // Unit: 수평 좌표도 viewport 기준 (getBoundingClientRect.right 사용)
+  it("우반부 배치 시 right 계산이 rect.right 기준이다", () => {
+    setupTestBed(SdDropdownTestDefault);
+    const fixture = TestBed.createComponent(SdDropdownTestDefault);
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+    const iw = window.innerWidth;
+    Object.defineProperty(dropdown, "offsetHeight", { value: 30, configurable: true });
+    Object.defineProperty(dropdown, "offsetWidth", { value: 200, configurable: true });
+
+    // 우반부 배치
+    vi.spyOn(dropdown, "getBoundingClientRect").mockReturnValue({
+      top: 100, left: iw * 0.8, bottom: 130, right: iw * 0.8 + 200,
+      width: 200, height: 30, x: iw * 0.8, y: 100,
+      toJSON: () => ({}),
+    });
+    // getRelativeOffset는 다른 값을 반환하도록 설정
+    (dropdown as any).getRelativeOffset = () => ({ top: 100, left: iw * 0.8 + 300 });
+
     dropdown.click();
     fixture.detectChanges();
     TestBed.flushEffects();
 
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    const innerDiv = popup.querySelector("div") as HTMLElement;
-
-    Object.defineProperty(innerDiv, "clientHeight", { value: 300, configurable: true });
-
-    const popupDebug = fixture.debugElement.query(
-      (de) => de.componentInstance instanceof SdDropdownPopupControl,
-    );
-    const popupInstance = popupDebug.componentInstance as SdDropdownPopupControl;
-    popupInstance.onResize({ widthChanged: true, heightChanged: true } as any);
-
-    expect(popup.style.height).toBe("");
+    // viewport 기준: right = innerWidth - rect.right
+    const expectedRight = iw - (iw * 0.8 + 200);
+    expect(popup.style.right).toBe(`${expectedRight}px`);
   });
 });
+
+// endregion
 
 // region FIX-2 Slice 3: dropdown popup 뷰포트 제한 (DESIGN-004)
 

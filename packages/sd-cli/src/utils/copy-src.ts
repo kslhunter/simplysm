@@ -2,11 +2,11 @@ import path from "path";
 import { fsx, pathx, FsWatcher } from "@simplysm/core-node";
 
 /**
- * Copy files matching glob patterns from src/ to dist/
- * Relative paths are preserved: src/a/b.css → dist/a/b.css
+ * glob 패턴에 매칭되는 파일을 src/에서 dist/로 복사한다.
+ * 상대 경로가 유지된다: src/a/b.css → dist/a/b.css
  *
- * @param pkgDir Package root directory
- * @param patterns Array of glob patterns (relative to src/)
+ * @param pkgDir 패키지 루트 디렉토리
+ * @param patterns glob 패턴 배열 (src/ 기준 상대 경로)
  */
 export async function copySrcFiles(pkgDir: string, patterns: string[]): Promise<void> {
   const srcDir = pathx.posix(path.join(pkgDir, "src"));
@@ -26,21 +26,21 @@ export async function copySrcFiles(pkgDir: string, patterns: string[]): Promise<
 }
 
 /**
- * Watch and copy files matching glob patterns from src/ to dist/
- * Automatically reflects changes, additions, and deletions after initial copy.
+ * glob 패턴에 매칭되는 파일을 src/에서 dist/로 감시하며 복사한다.
+ * 초기 복사 후 변경, 추가, 삭제를 자동으로 반영한다.
  *
- * @param pkgDir Package root directory
- * @param patterns Array of glob patterns (relative to src/)
- * @returns FsWatcher instance (call close() on shutdown)
+ * @param pkgDir 패키지 루트 디렉토리
+ * @param patterns glob 패턴 배열 (src/ 기준 상대 경로)
+ * @returns FsWatcher 인스턴스 (종료 시 close() 호출)
  */
 export async function watchCopySrcFiles(pkgDir: string, patterns: string[]): Promise<FsWatcher> {
   const srcDir = pathx.posix(path.join(pkgDir, "src"));
   const distDir = pathx.posix(path.join(pkgDir, "dist"));
 
-  // Initial copy
+  // 초기 복사
   await copySrcFiles(pkgDir, patterns);
 
-  // Start watch
+  // 감시 시작
   const watchPaths = patterns.map((p) => pathx.posix(path.join(srcDir, p)));
   const watcher = await FsWatcher.watch(watchPaths);
 

@@ -4,8 +4,8 @@
  *
  * SdModalProvider를 import하지 않아 순환 의존을 회피한다.
  */
-export function findTopOpenModalEl(): HTMLElement | null {
-  const openModals = document.querySelectorAll<HTMLElement>("sd-modal[data-sd-open]");
+export function findTopOpenModalEl(doc: Document): HTMLElement | null {
+  const openModals = doc.querySelectorAll<HTMLElement>("sd-modal[data-sd-open]");
   if (openModals.length === 0) return null;
 
   let topModal: HTMLElement = openModals[0];

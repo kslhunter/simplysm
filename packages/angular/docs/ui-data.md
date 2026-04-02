@@ -216,18 +216,34 @@ interface ISdSheetConfig {
 
 ## `ISdSheetItemKeydownEventParam`
 
-Payload for `itemKeydown` and `cellKeydown` outputs.
+Payload for the `itemKeydown` output on `SdSheetControl`.
 
 ```typescript
 interface ISdSheetItemKeydownEventParam<T> {
   item: T;
-  key?: string;
   event: KeyboardEvent;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `item` | `T` | The data item |
-| `key` | `string \| undefined` | Column key (present on `cellKeydown`) |
+| `item` | `T` | The data item for the row |
+| `event` | `KeyboardEvent` | Original keyboard event |
+
+## `ISdSheetCellKeydownEventParam`
+
+Payload for the `cellKeydown` output on `SdSheetControl`.
+
+```typescript
+interface ISdSheetCellKeydownEventParam<T> {
+  item: T;
+  key: string;
+  event: KeyboardEvent;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `item` | `T` | The data item for the row |
+| `key` | `string` | Column key identifying which cell |
 | `event` | `KeyboardEvent` | Original keyboard event |

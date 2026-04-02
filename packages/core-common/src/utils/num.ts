@@ -10,14 +10,15 @@
  *
  * @note 소수점이 있는 문자열은 정수 부분만 반환 (예: '12.34' → 12).
  *       반올림이 필요하면 {@link parseRoundedInt} 사용.
- * @note 문자열 중간의 하이픈(-)은 유지되므로 의도치 않은 음수가 될 수 있음.
- *       예: `"A-123B"` → `-123`
+ * @note 선행 하이픈(-)만 음수 부호로 유지하고, 중간 하이픈은 제거한다.
+ *       예: `"-123"` → `-123`, `"010-1234-5678"` → `1012345678`
  */
 export function parseInt(text: unknown): number | undefined {
   if (typeof text === "number") return Math.trunc(text);
   if (typeof text !== "string") return undefined;
-  const txt = text.replace(/[^0-9.\-]/g, "").trim();
-  if (txt === "") return undefined;
+  const stripped = text.replace(/[^0-9.\-]/g, "");
+  const txt = (stripped.startsWith("-") ? "-" : "") + stripped.replace(/-/g, "");
+  if (txt === "" || txt === "-") return undefined;
   const result = Number.parseInt(txt, 10);
   if (Number.isNaN(result)) return undefined;
   return result;
@@ -38,8 +39,9 @@ export function parseRoundedInt(text: unknown): number | undefined {
 export function parseFloat(text: unknown): number | undefined {
   if (typeof text === "number") return text;
   if (typeof text !== "string") return undefined;
-  const txt = text.replace(/[^0-9.\-]/g, "").trim();
-  if (txt === "") return undefined;
+  const stripped = text.replace(/[^0-9.\-]/g, "");
+  const txt = (stripped.startsWith("-") ? "-" : "") + stripped.replace(/-/g, "");
+  if (txt === "" || txt === "-") return undefined;
   const result = Number.parseFloat(txt);
   if (Number.isNaN(result)) return undefined;
   return result;

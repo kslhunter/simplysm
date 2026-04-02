@@ -25,8 +25,8 @@ vi.mock("@simplysm/core-node", () => ({
     glob: mockFsxGlob,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -44,7 +44,7 @@ vi.mock("@simplysm/core-common", () => ({
 
 // cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
-const mockCpxExec = vi.fn((...args: unknown[]) => {
+const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
   return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 });
@@ -82,7 +82,9 @@ vi.mock("consola", () => ({
       warn: mockLoggerWarn,
       success: mockLoggerSuccess,
     }),
+    level: 0,
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -178,7 +180,7 @@ describe("Capacitor 아이콘 처리", () => {
 
       // capacitor-assets generate가 실행되었는지 확인
       const assetsCmd = execaCalls.find(
-        (c) => c.command === "npx" && c.args.includes("capacitor-assets"),
+        (c) => c.command === "pnpm" && c.args.includes("capacitor-assets"),
       );
       expect(assetsCmd).toBeDefined();
 
@@ -202,7 +204,7 @@ describe("Capacitor 아이콘 처리", () => {
 
       // capacitor-assets generate가 실행되지 않아야 한다
       const assetsCmd = execaCalls.find(
-        (c) => c.command === "npx" && c.args.includes("capacitor-assets"),
+        (c) => c.command === "pnpm" && c.args.includes("capacitor-assets"),
       );
       expect(assetsCmd).toBeUndefined();
     });

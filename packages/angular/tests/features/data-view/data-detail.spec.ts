@@ -221,6 +221,25 @@ describe("AbsSdDataDetail", () => {
       expect(mockToast.success).toHaveBeenCalledWith("저장되었습니다.");
     });
 
+    it("dataInfo가 undefined이면 메시지 없이 조기 리턴한다", async () => {
+      const fixture = TestBed.createComponent(DDTestHost);
+      const host = fixture.componentInstance;
+      // canUse=false로 자동 로드를 방지하여 dataInfo가 undefined인 상태 유지
+      host.canUse.set(false);
+      host.submitFn.mockResolvedValue(true);
+
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await new Promise<void>((r) => setTimeout(r, 0));
+
+      expect(host.dataInfo()).toBeUndefined();
+
+      await host.doSubmit();
+
+      expect(host.submitFn).not.toHaveBeenCalled();
+      expect(mockToast.info).not.toHaveBeenCalled();
+    });
+
     it("변경사항이 없으면 info 토스트가 표시되고 submit이 호출되지 않는다", async () => {
       const { host } = await createFixtureAndInit({ id: 1, name: "Original" });
 

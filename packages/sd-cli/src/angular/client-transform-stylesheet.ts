@@ -52,7 +52,7 @@ export function createClientTransformStylesheet(
           return "/* SCSS compilation error */";
         }
       }
-      // .css → readResource가 처리
+      // .css → externalStylesheets의 SHA256 ID 매핑으로 처리
       return null;
     }
 

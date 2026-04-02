@@ -26,8 +26,8 @@ vi.mock("@simplysm/core-node", () => ({
     copy: mockFsxCopy,
   },
   cpx: {
-    exec: mockCpxExec,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mockCpxSpawn,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
   pathx: {
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
@@ -43,7 +43,7 @@ vi.mock("@simplysm/core-common", () => ({
 }));
 
 const execaCalls: { command: string; args: string[] }[] = [];
-const mockCpxExec = vi.fn((...args: unknown[]) => {
+const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
   return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 });
@@ -75,7 +75,9 @@ vi.mock("fs/promises", () => ({
 vi.mock("consola", () => ({
   consola: {
     withTag: () => ({ debug: vi.fn(), warn: vi.fn() }),
+    level: 0,
   },
+  LogLevels: { debug: 4 },
 }));
 
 //#endregion

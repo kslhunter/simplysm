@@ -12,7 +12,11 @@ export class SdLocalStorageProvider<T> {
   get<K extends keyof T & string>(key: K): T[K] | undefined {
     const json = localStorage.getItem(`${this._sdNgConf.clientName}.${key}`);
     if (json == null) return undefined;
-    return JSON.parse(json);
+    try {
+      return JSON.parse(json);
+    } catch {
+      return undefined;
+    }
   }
 
   remove(key: keyof T & string) {

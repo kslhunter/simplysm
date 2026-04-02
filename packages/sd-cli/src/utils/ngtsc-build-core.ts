@@ -29,9 +29,9 @@ export interface NgtscBuildInfo {
   cwd: string;
   pkgDir: string;
   output: BuildOutput;
-  /** Typecheck environment. When set, adjusts compilerOptions via getCompilerOptionsForEnv(). */
+  /** 타입체크 환경. 설정 시 getCompilerOptionsForEnv()로 compilerOptions를 조정한다. */
   env?: TypecheckEnv;
-  /** replaceDeps configuration from sd.config.ts */
+  /** sd.config.ts의 replaceDeps 설정 */
   replaceDeps?: Record<string, string>;
 }
 
@@ -40,7 +40,7 @@ export interface NgtscBuildResult {
   lint?: LintWithProgramResult;
 }
 
-/** runNgtscBuild 내부 반환 타입. program은 워커 내에서 lint 용도로만 사용된다. */
+/** runNgtscBuild 내부 반환 타입. program은 워커 내에서 lint 용도로만 사용한다. */
 export interface NgtscBuildInternalResult extends NgtscBuildResult {
   program?: ts.Program;
 }
@@ -83,7 +83,7 @@ export function buildCompilerOptions(
     options.emitDeclarationOnly = true;
     options.declarationDir = path.join(pkgDir, "dist");
   } else {
-    // both false — typecheck only
+    // 둘 다 false — 타입체크만 수행
     options.noEmit = true;
     options.declaration = false;
     options.declarationMap = false;
@@ -199,12 +199,12 @@ export function writeEmitResults(
     if (rewrite == null) continue;
     let [newPath, newContent] = rewrite;
 
-    // Process side-effect SCSS imports in .js files
+    // .js 파일 내 side-effect SCSS import 처리
     if (scss != null && newPath.endsWith(".js")) {
       const { text, scssImports } = rewriteScssImports(newContent);
       newContent = text;
 
-      // Clear stale registry entries for this source file before registering new ones
+      // 새 항목 등록 전에 이 소스 파일의 기존 레지스트리 항목 제거
       if (scss.registry != null && sourceFileName != null) {
         for (const [key, entry] of scss.registry) {
           if (entry.sourceFileName === sourceFileName) {
@@ -222,7 +222,7 @@ export function writeEmitResults(
           const cssFileName = scssImport.replace(/\.scss$/, ".css");
           const cssAbsPath = path.resolve(outputDir, cssFileName);
 
-          // Register in registry if provided (keyed by scssAbsPath for uniqueness)
+          // 레지스트리가 제공된 경우 등록 (scssAbsPath를 키로 사용하여 중복 방지)
           if (scss.registry != null) {
             scss.registry.set(scssAbsPath, { scssAbsPath, cssAbsPath, sourceFileName });
           }
@@ -248,9 +248,9 @@ export function writeEmitResults(
 //#region Side-effect SCSS
 
 /**
- * Compile all side-effect SCSS entries in the registry to CSS.
- * Follows the same pattern as compileGlobalScss — always recompiles all entries.
- * On error, adds to scssErrors and preserves existing CSS file.
+ * 레지스트리의 모든 side-effect SCSS 항목을 CSS로 컴파일한다.
+ * compileGlobalScss와 동일한 패턴 — 항상 모든 항목을 재컴파일한다.
+ * 에러 발생 시 scssErrors에 추가하고 기존 CSS 파일을 보존한다.
  */
 export function compileSideEffectScss(
   registry: ReadonlyMap<string, SideEffectScssEntry>,
@@ -300,8 +300,8 @@ export function compileGlobalScss(
 //#endregion
 
 /**
- * Run a full Angular library build using AngularCompiler.
- * (parse, initialize, diagnostics, emit, global SCSS)
+ * AngularCompiler를 사용한 전체 Angular 라이브러리 빌드를 수행한다.
+ * (파싱, 초기화, 진단, emit, global SCSS)
  */
 export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInternalResult> {
   try {
@@ -328,7 +328,7 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
     const scssDependencies = new Map<string, Set<string>>();
     const loadPaths = buildScssLoadPaths(info);
 
-    // Create AngularCompiler
+    // AngularCompiler 생성
     logger.debug(`[${info.name}] AngularCompiler 생성 중...`);
     const compiler = new AngularCompiler({
       rootNames: sourceFiles,
@@ -337,12 +337,12 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
       transformStylesheet: createLibraryTransformStylesheet(loadPaths, scssErrors, scssDependencies),
     });
 
-    // Initialize (creates program, AOT analysis, finds affected files)
+    // 초기화 (프로그램 생성, AOT 분석, affected 파일 탐색)
     logger.debug(`[${info.name}] AngularCompiler 초기화 중...`);
     await compiler.initialize();
     logger.debug(`[${info.name}] AngularCompiler 초기화 완료`);
 
-    // Collect diagnostics — workspace scope (no package-level filtering)
+    // 진단 수집 — workspace 스코프 (패키지 단위 필터링 없음)
     const allDiagnostics = [...compiler.collectDiagnostics()].filter(
       (d) => isWorkspaceDiagnostic(d, info.cwd),
     );
@@ -357,7 +357,7 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
       .filter((d) => d.category === ts.DiagnosticCategory.Error)
       .map(formatDiagnosticError);
 
-    // Emit via AngularCompiler + output-path-rewriting
+    // AngularCompiler를 통한 emit + output-path-rewriting
     const emitResults = compiler.emitAffectedFiles({
       sourceFilter: (fileName: string) =>
         pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
@@ -368,7 +368,7 @@ export async function runNgtscBuild(info: NgtscBuildInfo): Promise<NgtscBuildInt
       scssDependencies,
     });
 
-    // Global SCSS compilation
+    // Global SCSS 컴파일
     const globalScssErrors = compileGlobalScss(info.pkgDir, loadPaths);
 
     const allErrors = [...errors, ...scssErrors, ...globalScssErrors];

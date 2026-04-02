@@ -21,17 +21,17 @@ import { Electron } from "../electron/electron";
 //#region Types
 
 /**
- * Build Orchestrator options
+ * BuildOrchestrator 옵션
  */
 export interface BuildOrchestratorOptions {
-  /** Package filter for build (empty array includes all packages) */
+  /** 빌드 대상 패키지 필터 (빈 배열이면 전체) */
   targets: string[];
-  /** Additional options to pass to sd.config.ts */
+  /** sd.config.ts에 전달할 추가 옵션 */
   options: string[];
 }
 
 /**
- * Build result
+ * 빌드 결과
  */
 interface BuildStepResult {
   name: string;
@@ -44,14 +44,14 @@ interface BuildStepResult {
 }
 
 /**
- * Package classification result
+ * 패키지 분류 결과
  */
 interface ClassifiedPackages {
-  /** node/browser/neutral target (JS + dts) */
+  /** node/browser/neutral 대상 (JS + DTS) */
   buildPackages: Array<{ name: string; config: SdBuildPackageConfig }>;
-  /** server target (JS build, no dts) */
+  /** server 대상 (JS 빌드, DTS 없음) */
   serverPackages: Array<{ name: string; config: SdServerPackageConfig }>;
-  /** client target (Vite production build, no dts) */
+  /** client 대상 (Vite 프로덕션 빌드, DTS 없음) */
   clientPackages: Array<{ name: string; config: SdClientPackageConfig }>;
 }
 
@@ -60,11 +60,11 @@ interface ClassifiedPackages {
 //#region Utilities
 
 /**
- * Classify packages by target
- * - node/browser/neutral: buildPackages (JS + dts)
- * - server: serverPackages (JS build, no dts)
- * - client: clientPackages (Vite production build, no dts)
- * - scripts: excluded
+ * 패키지를 target별로 분류
+ * - node/browser/neutral: buildPackages (JS + DTS)
+ * - server: serverPackages (JS 빌드, DTS 없음)
+ * - client: clientPackages (Vite 프로덕션 빌드, DTS 없음)
+ * - scripts: 제외
  */
 export function classifyPackages(
   packages: Record<
@@ -97,7 +97,7 @@ export function classifyPackages(
 }
 
 /**
- * Delete dist folders
+ * dist 폴더 삭제
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
   await Promise.all(packageNames.map((name) => fsx.rm(pathx.posixResolve(cwd, "packages", name, "dist"))));
@@ -108,14 +108,14 @@ async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<vo
 //#region BuildOrchestrator
 
 /**
- * Orchestrator for coordinating production builds
+ * 프로덕션 빌드를 조율하는 Orchestrator
  *
- * Classifies packages based on sd.config.ts and executes builds.
- * - Clean dist folders (clean build)
- * - Run lint + build concurrently
- * - node/browser/neutral targets: esbuild JS build + dts generation
- * - server targets: esbuild JS build
- * - client targets: Vite production build
+ * sd.config.ts 기반으로 패키지를 분류하고 빌드를 실행한다.
+ * - dist 폴더 정리 (클린 빌드)
+ * - lint + 빌드 동시 실행
+ * - 라이브러리 패키지: TscEngine/NgtscEngine으로 JS + DTS 빌드
+ * - 서버 패키지: BuildEngine으로 JS 빌드
+ * - 클라이언트 패키지: ViteEngine으로 Vite 프로덕션 빌드
  */
 export class BuildOrchestrator {
   private readonly _cwd: string;
@@ -183,12 +183,12 @@ export class BuildOrchestrator {
   }
 
   /**
-   * Execute build
-   * - Clean
-   * - Lint + Build (concurrent)
-   * - Output results
+   * 빌드 실행
+   * - 클린
+   * - lint + 빌드 (동시 실행)
+   * - 결과 출력
    *
-   * @returns whether errors occurred (true: errors present)
+   * @returns 에러 발생 여부 (true: 에러 있음)
    */
   async start(): Promise<boolean> {
     if (this._allPackageNames.length === 0) {
@@ -198,15 +198,15 @@ export class BuildOrchestrator {
     const classified = this._classified!;
     const baseEnv = this._baseEnv!;
 
-    // Collect results
+    // 결과 수집
     const results: BuildStepResult[] = [];
-    // Track errors (wrapped in object to allow mutation tracking in callbacks)
+    // 에러 추적 (콜백에서 변경 추적을 위해 객체로 래핑)
     const state = { hasError: false };
 
-    // File cache (for diagnostics output)
+    // 파일 캐시 (진단 출력용)
     const fileCache = new Map<string, string>();
 
-    // formatHost (for diagnostics output)
+    // formatHost (진단 출력용)
     const formatHost: ts.FormatDiagnosticsHost = {
       getCanonicalFileName: (f) => f,
       getCurrentDirectory: () => this._cwd,
@@ -221,10 +221,10 @@ export class BuildOrchestrator {
     // Phase 2: 빌드
     const concurrency = getMaxConcurrency();
 
-    // Create list of build tasks
+    // 빌드 태스크 목록 생성
     const buildTasks: Array<() => Promise<void>> = [];
 
-    // buildPackages: JS build + dts generation via BuildEngine
+    // 라이브러리 패키지: BuildEngine으로 JS + DTS 빌드
     for (const { name, config } of classified.buildPackages) {
       const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
@@ -276,7 +276,7 @@ export class BuildOrchestrator {
       });
     }
 
-    // serverPackages: JS build + typecheck via BuildEngine
+    // 서버 패키지: BuildEngine으로 JS 빌드 + 타입체크
     for (const { name, config } of classified.serverPackages) {
       const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
@@ -322,7 +322,7 @@ export class BuildOrchestrator {
       });
     }
 
-    // clientPackages: Vite production build via ViteEngine (no dts)
+    // 클라이언트 패키지: ViteEngine으로 Vite 프로덕션 빌드 (DTS 없음)
     for (const { name, config } of classified.clientPackages) {
       const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
 
@@ -471,11 +471,11 @@ export class BuildOrchestrator {
   }
 
   /**
-   * Shutdown Orchestrator (no resources to clean up currently)
+   * Orchestrator 종료 (현재 정리할 리소스 없음)
    */
   async shutdown(): Promise<void> {
-    // Production builds are one-time operations, so there are no resources to clean up at shutdown
-    // Workers are cleaned up with terminate() within each build task
+    // 프로덕션 빌드는 일회성 작업이므로 종료 시 정리할 리소스가 없음
+    // Worker는 각 빌드 태스크 내에서 terminate()로 정리됨
     await Promise.resolve();
   }
 }

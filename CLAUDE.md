@@ -4,7 +4,7 @@ pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 �
 
 ## 기술 스택
 
-Angular 21, TypeScript 5.9, Fastify 5.8, Vitest, esbuild, ESLint, Prettier
+Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7.3, Vitest, esbuild, ESLint, Prettier
 
 ## 명령어
 
@@ -49,7 +49,7 @@ UI:       angular (Angular 21)
 ORM:      orm-node / orm-common
 코어:     core-common (중립) / core-browser / core-node
 유틸:     excel, storage (FTP/SFTP)
-모바일:   capacitor-plugin-* (4개: auto-update, broadcast, file-system, usb-storage)
+모바일:   capacitor-plugin-* (4개: auto-update, intent, file-system, usb-storage)
 도구:     sd-cli (빌드/체크 CLI), lint (ESLint 공유 설정), sd-claude (Claude Code 에셋 동기화)
 ```
 
@@ -59,6 +59,9 @@ ORM:      orm-node / orm-common
 
 - `tests/orm` — DB 연결, DbContext 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
 - `tests/service` — 서비스 클라이언트-서버 통신 테스트.
+- `tests/sd-cli-client` — sd-cli 클라이언트 빌드 통합 테스트.
+- `tests/sd-cli-server` — sd-cli 서버 빌드 통합 테스트.
+- `tests/vite-css-hmr` — Vite CSS HMR 통합 테스트.
 
 ## 코딩 규칙
 
@@ -70,8 +73,17 @@ ORM:      orm-node / orm-common
 
 ### 브라우저 호환성 (Chrome 61+)
 
-sd-cli의 `browserSupport.browserslist` 설정은 esbuild target으로 변환되어 **문법(syntax)만 다운레벨 컴파일**한다. 최신 문법(`?.`, `??`, `&&=` 등)은 esbuild가 변환하므로 자유롭게 사용 가능하다.
+- sd-cli의 `browserSupport.browserslist` 설정은 esbuild target으로 변환되어 **문법(syntax)만 다운레벨 컴파일**한다.
+  최신 문법(`?.`, `??`, `&&=` 등)은 esbuild가 변환하므로 자유롭게 사용 가능하다.
 
-**런타임 API는 esbuild가 폴리필하지 않는다.** 프로토타입 메서드, 전역 함수, 내장 객체의 신규 메서드 등 런타임 API를 사용할 때는 반드시 **Chrome 61에 해당 API가 존재하는지 확인**하고, 존재하지 않으면 사용하지 않는다. 단, 소비 프로젝트에서 `polyfills.ts`로 폴리필 가능한 API(예: `Array.prototype.flat`, `Object.fromEntries` 등 표준 프로토타입 메서드)는 예외로 사용 가능하다. 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
+- **런타임 API는 esbuild가 폴리필하지 않는다.**
+  - 프로토타입 메서드, 전역 함수, 내장 객체의 신규 메서드 등 런타임 API를 사용할 때는 반드시 **Chrome 61에 해당 API가 존재하는지 확인**하고, 존재하지 않으면 사용하지 않는다.
+  - 단, 소비 프로젝트에서 `polyfills.ts`로 폴리필 가능한 API(예: `Array.prototype.flat`, `Object.fromEntries` 등 표준 프로토타입 메서드)는 예외로 사용 가능하다.
+  - 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
 
 **판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).
+
+
+## 자주하는 실수
+
+-  `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용

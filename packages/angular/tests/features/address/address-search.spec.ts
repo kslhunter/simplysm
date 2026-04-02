@@ -28,6 +28,34 @@ describe("SdAddressSearchModal", () => {
   }
 
   describe("스크립트 로딩", () => {
+    it("스크립트 로드 실패 시 명확한 에러 메시지와 함께 reject한다", async () => {
+      const origAppendChild = document.head.appendChild.bind(document.head);
+      const appendSpy = vi
+        .spyOn(document.head, "appendChild")
+        .mockImplementation((node: Node) => {
+          if (node instanceof HTMLScriptElement && node.id === "daum_address") {
+            void Promise.resolve().then(() => {
+              (node as any).onerror?.(new Event("error"));
+            });
+            return node as any;
+          }
+          return origAppendChild(node);
+        });
+
+      await TestBed.configureTestingModule({
+        imports: [SdAddressSearchModal],
+      }).compileComponents();
+
+      // detectChanges 생략 — ngOnInit의 void initAsync() unhandled rejection 방지
+      const fixture = TestBed.createComponent(SdAddressSearchModal);
+
+      await expect((fixture.componentInstance as any).initAsync()).rejects.toThrow(
+        "주소 검색 스크립트를 불러올 수 없습니다.",
+      );
+
+      appendSpy.mockRestore();
+    });
+
     it("최초 실행 시 daum_address 스크립트를 head에 삽입한다", async () => {
       await createAndInit();
 

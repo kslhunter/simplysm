@@ -4,6 +4,8 @@ import { ApplicationRef, ErrorHandler } from "@angular/core";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { IMAGE_CONFIG } from "@angular/common";
 import { SwUpdate } from "@angular/service-worker";
+import { Router, NavigationStart, NavigationEnd } from "@angular/router";
+import { Subject } from "rxjs";
 import { provideSdAngular } from "../../src/core/provideSdAngular";
 import { SdAngularConfigProvider } from "../../src/core/providers/sd-angular-config.provider";
 import { SdGlobalErrorHandlerPlugin } from "../../src/core/plugins/sd-global-error-handler.plugin";
@@ -15,6 +17,7 @@ import { SdOptionEventPlugin } from "../../src/core/plugins/events/sd-option-eve
 import { SdIntersectionEventPlugin } from "../../src/core/plugins/events/sd-intersection-event.plugin";
 import { SdThemeProvider } from "../../src/core/providers/sd-theme-provider";
 import { SdLocalStorageProvider } from "../../src/core/providers/sd-local-storage.provider";
+import { SdBusyProvider } from "../../src/ui/overlay/busy/sd-busy.provider";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../src/core/commons";
 
 describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
@@ -326,6 +329,88 @@ describe("FIX-1 Slice 3: provideSdAngular 수정", () => {
       const plugins = TestBed.inject(EVENT_MANAGER_PLUGINS);
       const pluginClasses = plugins.map((p) => p.constructor);
       expect(pluginClasses).toContain(SdIntersectionEventPlugin);
+    });
+  });
+});
+
+describe("Feature 4.3: 테마 write 방지", () => {
+  afterEach(() => {
+    localStorage.clear();
+    document.body.className = "";
+    document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
+  });
+
+  describe("Rule: 테마 effect는 값 변경 시에만 localStorage에 write한다", () => {
+    it("초기 실행 시 동일 값이면 localStorage에 다시 쓰지 않는다", () => {
+      window.localStorage.setItem("test-app.sd-theme-dark", JSON.stringify(true));
+
+      TestBed.configureTestingModule({
+        providers: [provideSdAngular({ clientName: "test-app" })],
+      });
+
+      const sdLocalStorage = TestBed.inject(SdLocalStorageProvider);
+      const setSpy = vi.spyOn(sdLocalStorage, "set");
+
+      TestBed.inject(ApplicationRef);
+      TestBed.flushEffects();
+
+      const themeSetCalls = setSpy.mock.calls.filter(
+        (call) => call[0] === "sd-theme-dark",
+      );
+      expect(themeSetCalls).toHaveLength(0);
+
+      setSpy.mockRestore();
+    });
+  });
+});
+
+describe("Feature 2.3 Slice 2: 네비게이션 busy 카운터 수정", () => {
+  let routerEvents$: Subject<any>;
+  let sdBusy: SdBusyProvider;
+
+  beforeEach(() => {
+    routerEvents$ = new Subject();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSdAngular({ clientName: "test-app" }),
+        { provide: Router, useValue: { events: routerEvents$.asObservable() } },
+      ],
+    });
+    TestBed.inject(ApplicationRef);
+    sdBusy = TestBed.inject(SdBusyProvider);
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    document.body.className = "";
+    document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
+  });
+
+  describe("Rule: 네비게이션 busy 카운터는 음수가 되지 않는다", () => {
+    it("첫 이벤트가 NavigationEnd인 경우 globalBusyCount가 0을 유지한다", () => {
+      routerEvents$.next(new NavigationEnd(1, "/", "/"));
+      TestBed.flushEffects();
+
+      expect(sdBusy.globalBusyCount()).toBe(0);
+    });
+
+    it("정상 네비게이션 흐름: NavigationStart → NavigationEnd", () => {
+      routerEvents$.next(new NavigationStart(1, "/"));
+      TestBed.flushEffects();
+      expect(sdBusy.globalBusyCount()).toBe(1);
+
+      routerEvents$.next(new NavigationEnd(1, "/", "/"));
+      TestBed.flushEffects();
+      expect(sdBusy.globalBusyCount()).toBe(0);
+    });
+
+    it("NavigationEnd 연속 2회 발생해도 globalBusyCount가 0을 유지한다", () => {
+      routerEvents$.next(new NavigationEnd(1, "/", "/"));
+      TestBed.flushEffects();
+      routerEvents$.next(new NavigationEnd(2, "/a", "/a"));
+      TestBed.flushEffects();
+
+      expect(sdBusy.globalBusyCount()).toBe(0);
     });
   });
 });

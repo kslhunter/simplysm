@@ -25,48 +25,48 @@ import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 //#region Types
 
 /**
- * Server build information (one-time build)
+ * 서버 빌드 정보 (일회성 빌드)
  */
 export interface ServerBuildInfo {
   name: string;
   cwd: string;
   pkgDir: string;
   output: BuildOutput;
-  /** Environment variables to substitute during build */
+  /** 빌드 시 치환할 환경변수 */
   env?: Record<string, string>;
-  /** Runtime configuration (recorded in dist/.config.json) */
+  /** 런타임 설정 (dist/.config.json에 기록) */
   configs?: Record<string, unknown>;
-  /** External modules manually specified in sd.config.ts */
+  /** sd.config.ts에서 수동 지정한 외부 모듈 */
   externals?: string[];
-  /** PM2 configuration (generates dist/pm2.config.cjs when specified) */
+  /** PM2 설정 (지정 시 dist/pm2.config.cjs 생성) */
   pm2?: {
     name?: string;
     ignoreWatchPaths?: string[];
   };
-  /** Package manager to use (affects mise.toml or volta settings generation) */
+  /** 사용할 패키지 매니저 (mise.toml 또는 volta 설정 생성에 영향) */
   packageManager?: "volta" | "mise";
 }
 
 /**
- * Server watch information
+ * 서버 watch 정보
  */
 export interface ServerWatchInfo {
   name: string;
   cwd: string;
   pkgDir: string;
   output: BuildOutput;
-  /** Environment variables to substitute during build */
+  /** 빌드 시 치환할 환경변수 */
   env?: Record<string, string>;
-  /** Runtime configuration (recorded in dist/.config.json) */
+  /** 런타임 설정 (dist/.config.json에 기록) */
   configs?: Record<string, unknown>;
-  /** External modules manually specified in sd.config.ts */
+  /** sd.config.ts에서 수동 지정한 외부 모듈 */
   externals?: string[];
-  /** replaceDeps configuration from sd.config.ts */
+  /** sd.config.ts의 replaceDeps 설정 */
   replaceDeps?: Record<string, string>;
 }
 
 /**
- * Server build result (aligned with LibraryBuildResult + mainJsPath)
+ * 서버 빌드 결과 (LibraryBuildResult + mainJsPath 형태)
  */
 export interface ServerBuildResult {
   build: { success: boolean; errors?: string[]; warnings?: string[]; diagnostics: SerializedDiagnostic[] };
@@ -75,7 +75,7 @@ export interface ServerBuildResult {
 }
 
 /**
- * Combined build event for watch mode
+ * watch 모드용 통합 빌드 이벤트
  */
 export interface ServerCombinedBuildEvent {
   build: { success: boolean; errors?: string[]; warnings?: string[] };
@@ -84,7 +84,7 @@ export interface ServerCombinedBuildEvent {
 }
 
 /**
- * Worker event types
+ * 워커 이벤트 타입
  */
 export interface ServerBuildWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
@@ -100,16 +100,16 @@ applyDebugLevel();
 
 const logger = consola.withTag("sd:cli:server-build:worker");
 
-/** esbuild build context (to be cleaned up) */
+/** esbuild 빌드 컨텍스트 (정리 대상) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
-/** Last build metafile (for filtering changed files on rebuild) */
+/** 마지막 빌드 metafile (리빌드 시 변경 파일 필터링용) */
 let lastMetafile: esbuild.Metafile | undefined;
 
-/** Public files watcher (to be cleaned up) */
+/** public 파일 감시자 (정리 대상) */
 let publicWatcher: FsWatcher | undefined;
 
-/** Source + scope packages watcher (to be cleaned up) */
+/** 소스 + 스코프 패키지 감시자 (정리 대상) */
 let srcWatcher: FsWatcher | undefined;
 
 async function cleanup(): Promise<void> {
@@ -135,8 +135,8 @@ async function cleanup(): Promise<void> {
 }
 
 /**
- * Collect external modules from three sources and merge them.
- * Uses single-pass dependency tree traversal via collectAllDependencyExternals.
+ * 세 가지 소스에서 외부 모듈을 수집하고 병합한다.
+ * collectAllDependencyExternals를 통한 단일 패스 의존성 트리 순회를 사용한다.
  */
 function collectAllExternals(pkgDir: string, manualExternals?: string[]): string[] {
   logger.debug("의존성 트리 스캔 중...");
@@ -147,9 +147,9 @@ function collectAllExternals(pkgDir: string, manualExternals?: string[]): string
 }
 
 /**
- * Parse pnpm-lock.yaml packages section to build a name→version map.
- * Lockfile v9 format: `packages:` section with `'name@version':` keys.
- * Uses simple line-based parsing to avoid YAML parser dependency.
+ * pnpm-lock.yaml의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
+ * Lockfile v9 형식: `packages:` 섹션의 `'name@version':` 키를 파싱한다.
+ * YAML 파서 의존성을 피하기 위해 단순 라인 기반 파싱을 사용한다.
  */
 function parseLockfileVersions(cwd: string): Map<string, string> {
   const lockfilePath = path.join(cwd, "pnpm-lock.yaml");
@@ -160,7 +160,7 @@ function parseLockfileVersions(cwd: string): Map<string, string> {
   const content = fs.readFileSync(lockfilePath, "utf-8");
   const map = new Map<string, string>();
 
-  // Find "packages:" section and parse entries like "'@scope/name@1.2.3':" or "'name@1.2.3':"
+  // "packages:" 섹션을 찾고 "'@scope/name@1.2.3':" 또는 "'name@1.2.3':" 형태의 항목을 파싱
   const lines = content.split("\n");
   let inPackages = false;
   for (const line of lines) {
@@ -169,16 +169,16 @@ function parseLockfileVersions(cwd: string): Map<string, string> {
       continue;
     }
     if (inPackages && line.length > 0 && !line.startsWith(" ") && !line.startsWith("'")) {
-      break; // Next top-level section
+      break; // 다음 최상위 섹션
     }
     if (!inPackages) continue;
 
-    // Match "'@scope/name@version':" or "'name@version':"
+    // "'@scope/name@version':" 또는 "'name@version':" 매칭
     const match = /^\s{2}'(.+)@(\d[^']*)':\s*$/.exec(line);
     if (match != null) {
       const name = match[1];
       const version = match[2];
-      // Keep first occurrence (lockfile lists each version once)
+      // 첫 번째 항목 유지 (lockfile은 각 버전을 한 번만 기록)
       if (!map.has(name)) {
         map.set(name, version);
       }
@@ -189,8 +189,8 @@ function parseLockfileVersions(cwd: string): Map<string, string> {
 }
 
 /**
- * Resolve locked versions of all given packages from pnpm-lock.yaml.
- * Throws if any package is not found in the lockfile.
+ * pnpm-lock.yaml에서 주어진 모든 패키지의 잠긴 버전을 확인한다.
+ * lockfile에서 패키지를 찾을 수 없으면 에러를 던진다.
  */
 function resolveLockedVersions(cwd: string, pkgNames: string[]): Record<string, string> {
   const versionMap = parseLockfileVersions(cwd);
@@ -209,7 +209,7 @@ function resolveLockedVersions(cwd: string, pkgNames: string[]): Record<string, 
 }
 
 /**
- * Generate files for production deployment
+ * 프로덕션 배포용 파일을 생성한다
  */
 function generateProductionFiles(
   info: ServerBuildInfo,
@@ -228,7 +228,7 @@ function generateProductionFiles(
     distPkgJson["dependencies"] = resolveLockedVersions(info.cwd, externals);
   }
   if (info.packageManager === "volta") {
-    const nodeVersion = cpx.execSync("node", ["-v"]).stdout.trim();
+    const nodeVersion = cpx.spawnSync("node", ["-v"]).stdout.trim();
     distPkgJson["volta"] = { node: nodeVersion };
   }
   fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
@@ -319,21 +319,21 @@ registerCleanupHandlers(cleanup, logger);
 //#region Worker
 
 /**
- * One-time build (production)
+ * 일회성 빌드 (프로덕션)
  */
 async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
   const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
   logger.debug(`[${info.name}] server worker build 시작 (js: ${info.output.js}, dts: ${info.output.dts})`);
 
   try {
-    // Parse tsconfig
+    // tsconfig 파싱
     const parsedConfig = parseTsconfig(info.pkgDir);
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
-    // Collect externals
+    // 외부 모듈 수집
     const external = collectAllExternals(info.pkgDir, info.externals);
 
-    // esbuild (async) ‖ tsc (sync) in parallel
+    // esbuild (비동기) ‖ tsc (동기) 병렬 실행
     const esbuildOptions = createServerEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,
@@ -360,7 +360,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
         }))
       : null;
 
-    // tsc typecheck (always runs, emit controlled by output.dts)
+    // tsc 타입체크 (항상 실행, emit은 output.dts로 제어)
     const tscResult = runTscPackageBuild({
       pkgDir: info.pkgDir,
       cwd: info.cwd,
@@ -374,7 +374,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       ? await esbuildPromise
       : { success: true, errors: undefined, warnings: undefined };
 
-    // Run lint if enabled and program is available
+    // lint 실행 (활성화 + program 사용 가능 시)
     let lint: LintWithProgramResult | undefined;
     if (info.output.lint === true && tscResult.program != null) {
       logger.debug(`[${info.name}] lint 시작`);
@@ -386,7 +386,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       logger.debug(`[${info.name}] lint 완료`);
     }
 
-    // Generate production artifacts only when JS output is requested
+    // JS 출력이 요청된 경우에만 프로덕션 아티팩트 생성
     if (info.output.js) {
       const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
       fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
@@ -424,12 +424,12 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 
 const guardStartWatch = createOnceGuard("startWatch");
 
-// Mutable state for watch mode
+// watch 모드용 가변 상태
 let watchInfo: ServerWatchInfo | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
 
 /**
- * Rebuild esbuild + tsc in parallel (watch mode)
+ * esbuild + tsc 병렬 리빌드 (watch 모드)
  */
 async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
   const info = watchInfo!;
@@ -437,11 +437,11 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
   const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
   const parsedConfig = parseTsconfig(info.pkgDir);
 
-  // esbuild rebuild (async)
+  // esbuild 리빌드 (비동기)
   let esbuildPromise: Promise<{ success: boolean; errors?: string[]; warnings?: string[] }> | null = null;
   if (info.output.js && esbuildContext != null) {
     esbuildPromise = esbuildContext.rebuild().then(async (result) => {
-      // Save metafile
+      // metafile 저장
       if (result.metafile != null) {
         lastMetafile = result.metafile;
       }
@@ -459,7 +459,7 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     });
   }
 
-  // tsc rebuild (sync, incremental)
+  // tsc 리빌드 (동기, 증분)
   const tscResult = runTscPackageBuild({
     pkgDir: info.pkgDir,
     cwd: info.cwd,
@@ -469,7 +469,7 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     includeTests: info.output.includeTests,
   });
 
-  // Run lint if enabled and program is available
+  // lint 실행 (활성화 + program 사용 가능 시)
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true && tscResult.program != null) {
     logger.debug(`[${info.name}] lint 시작`);
@@ -504,7 +504,7 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
 }
 
 /**
- * Create esbuild context for watch mode
+ * watch 모드용 esbuild 컨텍스트를 생성한다
  */
 async function createEsbuildWatchContext(
   info: ServerWatchInfo,
@@ -527,7 +527,7 @@ async function createEsbuildWatchContext(
 }
 
 /**
- * Start watch mode
+ * watch 모드 시작
  */
 async function startWatch(info: ServerWatchInfo): Promise<void> {
   guardStartWatch();
@@ -538,33 +538,33 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     const parsedConfig = parseTsconfig(info.pkgDir);
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
-    // Collect externals (cached for watch mode)
+    // 외부 모듈 수집 (watch 모드용 캐시)
     let cachedExternal = collectAllExternals(info.pkgDir, info.externals);
 
-    // Create esbuild context (if JS output needed)
+    // esbuild 컨텍스트 생성 (JS 출력 필요 시)
     if (info.output.js) {
       esbuildContext = await createEsbuildWatchContext(info, entryPoints, cachedExternal);
     }
 
-    // Initial build: esbuild + tsc parallel
+    // 초기 빌드: esbuild + tsc 병렬
     sender.send("buildStart", {});
     const initialResult = await rebuildAll();
 
-    // Write .config.json on first build
+    // 첫 빌드 시 .config.json 작성
     const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
     fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
 
     sender.send("build", initialResult);
 
-    // Watch public/ + public-dev/
+    // public/ + public-dev/ 감시
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
-    // Collect watch paths based on dependencies
+    // 의존성 기반 감시 경로 수집
     const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
 
     const watchPaths: string[] = [];
 
-    // Server package itself + workspace dependency packages source
+    // 서버 패키지 자체 + workspace 의존성 패키지 소스
     const watchDirs = [
       info.pkgDir,
       ...workspaceDeps.map((d) => pathx.posixResolve(info.cwd, "packages", d)),
@@ -573,7 +573,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
       watchPaths.push(pathx.posixResolve(dir, "src", "**", "*"));
     }
 
-    // ReplaceDeps dependency packages dist
+    // replaceDeps 의존성 패키지 dist
     for (const pkg of replaceDeps) {
       watchPaths.push(pathx.posixResolve(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"));
       watchPaths.push(
@@ -581,7 +581,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
       );
     }
 
-    // Start FsWatcher
+    // FsWatcher 시작
     srcWatcher = await FsWatcher.watch(watchPaths);
 
     srcWatcher.onChange({ delay: 300 }, async (changes) => {
@@ -591,11 +591,11 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
         if (hasFileAddOrRemove) {
           sender.send("buildStart", {});
 
-          // Recreate context on file add/remove
+          // 파일 추가/삭제 시 컨텍스트 재생성
           const newParsedConfig = parseTsconfig(info.pkgDir);
           const newEntryPoints = getPackageSourceFiles(info.pkgDir, newParsedConfig);
 
-          // Only re-collect externals when package.json changed
+          // package.json이 변경된 경우에만 외부 모듈 재수집
           const hasPackageJsonChange = changes.some((c) =>
             c.path.endsWith("package.json"),
           );
@@ -617,7 +617,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           return;
         }
 
-        // Only file changes: filter by metafile
+        // 파일 변경만 있는 경우: metafile로 필터링
         if (esbuildContext == null) {
           sender.send("buildStart", {});
           const result = await rebuildAll();
@@ -632,7 +632,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           return;
         }
 
-        // Filter by metafile inputs
+        // metafile 입력 기반 필터링
         const metafileAbsPaths = new Set(
           Object.keys(lastMetafile.inputs).map((key) => pathx.posixResolve(info.cwd, key)),
         );
@@ -656,7 +656,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 }
 
 /**
- * Stop watch
+ * watch 중지
  */
 async function stopWatch(): Promise<void> {
   await cleanup();

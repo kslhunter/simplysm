@@ -1,12 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  effect,
-  ElementRef,
+  computed,
   inject,
   input,
   ViewEncapsulation,
 } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 import bwipjs from "bwip-js";
 
 @Component({
@@ -15,27 +15,29 @@ import bwipjs from "bwip-js";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: ``,
+  template: `
+    <div [innerHTML]="_trustedSvgHtml()"></div>
+  `,
 })
 export class SdBarcodeControl {
-  private readonly _elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly _sanitizer = inject(DomSanitizer);
 
   type = input.required<TBarcodeType>();
   value = input<string>();
 
-  constructor() {
-    effect(() => {
-      const text = this.value();
-      if (text == null || text === "") {
-        this._elRef.nativeElement.innerHTML = "";
-        return;
-      }
-      this._elRef.nativeElement.innerHTML = bwipjs.toSVG({
-        bcid: this.type(),
-        text,
-      });
+  // bwip-js는 바코드 데이터를 기하학적 SVG로 변환하는 신뢰할 수 있는 라이브러리이므로
+  // bypassSecurityTrustHtml을 사용한다. 사용자 HTML은 전달되지 않는다.
+  protected _trustedSvgHtml = computed(() => {
+    const text = this.value();
+    if (text == null || text === "") {
+      return "";
+    }
+    const svg = bwipjs.toSVG({
+      bcid: this.type(),
+      text,
     });
-  }
+    return this._sanitizer.bypassSecurityTrustHtml(svg);
+  });
 }
 
 export type TBarcodeType =

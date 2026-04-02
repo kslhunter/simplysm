@@ -144,14 +144,14 @@ export class SdDockControl {
       e.preventDefault();
 
       if (this.position() === "bottom") {
-        thisEl.style.height = `${startHeight - e.clientY + startY}px`;
+        thisEl.style.height = `${Math.max(0, startHeight - e.clientY + startY)}px`;
       } else if (this.position() === "right") {
-        thisEl.style.width = `${startWidth - e.clientX + startX}px`;
+        thisEl.style.width = `${Math.max(0, startWidth - e.clientX + startX)}px`;
       } else if (this.position() === "top") {
-        thisEl.style.height = `${startHeight + e.clientY - startY}px`;
+        thisEl.style.height = `${Math.max(0, startHeight + e.clientY - startY)}px`;
       } else {
         // left
-        thisEl.style.width = `${startWidth + e.clientX - startX}px`;
+        thisEl.style.width = `${Math.max(0, startWidth + e.clientX - startX)}px`;
       }
     };
 

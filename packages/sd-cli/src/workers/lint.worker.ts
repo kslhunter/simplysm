@@ -4,8 +4,8 @@ import { executeLint, type LintOptions, type LintResult } from "../commands/lint
 //#region Worker
 
 /**
- * Lint worker.
- * Worker to run lint in separate thread from check command and BuildOrchestrator
+ * lint 워커.
+ * check 명령어와 BuildOrchestrator에서 별도 스레드로 lint를 실행하는 워커
  */
 async function lint(options: LintOptions): Promise<LintResult> {
   return executeLint(options);

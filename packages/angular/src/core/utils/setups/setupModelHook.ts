@@ -5,7 +5,8 @@ export function setupModelHook<T, S extends WritableSignal<T>>(
   canFn: Signal<(item: T) => boolean | Promise<boolean>>,
 ): void {
   const errorHandler = inject(ErrorHandler);
-  const orgSet = model.set;
+  const orgSet = model.set.bind(model);
+
   model.set = (value) => {
     const canSet = canFn()(value);
 
@@ -25,5 +26,9 @@ export function setupModelHook<T, S extends WritableSignal<T>>(
     }).catch((err) => {
       errorHandler.handleError(err);
     });
+  };
+
+  model.update = (fn) => {
+    model.set(fn(model()));
   };
 }

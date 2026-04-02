@@ -50,10 +50,12 @@ export function useExpandingManager<T>(binding: {
 
   const hasExpandable = computed(() => expandableDefs().length > 0);
 
+  const _expandedSet = computed(() => new Set(binding.expandedItems()));
+
   const isAllExpanded = computed(() => {
     const expandable = expandableDefs();
     if (expandable.length === 0) return false;
-    const expandedSet = new Set(binding.expandedItems());
+    const expandedSet = _expandedSet();
     return expandable.every((d) => expandedSet.has(d.item));
   });
 
@@ -86,7 +88,7 @@ export function useExpandingManager<T>(binding: {
     const itemDef = map.get(item);
     if (itemDef == null) return false;
 
-    const expandedSet = new Set(binding.expandedItems());
+    const expandedSet = _expandedSet();
     let current = itemDef.parentDef;
     while (current != null) {
       if (!expandedSet.has(current.item)) {

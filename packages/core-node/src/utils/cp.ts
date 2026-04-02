@@ -1,4 +1,4 @@
-import type { ChildProcess } from "child_process";
+import type { ChildProcess, SpawnOptions, SpawnSyncOptions } from "child_process";
 import { execSync as cpExecSync, spawn as cpSpawn, spawnSync as cpSpawnSync } from "child_process";
 import { bytes } from "@simplysm/core-common";
 
@@ -53,22 +53,26 @@ export function getSystemEncoding(): string {
   return _cachedEncoding;
 }
 
-//#region exec types
+//#region spawn types
 
-export interface ExecOptions {
-  cwd?: string;
-  env?: Record<string, string>;
-  stdio?: "pipe" | "inherit";
-  shell?: boolean;
-  reject?: boolean;
-}
-
-export type ExecSyncOptions = Omit<ExecOptions, "reject">;
-
-export interface ExecResult {
+export interface SpawnResult {
   stdout: string;
   stderr: string;
   exitCode: number;
+}
+
+//#endregion
+
+//#region resolveStdioPipe
+
+export function resolveStdioPipe(
+  stdio: SpawnOptions["stdio"],
+): { stdout: boolean; stderr: boolean } {
+  if (Array.isArray(stdio)) {
+    return { stdout: stdio[1] === "pipe", stderr: stdio[2] === "pipe" };
+  }
+  const isPipe = stdio === "pipe" || stdio == null;
+  return { stdout: isPipe, stderr: isPipe };
 }
 
 //#endregion
@@ -91,13 +95,13 @@ export function decodeBytes(raw: Uint8Array, systemEncoding?: string): string {
 
 //#endregion
 
-//#region ExecProcess
+//#region SpawnProcess
 
-export class ExecProcess implements PromiseLike<ExecResult> {
+export class SpawnProcess implements PromiseLike<SpawnResult> {
   private readonly _process: ChildProcess;
-  private readonly _promise: Promise<ExecResult>;
+  private readonly _promise: Promise<SpawnResult>;
 
-  constructor(cp: ChildProcess, promise: Promise<ExecResult>) {
+  constructor(cp: ChildProcess, promise: Promise<SpawnResult>) {
     this._process = cp;
     this._promise = promise;
   }
@@ -106,8 +110,8 @@ export class ExecProcess implements PromiseLike<ExecResult> {
     return this._process.pid;
   }
 
-  then<TResult1 = ExecResult, TResult2 = never>(
-    onfulfilled?: ((value: ExecResult) => TResult1 | PromiseLike<TResult1>) | null,
+  then<TResult1 = SpawnResult, TResult2 = never>(
+    onfulfilled?: ((value: SpawnResult) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this._promise.then(onfulfilled, onrejected);
@@ -115,7 +119,7 @@ export class ExecProcess implements PromiseLike<ExecResult> {
 
   catch<TResult = never>(
     onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null,
-  ): Promise<ExecResult | TResult> {
+  ): Promise<SpawnResult | TResult> {
     return this._promise.catch(onrejected);
   }
 
@@ -126,77 +130,75 @@ export class ExecProcess implements PromiseLike<ExecResult> {
 
 //#endregion
 
-//#region exec / execSync
+//#region spawn / spawnSync
 
-export function exec(cmd: string, args: string[], options?: ExecOptions): ExecProcess {
-  const isInherit = options?.stdio === "inherit";
+export function spawn(
+  cmd: string,
+  args: string[],
+  options?: SpawnOptions & { reject?: boolean },
+): SpawnProcess {
+  const opts: SpawnOptions = { stdio: "pipe", ...options, env: { ...process.env, ...options?.env } };
 
-  const cp = cpSpawn(cmd, args, {
-    cwd: options?.cwd,
-    env: options?.env != null ? { ...process.env, ...options.env } : undefined,
-    stdio: isInherit ? "inherit" : "pipe",
-    shell: options?.shell ?? false,
-  });
+  const cp = cpSpawn(cmd, args, opts);
 
-  const promise = new Promise<ExecResult>((resolve, reject) => {
+  const { stdout: stdoutIsPipe, stderr: stderrIsPipe } = resolveStdioPipe(opts.stdio);
+
+  const promise = new Promise<SpawnResult>((resolve, reject) => {
     cp.on("error", (err) => {
-      reject(Object.assign(err, { stdout: "", stderr: "", exitCode: 1 }));
+      reject(err);
     });
-
-    if (isInherit) {
-      cp.on("close", (code, signal) => {
-        const exitCode = code ?? (signal != null ? 1 : 0);
-        const result: ExecResult = { stdout: "", stderr: "", exitCode };
-        if (exitCode !== 0 && options.reject !== false) {
-          reject(Object.assign(new Error(`Command failed: ${cmd} ${args.join(" ")}`), result));
-        } else {
-          resolve(result);
-        }
-      });
-      return;
-    }
 
     const stdoutChunks: Uint8Array[] = [];
     const stderrChunks: Uint8Array[] = [];
 
-    cp.stdout!.on("data", (chunk: Uint8Array) => stdoutChunks.push(chunk));
-    cp.stderr!.on("data", (chunk: Uint8Array) => stderrChunks.push(chunk));
+    if (stdoutIsPipe) {
+      cp.stdout!.on("data", (chunk: Uint8Array) => stdoutChunks.push(chunk));
+    }
+    if (stderrIsPipe) {
+      cp.stderr!.on("data", (chunk: Uint8Array) => stderrChunks.push(chunk));
+    }
 
     cp.on("close", (code, signal) => {
       const exitCode = code ?? (signal != null ? 1 : 0);
-      const stdout = decodeBytes(bytes.concat(stdoutChunks));
-      const stderr = decodeBytes(bytes.concat(stderrChunks));
-      const result: ExecResult = { stdout, stderr, exitCode };
+      const stdout = stdoutIsPipe ? decodeBytes(bytes.concat(stdoutChunks)) : "";
+      const stderr = stderrIsPipe ? decodeBytes(bytes.concat(stderrChunks)) : "";
+      const result: SpawnResult = { stdout, stderr, exitCode };
 
       if (exitCode !== 0 && options?.reject !== false) {
-        reject(Object.assign(new Error(`Command failed: ${cmd} ${args.join(" ")}`), result));
+        reject(new Error(`Command failed: ${cmd} ${args.join(" ")}`));
       } else {
         resolve(result);
       }
     });
   });
 
-  return new ExecProcess(cp, promise);
+  return new SpawnProcess(cp, promise);
 }
 
-export function execSync(cmd: string, args: string[], options?: ExecSyncOptions): ExecResult {
-  const isInherit = options?.stdio === "inherit";
+export function spawnSync(
+  cmd: string,
+  args: string[],
+  options?: SpawnSyncOptions & { reject?: boolean },
+): SpawnResult {
+  const opts: SpawnSyncOptions = {
+    stdio: "pipe",
+    ...options,
+    env: { ...process.env, ...options?.env },
+  };
 
-  const result = cpSpawnSync(cmd, args, {
-    cwd: options?.cwd,
-    env: options?.env != null ? { ...process.env, ...options.env } : undefined,
-    stdio: isInherit ? "inherit" : "pipe",
-    shell: options?.shell ?? false,
-  });
+  const result = cpSpawnSync(cmd, args, opts);
 
-  if (isInherit) {
-    return { stdout: "", stderr: "", exitCode: result.status ?? 0 };
+  const { stdout: stdoutIsPipe, stderr: stderrIsPipe } = resolveStdioPipe(opts.stdio);
+
+  const stdout = stdoutIsPipe ? decodeBytes(result.stdout as Uint8Array) : "";
+  const stderr = stderrIsPipe ? decodeBytes(result.stderr as Uint8Array) : "";
+  const exitCode = result.status ?? 0;
+
+  if (exitCode !== 0 && options?.reject !== false) {
+    throw new Error(`Command failed: ${cmd} ${args.join(" ")}`);
   }
 
-  const stdout = decodeBytes(result.stdout as Uint8Array);
-  const stderr = decodeBytes(result.stderr as Uint8Array);
-
-  return { stdout, stderr, exitCode: result.status ?? 0 };
+  return { stdout, stderr, exitCode };
 }
 
 //#endregion

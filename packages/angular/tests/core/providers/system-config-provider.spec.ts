@@ -128,3 +128,63 @@ describe("Feature 1.9 Slice 2: 시스템 설정 + 설정 리소스", () => {
     });
   });
 });
+
+describe("Feature 4.2a Slice 2: 시스템 설정 리소스 안전성", () => {
+  const mockElementRef = { nativeElement: { tagName: "SD-SHEET" } };
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // Scenario: undefined 키일 때 서버 요청을 하지 않는다
+  it("key()가 undefined이면 getAsync가 호출되지 않는다", async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ElementRef, useValue: mockElementRef }],
+    });
+    const appConfig = TestBed.inject(SdAngularConfigProvider);
+    appConfig.clientName = "test-app";
+
+    const configProvider = TestBed.inject(SdSystemConfigProvider);
+    const getAsyncSpy = vi.spyOn(configProvider, "getAsync");
+
+    const key = signal<string | undefined>(undefined);
+
+    let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+    TestBed.runInInjectionContext(() => {
+      res = useSdSystemConfigResource<string[]>({ key });
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(res!.value()).toBeUndefined();
+    expect(getAsyncSpy).not.toHaveBeenCalled();
+  });
+
+  // Scenario: destructuring으로 update를 사용한다
+  it("destructuring한 update를 호출해도 set이 정상 동작한다", async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ElementRef, useValue: mockElementRef }],
+    });
+    const appConfig = TestBed.inject(SdAngularConfigProvider);
+    appConfig.clientName = "test-app";
+
+    const key = signal<string | undefined>("columns");
+
+    let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+    TestBed.runInInjectionContext(() => {
+      res = useSdSystemConfigResource<string[]>({ key });
+    });
+
+    // 초기 로드 대기
+    await vi.waitFor(() => {
+      expect(res!.value()).toBeUndefined();
+    });
+
+    // destructuring
+    const { update } = res!;
+
+    // update 호출 — this 바인딩 없이도 동작해야 함
+    update(() => ["a", "b"]);
+
+    expect(res!.value()).toEqual(["a", "b"]);
+  });
+});

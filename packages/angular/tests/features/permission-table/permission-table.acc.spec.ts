@@ -47,6 +47,31 @@ describe("Feature 7.4b Slice 1: 계층형 권한 트리 렌더링", () => {
   });
 });
 
+describe("Feature 3.5 Slice 2: collapse icon 방향", () => {
+  it("펼친 상태에서 아이콘이 회전(open)되고, 접힌 상태에서 회전 해제된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    const collapseIcon = fixture.nativeElement.querySelector(
+      "sd-permission-table sd-collapse-icon",
+    ) as HTMLElement;
+
+    // 초기: 펼쳐진 상태 → open=true → rotate(90deg)
+    expect(collapseIcon.style.transform).toBe("rotate(90deg)");
+
+    // 클릭하여 접기
+    const anchor = fixture.nativeElement.querySelector(
+      "sd-permission-table sd-anchor",
+    ) as HTMLElement;
+    anchor.click();
+    fixture.detectChanges();
+
+    // 접힌 상태 → open=false → transform 없음
+    expect(collapseIcon.style.transform).toBe("");
+  });
+});
+
 describe("Feature 7.4b Slice 2: 접기/펼치기", () => {
   it("자식이 있는 항목 클릭 시 하위 항목이 숨겨진다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableThreeLevelTest] })
@@ -90,6 +115,27 @@ describe("Feature 7.4b Slice 2: 접기/펼치기", () => {
     const rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
     expect((rows[1] as HTMLElement).getAttribute("data-sd-collapse")).not.toBe("true");
     expect((rows[2] as HTMLElement).getAttribute("data-sd-collapse")).not.toBe("true");
+  });
+});
+
+describe("Feature 3.5 Slice 1: _changePermCheck가 value 파라미터에서 use 상태를 읽는다", () => {
+  it("value 파라미터에 use=true가 설정되어 있으면 edit 체크가 적용된다 (signal과 무관)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    // signal에는 use가 false인 상태
+    const table = fixture.debugElement.children[0].componentInstance;
+    const func1Item = table.items()[0].children[0]; // 기능1: perms ["use", "edit"]
+
+    // value 파라미터에 use=true를 미리 설정 (signal과 다른 상태)
+    const value: Record<string, boolean> = { "moduleA.func1.use": true };
+
+    // _changePermCheck를 직접 호출하여 edit 체크 시도
+    (table)._changePermCheck(value, func1Item, "edit", true);
+
+    // value 파라미터에서 use=true를 읽어 edit 설정이 적용되어야 한다
+    expect(value["moduleA.func1.edit"]).toBe(true);
   });
 });
 

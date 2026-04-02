@@ -5,6 +5,8 @@ import { findTopOpenModalEl } from "./findTopOpenModalEl";
 
 @Injectable({ providedIn: null })
 export class SdSaveCommandEventPlugin extends EventManagerPlugin {
+  private readonly _document = inject(DOCUMENT);
+
   constructor() {
     super(inject(DOCUMENT));
   }
@@ -25,7 +27,7 @@ export class SdSaveCommandEventPlugin extends EventManagerPlugin {
         !event.altKey &&
         !event.shiftKey
       ) {
-        const topModal = findTopOpenModalEl();
+        const topModal = findTopOpenModalEl(this._document);
         if (topModal != null && !topModal.contains(element)) return;
 
         event.preventDefault();
@@ -34,10 +36,10 @@ export class SdSaveCommandEventPlugin extends EventManagerPlugin {
       }
     };
 
-    document.addEventListener("keydown", listener);
+    this._document.addEventListener("keydown", listener);
 
     return (): void => {
-      document.removeEventListener("keydown", listener);
+      this._document.removeEventListener("keydown", listener);
     };
   }
 }

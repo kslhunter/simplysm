@@ -15,6 +15,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { str } from "@simplysm/core-common";
+import { matchesSearchText } from "./matchesSearchText";
 import type { ISharedDataBase } from "../../core/providers/sd-shared-data.provider";
 import {
   SdItemOfTemplateDirective,
@@ -163,20 +164,13 @@ export class SdSharedDataSelectListControl<
 
   pageItemCount = input<number>();
   page = signal(0);
-  pageLength = computed(() => {
-    const pic = this.pageItemCount();
-    if (pic != null && pic > 0) {
-      return Math.ceil(this.items().length / pic);
-    }
-    return 0;
-  });
 
-  displayItems = computed(() => {
+  private readonly _filteredItems = computed(() => {
     let result = this.items().filter((item) => !item.__isHidden);
 
     if (!str.isNullOrEmpty(this.searchText())) {
       result = result.filter((item) =>
-        item.__searchText.includes(this.searchText()!),
+        matchesSearchText(item.__searchText, this.searchText()),
       );
     }
 
@@ -184,12 +178,26 @@ export class SdSharedDataSelectListControl<
       result = result.filter((item, i) => this.filterFn()!(item, i));
     }
 
+    return result;
+  });
+
+  pageLength = computed(() => {
     const pic = this.pageItemCount();
     if (pic != null && pic > 0) {
-      result = result.slice(pic * this.page(), pic * (this.page() + 1));
+      return Math.ceil(this._filteredItems().length / pic);
+    }
+    return 0;
+  });
+
+  displayItems = computed(() => {
+    const filtered = this._filteredItems();
+
+    const pic = this.pageItemCount();
+    if (pic != null && pic > 0) {
+      return filtered.slice(pic * this.page(), pic * (this.page() + 1));
     }
 
-    return result;
+    return filtered;
   });
 
   constructor() {

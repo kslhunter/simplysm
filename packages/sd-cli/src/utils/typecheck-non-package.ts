@@ -15,13 +15,12 @@ export interface NonPackageTypecheckResult {
 }
 
 /**
- * Typecheck non-package files (root-level configs + package root configs).
- * Extracted from dts.worker.ts non-package mode.
+ * 비패키지 파일(루트 레벨 설정 + 패키지 루트 설정)을 타입체크한다.
  *
- * Non-package files include:
- * - Root-level files (vitest.config.ts, etc.) — not under packages/
- * - Package root config files (packages/{pkg}/vitest.config.ts) — depth 2 under packages/
- * Excludes package source files (packages/{pkg}/src/...)
+ * 비패키지 파일 범위:
+ * - 루트 레벨 파일 (vitest.config.ts 등) — packages/ 외부
+ * - 패키지 루트 설정 파일 (packages/{pkg}/vitest.config.ts) — packages/ 하위 깊이 2
+ * 패키지 소스 파일(packages/{pkg}/src/...)은 제외한다.
  */
 export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult {
   logger.debug("비패키지 파일 타입체크 시작");
@@ -32,10 +31,10 @@ export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult
     const normalized = pathx.posixResolve(fileName);
     const normalizedPkgDir = pathx.posixResolve(packagesDir);
 
-    // Files outside packages/ directory
+    // packages/ 디렉토리 외부 파일
     if (!normalized.startsWith(normalizedPkgDir + "/")) return true;
 
-    // Files directly in package root (e.g., packages/{pkg}/file.ts — depth 2)
+    // 패키지 루트에 직접 위치한 파일 (예: packages/{pkg}/file.ts — 깊이 2)
     const relative = pathx.posix(path.relative(normalizedPkgDir, normalized));
     return relative.split("/").length === 2;
   };

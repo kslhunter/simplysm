@@ -162,6 +162,34 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     expect(getModalInBody()).toBeNull();
   });
 
+  // DESIGN-003: input.required()를 사용하는 모달이 에러 없이 열린다
+  // SdModalProvider가 createComponent → setInput → attachView 순서를 보장함을 검증
+  it("input.required()를 사용하는 모달이 NG0950 에러 없이 열리고 렌더링된다", async () => {
+    const fixture = setupHost();
+    const provider = TestBed.inject(SdModalProvider);
+
+    // SdModalTestBasic의 title은 input.required<string>()
+    // setInput이 attachView보다 먼저 호출되지 않으면 NG0950 에러 발생
+    const promise = provider.showAsync(
+      { title: "Required Input Test", type: SdModalTestBasic, inputs: { title: "required-value" } },
+    );
+
+    await tick(fixture);
+
+    const modal = getModalInBody();
+    expect(modal).not.toBeNull();
+
+    // required input이 정상 설정되어 렌더링됨
+    const contentEl = modal!.querySelector(".content");
+    expect(contentEl!.textContent).toContain("required-value");
+
+    // cleanup
+    const closeBtn = modal!.querySelector("._close-btn") as HTMLElement;
+    closeBtn.click();
+    await tick(fixture);
+    await promise;
+  });
+
   // Unit: inputs가 컨텐츠 컴포넌트에 올바르게 전달된다
   it("inputs의 title이 컨텐츠 컴포넌트에 전달되어 렌더링된다", async () => {
     const fixture = setupHost();

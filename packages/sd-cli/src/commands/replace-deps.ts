@@ -3,15 +3,15 @@ import { loadSdConfig } from "../utils/sd-config";
 import { setupReplaceDeps } from "../utils/replace-deps";
 
 /**
- * replace-deps command options
+ * replace-deps 명령어 옵션
  */
 export interface ReplaceDepsOptions {
-  /** Additional options to pass to sd.config.ts */
+  /** sd.config.ts에 전달할 추가 옵션 */
   options: string[];
 }
 
 /**
- * Replace node_modules packages with symlinks to local source based on replaceDeps config in sd.config.ts.
+ * sd.config.ts의 replaceDeps 설정에 따라 node_modules 패키지를 로컬 소스 심볼릭 링크로 교체한다.
  */
 export async function runReplaceDeps(opts: ReplaceDepsOptions): Promise<void> {
   const cwd = process.cwd();

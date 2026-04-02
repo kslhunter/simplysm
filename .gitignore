@@ -1,9 +1,9 @@
 .tmp
 .playwright-cli
-.coverage
 __pycache__
 .claude/worktrees
 
+.coverage
 .cache
 node_modules
 packages/*/.*

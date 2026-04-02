@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { useFullPageCodeSignal } from "../../../core/utils/useFullPageCodeSignal";
 import {
+  type ISdMenu,
   getMenuRouterLinkOption as menuRouterLinkOption,
   getIsMenuSelected as menuIsSelected,
 } from "../menu-utils";
@@ -120,24 +121,24 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
   ],
 })
 export class SdTopbarMenuControl {
-  menus = input<ISdTopbarMenu[]>([]);
-  getMenuIsSelectedFn = input<(menu: ISdTopbarMenu) => boolean>();
+  menus = input<ISdMenu[]>([]);
+  getMenuIsSelectedFn = input<(menu: ISdMenu) => boolean>();
 
   fullPageCode = useFullPageCodeSignal();
 
   private readonly _dropdowns = viewChildren(SdDropdownControl);
 
   getMenuRouterLinkOption(
-    menu: ISdTopbarMenu,
+    menu: ISdMenu,
   ): { link: string; queryParams: Record<string, string> | undefined } | undefined {
     return menuRouterLinkOption(menu);
   }
 
-  getIsMenuSelected(menu: ISdTopbarMenu): boolean {
+  getIsMenuSelected(menu: ISdMenu): boolean {
     return menuIsSelected(menu, this.fullPageCode(), this.getMenuIsSelectedFn());
   }
 
-  onMenuClick(menu: ISdTopbarMenu, dropdownIndex: number): void {
+  onMenuClick(menu: ISdMenu, dropdownIndex: number): void {
     if (menu.url != null) {
       window.open(menu.url, "_blank");
     }
@@ -148,18 +149,10 @@ export class SdTopbarMenuControl {
   }
 
   protected readonly itemTemplateType!: {
-    menus: ISdTopbarMenu[];
+    menus: ISdMenu[];
     depth: number;
     dropdownIndex: number;
   };
 
   protected readonly tablerCaretDown = tablerCaretDown;
-}
-
-export interface ISdTopbarMenu {
-  title: string;
-  codeChain: string[];
-  url?: string;
-  icon?: string;
-  children?: ISdTopbarMenu[];
 }

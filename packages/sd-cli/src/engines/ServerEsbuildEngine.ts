@@ -8,24 +8,24 @@ import { consola } from "consola";
 const logger = consola.withTag("sd:cli:engine:server");
 
 /**
- * ServerEsbuildEngine options
+ * ServerEsbuildEngine 옵션
  */
 export interface ServerEsbuildEngineOptions {
   cwd: string;
   pkg: ServerPackageInfo;
-  /** replaceDeps configuration from sd.config.ts */
+  /** sd.config.ts의 replaceDeps 설정 */
   replaceDeps?: Record<string, string>;
-  /** ResultCollector for watch mode rebuild reporting */
+  /** 워치 모드 리빌드 보고용 ResultCollector */
   resultCollector?: ResultCollector;
-  /** RebuildManager for watch mode batch coordination */
+  /** 워치 모드 배치 조정용 RebuildManager */
   rebuildManager?: RebuildManager;
 }
 
 /**
- * Esbuild-based build engine for Server packages
+ * esbuild 기반 서버 패키지용 빌드 엔진
  *
- * Wraps a single server-build.worker that combines esbuild (JS bundle)
- * + tsc (typecheck) in one Worker thread.
+ * esbuild(JS 번들) + tsc(타입체크)를 하나의 Worker 스레드에서 결합하는
+ * server-build.worker를 래핑한다.
  */
 export class ServerEsbuildEngine extends BaseEngine<
   ServerPackageInfo,

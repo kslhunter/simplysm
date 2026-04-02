@@ -144,7 +144,7 @@ async function ensureSshAuth(
   const privateKeyData = fs.readFileSync(keyPath);
   const publicKey = fs.readFileSync(pubKeyPath, "utf-8").trim();
 
-  // 개인키가 암호화되어 있는지 확인
+  // 개인키 파싱 시도 (암호화 또는 형식 오류 시 Error 반환)
   const parsed = utils.parseKey(privateKeyData);
   const isKeyEncrypted = parsed instanceof Error;
   const sshAgent = process.env["SSH_AUTH_SOCK"];
@@ -352,7 +352,7 @@ async function publishPackage(
       logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
     }
 
-    await cpx.exec("pnpm", args, { cwd: pkgPath });
+    await cpx.spawn("pnpm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
     // 로컬 디렉토리에 복사
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
@@ -466,7 +466,7 @@ async function computePublishLevels(
  * 2. 버전 업그레이드 (package.json + 템플릿)
  * 3. 빌드
  * 4. Git commit/tag/push (변경된 파일만 명시적으로 스테이징)
- * 5. pnpm 배포
+ * 5. 패키지 배포 (npm/로컬 디렉토리/스토리지)
  * 6. postPublish (실패해도 계속 진행)
  */
 export async function runPublish(options: PublishOptions): Promise<void> {
@@ -559,18 +559,18 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (publishPackages.some((p) => p.config.type === "npm")) {
     logger.debug("npm 인증 검증 중...");
     try {
-      const { stdout: whoami } = await cpx.exec("npm", ["whoami"]);
+      const { stdout: whoami } = await cpx.spawn("npm", ["whoami"]);
       if (whoami.trim() === "") {
         throw new Error("npm 로그인 정보를 찾을 수 없습니다.");
       }
       logger.debug(`npm 로그인 확인됨: ${whoami.trim()}`);
-    } catch (err) {
-      logger.error(`npm whoami 실패:`, err);
-      /*logger.error(
-        "npm token is invalid or expired.\n" +
-          "Create a Granular Access Token at https://www.npmjs.com/settings/~/tokens, then:\n" +
-          "  npm config set //registry.npmjs.org/:_authToken <token>",
-      );*/
+    } catch {
+      logger.error(
+        "npm 인증 실패. 로그인 상태를 확인해주세요.\n" +
+          "  npm whoami              # 현재 로그인 확인\n" +
+          "  npm login               # 로그인\n" +
+          "  npm config set //registry.npmjs.org/:_authToken <token>  # 토큰 직접 설정",
+      );
       process.exitCode = 1;
       return;
     }
@@ -589,13 +589,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (!noBuild && hasGit) {
     logger.debug("git 커밋 상태 확인 중...");
     try {
-      const { stdout: diff } = await cpx.exec("git", ["diff", "--name-only"]);
-      const { stdout: stagedDiff } = await cpx.exec("git", ["diff", "--cached", "--name-only"]);
+      const { stdout: diff } = await cpx.spawn("git", ["diff", "--name-only"]);
+      const { stdout: stagedDiff } = await cpx.spawn("git", ["diff", "--cached", "--name-only"]);
 
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude로 자동 커밋 시도 중...");
         try {
-          await cpx.exec("claude", [
+          await cpx.spawn("claude", [
             "-p",
             "/sd-commit all",
             "--dangerously-skip-permissions",
@@ -683,11 +683,11 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       } else {
         logger.debug("Git commit/tag/push...");
         try {
-          await cpx.exec("git", ["add", ..._changedFiles]);
-          await cpx.exec("git", ["commit", "-m", `v${version}`]);
-          await cpx.exec("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
-          await cpx.exec("git", ["push"]);
-          await cpx.exec("git", ["push", "--tags"]);
+          await cpx.spawn("git", ["add", ..._changedFiles]);
+          await cpx.spawn("git", ["commit", "-m", `v${version}`]);
+          await cpx.spawn("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
+          await cpx.spawn("git", ["push"]);
+          await cpx.spawn("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
           logger.error(
@@ -806,7 +806,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
         } else {
           logger.debug(`실행 중: ${cmd} ${args.join(" ")}`);
-          await cpx.exec(cmd, args, { cwd });
+          await cpx.spawn(cmd, args, { cwd });
         }
       } catch (err) {
         // postPublish 실패 시 경고만 출력 (배포 롤백 불가)

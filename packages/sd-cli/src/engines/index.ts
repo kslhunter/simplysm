@@ -23,12 +23,12 @@ export type { ViteEngineOptions } from "./ViteEngine";
 export type { BuildEngine, BuildOutput, BuildPackageInfo, ClientPackageInfo, EngineResult, PackageInfo, ServerPackageInfo } from "./types";
 
 /**
- * Create a BuildEngine for the given package.
+ * 주어진 패키지에 맞는 BuildEngine을 생성한다.
  *
- * Client packages use ViteEngine (Angular buildApplicationInternal / serveWithVite).
- * Server packages use ServerEsbuildEngine.
- * Angular Library packages (detected by @angular/core in package.json) use NgtscEngine.
- * Other Library packages (node/browser/neutral) use TscEngine.
+ * 클라이언트 패키지는 ViteEngine을 사용한다.
+ * 서버 패키지는 ServerEsbuildEngine을 사용한다.
+ * Angular 라이브러리 패키지(package.json에 @angular/core 의존성 감지)는 NgtscEngine을 사용한다.
+ * 기타 라이브러리 패키지(node/browser/neutral)는 TscEngine을 사용한다.
  */
 export function createBuildEngine(
   pkg: BuildPackageInfo | ServerPackageInfo | ClientPackageInfo,

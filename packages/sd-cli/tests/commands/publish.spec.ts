@@ -51,8 +51,8 @@ vi.mock("../../src/utils/replace-deps", () => ({
 vi.mock("@simplysm/core-node", () => ({
   fsx: mocks.fsx,
   cpx: {
-    exec: mocks.execa,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mocks.execa,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
 }));
 

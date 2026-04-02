@@ -171,4 +171,75 @@ describe("Feature 1.5 Slice 1: DOM 이벤트 플러그인", () => {
       expect(plugin.supports("sdResize")).toBe(false);
     });
   });
+
+  describe("Feature 1.3: IntersectionObserver batch 콜백 안전 처리", () => {
+    let plugin: SdIntersectionEventPlugin;
+    let capturedCallback: ((entries: IntersectionObserverEntry[]) => void) | undefined;
+    let origIntersectionObserver: typeof IntersectionObserver;
+
+    beforeEach(() => {
+      capturedCallback = undefined;
+      origIntersectionObserver = window.IntersectionObserver;
+      window.IntersectionObserver = class {
+        constructor(callback: any) {
+          capturedCallback = callback;
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+        root = null;
+        rootMargin = "";
+        thresholds = [] as number[];
+        takeRecords = vi.fn().mockReturnValue([]);
+      } as unknown as typeof IntersectionObserver;
+
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: EVENT_MANAGER_PLUGINS, useClass: SdIntersectionEventPlugin, multi: true },
+        ],
+      });
+      const plugins = TestBed.inject(EVENT_MANAGER_PLUGINS);
+      plugin = plugins.find((p) => p instanceof SdIntersectionEventPlugin)!;
+    });
+
+    afterEach(() => {
+      window.IntersectionObserver = origIntersectionObserver;
+      vi.restoreAllMocks();
+    });
+
+    it("entries가 1개일 때 해당 entry를 handler에 전달한다", () => {
+      const handler = vi.fn();
+      const el = document.createElement("div");
+      plugin.addEventListener(el, "sdIntersection", handler);
+
+      const entry = { isIntersecting: true } as IntersectionObserverEntry;
+      capturedCallback!([entry]);
+
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith({ entry });
+    });
+
+    it("entries가 2개 이상일 때 마지막(최신) entry를 handler에 전달하고 예외가 발생하지 않는다", () => {
+      const handler = vi.fn();
+      const el = document.createElement("div");
+      plugin.addEventListener(el, "sdIntersection", handler);
+
+      const entry1 = { isIntersecting: false } as IntersectionObserverEntry;
+      const entry2 = { isIntersecting: true } as IntersectionObserverEntry;
+      capturedCallback!([entry1, entry2]);
+
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith({ entry: entry2 });
+    });
+
+    it("entries가 0개일 때 handler를 호출하지 않는다", () => {
+      const handler = vi.fn();
+      const el = document.createElement("div");
+      plugin.addEventListener(el, "sdIntersection", handler);
+
+      capturedCallback!([]);
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
 });

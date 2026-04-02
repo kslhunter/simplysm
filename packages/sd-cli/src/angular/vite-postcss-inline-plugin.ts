@@ -9,7 +9,7 @@ export interface SdPostCssInlinePluginOptions {
 }
 
 /**
- * 라이브러리 JS 파일의 Angular @Component 인라인 CSS에 PostCSS를 적용하는 Vite 플러그인.
+ * JS 파일 내 Angular @Component 인라인 스타일에 PostCSS를 적용하는 Vite 플러그인.
  *
  * TS AST로 @Component decorator의 `styles` 배열에서 CSS 문자열을 추출하고,
  * PostCSS를 적용한 후 교체한다.

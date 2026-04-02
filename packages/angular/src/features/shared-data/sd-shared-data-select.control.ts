@@ -35,6 +35,7 @@ import type {
 } from "../../ui/form/button/sd-modal-select-button.control";
 import { NgIcon } from "@ng-icons/core";
 import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
+import { matchesSearchText } from "./matchesSearchText";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -235,6 +236,46 @@ export class SdSharedDataSelectControl<
     return result;
   });
 
+  private readonly _searchTextMatchCache = computed(() => {
+    const cache = new Map<TItem["__valueKey"], boolean>();
+    const searchText = this.searchText();
+    const getSearchTextFn = this.getSearchTextFn();
+    const hasParent = this.hasParentKey();
+    const parentMap = this.itemByParentKeyMap();
+    const items = this.items();
+
+    const check = (item: TItem, index: number): boolean => {
+      const key = item.__valueKey;
+      const cached = cache.get(key);
+      if (cached !== undefined) return cached;
+
+      const itemText = getSearchTextFn(item, index);
+      if (matchesSearchText(itemText, searchText)) {
+        cache.set(key, true);
+        return true;
+      }
+
+      if (hasParent && parentMap != null) {
+        const children = parentMap.get(key as TItem["__valueKey"]) ?? [];
+        for (let i = 0; i < children.length; i++) {
+          if (check(children[i], i)) {
+            cache.set(key, true);
+            return true;
+          }
+        }
+      }
+
+      cache.set(key, false);
+      return false;
+    };
+
+    for (let i = 0; i < items.length; i++) {
+      check(items[i], i);
+    }
+
+    return cache;
+  });
+
   selectedKeys = computed((): any[] => {
     const val = this.value();
     if (val == null) return [];
@@ -243,13 +284,16 @@ export class SdSharedDataSelectControl<
   });
 
   constructor() {
-    // 드롭다운 닫힘 시 검색어 초기화
+    // 드롭다운 닫힘 시 검색어 초기화 (open → closed 전환 시에만)
+    let prevOpen = false;
     effect(() => {
       const ctrl = this._selectCtrl();
-      if (ctrl != null) {
-        ctrl.dropdownOpen();
+      const currentOpen = ctrl != null ? ctrl.dropdownOpen() : false;
+
+      if (prevOpen && !currentOpen) {
+        untracked(() => this.searchText.set(undefined));
       }
-      untracked(() => this.searchText.set(undefined));
+      prevOpen = currentOpen;
     });
   }
 
@@ -273,32 +317,8 @@ export class SdSharedDataSelectControl<
     return false;
   }
 
-  isIncludeSearchText(item: TItem, index: number): boolean {
-    const splitSearchTexts =
-      this.searchText()
-        ?.trim()
-        .split(" ")
-        .map((t) => t.trim())
-        .filter((t) => t !== "") ?? [];
-
-    if (splitSearchTexts.length === 0) return true;
-
-    const itemText = this.getSearchTextFn()(item, index);
-    for (const term of splitSearchTexts) {
-      if (!itemText.toLowerCase().includes(term.toLowerCase())) {
-        // 트리 구조에서 자식 중 매칭 항목 확인
-        if (this.hasParentKey()) {
-          const children = this.getChildren(item);
-          for (let i = 0; i < children.length; i++) {
-            if (this.isIncludeSearchText(children[i], i)) {
-              return true;
-            }
-          }
-        }
-        return false;
-      }
-    }
-    return true;
+  isIncludeSearchText(item: TItem, _index: number): boolean {
+    return this._searchTextMatchCache().get(item.__valueKey) ?? false;
   }
 
   getChildren = (item: ISharedDataBase<string | number>): TItem[] => {

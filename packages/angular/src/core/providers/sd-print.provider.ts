@@ -76,7 +76,7 @@ export class SdPrintProvider {
 
       try {
         this._appRef.tick();
-        await wait.until(() => compRef.instance.initialized());
+        await wait.until(() => compRef.instance.initialized(), 100, 300);
         await this._waitForAllImagesLoadedAsync(compEl);
 
         window.print();
@@ -122,7 +122,7 @@ export class SdPrintProvider {
 
       try {
         this._appRef.tick();
-        await wait.until(() => compRef.instance.initialized());
+        await wait.until(() => compRef.instance.initialized(), 100, 300);
         await this._waitForAllImagesLoadedAsync(compEl);
 
         const pageSize = options?.pageSize ?? "a4";

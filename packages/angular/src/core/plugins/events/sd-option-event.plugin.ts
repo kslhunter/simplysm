@@ -4,6 +4,8 @@ import { DOCUMENT } from "@angular/common";
 
 @Injectable({ providedIn: null })
 export class SdOptionEventPlugin extends EventManagerPlugin {
+  private readonly _document = inject(DOCUMENT);
+
   constructor() {
     super(inject(DOCUMENT));
   }
@@ -15,7 +17,7 @@ export class SdOptionEventPlugin extends EventManagerPlugin {
 
     return (
       `on${realEventName}` in window ||
-      `on${realEventName}` in document ||
+      `on${realEventName}` in this._document ||
       `on${realEventName}` in HTMLElement.prototype
     );
   }

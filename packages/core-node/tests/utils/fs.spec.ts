@@ -13,8 +13,8 @@ import {
   copy,
   readSync,
   read,
-  readBufferSync,
-  readBuffer,
+  readBytesSync,
+  readBytes,
   readJsonSync,
   readJson,
   writeSync,
@@ -179,27 +179,27 @@ describe("fs functions", () => {
     });
   });
 
-  describe("readBufferSync", () => {
-    it("reads file as Buffer", () => {
+  describe("readBytesSync", () => {
+    it("reads file as Uint8Array", () => {
       const filePath = path.join(testDir, "buffer.txt");
       fs.writeFileSync(filePath, "buffer content");
 
-      const buffer = readBufferSync(filePath);
+      const bytes = readBytesSync(filePath);
 
-      expect(buffer instanceof Uint8Array).toBe(true);
-      expect(buffer.toString()).toBe("buffer content");
+      expect(bytes instanceof Uint8Array).toBe(true);
+      expect(new TextDecoder().decode(bytes)).toBe("buffer content");
     });
   });
 
-  describe("readBuffer", () => {
-    it("reads file as Buffer asynchronously", async () => {
+  describe("readBytes", () => {
+    it("reads file as Uint8Array asynchronously", async () => {
       const filePath = path.join(testDir, "asyncbuffer.txt");
       fs.writeFileSync(filePath, "async buffer content");
 
-      const buffer = await readBuffer(filePath);
+      const bytes = await readBytes(filePath);
 
-      expect(buffer instanceof Uint8Array).toBe(true);
-      expect(buffer.toString()).toBe("async buffer content");
+      expect(bytes instanceof Uint8Array).toBe(true);
+      expect(new TextDecoder().decode(bytes)).toBe("async buffer content");
     });
   });
 

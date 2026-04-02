@@ -8,24 +8,24 @@ import { consola } from "consola";
 const logger = consola.withTag("sd:cli:engine:tsc");
 
 /**
- * TscEngine options
+ * TscEngine 옵션
  */
 export interface TscEngineOptions {
   cwd: string;
   pkg: BuildPackageInfo;
-  /** replaceDeps configuration from sd.config.ts */
+  /** sd.config.ts의 replaceDeps 설정 */
   replaceDeps?: Record<string, string>;
-  /** ResultCollector for watch mode rebuild reporting */
+  /** 워치 모드 리빌드 보고용 ResultCollector */
   resultCollector?: ResultCollector;
-  /** RebuildManager for watch mode batch coordination */
+  /** 워치 모드 배치 조정용 RebuildManager */
   rebuildManager?: RebuildManager;
 }
 
 /**
- * tsc-based build engine for Library packages (node/browser/neutral)
+ * tsc 기반 라이브러리 패키지(node/browser/neutral)용 빌드 엔진
  *
- * Wraps a single library-build.worker that uses tsc for JS + DTS emit
- * in one Worker thread.
+ * tsc를 사용하여 JS + DTS를 emit하는 library-build.worker를
+ * 하나의 Worker 스레드에서 래핑한다.
  */
 export class TscEngine extends BaseEngine<
   BuildPackageInfo,

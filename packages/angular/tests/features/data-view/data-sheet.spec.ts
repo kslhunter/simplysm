@@ -116,6 +116,26 @@ describe("Feature 7.2a Slice 1: 데이터 조회 기본", () => {
       expect(host.items()).toEqual([{ id: 3, name: "C" }]);
     });
 
+    it("필터 적용 시 refresh가 정확히 1회만 실행된다", async () => {
+      const { host } = await createFixtureAndInit([{ id: 1, name: "A" }], 2);
+      host.searchFn.mockClear();
+      host.page.set(1);
+
+      // effect flush 후 page 변경에 의한 search 호출 처리
+      TestBed.flushEffects();
+      await new Promise<void>((r) => setTimeout(r, 0));
+      host.searchFn.mockClear();
+
+      host.searchFn.mockResolvedValue({ items: [{ id: 3, name: "C" }], pageLength: 1 });
+      host.doFilterSubmit();
+
+      TestBed.flushEffects();
+      await new Promise<void>((r) => setTimeout(r, 0));
+
+      // page와 lastFilter 동시 변경에도 search는 1회만 호출
+      expect(host.searchFn).toHaveBeenCalledTimes(1);
+    });
+
     it("페이지 변경 — search(true) 호출", async () => {
       const { host } = await createFixtureAndInit([{ id: 1, name: "A" }], 3);
       host.searchFn.mockClear();

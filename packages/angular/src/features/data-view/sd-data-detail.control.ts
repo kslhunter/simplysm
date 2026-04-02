@@ -20,6 +20,7 @@ import { SdSharedDataProvider } from "../../core/providers/sd-shared-data.provid
 import { injectParent } from "../../core/utils/injectParent";
 import { setupCanDeactivate } from "../../core/utils/setups/setupCanDeactivate";
 import { useViewTypeSignal } from "../../core/utils/useViewTypeSignal";
+import { withBusy } from "../../core/utils/withBusy";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
@@ -96,12 +97,12 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
           return;
         }
 
-        this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
-          await this.refresh();
-        });
-        this.busyCount.update((v) => v - 1);
+        await withBusy(this.busyCount, () =>
+          this._sdToast.try(async () => {
+            await this._sdSharedData.wait();
+            await this.refresh();
+          }),
+        );
         this.initialized.set(true);
       });
     });
@@ -122,11 +123,11 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
     if (!this.canUse()) return;
     if (!this.checkIgnoreChanges()) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      await this.refresh();
-    });
-    this.busyCount.update((v) => v - 1);
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(async () => {
+        await this.refresh();
+      }),
+    );
   }
 
   async refresh() {
@@ -144,19 +145,19 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
     if (this.canDelete && !this.canDelete()) return;
     if (!this.toggleDelete) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
-      async () => {
-        const result = await this.toggleDelete!(del);
-        if (!result) return;
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(
+        async () => {
+          const result = await this.toggleDelete!(del);
+          if (!result) return;
 
-        this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
+          this._sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
 
-        this.close.emit(result);
-      },
-      (err) => this._getOrmDataEditToastErrorMessage(err),
+          this.close.emit(result);
+        },
+        (err) => this._getOrmDataEditToastErrorMessage(err),
+      ),
     );
-    this.busyCount.update((v) => v - 1);
   }
 
   async doSubmit(opt?: { permCheck?: boolean; hideNoChangeMessage?: boolean }) {
@@ -164,8 +165,11 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
     if (opt?.permCheck && !this.canEdit()) return;
     if (!this.submit) return;
 
+    const dataInfo = this.dataInfo();
+    if (dataInfo == null) return;
+
     if (
-      !this.dataInfo()?.isNew &&
+      !dataInfo.isNew &&
       (this._dataSnapshot == null || obj.equal(this.data(), this._dataSnapshot))
     ) {
       if (!opt?.hideNoChangeMessage) {
@@ -174,21 +178,21 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean>
       return;
     }
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
-      async () => {
-        const result = await this.submit!(this.data());
-        if (!result) return;
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(
+        async () => {
+          const result = await this.submit!(this.data());
+          if (!result) return;
 
-        this._sdToast.success("저장되었습니다.");
+          this._sdToast.success("저장되었습니다.");
 
-        this.close.emit(result);
+          this.close.emit(result);
 
-        await this.refresh();
-      },
-      (err) => this._getOrmDataEditToastErrorMessage(err),
+          await this.refresh();
+        },
+        (err) => this._getOrmDataEditToastErrorMessage(err),
+      ),
     );
-    this.busyCount.update((v) => v - 1);
   }
 
   private _getOrmDataEditToastErrorMessage(err: unknown) {

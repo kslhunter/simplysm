@@ -1,6 +1,5 @@
 import type { InlineConfig, PluginOption } from "vite";
 import path from "path";
-import { pathx } from "@simplysm/core-node";
 import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
@@ -36,7 +35,7 @@ export interface CreateClientViteConfigOptions {
     warnings?: string[];
     lint?: { success: boolean; errorCount: number; warningCount: number; formattedOutput: string };
   }) => void;
-  /** Enable lint using ts.Program from compilation */
+  /** 컴파일의 ts.Program을 사용하여 lint 실행 */
   enableLint?: boolean;
   /** replaceDeps 목록 (dev 모드에서 sdScopeWatchPlugin에 전달) */
   replaceDeps?: ScopeWatchReplaceDep[];
@@ -48,18 +47,21 @@ export interface CreateClientViteConfigOptions {
   postCssPlugins?: unknown[];
   /** polyfills 경로 배열 (transformIndexHtml로 주입) */
   polyfills?: string[];
-  /** legacy module support (disables code splitting + replaces import.meta) */
+  /** 레거시 모듈 지원 (코드 스플리팅 비활성화) */
   legacyModule?: boolean;
   /** PWA 설정. false로 비활성화. 미설정 시 기본값으로 활성화 */
   pwa?: false | SdPwaConfig;
+  /** Vite optimizeDeps.exclude에 전달할 패키지 목록 */
+  exclude?: string[];
+  /** watch 모드 (build.watch 활성화, emptyOutDir: false) */
+  watch?: boolean;
 }
 
 /**
  * Client Vite 설정을 생성한다. dev/build 모드에서 공용으로 사용한다.
  *
- * Feature 3.1 범위: sdAngularPlugin, tsconfigPaths, env define, server/build 기본 설정
- * Feature 5.1: browserslist, PostCSS, polyfills
- * Feature 1.1: legacyModule (import.meta 치환 + inlineDynamicImports)
+ * Angular AOT 플러그인, tsconfigPaths, env define, server/build 기본 설정,
+ * browserslist, PostCSS, polyfills, legacyModule (inlineDynamicImports) 등을 통합 구성한다.
  */
 export async function createClientViteConfig(
   options: CreateClientViteConfigOptions,
@@ -112,8 +114,12 @@ export async function createClientViteConfig(
     );
   }
 
-  // replaceDeps HMR (dev 모드만)
-  if (options.mode === "dev" && options.replaceDeps != null && options.replaceDeps.length > 0) {
+  // replaceDeps HMR (dev 모드 또는 watch 모드)
+  if (
+    (options.mode === "dev" || options.watch === true) &&
+    options.replaceDeps != null &&
+    options.replaceDeps.length > 0
+  ) {
     plugins.push(
       sdScopeWatchPlugin({
         pkgDir: options.pkgDir,
@@ -127,7 +133,7 @@ export async function createClientViteConfig(
   const serverConfig =
     options.mode === "dev"
       ? {
-          host: options.serverPort === 0 ? "127.0.0.1" : undefined,
+          host: options.serverPort === 0 ? "127.0.0.1" : "0.0.0.0",
           port: options.serverPort === 0 ? undefined : options.serverPort,
           strictPort: options.serverPort !== 0,
         }
@@ -139,6 +145,12 @@ export async function createClientViteConfig(
       ? { postcss: { plugins: options.postCssPlugins as import("postcss").AcceptedPlugin[] } }
       : undefined;
 
+  // optimizeDeps.exclude (사용자 지정 exclude)
+  const optimizeDepsConfig =
+    options.exclude != null && options.exclude.length > 0
+      ? { exclude: options.exclude }
+      : undefined;
+
   const config: InlineConfig = {
     root: options.pkgDir,
     base: `/${name}/`,
@@ -148,6 +160,15 @@ export async function createClientViteConfig(
     css: cssConfig,
     esbuild: {
       target: esbuildTarget,
+    },
+    build: {
+      target: esbuildTarget,
+    },
+    optimizeDeps: {
+      ...optimizeDepsConfig,
+      esbuildOptions: {
+        target: esbuildTarget as string[],
+      },
     },
   };
 
@@ -207,8 +228,15 @@ export async function createClientViteConfig(
     });
   }
 
-  // legacyModule: true → 단일 번들 + import.meta 치환
+  // legacyModule: true → 코드 스플리팅 비활성화 + esbuild import.meta/import() 변환 활성화
   if (options.legacyModule === true) {
+    config.esbuild = {
+      ...config.esbuild,
+      supported: {
+        "import-meta": false,
+        "dynamic-import": false,
+      },
+    };
     config.build = {
       ...config.build,
       rollupOptions: {
@@ -217,39 +245,21 @@ export async function createClientViteConfig(
         },
       },
     };
-
-    const pkgDir = options.pkgDir;
-    const base = `/${name}/`;
-
-    (config.plugins as PluginOption[]).push({
-      name: "sd-legacy-import-meta",
-      enforce: "post",
-      transform(code: string, id: string) {
-        if (!code.includes("import.meta")) return;
-
-        // id(파일 경로)를 Vite 서빙 URL로 변환
-        const relative = pathx.posix(path.relative(pkgDir, id));
-        const moduleUrl = id.startsWith("/") || id.startsWith("\0")
-          ? id // 가상 모듈(/@vite/client 등)은 그대로 사용
-          : base + relative;
-
-        const varName = "__sd_import_meta__";
-        const injected = `const ${varName} = { url: new URL(${JSON.stringify(moduleUrl)}, document.baseURI).href };\n`;
-        const replaced = code.replaceAll("import.meta", varName);
-
-        return { code: injected + replaced, map: null };
-      },
-    });
   }
 
   // build 모드 설정
   if (options.mode === "build") {
-    config.logLevel = "silent";
     config.build = {
       ...config.build,
       outDir: path.join(options.pkgDir, "dist"),
-      emptyOutDir: true,
     };
+    if (options.watch === true) {
+      config.build.watch = {};
+      config.build.emptyOutDir = false;
+    } else {
+      config.logLevel = "silent";
+      config.build.emptyOutDir = true;
+    }
   }
 
   return config;

@@ -5,6 +5,7 @@ import {
   SdProgressZeroTest,
   SdProgressFullTest,
   SdProgressOverflowTest,
+  SdProgressNegativeTest,
 } from "./sd-progress-test.fixture";
 
 describe("Feature 2.6 Slice 2: sd-progress", () => {
@@ -57,6 +58,17 @@ describe("Feature 2.6 Slice 2: sd-progress", () => {
     const bar = host.querySelector("._progress") as HTMLElement;
 
     expect(bar.style.width).toBe("100%");
+  });
+
+  it("value=-0.5이면 너비가 0%로 클램프된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdProgressNegativeTest] })
+      .createComponent(SdProgressNegativeTest);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector("sd-progress") as HTMLElement;
+    const bar = host.querySelector("._progress") as HTMLElement;
+
+    expect(bar.style.width).toBe("0%");
   });
 
 });

@@ -263,6 +263,43 @@ describe("BaseEngine", () => {
       await engine.stop();
     });
 
+    it("calls resolver on error event to release RebuildManager batch", async () => {
+      const mockResolver = vi.fn();
+      const mockRebuildManager = { registerBuild: vi.fn(() => mockResolver) };
+
+      mockWorker.startWatch.mockImplementation(() => {
+        // Trigger initial build to move past isInitialBuild
+        const buildHandler = mockWorker.on.mock.calls.find(
+          (call: any[]) => call[0] === "build",
+        )?.[1];
+        buildHandler?.({ build: { success: true } });
+      });
+
+      const engine = new TscEngine({
+        cwd: "/root",
+        pkg: createMockPkg(),
+        rebuildManager: mockRebuildManager as any,
+      });
+
+      await engine.startWatch({ js: true, dts: true });
+
+      // Simulate rebuild cycle: buildStart -> error (no build event)
+      const buildStartHandler = mockWorker.on.mock.calls.find(
+        (call: any[]) => call[0] === "buildStart",
+      )?.[1];
+      const errorHandler = mockWorker.on.mock.calls.find(
+        (call: any[]) => call[0] === "error",
+      )?.[1];
+
+      buildStartHandler?.({});
+      expect(mockRebuildManager.registerBuild).toHaveBeenCalled();
+
+      errorHandler?.({ message: "Worker crashed" });
+      expect(mockResolver).toHaveBeenCalled();
+
+      await engine.stop();
+    });
+
     it("uses _getTarget() for BuildResult target", async () => {
       const mockResultCollector = { add: vi.fn() };
 

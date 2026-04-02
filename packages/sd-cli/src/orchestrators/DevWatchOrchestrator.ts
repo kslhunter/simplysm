@@ -25,12 +25,12 @@ import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worke
 import type { ServerReadyEventData, ErrorEventData } from "../utils/worker-events";
 
 /**
- * Orchestrator mode
+ * Orchestrator 모드
  */
 export type OrchestratorMode = "watch" | "dev";
 
 /**
- * DevWatchOrchestrator options
+ * DevWatchOrchestrator 옵션
  */
 export interface DevWatchOrchestratorOptions {
   mode: OrchestratorMode;
@@ -39,26 +39,26 @@ export interface DevWatchOrchestratorOptions {
 }
 
 /**
- * Unified Orchestrator for watch and dev modes.
+ * watch/dev 모드 통합 Orchestrator
  *
- * - watch: Library(js+dts) + Scripts(watch hook) + copySrc + replaceDeps
- * - dev: Server(js+runtime) + client-ready(skip) + replaceDeps
+ * - watch: 라이브러리(JS+DTS) + Scripts(watch hook) + copySrc + replaceDeps
+ * - dev: 서버(JS+런타임) + 클라이언트 준비(skip) + replaceDeps
  */
 export class DevWatchOrchestrator {
   private readonly _cwd: string;
   private readonly _options: DevWatchOrchestratorOptions;
   private readonly _logger;
 
-  // Infrastructure
+  // 인프라
   private _resultCollector!: ResultCollector;
   private _signalHandler!: SignalHandler;
   private _rebuildManager!: RebuildManager;
 
-  // Engines
+  // 엔진
   private readonly _libraryEngines: BuildEngine[] = [];
   private readonly _serverEngines = new Map<string, BuildEngine>();
 
-  // Package info
+  // 패키지 정보
   private _libraryPackages: BuildPackageInfo[] = [];
   private _serverPackages: Array<{ name: string; dir: string; config: SdServerPackageConfig }> = [];
   private _watchHookPackages: Array<{ name: string; dir: string; config: SdScriptsPackageConfig | SdBuildPackageConfig }> = [];
@@ -66,13 +66,13 @@ export class DevWatchOrchestrator {
   private readonly _clientEngines = new Map<string, BuildEngine>();
   private _serverClientsMap = new Map<string, string[]>();
 
-  // Dev mode: runtime workers
+  // dev 모드: 런타임 워커
   private _baseEnv: { VER: string; DEV: string } | undefined;
   private readonly _serverRuntimeWorkers = new Map<string, WorkerProxy<typeof ServerRuntimeWorkerModule>>();
   private _printServersTimer: ReturnType<typeof setTimeout> | undefined;
   private _serverRestartTimer: ReturnType<typeof setTimeout> | undefined;
 
-  // Watchers
+  // 워처
   private _copySrcWatchers: FsWatcher[] = [];
   private readonly _watchHookWatchers: FsWatcher[] = [];
   private readonly _watchHookChildren = new Map<string, ChildProcess>();
@@ -106,30 +106,30 @@ export class DevWatchOrchestrator {
       throw err;
     }
 
-    // Build pathMap from config packages only (tests packages are excluded from watch/dev)
+    // config 패키지에서 pathMap 빌드 (tests 패키지는 watch/dev에서 제외)
     this._pathMap = buildPathMapFromConfig(sdConfig.packages);
 
-    // Validate targets
+    // 대상 유효성 검사
     validateTargets(this._options.targets, sdConfig.packages);
 
-    // Store replaceDeps for engine creation
+    // 엔진 생성을 위해 replaceDeps 저장
     this._replaceDeps = sdConfig.replaceDeps;
 
-    // Start watch if replaceDeps config exists
+    // replaceDeps 설정이 있으면 watch 시작
     if (sdConfig.replaceDeps != null) {
       this._replaceDepWatcher = await watchReplaceDeps(this._cwd, sdConfig.replaceDeps);
     }
 
-    // Prepare VER, DEV environment variables for dev mode
+    // dev 모드용 VER, DEV 환경변수 준비
     if (this._options.mode === "dev") {
       const version = await getVersion(this._cwd);
       this._baseEnv = { VER: version, DEV: "true" };
     }
 
-    // Filter by targets
+    // 대상으로 필터링
     const allPackages = filterPackagesByTargets(sdConfig.packages, this._options.targets);
 
-    // Classify packages based on mode
+    // 모드에 따라 패키지 분류
     if (this._options.mode === "watch") {
       const classified = classifyWatchPackages(allPackages, this._cwd, this._pathMap);
       this._libraryPackages = classified.libraryPackages;
@@ -141,7 +141,7 @@ export class DevWatchOrchestrator {
       this._serverClientsMap = classified.serverClientsMap;
     }
 
-    // Check if there are packages to process
+    // 처리할 패키지가 있는지 확인
     const totalPackages = this._libraryPackages.length + this._serverPackages.length + this._watchHookPackages.length + this._clientPackages.length;
     if (totalPackages === 0) {
       const modeLabel = this._options.mode === "watch" ? "워치" : "개발";
@@ -151,12 +151,12 @@ export class DevWatchOrchestrator {
 
     this._hasPackages = true;
 
-    // Initialize infrastructure
+    // 인프라 초기화
     this._signalHandler = new SignalHandler();
     this._resultCollector = new ResultCollector();
     this._rebuildManager = new RebuildManager(this._logger);
 
-    // Batch complete handler
+    // 배치 완료 핸들러
     if (this._options.mode === "watch") {
       this._rebuildManager.on("batchComplete", (_completedKeys) => {
         printErrors(this._resultCollector.toMap());
@@ -167,7 +167,7 @@ export class DevWatchOrchestrator {
       });
     }
 
-    // Create BuildEngines for library packages (watch mode only)
+    // 라이브러리 패키지용 BuildEngine 생성 (watch 모드 전용)
     for (const pkg of this._libraryPackages) {
       const engine = createBuildEngine(pkg, {
         cwd: this._cwd,
@@ -178,7 +178,7 @@ export class DevWatchOrchestrator {
       this._libraryEngines.push(engine);
     }
 
-    // Create BuildEngines for server packages
+    // 서버 패키지용 BuildEngine 생성
     for (const { name, dir, config } of this._serverPackages) {
       const engineConfig = this._options.mode === "dev"
         ? { ...config, env: { ...this._baseEnv, ...config.env } }
@@ -196,7 +196,7 @@ export class DevWatchOrchestrator {
       this._serverEngines.set(name, engine);
     }
 
-    // Create BuildEngines for client packages (dev mode only)
+    // 클라이언트 패키지용 BuildEngine 생성 (dev 모드 전용)
     const resolvedReplaceDeps = this._replaceDepWatcher?.entries.map((e) => ({
       packageName: e.targetName,
       sourcePath: e.resolvedSourcePath,
@@ -249,16 +249,16 @@ export class DevWatchOrchestrator {
 
     const shutdownTasks: Array<Promise<void>> = [];
 
-    // Stop all engines
+    // 모든 엔진 중지
     shutdownTasks.push(...this._libraryEngines.map((e) => e.stop()));
     shutdownTasks.push(...[...this._serverEngines.values()].map((e) => e.stop()));
     shutdownTasks.push(...[...this._clientEngines.values()].map((e) => e.stop()));
 
-    // Close watchers (watch mode)
+    // 워처 종료 (watch 모드)
     shutdownTasks.push(...this._copySrcWatchers.map((w) => w.close()));
     shutdownTasks.push(...this._watchHookWatchers.map((w) => w.close()));
 
-    // Kill hook child processes
+    // hook 자식 프로세스 종료
     for (const child of this._watchHookChildren.values()) {
       if (child.exitCode == null) {
         child.kill();
@@ -266,7 +266,7 @@ export class DevWatchOrchestrator {
     }
     this._watchHookChildren.clear();
 
-    // Terminate runtime workers (dev mode)
+    // 런타임 워커 종료 (dev 모드)
     shutdownTasks.push(...[...this._serverRuntimeWorkers.values()].map((w) => w.terminate()));
 
     await Promise.all(shutdownTasks);
@@ -277,7 +277,7 @@ export class DevWatchOrchestrator {
     process.stdout.write("✔ 종료 완료\n");
   }
 
-  // --- Watch mode ---
+  // --- watch 모드 ---
 
   private async _startWatchMode(): Promise<void> {
     this._logger.debug("watch 모드 시작");
@@ -346,7 +346,7 @@ export class DevWatchOrchestrator {
     });
   }
 
-  // --- Dev mode ---
+  // --- dev 모드 ---
 
   private async _startDevMode(): Promise<void> {
     // Start client and server engines in parallel
@@ -380,7 +380,7 @@ export class DevWatchOrchestrator {
       }
     });
 
-    // Register standalone client results in ResultCollector
+    // 독립 클라이언트 결과를 ResultCollector에 등록
     for (const { name } of this._clientPackages) {
       const isServerConnected = [...this._serverClientsMap.values()].some(
         (clients) => clients.includes(name),
@@ -399,7 +399,7 @@ export class DevWatchOrchestrator {
       }
     }
 
-    // Initialize Capacitor for client packages (device execution is handled by the `device` command)
+    // 클라이언트 패키지의 Capacitor 초기화 (디바이스 실행은 'device' 명령어가 담당)
     for (const { name, config } of this._clientPackages) {
       const port = this._getClientPort(name);
       if (port == null) continue;
@@ -474,13 +474,13 @@ export class DevWatchOrchestrator {
     }, 300);
   }
 
-  /** Get port from a client engine (duck-typing for ViteEngine.port) */
+  /** 클라이언트 엔진에서 포트 가져오기 (ViteEngine.port에 대한 duck-typing) */
   private _getClientPort(name: string): number | undefined {
     const engine = this._clientEngines.get(name) as { port?: number } | undefined;
     return engine?.port;
   }
 
-  /** Collect client ports for a server's connected clients */
+  /** 서버에 연결된 클라이언트들의 포트 수집 */
   private _collectClientPorts(serverName: string): Record<string, number> {
     const clientPorts: Record<string, number> = {};
     const connectedClients = this._serverClientsMap.get(serverName) ?? [];
@@ -501,19 +501,19 @@ export class DevWatchOrchestrator {
   ): Promise<void> {
     this._logger.debug(`[${serverName}] 서버 런타임 시작: ${mainJsPath}`);
 
-    // Terminate existing runtime
+    // 기존 런타임 종료
     const existingRuntime = this._serverRuntimeWorkers.get(serverName);
     if (existingRuntime != null) {
       this._logger.info(`[${serverName}] 서버 재시작 중...`);
       await existingRuntime.terminate();
     }
 
-    // Create and start new runtime worker
+    // 새 런타임 워커 생성 및 시작
     const runtimeWorkerPath = import.meta.resolve("../workers/server-runtime.worker");
     const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(runtimeWorkerPath);
     this._serverRuntimeWorkers.set(serverName, runtimeWorker);
 
-    // Runtime event handlers
+    // 런타임 이벤트 핸들러
     runtimeWorker.on("serverReady", (readyData) => {
       const readyEvent = readyData as ServerReadyEventData;
       this._resultCollector.add({

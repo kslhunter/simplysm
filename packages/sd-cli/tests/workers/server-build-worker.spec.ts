@@ -35,7 +35,7 @@ const mockRunTscPackageBuild = vi.fn(() => ({
   warningCount: 0,
 }));
 
-const mockCpxExecSync = vi.fn().mockReturnValue({ stdout: "v20.11.0", stderr: "", exitCode: 0 });
+const mockCpxSpawnSync = vi.fn().mockReturnValue({ stdout: "v20.11.0", stderr: "", exitCode: 0 });
 
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn((fns: Record<string, Function>) => {
@@ -54,8 +54,8 @@ vi.mock("@simplysm/core-node", () => ({
     posixResolve: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
   },
   cpx: {
-    exec: vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
-    execSync: mockCpxExecSync,
+    spawn: vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawnSync: mockCpxSpawnSync,
   },
 }));
 

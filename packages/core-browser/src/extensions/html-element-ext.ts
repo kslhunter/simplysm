@@ -11,16 +11,14 @@ declare global {
      * 부모 요소 기준 상대 위치 계산 (CSS 포지셔닝용)
      *
      * @remarks
-     * 부모 요소 기준으로 요소 위치를 계산하며, CSS `top`/`left` 속성에 바로 사용할 수 있는
-     * `window.scrollX/Y`를 포함한 문서 기반 좌표를 반환합니다.
+     * 부모 요소 기준으로 요소 위치를 계산하며, CSS `top`/`left` 속성에 바로 사용할 수 있는 좌표를 반환합니다.
      *
      * 주요 사용 사례:
-     * - `document.body`에 append한 후 드롭다운, 팝업 위치 지정
-     * - 스크롤된 페이지에서도 정상 동작
+     * - position: relative/absolute 부모 내에서 드롭다운, 팝업 위치 지정
+     * - 스크롤된 컨테이너에서도 정상 동작
      *
      * 계산에 포함되는 요소:
      * - 뷰포트 기준 위치 (getBoundingClientRect)
-     * - 문서 스크롤 위치 (window.scrollX/Y)
      * - 부모 요소 내부 스크롤 (parentEl.scrollTop/Left)
      * - 중간 요소의 border 두께
      * - CSS transform 변환
@@ -68,12 +66,9 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   const elementRect = this.getBoundingClientRect();
   const parentRect = parentEl.getBoundingClientRect();
 
-  const scrollLeft = window.scrollX;
-  const scrollTop = window.scrollY;
-
   const relativeOffset = {
-    top: elementRect.top - parentRect.top + scrollTop + (parentEl.scrollTop || 0),
-    left: elementRect.left - parentRect.left + scrollLeft + (parentEl.scrollLeft || 0),
+    top: elementRect.top - parentRect.top + (parentEl.scrollTop || 0),
+    left: elementRect.left - parentRect.left + (parentEl.scrollLeft || 0),
   };
 
   let currentEl = this.parentElement;

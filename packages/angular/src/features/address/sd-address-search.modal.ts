@@ -66,7 +66,7 @@ export class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
 
   private async initAsync() {
     if (!document.getElementById("daum_address")) {
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
         const scriptEl = document.createElement("script");
         scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
         scriptEl.setAttribute("id", "daum_address");
@@ -75,6 +75,9 @@ export class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
           daum.postcode.load(() => {
             resolve();
           });
+        };
+        scriptEl.onerror = (): void => {
+          reject(new Error("주소 검색 스크립트를 불러올 수 없습니다."));
         };
         document.head.appendChild(scriptEl);
       });
@@ -88,7 +91,7 @@ export class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
 
         let extraAddr = "";
         if (data.userSelectedType === "R") {
-          if (data.bname !== "" && /[동로가]$/g.test(data.bname)) {
+          if (data.bname !== "" && /[동로가]$/.test(data.bname)) {
             extraAddr += data.bname;
           }
 

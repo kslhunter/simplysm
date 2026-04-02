@@ -64,6 +64,7 @@ export class ViteEngine implements BuildEngine {
       configs: this._pkg.config.configs,
       browserSupport: this._pkg.config.browserSupport,
       enableLint: output.lint,
+      exclude: this._pkg.config.exclude,
     });
 
     logger.debug(`[${this._pkg.name}] ViteEngine.run 완료 (success: ${result.success})`);
@@ -81,7 +82,7 @@ export class ViteEngine implements BuildEngine {
 
   /**
    * 워치 모드 시작 (Vite 개발 서버)
-   * 개발 서버가 준비되면 Promise가 resolve된다.
+   * worker의 startWatch()가 완료되면 Promise가 resolve된다.
    */
   async startWatch(output: BuildOutput): Promise<void> {
     logger.debug(`[${this._pkg.name}] ViteEngine.startWatch 시작`);
@@ -94,7 +95,7 @@ export class ViteEngine implements BuildEngine {
       this.port = event.port;
     });
 
-    // 리빌드 이벤트 처리 (Feature 3.3 HMR)
+    // 리빌드 이벤트 처리 (HMR)
     let resolver: (() => void) | undefined;
     const workerKey = `vite:${this._pkg.name}`;
 
@@ -152,6 +153,9 @@ export class ViteEngine implements BuildEngine {
         message: event.message,
       };
       this._resultCollector?.add(buildResult);
+
+      resolver?.();
+      resolver = undefined;
     });
 
     const port =
@@ -159,7 +163,7 @@ export class ViteEngine implements BuildEngine {
         ? this._pkg.config.server
         : undefined;
 
-    const result = await this._worker!.startWatch({
+    await this._worker!.startWatch({
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
@@ -169,17 +173,8 @@ export class ViteEngine implements BuildEngine {
       replaceDeps: this._replaceDeps,
       browserSupport: this._pkg.config.browserSupport,
       enableLint: output.lint,
+      exclude: this._pkg.config.exclude,
     });
-
-    // 초기 빌드 결과 보고
-    const buildResult: BuildResult = {
-      name: this._pkg.name,
-      target: "client",
-      type: "build",
-      status: result.success ? "success" : "error",
-      message: result.errors?.join("\n"),
-    };
-    this._resultCollector?.add(buildResult);
   }
 
   /**

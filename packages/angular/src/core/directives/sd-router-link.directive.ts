@@ -6,7 +6,7 @@ import { SdNavigateWindowProvider } from "../providers/sd-navigate-window.provid
   selector: "[sd-router-link]",
   standalone: true,
   host: {
-    "[style.cursor]": "'pointer'",
+    "[style.cursor]": "option() ? 'pointer' : ''",
     "(click)": "onClick($event)",
   },
 })

@@ -2,7 +2,7 @@ import ts from "typescript";
 import { fsx } from "@simplysm/core-node";
 
 /**
- * Serialized Diagnostic that can be passed to Worker
+ * Worker로 전달할 수 있는 직렬화된 Diagnostic
  */
 export interface SerializedDiagnostic {
   category: number;
@@ -16,11 +16,11 @@ export interface SerializedDiagnostic {
 }
 
 /**
- * Convert Diagnostic to serializable form
- * (remove circular references/functions for structured clone communication between Worker threads)
+ * Diagnostic을 직렬화 가능한 형태로 변환한다.
+ * (Worker 스레드 간 structured clone 통신을 위해 순환 참조/함수를 제거)
  */
 export function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagnostic {
-  // If DiagnosticMessageChain, flatten entire chain to preserve all context info
+  // DiagnosticMessageChain인 경우 모든 컨텍스트 정보를 보존하기 위해 전체 체인을 평탄화
   const messageText = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 
   return {
@@ -38,22 +38,20 @@ export function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagno
 }
 
 /**
- * Determine TypeScript ScriptKind from filename
+ * 파일명에서 TypeScript ScriptKind를 결정한다.
  */
 function getScriptKind(fileName: string): ts.ScriptKind {
-  if (fileName.endsWith(".tsx")) return ts.ScriptKind.TSX;
-  if (fileName.endsWith(".jsx")) return ts.ScriptKind.JSX;
   if (fileName.endsWith(".js") || fileName.endsWith(".mjs") || fileName.endsWith(".cjs"))
     return ts.ScriptKind.JS;
   return ts.ScriptKind.TS;
 }
 
 /**
- * Restore SerializedDiagnostic to ts.Diagnostic
- * Reads actual file contents so source code context is displayed in formatDiagnosticsWithColorAndContext
- * @param serialized - Serialized diagnostic information
- * @param fileCache - File content cache (prevent duplicate reads of same file)
- * @returns Restored ts.Diagnostic object
+ * SerializedDiagnostic을 ts.Diagnostic으로 복원한다.
+ * formatDiagnosticsWithColorAndContext에서 소스 코드 컨텍스트가 표시되도록 실제 파일 내용을 읽는다.
+ * @param serialized - 직렬화된 진단 정보
+ * @param fileCache - 파일 내용 캐시 (같은 파일의 중복 읽기 방지)
+ * @returns 복원된 ts.Diagnostic 객체
  */
 export function deserializeDiagnostic(
   serialized: SerializedDiagnostic,
@@ -63,9 +61,9 @@ export function deserializeDiagnostic(
   if (serialized.file != null) {
     const fileName = serialized.file.fileName;
 
-    // Get cached file content (read and cache if not present)
-    // If file was deleted or inaccessible, treat as empty content
-    // (source code context won't be displayed but diagnostic message is shown normally)
+    // 캐시된 파일 내용 가져오기 (없으면 읽어서 캐시)
+    // 파일이 삭제되었거나 접근 불가능하면 빈 내용으로 처리
+    // (소스 코드 컨텍스트는 표시되지 않지만 진단 메시지는 정상 표시됨)
     if (!fileCache.has(fileName)) {
       fileCache.set(fileName, fsx.existsSync(fileName) ? fsx.readSync(fileName) : "");
     }

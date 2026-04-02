@@ -7,9 +7,9 @@ import type { SdConfig, SdConfigParams } from "../sd-config.types";
 const logger = consola.withTag("sd:cli:sd-config");
 
 /**
- * Load sd.config.ts
- * @returns SdConfig object
- * @throws if sd.config.ts is missing or format is incorrect
+ * sd.config.ts를 로드한다.
+ * @returns SdConfig 객체
+ * @throws sd.config.ts가 없거나 형식이 잘못된 경우
  */
 export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
   const sdConfigPath = pathx.posixResolve(params.cwd, "sd.config.ts");

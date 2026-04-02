@@ -493,6 +493,14 @@ describe("executeTypecheck", () => {
 
   //#endregion
 
+  it("throws when loadSdConfig fails (fail fast)", async () => {
+    mocks.loadSdConfig.mockRejectedValue(new Error("sd.config.ts not found"));
+    mocks.discoverWorkspacePackages.mockReturnValue(new Map());
+    mocks.mergeTestsPackagesIntoConfig.mockReturnValue({ merged: {}, pathMap: new Map() });
+
+    await expect(executeTypecheck({ targets: [], options: [] })).rejects.toThrow("sd.config.ts not found");
+  });
+
   //#region Slice 1: executeTypecheck lint integration (Feature 3.2)
 
   describe("lint integration", () => {

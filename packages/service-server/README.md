@@ -15,7 +15,7 @@ npm install @simplysm/service-server
 |-----|------|-------------|
 | `ServiceServerOptions` | `interface` | Server configuration (rootPath, port, SSL, auth, services) |
 
--> See [docs/server-options.md](./docs/server-options.md) for details.
+→ See [docs/server-options.md](./docs/server-options.md) for details.
 
 ### Authentication (JWT)
 | API | Type | Description |
@@ -25,7 +25,7 @@ npm install @simplysm/service-server
 | `verifyJwt` | `function` | Verifies a JWT token |
 | `decodeJwt` | `function` | Decodes a JWT token without verification |
 
--> See [docs/auth.md](./docs/auth.md) for details.
+→ See [docs/auth.md](./docs/auth.md) for details.
 
 ### Service Definition/Context
 | API | Type | Description |
@@ -38,14 +38,14 @@ npm install @simplysm/service-server
 | `defineService` | `function` | Defines a named service with a factory function |
 | `ServiceMethods` | `type` | Extracts method signatures from a ServiceDefinition |
 
--> See [docs/service-definition.md](./docs/service-definition.md) for details.
+→ See [docs/service-definition.md](./docs/service-definition.md) for details.
 
 ### Service Executor
 | API | Type | Description |
 |-----|------|-------------|
 | `executeServiceMethod` | `function` | Executes a service method with auth checking |
 
--> See [docs/service-executor.md](./docs/service-executor.md) for details.
+→ See [docs/service-executor.md](./docs/service-executor.md) for details.
 
 ### WebSocket Handler
 | API | Type | Description |
@@ -53,7 +53,7 @@ npm install @simplysm/service-server
 | `WebSocketHandler` | `interface` | Multi-connection WebSocket handler with event broadcasting |
 | `createWebSocketHandler` | `function` | Creates a WebSocket handler instance |
 
--> See [docs/websocket-handler.md](./docs/websocket-handler.md) for details.
+→ See [docs/websocket-handler.md](./docs/websocket-handler.md) for details.
 
 ### Service Socket
 | API | Type | Description |
@@ -61,7 +61,7 @@ npm install @simplysm/service-server
 | `ServiceSocket` | `interface` | Single WebSocket connection with protocol and events |
 | `createServiceSocket` | `function` | Creates a service socket instance |
 
--> See [docs/service-socket.md](./docs/service-socket.md) for details.
+→ See [docs/service-socket.md](./docs/service-socket.md) for details.
 
 ### HTTP Handlers
 | API | Type | Description |
@@ -70,7 +70,7 @@ npm install @simplysm/service-server
 | `handleUpload` | `function` | Handles multipart file uploads |
 | `handleStaticFile` | `function` | Serves static files with security guards |
 
--> See [docs/http-handlers.md](./docs/http-handlers.md) for details.
+→ See [docs/http-handlers.md](./docs/http-handlers.md) for details.
 
 ### Protocol Wrapper
 | API | Type | Description |
@@ -78,7 +78,7 @@ npm install @simplysm/service-server
 | `ServerProtocolWrapper` | `interface` | Server-side protocol wrapper with worker thread offloading |
 | `createServerProtocolWrapper` | `function` | Creates a server protocol wrapper instance |
 
--> See [docs/protocol-wrapper.md](./docs/protocol-wrapper.md) for details.
+→ See [docs/protocol-wrapper.md](./docs/protocol-wrapper.md) for details.
 
 ### ORM/AutoUpdate Services
 | API | Type | Description |
@@ -88,21 +88,21 @@ npm install @simplysm/service-server
 | `AutoUpdateService` | `const (ServiceDefinition)` | Built-in auto-update service definition |
 | `AutoUpdateServiceType` | `type` | Auto-update service method signatures |
 
--> See [docs/built-in-services.md](./docs/built-in-services.md) for details.
+→ See [docs/built-in-services.md](./docs/built-in-services.md) for details.
 
 ### Config Manager
 | API | Type | Description |
 |-----|------|-------------|
 | `getConfig` | `function` | Loads JSON config with file-watching and caching |
 
--> See [docs/config-manager.md](./docs/config-manager.md) for details.
+→ See [docs/config-manager.md](./docs/config-manager.md) for details.
 
 ### Legacy V1
 | API | Type | Description |
 |-----|------|-------------|
 | `handleV1Connection` | `function` | V1 legacy WebSocket handler (auto-update only) |
 
--> See [docs/legacy-v1.md](./docs/legacy-v1.md) for details.
+→ See [docs/legacy-v1.md](./docs/legacy-v1.md) for details.
 
 ### Main ServiceServer
 | API | Type | Description |
@@ -110,7 +110,7 @@ npm install @simplysm/service-server
 | `ServiceServer` | `class` | Main server class (Fastify + WebSocket + auth) |
 | `createServiceServer` | `function` | Factory function to create a ServiceServer |
 
--> See [docs/service-server.md](./docs/service-server.md) for details.
+→ See [docs/service-server.md](./docs/service-server.md) for details.
 
 ## Usage Examples
 

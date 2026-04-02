@@ -32,6 +32,7 @@ import { setupCumulateSelectedKeys } from "../../core/utils/setups/setupCumulate
 import { setupCloserWhenSingleSelectionChange } from "../../core/utils/setups/setupCloserWhenSingleSelectionChange";
 import { setupCanDeactivate } from "../../core/utils/setups/setupCanDeactivate";
 import { injectParent } from "../../core/utils/injectParent";
+import { withBusy } from "../../core/utils/withBusy";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../core/commons";
 import { SdBaseContainerControl } from "../base/sd-base-container.control";
@@ -200,24 +201,30 @@ export abstract class AbsSdDataSheet<
       this.lastFilter.set(obj.clone(filter));
     });
 
-    effect(() => {
+    effect((onCleanup) => {
       this.page();
       this.lastFilter();
       this.sortingDefs();
       this.prepareRefreshEffect?.();
 
+      let cancelled = false;
+      onCleanup(() => {
+        cancelled = true;
+      });
+
       queueMicrotask(async () => {
+        if (cancelled) return;
         if (!this.canUse()) {
           this.initialized.set(true);
           return;
         }
 
-        this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
-          await this.refresh();
-        });
-        this.busyCount.update((v) => v - 1);
+        await withBusy(this.busyCount, () =>
+          this._sdToast.try(async () => {
+            await this._sdSharedData.wait();
+            await this.refresh();
+          }),
+        );
         this.initialized.set(true);
       });
     });
@@ -269,12 +276,12 @@ export abstract class AbsSdDataSheet<
   async doAddItem() {
     if (!this.newItem) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      const newItem = await this.newItem!();
-      this.items.update((items) => [newItem, ...items]);
-    });
-    this.busyCount.update((v) => v - 1);
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(async () => {
+        const newItem = await this.newItem!();
+        this.items.update((items) => [newItem, ...items]);
+      }),
+    );
   }
 
   async doSubmit(opt?: { permCheck?: boolean; hideNoChangeMessage?: boolean }) {
@@ -291,19 +298,19 @@ export abstract class AbsSdDataSheet<
       return;
     }
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
-      async () => {
-        const result = await this.submit!(diffs);
-        if (!result) return;
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(
+        async () => {
+          const result = await this.submit!(diffs);
+          if (!result) return;
 
-        this._sdToast.success("저장되었습니다.");
-        await this.refresh();
-        this.submitted.emit(true);
-      },
-      (err) => this._getOrmDataEditToastErrorMessage(err),
+          this._sdToast.success("저장되었습니다.");
+          await this.refresh();
+          this.submitted.emit(true);
+        },
+        (err) => this._getOrmDataEditToastErrorMessage(err),
+      ),
     );
-    this.busyCount.update((v) => v - 1);
   }
 
   doToggleDeleteItem(item: TItem) {
@@ -329,29 +336,29 @@ export abstract class AbsSdDataSheet<
     const result = await this.editItem(item);
     if (!result) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      await this.refresh();
-    });
-    this.busyCount.update((v) => v - 1);
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(async () => {
+        await this.refresh();
+      }),
+    );
   }
 
   async doToggleDeleteItems(del: boolean) {
     if (!this.canEdit()) return;
     if (!this.toggleDeleteItems) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
-      async () => {
-        const result = await this.toggleDeleteItems!(del);
-        if (!result) return;
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(
+        async () => {
+          const result = await this.toggleDeleteItems!(del);
+          if (!result) return;
 
-        await this.refresh();
-        this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
-      },
-      (err) => this._getOrmDataEditToastErrorMessage(err),
+          await this.refresh();
+          this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+        },
+        (err) => this._getOrmDataEditToastErrorMessage(err),
+      ),
     );
-    this.busyCount.update((v) => v - 1);
   }
 
   //-- excel
@@ -359,12 +366,12 @@ export abstract class AbsSdDataSheet<
   async doDownloadExcel() {
     if (!this.downloadExcel) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      const items = (await this.search(false)).items;
-      await this.downloadExcel!(items);
-    });
-    this.busyCount.update((v) => v - 1);
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(async () => {
+        const items = (await this.search(false)).items;
+        await this.downloadExcel!(items);
+      }),
+    );
   }
 
   async doUploadExcel() {
@@ -376,16 +383,16 @@ export abstract class AbsSdDataSheet<
     );
     if (!file) return;
 
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(
-      async () => {
-        await this.uploadExcel!(file);
-        await this.refresh();
-        this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
-      },
-      (err) => this._getOrmDataEditToastErrorMessage(err),
+    await withBusy(this.busyCount, () =>
+      this._sdToast.try(
+        async () => {
+          await this.uploadExcel!(file);
+          await this.refresh();
+          this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
+        },
+        (err) => this._getOrmDataEditToastErrorMessage(err),
+      ),
     );
-    this.busyCount.update((v) => v - 1);
   }
 
   //-- modal selection

@@ -74,6 +74,9 @@ export interface FsWatcherChangeInfo {
  * await watcher.close();
  */
 export class FsWatcher {
+  private static readonly _MAX_RETRIES = 3;
+  private static readonly _RETRY_DELAY_MS = 1000;
+
   /**
    * 파일 감시를 시작한다 (비동기).
    * ready 이벤트가 발생할 때까지 대기한다.
@@ -102,17 +105,40 @@ export class FsWatcher {
     });
   }
 
-  private readonly _watcher: chokidar.FSWatcher;
+  private _watcher: chokidar.FSWatcher;
+  private readonly _paths: string[];
+  private readonly _options: chokidar.ChokidarOptions;
   private readonly _ignoreInitial: boolean = true;
   private readonly _debounceQueues: DebounceQueue[] = [];
   private readonly _globMatchers: Minimatch[] = [];
+  private readonly _allHandlers: Array<(event: string, path: string) => void> = [];
+  private readonly _creationStack: string;
+  private _retryCount = 0;
+  private _isRecovering = false;
 
   private readonly _logger = consola.withTag("sd-fs-watcher");
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
-    const watchPaths: string[] = [];
+    // 생성 시점의 스택트레이스를 저장 (에러 발생 시 호출부 추적용)
+    this._creationStack = new Error().stack ?? "";
+    this._paths = [...paths];
+    this._options = { ...options };
 
-    for (const p of paths) {
+    this._watcher = this._buildChokidarWatcher();
+    this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
+
+    this._setupErrorHandler();
+  }
+
+  /**
+   * 저장된 paths와 options로 chokidar watcher를 생성한다.
+   * glob 패턴에서 base 디렉토리를 추출하고 globMatchers를 재구성한다.
+   */
+  private _buildChokidarWatcher(): chokidar.FSWatcher {
+    const watchPaths: string[] = [];
+    this._globMatchers.length = 0;
+
+    for (const p of this._paths) {
       const posixPath = posix(p);
       if (GLOB_CHARS_RE.test(posixPath)) {
         this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
@@ -125,17 +151,96 @@ export class FsWatcher {
     // 중복 경로 제거
     const uniquePaths = [...new Set(watchPaths)];
 
-    this._watcher = chokidar.watch(uniquePaths, {
+    return chokidar.watch(uniquePaths, {
       persistent: true,
-      ...options,
+      ...this._options,
       ignoreInitial: true,
     });
-    this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
+  }
 
-    // 감시 중 발생하는 오류를 로깅
+  /**
+   * chokidar watcher에 에러 핸들러를 등록한다.
+   * EPERM 에러 감지 시 자동 복구를 시도한다.
+   */
+  private _setupErrorHandler(): void {
     this._watcher.on("error", (err) => {
-      this._logger.error("FsWatcher 오류:", err);
+      const errDetail = err instanceof Error ? (err.stack ?? err.message) : String(err);
+      this._logger.error(
+        `FsWatcher 오류: ${errDetail}\n---- creation stack ----\n${this._creationStack}`,
+      );
+
+      if (
+        err instanceof Error &&
+        "code" in err &&
+        (err as NodeJS.ErrnoException).code === "EPERM" &&
+        !this._isRecovering
+      ) {
+        void this._handleEperm();
+      }
     });
+  }
+
+  /**
+   * EPERM 에러 발생 시 watcher를 재생성한다.
+   * 최대 _MAX_RETRIES회까지 _RETRY_DELAY_MS 간격으로 재시도한다.
+   * 성공 시 재시도 카운터를 초기화한다.
+   */
+  private async _handleEperm(): Promise<void> {
+    if (this._isRecovering) return;
+    this._isRecovering = true;
+
+    while (this._retryCount < FsWatcher._MAX_RETRIES) {
+      this._retryCount++;
+      this._logger.warn(
+        `EPERM 감지 — ${this._retryCount}/${FsWatcher._MAX_RETRIES} watcher 재시작 시도...`,
+      );
+
+      try {
+        try {
+          await this._watcher.close();
+        } catch {
+          // close 실패 무시
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, FsWatcher._RETRY_DELAY_MS));
+
+        this._watcher = this._buildChokidarWatcher();
+        this._setupErrorHandler();
+
+        for (const handler of this._allHandlers) {
+          this._watcher.on("all", handler);
+        }
+
+        await new Promise<void>((resolve, reject) => {
+          const onReady = () => {
+            this._watcher.removeListener("error", onError);
+            resolve();
+          };
+          const onError = (e: unknown) => {
+            this._watcher.removeListener("ready", onReady);
+            reject(e);
+          };
+          this._watcher.once("ready", onReady);
+          this._watcher.once("error", onError);
+        });
+
+        // 성공 — 카운터 초기화 후 복구 완료
+        this._retryCount = 0;
+        this._isRecovering = false;
+        this._logger.success("watcher 재시작 완료");
+        return;
+      } catch (err) {
+        const errDetail = err instanceof Error ? err.message : String(err);
+        this._logger.error(
+          `watcher 재시작 실패 (${this._retryCount}/${FsWatcher._MAX_RETRIES}): ${errDetail}`,
+        );
+      }
+    }
+
+    this._logger.error(
+      `EPERM 재시도 최대 횟수(${FsWatcher._MAX_RETRIES}회) 초과 — 재시도 중단`,
+    );
+    this._isRecovering = false;
   }
 
   /**
@@ -161,7 +266,7 @@ export class FsWatcher {
       });
     }
 
-    this._watcher.on("all", (event, filePath) => {
+    const handler = (event: string, filePath: string) => {
       // 지원되는 이벤트만 처리
       if (!FS_WATCHER_EVENTS.includes(event as FsWatcherEvent)) return;
 
@@ -180,7 +285,7 @@ export class FsWatcher {
        * - 그 외 → 최신 이벤트로 덮어쓰기
        */
       if (!changeInfoMap.has(filePath)) {
-        changeInfoMap.set(filePath, event);
+        changeInfoMap.set(filePath, event as EventName);
       }
       const prevEvent = changeInfoMap.get(filePath)!;
 
@@ -193,14 +298,17 @@ export class FsWatcher {
       ) {
         // add 후 unlink → 변경 없음 (삭제)
         changeInfoMap.delete(filePath);
-      } else if (prevEvent === "unlink" && (event === "add" || event === "change")) {
-        // unlink 후 add/change → add (파일 재생성)
+      } else if (prevEvent === "unlink" && event === "add") {
+        // unlink 후 add → add (파일 재생성)
         changeInfoMap.set(filePath, "add");
+      } else if (prevEvent === "unlink" && event === "change") {
+        // unlink 후 change → change (이전 사이클에서 이미 존재하던 파일이 삭제 후 수정된 경우)
+        changeInfoMap.set(filePath, "change");
       } else if (prevEvent === "unlinkDir" && event === "addDir") {
         // unlinkDir 후 addDir → addDir (디렉토리 재생성)
         changeInfoMap.set(filePath, "addDir");
       } else {
-        changeInfoMap.set(filePath, event);
+        changeInfoMap.set(filePath, event as EventName);
       }
 
       fnQ.run(async () => {
@@ -218,7 +326,10 @@ export class FsWatcher {
 
         await cb(changeInfos);
       });
-    });
+    };
+
+    this._allHandlers.push(handler);
+    this._watcher.on("all", handler);
 
     return this;
   }

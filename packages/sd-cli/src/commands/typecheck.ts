@@ -2,7 +2,6 @@ import ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
-import type { SdConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import { createBuildEngine } from "../engines/index";
@@ -35,14 +34,14 @@ export interface TypecheckResult {
   errorCount: number;
   warningCount: number;
   formattedOutput: string;
-  /** Lint result (present when TypecheckOptions.lint is true) */
+  /** lint 결과 (TypecheckOptions.lint가 true일 때 존재) */
   lint?: {
     success: boolean;
     errorCount: number;
     warningCount: number;
     formattedOutput: string;
   };
-  /** Paths of scripts packages that were skipped (for separate lint) */
+  /** 건너뛴 scripts 패키지 경로 (별도 lint용) */
   scriptsPackagePaths?: string[];
 }
 
@@ -75,7 +74,8 @@ function extractTargetPackageNames(targets: string[]): Set<string> {
  *
  * sd.config.ts의 각 패키지에 대해:
  * - 라이브러리/서버 패키지 → BuildEngine.run({js:false, dts:false})
- * - 스크립트/클라이언트 패키지 → 제외
+ * - client 패키지 → browser target으로 변환하여 포함
+ * - scripts 패키지 → 타입체크 제외 (별도 lint만 수행)
  * 비패키지 파일 → typecheckNonPackageFiles 유틸리티
  *
  * @param options - 타입체크 실행 옵션
@@ -97,14 +97,8 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   };
 
   // sd.config.ts 로드
-  let sdConfig: SdConfig;
-  try {
-    sdConfig = await loadSdConfig({ cwd, dev: false, options: options.options });
-    logger.debug("sd.config.ts 로드 완료");
-  } catch {
-    sdConfig = { packages: {} };
-    logger.debug("sd.config.ts 로드 실패, 기본값 사용");
-  }
+  const sdConfig = await loadSdConfig({ cwd, dev: false, options: options.options });
+  logger.debug("sd.config.ts 로드 완료");
 
   // 워크스페이스 패키지 탐색 및 tests/를 설정에 병합
   const workspacePackages = discoverWorkspacePackages(cwd);
@@ -278,7 +272,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     formattedOutput = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
   }
 
-  // Build lint result if lint was requested
+  // lint가 요청된 경우 lint 결과 생성
   const lintResult = options.lint === true
     ? {
         success: lintSuccess,

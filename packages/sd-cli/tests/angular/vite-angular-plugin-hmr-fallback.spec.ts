@@ -195,6 +195,7 @@ describe("sdAngularPlugin HMR fallback", () => {
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
     const mockServer = {
+      config: { base: "/" },
       middlewares: {
         use: (fn: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => {
           middlewares.push(fn);

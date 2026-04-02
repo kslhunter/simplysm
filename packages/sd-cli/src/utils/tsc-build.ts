@@ -17,23 +17,23 @@ import { createOutputPathRewriter, addJsExtensionToImports } from "./output-path
 import { isWorkspaceDiagnostic, formatDiagnosticError } from "./diagnostic-utils";
 
 /**
- * Options for package-mode tsc build
+ * 패키지 모드 tsc 빌드 옵션
  */
 export interface TscPackageBuildOptions {
   pkgDir: string;
   cwd: string;
-  /** Output control flags: which files to emit */
+  /** 출력 제어 플래그: emit할 파일 종류 */
   output: { js: boolean; dts: boolean };
-  /** Pre-parsed tsconfig. If provided, skips parseTsconfig() call. */
+  /** 미리 파싱된 tsconfig. 제공 시 parseTsconfig() 호출을 스킵한다. */
   parsedConfig?: ts.ParsedCommandLine;
-  /** Typecheck environment. When set, adjusts compilerOptions via getCompilerOptionsForEnv(). */
+  /** 타입체크 환경. 설정 시 getCompilerOptionsForEnv()로 compilerOptions를 조정한다. */
   env?: TypecheckEnv;
-  /** Include tests/ files in typecheck-only mode. Defaults to false. */
+  /** 타입체크 전용 모드에서 tests/ 파일 포함 여부. 기본값 false. */
   includeTests?: boolean;
 }
 
 /**
- * Result of package-mode tsc build
+ * 패키지 모드 tsc 빌드 결과
  */
 export interface TscPackageBuildResult {
   success: boolean;
@@ -41,20 +41,20 @@ export interface TscPackageBuildResult {
   diagnostics: SerializedDiagnostic[];
   errorCount: number;
   warningCount: number;
-  /** ts.Program exposed for lint-with-program integration */
+  /** lint-with-program 통합을 위해 노출된 ts.Program */
   program?: ts.Program;
-  /** Files affected in this build (normalized forward-slash paths).
-   *  Used for incremental lint in watch mode. */
+  /** 이 빌드에서 영향받은 파일 (정규화된 순방향 슬래시 경로).
+   *  watch 모드에서 증분 lint에 사용한다. */
   affectedFiles?: ReadonlySet<string>;
 }
 
 /**
- * Run TypeScript incremental build for a package.
+ * 패키지에 대해 TypeScript 증분 빌드를 실행한다.
  *
- * - output.js || output.dts: emit mode (src files only, generates output files)
- * - neither: typecheck only (src files only by default, src + test files when includeTests=true)
+ * - output.js || output.dts: emit 모드 (src 파일만, 출력 파일 생성)
+ * - 둘 다 아님: 타입체크만 (기본 src 파일만, includeTests=true이면 src + test 파일)
  *
- * Uses tsBuildInfoFile for incremental compilation across runs.
+ * 실행 간 증분 컴파일을 위해 tsBuildInfoFile을 사용한다.
  */
 export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageBuildResult {
   try {
@@ -144,9 +144,9 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       host,
     );
 
-    // Track affected files via builder program's incremental analysis.
-    // getSemanticDiagnosticsOfNextAffectedFile iterates files that changed since the last build.
-    // affected can be ts.SourceFile or ts.Program (when global scope changes).
+    // builder program의 증분 분석을 통해 affected 파일을 추적한다.
+    // getSemanticDiagnosticsOfNextAffectedFile은 마지막 빌드 이후 변경된 파일을 순회한다.
+    // affected는 ts.SourceFile 또는 ts.Program(전역 스코프 변경 시)일 수 있다.
     let affectedFiles: Set<string> | undefined = new Set<string>();
 
     while (true) {
@@ -155,7 +155,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       if ("fileName" in result.affected) {
         affectedFiles?.add(pathx.posix(result.affected.fileName));
       } else {
-        // ts.Program returned — global change, treat as full rebuild
+        // ts.Program 반환 — 전역 변경, 전체 재빌드로 처리
         affectedFiles = undefined;
       }
     }
@@ -173,7 +173,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       ...emitResult.diagnostics,
     ];
 
-    // Workspace scope: exclude node_modules, keep all workspace diagnostics
+    // 워크스페이스 범위: node_modules 제외, 모든 워크스페이스 진단 유지
     const filteredDiagnostics = allDiagnostics.filter(
       (d) => isWorkspaceDiagnostic(d, options.cwd),
     );

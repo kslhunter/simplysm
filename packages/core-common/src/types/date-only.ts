@@ -315,7 +315,7 @@ export class DateOnly {
 
   /** 지정된 일수를 더한 새 인스턴스 반환 */
   addDays(days: number): DateOnly {
-    return new DateOnly(this.tick + days * DateOnly.MS_PER_DAY);
+    return this.setDay(this.day + days);
   }
 
   //#endregion

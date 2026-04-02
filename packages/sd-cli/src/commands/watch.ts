@@ -4,17 +4,17 @@ import {
 } from "../orchestrators/DevWatchOrchestrator";
 
 /**
- * Build all packages in watch mode.
+ * DevWatchOrchestrator를 통해 모든 패키지를 watch 모드로 빌드한다.
  *
- * - Load `sd.config.ts` to check build target info per package (required)
- * - `node`/`browser`/`neutral` target: build in esbuild watch mode + generate .d.ts
- * - `server` target: build in esbuild watch mode (no runtime)
- * - `scripts` target with watch config: run hook on file changes
- * - Auto rebuild on file changes
- * - Terminate with SIGINT/SIGTERM signals
+ * - `sd.config.ts`를 로드하여 패키지별 빌드 대상 정보를 확인한다
+ * - `node`/`browser`/`neutral` target: esbuild watch 모드 빌드 + .d.ts 생성
+ * - `server` target: esbuild watch 모드 빌드 (런타임 없음)
+ * - `scripts` target (watch 설정 있을 때): 파일 변경 시 hook 실행
+ * - 파일 변경 시 자동 재빌드
+ * - SIGINT/SIGTERM 시그널로 종료
  *
- * @param options - watch execution options (targets, options)
- * @returns resolves on termination signal
+ * @param options - watch 실행 옵션 (targets, options)
+ * @returns 종료 시그널 수신 시 resolve
  */
 export async function runWatch(options: Omit<DevWatchOrchestratorOptions, "mode">): Promise<void> {
   const orchestrator = new DevWatchOrchestrator({ mode: "watch", ...options });

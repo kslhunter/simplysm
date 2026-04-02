@@ -34,6 +34,7 @@ export class SdTiptapEditorInitialValueTest {
 export class SdTiptapEditorCustomExtensionsTest {
   value = signal<string | undefined>(undefined);
   customExtensions = signal<AnyExtension[]>([]);
+  editorCtrl = viewChild(SdTiptapEditorControl);
 }
 
 // Slice 4: 폼 통합

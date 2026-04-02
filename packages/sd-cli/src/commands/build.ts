@@ -4,17 +4,10 @@ import {
 } from "../orchestrators/BuildOrchestrator";
 
 /**
- * Run production build.
+ * BuildOrchestrator를 통해 프로덕션 빌드를 실행한다.
  *
- * - Load `sd.config.ts` to check build target info per package (required)
- * - Run lint
- * - Clean dist folder (clean build)
- * - `node`/`browser`/`neutral` target: esbuild JS build + dts generation (with type check)
- * - `client` target: Vite production build + typecheck (dts not needed)
- * - Set `process.exitCode = 1` if any step fails
- *
- * @param options - build execution options
- * @returns resolves on completion
+ * @param options - 빌드 실행 옵션
+ * @returns 완료 시 resolve
  */
 export async function runBuild(options: BuildOrchestratorOptions): Promise<void> {
   const orchestrator = new BuildOrchestrator(options);

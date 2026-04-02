@@ -46,6 +46,14 @@ export class SdToastProvider {
   private readonly _toastRefs: ComponentRef<SdToastControl>[] = [];
   private readonly _contentRefs = new Map<ComponentRef<SdToastControl>, ComponentRef<any>>();
 
+  constructor() {
+    effect(() => {
+      if (this._containerRef !== undefined) {
+        this._containerRef.setInput("overlap", this.overlap());
+      }
+    });
+  }
+
   private get containerRef(): ComponentRef<SdToastContainerControl> {
     if (this._containerRef === undefined) {
       this._containerRef = createComponent(SdToastContainerControl, {
@@ -53,8 +61,8 @@ export class SdToastProvider {
       });
       this._appRef.attachView(this._containerRef.hostView);
       document.body.appendChild(this._containerRef.location.nativeElement);
+      this._containerRef.setInput("overlap", this.overlap());
     }
-    this._containerRef.setInput("overlap", this.overlap());
     return this._containerRef;
   }
 
@@ -228,14 +236,18 @@ export class SdToastProvider {
     const el = toastRef.location.nativeElement as HTMLElement;
     let isHovering = false;
     let dismissPending = false;
+    let dismissed = false;
 
     const dismiss = () => {
+      if (dismissed) return;
+      dismissed = true;
       onDismiss?.();
       this._dismissToast(toastRef);
     };
 
     const dismissAfterDelay = (ms: number) => {
       setTimeout(() => {
+        if (dismissed) return;
         if (isHovering) {
           dismissPending = true;
         } else {
@@ -250,6 +262,7 @@ export class SdToastProvider {
     el.addEventListener("mouseleave", () => {
       isHovering = false;
       if (dismissPending) {
+        dismissPending = false;
         dismissAfterDelay(1000);
       }
     });

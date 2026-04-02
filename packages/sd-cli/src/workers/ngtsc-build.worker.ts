@@ -30,7 +30,7 @@ import { collectDeps } from "../utils/package-utils";
 
 applyDebugLevel();
 
-//#region Types (re-export for worker interface)
+//#region 타입 (워커 인터페이스용 re-export)
 
 export type { NgtscBuildInfo, NgtscBuildResult, NgtscCombinedBuildEvent };
 
@@ -69,7 +69,7 @@ async function build(info: NgtscBuildInfo): Promise<NgtscBuildResult> {
   const { program, ...result } = await runNgtscBuild({ ...info, env: info.output.env });
   logger.debug(`[${info.name}] ngtsc worker build 완료 (build.success: ${result.build.success})`);
 
-  // Run lint if enabled and program is available
+  // lint 실행 (활성화 + program 사용 가능 시)
   if (info.output.lint === true && program != null) {
     logger.debug(`[${info.name}] lint 시작`);
     const lintRunner = new LintWithProgramRunner({
@@ -104,11 +104,11 @@ function extractSourceFilePaths(program: ReturnType<AngularCompiler["getTsProgra
 }
 
 /**
- * Perform a watch build (initial or incremental) using AngularCompiler.
- * Returns NgtscCombinedBuildEvent for sending to the engine.
+ * AngularCompiler를 사용하여 watch 빌드(초기 또는 증분)를 수행한다.
+ * 엔진에 전송할 NgtscCombinedBuildEvent를 반환한다.
  *
- * @param affectedFileNames - When provided (watch rebuild), only these files are linted.
- *   When undefined (initial build), all workspace files are linted.
+ * @param affectedFileNames - 제공 시(watch 재빌드) 해당 파일만 lint 수행.
+ *   미제공 시(초기 빌드) workspace 전체 파일을 lint 수행.
  */
 async function performWatchBuild(
   info: NgtscBuildInfo,
@@ -122,7 +122,7 @@ async function performWatchBuild(
   const pkgSrcDir = path.join(info.pkgDir, "src");
   const normalizedSrcDir = pathx.posix(pkgSrcDir);
 
-  // Collect diagnostics — workspace scope (no package-level filtering)
+  // 진단 수집 — workspace 스코프 (패키지 단위 필터링 없음)
   const allDiagnostics = [...compiler.collectDiagnostics()].filter(
     (d) => isWorkspaceDiagnostic(d, info.cwd),
   );
@@ -134,7 +134,7 @@ async function performWatchBuild(
     .filter((d) => d.category === ts.DiagnosticCategory.Error)
     .map(formatDiagnosticError);
 
-  // Emit via AngularCompiler + output-path-rewriting
+  // AngularCompiler로 emit + output-path-rewriting 적용
   const loadPaths = buildScssLoadPaths(info);
   const emitResults = compiler.emitAffectedFiles({
     sourceFilter: (fileName: string) =>
@@ -147,17 +147,17 @@ async function performWatchBuild(
     registry: sideEffectScssRegistry,
   });
 
-  // Side-effect SCSS compilation (skip when no .scss/.css files changed)
+  // 사이드 이펙트 SCSS 컴파일 (.scss/.css 파일 변경 없으면 건너뜀)
   if (hasScssChanges) {
     compileSideEffectScss(sideEffectScssRegistry, loadPaths, scssErrors, scssDependencies);
   }
 
-  // Global SCSS compilation
+  // 전역 SCSS 컴파일
   const globalScssErrors = compileGlobalScss(info.pkgDir, loadPaths);
 
   const allErrors = [...errors, ...scssErrors, ...globalScssErrors];
 
-  // Run lint if enabled
+  // lint 실행 (활성화 시)
   let lint: LintWithProgramResult | undefined;
   if (info.output.lint === true) {
     logger.debug(`[${info.name}] lint 시작`);
@@ -189,7 +189,7 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
   watchInfo = { ...info, env: info.output.env };
 
   try {
-    // Parse tsconfig and prepare compiler options
+    // tsconfig 파싱 및 컴파일러 옵션 준비
     const parsedConfig = parseTsconfig(watchInfo.pkgDir);
     const sourceFiles = watchInfo.output.includeTests === true
       ? getPackageFiles(watchInfo.pkgDir, parsedConfig)
@@ -202,13 +202,13 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
 
     const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
 
-    // SCSS closure variables
+    // SCSS 클로저 변수
     const scssErrors: string[] = [];
     const scssDependencies = new Map<string, Set<string>>();
     const loadPaths = buildScssLoadPaths(watchInfo);
     currentScssDependencies = scssDependencies;
 
-    // Create AngularSourceFileCache + AngularCompiler
+    // AngularSourceFileCache + AngularCompiler 생성
     const sourceFileCache = new AngularSourceFileCache();
     const compiler = new AngularCompiler({
       rootNames: sourceFiles,
@@ -217,34 +217,34 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
       sourceFileCache,
       transformStylesheet: createLibraryTransformStylesheet(loadPaths, scssErrors, scssDependencies),
     });
-    // Initial build
+    // 초기 빌드
     await compiler.initialize();
     lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
     const initialResult = await performWatchBuild(watchInfo, compiler, scssDependencies, scssErrors);
     sender.send("build", initialResult);
 
-    // Collect workspace dependency paths + replaceDeps
+    // workspace 의존성 경로 + replaceDeps 수집
     const { workspaceDeps, replaceDeps } = collectDeps(
       watchInfo.pkgDir,
       watchInfo.cwd,
       watchInfo.replaceDeps,
     );
 
-    // Start FsWatcher
+    // FsWatcher 시작
     logger.debug(`[${watchInfo.name}] FsWatcher 시작`);
     const watchPaths = [
-      path.join(watchInfo.pkgDir, "src", "**", "*.{ts,scss,css}"),
-      path.join(watchInfo.pkgDir, "scss", "**", "*.{scss,css}"),
+      pathx.posixResolve(watchInfo.pkgDir, "src", "**", "*.{ts,scss,css}"),
+      pathx.posixResolve(watchInfo.pkgDir, "scss", "**", "*.{scss,css}"),
       ...workspaceDeps.flatMap((d) => {
-        const depDir = path.join(watchInfo!.cwd, "packages", d);
+        const depDir = pathx.posixResolve(watchInfo!.cwd, "packages", d);
         return [
-          path.join(depDir, "src", "**", "*.{ts,scss,css}"),
-          path.join(depDir, "scss", "**", "*.{scss,css}"),
+          pathx.posixResolve(depDir, "src", "**", "*.{ts,scss,css}"),
+          pathx.posixResolve(depDir, "scss", "**", "*.{scss,css}"),
         ];
       }),
       ...replaceDeps.flatMap((pkg) => [
-        path.join(watchInfo!.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-        path.join(watchInfo!.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
+        pathx.posixResolve(watchInfo!.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
+        pathx.posixResolve(watchInfo!.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
       ]),
     ];
     fsWatcher = await FsWatcher.watch(watchPaths);
@@ -255,12 +255,12 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
           (c) => c.event === "add" || c.event === "unlink",
         );
 
-        // Collect modified files (all changed + SCSS dependency reverse-lookup)
+        // 변경된 파일 수집 (전체 변경 + SCSS 의존성 역방향 탐색)
         const modifiedFiles = new Set<string>();
         for (const f of changedFiles) {
           modifiedFiles.add(f.path);
 
-          // SCSS dependency reverse-lookup
+          // SCSS 의존성 역방향 탐색
           if (
             (f.path.endsWith(".scss") || f.path.endsWith(".css")) &&
             currentScssDependencies != null
@@ -273,7 +273,7 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
           }
         }
 
-        // Dependency filter: skip rebuild if no relevant changes
+        // 의존성 필터: 관련 변경이 없으면 리빌드 건너뜀
         if (!hasFileAddOrRemove && lastSourceFilePaths != null) {
           const hasRelevantChange = [...modifiedFiles].some((p) =>
             lastSourceFilePaths!.has(p),
@@ -286,17 +286,17 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
 
         sender.send("buildStart", {});
 
-        // Clear SCSS errors for fresh rebuild
+        // 새 리빌드를 위해 SCSS 에러 초기화
         scssErrors.length = 0;
         scssDependencies.clear();
 
-        // Incremental rebuild via AngularCompiler.update()
+        // AngularCompiler.update()를 통한 증분 리빌드
         const updateResult = await compiler.update(modifiedFiles);
 
-        // Update source file paths after rebuild
+        // 리빌드 후 소스 파일 경로 업데이트
         lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
 
-        // Convert affected ts.SourceFile set to file name strings for incremental lint
+        // 증분 lint를 위해 영향받은 ts.SourceFile 집합을 파일명 문자열로 변환
         const affectedFileNames = new Set<string>();
         for (const sf of updateResult.affectedFiles) {
           affectedFileNames.add(pathx.posix(sf.fileName));

@@ -20,7 +20,7 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
-    expect(host.innerHTML).toContain("<svg");
+    expect(host.querySelector("svg")).not.toBeNull();
   });
 
   it("type=qrcode이면 QR 코드 SVG가 렌더링된다", async () => {
@@ -30,7 +30,7 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
-    expect(host.innerHTML).toContain("<svg");
+    expect(host.querySelector("svg")).not.toBeNull();
   });
 
   it("value가 변경되면 바코드 SVG가 갱신된다", async () => {
@@ -40,14 +40,14 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
-    const svg1 = host.innerHTML;
+    const svg1 = host.querySelector("div")!.innerHTML;
 
     fixture.componentInstance.value.set("67890");
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const svg2 = host.innerHTML;
-    expect(svg2).toContain("<svg");
+    const svg2 = host.querySelector("div")!.innerHTML;
+    expect(svg2).not.toBe("");
     expect(svg2).not.toBe(svg1);
   });
 
@@ -58,7 +58,8 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
-    expect(host.innerHTML).toBe("");
+    const div = host.querySelector("div") as HTMLElement;
+    expect(div.innerHTML).toBe("");
   });
 
   it("type=ean13으로도 바코드가 렌더링된다", async () => {
@@ -70,7 +71,7 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
-    expect(host.innerHTML).toContain("<svg");
+    expect(host.querySelector("svg")).not.toBeNull();
   });
 });
 

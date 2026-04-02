@@ -39,6 +39,24 @@ describe("FIX-1 Slice 4: SdNavigateWindowProvider", () => {
     expect(openedWindows.has(mockWindow2)).toBe(true);
   });
 
+  it("hash에 세미콜론이 없으면 isWindow는 false를 반환한다", () => {
+    const origHash = window.location.hash;
+    window.location.hash = "#/main";
+
+    expect(provider.isWindow).toBe(false);
+
+    window.location.hash = origHash;
+  });
+
+  it("hash에 세미콜론과 window=true가 있으면 isWindow는 true를 반환한다", () => {
+    const origHash = window.location.hash;
+    window.location.hash = "#/main;window=true";
+
+    expect(provider.isWindow).toBe(true);
+
+    window.location.hash = origHash;
+  });
+
   it("부모 unload 시 모든 열린 팝업이 닫힌다", () => {
     const mockWindow1 = { close: vi.fn(), closed: false } as unknown as Window;
     const mockWindow2 = { close: vi.fn(), closed: false } as unknown as Window;

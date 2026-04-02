@@ -323,7 +323,7 @@ export class DateTime {
 
   /** 지정된 일수를 더한 새 인스턴스 반환 */
   addDays(days: number): DateTime {
-    return new DateTime(this.tick + days * 24 * 60 * 60 * 1000);
+    return this.setDay(this.day + days);
   }
 
   /** 지정된 시간을 더한 새 인스턴스 반환 */

@@ -60,6 +60,40 @@ describe("SdSharedDataSelectListControl", () => {
       expect(ctrl.displayItems().map((i) => i.__valueKey)).toEqual([2]);
     });
 
+    it("검색어를 대소문자 무시로 필터링한다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([listItem(1, "Alice"), listItem(2, "BOB"), listItem(3, "charlie")]);
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      ctrl.searchText.set("bob");
+      expect(ctrl.displayItems().map((i) => i.__valueKey)).toEqual([2]);
+    });
+
+    it("공백 분리 AND 검색으로 필터링한다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([
+        listItem(1, "서울특별시 강남구"),
+        listItem(2, "서울특별시 종로구"),
+        listItem(3, "부산광역시 해운대구"),
+      ]);
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      ctrl.searchText.set("서울 강남");
+      expect(ctrl.displayItems().map((i) => i.__valueKey)).toEqual([1]);
+    });
+
+    it("AND 조건 불일치 시 제외한다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([listItem(1, "서울특별시 강남구")]);
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      ctrl.searchText.set("서울 부산");
+      expect(ctrl.displayItems().map((i) => i.__valueKey)).toEqual([]);
+    });
+
     it("filterFn이 설정되면 추가 필터링한다", () => {
       const { fixture, host } = createFixture();
       host.items.set([listItem(1, "A"), listItem(2, "B"), listItem(3, "C")]);
@@ -105,6 +139,39 @@ describe("SdSharedDataSelectListControl", () => {
       fixture.detectChanges();
 
       expect(getCtrl(fixture).pageLength()).toBe(2); // ceil(3/2) = 2
+    });
+
+    it("hidden 항목을 제외한 길이로 페이지 수를 계산한다", () => {
+      const { fixture, host } = createFixture();
+      // 5개 중 2개 hidden → 표시 3개
+      host.items.set([
+        listItem(1, "A"),
+        listItem(2, "B", { hidden: true }),
+        listItem(3, "C"),
+        listItem(4, "D", { hidden: true }),
+        listItem(5, "E"),
+      ]);
+      host.pageItemCount.set(2);
+      fixture.detectChanges();
+
+      expect(getCtrl(fixture).pageLength()).toBe(2); // ceil(3/2) = 2, not ceil(5/2) = 3
+    });
+
+    it("검색 필터 적용 후 길이로 페이지 수를 계산한다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([
+        listItem(1, "Alice"),
+        listItem(2, "Bob"),
+        listItem(3, "Almond"),
+        listItem(4, "Charlie"),
+      ]);
+      host.pageItemCount.set(2);
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      ctrl.searchText.set("Al");
+
+      expect(ctrl.pageLength()).toBe(1); // ceil(2/2) = 1, not ceil(4/2) = 2
     });
   });
 

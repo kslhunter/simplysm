@@ -20,12 +20,16 @@ export function injectParent<T = object>(
       break;
     }
 
-    const comp = lView[8] as object;
-    if (type == null) {
-      return comp as T;
-    }
-    if (comp instanceof type) {
-      return comp as T;
+    const comp = lView[8];
+    // 컴포넌트 인스턴스 검증: null, primitive, plain object({})는 건너뜀
+    // Angular 내부 슬롯 변경 시 잘못된 객체 반환을 방지하는 방어 코드
+    if (comp != null && typeof comp === "object" && comp.constructor !== Object) {
+      if (type == null) {
+        return comp as T;
+      }
+      if (comp instanceof type) {
+        return comp as T;
+      }
     }
 
     currentInjector = currentInjector.get(Injector, undefined, {

@@ -65,10 +65,12 @@ export abstract class SdAppStructureUtils {
     permKeys: K[],
     permRecord: Record<string, boolean> | undefined,
   ): K[] {
+    if (permRecord === undefined) return [] as K[];
+
     const result = [] as K[];
     for (const permKey of permKeys) {
       // 해당 권한이 설정되어있거나
-      if (fullCodes.some((fullCode) => permRecord?.[fullCode + "." + permKey])) {
+      if (fullCodes.some((fullCode) => permRecord[fullCode + "." + permKey])) {
         result.push(permKey);
       }
       // 권한이라는것이 아얘 존재하지 않거나
@@ -93,14 +95,12 @@ export abstract class SdAppStructureUtils {
 
     const result: TSdAppStructureItem<TModule>[] = [];
 
-    let cursor: TSdAppStructureItem<TModule> | undefined;
     let cursorChildren = items;
     for (const currCode of codeChain) {
-      cursor = cursorChildren.single((item) => item.code === currCode);
-      cursorChildren = cursor != null && "children" in cursor ? cursor.children : [];
-      if (cursor) {
-        result.push(cursor);
-      }
+      const cursor = cursorChildren.single((item) => item.code === currCode);
+      if (cursor == null) return [];
+      cursorChildren = "children" in cursor ? cursor.children : [];
+      result.push(cursor);
     }
 
     return result;

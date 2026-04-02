@@ -37,8 +37,8 @@ vi.mock("../../src/utils/sd-config", () => ({
 
 vi.mock("@simplysm/core-node", () => ({
   cpx: {
-    exec: mocks.execa,
-    execSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    spawn: mocks.execa,
+    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
   },
 }));
 

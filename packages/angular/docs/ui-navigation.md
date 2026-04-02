@@ -144,37 +144,19 @@ Recursive sidebar navigation menu. Supports accordion and flat layouts, router l
 ```typescript
 @Component({ selector: "sd-sidebar-menu" })
 class SdSidebarMenuControl {
-  menus = input<ISdSidebarMenu[]>([]);
+  menus = input<ISdMenu[]>([]);
   layout = input<"accordion" | "flat">();
-  getMenuIsSelectedFn = input<(menu: ISdSidebarMenu) => boolean>();
+  getMenuIsSelectedFn = input<(menu: ISdMenu) => boolean>();
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `menus` | `ISdSidebarMenu[]` | `[]` | Menu items |
+| `menus` | `ISdMenu[]` | `[]` | Menu items (from `SdAppStructureProvider.usableMenus`) |
 | `layout` | `"accordion" \| "flat" \| undefined` | auto | Flat when ≤3 root menus |
-| `getMenuIsSelectedFn` | `((menu) => boolean) \| undefined` | — | Custom selection predicate |
+| `getMenuIsSelectedFn` | `((menu: ISdMenu) => boolean) \| undefined` | — | Custom selection predicate |
 
-## `ISdSidebarMenu`
-
-```typescript
-interface ISdSidebarMenu {
-  title: string;
-  codeChain: string[];
-  url?: string;
-  icon?: string;
-  children?: ISdSidebarMenu[];
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Display text |
-| `codeChain` | `string[]` | Hierarchical code path for router link |
-| `url` | `string \| undefined` | External URL (opens in new tab) |
-| `icon` | `string \| undefined` | Icon SVG string |
-| `children` | `ISdSidebarMenu[] \| undefined` | Sub-menus |
+Uses `ISdMenu` from `@simplysm/angular` (exported via `SdAppStructureProvider`).
 
 ## `SdSidebarUserControl`
 
@@ -228,30 +210,12 @@ Horizontal topbar navigation menu with dropdown sub-menus.
 ```typescript
 @Component({ selector: "sd-topbar-menu" })
 class SdTopbarMenuControl {
-  menus = input<ISdTopbarMenu[]>([]);
-  getMenuIsSelectedFn = input<(menu: ISdTopbarMenu) => boolean>();
+  menus = input<ISdMenu[]>([]);
+  getMenuIsSelectedFn = input<(menu: ISdMenu) => boolean>();
 }
 ```
 
-## `ISdTopbarMenu`
-
-```typescript
-interface ISdTopbarMenu {
-  title: string;
-  codeChain: string[];
-  url?: string;
-  icon?: string;
-  children?: ISdTopbarMenu[];
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Display text |
-| `codeChain` | `string[]` | Hierarchical code path for router link |
-| `url` | `string \| undefined` | External URL (opens in new tab) |
-| `icon` | `string \| undefined` | Icon SVG string |
-| `children` | `ISdTopbarMenu[] \| undefined` | Sub-menus |
+Uses `ISdMenu` from `@simplysm/angular` (exported via `SdAppStructureProvider`).
 
 ## `SdTopbarUserControl`
 

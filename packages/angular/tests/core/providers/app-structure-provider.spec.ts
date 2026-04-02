@@ -121,6 +121,66 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     });
   });
 
+  describe("Feature 2.2 Slice 1: getItemChainByFullCode 중간 코드 누락", () => {
+    it("중간 코드가 items에 존재하지 않으면 빈 배열을 반환한다", () => {
+      // "admin.nonexistent.something" — admin은 있지만 nonexistent는 없다
+      const chain = structure.getItemChainByFullCode("admin.nonexistent.something");
+      expect(chain).toEqual([]);
+    });
+
+    it("중간 코드 누락 시 getTitleByFullCode가 에러를 throw한다", () => {
+      expect(() => structure.getTitleByFullCode("admin.nonexistent.something")).toThrow(
+        "Item not found for fullCode: admin.nonexistent.something",
+      );
+    });
+
+    it("중간 코드 누락 시 getPermsByFullCode가 빈 배열을 반환한다", () => {
+      structure.permRecord.set({ "admin.user.use": true });
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["admin.nonexistent.something"], ["use", "edit"]),
+      );
+      expect(result()).toEqual([]);
+    });
+
+    it("유효한 fullCode는 전체 체인을 반환한다", () => {
+      const chain = structure.getItemChainByFullCode("admin.user");
+      expect(chain.length).toBe(2);
+      expect(chain[0].code).toBe("admin");
+      expect(chain[1].code).toBe("user");
+    });
+
+    it("단일 코드는 1개 아이템 체인을 반환한다", () => {
+      const chain = structure.getItemChainByFullCode("admin");
+      expect(chain.length).toBe(1);
+      expect(chain[0].code).toBe("admin");
+    });
+  });
+
+  describe("Feature 2.2 Slice 2: getPermsByFullCode permRecord 미로딩 가드", () => {
+    it("permRecord가 undefined이고 perms 미정의 항목이면 빈 배열을 반환한다", () => {
+      // permRecord는 초기값 undefined (signal 초기 상태)
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["admin.config"], ["use", "edit"]),
+      );
+      expect(result()).toEqual([]);
+    });
+
+    it("permRecord가 undefined이고 perms 정의 항목이면 빈 배열을 반환한다", () => {
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["admin.user"], ["use", "edit"]),
+      );
+      expect(result()).toEqual([]);
+    });
+
+    it("permRecord 로딩 완료 후 기존 동작을 보존한다", () => {
+      structure.permRecord.set({ "admin.user.use": true });
+      const result = TestBed.runInInjectionContext(() =>
+        usePermsSignal(["admin.user"], ["use", "edit"]),
+      );
+      expect(result()).toEqual(["use"]);
+    });
+  });
+
   describe("Feature 1.1: 경계값 안전 처리", () => {
     it("잘못된 fullCode로 getTitleByFullCode 호출 시 에러가 발생한다", () => {
       expect(() => structure.getTitleByFullCode("nonexistent.code")).toThrow(

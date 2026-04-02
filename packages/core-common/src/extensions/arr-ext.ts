@@ -582,8 +582,8 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector == null ? p : selector(p);
+      const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, false);
     });
   },
@@ -592,8 +592,8 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector == null ? p : selector(p);
+      const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, true);
     });
   },

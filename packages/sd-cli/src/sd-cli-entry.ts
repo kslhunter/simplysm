@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-// side-effect: Map/Array prototype extensions (getOrCreate, etc.)
+// 사이드 이펙트: Map/Array prototype 확장 (getOrCreate 등)
 import "@simplysm/core-common";
 import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -34,7 +34,7 @@ async function collectYargsHelp(argv: string[]): Promise<string> {
   try {
     await createCliParser(argv).exitProcess(false).parse();
   } catch {
-    // yargs may throw after help display
+    // yargs가 help 출력 후 throw할 수 있음
   } finally {
   
     console.log = orig;
@@ -43,11 +43,11 @@ async function collectYargsHelp(argv: string[]): Promise<string> {
 }
 
 /**
- * Create CLI parser
- * @internal exported for testing
+ * CLI 파서 생성
+ * @internal 테스트용으로 export
  */
 export function createCliParser(argv: string[]): Argv {
-  // Top-level --help/-h (without a subcommand): show comprehensive help for all commands
+  // 최상위 --help/-h (서브커맨드 없이): 모든 명령어의 종합 도움말 표시
   const hasHelp = argv.includes("--help") || argv.includes("-h");
   const hasCommand = COMMAND_NAMES.some((cmd) => argv.includes(cmd));
   if (hasHelp && !hasCommand) {
@@ -313,11 +313,18 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .demandCommand(1, "Please specify a command.")
-    .strict();
+    .strict()
+    .fail((msg, err) => {
+      if (msg) {
+        consola.error(msg);
+        process.exit(1);
+      }
+      throw err;
+    });
 }
 
-// Parse only when executed directly as CLI
-// Determine main module in ESM: normalize import.meta.url and process.argv[1] and compare
+// CLI로 직접 실행될 때만 파싱
+// ESM에서 메인 모듈 판별: import.meta.url과 process.argv[1]을 정규화하여 비교
 const cliEntryPath = process.argv.at(1);
 if (
   cliEntryPath != null &&

@@ -18,10 +18,9 @@ export class SdIntersectionEventPlugin extends EventManagerPlugin {
     handler: (entry: ISdIntersectionEvent) => void,
   ): () => void {
     const observer = new IntersectionObserver((entries) => {
-      const entry = entries.single();
-      if (!entry) return;
+      if (entries.length === 0) return;
 
-      handler({ entry });
+      handler({ entry: entries[entries.length - 1] });
     });
     observer.observe(element);
 

@@ -43,6 +43,32 @@ function createTreeManager(items: IItem[]) {
   };
 }
 
+describe("Feature 3.3 Slice 1: isVisible expandedSet 캐싱", () => {
+  it("filter에서 isVisible을 N번 호출해도 expandedItems 변경이 반영된다", () => {
+    const grandchild: IItem = { name: "Grandchild" };
+    const child: IItem = { name: "Child", children: [grandchild] };
+    const parent: IItem = { name: "Parent", children: [child] };
+    const lone: IItem = { name: "Lone" };
+    const { manager, expandedItems } = createTreeManager([parent, lone]);
+
+    const allItems = manager.displayItems();
+
+    // 초기: 부모 미펼침 → child, grandchild는 isVisible=false
+    const visible1 = allItems.filter((item) => manager.isVisible(item));
+    expect(visible1).toEqual([parent, lone]);
+
+    // 부모 펼침 → child가 보여야 함
+    expandedItems.set([parent]);
+    const visible2 = allItems.filter((item) => manager.isVisible(item));
+    expect(visible2).toEqual([parent, child, lone]);
+
+    // 부모+자식 펼침 → grandchild도 보여야 함
+    expandedItems.set([parent, child]);
+    const visible3 = allItems.filter((item) => manager.isVisible(item));
+    expect(visible3).toEqual([parent, child, grandchild, lone]);
+  });
+});
+
 describe("FIX-1 Slice 5: useExpandingManager Set 기반 비교", () => {
   it("isAllExpanded가 Set.has()를 사용하여 O(n)으로 비교한다", () => {
     // 1000개 항목으로 성능 검증

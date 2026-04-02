@@ -16,6 +16,7 @@ export class FormatPipe implements PipeTransform {
 
       for (const formatItem of formatItems) {
         const fullLength = formatItem.match(/X/g)?.length;
+        if (fullLength == null) continue;
         if (fullLength === value.length) {
           let result = "";
           let valCur = 0;

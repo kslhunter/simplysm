@@ -46,10 +46,10 @@ import type { TSelectModeValue } from "../../ui/form/select/sd-select.control";
   `,
 })
 export class SdSharedDataSelectButtonControl<
-  TItem extends ISharedDataBase<number>,
-  TMode extends keyof TSelectModeValue<number>,
+  TItem extends ISharedDataBase<string | number>,
+  TMode extends keyof TSelectModeValue<string | number>,
   TModal extends ISdSelectModal<any>,
-> extends AbsSdDataSelectButton<TItem, number, TMode> {
+> extends AbsSdDataSelectButton<TItem, string | number, TMode> {
   items = input<TItem[]>([]);
   modal = input.required<TSdSelectModalInfo<TModal>>();
 
@@ -58,7 +58,7 @@ export class SdSharedDataSelectButtonControl<
     { read: TemplateRef },
   );
 
-  override load(keys: number[]): TItem[] {
+  override load(keys: (string | number)[]): TItem[] {
     return this.items().filter((item) => keys.includes(item.__valueKey));
   }
 }

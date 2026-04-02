@@ -100,7 +100,7 @@ describe("SdDateRangePicker.handleDatePeriodTypeChanged unit tests", () => {
     expect(ctrl.to()).toEqual(new DateOnly(2024, 1, 31));
   });
 
-  it("'월' 모드에서 비정규화된 from 변경 시 to가 정규화된 월말이 된다", () => {
+  it("'월' 모드에서 비정규화된 from 변경 시 from이 1일로 정규화되고 to가 월말이 된다", () => {
     setupTestBed(SdDateRangePickerDefaultTest);
     const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);
     fixture.detectChanges();
@@ -114,6 +114,7 @@ describe("SdDateRangePicker.handleDatePeriodTypeChanged unit tests", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
+    expect(ctrl.from()).toEqual(new DateOnly(2025, 3, 1));
     expect(ctrl.to()).toEqual(new DateOnly(2025, 3, 31));
   });
 
@@ -208,6 +209,22 @@ describe("SdDateRangePicker.handleFromDateChanged unit tests", () => {
     TestBed.flushEffects();
 
     expect(ctrl.to()).toEqual(new DateOnly(2024, 2, 29));
+  });
+
+  it("'월' 모드에서 from이 undefined이면 to도 undefined이다", () => {
+    setupTestBed(SdDateRangePickerDefaultTest);
+    const fixture = TestBed.createComponent(SdDateRangePickerDefaultTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const ctrl = getPickerControl(fixture);
+    ctrl.periodType.set("월");
+    ctrl.from.set(undefined);
+    ctrl.handleFromDateChanged();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(ctrl.to()).toBeUndefined();
   });
 });
 

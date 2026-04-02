@@ -192,6 +192,73 @@ describe("sdAngularPlugin", () => {
     // (in real use, Vite server close triggers this)
   });
 
+  // Scenario: optimizeDeps에 Angular Linker esbuild 플러그인이 등록된다 (Feature 1.1 Angular Linker)
+  it("registers angular-vite-optimize-deps esbuild plugin in optimizeDeps config", () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    const config = (plugin as any).config?.();
+
+    const esbuildPlugins = config?.optimizeDeps?.esbuildOptions?.plugins as
+      | { name: string }[]
+      | undefined;
+    expect(esbuildPlugins).toBeDefined();
+    expect(esbuildPlugins!.some((p) => p.name === "angular-vite-optimize-deps")).toBe(true);
+  });
+
+  // Scenario: .mjs 파일이 JavaScriptTransformer를 통과한다 (Feature 1.1 Angular Linker)
+  it("transforms .mjs files through JavaScriptTransformer", async () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    await (plugin as any).buildStart?.call({});
+
+    const mjsCode = "export const x = 1;";
+    const result = await (plugin as any).transform?.call(
+      {},
+      mjsCode,
+      "/some/library/module.mjs",
+    );
+
+    // .mjs 파일은 transform 결과를 반환해야 한다 (undefined가 아님)
+    expect(result).toBeDefined();
+    expect(result.code).toBeDefined();
+    expect(typeof result.code).toBe("string");
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Scenario: .js 파일이 JavaScriptTransformer를 통과한다 (Feature 1.1 Angular Linker)
+  it("transforms .js files through JavaScriptTransformer", async () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    await (plugin as any).buildStart?.call({});
+
+    const jsCode = "export const y = 2;";
+    const result = await (plugin as any).transform?.call(
+      {},
+      jsCode,
+      "/some/library/module.js",
+    );
+
+    expect(result).toBeDefined();
+    expect(result.code).toBeDefined();
+    expect(typeof result.code).toBe("string");
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Scenario: 비대상 파일(.css 등)은 transform하지 않는다 (Feature 1.1 Angular Linker)
+  it("returns undefined for non-JS files like .css", async () => {
+    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    await (plugin as any).buildStart?.call({});
+
+    const result = await (plugin as any).transform?.call(
+      {},
+      "body { color: red; }",
+      "/some/styles.css",
+    );
+
+    expect(result).toBeUndefined();
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
   // Scenario: Angular .ts 파일 transform
   it("transforms emitted .ts files with compiled JS", async () => {
     const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: false });

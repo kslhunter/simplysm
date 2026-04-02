@@ -22,14 +22,14 @@ Supported file change event types.
 ```ts
 interface FsWatcherChangeInfo {
   event: FsWatcherEvent;
-  path: NormPath;
+  path: PosixPath;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `event` | `FsWatcherEvent` | The type of change event |
-| `path` | `NormPath` | Normalized absolute path of the changed file/directory |
+| `path` | `PosixPath` | Normalized absolute path of the changed file/directory |
 
 ## FsWatcher
 
