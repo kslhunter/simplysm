@@ -11,13 +11,17 @@ def extract(file_path):
     import fitz
     import pymupdf4llm
 
-    # Text + table extraction (pymupdf4llm)
-    md_text = pymupdf4llm.to_markdown(file_path)
+    # Text extraction per page (pymupdf4llm)
+    page_chunks = pymupdf4llm.to_markdown(file_path, page_chunks=True)
 
-    # Image extraction (fitz)
+    # Image extraction per page (fitz)
     images = []
+    img_idx = 0
     doc = fitz.open(file_path)
+
+    page_img_indices = {}  # page_num -> list of img_idx
     for page_num, page in enumerate(doc, 1):
+        page_img_indices[page_num] = []
         for img_info in page.get_images(full=True):
             xref = img_info[0]
             base_image = doc.extract_image(xref)
@@ -33,22 +37,43 @@ def extract(file_path):
                 if w <= 4 or h <= 4:
                     continue
 
+            img_idx += 1
             images.append({
                 "data": data,
                 "ext": ext,
                 "context": f"Page {page_num}",
             })
+            page_img_indices[page_num].append(img_idx)
+
+    # Build text with inline image markers per page
+    text_parts = []
+    if isinstance(page_chunks, list):
+        for i, chunk in enumerate(page_chunks):
+            page_num = i + 1
+            page_text = chunk.get("text", str(chunk)) if isinstance(chunk, dict) else str(chunk)
+            text_parts.append(page_text.rstrip())
+            for idx in page_img_indices.get(page_num, []):
+                text_parts.append(f"\n[IMG:{idx}]")
+            text_parts.append("")
+    else:
+        # Fallback: non-chunked output
+        text_parts.append(str(page_chunks))
+        for idx in range(1, img_idx + 1):
+            text_parts.append(f"[IMG:{idx}]")
 
     # Embedded file attachments (fitz)
     embedded = []
+    emb_idx = 0
     if doc.embfile_count() > 0:
         for i in range(doc.embfile_count()):
             info = doc.embfile_info(i)
             data = doc.embfile_get(i)
+            emb_idx += 1
             embedded.append({
                 "filename": info.get("name", f"embedded_{i + 1}"),
                 "data": data,
             })
+            text_parts.append(f"[EMB:{emb_idx}]")
 
     # Also check PDF attachments via annotation-based attachments
     for page in doc:
@@ -56,15 +81,17 @@ def extract(file_path):
             if annot.type[0] == fitz.PDF_ANNOT_FILE_ATTACHMENT:
                 file_info = annot.get_file()
                 if file_info:
+                    emb_idx += 1
                     embedded.append({
-                        "filename": file_info.get("filename", f"attachment_{len(embedded) + 1}"),
+                        "filename": file_info.get("filename", f"attachment_{len(embedded)}"),
                         "data": file_info.get("content", b""),
                     })
+                    text_parts.append(f"[EMB:{emb_idx}]")
 
     doc.close()
 
     return {
-        "text": md_text,
+        "text": "\n".join(text_parts),
         "images": images,
         "embedded": embedded,
         "metadata": {},

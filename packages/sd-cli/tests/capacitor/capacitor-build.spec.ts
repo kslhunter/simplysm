@@ -93,6 +93,19 @@ vi.mock("consola", () => ({
 
 const PKG_PATH = "/fake/pkg";
 
+/** Gradle 실행 명령을 찾는다 (Windows: cmd /c gradlew.bat, 그 외: gradlew) */
+function findGradleCall(calls: { command: string; args: string[] }[]) {
+  return calls.find(
+    (c) => c.command.includes("gradlew") || (c.command === "cmd" && c.args.includes("gradlew.bat")),
+  );
+}
+
+function findGradleCallIndex(calls: { command: string; args: string[] }[]) {
+  return calls.findIndex(
+    (c) => c.command.includes("gradlew") || (c.command === "cmd" && c.args.includes("gradlew.bat")),
+  );
+}
+
 function setupDefaultMocks() {
   mockFsxExists.mockResolvedValue(true);
 
@@ -181,7 +194,7 @@ describe("Capacitor 빌드", () => {
 
       await cap.build("/fake/out");
 
-      const gradleCmd = execaCalls.find((c) => c.command.includes("gradlew"));
+      const gradleCmd = findGradleCall(execaCalls);
       expect(gradleCmd).toBeDefined();
       expect(gradleCmd!.args).toContain("bundleRelease");
     });
@@ -197,7 +210,7 @@ describe("Capacitor 빌드", () => {
 
       await cap.build("/fake/out");
 
-      const gradleCmd = execaCalls.find((c) => c.command.includes("gradlew"));
+      const gradleCmd = findGradleCall(execaCalls);
       expect(gradleCmd).toBeDefined();
       expect(gradleCmd!.args).toContain("assembleRelease");
     });
@@ -214,7 +227,7 @@ describe("Capacitor 빌드", () => {
 
       await cap.build("/fake/out");
 
-      const gradleCmd = execaCalls.find((c) => c.command.includes("gradlew"));
+      const gradleCmd = findGradleCall(execaCalls);
       expect(gradleCmd).toBeDefined();
       expect(gradleCmd!.args).toContain("assembleDebug");
     });
@@ -274,12 +287,12 @@ describe("Capacitor 빌드", () => {
       const capCopyIndex = execaCalls.findIndex(
         (c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("copy"),
       );
-      const gradlewIndex = execaCalls.findIndex((c) => c.command.includes("gradlew"));
+      const gradlewIndex = findGradleCallIndex(execaCalls);
       expect(capCopyIndex).toBeGreaterThanOrEqual(0);
       expect(gradlewIndex).toBeGreaterThan(capCopyIndex);
     });
 
-    it("Windows에서 gradlew.bat을 사용한다", async () => {
+    it("Windows에서 cmd /c gradlew.bat으로 Gradle을 실행한다", async () => {
       const originalPlatform = process.platform;
       Object.defineProperty(process, "platform", { value: "win32" });
 
@@ -294,8 +307,37 @@ describe("Capacitor 빌드", () => {
 
         await cap.build("/fake/out");
 
-        const gradleCmd = execaCalls.find((c) => c.command.includes("gradlew"));
-        expect(gradleCmd!.command).toContain("gradlew.bat");
+        const gradleCmd = execaCalls.find((c) => c.command === "cmd");
+        expect(gradleCmd).toBeDefined();
+        expect(gradleCmd!.args[0]).toBe("/c");
+        expect(gradleCmd!.args[1]).toBe("gradlew.bat");
+        expect(gradleCmd!.args).toContain("assembleRelease");
+        expect(gradleCmd!.args).toContain("--no-daemon");
+      } finally {
+        Object.defineProperty(process, "platform", { value: originalPlatform });
+      }
+    });
+
+    it("Linux/macOS에서 gradlew를 직접 실행한다", async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, "platform", { value: "linux" });
+
+      try {
+        const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+
+        const cap = await Capacitor.create(PKG_PATH, {
+          appId: "com.test.app",
+          appName: "Test App",
+          platform: { android: {} },
+        });
+
+        await cap.build("/fake/out");
+
+        const gradleCmd = findGradleCall(execaCalls);
+        expect(gradleCmd).toBeDefined();
+        expect(gradleCmd!.command).toContain("gradlew");
+        expect(gradleCmd!.command).not.toContain("gradlew.bat");
+        expect(gradleCmd!.args).toContain("assembleRelease");
       } finally {
         Object.defineProperty(process, "platform", { value: originalPlatform });
       }
@@ -375,6 +417,44 @@ describe("Capacitor 빌드", () => {
       });
 
       await expect(cap.build("/fake/out")).rejects.toThrow("keystore");
+    });
+
+    it("비밀번호에 $, \\, ' 등 특수문자가 있으면 Groovy 이스케이프하여 build.gradle에 기록한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      mockFsxExists.mockResolvedValue(true);
+
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: {
+          android: {
+            sign: {
+              keystore: "my-release.keystore",
+              storePassword: "12tlavmf#$",
+              alias: "my-key",
+              password: "pass\\'word",
+            },
+          },
+        },
+      });
+
+      await cap.build("/fake/out");
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const gradleWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("build.gradle") &&
+          typeof call[1] === "string" &&
+          call[1].includes("signingConfigs"),
+      );
+      expect(gradleWrite).toBeDefined();
+
+      const gradleContent = gradleWrite![1] as string;
+      // $ 는 Groovy single-quoted string에서 그대로 유지
+      expect(gradleContent).toContain("storePassword '12tlavmf#$'");
+      // \ → \\, ' → \' 이스케이프
+      expect(gradleContent).toContain("keyPassword 'pass\\\\\\'word'");
     });
 
     it("signed 빌드 산출물이 unsigned 접미사 없이 복사된다", async () => {

@@ -14,8 +14,11 @@ def extract(file_path):
     text_parts = []
     images = []
     embedded = []
+    img_idx = 0
+    emb_idx = 0
 
     for para in doc.paragraphs:
+        para_img_markers = []
         for run in para.runs:
             drawings = (run._element.findall(f".//{qn('wp:inline')}") +
                         run._element.findall(f".//{qn('wp:anchor')}"))
@@ -27,11 +30,13 @@ def extract(file_path):
                         rel = doc.part.rels.get(embed_id)
                         if rel and hasattr(rel, 'target_part'):
                             ext = ext_from_content_type(rel.target_part.content_type)
+                            img_idx += 1
                             images.append({
                                 "data": rel.target_part.blob,
                                 "ext": ext,
                                 "context": "paragraph image",
                             })
+                            para_img_markers.append(f"[IMG:{img_idx}]")
 
         text = para.text.strip()
         if text:
@@ -44,6 +49,9 @@ def extract(file_path):
                 else:
                     prefix = "## "
             text_parts.append(f"{prefix}{text}")
+
+        for marker in para_img_markers:
+            text_parts.append(marker)
 
     for t_idx, table in enumerate(doc.tables):
         text_parts.append(f"\n### Table {t_idx + 1}\n")
@@ -65,7 +73,9 @@ def extract(file_path):
                 filename = target_ref.split("/")[-1] if "/" in target_ref else target_ref
                 if not filename:
                     filename = f"embedded_{len(embedded) + 1}.bin"
+                emb_idx += 1
                 embedded.append({"filename": filename, "data": blob})
+                text_parts.append(f"[EMB:{emb_idx}]")
             except Exception:
                 pass
 

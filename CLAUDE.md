@@ -87,3 +87,4 @@ ORM:      orm-node / orm-common
 ## 자주하는 실수
 
 -  `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용
+- **esbuild `dynamic-import: false` 금지**: esbuild가 `import()` → `require()`로 변환하여 브라우저에서 실패. dynamic import는 Rollup `inlineDynamicImports`로 처리해야 하며, esbuild가 건드리면 안 된다

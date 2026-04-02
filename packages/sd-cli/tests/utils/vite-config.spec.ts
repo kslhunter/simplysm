@@ -257,8 +257,8 @@ describe("createClientViteConfig", () => {
 
   // --- legacyModule esbuild.supported override (Feature 1.4) ---
 
-  // Acceptance: Scenario "legacyModule: true일 때 esbuild.supported에 import-meta/dynamic-import false 설정"
-  it("sets esbuild.supported to disable import-meta and dynamic-import when legacyModule is true", async () => {
+  // Acceptance: Scenario "legacyModule: true일 때 esbuild.supported에 import-meta false 설정"
+  it("sets esbuild.supported to disable import-meta when legacyModule is true", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       legacyModule: true,
@@ -268,7 +268,6 @@ describe("createClientViteConfig", () => {
     expect(esbuildOpts?.["supported"]).toEqual(
       expect.objectContaining({
         "import-meta": false,
-        "dynamic-import": false,
       }),
     );
   });
@@ -502,6 +501,25 @@ describe("createClientViteConfig", () => {
 
     expect(config.build?.outDir).toContain("my-client");
     expect(config.build?.outDir).toMatch(/dist$/);
+  });
+
+  // --- outDir override ---
+
+  // Acceptance: Scenario "outDir 설정 시 해당 경로로 빌드 출력"
+  it("uses custom outDir when provided", async () => {
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      outDir: "/packages/my-client/.capacitor/www",
+    });
+
+    expect(config.build?.outDir).toBe("/packages/my-client/.capacitor/www");
+  });
+
+  // Acceptance: Scenario "outDir 미설정 시 pkgDir/dist 사용"
+  it("defaults outDir to pkgDir/dist when not provided", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    expect(config.build?.outDir).toMatch(/my-client[\\/]dist$/);
   });
 
   // --- exclude (Feature 1.1: vite-exclude-passthrough) ---

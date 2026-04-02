@@ -38,6 +38,10 @@ export function createBuildEngine(
     resolvedReplaceDeps?: Array<{ packageName: string; sourcePath: string }>;
     resultCollector?: ResultCollector;
     rebuildManager?: RebuildManager;
+    /** 클라이언트 빌드 출력 경로 (ViteEngine에만 적용) */
+    outDir?: string;
+    /** Vite base 경로 (ViteEngine에만 적용, 미설정 시 /{pkgName}/) */
+    base?: string;
   },
 ): BuildEngine {
   if (pkg.config.target === "client") {
@@ -48,6 +52,8 @@ export function createBuildEngine(
       resultCollector: options.resultCollector,
       rebuildManager: options.rebuildManager,
       replaceDeps: options.resolvedReplaceDeps,
+      outDir: options.outDir,
+      base: options.base,
     });
   }
 

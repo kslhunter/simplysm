@@ -20,6 +20,10 @@ export interface ViteEngineOptions {
   rebuildManager?: RebuildManager;
   /** sdScopeWatchPlugin용 replaceDeps 항목 */
   replaceDeps?: Array<{ packageName: string; sourcePath: string }>;
+  /** 빌드 출력 경로 (미설정 시 pkgDir/dist) */
+  outDir?: string;
+  /** Vite base 경로 (미설정 시 /{pkgName}/) */
+  base?: string;
 }
 
 /**
@@ -34,6 +38,8 @@ export class ViteEngine implements BuildEngine {
   private readonly _resultCollector: ResultCollector | undefined;
   private readonly _rebuildManager: RebuildManager | undefined;
   private readonly _replaceDeps: Array<{ packageName: string; sourcePath: string }> | undefined;
+  private readonly _outDir: string | undefined;
+  private readonly _base: string | undefined;
 
   private _worker: WorkerProxy<typeof ClientWorkerModule> | undefined;
   private _isWatchMode = false;
@@ -47,6 +53,8 @@ export class ViteEngine implements BuildEngine {
     this._resultCollector = options.resultCollector;
     this._rebuildManager = options.rebuildManager;
     this._replaceDeps = options.replaceDeps;
+    this._outDir = options.outDir;
+    this._base = options.base;
   }
 
   /**
@@ -65,6 +73,8 @@ export class ViteEngine implements BuildEngine {
       browserSupport: this._pkg.config.browserSupport,
       enableLint: output.lint,
       exclude: this._pkg.config.exclude,
+      outDir: this._outDir,
+      base: this._base,
     });
 
     logger.debug(`[${this._pkg.name}] ViteEngine.run 완료 (success: ${result.success})`);

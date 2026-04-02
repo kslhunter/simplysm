@@ -37,7 +37,10 @@ def _extract_eml(file_path):
     body_html = ""
     images = []
     embedded = []
+    img_idx = 0
+    emb_idx = 0
     seen_cids = set()
+    cid_to_idx = {}  # content_id -> img_idx
 
     if not msg.is_multipart():
         ctype = msg.get_content_type()
@@ -68,11 +71,13 @@ def _extract_eml(file_path):
                 if content_id not in seen_cids:
                     seen_cids.add(content_id)
                     ext = _guess_ext(ctype, filename)
+                    img_idx += 1
                     images.append({
                         "data": payload,
                         "ext": ext,
                         "context": f"inline (cid:{content_id})",
                     })
+                    cid_to_idx[content_id] = img_idx
                 continue
 
             # Regular attachment
@@ -80,24 +85,53 @@ def _extract_eml(file_path):
                 continue
             if cdisp not in ("attachment", "inline", None):
                 continue
+            emb_idx += 1
             embedded.append({"filename": filename, "data": payload})
 
-    # Extract data URI images from HTML body
+    # Replace cid references and data URI images in HTML with [IMG:N] markers
     if body_html:
-        for img_type, b64data in _RE_DATA_URI.findall(body_html):
+        for cid, idx in cid_to_idx.items():
+            body_html = re.sub(
+                rf'<img[^>]+src=["\']cid:{re.escape(cid)}["\'][^>]*>',
+                f'[IMG:{idx}]',
+                body_html,
+                flags=re.IGNORECASE,
+            )
+
+        def _replace_data_uri(m):
+            nonlocal img_idx
+            img_type = m.group(1)
+            b64data = m.group(2)
             try:
                 data = base64.b64decode(b64data)
+                img_idx += 1
                 images.append({
                     "data": data,
                     "ext": img_type,
                     "context": "data URI in HTML body",
                 })
+                return f'[IMG:{img_idx}]'
             except Exception:
-                pass
+                return ''
 
-    body = body_plain
-    if not body and body_html:
-        body = strip_html(body_html)
+        body_html = _RE_DATA_URI.sub(_replace_data_uri, body_html)
+
+    # Build final body text
+    if body_plain:
+        body = body_plain.strip()
+        # plain text doesn't have image positions — append inline images at end
+        if images:
+            img_lines = [f"[IMG:{i}]" for i in range(1, img_idx + 1)]
+            body = body + "\n\n" + "\n".join(img_lines)
+    elif body_html:
+        body = strip_html(body_html)  # [IMG:N] markers survive HTML stripping
+    else:
+        body = ""
+
+    # Append [EMB:N] for attachments
+    if embedded:
+        emb_lines = [f"[EMB:{i}]" for i in range(1, emb_idx + 1)]
+        body = body.strip() + "\n\n" + "\n".join(emb_lines) if body else "\n".join(emb_lines)
 
     return {
         "text": body.strip() if body else "",
@@ -130,6 +164,9 @@ def _extract_msg(file_path):
 
         images = []
         embedded = []
+        img_idx = 0
+        emb_idx = 0
+        cid_to_idx = {}
 
         for att in (msg.attachments or []):
             data = getattr(att, "data", None)
@@ -149,30 +186,60 @@ def _extract_msg(file_path):
 
             if cid and mimetype.startswith("image/"):
                 ext = _guess_ext(mimetype, filename)
+                img_idx += 1
                 images.append({
                     "data": data,
                     "ext": ext,
                     "context": f"inline (cid:{cid.strip('<> ')})",
                 })
+                cid_to_idx[cid.strip("<> ")] = img_idx
             else:
+                emb_idx += 1
                 embedded.append({"filename": filename, "data": data})
 
-        # Extract data URI images from HTML body
+        # Replace cid references and data URI images in HTML with [IMG:N] markers
         if body_html:
-            for img_type, b64data in _RE_DATA_URI.findall(body_html):
+            for cid, idx in cid_to_idx.items():
+                body_html = re.sub(
+                    rf'<img[^>]+src=["\']cid:{re.escape(cid)}["\'][^>]*>',
+                    f'[IMG:{idx}]',
+                    body_html,
+                    flags=re.IGNORECASE,
+                )
+
+            def _replace_data_uri(m):
+                nonlocal img_idx
+                img_type = m.group(1)
+                b64data = m.group(2)
                 try:
                     decoded = base64.b64decode(b64data)
+                    img_idx += 1
                     images.append({
                         "data": decoded,
                         "ext": img_type,
                         "context": "data URI in HTML body",
                     })
+                    return f'[IMG:{img_idx}]'
                 except Exception:
-                    pass
+                    return ''
 
-        body = body_plain
-        if not body and body_html:
+            body_html = _RE_DATA_URI.sub(_replace_data_uri, body_html)
+
+        # Build final body text
+        if body_plain:
+            body = body_plain.strip()
+            if images:
+                img_lines = [f"[IMG:{i}]" for i in range(1, img_idx + 1)]
+                body = body + "\n\n" + "\n".join(img_lines)
+        elif body_html:
             body = strip_html(body_html)
+        else:
+            body = ""
+
+        # Append [EMB:N] for attachments
+        if embedded:
+            emb_lines = [f"[EMB:{i}]" for i in range(1, emb_idx + 1)]
+            body = body.strip() + "\n\n" + "\n".join(emb_lines) if body else "\n".join(emb_lines)
 
         return {
             "text": body.strip() if body else "",

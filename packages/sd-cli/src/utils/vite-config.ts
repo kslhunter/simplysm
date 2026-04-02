@@ -55,6 +55,10 @@ export interface CreateClientViteConfigOptions {
   exclude?: string[];
   /** watch 모드 (build.watch 활성화, emptyOutDir: false) */
   watch?: boolean;
+  /** 빌드 출력 경로 (미설정 시 pkgDir/dist) */
+  outDir?: string;
+  /** Vite base 경로 (미설정 시 /{pkgName}/) */
+  base?: string;
 }
 
 /**
@@ -99,6 +103,7 @@ export async function createClientViteConfig(
     sdAngularPlugin({
       tsconfig: options.tsconfigPath,
       dev: options.mode === "dev",
+      sourcemap: options.mode === "dev" || options.watch === true,
       onBuildStart: options.onBuildStart,
       onBuild: options.onBuild,
       enableLint: options.enableLint,
@@ -153,7 +158,7 @@ export async function createClientViteConfig(
 
   const config: InlineConfig = {
     root: options.pkgDir,
-    base: `/${name}/`,
+    base: options.base ?? `/${name}/`,
     define: Object.keys(define).length > 0 ? define : undefined,
     plugins,
     server: serverConfig,
@@ -210,31 +215,57 @@ export async function createClientViteConfig(
     );
   }
 
-  // polyfills plugin (transformIndexHtml)
+  // polyfills plugin
   if (options.polyfills != null && options.polyfills.length > 0) {
     const polyfillImports = options.polyfills;
-    (config.plugins as PluginOption[]).push({
-      name: "sd-polyfills",
-      transformIndexHtml() {
-        return [
-          {
-            tag: "script",
-            attrs: { type: "module" },
-            children: polyfillImports.map((p) => `import "${p}";`).join("\n"),
-            injectTo: "head-prepend" as const,
-          },
-        ];
-      },
-    });
+    if (options.legacyModule === true) {
+      // legacyModule: 메인 엔트리의 transform에서 polyfill import를 상단에 주입한다.
+      // transformIndexHtml의 인라인 <script type="module">은 Vite 빌드에서 번들링되지 않으므로,
+      // Rollup이 처리할 수 있도록 소스 코드 레벨에서 주입한다.
+      const mainEntryPath = path.resolve(options.pkgDir, "src/main.ts");
+      (config.plugins as PluginOption[]).push({
+        name: "sd-polyfills",
+        transform(code, id) {
+          if (path.normalize(id) !== path.normalize(mainEntryPath)) return null;
+          // polyfillImports는 pkgDir 기준 상대경로 (예: "./src/polyfills.ts")
+          // main.ts는 src/ 안에 있으므로, main.ts 기준 상대경로로 변환한다
+          const mainDir = path.dirname(mainEntryPath);
+          const polyfillCode = polyfillImports
+            .map((p) => {
+              const abs = path.resolve(options.pkgDir, p);
+              this.addWatchFile(abs);
+              const rel = path.relative(mainDir, abs);
+              const posixRel = rel.replace(/\\/g, "/");
+              return "import \"./" + posixRel + "\";";
+            })
+            .join("\n");
+          return { code: polyfillCode + "\n" + code, map: null };
+        },
+      });
+    } else {
+      // dev 모드: transformIndexHtml로 인라인 스크립트 주입 (Vite dev server가 처리)
+      (config.plugins as PluginOption[]).push({
+        name: "sd-polyfills",
+        transformIndexHtml() {
+          return [
+            {
+              tag: "script",
+              attrs: { type: "module" },
+              children: polyfillImports.map((p) => `import "${p}";`).join("\n"),
+              injectTo: "head-prepend" as const,
+            },
+          ];
+        },
+      });
+    }
   }
 
-  // legacyModule: true → 코드 스플리팅 비활성화 + esbuild import.meta/import() 변환 활성화
+  // legacyModule: true → 코드 스플리팅 비활성화 + esbuild import.meta 변환 + 잔여 import() 제거
   if (options.legacyModule === true) {
     config.esbuild = {
       ...config.esbuild,
       supported: {
         "import-meta": false,
-        "dynamic-import": false,
       },
     };
     config.build = {
@@ -245,17 +276,38 @@ export async function createClientViteConfig(
         },
       },
     };
+
+    // Rollup이 인라인하지 못한 잔여 dynamic import()를 제거한다.
+    // inlineDynamicImports가 정적 경로를 모두 인라인한 후에도,
+    // @vite-ignore나 런타임 계산 경로의 import()가 남을 수 있다.
+    // Chrome 61은 import() 구문을 파싱하지 못하므로 no-op 함수로 치환한다.
+    (config.plugins as PluginOption[]).push({
+      name: "sd-legacy-strip-dynamic-import",
+      enforce: "post",
+      renderChunk(code) {
+        if (!code.includes("import(")) return null;
+        return {
+          code: code.replace(
+            /\bimport\s*\(/g,
+            "(function(){return Promise.reject(new Error(\"Dynamic import not supported\"))})(",
+          ),
+          map: null,
+        };
+      },
+    });
   }
 
   // build 모드 설정
   if (options.mode === "build") {
     config.build = {
       ...config.build,
-      outDir: path.join(options.pkgDir, "dist"),
+      outDir: options.outDir ?? path.join(options.pkgDir, "dist"),
     };
     if (options.watch === true) {
       config.build.watch = {};
       config.build.emptyOutDir = false;
+      config.build.minify = false;
+      config.build.sourcemap = true;
     } else {
       config.logLevel = "silent";
       config.build.emptyOutDir = true;

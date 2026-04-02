@@ -595,13 +595,17 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude로 자동 커밋 시도 중...");
         try {
-          await cpx.spawn("claude", [
-            "-p",
-            "/sd-commit all",
-            "--dangerously-skip-permissions",
-            "--model",
-            "haiku",
-          ], { stdio: "inherit" });
+          await cpx.spawn(
+            "claude",
+            ["-p", "/sd-commit", "--dangerously-skip-permissions", "--model", "haiku"],
+            {
+              stdio: "inherit",
+              env: {
+                ...process.env,
+                MCP_CONNECTION_NONBLOCKING: "true",
+              },
+            },
+          );
         } catch (e) {
           throw new Error(
             "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도해주세요.\n" +

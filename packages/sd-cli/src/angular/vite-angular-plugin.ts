@@ -23,8 +23,10 @@ const logger = consola.withTag("sd:cli:angular");
 export interface SdAngularPluginOptions {
   /** tsconfig.json 경로 */
   tsconfig: string;
-  /** 개발 모드 */
+  /** 개발 모드 (HMR, advancedOptimizations 제어) */
   dev: boolean;
+  /** 소스맵 생성 여부 (dev와 독립적으로 제어) */
+  sourcemap?: boolean;
   /** rebuild 시작 콜백 (CLI 상태 보고용) */
   onBuildStart?: () => void;
   /** rebuild 완료 콜백 (CLI 상태 보고용) */
@@ -83,9 +85,11 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
   let hmrLock: Promise<void> = Promise.resolve();
   const scssDependencies = new Map<string, Set<string>>();
 
+  const enableSourcemap = options.sourcemap ?? options.dev;
+
   // Pre-bundle transformer: optimizeDeps의 esbuild 단계에서 Angular Linker 실행
   const prebundleTransformer = new JavaScriptTransformer(
-    { sourcemap: options.dev, jit: false, thirdPartySourcemaps: options.dev },
+    { sourcemap: enableSourcemap, jit: false, thirdPartySourcemaps: enableSourcemap },
     1,
   );
 
@@ -93,8 +97,8 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     const maxThreads = Math.max(1, Math.floor((os.cpus().length * 2) / 3));
     return new JavaScriptTransformer(
       {
-        sourcemap: options.dev,
-        thirdPartySourcemaps: options.dev,
+        sourcemap: enableSourcemap,
+        thirdPartySourcemaps: enableSourcemap,
         advancedOptimizations: !options.dev,
         jit: false,
       },
@@ -345,7 +349,20 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
       // Phase 2: JS 변환 — Angular Linker로 partial → full AOT 링킹 + 최적화
       const transformed = await jsTransformer.transformData(pathx.posix(id), code, false);
-      return { code: new TextDecoder().decode(transformed) };
+      const transformedCode = new TextDecoder().decode(transformed);
+
+      // 인라인 소스맵 분리 (Rollup 경고 방지)
+      const inlineMapMatch = transformedCode.match(
+        /\/\/# sourceMappingURL=data:application\/json;(?:charset=utf-8;)?base64,(.+)$/m,
+      );
+      if (inlineMapMatch != null) {
+        const mapJson = atob(inlineMapMatch[1]);
+        return {
+          code: transformedCode.slice(0, inlineMapMatch.index),
+          map: JSON.parse(mapJson),
+        };
+      }
+      return { code: transformedCode, map: null };
     },
 
     async buildEnd() {

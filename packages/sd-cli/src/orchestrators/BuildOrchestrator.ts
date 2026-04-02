@@ -328,9 +328,13 @@ export class BuildOrchestrator {
 
       buildTasks.push(async () => {
         this._logger.debug(`[${name}] (client) 빌드 시작`);
+        const isNativeBuild = config.capacitor != null || config.electron != null;
+        const outDir = config.capacitor != null
+          ? pathx.posixResolve(pkgDir, ".capacitor/www")
+          : undefined;
         const engine = createBuildEngine(
           { name, dir: pkgDir, config: { ...config, env: { ...baseEnv, ...config.env } } },
-          { cwd: this._cwd },
+          { cwd: this._cwd, outDir, base: isNativeBuild ? "" : undefined },
         );
 
         try {

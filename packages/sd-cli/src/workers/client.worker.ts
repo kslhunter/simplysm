@@ -37,6 +37,10 @@ export interface ClientBuildInfo {
   enableLint?: boolean;
   /** Vite optimizeDeps.exclude에 전달할 패키지 목록 */
   exclude?: string[];
+  /** 빌드 출력 경로 (미설정 시 pkgDir/dist) */
+  outDir?: string;
+  /** Vite base 경로 (미설정 시 /{pkgName}/) */
+  base?: string;
 }
 
 /** Client 빌드 결과 */
@@ -416,12 +420,14 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       polyfills,
       pwa: info.pwa,
       exclude: info.exclude,
+      outDir: info.outDir,
+      base: info.base,
     });
 
     await viteBuild(viteConfig);
 
-    // .config.json 생성
-    writeConfigJson(info.pkgDir, info.configs);
+    // .config.json 생성 (항상 dist/에 기록 — outDir과 무관)
+    writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
 
     logger.debug(`[${info.name}] client worker build 완료`);
     return { success: true, lint: lintResult };
@@ -432,12 +438,11 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   }
 }
 
-/** dist/.config.json 생성 */
+/** .config.json 생성 */
 function writeConfigJson(
-  pkgDir: string,
+  distDir: string,
   configs?: Record<string, unknown>,
 ): void {
-  const distDir = path.join(pkgDir, "dist");
   fs.mkdirSync(distDir, { recursive: true });
   fs.writeFileSync(
     path.join(distDir, ".config.json"),

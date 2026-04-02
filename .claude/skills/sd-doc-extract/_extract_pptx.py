@@ -24,6 +24,8 @@ def extract(file_path):
     text_parts = []
     images = []
     embedded = []
+    img_idx = 0
+    emb_idx = 0
 
     for slide_num, slide in enumerate(prs.slides, 1):
         text_parts.append(f"[Slide {slide_num}]")
@@ -31,11 +33,13 @@ def extract(file_path):
         for shape in slide.shapes:
             if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
                 ext = ext_from_content_type(shape.image.content_type)
+                img_idx += 1
                 images.append({
                     "data": shape.image.blob,
                     "ext": ext,
                     "context": f"Slide {slide_num} {_pos(shape)}",
                 })
+                text_parts.append(f"[IMG:{img_idx}]")
 
             if hasattr(shape, "text") and shape.text.strip():
                 text = shape.text.strip().replace("\n", "\n       ")
@@ -55,7 +59,9 @@ def extract(file_path):
                     filename = target_ref.split("/")[-1] if "/" in target_ref else target_ref
                     if not filename:
                         filename = f"embedded_slide{slide_num}_{len(embedded) + 1}.bin"
+                    emb_idx += 1
                     embedded.append({"filename": filename, "data": blob})
+                    text_parts.append(f"[EMB:{emb_idx}]")
                 except Exception:
                     pass
 

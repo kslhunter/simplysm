@@ -549,7 +549,7 @@ describe("Android 네이티브 설정", () => {
     expect(manifestWrite).toBeDefined();
   });
 
-  it("styles.xml의 Theme.SplashScreen parent를 Theme.AppCompat.DayNight.NoActionBar로 변경한다", async () => {
+  it("styles.xml의 Theme.SplashScreen parent를 변경하고 android:background를 android:windowBackground로 변경한다", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
     const cap = await Capacitor.create(PKG_PATH, {
       appId: "com.test.app",
@@ -567,10 +567,14 @@ describe("Android 네이티브 설정", () => {
         call[1].includes('parent="Theme.AppCompat.DayNight.NoActionBar"'),
     );
     expect(stylesWrite).toBeDefined();
-    // android:background는 유지
-    expect((stylesWrite![1] as string)).toContain("@drawable/splash");
+    const content = stylesWrite![1] as string;
+    // @drawable/splash는 유지
+    expect(content).toContain("@drawable/splash");
     // Theme.SplashScreen은 제거됨
-    expect((stylesWrite![1] as string)).not.toContain('parent="Theme.SplashScreen"');
+    expect(content).not.toContain('parent="Theme.SplashScreen"');
+    // android:background → android:windowBackground로 변경됨
+    expect(content).toContain('"android:windowBackground">@drawable/splash');
+    expect(content).not.toContain('"android:background">@drawable/splash');
   });
 
   it("이미 변경된 styles.xml은 재변경하지 않는다", async () => {
@@ -579,7 +583,7 @@ describe("Android 네이티브 설정", () => {
         return `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:windowBackground">@drawable/splash</item>
     </style>
 </resources>`;
       }

@@ -74,7 +74,14 @@ def extract_recursive(file_path: Path, out_dir: Path):
 
 def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
                        saved_images: list, saved_embedded: list):
-    """Generate {stem}.md in parent of out_dir, summarizing extraction results."""
+    """Generate {stem}.md in parent of out_dir, summarizing extraction results.
+
+    Images and embedded files are placed inline via [IMG:N]/[EMB:N] placeholders
+    inserted by each format handler.  Placeholders are replaced with actual
+    markdown links.  Only unreferenced items fall into a residual table.
+    """
+    import re
+
     lines = []
     rel_prefix = out_dir.name
 
@@ -99,10 +106,39 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
                 lines.append(f"| {key.title()} | {val} |")
         lines.append("")
 
-    # Body text
+    # Body text with inline placeholder replacement
     text = result.get("text", "").strip()
     if text:
         lines.append("## 본문\n")
+
+        # Track which items are referenced by placeholders
+        referenced_imgs = set()
+        referenced_embs = set()
+
+        def replace_img(m):
+            idx = int(m.group(1))
+            referenced_imgs.add(idx)
+            if 1 <= idx <= len(saved_images):
+                img = saved_images[idx - 1]
+                return f"![{img['filename']}]({rel_prefix}/{img['filename']})"
+            return m.group(0)
+
+        def replace_emb(m):
+            idx = int(m.group(1))
+            referenced_embs.add(idx)
+            if 1 <= idx <= len(saved_embedded):
+                emb = saved_embedded[idx - 1]
+                name = emb["filename"]
+                if emb["recursed"]:
+                    stem = Path(name).stem
+                    return f"> embedded: [{name}]({rel_prefix}/{stem}.md)"
+                else:
+                    return f"> embedded: [{name}]({rel_prefix}/{name})"
+            return m.group(0)
+
+        text = re.sub(r'\[IMG:(\d+)\]', replace_img, text)
+        text = re.sub(r'\[EMB:(\d+)\]', replace_emb, text)
+
         if len(text) > 10000:
             body_path = out_dir / "body.txt"
             body_path.write_text(text, encoding="utf-8")
@@ -111,28 +147,59 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
             lines.append(text)
             lines.append("")
 
-    # Extracted files table
-    all_files = saved_images + saved_embedded
-    if all_files:
-        lines.append("## 추출 파일\n")
-        lines.append("| # | 파일 | 타입 | 크기 |")
-        lines.append("|---|------|------|------|")
-        idx = 0
-        for img in saved_images:
-            idx += 1
-            lines.append(f"| {idx} | [{img['filename']}]({rel_prefix}/{img['filename']}) | 이미지 | {fmt_size(img['size'])} |")
-        for emb in saved_embedded:
-            idx += 1
-            name = emb["filename"]
-            if emb["recursed"]:
-                stem = Path(name).stem
-                link = f"[{name}]({rel_prefix}/{stem}.md)"
-            else:
-                link = f"[{name}]({rel_prefix}/{name})"
-            ext = Path(emb["original_name"]).suffix.lower()
-            type_label = _ext_to_type_label(ext)
-            lines.append(f"| {idx} | {link} | {type_label} | {fmt_size(emb['size'])} |")
-        lines.append("")
+        # Residual table for unreferenced items only
+        unreferenced_imgs = [
+            (i, img) for i, img in enumerate(saved_images, 1)
+            if i not in referenced_imgs
+        ]
+        unreferenced_embs = [
+            (i, emb) for i, emb in enumerate(saved_embedded, 1)
+            if i not in referenced_embs
+        ]
+
+        if unreferenced_imgs or unreferenced_embs:
+            lines.append("## 기타 추출 파일\n")
+            lines.append("| # | 파일 | 타입 | 크기 |")
+            lines.append("|---|------|------|------|")
+            idx = 0
+            for _, img in unreferenced_imgs:
+                idx += 1
+                lines.append(f"| {idx} | [{img['filename']}]({rel_prefix}/{img['filename']}) | 이미지 | {fmt_size(img['size'])} |")
+            for _, emb in unreferenced_embs:
+                idx += 1
+                name = emb["filename"]
+                if emb["recursed"]:
+                    stem = Path(name).stem
+                    link = f"[{name}]({rel_prefix}/{stem}.md)"
+                else:
+                    link = f"[{name}]({rel_prefix}/{name})"
+                ext_str = Path(emb["original_name"]).suffix.lower()
+                type_label = _ext_to_type_label(ext_str)
+                lines.append(f"| {idx} | {link} | {type_label} | {fmt_size(emb['size'])} |")
+            lines.append("")
+    else:
+        # No body text — list all files in a table
+        all_files = saved_images + saved_embedded
+        if all_files:
+            lines.append("## 추출 파일\n")
+            lines.append("| # | 파일 | 타입 | 크기 |")
+            lines.append("|---|------|------|------|")
+            idx = 0
+            for img in saved_images:
+                idx += 1
+                lines.append(f"| {idx} | [{img['filename']}]({rel_prefix}/{img['filename']}) | 이미지 | {fmt_size(img['size'])} |")
+            for emb in saved_embedded:
+                idx += 1
+                name = emb["filename"]
+                if emb["recursed"]:
+                    stem = Path(name).stem
+                    link = f"[{name}]({rel_prefix}/{stem}.md)"
+                else:
+                    link = f"[{name}]({rel_prefix}/{name})"
+                ext_str = Path(emb["original_name"]).suffix.lower()
+                type_label = _ext_to_type_label(ext_str)
+                lines.append(f"| {idx} | {link} | {type_label} | {fmt_size(emb['size'])} |")
+            lines.append("")
 
     index_path = out_dir.parent / f"{out_dir.name}.md"
     index_path.write_text("\n".join(lines), encoding="utf-8")

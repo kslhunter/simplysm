@@ -49,6 +49,40 @@ python .claude/skills/sd-doc-extract/extract.py "<file_path>"
 - 추출 요약 (이미지 N개, 임베디드 파일 N개 등)
 - 에러가 있었다면 stderr 내용
 
+## 출력 마크다운 형식
+
+`extract.py`가 생성하는 인덱스 `.md`는 이미지와 embedded 파일을 **원문에서 등장하는 위치에 인라인 배치**한다. 별도 "추출 파일" 테이블로 분리하지 않는다 — 분리하면 후속 LLM 분석 시 이미지-텍스트 매핑이 끊어지기 때문이다.
+
+### 인라인 배치 원칙
+
+각 추출기는 텍스트에 `[IMG:N]`, `[EMB:N]` 플레이스홀더를 삽입하고, `extract.py`가 이를 실제 마크다운 링크로 치환한다.
+
+| 포맷 | 이미지 배치 | Embedded 배치 |
+|------|-----------|--------------|
+| PPTX | shape 순회 중 PICTURE를 만나면 그 자리에 `[IMG:N]` 삽입 | OLE 객체를 만난 슬라이드 내에 `[EMB:N]` 삽입 |
+| DOCX | run 순회 중 drawing/blip을 만나면 그 문단에 `[IMG:N]` 삽입 | OLE 객체를 만난 위치에 `[EMB:N]` 삽입 |
+| PDF | 페이지별 이미지를 해당 페이지 텍스트 내에 `[IMG:N]` 삽입 | 첨부파일은 문서 끝에 `[EMB:N]` 배치 (PDF 첨부는 페이지 귀속이 아님) |
+| XLSX | 이미지의 anchor 셀 좌표 근처에 `[IMG:N]` 삽입 | 시트의 embeddings 디렉토리에서 추출한 객체를 해당 시트 끝에 `[EMB:N]` 배치 |
+| XLSB | (이미지 없음) | (embedded 없음) |
+| EMAIL | HTML 본문의 `cid:` 참조 위치에 `[IMG:N]` 삽입, data URI 이미지도 등장 위치에 삽입 | 첨부파일은 본문 뒤에 `[EMB:N]` 배치 |
+
+### 치환 결과 예시
+
+```markdown
+[Slide 1]
+[TXT] (left=0.4", top=0.4") 1. 일정 및 정보 변경
+[TXT] (left=0.6", top=0.8") - Case1~5번 공통 적용 사항
+
+![img_001](scheduling-1/img_001.png)
+
+[TXT] (left=0.5", top=1.4") 1) 구성
+[TXT] (left=0.8", top=2.8") 프로세스: BOA 선택 ...
+
+![img_002](scheduling-1/img_002.png)
+
+> embedded: [embedded_001_worksheet.xlsb](scheduling-1/embedded_001_worksheet.md)
+```
+
 ## 주의사항
 
 - 바이너리 문서를 Read 도구로 직접 열면 의미 있는 내용을 얻을 수 없다. 반드시 `extract.py`를 통해 추출한다.

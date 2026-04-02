@@ -299,15 +299,6 @@ export class Capacitor {
       Capacitor._logger.debug("cap init 완료");
     }
 
-    // 기본 www/index.html 생성
-    const wwwPath = pathx.posixResolve(this._capPath, "www");
-    await fsx.mkdir(wwwPath);
-    await fsx.write(
-      pathx.posixResolve(wwwPath, "index.html"),
-      "<!DOCTYPE html><html><head></head><body></body></html>",
-    );
-    Capacitor._logger.debug("www/index.html 생성 완료");
-
     return true;
   }
 
@@ -798,11 +789,17 @@ export default config;
   }
 
   /**
-   * styles.xml의 스플래시 테마 parent 변경
+   * styles.xml의 스플래시 테마 수정
    *
-   * Theme.SplashScreen은 android:windowBackground에 compat_splash_screen을 설정하여
-   * android:background(@drawable/splash)와 이중 표시를 발생시킨다.
-   * installSplashScreen()을 호출하지 않으므로 Theme.SplashScreen 기능이 불필요하다.
+   * 1. Theme.SplashScreen parent → Theme.AppCompat.DayNight.NoActionBar
+   *    Theme.SplashScreen은 android:windowBackground에 compat_splash_screen을 설정하여
+   *    android:background(@drawable/splash)와 이중 표시를 발생시킨다.
+   *    installSplashScreen()을 호출하지 않으므로 Theme.SplashScreen 기능이 불필요하다.
+   *
+   * 2. android:background → android:windowBackground
+   *    android:background는 View 레벨 속성으로 AppCompat 뷰 계층의 여러 View에 상속되어
+   *    동일한 splash 로고가 다중 레이어에 중복 렌더링된다.
+   *    android:windowBackground는 Window의 DecorView에만 적용되어 단일 렌더링을 보장한다.
    */
   private async _configureAndroidStyles(androidPath: string): Promise<void> {
     const stylesPath = pathx.posixResolve(androidPath, "app/src/main/res/values/styles.xml");
@@ -813,17 +810,27 @@ export default config;
     }
 
     let content = await fsx.read(stylesPath);
+    let changed = false;
 
-    if (!content.includes('parent="Theme.SplashScreen"')) {
-      return;
+    if (content.includes('parent="Theme.SplashScreen"')) {
+      content = content.replace(
+        'parent="Theme.SplashScreen"',
+        'parent="Theme.AppCompat.DayNight.NoActionBar"',
+      );
+      changed = true;
     }
 
-    content = content.replace(
-      'parent="Theme.SplashScreen"',
-      'parent="Theme.AppCompat.DayNight.NoActionBar"',
-    );
+    if (content.includes('"android:background">@drawable/splash')) {
+      content = content.replace(
+        '"android:background">@drawable/splash',
+        '"android:windowBackground">@drawable/splash',
+      );
+      changed = true;
+    }
 
-    await fsx.write(stylesPath, content);
+    if (changed) {
+      await fsx.write(stylesPath, content);
+    }
   }
 
   //#endregion
@@ -966,8 +973,9 @@ export default config;
     if (content.includes("signingConfigs")) return;
 
     const storeType = sign.keystoreType ?? "jks";
-    const escapedStorePassword = sign.storePassword.replace(/'/g, "\\'");
-    const escapedKeyPassword = sign.password.replace(/'/g, "\\'");
+    const escapeGroovy = (s: string) => s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const escapedStorePassword = escapeGroovy(sign.storePassword);
+    const escapedKeyPassword = escapeGroovy(sign.password);
 
     const signingBlock = `    signingConfigs {
         release {
@@ -981,7 +989,7 @@ export default config;
 `;
 
     // signingConfigs 블록을 buildTypes 앞에 삽입
-    content = content.replace(/(\s*buildTypes\s*\{)/, `${signingBlock}$1`);
+    content = content.replace(/(\s*buildTypes\s*\{)/, (match) => `\n${signingBlock}${match}`);
 
     // buildTypes.release에 signingConfig 추가
     content = content.replace(
@@ -1007,12 +1015,15 @@ export default config;
 
     const androidPath = pathx.posixResolve(this._capPath, "android");
     const isWindows = process.platform === "win32";
-    const gradlew = isWindows
-      ? pathx.posixResolve(androidPath, "gradlew.bat")
-      : pathx.posixResolve(androidPath, "gradlew");
 
-    Capacitor._logger.debug(`Gradle 실행: ${gradlew} ${gradleTask}`);
-    await this._exec(gradlew, [gradleTask, "--no-daemon"], androidPath);
+    if (isWindows) {
+      Capacitor._logger.debug(`Gradle 실행: cmd /c gradlew.bat ${gradleTask}`);
+      await this._exec("cmd", ["/c", "gradlew.bat", gradleTask, "--no-daemon"], androidPath);
+    } else {
+      const gradlew = pathx.posixResolve(androidPath, "gradlew");
+      Capacitor._logger.debug(`Gradle 실행: ${gradlew} ${gradleTask}`);
+      await this._exec(gradlew, [gradleTask, "--no-daemon"], androidPath);
+    }
   }
 
   /**
