@@ -215,9 +215,7 @@ class ForeignKeyBuilder<TOwner extends TableBuilder<any, any>, TTargetFn extends
 
 N:1 FK relation builder. Creates an actual DB foreign key constraint.
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `description` | `(desc: string) => ForeignKeyBuilder` | Set relation description |
+`description` is configured via the factory function's `opts` parameter (3rd argument to `foreignKey()`), not via method chaining. This class has no methods — it is a data holder for relation metadata.
 
 ## ForeignKeyTargetBuilder
 
@@ -232,12 +230,11 @@ class ForeignKeyTargetBuilder<TTargetTableFn extends () => TableBuilder<any, any
 }
 ```
 
-1:N FK reverse-reference builder. Loaded as array by default, single object with `.single()`.
+1:N FK reverse-reference builder. Loaded as array by default, single object with `{ single: true }` opts.
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `description` | `(desc: string) => ForeignKeyTargetBuilder` | Set relation description |
-| `single` | `() => ForeignKeyTargetBuilder<..., true>` | Change to 1:1 (single object) |
+`description` and `single` are configured via the factory function's `opts` parameter (3rd argument to `foreignKeyTarget()`), not via method chaining. Method chaining was removed to prevent TS7022 in complex circular references.
+
+This class has no methods — it is a data holder for relation metadata.
 
 ## RelationKeyBuilder
 
@@ -250,9 +247,7 @@ class RelationKeyBuilder<
 
 Logical N:1 relation builder (no DB FK constraint). Works with both Tables and Views.
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `description` | `(desc: string) => RelationKeyBuilder` | Set relation description |
+`description` is configured via the factory function's `opts` parameter (3rd argument to `relationKey()`), not via method chaining. This class has no methods — it is a data holder for relation metadata.
 
 ## RelationKeyTargetBuilder
 
@@ -265,10 +260,9 @@ class RelationKeyTargetBuilder<
 
 Logical 1:N reverse-reference builder (no DB FK constraint). Works with both Tables and Views.
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `description` | `(desc: string) => RelationKeyTargetBuilder` | Set relation description |
-| `single` | `() => RelationKeyTargetBuilder<..., true>` | Change to 1:1 (single object) |
+`description` and `single` are configured via the factory function's `opts` parameter (3rd argument to `relationKeyTarget()`), not via method chaining.
+
+This class has no methods — it is a data holder for relation metadata.
 
 ## createRelationFactory
 
@@ -284,10 +278,10 @@ Creates a relation factory. For `TableBuilder`: provides `foreignKey`, `foreignK
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `foreignKey` | `(columns: TColumnKey[], targetFn: () => TableBuilder) => ForeignKeyBuilder` | N:1 FK (creates DB constraint) |
-| `foreignKeyTarget` | `(targetTableFn: () => TableBuilder, relationName: string) => ForeignKeyTargetBuilder` | 1:N FK reverse-reference |
-| `relationKey` | `(columns: TColumnKey[], targetFn: () => TableBuilder \| ViewBuilder) => RelationKeyBuilder` | N:1 logical relation (no DB FK) |
-| `relationKeyTarget` | `(targetTableFn: () => TableBuilder \| ViewBuilder, relationName: string) => RelationKeyTargetBuilder` | 1:N logical reverse-reference |
+| `foreignKey` | `(columns, targetFn, opts?: { description?: string })` | N:1 FK (creates DB constraint) |
+| `foreignKeyTarget` | `(targetTableFn, relationName, opts?: { single?: boolean; description?: string })` | 1:N FK reverse-reference. `{ single: true }` → 1:1 |
+| `relationKey` | `(columns, targetFn, opts?: { description?: string })` | N:1 logical relation (no DB FK) |
+| `relationKeyTarget` | `(targetTableFn, relationName, opts?: { single?: boolean; description?: string })` | 1:N logical reverse-reference. `{ single: true }` → 1:1 |
 
 ### Factory Methods (View)
 

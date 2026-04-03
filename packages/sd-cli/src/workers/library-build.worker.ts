@@ -9,9 +9,9 @@ import type { LintWithProgramResult } from "../utils/lint-with-program";
 import { runTscPackageBuild } from "../utils/tsc-build";
 import { LintWithProgramRunner } from "../utils/lint-with-program";
 import { collectDeps } from "../utils/package-utils";
-import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
 
-applyDebugLevel();
+setupWorkerConsola();
 
 //#region Types
 

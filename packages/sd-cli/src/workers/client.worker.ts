@@ -6,13 +6,13 @@ import mime from "mime";
 import { createWorker } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
-import { registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils.js";
+import { registerCleanupHandlers, setupWorkerConsola } from "../utils/worker-utils.js";
 import { createClientViteConfig } from "../utils/vite-config.js";
 import type { ScopeWatchReplaceDep } from "../utils/vite-scope-watch-plugin.js";
 import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types.js";
 import type { LintWithProgramResult } from "../utils/lint-with-program.js";
 
-applyDebugLevel();
+setupWorkerConsola();
 
 //#region Types
 

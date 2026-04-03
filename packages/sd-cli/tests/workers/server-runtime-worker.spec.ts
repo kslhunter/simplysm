@@ -32,7 +32,7 @@ vi.mock("consola", () => ({
 
 vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
 }));
 
 // @fastify/http-proxy mock

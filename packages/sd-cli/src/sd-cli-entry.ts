@@ -5,7 +5,7 @@
 import "@simplysm/core-common";
 import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
-import { runCheck, type CheckType } from "./commands/check";
+import { type CheckType, runCheck } from "./commands/check";
 import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
@@ -15,13 +15,11 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
-import { consola, LogLevels } from "consola";
-import { SdCliReporter } from "./utils/SdCliReporter";
+import { consola } from "consola";
+import { setupConsola } from "@simplysm/core-node";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
-
-consola.options.reporters = [new SdCliReporter()];
 
 const COMMAND_NAMES = ["check", "watch", "dev", "device", "build", "publish", "replace-deps"];
 
@@ -36,7 +34,6 @@ async function collectYargsHelp(argv: string[]): Promise<string> {
   } catch {
     // yargs가 help 출력 후 throw할 수 있음
   } finally {
-  
     console.log = orig;
   }
   return lines.join("\n");
@@ -58,9 +55,9 @@ export function createCliParser(argv: string[]): Argv {
       async () => {
         for (const cmdName of COMMAND_NAMES) {
           const helpText = await collectYargsHelp([cmdName, "--help"]);
-        
+
           console.log(helpText);
-        
+
           console.log();
         }
       },
@@ -78,9 +75,9 @@ export function createCliParser(argv: string[]): Argv {
     })
     .middleware((args) => {
       if (args.debug) {
-        consola.level = LogLevels.debug;
         process.env["SD_DEBUG"] = "true";
       }
+      setupConsola({ cli: true });
     })
     .command(
       "check [targets..]",
@@ -113,9 +110,7 @@ export function createCliParser(argv: string[]): Argv {
           types: (() => {
             const validTypes = ["typecheck", "lint", "test"] as const;
             const types = args.type.split(",").map((t) => t.trim());
-            const invalidTypes = types.filter(
-              (t) => !validTypes.includes(t as CheckType),
-            );
+            const invalidTypes = types.filter((t) => !validTypes.includes(t as CheckType));
             if (invalidTypes.length > 0) {
               throw new Error(
                 `Invalid check type(s): ${invalidTypes.join(", ")}. Valid types: ${validTypes.join(", ")}`,
@@ -197,11 +192,11 @@ export function createCliParser(argv: string[]): Argv {
             describe: "Client package to run (e.g., my-client-app)",
           })
           .options({
-            "url": {
+            url: {
               type: "string",
               description: "Dev server URL (auto-detected from sd.config.ts if omitted)",
             },
-            "opt": {
+            opt: {
               type: "string",
               array: true,
               alias: "o",

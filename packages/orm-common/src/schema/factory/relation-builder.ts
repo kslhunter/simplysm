@@ -12,6 +12,9 @@ import type { ViewBuilder } from "../view-builder";
  * 현재 Table에서 대상 Table로의 FK 관계를 정의
  * DB에 실제 FK 제약조건을 생성
  *
+ * description 설정은 factory 함수의 opts 파라미터로 전달한다.
+ * 메서드 체이닝(.description())은 TypeScript 순환 참조 시 TS7022를 유발하므로 제거됨.
+ *
  * @template TOwner - 소유 Table builder 타입
  * @template TTargetFn - 대상 Table builder factory 타입
  *
@@ -25,7 +28,7 @@ import type { ViewBuilder } from "../view-builder";
  *   .primaryKey("id")
  *   .relations((r) => ({
  *     // N:1 relationship - Post → User
- *     author: r.foreignKey(["authorId"], () => User),
+ *     author: r.foreignKey(["authorId"], () => User, { description: "작성자" }),
  *   }));
  * ```
  *
@@ -51,23 +54,16 @@ export class ForeignKeyBuilder<
       description?: string;
     },
   ) {}
-
-  /**
-   * 관계 설명 설정
-   *
-   * @param desc - 관계 설명
-   * @returns 새 ForeignKeyBuilder 인스턴스
-   */
-  description(desc: string): ForeignKeyBuilder<TOwner, TTargetFn> {
-    return new ForeignKeyBuilder({ ...this.meta, description: desc });
-  }
 }
 
 /**
  * Foreign Key 역참조 builder (1:N)
  *
  * 다른 Table이 현재 Table을 참조하는 FK의 역참조를 정의
- * include() 시 배열로 로드됨 (single() 호출 시 단일 객체)
+ * include() 시 배열로 로드됨 (opts.single: true 시 단일 객체)
+ *
+ * description, single 설정은 factory 함수의 opts 파라미터로 전달한다.
+ * 메서드 체이닝(.description(), .single())은 TypeScript 순환 참조 시 TS7022를 유발하므로 제거됨.
  *
  * @template TTargetTableFn - 참조하는 Table builder factory 타입
  * @template TIsSingle - 단일 객체 여부
@@ -85,7 +81,10 @@ export class ForeignKeyBuilder<
  *     posts: r.foreignKeyTarget(() => Post, "author"),
  *
  *     // 1:1 relation (single object)
- *     profile: r.foreignKeyTarget(() => Profile, "user").single(),
+ *     profile: r.foreignKeyTarget(() => Profile, "user", { single: true }),
+ *
+ *     // with description
+ *     comments: r.foreignKeyTarget(() => Comment, "user", { description: "댓글목록" }),
  *   }));
  * ```
  *
@@ -110,32 +109,6 @@ export class ForeignKeyTargetBuilder<
       isSingle?: TIsSingle;
     },
   ) {}
-
-  /**
-   * 관계 설명 설정
-   *
-   * @param desc - 관계 설명
-   * @returns 새 ForeignKeyTargetBuilder 인스턴스
-   */
-  description(desc: string): ForeignKeyTargetBuilder<TTargetTableFn, TIsSingle> {
-    return new ForeignKeyTargetBuilder({ ...this.meta, description: desc });
-  }
-
-  /**
-   * 단일 객체 관계로 설정 (1:1)
-   *
-   * 기본값은 배열(1:N), single() 호출 시 단일 객체
-   *
-   * @returns 새 ForeignKeyTargetBuilder 인스턴스 (isSingle=true)
-   *
-   * @example
-   * ```typescript
-   * profile: r.foreignKeyTarget(() => Profile, "user").single()
-   * ```
-   */
-  single(): ForeignKeyTargetBuilder<TTargetTableFn, true> {
-    return new ForeignKeyTargetBuilder({ ...this.meta, isSingle: true });
-  }
 }
 
 // ============================================
@@ -148,6 +121,8 @@ export class ForeignKeyTargetBuilder<
  * ForeignKeyBuilder와 동일하지만 DB에 FK 제약조건을 생성하지 않음
  * View에서도 사용 가능
  *
+ * description 설정은 factory 함수의 opts 파라미터로 전달한다.
+ *
  * @template TOwner - 소유 Table/View builder 타입
  * @template TTargetFn - 대상 Table/View builder factory 타입
  *
@@ -158,14 +133,7 @@ export class ForeignKeyTargetBuilder<
  *   .query((db: MyDb) => db.user().select(...))
  *   .relations((r) => ({
  *     // View → Table (FK 미생성)
- *     company: r.relationKey(["companyId"], () => Company),
- *   }));
- *
- * // FK 없는 Table 관계 정의
- * const Report = Table("Report")
- *   .columns((c) => ({ userId: c.bigint() }))
- *   .relations((r) => ({
- *     user: r.relationKey(["userId"], () => User),
+ *     company: r.relationKey(["companyId"], () => Company, { description: "소속회사" }),
  *   }));
  * ```
  *
@@ -190,16 +158,6 @@ export class RelationKeyBuilder<
       description?: string;
     },
   ) {}
-
-  /**
-   * 관계 설명 설정
-   *
-   * @param desc - 관계 설명
-   * @returns 새 RelationKeyBuilder 인스턴스
-   */
-  description(desc: string): RelationKeyBuilder<TOwner, TTargetFn> {
-    return new RelationKeyBuilder({ ...this.meta, description: desc });
-  }
 }
 
 /**
@@ -207,6 +165,8 @@ export class RelationKeyBuilder<
  *
  * ForeignKeyTargetBuilder와 동일하지만 DB에 FK 제약조건을 생성하지 않음
  * View에서도 사용 가능
+ *
+ * description, single 설정은 factory 함수의 opts 파라미터로 전달한다.
  *
  * @template TTargetTableFn - 참조하는 Table/View builder factory 타입
  * @template TIsSingle - 단일 객체 여부
@@ -218,6 +178,8 @@ export class RelationKeyBuilder<
  *   .relations((r) => ({
  *     // 역참조 (FK 미생성)
  *     employees: r.relationKeyTarget(() => UserSummary, "company"),
+ *     // 단일 객체 + 설명
+ *     ceo: r.relationKeyTarget(() => UserSummary, "company", { single: true, description: "대표" }),
  *   }));
  * ```
  *
@@ -242,27 +204,6 @@ export class RelationKeyTargetBuilder<
       isSingle?: TIsSingle;
     },
   ) {}
-
-  /**
-   * 관계 설명 설정
-   *
-   * @param desc - 관계 설명
-   * @returns 새 RelationKeyTargetBuilder 인스턴스
-   */
-  description(desc: string): RelationKeyTargetBuilder<TTargetTableFn, TIsSingle> {
-    return new RelationKeyTargetBuilder({ ...this.meta, description: desc });
-  }
-
-  /**
-   * 단일 객체 관계로 설정 (1:1)
-   *
-   * 기본값은 배열(1:N), single() 호출 시 단일 객체
-   *
-   * @returns 새 RelationKeyTargetBuilder 인스턴스 (isSingle=true)
-   */
-  single(): RelationKeyTargetBuilder<TTargetTableFn, true> {
-    return new RelationKeyTargetBuilder({ ...this.meta, isSingle: true });
-  }
 }
 
 /**
@@ -276,11 +217,18 @@ type RelationFkFactory<TOwner extends TableBuilder<any, any>, TColumnKey extends
   foreignKey<TTargetFn extends () => TableBuilder<any, any>>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
+    opts?: { description?: string },
   ): ForeignKeyBuilder<TOwner, TTargetFn>;
-  /** 1:N FK 역참조 정의 */
+  /** 1:N FK 역참조 정의 (single: true → 단일 객체) */
   foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any>>(
     targetTableFn: TTargetTableFn,
     relationName: string,
+    opts: { single: true; description?: string },
+  ): ForeignKeyTargetBuilder<TTargetTableFn, true>;
+  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any>>(
+    targetTableFn: TTargetTableFn,
+    relationName: string,
+    opts?: { single?: false; description?: string },
   ): ForeignKeyTargetBuilder<TTargetTableFn, false>;
 };
 
@@ -298,13 +246,22 @@ type RelationRkFactory<
   relationKey<TTargetFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
+    opts?: { description?: string },
   ): RelationKeyBuilder<TOwner, TTargetFn>;
-  /** 1:N 논리적 역참조 정의 */
+  /** 1:N 논리적 역참조 정의 (single: true → 단일 객체) */
   relationKeyTarget<
     TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
   >(
     targetTableFn: TTargetTableFn,
     relationName: string,
+    opts: { single: true; description?: string },
+  ): RelationKeyTargetBuilder<TTargetTableFn, true>;
+  relationKeyTarget<
+    TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  >(
+    targetTableFn: TTargetTableFn,
+    relationName: string,
+    opts?: { single?: false; description?: string },
   ): RelationKeyTargetBuilder<TTargetTableFn, false>;
 };
 
@@ -348,25 +305,37 @@ export function createRelationFactory<
   ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
   : RelationRkFactory<TOwner, TColumnKey> {
   return {
-    foreignKey(columns, targetFn) {
+    foreignKey(columns, targetFn, opts?) {
       return new ForeignKeyBuilder({
         ownerFn: ownerFn as () => TableBuilder<any, any>,
         columns,
         targetFn,
+        description: opts?.description,
       });
     },
-    foreignKeyTarget(targetTableFn, relationName) {
-      return new ForeignKeyTargetBuilder({ targetTableFn, relationName });
+    foreignKeyTarget(targetTableFn, relationName, opts?) {
+      return new ForeignKeyTargetBuilder({
+        targetTableFn,
+        relationName,
+        description: opts?.description,
+        isSingle: opts?.single,
+      });
     },
-    relationKey(columns, targetFn) {
+    relationKey(columns, targetFn, opts?) {
       return new RelationKeyBuilder({
         ownerFn: ownerFn,
         columns,
         targetFn,
+        description: opts?.description,
       });
     },
-    relationKeyTarget(targetTableFn, relationName) {
-      return new RelationKeyTargetBuilder({ targetTableFn, relationName });
+    relationKeyTarget(targetTableFn, relationName, opts?) {
+      return new RelationKeyTargetBuilder({
+        targetTableFn,
+        relationName,
+        description: opts?.description,
+        isSingle: opts?.single,
+      });
     },
   } as TOwner extends TableBuilder<any, any>
     ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
@@ -414,7 +383,7 @@ export type ExtractRelationTarget<TRelation> = TRelation extends
 /**
  * FKTarget/RelationKeyTarget에서 대상 타입 추출 (배열 또는 단일 객체)
  *
- * 1:N 관계의 대상 타입 (single() 호출 시 단일 객체)
+ * 1:N 관계의 대상 타입 (opts.single: true 시 단일 객체)
  * TTargetTableFn: 순환 참조 방지를 위한 지연 평가용 () => Post 형태
  *
  * @template T - FKTarget 또는 RelationKeyTarget builder 타입

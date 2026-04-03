@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { applyDebugLevel, createOnceGuard, registerCleanupHandlers } from "../../src/utils/worker-utils";
+import { setupWorkerConsola, createOnceGuard, registerCleanupHandlers } from "../../src/utils/worker-utils";
 import consola, { LogLevels } from "consola";
 
-describe("applyDebugLevel", () => {
+describe("setupWorkerConsola", () => {
   const originalLevel = consola.level;
+  const originalReporters = [...consola.options.reporters];
   const originalEnv = process.env["SD_DEBUG"];
 
   afterEach(() => {
     consola.level = originalLevel;
+    consola.options.reporters = originalReporters;
     if (originalEnv === undefined) {
       delete process.env["SD_DEBUG"];
     } else {
@@ -17,15 +19,14 @@ describe("applyDebugLevel", () => {
 
   it("sets consola level to debug when SD_DEBUG is 'true'", () => {
     process.env["SD_DEBUG"] = "true";
-    applyDebugLevel();
+    setupWorkerConsola();
     expect(consola.level).toBe(LogLevels.debug);
   });
 
-  it("does not change level when SD_DEBUG is not set", () => {
+  it("sets consola level to debug even when SD_DEBUG is not set", () => {
     delete process.env["SD_DEBUG"];
-    const before = consola.level;
-    applyDebugLevel();
-    expect(consola.level).toBe(before);
+    setupWorkerConsola();
+    expect(consola.level).toBe(LogLevels.debug);
   });
 });
 

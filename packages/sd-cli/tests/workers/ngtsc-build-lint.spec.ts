@@ -72,7 +72,7 @@ vi.mock("typescript", async (importOriginal) => {
 vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
 }));
 
 vi.mock("../../src/utils/package-utils", () => ({

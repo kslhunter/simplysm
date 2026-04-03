@@ -132,7 +132,7 @@ vi.mock("../../src/utils/worker-utils", () => ({
     if (guardCalled) throw new Error("startWatch has already been called");
     guardCalled = true;
   }),
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
 }));
 
 vi.mock("../../src/utils/package-utils", () => ({

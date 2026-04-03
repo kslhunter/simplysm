@@ -5,16 +5,16 @@ import { sep } from "node:path";
 // -- Constants ----------------------------------------------------------------
 
 const TYPE_ICONS: Record<string, string> = {
-  error: "✖",
-  fatal: "✖",
-  ready: "✔",
-  warn: "⚠",
-  info: "ℹ",
-  success: "✔",
-  debug: "⚙",
-  trace: "→",
-  fail: "✖",
-  start: "◐",
+  error: "\u2716",
+  fatal: "\u2716",
+  ready: "\u2714",
+  warn: "\u26A0",
+  info: "\u2139",
+  success: "\u2714",
+  debug: "\u2699",
+  trace: "\u2192",
+  fail: "\u2716",
+  start: "\u25D0",
   log: "",
 };
 
@@ -61,7 +61,6 @@ function detectColorSupport(): boolean {
   if (process.env["NO_COLOR"] != null) return false;
   if (process.env["FORCE_COLOR"] != null) return true;
   if (process.stdout.isTTY === true) return true;
-  // 워커 스레드에서는 process.stdout.isTTY가 없음. Windows 터미널은 ANSI 지원.
   return process.platform === "win32";
 }
 
@@ -74,11 +73,7 @@ interface FormatOpts {
   errorLevel?: number;
 }
 
-/**
- * sd-cli 전용 consola reporter.
- * 모든 로그를 `[tag] icon message     time` 형식으로 통일한다.
- */
-export class SdCliReporter implements ConsolaReporter {
+export class PrettyReporter implements ConsolaReporter {
   log(logObj: LogObject, ctx: { options: ConsolaOptions }): void {
     const opts: FormatOpts = {
       ...ctx.options.formatOptions,
@@ -102,7 +97,6 @@ export class SdCliReporter implements ConsolaReporter {
       return this._formatBox(logObj, formattedArgs);
     }
 
-    // Build: [tag] icon message time
     const tag = logObj.tag !== "" ? colorize("gray", `[${logObj.tag}]`, opts.colors) : "";
     const icon = this._formatIcon(logObj, opts.colors);
     const date = this._formatDate(logObj.date, opts);

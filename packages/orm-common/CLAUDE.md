@@ -64,6 +64,9 @@ src/
 
 모든 스키마 객체는 불변(immutable) 빌더로 정의하며, 메서드 체인마다 새 인스턴스를 반환한다.
 
+모든 relation 빌더의 `description`/`single` 설정은 factory 함수의 opts 파라미터(마지막 인자)로 전달한다.
+메서드 체이닝(`.description()`, `.single()`)은 TypeScript 순환 참조 시 TS7022를 유발하므로 전면 제거되었다.
+
 ```typescript
 // 테이블 정의
 export const User = Table("User")
@@ -78,8 +81,9 @@ export const User = Table("User")
   .primaryKey("id")
   .indexes((i) => [i.index("email").unique()])
   .relations((r) => ({
-    company: r.foreignKey(["companyId"], () => Company),  // N:1
+    company: r.foreignKey(["companyId"], () => Company, { description: "소속회사" }),  // N:1
     posts: r.foreignKeyTarget(() => Post, "user"),         // 1:N 역참조
+    profile: r.foreignKeyTarget(() => Profile, "user", { single: true }),  // 1:1
   }));
 
 // 뷰 정의

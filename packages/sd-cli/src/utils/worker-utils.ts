@@ -1,18 +1,12 @@
-import consola, { type ConsolaInstance, LogLevels } from "consola";
-import { SdCliReporter } from "./SdCliReporter";
+import { type ConsolaInstance } from "consola";
+import { setupConsola } from "@simplysm/core-node";
 
 /**
- * 워커 스레드에서 sd-cli 리포터와 디버그 로그 레벨을 적용한다.
- *
- * SD_DEBUG 환경변수(메인 프로세스의 --debug 플래그로 설정)를 확인하고
- * 현재 워커 스레드의 consola에 디버그 로그 레벨을 적용한다.
+ * 워커 스레드에서 consola를 설정한다.
  * 워커 모듈 최상위에서 호출해야 한다.
  */
-export function applyDebugLevel(): void {
-  consola.options.reporters = [new SdCliReporter()];
-  if (process.env["SD_DEBUG"] === "true") {
-    consola.level = LogLevels.debug;
-  }
+export function setupWorkerConsola(): void {
+  setupConsola();
 }
 
 /**

@@ -64,10 +64,10 @@ pnpm add @simplysm/orm-common
 | [`createColumnFactory`](./docs/schema-builders.md#createcolumnfactory) | Function | Column type factory |
 | [`IndexBuilder`](./docs/schema-builders.md#indexbuilder) | Class | Index definition builder |
 | [`createIndexFactory`](./docs/schema-builders.md#createindexfactory) | Function | Index factory |
-| [`ForeignKeyBuilder`](./docs/schema-builders.md#foreignkeybuilder) | Class | FK relation builder (N:1) |
-| [`ForeignKeyTargetBuilder`](./docs/schema-builders.md#foreignkeytargetbuilder) | Class | FK reverse-reference builder (1:N/1:1) |
-| [`RelationKeyBuilder`](./docs/schema-builders.md#relationkeybuilder) | Class | Logical relation builder (no DB FK) |
-| [`RelationKeyTargetBuilder`](./docs/schema-builders.md#relationkeytargetbuilder) | Class | Logical reverse-reference builder |
+| [`ForeignKeyBuilder`](./docs/schema-builders.md#foreignkeybuilder) | Class | FK relation builder (N:1, configured via factory opts) |
+| [`ForeignKeyTargetBuilder`](./docs/schema-builders.md#foreignkeytargetbuilder) | Class | FK reverse-reference builder (1:N/1:1, configured via factory opts) |
+| [`RelationKeyBuilder`](./docs/schema-builders.md#relationkeybuilder) | Class | Logical relation builder (no DB FK, configured via factory opts) |
+| [`RelationKeyTargetBuilder`](./docs/schema-builders.md#relationkeytargetbuilder) | Class | Logical reverse-reference builder (configured via factory opts) |
 | [`createRelationFactory`](./docs/schema-builders.md#createrelationfactory) | Function | Relation factory |
 
 ### Query Builder & Result Parsing
@@ -114,8 +114,9 @@ const User = Table("User")
   .primaryKey("id")
   .indexes((i) => [i.index("email").unique()])
   .relations((r) => ({
-    company: r.foreignKey(["companyId"], () => Company),
+    company: r.foreignKey(["companyId"], () => Company, { description: "소속회사" }),
     posts: r.foreignKeyTarget(() => Post, "author"),
+    topPost: r.foreignKeyTarget(() => Post, "author", { single: true, description: "Top post" }),
   }));
 
 const MyDb = defineDbContext({ tables: { user: User, post: Post, company: Company } });

@@ -35,7 +35,7 @@ vi.mock("../../src/utils/tsc-build", () => ({
 vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
 }));
 
 const mockConsolaLogger = {

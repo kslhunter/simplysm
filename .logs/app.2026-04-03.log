@@ -1,0 +1,820 @@
+{"time":"2026-04-03T04:36:20.615Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 시작 [object Object]"}
+{"time":"2026-04-03T04:36:20.628Z","level":"DEBUG","tag":"sd:cli:watch","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T04:36:20.632Z","level":"DEBUG","tag":"sd:cli:watch","msg":"start 시작"}
+{"time":"2026-04-03T04:36:20.633Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 모드 시작"}
+{"time":"2026-04-03T04:36:20.633Z","level":"START","tag":"sd:cli:watch","msg":"초기 빌드 실행 중... (17개 패키지)"}
+{"time":"2026-04-03T04:36:23.878Z","level":"INFO","tag":"sd:cli:watch","msg":"  [1/17] capacitor-plugin-intent 완료"}
+{"time":"2026-04-03T04:36:25.090Z","level":"INFO","tag":"sd:cli:watch","msg":"  [2/17] capacitor-plugin-usb-storage 완료"}
+{"time":"2026-04-03T04:36:25.309Z","level":"INFO","tag":"sd:cli:watch","msg":"  [3/17] core-browser 완료"}
+{"time":"2026-04-03T04:36:25.335Z","level":"INFO","tag":"sd:cli:watch","msg":"  [4/17] capacitor-plugin-file-system 완료"}
+{"time":"2026-04-03T04:36:25.674Z","level":"INFO","tag":"sd:cli:watch","msg":"  [5/17] lint 완료"}
+{"time":"2026-04-03T04:36:25.745Z","level":"INFO","tag":"sd:cli:watch","msg":"  [6/17] core-common 완료"}
+{"time":"2026-04-03T04:36:26.178Z","level":"INFO","tag":"sd:cli:watch","msg":"  [7/17] core-node 완료"}
+{"time":"2026-04-03T04:36:26.333Z","level":"INFO","tag":"sd:cli:watch","msg":"  [8/17] storage 완료"}
+{"time":"2026-04-03T04:36:26.501Z","level":"INFO","tag":"sd:cli:watch","msg":"  [9/17] excel 완료"}
+{"time":"2026-04-03T04:36:27.095Z","level":"INFO","tag":"sd:cli:watch","msg":"  [10/17] service-common 완료"}
+{"time":"2026-04-03T04:36:27.343Z","level":"INFO","tag":"sd:cli:watch","msg":"  [11/17] orm-common 완료"}
+{"time":"2026-04-03T04:36:27.514Z","level":"INFO","tag":"sd:cli:watch","msg":"  [12/17] capacitor-plugin-auto-update 완료"}
+{"time":"2026-04-03T04:36:27.597Z","level":"INFO","tag":"sd:cli:watch","msg":"  [13/17] orm-node 완료"}
+{"time":"2026-04-03T04:36:27.621Z","level":"INFO","tag":"sd:cli:watch","msg":"  [14/17] service-client 완료"}
+{"time":"2026-04-03T04:36:28.421Z","level":"INFO","tag":"sd:cli:watch","msg":"  [15/17] service-server 완료"}
+{"time":"2026-04-03T04:36:29.027Z","level":"INFO","tag":"sd:cli:watch","msg":"  [16/17] sd-cli 완료"}
+{"time":"2026-04-03T04:36:31.145Z","level":"INFO","tag":"sd:cli:watch","msg":"  [17/17] angular 완료"}
+{"time":"2026-04-03T04:36:31.146Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"초기 빌드 실행 완료"}
+{"time":"2026-04-03T04:36:31.295Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"워치 훅 시작됨: sd-claude"}
+{"time":"2026-04-03T04:37:45.219Z","level":"DEBUG","tag":"sd:cli:watch","msg":"shutdown 시작"}
+{"time":"2026-04-03T04:37:47.808Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 시작 [object Object]"}
+{"time":"2026-04-03T04:37:47.819Z","level":"DEBUG","tag":"sd:cli:watch","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T04:37:47.824Z","level":"DEBUG","tag":"sd:cli:watch","msg":"start 시작"}
+{"time":"2026-04-03T04:37:47.825Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 모드 시작"}
+{"time":"2026-04-03T04:37:47.826Z","level":"START","tag":"sd:cli:watch","msg":"초기 빌드 실행 중... (17개 패키지)"}
+{"time":"2026-04-03T04:37:51.288Z","level":"INFO","tag":"sd:cli:watch","msg":"  [1/17] capacitor-plugin-intent 완료"}
+{"time":"2026-04-03T04:37:52.810Z","level":"INFO","tag":"sd:cli:watch","msg":"  [2/17] capacitor-plugin-file-system 완료"}
+{"time":"2026-04-03T04:37:52.877Z","level":"INFO","tag":"sd:cli:watch","msg":"  [3/17] core-browser 완료"}
+{"time":"2026-04-03T04:37:53.142Z","level":"INFO","tag":"sd:cli:watch","msg":"  [4/17] capacitor-plugin-usb-storage 완료"}
+{"time":"2026-04-03T04:37:53.396Z","level":"INFO","tag":"sd:cli:watch","msg":"  [5/17] lint 완료"}
+{"time":"2026-04-03T04:37:53.516Z","level":"INFO","tag":"sd:cli:watch","msg":"  [6/17] core-common 완료"}
+{"time":"2026-04-03T04:37:53.708Z","level":"INFO","tag":"sd:cli:watch","msg":"  [7/17] core-node 완료"}
+{"time":"2026-04-03T04:37:53.844Z","level":"INFO","tag":"sd:cli:watch","msg":"  [8/17] storage 완료"}
+{"time":"2026-04-03T04:37:54.089Z","level":"INFO","tag":"sd:cli:watch","msg":"  [9/17] excel 완료"}
+{"time":"2026-04-03T04:37:54.494Z","level":"INFO","tag":"sd:cli:watch","msg":"  [10/17] service-common 완료"}
+{"time":"2026-04-03T04:37:54.868Z","level":"INFO","tag":"sd:cli:watch","msg":"  [11/17] capacitor-plugin-auto-update 완료"}
+{"time":"2026-04-03T04:37:54.950Z","level":"INFO","tag":"sd:cli:watch","msg":"  [12/17] orm-common 완료"}
+{"time":"2026-04-03T04:37:55.126Z","level":"INFO","tag":"sd:cli:watch","msg":"  [13/17] orm-node 완료"}
+{"time":"2026-04-03T04:37:55.159Z","level":"INFO","tag":"sd:cli:watch","msg":"  [14/17] service-client 완료"}
+{"time":"2026-04-03T04:37:55.932Z","level":"INFO","tag":"sd:cli:watch","msg":"  [15/17] service-server 완료"}
+{"time":"2026-04-03T04:37:56.941Z","level":"INFO","tag":"sd:cli:watch","msg":"  [16/17] sd-cli 완료"}
+{"time":"2026-04-03T04:37:58.920Z","level":"INFO","tag":"sd:cli:watch","msg":"  [17/17] angular 완료"}
+{"time":"2026-04-03T04:37:58.921Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"초기 빌드 실행 완료"}
+{"time":"2026-04-03T04:37:59.070Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"워치 훅 시작됨: sd-claude"}
+{"time":"2026-04-03T04:37:59.072Z","level":"DEBUG","tag":"sd:cli:watch","msg":"shutdown 시작"}
+{"time":"2026-04-03T04:46:09.803Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 시작 [object Object]"}
+{"time":"2026-04-03T04:46:09.812Z","level":"DEBUG","tag":"sd:cli:watch","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T04:46:09.815Z","level":"DEBUG","tag":"sd:cli:watch","msg":"start 시작"}
+{"time":"2026-04-03T04:46:09.815Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 모드 시작"}
+{"time":"2026-04-03T04:46:09.816Z","level":"START","tag":"sd:cli:watch","msg":"초기 빌드 실행 중... (17개 패키지)"}
+{"time":"2026-04-03T04:46:12.052Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.061Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.065Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.248Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.267Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.278Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.280Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.282Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.298Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.304Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.306Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.307Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.307Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.310Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.311Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:12.708Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:12.710Z","level":"INFO","tag":"sd:cli:watch","msg":"  [1/17] capacitor-plugin-intent 완료"}
+{"time":"2026-04-03T04:46:12.719Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.118Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.120Z","level":"INFO","tag":"sd:cli:watch","msg":"  [2/17] core-browser 완료"}
+{"time":"2026-04-03T04:46:14.129Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.217Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.219Z","level":"INFO","tag":"sd:cli:watch","msg":"  [3/17] core-node 완료"}
+{"time":"2026-04-03T04:46:14.227Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.237Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.239Z","level":"INFO","tag":"sd:cli:watch","msg":"  [4/17] capacitor-plugin-usb-storage 완료"}
+{"time":"2026-04-03T04:46:14.248Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.271Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.273Z","level":"INFO","tag":"sd:cli:watch","msg":"  [5/17] capacitor-plugin-file-system 완료"}
+{"time":"2026-04-03T04:46:14.286Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.379Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.383Z","level":"INFO","tag":"sd:cli:watch","msg":"  [6/17] lint 완료"}
+{"time":"2026-04-03T04:46:14.393Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.518Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.519Z","level":"INFO","tag":"sd:cli:watch","msg":"  [7/17] core-common 완료"}
+{"time":"2026-04-03T04:46:14.526Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.727Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.729Z","level":"INFO","tag":"sd:cli:watch","msg":"  [8/17] storage 완료"}
+{"time":"2026-04-03T04:46:14.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:14.891Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:14.892Z","level":"INFO","tag":"sd:cli:watch","msg":"  [9/17] excel 완료"}
+{"time":"2026-04-03T04:46:14.900Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:15.172Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:15.174Z","level":"INFO","tag":"sd:cli:watch","msg":"  [10/17] service-common 완료"}
+{"time":"2026-04-03T04:46:15.182Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:15.587Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:15.588Z","level":"INFO","tag":"sd:cli:watch","msg":"  [11/17] orm-common 완료"}
+{"time":"2026-04-03T04:46:15.594Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:34.554Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 시작 [object Object]"}
+{"time":"2026-04-03T04:46:34.564Z","level":"DEBUG","tag":"sd:cli:watch","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T04:46:34.567Z","level":"DEBUG","tag":"sd:cli:watch","msg":"start 시작"}
+{"time":"2026-04-03T04:46:34.567Z","level":"DEBUG","tag":"sd:cli:watch","msg":"watch 모드 시작"}
+{"time":"2026-04-03T04:46:34.568Z","level":"START","tag":"sd:cli:watch","msg":"초기 빌드 실행 중... (17개 패키지)"}
+{"time":"2026-04-03T04:46:36.970Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.039Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.093Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.130Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.170Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.171Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.190Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.191Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.302Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.304Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.326Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.328Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.332Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.341Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.343Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:37.344Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] rebuildAll 시작"}
+{"time":"2026-04-03T04:46:38.035Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:38.038Z","level":"INFO","tag":"sd:cli:watch","msg":"  [1/17] capacitor-plugin-intent 완료"}
+{"time":"2026-04-03T04:46:38.048Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-intent] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:38.749Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:38.752Z","level":"INFO","tag":"sd:cli:watch","msg":"  [2/17] capacitor-plugin-usb-storage 완료"}
+{"time":"2026-04-03T04:46:38.759Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-usb-storage] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:38.904Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:38.907Z","level":"INFO","tag":"sd:cli:watch","msg":"  [3/17] capacitor-plugin-file-system 완료"}
+{"time":"2026-04-03T04:46:38.913Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-file-system] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.276Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.278Z","level":"INFO","tag":"sd:cli:watch","msg":"  [4/17] core-browser 완료"}
+{"time":"2026-04-03T04:46:39.286Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-browser] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.450Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.452Z","level":"INFO","tag":"sd:cli:watch","msg":"  [5/17] lint 완료"}
+{"time":"2026-04-03T04:46:39.457Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[lint] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.492Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.494Z","level":"INFO","tag":"sd:cli:watch","msg":"  [6/17] core-common 완료"}
+{"time":"2026-04-03T04:46:39.503Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.546Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.547Z","level":"INFO","tag":"sd:cli:watch","msg":"  [7/17] core-node 완료"}
+{"time":"2026-04-03T04:46:39.554Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.733Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.734Z","level":"INFO","tag":"sd:cli:watch","msg":"  [8/17] excel 완료"}
+{"time":"2026-04-03T04:46:39.738Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[excel] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:39.840Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:39.842Z","level":"INFO","tag":"sd:cli:watch","msg":"  [9/17] storage 완료"}
+{"time":"2026-04-03T04:46:39.848Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[storage] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:40.539Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:40.541Z","level":"INFO","tag":"sd:cli:watch","msg":"  [10/17] service-common 완료"}
+{"time":"2026-04-03T04:46:40.548Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:40.787Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:40.789Z","level":"INFO","tag":"sd:cli:watch","msg":"  [11/17] orm-common 완료"}
+{"time":"2026-04-03T04:46:40.795Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:40.990Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:40.992Z","level":"INFO","tag":"sd:cli:watch","msg":"  [12/17] capacitor-plugin-auto-update 완료"}
+{"time":"2026-04-03T04:46:41.002Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:41.077Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:41.078Z","level":"INFO","tag":"sd:cli:watch","msg":"  [13/17] orm-node 완료"}
+{"time":"2026-04-03T04:46:41.085Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:41.278Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:41.279Z","level":"INFO","tag":"sd:cli:watch","msg":"  [14/17] service-client 완료"}
+{"time":"2026-04-03T04:46:41.285Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:41.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:41.889Z","level":"INFO","tag":"sd:cli:watch","msg":"  [15/17] service-server 완료"}
+{"time":"2026-04-03T04:46:41.892Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:42.407Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T04:46:42.422Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 완료"}
+{"time":"2026-04-03T04:46:42.424Z","level":"INFO","tag":"sd:cli:watch","msg":"  [16/17] sd-cli 완료"}
+{"time":"2026-04-03T04:46:42.428Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:44.335Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T04:46:44.337Z","level":"INFO","tag":"sd:cli:watch","msg":"  [17/17] angular 완료"}
+{"time":"2026-04-03T04:46:44.338Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"초기 빌드 실행 완료"}
+{"time":"2026-04-03T04:46:44.340Z","level":"ERROR","msg":"sd-cli (node)\n  → D:/workspaces-14/simplysm/packages/sd-cli/src/utils/worker-utils.ts:10:18: TS2353: Object literal may only specify known properties, and 'logDir' does not exist in type 'SetupConsolaOptions'."}
+{"time":"2026-04-03T04:46:44.343Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] FsWatcher 시작"}
+{"time":"2026-04-03T04:46:44.503Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"워치 훅 시작됨: sd-claude"}
+{"time":"2026-04-03T04:54:11.555Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 시작"}
+{"time":"2026-04-03T04:54:11.556Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: sd-cli:build (sd-cli (node))"}
+{"time":"2026-04-03T04:54:11.558Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (sd-cli (node))"}
+{"time":"2026-04-03T04:54:14.103Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 완료"}
+{"time":"2026-04-03T04:54:14.105Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (sd-cli (node))"}
+{"time":"2026-04-03T04:54:16.055Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: sd-cli:build (sd-cli (node))"}
+{"time":"2026-04-03T04:54:16.055Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 시작"}
+{"time":"2026-04-03T04:54:16.057Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (sd-cli (node))"}
+{"time":"2026-04-03T04:54:18.461Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 완료"}
+{"time":"2026-04-03T04:54:18.464Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (sd-cli (node))"}
+{"time":"2026-04-03T05:27:48.676Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.676Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.676Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:27:48.679Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node))"}
+{"time":"2026-04-03T05:27:48.680Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:27:48.692Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:27:48.692Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.692Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.692Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.692Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:48.694Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:27:48.698Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:27:48.699Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:27:48.700Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:27:48.884Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:27:50.772Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:50.838Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:51.257Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:51.334Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:51.360Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:51.438Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:27:51.890Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:51.892Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node))"}
+{"time":"2026-04-03T05:27:51.893Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral), angular (browser), service-common (neutral), capacitor-plugin-auto-update (browser), orm-node (node), service-client (neutral))"}
+{"time":"2026-04-03T05:27:51.894Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral), angular (browser), service-common (neutral), capacitor-plugin-auto-update (browser), orm-node (node), service-client (neutral))"}
+{"time":"2026-04-03T05:27:57.950Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:27:57.950Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.952Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-client (neutral))"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:27:57.965Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:27:57.970Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:27:57.971Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:27:57.972Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:27:57.974Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:27:57.975Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:27:58.084Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:27:58.868Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:27:59.668Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:27:59.794Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:00.055Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:00.057Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:00.057Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-client (neutral))"}
+{"time":"2026-04-03T05:28:00.059Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral), angular (browser), service-server (node), capacitor-plugin-auto-update (browser), orm-node (node), service-common (neutral))"}
+{"time":"2026-04-03T05:28:00.116Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:00.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:00.715Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral), angular (browser), service-server (node), capacitor-plugin-auto-update (browser), orm-node (node), service-common (neutral))"}
+{"time":"2026-04-03T05:28:13.157Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.157Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:28:13.159Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-client (neutral))"}
+{"time":"2026-04-03T05:28:13.172Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.172Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.173Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.173Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:28:13.173Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.173Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:13.177Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:28:13.179Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:28:13.180Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:13.180Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:28:13.181Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:28:13.294Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:28:14.314Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:28:14.886Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:14.915Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:15.318Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:15.351Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:15.352Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-client (neutral))"}
+{"time":"2026-04-03T05:28:15.353Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), capacitor-plugin-auto-update (browser), orm-node (node), orm-common (neutral), service-common (neutral), angular (browser))"}
+{"time":"2026-04-03T05:28:15.444Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:15.560Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:15.561Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), capacitor-plugin-auto-update (browser), orm-node (node), orm-common (neutral), service-common (neutral), angular (browser))"}
+{"time":"2026-04-03T05:28:18.792Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.792Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:18.796Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.807Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:18.811Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:28:18.812Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:28:18.813Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:28:18.815Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:28:18.816Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:28:18.931Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:28:19.793Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:28:20.506Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:20.651Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:20.653Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:20.655Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (capacitor-plugin-auto-update (browser), service-client (neutral), orm-node (node), angular (browser), service-common (neutral), service-server (node))"}
+{"time":"2026-04-03T05:28:20.959Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:21.022Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:21.042Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:21.452Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:21.453Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (capacitor-plugin-auto-update (browser), service-client (neutral), orm-node (node), angular (browser), service-common (neutral), service-server (node))"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.854Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:26.858Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-node (node))"}
+{"time":"2026-04-03T05:28:26.859Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:28:26.860Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:28:26.862Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:28:26.863Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:26.864Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:28:26.866Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:28:26.964Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:28:27.047Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:28:28.250Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:28.740Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:28.780Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:28.782Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-node (node))"}
+{"time":"2026-04-03T05:28:28.783Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-common (neutral), service-server (node), service-client (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser), angular (browser))"}
+{"time":"2026-04-03T05:28:29.209Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:29.273Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:29.465Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:29.466Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-common (neutral), service-server (node), service-client (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser), angular (browser))"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:28:30.717Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:28:30.724Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-common (neutral))"}
+{"time":"2026-04-03T05:28:30.725Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:28:30.727Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:28:30.728Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:28:30.730Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:28:30.732Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:28:30.733Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:28:30.823Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:28:30.895Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:28:31.985Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:31.986Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-common (neutral))"}
+{"time":"2026-04-03T05:28:31.987Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (angular (browser), orm-node (node), service-server (node), service-client (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:28:32.236Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:32.444Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:32.551Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:32.569Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:32.987Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:28:32.988Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (angular (browser), orm-node (node), service-server (node), service-client (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:30:06.736Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:06.742Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-client (neutral))"}
+{"time":"2026-04-03T05:30:06.744Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:30:06.745Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:30:06.745Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:30:06.747Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:30:06.747Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:30:06.748Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:30:06.862Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:30:07.988Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:30:08.495Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:08.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:08.941Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:09.043Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:09.196Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:09.196Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-client (neutral))"}
+{"time":"2026-04-03T05:30:09.198Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), service-common (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser), angular (browser), orm-node (node))"}
+{"time":"2026-04-03T05:30:09.760Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:09.762Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), service-common (neutral), orm-common (neutral), capacitor-plugin-auto-update (browser), angular (browser), orm-node (node))"}
+{"time":"2026-04-03T05:30:17.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.888Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.887Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:30:17.888Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:30:17.894Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node))"}
+{"time":"2026-04-03T05:30:17.895Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:30:17.896Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:30:17.898Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:30:17.899Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:30:17.900Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:30:17.901Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:30:18.005Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:30:18.807Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:30:19.562Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:19.602Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:19.884Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:19.985Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:20.167Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:20.441Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:30:20.442Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node))"}
+{"time":"2026-04-03T05:30:20.443Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (capacitor-plugin-auto-update (browser), service-client (neutral), angular (browser), orm-node (node), service-common (neutral), orm-common (neutral))"}
+{"time":"2026-04-03T05:30:20.443Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (capacitor-plugin-auto-update (browser), service-client (neutral), angular (browser), orm-node (node), service-common (neutral), orm-common (neutral))"}
+{"time":"2026-04-03T05:32:22.318Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:22.321Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:32:22.322Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:32:22.322Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck)"}
+{"time":"2026-04-03T05:32:22.325Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:22.345Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:32:22.349Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크 실행 중... (2개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:32:22.350Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:22.353Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:23.269Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:23.271Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:25.692Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: false)"}
+{"time":"2026-04-03T05:32:25.696Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 실패"}
+{"time":"2026-04-03T05:32:25.924Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: false)"}
+{"time":"2026-04-03T05:32:25.927Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 실패"}
+{"time":"2026-04-03T05:32:25.959Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크 실행 완료"}
+{"time":"2026-04-03T05:32:25.979Z","level":"ERROR","tag":"sd:cli:typecheck","msg":"타입체크 에러 발생 [object Object]"}
+{"time":"2026-04-03T05:32:25.984Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:32:35.422Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:35.425Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:32:35.426Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:32:35.426Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck)"}
+{"time":"2026-04-03T05:32:35.430Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:35.439Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:32:35.442Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크 실행 중... (2개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:32:35.443Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:35.446Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:36.301Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:36.318Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:38.396Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: false)"}
+{"time":"2026-04-03T05:32:38.399Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 실패"}
+{"time":"2026-04-03T05:32:38.636Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: false)"}
+{"time":"2026-04-03T05:32:38.639Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 실패"}
+{"time":"2026-04-03T05:32:38.670Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크 실행 완료"}
+{"time":"2026-04-03T05:32:38.691Z","level":"ERROR","tag":"sd:cli:typecheck","msg":"타입체크 에러 발생 [object Object]"}
+{"time":"2026-04-03T05:32:38.695Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:32:54.540Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:54.544Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:32:54.544Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:32:54.545Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck)"}
+{"time":"2026-04-03T05:32:54.548Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크 시작 [object Object]"}
+{"time":"2026-04-03T05:32:54.557Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:32:54.560Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크 실행 중... (2개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:32:54.561Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:54.563Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:32:55.408Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:55.410Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:32:57.445Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:32:57.448Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:32:57.636Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:32:57.639Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 완료"}
+{"time":"2026-04-03T05:32:57.673Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크 실행 완료"}
+{"time":"2026-04-03T05:32:57.675Z","level":"INFO","tag":"sd:cli:typecheck","msg":"타입체크 완료 [object Object]"}
+{"time":"2026-04-03T05:32:57.677Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:33:07.971Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:33:07.975Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:33:07.975Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:33:07.976Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck, lint, test)"}
+{"time":"2026-04-03T05:33:07.979Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크/린트 시작 [object Object]"}
+{"time":"2026-04-03T05:33:07.980Z","level":"DEBUG","tag":"sd:cli:test","msg":"vitest 실행 [object Object]"}
+{"time":"2026-04-03T05:33:07.980Z","level":"START","tag":"sd:cli:test","msg":"테스트 실행 중..."}
+{"time":"2026-04-03T05:33:07.994Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:33:07.997Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크/린트 실행 중... (8개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:33:07.998Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.001Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.003Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-node:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.004Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.006Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.007Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.010Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:08.012Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-server:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:33:09.399Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-node)"}
+{"time":"2026-04-03T05:33:09.399Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:33:09.416Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:33:09.424Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-common)"}
+{"time":"2026-04-03T05:33:09.425Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-client)"}
+{"time":"2026-04-03T05:33:09.438Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-client)"}
+{"time":"2026-04-03T05:33:09.438Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-common)"}
+{"time":"2026-04-03T05:33:09.439Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-server)"}
+{"time":"2026-04-03T05:33:11.889Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:11.891Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 시작"}
+{"time":"2026-04-03T05:33:12.313Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:12.315Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 시작"}
+{"time":"2026-04-03T05:33:12.752Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:12.754Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] lint 시작"}
+{"time":"2026-04-03T05:33:12.800Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:12.802Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 시작"}
+{"time":"2026-04-03T05:33:13.045Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:13.047Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 시작"}
+{"time":"2026-04-03T05:33:13.053Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:13.055Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 시작"}
+{"time":"2026-04-03T05:33:13.394Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:13.396Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 시작"}
+{"time":"2026-04-03T05:33:14.091Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:33:14.093Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] lint 시작"}
+{"time":"2026-04-03T05:33:14.356Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 완료"}
+{"time":"2026-04-03T05:33:14.360Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:33:14.650Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 완료"}
+{"time":"2026-04-03T05:33:14.653Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:node] 타입체크 완료"}
+{"time":"2026-04-03T05:33:15.082Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] lint 완료"}
+{"time":"2026-04-03T05:33:15.085Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-node:node] 타입체크 완료"}
+{"time":"2026-04-03T05:33:15.128Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 완료"}
+{"time":"2026-04-03T05:33:15.132Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:node] 타입체크 완료"}
+{"time":"2026-04-03T05:33:15.377Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 완료"}
+{"time":"2026-04-03T05:33:15.381Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:33:16.192Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 완료"}
+{"time":"2026-04-03T05:33:16.195Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:33:16.415Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 완료"}
+{"time":"2026-04-03T05:33:16.418Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 완료"}
+{"time":"2026-04-03T05:33:17.414Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] lint 완료"}
+{"time":"2026-04-03T05:33:17.420Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-server:node] 타입체크 완료"}
+{"time":"2026-04-03T05:33:17.513Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크/린트 실행 완료"}
+{"time":"2026-04-03T05:33:17.519Z","level":"INFO","tag":"sd:cli:typecheck","msg":"타입체크/린트 완료 [object Object]"}
+{"time":"2026-04-03T05:33:24.557Z","level":"SUCCESS","tag":"sd:cli:test","msg":"테스트 실행 완료"}
+{"time":"2026-04-03T05:33:24.560Z","level":"INFO","tag":"sd:cli:test","msg":"테스트 완료 [object Object]"}
+{"time":"2026-04-03T05:33:24.562Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:33:55.699Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.699Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:33:55.702Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-client (neutral))"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.713Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:33:55.718Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:33:55.720Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:33:55.721Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:33:55.722Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:33:55.723Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:33:55.893Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:33:57.260Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:33:58.148Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:58.263Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:58.715Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:58.802Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:58.804Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-client (neutral))"}
+{"time":"2026-04-03T05:33:58.805Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (angular (browser), capacitor-plugin-auto-update (browser), service-common (neutral), orm-node (node), orm-common (neutral), service-server (node))"}
+{"time":"2026-04-03T05:33:58.824Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:59.861Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:33:59.863Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (angular (browser), capacitor-plugin-auto-update (browser), service-common (neutral), orm-node (node), orm-common (neutral), service-server (node))"}
+{"time":"2026-04-03T05:34:05.958Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:34:05.962Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:34:05.962Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:34:05.963Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck, lint, test)"}
+{"time":"2026-04-03T05:34:05.966Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크/린트 시작 [object Object]"}
+{"time":"2026-04-03T05:34:05.967Z","level":"DEBUG","tag":"sd:cli:test","msg":"vitest 실행 [object Object]"}
+{"time":"2026-04-03T05:34:05.967Z","level":"START","tag":"sd:cli:test","msg":"테스트 실행 중..."}
+{"time":"2026-04-03T05:34:05.981Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:34:05.985Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크/린트 실행 중... (8개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:34:05.986Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.990Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.991Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-node:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.993Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.994Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.996Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.997Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:browser] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:05.999Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-server:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:34:07.424Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:34:07.447Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-common)"}
+{"time":"2026-04-03T05:34:07.457Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/orm-node)"}
+{"time":"2026-04-03T05:34:07.466Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-common)"}
+{"time":"2026-04-03T05:34:07.477Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-server)"}
+{"time":"2026-04-03T05:34:07.487Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-client)"}
+{"time":"2026-04-03T05:34:07.493Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-common)"}
+{"time":"2026-04-03T05:34:07.494Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/service-client)"}
+{"time":"2026-04-03T05:34:09.975Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:09.978Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 시작"}
+{"time":"2026-04-03T05:34:10.446Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:10.448Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 시작"}
+{"time":"2026-04-03T05:34:10.925Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:10.927Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] lint 시작"}
+{"time":"2026-04-03T05:34:11.073Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:11.076Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 시작"}
+{"time":"2026-04-03T05:34:11.167Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:11.169Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 시작"}
+{"time":"2026-04-03T05:34:11.261Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:11.263Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 시작"}
+{"time":"2026-04-03T05:34:11.436Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:11.438Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 시작"}
+{"time":"2026-04-03T05:34:12.182Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:34:12.184Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] lint 시작"}
+{"time":"2026-04-03T05:34:12.227Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 완료"}
+{"time":"2026-04-03T05:34:12.230Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:34:12.650Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] lint 완료"}
+{"time":"2026-04-03T05:34:12.653Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-common:node] 타입체크 완료"}
+{"time":"2026-04-03T05:34:13.158Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] lint 완료"}
+{"time":"2026-04-03T05:34:13.161Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-node:node] 타입체크 완료"}
+{"time":"2026-04-03T05:34:13.318Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 완료"}
+{"time":"2026-04-03T05:34:13.321Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:node] 타입체크 완료"}
+{"time":"2026-04-03T05:34:13.441Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 완료"}
+{"time":"2026-04-03T05:34:13.443Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:34:13.482Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] lint 완료"}
+{"time":"2026-04-03T05:34:13.485Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-client:browser] 타입체크 완료"}
+{"time":"2026-04-03T05:34:13.643Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] lint 완료"}
+{"time":"2026-04-03T05:34:13.645Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[orm-common:node] 타입체크 완료"}
+{"time":"2026-04-03T05:34:14.073Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] lint 완료"}
+{"time":"2026-04-03T05:34:14.075Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[service-server:node] 타입체크 완료"}
+{"time":"2026-04-03T05:34:14.131Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크/린트 실행 완료"}
+{"time":"2026-04-03T05:34:14.134Z","level":"INFO","tag":"sd:cli:typecheck","msg":"타입체크/린트 완료 [object Object]"}
+{"time":"2026-04-03T05:34:22.083Z","level":"SUCCESS","tag":"sd:cli:test","msg":"테스트 실행 완료"}
+{"time":"2026-04-03T05:34:22.084Z","level":"INFO","tag":"sd:cli:test","msg":"테스트 완료 [object Object]"}
+{"time":"2026-04-03T05:34:22.085Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:40:17.464Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:40:17.464Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 시작"}
+{"time":"2026-04-03T05:40:17.464Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:40:17.464Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:40:17.466Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node))"}
+{"time":"2026-04-03T05:40:17.470Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: sd-cli:build (sd-cli (node))"}
+{"time":"2026-04-03T05:40:17.471Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: core-node:build (core-node (node))"}
+{"time":"2026-04-03T05:40:18.483Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:40:19.868Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:40:19.869Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node))"}
+{"time":"2026-04-03T05:40:19.871Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (sd-cli (node), core-node (node))"}
+{"time":"2026-04-03T05:40:20.413Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[sd-cli] rebuildAll 완료"}
+{"time":"2026-04-03T05:40:20.414Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (sd-cli (node), core-node (node))"}
+{"time":"2026-04-03T05:40:32.297Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 시작 [object Object]"}
+{"time":"2026-04-03T05:40:32.299Z","level":"DEBUG","tag":"sd:cli:check","msg":"워크스페이스 패키지 검증 완료 [object Object]"}
+{"time":"2026-04-03T05:40:32.299Z","level":"DEBUG","tag":"sd:cli:check","msg":"체크 구성 [object Object]"}
+{"time":"2026-04-03T05:40:32.299Z","level":"START","tag":"sd:cli:check","msg":"체크 실행 중... (typecheck)"}
+{"time":"2026-04-03T05:40:32.302Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"타입체크 시작 [object Object]"}
+{"time":"2026-04-03T05:40:32.311Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"sd.config.ts 로드 완료"}
+{"time":"2026-04-03T05:40:32.315Z","level":"START","tag":"sd:cli:typecheck","msg":"타입체크 실행 중... (1개 작업, 동시성: 28)"}
+{"time":"2026-04-03T05:40:32.315Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[core-node:node] 타입체크 시작됨"}
+{"time":"2026-04-03T05:40:33.200Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] library worker build 시작 (pkgDir: D:/workspaces-14/simplysm/packages/core-node)"}
+{"time":"2026-04-03T05:40:34.272Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[core-node] library worker build 완료 (success: true)"}
+{"time":"2026-04-03T05:40:34.273Z","level":"DEBUG","tag":"sd:cli:typecheck","msg":"[core-node:node] 타입체크 완료"}
+{"time":"2026-04-03T05:40:34.294Z","level":"SUCCESS","tag":"sd:cli:typecheck","msg":"타입체크 실행 완료"}
+{"time":"2026-04-03T05:40:34.294Z","level":"INFO","tag":"sd:cli:typecheck","msg":"타입체크 완료 [object Object]"}
+{"time":"2026-04-03T05:40:34.295Z","level":"SUCCESS","tag":"sd:cli:check","msg":"체크 실행 완료"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:10.946Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:10.952Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:10.953Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:10.954Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:10.955Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:10.956Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:10.957Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:10.958Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:11.059Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:12.016Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:51:12.720Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:12.835Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:13.136Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:13.275Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:13.285Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:13.286Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:13.287Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (angular (browser), orm-node (node), service-server (node), service-common (neutral), service-client (neutral), orm-common (neutral))"}
+{"time":"2026-04-03T05:51:13.955Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:13.956Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (angular (browser), orm-node (node), service-server (node), service-common (neutral), service-client (neutral), orm-common (neutral))"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.753Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:15.758Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-common (neutral))"}
+{"time":"2026-04-03T05:51:15.760Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:15.761Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:15.762Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:15.763Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:15.763Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:15.764Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:15.847Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:17.269Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:17.270Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-common (neutral))"}
+{"time":"2026-04-03T05:51:17.271Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), capacitor-plugin-auto-update (browser), service-client (neutral), orm-common (neutral), angular (browser), orm-node (node))"}
+{"time":"2026-04-03T05:51:17.383Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:15.847Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:17.797Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:17.886Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:17.934Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:18.458Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:18.459Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), capacitor-plugin-auto-update (browser), service-client (neutral), orm-common (neutral), angular (browser), orm-node (node))"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:21.300Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:21.306Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:21.308Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:21.309Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:21.310Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:21.311Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:21.312Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:21.313Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:21.388Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:22.081Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:51:22.617Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:22.970Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:22.971Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:22.972Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), service-client (neutral), capacitor-plugin-auto-update (browser), orm-node (node), angular (browser), service-common (neutral))"}
+{"time":"2026-04-03T05:51:23.301Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:23.430Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:23.471Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:24.059Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:24.060Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), service-client (neutral), capacitor-plugin-auto-update (browser), orm-node (node), angular (browser), service-common (neutral))"}
+{"time":"2026-04-03T05:51:26.037Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.037Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.037Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:26.037Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.042Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:26.043Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:26.044Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:26.052Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.052Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.052Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:26.052Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:26.055Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:26.056Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:26.056Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:26.150Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:26.841Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:51:27.225Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:27.460Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:27.462Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:27.463Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-node (node), service-common (neutral), service-client (neutral), angular (browser), capacitor-plugin-auto-update (browser), service-server (node))"}
+{"time":"2026-04-03T05:51:28.003Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:28.157Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:28.172Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:28.750Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:28.752Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-node (node), service-common (neutral), service-client (neutral), angular (browser), capacitor-plugin-auto-update (browser), service-server (node))"}
+{"time":"2026-04-03T05:51:30.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.812Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:30.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.817Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-common (neutral))"}
+{"time":"2026-04-03T05:51:30.819Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:30.819Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:30.821Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:30.822Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:30.823Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:30.826Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:30.826Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:30.916Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:30.999Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:51:32.081Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:32.083Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-common (neutral))"}
+{"time":"2026-04-03T05:51:32.084Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), orm-node (node), capacitor-plugin-auto-update (browser), service-client (neutral), angular (browser), orm-common (neutral))"}
+{"time":"2026-04-03T05:51:32.341Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:32.866Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:32.926Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:33.039Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:33.565Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:33.566Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), orm-node (node), capacitor-plugin-auto-update (browser), service-client (neutral), angular (browser), orm-common (neutral))"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:35.292Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T05:51:35.298Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:35.300Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T05:51:35.301Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T05:51:35.301Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T05:51:35.303Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T05:51:35.304Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T05:51:35.305Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T05:51:35.388Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T05:51:35.464Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T05:51:36.465Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:36.591Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:36.592Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral))"}
+{"time":"2026-04-03T05:51:36.593Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-server (node), capacitor-plugin-auto-update (browser), service-client (neutral), orm-node (node), service-common (neutral), angular (browser))"}
+{"time":"2026-04-03T05:51:37.211Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:37.343Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:37.357Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:37.929Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T05:51:37.930Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-server (node), capacitor-plugin-auto-update (browser), service-client (neutral), orm-node (node), service-common (neutral), angular (browser))"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.657Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T06:07:50.664Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral))"}
+{"time":"2026-04-03T06:07:50.665Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T06:07:50.666Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T06:07:50.667Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T06:07:50.669Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T06:07:50.670Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T06:07:50.671Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T06:07:50.859Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T06:07:52.323Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 완료"}
+{"time":"2026-04-03T06:07:53.013Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:53.194Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:53.195Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral))"}
+{"time":"2026-04-03T06:07:53.196Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (service-client (neutral), service-common (neutral), capacitor-plugin-auto-update (browser), orm-node (node), service-server (node), angular (browser))"}
+{"time":"2026-04-03T06:07:53.588Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:53.762Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:53.864Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:54.382Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T06:07:54.384Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (service-client (neutral), service-common (neutral), capacitor-plugin-auto-update (browser), orm-node (node), service-server (node), angular (browser))"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: angular:build (angular (browser))"}
+{"time":"2026-04-03T06:08:02.811Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 시작"}
+{"time":"2026-04-03T06:08:02.818Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (angular (browser))"}
+{"time":"2026-04-03T06:08:02.819Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-common:build (orm-common (neutral))"}
+{"time":"2026-04-03T06:08:02.820Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: orm-node:build (orm-node (node))"}
+{"time":"2026-04-03T06:08:02.821Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-server:build (service-server (node))"}
+{"time":"2026-04-03T06:08:02.822Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-common:build (service-common (neutral))"}
+{"time":"2026-04-03T06:08:02.823Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: service-client:build (service-client (neutral))"}
+{"time":"2026-04-03T06:08:02.824Z","level":"DEBUG","tag":"sd:cli:watch","msg":"빌드 등록: capacitor-plugin-auto-update:build (capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T06:08:02.934Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T06:08:03.852Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (angular (browser))"}
+{"time":"2026-04-03T06:08:03.854Z","level":"START","tag":"sd:cli:watch","msg":"리빌드 실행 중... (orm-common (neutral), orm-node (node), service-server (node), service-common (neutral), service-client (neutral), capacitor-plugin-auto-update (browser))"}
+{"time":"2026-04-03T06:08:04.607Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-common] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:04.629Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-common] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:02.934Z","level":"DEBUG","tag":"sd:cli:ngtsc-build:worker","msg":"[angular] performWatchBuild 시작"}
+{"time":"2026-04-03T06:08:05.091Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[orm-node] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:05.218Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[capacitor-plugin-auto-update] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:05.219Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-client] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:05.867Z","level":"DEBUG","tag":"sd:cli:library-build:worker","msg":"[service-server] rebuildAll 완료"}
+{"time":"2026-04-03T06:08:05.869Z","level":"SUCCESS","tag":"sd:cli:watch","msg":"리빌드 실행 완료 (orm-common (neutral), orm-node (node), service-server (node), service-common (neutral), service-client (neutral), capacitor-plugin-auto-update (browser))"}

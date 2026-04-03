@@ -59,7 +59,7 @@ vi.mock("../../src/utils/tsc-build", () => ({
 }));
 
 vi.mock("../../src/utils/worker-utils", () => ({
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
 }));

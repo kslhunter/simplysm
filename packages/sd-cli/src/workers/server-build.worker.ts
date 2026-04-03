@@ -18,7 +18,7 @@ import {
 } from "../utils/esbuild-config";
 import { runTscPackageBuild } from "../utils/tsc-build";
 import { LintWithProgramRunner } from "../utils/lint-with-program";
-import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
 import { collectDeps } from "../utils/package-utils";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 
@@ -96,7 +96,7 @@ export interface ServerBuildWorkerEvents extends Record<string, unknown> {
 
 //#region Resource Management
 
-applyDebugLevel();
+setupWorkerConsola();
 
 const logger = consola.withTag("sd:cli:server-build:worker");
 

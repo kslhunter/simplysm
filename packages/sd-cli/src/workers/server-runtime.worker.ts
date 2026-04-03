@@ -4,7 +4,7 @@ import { consola } from "consola";
 import proxy from "@fastify/http-proxy";
 import net from "net";
 import { pathToFileURL } from "url";
-import { registerCleanupHandlers, applyDebugLevel } from "../utils/worker-utils";
+import { registerCleanupHandlers, setupWorkerConsola } from "../utils/worker-utils";
 
 //#region Types
 
@@ -42,7 +42,7 @@ export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
 
 //#endregion
 
-applyDebugLevel();
+setupWorkerConsola();
 
 const logger = consola.withTag("sd:cli:server-runtime:worker");
 

@@ -3,7 +3,7 @@ import ts from "typescript";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
-import { registerCleanupHandlers, createOnceGuard, applyDebugLevel } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
 import {
   runNgtscBuild,
   buildCompilerOptions,
@@ -28,7 +28,7 @@ import {
 import { AngularCompiler, AngularSourceFileCache } from "../utils/angular-compiler";
 import { collectDeps } from "../utils/package-utils";
 
-applyDebugLevel();
+setupWorkerConsola();
 
 //#region 타입 (워커 인터페이스용 re-export)
 

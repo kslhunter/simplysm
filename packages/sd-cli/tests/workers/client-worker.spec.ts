@@ -75,7 +75,7 @@ vi.mock("consola", () => ({
 
 vi.mock("../../src/utils/worker-utils.js", () => ({
   registerCleanupHandlers: vi.fn(),
-  applyDebugLevel: vi.fn(),
+  setupWorkerConsola: vi.fn(),
 }));
 
 //#endregion
