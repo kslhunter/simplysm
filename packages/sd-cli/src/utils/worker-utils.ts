@@ -6,7 +6,7 @@ import { setupConsola } from "@simplysm/core-node";
  * 워커 모듈 최상위에서 호출해야 한다.
  */
 export function setupWorkerConsola(): void {
-  setupConsola();
+  setupConsola({ cli: true });
 }
 
 /**

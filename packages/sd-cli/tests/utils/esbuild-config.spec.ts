@@ -162,7 +162,7 @@ describe("writeChangedOutputFiles", () => {
   it("skips writing when transformed content matches existing file", async () => {
     vi.mocked(mockFs.readFile).mockResolvedValue('import { bar } from "./bar.js";' as any);
 
-    const hasChanges = await writeChangedOutputFiles([
+    await writeChangedOutputFiles([
       {
         path: "/pkg/dist/foo.js",
         text: 'import { bar } from "./bar";',
@@ -170,13 +170,12 @@ describe("writeChangedOutputFiles", () => {
     ] as any);
 
     expect(mockFs.writeFile).not.toHaveBeenCalled();
-    expect(hasChanges).toBe(false);
   });
 
-  it("writes file and returns true when content changed", async () => {
+  it("writes file when content changed", async () => {
     vi.mocked(mockFs.readFile).mockResolvedValue('import { old } from "./old.js";' as any);
 
-    const hasChanges = await writeChangedOutputFiles([
+    await writeChangedOutputFiles([
       {
         path: "/pkg/dist/foo.js",
         text: 'import { bar } from "./bar";',
@@ -184,13 +183,12 @@ describe("writeChangedOutputFiles", () => {
     ] as any);
 
     expect(mockFs.writeFile).toHaveBeenCalled();
-    expect(hasChanges).toBe(true);
   });
 
   it("writes new file when existing file does not exist", async () => {
     vi.mocked(mockFs.readFile).mockRejectedValue(new Error("ENOENT"));
 
-    const hasChanges = await writeChangedOutputFiles([
+    await writeChangedOutputFiles([
       {
         path: "/pkg/dist/foo.js",
         text: 'const x = 1;',
@@ -199,7 +197,6 @@ describe("writeChangedOutputFiles", () => {
 
     expect(mockFs.mkdir).toHaveBeenCalledWith(path.dirname("/pkg/dist/foo.js"), { recursive: true });
     expect(mockFs.writeFile).toHaveBeenCalledWith("/pkg/dist/foo.js", "const x = 1;");
-    expect(hasChanges).toBe(true);
   });
 
   it("does not transform non-.js files", async () => {

@@ -1,6 +1,7 @@
 import type { ConsolaReporter, LogObject, ConsolaOptions } from "consola";
 import { formatWithOptions } from "node:util";
 import { sep } from "node:path";
+import { env } from "@simplysm/core-common";
 
 // -- Constants ----------------------------------------------------------------
 
@@ -58,8 +59,8 @@ function writeStream(data: string, stream: NodeJS.WritableStream): void {
 }
 
 function detectColorSupport(): boolean {
-  if (process.env["NO_COLOR"] != null) return false;
-  if (process.env["FORCE_COLOR"] != null) return true;
+  if (env("NO_COLOR") != null) return false;
+  if (env("FORCE_COLOR") != null) return true;
   if (process.stdout.isTTY === true) return true;
   return process.platform === "win32";
 }

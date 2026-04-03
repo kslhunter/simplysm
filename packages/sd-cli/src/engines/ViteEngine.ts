@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "path";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import { consola } from "consola";
 import type * as ClientWorkerModule from "../workers/client.worker";
@@ -81,7 +83,6 @@ export class ViteEngine implements BuildEngine {
 
     logger.debug(`[${this._pkg.name}] ViteEngine.run 완료 (success: ${result.success})`);
     return {
-      success: result.success,
       build: {
         success: result.success,
         errors: result.errors ?? [],
@@ -196,6 +197,11 @@ export class ViteEngine implements BuildEngine {
    */
   async stop(): Promise<void> {
     logger.debug(`[${this._pkg.name}] ViteEngine stop 시작`);
+
+    // .dev-port 파일 삭제
+    const portFile = path.join(this._pkg.dir, "dist", ".dev-port");
+    try { fs.unlinkSync(portFile); } catch { /* 파일 없으면 무시 */ }
+
     await stopEngineWorker(this._worker, this._isWatchMode);
     this._worker = undefined;
     logger.debug(`[${this._pkg.name}] ViteEngine stop 완료`);

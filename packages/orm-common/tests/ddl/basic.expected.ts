@@ -7,7 +7,7 @@ export const clearSchema: ExpectedSql = {
   mysql: mysql`
 SET FOREIGN_KEY_CHECKS = 0;
 SET @tables = NULL;
-SELECT GROUP_CONCAT(table_name) INTO @tables FROM information_schema.tables WHERE table_schema = 'TestDb';
+SELECT GROUP_CONCAT(CONCAT('\`', REPLACE(table_name, '\`', '\`\`'), '\`')) INTO @tables FROM information_schema.tables WHERE table_schema = 'TestDb';
 SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ', @tables));
 PREPARE stmt FROM @drop_stmt;
 EXECUTE stmt;

@@ -1,6 +1,6 @@
 import type { ChildProcess, SpawnOptions, SpawnSyncOptions } from "child_process";
 import { execSync as cpExecSync, spawn as cpSpawn, spawnSync as cpSpawnSync } from "child_process";
-import { bytes } from "@simplysm/core-common";
+import { bytes, env } from "@simplysm/core-common";
 
 const CODE_PAGE_MAP: Record<number, string> = {
   65001: "utf-8",
@@ -36,7 +36,7 @@ export function getSystemEncoding(): string {
         return _cachedEncoding;
       }
     } else {
-      const lang = process.env["LANG"] ?? process.env["LC_ALL"] ?? "";
+      const lang = env("LANG") ?? env("LC_ALL") ?? "";
       const dotIndex = lang.indexOf(".");
       if (dotIndex >= 0) {
         let encoding = lang.slice(dotIndex + 1).split("@")[0].toLowerCase();

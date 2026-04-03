@@ -1,3 +1,4 @@
+import type ts from "typescript";
 import path from "path";
 import fs from "fs";
 import esbuild from "esbuild";
@@ -116,6 +117,7 @@ async function cleanup(): Promise<void> {
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
   lastMetafile = undefined;
+  lastBuilderProgram = undefined;
 
   const watcherToClose = publicWatcher;
   publicWatcher = undefined;
@@ -427,6 +429,7 @@ const guardStartWatch = createOnceGuard("startWatch");
 // watch 모드용 가변 상태
 let watchInfo: ServerWatchInfo | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
+let lastBuilderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
 /**
  * esbuild + tsc 병렬 리빌드 (watch 모드)
@@ -467,7 +470,9 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     parsedConfig,
     env: info.output.env,
     includeTests: info.output.includeTests,
+    oldBuilderProgram: lastBuilderProgram,
   });
+  lastBuilderProgram = tscResult.builderProgram ?? lastBuilderProgram;
 
   // lint 실행 (활성화 + program 사용 가능 시)
   let lint: LintWithProgramResult | undefined;

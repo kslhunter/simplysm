@@ -4,15 +4,14 @@ import type { ProcedureBuilder } from "../schema/procedure-builder";
 import type { ColumnBuilder } from "../schema/factory/column-builder";
 import type { ForeignKeyBuilder } from "../schema/factory/relation-builder";
 import type { IndexBuilder } from "../schema/factory/index-builder";
-import type { DataRecord, IsolationLevel, Migration, ResultMeta } from "./db";
+import type { DataRecord, ResultMeta } from "./db";
 import type { QueryDef, QueryDefObjectName } from "./query-def";
 
 /**
  * DbContext 핵심 인터페이스
  *
  * Queryable, Executable, ViewBuilder에서 사용하는 내부 인터페이스.
- * 기존 DbContext 클래스와 새로운 createDbContext 반환 객체 모두
- * 이 인터페이스를 만족함.
+ * DbContext class가 이 인터페이스를 구현한다.
  */
 export interface DbContextBase {
   status: DbContextStatus;
@@ -31,63 +30,6 @@ export interface DbContextBase {
 }
 
 export type DbContextStatus = "ready" | "connect" | "transact";
-
-/**
- * DbContext 정의 (blueprint)
- *
- * defineDbContext()로 생성됨. Schema 메타데이터만 포함하며 런타임 상태는 없음.
- */
-export interface DbContextDef<
-  TTables extends Record<string, TableBuilder<any, any>>,
-  TViews extends Record<string, ViewBuilder<any, any, any>>,
-  TProcedures extends Record<string, ProcedureBuilder<any, any>> = {},
-> {
-  readonly meta: {
-    readonly tables: TTables;
-    readonly views: TViews;
-    readonly procedures: TProcedures;
-    readonly migrations: Migration[];
-  };
-}
-
-/**
- * 전체 DbContext 인스턴스 타입 (createDbContext로 생성)
- *
- * DbContextBase를 queryable 접근자, DDL 메서드,
- * 연결/트랜잭션 관리로 확장.
- */
-export type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbContextBase &
-  DbContextConnectionMethods &
-  DbContextDdlMethods & {
-    // 자동 매핑된 table queryable 접근자
-    [K in keyof TDef["meta"]["tables"]]: () => import("../exec/queryable").Queryable<
-      TDef["meta"]["tables"][K]["$inferSelect"],
-      TDef["meta"]["tables"][K]
-    >;
-  } & {
-    // 자동 매핑된 view queryable 접근자
-    [K in keyof TDef["meta"]["views"]]: () => import("../exec/queryable").Queryable<
-      TDef["meta"]["views"][K]["$inferSelect"],
-      never
-    >;
-  } & {
-    // 자동 매핑된 procedure executable 접근자
-    [K in keyof TDef["meta"]["procedures"]]: () => import("../exec/executable").Executable<
-      TDef["meta"]["procedures"][K]["$params"],
-      TDef["meta"]["procedures"][K]["$returns"]
-    >;
-  } & {
-    // 시스템 table
-    _migration: () => import("../exec/queryable").Queryable<{ code: string }, any>;
-    // 초기화
-    initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void>;
-  };
-
-export interface DbContextConnectionMethods {
-  connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
-  connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult>;
-  transaction<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
-}
 
 export interface DbContextDdlMethods {
   createTable(table: TableBuilder<any, any>): Promise<void>;

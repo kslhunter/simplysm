@@ -1,38 +1,38 @@
 import { OrmClientDbContextExecutor } from "./orm-client-db-context-executor";
 import type { OrmConnectOptions } from "./orm-connect-options";
-import { createDbContext, type DbContextDef, type DbContextInstance } from "@simplysm/orm-common";
+import { type DbContext } from "@simplysm/orm-common";
 import type { ServiceClient } from "../../service-client";
 
 export interface OrmClientConnector {
-  connect<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  connect<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R>;
-  connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  connectWithoutTransaction<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R>;
 }
 
 export function createOrmClientConnector(serviceClient: ServiceClient): OrmClientConnector {
-  async function _createConfiguredDb<TDef extends DbContextDef<any, any, any>>(
-    config: OrmConnectOptions<TDef>,
-  ): Promise<DbContextInstance<TDef>> {
+  async function _createConfiguredDb<T extends DbContext>(
+    config: OrmConnectOptions<T>,
+  ): Promise<T> {
     const executor = new OrmClientDbContextExecutor(serviceClient, config.connOpt);
     const info = await executor.getInfo();
     const database = config.dbContextOpt?.database ?? info.database;
     if (database == null || database === "") {
       throw new Error("database는 필수입니다.");
     }
-    return createDbContext(config.dbContextDef, executor, {
+    return new config.DbClass(executor, {
       database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
   }
 
-  async function connect<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  async function connect<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R> {
     const db = await _createConfiguredDb(config);
     return db.connect(async () => {
@@ -52,9 +52,9 @@ export function createOrmClientConnector(serviceClient: ServiceClient): OrmClien
     });
   }
 
-  async function connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  async function connectWithoutTransaction<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R> {
     const db = await _createConfiguredDb(config);
     return db.connectWithoutTransaction(async () => callback(db));

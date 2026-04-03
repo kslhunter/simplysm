@@ -112,7 +112,7 @@ export abstract class BaseEngine<
     logger.debug(`[${this._pkg.name}] run 시작 (js: ${output.js}, dts: ${output.dts}, env: ${output.env ?? "none"})`);
     this._createWorker();
     const result = await this._callBuild(output);
-    logger.debug(`[${this._pkg.name}] run 완료 (success: ${result.success})`);
+    logger.debug(`[${this._pkg.name}] run 완료 (success: ${result.build.success})`);
     return result;
   }
 

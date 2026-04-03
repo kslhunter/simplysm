@@ -139,9 +139,7 @@ export const updateWithTop: ExpectedSql = {
     WHERE (([T1].[departmentId] IS NULL AND 1 IS NULL) OR [T1].[departmentId] = 1)
   `,
   postgresql: pgsql`
-    UPDATE "TestSchema"."Employee" AS "T1"
-    SET "name" = 'New Name'
-    WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1
+    WITH _limited AS (SELECT "T1".ctid FROM "TestSchema"."Employee" AS "T1" WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1 LIMIT 10) UPDATE "TestSchema"."Employee" AS "T1" SET "name" = 'New Name' WHERE "T1".ctid IN (SELECT ctid FROM _limited)
   `,
 };
 

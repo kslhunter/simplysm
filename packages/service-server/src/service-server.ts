@@ -56,7 +56,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async listen(): Promise<void> {
-    logger.info(`서버 시작 중... ${env.VER ?? ""}`);
+    logger.info(`서버 시작 중... ${env("VER") ?? ""}`);
 
     // auth 설정 검증: auth 미설정(undefined)인데 auth 요구 서비스가 있으면 에러
     if (this.options.auth === undefined) {

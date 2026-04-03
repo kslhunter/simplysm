@@ -31,6 +31,7 @@ The package exports configuration types for `sd.config.ts` and a Vitest plugin f
 
 | API | Type | Description |
 |-----|------|-------------|
+| `NpmConfig` | interface | npm `package.json` structure with name, version, and dependency fields |
 | `BuildTarget` | type | Build target platform: `"node"`, `"browser"`, or `"neutral"` |
 | `SdBuildPackageConfig` | interface | Configuration for buildable packages (node/browser/neutral) |
 | `SdClientPackageConfig` | interface | Configuration for client (Angular/Solid + Vite) packages |

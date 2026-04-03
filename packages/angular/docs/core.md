@@ -884,6 +884,19 @@ async function withBusy(
 ): Promise<void>;
 ```
 
+## `mark`
+
+Manually notifies signal consumers of a change. Useful when an object/array is mutated in place rather than replaced.
+
+```typescript
+function mark(sig: WritableSignal<any>, clone?: boolean): void;
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sig` | `WritableSignal<any>` | The signal to mark as changed |
+| `clone` | `boolean` (optional) | If `true`, performs a shallow clone via `update()` (array spread or object spread). If `false`/omitted, directly increments the signal version using Angular internal primitives (`producerIncrementEpoch`, `producerNotifyConsumers`). |
+
 ## `setupModelHook`
 
 Intercepts a `WritableSignal.set` to guard value changes with a sync/async predicate.

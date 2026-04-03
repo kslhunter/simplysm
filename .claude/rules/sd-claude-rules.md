@@ -24,9 +24,10 @@
   - bold는 문장 내 강조에만 사용하고, 구조적 섹션 구분에는 절대 사용하지 않는다.
 - 복잡한 프로세스("반복 혹은 분기"가 3건 이상 포함)를 설명할 때는 mermaid 다이어그램으로 overview를 먼저 제시한 뒤 상세 설명을 작성한다.
 
-# Git 금지 명령어
+# 금지 명령어
 
-`git stash`, `git checkout`, `git restore`, `git reset`, `git clean`은 hook(`sd-check-git.py`)이 차단한다.
+- GIT: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean`은 hook(`sd-check-git.py`)이 차단한다.
+- cd: `cd ...` 명령을 통한 타 폴더로의 이동을 금지한다.
 
 # Typescript 빌드 규칙
 

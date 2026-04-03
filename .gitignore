@@ -3,6 +3,7 @@
 __pycache__
 .claude/worktrees
 
+.logs
 .coverage
 .cache
 node_modules

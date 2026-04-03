@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 // 사이드 이펙트: Map/Array prototype 확장 (getOrCreate 등)
-import "@simplysm/core-common";
+import { env } from "@simplysm/core-common";
 import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { type CheckType, runCheck } from "./commands/check";
@@ -75,7 +75,7 @@ export function createCliParser(argv: string[]): Argv {
     })
     .middleware((args) => {
       if (args.debug) {
-        process.env["SD_DEBUG"] = "true";
+        env("SD_DEBUG", "true");
       }
       setupConsola({ cli: true });
     })

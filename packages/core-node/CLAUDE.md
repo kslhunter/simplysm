@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작, 자식 프로세스 실행, 경로 처리, 파일 감시, Worker thread 래퍼를 제공한다. 소스 파일 8개.
+`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작, 자식 프로세스 실행, 경로 처리, 파일 감시, Worker thread 래퍼, consola 로깅 설정을 제공한다. 소스 파일 11개.
 
 ## Architecture
 
@@ -15,12 +15,16 @@ src/
 │   ├── cp.ts         ← 자식 프로세스 실행 (spawn, spawnSync, SpawnProcess, 인코딩 감지)
 │   └── path.ts       ← 경로 유틸리티 (PosixPath 브랜드 타입, posix/posixResolve, isChildPath 등)
 ├── features/
-│   └── fs-watcher.ts ← Chokidar 기반 파일 시스템 감시 (FsWatcher 클래스, 이벤트 병합, EPERM 자동 복구)
+│   ├── fs-watcher.ts ← Chokidar 기반 파일 시스템 감시 (FsWatcher 클래스, 이벤트 병합, EPERM 자동 복구)
+│   └── consola/
+│       ├── pretty-reporter.ts ← 터미널 출력용 consola reporter (아이콘, 색상, 에러 스택 포맷팅)
+│       ├── file-reporter.ts   ← 파일 기반 consola reporter (JSON 라인, 날짜별 로테이션, 크기 제한)
+│       └── setup-consola.ts   ← consola 환경별 자동 구성 (setupConsola, withMaxLevel)
 ├── worker/
 │   ├── types.ts      ← Worker 관련 타입 정의 (WorkerModule, WorkerProxy, 메시지 형식)
 │   ├── worker.ts     ← 타입 안전한 Worker 래퍼 (Worker.create, WorkerInternal)
 │   └── create-worker.ts ← Worker thread 팩토리 (createWorker, send)
-└── index.ts          ← public API: cpx, fsx, pathx 네임스페이스 + FsWatcher + Worker 관련 export
+└── index.ts          ← public API: cpx, fsx, pathx 네임스페이스 + FsWatcher + consola + Worker 관련 export
 ```
 
 `index.ts`에서 유틸리티 3종은 네임스페이스(`cpx`, `fsx`, `pathx`)로 re-export된다. 소비 코드에서 `import { fsx } from "@simplysm/core-node"` 형태로 사용한다.
@@ -105,6 +109,31 @@ await watcher.close();
 
 glob 패턴이 포함된 경로는 glob base 디렉토리를 감시하고, Minimatch로 이벤트를 필터링한다.
 
+### Consola 로깅 패턴
+
+`setupConsola()`는 환경에 따라 consola reporter를 자동 구성한다. 프로젝트 루트의 `console.*` 금지 규칙을 대체하여 `consola`를 표준 로깅 수단으로 사용한다.
+
+환경별 동작:
+- **프로덕션** (`env.DEV` 아님): `FileReporter`만 사용, debug 레벨까지 파일 기록
+- **개발 + `SD_DEBUG`**: `PrettyReporter`만 사용, debug 레벨까지 터미널 출력
+- **개발 (일반)**: `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록
+
+```typescript
+import { setupConsola, PrettyReporter, createFileReporter, withMaxLevel } from "@simplysm/core-node";
+
+// 환경별 자동 구성
+setupConsola();
+
+// CLI 모드 (항상 PrettyReporter 사용)
+setupConsola({ cli: true });
+
+// 개별 reporter 직접 사용
+const fileReporter = createFileReporter({ maxSize: 10 * 1024 * 1024, maxDays: 7 });
+const limitedReporter = withMaxLevel(new PrettyReporter(), 3); // info 이하만
+```
+
+`FileReporter`는 `.logs/` 디렉토리에 `app.YYYY-MM-DD.log` 형식으로 JSON 라인을 기록하며, 날짜별 로테이션과 크기 제한(기본 20MB)을 지원한다. `maxDays`(기본 14일) 이전의 로그 파일은 자동 삭제된다.
+
 ### Worker thread 패턴
 
 Worker thread는 `createWorker()`(워커 측)와 `Worker.create()`(메인 측) 한 쌍으로 구성된다. 메서드와 이벤트 타입이 모두 타입 안전하다.
@@ -153,6 +182,7 @@ tests/
 │   ├── fs-watcher-recovery.spec.ts ← FsWatcher EPERM 자동 복구 테스트
 │   ├── path.spec.ts              ← pathx 함수 유닛 테스트
 │   ├── cp.spec.ts                ← cpx 인코딩/디코딩 함수 유닛 테스트
+│   ├── cp.acc.spec.ts            ← cpx 인코딩 감지 수용 테스트
 │   ├── spawn.spec.ts             ← resolveStdioPipe 유닛 테스트
 │   ├── spawn.acc.spec.ts         ← spawn 수용 테스트 (실제 프로세스 실행)
 │   ├── spawn-sync.acc.spec.ts    ← spawnSync 수용 테스트

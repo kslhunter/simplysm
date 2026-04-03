@@ -30,6 +30,8 @@ export interface TscPackageBuildOptions {
   env?: TypecheckEnv;
   /** 타입체크 전용 모드에서 tests/ 파일 포함 여부. 기본값 false. */
   includeTests?: boolean;
+  /** 이전 빌드의 BuilderProgram. watch 모드에서 SourceFile 재사용을 위해 전달한다. */
+  oldBuilderProgram?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
 }
 
 /**
@@ -46,6 +48,9 @@ export interface TscPackageBuildResult {
   /** 이 빌드에서 영향받은 파일 (정규화된 순방향 슬래시 경로).
    *  watch 모드에서 증분 lint에 사용한다. */
   affectedFiles?: ReadonlySet<string>;
+  /** 다음 빌드에서 SourceFile 재사용을 위한 BuilderProgram.
+   *  watch 모드에서 이 값을 저장해두고 다음 빌드 시 oldBuilderProgram으로 전달한다. */
+  builderProgram?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
 }
 
 /**
@@ -142,6 +147,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       rootFiles,
       compilerOptions,
       host,
+      options.oldBuilderProgram,
     );
 
     // builder program의 증분 분석을 통해 affected 파일을 추적한다.
@@ -199,6 +205,7 @@ export function runTscPackageBuild(options: TscPackageBuildOptions): TscPackageB
       warningCount,
       program: builderProgram.getProgram(),
       affectedFiles,
+      builderProgram,
     };
   } catch (err) {
     const message = errNs.message(err);

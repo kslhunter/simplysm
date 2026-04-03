@@ -1,7 +1,6 @@
 import {
-  createDbContext,
-  type DbContextDef,
-  type DbContextInstance,
+  DbContext,
+  type DbContextExecutor,
   type IsolationLevel,
 } from "@simplysm/orm-common";
 import type { DbConnConfig } from "./types/db-conn";
@@ -29,8 +28,11 @@ export interface OrmOptions {
  *
  * createOrm에서 반환하는 객체의 타입
  */
-export interface Orm<TDef extends DbContextDef<any, any, any>> {
-  readonly dbContextDef: TDef;
+export interface Orm<T extends DbContext> {
+  readonly DbClass: new (
+    executor: DbContextExecutor,
+    opt: { database: string; schema?: string },
+  ) => T;
   readonly config: DbConnConfig;
   readonly options?: OrmOptions;
 
@@ -42,7 +44,7 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
    * @returns 콜백 결과
    */
   connect<R>(
-    callback: (conn: DbContextInstance<TDef>) => Promise<R>,
+    callback: (conn: T) => Promise<R>,
     isolationLevel?: IsolationLevel,
   ): Promise<R>;
 
@@ -52,20 +54,20 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
    * @param callback - DB 연결 후 실행할 콜백
    * @returns 콜백 결과
    */
-  connectWithoutTransaction<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>): Promise<R>;
+  connectWithoutTransaction<R>(callback: (conn: T) => Promise<R>): Promise<R>;
 }
 
 /**
  * Node.js ORM 팩토리 함수
  *
  * DbContext와 DB 연결을 관리하는 인스턴스를 생성한다.
- * DbContext 정의와 연결 설정을 받아 트랜잭션을 관리한다.
+ * DbContext 서브클래스와 연결 설정을 받아 트랜잭션을 관리한다.
  *
  * @example
  * ```typescript
- * const MyDb = defineDbContext({
- *   user: (db) => queryable(db, User),
- * });
+ * class MyDb extends DbContext {
+ *   user = this.queryable(User);
+ * }
  *
  * const orm = createOrm(MyDb, {
  *   dialect: "mysql",
@@ -89,12 +91,12 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
  * });
  * ```
  */
-export function createOrm<TDef extends DbContextDef<any, any, any>>(
-  dbContextDef: TDef,
+export function createOrm<T extends DbContext>(
+  DbClass: new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T,
   config: DbConnConfig,
   options?: OrmOptions,
-): Orm<TDef> {
-  function _createDbContext(): DbContextInstance<TDef> {
+): Orm<T> {
+  function _createInstance(): T {
     // options의 database를 우선 사용, 없으면 config에서
     const database = options?.database ?? ("database" in config ? config.database : undefined);
     if (database == null || database === "") {
@@ -104,22 +106,22 @@ export function createOrm<TDef extends DbContextDef<any, any, any>>(
     // options의 schema를 우선 사용, 없으면 config에서
     const schema = options?.schema ?? ("schema" in config ? config.schema : undefined);
 
-    return createDbContext(dbContextDef, new NodeDbContextExecutor(config), {
+    return new DbClass(new NodeDbContextExecutor(config), {
       database,
       schema,
     });
   }
 
   return {
-    dbContextDef,
+    DbClass,
     config,
     options,
     async connect(callback, isolationLevel?) {
-      const db = _createDbContext();
+      const db = _createInstance();
       return db.connect(async () => callback(db), isolationLevel);
     },
     async connectWithoutTransaction(callback) {
-      const db = _createDbContext();
+      const db = _createInstance();
       return db.connectWithoutTransaction(async () => callback(db));
     },
   };

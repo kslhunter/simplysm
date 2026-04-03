@@ -1,4 +1,4 @@
-declare const process: { env: { DEV?: string; VER?: string; [key: string]: string | undefined } };
+declare const process: { env: Record<string, string | undefined> };
 
 declare global {
   interface ImportMetaEnv extends Record<string, unknown> {}
@@ -15,16 +15,28 @@ export function parseBoolEnv(value: unknown): boolean {
   return ["true", "1", "yes", "on"].includes(String(value ?? "").toLowerCase());
 }
 
-const _metaEnv: Record<string, unknown> = { ...import.meta.env };
-const _processEnv: Record<string, unknown> = typeof process !== "undefined" ? process.env : {};
-const _raw: Record<string, unknown> = { ..._metaEnv, ..._processEnv };
+/**
+ * 환경변수 get/set 함수
+ * - `env(key)` — 값 읽기 (process.env 우선, fallback import.meta.env)
+ * - `env(key, value)` — 값 쓰기 (process.env에 저장)
+ */
+export function env(key: string): string | undefined;
+export function env(key: string, value: string): void;
+export function env(key: string, value?: string): string | undefined | void {
+  if (arguments.length >= 2) {
+    if (typeof process !== "undefined") {
+      process.env[key] = value;
+    }
+    return;
+  }
 
-export const env: {
-  DEV: boolean;
-  VER?: string;
-  [key: string]: unknown;
-} = {
-  ..._raw,
-  DEV: parseBoolEnv(_raw["DEV"]),
-  VER: _raw["VER"] as string | undefined,
-};
+
+  if (typeof process !== "undefined") {
+    const val = process.env[key];
+    if (val !== undefined) return val;
+  }
+
+  const metaEnv = (import.meta as unknown as Record<string, unknown>)["env"] as Record<string, unknown> | undefined;
+  const metaVal = metaEnv?.[key];
+  return metaVal != null ? String(metaVal) : undefined;
+}

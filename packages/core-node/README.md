@@ -1,6 +1,6 @@
 # @simplysm/core-node
 
-Node.js-specific core utilities for the Simplysm framework. Provides enhanced file system operations, child process execution, path utilities, file watching, and a type-safe worker thread abstraction.
+Node.js-specific core utilities for the Simplysm framework. Provides enhanced file system operations, child process execution, path utilities, file watching, consola logging configuration, and a type-safe worker thread abstraction.
 
 ## Installation
 
@@ -82,7 +82,7 @@ Namespace `pathx` -- Path manipulation utilities.
 
 > See [docs/pathx.md](./docs/pathx.md) for details.
 
-### Features
+### Features / FsWatcher
 
 | API | Type | Description |
 |-----|------|-------------|
@@ -91,6 +91,19 @@ Namespace `pathx` -- Path manipulation utilities.
 | `FsWatcher` | class | Debounced file system watcher (chokidar-based) |
 
 > See [docs/fs-watcher.md](./docs/fs-watcher.md) for details.
+
+### Features / Consola
+
+| API | Type | Description |
+|-----|------|-------------|
+| `PrettyReporter` | class | Terminal consola reporter with icons, colors, and error stack formatting |
+| `FileReporterOptions` | interface | Options for `createFileReporter` (maxSize, maxDays) |
+| `createFileReporter` | function | Create a file-based consola reporter (JSON lines, date rotation) |
+| `withMaxLevel` | function | Wrap a reporter to filter out log entries above a max level |
+| `SetupConsolaOptions` | interface | Options for `setupConsola` |
+| `setupConsola` | function | Configure consola reporters based on environment (prod/dev/debug) |
+
+> See [docs/consola.md](./docs/consola.md) for details.
 
 ### Worker
 
@@ -160,6 +173,18 @@ const p = pathx.posix("C:\\Users\\test"); // "C:/Users/test"
 const abs = pathx.posixResolve("./relative"); // absolute PosixPath
 const name = pathx.basenameWithoutExt("file.spec.ts"); // "file.spec"
 const isChild = pathx.isChildPath("/a/b/c", "/a/b"); // true
+```
+
+### Consola logging
+
+```typescript
+import { setupConsola } from "@simplysm/core-node";
+
+// Auto-configure based on environment (prod → file only, dev → file + terminal)
+setupConsola();
+
+// CLI mode — always use terminal output regardless of environment
+setupConsola({ cli: true });
 ```
 
 ### File watcher

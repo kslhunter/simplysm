@@ -1,4 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
+import { env } from "@simplysm/core-common";
 import type { ApkInstallerPlugin, VersionInfo } from "../ApkInstallerPlugin";
 
 export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
@@ -19,7 +20,7 @@ export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
   getVersionInfo(): Promise<VersionInfo> {
     return Promise.resolve({
       versionName:
-        import.meta.env.__VER__ ?? "0.0.0",
+        env("__VER__") ?? "0.0.0",
       versionCode: "0",
     });
   }

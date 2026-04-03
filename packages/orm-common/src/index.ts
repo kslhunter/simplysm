@@ -1,8 +1,7 @@
 //#region ========== Core ==========
 
-// 함수형 API (권장)
-export * from "./define-db-context";
-export * from "./create-db-context";
+// Class 기반 API
+export * from "./db-context";
 export * from "./types/db-context-def";
 export * from "./errors/db-transaction-error";
 

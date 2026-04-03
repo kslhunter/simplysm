@@ -53,6 +53,7 @@ async function cleanup(): Promise<void> {
   const watcherToClose = fsWatcher;
   fsWatcher = undefined;
   lastSourceFilePaths = undefined;
+  lastBuilderProgram = undefined;
   await watcherToClose?.close();
 }
 
@@ -106,6 +107,7 @@ const guardStartWatch = createOnceGuard("startWatch");
 let watchInfo: LibraryBuildInfo | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
 let lastSourceFilePaths: Set<string> | undefined;
+let lastBuilderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
 
 function extractSourceFilePaths(program: ts.Program | undefined): Set<string> | undefined {
   if (program == null) return undefined;
@@ -126,7 +128,9 @@ async function rebuildAll(): Promise<CombinedBuildEvent> {
     output: info.output,
     env: info.output.env,
     includeTests: info.output.includeTests,
+    oldBuilderProgram: lastBuilderProgram,
   });
+  lastBuilderProgram = tscResult.builderProgram ?? lastBuilderProgram;
 
   // 의존성 필터링을 위한 소스 파일 경로 업데이트
   lastSourceFilePaths = extractSourceFilePaths(tscResult.program) ?? lastSourceFilePaths;

@@ -14,9 +14,8 @@ const logger = consola.withTag("sd:cli:esbuild-config");
  * - 기타 파일(.js.map 등): 원본 내용을 그대로 비교한다
  * - 기존 파일과 내용이 동일하면 타임스탬프 보존을 위해 쓰기를 스킵한다
  */
-export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<boolean> {
+export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<void> {
   logger.debug(`변경된 출력 파일 쓰기 시작 (${outputFiles.length}개)`);
-  let hasChanges = false;
   await Promise.all(
     outputFiles.map(async (file) => {
       const finalText = file.path.endsWith(".js")
@@ -36,13 +35,11 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
         // 파일이 아직 존재하지 않음
       }
 
-      hasChanges = true;
       await fs.mkdir(path.dirname(file.path), { recursive: true });
       await fs.writeFile(file.path, finalText);
     }),
   );
-  logger.debug(`변경된 출력 파일 쓰기 완료 (변경: ${String(hasChanges)})`);
-  return hasChanges;
+  logger.debug("변경된 출력 파일 쓰기 완료");
 }
 
 /**

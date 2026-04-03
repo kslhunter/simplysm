@@ -247,8 +247,13 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
 
     sender.send("serverReady", { port: actualPort });
 
+    // .dev-port 기록 (device 명령어에서 자동 탐지용)
+    const distDir = path.join(info.pkgDir, "dist");
+    fs.mkdirSync(distDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, ".dev-port"), String(actualPort));
+
     // .config.json 생성
-    writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
+    writeConfigJson(distDir, info.configs);
 
     return { success: true };
   } catch (err) {
@@ -322,6 +327,9 @@ async function startLegacyWatch(info: ClientBuildInfo): Promise<ClientBuildResul
     });
 
     sender.send("serverReady", { port: serverPort });
+
+    // .dev-port 기록 (device 명령어에서 자동 탐지용)
+    fs.writeFileSync(path.join(info.pkgDir, "dist", ".dev-port"), String(serverPort));
 
     // 첫 빌드 완료 대기
     return await new Promise<ClientBuildResult>((resolve) => {

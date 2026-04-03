@@ -1,5 +1,31 @@
 # Config
 
+## `NpmConfig`
+
+npm `package.json` structure.
+
+```typescript
+interface NpmConfig {
+  name: string;
+  version: string;
+  description?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  volta?: unknown;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | Package name |
+| `version` | `string` | Package version |
+| `description` | `string` | Package description |
+| `dependencies` | `Record<string, string>` | Production dependencies |
+| `devDependencies` | `Record<string, string>` | Development dependencies |
+| `peerDependencies` | `Record<string, string>` | Peer dependencies |
+| `volta` | `unknown` | Volta configuration |
+
 ## `BuildTarget`
 
 Build target type (built with esbuild).

@@ -522,6 +522,55 @@ describe("client.worker", () => {
     });
   });
 
+  // Acceptance: Scenario "Vite dev server 포트 확정 시 포트 파일 기록"
+  describe("dev port file", () => {
+    it("writes .dev-port after serverReady in dev mode", async () => {
+      const mockServer = {
+        listen: vi.fn().mockResolvedValue(undefined),
+        close: vi.fn().mockResolvedValue(undefined),
+        httpServer: { address: () => ({ port: 5173 }) },
+      };
+      mockCreateServer.mockResolvedValue(mockServer);
+
+      await workerFns["startWatch"]({
+        ...createBaseInfo(),
+        port: 5173,
+      });
+
+      expect(mockWriteFileSync).toHaveBeenCalledWith(
+        expect.stringContaining(".dev-port"),
+        "5173",
+      );
+
+      await workerFns["stopWatch"]();
+    });
+
+    it("writes .dev-port after serverReady in legacy mode", async () => {
+      const mockWatcher = createMockWatcher();
+      mockViteBuild.mockImplementation(() => {
+        setTimeout(() => mockWatcher.emit("event", { code: "END" }), 0);
+        return Promise.resolve(mockWatcher);
+      });
+
+      mockExistsSync.mockReturnValue(false);
+
+      await workerFns["startWatch"]({
+        ...createBaseInfo(),
+        browserSupport: { legacyModule: true },
+        port: 0,
+      });
+
+      const port = mockSend.mock.calls.find((c: any[]) => c[0] === "serverReady")?.[1]?.port;
+
+      expect(mockWriteFileSync).toHaveBeenCalledWith(
+        expect.stringContaining(".dev-port"),
+        String(port),
+      );
+
+      await workerFns["stopWatch"]();
+    });
+  });
+
   describe("startWatch — legacy live reload (Feature 1.3)", () => {
     // Acceptance: Scenario "index.html 서빙 시 reload 스크립트 자동 삽입"
     it("injects live reload script into HTML responses", async () => {

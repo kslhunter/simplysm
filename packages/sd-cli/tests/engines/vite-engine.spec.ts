@@ -74,7 +74,6 @@ describe("ViteEngine", () => {
           pkgDir: "/packages/my-client",
         }),
       );
-      expect(result.success).toBe(true);
       expect(result.build.success).toBe(true);
       expect(result.build.errors).toEqual([]);
       expect(result.build.diagnostics).toEqual([]);
@@ -91,7 +90,6 @@ describe("ViteEngine", () => {
       const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: false });
 
-      expect(result.success).toBe(false);
       expect(result.build.success).toBe(false);
       expect(result.build.errors).toContain("TS2345: Argument of type...");
       await engine.stop();

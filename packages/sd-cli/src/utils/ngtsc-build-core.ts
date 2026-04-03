@@ -59,10 +59,17 @@ export function buildCompilerOptions(
   pkgDir: string,
   output: BuildOutput,
 ): ts.CompilerOptions {
+  const needsEmit = output.js || output.dts;
   const options: ts.CompilerOptions = {
     ...baseOptions,
     sourceMap: false,
     outDir: path.join(pkgDir, "dist"),
+    incremental: true,
+    tsBuildInfoFile: path.join(
+      pkgDir,
+      ".cache",
+      needsEmit ? "ngtsc-build.tsbuildinfo" : "ngtsc-typecheck.tsbuildinfo",
+    ),
   };
 
   if (output.js && output.dts) {

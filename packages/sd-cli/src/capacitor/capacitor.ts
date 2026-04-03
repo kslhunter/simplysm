@@ -6,19 +6,7 @@ import { createRequire } from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
 import { consola, LogLevels } from "consola";
-import type { SdCapacitorConfig } from "../sd-config.types.js";
-
-/**
- * package.json 타입
- */
-interface NpmConfig {
-  name: string;
-  version: string;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
-  volta?: unknown;
-}
+import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 
 /**
  * 설정 검증 에러
@@ -275,10 +263,6 @@ export class Capacitor {
     if (!(await fsx.exists(workspaceYamlPath))) {
       await fsx.write(workspaceYamlPath, "");
     }
-    const lockfilePath = pathx.posixResolve(this._capPath, "pnpm-lock.yaml");
-    if (!(await fsx.exists(lockfilePath))) {
-      await fsx.write(lockfilePath, "");
-    }
 
     // pnpm install + 빌드 스크립트 승인
     Capacitor._logger.debug("pnpm install 시작");
@@ -340,15 +324,15 @@ export class Capacitor {
 
     // 기본 의존성
     capNpmConf.dependencies = capNpmConf.dependencies ?? {};
-    capNpmConf.dependencies["@capacitor/core"] = "^7.0.0";
-    capNpmConf.dependencies["@capacitor/app"] = "^7.0.0";
+    capNpmConf.dependencies["@capacitor/core"] = "^7";
+    capNpmConf.dependencies["@capacitor/app"] = "^7";
     for (const platform of this._platforms) {
-      capNpmConf.dependencies[`@capacitor/${platform}`] = "^7.0.0";
+      capNpmConf.dependencies[`@capacitor/${platform}`] = "^7";
     }
 
     capNpmConf.devDependencies = capNpmConf.devDependencies ?? {};
-    capNpmConf.devDependencies["@capacitor/cli"] = "^7.0.0";
-    capNpmConf.devDependencies["@capacitor/assets"] = "^3.0.0";
+    capNpmConf.devDependencies["@capacitor/cli"] = "^7";
+    capNpmConf.devDependencies["@capacitor/assets"] = "^3";
 
     // 플러그인 패키지 설정
     const mainDeps = {
@@ -640,15 +624,15 @@ export default config;
    */
   private async _findAndroidSdk(): Promise<string | undefined> {
     const androidHome =
-      (env["ANDROID_HOME"] as string | undefined) ??
-      (env["ANDROID_SDK_ROOT"] as string | undefined);
+      env("ANDROID_HOME") ??
+      env("ANDROID_SDK_ROOT");
     if (androidHome != null && (await fsx.exists(androidHome))) {
       return androidHome;
     }
 
     const candidates = [
-      pathx.posixResolve((env["LOCALAPPDATA"] as string | undefined) ?? "", "Android/Sdk"),
-      pathx.posixResolve((env["HOME"] as string | undefined) ?? "", "Android/Sdk"),
+      pathx.posixResolve(env("LOCALAPPDATA") ?? "", "Android/Sdk"),
+      pathx.posixResolve(env("HOME") ?? "", "Android/Sdk"),
       "C:/Program Files/Android/Sdk",
       "C:/Android/Sdk",
     ];

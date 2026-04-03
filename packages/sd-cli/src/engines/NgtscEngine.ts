@@ -53,7 +53,6 @@ export class NgtscEngine extends BaseEngine<
     });
 
     return {
-      success: result.build.success,
       build: {
         success: result.build.success,
         errors: result.build.errors ?? [],

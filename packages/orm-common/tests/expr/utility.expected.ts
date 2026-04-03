@@ -41,7 +41,7 @@ export const random: ExpectedSql = {
   mssql: tsql`
     SELECT
       [T1].[id] AS [id],
-      NEWID() AS [randomVal]
+      (ABS(CHECKSUM(NEWID())) / 2147483647.0) AS [randomVal]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`

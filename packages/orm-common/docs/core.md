@@ -1,67 +1,61 @@
 # Core
 
-DbContext definition, creation, and lifecycle management.
+DbContext abstract class, connection/transaction lifecycle, DDL execution, and initialization.
 
-## defineDbContext
-
-```typescript
-function defineDbContext<
-  TTables extends Record<string, TableBuilder<any, any>> = {},
-  TViews extends Record<string, ViewBuilder<any, any, any>> = {},
-  TProcedures extends Record<string, ProcedureBuilder<any, any>> = {},
->(config: {
-  tables?: TTables;
-  views?: TViews;
-  procedures?: TProcedures;
-  migrations?: Migration[];
-}): DbContextDef<TTables & { _migration: typeof _Migration }, TViews, TProcedures>
-```
-
-Creates a DbContext definition (blueprint) containing schema metadata. Automatically adds the `_migration` system table. The definition itself has no runtime state.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config.tables` | `Record<string, TableBuilder>` | Table definitions |
-| `config.views` | `Record<string, ViewBuilder>` | View definitions |
-| `config.procedures` | `Record<string, ProcedureBuilder>` | Procedure definitions |
-| `config.migrations` | `Migration[]` | Migration definitions |
+## DbContext
 
 ```typescript
-const MyDb = defineDbContext({
-  tables: { user: User, post: Post },
-  views: { activeUsers: ActiveUsersView },
-  procedures: { getUserById: GetUserById },
-  migrations: [
-    { name: "20260101_001_init", up: async (db) => { await db.createTable(User); } },
-  ],
-});
+abstract class DbContext implements DbContextBase {
+  status: DbContextStatus;
+
+  constructor(
+    executor: DbContextExecutor,
+    opt: { database: string; schema?: string },
+  )
+
+  // Registration
+  protected queryable<T extends TableBuilder | ViewBuilder>(builder: T): () => Queryable<...>
+  protected executable<T extends ProcedureBuilder>(builder: T): () => Executable<...>
+
+  // Connection
+  connect<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>
+  connectWithoutTransaction<R>(fn: () => Promise<R>): Promise<R>
+  transaction<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>
+
+  // DDL execution (see DDL Execution Methods below)
+  // DDL QueryDef generators (get*QueryDef methods)
+
+  // Initialization
+  initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void>
+
+  // Override in subclass
+  migrations: Migration[];
+}
 ```
 
-## createDbContext
+Base class for database contexts. Subclass to define tables, views, and procedures as class properties.
 
-```typescript
-function createDbContext<TDef extends DbContextDef<any, any, any>>(
-  def: TDef,
-  executor: DbContextExecutor,
-  opt: { database: string; schema?: string },
-): DbContextInstance<TDef>
-```
+Each property registered via `queryable()` or `executable()` is independently serialized, avoiding TS7056 even with 40+ tables.
 
-Creates a full DbContext instance from a definition and executor. The returned object provides:
-
-- **Queryable accessors** for each table/view (e.g., `db.user()` returns a `Queryable`)
-- **Executable accessors** for each procedure (e.g., `db.getUserById()` returns an `Executable`)
-- **Connection management**: `connect()`, `connectWithoutTransaction()`, `transaction()`
-- **DDL methods**: `createTable()`, `dropTable()`, `addColumn()`, etc. (see `DbContextDdlMethods`)
-- **DDL QueryDef generators**: `getCreateTableQueryDef()`, etc.
-- **Initialize**: `initialize()` runs migrations
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `def` | `DbContextDef` | Definition from `defineDbContext()` |
+| Constructor Parameter | Type | Description |
+|---|---|---|
 | `executor` | `DbContextExecutor` | Query execution engine (e.g., `NodeDbContextExecutor`) |
 | `opt.database` | `string` | Database name |
 | `opt.schema` | `string?` | Schema name (MSSQL: dbo, PostgreSQL: public) |
+
+```typescript
+class MainDb extends DbContext {
+  user = this.queryable(User);
+  post = this.queryable(Post);
+  getUserById = this.executable(GetUserById);
+
+  migrations = [
+    { name: "20260101_001_init", up: async (db) => { await db.createTable(User); } },
+  ];
+}
+
+const db = new MainDb(executor, { database: "mydb", schema: "dbo" });
+```
 
 ### Connection Methods
 
@@ -99,7 +93,7 @@ Creates a full DbContext instance from a definition and executor. The returned o
 
 ### DDL QueryDef Generators
 
-Each DDL method has a corresponding `get*QueryDef` method that returns a `QueryDef` without executing it. For example: `getCreateTableQueryDef(table)`, `getDropTableQueryDef(table)`, etc.
+Each DDL method has a corresponding `get*QueryDef` method that returns a `QueryDef` without executing it. For example: `getCreateTableQueryDef(table)`, `getDropTableQueryDef(table)`, `getCreateObjectQueryDef(builder)`, etc.
 
 ### Initialize
 
@@ -107,7 +101,20 @@ Each DDL method has a corresponding `get*QueryDef` method that returns a `QueryD
 async initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void>
 ```
 
-Runs pending migrations. If `force` is true, drops and recreates the schema.
+Code First database initialization. Creates all registered Table/View/Procedure objects and runs pending migrations.
+
+- **force=true**: Clear schema, recreate all objects, register all migrations as applied
+- **force=false** (default):
+  - No `_Migration` table: Full creation + register all migrations
+  - `_Migration` table exists: Run only pending migrations
+
+## SD_BUILDER
+
+```typescript
+const SD_BUILDER: unique symbol
+```
+
+Internal symbol used to tag queryable/executable factory functions with their underlying builder. Used by `initialize()` to discover registered builders from DbContext instances.
 
 ## DbTransactionError
 
@@ -148,10 +155,63 @@ enum DbErrorCode {
 | `DEADLOCK` | Deadlock detected |
 | `LOCK_TIMEOUT` | Lock timeout exceeded |
 
+## DbContextBase
+
+```typescript
+interface DbContextBase {
+  status: DbContextStatus;
+  readonly database: string | undefined;
+  readonly schema: string | undefined;
+  getNextAlias(): string;
+  resetAliasCounter(): void;
+  executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]>;
+  getQueryDefObjectName(tableOrView: TableBuilder | ViewBuilder): QueryDefObjectName;
+  switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
+}
+```
+
+Core interface implemented by DbContext. Used internally by Queryable, Executable, and ViewBuilder.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `DbContextStatus` | Current connection status |
+| `database` | `string \| undefined` | Database name |
+| `schema` | `string \| undefined` | Schema name |
+| `getNextAlias()` | `string` | Generate next table alias (T1, T2, ...) |
+| `resetAliasCounter()` | `void` | Reset alias counter |
+| `executeDefs()` | `Promise<T[][]>` | Execute QueryDef array, returns result per def |
+| `getQueryDefObjectName()` | `QueryDefObjectName` | Resolve table/view to qualified name |
+| `switchFk()` | `Promise<void>` | Enable/disable FK constraints |
+
+## DbContextDdlMethods
+
+```typescript
+interface DbContextDdlMethods {
+  createTable(table: TableBuilder): Promise<void>;
+  dropTable(table: QueryDefObjectName): Promise<void>;
+  // ... all DDL methods listed in DbContext DDL Execution Methods above
+  // ... plus all get*QueryDef generator methods
+}
+```
+
+Interface for DDL execution and QueryDef generation methods. DbContext implements this interface. Used by the `initialize()` function and `Migration.up()` callback parameter type.
+
+## DbContextStatus
+
+```typescript
+type DbContextStatus = "ready" | "connect" | "transact";
+```
+
+| Value | Description |
+|-------|-------------|
+| `"ready"` | Not connected |
+| `"connect"` | Connected, no active transaction |
+| `"transact"` | Connected with active transaction |
+
 ## _Migration
 
 ```typescript
 const _Migration: TableBuilder<{ code: ColumnBuilder<string, ...> }, {}>
 ```
 
-System migration tracking table. Automatically added to every DbContext via `defineDbContext()`. Has a single `code` column (VARCHAR(255)) as primary key, storing executed migration names.
+System migration tracking table. Automatically registered in every DbContext as `_migration`. Has a single `code` column (VARCHAR(255)) as primary key, storing executed migration names.

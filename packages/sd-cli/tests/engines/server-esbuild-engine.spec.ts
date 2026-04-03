@@ -89,7 +89,6 @@ describe("ServerEsbuildEngine", () => {
           packageManager: "mise",
         }),
       );
-      expect(result.success).toBe(true);
       expect(result.build.success).toBe(true);
       await engine.stop();
     });
@@ -104,7 +103,6 @@ describe("ServerEsbuildEngine", () => {
       const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: false });
 
-      expect(result.success).toBe(false);
       expect(result.build.warnings).toEqual(["warn1"]);
       expect(result.build.success).toBe(false);
       expect(result.build.diagnostics).toEqual([{ code: 2345, category: 1 }]);
@@ -121,7 +119,6 @@ describe("ServerEsbuildEngine", () => {
       const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: false });
 
-      expect(result.success).toBe(false);
       expect(result.build.success).toBe(false);
       expect(result.build.errors).toEqual(["esbuild error"]);
       await engine.stop();

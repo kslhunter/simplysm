@@ -257,6 +257,7 @@ export {
 } from "./core/providers/sd-print.provider";
 
 // core/utils
+export { mark } from "./core/utils/mark";
 export { useSortingManager, type ISortingDef } from "./core/utils/useSortingManager";
 export type {
   TDirectiveInputSignals,

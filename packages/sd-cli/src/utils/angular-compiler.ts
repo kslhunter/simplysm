@@ -285,11 +285,16 @@ export class AngularCompiler {
     const programFiles = tsProgram.getSourceFiles();
     logger.debug(`ts.Program 소스 파일: ${programFiles.length}개`);
 
-    // 9. BuilderProgram 생성
+    // 9. BuilderProgram 생성 (진단 + affected file 탐지용)
+    //    .tsbuildinfo에서 이전 상태를 복원하여 프로세스 재시작 후에도 incremental 진단 유지
+    let oldBuilderProgram = this._builderProgram;
+    if (oldBuilderProgram == null) {
+      oldBuilderProgram = ts.readBuilderProgram(mergedOptions, host) ?? undefined;
+    }
     const builderProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
       tsProgram,
       host,
-      this._builderProgram,
+      oldBuilderProgram,
     );
 
     // 10. AOT 분석
@@ -446,7 +451,7 @@ export class AngularCompiler {
     }
 
     const angularCompiler = this._ngtscProgram.compiler;
-    const builderProgram = this._builderProgram;
+    const tsProgram = this._ngtscProgram.getTsProgram();
     const affectedFiles = this._affectedFiles;
 
     // 2. prepareEmit() → Angular transformers 획득
@@ -466,7 +471,6 @@ export class AngularCompiler {
 
     // 4. emit 결과를 수집하는 구조
     const emitResults: EmitResult[] = [];
-    const emittedSourceFiles = new Set<ts.SourceFile>();
     const emitDeclarationOnly = !!compilerOptions.emitDeclarationOnly;
 
     const writeFileCallback: ts.WriteFileCallback = (
@@ -484,25 +488,16 @@ export class AngularCompiler {
         return;
       }
       angularCompiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
-      emittedSourceFiles.add(sourceFile);
       emitResults.push({ filename, contents, sourceFileName: sourceFile.fileName });
     };
 
-    // 5. emitNextAffectedFile 루프
-    while (
-      builderProgram.emitNextAffectedFile(
-        writeFileCallback,
-        undefined,
-        emitDeclarationOnly,
-        transformers,
-      )
-    ) {
-      /* empty */
-    }
-
-    // 6. 2차 루프: TypeScript가 affected로 판단하지 않았지만 Angular이 처리해야 할 파일
-    for (const sourceFile of builderProgram.getSourceFiles()) {
-      if (emittedSourceFiles.has(sourceFile) || angularCompiler.ignoreForEmit.has(sourceFile)) {
+    // 5. ts.Program.emit()으로 직접 emit (NgtscProgram.emit 패턴)
+    //    EmitAndSemanticDiagnosticsBuilderProgram.emitNextAffectedFile()은 내부적으로
+    //    emitKind를 DTS-only로 결정할 수 있어 Angular before transformer가 .js를 생성하지 않고
+    //    DtsTransformRegistry에 메타데이터를 등록하지 않는 문제가 있다.
+    //    ts.Program.emit()을 직접 호출하면 항상 full emit이 수행된다.
+    for (const sourceFile of tsProgram.getSourceFiles()) {
+      if (angularCompiler.ignoreForEmit.has(sourceFile)) {
         continue;
       }
       if (sourceFile.isDeclarationFile) {
@@ -514,7 +509,7 @@ export class AngularCompiler {
       ) {
         continue;
       }
-      builderProgram.emit(
+      tsProgram.emit(
         sourceFile,
         writeFileCallback,
         undefined,
@@ -522,6 +517,11 @@ export class AngularCompiler {
         transformers,
       );
     }
+
+    // 6. .tsbuildinfo 영속화 (프로세스 재시작 후 incremental 진단 유지)
+    //    TS 5.9에서 emitBuildInfo()가 제거됨. emit()이 내부적으로 build info를 기록한다.
+    //    no-op writeFile로 JS/DTS 재출력 없이 build info만 갱신.
+    this._builderProgram.emit(undefined, () => {});
 
     // 7. sourceFilter 적용 후 yield
     logger.debug(`emitAffectedFiles 완료 (${emitResults.length}개 파일)`);

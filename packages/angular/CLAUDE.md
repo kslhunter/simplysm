@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 134 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 135 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -116,6 +116,7 @@ src/
   - `withBusy(busyCount, fn)`: `WritableSignal<number>`를 증감시켜 비동기 작업 중 busy 표시. finally에서 감소
   - `injectParent(type?, options?)`: ViewContainerRef injector chain을 순회하여 가장 가까운 부모 컴포넌트 인스턴스를 반환. Angular 내부 `_lView[8]` (CONTEXT slot) 사용. 3 overloads: no args, type filter, type + `{ optional: true }`
   - `setSafeStyle(renderer, el, styles)`: Renderer2를 사용하여 여러 CSS 스타일을 안전하게 적용
+  - `mark(sig, clone?)`: WritableSignal의 버전을 수동으로 증가시켜 consumer에게 변경을 알린다. `clone`이 `true`이면 배열/객체를 shallow copy하여 `update()`로 처리하고, `false`이면 Angular 내부 `producerIncrementEpoch`/`producerNotifyConsumers` API를 직접 호출하여 값 변경 없이 변경 알림을 트리거한다
   - `useCurrentPageCodeSignal()`, `useFullPageCodeSignal()`, `useViewTitleSignal()`, `useViewTypeSignal(getComp)`: 라우터 기반 현재 페이지 코드/타이틀/뷰 타입 signal
 
 ### Provider System
@@ -207,7 +208,7 @@ type TWithOptional<T, K extends keyof T>
 
 테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/features/`, `tests/ui/`, `tests/scss/`
 
-138개의 spec 파일. SCSS 컴파일 결과 검증 테스트 포함 (`tests/scss/`).
+137개의 spec 파일. SCSS 컴파일 결과 검증 테스트 포함 (`tests/scss/`).
 
 ### Test Pattern
 

@@ -35,11 +35,9 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 // env mock
-let mockEnv: Record<string, unknown> = {};
+let mockEnv: Record<string, string | undefined> = {};
 vi.mock("@simplysm/core-common", () => ({
-  env: new Proxy({} as Record<string, unknown>, {
-    get: (_target, prop) => mockEnv[prop as string],
-  }),
+  env: (key: string) => mockEnv[key],
 }));
 
 // cpx mock (was execa)

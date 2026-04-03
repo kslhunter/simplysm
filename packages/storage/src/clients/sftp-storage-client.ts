@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { SdError } from "@simplysm/core-common";
+import { env, SdError } from "@simplysm/core-common";
 import SftpClient from "ssh2-sftp-client";
 import fsP from "fs/promises";
 import os from "os";
@@ -49,7 +49,7 @@ export class SftpStorageClient implements StorageClient {
           host: config.host,
           port: config.port,
           username: config.user,
-          ...(process.env["SSH_AUTH_SOCK"] != null ? { agent: process.env["SSH_AUTH_SOCK"] } : {}),
+          ...(env("SSH_AUTH_SOCK") != null ? { agent: env("SSH_AUTH_SOCK") } : {}),
         };
 
         try {

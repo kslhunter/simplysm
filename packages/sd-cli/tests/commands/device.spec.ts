@@ -31,6 +31,27 @@ vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: vi.fn(),
 }));
 
+// fs mock (포트 파일 읽기용)
+const mockReadFileSync = vi.fn();
+const mockExistsSync = vi.fn().mockReturnValue(false);
+vi.mock("node:fs", () => ({
+  default: {
+    readFileSync: (...args: any[]) => mockReadFileSync(...args),
+    existsSync: (...args: any[]) => mockExistsSync(...args),
+  },
+  readFileSync: (...args: any[]) => mockReadFileSync(...args),
+  existsSync: (...args: any[]) => mockExistsSync(...args),
+}));
+
+// http mock (헬스체크용)
+const mockHttpGet = vi.fn();
+vi.mock("node:http", () => ({
+  default: {
+    get: (...args: any[]) => mockHttpGet(...args),
+  },
+  get: (...args: any[]) => mockHttpGet(...args),
+}));
+
 const { Capacitor } = await import("../../src/capacitor/capacitor");
 const { Electron } = await import("../../src/electron/electron");
 const { loadSdConfig } = await import("../../src/utils/sd-config");
@@ -143,5 +164,84 @@ describe("runDevice", () => {
     });
 
     await expect(runDevice({ target: "my-server", options: [] })).rejects.toThrow();
+  });
+
+  // Acceptance: Scenario "dev 서버 실행 중 device 실행 시 URL 자동 생성"
+  it("auto-detects URL from .dev-port when server is a string", async () => {
+    vi.mocked(loadSdConfig).mockResolvedValue({
+      packages: {
+        "client-devtool": {
+          target: "client",
+          server: "server",
+          electron: { appId: "com.test.electron" },
+        },
+      },
+    });
+
+    mockReadFileSync.mockReturnValue("5173");
+
+    // HTTP 헬스체크 성공 mock
+    mockHttpGet.mockImplementation((_url: string, cb: Function) => {
+      const res = { resume: vi.fn() };
+      cb(res);
+      return { on: vi.fn(), setTimeout: vi.fn() };
+    });
+
+    await runDevice({ target: "client-devtool", options: [] });
+
+    expect(mockElectronInstance.run).toHaveBeenCalledWith(
+      "http://localhost:5173/client-devtool/",
+    );
+  });
+
+  // Acceptance: Scenario "dev 서버 미실행 시 에러"
+  it("throws when .dev-port file does not exist and server is a string", async () => {
+    vi.mocked(loadSdConfig).mockResolvedValue({
+      packages: {
+        "client-devtool": {
+          target: "client",
+          server: "server",
+          electron: { appId: "com.test.electron" },
+        },
+      },
+    });
+
+    mockReadFileSync.mockImplementation(() => {
+      throw new Error("ENOENT");
+    });
+
+    await expect(runDevice({ target: "client-devtool", options: [] })).rejects.toThrow(
+      "dev 서버가 실행 중이 아닙니다",
+    );
+  });
+
+  // Acceptance: Scenario "stale 포트 파일 존재 시 헬스체크 실패 에러"
+  it("throws when .dev-port exists but health check fails", async () => {
+    vi.mocked(loadSdConfig).mockResolvedValue({
+      packages: {
+        "client-devtool": {
+          target: "client",
+          server: "server",
+          electron: { appId: "com.test.electron" },
+        },
+      },
+    });
+
+    mockReadFileSync.mockReturnValue("5173");
+
+    // HTTP 헬스체크 실패 mock
+    mockHttpGet.mockImplementation((_url: string, _cb: Function) => {
+      const req = {
+        on: vi.fn((event: string, handler: Function) => {
+          if (event === "error") handler(new Error("ECONNREFUSED"));
+        }),
+        setTimeout: vi.fn(),
+      };
+      return req;
+    });
+
+    await expect(runDevice({ target: "client-devtool", options: [] })).rejects.toThrow(
+      "dev 서버가 응답하지 않습니다",
+    );
   });
 });

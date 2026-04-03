@@ -100,20 +100,7 @@ interface QueryBuildResult {
 
 ## DbContext Types
 
-### DbContextDef
-
-```typescript
-interface DbContextDef<TTables, TViews, TProcedures> {
-  readonly meta: {
-    readonly tables: TTables;
-    readonly views: TViews;
-    readonly procedures: TProcedures;
-    readonly migrations: Migration[];
-  };
-}
-```
-
-DbContext blueprint created by `defineDbContext()`. Contains only schema metadata, no runtime state.
+See [Core documentation](./core.md) for detailed descriptions of these types.
 
 ### DbContextBase
 
@@ -130,38 +117,12 @@ interface DbContextBase {
 }
 ```
 
-Core interface used internally by Queryable, Executable, and ViewBuilder.
+Core interface implemented by DbContext. Used internally by Queryable, Executable, and ViewBuilder.
 
 ### DbContextStatus
 
 ```typescript
 type DbContextStatus = "ready" | "connect" | "transact";
-```
-
-### DbContextInstance
-
-```typescript
-type DbContextInstance<TDef extends DbContextDef<any, any, any>> =
-  DbContextBase &
-  DbContextConnectionMethods &
-  DbContextDdlMethods &
-  { [K in keyof TDef["meta"]["tables"]]: () => Queryable<...> } &
-  { [K in keyof TDef["meta"]["views"]]: () => Queryable<...> } &
-  { [K in keyof TDef["meta"]["procedures"]]: () => Executable<...> } &
-  { _migration: () => Queryable<{ code: string }, any> } &
-  { initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void> };
-```
-
-Full DbContext instance type returned by `createDbContext()`. Includes queryable accessors for all tables/views, executable accessors for all procedures, connection methods, DDL methods, and `initialize()`.
-
-### DbContextConnectionMethods
-
-```typescript
-interface DbContextConnectionMethods {
-  connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
-  connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult>;
-  transaction<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
-}
 ```
 
 ### DbContextDdlMethods

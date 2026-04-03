@@ -2,8 +2,7 @@ import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
 import { fsx, pathx } from "@simplysm/core-node";
-import "@simplysm/core-common";
-import { SdError } from "@simplysm/core-common";
+import { env, SdError } from "@simplysm/core-common";
 import { consola } from "consola";
 
 //#region Types
@@ -128,7 +127,7 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
 
   // TIMING 환경변수 설정
   if (timing) {
-    process.env["TIMING"] = "1";
+    env("TIMING", "1");
   }
 
   // ESLint 설정 로드

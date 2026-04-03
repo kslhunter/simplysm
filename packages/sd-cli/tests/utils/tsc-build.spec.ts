@@ -176,11 +176,12 @@ describe("runTscPackageBuild", () => {
       output: { js: true, dts: true },
     });
 
-    // createEmitAndSemanticDiagnosticsBuilderProgram(rootNames, options, host)
+    // createEmitAndSemanticDiagnosticsBuilderProgram(rootNames, options, host, oldBuilderProgram)
     expect(vi.mocked(tsModule.default.createEmitAndSemanticDiagnosticsBuilderProgram)).toHaveBeenCalledWith(
       [SRC_INDEX, SRC_UTIL],
       expect.any(Object),
       expect.any(Object),
+      undefined,
     );
   });
 
@@ -198,6 +199,7 @@ describe("runTscPackageBuild", () => {
       [SRC_INDEX, SRC_UTIL],
       expect.any(Object),
       expect.any(Object),
+      undefined,
     );
   });
 
@@ -216,6 +218,7 @@ describe("runTscPackageBuild", () => {
       [SRC_INDEX, SRC_UTIL, TEST_INDEX],
       expect.any(Object),
       expect.any(Object),
+      undefined,
     );
   });
 

@@ -13,7 +13,7 @@ LIMIT 5
   mssql: tsql`
 SELECT TOP 5 *
 FROM [TestDb].[TestSchema].[User] AS [T1]
-ORDER BY NEWID()
+ORDER BY (ABS(CHECKSUM(NEWID())) / 2147483647.0)
   `,
   postgresql: pgsql`
 SELECT *
@@ -35,7 +35,7 @@ LIMIT 3
 SELECT TOP 3 *
 FROM [TestDb].[TestSchema].[User] AS [T1]
 WHERE [T1].[age] >= 20
-ORDER BY NEWID()
+ORDER BY (ABS(CHECKSUM(NEWID())) / 2147483647.0)
   `,
   postgresql: pgsql`
 SELECT *
@@ -56,7 +56,7 @@ LIMIT 10
   mssql: tsql`
 SELECT TOP 10 [T1].[id] AS [id], [T1].[name] AS [name]
 FROM [TestDb].[TestSchema].[User] AS [T1]
-ORDER BY NEWID()
+ORDER BY (ABS(CHECKSUM(NEWID())) / 2147483647.0)
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."name" AS "name"

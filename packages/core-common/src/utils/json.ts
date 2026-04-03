@@ -9,7 +9,7 @@ import { Uuid } from "../types/uuid";
 import { nullToUndefined } from "./obj";
 import { SdError } from "../errors/sd-error";
 import { toHex, fromHex } from "./bytes";
-import { env } from "../env";
+import { env, parseBoolEnv } from "../env";
 
 interface TypedObject {
   __type__: string;
@@ -227,7 +227,7 @@ export function parse<TResult = unknown>(json: string): TResult {
       }),
     ) as TResult;
   } catch (err) {
-    if (env.DEV) {
+    if (parseBoolEnv(env("DEV"))) {
       throw new SdError(err, "JSON 파싱 오류: \n" + json);
     }
     throw new SdError(err, `JSON 파싱 오류 (길이: ${json.length})`);

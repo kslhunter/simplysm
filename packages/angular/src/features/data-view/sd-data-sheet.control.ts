@@ -20,6 +20,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { type ArrayOneWayDiffResult, obj } from "@simplysm/core-common";
+import { mark } from "../../core/utils/mark";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
 import { SdSheetColumnDirective } from "../../ui/data/sheet/sd-sheet-column.directive";
@@ -252,7 +253,7 @@ export abstract class AbsSdDataSheet<
     if (!this.canUse()) return;
     if (!this.checkIgnoreChanges()) return;
 
-    this.lastFilter.update((v) => ({ ...v }));
+    mark(this.lastFilter);
   }
 
   async refresh() {
@@ -325,7 +326,7 @@ export abstract class AbsSdDataSheet<
     (item[this.itemPropInfo.isDeleted] as boolean) = !(item[
       this.itemPropInfo.isDeleted
     ] as boolean);
-    this.items.update((v) => [...v]);
+    mark(this.items);
   }
 
   //-- modal edit

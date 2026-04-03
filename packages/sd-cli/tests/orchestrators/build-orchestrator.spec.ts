@@ -66,7 +66,6 @@ vi.mock("../../src/engines/index", () => ({
   createBuildEngine: vi.fn(() => {
     const engine = {
       run: vi.fn().mockResolvedValue({
-        success: true,
         build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn().mockResolvedValue(undefined),
@@ -159,7 +158,6 @@ beforeEach(() => {
   vi.mocked(createBuildEngine).mockImplementation(() => {
     const engine = {
       run: vi.fn().mockResolvedValue({
-        success: true,
         build: { success: true, errors: [], warnings: [], diagnostics: [] },
 
       }),
@@ -413,7 +411,6 @@ describe("BuildOrchestrator.start", () => {
     });
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
-        success: false,
         build: { success: false, errors: ["Module not found"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
@@ -603,7 +600,6 @@ describe("BuildOrchestrator client build", () => {
     });
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
-        success: true,
         build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
@@ -637,7 +633,6 @@ describe("BuildOrchestrator client build", () => {
     });
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
-        success: false,
         build: { success: false, errors: ["Template error"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),
@@ -957,7 +952,6 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
     });
     vi.mocked(createBuildEngine).mockReturnValue({
       run: vi.fn().mockResolvedValue({
-        success: false,
         build: { success: false, errors: ["Build error"], warnings: [], diagnostics: [] },
       }),
       startWatch: vi.fn(),

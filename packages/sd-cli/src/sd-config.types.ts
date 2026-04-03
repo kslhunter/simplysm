@@ -1,3 +1,14 @@
+/** npm package.json 구조 */
+export interface NpmConfig {
+  name: string;
+  version: string;
+  description?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  volta?: unknown;
+}
+
 /**
  * 빌드 타겟 타입 (esbuild로 빌드)
  * - node: Node.js 전용 패키지

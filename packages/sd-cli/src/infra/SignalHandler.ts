@@ -7,7 +7,6 @@
 export class SignalHandler {
   private _terminateResolver: (() => void) | null = null;
   private readonly _terminatePromise: Promise<void>;
-  private _terminated = false;
 
   constructor() {
     this._terminatePromise = new Promise((resolve) => {
@@ -17,8 +16,8 @@ export class SignalHandler {
     const handler = () => {
       process.off("SIGINT", handler);
       process.off("SIGTERM", handler);
-      this._terminated = true;
       this._terminateResolver?.();
+      this._terminateResolver = null;
     };
 
     process.on("SIGINT", handler);
@@ -33,20 +32,11 @@ export class SignalHandler {
   }
 
   /**
-   * 종료 여부를 확인한다
-   */
-  isTerminated(): boolean {
-    return this._terminated;
-  }
-
-  /**
    * 프로그래밍 방식으로 종료를 요청한다
-   * (테스트나 외부에서 종료를 트리거할 때 사용)
+   * (테스트에서 종료를 트리거할 때 사용)
    */
   requestTermination(): void {
-    if (!this._terminated) {
-      this._terminated = true;
-      this._terminateResolver?.();
-    }
+    this._terminateResolver?.();
+    this._terminateResolver = null;
   }
 }

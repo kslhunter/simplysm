@@ -189,7 +189,6 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
           logger.debug(`[${label}] 스택 트레이스:\n${stack}`);
         }
         return {
-          success: false,
           build: {
             success: false,
             errors: [`[${label}] ${message}`],

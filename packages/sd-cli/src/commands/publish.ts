@@ -61,7 +61,7 @@ function replaceEnvVariables(str: string, version: string, projectPath: string):
     if (envName === "PROJECT") {
       return projectPath;
     }
-    return (env[envName] as string | undefined) ?? match;
+    return env(envName) ?? match;
   });
 
   // 치환되지 않은 환경변수가 남아있으면 에러 발생
@@ -147,7 +147,7 @@ async function ensureSshAuth(
   // 개인키 파싱 시도 (암호화 또는 형식 오류 시 Error 반환)
   const parsed = utils.parseKey(privateKeyData);
   const isKeyEncrypted = parsed instanceof Error;
-  const sshAgent = process.env["SSH_AUTH_SOCK"];
+  const sshAgent = env("SSH_AUTH_SOCK");
 
   // 각 서버에 대해 키 인증 검증
   for (const [label, target] of sshTargets) {

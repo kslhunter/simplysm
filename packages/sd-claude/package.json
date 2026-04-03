@@ -10,6 +10,9 @@
     "directory": "packages/sd-claude"
   },
   "type": "module",
+  "bin": {
+    "sd-claude": "scripts/cli.mjs"
+  },
   "files": [
     "scripts",
     "claude"

@@ -912,7 +912,7 @@ export const expr = {
    * @example
    * ```typescript
    * db.order().select((o) => ({
-   *   pages: expr.ceil(expr.divide(o.itemCount, 10)),
+   *   pages: expr.ceil(expr.multiply(o.itemCount, 0.1)),
    * }))
    * // SELECT CEILING(itemCount / 10) AS pages
    * // 25 / 10 = 2.5 → 3
@@ -934,7 +934,7 @@ export const expr = {
    * @example
    * ```typescript
    * db.user().select((u) => ({
-   *   ageGroup: expr.floor(expr.divide(u.age, 10)),
+   *   ageGroup: expr.floor(expr.multiply(u.age, 0.1)),
    * }))
    * // SELECT FLOOR(age / 10) AS ageGroup
    * // 25 / 10 = 2.5 → 2

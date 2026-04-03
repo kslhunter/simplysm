@@ -1,5 +1,5 @@
 import { createWorker } from "@simplysm/core-node";
-import { err as errNs } from "@simplysm/core-common";
+import { env, err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import proxy from "@fastify/http-proxy";
 import net from "net";
@@ -122,7 +122,7 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
     // main.js import 전에 환경변수를 process.env에 주입
     if (info.env != null) {
       for (const [key, value] of Object.entries(info.env)) {
-        process.env[key] = value;
+        env(key, value);
       }
     }
 

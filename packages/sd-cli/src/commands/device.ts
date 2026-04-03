@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import http from "node:http";
+import path from "path";
 import { consola } from "consola";
 import { pathx } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
@@ -61,9 +64,26 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     if (typeof clientConfig.server === "number") {
       serverUrl = `http://localhost:${clientConfig.server}/${targetName}/`;
     } else {
-      throw new SdError(
-        `--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`,
-      );
+      // server가 패키지명(string)인 경우: .dev-port 파일에서 포트 자동 탐지
+      const portFile = path.join(pkgDir, "dist", ".dev-port");
+      let portStr: string;
+      try {
+        portStr = fs.readFileSync(portFile, "utf-8").trim();
+      } catch {
+        throw new SdError(
+          "dev 서버가 실행 중이 아닙니다. 먼저 pnpm dev를 실행해주세요.",
+        );
+      }
+      const port = Number(portStr);
+      serverUrl = `http://localhost:${port}/${targetName}/`;
+
+      // HTTP 헬스체크
+      const alive = await checkDevServer(serverUrl);
+      if (!alive) {
+        throw new SdError(
+          "dev 서버가 응답하지 않습니다. pnpm dev를 다시 실행해주세요.",
+        );
+      }
     }
   }
 
@@ -81,4 +101,19 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   } else {
     throw new SdError(`${targetName}에 capacitor 또는 electron 설정이 없습니다.`);
   }
+}
+
+/** dev 서버가 응답하는지 HTTP GET으로 확인한다. */
+function checkDevServer(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      res.resume();
+      resolve(true);
+    });
+    req.on("error", () => resolve(false));
+    req.setTimeout(3000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
 }

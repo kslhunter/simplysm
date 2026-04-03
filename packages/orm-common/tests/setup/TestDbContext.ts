@@ -1,7 +1,5 @@
 import "@simplysm/core-common";
-import type { DbContextInstance } from "../../src/types/db-context-def";
-import { defineDbContext } from "../../src/define-db-context";
-import { createDbContext } from "../../src/create-db-context";
+import { DbContext } from "../../src/db-context";
 import { Post } from "./models/Post";
 import { Company } from "./models/Company";
 import { Sales } from "./models/Sales";
@@ -14,46 +12,39 @@ import { User } from "./models/User";
 import { GetUserById } from "./procedure/GetUserById";
 import { GetAllUsers } from "./procedure/GetAllUsers";
 
-// Tables-only definition (used by view definitions to break circular reference)
-// eslint-disable-next-line unused-imports/no-unused-vars -- used in typeof for TestDbTablesContext type
-const TestDbTablesDef = defineDbContext({
-  tables: {
-    company: Company,
-    user: User,
-    post: Post,
-    sales: Sales,
-    monthlySales: MonthlySales,
-    employee: Employee,
-  },
-});
+// Tables-only context (used by view definitions to break circular reference)
+class TestDbTablesOnly extends DbContext {
+  company = this.queryable(Company);
+  user = this.queryable(User);
+  post = this.queryable(Post);
+  sales = this.queryable(Sales);
+  monthlySales = this.queryable(MonthlySales);
+  employee = this.queryable(Employee);
+}
 
 /** Type for view definitions — references tables only, avoids circular dependency */
-export type TestDbTablesContext = DbContextInstance<typeof TestDbTablesDef>;
+export type TestDbTablesContext = { [K in keyof TestDbTablesOnly]: TestDbTablesOnly[K] };
 
-export const TestDbDef = defineDbContext({
-  tables: {
-    company: Company,
-    user: User,
-    post: Post,
-    sales: Sales,
-    monthlySales: MonthlySales,
-    employee: Employee,
-  },
-  views: {
-    activeUsers: ActiveUsers,
-    userSummary: UserSummary,
-  },
-  procedures: {
-    getUserById: GetUserById,
-    getAllUsers: GetAllUsers,
-  },
-});
+class TestDb extends DbContext {
+  company = this.queryable(Company);
+  user = this.queryable(User);
+  post = this.queryable(Post);
+  sales = this.queryable(Sales);
+  monthlySales = this.queryable(MonthlySales);
+  employee = this.queryable(Employee);
+
+  activeUsers = this.queryable(ActiveUsers);
+  userSummary = this.queryable(UserSummary);
+
+  getUserById = this.executable(GetUserById);
+  getAllUsers = this.executable(GetAllUsers);
+}
 
 export function createTestDb() {
-  return createDbContext(TestDbDef, new MockExecutor(), {
+  return new TestDb(new MockExecutor(), {
     database: "TestDb",
     schema: "TestSchema",
   });
 }
 
-export type TestDbContext = ReturnType<typeof createTestDb>;
+export type TestDbContext = TestDb;

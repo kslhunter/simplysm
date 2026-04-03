@@ -651,8 +651,9 @@ describe("DevWatchOrchestrator", () => {
         expect.any(Object),
       );
       expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
-      // Runtime is NOT started during initial build; it starts via batchComplete
-      expect(Worker.create).not.toHaveBeenCalled();
+      // Runtime starts during start() after all engines ready
+      expect(Worker.create).toHaveBeenCalled();
+      expect(mockRuntimeProxies[0].start).toHaveBeenCalled();
     });
 
     // --- Acceptance: Server 패키지 dev 모드 실행 ---
@@ -833,7 +834,7 @@ describe("DevWatchOrchestrator", () => {
     });
 
     // --- Acceptance: Server batchComplete 시 runtime 시작 ---
-    it("starts runtime on batchComplete with success", async () => {
+    it("starts runtime during start() after all engines ready", async () => {
       setupDefaults(createConfig({
         packages: { "service-server": { target: "server" } },
       }));
@@ -843,18 +844,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // No runtime started initially
-      expect(Worker.create).not.toHaveBeenCalled();
-
-      // Get batchComplete handler
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
-
-      // First runtime created via batchComplete
+      // Runtime starts during start(), not via batchComplete
       expect(mockRuntimeProxies).toHaveLength(1);
       expect(mockRuntimeProxies[0].start).toHaveBeenCalled();
     });
@@ -870,12 +860,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Trigger batchComplete to create runtime first
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
+      // Runtime is now started during start()
+      expect(mockRuntimeProxies).toHaveLength(1);
 
       await orchestrator.shutdown();
 
@@ -911,7 +897,7 @@ describe("DevWatchOrchestrator", () => {
     });
 
     // Unit: multiple server packages
-    it("creates engines for multiple server packages (runtimes start via batchComplete)", async () => {
+    it("creates engines for multiple server packages (runtimes start during start())", async () => {
       setupDefaults(createConfig({
         packages: {
           "service-server": { target: "server" },
@@ -925,8 +911,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       expect(createBuildEngine).toHaveBeenCalledTimes(2);
-      // Runtimes are NOT started during initial build
-      expect(Worker.create).not.toHaveBeenCalled();
+      // Runtimes start during start() after all engines ready
+      expect(Worker.create).toHaveBeenCalledTimes(2);
     });
 
     // Unit: skips start when no packages
@@ -1027,16 +1013,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Runtime starts via batchComplete, not initial start
-      expect(Worker.create).not.toHaveBeenCalled();
-
-      // Trigger batchComplete
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
-
+      // Runtime starts during start() with client ports available
       expect(Worker.create).toHaveBeenCalled();
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1059,13 +1036,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Trigger batchComplete to start server runtime
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
-
+      // Runtime starts during start(), standalone client ports excluded
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
           clientPorts: {},
@@ -1112,13 +1083,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Trigger batchComplete to start server runtime
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
-
+      // Runtime starts during start() but client port unavailable → empty clientPorts
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
           clientPorts: {},
@@ -1126,8 +1091,8 @@ describe("DevWatchOrchestrator", () => {
       );
     });
 
-    // --- Acceptance: printServers에 serverClientsMap 전달 ---
-    it("passes serverClientsMap to printServers", async () => {
+    // --- Acceptance: printServers는 start()에서 직접 호출되지 않는다 (serverReady 이벤트 경로만 사용) ---
+    it("does not call printServers directly during start()", async () => {
       setupDefaults(createConfig({
         packages: {
           "service-server": { target: "server" },
@@ -1140,12 +1105,9 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(_printServers).toHaveBeenCalledWith(
-        expect.any(Map),
-        expect.any(Map),
-      );
-      const serverClientsMap = vi.mocked(_printServers).mock.calls[0][1] as Map<string, string[]>;
-      expect(serverClientsMap.get("service-server")).toEqual(["my-client"]);
+      // printServers should NOT be called directly during start()
+      // It should only be called via serverReady → _schedulePrintServers()
+      expect(_printServers).not.toHaveBeenCalled();
     });
 
     // --- Acceptance: 서버 rebuild 시 프록시 재등록 ---
@@ -1162,14 +1124,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      // Trigger first batchComplete to start runtime
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
-      await new Promise((r) => setTimeout(r, 200));
-
-      // First runtime created with clientPorts
+      // First runtime created during start() with clientPorts
       expect(mockRuntimeProxies).toHaveLength(1);
       expect(mockRuntimeProxies[0].start).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1177,11 +1132,14 @@ describe("DevWatchOrchestrator", () => {
         }),
       );
 
-      // Trigger second batchComplete (rebuild)
+      // Trigger batchComplete (rebuild after initial build)
+      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
       batchHandler?.(["service-server:build"]);
       await new Promise((r) => setTimeout(r, 200));
 
-      // Second runtime start should also have clientPorts
+      // Second runtime start (rebuild) should also have clientPorts
       expect(mockRuntimeProxies).toHaveLength(2);
       expect(mockRuntimeProxies[0].terminate).toHaveBeenCalled();
       expect(mockRuntimeProxies[1].start).toHaveBeenCalledWith(

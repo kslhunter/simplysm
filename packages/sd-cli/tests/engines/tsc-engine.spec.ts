@@ -75,7 +75,6 @@ describe("TscEngine", () => {
           output: { js: true, dts: true },
         }),
       );
-      expect(result.success).toBe(true);
       expect(result.build.success).toBe(true);
       await engine.stop();
     });
@@ -101,7 +100,7 @@ describe("TscEngine", () => {
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.success).toBe(false);
+      expect(result.build.success).toBe(false);
       expect(result.build.errors).toEqual(["type error"]);
       expect(result.build.diagnostics).toHaveLength(1);
       await engine.stop();

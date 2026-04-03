@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockFsxExists = vi.fn();
 const mockFsxReadJson = vi.fn();
 const mockFsxWriteJson = vi.fn().mockResolvedValue(undefined);
+const mockFsxWrite = vi.fn().mockResolvedValue(undefined);
 const mockFsxMkdir = vi.fn().mockResolvedValue(undefined);
 const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 const mockFsxReaddir = vi.fn();
@@ -17,6 +18,7 @@ vi.mock("@simplysm/core-node", () => ({
     exists: mockFsxExists,
     readJson: mockFsxReadJson,
     writeJson: mockFsxWriteJson,
+    write: mockFsxWrite,
     mkdir: mockFsxMkdir,
     copy: mockFsxCopy,
     readdir: mockFsxReaddir,
@@ -96,6 +98,11 @@ function setupDefaultMocks() {
       "better-sqlite3": "^11.0.0",
       "sharp": "^0.34.0",
     },
+    devDependencies: {
+      "electron": "^35.0.0",
+      "@electron/rebuild": "^4.0.0",
+      "electron-builder": "^26.0.0",
+    },
   });
   mockFsxReaddir.mockResolvedValue(["index.html", "assets", "electron"]);
   // Default: glob returns one exe file matching the builder output
@@ -169,7 +176,7 @@ describe("Electron", () => {
   //#region Rule: Electron 프로젝트를 초기화한다
 
   describe("인수 테스트: 초기화", () => {
-    it("package.json 생성 + npm install + electron-rebuild를 실행한다", async () => {
+    it("package.json 생성 + pnpm install + electron-rebuild를 실행한다", async () => {
       const { Electron } = await import("../../src/electron/electron.js");
 
       const electron = await Electron.create(PKG_PATH, {
@@ -181,13 +188,13 @@ describe("Electron", () => {
 
       expect(findElectronPackageJson()).toBeDefined();
 
-      const execaCalls = mockCpxSpawn.mock.calls;
+      const spawnCalls = mockCpxSpawn.mock.calls;
       expect(
-        execaCalls.find((c) => c[0] === "npm" && (c[1] as string[]).includes("install")),
+        spawnCalls.find((c) => c[0] === "pnpm" && (c[1] as string[]).includes("install")),
       ).toBeDefined();
       expect(
-        execaCalls.find(
-          (c) => typeof c[0] === "string" && c[0].includes("electron-rebuild"),
+        spawnCalls.find(
+          (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron-rebuild"),
         ),
       ).toBeDefined();
     });
@@ -199,7 +206,7 @@ describe("Electron", () => {
       await electron.initialize();
 
       const rebuildCall = mockCpxSpawn.mock.calls.find(
-        (c) => typeof c[0] === "string" && c[0].includes("electron-rebuild"),
+        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron-rebuild"),
       );
       expect(rebuildCall).toBeUndefined();
     });
@@ -455,9 +462,9 @@ describe("Electron", () => {
       const electronKill = vi.fn();
       let resolveElectron: () => void = () => {};
 
-      mockCpxSpawn.mockImplementation((cmd: string) => {
-        if (typeof cmd === "string" && cmd.includes("electron")) {
-          // Electron process: create a deferred promise we can resolve externally
+      mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
+        // pnpm exec electron . → Electron 프로세스
+        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -537,8 +544,8 @@ describe("Electron", () => {
   describe("단위: run() 플러그인 동작", () => {
     it("passes custom env and ELECTRON_DEV_URL via esbuild banner", async () => {
       let resolveElectron: () => void = () => {};
-      mockCpxSpawn.mockImplementation((cmd: string) => {
-        if (typeof cmd === "string" && cmd.includes("electron")) {
+      mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
+        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -570,8 +577,8 @@ describe("Electron", () => {
 
     it("calls initialize() before starting esbuild context", async () => {
       let resolveElectron: () => void = () => {};
-      mockCpxSpawn.mockImplementation((cmd: string) => {
-        if (typeof cmd === "string" && cmd.includes("electron")) {
+      mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
+        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -589,11 +596,11 @@ describe("Electron", () => {
       resolveElectron();
       await runPromise;
 
-      // initialize calls npm install -> execa should have been called with npm install
-      const npmInstallCall = mockCpxSpawn.mock.calls.find(
-        (c: any[]) => c[0] === "npm" && (c[1] as string[]).includes("install"),
+      // initialize calls pnpm install
+      const pnpmInstallCall = mockCpxSpawn.mock.calls.find(
+        (c: any[]) => c[0] === "pnpm" && (c[1] as string[]).includes("install"),
       );
-      expect(npmInstallCall).toBeDefined();
+      expect(pnpmInstallCall).toBeDefined();
     }, 10_000);
   });
 

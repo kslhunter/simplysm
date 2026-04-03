@@ -119,6 +119,25 @@
   - [ ] CLAUDE.md에 루트 CLAUDE.md와 중복되는 내용(명령어, 코딩 규칙)이 없다
   - [ ] README.md에 export된 모든 API가 문서화되었다
 
+### 시나리오 9: 변경 없는 패키지 스킵
+
+- 입력: "/sd-claude-docs"
+- 전제조건:
+  - git 저장소로 초기화됨 (커밋 이력 포함)
+  - 모노레포 구조: `pnpm-workspace.yaml`, 3개 패키지 (`packages/core`, `packages/web`, `packages/utils`)
+  - 각 패키지: `package.json` (name, description, main), `src/index.ts` (export 3개)
+  - 커밋 이력:
+    1. 초기 커밋: 모든 소스 파일 + `pnpm-workspace.yaml` + root `package.json`
+    2. 커밋 2: `packages/core/CLAUDE.md` + `packages/core/README.md` 생성 (src/ 변경 없음)
+    3. 커밋 3: `packages/web/CLAUDE.md` + `packages/web/README.md` + `packages/web/src/helper.ts` 추가 (동시 커밋)
+  - `packages/utils/`에는 CLAUDE.md, README.md 없음
+  - working tree clean
+- 체크리스트:
+  - [ ] `packages/core/`가 스킵되었다 (문서 이후 변경 없음)
+  - [ ] `packages/web/`가 처리 대상에 포함되었다 (문서 커밋에 src/ 변경 동시 존재)
+  - [ ] `packages/utils/`가 처리 대상에 포함되었다 (문서 미존재)
+  - [ ] 스킵/처리 대상 목록이 출력에 표시되었다
+
 ## 안티패턴 Eval
 
 - [ ] "적절히", "필요에 따라", "상황에 따라" 같은 모호한 표현이 CLAUDE.md에 없다

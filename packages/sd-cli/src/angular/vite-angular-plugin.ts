@@ -1,6 +1,8 @@
 import type { Plugin, ModuleNode, ViteDevServer } from "vite";
 import type { IncomingMessage, ServerResponse } from "http";
 import { JavaScriptTransformer } from "@angular/build/private";
+import { createHash } from "crypto";
+import fsp from "fs/promises";
 import os from "os";
 import path from "path";
 import ts from "typescript";
@@ -45,6 +47,25 @@ export interface SdAngularPluginOptions {
   browserslist?: string[];
   /** PostCSS 플러그인 배열 */
   postCssPlugins?: unknown[];
+  /** Linker 캐시 디렉토리 (기본값: {cwd}/.cache/linker/{sm|nosm}) */
+  linkerCacheDir?: string;
+}
+
+/**
+ * SCSS 의존성 역방향 탐색.
+ * 변경된 SCSS 파일을 @use하는 owner 파일(TS 또는 SCSS)을 찾는다.
+ */
+export function findAffectedByScss(
+  normalizedScssPath: string,
+  scssDependencies: Map<string, Set<string>>,
+): string[] {
+  const affected: string[] = [];
+  for (const [ownerFile, deps] of scssDependencies) {
+    if (deps.has(normalizedScssPath)) {
+      affected.push(ownerFile);
+    }
+  }
+  return affected;
 }
 
 /**
@@ -114,6 +135,10 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     enforce: "pre",
 
     config() {
+      const linkerCacheDir =
+        options.linkerCacheDir ??
+        path.join(process.cwd(), ".cache", "linker", enableSourcemap ? "sm" : "nosm");
+
       return {
         define: {
           ngDevMode: options.dev ? undefined : "false",
@@ -128,10 +153,33 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
                 setup(build: { onLoad: Function }) {
                   build.onLoad(
                     { filter: /\.[cm]?js$/ },
-                    async (args: { path: string }) => ({
-                      contents: await prebundleTransformer.transformFile(args.path),
-                      loader: "js" as const,
-                    }),
+                    async (args: { path: string }) => {
+                      const content = await fsp.readFile(args.path, "utf-8");
+                      const hash = createHash("sha256").update(content).digest("hex");
+                      const cachePath = path.join(linkerCacheDir, `${hash}.js`);
+
+                      try {
+                        const cached = await fsp.readFile(cachePath, "utf-8");
+                        return { contents: cached, loader: "js" as const };
+                      } catch {
+                        // cache miss
+                      }
+
+                      const result = await prebundleTransformer.transformFile(args.path);
+                      const resultStr =
+                        typeof result === "string"
+                          ? result
+                          : new TextDecoder().decode(result);
+
+                      try {
+                        await fsp.mkdir(linkerCacheDir, { recursive: true });
+                        await fsp.writeFile(cachePath, resultStr);
+                      } catch {
+                        // cache write failure — non-fatal
+                      }
+
+                      return { contents: resultStr, loader: "js" as const };
+                    },
                   );
                 },
               },
@@ -165,6 +213,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         postCssPlugins: options.postCssPlugins,
         scssErrors,
         scssDependencies,
+        cacheDir: path.join(workspaceRoot, ".cache", "scss"),
       });
 
       // externalStylesheets (client mode에서 stylesheet SHA256 ID 매핑)
@@ -239,6 +288,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     async handleHotUpdate({
       file,
       modules,
+      server,
     }: {
       file: string;
       modules: ModuleNode[];
@@ -255,15 +305,25 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         return;
       }
 
-      // 의존성 필터: TypeScript program에 포함되지 않은 파일은 건너뜀
       const normalizedFile = pathx.posix(file);
-      const programFiles = compiler.getTsProgram().getSourceFiles();
-      const isInProgram = programFiles.some(
-        (sf) => pathx.posix(sf.fileName) === normalizedFile,
-      );
-      if (!isInProgram) {
-        logger.debug(`변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀: ${normalizedFile}`);
-        return;
+      let filesToUpdate: string[];
+
+      if (file.endsWith(".scss")) {
+        // SCSS @use 의존성 역방향 탐색: 변경된 SCSS를 @use하는 파일을 찾아 재컴파일
+        const affectedOwnerFiles = findAffectedByScss(normalizedFile, scssDependencies);
+        if (affectedOwnerFiles.length === 0) return;
+        filesToUpdate = affectedOwnerFiles;
+      } else {
+        // 의존성 필터: TypeScript program에 포함되지 않은 파일은 건너뜀
+        const programFiles = compiler.getTsProgram().getSourceFiles();
+        const isInProgram = programFiles.some(
+          (sf) => pathx.posix(sf.fileName) === normalizedFile,
+        );
+        if (!isInProgram) {
+          logger.debug(`변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀: ${normalizedFile}`);
+          return;
+        }
+        filesToUpdate = [file];
       }
 
       // 경쟁 조건 방지: 이전 HMR 처리 완료 대기
@@ -280,7 +340,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         // rebuild 시작 시 이전 templateUpdates 정리
         templateUpdates.clear();
 
-        const updateResult = await compiler.update([file]);
+        const updateResult = await compiler.update(filesToUpdate);
 
         // templateUpdates 수집
         if (updateResult.templateUpdates != null) {
@@ -321,10 +381,21 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           lint: lintResult,
         });
 
-        const affectedSet = new Set(affectedPaths);
-        return modules.filter(
-          (m) => m.file != null && affectedSet.has(pathx.posix(m.file)),
-        );
+        if (file.endsWith(".scss")) {
+          // SCSS: moduleGraph에서 영향받은 TS 모듈 조회
+          const result: ModuleNode[] = [];
+          for (const p of affectedPaths) {
+            const mods = server.moduleGraph.getModulesByFile(p);
+            if (mods) result.push(...mods);
+          }
+          return result;
+        } else {
+          // TS/HTML: 전달받은 modules에서 영향받은 모듈 필터
+          const affectedSet = new Set(affectedPaths);
+          return modules.filter(
+            (m) => m.file != null && affectedSet.has(pathx.posix(m.file)),
+          );
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error(`HMR recompile failed: ${message}`);

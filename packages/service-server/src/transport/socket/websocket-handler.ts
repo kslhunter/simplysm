@@ -1,5 +1,5 @@
 import type { WebSocket } from "ws";
-import { Uuid, env } from "@simplysm/core-common";
+import { Uuid, env, parseBoolEnv } from "@simplysm/core-common";
 import type { ServiceEventDef, ServiceClientMessage } from "@simplysm/service-common";
 import { createServiceSocket, type ServiceSocket } from "./service-socket";
 import { verifyJwt } from "../../auth/jwt-manager";
@@ -123,7 +123,7 @@ export function createWebSocketHandler(
           body: {
             name: err.name,
             message: err.message,
-            ...(env.DEV ? { stack: err.stack } : {}),
+            ...(parseBoolEnv(env("DEV")) ? { stack: err.stack } : {}),
             code: "BAD_MESSAGE",
           },
         });
@@ -140,7 +140,7 @@ export function createWebSocketHandler(
           name: error.name,
           message: error.message,
           code: "INTERNAL_ERROR",
-          ...(env.DEV ? { stack: error.stack } : {}),
+          ...(parseBoolEnv(env("DEV")) ? { stack: error.stack } : {}),
         },
       });
     }

@@ -266,17 +266,29 @@ async function parseJoinedRecords<TRecord>(
 /**
  * 그룹 key를 문자열로 직렬화 (Map key로 사용)
  *
- * JSON.stringify보다 빠른 커스텀 직렬화
+ * length-prefixed 인코딩으로 값 내부의 구분자 문자 충돌을 방지한다.
+ * null/undefined와 문자열 "null"/"undefined"도 구분된다.
+ * 객체 타입 값(하위 JOIN 데이터)은 직렬화에서 제외한다.
  */
 function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
   let result = "";
-  for (let i = 0; i < keys.length; i++) {
-    if (i > 0) result += "|";
-    const v = groupKey[keys[i]];
-    result += keys[i];
+  for (const key of keys) {
+    const v = groupKey[key];
+    result += key.length.toString();
     result += ":";
-    result += v === null ? "null" : String(v);
+    result += key;
+    if (v == null) {
+      result += "N;";
+    } else if (typeof v === "object") {
+      result += "O;";
+    } else {
+      const str = String(v);
+      result += str.length.toString();
+      result += ":";
+      result += str;
+      result += ";";
+    }
   }
   return result;
 }
@@ -319,6 +331,8 @@ function groupRecordsRecursively(
 
   // Map 기반 그룹핑 (O(n) 복잡도)
   const groupMap = new Map<string, Record<string, unknown>>();
+  // 중복 검사용 hashSet을 데이터 객체와 분리 (DESIGN-003)
+  const hashSetsMap = new Map<string, Record<string, Set<string>>>();
 
   // O(1) 조회를 위한 JOIN key 제외 집합 사전 계산
   const joinKeyExclusions = buildJoinKeyExclusionSet(childJoinKeys);
@@ -338,13 +352,15 @@ function groupRecordsRecursively(
 
     if (existingGroup != null) {
       // 기존 그룹에 JOIN 데이터 병합
+      const hashSets = hashSetsMap.get(keyStr)!;
       for (const joinKey of childJoinKeys) {
         const localKey = currentPath === "" ? joinKey : joinKey.slice(currentPath.length + 1);
-        mergeJoinData(existingGroup, record, localKey, joinsConfig[joinKey].isSingle);
+        mergeJoinData(existingGroup, record, localKey, joinsConfig[joinKey].isSingle, hashSets);
       }
     } else {
       // 새 그룹 생성
       const newGroup = { ...record };
+      const hashSets: Record<string, Set<string>> = {};
 
       // 각 JOIN key를 배열 또는 단일 객체로 초기화
       for (const joinKey of childJoinKeys) {
@@ -353,7 +369,7 @@ function groupRecordsRecursively(
 
         if (joinData != null && !isEmptyObject(joinData)) {
           if (!joinsConfig[joinKey].isSingle) {
-            // 배열로 변환
+            // 배열로 변환 (hashSet은 첫 merge 시 초기화)
             newGroup[localKey] = [joinData];
           }
         } else {
@@ -363,6 +379,7 @@ function groupRecordsRecursively(
       }
 
       groupMap.set(keyStr, newGroup);
+      hashSetsMap.set(keyStr, hashSets);
     }
   }
 
@@ -394,15 +411,6 @@ function groupRecordsRecursively(
         if (processed.length > 0) {
           group[localKey] = processed[0];
         }
-      }
-    }
-  }
-
-  // __hashSet__ 내부 속성 제거 (중복 검사용 임시 속성)
-  for (const group of grouped) {
-    for (const key of Object.keys(group)) {
-      if (key.startsWith("__hashSet__")) {
-        delete group[key];
       }
     }
   }
@@ -454,6 +462,7 @@ function mergeJoinData(
   newRecord: Record<string, unknown>,
   localKey: string,
   isSingle: boolean,
+  hashSets: Record<string, Set<string>>,
 ): void {
   const newJoinData = newRecord[localKey] as Record<string, unknown> | undefined;
 
@@ -474,14 +483,12 @@ function mergeJoinData(
     }
   } else {
     // isSingle: false → 배열에 추가
-    const hashSetKey = `__hashSet__${localKey}`;
     if (!Array.isArray(existingJoinData)) {
       existingGroup[localKey] = [newJoinData];
-      // Set 기반 중복 검사용 내부 속성 초기화
-      existingGroup[hashSetKey] = new Set([serializeGroupKey(newJoinData)]);
+      hashSets[localKey] = new Set([serializeGroupKey(newJoinData)]);
     } else {
       // Set 기반 중복 검사 (O(1))
-      const hashSet = existingGroup[hashSetKey] as Set<string> | undefined;
+      const hashSet = hashSets[localKey] as Set<string> | undefined;
       const newHash = serializeGroupKey(newJoinData);
       if (hashSet != null) {
         if (!hashSet.has(newHash)) {
@@ -489,7 +496,7 @@ function mergeJoinData(
           existingJoinData.push(newJoinData);
         }
       } else {
-        // hashSet 없는 폴백 (레거시 방식)
+        // hashSet 미초기화: obj.equal 폴백 (중첩 객체 포함 시 정확한 비교)
         const isDuplicate = existingJoinData.some((item) =>
           obj.equal(item as Record<string, unknown>, newJoinData),
         );

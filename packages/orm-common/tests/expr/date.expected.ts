@@ -288,7 +288,7 @@ export const formatDate: ExpectedSql = {
 
 export const isoWeek: ExpectedSql = {
   mysql: mysql`
-    SELECT WEEK(CAST(\`T1\`.\`createdAt\` AS DATE), 1) AS \`week\`
+    SELECT WEEK(CAST(\`T1\`.\`createdAt\` AS DATE), 3) AS \`week\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`

@@ -16,10 +16,13 @@ pnpm add @simplysm/orm-common
 
 | Export | Type | Description |
 |--------|------|-------------|
-| [`defineDbContext`](./docs/core.md#definedbcontext) | Function | Create a DbContext definition (blueprint) with tables, views, procedures, and migrations |
-| [`createDbContext`](./docs/core.md#createdbcontext) | Function | Create a DbContext instance from a definition and executor |
+| [`DbContext`](./docs/core.md#dbcontext) | Abstract Class | Base class for database contexts with connection, transaction, DDL, and initialization |
+| [`SD_BUILDER`](./docs/core.md#sd_builder) | Symbol | Internal marker for queryable/executable builder identification |
 | [`DbTransactionError`](./docs/core.md#dbtransactionerror) | Class | Standardized database transaction error with DBMS-independent error codes |
 | [`DbErrorCode`](./docs/core.md#dberrorcode) | Enum | Transaction error codes |
+| [`DbContextBase`](./docs/core.md#dbcontextbase) | Interface | Core interface for Queryable/Executable internal use |
+| [`DbContextDdlMethods`](./docs/core.md#dbcontextddlmethods) | Interface | DDL execution and QueryDef generator methods |
+| [`DbContextStatus`](./docs/core.md#dbcontextstatus) | Type | Connection status: "ready", "connect", "transact" |
 | [`_Migration`](./docs/core.md#_migration) | Constant | System migration table definition (TableBuilder) |
 
 ### Queryable / Executable
@@ -89,7 +92,6 @@ pnpm add @simplysm/orm-common
 
 See [Types documentation](./docs/types.md) for all type exports including:
 - Database: `Dialect`, `dialects`, `IsolationLevel`, `DataRecord`, `DbContextExecutor`, `ResultMeta`, `Migration`, `QueryBuildResult`
-- DbContext: `DbContextDef`, `DbContextBase`, `DbContextStatus`, `DbContextInstance`, `DbContextConnectionMethods`, `DbContextDdlMethods`
 - Column: `DataType`, `ColumnPrimitive`, `ColumnPrimitiveStr`, `ColumnPrimitiveMap`, `ColumnMeta`, `dataTypeStrToColumnPrimitiveStr`, `inferColumnPrimitiveStr`, `InferColumnPrimitiveFromDataType`
 - Column Builder: `ColumnBuilderRecord`, `InferColumns`, `InferColumnExprs`, `InferInsertColumns`, `InferUpdateColumns`, `RequiredInsertKeys`, `OptionalInsertKeys`, `DataToColumnBuilderRecord`
 - Relation: `RelationBuilderRecord`, `InferDeepRelations`, `ExtractRelationTarget`, `ExtractRelationTargetResult`
@@ -101,10 +103,9 @@ See [Types documentation](./docs/types.md) for all type exports including:
 ### Define Schema and DbContext
 
 ```typescript
-import { Table, defineDbContext, createDbContext, expr } from "@simplysm/orm-common";
+import { Table, DbContext, expr } from "@simplysm/orm-common";
 
 const User = Table("User")
-  .database("mydb")
   .columns((c) => ({
     id: c.bigint().autoIncrement(),
     name: c.varchar(100),
@@ -114,13 +115,18 @@ const User = Table("User")
   .primaryKey("id")
   .indexes((i) => [i.index("email").unique()])
   .relations((r) => ({
-    company: r.foreignKey(["companyId"], () => Company, { description: "소속회사" }),
+    company: r.foreignKey(["companyId"], () => Company, { description: "Company" }),
     posts: r.foreignKeyTarget(() => Post, "author"),
     topPost: r.foreignKeyTarget(() => Post, "author", { single: true, description: "Top post" }),
   }));
 
-const MyDb = defineDbContext({ tables: { user: User, post: Post, company: Company } });
-const db = createDbContext(MyDb, executor, { database: "mydb" });
+class MyDb extends DbContext {
+  user = this.queryable(User);
+  post = this.queryable(Post);
+  company = this.queryable(Company);
+}
+
+const db = new MyDb(executor, { database: "mydb" });
 ```
 
 ### Query Data
@@ -128,8 +134,8 @@ const db = createDbContext(MyDb, executor, { database: "mydb" });
 ```typescript
 await db.connect(async () => {
   const users = await db.user()
-    .where((u) => [expr.eq(u.status, "active")])
-    .orderBy((u) => u.name)
+    .where((u) => [expr.eq(u.name, "Alice")])
+    .orderBy((u) => [u.name])
     .execute();
 
   const posts = await db.post().include((p) => p.author).execute();
@@ -138,7 +144,7 @@ await db.connect(async () => {
 
   await db.user()
     .where((u) => [expr.eq(u.id, 1)])
-    .update(() => ({ name: expr.val("string", "Updated") }));
+    .update({ name: "Updated" });
 });
 ```
 
@@ -158,8 +164,7 @@ db.user().select((u) => ({
     .default("C"),
 }));
 
-// Raw SQL
-db.user().select((u) => ({
-  data: expr.raw("string")`JSON_EXTRACT(${u.metadata}, '$.email')`,
-}));
+// Search parser
+const parsed = parseSearchQuery('+apple -banana "exact phrase"');
+// { must: ["%apple%", "%exact phrase%"], not: ["%banana%"], or: [] }
 ```

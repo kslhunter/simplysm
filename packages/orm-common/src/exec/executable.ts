@@ -47,7 +47,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
       params:
         params && meta.params
           ? Object.fromEntries(
-              Object.keys(params).map((key) => [
+              Object.keys(meta.params).map((key) => [
                 key,
                 params[key] instanceof ExprUnit
                   ? params[key].expr

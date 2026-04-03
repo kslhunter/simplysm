@@ -1127,8 +1127,8 @@ export class Queryable<
    * ```
    */
   async exists(): Promise<boolean> {
-    const count = await this.count();
-    return count > 0;
+    const result = await this.top(1).execute();
+    return result.length > 0;
   }
 
   getSelectQueryDef(): SelectQueryDef {

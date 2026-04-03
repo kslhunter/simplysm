@@ -18,14 +18,14 @@ export interface SetupConsolaOptions {
 }
 
 export function setupConsola(opts?: SetupConsolaOptions): void {
-  if (!opts?.cli && !env.DEV) {
+  if (!opts?.cli && !parseBoolEnv(env("DEV"))) {
     // prod: debug 포함 FileReporter
     consola.level = LogLevels.debug;
     consola.options.reporters = [createFileReporter()];
     return;
   }
 
-  if (parseBoolEnv(env["SD_DEBUG"])) {
+  if (parseBoolEnv(env("SD_DEBUG"))) {
     // dev + SD_DEBUG: debug 포함 PrettyReporter
     consola.level = LogLevels.debug;
     consola.options.reporters = [new PrettyReporter()];

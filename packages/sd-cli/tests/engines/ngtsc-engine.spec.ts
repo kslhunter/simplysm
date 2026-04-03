@@ -78,7 +78,6 @@ describe("NgtscEngine", () => {
           output: { js: true, dts: true },
         }),
       );
-      expect(result.success).toBe(true);
       expect(result.build.success).toBe(true);
       expect(result.build.diagnostics).toEqual([]);
       await engine.stop();
@@ -133,7 +132,6 @@ describe("NgtscEngine", () => {
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.success).toBe(false);
       expect(result.build.success).toBe(false);
       expect(result.build.errors).toContain("TS2322: Type error");
       await engine.stop();
@@ -148,7 +146,6 @@ describe("NgtscEngine", () => {
       const engine = new NgtscEngine({ cwd: "/root", pkg: createMockPkg() });
       const result = await engine.run({ js: true, dts: true });
 
-      expect(result.success).toBe(false);
       expect(result.build.success).toBe(false);
       expect(result.build.errors).toEqual(["ngtsc compilation error"]);
       await engine.stop();

@@ -522,7 +522,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected random(_expr: ExprRandom): string {
-    return "NEWID()";
+    return "(ABS(CHECKSUM(NEWID())) / 2147483647.0)";
   }
 
   protected cast(expr: ExprCast): string {

@@ -156,14 +156,10 @@ export class DevWatchOrchestrator {
     this._resultCollector = new ResultCollector();
     this._rebuildManager = new RebuildManager(this._logger);
 
-    // 배치 완료 핸들러
+    // 배치 완료 핸들러 (watch 모드만 여기서 등록, dev 모드는 _startDevMode() 끝에서 등록)
     if (this._options.mode === "watch") {
       this._rebuildManager.on("batchComplete", (_completedKeys) => {
         printErrors(this._resultCollector.toMap());
-      });
-    } else {
-      this._rebuildManager.on("batchComplete", (completedKeys) => {
-        this._onDevBatchComplete(completedKeys);
       });
     }
 
@@ -418,9 +414,26 @@ export class DevWatchOrchestrator {
       }
     }
 
-    // Print initial results
-    printErrors(this._resultCollector.toMap());
-    printServers(this._resultCollector.toMap(), this._serverClientsMap);
+    // 모든 엔진 준비 완료 후 서버 런타임 시작 (클라이언트 포트 확보 보장)
+    await this._restartServers();
+
+    // 독립 클라이언트만 존재하고 서버가 없는 경우 URL 출력 예약
+    if (this._serverPackages.length === 0) {
+      const hasIndependentClients = this._clientPackages.some(({ name }) => {
+        const isServerConnected = [...this._serverClientsMap.values()].some(
+          (clients) => clients.includes(name),
+        );
+        return !isServerConnected && this._getClientPort(name) != null;
+      });
+      if (hasIndependentClients) {
+        this._schedulePrintServers();
+      }
+    }
+
+    // dev 모드 배치 완료 핸들러 등록 (이후 watch 이벤트용)
+    this._rebuildManager.on("batchComplete", (completedKeys) => {
+      this._onDevBatchComplete(completedKeys);
+    });
   }
 
   private _onDevBatchComplete(completedKeys: string[]): void {
@@ -464,7 +477,6 @@ export class DevWatchOrchestrator {
     await Promise.all(restartPromises);
     this._logger.debug("서버 재시작 완료");
     printErrors(this._resultCollector.toMap());
-    this._schedulePrintServers();
   }
 
   private _schedulePrintServers(): void {

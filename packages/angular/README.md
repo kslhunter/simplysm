@@ -81,6 +81,7 @@ Providers, plugins, directives, pipes, and utility functions that form the frame
 | `SdItemOfTemplateContext` | interface | Template context for item iteration |
 | `ISortingDef` | interface | Sort definition (key + direction) |
 | `withBusy` | function | Wraps async function with busy signal increment/decrement |
+| `mark` | function | Manually notify signal consumers of a change (with optional shallow clone) |
 | `ISdStatePreset` | interface | Named state preset |
 | `TSdViewType` | type | `"page" \| "modal" \| "control"` |
 | `TDirectiveInputSignals` | type | Extracts input signal value types from component |

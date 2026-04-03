@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 68개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 67개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -67,7 +67,6 @@ src/
     ├── diagnostic-utils.ts      ← isWorkspaceDiagnostic, formatDiagnosticError
     ├── output-utils.ts          ← formatBuildMessages, printErrors, printServers
     ├── output-path-rewriter.ts  ← 출력 경로 변환
-    ├── SdCliReporter.ts         ← sd-cli 전용 consola reporter
     ├── concurrency.ts           ← runWithConcurrency, getMaxConcurrency
     ├── worker-utils.ts          ← Worker 관련 유틸리티
     ├── worker-events.ts         ← Worker 이벤트 타입 정의

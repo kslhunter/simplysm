@@ -3,20 +3,14 @@ import fs from "fs";
 import module from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
-import type { SdElectronConfig } from "../sd-config.types.js";
+import type { NpmConfig, SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../utils/esbuild-config.js";
-
-interface NpmConfig {
-  name: string;
-  version: string;
-  description?: string;
-  dependencies?: Record<string, string>;
-}
 
 export class Electron {
   private static readonly _logger = consola.withTag("sd:cli:electron");
 
   private readonly _electronPath: string;
+  private readonly _srcPath: string;
 
   private constructor(
     private readonly _pkgPath: string,
@@ -25,6 +19,7 @@ export class Electron {
     private readonly _exclude: string[],
   ) {
     this._electronPath = pathx.posixResolve(this._pkgPath, ".electron");
+    this._srcPath = pathx.posixResolve(this._electronPath, "src");
   }
 
   static async create(
@@ -42,10 +37,6 @@ export class Electron {
     if (typeof config.appId !== "string" || config.appId.trim() === "") {
       throw new Error("electron.appId is required.");
     }
-  }
-
-  private _localBin(name: string): string {
-    return pathx.posixResolve(this._pkgPath, "node_modules/.bin", name);
   }
 
   private async _exec(
@@ -70,20 +61,26 @@ export class Electron {
 
   async initialize(): Promise<void> {
     Electron._logger.debug("initialize 시작");
-    const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     Electron._logger.debug("package.json 설정 시작");
-    await this._setupPackageJson(srcPath);
+    await this._setupNpmConf();
     Electron._logger.debug("package.json 설정 완료");
 
-    Electron._logger.debug("npm install 시작");
-    await this._exec("npm", ["install"], srcPath);
-    Electron._logger.debug("npm install 완료");
+    // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
+    const workspaceYamlPath = pathx.posixResolve(this._srcPath, "pnpm-workspace.yaml");
+    if (!(await fsx.exists(workspaceYamlPath))) {
+      await fsx.write(workspaceYamlPath, "");
+    }
+
+    Electron._logger.debug("pnpm install 시작");
+    await this._exec("pnpm", ["install"], this._srcPath);
+    await this._exec("pnpm", ["approve-builds", "--all"], this._srcPath);
+    Electron._logger.debug("pnpm install 완료");
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     if (reinstallDeps.length > 0) {
       Electron._logger.debug(`electron-rebuild 시작 (${reinstallDeps.join(", ")})`);
-      await this._exec(this._localBin("electron-rebuild"), [], srcPath);
+      await this._exec("pnpm", ["exec", "electron-rebuild"], this._srcPath);
       Electron._logger.debug("electron-rebuild 완료");
     }
     Electron._logger.debug("initialize 완료");
@@ -91,9 +88,9 @@ export class Electron {
 
   async run(url: string): Promise<void> {
     Electron._logger.debug(`run 시작 (url: ${url})`);
-    const srcPath = pathx.posixResolve(this._electronPath, "src");
 
     await this.initialize();
+    await this._copyPublicAssets();
 
     const esbuild = await import("esbuild");
     const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
@@ -104,7 +101,6 @@ export class Electron {
 
     const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
     const reinstallDeps = this._config.reinstallDependencies ?? [];
-    await fsx.mkdir(srcPath);
 
     let currentElectron: cpx.SpawnProcess | null = null;
     let isRestarting = false;
@@ -112,9 +108,10 @@ export class Electron {
 
     const spawnElectron = () => {
       Electron._logger.debug("Electron 프로세스 시작");
-      currentElectron = cpx.spawn(this._localBin("electron"), ["."], {
-        cwd: srcPath,
+      currentElectron = cpx.spawn("pnpm", ["exec", "electron", "."], {
+        cwd: this._srcPath,
         stdio: "inherit",
+        shell: true,
         reject: false,
       });
 
@@ -132,7 +129,7 @@ export class Electron {
     Electron._logger.debug("esbuild context 생성 시작");
     const ctx = await esbuild.context({
       entryPoints: [entryPoint],
-      outfile: pathx.posixResolve(srcPath, "electron-main.js"),
+      outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
       target: "node20",
       format: "cjs",
@@ -205,18 +202,19 @@ export class Electron {
 
   async build(outPath: string): Promise<void> {
     Electron._logger.debug("build 시작");
-    const srcPath = pathx.posixResolve(this._electronPath, "src");
+
+    await this.initialize();
 
     Electron._logger.debug("메인 프로세스 번들링 시작");
-    await this._bundleMainProcess(srcPath);
+    await this._bundleMainProcess();
     Electron._logger.debug("메인 프로세스 번들링 완료");
 
     Electron._logger.debug("웹 에셋 복사 시작");
-    await this._copyWebAssets(outPath, srcPath);
+    await this._copyWebAssets(outPath);
     Electron._logger.debug("웹 에셋 복사 완료");
 
     Electron._logger.debug("electron-builder 실행 시작");
-    await this._runElectronBuilder(srcPath);
+    await this._runElectronBuilder();
     Electron._logger.debug("electron-builder 실행 완료");
 
     Electron._logger.debug("빌드 산출물 복사 시작");
@@ -230,14 +228,19 @@ export class Electron {
 
   //#region Private - Initialization
 
-  private async _setupPackageJson(srcPath: string): Promise<void> {
-    await fsx.mkdir(srcPath);
+  private async _setupNpmConf(): Promise<void> {
+    await fsx.mkdir(this._srcPath);
+
+    const mainDeps: Record<string, string | undefined> = {
+      ...this._npmConfig.dependencies,
+      ...this._npmConfig.devDependencies,
+    };
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
     const dependencies: Record<string, string> = {};
     for (const dep of reinstallDeps) {
-      const version = this._npmConfig.dependencies?.[dep];
+      const version = mainDeps[dep];
       if (version != null) {
         dependencies[dep] = version;
       }
@@ -245,12 +248,17 @@ export class Electron {
 
     for (const excludePkg of this._exclude) {
       if (!(excludePkg in dependencies)) {
-        const version = this._npmConfig.dependencies?.[excludePkg];
+        const version = mainDeps[excludePkg];
         if (version != null) {
           dependencies[excludePkg] = version;
         }
       }
     }
+
+    const devDependencies: Record<string, string> = {};
+    devDependencies["electron"] = "^41";
+    devDependencies["@electron/rebuild"] = "^4";
+    devDependencies["electron-builder"] = "^26";
 
     const packageJson: Record<string, unknown> = {
       name: this._npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
@@ -258,20 +266,21 @@ export class Electron {
       description: this._npmConfig.description,
       main: "electron-main.js",
       dependencies,
+      devDependencies,
     };
 
     if (this._config.postInstallScript != null) {
       packageJson["scripts"] = { postinstall: this._config.postInstallScript };
     }
 
-    await fsx.writeJson(pathx.posixResolve(srcPath, "package.json"), packageJson, { space: 2 });
+    await fsx.writeJson(pathx.posixResolve(this._srcPath, "package.json"), packageJson, { space: 2 });
   }
 
   //#endregion
 
   //#region Private - Bundling
 
-  private async _bundleMainProcess(outDir: string): Promise<void> {
+  private async _bundleMainProcess(): Promise<void> {
     const esbuild = await import("esbuild");
     const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
 
@@ -282,14 +291,12 @@ export class Electron {
     const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
-    await fsx.mkdir(outDir);
-
     const envBanner = createEnvBanner(this._config.env);
 
     Electron._logger.debug(`esbuild 번들링: ${entryPoint}`);
     await esbuild.build({
       entryPoints: [entryPoint],
-      outfile: pathx.posixResolve(outDir, "electron-main.js"),
+      outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
       target: "node20",
       format: "cjs",
@@ -301,15 +308,27 @@ export class Electron {
 
   //#endregion
 
+  private async _copyPublicAssets(): Promise<void> {
+    const publicPath = pathx.posixResolve(this._pkgPath, "public");
+    if (!(await fsx.exists(publicPath))) return;
+
+    const items = await fsx.readdir(publicPath);
+    for (const item of items) {
+      const source = pathx.posixResolve(publicPath, item);
+      const dest = pathx.posixResolve(this._srcPath, item);
+      await fsx.copy(source, dest);
+    }
+  }
+
   //#region Private - Build
 
-  private async _copyWebAssets(outPath: string, srcPath: string): Promise<void> {
+  private async _copyWebAssets(outPath: string): Promise<void> {
     const items = await fsx.readdir(outPath);
     for (const item of items) {
       if (item === "electron") continue;
 
       const source = pathx.posixResolve(outPath, item);
-      const dest = pathx.posixResolve(srcPath, item);
+      const dest = pathx.posixResolve(this._srcPath, item);
       await fsx.copy(source, dest);
     }
   }
@@ -331,7 +350,7 @@ export class Electron {
     }
   }
 
-  private async _runElectronBuilder(srcPath: string): Promise<void> {
+  private async _runElectronBuilder(): Promise<void> {
     if (!Electron._canCreateSymlink()) {
       throw new Error(
         "Symlink 생성 권한이 필요합니다. Windows 개발자 모드를 활성화하세요.",
@@ -349,7 +368,7 @@ export class Electron {
       },
       nsis: this._config.nsisOptions ?? {},
       directories: {
-        app: srcPath,
+        app: this._srcPath,
         output: distPath,
       },
       removePackageScripts: false,
@@ -366,9 +385,9 @@ export class Electron {
 
     Electron._logger.debug(`electron-builder 설정: ${configFilePath}`);
     await this._exec(
-      this._localBin("electron-builder"),
-      ["--win", "--config", configFilePath],
-      this._pkgPath,
+      "pnpm",
+      ["exec", "electron-builder", "--win", "--config", configFilePath],
+      this._srcPath,
     );
   }
 

@@ -45,7 +45,6 @@ export interface BuildOutput {
  * BuildEngine.run() 반환값
  */
 export interface EngineResult {
-  success: boolean;
   build: {
     success: boolean;
     errors: string[];

@@ -16,6 +16,13 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 vi.mock("@simplysm/core-common", () => ({
+  env: vi.fn((key: string, value?: string) => {
+    if (value !== undefined) {
+      process.env[key] = value;
+      return;
+    }
+    return process.env[key];
+  }),
   err: { message: (e: any) => e?.message ?? String(e) },
 }));
 

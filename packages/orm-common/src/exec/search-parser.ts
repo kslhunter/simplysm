@@ -96,7 +96,8 @@ export function parseSearchQuery(searchText: string): ParsedSearchQuery {
     .replace(/\\%/g, ESC.PERCENT)
     .replace(/\\"/g, ESC.QUOTE)
     .replace(/\\\+/g, ESC.PLUS)
-    .replace(/\\-/g, ESC.MINUS);
+    .replace(/\\-/g, ESC.MINUS)
+    .replace(/\\(.)/g, "$1"); // 미정의 이스케이프: backslash 제거, 리터럴 문자 유지
 
   // 따옴표 구간 추출
   const quotedRegex = /([+-]?)"([^"]*)"/g;

@@ -1,6 +1,7 @@
-import type { DbContextBase, DbContextDef, DbContextDdlMethods } from "../types/db-context-def";
+import type { DbContextBase, DbContextDdlMethods } from "../types/db-context-def";
 import type { Queryable } from "../exec/queryable";
 import type { QueryDef } from "../types/query-def";
+import type { Migration } from "../types/db";
 import { TableBuilder } from "../schema/table-builder";
 import { ViewBuilder } from "../schema/view-builder";
 import { ProcedureBuilder } from "../schema/procedure-builder";
@@ -13,6 +14,7 @@ import {
 import { getCreateObjectQueryDef } from "./table-ddl";
 import { getAddForeignKeyQueryDef, getAddIndexQueryDef } from "./relation-ddl";
 import { getClearSchemaQueryDef, getSchemaExistsQueryDef } from "./schema-ddl";
+import { SD_BUILDER } from "../db-context";
 
 /**
  * Code First 데이터베이스 초기화
@@ -35,8 +37,11 @@ import { getClearSchemaQueryDef, getSchemaExistsQueryDef } from "./schema-ddl";
  *   - _Migration 테이블 있음: 미적용 migration만 실행
  */
 export async function initialize(
-  db: DbContextBase & DbContextDdlMethods & { _migration: () => Queryable<{ code: string }, any> },
-  def: DbContextDef<any, any, any>,
+  db: DbContextBase &
+    DbContextDdlMethods & {
+      _migration: () => Queryable<{ code: string }, any>;
+      migrations: Migration[];
+    },
   options?: { dbs?: string[]; force?: boolean },
 ): Promise<void> {
   const dbNames = options?.dbs ?? (db.database !== undefined ? [db.database] : []);
@@ -45,6 +50,8 @@ export async function initialize(
   }
 
   const force = options?.force ?? false;
+  const builders = collectBuilders(db);
+  const migrations = db.migrations;
 
   // 1. DB 존재 여부 확인
   for (const dbName of dbNames) {
@@ -62,14 +69,18 @@ export async function initialize(
       const clearDef = getClearSchemaQueryDef({ database: dbName, schema: db.schema });
       await db.executeDefs([clearDef]);
     }
-    await createAllObjects(db, def);
+
+    // 각 대상 DB에 객체 생성
+    for (const dbName of dbNames) {
+      await createAllObjects(db, builders, dbName);
+    }
 
     // 모든 migration을 "적용됨"으로 등록
-    if (def.meta.migrations.length > 0) {
-      await db._migration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
+    if (migrations.length > 0) {
+      await db._migration().insert(migrations.map((m) => ({ code: m.name })));
     }
   } else {
-    // 3. Migration 기반 초기화
+    // 3. Migration 기반 초기화 — 각 대상 DB에 대해 수행
     let appliedMigrations: { code: string }[] | undefined;
     try {
       appliedMigrations = await db._migration().execute();
@@ -81,17 +92,19 @@ export async function initialize(
     }
 
     if (appliedMigrations == null) {
-      // 새 환경: 전체 생성
-      await createAllObjects(db, def);
+      // 새 환경: 각 대상 DB에 전체 생성
+      for (const dbName of dbNames) {
+        await createAllObjects(db, builders, dbName);
+      }
 
       // 모든 migration을 "적용됨"으로 등록
-      if (def.meta.migrations.length > 0) {
-        await db._migration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
+      if (migrations.length > 0) {
+        await db._migration().insert(migrations.map((m) => ({ code: m.name })));
       }
     } else {
       // 기존 환경: 미적용 migration만 실행
       const appliedCodes = new Set(appliedMigrations.map((m) => m.code));
-      const pendingMigrations = def.meta.migrations.filter((m) => !appliedCodes.has(m.name));
+      const pendingMigrations = migrations.filter((m) => !appliedCodes.has(m.name));
 
       for (const migration of pendingMigrations) {
         await migration.up(db);
@@ -103,15 +116,26 @@ export async function initialize(
 
 /**
  * 모든 객체 생성 (table/view/procedure/FK/index)
+ *
+ * @param db - DbContext 인스턴스
+ * @param builders - 생성할 builder 목록
+ * @param targetDatabase - 대상 데이터베이스. builder에 database가 지정된 경우 해당 builder의 database가 targetDatabase와
+ *   일치할 때만 생성한다. 미지정 builder는 targetDatabase에 생성한다.
  */
 async function createAllObjects(
   db: DbContextBase,
-  def: DbContextDef<any, any, any>,
+  builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[],
+  targetDatabase: string,
 ): Promise<void> {
+  // targetDatabase에 해당하는 builder만 필터링
+  const targetBuilders = builders.filter((b) => {
+    const builderDb = b.meta.database;
+    return builderDb == null || builderDb === targetDatabase;
+  });
+
   // 1. Table/View/Procedure 생성
-  const builders = getBuilders(def);
   const createDefs: QueryDef[] = [];
-  for (const builder of builders) {
+  for (const builder of targetBuilders) {
     createDefs.push(getCreateObjectQueryDef(db, builder));
   }
   if (createDefs.length > 0) {
@@ -119,7 +143,7 @@ async function createAllObjects(
   }
 
   // 2. FK 생성 (TableBuilder만)
-  const tables = builders.filter((b) => b instanceof TableBuilder);
+  const tables = targetBuilders.filter((b) => b instanceof TableBuilder);
   const addFkDefs: QueryDef[] = [];
   for (const table of tables) {
     const relations = table.meta.relations;
@@ -153,10 +177,10 @@ async function createAllObjects(
 }
 
 /**
- * DbContext에서 모든 builder 수집 (Table/View/Procedure)
+ * DbContext 인스턴스에서 SD_BUILDER 태그가 붙은 builder를 수집
  */
-function getBuilders(
-  def: DbContextDef<any, any, any>,
+function collectBuilders(
+  dbContext: object,
 ): (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
   const builders: (
     | TableBuilder<any, any>
@@ -164,22 +188,10 @@ function getBuilders(
     | ProcedureBuilder<any, any>
   )[] = [];
 
-  // Tables
-  const tables: TableBuilder<any, any>[] = Object.values(def.meta.tables);
-  for (const table of tables) {
-    builders.push(table);
-  }
-
-  // Views
-  const views: ViewBuilder<any, any, any>[] = Object.values(def.meta.views);
-  for (const view of views) {
-    builders.push(view);
-  }
-
-  // Procedures
-  const procs: ProcedureBuilder<any, any>[] = Object.values(def.meta.procedures);
-  for (const proc of procs) {
-    builders.push(proc);
+  for (const value of Object.values(dbContext)) {
+    if (typeof value === "function" && SD_BUILDER in value) {
+      builders.push(value[SD_BUILDER as keyof typeof value] as TableBuilder<any, any>);
+    }
   }
 
   return builders;
@@ -189,8 +201,8 @@ function getBuilders(
  * ForeignKeyTarget/RelationKeyTarget 관계 검증
  * - targetTableFn()이 반환하는 테이블에 relationName과 일치하는 FK/RelationKey가 있는지 확인
  */
-export function validateRelations(def: DbContextDef<any, any, any>): void {
-  const builders = getBuilders(def);
+export function validateRelations(dbContext: object): void {
+  const builders = collectBuilders(dbContext);
   const tables = builders.filter((b) => b instanceof TableBuilder);
 
   for (const table of tables) {

@@ -240,13 +240,20 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected update(def: UpdateQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const alias = this.expr.wrap(def.as);
+    const hasLimit = def.top != null || def.limit != null;
 
     // SET
     const setParts = Object.entries(def.record).map(
       ([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`,
     );
 
-    let sql = `UPDATE ${table} AS ${alias} SET ${setParts.join(", ")}`;
+    // CTE: top/limit → ctid 기반 서브쿼리
+    let ctePart = "";
+    if (hasLimit) {
+      ctePart = this._buildLimitCte(def, table, alias);
+    }
+
+    let sql = `${ctePart}UPDATE ${table} AS ${alias} SET ${setParts.join(", ")}`;
 
     // PostgreSQL: JOIN은 FROM 절로 처리
     if (def.joins != null && def.joins.length > 0) {
@@ -256,21 +263,29 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
       });
       sql += ` FROM ${joinTables.join(", ")}`;
 
-      // JOIN ON 조건을 WHERE에 추가
       const joinConditions = def.joins
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
-      if (joinConditions.length > 0) {
+
+      if (hasLimit) {
+        // CTE가 WHERE 조건을 포함하므로 ctid 필터 + JOIN 조건만
+        const conditions = [`${alias}.ctid IN (SELECT ctid FROM _limited)`, ...joinConditions];
+        sql += ` WHERE ${conditions.join(" AND ")}`;
+      } else {
         const whereCondition =
           def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
         const allConditions =
           whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
-        sql += ` WHERE ${allConditions.join(" AND ")}`;
+        if (allConditions.length > 0) {
+          sql += ` WHERE ${allConditions.join(" AND ")}`;
+        }
+      }
+    } else {
+      if (hasLimit) {
+        sql += ` WHERE ${alias}.ctid IN (SELECT ctid FROM _limited)`;
       } else {
         sql += this.renderWhere(def.where);
       }
-    } else {
-      sql += this.renderWhere(def.where);
     }
 
     // RETURNING 절
@@ -289,8 +304,15 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected delete(def: DeleteQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     const alias = this.expr.wrap(def.as);
+    const hasLimit = def.top != null || def.limit != null;
 
-    let sql = `DELETE FROM ${table} AS ${alias}`;
+    // CTE: top/limit → ctid 기반 서브쿼리
+    let ctePart = "";
+    if (hasLimit) {
+      ctePart = this._buildLimitCte(def, table, alias);
+    }
+
+    let sql = `${ctePart}DELETE FROM ${table} AS ${alias}`;
 
     // PostgreSQL: JOIN은 USING 절로 처리
     if (def.joins != null && def.joins.length > 0) {
@@ -300,21 +322,28 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
       });
       sql += ` USING ${joinTables.join(", ")}`;
 
-      // JOIN ON 조건을 WHERE에 추가
       const joinConditions = def.joins
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
-      if (joinConditions.length > 0) {
+
+      if (hasLimit) {
+        const conditions = [`${alias}.ctid IN (SELECT ctid FROM _limited)`, ...joinConditions];
+        sql += ` WHERE ${conditions.join(" AND ")}`;
+      } else {
         const whereCondition =
           def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
         const allConditions =
           whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
-        sql += ` WHERE ${allConditions.join(" AND ")}`;
+        if (allConditions.length > 0) {
+          sql += ` WHERE ${allConditions.join(" AND ")}`;
+        }
+      }
+    } else {
+      if (hasLimit) {
+        sql += ` WHERE ${alias}.ctid IN (SELECT ctid FROM _limited)`;
       } else {
         sql += this.renderWhere(def.where);
       }
-    } else {
-      sql += this.renderWhere(def.where);
     }
 
     // RETURNING (PostgreSQL: DELETE에서도 지원)
@@ -611,12 +640,62 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected execProc(def: ExecProcQueryDef): QueryBuildResult {
     const proc = this.tableName(def.procedure);
     if (def.params == null || Object.keys(def.params).length === 0) {
-      return { sql: `SELECT ${proc}()` };
+      return { sql: `SELECT * FROM ${proc}()` };
     }
     const params = Object.values(def.params)
       .map((p) => this.expr.render(p))
       .join(", ");
-    return { sql: `SELECT ${proc}(${params})` };
+    return { sql: `SELECT * FROM ${proc}(${params})` };
+  }
+
+  /**
+   * UPDATE/DELETE의 top/limit를 CTE로 변환
+   *
+   * PostgreSQL은 UPDATE/DELETE에 LIMIT을 지원하지 않으므로
+   * ctid 기반 CTE로 변환한다.
+   */
+  private _buildLimitCte(
+    def: { table: QueryDefObjectName; as: string; top?: number; limit?: [number, number]; where?: unknown[]; joins?: SelectQueryDefJoin[] },
+    table: string,
+    alias: string,
+  ): string {
+    let sql = `WITH _limited AS (SELECT ${alias}.ctid FROM ${table} AS ${alias}`;
+
+    if (def.joins != null && def.joins.length > 0) {
+      const joinTables = def.joins.map((j) => {
+        const from = this.renderFrom(j.from);
+        return `${from} AS ${this.expr.wrap(j.as)}`;
+      });
+      sql += `, ${joinTables.join(", ")}`;
+
+      const joinConditions = def.joins
+        .filter((j) => j.where != null && j.where.length > 0)
+        .map((j) => this.expr.renderWhere(j.where!));
+      const whereCondition =
+        def.where != null && def.where.length > 0
+          ? this.expr.renderWhere(def.where as any)
+          : null;
+      const allConditions = [
+        ...(whereCondition != null ? [whereCondition] : []),
+        ...joinConditions,
+      ];
+      if (allConditions.length > 0) {
+        sql += ` WHERE ${allConditions.join(" AND ")}`;
+      }
+    } else if (def.where != null && def.where.length > 0) {
+      sql += ` WHERE ${this.expr.renderWhere(def.where as any)}`;
+    }
+
+    if (def.limit != null) {
+      const [offset, count] = def.limit;
+      sql += ` LIMIT ${count}`;
+      if (offset > 0) sql += ` OFFSET ${offset}`;
+    } else if (def.top != null) {
+      sql += ` LIMIT ${def.top}`;
+    }
+
+    sql += `) `;
+    return sql;
   }
 
   //#endregion

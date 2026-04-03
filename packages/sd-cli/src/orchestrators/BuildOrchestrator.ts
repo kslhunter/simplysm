@@ -200,8 +200,8 @@ export class BuildOrchestrator {
 
     // 결과 수집
     const results: BuildStepResult[] = [];
-    // 에러 추적 (콜백에서 변경 추적을 위해 객체로 래핑)
-    const state = { hasError: false };
+    // results에 포함되지 않는 에러 추적 (네이티브 빌드 실패, rejected 태스크 등)
+    let hasUntrackedError = false;
 
     // 파일 캐시 (진단 출력용)
     const fileCache = new Map<string, string>();
@@ -249,7 +249,6 @@ export class BuildOrchestrator {
             warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.build.success) state.hasError = true;
 
         } finally {
           await engine.stop();
@@ -289,7 +288,6 @@ export class BuildOrchestrator {
             warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.build.success) state.hasError = true;
 
         } finally {
           await engine.stop();
@@ -327,7 +325,6 @@ export class BuildOrchestrator {
             warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
             diagnostics,
           });
-          if (!engineResult.build.success) state.hasError = true;
 
           // 네이티브 빌드 (빌드 성공 시에만 실행)
           if (engineResult.build.success) {
@@ -362,7 +359,7 @@ export class BuildOrchestrator {
               const nativeResults = await Promise.allSettled(nativeBuildPromises);
               for (const nativeResult of nativeResults) {
                 if (nativeResult.status === "rejected") {
-                  state.hasError = true;
+                  hasUntrackedError = true;
                   const err = nativeResult.reason;
                   this._logger.error(
                     `[${name}] 네이티브 빌드 실패: ${err instanceof Error ? err.message : String(err)}`,
@@ -391,7 +388,7 @@ export class BuildOrchestrator {
         if (stack != null) {
           this._logger.debug(`빌드 예외 스택:\n${stack}`);
         }
-        state.hasError = true;
+        hasUntrackedError = true;
       }
     }
     this._logger.success("빌드 실행 완료");
@@ -429,13 +426,14 @@ export class BuildOrchestrator {
     // 최종 결과 로그
     const errorCount = results.filter((r) => !r.success).length;
     const warningCount = results.filter((r) => r.warnings != null).length;
-    if (state.hasError) {
+    const hasError = errorCount > 0 || hasUntrackedError;
+    if (hasError) {
       this._logger.error("빌드 에러 발생", { errorCount, warningCount });
     } else {
       this._logger.info("빌드 완료", { errorCount, warningCount });
     }
 
-    return state.hasError;
+    return hasError;
   }
 
   /**

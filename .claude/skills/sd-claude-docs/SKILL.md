@@ -26,7 +26,7 @@ flowchart TD
     CHK -- Yes --> S_PKG[2단계: 지정 패키지 문서 생성 — subagent]
     CHK -- No --> S_MONO{모노레포?}
     S_MONO -- 아님 --> S_SINGLE[2단계: root 문서 생성 — CLAUDE.md + README.md]
-    S_MONO -- 맞음 --> S_ALL[2단계: 전체 패키지 목록 결정]
+    S_MONO -- 맞음 --> S_ALL[2단계: 전체 패키지 목록 + 변경 감지 필터링]
     S_ALL --> S_AGENTS[3단계: 패키지별 문서 생성 — 병렬 subagent]
     S_AGENTS --> S_ROOT[4단계: root 문서 생성 — CLAUDE.md + README.md]
     S_PKG --> DONE[완료: 결과 보고]
@@ -88,16 +88,36 @@ root 문서는 생성·변경하지 않는다.
 
 ### 전체 실행 — 모노레포
 
-`packages/` 하위의 모든 패키지를 탐색한다. 대상 목록을 표시한다:
+`packages/` 하위의 모든 패키지를 탐색한다.
+
+#### 변경 감지 필터링
+
+git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지를 스킵한다. git 저장소가 아니면 모든 패키지를 처리 대상으로 한다.
+
+각 패키지에 대해:
+1. `packages/{name}/CLAUDE.md`, `README.md`, `docs/`가 마지막으로 수정된 커밋(`DOC_COMMIT`)을 찾는다
+2. `DOC_COMMIT`이 없으면 (문서 미생성) → **처리 대상**
+3. `DOC_COMMIT`의 부모부터 working tree까지, 문서 파일을 제외한 패키지 내 변경을 확인한다:
+   ```bash
+   git diff --quiet {DOC_COMMIT}~1 -- packages/{name}/ \
+     ':!packages/{name}/CLAUDE.md' ':!packages/{name}/README.md' ':!packages/{name}/docs/'
+   ```
+   - 변경 있음 → **처리 대상**
+   - 변경 없음 → **스킵**
+4. `DOC_COMMIT`이 root 커밋(부모 없음)이면 → **처리 대상**
+
+필터링 결과를 표시한다:
 
 ```
 대상 패키지:
-1. @simplysm/core-common (src 35파일)
-2. @simplysm/angular (src 126파일)
-...
+1. @simplysm/core-common (src 35파일) — 스킵 (변경 없음)
+2. @simplysm/angular (src 126파일) — 처리 (변경 감지)
+3. @simplysm/utils (src 8파일) — 처리 (문서 미존재)
+
+처리 대상: 2개 / 스킵: 1개
 ```
 
-3단계로 진행한다.
+처리 대상 패키지가 있으면 3단계로 진행한다. 전체 스킵이면 4단계(root 문서)로 진행한다.
 
 ## 3단계: 패키지별 문서 생성 (모노레포)
 
@@ -227,12 +247,13 @@ UI:       angular (Angular)
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | CLAUDE.md | README.md | 구조 | API 항목 수 |
-|--------|-----------|-----------|------|-------------|
-| root | 생성 | 생성 | — | — |
-| @simplysm/core-common | 생성 | 생성 | README + docs/ | 52 |
-| @simplysm/storage | 생성 | 생성 | README 단독 | 8 |
-| @simplysm/internal | 생성 | — (private) | — | — |
+| 패키지 | 상태 | CLAUDE.md | README.md | 구조 | API 항목 수 |
+|--------|------|-----------|-----------|------|-------------|
+| root | — | 생성 | 생성 | — | — |
+| @simplysm/core-common | 스킵 | — | — | — | — |
+| @simplysm/angular | 처리 | 갱신 | 갱신 | README + docs/ | 126 |
+| @simplysm/storage | 처리 | 생성 | 생성 | README 단독 | 8 |
+| @simplysm/internal | 처리 | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)

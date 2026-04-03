@@ -376,7 +376,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected isoWeek(expr: ExprIsoWeek): string {
-    return `WEEK(${this.render(expr.arg)}, 1)`;
+    return `WEEK(${this.render(expr.arg)}, 3)`;
   }
 
   protected isoWeekStartDate(expr: ExprIsoWeekStartDate): string {
