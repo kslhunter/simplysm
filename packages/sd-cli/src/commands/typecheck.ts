@@ -97,7 +97,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   };
 
   // sd.config.ts 로드
-  const sdConfig = await loadSdConfig({ cwd, dev: false, options: options.options });
+  const sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
   logger.debug("sd.config.ts 로드 완료");
 
   // 워크스페이스 패키지 탐색 및 tests/를 설정에 병합

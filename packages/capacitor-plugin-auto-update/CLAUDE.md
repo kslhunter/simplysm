@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/capacitor-plugin-auto-update` — Android APK 자동 업데이트 플러그인. 서버 버전 비교 후 APK 다운로드·설치를 처리하며, 외부 저장소(USB 등)에서도 업데이트할 수 있다. TypeScript 소스 5개 파일.
+`@simplysm/capacitor-plugin-auto-update` — Android APK 자동 업데이트 플러그인. 서버 버전 비교 후 APK 다운로드·설치를 처리하며, 외부 저장소(USB 등)에서도 업데이트할 수 있다. TypeScript 소스 6개 파일.
 
 의존성:
 - `@simplysm/capacitor-plugin-file-system` — APK 파일 저장 및 URI 조회
@@ -20,11 +20,12 @@ src/
 ├── ApkInstallerPlugin.ts  ← Capacitor 플러그인 인터페이스 정의 (VersionInfo, ApkInstallerPlugin)
 ├── ApkInstaller.ts        ← 플러그인 등록 및 정적 파사드 클래스
 ├── AutoUpdate.ts          ← 자동 업데이트 오케스트레이터 (정적 클래스)
+├── env.d.ts               ← import.meta.env.__VER__ 타입 선언
 ├── web/
 │   └── ApkInstallerWeb.ts ← 브라우저 폴백 구현 (WebPlugin 상속)
 └── index.ts               ← public API re-exports
 android/
-└── src/main/java/kr/co/simplysm/capacitor/apkinstaller/
+└── src/main/kotlin/kr/co/simplysm/capacitor/apkinstaller/
     └── ApkInstallerPlugin.kt ← Android 네이티브 구현 (Kotlin)
 ```
 
@@ -91,7 +92,7 @@ export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
 
 ## Android 네이티브
 
-- 파일: `android/src/main/java/kr/co/simplysm/capacitor/apkinstaller/ApkInstallerPlugin.kt`
+- 파일: `android/src/main/kotlin/kr/co/simplysm/capacitor/apkinstaller/ApkInstallerPlugin.kt`
 - 권한: `REQUEST_INSTALL_PACKAGES` (AndroidManifest.xml에 선언 필요)
 - `install()`: `FileProvider` URI를 받아 `ACTION_VIEW` 인텐트로 APK 설치 실행
 - `checkPermissions()`: `canRequestPackageInstalls()` (API 26+) 및 manifest 선언 여부 동시 확인

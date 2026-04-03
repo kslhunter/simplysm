@@ -76,7 +76,7 @@ export default createRule({
 
 ### AST 순회 헬퍼
 
-`ts-no-unused-injects.ts`와 `ts-no-unused-protected-readonly.ts`는 동일한 `traverseNode()` 헬퍼 함수를 각 파일 내에 직접 정의한다 (`parent`, `range`, `loc` 키를 건너뛰며 재귀 순회).
+`ts-no-unused-injects.ts`와 `ts-no-unused-protected-readonly.ts`는 유사한 `traverseNode()` 헬퍼 함수를 각 파일 내에 직접 정의한다. 두 구현 모두 `parent` 키를 건너뛰며 재귀 순회하고, `ts-no-unused-protected-readonly.ts`는 추가로 `range`, `loc` 키도 건너뛴다.
 
 ## Testing
 

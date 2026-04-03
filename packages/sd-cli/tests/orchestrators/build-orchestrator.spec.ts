@@ -218,7 +218,7 @@ describe("BuildOrchestrator.initialize", () => {
     await orchestrator.initialize();
 
     expect(loadSdConfig).toHaveBeenCalledWith(
-      expect.objectContaining({ options: ["production"] }),
+      expect.objectContaining({ opt: ["production"] }),
     );
   });
 

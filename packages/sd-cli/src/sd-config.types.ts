@@ -325,7 +325,7 @@ export interface SdConfigParams {
   /** 개발 모드 플래그 */
   dev: boolean;
   /** 추가 옵션 (CLI의 -o 플래그에서 전달) */
-  options: string[];
+  opt: string[];
 }
 
 /**

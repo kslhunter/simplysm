@@ -860,6 +860,21 @@ export default config;
     await this._updateServerUrl(url);
 
     for (const platform of this._platforms) {
+      // Android + localhost URL이면 adb reverse로 포트 포워딩
+      if (platform === "android") {
+        const urlObj = new URL(url);
+        if (urlObj.hostname === "localhost" || urlObj.hostname === "127.0.0.1") {
+          const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
+          Capacitor._logger.debug(`[${platform}] adb reverse tcp:${port} 설정`);
+          try {
+            await this._exec("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], this._capPath);
+          } catch (err) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            Capacitor._logger.warn(`adb reverse 실패 — USB 연결을 확인하세요: ${errMsg}`);
+          }
+        }
+      }
+
       Capacitor._logger.debug(`[${platform}] cap copy 시작`);
       await this._execCap(["copy", platform]);
       Capacitor._logger.debug(`[${platform}] cap copy 완료`);

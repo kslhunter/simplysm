@@ -26,8 +26,8 @@ Namespace `fsx` -- Enhanced file system functions (sync and async pairs).
 | `copySync` | function | Copy file/directory with filter (sync) |
 | `read` | function | Read file as UTF-8 string (async) |
 | `readSync` | function | Read file as UTF-8 string (sync) |
-| `readBuffer` | function | Read file as Buffer (async) |
-| `readBufferSync` | function | Read file as Buffer (sync) |
+| `readBytes` | function | Read file as Uint8Array (async) |
+| `readBytesSync` | function | Read file as Uint8Array (sync) |
 | `readJson` | function | Read and parse JSON file (async) |
 | `readJsonSync` | function | Read and parse JSON file (sync) |
 | `write` | function | Write data to file (async) |
@@ -54,15 +54,14 @@ Namespace `cpx` -- Child process execution utilities.
 
 | API | Type | Description |
 |-----|------|-------------|
-| `ExecOptions` | interface | Options for `exec` |
-| `ExecSyncOptions` | type | Options for `execSync` (same as `ExecOptions` without `reject`) |
-| `ExecResult` | interface | Result of a child process execution |
-| `ExecProcess` | class | `PromiseLike<ExecResult>` wrapper with `kill()` support |
-| `exec` | function | Spawn a child process (async, returns `ExecProcess`) |
-| `execSync` | function | Spawn a child process (sync) |
+| `SpawnResult` | interface | Result of a spawned child process |
+| `SpawnProcess` | class | `PromiseLike<SpawnResult>` wrapper with `kill()` support |
+| `spawn` | function | Spawn a child process (async, returns `SpawnProcess`) |
+| `spawnSync` | function | Spawn a child process (sync) |
 | `codePageToEncoding` | function | Convert Windows code page number to encoding name |
 | `getSystemEncoding` | function | Detect system console encoding (cached) |
 | `resetEncodingCache` | function | Clear the cached system encoding |
+| `resolveStdioPipe` | function | Determine which stdio channels are piped |
 | `decodeBytes` | function | Decode `Uint8Array` output with system encoding fallback |
 
 > See [docs/cpx.md](./docs/cpx.md) for details.
@@ -118,6 +117,9 @@ import { fsx } from "@simplysm/core-node";
 const content = await fsx.read("/path/to/file.txt");
 await fsx.write("/path/to/output.txt", "hello");
 
+// Binary read
+const rawBytes = await fsx.readBytes("/path/to/image.png");
+
 // JSON
 const data = await fsx.readJson<{ name: string }>("/path/to/config.json");
 await fsx.writeJson("/path/to/out.json", data, { space: 2 });
@@ -135,15 +137,18 @@ const tsFiles = await fsx.glob("/project/src/**/*.ts");
 import { cpx } from "@simplysm/core-node";
 
 // Await result
-const result = await cpx.exec("git", ["status"], { cwd: "/project" });
+const result = await cpx.spawn("git", ["status"], { cwd: "/project" });
 // result: { stdout, stderr, exitCode }
 
 // Kill a running process
-const proc = cpx.exec("long-running-cmd", []);
+const proc = cpx.spawn("long-running-cmd", []);
 proc.kill();
 
 // Inherit stdio, don't reject on non-zero exit
-await cpx.exec("make", ["build"], { stdio: "inherit", reject: false });
+await cpx.spawn("make", ["build"], { stdio: "inherit", reject: false });
+
+// Synchronous execution
+const syncResult = cpx.spawnSync("node", ["--version"]);
 ```
 
 ### Path utilities

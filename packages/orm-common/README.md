@@ -48,6 +48,7 @@ pnpm add @simplysm/orm-common
 | [`WhereExprUnit`](./docs/expression.md#whereexprunit) | Class | WHERE clause expression wrapper |
 | [`ExprInput`](./docs/expression.md#exprinput) | Type | Union of ExprUnit or literal values |
 | [`SwitchExprBuilder`](./docs/expression.md#switchexprbuilder) | Interface | CASE WHEN builder (fluent API) |
+| [`toExpr`](./docs/expression.md#toexpr) | Function | Convert ExprInput to Expr JSON AST |
 
 ### Schema Builders
 

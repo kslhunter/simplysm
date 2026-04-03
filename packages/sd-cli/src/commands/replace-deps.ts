@@ -16,7 +16,7 @@ export interface ReplaceDepsOptions {
 export async function runReplaceDeps(opts: ReplaceDepsOptions): Promise<void> {
   const cwd = process.cwd();
 
-  const sdConfig = await loadSdConfig({ cwd, dev: false, options: opts.options });
+  const sdConfig = await loadSdConfig({ cwd, dev: false, opt: opts.options });
 
   if (sdConfig.replaceDeps == null) {
     consola.warn("sd.config.ts에 replaceDeps 설정이 없습니다.");

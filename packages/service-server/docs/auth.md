@@ -54,8 +54,8 @@ export async function verifyJwt<TAuthInfo = unknown>(
 **Returns:** `Promise<AuthTokenPayload<TAuthInfo>>` -- Decoded token payload.
 
 **Throws:**
-- `Error("Token expired")` when the token has expired
-- `Error("Invalid token")` for any other verification failure
+- `Error("토큰이 만료되었습니다.")` when the token has expired
+- `Error("유효하지 않은 토큰입니다.")` for any other verification failure
 
 ## `decodeJwt`
 

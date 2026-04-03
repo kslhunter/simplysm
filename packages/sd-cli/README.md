@@ -1,6 +1,6 @@
 # @simplysm/sd-cli
 
-Monorepo build/check CLI tool -- TypeScript compilation, Angular builds, Capacitor/Electron packaging, publish to npm/storage.
+Simplysm monorepo build, development, and deployment CLI tool. Reads `sd.config.ts` to determine per-package build strategies and orchestrates TypeScript compilation, esbuild bundling, Vite dev server, Angular AOT, linting, and publishing.
 
 ## Installation
 
@@ -33,7 +33,7 @@ The package exports configuration types for `sd.config.ts` and a Vitest plugin f
 |-----|------|-------------|
 | `BuildTarget` | type | Build target platform: `"node"`, `"browser"`, or `"neutral"` |
 | `SdBuildPackageConfig` | interface | Configuration for buildable packages (node/browser/neutral) |
-| `SdClientPackageConfig` | interface | Configuration for client (Angular/Vite) packages |
+| `SdClientPackageConfig` | interface | Configuration for client (Angular/Solid + Vite) packages |
 | `SdServerPackageConfig` | interface | Configuration for server (Fastify) packages |
 | `SdScriptsPackageConfig` | interface | Configuration for scripts-only packages (no build output) |
 | `SdWatchHookConfig` | interface | Watch hook for running commands on file changes |

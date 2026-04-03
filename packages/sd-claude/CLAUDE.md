@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 4개 rules, 3개 훅 스크립트, 3개 eval 파일을 포함한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 18개 스킬, 4개 rules, 4개 훅 스크립트, 3개 eval 파일을 포함한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -15,8 +15,9 @@ sd-claude/
 ├── claude/               ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
 │   ├── evals/            ← Eval 시나리오 파일 (sd-*.md, 3개)
 │   ├── rules/            ← Claude Code 규칙 파일 (sd-*.md, 4개)
-│   ├── skills/           ← 스킬 파일 디렉토리 (17개 스킬)
+│   ├── skills/           ← 스킬 파일 디렉토리 (18개 스킬)
 │   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
+│   │   ├── sd-auth/           ← Claude Code 멀티 계정(Pro/Max) 전환
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
 │   │   ├── sd-claude-docs/    ← CLAUDE.md + README.md 동시 생성
 │   │   ├── sd-commit/         ← 그룹별 커밋 생성
@@ -33,6 +34,7 @@ sd-claude/
 │   │   ├── sd-review/         ← 코드 리뷰 리포트 생성
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
+│   ├── sd-check-git.py   ← Bash 도구 사전 검사 훅 (금지 git 명령어 차단)
 │   ├── sd-check-write.py ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
 │   ├── sd-session-start.sh ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
 │   └── sd-statusline.py  ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
@@ -75,7 +77,7 @@ INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
 → simplysm 모노레포 동일 메이저 버전이면 건너뜀 (자기 자신에게 설치 방지)
 → cleanSdEntries: 기존 sd-* 항목 삭제
 → copySdEntries: claude/ → .claude/ 복사
-→ setupSettings: .claude/settings.json에 훅 3종 등록
+→ setupSettings: .claude/settings.json에 훅 4종 등록
 ```
 
 `postinstall`은 실패해도 `pnpm install`을 차단하지 않는다 — 전체 try-catch로 감싸서 경고만 출력한다.
@@ -88,6 +90,7 @@ INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
 |---------|------|-----------|
 | `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` |
 | `PreToolUse` | `Write` | `python .claude/sd-check-write.py` |
+| `PreToolUse` | `Bash` | `python .claude/sd-check-git.py` |
 | `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` |
 | `statusLine` | — | `python .claude/sd-statusline.py` |
 

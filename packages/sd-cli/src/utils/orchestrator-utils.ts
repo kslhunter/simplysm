@@ -19,7 +19,7 @@ export async function loadAndValidateConfig(params: {
   const config = await loadSdConfig({
     cwd: params.cwd,
     dev: params.dev,
-    options: params.options,
+    opt: params.options,
   });
   validateTargets(params.targets, params.packagesForValidation ?? config.packages);
   return config;

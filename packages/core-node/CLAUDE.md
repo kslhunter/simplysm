@@ -12,10 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 src/
 ├── utils/
 │   ├── fs.ts         ← 파일 시스템 유틸리티 (존재 확인, 읽기/쓰기, 복사, 삭제, glob 등)
-│   ├── cp.ts         ← 자식 프로세스 실행 (exec, execSync, ExecProcess, 인코딩 감지)
+│   ├── cp.ts         ← 자식 프로세스 실행 (spawn, spawnSync, SpawnProcess, 인코딩 감지)
 │   └── path.ts       ← 경로 유틸리티 (PosixPath 브랜드 타입, posix/posixResolve, isChildPath 등)
 ├── features/
-│   └── fs-watcher.ts ← Chokidar 기반 파일 시스템 감시 (FsWatcher 클래스, 이벤트 병합)
+│   └── fs-watcher.ts ← Chokidar 기반 파일 시스템 감시 (FsWatcher 클래스, 이벤트 병합, EPERM 자동 복구)
 ├── worker/
 │   ├── types.ts      ← Worker 관련 타입 정의 (WorkerModule, WorkerProxy, 메시지 형식)
 │   ├── worker.ts     ← 타입 안전한 Worker 래퍼 (Worker.create, WorkerInternal)
@@ -36,7 +36,7 @@ src/
 import { fsx, cpx, pathx } from "@simplysm/core-node";
 
 await fsx.write("/path/to/file.txt", "content");
-const result = await cpx.exec("node", ["--version"]);
+const result = await cpx.spawn("node", ["--version"], []);
 const posixPath = pathx.posixResolve("/base", "sub");
 ```
 
@@ -47,6 +47,7 @@ const posixPath = pathx.posixResolve("/base", "sub");
 - `rm`: 비동기. 파일 잠금 오류 시 최대 6회(500ms 간격) 재시도.
 - `rmSync`: 동기. 재시도 없이 즉시 실패.
 - 쓰기 함수(`write`, `writeSync`)는 상위 디렉토리를 자동 생성한다.
+- 바이너리 읽기는 `readBytes`/`readBytesSync`로 `Uint8Array`를 반환한다.
 
 ### PosixPath 브랜드 타입
 
@@ -61,7 +62,7 @@ const abs: pathx.PosixPath = pathx.posixResolve("./relative"); // 절대 경로 
 
 ### SpawnProcess 패턴
 
-`cpx.spawn()`은 `PromiseLike<SpawnResult>`를 구현하는 `SpawnProcess`를 반환한다. `await`로 결과를 기다리거나, `kill()`로 프로세스를 종료할 수 있다.
+`cpx.spawn()`은 `PromiseLike<SpawnResult>`를 구현하는 `SpawnProcess`를 반환한다. `await`로 결과를 기다리거나, `kill()`로 프로세스를 종료할 수 있다. `cpx.spawnSync()`는 동기 버전으로 `SpawnResult`를 직접 반환한다.
 
 ```typescript
 import { cpx } from "@simplysm/core-node";
@@ -76,13 +77,16 @@ proc.kill();
 
 // stdio: "inherit"로 출력 직접 표시, reject: false로 오류 무시
 await cpx.spawn("make", ["build"], { stdio: "inherit", reject: false });
+
+// 동기 실행
+const syncResult = cpx.spawnSync("node", ["--version"]);
 ```
 
-기본적으로 `exitCode !== 0`이면 reject된다. `options.reject: false`를 지정하면 항상 resolve된다.
+기본적으로 `exitCode !== 0`이면 reject된다(spawn) 또는 throw된다(spawnSync). `options.reject: false`를 지정하면 항상 resolve/반환된다.
 
 ### FsWatcher 패턴
 
-`FsWatcher.watch()`로 감시를 시작하고 `onChange()`로 핸들러를 등록한다. 짧은 시간 내 연속 이벤트는 내부에서 병합된다 (예: `add` + `change` → `add`).
+`FsWatcher.watch()`로 감시를 시작하고 `onChange()`로 핸들러를 등록한다. 짧은 시간 내 연속 이벤트는 내부에서 병합된다 (예: `add` + `change` -> `add`). EPERM 에러 발생 시 최대 3회까지 watcher를 자동 재시작한다.
 
 ```typescript
 import { FsWatcher } from "@simplysm/core-node";
@@ -143,16 +147,19 @@ await worker.terminate();
 ```
 tests/
 ├── utils/
-│   ├── fs.spec.ts              ← fsx 함수 유닛 테스트 (임시 디렉토리 사용)
-│   ├── fs-watcher.spec.ts      ← FsWatcher 유닛 테스트
-│   ├── fs-watcher-error.spec.ts
-│   ├── path.spec.ts            ← pathx 함수 유닛 테스트
-│   ├── cp.spec.ts              ← cpx 함수 유닛 테스트
-│   ├── cp.acc.spec.ts          ← cpx 수용 테스트 (실제 프로세스 실행)
-│   └── exec.acc.spec.ts        ← exec 수용 테스트
+│   ├── fs.spec.ts                ← fsx 함수 유닛 테스트 (임시 디렉토리 사용)
+│   ├── fs-watcher.spec.ts        ← FsWatcher 유닛 테스트
+│   ├── fs-watcher-error.spec.ts  ← FsWatcher 에러 핸들링 테스트
+│   ├── fs-watcher-recovery.spec.ts ← FsWatcher EPERM 자동 복구 테스트
+│   ├── path.spec.ts              ← pathx 함수 유닛 테스트
+│   ├── cp.spec.ts                ← cpx 인코딩/디코딩 함수 유닛 테스트
+│   ├── spawn.spec.ts             ← resolveStdioPipe 유닛 테스트
+│   ├── spawn.acc.spec.ts         ← spawn 수용 테스트 (실제 프로세스 실행)
+│   ├── spawn-sync.acc.spec.ts    ← spawnSync 수용 테스트
+│   └── exec.acc.spec.ts          ← exec 수용 테스트 (레거시)
 └── worker/
-    ├── sd-worker.spec.ts       ← Worker thread 통합 테스트
-    └── fixtures/test-worker.ts ← 테스트용 워커 파일
+    ├── sd-worker.spec.ts         ← Worker thread 통합 테스트
+    └── fixtures/test-worker.ts   ← 테스트용 워커 파일
 ```
 
 `fs.spec.ts`의 패턴: `beforeEach`에서 `os.tmpdir()` 하위에 임시 디렉토리를 생성하고, `afterEach`에서 삭제한다.

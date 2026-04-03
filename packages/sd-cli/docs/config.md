@@ -41,6 +41,7 @@ Configuration for client (Angular/Vite) packages.
 ```typescript
 interface SdClientPackageConfig {
   target: "client";
+  framework?: "angular" | "solid";
   server: string | number;
   env?: Record<string, string>;
   publish?: SdPublishConfig;
@@ -56,6 +57,7 @@ interface SdClientPackageConfig {
 | Field | Type | Description |
 |-------|------|-------------|
 | `target` | `"client"` | Fixed value |
+| `framework` | `"angular" \| "solid"` | Client framework selection. Defaults to `"angular"` when not specified |
 | `server` | `string \| number` | Server package name to connect to (e.g., `"solid-demo-server"`), or Vite port number (backward compatibility) |
 | `env` | `Record<string, string>` | Environment variables to substitute during build (replaces `process.env` with object) |
 | `publish` | `SdPublishConfig` | Publish configuration |
@@ -173,7 +175,7 @@ Parameters passed to the `sd.config.ts` function.
 interface SdConfigParams {
   cwd: string;
   dev: boolean;
-  options: string[];
+  opt: string[];
 }
 ```
 
@@ -181,7 +183,7 @@ interface SdConfigParams {
 |-------|------|-------------|
 | `cwd` | `string` | Current working directory |
 | `dev` | `boolean` | Development mode flag |
-| `options` | `string[]` | Additional options (from CLI's `-o` flag) |
+| `opt` | `string[]` | Additional options (from CLI's `-o` flag) |
 
 ## `SdConfigFn`
 

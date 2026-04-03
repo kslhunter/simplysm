@@ -17,16 +17,16 @@ npm install @simplysm/capacitor-plugin-intent
 
 | API | Type | Description |
 |-----|------|-------------|
-| `IntentResult` | Interface | Data received from a broadcast or launch intent |
-| `StartActivityForResultOptions` | Interface | Options for starting an Android activity and awaiting its result |
-| `StartActivityForResultResult` | Interface | Result returned from a started activity |
-| `IntentPlugin` | Interface | Native plugin interface for intent operations |
+| `IntentResult` | interface | Data received from a broadcast or launch intent |
+| `StartActivityForResultOptions` | interface | Options for starting an Android activity and awaiting its result |
+| `StartActivityForResultResult` | interface | Result returned from a started activity |
+| `IntentPlugin` | interface | Native plugin interface for intent operations |
 
 ### Classes
 
 | API | Type | Description |
 |-----|------|-------------|
-| `Intent` | Class | Static API for broadcast send/receive, launch intents, and activity results |
+| `Intent` | class | Static API for broadcast send/receive, launch intents, and activity results |
 
 ## `IntentResult`
 

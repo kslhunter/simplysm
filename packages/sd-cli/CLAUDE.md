@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` — Simplysm 모노레포용 빌드·개발·배포 CLI 도구. 68개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 68개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -51,17 +51,34 @@ src/
     ├── angular-compiler.ts      ← AngularCompiler, AngularSourceFileCache (증분 재컴파일, HMR 지원)
     ├── ngtsc-build-core.ts      ← Angular 라이브러리 빌드 핵심 로직 (runNgtscBuild)
     ├── angular-build.ts         ← NgtscProgram 래퍼
+    ├── hmr-candidates.ts        ← collectHmrCandidates, analyzeFileUpdates (HMR 후보 판별)
     ├── sd-config.ts             ← loadSdConfig (jiti로 sd.config.ts 동적 로드)
     ├── tsconfig.ts              ← parseTsconfig, getPackageSourceFiles, TypecheckEnv
     ├── esbuild-config.ts        ← esbuild 설정 생성
     ├── vite-config.ts           ← Vite 설정 생성
-    ├── scss-compiler.ts         ← sass 컴파일
+    ├── vite-scope-watch-plugin.ts ← sdScopeWatchPlugin (replaceDeps dist/ 감시 → Vite HMR 트리거)
+    ├── scss-compiler.ts         ← sass 컴파일 (compileScssString, compileScssFile)
     ├── lint-with-program.ts     ← ESLint + ts.Program 통합 실행
+    ├── lint-utils.ts            ← runLintInWorker (lint Worker 유틸)
     ├── rebuild-manager.ts       ← RebuildManager 구현
     ├── package-utils.ts         ← 패키지 분류·필터링 (classifyWatchPackages, classifyDevPackages)
     ├── typecheck-serialization.ts ← ts.Diagnostic 직렬화/역직렬화 (Worker 경계 통과용)
+    ├── typecheck-non-package.ts ← sd.config.ts에 없는 패키지의 typecheck 처리
+    ├── diagnostic-utils.ts      ← isWorkspaceDiagnostic, formatDiagnosticError
+    ├── output-utils.ts          ← formatBuildMessages, printErrors, printServers
+    ├── output-path-rewriter.ts  ← 출력 경로 변환
+    ├── SdCliReporter.ts         ← sd-cli 전용 consola reporter
     ├── concurrency.ts           ← runWithConcurrency, getMaxConcurrency
-    └── ...
+    ├── worker-utils.ts          ← Worker 관련 유틸리티
+    ├── worker-events.ts         ← Worker 이벤트 타입 정의
+    ├── build-env.ts             ← 빌드 환경 변수 처리
+    ├── copy-public.ts           ← public/ 디렉토리 복사
+    ├── copy-src.ts              ← copySrc 패턴에 따른 src→dist 파일 복사
+    ├── engine-stop.ts           ← 엔진 중지 유틸리티
+    ├── replace-deps.ts          ← replaceDeps 심링크 처리
+    ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
+    ├── generate-pwa-icons.ts    ← PWA 아이콘 생성 (sharp 사용)
+    └── orchestrator-utils.ts    ← Orchestrator 공통 유틸리티
 ```
 
 ## Key Patterns
@@ -73,10 +90,10 @@ src/
 ```typescript
 // SdPackageConfig 유니언: 패키지 target에 따라 다른 타입
 type SdPackageConfig =
-  | SdBuildPackageConfig    // target: "node" | "browser" | "neutral" — JS+dts 빌드
-  | SdClientPackageConfig   // target: "client" — Vite 빌드
-  | SdServerPackageConfig   // target: "server" — esbuild JS 빌드
-  | SdScriptsPackageConfig; // target: "scripts" — 빌드 제외, watch hook만 가능
+  | SdBuildPackageConfig    // target: "node" | "browser" | "neutral" -- JS+dts 빌드
+  | SdClientPackageConfig   // target: "client" -- Vite 빌드
+  | SdServerPackageConfig   // target: "server" -- esbuild JS 빌드
+  | SdScriptsPackageConfig; // target: "scripts" -- 빌드 제외, watch hook만 가능
 
 // sd.config.ts는 반드시 이 형식으로 default export한다
 const config: SdConfigFn = (params: SdConfigParams) => ({
@@ -151,7 +168,7 @@ resolve(); // batchComplete 이벤트 발행
 
 ### Orchestrator 생명주기
 
-Orchestrator는 `initialize() → start() → awaitTermination() → shutdown()` 순서로 호출한다. 모든 외부 리소스(Worker, FsWatcher)는 `shutdown()`에서 정리한다:
+Orchestrator는 `initialize() -> start() -> awaitTermination() -> shutdown()` 순서로 호출한다. 모든 외부 리소스(Worker, FsWatcher)는 `shutdown()`에서 정리한다:
 
 ```typescript
 const orch = new DevWatchOrchestrator(options);
@@ -165,9 +182,9 @@ await orch.shutdown();   // 리소스 정리
 
 `src/angular/vite-angular-plugin.ts`의 `sdAngularPlugin`은 Vite 플러그인으로 Angular AOT 컴파일을 수행한다:
 
-- `buildStart`: `AngularCompiler` 초기화 → 전체 컴파일 → `emit`으로 파일 캐싱
+- `buildStart`: `AngularCompiler` 초기화 -> 전체 컴파일 -> `emit`으로 파일 캐싱
 - `transform`: `.ts` 파일 요청 시 캐싱된 JS 반환 + `JavaScriptTransformer` 적용
-- `handleHotUpdate`: 변경 파일 감지 → 증분 재컴파일 → HMR 또는 full-reload
+- `handleHotUpdate`: 변경 파일 감지 -> 증분 재컴파일 -> HMR 또는 full-reload
 - `buildEnd`: `AngularCompiler` dispose
 
 ### angularVitestPlugin
@@ -204,20 +221,18 @@ const restored = deserializeDiagnostic(serialized, fileCache);
 
 ```
 tests/
-├── angular/        ← sdAngularPlugin, vite-angular-plugin, scss-compiler 등
-├── commands/       ← 커맨드별 단위 테스트
-├── engines/        ← 엔진 단위 및 통합 테스트
+├── angular/        ← sdAngularPlugin, vite-angular-plugin, scss-compiler, hmr-candidates 등
+├── capacitor/      ← Capacitor 빌드 테스트 (init, build, run, icon, workspace)
+├── commands/       ← 커맨드별 단위 테스트 (build, dev, watch, check, lint, typecheck, publish, device)
+├── electron/       ← Electron 빌드 테스트
+├── engines/        ← 엔진 단위 및 통합 테스트 (base-engine, tsc, ngtsc, server-esbuild, vite, engine-selection)
 ├── infra/          ← ResultCollector, SignalHandler, WorkerManager
 ├── orchestrators/  ← BuildOrchestrator, DevWatchOrchestrator
 ├── utils/          ← 유틸 함수 단위 테스트
-└── workers/        ← Worker 모듈 단위 테스트
+├── workers/        ← Worker 모듈 단위 테스트
+├── vitest-plugin.spec.ts      ← angularVitestPlugin 테스트
+└── sd-cli-entry.spec.ts       ← CLI 엔트리 테스트
 ```
-
-## 자주하는 실수
-
-- **build/dev에서 lint 실행 금지**: `BuildOrchestrator`/`DevWatchOrchestrator`에서 `lint: true`로 넘기면 안 된다. lint는 `pnpm check` (lint 커맨드)에서만 실행한다
-
-## Testing
 
 **Worker 모킹 패턴**: Worker Thread를 직접 실행하지 않고 `vi.mock("@simplysm/core-node")`으로 Worker 팩토리를 모킹한다. `vi.mock`은 호이스팅되므로 동적 import(`await import(...)`) 이전에 선언한다:
 
@@ -231,3 +246,7 @@ const { TscEngine } = await import("../../src/engines/TscEngine");
 ```
 
 **Angular 플러그인 테스트**: `tests/angular/fixtures/basic-app/`에 최소 Angular 앱 픽스처를 두고 실제 컴파일을 수행하는 통합 테스트를 작성한다. 컴파일러 내부(AngularCompiler 메서드)는 직접 테스트하지 않고 플러그인 훅(buildStart, transform, handleHotUpdate)을 통해 검증한다.
+
+## 자주하는 실수
+
+- **build/dev에서 lint 실행 금지**: `BuildOrchestrator`/`DevWatchOrchestrator`에서 `lint: true`로 넘기면 안 된다. lint는 `pnpm check` (lint 커맨드)에서만 실행한다

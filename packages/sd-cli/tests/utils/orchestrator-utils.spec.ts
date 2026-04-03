@@ -57,7 +57,7 @@ describe("loadAndValidateConfig", () => {
     expect(mocks.loadSdConfig).toHaveBeenCalledWith({
       cwd: "/test",
       dev: false,
-      options: [],
+      opt: [],
     });
     expect(mocks.validateTargets).toHaveBeenCalledWith(
       ["core-common"],
@@ -83,7 +83,7 @@ describe("loadAndValidateConfig", () => {
     expect(mocks.loadSdConfig).toHaveBeenCalledWith({
       cwd: "/test",
       dev: true,
-      options: ["key=value"],
+      opt: ["key=value"],
     });
     expect(mocks.validateTargets).toHaveBeenCalledWith([], config.packages);
     expect(result).toBe(config);

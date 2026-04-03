@@ -9,38 +9,10 @@ import { cpx } from "@simplysm/core-node";
 
 ## Types
 
-### ExecOptions
+### SpawnResult
 
 ```ts
-interface ExecOptions {
-  cwd?: string;
-  env?: Record<string, string>;
-  stdio?: "pipe" | "inherit";
-  shell?: boolean;
-  reject?: boolean;
-}
-```
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `cwd` | `string` | `undefined` | Working directory for the child process |
-| `env` | `Record<string, string>` | `undefined` | Extra environment variables (merged with `process.env`) |
-| `stdio` | `"pipe" \| "inherit"` | `"pipe"` | `"pipe"` captures stdout/stderr; `"inherit"` passes them through |
-| `shell` | `boolean` | `false` | Run the command in a shell |
-| `reject` | `boolean` | `true` | If `false`, the promise resolves even on non-zero exit codes |
-
-### ExecSyncOptions
-
-```ts
-type ExecSyncOptions = Omit<ExecOptions, "reject">
-```
-
-Same as `ExecOptions` without the `reject` field. `execSync` always returns a result regardless of exit code.
-
-### ExecResult
-
-```ts
-interface ExecResult {
+interface SpawnResult {
   stdout: string;
   stderr: string;
   exitCode: number;
@@ -49,27 +21,27 @@ interface ExecResult {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `stdout` | `string` | Captured standard output (empty when `stdio: "inherit"`) |
-| `stderr` | `string` | Captured standard error (empty when `stdio: "inherit"`) |
+| `stdout` | `string` | Captured standard output (empty when stdio is not `"pipe"`) |
+| `stderr` | `string` | Captured standard error (empty when stdio is not `"pipe"`) |
 | `exitCode` | `number` | Process exit code |
 
-## ExecProcess
+## SpawnProcess
 
 ```ts
-class ExecProcess implements PromiseLike<ExecResult> {
+class SpawnProcess implements PromiseLike<SpawnResult> {
   get pid(): number | undefined;
   then<TResult1, TResult2>(
-    onfulfilled?: ((value: ExecResult) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?: ((value: SpawnResult) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2>;
   catch<TResult>(
     onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null,
-  ): Promise<ExecResult | TResult>;
+  ): Promise<SpawnResult | TResult>;
   kill(signal?: NodeJS.Signals | number): boolean;
 }
 ```
 
-A `PromiseLike<ExecResult>` wrapper around `ChildProcess`. Can be `await`ed for the result or `kill()`ed to terminate the process.
+A `PromiseLike<SpawnResult>` wrapper around `ChildProcess`. Can be `await`ed for the result or `kill()`ed to terminate the process.
 
 | Property/Method | Description |
 |-----------------|-------------|
@@ -80,35 +52,61 @@ A `PromiseLike<ExecResult>` wrapper around `ChildProcess`. Can be `await`ed for 
 
 ## Functions
 
-### exec
+### spawn
 
 ```ts
-function exec(cmd: string, args: string[], options?: ExecOptions): ExecProcess
+function spawn(
+  cmd: string,
+  args: string[],
+  options?: SpawnOptions & { reject?: boolean },
+): SpawnProcess
 ```
 
-Spawn a child process asynchronously. Returns an `ExecProcess` that can be awaited or killed.
+Spawn a child process asynchronously. Returns a `SpawnProcess` that can be awaited or killed. Options extend Node.js `SpawnOptions` with an additional `reject` field.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `cmd` | `string` | Command to execute |
 | `args` | `string[]` | Command arguments |
-| `options` | `ExecOptions` | Execution options |
+| `options` | `SpawnOptions & { reject?: boolean }` | Node.js spawn options plus `reject` (default `true`) |
 
-By default, rejects if exit code is non-zero. Set `options.reject: false` to always resolve. Output is decoded using system encoding detection (UTF-8 with fallback).
+By default, rejects if exit code is non-zero. Set `options.reject: false` to always resolve. The `env` option is merged with `process.env`. Output is decoded using system encoding detection (UTF-8 with fallback).
 
-### execSync
+### spawnSync
 
 ```ts
-function execSync(cmd: string, args: string[], options?: ExecSyncOptions): ExecResult
+function spawnSync(
+  cmd: string,
+  args: string[],
+  options?: SpawnSyncOptions & { reject?: boolean },
+): SpawnResult
 ```
 
-Spawn a child process synchronously. Always returns an `ExecResult` regardless of exit code.
+Spawn a child process synchronously. Options extend Node.js `SpawnSyncOptions` with an additional `reject` field.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `cmd` | `string` | Command to execute |
 | `args` | `string[]` | Command arguments |
-| `options` | `ExecSyncOptions` | Execution options |
+| `options` | `SpawnSyncOptions & { reject?: boolean }` | Node.js spawn sync options plus `reject` (default `true`) |
+
+By default, throws if exit code is non-zero. Set `options.reject: false` to always return the result.
+
+### resolveStdioPipe
+
+```ts
+function resolveStdioPipe(
+  stdio: SpawnOptions["stdio"],
+): { stdout: boolean; stderr: boolean }
+```
+
+Determine whether stdout and stderr are piped based on the `stdio` option value.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `stdio` | `SpawnOptions["stdio"]` | The stdio configuration (string or array) |
+
+Returns `{ stdout: true, stderr: true }` when `stdio` is `"pipe"` or `undefined`. For array form, checks `stdio[1]` and `stdio[2]` individually.
 
 ### codePageToEncoding
 
@@ -155,19 +153,19 @@ Decode a `Uint8Array` to a string. First tries UTF-8 (with `fatal: true`); if th
 import { cpx } from "@simplysm/core-node";
 
 // Basic execution
-const result = await cpx.exec("git", ["status"], { cwd: "/project" });
+const result = await cpx.spawn("git", ["status"], { cwd: "/project" });
 // result.stdout, result.stderr, result.exitCode
 
 // Inherit stdio
-await cpx.exec("make", ["build"], { stdio: "inherit" });
+await cpx.spawn("make", ["build"], { stdio: "inherit" });
 
 // Don't reject on failure
-const { exitCode } = await cpx.exec("test-cmd", [], { reject: false });
+const { exitCode } = await cpx.spawn("test-cmd", [], { reject: false });
 
 // Kill a long-running process
-const proc = cpx.exec("long-cmd", []);
+const proc = cpx.spawn("long-cmd", []);
 proc.kill();
 
 // Synchronous execution
-const syncResult = cpx.execSync("node", ["--version"]);
+const syncResult = cpx.spawnSync("node", ["--version"]);
 ```

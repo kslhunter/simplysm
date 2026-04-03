@@ -17,6 +17,8 @@ src/
 ├── index.ts                    ← public API re-exports
 ├── define-db-context.ts        ← DbContext 정의 팩토리 (defineDbContext)
 ├── create-db-context.ts        ← DbContext 인스턴스 팩토리 (createDbContext)
+├── errors/
+│   └── db-transaction-error.ts ←   DbTransactionError, DbErrorCode
 ├── schema/                     ← 스키마 정의 빌더 (Fluent API)
 │   ├── table-builder.ts        ←   Table() + TableBuilder
 │   ├── view-builder.ts         ←   View() + ViewBuilder
@@ -249,8 +251,12 @@ tests/
 ├── select/               ← SELECT 쿼리 SQL 생성 테스트
 ├── expr/                 ← 표현식 빌더 테스트
 ├── ddl/                  ← DDL QueryDef 생성 테스트
-├── exec/                 ← Queryable/Executable 동작 테스트
-└── utils/                ← result-parser 등 유틸 테스트
+├── exec/                 ← Queryable 검색(search-parser) 테스트
+├── executable/           ← Executable(Stored Procedure) SQL 생성 테스트
+├── errors/               ← Queryable 에러 케이스 테스트
+├── examples/             ← 실전 패턴 테스트 (pivot, unpivot, sampling)
+├── types/                ← 타입 추론 테스트 (NullableQueryableRecord 등)
+└── utils/                ← result-parser 단위/성능 테스트
 ```
 
 모든 SQL 생성 테스트는 dialect별로 기댓값을 별도 파일(`*.expected.ts`)에 분리하여 관리한다.

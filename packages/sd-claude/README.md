@@ -18,7 +18,7 @@ On `pnpm install`, the `postinstall` script copies `sd-*` assets into the consum
 2. **Self-install guard** -- skips installation if the consuming project is the simplysm monorepo with the same major version.
 3. **Clean** -- removes existing `sd-*` entries from `.claude/`.
 4. **Copy** -- copies all `sd-*` assets from `claude/` to `.claude/`.
-5. **Settings setup** -- registers hooks in `.claude/settings.json` (SessionStart, PreToolUse, SubagentStart, statusLine).
+5. **Settings setup** -- registers hooks in `.claude/settings.json` (SessionStart, PreToolUse Write, PreToolUse Bash, SubagentStart, statusLine).
 
 Installation failure does not block `pnpm install` -- the entire process is wrapped in try-catch.
 
@@ -37,11 +37,12 @@ Before `npm publish`/`npm pack`, the `prepack` script synchronizes the root `.cl
 | `sd-problem-solving.md` | Problem-solving principles and workaround prohibition list |
 | `sd-readme.md` | Package README reference rules |
 
-### Skills (17)
+### Skills (18)
 
 | Skill | Description |
 |-------|-------------|
 | `sd-apk-decompile` | APK decompilation (Python + Java tools) |
+| `sd-auth` | Claude Code multi-account (Pro/Max) switching |
 | `sd-check` | typecheck/lint/test execution and error resolution |
 | `sd-claude-docs` | CLAUDE.md and README.md simultaneous generation |
 | `sd-commit` | Group-based commit creation |
@@ -59,12 +60,13 @@ Before `npm publish`/`npm pack`, the `prepack` script synchronizes the root `.cl
 | `sd-use` | Natural language routing to sd-* skills |
 | `sd-wbs` | WBS Feature decomposition |
 
-### Hooks (3)
+### Hooks (4)
 
 | Hook | Type | Description |
 |------|------|-------------|
 | `sd-session-start.sh` | SessionStart, SubagentStart | Outputs rules/*.md and CLAUDE.md paths on session start |
 | `sd-check-write.py` | PreToolUse (Write) | Pre-checks file existence before Write tool execution |
+| `sd-check-git.py` | PreToolUse (Bash) | Blocks forbidden git commands (stash, checkout, restore, reset, clean) |
 | `sd-statusline.py` | statusLine | Displays folder, model, context%, usage in status bar |
 
 ## Usage Examples

@@ -299,7 +299,7 @@ describe("executeTypecheck", () => {
     await executeTypecheck({ targets: [], options: ["key=value"] });
 
     expect(mocks.loadSdConfig).toHaveBeenCalledWith(
-      expect.objectContaining({ options: ["key=value"] }),
+      expect.objectContaining({ opt: ["key=value"] }),
     );
   });
 

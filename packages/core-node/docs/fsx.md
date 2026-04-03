@@ -111,21 +111,21 @@ async function read(targetPath: string): Promise<string>
 
 Read a file as a UTF-8 string (async).
 
-### readBufferSync
+### readBytesSync
 
 ```ts
-function readBufferSync(targetPath: string): Buffer
+function readBytesSync(targetPath: string): Uint8Array
 ```
 
-Read a file as a Buffer (sync).
+Read a file as a Uint8Array (sync).
 
-### readBuffer
+### readBytes
 
 ```ts
-async function readBuffer(targetPath: string): Promise<Buffer>
+async function readBytes(targetPath: string): Promise<Uint8Array>
 ```
 
-Read a file as a Buffer (async).
+Read a file as a Uint8Array (async).
 
 ### readJsonSync
 

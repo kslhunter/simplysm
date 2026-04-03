@@ -12,11 +12,10 @@ repaint(): void
 
 ## `HTMLElement.prototype.getRelativeOffset`
 
-Calculate the element's position relative to a parent element. Returns document-based coordinates (including `window.scrollX/Y`) suitable for CSS `top`/`left` properties.
+Calculate the element's position relative to a parent element. Returns coordinates suitable for CSS `top`/`left` properties.
 
 The calculation accounts for:
 - Viewport position (`getBoundingClientRect`)
-- Document scroll (`window.scrollX/Y`)
 - Parent internal scroll (`parentEl.scrollTop/Left`)
 - Intermediate element border widths
 - CSS `transform`

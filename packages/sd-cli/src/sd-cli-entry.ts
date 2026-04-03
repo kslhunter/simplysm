@@ -186,19 +186,17 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .command(
-      "device",
+      "device [target]",
       "Run native app on device/desktop",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
+          .positional("target", {
+            type: "string",
+            describe: "Client package to run (e.g., my-client-app)",
+          })
           .options({
-            "package": {
-              type: "string",
-              alias: "p",
-              description: "Client package name to run",
-              demandOption: true,
-            },
             "url": {
               type: "string",
               description: "Dev server URL (auto-detected from sd.config.ts if omitted)",
@@ -214,7 +212,7 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         const { runDevice } = await import("./commands/device");
         await runDevice({
-          package: args.package,
+          target: args.target,
           url: args.url,
           options: args.opt,
         });

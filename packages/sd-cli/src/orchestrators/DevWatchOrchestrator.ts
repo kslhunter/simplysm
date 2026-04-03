@@ -97,7 +97,7 @@ export class DevWatchOrchestrator {
       sdConfig = await loadSdConfig({
         cwd: this._cwd,
         dev: true,
-        options: this._options.options,
+        opt: this._options.options,
       });
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {

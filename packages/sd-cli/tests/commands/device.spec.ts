@@ -55,14 +55,14 @@ describe("runDevice", () => {
       },
     });
 
-    await runDevice({ package: "client-pda", options: [] });
+    await runDevice({ target: "client-pda", options: [] });
 
     expect(Capacitor.create).toHaveBeenCalledWith(
       expect.stringContaining("client-pda"),
       { appId: "com.test.app", appName: "TestApp" },
       undefined,
     );
-    expect(mockCapacitorInstance.run).toHaveBeenCalledWith("http://localhost:40480");
+    expect(mockCapacitorInstance.run).toHaveBeenCalledWith("http://localhost:40480/client-pda/");
   });
 
   // Acceptance: Scenario "device 명령어로 Electron 앱 실행"
@@ -77,14 +77,14 @@ describe("runDevice", () => {
       },
     });
 
-    await runDevice({ package: "my-client", options: [] });
+    await runDevice({ target: "my-client", options: [] });
 
     expect(Electron.create).toHaveBeenCalledWith(
       expect.stringContaining("my-client"),
       { appId: "com.test.electron" },
       undefined,
     );
-    expect(mockElectronInstance.run).toHaveBeenCalledWith("http://localhost:4200");
+    expect(mockElectronInstance.run).toHaveBeenCalledWith("http://localhost:4200/my-client/");
   });
 
   // Acceptance: Scenario "device 명령어에 URL 옵션 지정"
@@ -99,7 +99,7 @@ describe("runDevice", () => {
       },
     });
 
-    await runDevice({ package: "client-pda", url: "http://192.168.1.100:4200", options: [] });
+    await runDevice({ target: "client-pda", url: "http://192.168.1.100:4200", options: [] });
 
     expect(mockCapacitorInstance.run).toHaveBeenCalledWith("http://192.168.1.100:4200");
   });
@@ -117,7 +117,7 @@ describe("runDevice", () => {
       },
     });
 
-    await runDevice({ package: "my-client", options: [] });
+    await runDevice({ target: "my-client", options: [] });
 
     expect(Electron.create).toHaveBeenCalled();
     expect(Capacitor.create).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe("runDevice", () => {
       },
     });
 
-    await expect(runDevice({ package: "nonexistent", options: [] })).rejects.toThrow();
+    await expect(runDevice({ target: "nonexistent", options: [] })).rejects.toThrow();
   });
 
   // Unit: client가 아닌 패키지 에러
@@ -142,6 +142,6 @@ describe("runDevice", () => {
       },
     });
 
-    await expect(runDevice({ package: "my-server", options: [] })).rejects.toThrow();
+    await expect(runDevice({ target: "my-server", options: [] })).rejects.toThrow();
   });
 });

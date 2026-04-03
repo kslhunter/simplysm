@@ -483,7 +483,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   // sd.config.ts 로드
   let sdConfig: SdConfig;
   try {
-    sdConfig = await loadSdConfig({ cwd, dev: false, options: options.options });
+    sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
     logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);

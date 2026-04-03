@@ -22,7 +22,7 @@ vi.mock("jiti", () => ({
 const { loadSdConfig } = await import("../../src/utils/sd-config");
 
 describe("loadSdConfig", () => {
-  const baseParams = { cwd: "/project", dev: true, options: [] as string[] };
+  const baseParams = { cwd: "/project", dev: true, opt: [] as string[] };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -73,7 +73,7 @@ describe("loadSdConfig", () => {
     mockExists.mockResolvedValue(true);
     mockJitiImport.mockResolvedValue({ default: configFn });
 
-    const params = { cwd: "/project", dev: true, options: ["key=val"] };
+    const params = { cwd: "/project", dev: true, opt: ["key=val"] };
     await loadSdConfig(params);
 
     expect(configFn).toHaveBeenCalledWith(params);

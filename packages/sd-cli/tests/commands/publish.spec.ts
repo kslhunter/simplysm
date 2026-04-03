@@ -446,7 +446,7 @@ describe("runPublish", () => {
         (c: unknown[]) => c[0] === "claude",
       );
       expect(claudeCalls).toHaveLength(1);
-      expect((claudeCalls[0][1] as string[])).toContain("/sd-commit all");
+      expect((claudeCalls[0][1] as string[])).toContain("/sd-commit");
     });
 
     it("aborts when auto-commit claude command fails", async () => {
@@ -1105,7 +1105,7 @@ describe("runPublish", () => {
       });
 
       expect(mocks.loadSdConfig).toHaveBeenCalledWith(
-        expect.objectContaining({ options: ["production"] }),
+        expect.objectContaining({ opt: ["production"] }),
       );
     });
 

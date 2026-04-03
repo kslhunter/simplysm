@@ -73,6 +73,7 @@ export class ViteEngine implements BuildEngine {
       configs: this._pkg.config.configs,
       browserSupport: this._pkg.config.browserSupport,
       enableLint: output.lint,
+      pwa: this._pkg.config.pwa,
       exclude: this._pkg.config.exclude,
       outDir: this._outDir,
       base: this._base,
@@ -185,6 +186,7 @@ export class ViteEngine implements BuildEngine {
       replaceDeps: this._replaceDeps,
       browserSupport: this._pkg.config.browserSupport,
       enableLint: output.lint,
+      pwa: this._pkg.config.pwa,
       exclude: this._pkg.config.exclude,
     });
   }
