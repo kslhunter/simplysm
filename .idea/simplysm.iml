@@ -46,6 +46,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-client/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-server/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

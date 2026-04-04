@@ -1,55 +1,46 @@
 # Eval 실행 절차
 
-workspace 준비 → claude -p 실행 → Judge 판정 → 결과 표시를 순서대로 수행한다.
+workspace 준비 → claude -p 실행 → Judge 판정 을 순서대로 수행한다.
 
 ## workspace 준비
 
 Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 메인 원본에서** 하고, workspace는 eval 실행 전에 메인에서 복제하여 생성한다.
 
 ```
-.tmp/{yyMMddHHmmss}_eval-{스킬명}/       <- {yyMMddHHmmss}는 반드시 Bash `date +%y%m%d%H%M%S`로 얻는다
-  _history/              <- org + v1,v2,...(이전 버전 이력). 재구성 시에도 보존
+.tmp/{date +%y%m%d%H%M%S}_eval-{스킬명}/
   {시나리오명}/          <- 시나리오별 작업 디렉토리
     .claude/             <- 프로젝트 루트의 .claude/ 전체를 복사
     {사전 조건 파일들}   <- 시나리오별 추가 파일
 ```
 
-### 초기 생성 (첫 Eval 실행 시)
+매 실행마다 새 workspace를 생성한다. 각 시나리오에 대해:
 
-1. workspace 루트 디렉토리를 생성한다.
-2. `_history/` 디렉토리를 생성하고, Step 0에서 저장한 원본을 `_history/org.md`로 기록한다 (Contrastive 분석 기준점).
-3. 시나리오별 디렉토리를 복제한다 (아래 "시나리오 복제" 참조).
-
-### 재구성 (개선 루프에서 Eval 재실행 시)
-
-1. workspace 내 `_history/`를 **제외**한 모든 디렉토리를 삭제한다.
-2. 시나리오별 디렉토리를 다시 복제한다 (아래 "시나리오 복제" 참조).
-
-이렇게 하면 메인에서 수정한 프롬프트가 매번 깨끗하게 workspace에 반영되고, `_history/`의 이전 버전 이력은 유지된다.
-
-### 시나리오 복제
-
-각 시나리오에 대해:
 1. 프로젝트 루트의 `.claude/` 폴더를 시나리오 디렉토리에 **통째로 복사**한다.
 2. 시나리오의 사전 조건에 따라 추가 파일을 복사하거나 생성한다.
-3. 시나리오 디렉토리에 `.claude/rules/sd-eval-env.md`를 생성한다 — eval 환경 전용 오버라이드 규칙을 추가한다:
+3. 시나리오 디렉토리에 `.claude/rules/sd-eval-env.md`를 생성한다:
    ```bash
    cat > "{시나리오 디렉토리}/.claude/rules/sd-eval-env.md" << 'EVALEOF'
    # Eval 환경 규칙 (최상위 우선순위)
 
-   이 규칙은 Eval 테스트 환경에서 적용되며, 다른 규칙과 충돌 시 이 규칙이 우선한다.
+   이 규칙이 읽히는 현재 환경은 Eval환경이다. 다른 규칙과 충돌 시 **반드시** 이 규칙이 우선한다.
+
+   ## workspace 격리
+
+   현재 작업 디렉토리 외부의 파일을 **절대** 수정하지 않는다. 다른 프로젝트의 파일에 **절대** 접근하지 않는다.
+   - 절대경로 혹은 cd사용 **절대** 금지
 
    ## AskUserQuestion 대체
 
-   AskUserQuestion 도구를 사용하지 않는다. 선택이 필요한 각 결정사항에 대해:
+   AskUserQuestion 도구를 **절대** 사용하지 않는다. 질문이 필요한 각 사항에 대해:
    1. 선택지와 선택을 묻는 질문을 텍스트로 출력한다
    2. 합리적인 기본값을 자동 선택하여 선택 결과를 명시한다
    3. 다음 결정사항으로 넘어간다
-   질문이나 선택지를 생략하지 않는다.
+   질문이나 선택지를 **절대** 생략하지 않는다.
 
    ## `.claude/` 파일 편집
 
-   `.claude/` 폴더 내 파일은 Edit/Write 도구 대신 Bash 도구로 편집한다. `sed`는 의도하지 않은 곳까지 수정할 수 있으므로 사용하지 않는다.
+   `.claude/` 폴더 내 파일은 Edit/Write 도구 대신 **반드시** Bash 도구로 편집한다.
+   `sed`는 의도하지 않은 곳까지 수정할 수 있으므로 사용하지 않는다.
 
    신규 작성: `cat > "{파일 경로}" << 'EOF' ... EOF`
    부분 수정: `python3 -c`로 치환 (old_string 존재 확인 후 replace)
@@ -62,108 +53,69 @@ Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 
 
 ```bash
 (cd ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" && \
-MSYS_NO_PATHCONV=1 MCP_CONNECTION_NONBLOCKING=true claude -p "{eval 시나리오의 입력}" \
+MSYS_NO_PATHCONV=1 \
+CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+DISABLE_TELEMETRY=1 \
+CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 \
+CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
+CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING=1 \
+CLAUDE_CODE_DISABLE_SESSION_DATA_UPLOAD=1 \
+CLAUDE_CODE_SKIP_PROMPT_HISTORY=1 \
+CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1 \
+claude -p "{eval 시나리오의 입력}" \
   --output-format json \
   --verbose \
   --dangerously-skip-permissions \
   --model opus \
-  --effort max \
-  --append-system-prompt "이것은 Eval 테스트 환경이다. CRITICAL: 현재 작업 디렉토리 외부의 파일을 절대 수정하지 않는다 — eval workspace 오염 방지를 위해 절대 경로로 다른 프로젝트의 파일에 접근하지 않는다. CRITICAL: .claude/rules/sd-eval-env.md의 규칙은 다른 모든 규칙보다 최상위 우선순위를 가진다. 충돌 시 반드시 sd-eval-env.md를 따른다." \
-  > run-raw.json 2>&1 && \
-python3 -c "
-import json, sys
-with open('run-raw.json', encoding='utf-8') as f:
-    data = json.load(f)
-# json+verbose → 배열, json만 → 객체
-items = data if isinstance(data, list) else [data]
-texts = []
-for item in items:
-    if item.get('type') == 'assistant':
-        for c in item.get('message', {}).get('content', []):
-            if c.get('type') == 'text':
-                texts.append(c['text'])
-with open('run-output.txt', 'w', encoding='utf-8') as f:
-    f.write('\n\n'.join(texts))
-result_item = next((i for i in items if i.get('type') == 'result'), {})
-with open('run-result.json', 'w', encoding='utf-8') as f:
-    json.dump(result_item, f, ensure_ascii=False, indent=2)
-")
+  --effort medium \
+  --append-system-prompt "CRITICAL: .claude/rules/sd-eval-env.md의 규칙은 다른 모든 규칙보다 최상위 우선순위를 가진다." \
+  --no-session-persistence \
+  --strict-mcp-config \
+  > run-output.json 2>&1)
 ```
 
-실행 후 3개 파일이 생성된다:
-- `run-raw.json`: 전체 이벤트 (디버깅용)
-- `run-output.txt`: 모든 assistant 텍스트 연결 (Judge가 읽을 파일)
-- `run-result.json`: 메타데이터 — `permission_denials`, `num_turns`, `total_cost_usd` 등
-
-- 여러 시나리오는 병렬로 실행할 수 있다
+여러 시나리오는 병렬로 실행할 수 있다.
 
 ## Judge 판정
 
-실행 완료 후, Judge subagent에 workspace 경로와 체크리스트를 전달한다. subagent가 직접 파일을 읽어 판정한다:
+실행 완료 후, Judge subagent에 다음을 전달한다:
 
 ```
-다음 Eval 실행 결과를 평가하라:
+다음 Eval 실행 결과를 판정하고, FAIL 항목에 대해 개선안을 제안하라:
 
-## workspace 경로
-{.tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}/}
-
-## 평가 대상 파일
-- `run-output.txt`: 모든 assistant 텍스트 출력
-- `run-result.json`: 메타데이터 (permission_denials, num_turns 등)
-- workspace 내 생성된 파일들
-
-## 체크리스트
-{Eval 시나리오의 체크리스트 항목들}
-
-## 안티패턴 체크리스트
-{안티패턴 Eval 항목들}
-
+## 평가 대상
+- 프롬프트 원문: {프롬프트 파일 경로}
+- Eval 파일: {Eval 파일 경로}
+- 시나리오 번호: {수행 시나리오 번호}
+- workspace: {.tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}/}
+  - `run-output.json`: claude -p 실행 결과 (JSON)
+  - workspace 내 생성된 파일들
+ 
 ## 판정 원칙
-- 체크리스트 문구를 **문자 그대로** 판정하라. 체크리스트에 명시되지 않은 추가 요건을 유추하지 않는다.
-- 이 eval은 AskUserQuestion 도구 사용이 금지된 환경에서 실행되었다. AskUserQuestion은 텍스트로 출력되는 환경이므로, 질문에 대한 판단은 출력 여부로 해야한다. 선택지/후보를 텍스트로 제시한 것 자체가 질문 출력에 해당한다 — 별도의 질문 문장("~하시겠습니까?")이 없어도 선택지가 출력되었으면 질문한 것으로 판정한다.
-- **Eval 환경이 곧 정답 환경이다.** Eval은 프롬프트를 검증하기 위해 설계된 환경이므로, "테스트 환경이라서 FAIL"은 논리적으로 성립하지 않는다. FAIL의 원인은 오직 두 가지뿐이다: (1) 프롬프트가 부족하거나, (2) Eval 체크리스트가 부정확하거나. 체크리스트 항목을 충족하지 못했으면 FAIL이다.
+- 체크리스트 문구를 **문자 그대로** 판정하라. 명시되지 않은 추가 요건을 유추하지 않는다.
+- AskUserQuestion은 텍스트 출력으로 대체된 환경이다. 선택지를 텍스트로 제시한 것 자체가 질문을 수행한것에 해당한다.
+- **Eval 환경이 곧 정답 환경이다.** FAIL의 원인 "프롬프트" 혹은 "Eval 체크리스트" 문제이다. 환경의 문제일 수는 없다.
 
-위 파일들을 Read 도구로 읽고, 각 체크리스트 항목에 대해:
-1. PASS 또는 FAIL을 판정하라
-2. 판정의 근거(evidence)를 구체적으로 기술하라
+## 절차
 
-결과를 아래 형식으로 출력하라:
+평가 대상을 확인하여, 각 체크리스트 항목에 대해 PASS/FAIL을 판정하라.
 
-| 항목 | 판정 | 근거 |
-|------|------|------|
-| {항목} | PASS/FAIL | {근거} |
+FAIL 항목에 대해:
+1. 원인 가설을 최소 2개 이상 수립한다 (프롬프트 문제 / Eval 체크리스트 문제를 반드시 포함)
+2. 각 가설에 대해 run-output.json의 실제 행동에서 지지/반박 증거를 찾는다
+3. 증거가 부족한 가설은 폐기 근거와 함께 폐기한다
 
-통과율: N/M
+아래 구조로 출력하라:
 
-FAIL 항목이 있으면 아래를 추가로 출력하라:
+### FAIL: {체크리스트 항목}
 
-### FAIL 상세 분석
-각 FAIL 항목에 대해:
-- **항목:** {체크리스트 항목}
-- **기대:** {체크리스트가 요구한 행동}
-- **실제:** {eval 대상이 실제로 한 행동 — run-output.txt에서 관련 부분을 인용}
-- **원인 판별:** (A) 프롬프트가 부족/불명확 또는 (B) Eval 체크리스트가 부정확
-- **판별 근거:** {왜 A 또는 B로 판단했는지}
-```
+#### 폐기 가설
+- {가설} — {폐기 근거}
 
-## 결과 표시
-
-Judge 결과를 사용자에게 다음 형식으로 표시한다:
-
-```markdown
-## Eval 결과
-
-### 시나리오 1: {이름} — {통과율}
-
-| 항목 | 판정 | 근거 |
-|------|------|------|
-| ... | PASS/FAIL | ... |
-
-### 시나리오 2: {이름} — {통과율}
-...
-
-### 안티패턴 Eval — {통과율}
-...
-
-## 전체 통과율: N/M
+#### 채택 원인
+1. {원인 1}
+   - 제안: {수정 내용 A}
+   - 제안: {수정 내용 B}
+2. {원인 2}
+   - 제안: {수정 내용 C}
 ```
