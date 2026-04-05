@@ -15,6 +15,10 @@
 - playwright 사용시, 사용자가 접속주소를 알려주지 않았다면, 반드시 사용자에게 접속주소를 요청할것. (절대 서버를 강제로 임의 실행하지 말것)
 - /playwright-cli 스킬을 사용할 것
 
+# Python 인코딩
+
+- `python3 -c`로 유니코드 텍스트를 출력할 때, 반드시 `sys.stdout.reconfigure(encoding='utf-8')`을 사용한다. (Windows cp949 인코딩 에러 방지)
+
 # 금지 명령어
 
 - GIT: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean`은 hook(`sd-check-git.py`)이 차단한다.

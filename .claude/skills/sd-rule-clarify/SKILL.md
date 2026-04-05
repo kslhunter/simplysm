@@ -1,6 +1,6 @@
 ---
 name: sd-rule-clarify
-description: 불명확한 정보를 다룰 때 사용하는 행동 규칙. 정보의 확실성을 분류(VERIFIED/INFERRED/ASSUMED)하고 불명확한 항목을 사용자에게 질문하여 해소한다.
+description: 불명확한 정보를 다룰 때 사용하는 행동 규칙. "정보 확인", "불명확한 항목 정리", "확실성 분류" 등을 요청할 때 사용한다.
 ---
 
 # sd-rule-clarify: 명확화 규칙

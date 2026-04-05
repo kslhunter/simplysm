@@ -12,7 +12,7 @@
       return parsed.value;
     }
     ```
-- 입력: "src/utils.ts의 processData 함수의 에러 처리를 개선해줘"
+- 입력: "/sd-rule-clarify src/utils.ts의 processData 함수의 에러 처리를 개선해줘"
 - 체크리스트:
   - [ ] 요청에서 불명확한 항목(어떤 에러를 처리할지, 어떤 방식으로 개선할지)을 식별했다
   - [ ] 식별한 항목의 확실성 수준(VERIFIED/INFERRED/ASSUMED)을 분류하여 표시했다
@@ -26,7 +26,7 @@
     ```typescript
     console.log("Hello, world!");
     ```
-- 입력: "다른 프로젝트에서 했던 방식으로 /api/products 엔드포인트를 추가해줘"
+- 입력: "/sd-rule-clarify 다른 프로젝트에서 했던 방식으로 /api/products 엔드포인트를 추가해줘"
 - 체크리스트:
   - [ ] "/api/products 경로"를 VERIFIED로 분류했다
   - [ ] "다른 프로젝트에서 했던 방식"을 INFERRED Medium 이하로 분류했다
@@ -41,10 +41,10 @@
       return a + b;
     }
     ```
-- 입력: "src/math.ts의 add 함수에서 두 인자가 모두 음수일 때 0을 반환하도록 if 조건문을 추가해줘"
+- 입력: "/sd-rule-clarify src/math.ts의 add 함수에서 두 인자가 모두 음수일 때 0을 반환하도록 if 조건문을 추가해줘"
 - 체크리스트:
   - [ ] 명확화 질문을 제시하지 않고 작업을 진행했다
-  - [ ] 요청된 조건(두 인자 모두 음수 → 0 반환)을 코드에 반영했다
+  - [ ] 요청된 조건(두 인자 모두 음수 → 0 반환)에 대한 코드 변경안을 제시했다
 
 ## 안티패턴 Eval
 

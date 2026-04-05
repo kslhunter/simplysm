@@ -21,7 +21,7 @@
     ### `ObjectUtils.clone(obj)`
     객체를 깊은 복제한다.
     ```
-- 입력: "@simplysm/core-common의 ObjectUtils 사용법 알려줘"
+- 입력: "/sd-rule-readme @simplysm/core-common의 ObjectUtils 사용법 알려줘"
 - 체크리스트:
   - [ ] @simplysm/core-common의 README.md 파일을 읽었다
   - [ ] 응답에 README.md에 기재된 `merge`, `equal`, `clone` 메서드 정보가 반영되어 있다
@@ -40,7 +40,7 @@
     `sheet.cell(row, col).value = v` — 셀 값 설정
     `await wb.downloadAsync(filename)` — 파일 다운로드
     ```
-- 입력: "@simplysm/excel을 사용해서 엑셀 파일 만드는 코드 작성해줘"
+- 입력: "/sd-rule-readme @simplysm/excel을 사용해서 엑셀 파일 만드는 코드 작성해줘"
 - 체크리스트:
   - [ ] @simplysm/excel의 README.md 파일을 읽었다
   - [ ] 작성된 코드가 README.md에 기재된 API(`SdExcelWorkbook`, `createSheet`, `cell`, `downloadAsync`)를 사용한다
