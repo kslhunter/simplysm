@@ -2,183 +2,63 @@
 
 ## 행동 Eval
 
-### 시나리오 1: ACH 확정 + 방안 경쟁 — race condition
+### 시나리오 1: 에러 메시지 분석
 
-#### 사전 조건 파일
-
-`src/cache.ts`:
-
-```typescript
-async function fetchData(key: string): Promise<string> {
-  return new Promise((resolve) => setTimeout(() => resolve(`data-${key}`), 100));
-}
-
-class Cache {
-  private data: Map<string, string> = new Map();
-  private loading: Set<string> = new Set();
-
-  async get(key: string): Promise<string> {
-    if (this.data.has(key)) {
-      return this.data.get(key)!;
+- 사전 조건:
+  - `src/utils.ts`:
+    ```typescript
+    interface User {
+      name: string;
+      roles?: string[];
     }
 
-    if (this.loading.has(key)) {
-      return this.data.get(key)!;
+    export function getUserRoleNames(users: User[]): string[] {
+      return users.flatMap(u => u.roles.map(r => r.toUpperCase()));
     }
-
-    this.loading.add(key);
-    const value = await fetchData(key);
-    this.data.set(key, value);
-    this.loading.delete(key);
-    return value;
-  }
-}
-
-const cache = new Cache();
-Promise.all([cache.get("x"), cache.get("x")]).then(([a, b]) => {
-  console.log(a, b);
-});
-```
-
-- 입력: "/sd-debug cache.get을 동시에 호출하면 두 번째 호출이 undefined를 반환합니다"
+    ```
+  - `src/app.ts`:
+    ```typescript
+    import { getUserRoleNames } from "./utils";
+    const users = [{ name: "Alice", roles: ["admin"] }, { name: "Bob" }];
+    console.log(getUserRoleNames(users));
+    ```
+- 입력: "/sd-debug `TypeError: Cannot read properties of undefined (reading 'map')` at getUserRoleNames (src/utils.ts:7)"
 - 체크리스트:
-  - [ ] 출력에 가설이 2개 이상 나열되어 있다
-  - [ ] 출력에 ACH 매트릭스(가설 x 증거, C/I/N 표시)가 포함되어 있다
-  - [ ] 불일치(I)인 가설에 "폐기" 표시가 있다
-  - [ ] loading 상태에서 data가 아직 없는데 get을 시도하는 것이 근본 원인임을 식별했다
-  - [ ] 출력에 "확정" 판정이 포함되어 있다
-  - [ ] 해결 방안이 2개 이상 제시되었다 (예: Promise 캐싱, 대기 큐 등)
-  - [ ] 각 방안에 대해 독립적으로 채점 프로세스를 수행했다
-  - [ ] 각 방안에 반론이 있다
-  - [ ] 최고 점수 방안이 명시적으로 추천되었다
-  - [ ] 방안 선택을 묻는 질문이 출력에 포함되었다
-  - [ ] 선택 후 `.tasks/` 하위에 `*_debug-*/debug.md` 파일이 생성되었다
-  - [ ] debug.md에 ACH 매트릭스가 포함되어 있다
-  - [ ] debug.md에 `## 출처` 섹션이 있고 `origin: direct`이 기록되어 있다
-  - [ ] 소스 코드 파일(src/cache.ts)이 수정되지 않았다
+  - [ ] 증상을 에러 유형으로 분류하고 에러 메시지 원문을 인용했다
+  - [ ] 에러 발생 위치(파일:라인)를 특정했다
+  - [ ] 원인 가설을 2개 이상 생성했다
+  - [ ] ACH 매트릭스를 작성하고 각 셀에 C/I/N과 증거 등급(code/doc/infer)을 표시했다
+  - [ ] 해결 방안에 편법/우회 목록의 항목(옵셔널 체이닝으로 undefined 무시, as any, try-catch 등)을 사용하지 않았다
+  - [ ] 각 해결 방안에 장점, 반론, 관점별 점수(10점 만점)와 평균을 포함했다
 
-### 시나리오 2: 편법 금지 — 타이밍 이슈
+### 시나리오 2: 동작 이상 분석
 
-#### 사전 조건 파일
-
-`src/app.ts`:
-
-```typescript
-class DataLoader {
-  private data: string[] | undefined;
-
-  async init() {
-    const response = await fetch("/api/data");
-    this.data = await response.json();
-  }
-
-  getItems(): string[] {
-    return this.data!;
-  }
-}
-
-const loader = new DataLoader();
-loader.init();
-const items = loader.getItems();
-console.log(items.length);
-```
-
-- 입력: "/sd-debug items가 undefined입니다. setTimeout(, 100) 감싸면 되긴 하는데 근본 원인이 뭘까요?"
+- 사전 조건:
+  - `src/sorter.ts`:
+    ```typescript
+    export function sortByAge(items: { name: string; age: number }[]): { name: string; age: number }[] {
+      return items.sort((a, b) => String(a.age).localeCompare(String(b.age)));
+    }
+    ```
+- 입력: "/sd-debug sortByAge 함수에 [{name:'A',age:2},{name:'B',age:10},{name:'C',age:1}]을 넣으면 [1,10,2] 순서로 정렬됨. 기대: [1,2,10]"
 - 체크리스트:
-  - [ ] setTimeout을 해결 방안으로 제안하지 않았다
-  - [ ] `init()`의 비동기 완료를 기다리지 않는 것이 근본 원인임을 식별했다
-  - [ ] await 누락 또는 초기화 흐름 재설계 등 근본적 해결책을 제시했다
-  - [ ] 방안 선택을 묻는 질문이 출력에 포함되었다
+  - [ ] 기대 동작과 실제 동작을 각각 명시했다
+  - [ ] 코드를 읽고 원인 가설을 2개 이상 생성했다
+  - [ ] 증거 등급(C(code)/C(doc)/C(infer))을 구분하여 표시했다
+  - [ ] 원인별로 해결 방안을 묶어 제시하고 각 방안에 반론을 포함했다
 
-### 시나리오 3: 에러 그룹핑 — 같은 근본 원인의 여러 에러
+### 시나리오 3: 불명확한 입력
 
-#### 사전 조건 파일
-
-`src/api.ts`:
-
-```typescript
-interface ApiResponse {
-  status: number;
-  data: {
-    items: string[];
-    total: number;
-  };
-}
-
-async function fetchItems(): Promise<ApiResponse> {
-  return { status: 200, data: { items: ["a", "b"], total: 2 } };
-}
-
-async function processItems() {
-  const res = await fetchItems();
-  const items = res.body.items;
-  const total = res.body.total;
-  const mapped = res.body.items.map((i: string) => i.toUpperCase());
-  return { items, total, mapped };
-}
-```
-
-- 입력: "/sd-debug processItems에서 3개 에러 발생: 1) res.body.items - body가 undefined 2) res.body.total - body가 undefined 3) res.body.items.map - cannot read properties of undefined. 전부 분석해주세요"
+- 사전 조건: 없음
+- 입력: "/sd-debug 안 돼요"
 - 체크리스트:
-  - [ ] 3개 에러가 같은 근본 원인(`body` 대신 `data`를 써야 함)에서 파생됨을 식별했다
-  - [ ] 에러들을 하나의 그룹으로 묶어서 분석했다 (개별 3회가 아닌 1회 분석)
-  - [ ] 해결 방안이 제시되었다
-  - [ ] 방안 선택을 묻는 질문이 출력에 포함되었다
-
-### 시나리오 4: ACH 프로세스 — 런타임 데이터 의존 버그
-
-#### 사전 조건 파일
-
-`src/order-service.ts`:
-
-```typescript
-interface OrderItem {
-  productId: string;
-  quantity: number;
-  unitPrice: number;
-}
-
-interface Order {
-  id: string;
-  items: OrderItem[];
-  createdAt: string;
-}
-
-async function getOrder(orderId: string): Promise<Order> {
-  const res = await fetch(`/api/orders/${orderId}`);
-  if (!res.ok) throw new Error(`Order fetch failed: ${res.status}`);
-  return res.json();
-}
-
-function calculateOrderTotal(order: Order): number {
-  return order.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-}
-
-async function processRefund(orderId: string) {
-  const order = await getOrder(orderId);
-  const total = calculateOrderTotal(order);
-  const refundAmount = total * 0.9;
-  await fetch(`/api/refunds`, {
-    method: 'POST',
-    body: JSON.stringify({ orderId, amount: refundAmount }),
-  });
-  return refundAmount;
-}
-```
-
-- 입력: "/sd-debug processRefund에서 간헐적으로 refundAmount가 NaN이 됩니다. 특정 주문에서만 발생하고 대부분은 정상입니다. 어떤 주문이 문제인지는 아직 특정하지 못했습니다."
-- 체크리스트:
-  - [ ] 출력에 가설이 2개 이상 나열되어 있다 (예: quantity/unitPrice가 undefined, API 응답 스키마 불일치, items 필드 문제 등)
-  - [ ] 출력에 ACH 매트릭스(가설 x 증거, C/I/N 표시)가 포함되어 있다
-  - [ ] I(불일치)로 폐기된 가설이 있다면, 그 근거가 코드에서 직접 관찰 가능한 모순이다
-  - [ ] 런타임 데이터(API 응답)를 직접 확인할 수 없다는 점이 분석에 반영되어 있다
-  - [ ] 해결 방안이 2개 이상 제시되었다
-  - [ ] 방안 선택을 묻는 질문이 출력에 포함되었다
+  - [ ] 증상·위치·재현 절차 중 불명확한 항목에 대해 질문을 제시했다
+  - [ ] 불명확한 정보에 대해 추측으로 원인을 단정하지 않았다
+  - [ ] 질문 없이 임의로 분석을 진행하지 않았다
 
 ## 안티패턴 Eval
 
-- [ ] 소스 코드 파일(사전 조건 파일)이 수정되지 않았다
-- [ ] 편법(setTimeout, try-catch로 에러 무시, 플래그 변수 우회)을 추천 방안으로 제안하지 않았다
-- [ ] 원인 분석 없이 바로 해결책만 나열하지 않았다
-- [ ] 방안 선택 질문 없이 바로 문서만 생성하지 않았다
-- [ ] 가설을 1개만 세우고 바로 확정하지 않았다 (ACH 매트릭스 없이 단일 가설 확정)
+- [ ] 증거 없이 "~일 수 있다", "~가능성이 높다"로 원인을 단정했다
+- [ ] 편법/우회 목록의 항목(setTimeout, try-catch, as any, @ts-ignore, eslint-disable, 플래그 변수, 옵셔널 체이닝으로 undefined 무시)을 해결 방안으로 제안했다
+- [ ] 가설을 1개만 생성하고 ACH 매트릭스를 생략했다
+- [ ] 외부 라이브러리 버그를 C(doc) 이상의 근거 없이 원인으로 지목했다

@@ -11,19 +11,17 @@ Microsoft Graph API로 Outlook 메일을 검색하고, 본문+첨부파일을 �
 
 인증 정보는 `.claude/simplysm.json`의 `outlook` 섹션에서 자동으로 읽는다.
 
-## 프로세스
-
-### 1. 요청 분석 → CLI 옵션 매핑
+## Step 1: 요청 분석
 
 사용자의 자연어 요청에서 검색 조건, 날짜 범위, 목적(검색/다운로드)을 파악하여 CLI 옵션으로 매핑한다.
 
-### 2. 스크립트 실행
+## Step 2: 스크립트 실행
 
 ```bash
 python .claude/skills/sd-outlook/outlook.py {search|download} [옵션...]
 ```
 
-#### KQL 검색 옵션 (AND 조합)
+### KQL 검색 옵션 (AND 조합)
 
 | 옵션 | KQL | 설명 |
 |------|-----|------|
@@ -37,14 +35,14 @@ python .claude/skills/sd-outlook/outlook.py {search|download} [옵션...]
 | `--has-attachment` | `hasattachment:yes` | 첨부 있는 메일만 |
 | `--importance {high,normal,low}` | `importance:` | 중요도 필터 |
 
-#### 특수 검색 모드
+### 특수 검색 모드
 
 | 옵션 | 설명 |
 |------|------|
 | `--domain DOMAIN` | from/to 양방향 OR 검색 + 중복 제거. 다른 KQL 옵션과 **조합 가능** |
 | `--query KQL` | KQL 직접 입력. 다른 KQL 옵션과 **배타** |
 
-#### 필터 및 공통 옵션
+### 필터 및 공통 옵션
 
 | 옵션 | 설명 |
 |------|------|
@@ -54,7 +52,7 @@ python .claude/skills/sd-outlook/outlook.py {search|download} [옵션...]
 | `--user EMAIL` | 메일 계정 (기본: config의 defaultUser) |
 | `--config PATH` | 설정 파일 (기본: `.claude/simplysm.json`) |
 
-#### 사용 예시
+### 사용 예시
 
 ```bash
 # 도메인 관련 전체 메일
@@ -73,7 +71,7 @@ python outlook.py download --domain example.com --after 2026-01-01 --outdir .tmp
 python outlook.py search --query "from:user@a.com subject:견적"
 ```
 
-### 3. 결과 보고
+## Step 3: 결과 보고
 
 - `search`: stdout의 마크다운 표를 사용자에게 보여준다.
 - `download`: stdout에 출력된 `index.md` 경로를 안내한다. 다운로드된 첨부파일의 분석이 필요하면 `sd-doc-extract` 스킬을 안내한다.

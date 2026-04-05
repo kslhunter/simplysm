@@ -17,24 +17,7 @@ description: |
 /sd-claude-docs angular      ← packages/angular 만
 ```
 
-## 프로세스 흐름
-
-```mermaid
-flowchart TD
-    S1[1단계: 프로젝트 설정 분석]
-    S1 --> CHK{패키지명 지정?}
-    CHK -- Yes --> S_PKG[2단계: 지정 패키지 문서 생성 — subagent]
-    CHK -- No --> S_MONO{모노레포?}
-    S_MONO -- 아님 --> S_SINGLE[2단계: root 문서 생성 — CLAUDE.md + README.md]
-    S_MONO -- 맞음 --> S_ALL[2단계: 전체 패키지 목록 + 변경 감지 필터링]
-    S_ALL --> S_AGENTS[3단계: 패키지별 문서 생성 — 병렬 subagent]
-    S_AGENTS --> S_ROOT[4단계: root 문서 생성 — CLAUDE.md + README.md]
-    S_PKG --> DONE[완료: 결과 보고]
-    S_SINGLE --> DONE
-    S_ROOT --> DONE
-```
-
-## 1단계: 프로젝트 설정 분석
+## Step 1: 프로젝트 설정 분석
 
 ### 1-1. 패키지 매니저 감지
 
@@ -72,7 +55,7 @@ flowchart TD
 
 `.claude/rules/` 디렉토리가 존재하면 모든 `.md` 파일을 읽는다. 이미 다루고 있는 주제를 목록화한다. 해당 주제는 **CLAUDE.md에서 제외**한다 — 파일 간 규칙 중복은 LLM이 고유한 지침 대신 중복 컨텍스트를 처리하게 되어 지침의 효과를 약화시킨다.
 
-## 2단계: 분기
+## Step 2: 분기
 
 ### 패키지명 지정 시
 
@@ -119,7 +102,7 @@ git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지�
 
 처리 대상 패키지가 있으면 3단계로 진행한다. 전체 스킵이면 4단계(root 문서)로 진행한다.
 
-## 3단계: 패키지별 문서 생성 (모노레포)
+## Step 3: 패키지별 문서 생성 (모노레포)
 
 각 패키지에 대해 **Agent 도구로 subagent를 병렬 실행**한다. 하나의 메시지에서 모든 패키지의 Agent 호출을 동시에 보낸다.
 
@@ -151,7 +134,7 @@ git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지�
 - 생성된 파일 목록
 - package.json files 변경 여부
 
-## 4단계: root 문서 생성
+## Step 4: root 문서 생성
 
 ### root CLAUDE.md
 
@@ -242,7 +225,7 @@ UI:       angular (Angular)
 
 단일 패키지인 경우 `package-doc-gen.md`의 README 형식을 root에 직접 적용한다.
 
-## 완료: 결과 보고
+## Step 5: 결과 보고
 
 ```markdown
 ## sd-claude-docs 결과

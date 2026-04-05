@@ -1,7 +1,7 @@
 # 대화 규칙
 
-- 사용자의 질문에 답변만 하라. 절대 임의로 다음단계(특히, 코드변경)로 넘어가지 않는다. 답변만 하고 사용자의 명시적 요청을 기다린다.
-- 사용자의 질문이 명확하지 않으면 `.claude/rules/sd-option-scoring.md`의 규칙에 따라 명확화 한다. (절대 추측하지 않는다.)
+- 사용자의 질문에 답변만 하라. 절대 임의로 다음단계(특히, 코드변경)로 넘어가지 않는다(NEVER). 답변만 하고 사용자의 명시적 요청을 기다린다.
+- 사용자의 질문이 명확하지 않으면 `sd-rule-clarify` 스킬의 규칙에 따라 명확화 한다. (절대 추측하지 않는다.)
 - 사용자의 질문은 동의를 구하는것이 아니다. 무조건적 동의하려하지 말고, 비판적으로 사고하여 답변한다. 
 
 # Compaction Rules
@@ -19,10 +19,11 @@
 
 - GIT: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean`은 hook(`sd-check-git.py`)이 차단한다.
 - cd: `cd ...` 명령을 통한 타 폴더로의 이동을 금지한다.
+- **타입체크 명령어**: `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]`등의 스크립트 사용
 
-# Typescript 빌드 규칙
+# 도구사용 규칙
 
-- 절대 tsc를 emit모드로 실행하지 말것.
+- Write: 이미 존재하는 파일에 Write 도구를 사용하지 않는다. 기존 파일 수정은 반드시 Edit 도구를 사용한다. (Write는 덮어쓰기때문에 위험함)
 
 # 코딩 룰
 
@@ -33,7 +34,6 @@
 
 ## 자주 하는 실수
 
-- **타입체크 명령어**: `npx tsc --noEmit` 사용 금지. 반드시 `pnpm typecheck [targets..]` 사용
 - **`as any[]` 캐스팅 후 `??` 방어**: `value as any[]`로 캐스팅하면 TypeScript는 nullable이 아니라고 판단하여 `?? []`에 lint 에러 발생. `value as any[] | undefined`로 캐스팅해야 한다
 - **타입 추론 해제 금지**: 타입 추론을 해제하는 방식의 수정은 절대 금지한다.
 - **불필요한 `as` 캐스팅**: 가드(`target !== "client"` 등)로 타입이 좁혀진 후에는 `as SdClientPackageConfig` 같은 캐스팅 불필요. lint 에러 `no-unnecessary-type-assertion` 발생

@@ -51,7 +51,7 @@ Before `npm publish`/`npm pack`, the `prepack` script synchronizes the root `.cl
 | `sd-dev` | Integrated development orchestrator (spec -> plan -> TDD -> check -> review) |
 | `sd-dev-plan` | Implementation plan creation from spec |
 | `sd-dev-spec` | Requirement specification writing |
-| `sd-dev-tdd` | TDD development from plan |
+| `sd-tdd` | TDD development from plan |
 | `sd-doc-extract` | Document file text/image extraction (docx, xlsx, pptx, pdf, eml, msg) |
 | `sd-issue` | GitHub issue creation for simplysm |
 | `sd-outlook` | Outlook mail search and download via Microsoft Graph API |

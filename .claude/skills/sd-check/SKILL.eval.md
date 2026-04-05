@@ -2,66 +2,75 @@
 
 ## 행동 Eval
 
-### 시나리오 1: typecheck 에러 → sd-debug 분석 → 수정 → 재실행
-- 입력: "/sd-check"
+### 시나리오 1: pnpm 프로젝트 전체 스크립트 탐지
+
 - 사전 조건:
-  - `pnpm-lock.yaml` (빈 파일)
+  - `pnpm-lock.yaml`: 빈 파일
   - `package.json`:
     ```json
-    { "name": "@simplysm/eval-check", "scripts": { "typecheck": "node scripts/typecheck.js" } }
-    ```
-  - `scripts/typecheck.js`:
-    ```js
-    const fs = require("fs");
-    const content = fs.readFileSync("src/calc.ts", "utf-8");
-    if (content.includes('"hello"')) {
-      console.error("src/calc.ts(4,24): error TS2322: Type 'string' is not assignable to type 'number'.");
-      process.exit(1);
+    {
+      "name": "eval-project",
+      "scripts": {
+        "typecheck": "echo typecheck-pass",
+        "lint": "echo lint-pass",
+        "test": "echo test-pass",
+        "build": "echo build",
+        "dev": "echo dev"
+      }
     }
-    console.log("typecheck passed");
     ```
-  - `src/calc.ts`:
-    ```ts
-    export function add(a: number, b: number): number {
-      return a + b;
-    }
-    const result: number = "hello";
-    ```
-- 체크리스트:
-  - [ ] typecheck 명령어를 실행했다
-  - [ ] 에러 발생 후 sd-debug의 분석 프로세스(Why Chain, 다관점 방안 채점)를 수행했다
-  - [ ] 수정 방안 선택지를 제시했다
-  - [ ] 선택된 방안에 따라 src/calc.ts를 수정했다
-  - [ ] 수정 후 typecheck를 재실행했다
-
-### 시나리오 2: 전체 흐름 — 순서 + lint --fix + 결과 보고
 - 입력: "/sd-check"
+- 체크리스트:
+  - [ ] lock 파일을 확인하여 패키지 매니저를 pnpm으로 결정했다
+  - [ ] package.json의 scripts를 읽었다
+  - [ ] typecheck, lint, test 3개를 탐지 결과로 표시했다
+  - [ ] build, dev를 check 대상에 포함하지 않았다
+  - [ ] typecheck → lint → test 순서로 실행을 시도했다
+
+### 시나리오 2: npm 프로젝트 + 대체 스크립트명
+
 - 사전 조건:
-  - `pnpm-lock.yaml` (빈 파일)
+  - `package-lock.json`: 빈 파일
   - `package.json`:
     ```json
-    { "name": "@simplysm/eval-check", "scripts": { "typecheck": "node scripts/typecheck.js", "lint": "node scripts/lint.js", "test": "node scripts/test.js" } }
+    {
+      "name": "eval-project",
+      "scripts": {
+        "tsc": "echo tsc-pass",
+        "eslint": "echo eslint-pass",
+        "vitest": "echo vitest-pass"
+      }
+    }
     ```
-  - `scripts/typecheck.js`: `console.log("typecheck passed");`
-  - `scripts/lint.js`: `console.log("lint passed");`
-  - `scripts/test.js`: `console.log("test passed");`
-- 체크리스트:
-  - [ ] typecheck, lint, test 3개 스크립트를 탐지하여 표시했다
-  - [ ] typecheck → lint → test 순서로 실행했다
-  - [ ] lint 실행 시 `--fix` 플래그가 포함된 명령어를 사용했다
-  - [ ] 각 Check의 상태와 반복 횟수를 포함하는 결과 보고가 출력되었다
-
-### 시나리오 3: 스크립트 미탐지 → 사용자 질문
 - 입력: "/sd-check"
-- 사전 조건:
-  - `pnpm-lock.yaml` (빈 파일)
-  - `package.json`: `{ "name": "@simplysm/eval-check", "scripts": { "build": "echo build" } }`
 - 체크리스트:
-  - [ ] 탐지된 check 스크립트가 없다는 내용이 출력되었다
-  - [ ] 사용자에게 실행할 명령어를 묻는 질문이 출력에 포함되었다
+  - [ ] lock 파일을 확인하여 패키지 매니저를 npm으로 결정했다
+  - [ ] tsc를 타입 체크, eslint을 린트, vitest를 테스트 카테고리에 매칭했다
+  - [ ] `npm run`으로 실행을 시도했다
+
+### 시나리오 3: 스크립트 없는 프로젝트
+
+- 사전 조건:
+  - `yarn.lock`: 빈 파일
+  - `package.json`:
+    ```json
+    {
+      "name": "eval-project",
+      "scripts": {
+        "build": "echo build",
+        "start": "echo start"
+      }
+    }
+    ```
+- 입력: "/sd-check"
+- 체크리스트:
+  - [ ] lock 파일을 확인하여 패키지 매니저를 yarn으로 결정했다
+  - [ ] 매칭되는 check 스크립트가 없음을 인지했다
+  - [ ] 실행할 명령어에 대해 사용자에게 질문했다
 
 ## 안티패턴 Eval
 
-- [ ] typecheck 통과 전에 lint나 test를 먼저 실행했다
-- [ ] 에러 발생 시 sd-debug 분석 프로세스 없이 직접 수정했다
-- [ ] 탐지 결과를 사용자에게 표시하지 않고 바로 실행으로 넘어갔다
+- [ ] lock 파일 확인 없이 패키지 매니저를 가정했다
+- [ ] package.json의 scripts를 읽지 않고 명령어를 실행했다
+- [ ] 탐지 결과를 표시하지 않고 바로 명령어를 실행했다
+- [ ] typecheck보다 lint 또는 test를 먼저 실행했다

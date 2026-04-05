@@ -26,7 +26,7 @@ sd-claude/
 │   │   ├── sd-dev/            ← 통합 개발 오케스트레이터
 │   │   ├── sd-dev-plan/       ← 구현계획 작성
 │   │   ├── sd-dev-spec/       ← 요구명세 작성
-│   │   ├── sd-dev-tdd/        ← TDD 개발
+│   │   ├── sd-tdd/        ← TDD 개발
 │   │   ├── sd-doc-extract/    ← 문서 파일 텍스트/이미지 추출 (Python)
 │   │   ├── sd-issue/          ← GitHub 이슈 생성
 │   │   ├── sd-outlook/        ← Outlook 메일 검색·다운로드 (Python)

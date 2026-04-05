@@ -13,5 +13,5 @@ BLOCKED = [
 
 for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
-        print(f"금지된 명령어입니다: {label}", file=sys.stderr)
+        print(f"Blocked command: {label}", file=sys.stderr)
         sys.exit(2)
