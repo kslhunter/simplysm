@@ -28,7 +28,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       .join(FIXTURE_DIR, "node_modules/@scope/lib/dist/style.css")
       .replace(/\\/g, "/");
 
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
+    const hmrResult = await (plugin as any).hotUpdate?.({
       file: cssFilePath,
       modules: [{ file: cssFilePath, id: cssFilePath }],
       server: { watcher: { emit: vi.fn() } },
@@ -68,7 +68,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    await (plugin as any).handleHotUpdate?.({
+    await (plugin as any).hotUpdate?.({
       file: tsFilePath,
       modules: [{ file: tsFilePath, id: tsFilePath }],
       server: { watcher: { emit: vi.fn() } },
@@ -88,7 +88,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       .join(FIXTURE_DIR, "node_modules/@scope/lib/dist/style.css")
       .replace(/\\/g, "/");
 
-    await (plugin as any).handleHotUpdate?.({
+    await (plugin as any).hotUpdate?.({
       file: cssFilePath,
       modules: [{ file: cssFilePath, id: cssFilePath }],
       server: { watcher: { emit: vi.fn() } },
@@ -121,7 +121,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
     ];
 
     for (const cssPath of cssVariants) {
-      const result = await (plugin as any).handleHotUpdate?.({
+      const result = await (plugin as any).hotUpdate?.({
         file: cssPath,
         modules: [{ file: cssPath, id: cssPath }],
         server: { watcher: { emit: vi.fn() } },
@@ -159,7 +159,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       .join(FIXTURE_DIR, "src/styles.scss")
       .replace(/\\/g, "/");
 
-    const result = await (plugin as any).handleHotUpdate?.({
+    const result = await (plugin as any).hotUpdate?.({
       file: scssFilePath,
       modules: [{ file: scssFilePath, id: scssFilePath }],
       server: { watcher: { emit: vi.fn() } },
@@ -209,8 +209,8 @@ describe("sdAngularPlugin HMR fallback", () => {
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    // handleHotUpdate 호출
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
+    // hotUpdate 호출
+    const hmrResult = await (plugin as any).hotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath, id: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },
@@ -218,7 +218,7 @@ describe("sdAngularPlugin HMR fallback", () => {
       read: () => Promise.resolve(""),
     });
 
-    // handleHotUpdate는 항상 affected modules 배열을 반환해야 한다
+    // hotUpdate는 항상 affected modules 배열을 반환해야 한다
     // (templateUpdates가 undefined이든 아니든)
     expect(Array.isArray(hmrResult)).toBe(true);
 
@@ -249,8 +249,8 @@ describe("sdAngularPlugin HMR fallback", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Unit: prod 모드(dev: false)에서는 handleHotUpdate가 void 반환 (HMR 비활성)
-  it("returns undefined from handleHotUpdate in prod mode", async () => {
+  // Unit: prod 모드(dev: false)에서는 hotUpdate가 void 반환 (HMR 비활성)
+  it("returns undefined from hotUpdate in prod mode", async () => {
     const plugin = sdAngularPlugin({
       tsconfig: TSCONFIG_PATH,
       dev: false,
@@ -262,7 +262,7 @@ describe("sdAngularPlugin HMR fallback", () => {
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
+    const hmrResult = await (plugin as any).hotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },
@@ -276,7 +276,7 @@ describe("sdAngularPlugin HMR fallback", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Acceptance: 수정 파일 33개 이상일 때도 handleHotUpdate가 정상 동작
+  // Acceptance: 수정 파일 33개 이상일 때도 hotUpdate가 정상 동작
   // (Angular 컴파일러 내부에서 HMR 분석을 생략하고 templateUpdates=undefined 반환)
   it("handles update with many modified files gracefully (HMR skipped by compiler)", async () => {
     const plugin = sdAngularPlugin({
@@ -290,11 +290,11 @@ describe("sdAngularPlugin HMR fallback", () => {
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    // handleHotUpdate는 단일 파일에 대해 호출됨 (Vite 설계)
+    // hotUpdate는 단일 파일에 대해 호출됨 (Vite 설계)
     // 33개 이상 수정 파일 제한은 Angular 컴파일러 내부에서 처리
     // AngularFacade.update()에서 modifiedFiles가 SourceFileCache.modifiedFiles로 전달되므로
     // 실제 33개 이상 파일 변경은 SourceFileCache를 통해 추적됨
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
+    const hmrResult = await (plugin as any).hotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },
@@ -302,7 +302,7 @@ describe("sdAngularPlugin HMR fallback", () => {
       read: () => Promise.resolve(""),
     });
 
-    // handleHotUpdate가 에러 없이 동작해야 한다
+    // hotUpdate가 에러 없이 동작해야 한다
     expect(Array.isArray(hmrResult)).toBe(true);
 
     await (plugin as any).buildEnd?.call({});

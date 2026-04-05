@@ -18,7 +18,7 @@ interface SdPwaConfig {
 
 ## `SdPwaManifestConfig`
 
-PWA manifest configuration (subset of VitePWA manifest options).
+PWA manifest configuration.
 
 ```typescript
 interface SdPwaManifestConfig {

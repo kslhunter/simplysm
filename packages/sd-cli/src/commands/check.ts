@@ -34,25 +34,22 @@ async function spawnVitest(targets: string[]): Promise<CheckResult> {
     const args = ["vitest", ...targets, "--run"];
     logger.debug("vitest 실행", { args });
     logger.start("테스트 실행 중...");
-    const result = await cpx.spawn("pnpm", args, { cwd: process.cwd(), reject: false });
-    const output = result.stdout + result.stderr;
+    const result = await cpx.spawn("pnpm", args, {
+      cwd: process.cwd(),
+      reject: false,
+      stdio: "inherit",
+    });
     const code = result.exitCode;
 
-    const failMatch =
-      output.match(/(\d+)\s+tests?\s+failed/i) ??
-      output.match(/Tests\s+(\d+)\s+failed/i) ??
-      output.match(/(\d+)\s+fail/i);
-    const failCount = failMatch ? Number(failMatch[1]) : 0;
-
     logger.success("테스트 실행 완료");
-    logger.info("테스트 완료", { errorCount: failCount, warningCount: 0 });
+    logger.info("테스트 완료", { errorCount: code === 0 ? 0 : 1, warningCount: 0 });
 
     return {
       name: "TEST",
       success: code === 0,
-      errorCount: failCount,
+      errorCount: code === 0 ? 0 : 1,
       warningCount: 0,
-      formattedOutput: code === 0 ? "" : output,
+      formattedOutput: "",
     };
   } catch (err) {
     logger.fail("테스트 실행 실패");

@@ -1,4 +1,4 @@
-import type { Plugin, ModuleNode, ViteDevServer } from "vite";
+import type { Plugin, EnvironmentModuleNode, HotUpdateOptions, ViteDevServer } from "vite";
 import type { IncomingMessage, ServerResponse } from "http";
 import { JavaScriptTransformer } from "@angular/build/private";
 import { createHash } from "crypto";
@@ -146,41 +146,37 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           ngHmrMode: options.dev && !options.legacyModule ? undefined : "false",
         },
         optimizeDeps: {
-          esbuildOptions: {
+          rolldownOptions: {
             plugins: [
               {
                 name: "angular-vite-optimize-deps",
-                setup(build: { onLoad: Function }) {
-                  build.onLoad(
-                    { filter: /\.[cm]?js$/ },
-                    async (args: { path: string }) => {
-                      const content = await fsp.readFile(args.path, "utf-8");
-                      const hash = createHash("sha256").update(content).digest("hex");
-                      const cachePath = path.join(linkerCacheDir, `${hash}.js`);
+                async load(id: string) {
+                  if (!/\.[cm]?js$/.test(id)) return null;
 
-                      try {
-                        const cached = await fsp.readFile(cachePath, "utf-8");
-                        return { contents: cached, loader: "js" as const };
-                      } catch {
-                        // cache miss
-                      }
+                  const content = await fsp.readFile(id, "utf-8");
+                  const hash = createHash("sha256").update(content).digest("hex");
+                  const cachePath = path.join(linkerCacheDir, `${hash}.js`);
 
-                      const result = await prebundleTransformer.transformFile(args.path);
-                      const resultStr =
-                        typeof result === "string"
-                          ? result
-                          : new TextDecoder().decode(result);
+                  try {
+                    return await fsp.readFile(cachePath, "utf-8");
+                  } catch {
+                    // cache miss
+                  }
 
-                      try {
-                        await fsp.mkdir(linkerCacheDir, { recursive: true });
-                        await fsp.writeFile(cachePath, resultStr);
-                      } catch {
-                        // cache write failure — non-fatal
-                      }
+                  const result = await prebundleTransformer.transformFile(id);
+                  const resultStr =
+                    typeof result === "string"
+                      ? result
+                      : new TextDecoder().decode(result);
 
-                      return { contents: resultStr, loader: "js" as const };
-                    },
-                  );
+                  try {
+                    await fsp.mkdir(linkerCacheDir, { recursive: true });
+                    await fsp.writeFile(cachePath, resultStr);
+                  } catch {
+                    // cache write failure — non-fatal
+                  }
+
+                  return resultStr;
                 },
               },
             ],
@@ -285,17 +281,10 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       });
     },
 
-    async handleHotUpdate({
+    async hotUpdate({
       file,
       modules,
-      server,
-    }: {
-      file: string;
-      modules: ModuleNode[];
-      server: ViteDevServer;
-      timestamp: number;
-      read: () => string | Promise<string>;
-    }): Promise<ModuleNode[] | void> {
+    }: HotUpdateOptions): Promise<EnvironmentModuleNode[] | void> {
       if (compiler == null || !options.dev) return;
       if (
         !file.endsWith(".ts") &&
@@ -383,9 +372,10 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
         if (file.endsWith(".scss")) {
           // SCSS: moduleGraph에서 영향받은 TS 모듈 조회
-          const result: ModuleNode[] = [];
+          const moduleGraph = this.environment.moduleGraph;
+          const result: EnvironmentModuleNode[] = [];
           for (const p of affectedPaths) {
-            const mods = server.moduleGraph.getModulesByFile(p);
+            const mods = moduleGraph.getModulesByFile(p);
             if (mods) result.push(...mods);
           }
           return result;

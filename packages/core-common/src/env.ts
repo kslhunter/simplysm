@@ -36,7 +36,7 @@ export function env(key: string, value?: string): string | undefined | void {
     if (val !== undefined) return val;
   }
 
-  const metaEnv = (import.meta as unknown as Record<string, unknown>)["env"] as Record<string, unknown> | undefined;
-  const metaVal = metaEnv?.[key];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Node.js에서 import.meta.env는 undefined
+  const metaVal = import.meta.env?.[key];
   return metaVal != null ? String(metaVal) : undefined;
 }

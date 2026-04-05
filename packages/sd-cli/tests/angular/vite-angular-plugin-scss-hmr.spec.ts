@@ -1,18 +1,19 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import path from "path";
 import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
 
 const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
 const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
 
-function mockServer() {
+function mockEnvironmentContext() {
   return {
-    moduleGraph: {
-      getModulesByFile: (file: string) => {
-        return new Set([{ file, id: file }]);
+    environment: {
+      moduleGraph: {
+        getModulesByFile: (file: string) => {
+          return new Set([{ file, id: file }]);
+        },
       },
     },
-    watcher: { emit: vi.fn() },
   };
 }
 
@@ -34,10 +35,11 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_variables.scss")
       .replace(/\\/g, "/");
 
-    const result = await (plugin as any).handleHotUpdate?.({
+    const ctx = mockEnvironmentContext();
+    const result = await (plugin as any).hotUpdate?.call(ctx, {
       file: variablesPath,
       modules: [],
-      server: mockServer(),
+      server: {},
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });
@@ -52,10 +54,11 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_colors.scss")
       .replace(/\\/g, "/");
 
-    const result = await (plugin as any).handleHotUpdate?.({
+    const ctx = mockEnvironmentContext();
+    const result = await (plugin as any).hotUpdate?.call(ctx, {
       file: colorsPath,
       modules: [],
-      server: mockServer(),
+      server: {},
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });
@@ -70,10 +73,11 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_unrelated.scss")
       .replace(/\\/g, "/");
 
-    const result = await (plugin as any).handleHotUpdate?.({
+    const ctx = mockEnvironmentContext();
+    const result = await (plugin as any).hotUpdate?.call(ctx, {
       file: unrelatedPath,
       modules: [],
-      server: mockServer(),
+      server: {},
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });

@@ -1,6 +1,5 @@
 import type { InlineConfig, PluginOption } from "vite";
 import path from "path";
-import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
 import solidPlugin from "vite-plugin-solid";
@@ -10,8 +9,7 @@ import {
 } from "./vite-scope-watch-plugin.js";
 import { sdPostCssInlinePlugin } from "../angular/vite-postcss-inline-plugin.js";
 import type { SdPwaConfig } from "../sd-config.types.js";
-import { VitePWA } from "vite-plugin-pwa";
-import { generatePwaIcons } from "./generate-pwa-icons.js";
+import { sdPwaPlugin } from "./vite-pwa-plugin.js";
 
 /** createClientViteConfig 옵션 */
 export interface CreateClientViteConfigOptions {
@@ -70,9 +68,9 @@ export interface CreateClientViteConfigOptions {
  * Angular AOT 플러그인, tsconfigPaths, env define, server/build 기본 설정,
  * browserslist, PostCSS, polyfills, legacyModule (inlineDynamicImports) 등을 통합 구성한다.
  */
-export async function createClientViteConfig(
+export function createClientViteConfig(
   options: CreateClientViteConfigOptions,
-): Promise<InlineConfig> {
+): InlineConfig {
   const name = options.pkgName.replace(/^@[^/]+\//, "");
 
   // browserslist → esbuild target
@@ -101,9 +99,7 @@ export async function createClientViteConfig(
   }
 
   // plugins
-  const plugins: PluginOption[] = [
-    tsconfigPaths({ projects: [options.tsconfigPath] }),
-  ];
+  const plugins: PluginOption[] = [];
 
   if (options.framework === "solid") {
     plugins.push(solidPlugin());
@@ -170,59 +166,23 @@ export async function createClientViteConfig(
   const config: InlineConfig = {
     root: options.pkgDir,
     base: options.base ?? `/${name}/`,
+    resolve: { tsconfigPaths: true },
     define: Object.keys(define).length > 0 ? define : undefined,
     plugins,
     server: serverConfig,
     css: cssConfig,
-    esbuild: {
-      target: esbuildTarget,
-    },
     build: {
       target: esbuildTarget,
     },
     optimizeDeps: {
       ...optimizeDepsConfig,
-      esbuildOptions: {
-        target: esbuildTarget as string[],
-      },
     },
   };
 
   // PWA (build 모드 + pwa !== false)
   if (options.mode === "build" && options.pwa !== false) {
-    const pwaConfig = typeof options.pwa === "object" ? options.pwa : {};
-
-    // 아이콘 자동 생성 (커스텀 icons 미설정 시)
-    let iconsConfig: Record<string, unknown> = {};
-    if (pwaConfig.manifest?.icons != null) {
-      iconsConfig = { icons: pwaConfig.manifest.icons };
-    } else {
-      const generatedIcons = await generatePwaIcons(options.pkgDir);
-      if (generatedIcons.length > 0) {
-        iconsConfig = { icons: generatedIcons };
-      }
-    }
-
-    const pwaManifest = {
-      name: pwaConfig.manifest?.name ?? name,
-      short_name: pwaConfig.manifest?.short_name ?? name,
-      display: pwaConfig.manifest?.display ?? "standalone",
-      theme_color: pwaConfig.manifest?.theme_color ?? "#ffffff",
-      background_color: pwaConfig.manifest?.background_color ?? "#ffffff",
-      ...iconsConfig,
-    };
-    const pwaWorkbox = {
-      globPatterns: pwaConfig.workbox?.globPatterns ?? [
-        "**/*.{js,css,html,ico,png,svg,woff2}",
-      ],
-    };
     (config.plugins as PluginOption[]).push(
-      VitePWA({
-        registerType: "prompt",
-        injectRegister: "script",
-        manifest: pwaManifest,
-        workbox: pwaWorkbox,
-      }),
+      sdPwaPlugin({ pkgDir: options.pkgDir, pkgName: name, pwa: options.pwa }),
     );
   }
 
@@ -271,24 +231,18 @@ export async function createClientViteConfig(
     }
   }
 
-  // legacyModule: true → 코드 스플리팅 비활성화 + esbuild import.meta 변환 + 잔여 import() 제거
+  // legacyModule: true → 코드 스플리팅 비활성화 + import.meta/import() 치환 (Chrome 61 호환)
   if (options.legacyModule === true) {
-    config.esbuild = {
-      ...config.esbuild,
-      supported: {
-        "import-meta": false,
-      },
-    };
     config.build = {
       ...config.build,
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           inlineDynamicImports: true,
         },
       },
     };
 
-    // Rollup이 인라인하지 못한 잔여 dynamic import()를 제거한다.
+    // Rolldown이 인라인하지 못한 잔여 dynamic import()를 제거한다.
     // inlineDynamicImports가 정적 경로를 모두 인라인한 후에도,
     // @vite-ignore나 런타임 계산 경로의 import()가 남을 수 있다.
     // Chrome 61은 import() 구문을 파싱하지 못하므로 no-op 함수로 치환한다.
@@ -302,6 +256,20 @@ export async function createClientViteConfig(
             /\bimport\s*\(/g,
             "(function(){return Promise.reject(new Error(\"Dynamic import not supported\"))})(",
           ),
+          map: null,
+        };
+      },
+    });
+
+    // import.meta 구문을 치환한다. Chrome 61은 import.meta를 파싱하지 못한다 (Chrome 64+).
+    // Vite/Rolldown이 빌드 시 대부분의 import.meta를 resolve하지만, 잔여분에 대한 안전망이다.
+    (config.plugins as PluginOption[]).push({
+      name: "sd-legacy-strip-import-meta",
+      enforce: "post",
+      renderChunk(code) {
+        if (!code.includes("import.meta")) return null;
+        return {
+          code: code.replace(/\bimport\.meta\b/g, "(void 0)"),
           map: null,
         };
       },

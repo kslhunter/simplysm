@@ -180,7 +180,7 @@ export interface SdElectronConfig {
 //#region PWA 설정 타입
 
 /**
- * PWA manifest 설정 (VitePWA manifest 옵션의 서브셋)
+ * PWA manifest 설정
  */
 export interface SdPwaManifestConfig {
   name?: string;

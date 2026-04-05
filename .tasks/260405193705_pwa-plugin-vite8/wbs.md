@@ -25,7 +25,7 @@
 
 ### Epic 1. PWA 직접 구현
 
-#### [ ] Feature 1.1 커스텀 Vite PWA 플러그인 구현
+#### [x] Feature 1.1 커스텀 Vite PWA 플러그인 구현
 
 **의존성:** 없음
 
@@ -35,11 +35,12 @@
 - Service Worker 파일(`sw.js`) 생성 (`closeBundle` 훅) — 앱 버전 상수 + `dist/` 산출물 파일 목록 주입
 - SW의 `install` 이벤트: 파일 목록 전체를 캐시에 저장
 - SW의 `activate` 이벤트: 현재 버전 외 이전 캐시 삭제
-- SW의 `fetch` 이벤트: 캐시 우선 응답
+- SW의 `fetch` 이벤트: 캐시 우선 응답 + navigate 요청 시 `index.html` fallback (SPA 지원)
 - SW의 `message` 이벤트: `SKIP_WAITING` 메시지 수신 시 `self.skipWaiting()` 호출
-- HTML에 `<link rel="manifest" href="/manifest.webmanifest">` 주입 (`transformIndexHtml` 훅)
+- HTML에 `<link rel="manifest" href="manifest.webmanifest">` 주입 (`transformIndexHtml` 훅)
 - HTML에 SW 등록 + 업데이트 감지 + prompt 스크립트 주입 (`transformIndexHtml` 훅)
-- 앱 버전 기반 캐시 관리 (버전 변경 시 전체 캐시 교체, 파일별 해시 불필요)
+- 업데이트 알림: `CustomEvent("sd-pwa-update-ready")` dispatch, `detail.update()` 호출로 적용
+- 앱 버전 기반 캐시 관리 (캐시명: `"precache-{version}"`, 버전 변경 시 전체 캐시 교체)
 - 버전 소스: `package.json`의 `version` 필드
 - 기존 `SdPwaConfig` 타입 재사용
 - 기존 `generate-pwa-icons.ts` 재사용
@@ -55,48 +56,57 @@
 - 대화: "직접 만들어서 대체 안되나", "버전관리 그냥 앱 버전으로 하면안됨?"
 - 코드: `vite-config.ts:220` — `registerType: "prompt"`, `injectRegister: "script"`, manifest/workbox 설정만 사용
 
-#### [ ] Feature 1.2 vite-plugin-pwa 의존성 교체
+#### [x] Feature 1.2 vite-plugin-pwa 의존성 교체
 
 **의존성:** Feature 1.1
 
 **범위:**
 
-- `vite-config.ts`에서 `VitePWA` import → 커스텀 플러그인으로 교체
-- `package.json`에서 `vite-plugin-pwa`, `workbox-build`, `workbox-window` 의존성 제거
-- 기존 테스트(`vite-config.spec.ts`) PWA 관련 부분 업데이트
+- `vite-config.ts`에서 `VitePWA` import → 커스텀 플러그인(`sdPwaPlugin`)으로 교체
+- `package.json`에서 `vite-plugin-pwa` 의존성 제거 (`workbox-build`, `workbox-window`은 transitive dependency로 자동 제거)
+- 기존 테스트(`vite-config.spec.ts`) PWA 관련 부분 업데이트 (중복 테스트는 `vite-pwa-plugin.spec.ts`로 위임)
+- `sd-config.types.ts` JSDoc, `README.md`, `docs/pwa-configuration-types.md`의 VitePWA 참조 업데이트
 
 **경계:**
 
-- `SdPwaConfig` 타입은 변경하지 않음 (기존 설정 호환 유지)
+- `SdPwaConfig` 타입(인터페이스 필드)은 변경하지 않음 (기존 설정 호환 유지)
 - `sd.config.ts`의 `pwa` 설정 인터페이스 변경 없음
+- `sdPwaPlugin` 내부 동작 변경 없음 (Feature 1.1에서 완성)
 
 **근거:**
 
 - 대화: 의존성 3개 제거 목적
-- 코드: `package.json:49` — `"vite-plugin-pwa": "^1.2.0"`
+- 코드: `package.json:49` — `"vite-plugin-pwa": "^1.2.0"` (workbox는 package.json에 직접 존재하지 않음)
+- 구현계획: [1.2-vite-plugin-pwa-dependency-replacement.md](./1.2-vite-plugin-pwa-dependency-replacement.md)
 
 ### Epic 2. Vite 8 업그레이드
 
-#### [ ] Feature 2.1 Vite 8 업그레이드
+#### [x] Feature 2.1 Vite 8 업그레이드
 
 **의존성:** Feature 1.2
 
 **범위:**
 
 - `vite` 의존성 `^7.3.1` → `^8.0.0` 업데이트
-- Vite 8 breaking changes 대응 (빌드 설정, 플러그인 API 변경 등)
-- 다른 Vite 관련 의존성 호환성 확인 (`vite-plugin-solid` ^8 지원 확인됨, `vite-tsconfig-paths` 와일드카드 peer dep으로 호환)
+- Vite 8 breaking changes 대응:
+  - `esbuild` config → `oxc` config (`esbuild.supported` 미지원 → renderChunk 플러그인 대안)
+  - `build.rollupOptions` → `build.rolldownOptions`
+  - `optimizeDeps.esbuildOptions` → `optimizeDeps.rolldownOptions` (Angular linker esbuild 플러그인 → Rolldown 플러그인)
+  - `handleHotUpdate` → `hotUpdate` (deprecated 대응)
+- 다른 Vite 관련 의존성 호환성 확인 (`vite-plugin-solid` ^8 지원 확인됨, `vite-tsconfig-paths` 와일드카드 peer dep으로 호환, `@angular/build`는 pnpm이 별도 vite@7 설치)
 
 **경계:**
 
 - Node.js 버전 업그레이드는 이 Feature에서 다루지 않음 (Vite 8 요구사항: Node.js ^20.19 || >=22.12.0)
 - Vite 8의 신규 기능 활용은 이 Feature에서 다루지 않음 (호환성 확보만)
+- esbuild 직접 사용(`server-build.worker.ts`)은 변경하지 않음 (Vite 외부)
 
 **근거:**
 
 - 대화: "직접구현으로 하면 vite도 8버전으로 올릴 수 있을거같은데"
 - 조사: `vite-plugin-pwa`가 유일한 Vite 8 블로커 (`peerDependency: ^3~^7`)
 - npm: Vite 8.0.0~8.0.3 배포 확인
+- 구현계획: [2.1-vite8-upgrade.md](./2.1-vite8-upgrade.md)
 
 ## 제외 사항
 

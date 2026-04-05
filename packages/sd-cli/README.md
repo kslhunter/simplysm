@@ -69,7 +69,7 @@ The package exports configuration types for `sd.config.ts` and a Vitest plugin f
 | API | Type | Description |
 |-----|------|-------------|
 | `SdPwaConfig` | interface | PWA configuration |
-| `SdPwaManifestConfig` | interface | PWA manifest options (subset of VitePWA manifest) |
+| `SdPwaManifestConfig` | interface | PWA manifest options |
 | `SdPwaWorkboxConfig` | interface | PWA workbox service worker options |
 
 -> See [docs/pwa-configuration-types.md](./docs/pwa-configuration-types.md) for details.
