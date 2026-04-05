@@ -29,7 +29,7 @@ description: 스킬/프롬프트 파일의 작성·개선을 위한 EDD 스킬. 
 - **입력**: 무엇을 받는가
 - **출력**: 무엇을 내놓는가
 
-`sd-rule-clarify` 스킬의 규칙에 따라 명확화한다.
+`.claude/references/sd-clarify.md`를 읽고 명확화한다.
 
 ## Step 2: Eval 시나리오 정의
 
@@ -149,7 +149,7 @@ LLM이 특정 형태의 결과를 출력했는지가 아니라, 프로세스/규
 
 FAIL이 1개라도 있으면 다음 단계로 진행할 수 없다. 이유를 불문하고 수정 없이 다음 단계로 넘어가는 것은 금지한다.
 Judge 보고서의 개선 제안을:
-1. `sd-rule-options` 스킬의 규칙에 따라 사용자에게 질문한다.
+1. `.claude/references/sd-options.md`를 읽고 사용자에게 질문한다.
    - FAIL 판정이유 및 해당하는 부분의 실제 출력을 포함해야함
 2. 승인된 제안을 작성 원칙에 따라 수정한다.
 3. 수정 후 workspace를 재구성하여 Eval을 재실행한다. (Eval만 수정된 경우 복사하고, Judge만 재수행)
@@ -171,7 +171,7 @@ Judge 보고서의 개선 제안을:
 | **상충 지시** — 서로 모순/충돌          | 우선순위 결정 후 통합 또는 삭제 |
 | **구조 산만** — 관련 지시가 흩어져 있음     | 재배치                |
 
-발견된 Prompt Smell에 대해 `sd-rule-clarify` 스킬의 규칙에 따라 진행여부와 방법을 명확화하여 수정한다.
+발견된 Prompt Smell에 대해 `.claude/references/sd-clarify.md`를 읽고 진행여부와 방법을 명확화하여 수정한다.
 
 ### Regression Guard
 

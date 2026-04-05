@@ -5,14 +5,6 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 
 # sd-check: Check 실행 & 에러 수정
 
-## 공통 규칙
-
-### 에러 수정
-
-실패하면 `sd-debug`스킬의 지침에 따르되 아래 지침을 우선으로 따른다:
-
-- 문서기록 및 완료 출력은 하지 않고, 바로 직접 수정한다.
-
 ## Step 1: 명령어 탐지
 
 ### 1-1. 패키지 매니저 감지
@@ -51,17 +43,17 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 
 ## Step 2: typecheck
 
-typecheck 명령어를 실행한다. 실패하면 수정 후 재실행한다.
+typecheck 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 지침에 따라 수정 후 재실행한다.
 
 ## Step 3: lint
 
-린트 명령어를 실행한다. 실패하면 수정 후 재실행한다.
+린트 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 지침에 따라 수정 후 재실행한다.
 
 - 가능하면 자동픽스(--fix) 명령을 실행한다.
 
 ## Step 4: test
 
-테스트 명령어를 실행한다. 실패하면 수정 후 재실행한다.
+테스트 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 지침에 따라 수정 후 재실행한다.
 
 ## Step 5: 반복 혹은 완료
 

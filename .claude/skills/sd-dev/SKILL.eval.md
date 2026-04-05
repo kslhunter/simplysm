@@ -21,7 +21,7 @@
 - 체크리스트:
   - [ ] Feature 문서를 읽었다
   - [ ] Slice 체크박스 상태를 확인하여 완료된 Slice 1을 건너뛰었다
-  - [ ] sd-tdd SKILL.md를 읽었다
+  - [ ] `.claude/skills/sd-tdd/SKILL.md`를 읽었다
   - [ ] Slice 2 또는 그 이후부터 구현을 시작했다
 
 ### 시나리오 3: wbs + Feature 번호 — sd-plan부터 시작
@@ -30,7 +30,7 @@
 - 사전 조건:
   - `.tasks/wbs.md` 생성 (Feature 1.1 포함)
 - 체크리스트:
-  - [ ] sd-plan SKILL.md를 읽었다
+  - [ ] `.claude/skills/sd-plan/SKILL.md`를 읽었다
   - [ ] wbs.md에서 Feature 1.1 정보를 확인했다
   - [ ] Feature 분석(범위 설정 또는 Rule/Example/Question 도출)을 수행했다
   - [ ] 단계 전환 시 사용자에게 진행 여부를 묻지 않고 자동으로 진행했다

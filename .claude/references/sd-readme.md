@@ -1,8 +1,3 @@
----
-name: sd-rule-readme
-description: "@simplysm 패키지 사용 시 README를 먼저 읽어 API와 사용법을 파악하는 규칙. \"@simplysm 패키지 사용\", \"@simplysm API 확인\" 등을 요청할 때 사용한다."
----
-
 # sd-rule-readme: @simplysm 패키지 문서 참조
 
 `@simplysm/*` 패키지 사용 시, 해당 패키지의 README.md를 먼저 읽어 API와 사용법을 파악한다.

@@ -60,11 +60,6 @@ SKILLS
     sd-doc-extract      문서에서 텍스트/이미지 추출
     sd-deliverable      매뉴얼 & SIT 문서 생성
 
-  규칙
-    sd-rule-clarify     불명확한 정보 명확화 규칙
-    sd-rule-options     선택지 제시 규칙
-    sd-rule-readme      @simplysm 패키지 README 참조 규칙
-
   도구
     sd-prompt           스킬/프롬프트 파일 생성·개선
     sd-outlook          Outlook 메일 검색/다운로드
@@ -75,7 +70,7 @@ SKILLS
 
 ### 3-1. 스킬 라우팅
 
-스킬 카탈로그를 참조하여 사용자의 요청을 가장 적합한 스킬에 라우팅한다. 단일 스킬에 명확히 라우팅되지 않으면 후보 스킬들을 선택지로 제시하여 사용자에게 확인한다. (`sd-rule-options` 스킬의 규칙을 따른다)
+스킬 카탈로그를 참조하여 사용자의 요청을 가장 적합한 스킬에 라우팅한다. 단일 스킬에 명확히 라우팅되지 않으면 후보 스킬들을 선택지로 제시하여 사용자에게 확인한다. (`.claude/references/sd-options.md`를 읽고 따른다)
 
 ### 3-2. 안내 및 실행
 

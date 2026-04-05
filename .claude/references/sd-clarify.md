@@ -1,8 +1,3 @@
----
-name: sd-rule-clarify
-description: 불명확한 정보를 다룰 때 사용하는 행동 규칙. "정보 확인", "불명확한 항목 정리", "확실성 분류" 등을 요청할 때 사용한다.
----
-
 # sd-rule-clarify: 명확화 규칙
 
 불명확한 정보를 다룰 때 적용한다. 파악한 정보를 확실성 수준별로 분류하고, 불명확한 항목은 사용자에게 질문하여 해소한다.
@@ -20,4 +15,4 @@ description: 불명확한 정보를 다룰 때 사용하는 행동 규칙. "정�
 
 ## 명확화 질문
 
-INFERRED Medium/Low와 ASSUMED는 `sd-rule-options` 스킬의 규칙에 따라 **반드시** 사용자에게 질문하여 명확화한다.
+INFERRED Medium/Low와 ASSUMED는 `.claude/references/sd-options.md`를 읽고 **반드시** 사용자에게 질문하여 명확화한다.
