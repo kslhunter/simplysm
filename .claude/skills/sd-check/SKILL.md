@@ -47,7 +47,7 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 3. test → pnpm run test
 ```
 
-탐지된 스크립트가 없으면 사용자에게 실행할 명령어를 질문한다.
+탐지된 스크립트가 없으면 오류 메시지를 출력하고 종료한다.
 
 ## Step 2: typecheck
 
