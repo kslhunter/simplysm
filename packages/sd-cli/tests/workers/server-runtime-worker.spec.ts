@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
+import fs from "fs";
 import path from "path";
 import os from "os";
 import fsp from "fs/promises";
@@ -82,8 +83,9 @@ vi.mock("net", () => ({
 // Import triggers createWorker
 await import("../../src/workers/server-runtime.worker");
 
-// Create a temp mock main.js that exports globalThis.__sdCliTestServer
-const mockMainJsPath = path.join(os.tmpdir(), `sd-cli-test-main-${Date.now()}.mjs`);
+// Create a temp directory with mock main.js that exports globalThis.__sdCliTestServer
+const mockMainDir = path.join(os.tmpdir(), `sd-cli-test-server-${Date.now()}`);
+const mockMainJsPath = path.join(mockMainDir, "main.mjs");
 
 const mockRegister = vi.fn().mockResolvedValue(undefined);
 
@@ -96,6 +98,7 @@ const mockServer = {
 
 beforeAll(async () => {
   (globalThis as any).__sdCliTestServer = mockServer;
+  await fsp.mkdir(mockMainDir, { recursive: true });
   await fsp.writeFile(
     mockMainJsPath,
     "export const server = globalThis.__sdCliTestServer;\n",
@@ -103,7 +106,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await fsp.unlink(mockMainJsPath).catch(() => {});
+  await fsp.rm(mockMainDir, { recursive: true, force: true }).catch(() => {});
   delete (globalThis as any).__sdCliTestServer;
 });
 
@@ -152,7 +155,7 @@ describe("server-runtime.worker start", () => {
     portCheckIndex = 0;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // Restore modified env vars
     for (const [key, value] of Object.entries(savedEnv)) {
       if (value === undefined) {
@@ -161,6 +164,8 @@ describe("server-runtime.worker start", () => {
         process.env[key] = value;
       }
     }
+    // .dev-port 정리
+    await fsp.unlink(path.join(mockMainDir, ".dev-port")).catch(() => {});
   });
 
   function trackEnv(key: string): void {
@@ -266,6 +271,45 @@ describe("server-runtime.worker start", () => {
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  // Acceptance: Scenario "서버 listen 완료 후 .dev-port 기록"
+  it("writes .dev-port file with server port after listen", async () => {
+    portCheckResults = [true];
+    mockServer.options.port = 3000;
+
+    await workerFns["start"]({ mainJsPath: mockMainJsPath });
+
+    const portFile = path.join(mockMainDir, ".dev-port");
+    const content = await fsp.readFile(portFile, "utf-8");
+    expect(content).toBe("3000");
+  });
+
+  // Unit: 포트 충돌로 다른 포트 사용 시 실제 포트 기록
+  it("writes actual port to .dev-port when port auto-incremented", async () => {
+    portCheckResults = [false, false, true]; // 3000, 3001 taken, 3002 available
+    mockServer.options.port = 3000;
+
+    await workerFns["start"]({ mainJsPath: mockMainJsPath });
+
+    const portFile = path.join(mockMainDir, ".dev-port");
+    const content = await fsp.readFile(portFile, "utf-8");
+    expect(content).toBe("3002");
+  });
+
+  // Unit: cleanup 시 .dev-port 삭제
+  it("removes .dev-port file during cleanup", async () => {
+    portCheckResults = [true];
+    await workerFns["start"]({ mainJsPath: mockMainJsPath });
+
+    const portFile = path.join(mockMainDir, ".dev-port");
+    expect(fs.existsSync(portFile)).toBe(true);
+
+    const { registerCleanupHandlers } = await import("../../src/utils/worker-utils");
+    const cleanupFn = vi.mocked(registerCleanupHandlers).mock.calls[0][0];
+    await cleanupFn();
+
+    expect(fs.existsSync(portFile)).toBe(false);
   });
 
   it("sends error event when main.js does not export server", async () => {

@@ -166,19 +166,19 @@ describe("runDevice", () => {
     await expect(runDevice({ target: "my-server", options: [] })).rejects.toThrow();
   });
 
-  // Acceptance: Scenario "dev 서버 실행 중 device 실행 시 URL 자동 생성"
-  it("auto-detects URL from .dev-port when server is a string", async () => {
+  // Acceptance: Scenario "server가 string일 때 서버 패키지의 .dev-port에서 포트 읽기"
+  it("reads .dev-port from server package directory when server is a string", async () => {
     vi.mocked(loadSdConfig).mockResolvedValue({
       packages: {
         "client-devtool": {
           target: "client",
-          server: "server",
+          server: "my-server",
           electron: { appId: "com.test.electron" },
         },
       },
     });
 
-    mockReadFileSync.mockReturnValue("5173");
+    mockReadFileSync.mockReturnValue("3000");
 
     // HTTP 헬스체크 성공 mock
     mockHttpGet.mockImplementation((_url: string, cb: Function) => {
@@ -189,8 +189,13 @@ describe("runDevice", () => {
 
     await runDevice({ target: "client-devtool", options: [] });
 
+    // 서버 패키지 경로의 .dev-port를 읽어야 함
+    expect(mockReadFileSync).toHaveBeenCalledWith(
+      expect.stringContaining("my-server"),
+      "utf-8",
+    );
     expect(mockElectronInstance.run).toHaveBeenCalledWith(
-      "http://localhost:5173/client-devtool/",
+      "http://localhost:3000/client-devtool/",
     );
   });
 
@@ -200,7 +205,7 @@ describe("runDevice", () => {
       packages: {
         "client-devtool": {
           target: "client",
-          server: "server",
+          server: "my-server",
           electron: { appId: "com.test.electron" },
         },
       },
@@ -221,7 +226,7 @@ describe("runDevice", () => {
       packages: {
         "client-devtool": {
           target: "client",
-          server: "server",
+          server: "my-server",
           electron: { appId: "com.test.electron" },
         },
       },

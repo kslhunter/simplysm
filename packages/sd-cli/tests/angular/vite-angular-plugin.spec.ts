@@ -54,7 +54,7 @@ describe("sdAngularPlugin", () => {
   });
 
   // Scenario: Angular 컴포넌트 .ts 파일 수정 시 컴포넌트 HMR (Acceptance — Feature 3.3)
-  it("updates emit cache and returns affected modules when hotUpdate is called", async () => {
+  it("updates emit cache and returns affected modules when handleHotUpdate is called", async () => {
     const onBuildStart = vi.fn();
     const onBuild = vi.fn();
 
@@ -77,12 +77,12 @@ describe("sdAngularPlugin", () => {
     expect(initialResult).toBeDefined();
     expect(initialResult.code.length).toBeGreaterThan(0);
 
-    // hotUpdate must exist
-    expect((plugin as any).hotUpdate).toBeDefined();
+    // handleHotUpdate must exist
+    expect((plugin as any).handleHotUpdate).toBeDefined();
 
     // Simulate file change
     const mockModule = { file: appComponentPath, id: appComponentPath };
-    const hmrResult = await (plugin as any).hotUpdate?.({
+    const hmrResult = await (plugin as any).handleHotUpdate?.({
       file: appComponentPath,
       modules: [mockModule],
       server: { watcher: { emit: vi.fn() } },
@@ -122,7 +122,7 @@ describe("sdAngularPlugin", () => {
   });
 
   // Scenario: 컴파일 에러 발생 및 복구 (Acceptance — Feature 3.3)
-  it("calls onBuild with success=false when hotUpdate encounters compile error", async () => {
+  it("calls onBuild with success=false when handleHotUpdate encounters compile error", async () => {
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
       tsconfig: TSCONFIG_PATH,
@@ -132,8 +132,8 @@ describe("sdAngularPlugin", () => {
 
     await (plugin as any).buildStart?.call({});
 
-    // hotUpdate with a non-existent file — facade.update() should handle gracefully
-    const _hmrResult = await (plugin as any).hotUpdate?.({
+    // handleHotUpdate with a non-existent file — facade.update() should handle gracefully
+    const _hmrResult = await (plugin as any).handleHotUpdate?.({
       file: path.join(FIXTURE_DIR, "src/nonexistent-file.ts").replace(/\\/g, "/"),
       modules: [],
       server: { watcher: { emit: vi.fn() } },
@@ -147,8 +147,8 @@ describe("sdAngularPlugin", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Scenario: non-Angular .ts 파일 수정 — hotUpdate passes through
-  it("hotUpdate skips non-ts/html/scss files", async () => {
+  // Scenario: non-Angular .ts 파일 수정 — handleHotUpdate passes through
+  it("handleHotUpdate skips non-ts/html/scss files", async () => {
     const onBuildStart = vi.fn();
     const plugin = sdAngularPlugin({
       tsconfig: TSCONFIG_PATH,
@@ -159,7 +159,7 @@ describe("sdAngularPlugin", () => {
     await (plugin as any).buildStart?.call({});
 
     // .json file should be ignored
-    const result = await (plugin as any).hotUpdate?.({
+    const result = await (plugin as any).handleHotUpdate?.({
       file: "/some/file.json",
       modules: [],
       server: {},
@@ -192,16 +192,81 @@ describe("sdAngularPlugin", () => {
     // (in real use, Vite server close triggers this)
   });
 
-  // Scenario: optimizeDeps에 Angular Linker Rolldown 플러그인이 등록된다
-  it("registers angular-vite-optimize-deps rolldown plugin in optimizeDeps config", () => {
+  // Scenario: optimizeDeps에 Angular Linker esbuild 플러그인이 등록된다
+  it("registers angular-vite-optimize-deps esbuild plugin in optimizeDeps config", () => {
     const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
     const config = (plugin as any).config?.();
 
-    const rolldownPlugins = config?.optimizeDeps?.rolldownOptions?.plugins as
+    const esbuildPlugins = config?.optimizeDeps?.esbuildOptions?.plugins as
       | { name: string }[]
       | undefined;
-    expect(rolldownPlugins).toBeDefined();
-    expect(rolldownPlugins!.some((p) => p.name === "angular-vite-optimize-deps")).toBe(true);
+    expect(esbuildPlugins).toBeDefined();
+    expect(esbuildPlugins!.some((p) => p.name === "angular-vite-optimize-deps")).toBe(true);
+  });
+
+  // Scenario: Linker 캐시 skip — replaceDeps 파일은 사전 번들링에서 건너뛴다
+  it("angular-vite-optimize-deps returns null for replaceDeps dist files", async () => {
+    const plugin = sdAngularPlugin({
+      tsconfig: TSCONFIG_PATH,
+      dev: true,
+      replaceDepDistPaths: ["/packages/my-client/node_modules/@scope/core/dist"],
+    });
+
+    const config = (plugin as any).config?.();
+    const esbuildPlugins = config?.optimizeDeps?.esbuildOptions?.plugins as
+      | { name: string; setup: (build: { onLoad: Function }) => void }[];
+    const optimizePlugin = esbuildPlugins.find(
+      (p) => p.name === "angular-vite-optimize-deps",
+    )!;
+
+    // esbuild onLoad 핸들러 추출
+    let onLoadHandler: (args: { path: string }) => Promise<unknown>;
+    optimizePlugin.setup({
+      onLoad(_filter: unknown, fn: (args: { path: string }) => Promise<unknown>) {
+        onLoadHandler = fn;
+      },
+    });
+
+    // replaceDeps dist 경로 내 .js 파일 → null 반환 (skip)
+    const result = await onLoadHandler!(
+      { path: "/packages/my-client/node_modules/@scope/core/dist/index.js" },
+    );
+    expect(result).toBeNull();
+  });
+
+  // Scenario: handleHotUpdate에서 replaceDeps .js 변경 시 full-reload 강제
+  it("handleHotUpdate triggers full-reload for replaceDeps .js files", async () => {
+    const plugin = sdAngularPlugin({
+      tsconfig: TSCONFIG_PATH,
+      dev: true,
+      replaceDepDistPaths: ["/packages/my-client/node_modules/@scope/core/dist"],
+    });
+
+    await (plugin as any).buildStart?.call({});
+
+    // configureServer로 server 참조 저장
+    const mockHotSend = vi.fn();
+    const mockServer = {
+      middlewares: { use: vi.fn() },
+      httpServer: { on: vi.fn() },
+      config: { base: "/" },
+      hot: { send: mockHotSend },
+    };
+    (plugin as any).configureServer?.(mockServer);
+
+    // replaceDeps .js 파일 변경 → full-reload
+    const hmrResult = await (plugin as any).handleHotUpdate?.({
+      file: "/packages/my-client/node_modules/@scope/core/dist/component.js",
+      modules: [],
+      server: mockServer,
+      timestamp: Date.now(),
+      read: () => Promise.resolve(""),
+    });
+
+    expect(mockHotSend).toHaveBeenCalledWith({ type: "full-reload" });
+    expect(hmrResult).toEqual([]);
+
+    await (plugin as any).buildEnd?.call({});
   });
 
   // Scenario: .mjs 파일이 JavaScriptTransformer를 통과한다 (Feature 1.1 Angular Linker)

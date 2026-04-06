@@ -131,8 +131,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Acceptance: hotUpdate에서 templateUpdates를 수집하고 middleware에서 서빙
-  it("collects templateUpdates from hotUpdate and serves via middleware", async () => {
+  // Acceptance: handleHotUpdate에서 templateUpdates를 수집하고 middleware에서 서빙
+  it("collects templateUpdates from handleHotUpdate and serves via middleware", async () => {
     const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
 
     await (plugin as any).buildStart?.call({});
@@ -151,12 +151,12 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
     };
     (plugin as any).configureServer?.(mockServer);
 
-    // hotUpdate 호출 (인라인 템플릿 변경)
+    // handleHotUpdate 호출 (인라인 템플릿 변경)
     const appComponentPath = path
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    await (plugin as any).hotUpdate?.({
+    await (plugin as any).handleHotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath, id: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },
@@ -174,7 +174,7 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
   });
 
   // Acceptance: rebuild 시작 시 이전 templateUpdates 정리
-  it("clears templateUpdates at the start of hotUpdate", async () => {
+  it("clears templateUpdates at the start of handleHotUpdate", async () => {
     const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
     await (plugin as any).buildStart?.call({});
 
@@ -195,8 +195,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
       .join(FIXTURE_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    // 첫 번째 hotUpdate
-    await (plugin as any).hotUpdate?.({
+    // 첫 번째 handleHotUpdate
+    await (plugin as any).handleHotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },
@@ -204,8 +204,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
       read: () => Promise.resolve(""),
     });
 
-    // 두 번째 hotUpdate — 이전 templateUpdates가 정리되어야 한다
-    await (plugin as any).hotUpdate?.({
+    // 두 번째 handleHotUpdate — 이전 templateUpdates가 정리되어야 한다
+    await (plugin as any).handleHotUpdate?.({
       file: appComponentPath,
       modules: [{ file: appComponentPath }],
       server: { watcher: { emit: vi.fn() } },

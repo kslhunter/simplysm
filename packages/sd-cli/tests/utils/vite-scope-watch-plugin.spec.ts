@@ -16,6 +16,7 @@ vi.mock("@simplysm/core-node", () => ({
 vi.mock("fs", () => ({
   default: {
     existsSync: vi.fn(() => true),
+    realpathSync: vi.fn((p: string) => p.replace("/symlink/", "/real/")),
   },
 }));
 
@@ -131,6 +132,27 @@ describe("sdScopeWatchPlugin", () => {
     await (plugin as any).configureServer?.(mockServer);
 
     expect(FsWatcher.watch).not.toHaveBeenCalled();
+  });
+
+  // Scenario: symlink 경로를 realpath로 해결하여 감시한다
+  it("resolves symlink paths to realpath for watch directories", async () => {
+    const plugin = sdScopeWatchPlugin({
+      pkgDir: "/packages/my-client",
+      replaceDeps: [
+        { packageName: "@scope/core", sourcePath: "/packages/core" },
+      ],
+    });
+
+    const mockServer = {
+      watcher: { emit: vi.fn() },
+      httpServer: { on: vi.fn() },
+    };
+
+    await (plugin as any).configureServer?.(mockServer);
+
+    // fs.realpathSync가 dist 경로에 대해 호출되었는지 확인
+    const fsModule = (await import("fs")).default;
+    expect(fsModule.realpathSync).toHaveBeenCalled();
   });
 
   // Unit: server close cleans up watcher

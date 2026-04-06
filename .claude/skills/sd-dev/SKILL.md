@@ -58,6 +58,7 @@ sd-tdd부터 재개: sd-tdd → sd-check → sd-review
 ## Step 4: sd-check
 
 `.claude/skills/sd-check/SKILL.md`를 읽고 변경 패키지및 의존패키지에 대해 실행한다.
+- 문제 발생시 `.claude/references/sd-debug.md`를 읽고 ACH 지침에 따라 근본 원인을 찾아 수정할 수 있다.
 
 ## Step 5: sd-review
 

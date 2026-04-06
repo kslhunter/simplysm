@@ -70,6 +70,17 @@ vi.mock("fs/promises", () => ({
   symlink: mockSymlink,
 }));
 
+vi.mock("module", () => ({
+  createRequire: () => ({
+    resolve: (id: string) => {
+      if (id.includes("capacitor-plugin-auto-update")) {
+        return path.resolve("/fake/workspace/packages/capacitor-plugin-auto-update/package.json");
+      }
+      throw new Error(`Cannot find module '${id}'`);
+    },
+  }),
+}));
+
 vi.mock("consola", () => ({
   consola: {
     withTag: () => ({ debug: vi.fn(), warn: vi.fn() }),
@@ -155,7 +166,7 @@ describe("workspace:* 플러그인 해석", () => {
     setupDefaultMocks();
   });
 
-  it("workspace:* 플러그인을 package.json에 추가하지 않고 symlink로 연결한다", async () => {
+  it("workspace:* 플러그인이 link: 프로토콜로 package.json에 등록된다", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
 
     const cap = await Capacitor.create(PKG_PATH, {
@@ -170,7 +181,6 @@ describe("workspace:* 플러그인 해석", () => {
 
     await cap.initialize();
 
-    // 1. .capacitor/package.json에 workspace:* 플러그인이 포함되지 않아야 한다
     const writeJsonCalls = mockFsxWriteJson.mock.calls;
     const capPkgWrite = writeJsonCalls.find(
       (call) => typeof call[0] === "string" && call[0].includes("package.json"),
@@ -180,18 +190,18 @@ describe("workspace:* 플러그인 해석", () => {
       string,
       string
     >;
-    expect(deps["@simplysm/capacitor-plugin-auto-update"]).toBeUndefined();
 
-    // 2. 일반 npm 플러그인은 정상 추가되어야 한다
+    // 1. workspace:* 플러그인이 link: 프로토콜로 등록되어야 한다
+    expect(deps["@simplysm/capacitor-plugin-auto-update"]).toMatch(/^link:/);
+
+    // 2. link: 경로는 상대경로여야 한다 (절대경로가 아님)
+    const linkPath = deps["@simplysm/capacitor-plugin-auto-update"].replace(/^link:/, "");
+    expect(linkPath).not.toMatch(/^[A-Z]:|^\//i);
+
+    // 3. 일반 npm 플러그인은 버전 문자열로 등록되어야 한다
     expect(deps["@capacitor/camera"]).toBe("^7.0.0");
 
-    // 3. symlink가 생성되어야 한다
-    expect(mockSymlink).toHaveBeenCalled();
-    const symlinkCall = mockSymlink.mock.calls.find(
-      (call) =>
-        typeof call[1] === "string" &&
-        call[1].replace(/\\/g, "/").includes("@simplysm/capacitor-plugin-auto-update"),
-    );
-    expect(symlinkCall).toBeDefined();
+    // 4. 수동 symlink 생성이 호출되지 않아야 한다
+    expect(mockSymlink).not.toHaveBeenCalled();
   });
 });

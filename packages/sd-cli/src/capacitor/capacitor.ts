@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { existsSync } from "node:fs";
 import path from "path";
-import { symlink } from "fs/promises";
 import { createRequire } from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
@@ -247,14 +246,12 @@ export class Capacitor {
    */
   private async _initCap(): Promise<boolean> {
     Capacitor._logger.debug("package.json 설정 시작");
-    const { depChanged, workspacePlugins } = await this._setupNpmConf();
+    const depChanged = await this._setupNpmConf();
     const nodeModulesExists = await fsx.exists(pathx.posixResolve(this._capPath, "node_modules"));
     Capacitor._logger.debug(`depChanged: ${depChanged}, nodeModulesExists: ${nodeModulesExists}`);
 
     if (!depChanged && nodeModulesExists) {
-      // 의존성 미변경이어도 workspace 플러그인 symlink는 항상 갱신
-      Capacitor._logger.debug("의존성 변경 없음, workspace 플러그인 symlink만 갱신");
-      await this._linkWorkspacePlugins(workspacePlugins);
+      Capacitor._logger.debug("의존성 변경 없음");
       return false;
     }
 
@@ -269,11 +266,6 @@ export class Capacitor {
     await this._exec("pnpm", ["install"], this._capPath);
     await this._exec("pnpm", ["approve-builds", "--all"], this._capPath);
     Capacitor._logger.debug("pnpm install 완료");
-
-    // workspace 플러그인 symlink
-    Capacitor._logger.debug("workspace 플러그인 symlink 시작");
-    await this._linkWorkspacePlugins(workspacePlugins);
-    Capacitor._logger.debug("workspace 플러그인 symlink 완료");
 
     // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
     const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
@@ -300,7 +292,7 @@ export class Capacitor {
   /**
    * package.json 설정
    */
-  private async _setupNpmConf(): Promise<{ depChanged: boolean; workspacePlugins: string[] }> {
+  private async _setupNpmConf(): Promise<boolean> {
     const projNpmConfigPath = pathx.posixResolve(this._findWorkspaceRoot(), "package.json");
 
     // 루트 package.json 존재 확인
@@ -358,16 +350,17 @@ export class Capacitor {
       }
     }
 
-    // 새 플러그인 추가 (workspace:* 플러그인은 분리)
-    const workspacePlugins: string[] = [];
+    // 새 플러그인 추가
+    const pkgRequire = createRequire(pathx.posixResolve(this._pkgPath, "package.json"));
     for (const plugin of usePlugins) {
       const version = mainDeps[plugin] ?? "*";
       if (typeof version === "string" && version.startsWith("workspace:")) {
-        // workspace 플러그인은 package.json에 추가하지 않고 symlink로 처리
-        workspacePlugins.push(plugin);
-        // 이전에 추가되어 있었으면 제거
-        delete capNpmConf.dependencies[plugin];
-        Capacitor._logger.debug(`workspace 플러그인 (symlink 예정): ${plugin}`);
+        // workspace 플러그인은 link: 프로토콜로 실제 경로를 지정
+        const pluginPkgJsonPath = pkgRequire.resolve(`${plugin}/package.json`);
+        const pluginDir = path.dirname(pluginPkgJsonPath);
+        const relativePath = path.relative(this._capPath, pluginDir).replace(/\\/g, "/");
+        capNpmConf.dependencies[plugin] = `link:${relativePath}`;
+        Capacitor._logger.debug(`workspace 플러그인 (link): ${plugin} → ${relativePath}`);
       } else if (!(plugin in capNpmConf.dependencies)) {
         capNpmConf.dependencies[plugin] = version;
         Capacitor._logger.debug(`플러그인 추가: ${plugin}@${version}`);
@@ -388,12 +381,11 @@ export class Capacitor {
     await fsx.writeJson(capNpmConfPath, capNpmConf, { space: 2 });
 
     // 의존성 변경 여부 확인
-    const isChanged =
+    return (
       orgCapNpmConf.volta !== capNpmConf.volta ||
       JSON.stringify(orgCapNpmConf.dependencies) !== JSON.stringify(capNpmConf.dependencies) ||
-      JSON.stringify(orgCapNpmConf.devDependencies) !== JSON.stringify(capNpmConf.devDependencies);
-
-    return { depChanged: isChanged, workspacePlugins };
+      JSON.stringify(orgCapNpmConf.devDependencies) !== JSON.stringify(capNpmConf.devDependencies)
+    );
   }
 
   /**
@@ -1087,30 +1079,6 @@ export default config;
    * workspace:* 플러그인을 .capacitor/node_modules/에 symlink로 연결한다.
    * cap sync는 플러그인의 android/ 네이티브 코드만 필요하므로 JS 의존성 resolve 불필요.
    */
-  private async _linkWorkspacePlugins(plugins: string[]): Promise<void> {
-    if (plugins.length === 0) return;
-
-    const require = createRequire(pathx.posixResolve(this._pkgPath, "package.json"));
-
-    for (const plugin of plugins) {
-      const pluginPkgJsonPath = require.resolve(`${plugin}/package.json`);
-      const pluginDir = path.dirname(pluginPkgJsonPath);
-
-      const linkPath = pathx.posixResolve(this._capPath, "node_modules", ...plugin.split("/"));
-
-      // scope 디렉토리 생성 (예: @simplysm/)
-      await fsx.mkdir(path.dirname(linkPath));
-
-      // 기존 symlink가 있으면 삭제
-      if (await fsx.exists(linkPath)) {
-        await fsx.rm(linkPath);
-      }
-
-      await symlink(pluginDir, linkPath, "junction");
-      Capacitor._logger.debug(`workspace 플러그인 symlink: ${plugin} → ${pluginDir}`);
-    }
-  }
-
   /**
    * pnpm-workspace.yaml이 있는 워크스페이스 루트 디렉토리를 찾는다.
    */

@@ -190,6 +190,39 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     await promise;
   });
 
+  // Acceptance: transitionDuration > 0이면 transitionend까지 DOM에 유지된다
+  it("transitionDuration > 0이면 transitionend까지 모달이 DOM에 유지된다", async () => {
+    const fixture = setupHost();
+    const provider = TestBed.inject(SdModalProvider);
+
+    const promise = provider.showAsync(
+      { title: "Test", type: SdModalTestBasic, inputs: { title: "hello" } },
+    );
+
+    await tick(fixture);
+
+    const modal = getModalInBody()!;
+
+    // 인라인 스타일로 transition-duration을 설정하여 getComputedStyle에서 > 0 반환
+    modal.style.transitionDuration = "0.2s";
+
+    // 닫기 버튼 클릭
+    const closeBtn = modal.querySelector<HTMLElement>("._close-btn")!;
+    closeBtn.click();
+    fixture.detectChanges();
+
+    // transitionend 전이므로 모달은 아직 DOM에 존재
+    expect(getModalInBody()).not.toBeNull();
+
+    // transitionend 이벤트 발생
+    modal.dispatchEvent(new TransitionEvent("transitionend", { bubbles: true }));
+    await tick(fixture);
+    await promise;
+
+    // transitionend 후 DOM에서 제거
+    expect(getModalInBody()).toBeNull();
+  });
+
   // Unit: inputs가 컨텐츠 컴포넌트에 올바르게 전달된다
   it("inputs의 title이 컨텐츠 컴포넌트에 전달되어 렌더링된다", async () => {
     const fixture = setupHost();

@@ -18,14 +18,20 @@ const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.
 const TMP_DIR = path.join(os.tmpdir(), "sd-cli-linker-cache-test");
 const CACHE_DIR = path.join(TMP_DIR, "cache");
 
-type LoadHandler = (id: string) => Promise<string | null>;
+type OnLoadHandler = (args: { path: string }) => Promise<{ contents: string; loader: string } | null>;
 
-function getLoadHandler(plugin: ReturnType<typeof sdAngularPlugin>): LoadHandler {
+function getOnLoadHandler(plugin: ReturnType<typeof sdAngularPlugin>): OnLoadHandler {
   const config = (plugin as any).config();
-  const rolldownPlugin = config.optimizeDeps.rolldownOptions.plugins[0] as {
-    load: (id: string) => Promise<string | null>;
+  const esbuildPlugin = config.optimizeDeps.esbuildOptions.plugins[0] as {
+    setup: (build: { onLoad: Function }) => void;
   };
-  return (id: string) => rolldownPlugin.load(id);
+  let handler: OnLoadHandler;
+  esbuildPlugin.setup({
+    onLoad(_filter: unknown, fn: OnLoadHandler) {
+      handler = fn;
+    },
+  });
+  return handler!;
 }
 
 describe("Linker disk cache (optimizeDeps)", () => {
@@ -49,12 +55,12 @@ describe("Linker disk cache (optimizeDeps)", () => {
       dev: true,
       linkerCacheDir: CACHE_DIR,
     });
-    const load = getLoadHandler(plugin);
+    const onLoad = getOnLoadHandler(plugin);
 
     // First call: cache miss
-    const result1 = await load(jsFile);
+    const result1 = await onLoad({ path: jsFile });
     expect(mockTransformFile).toHaveBeenCalledOnce();
-    expect(result1).toBe("transformed-code");
+    expect(result1).toEqual({ contents: "transformed-code", loader: "js" });
 
     // Cache file created
     const cacheFiles = fs.readdirSync(CACHE_DIR);
@@ -63,9 +69,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
 
     // Second call: cache hit
     mockTransformFile.mockClear();
-    const result2 = await load(jsFile);
+    const result2 = await onLoad({ path: jsFile });
     expect(mockTransformFile).not.toHaveBeenCalled();
-    expect(result2).toBe("transformed-code");
+    expect(result2).toEqual({ contents: "transformed-code", loader: "js" });
   });
 
   // Acceptance: file content change → cache miss
@@ -78,9 +84,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
       dev: true,
       linkerCacheDir: CACHE_DIR,
     });
-    const load = getLoadHandler(plugin);
+    const onLoad = getOnLoadHandler(plugin);
 
-    await load(jsFile);
+    await onLoad({ path: jsFile });
     expect(mockTransformFile).toHaveBeenCalledOnce();
 
     // Change content
@@ -88,9 +94,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
     mockTransformFile.mockClear();
     mockTransformFile.mockResolvedValue("transformed-v2");
 
-    const result = await load(jsFile);
+    const result = await onLoad({ path: jsFile });
     expect(mockTransformFile).toHaveBeenCalledOnce();
-    expect(result).toBe("transformed-v2");
+    expect(result).toEqual({ contents: "transformed-v2", loader: "js" });
   });
 
   // Unit: corrupted cache file → graceful fallback
@@ -103,19 +109,19 @@ describe("Linker disk cache (optimizeDeps)", () => {
       dev: true,
       linkerCacheDir: CACHE_DIR,
     });
-    const load = getLoadHandler(plugin);
+    const onLoad = getOnLoadHandler(plugin);
 
     // First call to populate cache
-    await load(jsFile);
+    await onLoad({ path: jsFile });
 
     // Remove the cache file to simulate corruption/missing cache
     const cacheFiles = fs.readdirSync(CACHE_DIR);
     fs.rmSync(path.join(CACHE_DIR, cacheFiles[0]));
 
     mockTransformFile.mockClear();
-    const result = await load(jsFile);
+    const result = await onLoad({ path: jsFile });
     expect(mockTransformFile).toHaveBeenCalledOnce();
-    expect(result).toBe("transformed-code");
+    expect(result).toEqual({ contents: "transformed-code", loader: "js" });
   });
 
   // Unit: Uint8Array result from transformFile is handled
@@ -130,16 +136,16 @@ describe("Linker disk cache (optimizeDeps)", () => {
       dev: true,
       linkerCacheDir: CACHE_DIR,
     });
-    const load = getLoadHandler(plugin);
+    const onLoad = getOnLoadHandler(plugin);
 
-    const result = await load(jsFile);
-    expect(result).toBe("uint8-transformed");
+    const result = await onLoad({ path: jsFile });
+    expect(result).toEqual({ contents: "uint8-transformed", loader: "js" });
 
     // Second call: cache hit should also return string
     mockTransformFile.mockClear();
-    const result2 = await load(jsFile);
+    const result2 = await onLoad({ path: jsFile });
     expect(mockTransformFile).not.toHaveBeenCalled();
-    expect(result2).toBe("uint8-transformed");
+    expect(result2).toEqual({ contents: "uint8-transformed", loader: "js" });
   });
 
   // Unit: non-.js file returns null (filter)
@@ -149,9 +155,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
       dev: true,
       linkerCacheDir: CACHE_DIR,
     });
-    const load = getLoadHandler(plugin);
+    const onLoad = getOnLoadHandler(plugin);
 
-    const result = await load(path.join(TMP_DIR, "data.json"));
+    const result = await onLoad({ path: path.join(TMP_DIR, "data.json") });
     expect(result).toBeNull();
     expect(mockTransformFile).not.toHaveBeenCalled();
   });

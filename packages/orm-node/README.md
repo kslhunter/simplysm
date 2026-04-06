@@ -17,18 +17,13 @@ Peer dependencies (install the driver for your DBMS):
 
 ## API Overview
 
-### ORM Factory
+### ORM Factory & Query Execution
 
 | Export | Type | Description |
 |--------|------|-------------|
-| [`createOrm`](./docs/orm-factory.md#createorm) | Function | Create an ORM instance with connection management |
+| [`createOrm`](./docs/orm-factory.md#createorm) | Function | Create an ORM instance from a DbContext subclass and connection config |
 | [`Orm`](./docs/orm-factory.md#orm) | Interface | ORM instance type with `connect` and `connectWithoutTransaction` |
 | [`OrmOptions`](./docs/orm-factory.md#ormoptions) | Interface | ORM options (database/schema override) |
-
-### Query Execution
-
-| Export | Type | Description |
-|--------|------|-------------|
 | [`NodeDbContextExecutor`](./docs/orm-factory.md#nodedbcontextexecutor) | Class | Node.js `DbContextExecutor` implementation |
 
 ### Connection
@@ -64,12 +59,13 @@ Peer dependencies (install the driver for your DBMS):
 ### Basic ORM Usage
 
 ```typescript
-import { defineDbContext } from "@simplysm/orm-common";
+import { DbContext } from "@simplysm/orm-common";
 import { createOrm } from "@simplysm/orm-node";
 
-const MyDb = defineDbContext({
-  tables: { user: User, post: Post },
-});
+class MyDb extends DbContext {
+  user = this.queryable(User);
+  post = this.queryable(Post);
+}
 
 const orm = createOrm(MyDb, {
   dialect: "mysql",

@@ -21,8 +21,9 @@ android/
 └── src/main/kotlin/kr/co/simplysm/capacitor/intent/
     └── IntentPlugin.kt ← Android native implementation (Kotlin)
 tests/
-├── intent-rename.spec.ts            ← IntentWeb stub behavior verification
-└── start-activity-for-result.spec.ts ← startActivityForResult web fallback verification
+├── android-rename.spec.md            ← Android 리네이밍 요구사항 스펙 문서
+├── intent-rename.spec.ts             ← IntentWeb stub behavior verification
+└── start-activity-for-result.spec.md ← startActivityForResult 요구사항 스펙 문서
 ```
 
 ## Key Patterns

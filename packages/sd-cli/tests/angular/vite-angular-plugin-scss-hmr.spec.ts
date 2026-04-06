@@ -5,13 +5,11 @@ import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
 const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
 const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
 
-function mockEnvironmentContext() {
+function mockServerWithModuleGraph() {
   return {
-    environment: {
-      moduleGraph: {
-        getModulesByFile: (file: string) => {
-          return new Set([{ file, id: file }]);
-        },
+    moduleGraph: {
+      getModulesByFile: (file: string) => {
+        return new Set([{ file, id: file }]);
       },
     },
   };
@@ -35,11 +33,10 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_variables.scss")
       .replace(/\\/g, "/");
 
-    const ctx = mockEnvironmentContext();
-    const result = await (plugin as any).hotUpdate?.call(ctx, {
+    const result = await (plugin as any).handleHotUpdate?.({
       file: variablesPath,
       modules: [],
-      server: {},
+      server: mockServerWithModuleGraph(),
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });
@@ -54,11 +51,10 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_colors.scss")
       .replace(/\\/g, "/");
 
-    const ctx = mockEnvironmentContext();
-    const result = await (plugin as any).hotUpdate?.call(ctx, {
+    const result = await (plugin as any).handleHotUpdate?.({
       file: colorsPath,
       modules: [],
-      server: {},
+      server: mockServerWithModuleGraph(),
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });
@@ -73,11 +69,10 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       .join(FIXTURE_DIR, "scss/_unrelated.scss")
       .replace(/\\/g, "/");
 
-    const ctx = mockEnvironmentContext();
-    const result = await (plugin as any).hotUpdate?.call(ctx, {
+    const result = await (plugin as any).handleHotUpdate?.({
       file: unrelatedPath,
       modules: [],
-      server: {},
+      server: mockServerWithModuleGraph(),
       timestamp: Date.now(),
       read: () => Promise.resolve(""),
     });

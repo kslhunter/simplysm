@@ -58,6 +58,224 @@ import "@simplysm/core-browser";
       }
     </div>
   `,
+  styles: [
+    /* language=SCSS */ `
+      @use "../../../../scss/commons/mixins";
+
+      sd-modal {
+        display: block;
+        position: fixed;
+        z-index: var(--z-index-modal);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding-top: calc(var(--topbar-height) + var(--gap-sm));
+        opacity: 0;
+        transition: opacity var(--animation-duration) ease-in-out;
+        pointer-events: none;
+
+        > ._backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: var(--trans-default);
+        }
+
+        > ._dialog {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          margin: 0 auto;
+          width: fit-content;
+          min-width: 200px;
+          background: var(--control-color);
+          overflow: hidden;
+          @include mixins.elevation(16);
+          border-radius: var(--border-radius-default);
+          transform: translateY(-25px);
+          transition: transform var(--animation-duration) ease-in-out;
+
+          &:focus {
+            outline: none;
+          }
+
+          > ._header {
+            display: flex;
+            align-items: center;
+            user-select: none;
+            border-bottom: 1px solid var(--theme-gray-lightest);
+
+            > ._title {
+              flex: 1;
+              padding: var(--gap-sm) var(--gap-default);
+            }
+
+            > ._close-btn {
+              padding: var(--gap-sm) var(--gap-default);
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              font-size: inherit;
+              color: inherit;
+
+              &:hover {
+                background: var(--trans-lightest);
+              }
+            }
+          }
+
+          > ._content {
+            flex: 1;
+            overflow: auto;
+          }
+
+          > ._resize-handle {
+            position: absolute;
+
+            &._resize-left {
+              top: 0;
+              left: 0;
+              width: var(--gap-sm);
+              height: 100%;
+              cursor: ew-resize;
+            }
+
+            &._resize-right {
+              top: 0;
+              right: 0;
+              width: var(--gap-sm);
+              height: 100%;
+              cursor: ew-resize;
+            }
+
+            &._resize-top {
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: var(--gap-sm);
+              cursor: ns-resize;
+            }
+
+            &._resize-top-right {
+              right: 0;
+              top: 0;
+              width: var(--gap-sm);
+              height: var(--gap-sm);
+              z-index: 1;
+              cursor: nesw-resize;
+            }
+
+            &._resize-top-left {
+              left: 0;
+              top: 0;
+              width: var(--gap-sm);
+              height: var(--gap-sm);
+              cursor: nwse-resize;
+              z-index: 1;
+            }
+
+            &._resize-bottom {
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: var(--gap-sm);
+              cursor: ns-resize;
+            }
+
+            &._resize-bottom-right {
+              right: 0;
+              bottom: 0;
+              width: var(--gap-sm);
+              height: var(--gap-sm);
+              z-index: 1;
+              cursor: nwse-resize;
+            }
+
+            &._resize-bottom-left {
+              left: 0;
+              bottom: 0;
+              width: var(--gap-sm);
+              height: var(--gap-sm);
+              cursor: nesw-resize;
+              z-index: 1;
+            }
+          }
+        }
+
+        &[data-sd-open][data-sd-init] {
+          opacity: 1;
+          pointer-events: auto;
+
+          > ._dialog {
+            transform: none;
+          }
+        }
+
+        &[data-sd-float] {
+          pointer-events: none;
+
+          > ._backdrop {
+            display: none;
+          }
+
+          > ._dialog {
+            pointer-events: auto;
+            opacity: 0;
+            @include mixins.elevation(4);
+            border: 1px solid var(--theme-gray-lighter);
+
+            &:focus {
+              @include mixins.elevation(16);
+            }
+          }
+
+          &[data-sd-open][data-sd-init] {
+            pointer-events: none;
+
+            > ._dialog {
+              pointer-events: auto;
+              opacity: 1;
+            }
+          }
+        }
+
+        &[data-sd-position="bottom-right"] {
+          > ._dialog {
+            position: absolute;
+            right: calc(var(--gap-xxl) * 2);
+            bottom: var(--gap-xxl);
+          }
+        }
+
+        &[data-sd-position="top-right"] {
+          > ._dialog {
+            position: absolute;
+            right: var(--gap-xxl);
+            top: var(--gap-xxl);
+          }
+        }
+
+        &[data-sd-fill] {
+          padding-top: 0;
+
+          > ._dialog {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0;
+
+            > ._header {
+              background: transparent;
+              color: var(--text-trans-lighter);
+            }
+          }
+        }
+      }
+    `,
+  ],
 })
 export class SdModalControl {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
@@ -107,6 +325,11 @@ export class SdModalControl {
   private readonly _onDocumentMouseUp: () => void;
 
   constructor() {
+    // data-sd-init: 첫 렌더 후 설정하여 CSS transition 트리거 허용
+    effect(() => {
+      this._elRef.nativeElement.setAttribute("data-sd-init", "");
+    });
+
     // widthPx/heightPx를 dialog 스타일에 적용
     effect(() => {
       const dialogEl = this._getDialogEl();

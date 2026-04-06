@@ -51,7 +51,12 @@ export function sdScopeWatchPlugin(options: SdScopeWatchPluginOptions): Plugin {
           "dist",
         );
         if (fs.existsSync(distDir)) {
-          watchPaths.push(distDir);
+          // symlink → realpath 해결 (Vite 모듈 그래프가 realpath를 키로 사용)
+          try {
+            watchPaths.push(fs.realpathSync(distDir));
+          } catch {
+            watchPaths.push(distDir);
+          }
         }
       }
 

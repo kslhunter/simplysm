@@ -88,7 +88,7 @@ export class ApkInstallerWeb extends WebPlugin implements ApkInstallerPlugin {
 
 ### 웹 폴백 버전 정보
 
-`ApkInstallerWeb.getVersionInfo()`는 `import.meta.env.__VER__`를 사용한다. 빌드 도구가 해당 환경 변수를 주입하지 않으면 `"0.0.0"`을 반환한다.
+`ApkInstallerWeb.getVersionInfo()`는 `@simplysm/core-common`의 `env("__VER__")`를 사용한다. 빌드 도구가 해당 환경 변수를 주입하지 않으면 `"0.0.0"`을 반환한다.
 
 ## Android 네이티브
 

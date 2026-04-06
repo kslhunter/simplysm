@@ -192,27 +192,41 @@ export class SdModalProvider {
         closeSub?.unsubscribe();
         closeRequestSub?.unsubscribe();
 
-        // DOM에서 제거
+        // 닫힘 애니메이션 트리거: open(false) → CSS transition 시작
+        modalRef.instance.open.set(false);
+
         const modalEl = modalRef.location.nativeElement as HTMLElement;
-        if (modalEl.parentNode !== null) {
-          modalEl.parentNode.removeChild(modalEl);
+
+        const doDestroy = () => {
+          // DOM에서 제거
+          if (modalEl.parentNode !== null) {
+            modalEl.parentNode.removeChild(modalEl);
+          }
+
+          // 뷰 분리 + 파괴
+          this._appRef.detachView(modalRef.hostView);
+          this._appRef.detachView(contentRef.hostView);
+          modalRef.destroy();
+          contentRef.destroy();
+
+          // modalCount 감소
+          this.modalCount.update((v) => v - 1);
+
+          // 포커스 복귀
+          if (prevActiveEl !== null && prevActiveEl.isConnected) {
+            prevActiveEl.focus();
+          }
+
+          resolve(result);
+        };
+
+        // transition duration 확인 후 대기 또는 즉시 destroy
+        const duration = parseFloat(getComputedStyle(modalEl).transitionDuration || "0");
+        if (duration > 0) {
+          modalEl.addEventListener("transitionend", doDestroy, { once: true });
+        } else {
+          doDestroy();
         }
-
-        // 뷰 분리 + 파괴
-        this._appRef.detachView(modalRef.hostView);
-        this._appRef.detachView(contentRef.hostView);
-        modalRef.destroy();
-        contentRef.destroy();
-
-        // modalCount 감소
-        this.modalCount.update((v) => v - 1);
-
-        // 포커스 복귀
-        if (prevActiveEl !== null && prevActiveEl.isConnected) {
-          prevActiveEl.focus();
-        }
-
-        resolve(result);
       };
 
       // 10. close output 구독 (컨텐츠 컴포넌트가 직접 close.emit 호출)

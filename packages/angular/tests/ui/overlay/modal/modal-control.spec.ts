@@ -267,3 +267,27 @@ describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
 });
 
 // endregion
+
+// region data-sd-init
+
+describe("data-sd-init 마이그레이션 포팅", () => {
+  // Acceptance: effect 실행 후 data-sd-init 속성이 설정된다
+  it("컴포넌트 렌더 후 effect가 실행되면 data-sd-init 속성이 존재한다", () => {
+    const fixture = setup(SdModalTestControlDefault);
+    const modal = getModal(fixture);
+
+    expect(modal.hasAttribute("data-sd-init")).toBe(true);
+  });
+
+  // Unit: 초기 렌더(detectChanges 전)에는 data-sd-init이 없다
+  it("flushEffects 전에는 data-sd-init이 없다", () => {
+    TestBed.configureTestingModule({ imports: [SdModalTestControlDefault] });
+    const fixture = TestBed.createComponent(SdModalTestControlDefault);
+    // detectChanges/flushEffects 하지 않음
+    const modal = fixture.nativeElement.querySelector("sd-modal") as HTMLElement;
+
+    expect(modal.hasAttribute("data-sd-init")).toBe(false);
+  });
+});
+
+// endregion

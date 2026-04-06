@@ -125,6 +125,9 @@ export class Electron {
     };
 
     const envBanner = createEnvBanner({ ELECTRON_DEV_URL: url, ...this._config.env });
+    const bannerJs =
+      "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" +
+      envBanner;
 
     Electron._logger.debug("esbuild context 생성 시작");
     const ctx = await esbuild.context({
@@ -132,10 +135,10 @@ export class Electron {
       outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
       target: "node20",
-      format: "cjs",
+      format: "esm",
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
-      banner: { js: envBanner },
+      banner: { js: bannerJs },
       plugins: [
         {
           name: "electron-restart",
@@ -264,6 +267,7 @@ export class Electron {
       name: this._npmConfig.name.replace(/^@/, "").replace(/\//, "-"),
       version: this._npmConfig.version,
       description: this._npmConfig.description,
+      type: "module",
       main: "electron-main.js",
       dependencies,
       devDependencies,
@@ -292,6 +296,9 @@ export class Electron {
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
     const envBanner = createEnvBanner(this._config.env);
+    const bannerJs =
+      "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" +
+      envBanner;
 
     Electron._logger.debug(`esbuild 번들링: ${entryPoint}`);
     await esbuild.build({
@@ -299,10 +306,10 @@ export class Electron {
       outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
       target: "node20",
-      format: "cjs",
+      format: "esm",
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
-      banner: { js: envBanner },
+      banner: { js: bannerJs },
     });
   }
 

@@ -30,12 +30,13 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
         <ng-icon [svg]="tablerMenu2" />
       </sd-button>
     }
+    
     <ng-content />
   `,
   styles: [
     /* language=SCSS */ `
       sd-topbar {
-        min-height: var(--topbar-height);
+        height: var(--topbar-height);
         overflow-x: auto;
         overflow-y: hidden;
         user-select: none;

@@ -135,7 +135,7 @@ const db = new MyDb(executor, { database: "mydb" });
 await db.connect(async () => {
   const users = await db.user()
     .where((u) => [expr.eq(u.name, "Alice")])
-    .orderBy((u) => [u.name])
+    .orderBy((u) => u.name)
     .execute();
 
   const posts = await db.post().include((p) => p.author).execute();
@@ -144,7 +144,7 @@ await db.connect(async () => {
 
   await db.user()
     .where((u) => [expr.eq(u.id, 1)])
-    .update({ name: "Updated" });
+    .update(() => ({ name: expr.val("string", "Updated") }));
 });
 ```
 

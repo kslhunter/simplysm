@@ -277,6 +277,20 @@ export class DevWatchOrchestrator {
 
   private async _startWatchMode(): Promise<void> {
     this._logger.debug("watch 모드 시작");
+
+    // [DEBUG] angular/dist 삭제 감지용 임시 워처
+    {
+      const debugDistDir = pathx.posixResolve(this._cwd, "packages", "angular", "dist");
+      const debugWatcher = await FsWatcher.watch([debugDistDir]);
+      debugWatcher.onChange({ delay: 100 }, (changes) => {
+        for (const c of changes) {
+          if (c.event === "unlink" || c.event === "unlinkDir") {
+            this._logger.error(`[DEBUG:angular-dist] ${c.event}: ${c.path}\n${new Error().stack}`);
+          }
+        }
+      });
+    }
+
     // Start copySrc watchers for library packages
     for (const pkg of this._libraryPackages) {
       if (pkg.config.copySrc != null && pkg.config.copySrc.length > 0) {

@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 외부 의존성: `@zip.js/zip.js`, `consola`, `fast-xml-parser`, `yaml`
 
+tsconfig: `lib: ["ESNext", "WebWorker"]` — DOM 타입 없이 WebWorker 전역(EventTarget, CustomEvent, crypto 등)만 사용 가능하다.
+
 ## Architecture
 
 ```
@@ -94,7 +96,7 @@ items.toggle(selectedItem);
 
 ### Array 확장 메서드 분류
 
-- **불변(readonly) 메서드**: 새 배열 반환. `single`, `first`, `last`, `filterExists`, `ofType`, `groupBy`, `toMap`, `toArrayMap`, `toSetMap`, `toObject`, `toTree`, `distinct`, `orderBy`, `orderByDesc`, `diffs`, `oneWayDiffs`, `merge`, `sum`, `min`, `max`, `shuffle`, `mapAsync`, `filterAsync`, `mapMany`, `mapManyAsync`, `parallelAsync`
+- **불변(readonly) 메서드**: 새 배열 반환. `single`, `first`, `last`, `filterExists`, `ofType`, `groupBy`, `toMap`, `toMapAsync`, `toArrayMap`, `toSetMap`, `toMapValues`, `toObject`, `toTree`, `distinct`, `orderBy`, `orderByDesc`, `diffs`, `oneWayDiffs`, `merge`, `sum`, `min`, `max`, `shuffle`, `mapAsync`, `filterAsync`, `mapMany`, `mapManyAsync`, `parallelAsync`
 - **가변(mutable) 메서드**: 원본 배열 직접 변경 후 반환. `remove`, `insert`, `toggle`, `clear`, `distinctThis`, `orderByThis`, `orderByDescThis`
 
 ### EventEmitter 패턴

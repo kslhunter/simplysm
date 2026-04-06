@@ -28,35 +28,39 @@ Before `npm publish`/`npm pack`, the `prepack` script synchronizes the root `.cl
 
 ## Included Assets
 
-### Rules (4)
+### Rules (1)
 
 | File | Description |
 |------|-------------|
-| `sd-claude-rules.md` | Conversation rules, compaction rules, Playwright rules, document writing rules, TypeScript build rules, coding general rules, Angular rules |
-| `sd-option-scoring.md` | Option presentation and scoring rules for user choices |
-| `sd-problem-solving.md` | Problem-solving principles and workaround prohibition list |
+| `sd-claude-rules.md` | Compaction rules, forbidden commands, tool usage rules, conversation rules, Playwright rules, coding rules |
+
+### References (4)
+
+| File | Description |
+|------|-------------|
+| `sd-clarify.md` | Clarification guidelines for ambiguous user requests |
+| `sd-debug.md` | Debugging reference for root cause analysis |
+| `sd-options.md` | Option presentation and scoring rules for user choices |
 | `sd-readme.md` | Package README reference rules |
 
-### Skills (18)
+### Skills (16)
 
 | Skill | Description |
 |-------|-------------|
 | `sd-apk-decompile` | APK decompilation (Python + Java tools) |
-| `sd-auth` | Claude Code multi-account (Pro/Max) switching |
 | `sd-check` | typecheck/lint/test execution and error resolution |
 | `sd-claude-docs` | CLAUDE.md and README.md simultaneous generation |
 | `sd-commit` | Group-based commit creation |
 | `sd-debug` | Bug root cause analysis |
 | `sd-deliverable` | User manual and SIT document generation |
 | `sd-dev` | Integrated development orchestrator (spec -> plan -> TDD -> check -> review) |
-| `sd-dev-plan` | Implementation plan creation from spec |
-| `sd-dev-spec` | Requirement specification writing |
-| `sd-tdd` | TDD development from plan |
 | `sd-doc-extract` | Document file text/image extraction (docx, xlsx, pptx, pdf, eml, msg) |
 | `sd-issue` | GitHub issue creation for simplysm |
 | `sd-outlook` | Outlook mail search and download via Microsoft Graph API |
+| `sd-plan` | Requirement specification and implementation plan creation |
 | `sd-prompt` | Skill/prompt file authoring and improvement |
 | `sd-review` | Code review report generation |
+| `sd-tdd` | TDD development from plan |
 | `sd-use` | Natural language routing to sd-* skills |
 | `sd-wbs` | WBS Feature decomposition |
 
@@ -68,6 +72,26 @@ Before `npm publish`/`npm pack`, the `prepack` script synchronizes the root `.cl
 | `sd-check-write.py` | PreToolUse (Write) | Pre-checks file existence before Write tool execution |
 | `sd-check-git.py` | PreToolUse (Bash) | Blocks forbidden git commands (stash, checkout, restore, reset, clean) |
 | `sd-statusline.py` | statusLine | Displays folder, model, context%, usage in status bar |
+
+## CLI
+
+The package provides a `sd-claude` CLI command for multi-account management.
+
+### `sd-claude auth save`
+
+Saves the current Claude Code account (Organization name + refresh token) to `~/.claude/profiles.json`.
+
+```bash
+sd-claude auth save
+```
+
+### `sd-claude auth switch`
+
+Displays saved accounts with usage info and switches to the selected account. Requires TTY.
+
+```bash
+sd-claude auth switch
+```
 
 ## Usage Examples
 

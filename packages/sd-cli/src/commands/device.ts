@@ -64,8 +64,9 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     if (typeof clientConfig.server === "number") {
       serverUrl = `http://localhost:${clientConfig.server}/${targetName}/`;
     } else {
-      // server가 패키지명(string)인 경우: .dev-port 파일에서 포트 자동 탐지
-      const portFile = path.join(pkgDir, "dist", ".dev-port");
+      // server가 패키지명(string)인 경우: 서버 패키지의 .dev-port 파일에서 포트 자동 탐지
+      const serverPkgDir = pathx.posixResolve(cwd, "packages", clientConfig.server);
+      const portFile = path.join(serverPkgDir, "dist", ".dev-port");
       let portStr: string;
       try {
         portStr = fs.readFileSync(portFile, "utf-8").trim();

@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/lint` — Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 10개 (`src/rules/` 7개, `src/utils/` 1개, 진입점 2개).
+`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 10개 (`src/rules/` 7개, `src/utils/` 1개, 진입점 2개).
 
 두 가지 진입점을 exports한다:
-- `./eslint-plugin` — `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 모음
-- `./eslint-recommended` — 위 플러그인과 외부 플러그인(`typescript-eslint`, `angular-eslint`, `eslint-plugin-import`, `eslint-plugin-unused-imports`)을 조합한 Flat Config 배열
+- `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 7개를 `{ rules: {...} }` 형태로 내보냄
+- `./eslint-recommended` -- 위 플러그인과 외부 플러그인(`typescript-eslint`, `angular-eslint`, `eslint-plugin-import`, `eslint-plugin-unused-imports`)을 조합한 Flat Config 배열
 
 ## Architecture
 
@@ -17,13 +17,13 @@ src/
 ├── eslint-plugin.ts        ← 커스텀 규칙을 { rules: {...} } 형태로 묶어 내보냄
 ├── eslint-recommended.ts   ← tseslint.config()로 Flat Config 배열 생성
 ├── rules/
-│   ├── no-hard-private.ts                    ← TS/JS: ECMAScript # private 금지
-│   ├── no-subpath-imports-from-simplysm.ts   ← TS/JS: @simplysm/pkg/src/... import 금지
-│   ├── ts-no-throw-not-implemented-error.ts  ← TS:    NotImplementedError 사용 경고
-│   ├── ts-no-unused-injects.ts               ← TS:    미사용 inject() 필드 제거
-│   ├── ts-no-unused-protected-readonly.ts    ← TS:    미사용 protected readonly 필드 제거
+│   ├── no-hard-private.ts                    ← TS/JS: ECMAScript # private 금지, autofix
+│   ├── no-subpath-imports-from-simplysm.ts   ← TS/JS: @simplysm/pkg/src/... import 금지, autofix
+│   ├── ts-no-throw-not-implemented-error.ts  ← TS:    NotImplementedError 사용 경고 (suggestion)
+│   ├── ts-no-unused-injects.ts               ← TS:    미사용 inject() 필드 제거, autofix
+│   ├── ts-no-unused-protected-readonly.ts    ← TS:    미사용 protected readonly 필드 제거, autofix
 │   ├── ng-template-no-todo-comments.ts       ← HTML:  템플릿 내 TODO 주석 경고
-│   └── ng-template-sd-require-binding-attrs.ts ← HTML: sd-* 컴포넌트 plain attr 금지
+│   └── ng-template-sd-require-binding-attrs.ts ← HTML: sd-* 컴포넌트 plain attr 금지, autofix
 └── utils/
     └── create-rule.ts      ← ESLintUtils.RuleCreator 래퍼 (문서 URL 자동 생성)
 ```
@@ -59,9 +59,9 @@ export default createRule({
 
 ### 규칙 분류
 
-- `no-*` 접두사 — JS/TS 파일 모두에 적용 (`**/*.js`, `**/*.ts`)
-- `ts-*` 접두사 — TypeScript 파일에만 적용 (`**/*.ts`), `@typescript-eslint/utils` 사용
-- `ng-template-*` 접두사 — Angular HTML 템플릿에만 적용 (`**/*.html`), `@angular-eslint/utils` 사용
+- `no-*` 접두사 -- JS/TS 파일 모두에 적용 (`**/*.js`, `**/*.ts`)
+- `ts-*` 접두사 -- TypeScript 파일에만 적용 (`**/*.ts`), `@typescript-eslint/utils`의 AST 타입 사용
+- `ng-template-*` 접두사 -- Angular HTML 템플릿에만 적용 (`**/*.html`), `@angular-eslint/utils`의 `getTemplateParserServices` 사용
 
 ### Recommended Config 구조
 
@@ -69,25 +69,29 @@ export default createRule({
 
 | 파일 패턴 | 적용 플러그인 | 핵심 규칙 |
 |---|---|---|
-| `**/*.js`, `**/*.mjs`, `**/*.cjs` | `@simplysm`, `import`, `unused-imports` | `no-hard-private`, `no-subpath-imports-from-simplysm` |
-| `**/*.ts` | `@typescript-eslint`, `@simplysm`, `import`, `unused-imports` | 전체 커스텀 규칙 + TS 엄격 규칙 |
-| `**/*.html` | `@simplysm`, `@angular-eslint/template` | `ng-template-*` 2개 규칙 |
-| `**/tests/**/*.ts` | — | `no-console`, `import/no-extraneous-dependencies` 비활성화 |
+| `**/*.js`, `**/*.mjs`, `**/*.cjs` | `@simplysm`, `import`, `unused-imports` | `no-hard-private`, `no-subpath-imports-from-simplysm`, `require-await` |
+| `**/*.ts` | `@typescript-eslint`, `@simplysm`, `import`, `unused-imports`, `angular-eslint` | 전체 커스텀 규칙 + TS 엄격 규칙 (`require-await`, `strict-boolean-expressions`, `prefer-readonly`, `only-throw-error`, `no-array-delete` 등) |
+| `**/*.html` | `@simplysm`, `@angular-eslint/template` (recommended + accessibility) | `ng-template-*` 2개 규칙 |
+| `**/tests/**/*.ts` | -- | `no-console`, `import/no-extraneous-dependencies`, `ts-no-throw-not-implemented-error` 비활성화 |
+
+공유 규칙 변수: `commonRules` (eqeqeq, no-warning-comments 등), `noNodeBuiltinsRules` (Buffer/events/eventemitter3 금지), `unusedImportsRules` (미사용 import 자동 제거).
 
 ### AST 순회 헬퍼
 
 `ts-no-unused-injects.ts`와 `ts-no-unused-protected-readonly.ts`는 유사한 `traverseNode()` 헬퍼 함수를 각 파일 내에 직접 정의한다. 두 구현 모두 `parent` 키를 건너뛰며 재귀 순회하고, `ts-no-unused-protected-readonly.ts`는 추가로 `range`, `loc` 키도 건너뛴다.
 
+### ng-template-sd-require-binding-attrs 옵션
+
+유일하게 사용자 옵션(schema)을 가진 규칙이다. `RuleOptions` 인터페이스로 정의되며, 기본값은:
+- `selectorPrefixes`: `["sd-"]`
+- `allowAttributes`: `["id", "class", "style", "title", "tabindex", "role"]`
+- `allowAttributePrefixes`: `["aria-", "data-", "sd-"]`
+
 ## Testing
 
 **프레임워크**: Vitest + `@typescript-eslint/rule-tester`
 
-`@typescript-eslint/rule-tester`는 Vitest를 직접 지원하지 않으므로, `tests/vitest.setup.ts`에서 수동으로 바인딩한다.
-
-```typescript
-// tests/vitest.setup.ts — 모든 규칙 테스트 파일에서 첫 줄에 import
-import "./vitest.setup";
-```
+`@typescript-eslint/rule-tester`는 Vitest를 직접 지원하지 않으므로, `tests/vitest.setup.ts`에서 수동으로 바인딩한다. 모든 규칙 테스트 파일의 첫 줄에 `import "./vitest.setup"` 필수.
 
 규칙 테스트는 `RuleTester.run()`을 `describe` 블록 내에서 호출하는 패턴을 사용한다:
 
@@ -122,7 +126,7 @@ describe("my-rule", () => {
 });
 ```
 
-`recommended.spec.ts`는 `RuleTester`를 사용하지 않고 Flat Config 배열의 구조를 직접 검증하는 단위 테스트이다.
+테스트 파일 8개: 각 규칙 7개에 대한 개별 spec 파일 + `recommended.spec.ts` (Flat Config 배열 구조 검증, `RuleTester` 미사용).
 
 ## 컴파일러 설정
 

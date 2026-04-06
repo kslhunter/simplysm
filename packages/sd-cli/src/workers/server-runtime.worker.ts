@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "path";
 import { createWorker } from "@simplysm/core-node";
 import { env, err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
@@ -49,10 +51,18 @@ const logger = consola.withTag("sd:cli:server-runtime:worker");
 /** 서버 인스턴스 (정리 대상) */
 let serverInstance: { close: () => Promise<void> } | undefined;
 
+/** .dev-port 기록 경로 (cleanup에서 삭제용) */
+let mainJsDir: string | undefined;
+
 /**
  * 리소스 정리
  */
 async function cleanup(): Promise<void> {
+  if (mainJsDir != null) {
+    try { fs.unlinkSync(path.join(mainJsDir, ".dev-port")); } catch { /* 파일 없으면 무시 */ }
+    mainJsDir = undefined;
+  }
+
   const server = serverInstance;
   serverInstance = undefined;
   if (server != null) {
@@ -171,6 +181,11 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
     stepStart = performance.now();
     await server.listen();
     logger.debug(`서버 리슨 완료 (${Math.round(performance.now() - stepStart)}ms)`);
+
+    // .dev-port 기록 (device 명령어에서 자동 탐지용)
+    mainJsDir = path.dirname(info.mainJsPath);
+    fs.mkdirSync(mainJsDir, { recursive: true });
+    fs.writeFileSync(path.join(mainJsDir, ".dev-port"), String(server.options.port));
 
     logger.debug(
       `런타임 총 시작 시간: ${Math.round(performance.now() - startTime)}ms`,

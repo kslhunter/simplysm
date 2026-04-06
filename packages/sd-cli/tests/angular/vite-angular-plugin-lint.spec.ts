@@ -145,7 +145,7 @@ describe("vite-angular-plugin lint integration (Slice 5)", () => {
     });
   });
 
-  describe("Scenario: lint runs in hotUpdate", () => {
+  describe("Scenario: lint runs in handleHotUpdate", () => {
     it("runs lint after incremental compilation and passes result to onBuild", async () => {
       const onBuildResults: any[] = [];
 
@@ -167,9 +167,9 @@ describe("vite-angular-plugin lint integration (Slice 5)", () => {
         formattedOutput: "lint errors found",
       });
 
-      // Call hotUpdate
-      const hotUpdate = (plugin as any).hotUpdate;
-      await hotUpdate.call({}, {
+      // Call handleHotUpdate
+      const handleHotUpdate = (plugin as any).handleHotUpdate;
+      await handleHotUpdate.call({}, {
         file: "/workspace/packages/client/src/app.ts",
         modules: [],
         server: {},

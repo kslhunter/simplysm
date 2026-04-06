@@ -245,6 +245,15 @@ describe("Electron", () => {
       expect(deps["sharp"]).toBe("^0.34.0");
     });
 
+    it("package.json에 type: module이 설정된다", async () => {
+      const { Electron } = await import("../../src/electron/electron.js");
+
+      const electron = await Electron.create(PKG_PATH, { appId: "com.test.app" });
+      await electron.initialize();
+
+      expect(findElectronPackageJson()!["type"]).toBe("module");
+    });
+
     it("postInstallScript가 설정되면 scripts.postinstall에 포함한다", async () => {
       const { Electron } = await import("../../src/electron/electron.js");
 
@@ -277,7 +286,7 @@ describe("Electron", () => {
         expect.objectContaining({
           platform: "node",
           target: "node20",
-          format: "cjs",
+          format: "esm",
           bundle: true,
           external: expect.arrayContaining(["electron", "better-sqlite3"]),
         }),
@@ -313,6 +322,18 @@ describe("Electron", () => {
       expect(banner).toContain("https://api.example.com");
       expect(banner).not.toContain("ELECTRON_DEV_URL");
       expect(callArgs.define).toBeUndefined();
+    });
+
+    it("ESM 배너에 createRequire shim이 포함된다", async () => {
+      const { Electron } = await import("../../src/electron/electron.js");
+
+      const electron = await Electron.create(PKG_PATH, { appId: "com.test.app" });
+      await electron.build("/fake/out");
+
+      const callArgs = mockEsbuildBuild.mock.calls[0][0];
+      const banner = callArgs.banner?.js as string;
+      expect(banner).toContain("createRequire");
+      expect(banner).toContain("import.meta.url");
     });
   });
 
@@ -503,9 +524,13 @@ describe("Electron", () => {
 
       expect(callArgs.platform).toBe("node");
       expect(callArgs.target).toBe("node20");
-      expect(callArgs.format).toBe("cjs");
+      expect(callArgs.format).toBe("esm");
       expect(callArgs.bundle).toBe(true);
       expect(callArgs.external).toContain("electron");
+
+      // ESM 배너에 createRequire shim 포함
+      expect(banner).toContain("createRequire");
+      expect(banner).toContain("import.meta.url");
     }, 10_000);
 
     it("throws when electron-main.ts entry point is missing", async () => {

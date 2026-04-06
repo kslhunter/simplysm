@@ -42,9 +42,7 @@ src/
 │   └── client-transform-stylesheet.ts
 ├── infra/                 ← 인프라 유틸리티
 │   ├── ResultCollector.ts ← 빌드 결과 중앙 수집 (key: "패키지명:타입")
-│   ├── RebuildManager.ts  ← watch 모드 배치 빌드 조율 + batchComplete 이벤트
-│   ├── SignalHandler.ts   ← SIGINT/SIGTERM 감지, waitForTermination() 제공
-│   └── WorkerManager.ts   ← Worker 생명주기 관리
+│   └── SignalHandler.ts   ← SIGINT/SIGTERM 감지, waitForTermination() 제공
 ├── capacitor/             ← Capacitor Android 빌드 유틸
 ├── electron/              ← Electron 빌드 유틸
 └── utils/                 ← 빌드 유틸리티 함수 모음
@@ -77,6 +75,7 @@ src/
     ├── replace-deps.ts          ← replaceDeps 심링크 처리
     ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
     ├── generate-pwa-icons.ts    ← PWA 아이콘 생성 (sharp 사용)
+    ├── vite-pwa-plugin.ts       ← sdPwaPlugin (PWA manifest, service worker, 아이콘 생성 Vite 플러그인)
     └── orchestrator-utils.ts    ← Orchestrator 공통 유틸리티
 ```
 
@@ -225,11 +224,12 @@ tests/
 ├── commands/       ← 커맨드별 단위 테스트 (build, dev, watch, check, lint, typecheck, publish, device)
 ├── electron/       ← Electron 빌드 테스트
 ├── engines/        ← 엔진 단위 및 통합 테스트 (base-engine, tsc, ngtsc, server-esbuild, vite, engine-selection)
-├── infra/          ← ResultCollector, SignalHandler, WorkerManager
+├── infra/          ← ResultCollector, SignalHandler
 ├── orchestrators/  ← BuildOrchestrator, DevWatchOrchestrator
 ├── utils/          ← 유틸 함수 단위 테스트
 ├── workers/        ← Worker 모듈 단위 테스트
 ├── vitest-plugin.spec.ts      ← angularVitestPlugin 테스트
+├── vitest-plugin-cwd.spec.ts  ← angularVitestPlugin cwd 옵션 테스트
 └── sd-cli-entry.spec.ts       ← CLI 엔트리 테스트
 ```
 

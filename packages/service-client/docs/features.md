@@ -73,8 +73,8 @@ export function createFileClient(hostUrl: string, clientName: string): FileClien
 ORM connection options for client-side database context usage.
 
 ```typescript
-export interface OrmConnectOptions<TDef extends DbContextDef<any, any, any>> {
-  dbContextDef: TDef;
+export interface OrmConnectOptions<T extends DbContext> {
+  DbClass: new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T;
   connOpt: DbConnOptions & { configName: string };
   dbContextOpt?: {
     database: string;
@@ -85,7 +85,7 @@ export interface OrmConnectOptions<TDef extends DbContextDef<any, any, any>> {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `dbContextDef` | `TDef` | Database context definition |
+| `DbClass` | `new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T` | DbContext subclass constructor |
 | `connOpt` | `DbConnOptions & { configName: string }` | Connection options with required config name |
 | `dbContextOpt` | `{ database: string; schema: string }?` | Optional database/schema override |
 
@@ -95,21 +95,21 @@ ORM client connector that opens a database context over the service RPC layer.
 
 ```typescript
 export interface OrmClientConnector {
-  connect<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  connect<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R>;
-  connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
-    config: OrmConnectOptions<TDef>,
-    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  connectWithoutTransaction<T extends DbContext, R>(
+    config: OrmConnectOptions<T>,
+    callback: (db: T) => Promise<R> | R,
   ): Promise<R>;
 }
 ```
 
 | Method | Parameters | Return | Description |
 |--------|-----------|--------|-------------|
-| `connect` | `config: OrmConnectOptions<TDef>, callback: (db: DbContextInstance<TDef>) => Promise<R> \| R` | `Promise<R>` | Opens a DB context with automatic transaction (begin/commit/rollback). Wraps foreign key constraint errors with a user-friendly message |
-| `connectWithoutTransaction` | `config: OrmConnectOptions<TDef>, callback: (db: DbContextInstance<TDef>) => Promise<R> \| R` | `Promise<R>` | Opens a DB context without automatic transaction management |
+| `connect` | `config: OrmConnectOptions<T>, callback: (db: T) => Promise<R> \| R` | `Promise<R>` | Opens a DB context with automatic transaction (begin/commit/rollback). Wraps foreign key constraint errors with a user-friendly message |
+| `connectWithoutTransaction` | `config: OrmConnectOptions<T>, callback: (db: T) => Promise<R> \| R` | `Promise<R>` | Opens a DB context without automatic transaction management |
 
 ## `createOrmClientConnector`
 

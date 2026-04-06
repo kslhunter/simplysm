@@ -1,6 +1,13 @@
+# CRITICAL: 자주하는 실수
+
+- 어떠한 경우에도 지침을 무시하고 건너뛰지 않는다. 혼자만의 판단으로 무단 진행 절대(NEVER) 금지
+- 지침이 충돌등의 이유로 애매하면 사용자에게 질문한다.
+- 근거없는 답변 금지. 답변에는 항상 그 근거가 포함되어야 함.
+
 # Compaction Rules
 
 `/compact`수행 시, 항상 보존할 것:
+
 - 수정된 파일의 전체 경로 목록
 - 에러 메시지 원문
 
@@ -10,9 +17,10 @@
 
 # 금지 명령어
 
-- GIT: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean`은 hook(`sd-check-git.py`)이 차단한다.
-- cd: `cd` 명령을 통한 타 폴더로의 이동을 금지한다.
+- **GIT**: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean` 사용 금지.
+- **CRITICAL: 폴더이동 금지**: `cd` 명령을 통한 타 폴더로의 이동 금지. 폴더이동시 hook 오류남!!
 - **타입체크 명령어**: `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]`등의 스크립트 사용
+- **Lint 명령어**: `npx eslint` 사용 금지. 반드시 `pnpm lint [targets..]`등의 스크립트 사용
 
 # 도구사용 규칙
 
@@ -34,7 +42,9 @@
 # 코딩 룰
 
 - `@simplysm/*` 패키지를 사용할 때 `.claude/references/sd-readme.md`를 읽고 따른다.
-- 코딩 혹은 코드예제 출력 전, 코드베이스의 기존 패턴을 확인하여 통일성있게 안내한다.
+- `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
+- 코딩을 하거나 코드예제를 출력할때는, 반드시 코드베이스의 기존 패턴을 확인하여 통일성있게 안내한다.
+- 코드를 수정할 경우 수정에 의한 사이드이펙트를 항상 고려한다. (예, html구조가 바뀌면 css의 selector도 바뀌어야함)
 - 함수 작성 혹은 함수내 기능 추가시 단일 책임 원칙을 따른다. (함수가 이름에서 드러나지 않는 일을 몰래 해선 안됨)
 - `src/`에는 프로덕션 코드만 둔다. 테스트에서만 사용하는 파일(타입 선언, 헬퍼 등)은 `tests/`에 위치시킨다.
 - **barrel export 금지**: `src/` 루트의 `index.ts`를 제외하고, 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 패키지 루트 `index.ts`에서 개별 파일 경로를 직접 export한다.
@@ -46,3 +56,23 @@
 - **불필요한 `as` 캐스팅**: 가드(`target !== "client"` 등)로 타입이 좁혀진 후에는 `as SdClientPackageConfig` 같은 캐스팅 불필요. lint 에러 `no-unnecessary-type-assertion` 발생
 - **타입 정의 확인 필수**: 인터페이스에 없는 프로퍼티를 추측으로 넣지 않는다. 반드시 실제 타입 정의를 읽고 작성한다
 - **클래스 필드 vs prototype**: `Object.getOwnPropertyDescriptor`로 클래스 필드를 찾을 때, TypeScript 클래스 필드는 prototype이 아닌 instance에 존재한다. prototype에서 찾으면 `undefined` 반환
+- **요청하지 않은 기능 추가 금지**: 원본 코드에 없고 사용자가 요청하지 않은 기능을 임의로 추가하지 않는다. 기존 코드의 이벤트/패턴을 그대로 유지하고, 요청된 변경만 수행한다.
+- **프로젝트 구조 이해 필수**: 코드를 배치하기 전에 해당 디렉토리가 빌드 산출물인지, 영구 소스인지 반드시 확인한다. 모르면 사용자에게 질문한다.
+
+# 프로젝트 경계
+
+**CRITICAL: 프로젝트 루트(`D:\workspaces-14\oscom`) 외부의 파일을 절대 생성/수정/삭제하지 않는다.**
+
+- 다른 모노레포(`../simplysm/` 등)에 파일을 만드는 것은 절대 금지.
+
+# 빌드 산출물 디렉토리
+
+**CRITICAL: `.capacitor/`, `.electron/` 디렉토리는 빌드 시 삭제 후 재생성되는 산출물이다.**
+
+- 이 디렉토리 안에 직접 파일을 생성/수정하면 빌드 시 전부 사라진다.
+
+# Feature 범위 준수
+
+**CRITICAL: Feature 문서에 명시되지 않은 작업을 임의로 수행하지 않는다.**
+
+- 구현 중 추가 작업이 필요하다고 판단되면, 먼저 사용자에게 확인한다.

@@ -5,28 +5,31 @@ High-level ORM instance creation and Node.js query execution.
 ## createOrm
 
 ```typescript
-function createOrm<TDef extends DbContextDef<any, any, any>>(
-  dbContextDef: TDef,
+function createOrm<T extends DbContext>(
+  DbClass: new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T,
   config: DbConnConfig,
   options?: OrmOptions,
-): Orm<TDef>
+): Orm<T>
 ```
 
 Creates an ORM instance that manages DbContext creation and database connections. Each `connect()` or `connectWithoutTransaction()` call creates a fresh DbContext and connection.
 
+The `database` parameter is required -- it is resolved from `options.database` first, then `config.database`. An error is thrown if neither is provided.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `dbContextDef` | `DbContextDef` | DbContext definition from `defineDbContext()` |
+| `DbClass` | `new (executor, opt) => T` | DbContext subclass constructor |
 | `config` | `DbConnConfig` | Database connection configuration |
 | `options` | `OrmOptions?` | Optional overrides for database/schema |
 
 ```typescript
-import { defineDbContext } from "@simplysm/orm-common";
+import { DbContext } from "@simplysm/orm-common";
 import { createOrm } from "@simplysm/orm-node";
 
-const MyDb = defineDbContext({
-  tables: { user: User, post: Post },
-});
+class MyDb extends DbContext {
+  user = this.queryable(User);
+  post = this.queryable(Post);
+}
 
 const orm = createOrm(MyDb, {
   dialect: "mysql",
@@ -40,25 +43,27 @@ const orm = createOrm(MyDb, {
 // Transaction mode
 await orm.connect(async (db) => {
   const users = await db.user().execute();
-  await db.post().insert([{ title: "Hello", authorId: users[0].id }]);
   return users;
 });
 
 // No-transaction mode (for DDL, read-only)
 await orm.connectWithoutTransaction(async (db) => {
-  await db.initialize();
+  // ...
 });
 ```
 
 ## Orm
 
 ```typescript
-interface Orm<TDef extends DbContextDef<any, any, any>> {
-  readonly dbContextDef: TDef;
+interface Orm<T extends DbContext> {
+  readonly DbClass: new (
+    executor: DbContextExecutor,
+    opt: { database: string; schema?: string },
+  ) => T;
   readonly config: DbConnConfig;
   readonly options?: OrmOptions;
-  connect<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>;
-  connectWithoutTransaction<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>): Promise<R>;
+  connect<R>(callback: (conn: T) => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>;
+  connectWithoutTransaction<R>(callback: (conn: T) => Promise<R>): Promise<R>;
 }
 ```
 
@@ -66,14 +71,14 @@ ORM instance returned by `createOrm()`.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `dbContextDef` | `TDef` | The DbContext definition |
+| `DbClass` | `new (executor, opt) => T` | The DbContext subclass constructor |
 | `config` | `DbConnConfig` | The connection configuration |
 | `options` | `OrmOptions?` | The ORM options |
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `connect` | `<R>(callback: (conn) => Promise<R>, isolationLevel?) => Promise<R>` | Open connection, begin transaction, execute callback, commit (auto-rollback on error), close |
-| `connectWithoutTransaction` | `<R>(callback: (conn) => Promise<R>) => Promise<R>` | Open connection, execute callback, close (no transaction) |
+| `connect` | `<R>(callback: (conn: T) => Promise<R>, isolationLevel?) => Promise<R>` | Open connection, begin transaction, execute callback, commit (auto-rollback on error), close |
+| `connectWithoutTransaction` | `<R>(callback: (conn: T) => Promise<R>) => Promise<R>` | Open connection, execute callback, close (no transaction) |
 
 ## OrmOptions
 

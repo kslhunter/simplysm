@@ -4,44 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 18개 스킬, 4개 rules, 4개 훅 스크립트, 3개 eval 파일을 포함한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 16개 스킬, 1개 rules 파일, 4개 references 파일, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
-TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `claude/`는 배포 에셋 디렉토리다.
+TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고, `claude/`는 배포 에셋 디렉토리다.
 
 ## Architecture
 
 ```
 sd-claude/
-├── claude/               ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
-│   ├── evals/            ← Eval 시나리오 파일 (sd-*.md, 3개)
-│   ├── rules/            ← Claude Code 규칙 파일 (sd-*.md, 4개)
-│   ├── skills/           ← 스킬 파일 디렉토리 (18개 스킬)
+├── claude/                 ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
+│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 (sd-*.md, 4개)
+│   ├── rules/              ← Claude Code 규칙 파일 (sd-claude-rules.md, 1개)
+│   ├── skills/             ← 스킬 파일 디렉토리 (16개 스킬)
 │   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
-│   │   ├── sd-auth/           ← Claude Code 멀티 계정(Pro/Max) 전환
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
 │   │   ├── sd-claude-docs/    ← CLAUDE.md + README.md 동시 생성
 │   │   ├── sd-commit/         ← 그룹별 커밋 생성
 │   │   ├── sd-debug/          ← 버그 근본 원인 분석
 │   │   ├── sd-deliverable/    ← 매뉴얼·SIT 문서 생성
 │   │   ├── sd-dev/            ← 통합 개발 오케스트레이터
-│   │   ├── sd-dev-plan/       ← 구현계획 작성
-│   │   ├── sd-dev-spec/       ← 요구명세 작성
-│   │   ├── sd-tdd/        ← TDD 개발
 │   │   ├── sd-doc-extract/    ← 문서 파일 텍스트/이미지 추출 (Python)
 │   │   ├── sd-issue/          ← GitHub 이슈 생성
 │   │   ├── sd-outlook/        ← Outlook 메일 검색·다운로드 (Python)
+│   │   ├── sd-plan/           ← 요구명세·구현계획 작성
 │   │   ├── sd-prompt/         ← 스킬/프롬프트 파일 작성·개선
 │   │   ├── sd-review/         ← 코드 리뷰 리포트 생성
+│   │   ├── sd-tdd/            ← TDD 개발
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
-│   ├── sd-check-git.py   ← Bash 도구 사전 검사 훅 (금지 git 명령어 차단)
-│   ├── sd-check-write.py ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
+│   ├── sd-check-git.py     ← Bash 도구 사전 검사 훅 (금지 git 명령어 차단)
+│   ├── sd-check-write.py   ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
 │   ├── sd-session-start.sh ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
-│   └── sd-statusline.py  ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
+│   └── sd-statusline.py    ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
 └── scripts/
-    ├── sd-entries.mjs    ← sd-* 항목 탐색 유틸리티
-    ├── postinstall.mjs   ← pnpm install 후 .claude/ 설치 로직
-    └── sync.mjs          ← prepack: 루트 .claude/sd-* → claude/ 동기화
+    ├── cli.mjs             ← CLI 엔트리포인트 (bin: sd-claude)
+    ├── auth.mjs            ← 멀티 계정 save/switch 로직
+    ├── sd-entries.mjs      ← sd-* 항목 탐색 유틸리티
+    ├── postinstall.mjs     ← pnpm install 후 .claude/ 설치 로직
+    └── sync.mjs            ← prepack: 루트 .claude/sd-* → claude/ 동기화
 ```
 
 ## Key Patterns
@@ -118,6 +118,15 @@ description: 전체 변경사항에 대한 단일 커밋을 생성하는 스킬.
 model: haiku
 ---
 ```
+
+### CLI (sd-claude)
+
+`package.json`의 `bin`에 `sd-claude`로 등록된 CLI 도구. `scripts/cli.mjs`가 엔트리포인트이며, `scripts/auth.mjs`를 동적 import한다.
+
+- `sd-claude auth save` -- 현재 Claude Code 계정의 Organization 이름과 refresh token을 `~/.claude/profiles.json`에 저장한다.
+- `sd-claude auth switch` -- 저장된 계정 목록을 표시하고, 사용자가 선택한 계정으로 전환한다. TTY 필수.
+
+프로필 파일(`~/.claude/profiles.json`)은 `{ current, accounts: { [orgName]: { refreshToken, usage } } }` 구조다.
 
 ## sd-statusline.py
 

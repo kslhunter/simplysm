@@ -36,7 +36,10 @@ interface FsWatcherChangeInfo {
 Debounced file system watcher. Events occurring within the debounce window are merged using the following strategy:
 - `add` + `change` --> `add` (modification right after creation is treated as creation)
 - `add` + `unlink` --> removed (creation then deletion cancels out)
+- `addDir` + `unlinkDir` --> removed (directory creation then deletion cancels out)
 - `unlink` + `add` --> `add` (deletion then recreation is treated as creation)
+- `unlink` + `change` --> `change` (file that was deleted then modified in a prior cycle)
+- `unlinkDir` + `addDir` --> `addDir` (directory deletion then recreation)
 - Other combinations --> latest event wins
 
 The constructor is private; use the static `watch` method.
@@ -103,3 +106,17 @@ watcher.onChange({ delay: 300 }, (changes) => {
 // Later: stop watching
 await watcher.close();
 ```
+
+## EPERM Auto-Recovery
+
+When chokidar emits an `EPERM` error, `FsWatcher` automatically attempts recovery:
+
+1. Closes the current chokidar watcher
+2. Waits 1 second
+3. Creates a new watcher with the same paths and options
+4. Re-attaches all registered `onChange` handlers
+5. Waits for the new watcher's `ready` event
+
+Recovery is attempted up to 3 times. On success, the retry counter resets to zero. If all retries are exhausted, recovery stops and the error is logged.
+
+All recovery activity is logged via `consola.withTag("sd-fs-watcher")`.

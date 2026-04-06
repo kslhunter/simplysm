@@ -1,0 +1,108 @@
+import { describe, it, expect, vi } from "vitest";
+import path from "path";
+import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
+
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
+const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
+
+describe("sdAngularPlugin legacy watch rebuild", () => {
+  // Acceptance: 재빌드 시 변경 파일의 캐시가 무효화되고 증분 컴파일된다
+  it("invalidates cache and produces updated output on watch rebuild", async () => {
+    const onBuild = vi.fn();
+    const plugin = sdAngularPlugin({
+      tsconfig: TSCONFIG_PATH,
+      dev: true,
+      legacyModule: true,
+      onBuild,
+    });
+
+    // 초기 빌드
+    await (plugin as any).buildStart?.call({});
+
+    const appComponentPath = path
+      .join(FIXTURE_DIR, "src/app.component.ts")
+      .replace(/\\/g, "/");
+
+    // 초기 transform 결과 캡처
+    const initialResult = await (plugin as any).transform?.call({}, "", appComponentPath);
+    expect(initialResult).toBeDefined();
+    expect(initialResult.code.length).toBeGreaterThan(0);
+
+    // watchChange 호출 (파일 변경 알림)
+    expect((plugin as any).watchChange).toBeDefined();
+    await (plugin as any).watchChange?.call({}, appComponentPath, { event: "update" });
+
+    // 재빌드 (buildStart 재호출)
+    await (plugin as any).buildStart?.call({});
+
+    // 재빌드 후 transform — 컴파일러가 재실행되어 결과를 반환해야 한다
+    const rebuiltResult = await (plugin as any).transform?.call({}, "", appComponentPath);
+    expect(rebuiltResult).toBeDefined();
+    expect(rebuiltResult.code).toBeDefined();
+    expect(rebuiltResult.code.length).toBeGreaterThan(0);
+
+    // onBuild이 초기 빌드와 재빌드 모두에서 호출되어야 한다
+    expect(onBuild).toHaveBeenCalledTimes(2);
+    expect(onBuild).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true }),
+    );
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Acceptance: 첫 buildStart는 기존 로직으로 전체 컴파일한다
+  it("performs full compilation on first buildStart", async () => {
+    const onBuild = vi.fn();
+    const plugin = sdAngularPlugin({
+      tsconfig: TSCONFIG_PATH,
+      dev: true,
+      legacyModule: true,
+      onBuild,
+    });
+
+    // watchChange 없이 첫 buildStart
+    await (plugin as any).buildStart?.call({});
+
+    const appComponentPath = path
+      .join(FIXTURE_DIR, "src/app.component.ts")
+      .replace(/\\/g, "/");
+
+    const result = await (plugin as any).transform?.call({}, "", appComponentPath);
+    expect(result).toBeDefined();
+    expect(result.code.length).toBeGreaterThan(0);
+
+    // onBuild 정상 호출
+    expect(onBuild).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true }),
+    );
+
+    await (plugin as any).buildEnd?.call({});
+  });
+
+  // Acceptance: watchChange 없이 buildStart 재호출 시에도 정상 동작
+  it("handles buildStart re-invocation without watchChange gracefully", async () => {
+    const onBuild = vi.fn();
+    const plugin = sdAngularPlugin({
+      tsconfig: TSCONFIG_PATH,
+      dev: true,
+      legacyModule: true,
+      onBuild,
+    });
+
+    // 초기 빌드
+    await (plugin as any).buildStart?.call({});
+
+    // watchChange 없이 재빌드 (예: Rolldown이 변경 없이 재빌드 트리거)
+    await (plugin as any).buildStart?.call({});
+
+    const appComponentPath = path
+      .join(FIXTURE_DIR, "src/app.component.ts")
+      .replace(/\\/g, "/");
+
+    const result = await (plugin as any).transform?.call({}, "", appComponentPath);
+    expect(result).toBeDefined();
+    expect(result.code.length).toBeGreaterThan(0);
+
+    await (plugin as any).buildEnd?.call({});
+  });
+});

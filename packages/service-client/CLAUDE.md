@@ -115,13 +115,13 @@ if (typeof globalThis.WebSocket === "undefined") {
 
 ### ORM 원격 연결
 
-`createOrmClientConnector(serviceClient)`를 사용하면 `DbContextDef` 기반 ORM 트랜잭션을 원격 서버에서 실행할 수 있다.
+`createOrmClientConnector(serviceClient)`를 사용하면 `DbContext` 서브클래스 기반 ORM 트랜잭션을 원격 서버에서 실행할 수 있다.
 
 ```typescript
 const connector = createOrmClientConnector(serviceClient);
 
 const result = await connector.connect(
-  { dbContextDef: MyDbContextDef, connOpt: { configName: "main", /* ... */ } },
+  { DbClass: MyDbContext, connOpt: { configName: "main", /* ... */ } },
   async (db) => {
     return db.myTable.select(...);
   },
@@ -141,23 +141,4 @@ const result = await connector.connect(
 
 ## Testing
 
-**프레임워크**: Vitest
-
-테스트는 `tests/protocol/` 에만 존재하며, Worker 미사용 환경(Node.js)에서의 fallback 경로를 검증한다.
-
-```typescript
-describe("ClientProtocolWrapper (Worker 미사용 fallback)", () => {
-  it("Worker 없는 환경에서 encode/decode 라운드트립이 정상 동작한다", async () => {
-    const wrapper = createClientProtocolWrapper(createServiceProtocol());
-    try {
-      const encoded = await wrapper.encode(uuid, message);
-      const decoded = await wrapper.decode(encoded.chunks[0]);
-      expect(decoded.type).toBe("complete");
-    } finally {
-      wrapper.dispose(); // LazyGcMap 타이머 정리 필수
-    }
-  });
-});
-```
-
-`wrapper.dispose()`는 테스트 종료 후 반드시 호출해야 한다. 내부 `LazyGcMap`의 GC 타이머가 남아 있으면 Vitest가 종료되지 않는다.
+패키지 내부에 단위 테스트 디렉토리는 없다. 통합 테스트는 모노레포 루트의 `tests/service/`에 위치하며, `ServiceClient`의 서버 연결·RPC 호출을 검증한다.

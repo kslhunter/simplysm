@@ -1,4 +1,4 @@
-import type { Plugin, EnvironmentModuleNode, HotUpdateOptions, ViteDevServer } from "vite";
+import type { Plugin, ModuleNode, ViteDevServer } from "vite";
 import type { IncomingMessage, ServerResponse } from "http";
 import { JavaScriptTransformer } from "@angular/build/private";
 import { createHash } from "crypto";
@@ -49,6 +49,8 @@ export interface SdAngularPluginOptions {
   postCssPlugins?: unknown[];
   /** Linker 캐시 디렉토리 (기본값: {cwd}/.cache/linker/{sm|nosm}) */
   linkerCacheDir?: string;
+  /** replaceDeps 패키지의 resolved dist 경로 목록 (Linker 캐시 skip + full-reload 트리거) */
+  replaceDepDistPaths?: string[];
 }
 
 /**
@@ -108,6 +110,10 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
   const templateUpdates = new Map<string, string>();
   let hmrLock: Promise<void> = Promise.resolve();
   const scssDependencies = new Map<string, Set<string>>();
+  let devServer: ViteDevServer | undefined;
+
+  /** Rolldown watch 모드에서 변경된 파일 경로를 수집한다. buildStart 재호출 시 캐시 무효화에 사용. */
+  const pendingWatchChanges = new Set<string>();
 
   const enableSourcemap = options.sourcemap ?? options.dev;
 
@@ -134,6 +140,10 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     name: "sd-angular",
     enforce: "pre",
 
+    watchChange(id: string) {
+      pendingWatchChanges.add(pathx.posix(id));
+    },
+
     config() {
       const linkerCacheDir =
         options.linkerCacheDir ??
@@ -146,37 +156,53 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           ngHmrMode: options.dev && !options.legacyModule ? undefined : "false",
         },
         optimizeDeps: {
-          rolldownOptions: {
+          esbuildOptions: {
             plugins: [
               {
                 name: "angular-vite-optimize-deps",
-                async load(id: string) {
-                  if (!/\.[cm]?js$/.test(id)) return null;
+                setup(build: { onLoad: Function }) {
+                  build.onLoad(
+                    { filter: /\.[cm]?js$/ },
+                    async (args: { path: string }) => {
+                      if (!/\.[cm]?js$/.test(args.path)) return null;
 
-                  const content = await fsp.readFile(id, "utf-8");
-                  const hash = createHash("sha256").update(content).digest("hex");
-                  const cachePath = path.join(linkerCacheDir, `${hash}.js`);
+                      // replaceDeps 파일은 Linker 캐시를 건너뛴다 (항상 fresh 처리)
+                      if (
+                        options.replaceDepDistPaths != null &&
+                        options.replaceDepDistPaths.some((p) =>
+                          pathx.posix(args.path).startsWith(p),
+                        )
+                      ) {
+                        return null;
+                      }
 
-                  try {
-                    return await fsp.readFile(cachePath, "utf-8");
-                  } catch {
-                    // cache miss
-                  }
+                      const content = await fsp.readFile(args.path, "utf-8");
+                      const hash = createHash("sha256").update(content).digest("hex");
+                      const cachePath = path.join(linkerCacheDir, `${hash}.js`);
 
-                  const result = await prebundleTransformer.transformFile(id);
-                  const resultStr =
-                    typeof result === "string"
-                      ? result
-                      : new TextDecoder().decode(result);
+                      try {
+                        const cached = await fsp.readFile(cachePath, "utf-8");
+                        return { contents: cached, loader: "js" as const };
+                      } catch {
+                        // cache miss
+                      }
 
-                  try {
-                    await fsp.mkdir(linkerCacheDir, { recursive: true });
-                    await fsp.writeFile(cachePath, resultStr);
-                  } catch {
-                    // cache write failure — non-fatal
-                  }
+                      const result = await prebundleTransformer.transformFile(args.path);
+                      const resultStr =
+                        typeof result === "string"
+                          ? result
+                          : new TextDecoder().decode(result);
 
-                  return resultStr;
+                      try {
+                        await fsp.mkdir(linkerCacheDir, { recursive: true });
+                        await fsp.writeFile(cachePath, resultStr);
+                      } catch {
+                        // cache write failure — non-fatal
+                      }
+
+                      return { contents: resultStr, loader: "js" as const };
+                    },
+                  );
                 },
               },
             ],
@@ -195,6 +221,13 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
       // AngularSourceFileCache 생성 (또는 재사용)
       sourceFileCache ??= new AngularSourceFileCache();
+
+      // Rolldown watch 재빌드: 변경된 파일의 캐시 무효화
+      if (pendingWatchChanges.size > 0) {
+        logger.debug(`watch 변경 파일 ${pendingWatchChanges.size}개 캐시 무효화`);
+        sourceFileCache.invalidate(pendingWatchChanges);
+        pendingWatchChanges.clear();
+      }
 
       // SCSS errors 수집용
       const scssErrors: string[] = [];
@@ -229,6 +262,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           noEmit: false,
           declaration: false,
           declarationMap: false,
+          ...(options.dev ? { removeComments: false } : {}),
         }),
       });
 
@@ -281,16 +315,35 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       });
     },
 
-    async hotUpdate({
+    async handleHotUpdate({
       file,
       modules,
-    }: HotUpdateOptions): Promise<EnvironmentModuleNode[] | void> {
+      server,
+    }: {
+      file: string;
+      modules: ModuleNode[];
+      server: ViteDevServer;
+      timestamp: number;
+      read: () => string | Promise<string>;
+    }): Promise<ModuleNode[] | void> {
       if (compiler == null || !options.dev) return;
       if (
         !file.endsWith(".ts") &&
         !file.endsWith(".html") &&
         !file.endsWith(".scss")
       ) {
+        // replaceDeps .js 파일 변경 시 full-reload 강제
+        if (
+          file.endsWith(".js") &&
+          devServer != null &&
+          options.replaceDepDistPaths != null &&
+          options.replaceDepDistPaths.some((p) =>
+            pathx.posix(file).startsWith(p),
+          )
+        ) {
+          devServer.hot.send({ type: "full-reload" });
+          return [];
+        }
         return;
       }
 
@@ -372,10 +425,9 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
 
         if (file.endsWith(".scss")) {
           // SCSS: moduleGraph에서 영향받은 TS 모듈 조회
-          const moduleGraph = this.environment.moduleGraph;
-          const result: EnvironmentModuleNode[] = [];
+          const result: ModuleNode[] = [];
           for (const p of affectedPaths) {
-            const mods = moduleGraph.getModulesByFile(p);
+            const mods = server.moduleGraph.getModulesByFile(p);
             if (mods) result.push(...mods);
           }
           return result;
@@ -443,6 +495,8 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
     },
 
     configureServer(server: ViteDevServer) {
+      devServer = server;
+
       // component-middleware 등록 (HMR template updates 서빙)
       server.middlewares.use(angularComponentMiddleware(templateUpdates, server.config.base));
 
