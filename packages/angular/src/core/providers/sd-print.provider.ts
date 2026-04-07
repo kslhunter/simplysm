@@ -8,7 +8,7 @@ import {
   type Type,
 } from "@angular/core";
 import type { TDirectiveInputSignals, TWithOptional } from "../utils/TDirectiveInputSignals";
-import { SdBusyProvider } from "../../ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "./sd-busy.provider";
 import { wait } from "@simplysm/core-common";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";

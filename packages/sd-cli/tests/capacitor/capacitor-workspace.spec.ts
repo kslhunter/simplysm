@@ -1,5 +1,5 @@
 import path from "path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
 
@@ -33,11 +33,6 @@ vi.mock("@simplysm/core-node", () => ({
     posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
     posix: (p: string) => p.replace(/\\/g, "/"),
   },
-}));
-
-let mockEnv: Record<string, string | undefined> = {};
-vi.mock("@simplysm/core-common", () => ({
-  env: (key: string) => mockEnv[key],
 }));
 
 const execaCalls: { command: string; args: string[] }[] = [];
@@ -79,14 +74,6 @@ vi.mock("module", () => ({
       throw new Error(`Cannot find module '${id}'`);
     },
   }),
-}));
-
-vi.mock("consola", () => ({
-  consola: {
-    withTag: () => ({ debug: vi.fn(), warn: vi.fn() }),
-    level: 0,
-  },
-  LogLevels: { debug: 4 },
 }));
 
 //#endregion
@@ -154,11 +141,19 @@ function setupDefaultMocks() {
   });
 
   mockFsxGlob.mockResolvedValue(["C:/Program Files/Amazon Corretto/jdk21.0.1"]);
-  mockEnv = { ANDROID_HOME: "C:/Android/Sdk" };
+  process.env["ANDROID_HOME"] = "C:/Android/Sdk";
   execaCalls.length = 0;
 }
 
 //#endregion
+
+let savedEnv: Record<string, string | undefined>;
+beforeEach(() => {
+  savedEnv = { ...process.env };
+});
+afterEach(() => {
+  process.env = savedEnv;
+});
 
 describe("workspace:* 플러그인 해석", () => {
   beforeEach(() => {

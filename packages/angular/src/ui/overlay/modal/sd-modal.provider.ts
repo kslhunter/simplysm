@@ -19,6 +19,7 @@ import type {
   TWithOptional,
 } from "../../../core/utils/TDirectiveInputSignals";
 import { SdModalControl } from "./sd-modal.control";
+import { SdActivatedModalProvider } from "../../../core/providers/sd-activated-modal.provider";
 import "@simplysm/core-browser";
 
 /**
@@ -68,16 +69,6 @@ export interface ISdModalOptions {
   widthPx?: number;
   headerStyle?: string;
   noFirstControlFocusing?: boolean;
-}
-
-/**
- * 모달 내부에서 inject하여 사용하는 프로바이더
- */
-@Injectable()
-export class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
-  modalComponent = signal<any>(undefined);
-  contentComponent = signal<T | undefined>(undefined);
-  canDeactiveFn: () => boolean = () => true;
 }
 
 /**

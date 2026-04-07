@@ -25,7 +25,7 @@ import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
 import { type ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
-import { SdToastProvider } from "../../ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../core/providers/sd-toast.provider";
 import { SdBaseContainerControl } from "../base/sd-base-container.control";
 import { NgIcon } from "@ng-icons/core";
 import {

@@ -8,7 +8,7 @@ import {
   Router,
 } from "@angular/router";
 import { Subject } from "rxjs";
-import { SdBusyProvider } from "../../../../src/ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "../../../../src/core/providers/sd-busy.provider";
 import { SdBusyProviderTestHost } from "./sd-busy-test.fixture";
 import { provideSdAngular } from "../../../../src/core/provideSdAngular";
 

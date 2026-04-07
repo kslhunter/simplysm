@@ -1,6 +1,6 @@
 import { DestroyRef, ElementRef, inject, reflectComponentType } from "@angular/core";
 import { ActivatedRoute, type CanDeactivateFn } from "@angular/router";
-import { SdActivatedModalProvider } from "../../../ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../providers/sd-activated-modal.provider";
 
 export function setupCanDeactivate(fn: () => boolean): void {
   const activatedModal = inject(SdActivatedModalProvider, { optional: true });

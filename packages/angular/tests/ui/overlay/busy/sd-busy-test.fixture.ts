@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
 import { SdBusyContainerControl } from "../../../../src/ui/overlay/busy/sd-busy-container.control";
-import type { TSdBusyType } from "../../../../src/ui/overlay/busy/sd-busy.provider";
+import type { TSdBusyType } from "../../../../src/core/providers/sd-busy.provider";
 
 /**
  * 기본 busy container 테스트 (busy, type)

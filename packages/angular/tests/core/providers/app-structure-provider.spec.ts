@@ -4,9 +4,9 @@ import { TestBed } from "@angular/core/testing";
 import { signal } from "@angular/core";
 import {
   SdAppStructureProvider,
-  type TSdAppStructureItem,
   usePermsSignal,
 } from "../../../src/core/providers/sd-app-structure.provider";
+import type { TSdAppStructureItem } from "../../../src/core/providers/sd-app-structure.types";
 
 // 테스트용 구현체
 class TestAppStructure extends SdAppStructureProvider<string> {
@@ -34,6 +34,11 @@ class TestAppStructure extends SdAppStructureProvider<string> {
       code: "multi",
       title: "멀티모듈",
       requiredModules: ["moduleA", "moduleB"],
+    },
+    {
+      code: "external",
+      title: "외부링크",
+      url: "https://example.com",
     },
   ];
 
@@ -118,6 +123,31 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
         usePermsSignal(["admin.config"], ["use", "edit"]),
       );
       expect(result()).toEqual(["use", "edit"]);
+    });
+  });
+
+  describe("Feature 2.2: ISdMenu url 전파", () => {
+    it("url이 있는 LeafItem의 url이 메뉴에 전파된다", () => {
+      const menus = structure.usableMenus();
+      const externalMenu = menus.find((m) => m.codeChain[0] === "external");
+      expect(externalMenu).toBeDefined();
+      expect(externalMenu!.url).toBe("https://example.com");
+    });
+
+    it("url이 없는 LeafItem의 url은 undefined이다", () => {
+      structure.usableModules.set(["moduleA"]);
+      const menus = structure.usableMenus();
+      const reportMenu = menus.find((m) => m.codeChain[0] === "report");
+      expect(reportMenu).toBeDefined();
+      expect(reportMenu!.url).toBeUndefined();
+    });
+
+    it("그룹 메뉴는 url이 없다", () => {
+      structure.permRecord.set({ "admin.user.use": true });
+      const menus = structure.usableMenus();
+      const adminMenu = menus.find((m) => m.codeChain[0] === "admin");
+      expect(adminMenu).toBeDefined();
+      expect(adminMenu!.url).toBeUndefined();
     });
   });
 

@@ -3,9 +3,9 @@ import { existsSync } from "node:fs";
 import path from "path";
 import { createRequire } from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
-import { env } from "@simplysm/core-common";
 import { consola, LogLevels } from "consola";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
+import { configureAndroid, findAndroidSdk, findJava21 } from "./capacitor-android.js";
 
 /**
  * 설정 검증 에러
@@ -126,7 +126,7 @@ export class Capacitor {
       // 5. Android 네이티브 설정 구성
       if (this._platforms.includes("android")) {
         Capacitor._logger.debug("Android 네이티브 설정 시작");
-        await this._configureAndroid();
+        await configureAndroid(this._capPath, this._config, this._npmConfig);
         Capacitor._logger.debug("Android 네이티브 설정 완료");
       }
 
@@ -214,7 +214,7 @@ export class Capacitor {
    */
   private async _validateTools(): Promise<void> {
     // Android SDK 확인
-    const sdkPath = await this._findAndroidSdk();
+    const sdkPath = await findAndroidSdk();
     if (sdkPath == null) {
       throw new Error(
         "Android SDK를 찾을 수 없습니다.\n" +
@@ -226,7 +226,7 @@ export class Capacitor {
 
     // Java 확인 (android 플랫폼인 경우에만)
     if (this._platforms.includes("android")) {
-      const javaPath = await this._findJava21();
+      const javaPath = await findJava21();
       if (javaPath == null) {
         Capacitor._logger.warn(
           "Java 21을 찾을 수 없습니다. Gradle이 내장 JDK를 사용하거나 빌드가 실패할 수 있습니다.",
@@ -504,319 +504,6 @@ export default config;
       Capacitor._logger.warn(
         `아이콘 생성에 실패했습니다: ${err instanceof Error ? err.message : err}`,
       );
-    }
-  }
-
-  //#endregion
-
-  //#region Private - Android 설정
-
-  /**
-   * Android 네이티브 설정 구성
-   */
-  private async _configureAndroid(): Promise<void> {
-    const androidPath = pathx.posixResolve(this._capPath, "android");
-
-    // Android 디렉토리 존재 확인
-    if (!(await fsx.exists(androidPath))) {
-      throw new Error(`Android 프로젝트 디렉토리를 찾을 수 없습니다: ${androidPath}`);
-    }
-
-    Capacitor._logger.debug("JAVA_HOME 설정 시작");
-    await this._configureAndroidJavaHomePath(androidPath);
-    Capacitor._logger.debug("JAVA_HOME 설정 완료");
-
-    Capacitor._logger.debug("Android SDK 경로 설정 시작");
-    await this._configureAndroidSdkPath(androidPath);
-    Capacitor._logger.debug("Android SDK 경로 설정 완료");
-
-    Capacitor._logger.debug("AndroidManifest.xml 설정 시작");
-    await this._configureAndroidManifest(androidPath);
-    Capacitor._logger.debug("AndroidManifest.xml 설정 완료");
-
-    Capacitor._logger.debug("루트 build.gradle Kotlin 플러그인 설정 시작");
-    await this._configureAndroidRootBuildGradle(androidPath);
-    Capacitor._logger.debug("루트 build.gradle Kotlin 플러그인 설정 완료");
-
-    Capacitor._logger.debug("build.gradle 설정 시작");
-    await this._configureAndroidBuildGradle(androidPath);
-    Capacitor._logger.debug("build.gradle 설정 완료");
-
-    Capacitor._logger.debug("styles.xml 설정 시작");
-    await this._configureAndroidStyles(androidPath);
-    Capacitor._logger.debug("styles.xml 설정 완료");
-  }
-
-  /**
-   * JAVA_HOME 경로 설정 (gradle.properties)
-   */
-  private async _configureAndroidJavaHomePath(androidPath: string): Promise<void> {
-    const gradlePropsPath = pathx.posixResolve(androidPath, "gradle.properties");
-
-    if (!(await fsx.exists(gradlePropsPath))) {
-      Capacitor._logger.warn(`gradle.properties 파일을 찾을 수 없습니다: ${gradlePropsPath}`);
-      return;
-    }
-
-    let content = await fsx.read(gradlePropsPath);
-
-    const java21Path = await this._findJava21();
-    if (java21Path != null && !content.includes("org.gradle.java.home")) {
-      // Windows 경로 이스케이프
-      const escapedPath = java21Path.replace(/\\/g, "\\\\");
-      content += `\norg.gradle.java.home=${escapedPath}\n`;
-      await fsx.write(gradlePropsPath, content);
-    }
-  }
-
-  /**
-   * Java 21 경로 자동 탐색
-   */
-  private async _findJava21(): Promise<string | undefined> {
-    const patterns = [
-      "C:/Program Files/Amazon Corretto/jdk21*",
-      "C:/Program Files/Eclipse Adoptium/jdk-21*",
-      "C:/Program Files/Java/jdk-21*",
-      "C:/Program Files/Microsoft/jdk-21*",
-      "/usr/lib/jvm/java-21*",
-      "/usr/lib/jvm/temurin-21*",
-    ];
-
-    for (const pattern of patterns) {
-      const matches = await fsx.glob(pattern);
-      if (matches.length > 0) {
-        return matches.sort().at(-1);
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Android SDK 경로 설정 (local.properties)
-   */
-  private async _configureAndroidSdkPath(androidPath: string): Promise<void> {
-    const localPropsPath = pathx.posixResolve(androidPath, "local.properties");
-
-    const sdkPath = await this._findAndroidSdk();
-    if (sdkPath != null) {
-      // Gradle 호환: 항상 forward slash 사용
-      await fsx.write(localPropsPath, `sdk.dir=${pathx.posix(sdkPath)}\n`);
-    } else {
-      throw new Error(
-        "Android SDK를 찾을 수 없습니다.\n" +
-          "1. Android Studio를 설치하거나\n" +
-          "2. ANDROID_HOME 또는 ANDROID_SDK_ROOT 환경 변수를 설정하세요.",
-      );
-    }
-  }
-
-  /**
-   * Android SDK 경로 탐색
-   */
-  private async _findAndroidSdk(): Promise<string | undefined> {
-    const androidHome =
-      env("ANDROID_HOME") ??
-      env("ANDROID_SDK_ROOT");
-    if (androidHome != null && (await fsx.exists(androidHome))) {
-      return androidHome;
-    }
-
-    const candidates = [
-      pathx.posixResolve(env("LOCALAPPDATA") ?? "", "Android/Sdk"),
-      pathx.posixResolve(env("HOME") ?? "", "Android/Sdk"),
-      "C:/Program Files/Android/Sdk",
-      "C:/Android/Sdk",
-    ];
-
-    for (const candidate of candidates) {
-      if (await fsx.exists(candidate)) {
-        return candidate;
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * AndroidManifest.xml 설정
-   *
-   * 주의: Capacitor가 생성하는 초기 XML 포맷에 의존하는 정규식 기반 수정.
-   * XML 구조가 변경되면 정규식이 실패할 수 있음.
-   */
-  private async _configureAndroidManifest(androidPath: string): Promise<void> {
-    const manifestPath = pathx.posixResolve(androidPath, "app/src/main/AndroidManifest.xml");
-
-    if (!(await fsx.exists(manifestPath))) {
-      throw new Error(`AndroidManifest.xml 파일을 찾을 수 없습니다: ${manifestPath}`);
-    }
-
-    let content = await fsx.read(manifestPath);
-
-    // usesCleartextTraffic 설정
-    if (!content.includes("android:usesCleartextTraffic")) {
-      content = content.replace("<application", '<application android:usesCleartextTraffic="true"');
-    }
-
-    // 추가 권한 설정
-    const permissions = this._config.platform?.android?.permissions ?? [];
-    for (const perm of permissions) {
-      const permTag = `<uses-permission android:name="android.permission.${perm.name}"`;
-      if (!content.includes(permTag)) {
-        const maxSdkAttr =
-          perm.maxSdkVersion != null ? ` android:maxSdkVersion="${perm.maxSdkVersion}"` : "";
-        const ignoreAttr = perm.ignore != null ? ` tools:ignore="${perm.ignore}"` : "";
-        const permLine = `    ${permTag}${maxSdkAttr}${ignoreAttr} />\n`;
-
-        if (perm.ignore != null && !content.includes("xmlns:tools=")) {
-          content = content.replace(
-            "<manifest xmlns:android",
-            '<manifest xmlns:tools="http://schemas.android.com/tools" xmlns:android',
-          );
-        }
-
-        content = content.replace("</manifest>", `${permLine}</manifest>`);
-      }
-    }
-
-    // 추가 application 속성 설정
-    const appConfig = this._config.platform?.android?.config;
-    if (appConfig) {
-      for (const [key, value] of Object.entries(appConfig)) {
-        const attr = `android:${key}="${value}"`;
-        if (!content.includes(`android:${key}=`)) {
-          content = content.replace("<application", `<application ${attr}`);
-        }
-      }
-    }
-
-    // intentFilters 설정
-    const intentFilters = this._config.platform?.android?.intentFilters ?? [];
-    for (const filter of intentFilters) {
-      const filterKey = filter.action ?? filter.category ?? "";
-      if (filterKey && !content.includes(filterKey)) {
-        const actionLine = filter.action != null ? `<action android:name="${filter.action}"/>` : "";
-        const categoryLine =
-          filter.category != null ? `<category android:name="${filter.category}"/>` : "";
-
-        content = content.replace(
-          /(<activity[\s\S]*?android:name="\.MainActivity"[\s\S]*?>)/,
-          `$1
-            <intent-filter>
-                ${actionLine}
-                ${categoryLine}
-            </intent-filter>`,
-        );
-      }
-    }
-
-    await fsx.write(manifestPath, content);
-  }
-
-  /**
-   * 루트 build.gradle에 Kotlin Gradle 플러그인 classpath 추가
-   */
-  private async _configureAndroidRootBuildGradle(androidPath: string): Promise<void> {
-    const rootBuildGradlePath = pathx.posixResolve(androidPath, "build.gradle");
-
-    if (!(await fsx.exists(rootBuildGradlePath))) {
-      Capacitor._logger.warn(`루트 build.gradle 파일을 찾을 수 없습니다: ${rootBuildGradlePath}`);
-      return;
-    }
-
-    let content = await fsx.read(rootBuildGradlePath);
-
-    if (!content.includes("kotlin-gradle-plugin")) {
-      content = content.replace(
-        /classpath 'com\.android\.tools\.build:gradle:[^']+'/,
-        `$&\n        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20'`,
-      );
-      await fsx.write(rootBuildGradlePath, content);
-    }
-  }
-
-  /**
-   * build.gradle 수정 (서명 설정 제외)
-   */
-  private async _configureAndroidBuildGradle(androidPath: string): Promise<void> {
-    const buildGradlePath = pathx.posixResolve(androidPath, "app/build.gradle");
-
-    if (!(await fsx.exists(buildGradlePath))) {
-      throw new Error(`build.gradle 파일을 찾을 수 없습니다: ${buildGradlePath}`);
-    }
-
-    let content = await fsx.read(buildGradlePath);
-
-    // versionName, versionCode 설정
-    const version = this._npmConfig.version;
-    const cleanVersion = version.replace(/-.*$/, "");
-    const versionParts = cleanVersion.split(".");
-    const versionCode =
-      parseInt(versionParts[0] ?? "0") * 10000 +
-      parseInt(versionParts[1] ?? "0") * 100 +
-      parseInt(versionParts[2] ?? "0");
-
-    content = content.replace(/versionCode \d+/, `versionCode ${versionCode}`);
-    content = content.replace(/versionName "[^"]+"/, `versionName "${version}"`);
-
-    // SDK 버전 설정
-    if (this._config.platform?.android?.sdkVersion != null) {
-      const sdkVersion = this._config.platform.android.sdkVersion;
-      content = content.replace(/minSdkVersion .+/, `minSdkVersion ${sdkVersion}`);
-      content = content.replace(/targetSdkVersion .+/, `targetSdkVersion ${sdkVersion}`);
-    } else {
-      content = content.replace(/minSdkVersion .+/, `minSdkVersion rootProject.ext.minSdkVersion`);
-      content = content.replace(
-        /targetSdkVersion .+/,
-        `targetSdkVersion rootProject.ext.targetSdkVersion`,
-      );
-    }
-
-    await fsx.write(buildGradlePath, content);
-  }
-
-  /**
-   * styles.xml의 스플래시 테마 수정
-   *
-   * 1. Theme.SplashScreen parent → Theme.AppCompat.DayNight.NoActionBar
-   *    Theme.SplashScreen은 android:windowBackground에 compat_splash_screen을 설정하여
-   *    android:background(@drawable/splash)와 이중 표시를 발생시킨다.
-   *    installSplashScreen()을 호출하지 않으므로 Theme.SplashScreen 기능이 불필요하다.
-   *
-   * 2. android:background → android:windowBackground
-   *    android:background는 View 레벨 속성으로 AppCompat 뷰 계층의 여러 View에 상속되어
-   *    동일한 splash 로고가 다중 레이어에 중복 렌더링된다.
-   *    android:windowBackground는 Window의 DecorView에만 적용되어 단일 렌더링을 보장한다.
-   */
-  private async _configureAndroidStyles(androidPath: string): Promise<void> {
-    const stylesPath = pathx.posixResolve(androidPath, "app/src/main/res/values/styles.xml");
-
-    if (!(await fsx.exists(stylesPath))) {
-      Capacitor._logger.warn(`styles.xml 파일을 찾을 수 없습니다: ${stylesPath}`);
-      return;
-    }
-
-    let content = await fsx.read(stylesPath);
-    let changed = false;
-
-    if (content.includes('parent="Theme.SplashScreen"')) {
-      content = content.replace(
-        'parent="Theme.SplashScreen"',
-        'parent="Theme.AppCompat.DayNight.NoActionBar"',
-      );
-      changed = true;
-    }
-
-    if (content.includes('"android:background">@drawable/splash')) {
-      content = content.replace(
-        '"android:background">@drawable/splash',
-        '"android:windowBackground">@drawable/splash',
-      );
-      changed = true;
-    }
-
-    if (changed) {
-      await fsx.write(stylesPath, content);
     }
   }
 

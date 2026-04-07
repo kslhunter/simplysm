@@ -32,14 +32,16 @@ export { SdAngularConfigProvider } from "./core/providers/sd-angular-config.prov
 export { SdSystemLogProvider } from "./core/providers/sd-system-log.provider";
 export {
   SdAppStructureProvider,
-  SdAppStructureUtils,
   usePermsSignal,
-  type TSdAppStructureItem,
-  type ISdMenu,
-  type ISdFlatMenu,
-  type ISdPermission,
-  type ISdFlatPermission,
 } from "./core/providers/sd-app-structure.provider";
+export { SdAppStructureUtils } from "./core/providers/sd-app-structure.utils";
+export type {
+  TSdAppStructureItem,
+  ISdMenu,
+  ISdFlatMenu,
+  ISdPermission,
+  ISdFlatPermission,
+} from "./core/providers/sd-app-structure.types";
 export { SdFileDialogProvider } from "./core/providers/sd-file-dialog.provider";
 export { SdLocalStorageProvider } from "./core/providers/sd-local-storage.provider";
 export { SdSystemConfigProvider } from "./core/providers/sd-system-config.provider";
@@ -58,7 +60,7 @@ export { useViewTitleSignal } from "./core/utils/useViewTitleSignal";
 export { useViewTypeSignal, type TSdViewType } from "./core/utils/useViewTypeSignal";
 export { setupCanDeactivate } from "./core/utils/setups/setupCanDeactivate";
 export { setupCumulateSelectedKeys } from "./core/utils/setups/setupCumulateSelectedKeys";
-export { setupCloserWhenSingleSelectionChange } from "./core/utils/setups/setupCloserWhenSingleSelectionChange";
+export { setupCloserWhenSingleSelectionChange } from "./features/data-view/setupCloserWhenSingleSelectionChange";
 export {
   useExpandingManager,
   type IExpandItemDef,
@@ -100,6 +102,7 @@ export {
 export { SdSharedDataSelectControl } from "./features/shared-data/sd-shared-data-select.control";
 export { SdSharedDataSelectButtonControl } from "./features/shared-data/sd-shared-data-select-button.control";
 export { SdSharedDataSelectListControl } from "./features/shared-data/sd-shared-data-select-list.control";
+export { matchesSearchText } from "./features/shared-data/matchesSearchText";
 
 // ui/layout
 export { SdDockContainerControl } from "./ui/layout/dock/sd-dock-container.control";
@@ -125,9 +128,9 @@ export { SdAdditionalButtonControl } from "./ui/form/button/sd-additional-button
 export {
   SdModalSelectButtonControl,
   type ISdSelectModal,
-  type ISelectModalOutputResult,
   type TSdSelectModalInfo,
 } from "./ui/form/button/sd-modal-select-button.control";
+export type { ISelectModalOutputResult } from "./core/types/select-modal-output-result";
 
 // ui/form/input
 export { SdTextfieldControl } from "./ui/form/input/sd-textfield.control";
@@ -169,6 +172,9 @@ export { SdTabControl } from "./ui/navigation/tab/sd-tab.control";
 export { SdTabItemControl } from "./ui/navigation/tab/sd-tab-item.control";
 export { SdTabviewControl } from "./ui/navigation/tab/sd-tabview.control";
 export { SdTabviewItemControl } from "./ui/navigation/tab/sd-tabview-item.control";
+
+// ui/navigation/menu
+export { getMenuRouterLinkOption, getIsMenuSelected } from "./ui/navigation/menu-utils";
 
 // ui/navigation/pagination
 export { SdPaginationControl } from "./ui/navigation/pagination/sd-pagination.control";
@@ -223,11 +229,11 @@ export { SdDropdownPopupControl } from "./ui/overlay/dropdown/sd-dropdown-popup.
 export { SdModalControl } from "./ui/overlay/modal/sd-modal.control";
 export {
   SdModalProvider,
-  SdActivatedModalProvider,
   type ISdModal,
   type ISdModalInfo,
   type ISdModalOptions,
 } from "./ui/overlay/modal/sd-modal.provider";
+export { SdActivatedModalProvider } from "./core/providers/sd-activated-modal.provider";
 export { SdPromptModalControl } from "./ui/overlay/modal/sd-prompt-modal.control";
 export { SdConfirmModalControl } from "./ui/overlay/modal/sd-confirm-modal.control";
 
@@ -240,14 +246,14 @@ export {
   type TSdToastTheme,
   type ISdToast,
   type ISdToastInput,
-} from "./ui/overlay/toast/sd-toast.provider";
+} from "./core/providers/sd-toast.provider";
 
 // ui/overlay/busy
 export { SdBusyContainerControl } from "./ui/overlay/busy/sd-busy-container.control";
 export {
   SdBusyProvider,
   type TSdBusyType,
-} from "./ui/overlay/busy/sd-busy.provider";
+} from "./core/providers/sd-busy.provider";
 
 // core/providers (integration)
 export {

@@ -1,10 +1,6 @@
-export interface ISdMenu {
-  title: string;
-  codeChain: string[];
-  url?: string;
-  icon?: string;
-  children?: ISdMenu[];
-}
+import type { ISdMenu } from "../../core/providers/sd-app-structure.types";
+
+export type { ISdMenu } from "../../core/providers/sd-app-structure.types";
 
 export function getMenuRouterLinkOption(
   menu: ISdMenu,

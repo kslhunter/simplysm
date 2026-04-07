@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
-import { SdToastProvider } from "../../overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../../core/providers/sd-toast.provider";
 import { SdPromptModalControl } from "../../overlay/modal/sd-prompt-modal.control";
 import { SdConfirmModalControl } from "../../overlay/modal/sd-confirm-modal.control";
 import { useSdSystemConfigResource } from "../../../core/utils/useSdSystemConfigResource";

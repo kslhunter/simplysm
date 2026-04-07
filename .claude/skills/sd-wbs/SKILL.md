@@ -8,8 +8,10 @@ description: 프로젝트 요구사항을 Feature 단위로 분해하는 스킬.
 ## Step 1: 요구사항 수집
 
 사용자가 제공한 요구사항에 대한 분석을 시작한다.
+문서 파일(docx, xlsx, pdf 등)이 제공된 경우, `/sd-doc-extract`로 내용을 추출하여 분석한다.
+기존 wbs 경로가 제공된 경우, 해당 문서를 읽고 업데이트한다.
 요구사항과 함께 **프로젝트 개요**(배경, 환경, 전제조건, 기술적 제약)를 파악한다.
-`.claude/references/sd-clarify.md`를 읽고 명확화한다.
+@.claude/references/sd-clarify.md 지침에 따라 명확화한다.
 
 ## Step 2: Impact Mapping
 
@@ -20,7 +22,7 @@ Impact Mapping 트리(Goal → Actor → Impact → Deliverable)를 구축한다
 비즈니스 요구사항(What)에 대한 분석만 한다.
 
 - 기술적 구현 방법(How) — 인증 방식, 통신 프로토콜, 프레임워크, 아키텍처 패턴 등 — 에 대한 결정은 분석 단계에서 하지 않는다.
-- `.claude/references/sd-clarify.md`를 읽고 명확화한다.
+- @.claude/references/sd-clarify.md 지침에 따라 명확화한다.
 
 ### 명확화 항목
 
@@ -45,11 +47,11 @@ Impact Mapping 트리(Goal → Actor → Impact → Deliverable)를 구축한다
 
 ## Step 3: Feature Breakdown
 
-Deliverable을 Epic → Feature로 구조화한다.
+Deliverable을 Epic → Feature로 구조화한다. Epic은 도메인/비즈니스 영역 단위로 그룹화한다.
 
 ### Feature 분해 원칙
 
-Feature는 개발 1회의 처리 단위이다.
+Feature는 독립적으로 설계·개발·검증할 수 있는 최소 기능 단위이다.
 
 - 같은 세부기능을 공유한다는 이유로 독립 모듈을 하나의 Feature로 묶지 않는다. (예: event-bus Feature + 모달 Feature + 토스트 Feature —
   묶지 않음)
@@ -59,11 +61,11 @@ Feature는 개발 1회의 처리 단위이다.
 ### Feature 작성 규칙
 
 - **의존성**: 선행 Feature를 명시한다. 없으면 "없음".
-- **범위**: 해당 Feature의 세부 기능을 **MUST 빠짐없이** 나열한다. (절대 누락되어선 안된다. 누락된것은 다음단계에서 제외사항으로 판단될 수 있다.)
-- **경계**: 이 Feature가 **하지 않는 것**을 명시한다. 인접 Feature와의 경계가 모호한 경우 특히 중요하다.
+- **범위**: 해당 Feature의 세부 기능을 사용자 기능(user-facing function) 수준으로 **MUST 빠짐없이** 나열한다. (절대 누락되어선 안된다. 누락된것은 다음단계에서 제외사항으로 판단될 수 있다.)
+- **경계**: 이 Feature가 **하지 않는 것** 중 다른 Feature에서 다루거나 다룰 수 있는 것을 명시한다. 인접 Feature와의 경계가 모호한 경우 특히 중요하다. (프로젝트 전체에서 제외되는 항목은 문서 하단의 "제외 사항"에 기재한다.)
 - **근거**: 범위가 도출된 근거 혹은 출처를 명시한다. (요구사항, 사용자 답변, 첨부문서 등) 개발에 필요한 참조 파일/자료 경로가 있으면 확인 목적과 함께 기록한다.
 
-`.claude/references/sd-clarify.md`를 읽고 각 Feature의 세부 사항을 분류하고 불명확한 부분을 명확화한다.
+각 Feature의 세부 사항을 분류하고 @.claude/references/sd-clarify.md 지침에 따라 불명확한 부분을 명확화한다.
 - **나쁜 예:** "예약 기능 포함이 결정됨 → 예약 세부규칙(대기열 정책, 미대출 시 자동취소 기간)도 확정" — 기능 포함 여부와 세부 수치/규칙은 별개다. 세부사항은 별도로 분류·질문한다.
 
 ## Step 4: WBS 문서 생성

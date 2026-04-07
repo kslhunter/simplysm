@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdToastProvider } from "../../../../src/ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../../../src/core/providers/sd-toast.provider";
 import { SdToastProviderTestHost } from "./sd-toast-test.fixture";
 import "@simplysm/core-browser";
 

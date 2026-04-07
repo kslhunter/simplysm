@@ -7,7 +7,7 @@ import { SdAppStructureProvider } from "../../../../src/core/providers/sd-app-st
 import { useViewTitleSignal } from "../../../../src/core/utils/useViewTitleSignal";
 import { useViewTypeSignal, type TSdViewType } from "../../../../src/core/utils/useViewTypeSignal";
 import { setupCanDeactivate } from "../../../../src/core/utils/setups/setupCanDeactivate";
-import { SdActivatedModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../../src/core/providers/sd-activated-modal.provider";
 import "@simplysm/core-browser";
 
 function mockUrlRoute(path: string) {

@@ -2,8 +2,7 @@
 
 `@simplysm/*` 패키지 사용 시, 해당 패키지의 README.md를 먼저 읽어 API와 사용법을 파악한다.
 
-- 일반: `node_modules/@simplysm/{패키지명}/README.md`
-- hoist: `packages/{패키지}/node_modules/@simplysm/{패키지명}/README.md`
+- 먼저 `packages/{패키지}/node_modules/@simplysm/{패키지명}/README.md`를 확인하고, 없으면 `node_modules/@simplysm/{패키지명}/README.md`를 확인한다
 - simplysm패키지의 경우 context7은 구버전일수 있으니 context7사용을 지양한다.
 
 ## 14버전의 @simplysm 패키지를 사용하고 있다면 다음 패키지 목록 참고

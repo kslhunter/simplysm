@@ -1,0 +1,186 @@
+import type { ServerBuildInfo } from "../workers/server-build.worker";
+import path from "path";
+import fs from "fs";
+import { cpx } from "@simplysm/core-node";
+import { consola } from "consola";
+import { collectAllDependencyExternals } from "./esbuild-config";
+
+const logger = consola.withTag("sd:cli:server-production-files");
+
+/**
+ * 세 가지 소스에서 외부 모듈을 수집하고 병합한다.
+ * collectAllDependencyExternals를 통한 단일 패스 의존성 트리 순회를 사용한다.
+ */
+export function collectAllExternals(pkgDir: string, manualExternals?: string[]): string[] {
+  logger.debug("의존성 트리 스캔 중...");
+  const { optionalPeerDeps, nativeModules } = collectAllDependencyExternals(pkgDir);
+
+  const manual = manualExternals ?? [];
+  return [...new Set([...optionalPeerDeps, ...nativeModules, ...manual])];
+}
+
+/**
+ * pnpm-lock.yaml의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
+ * Lockfile v9 형식: `packages:` 섹션의 `'name@version':` 키를 파싱한다.
+ * YAML 파서 의존성을 피하기 위해 단순 라인 기반 파싱을 사용한다.
+ */
+export function parseLockfileVersions(cwd: string): Map<string, string> {
+  const lockfilePath = path.join(cwd, "pnpm-lock.yaml");
+  if (!fs.existsSync(lockfilePath)) {
+    throw new Error(`pnpm-lock.yaml not found in ${cwd}. Run "pnpm install" first.`);
+  }
+
+  const content = fs.readFileSync(lockfilePath, "utf-8");
+  const map = new Map<string, string>();
+
+  // "packages:" 섹션을 찾고 "'@scope/name@1.2.3':" 또는 "'name@1.2.3':" 형태의 항목을 파싱
+  const lines = content.split("\n");
+  let inPackages = false;
+  for (const line of lines) {
+    if (line === "packages:") {
+      inPackages = true;
+      continue;
+    }
+    if (inPackages && line.length > 0 && !line.startsWith(" ") && !line.startsWith("'")) {
+      break; // 다음 최상위 섹션
+    }
+    if (!inPackages) continue;
+
+    // "'@scope/name@version':" 또는 "'name@version':" 매칭
+    const match = /^\s{2}'(.+)@(\d[^']*)':\s*$/.exec(line);
+    if (match != null) {
+      const name = match[1];
+      const version = match[2];
+      // 첫 번째 항목 유지 (lockfile은 각 버전을 한 번만 기록)
+      if (!map.has(name)) {
+        map.set(name, version);
+      }
+    }
+  }
+
+  return map;
+}
+
+/**
+ * pnpm-lock.yaml에서 주어진 모든 패키지의 잠긴 버전을 확인한다.
+ * lockfile에서 패키지를 찾을 수 없으면 에러를 던진다.
+ */
+export function resolveLockedVersions(cwd: string, pkgNames: string[]): Record<string, string> {
+  const versionMap = parseLockfileVersions(cwd);
+  const result: Record<string, string> = {};
+  for (const name of pkgNames) {
+    const version = versionMap.get(name);
+    if (version == null) {
+      throw new Error(
+        `External dependency "${name}" not found in pnpm-lock.yaml. ` +
+          `Run "pnpm install" and try again.`,
+      );
+    }
+    result[name] = version;
+  }
+  return result;
+}
+
+/**
+ * 프로덕션 배포용 파일을 생성한다
+ */
+export function generateProductionFiles(
+  info: ServerBuildInfo,
+  externals: string[],
+): void {
+  const distDir = path.join(info.pkgDir, "dist");
+  const pkgJson = JSON.parse(fs.readFileSync(path.join(info.pkgDir, "package.json"), "utf-8"));
+
+  // dist/package.json
+  const distPkgJson: Record<string, unknown> = {
+    name: pkgJson.name,
+    version: pkgJson.version,
+    type: pkgJson.type,
+  };
+  if (externals.length > 0) {
+    distPkgJson["dependencies"] = resolveLockedVersions(info.cwd, externals);
+  }
+  if (info.packageManager === "volta") {
+    const nodeVersion = cpx.spawnSync("node", ["-v"]).stdout.trim();
+    distPkgJson["volta"] = { node: nodeVersion };
+  }
+  fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
+
+  // dist/mise.toml
+  if (info.packageManager === "mise") {
+    const rootMiseTomlPath = path.join(info.cwd, "mise.toml");
+    let nodeVersion = "20";
+    if (fs.existsSync(rootMiseTomlPath)) {
+      const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
+      const match = /node\s*=\s*"([^"]+)"/.exec(miseContent);
+      if (match != null) {
+        nodeVersion = match[1];
+      }
+    }
+    fs.writeFileSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);
+  }
+
+  // dist/openssl.cnf
+  fs.writeFileSync(
+    path.join(distDir, "openssl.cnf"),
+    [
+      "nodejs_conf = openssl_init",
+      "",
+      "[openssl_init]",
+      "providers = provider_sect",
+      "ssl_conf = ssl_sect",
+      "",
+      "[provider_sect]",
+      "default = default_sect",
+      "legacy = legacy_sect",
+      "",
+      "[default_sect]",
+      "activate = 1",
+      "",
+      "[legacy_sect]",
+      "activate = 1",
+      "",
+      "[ssl_sect]",
+      "system_default = system_default_sect",
+      "",
+      "[system_default_sect]",
+      "Options = UnsafeLegacyRenegotiation",
+    ].join("\n"),
+  );
+
+  // dist/pm2.config.cjs
+  if (info.pm2 != null) {
+    const pm2Name = info.pm2.name ?? pkgJson.name.replace(/@/g, "").replace(/[/\\]/g, "-");
+    const ignoreWatch = JSON.stringify([
+      "node_modules",
+      "www",
+      ...(info.pm2.ignoreWatchPaths ?? []),
+    ]);
+    const envObj: Record<string, string> = {
+      NODE_ENV: "production",
+      TZ: "Asia/Seoul",
+      ...(info.env ?? {}),
+    };
+    const envStr = JSON.stringify(envObj, undefined, 4);
+
+    const useInterpreter = info.packageManager !== "volta";
+
+    const pm2Config = [
+      ...(useInterpreter ? [`const cp = require("child_process");`, ``] : []),
+      `module.exports = {`,
+      `  name: ${JSON.stringify(pm2Name)},`,
+      `  script: "main.js",`,
+      `  watch: true,`,
+      `  watch_delay: 2000,`,
+      `  ignore_watch: ${ignoreWatch},`,
+      ...(useInterpreter ? [`  interpreter: cp.execSync("mise which node").toString().trim(),`] : []),
+      `  interpreter_args: "--openssl-config=openssl.cnf",`,
+      `  env: ${envStr.replace(/\n/g, "\n  ")},`,
+      `  arrayProcess: "concat",`,
+      `  useDelTargetNull: true,`,
+      `};`,
+    ].join("\n");
+
+    fs.writeFileSync(path.join(distDir, "pm2.config.cjs"), pm2Config);
+  }
+}

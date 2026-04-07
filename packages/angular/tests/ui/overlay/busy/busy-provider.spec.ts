@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdBusyProvider } from "../../../../src/ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "../../../../src/core/providers/sd-busy.provider";
 import { SdBusyProviderTestHost } from "./sd-busy-test.fixture";
 
 function setupHost() {

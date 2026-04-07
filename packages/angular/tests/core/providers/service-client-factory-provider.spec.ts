@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdServiceClientFactoryProvider } from "../../../src/core/providers/sd-service-client-factory.provider";
 import { SdAngularConfigProvider } from "../../../src/core/providers/sd-angular-config.provider";
-import { SdToastProvider } from "../../../src/ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../../src/core/providers/sd-toast.provider";
 import { ServiceClient } from "@simplysm/service-client";
 
 // ServiceClient 모의 객체

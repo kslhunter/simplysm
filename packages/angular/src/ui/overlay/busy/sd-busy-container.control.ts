@@ -8,7 +8,7 @@ import {
   input,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdBusyProvider, type TSdBusyType } from "./sd-busy.provider";
+import { SdBusyProvider, type TSdBusyType } from "../../../core/providers/sd-busy.provider";
 
 @Component({
   selector: "sd-busy-container",

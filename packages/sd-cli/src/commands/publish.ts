@@ -770,7 +770,8 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   // 실패한 패키지 확인
   const allPkgNames = publishPackages.map((p) => p.name);
-  const failedPkgNames = allPkgNames.filter((n) => !publishedPackages.includes(n));
+  const publishedSet = new Set(publishedPackages);
+  const failedPkgNames = allPkgNames.filter((n) => !publishedSet.has(n));
 
   if (failedPkgNames.length > 0) {
     if (publishedPackages.length > 0) {

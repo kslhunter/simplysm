@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { SdAppStructureProvider } from "../../../src/core/providers/sd-app-structure.provider";
-import { SdToastProvider } from "../../../src/ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../../src/core/providers/sd-toast.provider";
 import { SdSharedDataProvider } from "../../../src/core/providers/sd-shared-data.provider";
 import { SdFileDialogProvider } from "../../../src/core/providers/sd-file-dialog.provider";
 import { DSTestHost, type TestItem } from "./sd-data-sheet-test.fixture";
@@ -246,6 +246,47 @@ describe("Feature 7.2a Slice 1: 단위 테스트", () => {
     host.doFilterSubmit();
 
     expect(host.page()).toBe(2); // page not reset
+  });
+
+  it("doFilterSubmit — 미저장 변경 + confirm 거부 시 무시", async () => {
+    const { host } = await createFixtureAndInit([{ id: 1, name: "A", isDeleted: false }]);
+    host.items()[0].name = "modified";
+    host.items.update((v) => [...v]);
+
+    vi.spyOn(globalThis, "confirm").mockReturnValue(false);
+    host.page.set(2);
+    host.doFilterSubmit();
+
+    expect(host.page()).toBe(2);
+    expect(globalThis.confirm).toHaveBeenCalled();
+
+    vi.restoreAllMocks();
+  });
+
+  it("checkIgnoreChanges — 변경 없으면 confirm 미호출", async () => {
+    const { host } = await createFixtureAndInit([{ id: 1, name: "A" }]);
+
+    const confirmSpy = vi.spyOn(globalThis, "confirm");
+    const result = host.checkIgnoreChanges();
+
+    expect(result).toBe(true);
+    expect(confirmSpy).not.toHaveBeenCalled();
+
+    vi.restoreAllMocks();
+  });
+
+  it("refresh — selectedItems 중 현재 items에 없는 항목 자동 제거", async () => {
+    const items = [{ id: 1, name: "A" }, { id: 2, name: "B" }];
+    const { host } = await createFixtureAndInit(items);
+    host.selectedItems.set([host.items()[0], host.items()[1]]);
+
+    host.searchFn.mockResolvedValue({ items: [{ id: 1, name: "A-new" }] });
+    host.doRefresh();
+    TestBed.flushEffects();
+    await new Promise<void>((r) => setTimeout(r, 0));
+
+    expect(host.selectedItems().length).toBe(1);
+    expect(host.selectedItems()[0].name).toBe("A-new");
   });
 });
 

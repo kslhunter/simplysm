@@ -1,5 +1,5 @@
 import { Component, signal } from "@angular/core";
-import type { ISdPermission } from "../../../src/core/providers/sd-app-structure.provider";
+import type { ISdPermission } from "../../../src/core/providers/sd-app-structure.types";
 import { SdPermissionTableControl } from "../../../src/features/permission-table/sd-permission-table.control";
 
 @Component({

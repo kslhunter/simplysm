@@ -1,6 +1,6 @@
 import { computed, inject, type Signal } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { SdActivatedModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../providers/sd-activated-modal.provider";
 import { useCurrentPageCodeSignal } from "./useCurrentPageCodeSignal";
 import { useFullPageCodeSignal } from "./useFullPageCodeSignal";
 

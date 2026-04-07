@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { SdAppStructureProvider } from "../../../src/core/providers/sd-app-structure.provider";
-import { SdActivatedModalProvider } from "../../../src/ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../src/core/providers/sd-activated-modal.provider";
 import { BCTestHost } from "./sd-base-container-test.fixture";
 
 function createMockAppStructure() {

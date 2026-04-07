@@ -8,6 +8,7 @@
  */
 
 import { cpx } from "@simplysm/core-node";
+import { consola } from "consola";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -34,8 +35,12 @@ if (isDev) {
     if (process.argv[2] !== "replace-deps" && sdConfig.replaceDeps != null) {
       await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);
     }
-  } catch {
+  } catch (err: unknown) {
     // sd.config.ts가 없거나 replaceDeps가 설정되지 않으면 건너뜀
+    const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
+    if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
+      consola.warn("[sd-cli] replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
+    }
   }
 
   // Phase 2: 실제 CLI를 새 프로세스로 실행 (모듈 캐시 초기화)

@@ -4,12 +4,10 @@ import {
   Component,
   computed,
   contentChildren,
-  DestroyRef,
   inject,
   input,
   model,
   output,
-  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
@@ -29,12 +27,10 @@ import { useSheetLayoutEngine } from "./useSheetLayoutEngine";
 import { useSheetColumnFixing } from "./useSheetColumnFixing";
 import { useSelectionManager } from "../../../core/utils/useSelectionManager";
 import { useSortingManager, type ISortingDef } from "../../../core/utils/useSortingManager";
-import { useExpandingManager } from "../../../core/utils/useExpandingManager";
 import { SdPaginationControl } from "../../navigation/pagination/sd-pagination.control";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import type {
-  ISdSheetColumnDef,
   ISdSheetCellKeydownEventParam,
   ISdSheetConfig,
   ISdSheetHeaderDef,
@@ -43,6 +39,9 @@ import type {
 import { useSdSystemConfigResource } from "../../../core/utils/useSdSystemConfigResource";
 import { useSheetDomAccessor } from "./useSheetDomAccessor";
 import { useSheetCellAgent } from "./useSheetCellAgent";
+import { useSheetColumnResizing } from "./useSheetColumnResizing";
+import { useSheetDisplayPipeline } from "./useSheetDisplayPipeline";
+import { useSheetCellStyling } from "./useSheetCellStyling";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 
@@ -370,28 +369,25 @@ export class SdSheetControl<T> {
 
   // Injected providers
   private readonly _modalProvider = inject(SdModalProvider);
-  private readonly _destroyRef = inject(DestroyRef);
 
   // DOM accessor & cell agent
   domAccessor = useSheetDomAccessor();
   cellAgent = useSheetCellAgent({ domAccessor: this.domAccessor });
 
-  constructor() {
-    this._destroyRef.onDestroy(() => {
-      this._resizingCleanup?.();
-    });
-  }
-
-  // Resizing state
-  _isResizing = signal(false);
-  _resizeIndicatorLeft = signal(0);
-  private _lastResizeEndTimeStamp = 0;
-  private _resizingCleanup: (() => void) | null = null;
-
   // Config resource
   private readonly _configResource = useSdSystemConfigResource<ISdSheetConfig>({
     key: this.key,
   });
+
+  // Resizing composable
+  private readonly _resizing = useSheetColumnResizing({
+    domAccessor: this.domAccessor,
+    configResource: this._configResource,
+  });
+  _isResizing = this._resizing.isResizing;
+  _resizeIndicatorLeft = this._resizing.indicatorLeft;
+  onResizerMousedown = this._resizing.onMousedown;
+  onResizerDblClick = this._resizing.onDblClick;
 
   // Layout engine
   layout = useSheetLayoutEngine({
@@ -409,13 +405,43 @@ export class SdSheetControl<T> {
     sorts: this.sorts,
   });
 
-  // Effective page count (from totalPageCount or computed from items/itemsPerPage)
-  effectivePageCount = computed(() => {
-    const total = this.totalPageCount();
-    if (total > 0) return total;
-    const perPage = this.itemsPerPage();
-    if (perPage <= 0) return 0;
-    return Math.ceil(this.items().length / perPage);
+  // Display pipeline (sort → page → expand → display)
+  private readonly _pipeline = useSheetDisplayPipeline<T>({
+    items: this.items,
+    useAutoSort: this.useAutoSort,
+    sortItems: (items) => this.sorting.sort(items),
+    itemsPerPage: this.itemsPerPage,
+    currentPage: this.currentPage,
+    totalPageCount: this.totalPageCount,
+    expandedItems: this.expandedItems,
+    getChildrenFn: this.getChildrenFn,
+  });
+  effectivePageCount = this._pipeline.effectivePageCount;
+  expanding = this._pipeline.expanding;
+  displayItems = this._pipeline.displayItems;
+
+  // Cell styling composable
+  private readonly _styling = useSheetCellStyling<T>({
+    columnDefs: this.layout.columnDefs,
+    fixedLeftMap: this.fixing.fixedLeftMap,
+    getItemCellStyleFn: this.getItemCellStyleFn,
+    getItemCellClassFn: this.getItemCellClassFn,
+    getChildrenFn: this.getChildrenFn,
+    expandingDef: (item) => this.expanding.def(item),
+    isCellEditMode: (addr) => this.cellAgent.isCellEditMode(addr),
+  });
+  getHeaderCellStyle = this._styling.getHeaderCellStyle;
+  getCellStyle = this._styling.getCellStyle;
+  getFixedCellStyle = this._styling.getFixedCellStyle;
+  getCellStyleWithIndent = this._styling.getCellStyleWithIndent;
+  getDataCellClass = this._styling.getDataCellClass;
+
+  // Selection manager
+  selection = useSelectionManager<T>({
+    displayItems: this.displayItems,
+    selectedItems: this.selectedItems,
+    selectMode: this.selectMode,
+    getItemSelectableFn: this.getItemSelectableFn,
   });
 
   // Icons
@@ -428,56 +454,6 @@ export class SdSheetControl<T> {
     tablerChevronsDown,
     tablerSettings,
   };
-
-  // Sorted items
-  private readonly _sortedItems = computed(() => {
-    const items = this.items();
-    if (this.useAutoSort()) {
-      return this.sorting.sort(items);
-    }
-    return items;
-  });
-
-  // Paged items (root-level only)
-  private readonly _pagedItems = computed(() => {
-    const items = this._sortedItems();
-    const perPage = this.itemsPerPage();
-    if (perPage <= 0) return items;
-    const page = this.currentPage();
-    const start = page * perPage;
-    return items.slice(start, start + perPage);
-  });
-
-  // Expanding manager
-  expanding = useExpandingManager<T>({
-    items: this._pagedItems,
-    expandedItems: this.expandedItems,
-    getChildrenFn: this.getChildrenFn,
-    sort: (items) => {
-      if (this.useAutoSort()) {
-        return this.sorting.sort(items);
-      }
-      return items;
-    },
-  });
-
-  // Final display items (sorted → paged → expanded)
-  displayItems = computed(() => {
-    const getChildrenFn = this.getChildrenFn();
-    if (getChildrenFn != null) {
-      // With tree: only show visible items (parent expanded)
-      return this.expanding.displayItems().filter((item) => this.expanding.isVisible(item));
-    }
-    return this._pagedItems();
-  });
-
-  // Selection manager
-  selection = useSelectionManager<T>({
-    displayItems: this.displayItems,
-    selectedItems: this.selectedItems,
-    selectMode: this.selectMode,
-    getItemSelectableFn: this.getItemSelectableFn,
-  });
 
   private readonly _columnControlMap = computed(() => {
     const map = new Map<string, SdSheetColumnDirective>();
@@ -495,51 +471,6 @@ export class SdSheetControl<T> {
   getColumnSummaryTpl(key: string) {
     const col = this._columnControlMap().get(key);
     return col?.summaryTplRef() ?? null;
-  }
-
-  // Pre-computed column styles: header/footer (fixed z-index:3)
-  private readonly _headerColumnStyles = computed(() => {
-    const map = new Map<string, string | null>();
-    for (const colDef of this.layout.columnDefs()) {
-      const parts: string[] = [];
-      const colStyle = this._getColDefStyle(colDef);
-      if (colStyle != null) parts.push(colStyle);
-      const fixedStyle = this._getFixedStyle(colDef, 3, "var(--theme-secondary-lightest)");
-      if (fixedStyle != null) parts.push(fixedStyle);
-      map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
-    }
-    return map;
-  });
-
-  // Pre-computed column styles: body (fixed z-index:1)
-  private readonly _dataColumnBaseStyles = computed(() => {
-    const map = new Map<string, string | null>();
-    for (const colDef of this.layout.columnDefs()) {
-      const parts: string[] = [];
-      const colStyle = this._getColDefStyle(colDef);
-      if (colStyle != null) parts.push(colStyle);
-      const fixedStyle = this._getFixedStyle(colDef);
-      if (fixedStyle != null) parts.push(fixedStyle);
-      map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
-    }
-    return map;
-  });
-
-  getHeaderCellStyle(cell: ISdSheetHeaderDef) {
-    if (cell.colDef == null) return null;
-    return this._headerColumnStyles().get(cell.colDef.key) ?? null;
-  }
-
-  getCellStyle(item: T, colDef: ISdSheetColumnDef) {
-    const baseStyle = this._dataColumnBaseStyles().get(colDef.key) ?? null;
-    const styleFn = this.getItemCellStyleFn();
-    const customStyle = styleFn != null ? styleFn(item, colDef.key) : undefined;
-    if (baseStyle != null && customStyle != null) return `${baseStyle}; ${customStyle}`;
-    return customStyle ?? baseStyle ?? null;
-  }
-
-  getFixedCellStyle(colDef: ISdSheetColumnDef) {
-    return this._getFixedStyle(colDef, 3);
   }
 
   getSelectableTooltip(item: T): string | null {
@@ -572,7 +503,7 @@ export class SdSheetControl<T> {
   }
 
   onHeaderClick(event: MouseEvent, cell: ISdSheetHeaderDef): void {
-    if (event.timeStamp - this._lastResizeEndTimeStamp < 50) return;
+    if (event.timeStamp - this._resizing.lastResizeEndTimeStamp() < 50) return;
     if (cell.colDef == null) return;
     if (cell.colDef.disableSorting) return;
     this.sorting.toggle(cell.colDef.key, event.shiftKey);
@@ -580,22 +511,6 @@ export class SdSheetControl<T> {
 
   getSortDef(key: string) {
     return this.sorting.defMap().get(key) ?? null;
-  }
-
-  getCellStyleWithIndent(item: T, colDef: ISdSheetColumnDef, colIdx: number) {
-    const parts: string[] = [];
-    const cellStyle = this.getCellStyle(item, colDef);
-    if (cellStyle != null) {
-      parts.push(cellStyle);
-    }
-    // Add indent for tree depth on first data column
-    if (colIdx === 0 && this.getChildrenFn() != null) {
-      const itemDef = this.getItemDef(item);
-      if (itemDef.depth > 0) {
-        parts.push(`padding-left: calc(var(--gap-default) + ${itemDef.depth}em)`);
-      }
-    }
-    return parts.length > 0 ? parts.join("; ") : null;
   }
 
   getItemDef(item: T) {
@@ -626,41 +541,6 @@ export class SdSheetControl<T> {
     const sortDef = this.sorting.defMap().get(cell.colDef.key);
     if (sortDef == null) return null;
     return sortDef.desc ? "descending" : "ascending";
-  }
-
-  private _getColDefStyle(colDef: { width: string | undefined; collapse: boolean }): string | null {
-    if (colDef.collapse) {
-      return "padding: 0; width: 0; min-width: 0; max-width: 0; overflow: hidden; border: none";
-    }
-    if (colDef.width != null) {
-      return `width: ${colDef.width}; min-width: ${colDef.width}; max-width: ${colDef.width}`;
-    }
-    return null;
-  }
-
-  private _getFixedStyle(
-    colDef: ISdSheetColumnDef,
-    zIndex: number = 1,
-    background: string = "var(--control-color)",
-  ): string | null {
-    const fixedLeftMap = this.fixing.fixedLeftMap();
-    const leftValue = fixedLeftMap.get(colDef.key);
-    if (leftValue == null) return null;
-
-    return `position: sticky; left: ${leftValue}px; z-index: ${zIndex}; background: ${background}`;
-  }
-
-  getDataCellClass(item: T, colDef: ISdSheetColumnDef, r: number, c: number): string | null {
-    const parts: string[] = [];
-    const classFn = this.getItemCellClassFn();
-    const customClass = classFn != null ? classFn(item, colDef.key) : undefined;
-    if (customClass != null) {
-      parts.push(customClass);
-    }
-    if (this.cellAgent.isCellEditMode({ r, c })) {
-      parts.push("_edit-mode");
-    }
-    return parts.length > 0 ? parts.join(" ") : null;
   }
 
   async onKeydownCapture(event: Event): Promise<void> {
@@ -699,74 +579,6 @@ export class SdSheetControl<T> {
     }
   }
 
-  // --- Resizing ---
-
-  onResizerMousedown(event: MouseEvent, colDef: ISdSheetColumnDef): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const container = this.domAccessor.getContainer();
-    const startX = event.clientX;
-    const th = (event.target as HTMLElement).parentElement as HTMLElement;
-    const startWidth = th.offsetWidth;
-
-    this._isResizing.set(true);
-    this._resizeIndicatorLeft.set(
-      th.offsetLeft + th.offsetWidth - container.scrollLeft,
-    );
-
-    const onMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - startX;
-      const newWidth = Math.max(startWidth + deltaX, 5);
-      this._resizeIndicatorLeft.set(
-        th.offsetLeft + newWidth - container.scrollLeft,
-      );
-    };
-
-    const onMouseUp = (e: MouseEvent) => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      this._resizingCleanup = null;
-
-      const deltaX = e.clientX - startX;
-      const newWidth = Math.max(startWidth + deltaX, 5);
-
-      this._isResizing.set(false);
-      this._saveColumnConfig(colDef.key, { width: `${newWidth}px` });
-
-      this._lastResizeEndTimeStamp = e.timeStamp;
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-    this._resizingCleanup = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  }
-
-  onResizerDblClick(event: MouseEvent, colDef: ISdSheetColumnDef): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Remove the width from config to reset to column definition default
-    const current = this._configResource.value() ?? { columnRecord: {} };
-    const columnRecord = { ...current.columnRecord };
-    const colConfig = { ...columnRecord[colDef.key] };
-    delete colConfig.width;
-    columnRecord[colDef.key] = colConfig;
-    this._configResource.set({ ...current, columnRecord });
-  }
-
-  private _saveColumnConfig(
-    colKey: string,
-    changes: Partial<ISdSheetConfig["columnRecord"][string]>,
-  ): void {
-    const current = this._configResource.value() ?? { columnRecord: {} };
-    const columnRecord = { ...current.columnRecord };
-    columnRecord[colKey] = { ...columnRecord[colKey], ...changes };
-    this._configResource.set({ ...current, columnRecord });
-  }
 }
 
 // Re-export ISortingDef from useSortingManager for convenience

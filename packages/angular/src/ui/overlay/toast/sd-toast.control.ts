@@ -7,7 +7,7 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
-import type { TSdToastTheme } from "./sd-toast.provider";
+import type { TSdToastTheme } from "../../../core/providers/sd-toast.provider";
 
 const POLITE_THEMES: ReadonlySet<string> = new Set(["info", "success"]);
 const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);

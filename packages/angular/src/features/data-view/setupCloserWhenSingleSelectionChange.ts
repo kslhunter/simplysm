@@ -1,5 +1,5 @@
 import { type OutputEmitterRef, type Signal, effect } from "@angular/core";
-import type { ISelectModalOutputResult } from "../../../ui/form/button/sd-modal-select-button.control";
+import type { ISelectModalOutputResult } from "../../core/types/select-modal-output-result";
 
 export function setupCloserWhenSingleSelectionChange<TItem, TKey>(options: {
   selectedItemKeys: Signal<TKey[]>;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdPrintProvider } from "../../../src/core/providers/sd-print.provider";
-import { SdBusyProvider } from "../../../src/ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "../../../src/core/providers/sd-busy.provider";
 import { SdBusyProviderTestHost } from "../../ui/overlay/busy/sd-busy-test.fixture";
 import {
   SdPrintTestBasic,

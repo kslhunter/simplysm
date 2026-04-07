@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { obj } from "@simplysm/core-common";
-import type { ISdPermission } from "../../core/providers/sd-app-structure.provider";
+import type { ISdPermission } from "../../core/providers/sd-app-structure.types";
 import { SdCheckboxControl } from "../../ui/form/checkbox/sd-checkbox.control";
 import { SdCollapseIconControl } from "../../ui/navigation/collapse/sd-collapse-icon.control";
 import { SdTypedTemplateDirective } from "../../core/directives/sd-typed-template.directive";

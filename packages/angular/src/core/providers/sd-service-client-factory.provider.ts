@@ -2,7 +2,7 @@ import { DestroyRef, inject, Injectable, type WritableSignal } from "@angular/co
 import type { ServiceConnectionOptions, ServiceProgressState } from "@simplysm/service-client";
 import { createServiceClient, ServiceClient } from "@simplysm/service-client";
 import { SdAngularConfigProvider } from "./sd-angular-config.provider";
-import { SdToastProvider } from "../../ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "./sd-toast.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {

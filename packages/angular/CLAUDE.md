@@ -20,11 +20,11 @@ src/
 │   │   └── events/       resize(ResizeObserver), intersection(IntersectionObserver), option(.capture/.passive/.once)
 │   ├── providers/    config, theme, system-log, app-structure, file-dialog, local-storage, system-config, service-client-factory, shared-data, navigate-window, print
 │   └── utils/
-│       └── setups/   setupBgTheme, setupRipple, setupRevealOnShow, setupInvalid, setupModelHook, setupCanDeactivate, setupCumulateSelectedKeys, setupCloserWhenSingleSelectionChange
+│       └── setups/   setupBgTheme, setupRipple, setupRevealOnShow, setupInvalid, setupModelHook, setupCanDeactivate, setupCumulateSelectedKeys
 ├── features/     <- 도메인별 고수준 컴포넌트
 │   ├── address/        SdAddressSearchModal (Daum Postcode 위젯)
 │   ├── base/           SdBaseContainerControl (페이지/모달/뷰 공통 컨테이너)
-│   ├── data-view/      데이터 시트/상세/선택 추상 클래스 + presentation 컴포넌트
+│   ├── data-view/      데이터 시트/상세/선택 추상 클래스 + presentation 컴포넌트 + setupCloserWhenSingleSelectionChange
 │   ├── permission-table/  SdPermissionTableControl (권한 매트릭스)
 │   └── shared-data/    SdSharedDataSelect/SelectButton/SelectList + matchesSearchText 유틸
 └── ui/           <- 재사용 UI 컴포넌트 라이브러리 (60+개)
@@ -107,7 +107,7 @@ src/
   - `useSelectionManager`: `displayItems`, `selectedItems`, `selectMode`, `getItemSelectableFn` signal을 받아 `hasSelectable`, `isAllSelected`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환
   - `useSortingManager`: `sorts` WritableSignal을 받아 `defMap` (computed), `toggle()`, `sort()` 반환
   - `useExpandingManager`: `items`, `expandedItems`, `getChildrenFn`, `sort` 바인딩으로 `displayItems`, `hasExpandable`, `isAllExpanded`, `toggle()`, `toggleAll()`, `isVisible()`, `def()` 반환
-- **Setup 함수** - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()`, `setupCumulateSelectedKeys()`, `setupCloserWhenSingleSelectionChange()` 등
+- **Setup 함수** - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()`, `setupCumulateSelectedKeys()` 등 (core/utils/setups/). `setupCloserWhenSingleSelectionChange()`은 features/data-view/에 위치
   - `inject()`, `effect()`, `DestroyRef.onDestroy()` 사용하여 생성자에서 실행
 - **Resource 함수** - `useSdSystemConfigResource(options: { key: Signal<string | undefined> })`
   - `SdSystemConfigProvider`를 통해 컴포넌트 태그명 기반 키로 시스템 설정을 읽고 쓰는 `ResourceRef` 래퍼

@@ -7,7 +7,6 @@ import {
   contentChildren,
   Directive,
   effect,
-  inject,
   input,
   type InputSignal,
   model,
@@ -16,34 +15,34 @@ import {
   signal,
   type Signal,
   TemplateRef,
+  type WritableSignal,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { type ArrayOneWayDiffResult, obj } from "@simplysm/core-common";
+import type { ArrayOneWayDiffResult } from "@simplysm/core-common";
 import { mark } from "../../core/utils/mark";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
 import { SdSheetColumnDirective } from "../../ui/data/sheet/sd-sheet-column.directive";
 import { SdSheetControl, type ISortingDef } from "../../ui/data/sheet/sd-sheet.control";
-import { SdFileDialogProvider } from "../../core/providers/sd-file-dialog.provider";
-import { SdToastProvider } from "../../ui/overlay/toast/sd-toast.provider";
-import { SdSharedDataProvider } from "../../core/providers/sd-shared-data.provider";
 import { useViewTypeSignal } from "../../core/utils/useViewTypeSignal";
 import { setupCumulateSelectedKeys } from "../../core/utils/setups/setupCumulateSelectedKeys";
-import { setupCloserWhenSingleSelectionChange } from "../../core/utils/setups/setupCloserWhenSingleSelectionChange";
+import { setupCloserWhenSingleSelectionChange } from "./setupCloserWhenSingleSelectionChange";
 import { setupCanDeactivate } from "../../core/utils/setups/setupCanDeactivate";
 import { injectParent } from "../../core/utils/injectParent";
-import { withBusy } from "../../core/utils/withBusy";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../core/commons";
 import { SdBaseContainerControl } from "../base/sd-base-container.control";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
-import type {
-  ISdSelectModal,
-  ISelectModalOutputResult,
-} from "../../ui/form/button/sd-modal-select-button.control";
+import type { ISdSelectModal } from "../../ui/form/button/sd-modal-select-button.control";
+import type { ISelectModalOutputResult } from "../../core/types/select-modal-output-result";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
+import { useDataSheetFilterManager } from "./useDataSheetFilterManager";
+import { useDataSheetRefreshManager } from "./useDataSheetRefreshManager";
+import { useDataSheetInlineEditManager } from "./useDataSheetInlineEditManager";
+import { useDataSheetModalEditManager } from "./useDataSheetModalEditManager";
+import { useDataSheetExcelManager } from "./useDataSheetExcelManager";
 import {
   tablerDeviceFloppy,
   tablerEdit,
@@ -56,28 +55,16 @@ import {
   tablerUpload,
 } from "@ng-icons/tabler-icons";
 
-//#region Interfaces
-
-export interface ISdDataSheetItemPropInfo<I> {
-  isDeleted: (keyof I & string) | undefined;
-  lastModifiedAt: (keyof I & string) | undefined;
-  lastModifiedBy: (keyof I & string) | undefined;
-}
-
-export interface ISdDataSheetItemInfo<K> {
-  key: K;
-  canSelect: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
-
-export interface ISdDataSheetSearchResult<I> {
-  items: I[];
-  pageLength?: number;
-  summary?: Partial<I>;
-}
-
-//#endregion
+export type {
+  ISdDataSheetItemPropInfo,
+  ISdDataSheetItemInfo,
+  ISdDataSheetSearchResult,
+} from "./sd-data-sheet.types";
+import type {
+  ISdDataSheetItemPropInfo,
+  ISdDataSheetItemInfo,
+  ISdDataSheetSearchResult,
+} from "./sd-data-sheet.types";
 
 //#region AbsSdDataSheet
 
@@ -116,12 +103,18 @@ export abstract class AbsSdDataSheet<
   downloadExcel?(items: TItem[]): Promise<void> | void;
   uploadExcel?(file: File): Promise<void> | void;
 
-  //-- injected
-  private readonly _sdToast = inject(SdToastProvider);
-  private readonly _sdSharedData = inject(SdSharedDataProvider);
-  private readonly _sdFileDialog = inject(SdFileDialogProvider);
+  //-- composable instances
+  private readonly _filterMgr: ReturnType<typeof useDataSheetFilterManager<TFilter>>;
+  private readonly _refreshMgr: ReturnType<typeof useDataSheetRefreshManager<TItem, TKey>>;
+  private readonly _inlineEditMgr: ReturnType<
+    typeof useDataSheetInlineEditManager<TItem, TKey>
+  >;
+  private readonly _modalEditMgr: ReturnType<
+    typeof useDataSheetModalEditManager<TItem, TKey>
+  >;
+  private readonly _excelMgr: ReturnType<typeof useDataSheetExcelManager<TItem>>;
 
-  //-- state
+  //-- shared state (D1: class 소유)
   key = reflectComponentType(this.constructor as any)?.selector;
 
   viewType = useViewTypeSignal(() => this);
@@ -150,11 +143,9 @@ export abstract class AbsSdDataSheet<
   pageLength = signal(0);
   sortingDefs = signal<ISortingDef[]>([]);
 
-  filter = signal<TFilter>({} as TFilter);
-  lastFilter = signal<TFilter>({} as TFilter);
-
-  //-- change tracking
-  private _itemsSnapshot: TItem[] = [];
+  //-- filter state (composable에서 생성, 재할당)
+  filter!: WritableSignal<TFilter>;
+  lastFilter!: WritableSignal<TFilter>;
 
   //-- computed
   isSelectedItemsHasDeleted = computed(() =>
@@ -196,56 +187,84 @@ export abstract class AbsSdDataSheet<
       close: this.close,
     });
 
-    effect(() => {
-      const filter = this.bindFilter();
-      this.filter.set(filter);
-      this.lastFilter.set(obj.clone(filter));
+    //-- filter composable
+    this._filterMgr = useDataSheetFilterManager({
+      bindFilter: () => this.bindFilter(),
+      busyCount: this.busyCount,
+      canUse: () => this.canUse(),
+      page: this.page,
+      checkIgnoreChanges: () => this.checkIgnoreChanges(),
+    });
+    this.filter = this._filterMgr.filter;
+    this.lastFilter = this._filterMgr.lastFilter;
+
+    //-- refresh composable
+    this._refreshMgr = useDataSheetRefreshManager({
+      busyCount: this.busyCount,
+      initialized: this.initialized,
+      canUse: () => this.canUse(),
+      items: this.items,
+      selectedItems: this.selectedItems,
+      pageLength: this.pageLength,
+      summaryData: this.summaryData,
+      page: this.page,
+      lastFilter: this.lastFilter,
+      sortingDefs: this.sortingDefs,
+      getItemInfoFn: (item) => this.getItemInfoFn(item),
+      search: (p) => this.search(p),
+      prepareRefreshEffect: () => this.prepareRefreshEffect?.(),
+      getDiffsExcludes: () => this.diffsExcludes,
     });
 
-    effect((onCleanup) => {
-      this.page();
-      this.lastFilter();
-      this.sortingDefs();
-      this.prepareRefreshEffect?.();
+    //-- inline edit composable
+    this._inlineEditMgr = useDataSheetInlineEditManager({
+      busyCount: this.busyCount,
+      canEdit: () => this.canEdit(),
+      items: this.items,
+      submitted: this.submitted,
+      itemPropInfo: () => this.itemPropInfo,
+      getItemInfoFn: (item) => this.getItemInfoFn(item),
+      getDiffs: () => this._refreshMgr.getDiffs(),
+      refresh: () => this._refreshMgr.refresh(),
+      getNewItemFn: () => this.newItem?.bind(this),
+      getSubmitFn: () => this.submit?.bind(this),
+      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
+    });
 
-      let cancelled = false;
-      onCleanup(() => {
-        cancelled = true;
-      });
+    //-- modal edit composable
+    this._modalEditMgr = useDataSheetModalEditManager({
+      busyCount: this.busyCount,
+      canEdit: () => this.canEdit(),
+      selectedItemKeys: this.selectedItemKeys,
+      selectedItems: this.selectedItems,
+      close: this.close,
+      refresh: () => this._refreshMgr.refresh(),
+      getEditItemFn: () => this.editItem?.bind(this),
+      getToggleDeleteItemsFn: () => this.toggleDeleteItems?.bind(this),
+      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
+    });
 
-      queueMicrotask(async () => {
-        if (cancelled) return;
-        if (!this.canUse()) {
-          this.initialized.set(true);
-          return;
-        }
-
-        await withBusy(this.busyCount, () =>
-          this._sdToast.try(async () => {
-            await this._sdSharedData.wait();
-            await this.refresh();
-          }),
-        );
-        this.initialized.set(true);
-      });
+    //-- excel composable
+    this._excelMgr = useDataSheetExcelManager({
+      busyCount: this.busyCount,
+      search: (p) => this.search(p),
+      refresh: () => this._refreshMgr.refresh(),
+      getDownloadExcelFn: () => this.downloadExcel?.bind(this),
+      getUploadExcelFn: () => this.uploadExcel?.bind(this),
+      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
     });
 
     setupCanDeactivate(() => this.viewType() === "modal" || this.checkIgnoreChanges());
   }
 
-  //-- query
+  //-- D2: class 메서드 (커스터마이징 가능)
 
   checkIgnoreChanges() {
-    return this._getDiffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
+    return this._refreshMgr.getDiffs().length === 0 || confirm(TXT_CHANGE_IGNORE_CONFIRM);
   }
 
   doFilterSubmit() {
-    if (this.busyCount() > 0) return;
-    if (!this.canUse()) return;
-    if (!this.checkIgnoreChanges()) return;
-
-    this.page.set(0);
-    this.lastFilter.set(obj.clone(this.filter()));
+    this._filterMgr.doFilterSubmit();
   }
 
   doRefresh() {
@@ -257,170 +276,52 @@ export abstract class AbsSdDataSheet<
   }
 
   async refresh() {
-    const result = await this.search(true);
-    this.items.set(result.items);
-    this._itemsSnapshot = obj.clone(result.items);
-
-    this.pageLength.set(result.pageLength ?? 0);
-    this.summaryData.set(result.summary ?? {});
-
-    const selectedKeySet = new Set(
-      this.selectedItems().map((sel) => this.getItemInfoFn(sel).key),
-    );
-    this.selectedItems.set(
-      this.items().filter((item) => selectedKeySet.has(this.getItemInfoFn(item).key)),
-    );
+    await this._refreshMgr.refresh();
   }
 
-  //-- inline edit
+  //-- inline edit (delegated to composable)
 
   async doAddItem() {
-    if (!this.newItem) return;
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(async () => {
-        const newItem = await this.newItem!();
-        this.items.update((items) => [newItem, ...items]);
-      }),
-    );
+    await this._inlineEditMgr.doAddItem();
   }
 
   async doSubmit(opt?: { permCheck?: boolean; hideNoChangeMessage?: boolean }) {
-    if (this.busyCount() > 0) return;
-    if (opt?.permCheck && !this.canEdit()) return;
-    if (!this.submit) return;
-
-    const diffs = this._getDiffs();
-
-    if (diffs.length === 0) {
-      if (!opt?.hideNoChangeMessage) {
-        this._sdToast.info("변경사항이 없습니다.");
-      }
-      return;
-    }
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(
-        async () => {
-          const result = await this.submit!(diffs);
-          if (!result) return;
-
-          this._sdToast.success("저장되었습니다.");
-          await this.refresh();
-          this.submitted.emit(true);
-        },
-        (err) => this._getOrmDataEditToastErrorMessage(err),
-      ),
-    );
+    await this._inlineEditMgr.doSubmit(opt);
   }
 
   doToggleDeleteItem(item: TItem) {
-    if (!this.canEdit()) return;
-    if (this.itemPropInfo.isDeleted == null) return;
-
-    if (this.getItemInfoFn(item).key == null) {
-      this.items.update((items) => items.filter((item1) => item1 !== item));
-      return;
-    }
-
-    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[
-      this.itemPropInfo.isDeleted
-    ] as boolean);
-    mark(this.items);
+    this._inlineEditMgr.doToggleDeleteItem(item);
   }
 
-  //-- modal edit
+  //-- modal edit (delegated to composable)
 
   async doEditItem(item?: TItem) {
-    if (!this.editItem) return;
-
-    const result = await this.editItem(item);
-    if (!result) return;
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(async () => {
-        await this.refresh();
-      }),
-    );
+    await this._modalEditMgr.doEditItem(item);
   }
 
   async doToggleDeleteItems(del: boolean) {
-    if (!this.canEdit()) return;
-    if (!this.toggleDeleteItems) return;
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(
-        async () => {
-          const result = await this.toggleDeleteItems!(del);
-          if (!result) return;
-
-          await this.refresh();
-          this._sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
-        },
-        (err) => this._getOrmDataEditToastErrorMessage(err),
-      ),
-    );
+    await this._modalEditMgr.doToggleDeleteItems(del);
   }
-
-  //-- excel
-
-  async doDownloadExcel() {
-    if (!this.downloadExcel) return;
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(async () => {
-        const items = (await this.search(false)).items;
-        await this.downloadExcel!(items);
-      }),
-    );
-  }
-
-  async doUploadExcel() {
-    if (!this.uploadExcel) return;
-
-    const file = await this._sdFileDialog.showAsync(
-      false,
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-    if (!file) return;
-
-    await withBusy(this.busyCount, () =>
-      this._sdToast.try(
-        async () => {
-          await this.uploadExcel!(file);
-          await this.refresh();
-          this._sdToast.success("엑셀 업로드가 완료 되었습니다.");
-        },
-        (err) => this._getOrmDataEditToastErrorMessage(err),
-      ),
-    );
-  }
-
-  //-- modal selection
 
   doModalConfirm() {
-    this.close.emit({
-      selectedItemKeys: this.selectedItemKeys(),
-      selectedItems: this.selectedItems(),
-    });
+    this._modalEditMgr.doModalConfirm();
   }
 
   doModalCancel() {
-    this.close.emit({
-      selectedItemKeys: [],
-      selectedItems: [],
-    });
+    this._modalEditMgr.doModalCancel();
+  }
+
+  //-- excel (delegated to composable)
+
+  async doDownloadExcel() {
+    await this._excelMgr.doDownloadExcel();
+  }
+
+  async doUploadExcel() {
+    await this._excelMgr.doUploadExcel();
   }
 
   //-- private
-
-  private _getDiffs(): ArrayOneWayDiffResult<TItem>[] {
-    return this.items().oneWayDiffs(
-      this._itemsSnapshot,
-      (item) => this.getItemInfoFn(item).key,
-      this.diffsExcludes ? { excludes: this.diffsExcludes } : undefined,
-    ).filter((d) => d.type !== "same");
-  }
 
   private _getOrmDataEditToastErrorMessage(err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

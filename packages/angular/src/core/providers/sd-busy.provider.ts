@@ -8,7 +8,7 @@ import {
   signal,
   type ComponentRef,
 } from "@angular/core";
-import { SdBusyContainerControl } from "./sd-busy-container.control";
+import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.control";
 
 export type TSdBusyType = "spinner" | "bar" | "cube";
 

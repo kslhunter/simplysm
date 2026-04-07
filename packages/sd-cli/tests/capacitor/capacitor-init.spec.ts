@@ -1,5 +1,5 @@
 import path from "path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
 
@@ -35,11 +35,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-let mockEnv: Record<string, string | undefined> = {};
-vi.mock("@simplysm/core-common", () => ({
-  env: (key: string) => mockEnv[key],
-}));
-
 const execaCalls: { command: string; args: string[] }[] = [];
 const mockCpxSpawn = vi.fn((...args: unknown[]) => {
   execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
@@ -65,13 +60,14 @@ vi.mock("sharp", () => ({
   }),
 }));
 
-const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
+const _mockConsola = {
+  level: 0,
+  withTag: () => ({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() }),
+};
 vi.mock("consola", () => ({
-  consola: {
-    level: 0,
-    withTag: () => ({ debug: mockLoggerDebug, warn: mockLoggerWarn }),
-  },
+  consola: _mockConsola,
+  default: _mockConsola,
   LogLevels: { debug: 4 },
 }));
 
@@ -152,7 +148,7 @@ function setupDefaultMocks() {
 
   mockFsxGlob.mockResolvedValue(["C:/Program Files/Amazon Corretto/jdk21.0.1"]);
 
-  mockEnv = { ANDROID_HOME: "C:/Android/Sdk" };
+  process.env["ANDROID_HOME"] = "C:/Android/Sdk";
 
   execaCalls.length = 0;
   mockFsWriteFile.mockReset();
@@ -160,6 +156,14 @@ function setupDefaultMocks() {
 }
 
 //#endregion
+
+let savedEnv: Record<string, string | undefined>;
+beforeEach(() => {
+  savedEnv = { ...process.env };
+});
+afterEach(() => {
+  process.env = savedEnv;
+});
 
 describe("Capacitor 설정 검증", () => {
   beforeEach(() => {
@@ -398,7 +402,7 @@ describe("Android 개발 도구 감지", () => {
   });
 
   it("Android SDK 미설치 시 에러가 발생한다", async () => {
-    mockEnv = {};
+    delete process.env["ANDROID_HOME"];
     mockFsxExists.mockImplementation((p: string) => {
       const n = p.replace(/\\/g, "/");
       if (n.includes(".capacitor.lock")) return false;
@@ -518,7 +522,7 @@ describe("Android 네이티브 설정", () => {
         typeof call[0] === "string" &&
         call[0].includes("build.gradle") &&
         typeof call[1] === "string" &&
-        call[1].includes("versionCode 10203"),
+        call[1].includes("versionCode 1002003"),
     );
     expect(gradleWrite).toBeDefined();
   });

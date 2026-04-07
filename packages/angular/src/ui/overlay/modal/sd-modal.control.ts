@@ -13,7 +13,7 @@ import {
 } from "@angular/core";
 import { isTabbable } from "tabbable";
 import { NgTemplateOutlet } from "@angular/common";
-import { SdActivatedModalProvider } from "./sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../core/providers/sd-activated-modal.provider";
 import { SdSystemConfigProvider } from "../../../core/providers/sd-system-config.provider";
 import "@simplysm/core-browser";
 

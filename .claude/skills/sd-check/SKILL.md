@@ -5,6 +5,10 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 
 # sd-check: Check 실행 & 에러 수정
 
+## 공통규칙
+
+- 에러 원인찾기 및 해결: @.claude/references/sd-debug.md
+
 ## Step 1: 명령어 탐지
 
 ### 1-1. 패키지 매니저 감지
@@ -43,17 +47,17 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 
 ## Step 2: typecheck
 
-typecheck 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 ACH 지침에 따라 근본 원인을 찾아 수정 후 재실행한다.
+typecheck 명령어를 실행한다.
 
 ## Step 3: lint
 
-린트 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 ACH 지침에 따라 근본 원인을 찾아 수정 후 재실행한다.
+린트 명령어를 실행한다.
 
 - 가능하면 자동픽스(--fix) 명령을 실행한다.
 
 ## Step 4: test
 
-테스트 명령어를 실행한다. 실패하면 `.claude/references/sd-debug.md`를 읽고 ACH 지침에 따라 근본 원인을 찾아 후 재실행한다.
+테스트 명령어를 실행한다.
 
 ## Step 5: 반복 혹은 완료
 

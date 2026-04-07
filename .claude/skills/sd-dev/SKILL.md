@@ -27,8 +27,8 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 `.claude/skills/sd-wbs/SKILL.md`를 읽고 수행한다. 완료 후:
 
-- Feature가 **1개**면 바로 sd-plan → sd-tdd → sd-check → sd-review 진행
-- Feature가 **여러 개**면 `/sd-dev {wbs경로} {첫 Feature 번호(1.1)}` 안내 후 종료
+- 단일 Feature인 경우, 바로 다음 단계 진행
+- Feature가 **여러 개**인 경우, 반드시(MUST) `/sd-dev {wbs경로} {첫 Feature 번호(1.1)}` 안내만 하고 종료한다.
 
 ### Case 2: wbs 경로만
 
@@ -62,7 +62,9 @@ sd-tdd부터 재개: sd-tdd → sd-check → sd-review
 
 ## Step 5: sd-review
 
-`.claude/skills/sd-review/SKILL.md`를 읽고 따르되, 아래 지침을 더 우선한다.
+`.claude/skills/sd-review/SKILL.md`를 읽고 지침에 따라 wbs/feature문서를 잘 구현하고 있는지 검토한다.
+
+아래 지침을 우선으로 따른다:
 
 - 여러 패키지를 하나의 리포트로 통합한다. **단, 리포트 파일(review.md)을 생성하지 않고 발견된 이슈를 바로 코드에 적용한다.**
 - 분석 절차와 체크리스트는 `.claude/skills/sd-review/SKILL.md`를 그대로 따르되, 리포트 생성을 생략하고 이슈를 직접 수정한다.

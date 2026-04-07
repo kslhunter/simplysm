@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
   discoverWorkspacePackages: vi.fn(),
 }));
 
-vi.mock("../../src/commands/typecheck", () => ({
+vi.mock("../../src/orchestrators/TypecheckOrchestrator", () => ({
   executeTypecheck: mocks.executeTypecheck,
 }));
 
-vi.mock("../../src/commands/lint", () => ({
+vi.mock("../../src/utils/lint-core", () => ({
   executeLint: mocks.executeLint,
 }));
 

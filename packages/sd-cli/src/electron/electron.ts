@@ -348,12 +348,12 @@ export class Electron {
     try {
       fs.writeFileSync(testTarget, "test");
       fs.symlinkSync(testTarget, testLink, "file");
-      const isSymlink = fs.lstatSync(testLink).isSymbolicLink();
-      fs.unlinkSync(testLink);
-      fs.unlinkSync(testTarget);
-      return isSymlink;
+      return fs.lstatSync(testLink).isSymbolicLink();
     } catch {
       return false;
+    } finally {
+      try { fs.unlinkSync(testLink); } catch { /* 파일 없으면 무시 */ }
+      try { fs.unlinkSync(testTarget); } catch { /* 파일 없으면 무시 */ }
     }
   }
 

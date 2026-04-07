@@ -17,7 +17,7 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 
 구현 중 설계 결정을 그대로 구현할 수 없는 기술적 어려움을 발견하면,
 1. **해당 구현을 중단**한다.
-2. `.claude/references/sd-options.md`를 읽고 사용자에게 대안을 제시한다.
+2. @.claude/references/sd-options.md 를 읽고 사용자에게 대안을 제시한다.
 3. 사용자가 결정하면
   - 해당 결정을 Feature 문서의 `### 설계 결정` 섹션에 역방향 피드백으로 기록한다
   - 결정에 따라 구현계획을 갱신한다
@@ -117,9 +117,11 @@ Feature 문서의 `## 참조 자료` 섹션 및 그 하위섹션을 반드시 �
 ### 1-3. 문서 정합성 확인
 
 요구명세의 각 Scenario에서 참조하는 기능·메서드를 구현계획과 대조한다.
-`.claude/references/sd-clarify.md`를 읽고 누락된 기능등 불명확한 부분을 명확화한다.
+@.claude/references/sd-clarify.md 를 읽고 누락된 기능등 불명확한 부분을 명확화한다.
 
 ## Step 2: Double Loop TDD
+
+테스트 작성 시 @.claude/references/sd-testing.md 를 읽고 따른다.
 
 구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리한다.
 각 Scenario 시작 시 **테스트 분류 기준**에 따라 검증 항목을 분류한다.

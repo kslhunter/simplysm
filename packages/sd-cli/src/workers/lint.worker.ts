@@ -1,5 +1,5 @@
 import { createWorker } from "@simplysm/core-node";
-import { executeLint, type LintOptions, type LintResult } from "../commands/lint";
+import { executeLint, type LintOptions, type LintResult } from "../utils/lint-core";
 
 //#region Worker
 

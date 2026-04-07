@@ -39,6 +39,16 @@ describe("processPostCssInline", () => {
     expect(result).toBe(input);
   });
 
+  // Acceptance: double-quote 문자열의 인용부호가 보존된다
+  it("preserves double-quote style when processing inline CSS", async () => {
+    const input = `Component({ styles: [".host { color: blue; }"] })`;
+    const result = await processPostCssInline(input, "test.js", [testPlugin]);
+
+    expect(result).toContain("color: red");
+    // double-quote가 보존되어야 한다
+    expect(result).toMatch(/".host \{ color: red; \}"/);
+  });
+
   // Unit: multiple styles in array
   it("processes multiple styles in the array", async () => {
     const input = `Component({ styles: ['.a { color: blue; }', '.b { color: green; }'] })`;

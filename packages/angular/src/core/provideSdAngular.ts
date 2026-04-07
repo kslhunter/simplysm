@@ -22,7 +22,7 @@ import {
 } from "@angular/router";
 import { SwUpdate } from "@angular/service-worker";
 import { provideNgIconsConfig } from "@ng-icons/core";
-import { SdBusyProvider } from "../ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "./providers/sd-busy.provider";
 import { SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
 import { SdThemeProvider } from "./providers/sd-theme-provider";
 import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";

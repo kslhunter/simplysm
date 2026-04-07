@@ -9,7 +9,7 @@ import {
   SdModalTestHideHeader,
   SdModalTestMovable,
 } from "./sd-modal-test.fixture";
-import { SdActivatedModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../../src/core/providers/sd-activated-modal.provider";
 
 function setup<T>(component: Type<T>) {
   TestBed.configureTestingModule({ imports: [component] });

@@ -1,6 +1,6 @@
 import { Component, output, signal } from "@angular/core";
 import { SdToastControl } from "../../../../src/ui/overlay/toast/sd-toast.control";
-import type { ISdToast, TSdToastTheme } from "../../../../src/ui/overlay/toast/sd-toast.provider";
+import type { ISdToast, TSdToastTheme } from "../../../../src/core/providers/sd-toast.provider";
 
 /**
  * 기본 토스트 테스트 (theme, message, open)

@@ -4,7 +4,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { Subject } from "rxjs";
 import { SdAppStructureProvider } from "../../../src/core/providers/sd-app-structure.provider";
-import { SdToastProvider } from "../../../src/ui/overlay/toast/sd-toast.provider";
+import { SdToastProvider } from "../../../src/core/providers/sd-toast.provider";
 import { SdSharedDataProvider } from "../../../src/core/providers/sd-shared-data.provider";
 import { DDTestHost, type TestDetailItem } from "./sd-data-detail-test.fixture";
 import type { ISdDataDetailDataInfo } from "../../../src/features/data-view/sd-data-detail.control";

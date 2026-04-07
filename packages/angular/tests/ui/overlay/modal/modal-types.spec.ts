@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { TDirectiveInputSignals } from "../../../../src/core/utils/TDirectiveInputSignals";
-import {
-  SdActivatedModalProvider,
-  type ISdModalInfo,
-} from "../../../../src/ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../../../src/core/providers/sd-activated-modal.provider";
+import type { ISdModalInfo } from "../../../../src/ui/overlay/modal/sd-modal.provider";
 import { SdModalTestBasic } from "./sd-modal-test.fixture";
 
 describe("Feature 3.2 Slice 1: 타입 기반 + 인터페이스", () => {

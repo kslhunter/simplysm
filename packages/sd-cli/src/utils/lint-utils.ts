@@ -1,5 +1,5 @@
 import { Worker } from "@simplysm/core-node";
-import type { LintOptions, LintResult } from "../commands/lint";
+import type { LintOptions, LintResult } from "./lint-core";
 import type * as LintWorkerModule from "../workers/lint.worker";
 
 /**

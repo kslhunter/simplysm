@@ -95,7 +95,7 @@ const children = await fs.listChildren("/dir/");
 
 ## Testing
 
-**프레임워크**: Vitest (jsdom 환경)
+**프레임워크**: Vitest (Playwright browser 환경)
 
 테스트 디렉토리가 `src/` 구조를 미러링한다: `tests/extensions/`, `tests/utils/`
 

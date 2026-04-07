@@ -74,6 +74,7 @@ export class DevWatchOrchestrator {
 
   // 워처
   private _copySrcWatchers: FsWatcher[] = [];
+  private _distDeleteWatchers: FsWatcher[] = [];
   private readonly _watchHookWatchers: FsWatcher[] = [];
   private readonly _watchHookChildren = new Map<string, ChildProcess>();
   private _replaceDepWatcher: WatchReplaceDepResult | undefined;
@@ -252,6 +253,7 @@ export class DevWatchOrchestrator {
 
     // 워처 종료 (watch 모드)
     shutdownTasks.push(...this._copySrcWatchers.map((w) => w.close()));
+    shutdownTasks.push(...this._distDeleteWatchers.map((w) => w.close()));
     shutdownTasks.push(...this._watchHookWatchers.map((w) => w.close()));
 
     // hook 자식 프로세스 종료
@@ -267,6 +269,7 @@ export class DevWatchOrchestrator {
 
     await Promise.all(shutdownTasks);
     this._copySrcWatchers = [];
+    this._distDeleteWatchers = [];
     this._watchHookWatchers.length = 0;
     this._replaceDepWatcher?.dispose();
 
@@ -278,17 +281,18 @@ export class DevWatchOrchestrator {
   private async _startWatchMode(): Promise<void> {
     this._logger.debug("watch 모드 시작");
 
-    // [DEBUG] angular/dist 삭제 감지용 임시 워처
-    {
-      const debugDistDir = pathx.posixResolve(this._cwd, "packages", "angular", "dist");
-      const debugWatcher = await FsWatcher.watch([debugDistDir]);
-      debugWatcher.onChange({ delay: 100 }, (changes) => {
+    // 라이브러리 패키지 dist 삭제 감지 워처
+    for (const pkg of this._libraryPackages) {
+      const distDir = pathx.posixResolve(pkg.dir, "dist");
+      const watcher = await FsWatcher.watch([distDir]);
+      watcher.onChange({ delay: 100 }, (changes) => {
         for (const c of changes) {
           if (c.event === "unlink" || c.event === "unlinkDir") {
-            this._logger.error(`[DEBUG:angular-dist] ${c.event}: ${c.path}\n${new Error().stack}`);
+            this._logger.error(`[dist-delete:${pkg.name}] ${c.event}: ${c.path}\n${new Error().stack}`);
           }
         }
       });
+      this._distDeleteWatchers.push(watcher);
     }
 
     // Start copySrc watchers for library packages

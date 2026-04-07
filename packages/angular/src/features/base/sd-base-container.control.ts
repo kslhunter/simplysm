@@ -14,7 +14,7 @@ import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.
 import { SdTopbarContainerControl } from "../../ui/navigation/topbar/sd-topbar-container.control";
 import { SdTopbarControl } from "../../ui/navigation/topbar/sd-topbar.control";
 import { SdAppStructureProvider } from "../../core/providers/sd-app-structure.provider";
-import { SdActivatedModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
+import { SdActivatedModalProvider } from "../../core/providers/sd-activated-modal.provider";
 import { useCurrentPageCodeSignal } from "../../core/utils/useCurrentPageCodeSignal";
 import { useFullPageCodeSignal } from "../../core/utils/useFullPageCodeSignal";
 import {

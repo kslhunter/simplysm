@@ -1,5 +1,5 @@
 import path from "path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
 
@@ -34,12 +34,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-// env mock
-let mockEnv: Record<string, string | undefined> = {};
-vi.mock("@simplysm/core-common", () => ({
-  env: (key: string) => mockEnv[key],
-}));
-
 // cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
 const mockCpxSpawn = vi.fn((...args: unknown[]) => {
@@ -69,19 +63,15 @@ const mockSharpInstance = {
 const mockSharp = vi.fn().mockReturnValue(mockSharpInstance);
 vi.mock("sharp", () => ({ default: mockSharp }));
 
-// consola mock
-const mockLoggerDebug = vi.fn();
+// consola mock (logger assertion 필요)
 const mockLoggerWarn = vi.fn();
-const mockLoggerSuccess = vi.fn();
+const _mockConsola = {
+  level: 0,
+  withTag: () => ({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() }),
+};
 vi.mock("consola", () => ({
-  consola: {
-    withTag: () => ({
-      debug: mockLoggerDebug,
-      warn: mockLoggerWarn,
-      success: mockLoggerSuccess,
-    }),
-    level: 0,
-  },
+  consola: _mockConsola,
+  default: _mockConsola,
   LogLevels: { debug: 4 },
 }));
 
@@ -149,13 +139,21 @@ function setupDefaultMocks() {
   mockFsxGlob.mockResolvedValue(["C:/Program Files/Amazon Corretto/jdk21.0.1"]);
 
   // env: Android SDK
-  mockEnv = { ANDROID_HOME: "C:/Android/Sdk" };
+  process.env["ANDROID_HOME"] = "C:/Android/Sdk";
 
   // execa 호출 기록 초기화
   execaCalls.length = 0;
 }
 
 //#endregion
+
+let savedEnv: Record<string, string | undefined>;
+beforeEach(() => {
+  savedEnv = { ...process.env };
+});
+afterEach(() => {
+  process.env = savedEnv;
+});
 
 describe("Capacitor 아이콘 처리", () => {
   beforeEach(() => {

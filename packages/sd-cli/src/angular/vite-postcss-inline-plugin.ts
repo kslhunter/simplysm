@@ -115,10 +115,14 @@ export async function processPostCssInline(
     if (origChar === "`") {
       processedReplacements.push({ start: r.start, end: r.end, newText: `\`${newCss}\`` });
     } else {
+      const escaped =
+        origChar === '"'
+          ? newCss.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+          : newCss.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       processedReplacements.push({
         start: r.start,
         end: r.end,
-        newText: `'${newCss.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`,
+        newText: `${origChar}${escaped}${origChar}`,
       });
     }
   }

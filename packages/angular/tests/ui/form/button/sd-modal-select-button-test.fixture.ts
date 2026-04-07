@@ -2,9 +2,9 @@ import { Component, input, output, signal } from "@angular/core";
 import {
   SdModalSelectButtonControl,
   type ISdSelectModal,
-  type ISelectModalOutputResult,
   type TSdSelectModalInfo,
 } from "../../../../src/ui/form/button/sd-modal-select-button.control";
+import type { ISelectModalOutputResult } from "../../../../src/core/types/select-modal-output-result";
 
 export interface ITestModalItem {
   id: number;

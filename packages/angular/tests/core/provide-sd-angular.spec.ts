@@ -17,7 +17,7 @@ import { SdOptionEventPlugin } from "../../src/core/plugins/events/sd-option-eve
 import { SdIntersectionEventPlugin } from "../../src/core/plugins/events/sd-intersection-event.plugin";
 import { SdThemeProvider } from "../../src/core/providers/sd-theme-provider";
 import { SdLocalStorageProvider } from "../../src/core/providers/sd-local-storage.provider";
-import { SdBusyProvider } from "../../src/ui/overlay/busy/sd-busy.provider";
+import { SdBusyProvider } from "../../src/core/providers/sd-busy.provider";
 import { TXT_CHANGE_IGNORE_CONFIRM } from "../../src/core/commons";
 
 describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {

@@ -1,5 +1,5 @@
 import path from "path";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
 
@@ -36,14 +36,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-// env mock
-let mockEnv: Record<string, unknown> = {};
-vi.mock("@simplysm/core-common", () => ({
-  env: new Proxy({} as Record<string, unknown>, {
-    get: (_target, prop) => mockEnv[prop as string],
-  }),
-}));
-
 // cpx mock (was execa) — tracks commands and resolves immediately
 const execaCalls: { command: string; args: string[] }[] = [];
 let execaFactory: (...args: unknown[]) => Promise<{ stdout: string; stderr: string; exitCode: number }> = () =>
@@ -74,20 +66,6 @@ vi.mock("sharp", () => ({
   }),
 }));
 
-// consola mock
-const mockLoggerDebug = vi.fn();
-const mockLoggerWarn = vi.fn();
-vi.mock("consola", () => ({
-  consola: {
-    withTag: () => ({
-      debug: mockLoggerDebug,
-      warn: mockLoggerWarn,
-      info: vi.fn(),
-    }),
-    level: 0,
-  },
-  LogLevels: { debug: 4 },
-}));
 
 //#endregion
 
@@ -141,7 +119,7 @@ export default config;`;
     return [];
   });
 
-  mockEnv = { ANDROID_HOME: "C:/Android/Sdk" };
+  process.env["ANDROID_HOME"] = "C:/Android/Sdk";
 
   execaCalls.length = 0;
   execaFactory = () => Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
@@ -150,6 +128,14 @@ export default config;`;
 }
 
 //#endregion
+
+let savedEnv: Record<string, string | undefined>;
+beforeEach(() => {
+  savedEnv = { ...process.env };
+});
+afterEach(() => {
+  process.env = savedEnv;
+});
 
 describe("Capacitor.run()", () => {
   beforeEach(() => {

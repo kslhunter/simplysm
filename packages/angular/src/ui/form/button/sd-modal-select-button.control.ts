@@ -19,6 +19,7 @@ import type { TSelectModeValue } from "../select/sd-select.control";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdButtonControl } from "./sd-button.control";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
+import type { ISelectModalOutputResult } from "../../../core/types/select-modal-output-result";
 import { NgIcon } from "@ng-icons/core";
 import { tablerSearch, tablerEraser } from "@ng-icons/tabler-icons";
 
@@ -29,14 +30,6 @@ import { tablerSearch, tablerEraser } from "@ng-icons/tabler-icons";
 export interface ISdSelectModal<T> extends ISdModal<ISelectModalOutputResult<T>> {
   selectMode: InputSignal<"single" | "multi" | undefined>;
   selectedItemKeys: InputSignal<any[]>;
-}
-
-/**
- * 모달 선택 결과
- */
-export interface ISelectModalOutputResult<T> {
-  selectedItemKeys: any[];
-  selectedItems: T[];
 }
 
 /**

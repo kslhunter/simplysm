@@ -13,10 +13,10 @@ import {
   type WritableSignal,
 } from "@angular/core";
 import { outputToObservable } from "@angular/core/rxjs-interop";
-import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
-import { SdToastControl } from "./sd-toast.control";
-import { SdToastContainerControl } from "./sd-toast-container.control";
-import { SdSystemLogProvider } from "../../../core/providers/sd-system-log.provider";
+import type { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
+import { SdToastControl } from "../../ui/overlay/toast/sd-toast.control";
+import { SdToastContainerControl } from "../../ui/overlay/toast/sd-toast-container.control";
+import { SdSystemLogProvider } from "./sd-system-log.provider";
 import "@simplysm/core-browser";
 
 export type TSdToastSeverity = "info" | "success" | "warning" | "danger";
