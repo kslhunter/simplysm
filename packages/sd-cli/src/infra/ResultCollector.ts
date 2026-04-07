@@ -37,9 +37,9 @@ export class ResultCollector {
   }
 
   /**
-   * 내부 Map을 반환한다 (외부 접근용)
+   * 내부 Map을 반환한다 (외부 접근용, 읽기 전용)
    */
-  toMap(): Map<string, BuildResult> {
+  toMap(): ReadonlyMap<string, BuildResult> {
     return this._results;
   }
 }

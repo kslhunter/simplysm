@@ -237,10 +237,24 @@ export class DevWatchOrchestrator {
   }
 
   async shutdown(): Promise<void> {
+    // replaceDepWatcher는 항상 정리 (initialize 부분 실패 대응 — DESIGN-002)
+    this._replaceDepWatcher?.dispose();
+    this._replaceDepWatcher = undefined;
+
     if (!this._hasPackages) {
       return;
     }
     this._logger.debug("shutdown 시작");
+
+    // pending 타이머 정리 (DESIGN-001)
+    if (this._printServersTimer != null) {
+      clearTimeout(this._printServersTimer);
+      this._printServersTimer = undefined;
+    }
+    if (this._serverRestartTimer != null) {
+      clearTimeout(this._serverRestartTimer);
+      this._serverRestartTimer = undefined;
+    }
 
     process.stdout.write("⏳ 종료 중...\n");
 
@@ -271,7 +285,6 @@ export class DevWatchOrchestrator {
     this._copySrcWatchers = [];
     this._distDeleteWatchers = [];
     this._watchHookWatchers.length = 0;
-    this._replaceDepWatcher?.dispose();
 
     process.stdout.write("✔ 종료 완료\n");
   }
@@ -394,12 +407,14 @@ export class DevWatchOrchestrator {
       }
     });
 
+    // 서버에 연결된 클라이언트 Set 구성 (O(1) 조회용 — PERF-001)
+    const serverConnectedClients = new Set(
+      [...this._serverClientsMap.values()].flat(),
+    );
+
     // 독립 클라이언트 결과를 ResultCollector에 등록
     for (const { name } of this._clientPackages) {
-      const isServerConnected = [...this._serverClientsMap.values()].some(
-        (clients) => clients.includes(name),
-      );
-      if (!isServerConnected) {
+      if (!serverConnectedClients.has(name)) {
         const port = this._getClientPort(name);
         if (port != null) {
           this._resultCollector.add({
@@ -437,12 +452,9 @@ export class DevWatchOrchestrator {
 
     // 독립 클라이언트만 존재하고 서버가 없는 경우 URL 출력 예약
     if (this._serverPackages.length === 0) {
-      const hasIndependentClients = this._clientPackages.some(({ name }) => {
-        const isServerConnected = [...this._serverClientsMap.values()].some(
-          (clients) => clients.includes(name),
-        );
-        return !isServerConnected && this._getClientPort(name) != null;
-      });
+      const hasIndependentClients = this._clientPackages.some(({ name }) =>
+        !serverConnectedClients.has(name) && this._getClientPort(name) != null,
+      );
       if (hasIndependentClients) {
         this._schedulePrintServers();
       }
@@ -504,10 +516,9 @@ export class DevWatchOrchestrator {
     }, 300);
   }
 
-  /** 클라이언트 엔진에서 포트 가져오기 (ViteEngine.port에 대한 duck-typing) */
+  /** 클라이언트 엔진에서 포트 가져오기 */
   private _getClientPort(name: string): number | undefined {
-    const engine = this._clientEngines.get(name) as { port?: number } | undefined;
-    return engine?.port;
+    return this._clientEngines.get(name)?.port;
   }
 
   /** 서버에 연결된 클라이언트들의 포트 수집 */

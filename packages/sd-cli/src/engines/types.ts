@@ -80,4 +80,7 @@ export interface BuildEngine {
    * 엔진을 중지하고 리소스(Worker, esbuild context 등)를 정리한다
    */
   stop(): Promise<void>;
+
+  /** 개발 서버 포트 (ViteEngine의 워치 모드에서 serverReady 이벤트로 설정됨) */
+  readonly port?: number;
 }

@@ -1,4 +1,4 @@
-import { type Signal, type WritableSignal, effect, signal } from "@angular/core";
+import { type Signal, type WritableSignal, linkedSignal } from "@angular/core";
 import { obj } from "@simplysm/core-common";
 
 export function useDataSheetFilterManager<TFilter extends Record<string, any>>(options: {
@@ -8,13 +8,13 @@ export function useDataSheetFilterManager<TFilter extends Record<string, any>>(o
   page: WritableSignal<number>;
   checkIgnoreChanges: () => boolean;
 }) {
-  const filter = signal<TFilter>({} as TFilter);
-  const lastFilter = signal<TFilter>({} as TFilter);
-
-  effect(() => {
-    const f = options.bindFilter();
-    filter.set(f);
-    lastFilter.set(obj.clone(f));
+  const filter = linkedSignal<TFilter, TFilter>({
+    source: options.bindFilter,
+    computation: (f) => f,
+  });
+  const lastFilter = linkedSignal<TFilter, TFilter>({
+    source: options.bindFilter,
+    computation: (f) => obj.clone(f),
   });
 
   function doFilterSubmit(): void {

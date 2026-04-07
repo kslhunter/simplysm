@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   contentChildren,
   effect,
@@ -215,7 +216,26 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   _selectedItemContentHTML = signal<string | undefined>(undefined);
 
-  _flatItems = signal<{ data: T; index: number; depth: number }[]>([]);
+  _flatItems = computed(() => {
+    const items = this.items();
+    if (items == null) return [];
+    const getChildren = this.getChildrenFn();
+    const flat: { data: T; index: number; depth: number }[] = [];
+    let index = 0;
+    const walk = (list: T[], depth: number) => {
+      for (const item of list) {
+        flat.push({ data: item, index: index++, depth });
+        if (getChildren !== undefined) {
+          const children = getChildren(item);
+          if (children !== undefined) {
+            walk(children, depth + 1);
+          }
+        }
+      }
+    };
+    walk(items, 0);
+    return flat;
+  });
 
   constructor() {
     // Required validation
@@ -225,31 +245,6 @@ export class SdSelectControl<M extends "single" | "multi", T> {
       if (v == null) return "선택된 항목이 없습니다.";
       if (Array.isArray(v) && v.length === 0) return "선택된 항목이 없습니다.";
       return "";
-    });
-
-    // Flatten items array (with hierarchy support)
-    effect(() => {
-      const items = this.items();
-      if (items == null) {
-        this._flatItems.set([]);
-        return;
-      }
-      const getChildren = this.getChildrenFn();
-      const flat: { data: T; index: number; depth: number }[] = [];
-      let index = 0;
-      const walk = (list: T[], depth: number) => {
-        for (const item of list) {
-          flat.push({ data: item, index: index++, depth });
-          if (getChildren !== undefined) {
-            const children = getChildren(item);
-            if (children !== undefined) {
-              walk(children, depth + 1);
-            }
-          }
-        }
-      };
-      walk(items, 0);
-      this._flatItems.set(flat);
     });
 
     // D3: contentClass/contentStyle via effect() on popup element

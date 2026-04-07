@@ -20,35 +20,17 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdButtonControl],
+  host: {
+    style: "display: block",
+    class: "p-default",
+  },
   template: `
-    <div class="_sd-confirm-modal">
-      <p class="_message">{{ message() }}</p>
-      <div class="_actions">
-        <sd-button [theme]="'primary'" (click)="onConfirm()">확인</sd-button>
-        <sd-button (click)="onCancel()">취소</sd-button>
-      </div>
+    <p class="mb-default" [innerHTML]="message()"></p>
+    <div class="flex-row main-align-end gap-sm">
+      <sd-button [theme]="'primary'" (click)="onConfirm()">확인</sd-button>
+      <sd-button (click)="onCancel()">취소</sd-button>
     </div>
   `,
-  styles: [
-    /* language=SCSS */ `
-      sd-confirm-modal {
-        display: block;
-        padding: var(--gap-default);
-
-        > ._sd-confirm-modal {
-          > ._message {
-            margin-bottom: var(--gap-default);
-          }
-
-          > ._actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--gap-sm);
-          }
-        }
-      }
-    `,
-  ],
 })
 export class SdConfirmModalControl implements ISdModal<boolean> {
   initialized = signal(true);

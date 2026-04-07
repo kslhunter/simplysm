@@ -412,6 +412,9 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const polyfills = fs.existsSync(polyfillsPath) ? ["./src/polyfills.ts"] : undefined;
 
     let lintResult: LintWithProgramResult | undefined;
+    let buildSuccess = true;
+    let buildErrors: string[] | undefined;
+    let buildWarnings: string[] | undefined;
 
     const viteConfig = await createClientViteConfig({
       framework: info.framework,
@@ -423,6 +426,9 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       env: info.env,
       enableLint: info.enableLint,
       onBuild: (result) => {
+        buildSuccess = result.success;
+        buildErrors = result.errors;
+        buildWarnings = result.warnings;
         if (result.lint != null) {
           lintResult = result.lint;
         }
@@ -443,7 +449,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
 
     logger.debug(`[${info.name}] client worker build 완료`);
-    return { success: true, lint: lintResult };
+    return { success: buildSuccess, errors: buildErrors, warnings: buildWarnings, lint: lintResult };
   } catch (err) {
     const message = errNs.message(err);
     logger.debug(`[${info.name}] client worker build 예외: ${message}`);

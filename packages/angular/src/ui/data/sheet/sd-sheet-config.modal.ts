@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   input,
+  linkedSignal,
   output,
   signal,
   ViewEncapsulation,
@@ -28,7 +29,6 @@ interface IConfigItem {
   selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  standalone: true,
   imports: [SdButtonControl, SdCheckboxControl, NgIcon],
   template: `
     <div class="_sd-sheet-config-modal">
@@ -168,29 +168,25 @@ export class SdSheetConfigModal implements ISdModal<ISdSheetConfig | undefined> 
       .sort((a, b) => a.ordering - b.ordering);
   });
 
-  private readonly _editItems = signal<IConfigItem[] | undefined>(undefined);
-
-  _items = computed((): IConfigItem[] => {
-    return this._editItems() ?? this._initialItems();
-  });
+  _items = linkedSignal<IConfigItem[]>(() => this._initialItems());
 
   onFixedToggle(idx: number): void {
     const items = [...this._items()];
     items[idx] = { ...items[idx], fixed: !items[idx].fixed };
-    this._editItems.set(items);
+    this._items.set(items);
   }
 
   onHiddenToggle(idx: number): void {
     const items = [...this._items()];
     items[idx] = { ...items[idx], hidden: !items[idx].hidden };
-    this._editItems.set(items);
+    this._items.set(items);
   }
 
   onWidthChange(idx: number, event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     const items = [...this._items()];
     items[idx] = { ...items[idx], width: inputEl.value };
-    this._editItems.set(items);
+    this._items.set(items);
   }
 
   canMoveUp(idx: number): boolean {
@@ -217,14 +213,14 @@ export class SdSheetConfigModal implements ISdModal<ISdSheetConfig | undefined> 
     if (!this.canMoveUp(idx)) return;
     const items = [...this._items()];
     [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
-    this._editItems.set(items);
+    this._items.set(items);
   }
 
   onMoveDown(idx: number): void {
     if (!this.canMoveDown(idx)) return;
     const items = [...this._items()];
     [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
-    this._editItems.set(items);
+    this._items.set(items);
   }
 
   onOk(): void {

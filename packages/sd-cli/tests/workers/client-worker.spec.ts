@@ -737,4 +737,96 @@ describe("client.worker", () => {
       await workerFns["stopWatch"]();
     });
   });
+
+  describe("build", () => {
+    // Acceptance: Scenario "Angular 컴파일 에러 시 빌드 실패 반환"
+    it("returns failure with errors when Angular compilation fails", async () => {
+      let capturedOnBuild: ((result: any) => void) | undefined;
+      mockCreateClientViteConfig.mockImplementation((opts: any) => {
+        capturedOnBuild = opts.onBuild;
+        return { plugins: [] };
+      });
+
+      mockViteBuild.mockImplementation(() => {
+        capturedOnBuild?.({
+          success: false,
+          errors: ["TS2345: type mismatch"],
+          warnings: [],
+        });
+      });
+
+      const result = await workerFns["build"](createBaseInfo());
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toContain("TS2345: type mismatch");
+    });
+
+    // Acceptance: Scenario "Angular 컴파일 에러 없이 빌드 성공"
+    it("returns success when Angular compilation has no errors", async () => {
+      let capturedOnBuild: ((result: any) => void) | undefined;
+      mockCreateClientViteConfig.mockImplementation((opts: any) => {
+        capturedOnBuild = opts.onBuild;
+        return { plugins: [] };
+      });
+
+      mockViteBuild.mockImplementation(() => {
+        capturedOnBuild?.({ success: true });
+      });
+
+      const result = await workerFns["build"](createBaseInfo());
+
+      expect(result.success).toBe(true);
+      expect(result.errors).toBeUndefined();
+    });
+
+    // Acceptance: Scenario "Angular 컴파일 경고만 있을 때 성공 반환"
+    it("returns success with warnings when compilation has warnings only", async () => {
+      let capturedOnBuild: ((result: any) => void) | undefined;
+      mockCreateClientViteConfig.mockImplementation((opts: any) => {
+        capturedOnBuild = opts.onBuild;
+        return { plugins: [] };
+      });
+
+      mockViteBuild.mockImplementation(() => {
+        capturedOnBuild?.({
+          success: true,
+          warnings: ["deprecated API usage"],
+        });
+      });
+
+      const result = await workerFns["build"](createBaseInfo());
+
+      expect(result.success).toBe(true);
+      expect(result.warnings).toContain("deprecated API usage");
+    });
+
+    // Unit: lint result is still captured alongside compilation result
+    it("captures lint result from onBuild callback", async () => {
+      let capturedOnBuild: ((result: any) => void) | undefined;
+      mockCreateClientViteConfig.mockImplementation((opts: any) => {
+        capturedOnBuild = opts.onBuild;
+        return { plugins: [] };
+      });
+
+      const lintData = { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" };
+      mockViteBuild.mockImplementation(() => {
+        capturedOnBuild?.({ success: true, lint: lintData });
+      });
+
+      const result = await workerFns["build"](createBaseInfo());
+
+      expect(result.success).toBe(true);
+      expect(result.lint).toEqual(lintData);
+    });
+
+    // Unit: returns success true when onBuild is never called (non-Angular framework)
+    it("returns success true when onBuild is never called", async () => {
+      mockCreateClientViteConfig.mockResolvedValue({ plugins: [] });
+      mockViteBuild.mockResolvedValue(undefined);
+
+      const result = await workerFns["build"](createBaseInfo());
+
+      expect(result.success).toBe(true);
+    });
+  });
 });

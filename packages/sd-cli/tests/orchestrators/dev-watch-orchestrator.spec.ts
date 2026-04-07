@@ -1471,6 +1471,76 @@ describe("DevWatchOrchestrator", () => {
 
   //#region Slice 4: watch/dev lint 활성화 (Feature 3.2)
 
+  describe("resource safety (DESIGN-001, DESIGN-002)", () => {
+    // --- Acceptance: shutdown 시 타이머 정리 + replaceDepWatcher 해제 ---
+
+    it("clears pending timers on shutdown so no delayed restart fires", async () => {
+      vi.useFakeTimers();
+      try {
+        setupDefaults(createConfig({
+          packages: { "demo-server": { target: "server" } },
+        }));
+        // Engine adds "success" result to trigger restart timer via batchComplete
+        vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+          const engine = {
+            run: vi.fn(),
+            startWatch: vi.fn().mockImplementation(() => {
+              options.resultCollector?.add({
+                name: pkg.name, target: "server", type: "build", status: "success",
+              });
+            }),
+            stop: vi.fn().mockResolvedValue(undefined),
+            _pkgName: pkg.name,
+          };
+          mockBuildEngines.push(engine);
+          return engine as any;
+        });
+
+        const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
+        await orchestrator.initialize();
+        await orchestrator.start();
+
+        // Trigger batchComplete with a server build key → sets _serverRestartTimer
+        const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
+        const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
+        const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+        const runtimeCountBefore = mockRuntimeProxies.length;
+        batchHandler?.(["demo-server:build"]);
+
+        // shutdown before timer fires
+        await orchestrator.shutdown();
+
+        // Advance past timer (100ms restart + 300ms print)
+        vi.advanceTimersByTime(500);
+
+        // No new runtime workers created after shutdown
+        expect(mockRuntimeProxies.length).toBe(runtimeCountBefore);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("disposes replaceDepWatcher even when initialize fails after watchReplaceDeps", async () => {
+      const mockDispose = vi.fn();
+      vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose } as any);
+
+      setupDefaults(createConfig({
+        packages: { "demo-server": { target: "server" } },
+        replaceDeps: { "@simplysm/*": "packages/*/src" },
+      }));
+      vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose } as any);
+      // Make getVersion throw to simulate partial init failure after watchReplaceDeps
+      vi.mocked(getVersion).mockRejectedValue(new Error("version fetch failed"));
+
+      const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
+      await expect(orchestrator.initialize()).rejects.toThrow("version fetch failed");
+
+      await orchestrator.shutdown();
+
+      expect(mockDispose).toHaveBeenCalledOnce();
+    });
+  });
+
   describe("lint activation", () => {
     // Scenario: watch 초기 빌드에서 lint 비활성화 (별도 실행으로 분리됨)
     it("passes lint:false to startWatch for library engines in watch mode", async () => {

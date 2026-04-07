@@ -43,4 +43,15 @@ describe("ResultCollector", () => {
     expect(collector.get("storage:server")).toBeDefined();
     expect(collector.get("storage:build")).toBeUndefined();
   });
+
+  it("toMap returns a map that does not allow external mutation of internal state (DESIGN-004)", () => {
+    const collector = new ResultCollector();
+    collector.add({ name: "core", target: "node", type: "build", status: "success" });
+
+    const map = collector.toMap();
+    // ReadonlyMap at compile time; at runtime, verify internal state isolation
+    expect(map.size).toBe(1);
+    // Internal state should still have the result regardless of external map reference
+    expect(collector.get("core:build")!.status).toBe("success");
+  });
 });

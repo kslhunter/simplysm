@@ -110,7 +110,7 @@ export class ViteEngine implements BuildEngine {
 
     // 리빌드 이벤트 처리 (HMR)
     let resolver: (() => void) | undefined;
-    const workerKey = `vite:${this._pkg.name}`;
+    const workerKey = `${this._pkg.name}:build`;
 
     this._worker!.on("buildStart", () => {
       if (this._rebuildManager != null) {

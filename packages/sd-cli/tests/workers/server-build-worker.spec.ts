@@ -716,6 +716,45 @@ describe("server-build.worker startWatch()", () => {
     await workerFns["startWatch"](watchInfo);
     await expect(workerFns["startWatch"](watchInfo)).rejects.toThrow("already been called");
   });
+
+  // Acceptance: esbuild context creation failure leaves safe state (LOGIC-001)
+  it("allows tsc-only rebuilds after esbuild context recreation failure", async () => {
+    // Provide metafile inputs so subsequent change passes the metafile filter
+    mockMetafileInputs = { "packages/my-server/src/main.ts": {} };
+
+    await workerFns["startWatch"](watchInfo);
+
+    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
+      changes: Array<{ event: string; path: string }>,
+    ) => Promise<void>;
+
+    // After dispose, rebuild should throw (simulates real disposed context)
+    mockDispose.mockImplementation(() => {
+      mockRebuild.mockRejectedValue(new Error("Build context already disposed"));
+    });
+
+    // Make context() throw to simulate creation failure
+    vi.mocked(esbuild.context).mockRejectedValueOnce(new Error("context creation failed"));
+    mockSend.mockClear();
+
+    // File add triggers context recreation → fails → sends "error"
+    await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
+    expect(mockDispose).toHaveBeenCalled();
+
+    // Subsequent file change should work without "disposed" errors
+    mockSend.mockClear();
+    const absPath = path.resolve("/workspace", "packages/my-server/src/main.ts").replace(/\\/g, "/");
+    await onChangeHandler([{ event: "change", path: absPath }]);
+
+    // Should NOT get "disposed" error
+    const errorCalls = mockSend.mock.calls.filter((c) => c[0] === "error");
+    for (const [, data] of errorCalls) {
+      expect((data as { message: string }).message).not.toContain("disposed");
+    }
+    // Build event should be sent (tsc-only result)
+    const buildCalls = mockSend.mock.calls.filter((c) => c[0] === "build");
+    expect(buildCalls.length).toBeGreaterThanOrEqual(1);
+  });
 });
 
 describe("server-build.worker stopWatch()", () => {

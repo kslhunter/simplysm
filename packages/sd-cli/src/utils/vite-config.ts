@@ -207,7 +207,7 @@ export async function createClientViteConfig(
     optimizeDeps: {
       ...optimizeDepsConfig,
       esbuildOptions: {
-        target: esbuildTarget as string[],
+        target: esbuildTarget,
       },
     },
   };

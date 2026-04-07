@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import type { ISdModal } from "./sd-modal.provider";
 import { SdButtonControl } from "../../form/button/sd-button.control";
+import { SdTextfieldControl } from "../../form/input/sd-textfield.control";
 
 /**
  * 범용 프롬프트 모달.
@@ -19,52 +20,25 @@ import { SdButtonControl } from "../../form/button/sd-button.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButtonControl, SdTextfieldControl],
+  host: {
+    style: "display: block",
+    class: "p-default",
+  },
   template: `
-    <div class="_sd-prompt-modal">
-      <p class="_message">{{ message() }}</p>
-      <input
-        class="_input"
-        type="text"
-        [value]="_inputValue()"
-        (input)="onInputChange($event)"
-        (keydown.enter)="onConfirm()"
-      />
-      <div class="_actions">
-        <sd-button [theme]="'primary'" (click)="onConfirm()">확인</sd-button>
-        <sd-button (click)="onCancel()">취소</sd-button>
-      </div>
+    <p class="mb-default" [innerHTML]="message()"></p>
+    <sd-textfield
+      [type]="'text'"
+      [value]="_inputValue()"
+      (input)="onInputChange($event)"
+      (keydown.enter)="onConfirm()"
+      class="mb-default"
+    />
+    <div class="flex-row main-align-end gap-sm">
+      <sd-button [theme]="'primary'" (click)="onConfirm()">확인</sd-button>
+      <sd-button (click)="onCancel()">취소</sd-button>
     </div>
   `,
-  styles: [
-    /* language=SCSS */ `
-      sd-prompt-modal {
-        display: block;
-        padding: var(--gap-default);
-
-        > ._sd-prompt-modal {
-          > ._message {
-            margin-bottom: var(--gap-default);
-          }
-
-          > ._input {
-            display: block;
-            width: 100%;
-            padding: var(--gap-sm) var(--gap-default);
-            border: 1px solid var(--trans-lighter);
-            border-radius: var(--border-radius-default);
-            margin-bottom: var(--gap-default);
-          }
-
-          > ._actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--gap-sm);
-          }
-        }
-      }
-    `,
-  ],
 })
 export class SdPromptModalControl implements ISdModal<string> {
   initialized = signal(true);

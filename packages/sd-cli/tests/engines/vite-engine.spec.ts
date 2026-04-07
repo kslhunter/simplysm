@@ -492,6 +492,35 @@ describe("ViteEngine", () => {
       await engine.stop();
     });
 
+    // Unit: ViteEngine uses same workerKey pattern as BaseEngine (CONSIST-001)
+    it("registers with RebuildManager using '{name}:build' key pattern", async () => {
+      const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
+
+      mockWorker.startWatch.mockImplementation(() => {
+        return Promise.resolve({ success: true });
+      });
+
+      const engine = new ViteEngine({
+        cwd: "/root",
+        pkg: createMockPkg({ name: "my-client" }),
+        rebuildManager: mockRebuildManager as any,
+      });
+
+      await engine.startWatch({ js: true, dts: false });
+
+      const buildStartHandler = mockWorker.on.mock.calls.find(
+        (call: any[]) => call[0] === "buildStart",
+      )?.[1];
+      buildStartHandler?.({});
+
+      expect(mockRebuildManager.registerBuild).toHaveBeenCalledWith(
+        "my-client:build",
+        expect.any(String),
+      );
+
+      await engine.stop();
+    });
+
     // Acceptance: Scenario "build 이벤트로 ResultCollector 갱신 + resolver 호출" (Feature 3.3)
     it("resolves rebuild when build event arrives after buildStart", async () => {
       const mockResolver = vi.fn();

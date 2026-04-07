@@ -432,6 +432,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           const newExternal = cachedExternal;
 
           const oldContext = esbuildContext;
+          esbuildContext = undefined; // 선제 초기화 — 생성 실패 시 disposed 참조 방지 (LOGIC-001)
           try {
             if (info.output.js) {
               esbuildContext = await createEsbuildWatchContext(info, newEntryPoints, newExternal);

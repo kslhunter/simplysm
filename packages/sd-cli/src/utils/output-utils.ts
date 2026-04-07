@@ -18,7 +18,7 @@ export function formatBuildMessages(name: string, label: string, messages: strin
  * 에러만 출력한다.
  * @param results 패키지별 빌드 결과 상태
  */
-export function printErrors(results: Map<string, BuildResult>): void {
+export function printErrors(results: ReadonlyMap<string, BuildResult>): void {
   for (const result of results.values()) {
     if (result.status === "error") {
       const typeLabel = result.type === "lint" ? "lint" : result.target;
@@ -37,8 +37,8 @@ export function printErrors(results: Map<string, BuildResult>): void {
  * @param serverClientsMap 서버별 연결된 클라이언트 목록
  */
 export function printServers(
-  results: Map<string, BuildResult>,
-  serverClientsMap?: Map<string, string[]>,
+  results: ReadonlyMap<string, BuildResult>,
+  serverClientsMap?: ReadonlyMap<string, string[]>,
 ): void {
   // 서버 정보 수집
   const servers = [...results.values()].filter((r) => r.status === "running" && r.port != null);

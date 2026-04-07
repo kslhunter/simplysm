@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { ApplicationRef } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
 import { SdPromptModalControl } from "../../../../src/ui/overlay/modal/sd-prompt-modal.control";
@@ -8,9 +9,11 @@ import "@simplysm/core-browser";
 
 async function tick(fixture: any): Promise<void> {
   fixture.detectChanges();
+  TestBed.inject(ApplicationRef).tick();
   TestBed.flushEffects();
   await new Promise((r) => setTimeout(r, 50));
   fixture.detectChanges();
+  TestBed.inject(ApplicationRef).tick();
   TestBed.flushEffects();
 }
 
@@ -38,7 +41,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
     const modal = getModalInBody();
     expect(modal).not.toBeNull();
 
-    const messageEl = modal!.querySelector("._message");
+    const messageEl = modal!.querySelector("sd-prompt-modal > p");
     expect(messageEl).not.toBeNull();
     expect(messageEl!.textContent).toContain("이름을 입력하세요");
 
@@ -67,7 +70,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
 
     const modal = getModalInBody();
     // input에 값 입력
-    const inputEl = modal!.querySelector("input._input") as HTMLInputElement;
+    const inputEl = modal!.querySelector("sd-textfield input") as HTMLInputElement;
     expect(inputEl).not.toBeNull();
     inputEl.value = "테스트 이름";
     inputEl.dispatchEvent(new Event("input", { bubbles: true }));
@@ -161,7 +164,7 @@ describe("Feature 5.3 Slice 2: SdConfirmModalControl", () => {
     const modal = getModalInBody();
     expect(modal).not.toBeNull();
 
-    const messageEl = modal!.querySelector("._message");
+    const messageEl = modal!.querySelector("sd-confirm-modal > p");
     expect(messageEl).not.toBeNull();
     expect(messageEl!.textContent).toContain("삭제하시겠습니까?");
 
