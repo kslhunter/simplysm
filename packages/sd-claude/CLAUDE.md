@@ -18,7 +18,7 @@ sd-claude/
 │   ├── skills/             ← 스킬 파일 디렉토리 (16개 스킬)
 │   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
-│   │   ├── sd-claude-docs/    ← CLAUDE.md + README.md 동시 생성
+│   │   ├── sd-claude-docs/    ← CLAUDE.md + usage 문서 동시 생성
 │   │   ├── sd-commit/         ← 그룹별 커밋 생성
 │   │   ├── sd-debug/          ← 버그 근본 원인 분석
 │   │   ├── sd-deliverable/    ← 매뉴얼·SIT 문서 생성

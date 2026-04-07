@@ -96,7 +96,6 @@ await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
 
 ```
 tests/
-├── define-event.spec.ts          ← defineEvent 단위 테스트
 └── protocol/
     └── service-protocol.spec.ts  ← ServiceProtocol encode/decode/청킹/UUID 인터리빙 테스트
 ```

@@ -1,12 +1,15 @@
 ---
 name: sd-claude-docs
-description: 프로젝트 분석을 통해 CLAUDE.md와 README.md/docs/를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
+description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "usage 문서 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
 ---
 
-# sd-claude-docs: CLAUDE.md + README/docs 통합 생성
+# sd-claude-docs: CLAUDE.md + usage 문서 통합 생성
 
-프로젝트를 분석하여 CLAUDE.md(LLM 컨텍스트)와 README.md/docs/(API 문서)를 한 번에 생성한다.
+프로젝트를 분석하여 CLAUDE.md(LLM 컨텍스트)와 usage 문서(LLM용 API 문서)를 한 번에 생성한다.
 설정 파일, 스크립트, 소스 코드에서 검증 가능한 사실만 추출한다. 기존 문서가 있으면 섹션 단위로 병합한다.
+
+- **라이브러리 프로젝트** (`private: true`가 아닌 패키지가 1개 이상): CLAUDE.md + `.claude/references/sd-{name}{ver}/` usage 문서 생성
+- **소비앱** (모든 패키지가 `private: true`): CLAUDE.md만 생성
 
 ## 사용법
 
@@ -53,6 +56,19 @@ description: 프로젝트 분석을 통해 CLAUDE.md와 README.md/docs/를 동�
 
 `.claude/rules/` 디렉토리가 존재하면 모든 `.md` 파일을 읽는다. 이미 다루고 있는 주제를 목록화한다. 해당 주제는 **CLAUDE.md에서 제외**한다 — 파일 간 규칙 중복은 LLM이 고유한 지침 대신 중복 컨텍스트를 처리하게 되어 지침의 효과를 약화시킨다.
 
+### 1-5. 프로젝트 유형 감지
+
+모노레포인 경우 모든 패키지의 `package.json`을, 단일 패키지인 경우 루트 `package.json`을 확인한다.
+
+- **라이브러리 프로젝트**: `private: true`가 아닌 패키지가 1개 이상 존재
+- **소비앱**: 모든 패키지가 `private: true`
+
+라이브러리 프로젝트인 경우 usage 문서 경로를 결정한다:
+1. 루트 `package.json`의 `name`에서 라이브러리명을 추출한다
+2. 루트 `package.json`의 `version`에서 메이저 버전을 추출한다
+3. usage 문서 경로: `.claude/references/sd-{name}{majorVersion}/` (예: `sd-simplysm14/`)
+4. 인덱스 파일 경로: `.claude/references/sd-{name}{majorVersion}.md` (예: `sd-simplysm14.md`)
+
 ## Step 2: 분기
 
 ### 패키지명 지정 시
@@ -65,7 +81,7 @@ root 문서는 생성·변경하지 않는다.
 
 `workspaces` 필드가 없고 `pnpm-workspace.yaml`도 없으면 단일 패키지다.
 패키지별 CLAUDE.md는 생성하지 않는다. 바로 4단계로 진행하여 root 문서를 생성한다.
-단, root README.md 생성 시 엔트리포인트 기반 API 문서화도 수행한다 — `package-doc-gen.md` 참조 파일의 Step 2~5를 root에 직접 적용한다.
+라이브러리 프로젝트인 경우 `package-doc-gen.md`의 Step 2~4를 root에 직접 적용하여 `.claude/references/sd-{name}{ver}/usage.md` + `docs/`를 생성한다.
 
 ### 전체 실행 — 모노레포
 
@@ -76,12 +92,12 @@ root 문서는 생성·변경하지 않는다.
 git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지를 스킵한다. git 저장소가 아니면 모든 패키지를 처리 대상으로 한다.
 
 각 패키지에 대해:
-1. `packages/{name}/CLAUDE.md`, `README.md`, `docs/`가 마지막으로 수정된 커밋(`DOC_COMMIT`)을 찾는다
+1. `packages/{name}/CLAUDE.md`와 `.claude/references/sd-{name}{ver}/{name}/`가 마지막으로 수정된 커밋(`DOC_COMMIT`)을 찾는다
 2. `DOC_COMMIT`이 없으면 (문서 미생성) → **처리 대상**
 3. `DOC_COMMIT`의 부모부터 working tree까지, 문서 파일을 제외한 패키지 내 변경을 확인한다:
    ```bash
    git diff --quiet {DOC_COMMIT}~1 -- packages/{name}/ \
-     ':!packages/{name}/CLAUDE.md' ':!packages/{name}/README.md' ':!packages/{name}/docs/'
+     ':!packages/{name}/CLAUDE.md'
    ```
    - 변경 있음 → **처리 대상**
    - 변경 없음 → **스킵**
@@ -107,7 +123,7 @@ git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지�
 ### subagent 프롬프트
 
 ```
-{패키지 경로}의 CLAUDE.md와 README.md를 생성한다.
+{패키지 경로}의 CLAUDE.md와 usage 문서를 생성한다.
 
 ## CLAUDE.md 생성
 
@@ -116,21 +132,21 @@ git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지�
 루트 수준 설정 (이 내용과 동일한 정보는 패키지 CLAUDE.md에 반복하지 않는다):
 {1단계에서 추출한 코딩 규칙 및 컴파일러 설정 목록}
 
-## README.md 생성
+## usage 문서 생성 {소비앱이면 이 섹션 생략}
 
 `.claude/skills/sd-claude-docs/references/package-doc-gen.md`를 읽고 그 지침을 따른다.
-{private: true인 경우} 이 패키지는 private이므로 README.md는 생성하지 않는다.
+출력 경로: `.claude/references/sd-{name}{ver}/{패키지명}/`
+{private: true인 경우} 이 패키지는 private이므로 usage 문서는 생성하지 않는다.
 ```
 
-각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 README.md(API 문서) 모두에 활용한다.
+각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 usage 문서(API 문서) 모두에 활용한다.
 
 ### subagent 반환 정보
 
 - CLAUDE.md 생성 여부
-- README.md 생성 여부 + 문서 구조 (README 단독 / README + docs/)
+- usage 문서 생성 여부 + 문서 구조 (usage 단독 / usage + docs/)
 - API 항목 수
 - 생성된 파일 목록
-- package.json files 변경 여부
 
 ## Step 4: root 문서 생성
 
@@ -205,42 +221,55 @@ UI:       angular (Angular)
 - `console.*` 금지, `Buffer` 금지 → `Uint8Array`
 ````
 
-### root README.md
+### sd-{name}{ver}.md (라이브러리 프로젝트만)
 
-모노레포인 경우 패키지 목록 테이블을 생성한다. `private: true`인 패키지는 제외한다.
+라이브러리 프로젝트인 경우 `.claude/references/sd-{name}{ver}.md` 인덱스 파일을 생성/갱신한다.
+소비앱인 경우 이 단계를 건너뛴다.
+
+#### 포함할 내용
+
+- 패키지 목록 테이블 (`private: true`인 패키지는 제외)
+- 각 패키지의 usage 문서 경로 링크
+- 라이브러리 사용 시 주요 가이드 (기존 내용이 있으면 병합)
+
+#### 참고 예시
 
 ```markdown
-# {monorepo 프로젝트명}
+# sd-simplysm14: @simplysm v14 소비앱 가이드
 
-{루트 package.json의 description. 없으면 monorepo의 패키지 구성에서 추론하여 한 줄 요약}
+{기존 가이드 내용 보존}
 
-## Packages
+## 패키지별 상세 문서
 
-| Package | Description |
-|---------|-------------|
-| [`@simplysm/{name}`](./packages/{name}) | {package.json의 description} |
+| 패키지 | 문서 |
+|--------|------|
+| @simplysm/angular | [usage.md](./sd-simplysm14/angular/usage.md) |
+| @simplysm/core-common | [usage.md](./sd-simplysm14/core-common/usage.md) |
 ```
 
-단일 패키지인 경우 `package-doc-gen.md`의 README 형식을 root에 직접 적용한다.
+#### 병합
+
+기존 `sd-{name}{ver}.md`가 있으면 root CLAUDE.md와 동일한 병합 규칙을 적용한다.
 
 ## Step 5: 결과 보고
 
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | 상태 | CLAUDE.md | README.md | 구조 | API 항목 수 |
-|--------|------|-----------|-----------|------|-------------|
-| root | — | 생성 | 생성 | — | — |
+| 패키지 | 상태 | CLAUDE.md | usage 문서 | 구조 | API 항목 수 |
+|--------|------|-----------|------------|------|-------------|
+| root | — | 생성 | — | — | — |
+| sd-simplysm14.md | — | — | 갱신 | 인덱스 | — |
 | @simplysm/core-common | 스킵 | — | — | — | — |
-| @simplysm/angular | 처리 | 갱신 | 갱신 | README + docs/ | 126 |
-| @simplysm/storage | 처리 | 생성 | 생성 | README 단독 | 8 |
+| @simplysm/angular | 처리 | 갱신 | 갱신 | usage + docs/ | 126 |
+| @simplysm/storage | 처리 | 생성 | 생성 | usage 단독 | 8 |
 | @simplysm/internal | 처리 | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)
-- README.md (root)
+- .claude/references/sd-simplysm14.md
 - packages/core-common/CLAUDE.md
-- packages/core-common/README.md
-- packages/core-common/docs/types.md
+- .claude/references/sd-simplysm14/core-common/usage.md
+- .claude/references/sd-simplysm14/core-common/docs/types.md
 - ...
 ```

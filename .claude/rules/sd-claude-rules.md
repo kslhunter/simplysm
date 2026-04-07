@@ -41,7 +41,7 @@
 
 # 코딩 룰
 
-- `@simplysm/*` 패키지를 사용할 때 아래 `@simplysm 패키지 참조` 섹션을 따른다.
+- `@simplysm/*` 패키지를 사용할 때 아래 `# @simplysm 패키지 참조` 섹션을 따른다.
 - `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
 - 테스트 작성 시 `.claude/references/sd-testing.md`를 읽고 따른다.
 - 프론트엔드 UI 코드 작성·수정 시 `.claude/references/sd-frontend-design.md`를 읽고 따른다.
@@ -63,14 +63,12 @@
 
 # @simplysm 패키지 참조
 
-- `@simplysm/*` 패키지 사용 시, 해당 패키지의 README.md를 먼저 읽어 API와 사용법을 파악한다
-- 먼저 `packages/{패키지}/node_modules/@simplysm/{패키지명}/README.md`를 확인하고, 없으면 `node_modules/@simplysm/{패키지명}/README.md`를 확인한다
+- `@simplysm/*` 패키지 사용 시, `.claude/references/sd-simplysm{메이저버전}.md`를 읽고 해당 패키지의 문서 경로를 찾아 읽는다
 - simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다
-- 소비앱이 `@simplysm/*` v14를 사용하고 있다면 `.claude/references/sd-simplysm14.md`를 읽고 따른다
 
 # 프로젝트 경계
 
-**CRITICAL: 프로젝트 루트(`D:\workspaces-14\oscom`) 외부의 파일을 절대 생성/수정/삭제하지 않는다.**
+**CRITICAL: 프로젝트 루트 외부의 파일을 절대 생성/수정/삭제하지 않는다.**
 
 - 다른 모노레포(`../simplysm/` 등)에 파일을 만드는 것은 절대 금지.
 

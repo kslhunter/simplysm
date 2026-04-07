@@ -1,7 +1,7 @@
 # 패키지 문서 생성 프로세스
 
-이 문서는 단일 패키지에 대한 README.md 및 docs/ 문서 생성 프로세스를 기술한다.
-subagent가 패키지 경로를 전달받아 아래 순서대로 수행한다.
+이 문서는 단일 패키지에 대한 usage.md 및 docs/ 문서 생성 프로세스를 기술한다.
+subagent가 패키지 경로와 출력 경로(`.claude/references/sd-{name}{ver}/{패키지명}/`)를 전달받아 아래 순서대로 수행한다.
 
 ## Step 2: 엔트리포인트 & Export 체인 추적
 
@@ -74,20 +74,22 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 
 | 조건 | 문서 구조 |
 |------|-----------|
-| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | README 단독 |
-| 위 조건에 해당하지 않음 | README.md (개요+목차) + docs/ (카테고리별 분할) |
+| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | usage 단독 |
+| 위 조건에 해당하지 않음 | usage.md (개요+목차) + docs/ (카테고리별 분할) |
 
 ## Step 4: 문서 생성
 
 ### 작성 원칙
 
-- **영어로 작성**한다
+- **대화언어로 작성**한다
 - **소스에서 읽은 내용만** 문서화한다 — 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다
 - **모든 export를 빠짐없이 문서화한다** — Step 2에서 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다
 - **interface/type은 필드별 설명 테이블을 포함한다** — 시그니처만 나열하지 않고, 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다 — 필드가 많더라도 모든 필드를 테이블로 나열한다
 - **union type은 discriminant와 각 variant를 설명한다** — discriminated union인 경우, 어떤 필드로 분기되는지와 각 variant를 나열한다
 
-### Step 4-1: README.md 생성
+### Step 4-1: usage.md 생성
+
+출력 경로: `.claude/references/sd-{name}{ver}/{패키지명}/usage.md`
 
 ```markdown
 # @simplysm/{package-name}
@@ -102,7 +104,7 @@ npm install @simplysm/{package-name}
 
 ## API Overview
 
-{README 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
+{usage 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
 {docs/ 분할인 경우: 카테고리별 요약 테이블 + docs/ 링크}
 
 ### {Category Name}
@@ -135,7 +137,7 @@ npm install @simplysm/{package-name}
 
 ### Step 4-2: docs/*.md 생성 (분할 대상 패키지만)
 
-카테고리별로 `packages/{name}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 영어 kebab-case로 변환한다.
+카테고리별로 `.claude/references/sd-{name}{ver}/{패키지명}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 영어 kebab-case로 변환한다.
 
 ```markdown
 # {Category Name}
@@ -161,7 +163,7 @@ npm install @simplysm/{package-name}
 
 #### Styling 카테고리 문서 형식 (docs/styling.md)
 
-Step 2B에서 스타일 항목이 수집된 경우, `docs/styling.md`를 아래 형식으로 생성한다:
+Step 2B에서 스타일 항목이 수집된 경우, `{출력 경로}/docs/styling.md`를 아래 형식으로 생성한다:
 
 ```markdown
 # Styling
@@ -196,7 +198,7 @@ Step 2B에서 스타일 항목이 수집된 경우, `docs/styling.md`를 아래 
 
 문서 생성 후, Step 2에서 수집한 export 목록과 생성된 문서를 대조한다:
 
-1. export 목록의 각 항목이 README.md 또는 docs/*.md에 존재하는지 확인한다
+1. export 목록의 각 항목이 usage.md 또는 docs/*.md에 존재하는지 확인한다
 2. 누락된 항목이 있으면 해당 API를 문서에 추가한다
 3. 검증 결과를 표시한다:
 
@@ -212,12 +214,3 @@ Step 2B에서 스타일 항목이 수집된 경우, `docs/styling.md`를 아래 
 → 누락된 API를 문서에 추가합니다.
 ```
 
-## Step 5: package.json files 필드 동기화
-
-`package.json`을 읽어 `files` 배열을 docs/ 존재 여부에 맞게 동기화한다.
-
-| 조건 | 처리 |
-|------|------|
-| docs/ 분할로 생성됨 **그리고** `files`에 `"docs"` 없음 | `"docs"`를 `files` 배열에 추가 |
-| README 단독으로 생성됨 **그리고** `files`에 `"docs"` 있음 | `files` 배열에서 `"docs"` 제거 |
-| 그 외 (이미 일치하거나 `files` 필드 자체가 없음) | 변경 없음 |

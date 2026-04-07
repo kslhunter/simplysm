@@ -4,7 +4,7 @@ pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 �
 
 ## 기술 스택
 
-Angular 21, TypeScript 5.9, Fastify 5.8, Vite 8, Vitest, esbuild, ESLint, Prettier
+Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ESLint, Prettier
 
 ## 명령어
 
@@ -27,6 +27,7 @@ pnpm build [targets..]                   # 프로덕션 빌드
 pnpm pub [targets..]                     # 빌드 후 배포 (npm/sftp)
 pnpm pub:no-build                        # 빌드 없이 배포만
 pnpm pub --dry-run                       # 실제 배포 없이 시뮬레이션
+pnpm device <target>                     # 네이티브 앱 디바이스/데스크톱 실행
 ```
 
 ### 코드 품질
@@ -49,7 +50,7 @@ UI:       angular (Angular 21)
 ORM:      orm-node / orm-common
 코어:     core-common (중립) / core-browser / core-node
 유틸:     excel, storage (FTP/SFTP)
-모바일:   capacitor-plugin-* (5개: auto-update, intent, file-system, usb-storage, printer)
+모바일:   capacitor-plugin-* (4개: auto-update, intent, file-system, usb-storage)
 도구:     sd-cli (빌드/체크 CLI), lint (ESLint 공유 설정), sd-claude (Claude Code 에셋 동기화)
 ```
 

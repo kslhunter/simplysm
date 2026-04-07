@@ -47,7 +47,23 @@ Impact Mapping 트리(Goal → Actor → Impact → Deliverable)를 구축한다
 
 ## Step 3: Feature Breakdown
 
-Deliverable을 Epic → Feature로 구조화한다. Epic은 도메인/비즈니스 영역 단위로 그룹화한다.
+Deliverable을 Epic → Feature로 구조화한다.
+
+### Epic 분류 기준
+
+Epic은 **사용자 관점의 기능 영역**(비즈니스 기능) 단위로 그룹화한다.
+기술 계층(서버/클라이언트), 패키지, 아키텍처 레이어별로 분류하지 않는다(NEVER).
+하나의 기능이 서버와 클라이언트에 걸쳐 있으면 하나의 Epic 안에 Feature로 나열한다.
+
+**좋은 예:**
+
+- "로깅" Epic → Feature 1: 서버 로깅 서비스, Feature 2: 클라이언트 로깅 호출
+- "인증" Epic → Feature 1: 인증 토큰 발급(서버), Feature 2: 로그인 화면(클라이언트)
+
+**나쁜 예:**
+
+- "서버" Epic → 로깅 서비스, 인증 서비스, ... / "클라이언트" Epic → 로깅 호출, 로그인 화면, ...
+- "core-node 패키지" Epic → ... / "angular 패키지" Epic → ...
 
 ### Feature 분해 원칙
 
@@ -55,7 +71,7 @@ Feature는 독립적으로 설계·개발·검증할 수 있는 최소 기능 �
 
 - 같은 세부기능을 공유한다는 이유로 독립 모듈을 하나의 Feature로 묶지 않는다. (예: event-bus Feature + 모달 Feature + 토스트 Feature —
   묶지 않음)
-- 범주는 Epic, 개별 기능이 Feature (예: "UI 컴포넌트" Epic → 모달, 토스트, 드롭다운 각각이 Feature)
+- 범주는 Epic, 개별 기능이 Feature (예: "알림" Epic → 토스트 알림, 모달 알림, 이메일 알림 각각이 Feature)
 - 가능한한 의존성 순서로 정렬
 
 ### Feature 작성 규칙

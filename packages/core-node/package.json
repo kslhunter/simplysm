@@ -15,8 +15,7 @@
   "files": [
     "dist",
     "src",
-    "lib",
-    "docs"
+    "lib"
   ],
   "sideEffects": false,
   "dependencies": {
