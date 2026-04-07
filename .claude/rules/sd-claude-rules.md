@@ -41,7 +41,7 @@
 
 # 코딩 룰
 
-- `@simplysm/*` 패키지를 사용할 때 `.claude/references/sd-readme.md`를 읽고 따른다.
+- `@simplysm/*` 패키지를 사용할 때 아래 `@simplysm 패키지 참조` 섹션을 따른다.
 - `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
 - 테스트 작성 시 `.claude/references/sd-testing.md`를 읽고 따른다.
 - 프론트엔드 UI 코드 작성·수정 시 `.claude/references/sd-frontend-design.md`를 읽고 따른다.
@@ -60,6 +60,13 @@
 - **클래스 필드 vs prototype**: `Object.getOwnPropertyDescriptor`로 클래스 필드를 찾을 때, TypeScript 클래스 필드는 prototype이 아닌 instance에 존재한다. prototype에서 찾으면 `undefined` 반환
 - **요청하지 않은 기능 추가 금지**: 원본 코드에 없고 사용자가 요청하지 않은 기능을 임의로 추가하지 않는다. 기존 코드의 이벤트/패턴을 그대로 유지하고, 요청된 변경만 수행한다.
 - **프로젝트 구조 이해 필수**: 코드를 배치하기 전에 해당 디렉토리가 빌드 산출물인지, 영구 소스인지 반드시 확인한다. 모르면 사용자에게 질문한다.
+
+# @simplysm 패키지 참조
+
+- `@simplysm/*` 패키지 사용 시, 해당 패키지의 README.md를 먼저 읽어 API와 사용법을 파악한다
+- 먼저 `packages/{패키지}/node_modules/@simplysm/{패키지명}/README.md`를 확인하고, 없으면 `node_modules/@simplysm/{패키지명}/README.md`를 확인한다
+- simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다
+- 소비앱이 `@simplysm/*` v14를 사용하고 있다면 `.claude/references/sd-simplysm14.md`를 읽고 따른다
 
 # 프로젝트 경계
 

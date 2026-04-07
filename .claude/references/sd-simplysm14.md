@@ -1,11 +1,8 @@
-# sd-rule-readme: @simplysm 패키지 문서 참조
+# sd-simplysm14: @simplysm v14 소비앱 가이드
 
-`@simplysm/*` 패키지 사용 시, 해당 패키지의 README.md를 먼저 읽어 API와 사용법을 파악한다.
+소비앱이 `@simplysm/*` v14를 사용할 때 적용되는 규칙.
 
-- 먼저 `packages/{패키지}/node_modules/@simplysm/{패키지명}/README.md`를 확인하고, 없으면 `node_modules/@simplysm/{패키지명}/README.md`를 확인한다
-- simplysm패키지의 경우 context7은 구버전일수 있으니 context7사용을 지양한다.
-
-## 14버전의 @simplysm 패키지를 사용하고 있다면 다음 패키지 목록 참고
+## 패키지 목록
 
 Simplysm — TypeScript 모노레포. 코어 유틸리티, ORM, 서비스 프레임워크, Angular UI 컴포넌트, 빌드 도구를 제공한다.
 
@@ -29,3 +26,12 @@ Simplysm — TypeScript 모노레포. 코어 유틸리티, ORM, 서비스 프레
 | @simplysm/service-common               | 서비스 모듈 (common)               |
 | @simplysm/service-server               | 서비스 모듈 (server) — Fastify 기반  |
 | @simplysm/storage                      | 저장소 모듈 (node) — FTP/FTPS/SFTP |
+
+## 중간 패키지(common) 불필요
+
+v14에서는 `import type`으로 타입을 직접 가져올 수 있으므로, 이전 버전에서 클라이언트-서버 간 타입 공유를 위해 필요하던 중간 패키지(예: `service-common`, `orm-common`)가 소비앱의 의존성으로 불필요하다.
+
+```typescript
+// v14: 서버 패키지에서 타입을 직접 import — common 패키지 의존성 불필요
+import type { ServiceMethods } from "@simplysm/service-server";
+```
