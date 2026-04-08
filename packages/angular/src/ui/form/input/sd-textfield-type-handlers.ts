@@ -7,7 +7,7 @@ import {
 
 // region 타입 정의
 
-export type TSdTextfieldTypes = {
+export type SdTextfieldTypes = {
   "number": number;
   "text": string;
   "password": string;
@@ -23,7 +23,7 @@ export type TSdTextfieldTypes = {
   "time-sec": Time;
 };
 
-export const sdTextfieldTypes: (keyof TSdTextfieldTypes)[] = [
+export const sdTextfieldTypes: (keyof SdTextfieldTypes)[] = [
   "number",
   "text",
   "password",
@@ -43,20 +43,20 @@ export const sdTextfieldTypes: (keyof TSdTextfieldTypes)[] = [
 
 // region 핸들러 인터페이스
 
-export interface ITextfieldParseOpts {
+export interface TextfieldParseOpts {
   format?: string;
 }
 
-export interface ITextfieldFormatOpts {
+export interface TextfieldFormatOpts {
   useNumberComma?: boolean;
   format?: string;
 }
 
-export interface ITextfieldDisplayOpts {
+export interface TextfieldDisplayOpts {
   minDigits?: number;
 }
 
-export interface ITextfieldValidateOpts {
+export interface TextfieldValidateOpts {
   required?: boolean;
   min?: unknown;
   max?: unknown;
@@ -66,20 +66,20 @@ export interface ITextfieldValidateOpts {
   format?: string;
 }
 
-export interface ITextfieldTypeHandler {
+export interface TextfieldTypeHandler {
   readonly controlType: string;
   getControlStep(explicitStep: number | undefined): number | string;
-  parse(raw: string, opts: ITextfieldParseOpts): unknown;
-  toControlValue(value: unknown, opts: ITextfieldFormatOpts): string;
-  toDisplayText(value: unknown, opts: ITextfieldDisplayOpts): string | undefined;
-  validate(value: unknown, opts: ITextfieldValidateOpts): string[];
+  parse(raw: string, opts: TextfieldParseOpts): unknown;
+  toControlValue(value: unknown, opts: TextfieldFormatOpts): string;
+  toDisplayText(value: unknown, opts: TextfieldDisplayOpts): string | undefined;
+  validate(value: unknown, opts: TextfieldValidateOpts): string[];
 }
 
 // endregion
 
 // region 문자열 타입 핸들러 (text, password, email, color)
 
-function createStringHandler(type: "text" | "password" | "email" | "color"): ITextfieldTypeHandler {
+function createStringHandler(type: "text" | "password" | "email" | "color"): TextfieldTypeHandler {
   return {
     controlType: type,
     getControlStep(_explicitStep) {
@@ -134,7 +134,7 @@ function createStringHandler(type: "text" | "password" | "email" | "color"): ITe
 
 // region 숫자 타입 핸들러
 
-function createNumberHandler(): ITextfieldTypeHandler {
+function createNumberHandler(): TextfieldTypeHandler {
   return {
     controlType: "text",
     getControlStep(explicitStep) {
@@ -199,7 +199,7 @@ function createNumberHandler(): ITextfieldTypeHandler {
 
 // region 포맷 타입 핸들러
 
-function createFormatHandler(): ITextfieldTypeHandler {
+function createFormatHandler(): TextfieldTypeHandler {
   return {
     controlType: "text",
     getControlStep(_explicitStep) {
@@ -280,7 +280,7 @@ function createFormatHandler(): ITextfieldTypeHandler {
 
 function createDateOnlyHandler(
   subtype: "date" | "month" | "year",
-): ITextfieldTypeHandler {
+): TextfieldTypeHandler {
   const controlTypeMap = { date: "date", month: "month", year: "text" } as const;
   const formatMap = {
     date: "yyyy-MM-dd",
@@ -338,7 +338,7 @@ function createDateOnlyHandler(
 
 // region DateTime 타입 핸들러 (datetime, datetime-sec)
 
-function createDateTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
+function createDateTimeHandler(withSeconds: boolean): TextfieldTypeHandler {
   const controlFormat = withSeconds ? "yyyy-MM-ddTHH:mm:ss" : "yyyy-MM-ddTHH:mm";
   const displayFormat = withSeconds ? "yyyy-MM-dd tt hh:mm:ss" : "yyyy-MM-dd tt hh:mm";
 
@@ -392,7 +392,7 @@ function createDateTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
 
 // region Time 타입 핸들러 (time, time-sec)
 
-function createTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
+function createTimeHandler(withSeconds: boolean): TextfieldTypeHandler {
   const controlFormat = withSeconds ? "HH:mm:ss" : "HH:mm";
   const displayFormat = withSeconds ? "tt hh:mm:ss" : "tt hh:mm";
 
@@ -446,7 +446,7 @@ function createTimeHandler(withSeconds: boolean): ITextfieldTypeHandler {
 
 // region 핸들러 맵
 
-export const textfieldTypeHandlers: Record<keyof TSdTextfieldTypes, ITextfieldTypeHandler> = {
+export const textfieldTypeHandlers: Record<keyof SdTextfieldTypes, TextfieldTypeHandler> = {
   "text": createStringHandler("text"),
   "password": createStringHandler("password"),
   "email": createStringHandler("email"),

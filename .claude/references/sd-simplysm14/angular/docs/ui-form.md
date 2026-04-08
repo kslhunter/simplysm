@@ -2,13 +2,13 @@
 
 ## Buttons
 
-### `SdButtonControl`
+### `SdButton`
 
 버튼 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-button" })
-class SdButtonControl {
+class SdButton {
   inline = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
@@ -23,68 +23,68 @@ class SdButtonControl {
 
 호스트 속성: `data-sd-theme`, `data-sd-size`, `data-sd-disabled`
 
-### `SdAnchorControl`
+### `SdAnchor`
 
 앵커(인라인 버튼) 컴포넌트. 텍스트 내 클릭 가능 요소.
 
 ```typescript
 @Component({ selector: "sd-anchor" })
-class SdAnchorControl {
+class SdAnchor {
   disabled = input(false, { transform: booleanAttribute });
 }
 ```
 
-### `SdAdditionalButtonControl`
+### `SdAdditionalButton`
 
 추가 동작 버튼. 드롭다운 포함.
 
 ```typescript
 @Component({ selector: "sd-additional-button" })
-class SdAdditionalButtonControl {
+class SdAdditionalButton {
   inset = input(false, { transform: booleanAttribute });
 }
 ```
 
-### `SdModalSelectButtonControl`
+### `SdModalSelectButton`
 
 모달을 열어 선택하는 버튼 컴포넌트. 선택/지우기 버튼과 값 표시 영역으로 구성.
 
 ```typescript
 @Component({ selector: "sd-modal-select-button" })
-class SdModalSelectButtonControl<T> {
-  modal = input.required<TSdSelectModalInfo<ISdSelectModal<T>>>();
-  value = model<TSelectModeValue<any>[any]>();
+class SdModalSelectButton<T> {
+  modal = input.required<SdSelectModalInfo<SdSelectModal<T>>>();
+  value = model<SelectModeValue<any>[any]>();
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
   selectMode = input<"single" | "multi">("single");
   searchIcon = input(tablerSearch);
-  modalOptions = input<ISdModalOptions>();
+  modalOptions = input<SdModalOptions>();
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `modal` | `TSdSelectModalInfo<...>` | required | 모달 정보 |
+| `modal` | `SdSelectModalInfo<...>` | required | 모달 정보 |
 | `value` | `any` | - | 선택된 값 (two-way) |
 | `disabled` | `boolean` | `false` | 비활성화 |
 | `required` | `boolean` | `false` | 필수 (지우기 버튼 숨김) |
 | `inset` | `boolean` | `false` | 삽입 스타일 |
 | `selectMode` | `"single" \| "multi"` | `"single"` | 선택 모드 |
 | `searchIcon` | `string` | `tablerSearch` | 검색 아이콘 |
-| `modalOptions` | `ISdModalOptions \| undefined` | - | 모달 옵션 |
+| `modalOptions` | `SdModalOptions \| undefined` | - | 모달 옵션 |
 
 ## Inputs
 
-### `SdTextfieldControl`
+### `SdTextfield`
 
 텍스트 입력 컴포넌트. 13가지 타입을 지원한다.
 
 ```typescript
 @Component({ selector: "sd-textfield" })
-class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
+class SdTextfield<K extends keyof SdTextfieldTypes> {
   type = input.required<K>();
-  value = model<TSdTextfieldTypes[K] | undefined>();
+  value = model<SdTextfieldTypes[K] | undefined>();
   disabled = input(false, { transform: booleanAttribute });
   readonly = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
@@ -93,8 +93,8 @@ class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   inset = input(false, { transform: booleanAttribute });
   placeholder = input<string>();
   format = input<string>();
-  min = input<TSdTextfieldTypes[K]>();
-  max = input<TSdTextfieldTypes[K]>();
+  min = input<SdTextfieldTypes[K]>();
+  max = input<SdTextfieldTypes[K]>();
   step = input<number>();
   size = input<"sm" | "lg">();
 }
@@ -102,8 +102,8 @@ class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `type` | `keyof TSdTextfieldTypes` | required | 입력 타입 (number, text, password, color, email, format, date, month, year, datetime, datetime-sec, time, time-sec) |
-| `value` | `TSdTextfieldTypes[K] \| undefined` | - | 값 (two-way) |
+| `type` | `keyof SdTextfieldTypes` | required | 입력 타입 (number, text, password, color, email, format, date, month, year, datetime, datetime-sec, time, time-sec) |
+| `value` | `SdTextfieldTypes[K] \| undefined` | - | 값 (two-way) |
 | `disabled` | `boolean` | `false` | 비활성화 |
 | `readonly` | `boolean` | `false` | 읽기 전용 |
 | `required` | `boolean` | `false` | 필수 |
@@ -112,13 +112,13 @@ class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
 | `inset` | `boolean` | `false` | 삽입 스타일 |
 | `format` | `string \| undefined` | - | format 타입에서 사용할 포맷 문자열 |
 
-### `SdTextareaControl`
+### `SdTextarea`
 
 멀티라인 텍스트 입력 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-textarea" })
-class SdTextareaControl {
+class SdTextarea {
   value = model<string>();
   disabled = input(false, { transform: booleanAttribute });
   readonly = input(false, { transform: booleanAttribute });
@@ -128,13 +128,13 @@ class SdTextareaControl {
 }
 ```
 
-### `SdNumpadControl`
+### `SdNumpad`
 
 숫자 패드 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-numpad" })
-class SdNumpadControl {
+class SdNumpad {
   value = model<number | undefined>();
   required = input(false, { transform: booleanAttribute });
   inputDisabled = input(false, { transform: booleanAttribute });
@@ -143,16 +143,16 @@ class SdNumpadControl {
 }
 ```
 
-### `SdRangeControl`
+### `SdRange`
 
 범위 슬라이더 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-range" })
-class SdRangeControl<K extends keyof TSdTextfieldTypes> {
+class SdRange<K extends keyof SdTextfieldTypes> {
   type = input.required<K>();
-  from = model<TSdTextfieldTypes[K] | undefined>();
-  to = model<TSdTextfieldTypes[K] | undefined>();
+  from = model<SdTextfieldTypes[K] | undefined>();
+  to = model<SdTextfieldTypes[K] | undefined>();
   required = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
 }
@@ -173,35 +173,40 @@ class SdDateRangePicker {
 
 ## Choice
 
-### `SdStatePresetControl`
+### `SdStatePreset`
 
 상태 프리셋 저장/불러오기 컴포넌트. 사용자 설정을 저장하고 복원한다.
 
 ```typescript
 @Component({ selector: "sd-state-preset" })
-class SdStatePresetControl {
+class SdStatePreset {
   key = input.required<string>();
 }
 ```
 
-### `ISdStatePreset`
+### `SdStatePresetDef`
 
 ```typescript
-interface ISdStatePreset {
+interface SdStatePresetDef {
   name: string;
-  data: Record<string, any>;
+  state: any;
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | 프리셋 이름 |
+| `state` | `any` | 저장된 상태 데이터 |
+
 ## Checkbox
 
-### `SdCheckboxControl`
+### `SdCheckbox`
 
 체크박스 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-checkbox" })
-class SdCheckboxControl {
+class SdCheckbox {
   value = model(false);
   icon = input(tablerCheck);
   radio = input(false, { transform: booleanAttribute });
@@ -220,13 +225,13 @@ class SdCheckboxControl {
 | `inline` | `boolean` | `false` | 인라인 표시 |
 | `inset` | `boolean` | `false` | 삽입 스타일 |
 
-### `SdSwitchControl`
+### `SdSwitch`
 
 스위치 토글 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-switch" })
-class SdSwitchControl {
+class SdSwitch {
   value = model(false);
   disabled = input(false, { transform: booleanAttribute });
   inline = input(false, { transform: booleanAttribute });
@@ -234,25 +239,25 @@ class SdSwitchControl {
 }
 ```
 
-### `SdCheckboxGroupControl`
+### `SdCheckboxGroup`
 
 체크박스 그룹 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-checkbox-group" })
-class SdCheckboxGroupControl<T> {
+class SdCheckboxGroup<T> {
   value = model<T[]>([]);
   disabled = input(false, { transform: booleanAttribute });
 }
 ```
 
-### `SdCheckboxGroupItemControl`
+### `SdCheckboxGroupItem`
 
 체크박스 그룹 항목.
 
 ```typescript
 @Component({ selector: "sd-checkbox-group-item" })
-class SdCheckboxGroupItemControl<T> {
+class SdCheckboxGroupItem<T> {
   value = input.required<T>();
   inline = input(false, { transform: booleanAttribute });
 }
@@ -260,13 +265,13 @@ class SdCheckboxGroupItemControl<T> {
 
 ## Editor
 
-### `SdTiptapEditorControl`
+### `SdTiptapEditor`
 
 TipTap 기반 리치 텍스트 에디터.
 
 ```typescript
 @Component({ selector: "sd-tiptap-editor" })
-class SdTiptapEditorControl {
+class SdTiptapEditor {
   value = model<string>();
   disabled = input(false, { transform: booleanAttribute });
   readonly = input(false, { transform: booleanAttribute });
@@ -276,14 +281,14 @@ class SdTiptapEditorControl {
 
 ## Select
 
-### `SdSelectControl`
+### `SdSelect`
 
 드롭다운 선택 컴포넌트. single/multi/multi-with-header 모드를 지원한다.
 
 ```typescript
 @Component({ selector: "sd-select" })
-class SdSelectControl<T, M extends keyof TSelectModeValue<T>> {
-  value = model<TSelectModeValue<T>[M]>();
+class SdSelect<T, M extends keyof SelectModeValue<T>> {
+  value = model<SelectModeValue<T>[M]>();
   selectMode = input("single" as M);
   disabled = input(false, { transform: booleanAttribute });
   inline = input(false, { transform: booleanAttribute });
@@ -294,47 +299,47 @@ class SdSelectControl<T, M extends keyof TSelectModeValue<T>> {
 }
 ```
 
-### `TSelectModeValue`
+### `SelectModeValue`
 
 ```typescript
-type TSelectModeValue<T> = {
+type SelectModeValue<T> = {
   single: T | undefined;
   multi: T[];
   "multi-with-header": T[];
 }
 ```
 
-### `SdSelectItemControl`
+### `SdSelectItem`
 
 드롭다운 선택 항목.
 
 ```typescript
 @Component({ selector: "sd-select-item" })
-class SdSelectItemControl<T> {
+class SdSelectItem<T> {
   value = input.required<T>();
   disabled = input(false, { transform: booleanAttribute });
   hidden = input(false, { transform: booleanAttribute });
 }
 ```
 
-### `SdSelectButtonControl`
+### `SdSelectButton`
 
 버튼 스타일 선택 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-select-button" })
-class SdSelectButtonControl<T> { }
+class SdSelectButton<T> { }
 ```
 
 ## Form
 
-### `SdFormControl`
+### `SdForm`
 
 폼 래퍼 컴포넌트. submit 이벤트 처리, 유효성 검증, busy 관리.
 
 ```typescript
 @Component({ selector: "sd-form" })
-class SdFormControl { }
+class SdForm { }
 ```
 
 `<form>` 태그를 렌더링하며 submit 이벤트를 처리한다.

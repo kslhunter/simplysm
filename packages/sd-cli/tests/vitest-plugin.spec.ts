@@ -58,7 +58,7 @@ describe("angularVitestPlugin", () => {
   it("compiles @Directive source and serves ɵdir runtime code", async () => {
     const filePath = resolve(
       workspaceRoot,
-      "packages/angular/src/core/directives/sd-events.directive.ts",
+      "packages/angular/src/core/directives/sd-events.ts",
     );
     const result = await callTransform(plugin, "", filePath);
 

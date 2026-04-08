@@ -1,16 +1,16 @@
 # Provider Types
 
-## `TSdAppStructureItem`
+## `AppStructureItem`
 
 앱 구조 항목. 그룹(children 보유) 또는 리프(perms/url 보유) 중 하나.
 
 ```typescript
-type TSdAppStructureItem<TModule = unknown> =
-  | ISdAppStructureGroupItem<TModule>
-  | ISdAppStructureLeafItem<TModule>;
+type AppStructureItem<TModule = unknown> =
+  | AppStructureGroupItem<TModule>
+  | AppStructureLeafItem<TModule>;
 ```
 
-### `ISdAppStructureGroupItem`
+### `AppStructureGroupItem`
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -19,9 +19,9 @@ type TSdAppStructureItem<TModule = unknown> =
 | `modules` | `TModule[] \| undefined` | 모듈 제한 (OR 조건) |
 | `requiredModules` | `TModule[] \| undefined` | 필수 모듈 (AND 조건) |
 | `icon` | `string \| undefined` | 아이콘 |
-| `children` | `TSdAppStructureItem<TModule>[]` | 자식 항목 |
+| `children` | `AppStructureItem<TModule>[]` | 자식 항목 |
 
-### `ISdAppStructureLeafItem`
+### `AppStructureLeafItem`
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -30,12 +30,12 @@ type TSdAppStructureItem<TModule = unknown> =
 | `modules` | `TModule[] \| undefined` | 모듈 제한 (OR 조건) |
 | `requiredModules` | `TModule[] \| undefined` | 필수 모듈 (AND 조건) |
 | `perms` | `("use" \| "edit")[] \| undefined` | 권한 목록 |
-| `subPerms` | `ISdAppStructureSubPermission<TModule>[] \| undefined` | 하위 권한 |
+| `subPerms` | `AppStructureSubPermission<TModule>[] \| undefined` | 하위 권한 |
 | `icon` | `string \| undefined` | 아이콘 |
 | `url` | `string \| undefined` | 외부 URL |
 | `isNotMenu` | `boolean \| undefined` | 메뉴에서 제외 여부 |
 
-### `ISdAppStructureSubPermission`
+### `AppStructureSubPermission`
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -45,17 +45,17 @@ type TSdAppStructureItem<TModule = unknown> =
 | `requiredModules` | `TModule[] \| undefined` | 필수 모듈 |
 | `perms` | `("use" \| "edit")[]` | 권한 목록 |
 
-## `ISdMenu`
+## `SdMenu`
 
 메뉴 트리 노드.
 
 ```typescript
-interface ISdMenu {
+interface SdMenu {
   title: string;
   codeChain: string[];
   url?: string;
   icon?: string;
-  children?: ISdMenu[];
+  children?: SdMenu[];
 }
 ```
 
@@ -65,14 +65,14 @@ interface ISdMenu {
 | `codeChain` | `string[]` | 코드 체인 (루트부터 현재까지) |
 | `url` | `string \| undefined` | 외부 URL |
 | `icon` | `string \| undefined` | 아이콘 |
-| `children` | `ISdMenu[] \| undefined` | 하위 메뉴 |
+| `children` | `SdMenu[] \| undefined` | 하위 메뉴 |
 
-## `ISdFlatMenu`
+## `SdFlatMenu`
 
 플랫 메뉴 항목 (리프만).
 
 ```typescript
-interface ISdFlatMenu<TModule = unknown> {
+interface SdFlatMenu<TModule = unknown> {
   titleChain: string[];
   codeChain: string[];
   modulesChain: TModule[][];
@@ -85,17 +85,17 @@ interface ISdFlatMenu<TModule = unknown> {
 | `codeChain` | `string[]` | 코드 체인 |
 | `modulesChain` | `TModule[][]` | 모듈 체인 |
 
-## `ISdPermission`
+## `SdPermission`
 
 권한 트리 노드.
 
 ```typescript
-interface ISdPermission<TModule = unknown> {
+interface SdPermission<TModule = unknown> {
   title: string;
   codeChain: string[];
   modules: TModule[] | undefined;
   perms: ("use" | "edit")[] | undefined;
-  children: ISdPermission<TModule>[] | undefined;
+  children: SdPermission<TModule>[] | undefined;
 }
 ```
 
@@ -105,14 +105,14 @@ interface ISdPermission<TModule = unknown> {
 | `codeChain` | `string[]` | 코드 체인 |
 | `modules` | `TModule[] \| undefined` | 모듈 제한 |
 | `perms` | `("use" \| "edit")[] \| undefined` | 권한 목록 |
-| `children` | `ISdPermission<TModule>[] \| undefined` | 하위 권한 |
+| `children` | `SdPermission<TModule>[] \| undefined` | 하위 권한 |
 
-## `ISdFlatPermission`
+## `FlatPermission`
 
 플랫 권한 항목.
 
 ```typescript
-interface ISdFlatPermission<TModule = unknown> {
+interface FlatPermission<TModule = unknown> {
   titleChain: string[];
   codeChain: string[];
   modulesChain: TModule[][];
@@ -125,12 +125,12 @@ interface ISdFlatPermission<TModule = unknown> {
 | `codeChain` | `string[]` | 코드 체인 |
 | `modulesChain` | `TModule[][]` | 모듈 체인 |
 
-## `ISharedDataBase`
+## `SharedDataBase`
 
 공유 데이터 기본 인터페이스. 모든 공유 데이터 항목이 구현해야 한다.
 
 ```typescript
-interface ISharedDataBase<TKey extends string | number> {
+interface SharedDataBase<TKey extends string | number> {
   __valueKey: TKey;
   __searchText: string;
   __isHidden: boolean;
@@ -145,12 +145,12 @@ interface ISharedDataBase<TKey extends string | number> {
 | `__isHidden` | `boolean` | 숨김 여부 |
 | `__parentKey` | `TKey \| undefined` | 부모 키 (트리 구조용) |
 
-## `ISharedDataInfo`
+## `SharedDataInfo`
 
 공유 데이터 등록 정보.
 
 ```typescript
-interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
+interface SharedDataInfo<T extends SharedDataBase<string | number>> {
   serviceKey: string;
   getter: (changeKeys?: (string | number)[]) => Promise<T[]>;
   filter?: unknown;
@@ -170,7 +170,7 @@ interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
 공유 데이터 핸들. `getHandle()`이 반환하는 객체.
 
 ```typescript
-interface SharedDataHandle<T extends ISharedDataBase<string | number>> {
+interface SharedDataHandle<T extends SharedDataBase<string | number>> {
   items: Signal<T[]>;
   get(key: T["__valueKey"] | undefined): T | undefined;
 }
@@ -181,12 +181,12 @@ interface SharedDataHandle<T extends ISharedDataBase<string | number>> {
 | `items` | `Signal<T[]>` | 데이터 항목 signal |
 | `get(key)` | `(key) => T \| undefined` | 키로 항목 조회 |
 
-## `ISdModal`
+## `SdModalContentDef`
 
 모달 컴포넌트가 구현해야 하는 인터페이스.
 
 ```typescript
-interface ISdModal<O> {
+interface SdModalContentDef<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
   actionTplRef?: TemplateRef<any>;
@@ -201,15 +201,15 @@ interface ISdModal<O> {
 | `actionTplRef` | `TemplateRef<any> \| undefined` | 모달 헤더 액션 영역 템플릿 |
 | `_optionalModalInputs` | `string \| undefined` | optional로 취급할 input 키 목록 (리터럴 타입) |
 
-## `ISdModalInfo`
+## `SdModalInfo`
 
 모달 생성 시 전달하는 정보.
 
 ```typescript
-interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
+interface SdModalInfo<T extends SdModalContentDef<any>, X extends keyof any = ""> {
   title: string;
   type: Type<T>;
-  inputs: TWithOptional<Omit<TDirectiveInputSignals<T>, TSdModalExcludeKeys | X>, ...>;
+  inputs: WithOptional<Omit<DirectiveInputSignals<T>, SdModalExcludeKeys | X>, ...>;
 }
 ```
 
@@ -219,12 +219,12 @@ interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
 | `type` | `Type<T>` | 모달 컴포넌트 타입 |
 | `inputs` | `object` | 컴포넌트 inputs (initialized, close, actionTplRef 제외) |
 
-## `ISdModalOptions`
+## `SdModalOptions`
 
 모달 옵션.
 
 ```typescript
-interface ISdModalOptions {
+interface SdModalOptions {
   key?: string;
   hideHeader?: boolean;
   hideCloseButton?: boolean;
@@ -263,51 +263,51 @@ interface ISdModalOptions {
 | `headerStyle` | `string \| undefined` | 헤더 인라인 스타일 |
 | `noFirstControlFocusing` | `boolean \| undefined` | 첫 번째 컨트롤 자동 포커스 비활성화 |
 
-## `ISdToast`
+## `SdToastContentDef`
 
 커스텀 토스트 컴포넌트가 구현해야 하는 인터페이스.
 
 ```typescript
-interface ISdToast<O> {
+interface SdToastContentDef<O> {
   close: OutputEmitterRef<O | undefined>;
 }
 ```
 
-## `ISdToastInput`
+## `SdToastInput`
 
 커스텀 토스트 생성 입력.
 
 ```typescript
-interface ISdToastInput<T extends ISdToast<any>> {
+interface SdToastInput<T extends SdToastContentDef<any>> {
   type: Type<T>;
-  inputs: Omit<TDirectiveInputSignals<T>, "close">;
+  inputs: Omit<DirectiveInputSignals<T>, "close">;
 }
 ```
 
-## `TSdToastSeverity`
+## `SdToastSeverity`
 
 ```typescript
-type TSdToastSeverity = "info" | "success" | "warning" | "danger";
+type SdToastSeverity = "info" | "success" | "warning" | "danger";
 ```
 
-## `TSdToastTheme`
+## `SdToastTheme`
 
 ```typescript
-type TSdToastTheme = "primary" | "secondary" | TSdToastSeverity | "gray" | "blue-gray";
+type SdToastTheme = "primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray";
 ```
 
-## `TSdBusyType`
+## `SdBusyType`
 
 ```typescript
-type TSdBusyType = "spinner" | "bar" | "cube";
+type SdBusyType = "spinner" | "bar" | "cube";
 ```
 
-## `ISdPrint`
+## `SdPrint`
 
 인쇄 컴포넌트가 구현해야 하는 인터페이스.
 
 ```typescript
-interface ISdPrint {
+interface SdPrint {
   initialized: Signal<boolean>;
   readonly _optionalPrintInputs?: string;
 }
@@ -318,23 +318,23 @@ interface ISdPrint {
 | `initialized` | `Signal<boolean>` | 초기화 완료 여부 (true 될 때까지 대기 후 인쇄) |
 | `_optionalPrintInputs` | `string \| undefined` | optional로 취급할 input 키 목록 |
 
-## `ISdPrintInput`
+## `SdPrintInput`
 
 인쇄 생성 입력.
 
 ```typescript
-interface ISdPrintInput<T, X extends keyof any = ""> {
+interface SdPrintInput<T, X extends keyof any = ""> {
   type: Type<T>;
-  inputs: TWithOptional<Omit<TDirectiveInputSignals<T>, "_optionalPrintInputs" | X>, ...>;
+  inputs: WithOptional<Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>, ...>;
 }
 ```
 
-## `ISelectModalOutputResult`
+## `SelectModalOutputResult`
 
 모달 선택 결과.
 
 ```typescript
-interface ISelectModalOutputResult<T> {
+interface SelectModalOutputResult<T> {
   selectedItemKeys: any[];
   selectedItems: T[];
 }

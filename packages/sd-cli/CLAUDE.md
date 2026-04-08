@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 67개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 71개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -20,7 +20,8 @@ src/
 ├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, publish, device, replace-deps)
 ├── orchestrators/         ← 커맨드-엔진 조율
 │   ├── BuildOrchestrator.ts     ← 프로덕션 빌드 (일회성)
-│   └── DevWatchOrchestrator.ts  ← watch/dev 모드 (상시 감시)
+│   ├── DevWatchOrchestrator.ts  ← watch/dev 모드 (상시 감시)
+│   └── TypecheckOrchestrator.ts ← TypeScript 타입체크 (typecheck/check 커맨드 공용)
 ├── engines/               ← 빌드 엔진 추상화
 │   ├── types.ts           ← BuildEngine 인터페이스, PackageInfo, EngineResult
 │   ├── BaseEngine.ts      ← 템플릿 메서드 추상 기반 클래스 (TscEngine, NgtscEngine, ServerEsbuildEngine 공유)
@@ -56,6 +57,7 @@ src/
     ├── vite-config.ts           ← Vite 설정 생성
     ├── vite-scope-watch-plugin.ts ← sdScopeWatchPlugin (replaceDeps dist/ 감시 → Vite HMR 트리거)
     ├── scss-compiler.ts         ← sass 컴파일 (compileScssString, compileScssFile)
+    ├── lint-core.ts             ← ESLint 실행 핵심 로직 (LintOptions, runLint)
     ├── lint-with-program.ts     ← ESLint + ts.Program 통합 실행
     ├── lint-utils.ts            ← runLintInWorker (lint Worker 유틸)
     ├── rebuild-manager.ts       ← RebuildManager 구현
@@ -73,6 +75,7 @@ src/
     ├── copy-src.ts              ← copySrc 패턴에 따른 src→dist 파일 복사
     ├── engine-stop.ts           ← 엔진 중지 유틸리티
     ├── replace-deps.ts          ← replaceDeps 심링크 처리
+    ├── server-production-files.ts ← 서버 프로덕션 외부 모듈 수집 및 파일 복사
     ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
     ├── generate-pwa-icons.ts    ← PWA 아이콘 생성 (sharp 사용)
     ├── vite-pwa-plugin.ts       ← sdPwaPlugin (PWA manifest, service worker, 아이콘 생성 Vite 플러그인)

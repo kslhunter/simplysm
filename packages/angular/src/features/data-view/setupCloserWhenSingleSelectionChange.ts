@@ -1,11 +1,11 @@
 import { type OutputEmitterRef, type Signal, effect } from "@angular/core";
-import type { ISelectModalOutputResult } from "../../core/types/select-modal-output-result";
+import type { SelectModalOutputResult } from "../../core/types/select-modal-output-result";
 
 export function setupCloserWhenSingleSelectionChange<TItem, TKey>(options: {
   selectedItemKeys: Signal<TKey[]>;
   selectedItems: Signal<TItem[]>;
   selectMode: () => "single" | "multi" | undefined;
-  close: OutputEmitterRef<ISelectModalOutputResult<TItem>>;
+  close: OutputEmitterRef<SelectModalOutputResult<TItem>>;
 }): void {
   let initialized = false;
 

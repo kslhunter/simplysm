@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { useSortingManager, type ISortingDef } from "../../../src/core/utils/useSortingManager";
+import { useSortingManager, type SortingDef } from "../../../src/core/utils/useSortingManager";
 
-interface IItem {
+interface Item {
   name: string;
   age: number;
 }
@@ -11,7 +11,7 @@ interface IItem {
 describe("useSortingManager", () => {
   it("toggle: 미정렬 → 오름차순", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([]);
+    const sorts = signal<SortingDef[]>([]);
     const manager = useSortingManager({ sorts });
 
     manager.toggle("name", false);
@@ -20,7 +20,7 @@ describe("useSortingManager", () => {
 
   it("toggle: 오름차순 → 내림차순", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: false }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: false }]);
     const manager = useSortingManager({ sorts });
 
     manager.toggle("name", false);
@@ -29,7 +29,7 @@ describe("useSortingManager", () => {
 
   it("toggle: 내림차순 → 정렬 해제", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: true }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: true }]);
     const manager = useSortingManager({ sorts });
 
     manager.toggle("name", false);
@@ -38,7 +38,7 @@ describe("useSortingManager", () => {
 
   it("toggle (multiple=true): Shift+클릭으로 다중 정렬 추가", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: false }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: false }]);
     const manager = useSortingManager({ sorts });
 
     manager.toggle("age", true);
@@ -50,7 +50,7 @@ describe("useSortingManager", () => {
 
   it("toggle (multiple=true): 기존 다중 정렬 컬럼을 내림차순으로", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([
+    const sorts = signal<SortingDef[]>([
       { key: "name", desc: false },
       { key: "age", desc: false },
     ]);
@@ -65,7 +65,7 @@ describe("useSortingManager", () => {
 
   it("toggle (multiple=true): 다중 정렬에서 컬럼 제거", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([
+    const sorts = signal<SortingDef[]>([
       { key: "name", desc: false },
       { key: "age", desc: true },
     ]);
@@ -77,10 +77,10 @@ describe("useSortingManager", () => {
 
   it("sort: 오름차순 정렬", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: false }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: false }]);
     const manager = useSortingManager({ sorts });
 
-    const items: IItem[] = [
+    const items: Item[] = [
       { name: "Charlie", age: 30 },
       { name: "Alice", age: 25 },
       { name: "Bob", age: 35 },
@@ -92,10 +92,10 @@ describe("useSortingManager", () => {
 
   it("sort: 내림차순 정렬", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: true }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: true }]);
     const manager = useSortingManager({ sorts });
 
-    const items: IItem[] = [
+    const items: Item[] = [
       { name: "Alice", age: 25 },
       { name: "Charlie", age: 30 },
       { name: "Bob", age: 35 },
@@ -107,13 +107,13 @@ describe("useSortingManager", () => {
 
   it("sort: 다중 정렬 (이름 오름, 나이 오름)", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([
+    const sorts = signal<SortingDef[]>([
       { key: "name", desc: false },
       { key: "age", desc: false },
     ]);
     const manager = useSortingManager({ sorts });
 
-    const items: IItem[] = [
+    const items: Item[] = [
       { name: "Alice", age: 30 },
       { name: "Alice", age: 25 },
       { name: "Bob", age: 20 },
@@ -129,10 +129,10 @@ describe("useSortingManager", () => {
 
   it("sort: 정렬 없으면 원본 그대로", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([]);
+    const sorts = signal<SortingDef[]>([]);
     const manager = useSortingManager({ sorts });
 
-    const items: IItem[] = [
+    const items: Item[] = [
       { name: "Charlie", age: 30 },
       { name: "Alice", age: 25 },
     ];
@@ -143,7 +143,7 @@ describe("useSortingManager", () => {
 
   it("defMap: 단일 정렬이면 indexText가 undefined", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: false }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: false }]);
     const manager = useSortingManager({ sorts });
 
     const map = manager.defMap();
@@ -153,7 +153,7 @@ describe("useSortingManager", () => {
 
   it("defMap: 다중 정렬이면 indexText가 순서 번호", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([
+    const sorts = signal<SortingDef[]>([
       { key: "name", desc: false },
       { key: "age", desc: true },
     ]);
@@ -166,7 +166,7 @@ describe("useSortingManager", () => {
 
   it("sort: null 값은 앞으로 정렬", () => {
     TestBed.configureTestingModule({});
-    const sorts = signal<ISortingDef[]>([{ key: "name", desc: false }]);
+    const sorts = signal<SortingDef[]>([{ key: "name", desc: false }]);
     const manager = useSortingManager({ sorts });
 
     const items = [

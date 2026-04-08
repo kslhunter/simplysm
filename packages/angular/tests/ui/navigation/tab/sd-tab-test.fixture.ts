@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
-import { SdTabControl } from "../../../../src/ui/navigation/tab/sd-tab.control";
-import { SdTabItemControl } from "../../../../src/ui/navigation/tab/sd-tab-item.control";
+import { SdTab } from "../../../../src/ui/navigation/tab/sd-tab";
+import { SdTabItem } from "../../../../src/ui/navigation/tab/sd-tab-item";
 
 @Component({
   selector: "sd-tab-click-test",
@@ -11,7 +11,7 @@ import { SdTabItemControl } from "../../../../src/ui/navigation/tab/sd-tab-item.
     </sd-tab>
   `,
   standalone: true,
-  imports: [SdTabControl, SdTabItemControl],
+  imports: [SdTab, SdTabItem],
 })
 export class SdTabClickTest {
   value = signal<string | undefined>(undefined);
@@ -26,7 +26,7 @@ export class SdTabClickTest {
     </sd-tab>
   `,
   standalone: true,
-  imports: [SdTabControl, SdTabItemControl],
+  imports: [SdTab, SdTabItem],
 })
 export class SdTabReclickTest {
   value = signal<string>("A");
@@ -41,7 +41,7 @@ export class SdTabReclickTest {
     </sd-tab>
   `,
   standalone: true,
-  imports: [SdTabControl, SdTabItemControl],
+  imports: [SdTab, SdTabItem],
 })
 export class SdTabSelectedStyleTest {
   value = signal<string>("A");

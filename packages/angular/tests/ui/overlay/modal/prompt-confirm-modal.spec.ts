@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { ApplicationRef } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
-import { SdPromptModalControl } from "../../../../src/ui/overlay/modal/sd-prompt-modal.control";
-import { SdConfirmModalControl } from "../../../../src/ui/overlay/modal/sd-confirm-modal.control";
+import { SdPromptModal } from "../../../../src/ui/overlay/modal/sd-prompt-modal";
+import { SdConfirmModal } from "../../../../src/ui/overlay/modal/sd-confirm-modal";
 import { SdModalProviderTestHost } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
 
@@ -21,7 +21,7 @@ function getModalInBody(): HTMLElement | null {
   return document.body.querySelector("sd-modal");
 }
 
-describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
+describe("Feature 5.3 Slice 2: SdPromptModal", () => {
   // Unit: 프롬프트 모달이 SdModalProvider를 통해 열리고 message가 표시된다
   it("showAsync로 프롬프트 모달이 열리고 message가 표시된다", async () => {
     const fixture = TestBed.configureTestingModule({
@@ -32,7 +32,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "이름을 입력하세요" },
     });
 
@@ -62,7 +62,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "이름을 입력하세요" },
     });
 
@@ -95,7 +95,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "이름을 입력하세요" },
     });
 
@@ -120,7 +120,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "이름을 입력하세요" },
     });
 
@@ -144,7 +144,7 @@ describe("Feature 5.3 Slice 2: SdPromptModalControl", () => {
   });
 });
 
-describe("Feature 5.3 Slice 2: SdConfirmModalControl", () => {
+describe("Feature 5.3 Slice 2: SdConfirmModal", () => {
   // Unit: 확인 모달이 열리고 message가 표시된다
   it("showAsync로 확인 모달이 열리고 message가 표시된다", async () => {
     const fixture = TestBed.configureTestingModule({
@@ -155,7 +155,7 @@ describe("Feature 5.3 Slice 2: SdConfirmModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "확인",
-      type: SdConfirmModalControl,
+      type: SdConfirmModal,
       inputs: { message: "삭제하시겠습니까?" },
     });
 
@@ -185,7 +185,7 @@ describe("Feature 5.3 Slice 2: SdConfirmModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "확인",
-      type: SdConfirmModalControl,
+      type: SdConfirmModal,
       inputs: { message: "삭제하시겠습니까?" },
     });
 
@@ -210,7 +210,7 @@ describe("Feature 5.3 Slice 2: SdConfirmModalControl", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "확인",
-      type: SdConfirmModalControl,
+      type: SdConfirmModal,
       inputs: { message: "삭제하시겠습니까?" },
     });
 

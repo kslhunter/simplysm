@@ -8,23 +8,23 @@ import {
   signal,
   type ComponentRef,
 } from "@angular/core";
-import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.control";
+import { SdBusyContainer } from "../../ui/overlay/busy/sd-busy-container";
 
-export type TSdBusyType = "spinner" | "bar" | "cube";
+export type SdBusyType = "spinner" | "bar" | "cube";
 
 @Injectable({ providedIn: "root" })
 export class SdBusyProvider {
   private readonly _appRef = inject(ApplicationRef);
   private readonly _envInjector = inject(EnvironmentInjector);
 
-  type = signal<TSdBusyType>("bar");
+  type = signal<SdBusyType>("bar");
   globalBusyCount = signal(0);
 
-  private _containerRef: ComponentRef<SdBusyContainerControl> | undefined;
+  private _containerRef: ComponentRef<SdBusyContainer> | undefined;
 
-  get containerRef(): ComponentRef<SdBusyContainerControl> {
+  get containerRef(): ComponentRef<SdBusyContainer> {
     if (this._containerRef === undefined) {
-      this._containerRef = createComponent(SdBusyContainerControl, {
+      this._containerRef = createComponent(SdBusyContainer, {
         environmentInjector: this._envInjector,
       });
       this._appRef.attachView(this._containerRef.hostView);

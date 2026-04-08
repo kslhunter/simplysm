@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { SdSidebarMenuControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu.control";
+import { SdSidebarMenu } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu";
 import { MenuUnitTest } from "./sd-sidebar-menu-unit-test.fixture";
 
-describe("SdSidebarMenuControl unit", () => {
+describe("SdSidebarMenu unit", () => {
   it("rootLayout: layout 미지정 + 메뉴 2개 -> flat", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [MenuUnitTest],
@@ -18,7 +18,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     expect(ctrl.rootLayout()).toBe("flat");
   });
 
@@ -37,7 +37,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     expect(ctrl.rootLayout()).toBe("accordion");
   });
 
@@ -50,7 +50,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     expect(ctrl.rootLayout()).toBe("flat");
   });
 
@@ -63,7 +63,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Test",
       codeChain: ["mod", "pg"],
@@ -80,7 +80,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Test",
       codeChain: ["mod", "pg?a=1&b=2"],
@@ -99,7 +99,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Parent",
       codeChain: ["p"],
@@ -117,7 +117,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Ext",
       codeChain: ["ext"],
@@ -135,7 +135,7 @@ describe("SdSidebarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     // fullPageCode depends on router URL, default is ""
     const result = ctrl.getIsMenuSelected({ title: "X", codeChain: [] });
     // With empty URL, fullPageCode = "" and codeChain.join('.') = "" -> true

@@ -5,7 +5,7 @@ import {
   SdSidebarToggleTrueTest,
   SdSidebarBackdropTest,
 } from "./sd-sidebar-container-test.fixture";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 
 describe("Feature 4.3 Slice 1: Container + Sidebar 토글", () => {
   it("데스크탑에서 토글 false일 때 사이드바가 열려있다 — container에 padding-left가 있고 sidebar가 translateX 없이 표시된다", async () => {
@@ -36,7 +36,7 @@ describe("Feature 4.3 Slice 1: Container + Sidebar 토글", () => {
     const container = fixture.nativeElement.querySelector(
       "sd-sidebar-container",
     ) as HTMLElement;
-    const containerControl = fixture.debugElement.children[0].componentInstance as SdSidebarContainerControl;
+    const containerControl = fixture.debugElement.children[0].componentInstance as SdSidebarContainer;
 
     // Set toggle to true
     containerControl.toggle.set(true);
@@ -56,7 +56,7 @@ describe("Feature 4.3 Slice 1: Container + Sidebar 토글", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const containerControl = fixture.debugElement.children[0].componentInstance as SdSidebarContainerControl;
+    const containerControl = fixture.debugElement.children[0].componentInstance as SdSidebarContainer;
 
     // Set toggle=true first (backdrop visible on mobile)
     containerControl.toggle.set(true);

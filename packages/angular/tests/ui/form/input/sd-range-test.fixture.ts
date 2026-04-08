@@ -1,12 +1,12 @@
 import { Component, signal } from "@angular/core";
 import { DateOnly } from "@simplysm/core-common";
-import { SdRangeControl } from "../../../../src/ui/form/input/sd-range.control";
+import { SdRange } from "../../../../src/ui/form/input/sd-range";
 
 @Component({
   selector: "sd-range-number-test",
   template: `<sd-range [type]="'number'" [(from)]="from" [(to)]="to" />`,
   standalone: true,
-  imports: [SdRangeControl],
+  imports: [SdRange],
 })
 export class SdRangeNumberTest {
   from = signal<number | undefined>(undefined);
@@ -17,7 +17,7 @@ export class SdRangeNumberTest {
   selector: "sd-range-date-test",
   template: `<sd-range [type]="'date'" [(from)]="from" [(to)]="to" />`,
   standalone: true,
-  imports: [SdRangeControl],
+  imports: [SdRange],
 })
 export class SdRangeDateTest {
   from = signal<DateOnly | undefined>(undefined);
@@ -28,7 +28,7 @@ export class SdRangeDateTest {
   selector: "sd-range-disabled-test",
   template: `<sd-range [type]="'number'" [(from)]="from" [(to)]="to" [disabled]="true" />`,
   standalone: true,
-  imports: [SdRangeControl],
+  imports: [SdRange],
 })
 export class SdRangeDisabledTest {
   from = signal<number | undefined>(undefined);
@@ -39,7 +39,7 @@ export class SdRangeDisabledTest {
   selector: "sd-range-required-test",
   template: `<sd-range [type]="'number'" [(from)]="from" [(to)]="to" [required]="true" />`,
   standalone: true,
-  imports: [SdRangeControl],
+  imports: [SdRange],
 })
 export class SdRangeRequiredTest {
   from = signal<number | undefined>(undefined);

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 16개 스킬, 1개 rules 파일, 4개 references 파일, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 1개 rules 파일, 6개 references 파일, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -13,9 +13,9 @@ TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고,
 ```
 sd-claude/
 ├── claude/                 ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
-│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 (sd-*.md, 4개)
+│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 (sd-*.md, 6개)
 │   ├── rules/              ← Claude Code 규칙 파일 (sd-claude-rules.md, 1개)
-│   ├── skills/             ← 스킬 파일 디렉토리 (16개 스킬)
+│   ├── skills/             ← 스킬 파일 디렉토리 (17개 스킬)
 │   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
 │   │   ├── sd-claude-docs/    ← CLAUDE.md + usage 문서 동시 생성
@@ -28,6 +28,7 @@ sd-claude/
 │   │   ├── sd-outlook/        ← Outlook 메일 검색·다운로드 (Python)
 │   │   ├── sd-plan/           ← 요구명세·구현계획 작성
 │   │   ├── sd-prompt/         ← 스킬/프롬프트 파일 작성·개선
+│   │   ├── sd-refactor/       ← 리팩토링 분석 리포트 생성
 │   │   ├── sd-review/         ← 코드 리뷰 리포트 생성
 │   │   ├── sd-tdd/            ← TDD 개발
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅

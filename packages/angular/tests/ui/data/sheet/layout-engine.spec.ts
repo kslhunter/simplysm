@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { useSheetLayoutEngine } from "../../../../src/ui/data/sheet/useSheetLayoutEngine";
-import type { ISdSheetConfig } from "../../../../src/ui/data/sheet/types";
-import type { SdSheetColumnDirective } from "../../../../src/ui/data/sheet/sd-sheet-column.directive";
+import type { SdSheetConfig } from "../../../../src/ui/data/sheet/types";
+import type { SdSheetColumn } from "../../../../src/ui/data/sheet/sd-sheet-column";
 
 function mockColumn(overrides: Partial<{
   key: string;
@@ -17,7 +17,7 @@ function mockColumn(overrides: Partial<{
   ordering: number;
   cellTplRef: unknown;
   summaryTplRef: unknown;
-}>): SdSheetColumnDirective {
+}>): SdSheetColumn {
   return {
     key: signal(overrides.key ?? "col"),
     header: signal(overrides.header ?? ""),
@@ -30,16 +30,16 @@ function mockColumn(overrides: Partial<{
     ordering: signal(overrides.ordering ?? 0),
     cellTplRef: signal(overrides.cellTplRef ?? null),
     summaryTplRef: signal(overrides.summaryTplRef ?? null),
-  } as unknown as SdSheetColumnDirective;
+  } as unknown as SdSheetColumn;
 }
 
 describe("useSheetLayoutEngine", () => {
   it("단일 컬럼: columnDefs에 1개, headerDefTable에 1행 1셀", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", width: "200px" }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -54,11 +54,11 @@ describe("useSheetLayoutEngine", () => {
 
   it("hidden 컬럼은 columnDefs에서 제외된다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", hidden: false }),
       mockColumn({ key: "age", header: "나이", hidden: true }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -68,11 +68,11 @@ describe("useSheetLayoutEngine", () => {
 
   it("다중 레벨 헤더: 같은 그룹명은 colspan으로 병합된다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "col1", header: ["그룹A", "세부1"] }),
       mockColumn({ key: "col2", header: ["그룹A", "세부2"] }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -92,10 +92,10 @@ describe("useSheetLayoutEngine", () => {
 
   it("hasSummary: summaryTplRef가 있으면 true", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", summaryTplRef: {} }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -104,10 +104,10 @@ describe("useSheetLayoutEngine", () => {
 
   it("hasSummary: summaryTplRef가 없으면 false", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름" }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -116,10 +116,10 @@ describe("useSheetLayoutEngine", () => {
 
   it("config 적용: config에서 width를 오버라이드한다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", width: "200px" }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>({
+    const config = signal<SdSheetConfig | undefined>({
       columnRecord: {
         name: { width: "300px" },
       },
@@ -132,11 +132,11 @@ describe("useSheetLayoutEngine", () => {
 
   it("config 적용: config에서 hidden을 오버라이드한다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", hidden: false }),
       mockColumn({ key: "age", header: "나이", hidden: false }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>({
+    const config = signal<SdSheetConfig | undefined>({
       columnRecord: {
         age: { hidden: true },
       },
@@ -150,11 +150,11 @@ describe("useSheetLayoutEngine", () => {
 
   it("config 적용: config에서 ordering을 오버라이드한다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", ordering: 2 }),
       mockColumn({ key: "age", header: "나이", ordering: 1 }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>({
+    const config = signal<SdSheetConfig | undefined>({
       columnRecord: {
         name: { ordering: 10 },
         age: { ordering: 5 },
@@ -169,10 +169,10 @@ describe("useSheetLayoutEngine", () => {
 
   it("config 적용: config에서 fixed를 오버라이드한다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "name", header: "이름", fixed: false }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>({
+    const config = signal<SdSheetConfig | undefined>({
       columnRecord: {
         name: { fixed: true },
       },
@@ -185,12 +185,12 @@ describe("useSheetLayoutEngine", () => {
 
   it("ordering에 따라 컬럼 순서가 정렬된다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "c", header: "C", ordering: 3 }),
       mockColumn({ key: "a", header: "A", ordering: 1 }),
       mockColumn({ key: "b", header: "B", ordering: 2 }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 
@@ -199,11 +199,11 @@ describe("useSheetLayoutEngine", () => {
 
   it("단일 헤더와 다중 헤더 혼합 시 rowspan이 설정된다", () => {
     TestBed.configureTestingModule({});
-    const cols = signal<readonly SdSheetColumnDirective[]>([
+    const cols = signal<readonly SdSheetColumn[]>([
       mockColumn({ key: "col1", header: "단일" }),
       mockColumn({ key: "col2", header: ["그룹", "세부"] }),
     ]);
-    const config = signal<ISdSheetConfig | undefined>(undefined);
+    const config = signal<SdSheetConfig | undefined>(undefined);
 
     const layout = useSheetLayoutEngine({ columnControls: cols, config });
 

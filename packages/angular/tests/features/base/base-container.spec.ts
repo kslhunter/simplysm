@@ -42,7 +42,7 @@ function queryText(fixture: ReturnType<typeof createFixture>): string {
   return (fixture.nativeElement as HTMLElement).textContent.trim();
 }
 
-describe("Feature 7.1 Slice 2: SdBaseContainerControl", () => {
+describe("Feature 7.1 Slice 2: SdBaseContainer", () => {
   describe("Rule: 뷰 타입별 레이아웃 렌더링", () => {
     it("page 뷰 타입일 때 topbar-container 안에 topbar와 content가 표시된다", () => {
       setupTestBed();
@@ -155,6 +155,28 @@ describe("Feature 7.1 Slice 2: SdBaseContainerControl", () => {
       TestBed.flushEffects();
 
       expect(queryText(fixture)).toContain("구조 제목");
+    });
+  });
+
+  describe("Rule: items 미로딩 시 안전 처리", () => {
+    it("getTitleByFullCode가 throw하면 title이 빈 문자열이다", () => {
+      const mockStructure = createMockAppStructure();
+      mockStructure.getTitleByFullCode.mockImplementation(() => {
+        throw new Error("Item not found for fullCode: test");
+      });
+      TestBed.configureTestingModule({
+        imports: [BCTestHost],
+        providers: [
+          { provide: SdAppStructureProvider, useValue: mockStructure },
+          { provide: Router, useValue: { events: new Subject(), url: "/app/test" } },
+        ],
+      });
+      const fixture = createFixture();
+      fixture.componentInstance.viewType.set("page");
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(queryEl(fixture, "sd-topbar")).not.toBeNull();
     });
   });
 

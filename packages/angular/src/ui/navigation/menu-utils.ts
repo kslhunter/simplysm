@@ -1,9 +1,9 @@
-import type { ISdMenu } from "../../core/providers/sd-app-structure.types";
+import type { SdMenu } from "../../core/providers/sd-app-structure.types";
 
-export type { ISdMenu } from "../../core/providers/sd-app-structure.types";
+export type { SdMenu } from "../../core/providers/sd-app-structure.types";
 
 export function getMenuRouterLinkOption(
-  menu: ISdMenu,
+  menu: SdMenu,
 ): { link: string; queryParams: Record<string, string> | undefined } | undefined {
   if (menu.children !== undefined || menu.url != null) {
     return undefined;
@@ -24,9 +24,9 @@ export function getMenuRouterLinkOption(
 }
 
 export function getIsMenuSelected(
-  menu: ISdMenu,
+  menu: SdMenu,
   fullPageCode: string | undefined,
-  customFn?: (menu: ISdMenu) => boolean,
+  customFn?: (menu: SdMenu) => boolean,
 ): boolean {
   return customFn ? customFn(menu) : fullPageCode === menu.codeChain.join(".");
 }

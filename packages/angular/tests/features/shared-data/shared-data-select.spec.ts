@@ -5,10 +5,10 @@ import { SdModalProvider } from "../../../src/ui/overlay/modal/sd-modal.provider
 import {
   SharedDataSelectTestHost,
   item,
-  type ITestSharedItem,
+  type TestSharedItem,
 } from "./sd-shared-data-select-test.fixture";
-import { SdSharedDataSelectControl } from "../../../src/features/shared-data/sd-shared-data-select.control";
-import type { ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import { SdSharedDataSelect } from "../../../src/features/shared-data/sd-shared-data-select";
+import type { SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
 function createMockModalProvider() {
   return {
@@ -34,7 +34,7 @@ function createFixture() {
   return { fixture, host };
 }
 
-describe("SdSharedDataSelectControl", () => {
+describe("SdSharedDataSelect", () => {
   beforeEach(() => {
     setupTestBed();
   });
@@ -48,7 +48,7 @@ describe("SdSharedDataSelectControl", () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       // 초기 상태에서 searchText는 undefined (변경 없음)
       expect(ctrl.searchText()).toBeUndefined();
     });
@@ -59,7 +59,7 @@ describe("SdSharedDataSelectControl", () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       ctrl.searchText.set("test");
 
       // 드롭다운 열기
@@ -80,7 +80,7 @@ describe("SdSharedDataSelectControl", () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
 
       // 드롭다운 열기
       const selectCtrl = (ctrl as any)._selectCtrl();
@@ -115,7 +115,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set(items);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.rootDisplayItems()).toEqual(items);
     });
 
@@ -125,7 +125,7 @@ describe("SdSharedDataSelectControl", () => {
       host.filterFn.set((_item, index) => index !== 1);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.rootDisplayItems().map((i) => i.__valueKey)).toEqual([1, 3]);
     });
 
@@ -137,7 +137,7 @@ describe("SdSharedDataSelectControl", () => {
       ]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.rootDisplayItems().map((i) => i.__valueKey)).toEqual([1]);
     });
 
@@ -151,7 +151,7 @@ describe("SdSharedDataSelectControl", () => {
       host.displayOrderKeyProp.set("order");
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.rootDisplayItems().map((i) => i.__valueKey)).toEqual([2, 3, 1]);
     });
   });
@@ -167,7 +167,7 @@ describe("SdSharedDataSelectControl", () => {
       host.value.set(1);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.selectedKeys()).toEqual([1]);
     });
 
@@ -178,7 +178,7 @@ describe("SdSharedDataSelectControl", () => {
       host.value.set([1, 2]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.selectedKeys()).toEqual([1, 2]);
     });
 
@@ -186,7 +186,7 @@ describe("SdSharedDataSelectControl", () => {
       const { fixture } = createFixture();
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.selectedKeys()).toEqual([]);
     });
   });
@@ -201,7 +201,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "Alice")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.isIncludeSearchText(item(1, "Alice"), 0)).toBe(true);
     });
 
@@ -210,7 +210,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "Alice")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       ctrl.searchText.set("ali");
       expect(ctrl.isIncludeSearchText(item(1, "Alice"), 0)).toBe(true);
     });
@@ -220,7 +220,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "Alice Bob")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       ctrl.searchText.set("alice bob");
       expect(ctrl.isIncludeSearchText(item(1, "Alice Bob"), 0)).toBe(true);
 
@@ -235,7 +235,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([parent, child]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       ctrl.searchText.set("target");
       expect(ctrl.isIncludeSearchText(parent, 0)).toBe(true);
     });
@@ -251,7 +251,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "A")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemVisible(item(1, "A"), 0)).toBe(true);
     });
 
@@ -260,7 +260,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "A", { hidden: true })]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemVisible(item(1, "A", { hidden: true }), 0)).toBe(false);
     });
 
@@ -270,7 +270,7 @@ describe("SdSharedDataSelectControl", () => {
       host.value.set(1);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemVisible(item(1, "A", { hidden: true }), 0)).toBe(true);
     });
   });
@@ -285,7 +285,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "A")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemSelectable(item(1, "A"), 0, 0)).toBe(true);
     });
 
@@ -294,7 +294,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "Parent"), item(2, "Child", { parentKey: 1 })]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemSelectable(item(1, "Parent"), 0, 0)).toBe(true);
     });
 
@@ -303,7 +303,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([item(1, "Parent"), item(2, "Child", { parentKey: 1 })]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getItemSelectable(item(2, "Child", { parentKey: 1 }), 0, 1)).toBe(true);
     });
   });
@@ -321,7 +321,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([parent, child1, child2]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getChildren(parent)).toEqual([child1, child2]);
     });
 
@@ -331,7 +331,7 @@ describe("SdSharedDataSelectControl", () => {
       host.items.set([leaf, item(2, "Other")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       expect(ctrl.getChildren(leaf)).toEqual([]);
     });
   });
@@ -347,7 +347,7 @@ describe("SdSharedDataSelectControl", () => {
       host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [2], selectedItems: [] });
 
       const event = new MouseEvent("click");
@@ -366,7 +366,7 @@ describe("SdSharedDataSelectControl", () => {
       host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       mockModal.showAsync.mockResolvedValue(undefined);
 
       await ctrl.onModalButtonClick(new MouseEvent("click"));
@@ -381,7 +381,7 @@ describe("SdSharedDataSelectControl", () => {
       host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectControl<ITestSharedItem, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
       mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [1, 3], selectedItems: [] });
 
       await ctrl.onModalButtonClick(new MouseEvent("click"));

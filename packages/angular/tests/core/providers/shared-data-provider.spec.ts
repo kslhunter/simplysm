@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { ErrorHandler } from "@angular/core";
 import {
   TestSharedDataProvider,
-  type ITestUser,
+  type TestUser,
   testUser,
 } from "./sd-shared-data-test.fixture";
 import { SdServiceClientFactoryProvider } from "../../../src/core/providers/sd-service-client-factory.provider";
@@ -184,7 +184,7 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
 
   it("부분 업데이트에서 서버 key가 string이고 클라이언트 key가 number여도 매칭 성공한다", async () => {
     const { provider } = setup();
-    const initialData: ITestUser[] = [
+    const initialData: TestUser[] = [
       testUser(1, "Alice", 1),
       testUser(2, "Bob", 2),
     ];
@@ -219,8 +219,8 @@ describe("Feature 2.1: concurrent load 방지", () => {
   it("_loadAndListen 진행 중 register 후 getHandle 재호출 시 중복 로드가 발생하지 않고, 완료 후 자동 재로드한다", async () => {
     const { provider } = setup();
     let callCount = 0;
-    const data1: ITestUser[] = [testUser(1, "Old", 1)];
-    const data2: ITestUser[] = [testUser(1, "New", 1)];
+    const data1: TestUser[] = [testUser(1, "Old", 1)];
+    const data2: TestUser[] = [testUser(1, "New", 1)];
 
     // 첫 번째 getter: 느린 로드 (50ms)
     provider.register("users", {
@@ -265,7 +265,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: 데이터 등록 후 첫 조회
   it("register 후 getHandle()을 호출하면 데이터가 비동기 로드되고 SharedDataHandle이 반환된다", async () => {
     const { provider } = setup();
-    const mockData: ITestUser[] = [
+    const mockData: TestUser[] = [
       testUser(1, "Alice", 1),
       testUser(2, "Bob", 2),
     ];
@@ -287,7 +287,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("getHandle()을 다시 호출하면 기존 핸들이 반환된다 (데이터 리로드 없음)", async () => {
     const { provider } = setup();
     let callCount = 0;
-    const mockData: ITestUser[] = [testUser(1, "Alice", 1)];
+    const mockData: TestUser[] = [testUser(1, "Alice", 1)];
 
     provider.register("users", {
       serviceKey: "main",
@@ -315,7 +315,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: 키로 단건 조회
   it("handle.get(key)으로 단건 조회하면 해당 항목이 반환되고, 없으면 undefined를 반환한다", async () => {
     const { provider } = setup();
-    const mockData: ITestUser[] = [
+    const mockData: TestUser[] = [
       testUser(1, "Alice", 1),
       testUser(2, "Bob", 2),
     ];
@@ -335,8 +335,8 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: register 재호출로 getter 변경
   it("새로운 getter로 register()를 재호출하면 기존 리스너가 초기화되고 새 getter로 리로드된다", async () => {
     const { provider } = setup();
-    const oldData: ITestUser[] = [testUser(1, "Old", 1)];
-    const newData: ITestUser[] = [testUser(2, "New", 1)];
+    const oldData: TestUser[] = [testUser(1, "Old", 1)];
+    const newData: TestUser[] = [testUser(2, "New", 1)];
 
     provider.register("users", {
       serviceKey: "main",
@@ -366,8 +366,8 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   it("changeKeys 없이 이벤트가 수신되면 전체 데이터를 리로드한다", async () => {
     const { provider } = setup();
     let callCount = 0;
-    const data1: ITestUser[] = [testUser(1, "Alice", 1)];
-    const data2: ITestUser[] = [
+    const data1: TestUser[] = [testUser(1, "Alice", 1)];
+    const data2: TestUser[] = [
       testUser(1, "Alice Updated", 1),
       testUser(2, "Bob", 2),
     ];
@@ -394,7 +394,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
   // Acceptance: 부분 업데이트 이벤트
   it("changeKeys로 이벤트가 수신되면 해당 키만 교체하고 재정렬한다", async () => {
     const { provider } = setup();
-    const initialData: ITestUser[] = [
+    const initialData: TestUser[] = [
       testUser(1, "Alice", 1),
       testUser(2, "Bob", 2),
       testUser(3, "Charlie", 3),

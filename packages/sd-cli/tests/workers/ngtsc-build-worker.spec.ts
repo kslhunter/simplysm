@@ -52,7 +52,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "@Directive 데코레이터가 런타임 코드로 변환된다"
   it("transforms @Directive decorator to runtime ɵdir definition", () => {
     // dist already populated from prior test, check directive
-    const directiveJsPath = resolve(distDir, "core", "directives", "sd-events.directive.js");
+    const directiveJsPath = resolve(distDir, "core", "directives", "sd-events.js");
     expect(fs.existsSync(directiveJsPath)).toBe(true);
 
     const content = fs.readFileSync(directiveJsPath, "utf-8");

@@ -9,7 +9,7 @@ import {
   SdNumpadNoMinusTest,
   SdNumpadNoEnterTest,
 } from "./sd-numpad-test.fixture";
-import { SdNumpadControl } from "../../../../src/ui/form/input/sd-numpad.control";
+import { SdNumpad } from "../../../../src/ui/form/input/sd-numpad";
 
 // region Helper
 
@@ -24,18 +24,18 @@ function clickButton(host: HTMLElement, label: string): void {
   throw new Error(`Button "${label}" not found`);
 }
 
-function getNumpadControl(fixture: any): SdNumpadControl {
+function getNumpadControl(fixture: any): SdNumpad {
   const numpadEl = fixture.nativeElement.querySelector("sd-numpad");
   return fixture.debugElement.query(
     (de: any) => de.nativeElement === numpadEl,
-  ).componentInstance as SdNumpadControl;
+  ).componentInstance as SdNumpad;
 }
 
 // endregion
 
 // region Unit Tests: onButtonClick logic
 
-describe("SdNumpadControl.onButtonClick unit tests", () => {
+describe("SdNumpad.onButtonClick unit tests", () => {
   it("숫자 키를 누르면 text에 해당 숫자가 추가된다", () => {
     TestBed.configureTestingModule({ imports: [SdNumpadDefaultTest] });
     const fixture = TestBed.createComponent(SdNumpadDefaultTest);
@@ -145,7 +145,7 @@ describe("SdNumpadControl.onButtonClick unit tests", () => {
 
 // region Acceptance Tests: Numpad Scenarios
 
-describe("Feature 5.2 Slice 1: SdNumpadControl", () => {
+describe("Feature 5.2 Slice 1: SdNumpad", () => {
   it("Scenario: 숫자 버튼 클릭으로 텍스트 추가", () => {
     TestBed.configureTestingModule({ imports: [SdNumpadDefaultTest] });
     const fixture = TestBed.createComponent(SdNumpadDefaultTest);

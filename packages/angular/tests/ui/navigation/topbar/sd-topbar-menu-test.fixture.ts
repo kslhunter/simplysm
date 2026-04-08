@@ -1,16 +1,16 @@
 import { Component, signal } from "@angular/core";
 import { tablerHome } from "@ng-icons/tabler-icons";
-import { SdTopbarMenuControl } from "../../../../src/ui/navigation/topbar/sd-topbar-menu.control";
-import type { ISdMenu } from "../../../../src/ui/navigation/menu-utils";
+import { SdTopbarMenu } from "../../../../src/ui/navigation/topbar/sd-topbar-menu";
+import type { SdMenu } from "../../../../src/ui/navigation/menu-utils";
 
 @Component({
   selector: "sd-topbar-menu-basic-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuBasicTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "Menu 1", codeChain: ["m1"] },
     { title: "Menu 2", codeChain: ["m2"] },
     { title: "Menu 3", codeChain: ["m3"] },
@@ -21,10 +21,10 @@ export class TopbarMenuBasicTest {
   selector: "sd-topbar-menu-icon-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuIconTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "With Icon", codeChain: ["icon"], icon: tablerHome },
   ]);
 }
@@ -33,10 +33,10 @@ export class TopbarMenuIconTest {
   selector: "sd-topbar-menu-children-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuChildrenTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     {
       title: "Parent",
       codeChain: ["parent"],
@@ -58,10 +58,10 @@ export class TopbarMenuChildrenTest {
   selector: "sd-topbar-menu-url-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuUrlTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "External", codeChain: ["ext"], url: "https://example.com" },
   ]);
 }
@@ -70,10 +70,10 @@ export class TopbarMenuUrlTest {
   selector: "sd-topbar-menu-querystring-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuQueryStringTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "QS Page", codeChain: ["module", "page?key=value"] },
   ]);
 }
@@ -82,23 +82,23 @@ export class TopbarMenuQueryStringTest {
   selector: "sd-topbar-menu-custom-selected-fn-test",
   template: `<sd-topbar-menu [menus]="menus()" [getMenuIsSelectedFn]="selFn" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuCustomSelectedFnTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "Custom", codeChain: ["custom"] },
   ]);
-  selFn = (_menu: ISdMenu): boolean => true;
+  selFn = (_menu: SdMenu): boolean => true;
 }
 
 @Component({
   selector: "sd-topbar-menu-depth-test",
   template: `<sd-topbar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdTopbarMenuControl],
+  imports: [SdTopbarMenu],
 })
 export class TopbarMenuDepthTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     {
       title: "Root",
       codeChain: ["root"],

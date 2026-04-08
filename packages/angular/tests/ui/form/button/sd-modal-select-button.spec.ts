@@ -20,7 +20,7 @@ async function tick(fixture: any): Promise<void> {
   TestBed.flushEffects();
 }
 
-describe("Feature 5.3 Slice 1: SdModalSelectButtonControl", () => {
+describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
   // Acceptance: single 모드에서 모달로 항목 선택
   it("single 모드에서 검색 버튼 클릭 시 모달이 열리고, 선택 결과가 value에 반영된다", async () => {
     const fixture = TestBed.configureTestingModule({

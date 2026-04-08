@@ -1,11 +1,9 @@
 import { Component, signal } from "@angular/core";
 import { vi } from "vitest";
-import {
-  AbsSdDataSelectButton,
-  SdDataSelectButtonControl,
-} from "../../../src/features/data-view/sd-data-select-button.control";
-import type { TSdSelectModalInfo } from "../../../src/ui/form/button/sd-modal-select-button.control";
-import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-of-template.directive";
+import { SdDataSelectButton } from "../../../src/features/data-view/sd-data-select-button";
+import { SdDataSelectButtonBase } from "../../../src/features/data-view/sd-data-select-button.base";
+import type { SdSelectModalInfo } from "../../../src/ui/form/button/sd-modal-select-button";
+import { SdItemOfTemplate } from "../../../src/core/directives/sd-item-of-template";
 
 export interface TestSelectItem {
   id: number;
@@ -15,7 +13,7 @@ export interface TestSelectItem {
 @Component({
   selector: "dsb-test-host",
   standalone: true,
-  imports: [SdDataSelectButtonControl, SdItemOfTemplateDirective],
+  imports: [SdDataSelectButton, SdItemOfTemplate],
   template: `
     <sd-data-select-button>
       <ng-template [itemOf]="selectedItems()" let-item>
@@ -24,10 +22,10 @@ export interface TestSelectItem {
     </sd-data-select-button>
   `,
 })
-export class DSBTestHost extends AbsSdDataSelectButton<TestSelectItem, number> {
+export class DSBTestHost extends SdDataSelectButtonBase<TestSelectItem, number> {
   loadFn = vi.fn<(keys: number[]) => Promise<TestSelectItem[]>>();
 
-  modal = signal<TSdSelectModalInfo<any>>({
+  modal = signal<SdSelectModalInfo<any>>({
     title: "테스트 선택",
     type: class {} as any,
     inputs: {},

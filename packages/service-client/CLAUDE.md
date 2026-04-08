@@ -141,4 +141,8 @@ const result = await connector.connect(
 
 ## Testing
 
-패키지 내부에 단위 테스트 디렉토리는 없다. 통합 테스트는 모노레포 루트의 `tests/service/`에 위치하며, `ServiceClient`의 서버 연결·RPC 호출을 검증한다.
+**프레임워크**: Vitest
+
+패키지 내부 단위 테스트: `tests/protocol/postmessage-compat.spec.ts` — Worker 미사용 fallback 환경에서 `ClientProtocolWrapper`의 encode/decode 라운드트립 검증.
+
+통합 테스트는 모노레포 루트의 `tests/service/`에 위치하며, `ServiceClient`의 서버 연결·RPC 호출을 검증한다.

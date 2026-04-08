@@ -1,6 +1,6 @@
 import { Component, viewChild } from "@angular/core";
-import { SdTopbarControl } from "../../../../src/ui/navigation/topbar/sd-topbar.control";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdTopbar } from "../../../../src/ui/navigation/topbar/sd-topbar";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 
 @Component({
   selector: "sd-topbar-unit-with-sidebar",
@@ -10,7 +10,7 @@ import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdTopbarControl],
+  imports: [SdSidebarContainer, SdTopbar],
 })
 export class TopbarUnitWithSidebarTest {}
 
@@ -21,16 +21,16 @@ export class TopbarUnitWithSidebarTest {}
     <sd-topbar [sidebarContainer]="sc">Content</sd-topbar>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdTopbarControl],
+  imports: [SdSidebarContainer, SdTopbar],
 })
 export class TopbarUnitExternalSidebarTest {
-  sidebarContainer = viewChild.required<SdSidebarContainerControl>("sc");
+  sidebarContainer = viewChild.required<SdSidebarContainer>("sc");
 }
 
 @Component({
   selector: "sd-topbar-unit-no-sidebar",
   template: `<sd-topbar>Content</sd-topbar>`,
   standalone: true,
-  imports: [SdTopbarControl],
+  imports: [SdTopbar],
 })
 export class TopbarUnitNoSidebarTest {}

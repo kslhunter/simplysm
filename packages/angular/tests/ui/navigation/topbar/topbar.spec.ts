@@ -5,10 +5,10 @@ import {
   TopbarWithExternalSidebarTest,
   TopbarNoSidebarTest,
 } from "./sd-topbar-test.fixture";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 
-describe("Feature 4.4 Slice 1: SdTopbarControl 사이드바 토글", () => {
-  it("SdSidebarContainerControl이 부모에 있으면 토글 버튼이 표시된다", async () => {
+describe("Feature 4.4 Slice 1: SdTopbar 사이드바 토글", () => {
+  it("SdSidebarContainer이 부모에 있으면 토글 버튼이 표시된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarWithSidebarTest],
     }).createComponent(TopbarWithSidebarTest);
@@ -55,7 +55,7 @@ describe("Feature 4.4 Slice 1: SdTopbarControl 사이드바 토글", () => {
     await fixture.whenStable();
 
     const sidebarContainer = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     expect(sidebarContainer.toggle()).toBe(false);
 
     const toggleBtn = fixture.nativeElement.querySelector(

@@ -7,26 +7,26 @@ import {
   type Signal,
   type Type,
 } from "@angular/core";
-import type { TDirectiveInputSignals, TWithOptional } from "../utils/TDirectiveInputSignals";
+import type { DirectiveInputSignals, WithOptional } from "../utils/directive-input-signals";
 import { SdBusyProvider } from "./sd-busy.provider";
 import { wait } from "@simplysm/core-common";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 
-export interface ISdPrint {
+export interface SdPrint {
   initialized: Signal<boolean>;
   readonly _optionalPrintInputs?: string;
 }
 
-type TSdPrintOptionalKeys<T> = T extends { _optionalPrintInputs?: infer K extends string }
+type SdPrintOptionalKeys<T> = T extends { _optionalPrintInputs?: infer K extends string }
   ? K
   : never;
 
-export interface ISdPrintInput<T, X extends keyof any = ""> {
+export interface SdPrintInput<T, X extends keyof any = ""> {
   type: Type<T>;
-  inputs: TWithOptional<
-    Omit<TDirectiveInputSignals<T>, "_optionalPrintInputs" | X>,
-    TSdPrintOptionalKeys<T> & keyof Omit<TDirectiveInputSignals<T>, "_optionalPrintInputs" | X>
+  inputs: WithOptional<
+    Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>,
+    SdPrintOptionalKeys<T> & keyof Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>
   >;
 }
 
@@ -35,8 +35,8 @@ export class SdPrintProvider {
   private readonly _appRef = inject(ApplicationRef);
   private readonly _sdBusy = inject(SdBusyProvider);
 
-  async printAsync<T extends ISdPrint>(
-    template: ISdPrintInput<T>,
+  async printAsync<T extends SdPrint>(
+    template: SdPrintInput<T>,
     options?: {
       size?: string;
       margin?: string;
@@ -90,8 +90,8 @@ export class SdPrintProvider {
     }
   }
 
-  async getPdfBufferAsync<T extends ISdPrint>(
-    template: ISdPrintInput<T>,
+  async getPdfBufferAsync<T extends SdPrint>(
+    template: SdPrintInput<T>,
     options?: {
       orientation?: "portrait" | "landscape";
       pageSize?: string;

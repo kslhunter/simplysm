@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
-import { SdSidebarControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
+import { SdSidebar } from "../../../../src/ui/navigation/sidebar/sd-sidebar";
 
 @Component({
   selector: "sd-sidebar-toggle-false-test",
@@ -11,7 +11,7 @@ import { SdSidebarControl } from "../../../../src/ui/navigation/sidebar/sd-sideb
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdSidebarControl],
+  imports: [SdSidebarContainer, SdSidebar],
 })
 export class SdSidebarToggleFalseTest {}
 
@@ -24,7 +24,7 @@ export class SdSidebarToggleFalseTest {}
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdSidebarControl],
+  imports: [SdSidebarContainer, SdSidebar],
 })
 export class SdSidebarToggleTrueTest {}
 
@@ -37,6 +37,6 @@ export class SdSidebarToggleTrueTest {}
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdSidebarControl],
+  imports: [SdSidebarContainer, SdSidebar],
 })
 export class SdSidebarBackdropTest {}

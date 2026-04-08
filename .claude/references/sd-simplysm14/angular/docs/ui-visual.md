@@ -1,12 +1,12 @@
 # UI - Visual
 
-## `SdLabelControl`
+## `SdLabel`
 
 라벨 컴포넌트. 테마 색상과 클릭 가능 여부를 지원한다.
 
 ```typescript
 @Component({ selector: "sd-label" })
-class SdLabelControl {
+class SdLabel {
   clickable = input(false, { transform: booleanAttribute });
 }
 ```
@@ -17,13 +17,13 @@ class SdLabelControl {
 
 호스트 속성: `data-sd-theme` (primary, secondary, info, success, warning, danger, gray, blue-gray)
 
-## `SdNoteControl`
+## `SdNote`
 
 노트/알림 메시지 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-note" })
-class SdNoteControl {
+class SdNote {
   inset = input(false, { transform: booleanAttribute });
 }
 ```
@@ -34,13 +34,13 @@ class SdNoteControl {
 
 호스트 속성: `data-sd-theme`
 
-## `SdProgressControl`
+## `SdProgress`
 
 진행률 바 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-progress" })
-class SdProgressControl {
+class SdProgress {
   theme = input.required<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
   value = input.required<number>();
   inset = input(false, { transform: booleanAttribute });
@@ -53,13 +53,13 @@ class SdProgressControl {
 | `value` | `number` | required | 진행률 (0-100) |
 | `inset` | `boolean` | `false` | 삽입 스타일 |
 
-## `SdCalendarControl`
+## `SdCalendar`
 
 캘린더 컴포넌트. 항목을 날짜별로 배치한다.
 
 ```typescript
 @Component({ selector: "sd-calendar" })
-class SdCalendarControl<T> {
+class SdCalendar<T> {
   items = input.required<T[]>();
   getItemDateFn = input.required<(item: T, index: number) => DateOnly>();
   yearMonth = input(new DateOnly().setDay(1));
@@ -76,14 +76,14 @@ class SdCalendarControl<T> {
 | `weekStartDay` | `number` | `0` | 주 시작 요일 (0=일요일) |
 | `minDaysInFirstWeek` | `number` | `1` | 첫째 주 최소 일수 |
 
-## `SdBarcodeControl`
+## `SdBarcode`
 
 바코드 생성 컴포넌트. bwip-js 라이브러리를 사용한다.
 
 ```typescript
 @Component({ selector: "sd-barcode" })
-class SdBarcodeControl {
-  type = input.required<TBarcodeType>();
+class SdBarcode {
+  type = input.required<BarcodeType>();
   value = input.required<string>();
   scale = input(2);
 }
@@ -91,21 +91,21 @@ class SdBarcodeControl {
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `type` | `TBarcodeType` | required | 바코드 타입 |
+| `type` | `BarcodeType` | required | 바코드 타입 |
 | `value` | `string` | required | 바코드 값 |
 | `scale` | `number` | `2` | 렌더링 스케일 |
 
-### `TBarcodeType`
+### `BarcodeType`
 
 bwip-js에서 지원하는 바코드 타입 문자열. 예: `"qrcode"`, `"code128"`, `"ean13"` 등.
 
-## `SdEchartsControl`
+## `SdEcharts`
 
 ECharts 차트 래퍼 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-echarts" })
-class SdEchartsControl {
+class SdEcharts {
   option = input.required<echarts.EChartsOption>();
   notMerge = input(false);
   loading = input(false);

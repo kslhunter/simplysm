@@ -1,17 +1,17 @@
 import { computed, type Signal } from "@angular/core";
-import type { SdSheetColumnDirective } from "./sd-sheet-column.directive";
-import type { ISdSheetColumnDef, ISdSheetConfig, ISdSheetHeaderDef } from "./types";
+import type { SdSheetColumn } from "./sd-sheet-column";
+import type { SdSheetColumnDef, SdSheetConfig, SdSheetHeaderDef } from "./types";
 
 export function useSheetLayoutEngine(options: {
-  columnControls: Signal<readonly SdSheetColumnDirective[]>;
-  config: Signal<ISdSheetConfig | undefined>;
+  columnControls: Signal<readonly SdSheetColumn[]>;
+  config: Signal<SdSheetConfig | undefined>;
 }) {
-  const columnDefs = computed((): ISdSheetColumnDef[] => {
+  const columnDefs = computed((): SdSheetColumnDef[] => {
     const cfg = options.config();
     const cols = options.columnControls();
 
     return cols
-      .map((col): ISdSheetColumnDef => {
+      .map((col): SdSheetColumnDef => {
         const key = col.key();
         const cfgCol = cfg?.columnRecord[key];
         return {
@@ -45,10 +45,10 @@ export function useSheetLayoutEngine(options: {
     return maxDepth;
   });
 
-  const headerDefTable = computed((): ISdSheetHeaderDef[][] => {
+  const headerDefTable = computed((): SdSheetHeaderDef[][] => {
     const depth = headerDepth();
     const cols = columnDefs();
-    const table: ISdSheetHeaderDef[][] = [];
+    const table: SdSheetHeaderDef[][] = [];
 
     for (let row = 0; row < depth; row++) {
       table.push([]);

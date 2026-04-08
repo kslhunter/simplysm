@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { signal } from "@angular/core";
 import { useSheetCellStyling } from "../../../../src/ui/data/sheet/useSheetCellStyling";
-import type { ISdSheetColumnDef } from "../../../../src/ui/data/sheet/types";
-import type { IExpandItemDef } from "../../../../src/core/utils/useExpandingManager";
+import type { SdSheetColumnDef } from "../../../../src/ui/data/sheet/types";
+import type { ExpandItemDef } from "../../../../src/core/utils/useExpandingManager";
 
-interface IItem {
+interface Item {
   name: string;
 }
 
-function makeColDef(overrides: Partial<ISdSheetColumnDef> = {}): ISdSheetColumnDef {
+function makeColDef(overrides: Partial<SdSheetColumnDef> = {}): SdSheetColumnDef {
   return {
     key: "name",
     header: "이름",
@@ -24,27 +24,27 @@ function makeColDef(overrides: Partial<ISdSheetColumnDef> = {}): ISdSheetColumnD
 }
 
 function setup(overrides: {
-  columnDefs?: ISdSheetColumnDef[];
+  columnDefs?: SdSheetColumnDef[];
   fixedLeftMap?: Map<string, number>;
-  getItemCellStyleFn?: (item: IItem, colKey: string) => string | undefined;
-  getItemCellClassFn?: (item: IItem, colKey: string) => string;
-  getChildrenFn?: (item: IItem, index: number) => IItem[] | undefined;
-  expandingDef?: (item: IItem) => IExpandItemDef<IItem>;
+  getItemCellStyleFn?: (item: Item, colKey: string) => string | undefined;
+  getItemCellClassFn?: (item: Item, colKey: string) => string;
+  getChildrenFn?: (item: Item, index: number) => Item[] | undefined;
+  expandingDef?: (item: Item) => ExpandItemDef<Item>;
   isCellEditMode?: (addr: { r: number; c: number }) => boolean;
 } = {}) {
   const columnDefs = signal(overrides.columnDefs ?? [makeColDef()]);
   const fixedLeftMap = signal(overrides.fixedLeftMap ?? new Map<string, number>());
-  const getItemCellStyleFn = signal<((item: IItem, colKey: string) => string | undefined) | undefined>(
+  const getItemCellStyleFn = signal<((item: Item, colKey: string) => string | undefined) | undefined>(
     overrides.getItemCellStyleFn,
   );
-  const getItemCellClassFn = signal<((item: IItem, colKey: string) => string) | undefined>(
+  const getItemCellClassFn = signal<((item: Item, colKey: string) => string) | undefined>(
     overrides.getItemCellClassFn,
   );
-  const getChildrenFn = signal<((item: IItem, index: number) => IItem[] | undefined) | undefined>(
+  const getChildrenFn = signal<((item: Item, index: number) => Item[] | undefined) | undefined>(
     overrides.getChildrenFn,
   );
 
-  const styling = useSheetCellStyling<IItem>({
+  const styling = useSheetCellStyling<Item>({
     columnDefs,
     fixedLeftMap,
     getItemCellStyleFn,
@@ -57,7 +57,7 @@ function setup(overrides: {
   return { styling, columnDefs, fixedLeftMap };
 }
 
-const testItem: IItem = { name: "Alice" };
+const testItem: Item = { name: "Alice" };
 
 describe("useSheetCellStyling", () => {
   describe("Rule: fixed 컬럼 스타일", () => {

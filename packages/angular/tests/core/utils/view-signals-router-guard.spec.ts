@@ -4,8 +4,8 @@ import { ActivatedRoute, Router, UrlSegment } from "@angular/router";
 import { BehaviorSubject, Subject } from "rxjs";
 import { describe, it, expect, vi } from "vitest";
 import { SdAppStructureProvider } from "../../../src/core/providers/sd-app-structure.provider";
-import { useViewTitleSignal } from "../../../src/core/utils/useViewTitleSignal";
-import { useViewTypeSignal, type TSdViewType } from "../../../src/core/utils/useViewTypeSignal";
+import { injectViewTitleSignal } from "../../../src/core/utils/injectViewTitleSignal";
+import { injectViewTypeSignal, type SdViewType } from "../../../src/core/utils/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../src/core/utils/setups/setupCanDeactivate";
 
 // reflectComponentType가 읽는 ɵcmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
@@ -58,7 +58,7 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTitleSignal();
+        signal = injectViewTitleSignal();
       });
 
       expect(signal!()).toBe("[메인] 서브");
@@ -80,17 +80,45 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
             provide: Router,
             useValue: { events: new Subject(), url: "/app/page1" },
           },
-          // ActivatedRoute 미제공 → useCurrentPageCodeSignal returns undefined
+          // ActivatedRoute 미제공 → injectCurrentPageCodeSignal returns undefined
         ],
       });
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTitleSignal();
+        signal = injectViewTitleSignal();
       });
 
       expect(signal!()).toBe("페이지1 제목");
       expect(mockAppStructure.getTitleByFullCode).toHaveBeenCalledWith("page1");
+    });
+
+    it("getTitleByFullCode가 throw하면 빈 문자열을 반환한다", () => {
+      const mockAppStructure = {
+        getTitleByFullCode: vi.fn().mockImplementation(() => {
+          throw new Error("Item not found for fullCode: page1");
+        }),
+        items: [],
+        usableModules: () => undefined,
+        permRecord: () => undefined,
+      };
+
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useValue: mockAppStructure },
+          {
+            provide: Router,
+            useValue: { events: new Subject(), url: "/app/page1" },
+          },
+        ],
+      });
+
+      let titleSignal: Signal<string> | undefined;
+      TestBed.runInInjectionContext(() => {
+        titleSignal = injectViewTitleSignal();
+      });
+
+      expect(titleSignal!()).toBe("");
     });
   });
 
@@ -115,9 +143,9 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("page");
@@ -143,9 +171,9 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("control");
@@ -169,9 +197,9 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       // fullPageCode = "main.sub", currPageCode = "main" → not equal → control
@@ -189,9 +217,9 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("control");

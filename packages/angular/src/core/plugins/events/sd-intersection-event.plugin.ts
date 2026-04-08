@@ -15,7 +15,7 @@ export class SdIntersectionEventPlugin extends EventManagerPlugin {
   override addEventListener(
     element: HTMLElement,
     eventName: string,
-    handler: (entry: ISdIntersectionEvent) => void,
+    handler: (entry: SdIntersectionEvent) => void,
   ): () => void {
     const observer = new IntersectionObserver((entries) => {
       if (entries.length === 0) return;
@@ -30,6 +30,6 @@ export class SdIntersectionEventPlugin extends EventManagerPlugin {
   }
 }
 
-export interface ISdIntersectionEvent {
+export interface SdIntersectionEvent {
   entry: IntersectionObserverEntry;
 }

@@ -1,15 +1,15 @@
 import { Component, signal } from "@angular/core";
-import type { ISdPermission } from "../../../src/core/providers/sd-app-structure.types";
-import { SdPermissionTableControl } from "../../../src/features/permission-table/sd-permission-table.control";
+import type { SdPermission } from "../../../src/core/providers/sd-app-structure.types";
+import { SdPermissionTable } from "../../../src/features/permission-table/sd-permission-table";
 
 @Component({
   selector: "sd-permission-table-empty-test",
   template: `<sd-permission-table [items]="items()" [(value)]="value" />`,
   standalone: true,
-  imports: [SdPermissionTableControl],
+  imports: [SdPermissionTable],
 })
 export class SdPermissionTableEmptyTest {
-  items = signal<ISdPermission[]>([]);
+  items = signal<SdPermission[]>([]);
   value = signal<Record<string, boolean>>({});
 }
 
@@ -17,10 +17,10 @@ export class SdPermissionTableEmptyTest {
   selector: "sd-permission-table-two-level-test",
   template: `<sd-permission-table [items]="items()" [(value)]="value" />`,
   standalone: true,
-  imports: [SdPermissionTableControl],
+  imports: [SdPermissionTable],
 })
 export class SdPermissionTableTwoLevelTest {
-  items = signal<ISdPermission[]>([
+  items = signal<SdPermission[]>([
     {
       title: "모듈A",
       codeChain: ["moduleA"],
@@ -51,10 +51,10 @@ export class SdPermissionTableTwoLevelTest {
   selector: "sd-permission-table-three-level-test",
   template: `<sd-permission-table [items]="items()" [(value)]="value" />`,
   standalone: true,
-  imports: [SdPermissionTableControl],
+  imports: [SdPermissionTable],
 })
 export class SdPermissionTableThreeLevelTest {
-  items = signal<ISdPermission[]>([
+  items = signal<SdPermission[]>([
     {
       title: "최상위",
       codeChain: ["top"],
@@ -86,10 +86,10 @@ export class SdPermissionTableThreeLevelTest {
   selector: "sd-permission-table-disabled-test",
   template: `<sd-permission-table [items]="items()" [(value)]="value" [disabled]="true" />`,
   standalone: true,
-  imports: [SdPermissionTableControl],
+  imports: [SdPermissionTable],
 })
 export class SdPermissionTableDisabledTest {
-  items = signal<ISdPermission[]>([
+  items = signal<SdPermission[]>([
     {
       title: "모듈A",
       codeChain: ["moduleA"],

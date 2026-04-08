@@ -18,9 +18,9 @@ function getActualInputs(host: HTMLElement): HTMLInputElement[] {
 
 // endregion
 
-// region Unit Tests: SdRangeControl structure
+// region Unit Tests: SdRange structure
 
-describe("SdRangeControl unit tests", () => {
+describe("SdRange unit tests", () => {
   it("두 개의 sd-textfield와 ~ 구분자가 렌더링된다", () => {
     TestBed.configureTestingModule({ imports: [SdRangeNumberTest] });
     const fixture = TestBed.createComponent(SdRangeNumberTest);
@@ -68,7 +68,7 @@ describe("SdRangeControl unit tests", () => {
 
 // region Acceptance Tests: Range Scenarios
 
-describe("Feature 5.2 Slice 1: SdRangeControl", () => {
+describe("Feature 5.2 Slice 1: SdRange", () => {
   it("Scenario: from과 to로 숫자 범위 입력", () => {
     TestBed.configureTestingModule({ imports: [SdRangeNumberTest] });
     const fixture = TestBed.createComponent(SdRangeNumberTest);

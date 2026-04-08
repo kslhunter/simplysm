@@ -212,7 +212,7 @@ import {
   SdFormInvalidTest,
   SdFormRequestSubmitTest,
 } from "../sd-form-test.fixture";
-import { SdFormControl } from "../../../../src/ui/form/sd-form.control";
+import { SdForm } from "../../../../src/ui/form/sd-form";
 
 describe("Feature 2.4.1 Slice 2: sd-form", () => {
   it("유효한 폼 제출 시 submit 이벤트가 방출되고 브라우저 기본 제출이 방지된다", () => {
@@ -246,7 +246,7 @@ describe("Feature 2.4.1 Slice 2: sd-form", () => {
       .createComponent(SdFormRequestSubmitTest);
     fixture.detectChanges();
 
-    const sdForm = fixture.debugElement.children[0].componentInstance as SdFormControl;
+    const sdForm = fixture.debugElement.children[0].componentInstance as SdForm;
     sdForm.requestSubmit();
     fixture.detectChanges();
 

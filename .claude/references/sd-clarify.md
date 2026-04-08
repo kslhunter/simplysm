@@ -12,13 +12,12 @@
   - **High**: 타겟 코드베이스에서 동일 패턴을 확인했거나 공식 문서에 근거가 있는 추론
   - **Medium**: 일반적 도메인 관행이나 유사 사례에 기반한 추론. 마이그레이션 원본, 이전 버전, 외부 프로젝트의 패턴은 "유사 사례"에 해당
   - **Low**: 약한 유추나 제한적 근거에 기반한 추론
-- **ASSUMED**: 추측에 해당 — 반드시 질문으로 전환 
+- **ASSUMED**: 추측에 해당 — 반드시 질문으로 전환
 
 분류 결과를 사용자에게 출력한다.
 
 ## 명확화 질문
 
-INFERRED Medium/Low와 ASSUMED는 **반드시** 사용자에게 질문하여 명확화한다.
+INFERRED Medium/Low와 ASSUMED는 **반드시** @.claude/references/sd-options.md 의 지침에따라 사용자에게 질문하여 명확화한다.
 
-- 질문/선택지 제시 방법: @.claude/references/sd-options.md
 - VERIFIED와 INFERRED High는 명확한 것으로 본다.

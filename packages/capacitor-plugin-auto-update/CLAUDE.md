@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 의존성:
 - `@simplysm/capacitor-plugin-file-system` — APK 파일 저장 및 URI 조회
 - `@simplysm/core-browser` — `fetchUrlBytes` (다운로드 진행률 포함)
-- `@simplysm/core-common` — `html`, `wait`, `path`, `bytes`
+- `@simplysm/core-common` — `html`, `wait`, `path`, `env`
 - `@simplysm/service-client` / `@simplysm/service-common` — 서버 버전 조회
 - `semver` — 버전 비교
 

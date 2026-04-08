@@ -8,7 +8,7 @@ import {
   SdSelectMultiPreselectedTest,
   SdSelectDynamicContentTest,
 } from "./sd-select-test.fixture";
-import { SdSelectItemControl } from "../../../../src/ui/form/select/sd-select-item.control";
+import { SdSelectItem } from "../../../../src/ui/form/select/sd-select-item";
 import { vi } from "vitest";
 import "@simplysm/core-browser";
 
@@ -127,7 +127,7 @@ describe("PERF-003 Slice 1: isSelected computed + parent effect", () => {
     const itemDebug = selectDebug.queryAll(
       (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select-item",
     )[0];
-    const itemInstance = itemDebug.componentInstance as SdSelectItemControl<string>;
+    const itemInstance = itemDebug.componentInstance as SdSelectItem<string>;
 
     // computed signals don't have a .set method (it's a readonly signal)
     expect(typeof (itemInstance.isSelected as any).set).not.toBe("function");
@@ -151,7 +151,7 @@ describe("PERF-003 Slice 2: contentHTML MutationObserver 기반", () => {
       const itemDebug = selectDebug.queryAll(
         (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select-item",
       )[0];
-      const itemInstance = itemDebug.componentInstance as SdSelectItemControl<string>;
+      const itemInstance = itemDebug.componentInstance as SdSelectItem<string>;
       expect(itemInstance.contentHTML()).toContain("Item A");
     });
   });
@@ -170,7 +170,7 @@ describe("PERF-003 Slice 2: contentHTML MutationObserver 기반", () => {
       const itemDebug = selectDebug.queryAll(
         (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select-item",
       )[0];
-      const itemInstance = itemDebug.componentInstance as SdSelectItemControl<string>;
+      const itemInstance = itemDebug.componentInstance as SdSelectItem<string>;
       expect(itemInstance.contentHTML()).toContain("Item A");
     });
 
@@ -187,7 +187,7 @@ describe("PERF-003 Slice 2: contentHTML MutationObserver 기반", () => {
       const itemDebug = selectDebug.queryAll(
         (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select-item",
       )[0];
-      const itemInstance = itemDebug.componentInstance as SdSelectItemControl<string>;
+      const itemInstance = itemDebug.componentInstance as SdSelectItem<string>;
       expect(itemInstance.contentHTML()).toContain("Updated A");
     });
   });
@@ -206,7 +206,7 @@ describe("PERF-003 Slice 2: contentHTML MutationObserver 기반", () => {
     const itemDebug = selectDebug.queryAll(
       (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select-item",
     )[0];
-    const itemInstance = itemDebug.componentInstance as SdSelectItemControl<string>;
+    const itemInstance = itemDebug.componentInstance as SdSelectItem<string>;
 
     // contentHTML should still be a writable signal (set by MutationObserver)
     expect(typeof (itemInstance.contentHTML as any).set).toBe("function");

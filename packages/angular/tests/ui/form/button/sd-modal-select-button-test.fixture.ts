@@ -1,12 +1,12 @@
 import { Component, input, output, signal } from "@angular/core";
 import {
-  SdModalSelectButtonControl,
-  type ISdSelectModal,
-  type TSdSelectModalInfo,
-} from "../../../../src/ui/form/button/sd-modal-select-button.control";
-import type { ISelectModalOutputResult } from "../../../../src/core/types/select-modal-output-result";
+  SdModalSelectButton,
+  type SdSelectModal,
+  type SdSelectModalInfo,
+} from "../../../../src/ui/form/button/sd-modal-select-button";
+import type { SelectModalOutputResult } from "../../../../src/core/types/select-modal-output-result";
 
-export interface ITestModalItem {
+export interface TestModalItem {
   id: number;
   name: string;
 }
@@ -19,14 +19,14 @@ export interface ITestModalItem {
   standalone: true,
   template: `<div class="test-select-modal">{{ selectMode() }}</div>`,
 })
-export class TestSelectModalComponent implements ISdSelectModal<ITestModalItem> {
+export class TestSelectModalComponent implements SdSelectModal<TestModalItem> {
   initialized = signal(false);
-  close = output<ISelectModalOutputResult<ITestModalItem> | undefined>();
+  close = output<SelectModalOutputResult<TestModalItem> | undefined>();
   selectMode = input<"single" | "multi" | undefined>("single");
   selectedItemKeys = input<any[]>([]);
 }
 
-const TEST_MODAL_INFO: TSdSelectModalInfo<TestSelectModalComponent> = {
+const TEST_MODAL_INFO: SdSelectModalInfo<TestSelectModalComponent> = {
   title: "항목 선택",
   type: TestSelectModalComponent,
   inputs: {},
@@ -38,7 +38,7 @@ const TEST_MODAL_INFO: TSdSelectModalInfo<TestSelectModalComponent> = {
 @Component({
   selector: "sd-modal-select-button-single-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <sd-modal-select-button
       [selectMode]="'single'"
@@ -52,7 +52,7 @@ const TEST_MODAL_INFO: TSdSelectModalInfo<TestSelectModalComponent> = {
 })
 export class SdModalSelectButtonSingleTest {
   value = signal<number | undefined>(undefined);
-  selectedItems = signal<ITestModalItem[]>([]);
+  selectedItems = signal<TestModalItem[]>([]);
   modalInfo = TEST_MODAL_INFO;
   displayText = signal("선택하세요");
 }
@@ -63,7 +63,7 @@ export class SdModalSelectButtonSingleTest {
 @Component({
   selector: "sd-modal-select-button-multi-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <sd-modal-select-button
       [selectMode]="'multi'"
@@ -77,7 +77,7 @@ export class SdModalSelectButtonSingleTest {
 })
 export class SdModalSelectButtonMultiTest {
   value = signal<number[]>([]);
-  selectedItems = signal<ITestModalItem[]>([]);
+  selectedItems = signal<TestModalItem[]>([]);
   modalInfo = TEST_MODAL_INFO;
   displayText = signal("선택하세요");
 }
@@ -88,7 +88,7 @@ export class SdModalSelectButtonMultiTest {
 @Component({
   selector: "sd-modal-select-button-disabled-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <sd-modal-select-button
       [selectMode]="'single'"
@@ -111,7 +111,7 @@ export class SdModalSelectButtonDisabledTest {
 @Component({
   selector: "sd-modal-select-button-required-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <form>
       <sd-modal-select-button
@@ -136,7 +136,7 @@ export class SdModalSelectButtonRequiredTest {
 @Component({
   selector: "sd-modal-select-button-erasable-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <sd-modal-select-button
       [selectMode]="'single'"
@@ -159,7 +159,7 @@ export class SdModalSelectButtonErasableTest {
 @Component({
   selector: "sd-modal-select-button-multi-erasable-test",
   standalone: true,
-  imports: [SdModalSelectButtonControl],
+  imports: [SdModalSelectButton],
   template: `
     <sd-modal-select-button
       [selectMode]="'multi'"

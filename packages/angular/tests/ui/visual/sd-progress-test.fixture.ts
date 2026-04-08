@@ -1,11 +1,11 @@
 import { Component } from "@angular/core";
-import { SdProgressControl } from "../../../src/ui/visual/sd-progress.control";
+import { SdProgress } from "../../../src/ui/visual/sd-progress";
 
 @Component({
   selector: "sd-progress-half-test",
   template: `<sd-progress [value]="0.5" [theme]="'primary'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressHalfTest {}
 
@@ -13,7 +13,7 @@ export class SdProgressHalfTest {}
   selector: "sd-progress-zero-test",
   template: `<sd-progress [value]="0" [theme]="'success'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressZeroTest {}
 
@@ -21,7 +21,7 @@ export class SdProgressZeroTest {}
   selector: "sd-progress-full-test",
   template: `<sd-progress [value]="1" [theme]="'info'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressFullTest {}
 
@@ -29,7 +29,7 @@ export class SdProgressFullTest {}
   selector: "sd-progress-size-sm-test",
   template: `<sd-progress [value]="0.3" [theme]="'primary'" [size]="'sm'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressSizeSmTest {}
 
@@ -37,7 +37,7 @@ export class SdProgressSizeSmTest {}
   selector: "sd-progress-inset-test",
   template: `<sd-progress [value]="0.7" [theme]="'primary'" [inset]="true" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressInsetTest {}
 
@@ -45,7 +45,7 @@ export class SdProgressInsetTest {}
   selector: "sd-progress-overflow-test",
   template: `<sd-progress [value]="1.5" [theme]="'primary'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressOverflowTest {}
 
@@ -53,6 +53,6 @@ export class SdProgressOverflowTest {}
   selector: "sd-progress-negative-test",
   template: `<sd-progress [value]="-0.5" [theme]="'primary'" />`,
   standalone: true,
-  imports: [SdProgressControl],
+  imports: [SdProgress],
 })
 export class SdProgressNegativeTest {}

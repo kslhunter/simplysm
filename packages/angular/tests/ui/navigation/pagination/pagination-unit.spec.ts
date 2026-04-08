@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdPaginationControl } from "../../../../src/ui/navigation/pagination/sd-pagination.control";
+import { SdPagination } from "../../../../src/ui/navigation/pagination/sd-pagination";
 
 describe("Feature 4.1.1 Unit: displayPages computed", () => {
   it("currentPage=3, totalPageCount=20, visiblePageCount=10이면 [1..10]을 반환한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 3);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -16,8 +16,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("currentPage=0, totalPageCount=20, visiblePageCount=10이면 [1..10]을 반환한다 (경계값: 그룹 첫 페이지)", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 0);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -28,8 +28,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("currentPage=15, totalPageCount=20, visiblePageCount=10이면 [11..20]을 반환한다 (두 번째 그룹)", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 15);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -40,8 +40,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("currentPage=9, totalPageCount=20, visiblePageCount=10이면 [1..10]을 반환한다 (경계값: 그룹 마지막 페이지)", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 9);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -52,8 +52,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("currentPage=10, totalPageCount=20, visiblePageCount=10이면 [11..20]을 반환한다 (경계값: 두 번째 그룹 첫 페이지)", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 10);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -64,8 +64,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("totalPageCount=5, visiblePageCount=10이면 [1..5]을 반환한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 0);
     fixture.componentRef.setInput("totalPageCount", 5);
@@ -76,8 +76,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
   });
 
   it("totalPageCount=0이면 빈 배열을 반환한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 0);
     fixture.detectChanges();
@@ -88,8 +88,8 @@ describe("Feature 4.1.1 Unit: displayPages computed", () => {
 
 describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
   it("첫 그룹(currentPage=3)에서 hasPrev=false, hasNext=true이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 3);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -101,8 +101,8 @@ describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
   });
 
   it("마지막 그룹(currentPage=15, totalPageCount=20)에서 hasPrev=true, hasNext=false이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 15);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -114,8 +114,8 @@ describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
   });
 
   it("중간 그룹(currentPage=15, totalPageCount=30)에서 hasPrev=true, hasNext=true이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 15);
     fixture.componentRef.setInput("totalPageCount", 30);
@@ -127,8 +127,8 @@ describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
   });
 
   it("totalPageCount=0이면 hasPrev=false, hasNext=false이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 0);
     fixture.detectChanges();
@@ -140,8 +140,8 @@ describe("Feature 4.1.1 Unit: hasPrev/hasNext computed", () => {
 
 describe("LOGIC-014: visiblePageCount=0 안전 처리", () => {
   it("visiblePageCount=0일 때 displayPages가 빈 배열을 반환한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 10);
     fixture.componentRef.setInput("visiblePageCount", 0);
@@ -153,8 +153,8 @@ describe("LOGIC-014: visiblePageCount=0 안전 처리", () => {
   });
 
   it("visiblePageCount=0일 때 hasPrev/hasNext가 boolean을 반환한다 (NaN 아님)", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 10);
     fixture.componentRef.setInput("visiblePageCount", 0);
@@ -167,8 +167,8 @@ describe("LOGIC-014: visiblePageCount=0 안전 처리", () => {
 
 describe("LOGIC-022: 네비게이션 메서드 경계값 가드", () => {
   it("groupIndex=0에서 goToPrevGroup 호출 시 currentPage가 0 이상이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 0);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -180,8 +180,8 @@ describe("LOGIC-022: 네비게이션 메서드 경계값 가드", () => {
   });
 
   it("totalPageCount=0에서 goToLast 호출 시 currentPage가 0 이상이다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 0);
     fixture.detectChanges();
@@ -193,8 +193,8 @@ describe("LOGIC-022: 네비게이션 메서드 경계값 가드", () => {
 
 describe("Feature 4.1.1 Unit: navigation methods", () => {
   it("goToPage(4)가 currentPage를 4로 설정한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("totalPageCount", 20);
     fixture.detectChanges();
@@ -204,8 +204,8 @@ describe("Feature 4.1.1 Unit: navigation methods", () => {
   });
 
   it("goToNextGroup가 다음 그룹의 첫 페이지로 이동한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 3);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -217,8 +217,8 @@ describe("Feature 4.1.1 Unit: navigation methods", () => {
   });
 
   it("goToPrevGroup가 이전 그룹의 첫 페이지로 이동한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 15);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -230,8 +230,8 @@ describe("Feature 4.1.1 Unit: navigation methods", () => {
   });
 
   it("goToFirst가 currentPage를 0으로 설정한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 15);
     fixture.componentRef.setInput("totalPageCount", 20);
@@ -242,8 +242,8 @@ describe("Feature 4.1.1 Unit: navigation methods", () => {
   });
 
   it("goToLast가 currentPage를 totalPageCount-1로 설정한다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdPaginationControl] })
-      .createComponent(SdPaginationControl);
+    const fixture = TestBed.configureTestingModule({ imports: [SdPagination] })
+      .createComponent(SdPagination);
 
     fixture.componentRef.setInput("currentPage", 0);
     fixture.componentRef.setInput("totalPageCount", 20);

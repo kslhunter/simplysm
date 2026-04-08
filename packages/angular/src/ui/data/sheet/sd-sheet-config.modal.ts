@@ -8,15 +8,15 @@ import {
   signal,
   ViewEncapsulation,
 } from "@angular/core";
-import type { ISdModal } from "../../overlay/modal/sd-modal.provider";
-import type { ISdSheetConfig } from "./types";
-import type { SdSheetColumnDirective } from "./sd-sheet-column.directive";
-import { SdButtonControl } from "../../form/button/sd-button.control";
-import { SdCheckboxControl } from "../../form/checkbox/sd-checkbox.control";
+import type { SdModalContentDef } from "../../overlay/modal/sd-modal.provider";
+import type { SdSheetConfig } from "./types";
+import type { SdSheetColumn } from "./sd-sheet-column";
+import { SdButton } from "../../form/button/sd-button";
+import { SdCheckbox } from "../../form/checkbox/sd-checkbox";
 import { NgIcon } from "@ng-icons/core";
 import { tablerArrowUp, tablerArrowDown } from "@ng-icons/tabler-icons";
 
-interface IConfigItem {
+interface ConfigItem {
   key: string;
   header: string;
   fixed: boolean;
@@ -29,7 +29,7 @@ interface IConfigItem {
   selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [SdButtonControl, SdCheckboxControl, NgIcon],
+  imports: [SdButton, SdCheckbox, NgIcon],
   template: `
     <div class="_sd-sheet-config-modal">
       <table class="_config-table">
@@ -140,20 +140,20 @@ interface IConfigItem {
     `,
   ],
 })
-export class SdSheetConfigModal implements ISdModal<ISdSheetConfig | undefined> {
+export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | undefined> {
   initialized = signal(true);
-  close = output<ISdSheetConfig | undefined>();
+  close = output<SdSheetConfig | undefined>();
 
-  controls = input.required<readonly SdSheetColumnDirective[]>();
-  config = input.required<ISdSheetConfig | undefined>();
+  controls = input.required<readonly SdSheetColumn[]>();
+  config = input.required<SdSheetConfig | undefined>();
 
   _icons = { tablerArrowUp, tablerArrowDown };
 
-  private readonly _initialItems = computed((): IConfigItem[] => {
+  private readonly _initialItems = computed((): ConfigItem[] => {
     const cfg = this.config();
     const controls = this.controls();
     return controls
-      .map((ctrl): IConfigItem => {
+      .map((ctrl): ConfigItem => {
         const key = ctrl.key();
         const cfgCol = cfg?.columnRecord[key];
         return {
@@ -168,7 +168,7 @@ export class SdSheetConfigModal implements ISdModal<ISdSheetConfig | undefined> 
       .sort((a, b) => a.ordering - b.ordering);
   });
 
-  _items = linkedSignal<IConfigItem[]>(() => this._initialItems());
+  _items = linkedSignal<ConfigItem[]>(() => this._initialItems());
 
   onFixedToggle(idx: number): void {
     const items = [...this._items()];
@@ -225,7 +225,7 @@ export class SdSheetConfigModal implements ISdModal<ISdSheetConfig | undefined> 
 
   onOk(): void {
     const items = this._items();
-    const columnRecord: ISdSheetConfig["columnRecord"] = {};
+    const columnRecord: SdSheetConfig["columnRecord"] = {};
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       columnRecord[item.key] = {

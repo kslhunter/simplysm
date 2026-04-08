@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { useSheetColumnResizing } from "../../../../src/ui/data/sheet/useSheetColumnResizing";
-import type { ISdSheetConfig } from "../../../../src/ui/data/sheet/types";
+import { injectSheetColumnResizing } from "../../../../src/ui/data/sheet/injectSheetColumnResizing";
+import type { SdSheetConfig } from "../../../../src/ui/data/sheet/types";
 
-function setup(configInitial?: ISdSheetConfig) {
-  const configValue = signal<ISdSheetConfig | undefined>(configInitial);
-  const setConfig = vi.fn((v: ISdSheetConfig) => configValue.set(v));
+function setup(configInitial?: SdSheetConfig) {
+  const configValue = signal<SdSheetConfig | undefined>(configInitial);
+  const setConfig = vi.fn((v: SdSheetConfig) => configValue.set(v));
 
   const container = document.createElement("div");
   const mockDomAccessor = {
@@ -20,9 +20,9 @@ function setup(configInitial?: ISdSheetConfig) {
     getLastDepthFixedHeaders: () => [],
   };
 
-  let result!: ReturnType<typeof useSheetColumnResizing>;
+  let result!: ReturnType<typeof injectSheetColumnResizing>;
   TestBed.runInInjectionContext(() => {
-    result = useSheetColumnResizing({
+    result = injectSheetColumnResizing({
       domAccessor: mockDomAccessor,
       configResource: { value: configValue, set: setConfig },
     });
@@ -34,7 +34,7 @@ afterEach(() => {
   TestBed.resetTestingModule();
 });
 
-describe("useSheetColumnResizing", () => {
+describe("injectSheetColumnResizing", () => {
   describe("Rule: composable 추출 후 기존 동작 유지", () => {
     it("초기 상태 — isResizing은 false, indicatorLeft은 0", () => {
       const { result } = setup();

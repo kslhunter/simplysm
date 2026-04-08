@@ -43,7 +43,7 @@ async function createFixture(
   return { fixture, host };
 }
 
-describe("AbsSdDataSelectButton", () => {
+describe("SdDataSelectButtonBase", () => {
   beforeEach(() => {
     setupTestBed();
   });
@@ -325,7 +325,7 @@ describe("AbsSdDataSelectButton", () => {
   //#endregion
 });
 
-describe("SdDataSelectButtonControl", () => {
+describe("SdDataSelectButton", () => {
   beforeEach(() => {
     setupTestBed();
   });

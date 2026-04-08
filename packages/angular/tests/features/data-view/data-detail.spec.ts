@@ -7,7 +7,7 @@ import { SdAppStructureProvider } from "../../../src/core/providers/sd-app-struc
 import { SdToastProvider } from "../../../src/core/providers/sd-toast.provider";
 import { SdSharedDataProvider } from "../../../src/core/providers/sd-shared-data.provider";
 import { DDTestHost, type TestDetailItem } from "./sd-data-detail-test.fixture";
-import type { ISdDataDetailDataInfo } from "../../../src/features/data-view/sd-data-detail.control";
+import type { SdDataDetailDataInfo } from "../../../src/features/data-view/sd-data-detail.base";
 
 function createMockToast() {
   return {
@@ -35,7 +35,7 @@ function createMockAppStructure() {
   };
 }
 
-function makeExistingInfo(overrides?: Partial<ISdDataDetailDataInfo>): ISdDataDetailDataInfo {
+function makeExistingInfo(overrides?: Partial<SdDataDetailDataInfo>): SdDataDetailDataInfo {
   return {
     isNew: false,
     isDeleted: false,
@@ -45,7 +45,7 @@ function makeExistingInfo(overrides?: Partial<ISdDataDetailDataInfo>): ISdDataDe
   };
 }
 
-function makeNewInfo(): ISdDataDetailDataInfo {
+function makeNewInfo(): SdDataDetailDataInfo {
   return {
     isNew: true,
     isDeleted: false,
@@ -71,7 +71,7 @@ function setupTestBed() {
 
 async function createFixtureAndInit(
   data: TestDetailItem = { id: 1, name: "Test" },
-  info: ISdDataDetailDataInfo = makeExistingInfo(),
+  info: SdDataDetailDataInfo = makeExistingInfo(),
 ) {
   const fixture = TestBed.createComponent(DDTestHost);
   const host = fixture.componentInstance;
@@ -85,7 +85,7 @@ async function createFixtureAndInit(
   return { fixture, host };
 }
 
-describe("AbsSdDataDetail", () => {
+describe("SdDataDetailBase", () => {
   beforeEach(() => {
     setupTestBed();
   });

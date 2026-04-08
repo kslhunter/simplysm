@@ -1,11 +1,11 @@
 import { Component, signal } from "@angular/core";
-import { SdViewControl } from "../../../../src/ui/layout/view/sd-view.control";
-import { SdViewItemControl } from "../../../../src/ui/layout/view/sd-view-item.control";
+import { SdView } from "../../../../src/ui/layout/view/sd-view";
+import { SdViewItem } from "../../../../src/ui/layout/view/sd-view-item";
 
 @Component({
   selector: "sd-view-test-basic",
   standalone: true,
-  imports: [SdViewControl, SdViewItemControl],
+  imports: [SdView, SdViewItem],
   template: `
     <sd-view [value]="activeTab()">
       <sd-view-item [value]="'tab1'">Tab 1 Content</sd-view-item>
@@ -20,7 +20,7 @@ export class SdViewTestBasic {
 @Component({
   selector: "sd-view-test-fill",
   standalone: true,
-  imports: [SdViewControl, SdViewItemControl],
+  imports: [SdView, SdViewItem],
   template: `
     <sd-view [value]="'tab1'" [fill]="true">
       <sd-view-item [value]="'tab1'">Tab 1 Content</sd-view-item>
@@ -32,7 +32,7 @@ export class SdViewTestFill {}
 @Component({
   selector: "sd-view-test-no-fill",
   standalone: true,
-  imports: [SdViewControl, SdViewItemControl],
+  imports: [SdView, SdViewItem],
   template: `
     <sd-view [value]="'tab1'">
       <sd-view-item [value]="'tab1'">Tab 1 Content</sd-view-item>

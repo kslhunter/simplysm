@@ -15,7 +15,7 @@ function getToast(fixture: any): HTMLElement {
   return fixture.nativeElement.querySelector("sd-toast") as HTMLElement;
 }
 
-describe("Feature 3.3 Slice 1: SdToastControl 렌더링", () => {
+describe("Feature 3.3 Slice 1: SdToast 렌더링", () => {
   // Acceptance: info 토스트 표시
   it("info 테마의 토스트가 표시되고, role=status + aria-live=polite가 설정된다", () => {
     const fixture = setup(SdToastTestDefault);

@@ -1,12 +1,12 @@
 import { Component, viewChild } from "@angular/core";
-import { SdKanbanBoardControl } from "../../../../src/ui/layout/kanban/sd-kanban-board.control";
-import { SdKanbanLaneControl } from "../../../../src/ui/layout/kanban/sd-kanban-lane.control";
-import { SdKanbanControl } from "../../../../src/ui/layout/kanban/sd-kanban.control";
+import { SdKanbanBoard } from "../../../../src/ui/layout/kanban/sd-kanban-board";
+import { SdKanbanLane } from "../../../../src/ui/layout/kanban/sd-kanban-lane";
+import { SdKanban } from "../../../../src/ui/layout/kanban/sd-kanban";
 
 @Component({
   selector: "sd-kanban-board-test-horizontal",
   standalone: true,
-  imports: [SdKanbanBoardControl],
+  imports: [SdKanbanBoard],
   template: `
     <sd-kanban-board>
       <div class="lane">Lane 1</div>
@@ -20,7 +20,7 @@ export class SdKanbanBoardTestHorizontal {}
 @Component({
   selector: "sd-kanban-drag-drop-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board (drop)="onDrop($event)">
       <sd-kanban-lane [value]="'lane1'">
@@ -33,7 +33,7 @@ export class SdKanbanBoardTestHorizontal {}
   `,
 })
 export class SdKanbanDragDropTest {
-  board = viewChild.required(SdKanbanBoardControl);
+  board = viewChild.required(SdKanbanBoard);
   dropInfo: any = null;
 
   onDrop(event: any) {
@@ -44,7 +44,7 @@ export class SdKanbanDragDropTest {
 @Component({
   selector: "sd-kanban-select-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board [(selectedValues)]="selectedValues">
       <sd-kanban-lane [value]="'lane1'">
@@ -63,7 +63,7 @@ export class SdKanbanSelectTest {
 @Component({
   selector: "sd-kanban-lane-drop-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board (drop)="onDrop($event)">
       <sd-kanban-lane [value]="'lane1'">
@@ -75,7 +75,7 @@ export class SdKanbanSelectTest {
   `,
 })
 export class SdKanbanLaneDropTest {
-  board = viewChild.required(SdKanbanBoardControl);
+  board = viewChild.required(SdKanbanBoard);
   dropInfo: any = null;
 
   onDrop(event: any) {
@@ -86,7 +86,7 @@ export class SdKanbanLaneDropTest {
 @Component({
   selector: "sd-kanban-lane-select-all-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board [(selectedValues)]="selectedValues">
       <sd-kanban-lane [value]="'lane1'">
@@ -104,7 +104,7 @@ export class SdKanbanLaneSelectAllTest {
 @Component({
   selector: "sd-kanban-lane-no-selectable-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board>
       <sd-kanban-lane [value]="'lane1'">
@@ -118,7 +118,7 @@ export class SdKanbanLaneNoSelectableTest {}
 @Component({
   selector: "sd-kanban-lane-collapse-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board>
       <sd-kanban-lane [value]="'lane1'" [useCollapse]="true" [(collapse)]="collapsed">
@@ -134,7 +134,7 @@ export class SdKanbanLaneCollapseTest {
 @Component({
   selector: "sd-kanban-lane-no-collapse-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board>
       <sd-kanban-lane [value]="'lane1'" [useCollapse]="false">
@@ -148,7 +148,7 @@ export class SdKanbanLaneNoCollapseTest {}
 @Component({
   selector: "sd-kanban-lane-mixed-selectable-test",
   standalone: true,
-  imports: [SdKanbanBoardControl, SdKanbanLaneControl, SdKanbanControl],
+  imports: [SdKanbanBoard, SdKanbanLane, SdKanban],
   template: `
     <sd-kanban-board [(selectedValues)]="selectedValues">
       <sd-kanban-lane [value]="'lane1'">
@@ -160,6 +160,6 @@ export class SdKanbanLaneNoCollapseTest {}
   `,
 })
 export class SdKanbanLaneMixedSelectableTest {
-  lane = viewChild.required(SdKanbanLaneControl);
+  lane = viewChild.required(SdKanbanLane);
   selectedValues: string[] = [];
 }

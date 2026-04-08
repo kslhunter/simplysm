@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
-import { SdBusyContainerControl } from "../../../../src/ui/overlay/busy/sd-busy-container.control";
-import type { TSdBusyType } from "../../../../src/core/providers/sd-busy.provider";
+import { SdBusyContainer } from "../../../../src/ui/overlay/busy/sd-busy-container";
+import type { SdBusyType } from "../../../../src/core/providers/sd-busy.provider";
 
 /**
  * 기본 busy container 테스트 (busy, type)
@@ -8,7 +8,7 @@ import type { TSdBusyType } from "../../../../src/core/providers/sd-busy.provide
 @Component({
   selector: "sd-busy-test-default",
   standalone: true,
-  imports: [SdBusyContainerControl],
+  imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="busy()" [type]="type()">
       <div class="_content">콘텐츠</div>
@@ -17,7 +17,7 @@ import type { TSdBusyType } from "../../../../src/core/providers/sd-busy.provide
 })
 export class SdBusyTestDefault {
   busy = signal(false);
-  type = signal<TSdBusyType | undefined>(undefined);
+  type = signal<SdBusyType | undefined>(undefined);
 }
 
 /**
@@ -26,7 +26,7 @@ export class SdBusyTestDefault {
 @Component({
   selector: "sd-busy-test-message",
   standalone: true,
-  imports: [SdBusyContainerControl],
+  imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="busy()" [message]="message()">
       <div class="_content">콘텐츠</div>
@@ -44,7 +44,7 @@ export class SdBusyTestMessage {
 @Component({
   selector: "sd-busy-test-progress",
   standalone: true,
-  imports: [SdBusyContainerControl],
+  imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="busy()" [progressPercent]="progressPercent()">
       <div class="_content">콘텐츠</div>

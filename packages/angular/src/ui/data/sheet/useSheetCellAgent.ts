@@ -1,8 +1,8 @@
 import { signal } from "@angular/core";
-import type { useSheetDomAccessor } from "./useSheetDomAccessor";
+import type { injectSheetDomAccessor } from "./injectSheetDomAccessor";
 
 export function useSheetCellAgent(options: {
-  domAccessor: ReturnType<typeof useSheetDomAccessor>;
+  domAccessor: ReturnType<typeof injectSheetDomAccessor>;
 }) {
   const editModeCellAddr = signal<{ r: number; c: number } | undefined>(undefined);
   let _isTransitioning = false;

@@ -129,20 +129,17 @@ Docker가 필요하며 `tests/docker-compose.test.yml`에 MySQL(23306), PostgreS
 
 ```
 tests/orm/src/
-├── db-conn/                  ← 각 DbConn 클래스 단위 테스트
-│   ├── mssql-db-conn.spec.ts
-│   ├── mysql-db-conn.spec.ts
-│   └── postgresql-db-conn.spec.ts
-├── db-context/               ← DbContext + ORM 통합 테스트
-│   ├── mssql-db-context.spec.ts
-│   ├── mysql-db-context.spec.ts
-│   └── postgresql-db-context.spec.ts
-├── escape/                   ← SQL 이스케이프 단위 테스트
+├── db-conn/
+│   └── db-conn.spec.ts       ← 3개 DBMS(MSSQL/MySQL/PostgreSQL) DbConn 통합 테스트
+├── db-context/
+│   └── db-context.spec.ts    ← 3개 DBMS DbContext + ORM 통합 테스트
+├── escape/
+│   └── escape.spec.ts        ← SQL 이스케이프 단위 테스트
 ├── test-configs.ts           ← DBMS별 연결 설정 상수
 └── test-fixtures.ts          ← 공통 테스트 픽스처 (컬럼 메타, 레코드)
 ```
 
-테스트에서 `*DbConn` 클래스를 직접 생성할 때는 네이티브 라이브러리를 직접 import하여 생성자에 전달한다:
+테스트는 `DbDialectDef` 인터페이스로 DBMS별 SQL 방언을 추상화하여 하나의 spec 파일에서 3개 DBMS를 반복 테스트한다. `*DbConn` 클래스를 직접 생성할 때는 네이티브 라이브러리를 동적 import하여 생성자에 전달한다:
 
 ```typescript
 const mysql2 = await import("mysql2/promise");

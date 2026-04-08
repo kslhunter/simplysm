@@ -1,5 +1,5 @@
 import { Component, signal } from "@angular/core";
-import { SdFormControl } from "../../../src/ui/form/sd-form.control";
+import { SdForm } from "../../../src/ui/form/sd-form";
 
 @Component({
   selector: "sd-form-valid-test",
@@ -9,7 +9,7 @@ import { SdFormControl } from "../../../src/ui/form/sd-form.control";
     </sd-form>
   `,
   standalone: true,
-  imports: [SdFormControl],
+  imports: [SdForm],
 })
 export class SdFormValidTest {
   submitted = signal(false);
@@ -24,7 +24,7 @@ export class SdFormValidTest {
     </sd-form>
   `,
   standalone: true,
-  imports: [SdFormControl],
+  imports: [SdForm],
 })
 export class SdFormInvalidTest {
   submitted = signal(false);
@@ -39,7 +39,7 @@ export class SdFormInvalidTest {
     </sd-form>
   `,
   standalone: true,
-  imports: [SdFormControl],
+  imports: [SdForm],
 })
 export class SdFormRequestSubmitTest {
   submitted = signal(false);

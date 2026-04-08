@@ -43,7 +43,7 @@ function pressKey(el: HTMLElement, key: string): void {
   el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 }
 
-describe("Feature 3.2 Slice 2: SdModalControl 렌더링 + 닫기", () => {
+describe("Feature 3.2 Slice 2: SdModal 렌더링 + 닫기", () => {
   // Acceptance: 배경 클릭 닫기 활성화
   it("useCloseByBackdrop=true (기본값)이면 배경 클릭 시 closeRequest가 발생한다", () => {
     const fixture = setup(SdModalTestControlDefault);

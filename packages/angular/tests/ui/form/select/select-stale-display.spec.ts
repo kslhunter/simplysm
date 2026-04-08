@@ -3,8 +3,8 @@ import { TestBed } from "@angular/core/testing";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdResizeEventPlugin } from "../../../../src/core/plugins/events/sd-resize-event.plugin";
 import { SdSelectPreselectedTest } from "./sd-select-test.fixture";
-import { SdSelectControl } from "../../../../src/ui/form/select/sd-select.control";
-import { SdSelectItemControl } from "../../../../src/ui/form/select/sd-select-item.control";
+import { SdSelect } from "../../../../src/ui/form/select/sd-select";
+import { SdSelectItem } from "../../../../src/ui/form/select/sd-select-item";
 import "@simplysm/core-browser";
 
 function setupTestBed(component: any) {
@@ -16,11 +16,11 @@ function setupTestBed(component: any) {
   });
 }
 
-function getSelectControl(fixture: any): SdSelectControl<"single", string> {
+function getSelectControl(fixture: any): SdSelect<"single", string> {
   const selectEl = fixture.nativeElement.querySelector("sd-select");
   return fixture.debugElement.query(
     (de: any) => de.nativeElement === selectEl,
-  ).componentInstance as SdSelectControl<"single", string>;
+  ).componentInstance as SdSelect<"single", string>;
 }
 
 describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
@@ -42,7 +42,7 @@ describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
 
     // B의 contentHTML을 빈 문자열로 설정 (미렌더 상태 시뮬레이션)
     const itemB = selectCtrl._itemControls().find(
-      (item: SdSelectItemControl<string>) => item.value() === "B",
+      (item: SdSelectItem<string>) => item.value() === "B",
     );
     itemB!.contentHTML.set("");
 

@@ -8,22 +8,22 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import type { OnInit } from "@angular/core";
-import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.control";
-import type { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
+import { SdBusyContainer } from "../../ui/overlay/busy/sd-busy-container";
+import type { SdModalContentDef } from "../../ui/overlay/modal/sd-modal.provider";
 
 declare const daum: {
   postcode: {
     load(callback: () => void): void;
   };
   Postcode: new (options: {
-    oncomplete: (data: IDaumPostcodeData) => void;
+    oncomplete: (data: DaumPostcodeData) => void;
     onresize: (size: { height: number }) => void;
     width: string;
     height: string;
   }) => { embed(el: HTMLElement, options: { autoClose: boolean }): void };
 };
 
-interface IDaumPostcodeData {
+interface DaumPostcodeData {
   zonecode: string;
   roadAddress: string;
   jibunAddress: string;
@@ -33,7 +33,7 @@ interface IDaumPostcodeData {
   apartment: "Y" | "N";
 }
 
-export interface IAddress {
+export interface Address {
   postNumber: string | undefined;
   address: string | undefined;
   buildingName: string | undefined;
@@ -44,19 +44,19 @@ export interface IAddress {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdBusyContainerControl],
+  imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="!initialized()">
       <div #content style="min-height: 100px;"></div>
     </sd-busy-container>
   `,
 })
-export class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
+export class SdAddressSearchModal implements SdModalContentDef<Address>, OnInit {
   contentElRef = viewChild.required<"content", ElementRef<HTMLElement>>("content", {
     read: ElementRef,
   });
 
-  close = output<IAddress>();
+  close = output<Address>();
 
   initialized = signal(false);
 
@@ -86,7 +86,7 @@ export class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
     const contentEl = this.contentElRef().nativeElement;
 
     new daum.Postcode({
-      oncomplete: (data: IDaumPostcodeData): void => {
+      oncomplete: (data: DaumPostcodeData): void => {
         const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
 
         let extraAddr = "";

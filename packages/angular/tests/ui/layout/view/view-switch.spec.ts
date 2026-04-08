@@ -30,7 +30,7 @@ describe("Feature 2.2 Slice 2: View 전환", () => {
 
   // --- Unit Tests ---
 
-  it("view-item은 부모 SdViewControl을 inject하여 computed로 선택 상태를 판단한다", () => {
+  it("view-item은 부모 SdView을 inject하여 computed로 선택 상태를 판단한다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdViewTestBasic] })
       .createComponent(SdViewTestBasic);
     fixture.detectChanges();

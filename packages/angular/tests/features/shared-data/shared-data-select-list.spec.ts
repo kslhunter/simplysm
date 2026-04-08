@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/ui/overlay/modal/sd-modal.provider";
-import { SDSLTestHost, listItem, type ITestListItem } from "./sd-shared-data-select-list-test.fixture";
-import { SdSharedDataSelectListControl } from "../../../src/features/shared-data/sd-shared-data-select-list.control";
-import type { ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import { SDSLTestHost, listItem, type TestListItem } from "./sd-shared-data-select-list-test.fixture";
+import { SdSharedDataSelectList } from "../../../src/features/shared-data/sd-shared-data-select-list";
+import type { SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
 function createMockModalProvider() {
   return {
@@ -30,11 +30,11 @@ function createFixture() {
   return { fixture, host };
 }
 
-function getCtrl(fixture: any): SdSharedDataSelectListControl<ITestListItem, ISdSelectModal<any>> {
+function getCtrl(fixture: any): SdSharedDataSelectList<TestListItem, SdSelectModal<any>> {
   return fixture.debugElement.children[0].componentInstance;
 }
 
-describe("SdSharedDataSelectListControl", () => {
+describe("SdSharedDataSelectList", () => {
   beforeEach(() => {
     setupTestBed();
   });

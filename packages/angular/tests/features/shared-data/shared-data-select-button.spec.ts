@@ -3,8 +3,8 @@ import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/ui/overlay/modal/sd-modal.provider";
 import { SDSBTestHost, testItem } from "./sd-shared-data-select-button-test.fixture";
-import { SdSharedDataSelectButtonControl } from "../../../src/features/shared-data/sd-shared-data-select-button.control";
-import type { ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import { SdSharedDataSelectButton } from "../../../src/features/shared-data/sd-shared-data-select-button";
+import type { SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
 function createMockModalProvider() {
   return {
@@ -42,7 +42,7 @@ async function createFixture(opts?: { value?: number | number[]; selectMode?: "s
   return { fixture, host };
 }
 
-describe("SdSharedDataSelectButtonControl", () => {
+describe("SdSharedDataSelectButton", () => {
   beforeEach(() => {
     setupTestBed();
   });
@@ -56,7 +56,7 @@ describe("SdSharedDataSelectButtonControl", () => {
       fixture.componentInstance.items.set(items);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButtonControl<any, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
       expect(ctrl.load([1, 3])).toEqual([items[0], items[2]]);
     });
 
@@ -65,7 +65,7 @@ describe("SdSharedDataSelectButtonControl", () => {
       fixture.componentInstance.items.set([testItem(1, "A")]);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButtonControl<any, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
       expect(ctrl.load([999])).toEqual([]);
     });
   });
@@ -74,7 +74,7 @@ describe("SdSharedDataSelectButtonControl", () => {
 
   //#region Acceptance — 모달 선택 흐름
 
-  describe("모달 선택 흐름 (AbsSdDataSelectButton 위임)", () => {
+  describe("모달 선택 흐름 (SdDataSelectButtonBase 위임)", () => {
     it("value 설정 시 load로 selectedItems가 채워진다", async () => {
       const items = [testItem(1, "A"), testItem(2, "B")];
       const { fixture, host } = await createFixture();
@@ -85,7 +85,7 @@ describe("SdSharedDataSelectButtonControl", () => {
       await new Promise<void>((r) => setTimeout(r, 0));
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButtonControl<any, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
       expect(ctrl.selectedItems()).toEqual([items[0]]);
     });
 
@@ -95,7 +95,7 @@ describe("SdSharedDataSelectButtonControl", () => {
       host.items.set(items);
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButtonControl<any, any, ISdSelectModal<any>>;
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
       mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [2], selectedItems: [] });
 
       await ctrl.doShowModal();

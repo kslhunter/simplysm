@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { TopbarUserBasicTest } from "./sd-topbar-user-test.fixture";
-import { SdDropdownControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown.control";
+import { SdDropdown } from "../../../../src/ui/overlay/dropdown/sd-dropdown";
 
-describe("Feature 4.4 Slice 3: SdTopbarUserControl 사용자 메뉴", () => {
+describe("Feature 4.4 Slice 3: SdTopbarUser 사용자 메뉴", () => {
   it("ng-content로 사용자 정보가 드롭다운 트리거에 표시된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarUserBasicTest],
@@ -69,8 +69,8 @@ describe("Feature 4.4 Slice 3: SdTopbarUserControl 사용자 메뉴", () => {
 
     // Dropdown should be closed
     const dropdownCtrl = fixture.debugElement
-      .query((el) => el.componentInstance instanceof SdDropdownControl)
-      .componentInstance as SdDropdownControl;
+      .query((el) => el.componentInstance instanceof SdDropdown)
+      .componentInstance as SdDropdown;
     expect(dropdownCtrl.open()).toBe(false);
   });
 });

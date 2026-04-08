@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdSidebarUserControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-user.control";
+import { SdSidebarUser } from "../../../../src/ui/navigation/sidebar/sd-sidebar-user";
 import {
   SidebarUserProfileTest,
   SidebarUserMenuTest,
   SidebarUserNoMenuTest,
 } from "./sd-sidebar-user-test.fixture";
 
-describe("Feature 4.3 Slice 3: SdSidebarUserControl 사용자 메뉴", () => {
+describe("Feature 4.3 Slice 3: SdSidebarUser 사용자 메뉴", () => {
   it("ng-content로 사용자 프로필 영역을 표시한다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SidebarUserProfileTest],
@@ -44,7 +44,7 @@ describe("Feature 4.3 Slice 3: SdSidebarUserControl 사용자 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarUserControl;
+      .componentInstance as SdSidebarUser;
     expect(ctrl.menuOpen()).toBe(false);
 
     // Click menu button to open
@@ -81,7 +81,7 @@ describe("Feature 4.3 Slice 3: SdSidebarUserControl 사용자 메뉴", () => {
 
     // Open the menu first
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarUserControl;
+      .componentInstance as SdSidebarUser;
     ctrl.menuOpen.set(true);
     fixture.detectChanges();
     await fixture.whenStable();

@@ -1,9 +1,12 @@
-import { computed, inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import type { Signal } from "@angular/core";
-import type { TSdAppStructureItem, ISdFlatMenu } from "./sd-app-structure.types";
+import type { AppStructureService } from "@simplysm/service-common";
+import type { AppStructureItem, SdFlatMenu } from "./sd-app-structure.types";
 import { SdAppStructureUtils } from "./sd-app-structure.utils";
+import { SdServiceClientFactoryProvider } from "./sd-service-client-factory.provider";
+import { SdAngularConfigProvider } from "./sd-angular-config.provider";
 
-export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {
+export function injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {
   const sdAppStructure = inject(SdAppStructureProvider);
   return computed(() => sdAppStructure.getPermsByFullCode(viewCodes, keys));
 }
@@ -12,32 +15,46 @@ export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[])
 // 메뉴는 모듈/권한 모두 체크함
 @Injectable({ providedIn: "root" })
 export abstract class SdAppStructureProvider<TModule = unknown> {
-  abstract items: TSdAppStructureItem<TModule>[];
+  private readonly _clientFactory = inject(SdServiceClientFactoryProvider);
+  private readonly _config = inject(SdAngularConfigProvider);
+
+  abstract serviceKey: string;
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
+  readonly items = signal<AppStructureItem<TModule>[]>([]);
+
+  async fetchItems(): Promise<void> {
+    const client = this._clientFactory.get(this.serviceKey);
+    const svc = client.getService<AppStructureService>("AppStructure");
+    const itemsMap = await svc.getItems();
+    this.items.set(
+      (itemsMap[this._config.clientName] ?? []) as AppStructureItem<TModule>[],
+    );
+  }
+
   usableMenus = computed(() =>
-    SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()),
+    SdAppStructureUtils.getMenus(this.items(), [], this.usableModules(), this.permRecord()),
   );
-  usableFlatMenus = computed<ISdFlatMenu<TModule>[]>(() =>
-    SdAppStructureUtils.getFlatMenus(this.items, this.usableModules(), this.permRecord()),
+  usableFlatMenus = computed<SdFlatMenu<TModule>[]>(() =>
+    SdAppStructureUtils.getFlatMenus(this.items(), this.usableModules(), this.permRecord()),
   );
 
-  getPermissionsByStructure(items: TSdAppStructureItem<TModule>[], codeChain: string[] = []) {
+  getPermissionsByStructure(items: AppStructureItem<TModule>[], codeChain: string[] = []) {
     return SdAppStructureUtils.getPermissions(items, codeChain, this.usableModules());
   }
 
   getTitleByFullCode(fullCode: string) {
-    return SdAppStructureUtils.getTitleByFullCode(this.items, fullCode);
+    return SdAppStructureUtils.getTitleByFullCode(this.items(), fullCode);
   }
 
   getItemChainByFullCode(fullCode: string) {
-    return SdAppStructureUtils.getItemChainByFullCode(this.items, fullCode);
+    return SdAppStructureUtils.getItemChainByFullCode(this.items(), fullCode);
   }
 
   getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[] {
     return SdAppStructureUtils.getPermsByFullCode(
-      this.items,
+      this.items(),
       fullCodes,
       permKeys,
       this.permRecord(),

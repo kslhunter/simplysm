@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdTopbarControl } from "../../../../src/ui/navigation/topbar/sd-topbar.control";
+import { SdTopbar } from "../../../../src/ui/navigation/topbar/sd-topbar";
 import {
   TopbarUnitWithSidebarTest,
   TopbarUnitExternalSidebarTest,
   TopbarUnitNoSidebarTest,
 } from "./sd-topbar-unit-test.fixture";
 
-describe("SdTopbarControl unit", () => {
-  it("hasSidebar: inject된 SdSidebarContainerControl이 있으면 true", async () => {
+describe("SdTopbar unit", () => {
+  it("hasSidebar: inject된 SdSidebarContainer이 있으면 true", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarUnitWithSidebarTest],
     }).createComponent(TopbarUnitWithSidebarTest);
@@ -16,7 +16,7 @@ describe("SdTopbarControl unit", () => {
     await fixture.whenStable();
 
     const topbar = fixture.debugElement.children[0].children[0]
-      .componentInstance as SdTopbarControl;
+      .componentInstance as SdTopbar;
     expect(topbar.hasSidebar()).toBe(true);
   });
 
@@ -28,8 +28,8 @@ describe("SdTopbarControl unit", () => {
     await fixture.whenStable();
 
     const topbar = fixture.debugElement.query(
-      (el) => el.componentInstance instanceof SdTopbarControl,
-    ).componentInstance as SdTopbarControl;
+      (el) => el.componentInstance instanceof SdTopbar,
+    ).componentInstance as SdTopbar;
     expect(topbar.hasSidebar()).toBe(true);
   });
 
@@ -41,7 +41,7 @@ describe("SdTopbarControl unit", () => {
     await fixture.whenStable();
 
     const topbar = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarControl;
+      .componentInstance as SdTopbar;
     expect(topbar.hasSidebar()).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 # Directives
 
-## `SdEventsDirective`
+## `SdEvents`
 
 `.capture`, `.passive`, `.once` 수식어 및 커스텀 이벤트 바인딩을 지원하는 디렉티브. Angular 템플릿에서 해당 이벤트를 사용할 때 자동 매칭된다.
 
@@ -8,7 +8,7 @@
 @Directive({
   selector: `[click.capture], [scroll.passive], [sdResize], [sdSaveCommand], ...`,
 })
-class SdEventsDirective {
+class SdEvents {
   // 클릭: click.capture, click.once, click.capture.once
   // 마우스: mousedown.capture, mouseup.capture, mouseover.capture, mouseout.capture
   // 키보드: keydown.capture, keyup.capture
@@ -19,65 +19,65 @@ class SdEventsDirective {
   // 터치: touchstart.passive, touchstart.capture.passive, touchmove.passive, touchmove.capture.passive, touchend.passive
   // 드래그: dragover.capture, dragenter.capture, dragleave.capture, drop.capture
   // 애니메이션: transitionend.once, animationend.once
-  // 커스텀: sdResize (ISdResizeEvent)
+  // 커스텀: sdResize (SdResizeEvent)
   // 커맨드: sdRefreshCommand, sdSaveCommand, sdInsertCommand (KeyboardEvent)
 }
 ```
 
-## `SdRippleDirective`
+## `SdRipple`
 
 호스트 요소에 리플 효과를 추가하는 디렉티브.
 
 ```typescript
-@Directive({ selector: "[sd-ripple]" })
-class SdRippleDirective {
-  enabled = input.required({ alias: "sd-ripple", transform: booleanAttribute });
+@Directive({ selector: "[sdRipple]" })
+class SdRipple {
+  enabled = input.required({ alias: "sdRipple", transform: booleanAttribute });
 }
 ```
 
-사용법: `<div [sd-ripple]="true">` 또는 `<div sd-ripple>`
+사용법: `<div [sdRipple]="true">` 또는 `<div sdRipple>`
 
-## `SdShowEffectDirective`
+## `SdShowEffect`
 
 뷰포트에 진입할 때 reveal 애니메이션을 적용하는 디렉티브. IntersectionObserver 사용.
 
 ```typescript
-@Directive({ selector: "[sd-show-effect]" })
-class SdShowEffectDirective {
-  enabled = input.required({ alias: "sd-show-effect", transform: booleanAttribute });
+@Directive({ selector: "[sdShowEffect]" })
+class SdShowEffect {
+  enabled = input.required({ alias: "sdShowEffect", transform: booleanAttribute });
   sdShowEffectType = input<"l2r" | "t2b">("t2b");
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `sd-show-effect` | `boolean` | required | 효과 활성화 여부 |
+| `sdShowEffect` | `boolean` | required | 효과 활성화 여부 |
 | `sdShowEffectType` | `"l2r" \| "t2b"` | `"t2b"` | 애니메이션 방향 (좌->우 / 위->아래) |
 
-## `SdInvalidDirective`
+## `SdInvalid`
 
 호스트 요소에 유효성 검증 표시기를 추가하는 디렉티브. 빨간 점 표시기와 숨겨진 input으로 구성.
 
 ```typescript
-@Directive({ selector: "[sd-invalid]" })
-class SdInvalidDirective {
-  invalidMessage = input.required<string>({ alias: "sd-invalid" });
+@Directive({ selector: "[sdInvalid]" })
+class SdInvalid {
+  invalidMessage = input.required<string>({ alias: "sdInvalid" });
 }
 ```
 
-사용법: `<div [sd-invalid]="name이 비어있습니다">`. 메시지가 빈 문자열이면 유효, 비어있지 않으면 무효.
+사용법: `<div [sdInvalid]="name이 비어있습니다">`. 메시지가 빈 문자열이면 유효, 비어있지 않으면 무효.
 
-## `SdTypedTemplateDirective`
+## `SdTypedTemplate`
 
 `ng-template`의 컨텍스트 타입을 지정하는 디렉티브. 타입 가드를 통해 템플릿 내부에서 정확한 타입을 사용할 수 있다.
 
 ```typescript
 @Directive({ selector: "ng-template[typed]" })
-class SdTypedTemplateDirective<T> {
+class SdTypedTemplate<T> {
   typed = input.required<T>();
 
   static ngTemplateContextGuard<TypeToken>(
-    _dir: SdTypedTemplateDirective<TypeToken>,
+    _dir: SdTypedTemplate<TypeToken>,
     _ctx: unknown,
   ): _ctx is TypeToken;
 }
@@ -90,17 +90,17 @@ class SdTypedTemplateDirective<T> {
 </ng-template>
 ```
 
-## `SdItemOfTemplateDirective`
+## `SdItemOfTemplate`
 
 항목 반복 템플릿의 컨텍스트 타입을 지정하는 디렉티브.
 
 ```typescript
 @Directive({ selector: "ng-template[itemOf]" })
-class SdItemOfTemplateDirective<TItem> {
+class SdItemOfTemplate<TItem> {
   itemOf = input.required<TItem[]>();
 
   static ngTemplateContextGuard<TContextItem>(
-    _dir: SdItemOfTemplateDirective<TContextItem>,
+    _dir: SdItemOfTemplate<TContextItem>,
     _ctx: unknown,
   ): _ctx is SdItemOfTemplateContext<TContextItem>;
 }
@@ -133,26 +133,26 @@ interface SdItemOfTemplateContext<TItem> {
 </ng-template>
 ```
 
-## `SdRouterLinkDirective`
+## `SdRouterLink`
 
 라우터 네비게이션 디렉티브. 일반 클릭은 라우터 네비게이션, Ctrl/Shift+클릭은 새 창, 팝업 윈도우에서는 팝업 형태로 열린다.
 
 ```typescript
 @Directive({
-  selector: "[sd-router-link]",
+  selector: "[sdRouterLink]",
   host: {
     "[style.cursor]": "option() ? 'pointer' : ''",
     "(click)": "onClick($event)",
   },
 })
-class SdRouterLinkDirective {
+class SdRouterLink {
   option = input<{
     link: string;
     params?: Record<string, string>;
     window?: { width?: number; height?: number };
     outletName?: string;
     queryParams?: Record<string, string>;
-  } | undefined>(undefined, { alias: "sd-router-link" });
+  } | undefined>(undefined, { alias: "sdRouterLink" });
 }
 ```
 

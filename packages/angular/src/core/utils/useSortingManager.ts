@@ -1,13 +1,13 @@
 import { computed, type Signal, type WritableSignal } from "@angular/core";
 import "@simplysm/core-common";
 
-export interface ISortingDef {
+export interface SortingDef {
   key: string;
   desc: boolean;
 }
 
 export function useSortingManager(options: {
-  sorts: WritableSignal<ISortingDef[]>;
+  sorts: WritableSignal<SortingDef[]>;
 }): {
   defMap: Signal<Map<string, { indexText?: string; desc: boolean }>>;
   toggle(key: string, multiple: boolean): void;

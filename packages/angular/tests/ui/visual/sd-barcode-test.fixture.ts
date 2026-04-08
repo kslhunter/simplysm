@@ -1,12 +1,12 @@
 import { Component, signal } from "@angular/core";
-import type { TBarcodeType } from "../../../src/ui/visual/sd-barcode.control";
-import { SdBarcodeControl } from "../../../src/ui/visual/sd-barcode.control";
+import type { BarcodeType } from "../../../src/ui/visual/sd-barcode";
+import { SdBarcode } from "../../../src/ui/visual/sd-barcode";
 
 @Component({
   selector: "sd-barcode-code128-test",
   template: `<sd-barcode [type]="'code128'" [value]="'12345'" />`,
   standalone: true,
-  imports: [SdBarcodeControl],
+  imports: [SdBarcode],
 })
 export class SdBarcodeCode128Test {}
 
@@ -14,7 +14,7 @@ export class SdBarcodeCode128Test {}
   selector: "sd-barcode-qrcode-test",
   template: `<sd-barcode [type]="'qrcode'" [value]="'https://example.com'" />`,
   standalone: true,
-  imports: [SdBarcodeControl],
+  imports: [SdBarcode],
 })
 export class SdBarcodeQrcodeTest {}
 
@@ -22,10 +22,10 @@ export class SdBarcodeQrcodeTest {}
   selector: "sd-barcode-change-test",
   template: `<sd-barcode [type]="type()" [value]="value()" />`,
   standalone: true,
-  imports: [SdBarcodeControl],
+  imports: [SdBarcode],
 })
 export class SdBarcodeChangeTest {
-  type = signal<TBarcodeType>("code128");
+  type = signal<BarcodeType>("code128");
   value = signal("12345");
 }
 
@@ -33,6 +33,6 @@ export class SdBarcodeChangeTest {
   selector: "sd-barcode-no-value-test",
   template: `<sd-barcode [type]="'qrcode'" />`,
   standalone: true,
-  imports: [SdBarcodeControl],
+  imports: [SdBarcode],
 })
 export class SdBarcodeNoValueTest {}

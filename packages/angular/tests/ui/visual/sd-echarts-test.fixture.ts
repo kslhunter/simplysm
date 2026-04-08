@@ -1,12 +1,12 @@
 import { Component, signal } from "@angular/core";
 import type * as echarts from "echarts";
-import { SdEchartsControl } from "../../../src/ui/visual/sd-echarts.control";
+import { SdEcharts } from "../../../src/ui/visual/sd-echarts";
 
 @Component({
   selector: "sd-echarts-default-test",
   template: `<sd-echarts [option]="option" style="width: 400px; height: 300px;" />`,
   standalone: true,
-  imports: [SdEchartsControl],
+  imports: [SdEcharts],
 })
 export class SdEchartsDefaultTest {
   option: echarts.EChartsOption = {
@@ -20,7 +20,7 @@ export class SdEchartsDefaultTest {
   selector: "sd-echarts-change-test",
   template: `<sd-echarts [option]="option()" [loading]="loading()" style="width: 400px; height: 300px;" />`,
   standalone: true,
-  imports: [SdEchartsControl],
+  imports: [SdEcharts],
 })
 export class SdEchartsChangeTest {
   option = signal<echarts.EChartsOption>({

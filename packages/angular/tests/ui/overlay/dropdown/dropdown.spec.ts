@@ -8,7 +8,7 @@ import {
   SdDropdownTestScrollable,
   SdDropdownTestWithFocusable,
 } from "./sd-dropdown-test.fixture";
-import { SdDropdownControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown.control";
+import { SdDropdown } from "../../../../src/ui/overlay/dropdown/sd-dropdown";
 import "@simplysm/core-browser";
 
 function setupTestBed(component: any) {
@@ -93,7 +93,7 @@ describe("Feature 3.1 Slice 1: 컴포넌트 기본 구조 + 클릭 토글", () =
     const dropdownDebug = fixture.debugElement.query(
       (de) => de.nativeElement === dropdownEl,
     );
-    const dropdownInstance = dropdownDebug.componentInstance as SdDropdownControl;
+    const dropdownInstance = dropdownDebug.componentInstance as SdDropdown;
 
     expect(dropdownInstance.open()).toBe(false);
 
@@ -114,7 +114,7 @@ describe("Feature 3.1 Slice 1: 컴포넌트 기본 구조 + 클릭 토글", () =
     const dropdownDebug = fixture.debugElement.query(
       (de) => de.nativeElement === dropdownEl,
     );
-    const dropdownInstance = dropdownDebug.componentInstance as SdDropdownControl;
+    const dropdownInstance = dropdownDebug.componentInstance as SdDropdown;
 
     dropdownEl.click();
     fixture.detectChanges();

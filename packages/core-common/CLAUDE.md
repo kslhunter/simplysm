@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/core-common` — 브라우저와 Node.js 모두에서 사용 가능한 순수 공통 유틸리티 패키지. 다른 `@simplysm/*` 패키지에 대한 내부 의존성이 없는 리프 패키지다. 35개의 TypeScript 소스 파일로 구성된다.
+`@simplysm/core-common` — 브라우저와 Node.js 모두에서 사용 가능한 순수 공통 유틸리티 패키지. 다른 `@simplysm/*` 패키지에 대한 내부 의존성이 없는 리프 패키지다. 34개의 TypeScript 소스 파일로 구성된다.
 
 외부 의존성: `@zip.js/zip.js`, `consola`, `fast-xml-parser`, `yaml`
 

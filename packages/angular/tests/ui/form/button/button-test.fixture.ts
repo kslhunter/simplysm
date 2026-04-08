@@ -1,13 +1,13 @@
 import { Component } from "@angular/core";
-import { SdButtonControl } from "../../../../src/ui/form/button/sd-button.control";
-import { SdAnchorControl } from "../../../../src/ui/form/button/sd-anchor.control";
-import { SdAdditionalButtonControl } from "../../../../src/ui/form/button/sd-additional-button.control";
+import { SdButton } from "../../../../src/ui/form/button/sd-button";
+import { SdAnchor } from "../../../../src/ui/form/button/sd-anchor";
+import { SdAdditionalButton } from "../../../../src/ui/form/button/sd-additional-button";
 
 @Component({
   selector: "sd-button-default-test",
   template: `<sd-button>Click me</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonDefaultTest {}
 
@@ -15,7 +15,7 @@ export class SdButtonDefaultTest {}
   selector: "sd-button-theme-test",
   template: `<sd-button [theme]="'primary'">Primary</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonThemeTest {}
 
@@ -23,7 +23,7 @@ export class SdButtonThemeTest {}
   selector: "sd-button-link-test",
   template: `<sd-button [theme]="'link'">Link</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonLinkTest {}
 
@@ -31,7 +31,7 @@ export class SdButtonLinkTest {}
   selector: "sd-button-link-rev-test",
   template: `<sd-button [theme]="'link-rev'">Link Rev</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonLinkRevTest {}
 
@@ -39,7 +39,7 @@ export class SdButtonLinkRevTest {}
   selector: "sd-button-size-sm-test",
   template: `<sd-button [size]="'sm'">Small</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonSizeSmTest {}
 
@@ -47,7 +47,7 @@ export class SdButtonSizeSmTest {}
   selector: "sd-button-inline-test",
   template: `<sd-button [inline]="true">Inline</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonInlineTest {}
 
@@ -55,7 +55,7 @@ export class SdButtonInlineTest {}
   selector: "sd-button-inset-test",
   template: `<sd-button [inset]="true">Inset</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonInsetTest {}
 
@@ -63,7 +63,7 @@ export class SdButtonInsetTest {}
   selector: "sd-button-disabled-test",
   template: `<sd-button [disabled]="true">Disabled</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonDisabledTest {}
 
@@ -71,7 +71,7 @@ export class SdButtonDisabledTest {}
   selector: "sd-button-submit-test",
   template: `<sd-button [type]="'submit'">Submit</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonSubmitTest {}
 
@@ -79,7 +79,7 @@ export class SdButtonSubmitTest {}
   selector: "sd-button-custom-test",
   template: `<sd-button [buttonStyle]="'width: 200px'" [buttonClass]="'my-class'">Custom</sd-button>`,
   standalone: true,
-  imports: [SdButtonControl],
+  imports: [SdButton],
 })
 export class SdButtonCustomTest {}
 
@@ -89,7 +89,7 @@ export class SdButtonCustomTest {}
   selector: "sd-anchor-default-test",
   template: `<sd-anchor>Link</sd-anchor>`,
   standalone: true,
-  imports: [SdAnchorControl],
+  imports: [SdAnchor],
 })
 export class SdAnchorDefaultTest {}
 
@@ -97,7 +97,7 @@ export class SdAnchorDefaultTest {}
   selector: "sd-anchor-theme-test",
   template: `<sd-anchor [theme]="'danger'">Danger</sd-anchor>`,
   standalone: true,
-  imports: [SdAnchorControl],
+  imports: [SdAnchor],
 })
 export class SdAnchorThemeTest {}
 
@@ -105,7 +105,7 @@ export class SdAnchorThemeTest {}
   selector: "sd-anchor-disabled-test",
   template: `<sd-anchor [disabled]="true">Disabled</sd-anchor>`,
   standalone: true,
-  imports: [SdAnchorControl],
+  imports: [SdAnchor],
 })
 export class SdAnchorDisabledTest {}
 
@@ -121,7 +121,7 @@ export class SdAnchorDisabledTest {}
     </sd-additional-button>
   `,
   standalone: true,
-  imports: [SdAdditionalButtonControl, SdAnchorControl, SdButtonControl],
+  imports: [SdAdditionalButton, SdAnchor, SdButton],
 })
 export class SdAdditionalButtonDefaultTest {}
 
@@ -129,7 +129,7 @@ export class SdAdditionalButtonDefaultTest {}
   selector: "sd-additional-button-size-test",
   template: `<sd-additional-button [size]="'sm'">Content</sd-additional-button>`,
   standalone: true,
-  imports: [SdAdditionalButtonControl],
+  imports: [SdAdditionalButton],
 })
 export class SdAdditionalButtonSizeTest {}
 
@@ -137,6 +137,6 @@ export class SdAdditionalButtonSizeTest {}
   selector: "sd-additional-button-inset-test",
   template: `<sd-additional-button [inset]="true">Content</sd-additional-button>`,
   standalone: true,
-  imports: [SdAdditionalButtonControl],
+  imports: [SdAdditionalButton],
 })
 export class SdAdditionalButtonInsetTest {}

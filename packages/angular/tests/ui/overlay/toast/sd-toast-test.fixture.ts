@@ -1,6 +1,6 @@
 import { Component, output, signal } from "@angular/core";
-import { SdToastControl } from "../../../../src/ui/overlay/toast/sd-toast.control";
-import type { ISdToast, TSdToastTheme } from "../../../../src/core/providers/sd-toast.provider";
+import { SdToast } from "../../../../src/ui/overlay/toast/sd-toast";
+import type { SdToastContentDef, SdToastTheme } from "../../../../src/core/providers/sd-toast.provider";
 
 /**
  * 기본 토스트 테스트 (theme, message, open)
@@ -8,7 +8,7 @@ import type { ISdToast, TSdToastTheme } from "../../../../src/core/providers/sd-
 @Component({
   selector: "sd-toast-test-default",
   standalone: true,
-  imports: [SdToastControl],
+  imports: [SdToast],
   template: `
     <sd-toast
       [(open)]="open"
@@ -20,7 +20,7 @@ import type { ISdToast, TSdToastTheme } from "../../../../src/core/providers/sd-
 })
 export class SdToastTestDefault {
   open = signal(true);
-  theme = signal<TSdToastTheme>("info");
+  theme = signal<SdToastTheme>("info");
   message = signal<string | undefined>("테스트 메시지");
 }
 
@@ -30,7 +30,7 @@ export class SdToastTestDefault {
 @Component({
   selector: "sd-toast-test-progress",
   standalone: true,
-  imports: [SdToastControl],
+  imports: [SdToast],
   template: `
     <sd-toast
       [(open)]="open"
@@ -44,7 +44,7 @@ export class SdToastTestDefault {
 })
 export class SdToastTestProgress {
   open = signal(true);
-  theme = signal<TSdToastTheme>("info");
+  theme = signal<SdToastTheme>("info");
   message = signal<string | undefined>("업로드 중");
   progress = signal(50);
 }
@@ -55,7 +55,7 @@ export class SdToastTestProgress {
 @Component({
   selector: "sd-toast-test-no-progress",
   standalone: true,
-  imports: [SdToastControl],
+  imports: [SdToast],
   template: `
     <sd-toast
       [(open)]="open"
@@ -67,7 +67,7 @@ export class SdToastTestProgress {
 })
 export class SdToastTestNoProgress {
   open = signal(true);
-  theme = signal<TSdToastTheme>("info");
+  theme = signal<SdToastTheme>("info");
   message = signal<string | undefined>("메시지");
 }
 
@@ -82,7 +82,7 @@ export class SdToastTestNoProgress {
 export class SdToastProviderTestHost {}
 
 /**
- * 커스텀 토스트 컴포넌트 (ISdToast 구현)
+ * 커스텀 토스트 컴포넌트 (SdToastContentDef 구현)
  */
 @Component({
   selector: "sd-toast-test-custom",
@@ -92,6 +92,6 @@ export class SdToastProviderTestHost {}
     <button class="_close-btn" (click)="close.emit('result')">닫기</button>
   `,
 })
-export class SdToastTestCustom implements ISdToast<string> {
+export class SdToastTestCustom implements SdToastContentDef<string> {
   close = output<string | undefined>();
 }

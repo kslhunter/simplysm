@@ -13,22 +13,22 @@ import {
   type WritableSignal,
 } from "@angular/core";
 import { outputToObservable } from "@angular/core/rxjs-interop";
-import type { TDirectiveInputSignals } from "../utils/TDirectiveInputSignals";
-import { SdToastControl } from "../../ui/overlay/toast/sd-toast.control";
-import { SdToastContainerControl } from "../../ui/overlay/toast/sd-toast-container.control";
+import type { DirectiveInputSignals } from "../utils/directive-input-signals";
+import { SdToast } from "../../ui/overlay/toast/sd-toast";
+import { SdToastContainer } from "../../ui/overlay/toast/sd-toast-container";
 import { SdSystemLogProvider } from "./sd-system-log.provider";
 import "@simplysm/core-browser";
 
-export type TSdToastSeverity = "info" | "success" | "warning" | "danger";
-export type TSdToastTheme = "primary" | "secondary" | TSdToastSeverity | "gray" | "blue-gray";
+export type SdToastSeverity = "info" | "success" | "warning" | "danger";
+export type SdToastTheme = "primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray";
 
-export interface ISdToast<O> {
+export interface SdToastContentDef<O> {
   close: OutputEmitterRef<O | undefined>;
 }
 
-export interface ISdToastInput<T extends ISdToast<any>> {
+export interface SdToastInput<T extends SdToastContentDef<any>> {
   type: Type<T>;
-  inputs: Omit<TDirectiveInputSignals<T>, "close">;
+  inputs: Omit<DirectiveInputSignals<T>, "close">;
 }
 
 @Injectable({ providedIn: "root" })
@@ -38,13 +38,13 @@ export class SdToastProvider {
   private readonly _injector = inject(Injector);
   private readonly _systemLog = inject(SdSystemLogProvider);
 
-  alertThemes = signal<TSdToastSeverity[]>([]);
+  alertThemes = signal<SdToastSeverity[]>([]);
   overlap = signal(false);
-  beforeShowFn?: (theme: TSdToastSeverity) => void;
+  beforeShowFn?: (theme: SdToastSeverity) => void;
 
-  private _containerRef: ComponentRef<SdToastContainerControl> | undefined;
-  private readonly _toastRefs: ComponentRef<SdToastControl>[] = [];
-  private readonly _contentRefs = new Map<ComponentRef<SdToastControl>, ComponentRef<any>>();
+  private _containerRef: ComponentRef<SdToastContainer> | undefined;
+  private readonly _toastRefs: ComponentRef<SdToast>[] = [];
+  private readonly _contentRefs = new Map<ComponentRef<SdToast>, ComponentRef<any>>();
 
   constructor() {
     effect(() => {
@@ -54,9 +54,9 @@ export class SdToastProvider {
     });
   }
 
-  private get containerRef(): ComponentRef<SdToastContainerControl> {
+  private get containerRef(): ComponentRef<SdToastContainer> {
     if (this._containerRef === undefined) {
-      this._containerRef = createComponent(SdToastContainerControl, {
+      this._containerRef = createComponent(SdToastContainer, {
         environmentInjector: this._envInjector,
       });
       this._appRef.attachView(this._containerRef.hostView);
@@ -90,7 +90,7 @@ export class SdToastProvider {
     return this._show("danger", message, useProgress);
   }
 
-  notify<T extends ISdToast<any>>(input: ISdToastInput<T>): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
+  notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
     return new Promise((resolve) => {
       // overlap 모드: 기존 토스트 모두 제거
       if (this.overlap()) {
@@ -100,7 +100,7 @@ export class SdToastProvider {
       const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
       // 토스트 래퍼 생성
-      const toastRef = createComponent(SdToastControl, {
+      const toastRef = createComponent(SdToast, {
         environmentInjector: this._envInjector,
       });
       this._appRef.attachView(toastRef.hostView);
@@ -166,7 +166,7 @@ export class SdToastProvider {
   }
 
   private _show(
-    theme: TSdToastSeverity,
+    theme: SdToastSeverity,
     message: string,
     useProgress: boolean,
   ): WritableSignal<number> | void {
@@ -188,7 +188,7 @@ export class SdToastProvider {
 
     // 토스트 컴포넌트 생성
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
-    const toastRef = createComponent(SdToastControl, {
+    const toastRef = createComponent(SdToast, {
       environmentInjector: this._envInjector,
     });
     this._appRef.attachView(toastRef.hostView);
@@ -229,7 +229,7 @@ export class SdToastProvider {
   }
 
   private _setupAutoDismiss(
-    toastRef: ComponentRef<SdToastControl>,
+    toastRef: ComponentRef<SdToast>,
     delayMs: number,
     onDismiss?: () => void,
   ): void {
@@ -270,7 +270,7 @@ export class SdToastProvider {
     dismissAfterDelay(delayMs);
   }
 
-  private _dismissToast(toastRef: ComponentRef<SdToastControl>): void {
+  private _dismissToast(toastRef: ComponentRef<SdToast>): void {
     toastRef.instance.open.set(false);
 
     const el = toastRef.location.nativeElement as HTMLElement;
@@ -291,7 +291,7 @@ export class SdToastProvider {
     }, 300);
   }
 
-  private _destroyToast(toastRef: ComponentRef<SdToastControl>): void {
+  private _destroyToast(toastRef: ComponentRef<SdToast>): void {
     const idx = this._toastRefs.indexOf(toastRef);
     if (idx === -1) return; // 이미 파괴됨
 

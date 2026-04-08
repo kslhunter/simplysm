@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
-import { SdTabviewControl } from "../../../../src/ui/navigation/tab/sd-tabview.control";
-import { SdTabviewItemControl } from "../../../../src/ui/navigation/tab/sd-tabview-item.control";
+import { SdTabview } from "../../../../src/ui/navigation/tab/sd-tabview";
+import { SdTabviewItem } from "../../../../src/ui/navigation/tab/sd-tabview-item";
 
 @Component({
   selector: "sd-tabview-basic-test",
@@ -11,7 +11,7 @@ import { SdTabviewItemControl } from "../../../../src/ui/navigation/tab/sd-tabvi
     </sd-tabview>
   `,
   standalone: true,
-  imports: [SdTabviewControl, SdTabviewItemControl],
+  imports: [SdTabview, SdTabviewItem],
 })
 export class SdTabviewBasicTest {
   value = signal<string>("A");
@@ -26,7 +26,7 @@ export class SdTabviewBasicTest {
     </sd-tabview>
   `,
   standalone: true,
-  imports: [SdTabviewControl, SdTabviewItemControl],
+  imports: [SdTabview, SdTabviewItem],
 })
 export class SdTabviewHeaderTest {
   value = signal<string>("settings");
@@ -41,7 +41,7 @@ export class SdTabviewHeaderTest {
     </sd-tabview>
   `,
   standalone: true,
-  imports: [SdTabviewControl, SdTabviewItemControl],
+  imports: [SdTabview, SdTabviewItem],
 })
 export class SdTabviewExternalValueTest {
   value = signal<string>("A");

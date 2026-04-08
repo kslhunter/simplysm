@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 import { SidebarUnitTest } from "./sd-sidebar-unit-test.fixture";
 
-describe("SdSidebarControl unit", () => {
+describe("SdSidebar unit", () => {
   it("부모 container의 toggle을 반영하여 data-sd-toggle 속성을 바인딩한다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SidebarUnitTest],
@@ -16,7 +16,7 @@ describe("SdSidebarControl unit", () => {
 
     // toggle parent to true
     const containerCtrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     containerCtrl.toggle.set(true);
     fixture.detectChanges();
     await fixture.whenStable();

@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core";
-import type { ISharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
-import { SdSharedDataSelectListControl } from "../../../src/features/shared-data/sd-shared-data-select-list.control";
-import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-of-template.directive";
-import type { TSdSelectModalInfo, ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import type { SharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
+import { SdSharedDataSelectList } from "../../../src/features/shared-data/sd-shared-data-select-list";
+import { SdItemOfTemplate } from "../../../src/core/directives/sd-item-of-template";
+import type { SdSelectModalInfo, SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
-export interface ITestListItem extends ISharedDataBase<number> {
+export interface TestListItem extends SharedDataBase<number> {
   __valueKey: number;
   __searchText: string;
   __isHidden: boolean;
@@ -15,7 +15,7 @@ export function listItem(
   key: number,
   name: string,
   opts?: { hidden?: boolean },
-): ITestListItem {
+): TestListItem {
   return {
     __valueKey: key,
     __searchText: name,
@@ -27,7 +27,7 @@ export function listItem(
 @Component({
   selector: "sdsl-test-host",
   standalone: true,
-  imports: [SdSharedDataSelectListControl, SdItemOfTemplateDirective],
+  imports: [SdSharedDataSelectList, SdItemOfTemplate],
   template: `
     <sd-shared-data-select-list
       [(selectedItem)]="selectedItem"
@@ -45,11 +45,11 @@ export function listItem(
   `,
 })
 export class SDSLTestHost {
-  selectedItem = signal<ITestListItem | undefined>(undefined);
-  items = signal<ITestListItem[]>([]);
-  canChangeFn = signal<(item: ITestListItem | undefined) => boolean | Promise<boolean>>(() => true);
-  filterFn = signal<((item: ITestListItem, index: number) => boolean) | undefined>(undefined);
+  selectedItem = signal<TestListItem | undefined>(undefined);
+  items = signal<TestListItem[]>([]);
+  canChangeFn = signal<(item: TestListItem | undefined) => boolean | Promise<boolean>>(() => true);
+  filterFn = signal<((item: TestListItem, index: number) => boolean) | undefined>(undefined);
   pageItemCount = signal<number | undefined>(undefined);
   useUndefined = signal(false);
-  modal = signal<TSdSelectModalInfo<ISdSelectModal<any>> | undefined>(undefined);
+  modal = signal<SdSelectModalInfo<SdSelectModal<any>> | undefined>(undefined);
 }

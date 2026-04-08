@@ -2,13 +2,13 @@
 
 ## Dropdown
 
-### `SdDropdownControl`
+### `SdDropdown`
 
-드롭다운 트리거 컴포넌트. `SdDropdownPopupControl`과 함께 사용한다.
+드롭다운 트리거 컴포넌트. `SdDropdownPopup`과 함께 사용한다.
 
 ```typescript
 @Component({ selector: "sd-dropdown" })
-class SdDropdownControl {
+class SdDropdown {
   open = model(false);
   disabled = input(false, { transform: booleanAttribute });
 }
@@ -19,24 +19,24 @@ class SdDropdownControl {
 | `open` | `boolean` | `false` | 드롭다운 열림 상태 (two-way) |
 | `disabled` | `boolean` | `false` | 비활성화 |
 
-### `SdDropdownPopupControl`
+### `SdDropdownPopup`
 
 드롭다운 팝업 컨텐츠 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-dropdown-popup" })
-class SdDropdownPopupControl { }
+class SdDropdownPopup { }
 ```
 
 ## Modal
 
-### `SdModalControl`
+### `SdModal`
 
 모달 래퍼 컴포넌트. 보통 `SdModalProvider.showAsync()`로 생성되며 직접 사용하지 않는다.
 
 ```typescript
 @Component({ selector: "sd-modal" })
-class SdModalControl {
+class SdModal {
   open = model(false);
   title = input("");
   hideHeader = input(false);
@@ -72,26 +72,26 @@ class SdModalControl {
 | `position` | `"bottom-right" \| "top-right"` | - | 위치 프리셋 |
 | `noFirstControlFocusing` | `boolean` | `false` | 자동 포커스 비활성화 |
 
-### `SdPromptModalControl`
+### `SdPromptModal`
 
 프롬프트 입력 모달. 텍스트 입력을 받아 반환한다.
 
 ```typescript
 @Component({ selector: "sd-prompt-modal" })
-class SdPromptModalControl implements ISdModal<string> {
+class SdPromptModal implements SdModalContentDef<string> {
   message = input.required<string>();
   close = output<string>();
   initialized = signal(true);
 }
 ```
 
-### `SdConfirmModalControl`
+### `SdConfirmModal`
 
 확인/취소 모달.
 
 ```typescript
 @Component({ selector: "sd-confirm-modal" })
-class SdConfirmModalControl implements ISdModal<boolean> {
+class SdConfirmModal implements SdModalContentDef<boolean> {
   message = input.required<string>();
   close = output<boolean>();
   initialized = signal(true);
@@ -100,43 +100,43 @@ class SdConfirmModalControl implements ISdModal<boolean> {
 
 ## Toast
 
-### `SdToastControl`
+### `SdToast`
 
 토스트 개별 항목 컴포넌트. `SdToastProvider`에서 내부적으로 생성한다.
 
 ```typescript
 @Component({ selector: "sd-toast" })
-class SdToastControl {
+class SdToast {
   open = model(false);
   useProgress = input(false, { transform: booleanAttribute });
   progress = model(0);
-  theme = input<TSdToastTheme>();
+  theme = input<SdToastTheme>();
   message = signal<string>("");
 }
 ```
 
-### `SdToastContainerControl`
+### `SdToastContainer`
 
 토스트 컨테이너 컴포넌트. `SdToastProvider`에서 내부적으로 생성하여 body에 부착한다.
 
 ```typescript
 @Component({ selector: "sd-toast-container" })
-class SdToastContainerControl {
+class SdToastContainer {
   overlap = input(false, { transform: booleanAttribute });
 }
 ```
 
 ## Busy
 
-### `SdBusyContainerControl`
+### `SdBusyContainer`
 
 busy 표시 컨테이너 컴포넌트. spinner/bar/cube 3가지 타입을 지원한다.
 
 ```typescript
 @Component({ selector: "sd-busy-container" })
-class SdBusyContainerControl {
+class SdBusyContainer {
   busy = input(false, { transform: booleanAttribute });
-  type = input<TSdBusyType>("bar");
+  type = input<SdBusyType>("bar");
   message = input<string>();
 }
 ```
@@ -144,5 +144,5 @@ class SdBusyContainerControl {
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
 | `busy` | `boolean` | `false` | busy 상태 |
-| `type` | `TSdBusyType` | `"bar"` | 표시 유형 (spinner, bar, cube) |
+| `type` | `SdBusyType` | `"bar"` | 표시 유형 (spinner, bar, cube) |
 | `message` | `string \| undefined` | - | busy 메시지 |

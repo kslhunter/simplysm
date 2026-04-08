@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { ApplicationRef } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../../src/ui/overlay/modal/sd-modal.provider";
-import { SdPromptModalControl } from "../../../../src/ui/overlay/modal/sd-prompt-modal.control";
-import { SdConfirmModalControl } from "../../../../src/ui/overlay/modal/sd-confirm-modal.control";
+import { SdPromptModal } from "../../../../src/ui/overlay/modal/sd-prompt-modal";
+import { SdConfirmModal } from "../../../../src/ui/overlay/modal/sd-confirm-modal";
 import { SdModalProviderTestHost } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
 
@@ -31,7 +31,7 @@ describe("Feature 1.1: sd-confirm-modal 템플릿 정리", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "확인",
-      type: SdConfirmModalControl,
+      type: SdConfirmModal,
       inputs: { message: "테스트" },
     });
     await tick(fixture);
@@ -75,7 +75,7 @@ describe("Feature 1.1: sd-prompt-modal 템플릿 정리", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "테스트" },
     });
     await tick(fixture);
@@ -109,7 +109,7 @@ describe("Feature 1.1: sd-prompt-modal 템플릿 정리", () => {
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync({
       title: "입력",
-      type: SdPromptModalControl,
+      type: SdPromptModal,
       inputs: { message: "테스트" },
     });
     await tick(fixture);

@@ -20,7 +20,7 @@ function setupTestBed(component: any) {
   });
 }
 
-describe("Feature 6.3 Slice 3: SdKanbanLaneControl", () => {
+describe("Feature 6.3 Slice 3: SdKanbanLane", () => {
   // --- 드롭 ---
 
   it("카드를 빈 레인 영역에 드롭한다 — targetKanbanValue가 undefined인 drop 이벤트가 발생한다", () => {

@@ -1,8 +1,8 @@
 import { Component, signal } from "@angular/core";
 import {
-  SdSidebarUserControl,
-  type ISidebarUserMenu,
-} from "../../../../src/ui/navigation/sidebar/sd-sidebar-user.control";
+  SdSidebarUser,
+  type SdSidebarUserMenu,
+} from "../../../../src/ui/navigation/sidebar/sd-sidebar-user";
 
 @Component({
   selector: "sd-user-unit-test",
@@ -12,8 +12,8 @@ import {
     </sd-sidebar-user>
   `,
   standalone: true,
-  imports: [SdSidebarUserControl],
+  imports: [SdSidebarUser],
 })
 export class UserUnitTest {
-  userMenu = signal<ISidebarUserMenu | undefined>(undefined);
+  userMenu = signal<SdSidebarUserMenu | undefined>(undefined);
 }

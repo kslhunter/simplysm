@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { ElementRef, signal } from "@angular/core";
 import { SdAngularConfigProvider } from "../../../src/core/providers/sd-angular-config.provider";
 import { SdSystemConfigProvider } from "../../../src/core/providers/sd-system-config.provider";
-import { useSdSystemConfigResource } from "../../../src/core/utils/useSdSystemConfigResource";
+import { injectSdSystemConfigResource } from "../../../src/core/utils/injectSdSystemConfigResource";
 
 describe("Feature 1.9 Slice 2: 시스템 설정 + 설정 리소스", () => {
   describe("Rule: 시스템 설정은 로컬 또는 커스텀 저장소로 관리한다", () => {
@@ -67,9 +67,9 @@ describe("Feature 1.9 Slice 2: 시스템 설정 + 설정 리소스", () => {
 
       const key = signal<string | undefined>("columns");
 
-      let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+      let res: ReturnType<typeof injectSdSystemConfigResource<string[]>>;
       TestBed.runInInjectionContext(() => {
-        res = useSdSystemConfigResource<string[]>({ key });
+        res = injectSdSystemConfigResource<string[]>({ key });
       });
 
       await vi.waitFor(() => {
@@ -86,9 +86,9 @@ describe("Feature 1.9 Slice 2: 시스템 설정 + 설정 리소스", () => {
 
       const key = signal<string | undefined>("columns");
 
-      let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+      let res: ReturnType<typeof injectSdSystemConfigResource<string[]>>;
       TestBed.runInInjectionContext(() => {
-        res = useSdSystemConfigResource<string[]>({ key });
+        res = injectSdSystemConfigResource<string[]>({ key });
       });
 
       // 초기 로드 대기 (값이 없으면 undefined)
@@ -118,9 +118,9 @@ describe("Feature 1.9 Slice 2: 시스템 설정 + 설정 리소스", () => {
 
       const key = signal<string | undefined>(undefined);
 
-      let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+      let res: ReturnType<typeof injectSdSystemConfigResource<string[]>>;
       TestBed.runInInjectionContext(() => {
-        res = useSdSystemConfigResource<string[]>({ key });
+        res = injectSdSystemConfigResource<string[]>({ key });
       });
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -149,9 +149,9 @@ describe("Feature 4.2a Slice 2: 시스템 설정 리소스 안전성", () => {
 
     const key = signal<string | undefined>(undefined);
 
-    let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+    let res: ReturnType<typeof injectSdSystemConfigResource<string[]>>;
     TestBed.runInInjectionContext(() => {
-      res = useSdSystemConfigResource<string[]>({ key });
+      res = injectSdSystemConfigResource<string[]>({ key });
     });
 
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -169,9 +169,9 @@ describe("Feature 4.2a Slice 2: 시스템 설정 리소스 안전성", () => {
 
     const key = signal<string | undefined>("columns");
 
-    let res: ReturnType<typeof useSdSystemConfigResource<string[]>>;
+    let res: ReturnType<typeof injectSdSystemConfigResource<string[]>>;
     TestBed.runInInjectionContext(() => {
-      res = useSdSystemConfigResource<string[]>({ key });
+      res = injectSdSystemConfigResource<string[]>({ key });
     });
 
     // 초기 로드 대기

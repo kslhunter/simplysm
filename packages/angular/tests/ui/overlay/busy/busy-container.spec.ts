@@ -19,7 +19,7 @@ function getBusyContainer(fixture: any): HTMLElement {
   return fixture.nativeElement.querySelector("sd-busy-container") as HTMLElement;
 }
 
-describe("Feature 3.4 Slice 1: SdBusyContainerControl 렌더링", () => {
+describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
   // Acceptance: busy=true로 영역 인디케이터 표시
   it("busy=true이면 인디케이터가 표시되고 data-sd-busy 속성이 설정된다", () => {
     const fixture = setup(SdBusyTestDefault);

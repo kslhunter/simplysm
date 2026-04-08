@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-서비스 클라이언트와 서버가 공유하는 프로토콜, 메시지 타입, 서비스 인터페이스 정의 패키지.
+서비스 클라이언트와 서버가 공유하는 프로토콜, 메시지 타입, 서비스 인터페이스, 앱 구조 정의 패키지.
 
 ## Installation
 
@@ -42,6 +42,7 @@ npm install @simplysm/service-common
 | `OrmService` | interface | DB 연결, 트랜잭션 관리, 쿼리 실행 인터페이스 |
 | `DbConnOptions` | type | 데이터베이스 연결 옵션 |
 | `AutoUpdateService` | interface | 클라이언트 최신 버전 정보 조회 인터페이스 |
+| `AppStructureService` | interface | 서버에 등록된 앱 구조 항목을 클라이언트명 기준 맵으로 조회하는 인터페이스 |
 
 -> See [docs/service-types.md](./docs/service-types.md) for details.
 
@@ -52,6 +53,21 @@ npm install @simplysm/service-common
 | `ServiceUploadResult` | interface | 파일 업로드 결과 (경로, 파일명, 크기) |
 
 -> See [docs/types.md](./docs/types.md) for details.
+
+### App Structure
+
+| API | Type | Description |
+|-----|------|-------------|
+| `AppStructureItem` | type | 앱 구조 항목 유니언 (그룹 또는 리프) |
+| `AppStructureGroupItem` | interface | 자식을 가진 그룹 메뉴 항목 |
+| `AppStructureLeafItem` | interface | 말단 메뉴 항목 (권한, URL 포함) |
+| `AppStructureSubPermission` | interface | 리프 항목의 하위 권한 정의 |
+| `FlatPermission` | interface | 트리를 플래트닝한 권한 결과 |
+| `isUsableModules` | function | 모듈 접근 가능 여부 판단 (modules OR, requiredModules AND) |
+| `isUsableModulesChain` | function | 모듈 체인 전체의 접근 가능 여부 판단 |
+| `getFlatPermissions` | function | 앱 구조 트리를 모듈 조건 필터링하여 FlatPermission[]으로 플래트닝 |
+
+-> See [docs/app-structure.md](./docs/app-structure.md) for details.
 
 ### Events
 
@@ -103,4 +119,34 @@ ctx.socket?.emitEvent(OrderUpdated, { orderId: 123 }, { status: "shipped" });
 await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
   // data.status는 string으로 타입 추론됨
 });
+```
+
+### 앱 구조 권한 플래트닝
+
+```typescript
+import { getFlatPermissions, isUsableModules } from "@simplysm/service-common";
+import type { AppStructureItem } from "@simplysm/service-common";
+
+const items: AppStructureItem<string>[] = [
+  {
+    code: "admin",
+    title: "관리",
+    children: [
+      { code: "user", title: "사용자", perms: ["use", "edit"] },
+    ],
+  },
+  {
+    code: "report",
+    title: "리포트",
+    modules: ["moduleA"],
+    perms: ["use"],
+  },
+];
+
+// 활성 모듈 기준으로 권한 플래트닝
+const perms = getFlatPermissions(items, ["moduleA"]);
+// [{ codeChain: ["admin", "user", "use"], ... }, { codeChain: ["admin", "user", "edit"], ... }, ...]
+
+// 개별 모듈 접근 가능 여부 확인
+const canAccess = isUsableModules(["moduleA", "moduleB"], undefined, ["moduleA"]); // true (OR 조건)
 ```

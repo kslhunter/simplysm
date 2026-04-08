@@ -1,5 +1,5 @@
 import { computed, type Signal } from "@angular/core";
-import type { ISdSheetColumnDef } from "./types";
+import type { SdSheetColumnDef } from "./types";
 
 /**
  * Fixed column의 left offset을 계산한다.
@@ -8,7 +8,7 @@ import type { ISdSheetColumnDef } from "./types";
  * em, rem, % 등 non-px 단위의 width는 offset 누적에 반영되지 않는다 (0으로 처리).
  */
 export function useSheetColumnFixing(options: {
-  columnDefs: Signal<ISdSheetColumnDef[]>;
+  columnDefs: Signal<SdSheetColumnDef[]>;
 }) {
   const fixedLeftMap = computed((): Map<string, number> => {
     const map = new Map<string, number>();

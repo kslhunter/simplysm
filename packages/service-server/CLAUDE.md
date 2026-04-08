@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/service-server` - Fastify 기반 서비스 서버. WebSocket/HTTP 이중 전송, JWT 인증, ORM 브리지, 자동 업데이트를 제공한다. 18개의 TypeScript 소스 파일.
+`@simplysm/service-server` - Fastify 기반 서비스 서버. WebSocket/HTTP 이중 전송, JWT 인증, ORM 브리지, 자동 업데이트를 제공한다. 19개의 TypeScript 소스 파일.
 
 ## Architecture
 
@@ -31,8 +31,9 @@ src/
 ├── protocol/
 │   └── protocol-wrapper.ts    ← 서버 측 프로토콜 인코딩/디코딩 래퍼
 ├── services/
-│   ├── orm-service.ts         ← ORM 브리지 서비스 (WebSocket 전용, 인증 필수)
-│   └── auto-update-service.ts ← 자동 업데이트 서비스
+│   ├── orm-service.ts            ← ORM 브리지 서비스 (WebSocket 전용, 인증 필수)
+│   ├── auto-update-service.ts    ← 자동 업데이트 서비스
+│   └── app-structure-service.ts  ← 앱 구조 정보 제공 서비스
 ├── utils/
 │   └── config-manager.ts      ← .config.json 파일 읽기 유틸
 ├── workers/
@@ -134,6 +135,11 @@ const payload = await server.verifyAuthToken(token);
 - `clientPath/{platform}/updates/` 디렉토리에서 최신 버전 파일(`.apk` 또는 `.exe`)을 찾아 반환.
 - `semver`로 최대 버전을 결정.
 
+**AppStructureService** (`services/app-structure-service.ts`):
+
+- 팩토리 함수로 생성. `Record<string, AppStructureItem[]>` 맵을 받아 클라이언트에 앱 구조 정보를 반환한다.
+- 인증 불필요. `getItems()` 메서드 하나만 제공한다.
+
 ### JWT 토큰
 
 - 알고리즘: HS256, 유효기간: 12시간.
@@ -160,9 +166,11 @@ const payload = await server.verifyAuthToken(token);
 
 ```
 tests/
-├── define-service.spec.ts      ← defineService / auth / getServiceAuthPermissions 단위 테스트
-├── service-executor.spec.ts    ← executeServiceMethod 인증 파이프라인 통합 테스트
-└── orm-service.spec.ts         ← OrmService.executeDefs 동작 검증 (orm-node 모킹)
+├── define-service.spec.ts              ← defineService / auth / getServiceAuthPermissions 단위 테스트
+├── service-executor.spec.ts            ← executeServiceMethod 인증 파이프라인 통합 테스트
+├── orm-service.spec.ts                 ← OrmService.executeDefs 동작 검증 (orm-node 모킹)
+├── app-structure-service.spec.ts       ← AppStructureService 단위 테스트
+└── app-structure-service.acc.spec.ts   ← AppStructureService 인수 테스트
 ```
 
 **모킹 패턴**: `vi.mock`으로 `@simplysm/orm-node`를 모킹하고, `createDbConn`이 반환할 Mock 객체를 직접 구성한다. `ServiceServer`는 `{ options: { services, auth } }` 형태의 최소 목 객체(`createMockServer`)로 대체한다.

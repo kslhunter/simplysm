@@ -1,8 +1,8 @@
 import { Component, signal } from "@angular/core";
 import {
-  SdSidebarUserControl,
-  type ISidebarUserMenu,
-} from "../../../../src/ui/navigation/sidebar/sd-sidebar-user.control";
+  SdSidebarUser,
+  type SdSidebarUserMenu,
+} from "../../../../src/ui/navigation/sidebar/sd-sidebar-user";
 
 @Component({
   selector: "sd-sidebar-user-profile-test",
@@ -12,7 +12,7 @@ import {
     </sd-sidebar-user>
   `,
   standalone: true,
-  imports: [SdSidebarUserControl],
+  imports: [SdSidebarUser],
 })
 export class SidebarUserProfileTest {}
 
@@ -20,10 +20,10 @@ export class SidebarUserProfileTest {}
   selector: "sd-sidebar-user-menu-test",
   template: `<sd-sidebar-user [userMenu]="userMenu()" />`,
   standalone: true,
-  imports: [SdSidebarUserControl],
+  imports: [SdSidebarUser],
 })
 export class SidebarUserMenuTest {
-  userMenu = signal<ISidebarUserMenu>({
+  userMenu = signal<SdSidebarUserMenu>({
     title: "Hong Gildong",
     menus: [
       { title: "Settings", onClick: () => {} },
@@ -36,6 +36,6 @@ export class SidebarUserMenuTest {
   selector: "sd-sidebar-user-no-menu-test",
   template: `<sd-sidebar-user />`,
   standalone: true,
-  imports: [SdSidebarUserControl],
+  imports: [SdSidebarUser],
 })
 export class SidebarUserNoMenuTest {}

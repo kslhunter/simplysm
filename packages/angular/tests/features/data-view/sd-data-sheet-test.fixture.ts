@@ -1,13 +1,13 @@
 import { Component, input, signal } from "@angular/core";
 import { vi } from "vitest";
+import { SdDataSheet } from "../../../src/features/data-view/sd-data-sheet";
 import {
-  AbsSdDataSheet,
-  SdDataSheetControl,
-  type ISdDataSheetItemPropInfo,
-  type ISdDataSheetItemInfo,
-  type ISdDataSheetSearchResult,
-} from "../../../src/features/data-view/sd-data-sheet.control";
-import { SdDataSheetColumnDirective } from "../../../src/features/data-view/sd-data-sheet-column.directive";
+  SdDataSheetBase,
+  type SdDataSheetItemPropInfo,
+  type SdDataSheetItemInfo,
+  type SdDataSheetSearchResult,
+} from "../../../src/features/data-view/sd-data-sheet.base";
+import { SdDataSheetColumn } from "../../../src/features/data-view/sd-data-sheet-column";
 
 export interface TestItem {
   id: number | undefined;
@@ -18,7 +18,7 @@ export interface TestItem {
 @Component({
   selector: "ds-test-host",
   standalone: true,
-  imports: [SdDataSheetControl, SdDataSheetColumnDirective],
+  imports: [SdDataSheet, SdDataSheetColumn],
   template: `
     <sd-data-sheet>
       <sd-data-sheet-column [key]="'name'" [header]="'이름'" [edit]="true">
@@ -27,19 +27,19 @@ export interface TestItem {
     </sd-data-sheet>
   `,
 })
-export class DSTestHost extends AbsSdDataSheet<Record<string, any>, TestItem, number | undefined> {
+export class DSTestHost extends SdDataSheetBase<Record<string, any>, TestItem, number | undefined> {
   canUse = signal(true);
   canEdit = signal(true);
   override editMode: "inline" | "modal" | undefined = "inline";
   selectMode = input<"single" | "multi" | undefined>(undefined);
 
-  itemPropInfo: ISdDataSheetItemPropInfo<TestItem> = {
+  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = {
     isDeleted: "isDeleted",
     lastModifiedAt: undefined,
     lastModifiedBy: undefined,
   };
 
-  getItemInfoFn = (item: TestItem): ISdDataSheetItemInfo<number | undefined> => ({
+  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({
     key: item.id,
     canSelect: true,
     canEdit: true,
@@ -47,7 +47,7 @@ export class DSTestHost extends AbsSdDataSheet<Record<string, any>, TestItem, nu
   });
 
   searchFn = vi.fn<
-    (usePagination: boolean) => Promise<ISdDataSheetSearchResult<TestItem>>
+    (usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>
   >();
 
   bindFilter() {

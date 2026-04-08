@@ -1,11 +1,11 @@
 import { Component, signal } from "@angular/core";
-import { SdCheckboxControl } from "../../../../src/ui/form/checkbox/sd-checkbox.control";
+import { SdCheckbox } from "../../../../src/ui/form/checkbox/sd-checkbox";
 
 @Component({
   selector: "sd-checkbox-default-test",
   template: `<sd-checkbox [(value)]="value">Label</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxDefaultTest {
   value = signal(false);
@@ -15,7 +15,7 @@ export class SdCheckboxDefaultTest {
   selector: "sd-checkbox-checked-test",
   template: `<sd-checkbox [(value)]="value">Checked</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxCheckedTest {
   value = signal(true);
@@ -25,7 +25,7 @@ export class SdCheckboxCheckedTest {
   selector: "sd-checkbox-radio-test",
   template: `<sd-checkbox [(value)]="value" [radio]="true">Radio</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxRadioTest {
   value = signal(false);
@@ -35,7 +35,7 @@ export class SdCheckboxRadioTest {
   selector: "sd-checkbox-radio-checked-test",
   template: `<sd-checkbox [(value)]="value" [radio]="true">Radio Checked</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxRadioCheckedTest {
   value = signal(true);
@@ -45,7 +45,7 @@ export class SdCheckboxRadioCheckedTest {
   selector: "sd-checkbox-disabled-test",
   template: `<sd-checkbox [(value)]="value" [disabled]="true">Disabled</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxDisabledTest {
   value = signal(false);
@@ -55,7 +55,7 @@ export class SdCheckboxDisabledTest {
   selector: "sd-checkbox-can-change-allow-test",
   template: `<sd-checkbox [(value)]="value" [canChangeFn]="canChange">Guarded</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxCanChangeAllowTest {
   value = signal(false);
@@ -66,7 +66,7 @@ export class SdCheckboxCanChangeAllowTest {
   selector: "sd-checkbox-can-change-deny-test",
   template: `<sd-checkbox [(value)]="value" [canChangeFn]="canChange">Guarded</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxCanChangeDenyTest {
   value = signal(false);
@@ -77,7 +77,7 @@ export class SdCheckboxCanChangeDenyTest {
   selector: "sd-checkbox-theme-test",
   template: `<sd-checkbox [(value)]="value" [theme]="'primary'">Themed</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxThemeTest {
   value = signal(false);
@@ -87,7 +87,7 @@ export class SdCheckboxThemeTest {
   selector: "sd-checkbox-size-sm-test",
   template: `<sd-checkbox [(value)]="value" [size]="'sm'">Small</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxSizeSmTest {
   value = signal(false);
@@ -97,7 +97,7 @@ export class SdCheckboxSizeSmTest {
   selector: "sd-checkbox-inline-test",
   template: `<sd-checkbox [(value)]="value" [inline]="true">Inline</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxInlineTest {
   value = signal(false);
@@ -107,7 +107,7 @@ export class SdCheckboxInlineTest {
   selector: "sd-checkbox-inset-test",
   template: `<sd-checkbox [(value)]="value" [inset]="true">Inset</sd-checkbox>`,
   standalone: true,
-  imports: [SdCheckboxControl],
+  imports: [SdCheckbox],
 })
 export class SdCheckboxInsetTest {
   value = signal(false);

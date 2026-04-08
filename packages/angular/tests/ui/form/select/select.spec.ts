@@ -18,7 +18,7 @@ function setupTestBed(component: any) {
   });
 }
 
-describe("Feature 5.1 Slice 1: SdSelectControl + SdSelectItemControl basic (single select)", () => {
+describe("Feature 5.1 Slice 1: SdSelect + SdSelectItem basic (single select)", () => {
   // Acceptance: Scenario - clicking an item in single mode sets the value
   it("Scenario: click item B sets value to B and dropdown closes", () => {
     setupTestBed(SdSelectSingleTest);

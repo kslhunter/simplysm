@@ -1,11 +1,11 @@
 import { Component } from "@angular/core";
-import { SdTopbarContainerControl } from "../../../../src/ui/navigation/topbar/sd-topbar-container.control";
+import { SdTopbarContainer } from "../../../../src/ui/navigation/topbar/sd-topbar-container";
 
 @Component({
   selector: "sd-topbar-container-unit-test",
   template: `<sd-topbar-container><div>content</div></sd-topbar-container>`,
   standalone: true,
-  imports: [SdTopbarContainerControl],
+  imports: [SdTopbarContainer],
   styles: [
     `
       :host {

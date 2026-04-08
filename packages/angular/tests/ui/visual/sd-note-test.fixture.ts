@@ -1,11 +1,11 @@
 import { Component } from "@angular/core";
-import { SdNoteControl } from "../../../src/ui/visual/sd-note.control";
+import { SdNote } from "../../../src/ui/visual/sd-note";
 
 @Component({
   selector: "sd-note-theme-test",
   template: `<sd-note [theme]="'info'">안내 노트</sd-note>`,
   standalone: true,
-  imports: [SdNoteControl],
+  imports: [SdNote],
 })
 export class SdNoteThemeTest {}
 
@@ -13,7 +13,7 @@ export class SdNoteThemeTest {}
   selector: "sd-note-size-sm-test",
   template: `<sd-note [size]="'sm'">작은 노트</sd-note>`,
   standalone: true,
-  imports: [SdNoteControl],
+  imports: [SdNote],
 })
 export class SdNoteSizeSmTest {}
 
@@ -21,7 +21,7 @@ export class SdNoteSizeSmTest {}
   selector: "sd-note-size-lg-test",
   template: `<sd-note [size]="'lg'">큰 노트</sd-note>`,
   standalone: true,
-  imports: [SdNoteControl],
+  imports: [SdNote],
 })
 export class SdNoteSizeLgTest {}
 
@@ -29,7 +29,7 @@ export class SdNoteSizeLgTest {}
   selector: "sd-note-inset-test",
   template: `<sd-note [inset]="true">인셋 노트</sd-note>`,
   standalone: true,
-  imports: [SdNoteControl],
+  imports: [SdNote],
 })
 export class SdNoteInsetTest {}
 
@@ -37,6 +37,6 @@ export class SdNoteInsetTest {}
   selector: "sd-note-default-test",
   template: `<sd-note>기본 노트</sd-note>`,
   standalone: true,
-  imports: [SdNoteControl],
+  imports: [SdNote],
 })
 export class SdNoteDefaultTest {}

@@ -6,10 +6,10 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
-import { SdSelectControl } from "../select/sd-select.control";
-import { SdSelectItemControl } from "../select/sd-select-item.control";
-import { SdRangeControl } from "./sd-range.control";
-import { SdTextfieldControl } from "./sd-textfield.control";
+import { SdSelect } from "../select/sd-select";
+import { SdSelectItem } from "../select/sd-select-item";
+import { SdRange } from "./sd-range";
+import { SdTextfield } from "./sd-textfield";
 import { DateOnly } from "@simplysm/core-common";
 
 @Component({
@@ -17,7 +17,7 @@ import { DateOnly } from "@simplysm/core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdRangeControl, SdTextfieldControl],
+  imports: [SdSelect, SdSelectItem, SdRange, SdTextfield],
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";

@@ -1,11 +1,11 @@
 import { Component } from "@angular/core";
-import { SdDropdownControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown.control";
-import { SdDropdownPopupControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown-popup.control";
+import { SdDropdown } from "../../../../src/ui/overlay/dropdown/sd-dropdown";
+import { SdDropdownPopup } from "../../../../src/ui/overlay/dropdown/sd-dropdown-popup";
 
 @Component({
   selector: "sd-dropdown-test-default",
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
+  imports: [SdDropdown, SdDropdownPopup],
   template: `
     <sd-dropdown>
       trigger
@@ -18,7 +18,7 @@ export class SdDropdownTestDefault {}
 @Component({
   selector: "sd-dropdown-test-disabled",
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
+  imports: [SdDropdown, SdDropdownPopup],
   template: `
     <sd-dropdown [disabled]="true">
       trigger
@@ -31,7 +31,7 @@ export class SdDropdownTestDisabled {}
 @Component({
   selector: "sd-dropdown-test-scrollable",
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
+  imports: [SdDropdown, SdDropdownPopup],
   template: `
     <div class="scroll-container" style="height: 200px; overflow: auto;">
       <div style="height: 100px;"></div>
@@ -48,7 +48,7 @@ export class SdDropdownTestScrollable {}
 @Component({
   selector: "sd-dropdown-test-with-focusable",
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl],
+  imports: [SdDropdown, SdDropdownPopup],
   template: `
     <sd-dropdown>
       trigger

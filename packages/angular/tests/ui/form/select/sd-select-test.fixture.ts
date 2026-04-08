@@ -1,9 +1,9 @@
 import { Component, signal } from "@angular/core";
-import { SdSelectControl } from "../../../../src/ui/form/select/sd-select.control";
-import { SdSelectItemControl } from "../../../../src/ui/form/select/sd-select-item.control";
-import { SdFormControl } from "../../../../src/ui/form/sd-form.control";
-import { SdItemOfTemplateDirective } from "../../../../src/core/directives/sd-item-of-template.directive";
-import { SdSelectButtonControl } from "../../../../src/ui/form/select/sd-select-button.control";
+import { SdSelect } from "../../../../src/ui/form/select/sd-select";
+import { SdSelectItem } from "../../../../src/ui/form/select/sd-select-item";
+import { SdForm } from "../../../../src/ui/form/sd-form";
+import { SdItemOfTemplate } from "../../../../src/core/directives/sd-item-of-template";
+import { SdSelectButton } from "../../../../src/ui/form/select/sd-select-button";
 
 @Component({
   selector: "sd-select-single-test",
@@ -15,7 +15,7 @@ import { SdSelectButtonControl } from "../../../../src/ui/form/select/sd-select-
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectSingleTest {
   value = signal<string | undefined>(undefined);
@@ -31,7 +31,7 @@ export class SdSelectSingleTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectPreselectedTest {
   value = signal<string | undefined>("A");
@@ -46,7 +46,7 @@ export class SdSelectPreselectedTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectPlaceholderTest {
   value = signal<string | undefined>(undefined);
@@ -62,7 +62,7 @@ export class SdSelectPlaceholderTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectMultiTest {
   value = signal<string[]>([]);
@@ -78,7 +78,7 @@ export class SdSelectMultiTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectMultiPreselectedTest {
   value = signal<string[]>(["A", "B"]);
@@ -93,7 +93,7 @@ export class SdSelectMultiPreselectedTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectMultiHideSelectAllTest {
   value = signal<string[]>([]);
@@ -108,7 +108,7 @@ export class SdSelectMultiHideSelectAllTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectMultiVerticalTest {
   value = signal<string[]>(["A", "B"]);
@@ -123,7 +123,7 @@ export class SdSelectMultiVerticalTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectDisabledItemTest {
   value = signal<string | undefined>(undefined);
@@ -138,7 +138,7 @@ export class SdSelectDisabledItemTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectHiddenItemTest {
   value = signal<string | undefined>(undefined);
@@ -155,7 +155,7 @@ export class SdSelectHiddenItemTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectMultiMixedStateTest {
   value = signal<string[]>([]);
@@ -171,7 +171,7 @@ export class SdSelectMultiMixedStateTest {
     </sd-form>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdFormControl],
+  imports: [SdSelect, SdSelectItem, SdForm],
 })
 export class SdSelectRequiredTest {
   value = signal<string | undefined>(undefined);
@@ -187,7 +187,7 @@ export class SdSelectRequiredTest {
     </sd-form>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdFormControl],
+  imports: [SdSelect, SdSelectItem, SdForm],
 })
 export class SdSelectRequiredSelectedTest {
   value = signal<string | undefined>("A");
@@ -203,7 +203,7 @@ export class SdSelectRequiredSelectedTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdItemOfTemplateDirective],
+  imports: [SdSelect, SdSelectItem, SdItemOfTemplate],
 })
 export class SdSelectItemsTemplateTest {
   value = signal<string | undefined>(undefined);
@@ -232,7 +232,7 @@ interface TreeItem {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdItemOfTemplateDirective],
+  imports: [SdSelect, SdSelectItem, SdItemOfTemplate],
 })
 export class SdSelectHierarchyTest {
   value = signal<string | undefined>(undefined);
@@ -260,7 +260,7 @@ export class SdSelectHierarchyTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectHeaderTplTest {
   value = signal<string | undefined>(undefined);
@@ -277,7 +277,7 @@ export class SdSelectHeaderTplTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectBeforeTplTest {
   value = signal<string | undefined>(undefined);
@@ -294,7 +294,7 @@ export class SdSelectBeforeTplTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdSelectButtonControl],
+  imports: [SdSelect, SdSelectItem, SdSelectButton],
 })
 export class SdSelectButtonTest {
   value = signal<string | undefined>(undefined);
@@ -310,7 +310,7 @@ export class SdSelectButtonTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl, SdSelectButtonControl],
+  imports: [SdSelect, SdSelectItem, SdSelectButton],
 })
 export class SdSelectButtonDisabledTest {
   value = signal<string | undefined>(undefined);
@@ -324,7 +324,7 @@ export class SdSelectButtonDisabledTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectSizeSmTest {
   value = signal<string | undefined>(undefined);
@@ -338,7 +338,7 @@ export class SdSelectSizeSmTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectSizeLgTest {
   value = signal<string | undefined>(undefined);
@@ -352,7 +352,7 @@ export class SdSelectSizeLgTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectInlineTest {
   value = signal<string | undefined>(undefined);
@@ -366,7 +366,7 @@ export class SdSelectInlineTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectInsetTest {
   value = signal<string | undefined>(undefined);
@@ -380,7 +380,7 @@ export class SdSelectInsetTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectDisabledTest {
   value = signal<string | undefined>(undefined);
@@ -397,7 +397,7 @@ export class SdSelectDisabledTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectDynamicContentTest {
   value = signal<string | undefined>("A");
@@ -414,7 +414,7 @@ export class SdSelectDynamicContentTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectKeyboardTest {
   value = signal<string | undefined>(undefined);
@@ -429,7 +429,7 @@ export class SdSelectKeyboardTest {
     </sd-select>
   `,
   standalone: true,
-  imports: [SdSelectControl, SdSelectItemControl],
+  imports: [SdSelect, SdSelectItem],
 })
 export class SdSelectKeyboardMultiTest {
   value = signal<string[]>([]);

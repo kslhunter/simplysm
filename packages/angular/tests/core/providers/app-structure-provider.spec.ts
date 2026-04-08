@@ -1,59 +1,77 @@
 import "@simplysm/core-browser";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { signal } from "@angular/core";
 import {
   SdAppStructureProvider,
-  usePermsSignal,
+  injectPermsSignal,
 } from "../../../src/core/providers/sd-app-structure.provider";
-import type { TSdAppStructureItem } from "../../../src/core/providers/sd-app-structure.types";
+import type { AppStructureItem } from "../../../src/core/providers/sd-app-structure.types";
+import { SdServiceClientFactoryProvider } from "../../../src/core/providers/sd-service-client-factory.provider";
+import { SdAngularConfigProvider } from "../../../src/core/providers/sd-angular-config.provider";
+
+const TEST_ITEMS: AppStructureItem<string>[] = [
+  {
+    code: "admin",
+    title: "관리",
+    icon: "admin-icon",
+    children: [
+      { code: "user", title: "사용자", perms: ["use", "edit"] },
+      { code: "config", title: "설정" },
+    ],
+  },
+  {
+    code: "report",
+    title: "리포트",
+    modules: ["moduleA"],
+  },
+  {
+    code: "hidden",
+    title: "숨김",
+    isNotMenu: true,
+  },
+  {
+    code: "multi",
+    title: "멀티모듈",
+    requiredModules: ["moduleA", "moduleB"],
+  },
+  {
+    code: "external",
+    title: "외부링크",
+    url: "https://example.com",
+  },
+];
 
 // 테스트용 구현체
 class TestAppStructure extends SdAppStructureProvider<string> {
-  items: TSdAppStructureItem<string>[] = [
-    {
-      code: "admin",
-      title: "관리",
-      icon: "admin-icon",
-      children: [
-        { code: "user", title: "사용자", perms: ["use", "edit"] },
-        { code: "config", title: "설정" },
-      ],
-    },
-    {
-      code: "report",
-      title: "리포트",
-      modules: ["moduleA"],
-    },
-    {
-      code: "hidden",
-      title: "숨김",
-      isNotMenu: true,
-    },
-    {
-      code: "multi",
-      title: "멀티모듈",
-      requiredModules: ["moduleA", "moduleB"],
-    },
-    {
-      code: "external",
-      title: "외부링크",
-      url: "https://example.com",
-    },
-  ];
-
+  serviceKey = "test";
   usableModules = signal<string[] | undefined>(undefined);
   permRecord = signal<Record<string, boolean> | undefined>(undefined);
 }
 
-describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
+function createMockClientFactory(itemsMap: Record<string, AppStructureItem[]> = {}) {
+  return {
+    get: vi.fn().mockReturnValue({
+      getService: vi.fn().mockReturnValue({
+        getItems: vi.fn().mockResolvedValue(itemsMap),
+      }),
+    }),
+  };
+}
+
+describe("SdAppStructureProvider", () => {
   let structure: TestAppStructure;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{ provide: SdAppStructureProvider, useClass: TestAppStructure }],
+      providers: [
+        { provide: SdAppStructureProvider, useClass: TestAppStructure },
+        { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
+        { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+      ],
     });
     structure = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+    structure.items.set(TEST_ITEMS);
   });
 
   describe("메뉴 계산", () => {
@@ -91,7 +109,7 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
       const menus = structure.usableMenus();
       expect(menus.some((m) => m.codeChain[0] === "hidden")).toBe(false);
 
-      const perms = structure.getPermissionsByStructure(structure.items);
+      const perms = structure.getPermissionsByStructure(structure.items());
       expect(perms.some((p) => p.codeChain[0] === "hidden")).toBe(true);
     });
 
@@ -107,11 +125,11 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
   });
 
   describe("권한 조회", () => {
-    it("usePermsSignal로 활성 권한을 조회한다", () => {
+    it("injectPermsSignal로 활성 권한을 조회한다", () => {
       structure.permRecord.set({ "admin.user.edit": true });
 
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.user"], ["use", "edit"]),
+        injectPermsSignal(["admin.user"], ["use", "edit"]),
       );
       expect(result()).toEqual(["edit"]);
     });
@@ -120,13 +138,13 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
       structure.permRecord.set({});
 
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.config"], ["use", "edit"]),
+        injectPermsSignal(["admin.config"], ["use", "edit"]),
       );
       expect(result()).toEqual(["use", "edit"]);
     });
   });
 
-  describe("Feature 2.2: ISdMenu url 전파", () => {
+  describe("Feature 2.2: SdMenu url 전파", () => {
     it("url이 있는 LeafItem의 url이 메뉴에 전파된다", () => {
       const menus = structure.usableMenus();
       const externalMenu = menus.find((m) => m.codeChain[0] === "external");
@@ -167,7 +185,7 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     it("중간 코드 누락 시 getPermsByFullCode가 빈 배열을 반환한다", () => {
       structure.permRecord.set({ "admin.user.use": true });
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.nonexistent.something"], ["use", "edit"]),
+        injectPermsSignal(["admin.nonexistent.something"], ["use", "edit"]),
       );
       expect(result()).toEqual([]);
     });
@@ -190,14 +208,14 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     it("permRecord가 undefined이고 perms 미정의 항목이면 빈 배열을 반환한다", () => {
       // permRecord는 초기값 undefined (signal 초기 상태)
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.config"], ["use", "edit"]),
+        injectPermsSignal(["admin.config"], ["use", "edit"]),
       );
       expect(result()).toEqual([]);
     });
 
     it("permRecord가 undefined이고 perms 정의 항목이면 빈 배열을 반환한다", () => {
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.user"], ["use", "edit"]),
+        injectPermsSignal(["admin.user"], ["use", "edit"]),
       );
       expect(result()).toEqual([]);
     });
@@ -205,9 +223,94 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     it("permRecord 로딩 완료 후 기존 동작을 보존한다", () => {
       structure.permRecord.set({ "admin.user.use": true });
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.user"], ["use", "edit"]),
+        injectPermsSignal(["admin.user"], ["use", "edit"]),
       );
       expect(result()).toEqual(["use"]);
+    });
+  });
+
+  describe("Feature 1.3: items signal 및 fetch", () => {
+    it("Provider 생성 직후 items는 빈 배열이다", () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useClass: TestAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
+          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+        ],
+      });
+      const fresh = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+      expect(fresh.items()).toEqual([]);
+    });
+
+    it("fetchItems 후 clientName에 해당하는 items가 설정된다", async () => {
+      TestBed.resetTestingModule();
+      const mockFactory = createMockClientFactory({
+        "testApp": TEST_ITEMS,
+        "other": [{ code: "x", title: "x" }],
+      });
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useClass: TestAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
+          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+        ],
+      });
+      const fresh = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+
+      await fresh.fetchItems();
+
+      expect(fresh.items()).toEqual(TEST_ITEMS);
+      expect(mockFactory.get).toHaveBeenCalledWith("test");
+    });
+
+    it("clientName에 해당하는 항목이 없으면 빈 배열이다", async () => {
+      TestBed.resetTestingModule();
+      const mockFactory = createMockClientFactory({ "other": TEST_ITEMS });
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useClass: TestAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
+          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+        ],
+      });
+      const fresh = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+
+      await fresh.fetchItems();
+
+      expect(fresh.items()).toEqual([]);
+    });
+
+    it("fetch 전 usableMenus는 빈 배열이다", () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useClass: TestAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
+          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+        ],
+      });
+      const fresh = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+      expect(fresh.usableMenus()).toEqual([]);
+    });
+
+    it("fetch 후 usableMenus가 items에 따라 계산된다", async () => {
+      TestBed.resetTestingModule();
+      const mockFactory = createMockClientFactory({ "testApp": TEST_ITEMS });
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: SdAppStructureProvider, useClass: TestAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
+          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
+        ],
+      });
+      const fresh = TestBed.inject(SdAppStructureProvider) as TestAppStructure;
+
+      await fresh.fetchItems();
+      fresh.usableModules.set(["moduleA"]);
+
+      const menus = fresh.usableMenus();
+      expect(menus.some((m) => m.codeChain[0] === "report")).toBe(true);
     });
   });
 
@@ -221,7 +324,7 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     it("잘못된 fullCode로 getPermsByFullCode 호출 시 빈 배열이 반환된다 (권한 거부)", () => {
       structure.permRecord.set({});
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["nonexistent.code"], ["use", "edit"]),
+        injectPermsSignal(["nonexistent.code"], ["use", "edit"]),
       );
       expect(result()).toEqual([]);
     });
@@ -229,7 +332,7 @@ describe("Feature 1.8 Slice 2: SdAppStructureProvider", () => {
     it("perms가 없는 item의 fullCode는 모든 권한이 부여된다 (기존 동작 유지)", () => {
       structure.permRecord.set({});
       const result = TestBed.runInInjectionContext(() =>
-        usePermsSignal(["admin.config"], ["use", "edit"]),
+        injectPermsSignal(["admin.config"], ["use", "edit"]),
       );
       expect(result()).toEqual(["use", "edit"]);
     });

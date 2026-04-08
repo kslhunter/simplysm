@@ -1,16 +1,16 @@
 import { Component, signal } from "@angular/core";
 import { tablerHome } from "@ng-icons/tabler-icons";
-import { SdSidebarMenuControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu.control";
-import type { ISdMenu } from "../../../../src/ui/navigation/menu-utils";
+import { SdSidebarMenu } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu";
+import type { SdMenu } from "../../../../src/ui/navigation/menu-utils";
 
 @Component({
   selector: "sd-sidebar-menu-flat-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuFlatTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "Menu 1", codeChain: ["m1"] },
     { title: "Menu 2", codeChain: ["m2"] },
     { title: "Menu 3", codeChain: ["m3"] },
@@ -21,10 +21,10 @@ export class SidebarMenuFlatTest {
   selector: "sd-sidebar-menu-accordion-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuAccordionTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "Menu 1", codeChain: ["m1"] },
     { title: "Menu 2", codeChain: ["m2"] },
     { title: "Menu 3", codeChain: ["m3"] },
@@ -36,10 +36,10 @@ export class SidebarMenuAccordionTest {
   selector: "sd-sidebar-menu-force-layout-test",
   template: `<sd-sidebar-menu [menus]="menus()" [layout]="'flat'" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuForceLayoutTest {
-  menus = signal<ISdMenu[]>(
+  menus = signal<SdMenu[]>(
     Array.from({ length: 10 }, (_, i) => ({
       title: `Menu ${i + 1}`,
       codeChain: [`m${i + 1}`],
@@ -51,10 +51,10 @@ export class SidebarMenuForceLayoutTest {
   selector: "sd-sidebar-menu-children-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuChildrenTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     {
       title: "Parent",
       codeChain: ["parent"],
@@ -70,10 +70,10 @@ export class SidebarMenuChildrenTest {
   selector: "sd-sidebar-menu-icon-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuIconTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "With Icon", codeChain: ["icon"], icon: tablerHome },
   ]);
 }
@@ -82,10 +82,10 @@ export class SidebarMenuIconTest {
   selector: "sd-sidebar-menu-url-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuUrlTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "External", codeChain: ["ext"], url: "https://example.com" },
   ]);
 }
@@ -94,10 +94,10 @@ export class SidebarMenuUrlTest {
   selector: "sd-sidebar-menu-querystring-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuQueryStringTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "QS Page", codeChain: ["module", "page?key=value"] },
   ]);
 }
@@ -106,11 +106,11 @@ export class SidebarMenuQueryStringTest {
   selector: "sd-sidebar-menu-custom-selected-fn-test",
   template: `<sd-sidebar-menu [menus]="menus()" [getMenuIsSelectedFn]="selFn" />`,
   standalone: true,
-  imports: [SdSidebarMenuControl],
+  imports: [SdSidebarMenu],
 })
 export class SidebarMenuCustomSelectedFnTest {
-  menus = signal<ISdMenu[]>([
+  menus = signal<SdMenu[]>([
     { title: "Custom", codeChain: ["custom"] },
   ]);
-  selFn = (_menu: ISdMenu): boolean => true;
+  selFn = (_menu: SdMenu): boolean => true;
 }

@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdKanbanBoardTestHorizontal } from "./sd-kanban-test.fixture";
 import {
-  SdKanbanBoardControl,
-  type ISdKanbanDragRef,
-  type ISdKanbanDropTarget,
-} from "../../../../src/ui/layout/kanban/sd-kanban-board.control";
+  SdKanbanBoard,
+  type SdKanbanDragRef,
+  type SdKanbanDropTarget,
+} from "../../../../src/ui/layout/kanban/sd-kanban-board";
 
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
@@ -13,7 +13,7 @@ function setupTestBed(component: any) {
   });
 }
 
-describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
+describe("Feature 6.3 Slice 1: SdKanbanBoard 기본 구조", () => {
   it("Board에 여러 lane을 수평 나열한다 — inline-flex row 레이아웃으로 lane들을 좌→우 수평 배치하고 높이 100%를 채운다", () => {
     setupTestBed(SdKanbanBoardTestHorizontal);
     const fixture = TestBed.createComponent(SdKanbanBoardTestHorizontal);
@@ -49,7 +49,7 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
     const fixture = TestBed.createComponent(SdKanbanBoardTestHorizontal);
     fixture.detectChanges();
 
-    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoardControl<
+    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoard<
       string,
       number
     >;
@@ -61,11 +61,11 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
     const fixture = TestBed.createComponent(SdKanbanBoardTestHorizontal);
     fixture.detectChanges();
 
-    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoardControl<
+    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoard<
       string,
       number
     >;
-    const fakeDragRef: ISdKanbanDragRef<string, number> = {
+    const fakeDragRef: SdKanbanDragRef<string, number> = {
       value: () => 1,
       heightOnDrag: () => 100,
     };
@@ -81,11 +81,11 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
     const fixture = TestBed.createComponent(SdKanbanBoardTestHorizontal);
     fixture.detectChanges();
 
-    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoardControl<
+    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoard<
       string,
       number
     >;
-    const fakeDragRef: ISdKanbanDragRef<string, number> = {
+    const fakeDragRef: SdKanbanDragRef<string, number> = {
       value: () => 42,
       heightOnDrag: () => 100,
     };
@@ -96,7 +96,7 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
       emitted = v;
     });
 
-    const fakeTarget: ISdKanbanDropTarget<string, number> = {
+    const fakeTarget: SdKanbanDropTarget<string, number> = {
       targetLaneValue: () => "lane2",
       targetKanbanValue: () => 99,
     };
@@ -115,7 +115,7 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
     const fixture = TestBed.createComponent(SdKanbanBoardTestHorizontal);
     fixture.detectChanges();
 
-    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoardControl<
+    const board = fixture.debugElement.children[0].componentInstance as SdKanbanBoard<
       string,
       number
     >;
@@ -124,7 +124,7 @@ describe("Feature 6.3 Slice 1: SdKanbanBoardControl 기본 구조", () => {
       emitted = true;
     });
 
-    const fakeTarget: ISdKanbanDropTarget<string, number> = {
+    const fakeTarget: SdKanbanDropTarget<string, number> = {
       targetLaneValue: () => "lane1",
     };
     board.onDropTo(fakeTarget);

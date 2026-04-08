@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { TopbarUserBasicTest } from "./sd-topbar-user-test.fixture";
 
-describe("SdTopbarUserControl unit", () => {
+describe("SdTopbarUser unit", () => {
   it("menus input이 required이다 — 빈 배열도 에러 없이 렌더링된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarUserBasicTest],

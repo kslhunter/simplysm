@@ -15,44 +15,44 @@ import {
 import { outputToObservable } from "@angular/core/rxjs-interop";
 import { Subscription } from "rxjs";
 import type {
-  TDirectiveInputSignals,
-  TWithOptional,
-} from "../../../core/utils/TDirectiveInputSignals";
-import { SdModalControl } from "./sd-modal.control";
+  DirectiveInputSignals,
+  WithOptional,
+} from "../../../core/utils/directive-input-signals";
+import { SdModal } from "./sd-modal";
 import { SdActivatedModalProvider } from "../../../core/providers/sd-activated-modal.provider";
 import "@simplysm/core-browser";
 
 /**
  * 모달 컴포넌트가 구현해야 하는 인터페이스
  */
-export interface ISdModal<O> {
+export interface SdModalContentDef<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
   actionTplRef?: TemplateRef<any>;
   readonly _optionalModalInputs?: string;
 }
 
-type TSdModalExcludeKeys = "initialized" | "close" | "actionTplRef" | "_optionalModalInputs";
-type TSdModalOptionalKeys<T> = T extends { _optionalModalInputs?: infer K extends string }
+type SdModalExcludeKeys = "initialized" | "close" | "actionTplRef" | "_optionalModalInputs";
+type SdModalOptionalKeys<T> = T extends { _optionalModalInputs?: infer K extends string }
   ? K
   : never;
 
 /**
  * 모달 생성 시 전달하는 정보
  */
-export interface ISdModalInfo<T extends ISdModal<any>, X extends keyof any = ""> {
+export interface SdModalInfo<T extends SdModalContentDef<any>, X extends keyof any = ""> {
   title: string;
   type: Type<T>;
-  inputs: TWithOptional<
-    Omit<TDirectiveInputSignals<T>, TSdModalExcludeKeys | X>,
-    TSdModalOptionalKeys<T> & keyof Omit<TDirectiveInputSignals<T>, TSdModalExcludeKeys | X>
+  inputs: WithOptional<
+    Omit<DirectiveInputSignals<T>, SdModalExcludeKeys | X>,
+    SdModalOptionalKeys<T> & keyof Omit<DirectiveInputSignals<T>, SdModalExcludeKeys | X>
   >;
 }
 
 /**
  * 모달 옵션
  */
-export interface ISdModalOptions {
+export interface SdModalOptions {
   key?: string;
   hideHeader?: boolean;
   hideCloseButton?: boolean;
@@ -82,9 +82,9 @@ export class SdModalProvider {
 
   modalCount = signal(0);
 
-  async showAsync<T extends ISdModal<any>>(
-    modal: ISdModalInfo<T>,
-    options?: ISdModalOptions,
+  async showAsync<T extends SdModalContentDef<any>>(
+    modal: SdModalInfo<T>,
+    options?: SdModalOptions,
   ): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
     return new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve) => {
       // 1. modalCount 증가
@@ -109,8 +109,8 @@ export class SdModalProvider {
         contentRef.setInput(key, value);
       }
 
-      // 5. SdModalControl 생성 (projectableNodes로 컨텐츠 삽입)
-      const modalRef: ComponentRef<SdModalControl> = createComponent(SdModalControl, {
+      // 5. SdModal 생성 (projectableNodes로 컨텐츠 삽입)
+      const modalRef: ComponentRef<SdModal> = createComponent(SdModal, {
         environmentInjector: this._envInjector,
         elementInjector: contentInjector,
         projectableNodes: [[contentRef.location.nativeElement]],
@@ -225,7 +225,7 @@ export class SdModalProvider {
         cleanup(result);
       });
 
-      // 12. SdModalControl의 closeRequest 구독 (배경 클릭, ESC, 닫기 버튼)
+      // 12. SdModal의 closeRequest 구독 (배경 클릭, ESC, 닫기 버튼)
       closeRequestSub = outputToObservable(modalRef.instance.closeRequest).subscribe(() => {
         cleanup(undefined);
       });

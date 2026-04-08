@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
-import { SdCheckboxGroupControl } from "../../../../src/ui/form/checkbox/sd-checkbox-group.control";
-import { SdCheckboxGroupItemControl } from "../../../../src/ui/form/checkbox/sd-checkbox-group-item.control";
+import { SdCheckboxGroup } from "../../../../src/ui/form/checkbox/sd-checkbox-group";
+import { SdCheckboxGroupItem } from "../../../../src/ui/form/checkbox/sd-checkbox-group-item";
 
 @Component({
   selector: "sd-checkbox-group-default-test",
@@ -12,7 +12,7 @@ import { SdCheckboxGroupItemControl } from "../../../../src/ui/form/checkbox/sd-
     </sd-checkbox-group>
   `,
   standalone: true,
-  imports: [SdCheckboxGroupControl, SdCheckboxGroupItemControl],
+  imports: [SdCheckboxGroup, SdCheckboxGroupItem],
 })
 export class SdCheckboxGroupDefaultTest {
   value = signal<string[]>([]);
@@ -27,7 +27,7 @@ export class SdCheckboxGroupDefaultTest {
     </sd-checkbox-group>
   `,
   standalone: true,
-  imports: [SdCheckboxGroupControl, SdCheckboxGroupItemControl],
+  imports: [SdCheckboxGroup, SdCheckboxGroupItem],
 })
 export class SdCheckboxGroupPreselectedTest {
   value = signal<string[]>(["A"]);
@@ -42,7 +42,7 @@ export class SdCheckboxGroupPreselectedTest {
     </sd-checkbox-group>
   `,
   standalone: true,
-  imports: [SdCheckboxGroupControl, SdCheckboxGroupItemControl],
+  imports: [SdCheckboxGroup, SdCheckboxGroupItem],
 })
 export class SdCheckboxGroupMultiTest {
   value = signal<string[]>(["A", "B"]);
@@ -57,7 +57,7 @@ export class SdCheckboxGroupMultiTest {
     </sd-checkbox-group>
   `,
   standalone: true,
-  imports: [SdCheckboxGroupControl, SdCheckboxGroupItemControl],
+  imports: [SdCheckboxGroup, SdCheckboxGroupItem],
 })
 export class SdCheckboxGroupDisabledTest {
   value = signal<string[]>([]);

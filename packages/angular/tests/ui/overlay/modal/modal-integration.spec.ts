@@ -4,8 +4,8 @@ import { ActivatedRoute, Router, UrlSegment } from "@angular/router";
 import { BehaviorSubject, Subject } from "rxjs";
 import { describe, it, expect, vi } from "vitest";
 import { SdAppStructureProvider } from "../../../../src/core/providers/sd-app-structure.provider";
-import { useViewTitleSignal } from "../../../../src/core/utils/useViewTitleSignal";
-import { useViewTypeSignal, type TSdViewType } from "../../../../src/core/utils/useViewTypeSignal";
+import { injectViewTitleSignal } from "../../../../src/core/utils/injectViewTitleSignal";
+import { injectViewTypeSignal, type SdViewType } from "../../../../src/core/utils/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../../src/core/utils/setups/setupCanDeactivate";
 import { SdActivatedModalProvider } from "../../../../src/core/providers/sd-activated-modal.provider";
 import "@simplysm/core-browser";
@@ -28,7 +28,7 @@ function createTestComponent(selector: string) {
 const TestComp = createTestComponent("test-comp");
 
 describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합", () => {
-  describe("Rule: useViewTypeSignal이 모달 컨텍스트에서 'modal'을 반환한다", () => {
+  describe("Rule: injectViewTypeSignal이 모달 컨텍스트에서 'modal'을 반환한다", () => {
     it("Unit: SdActivatedModalProvider + ActivatedRoute 모두 있어도 'modal' 우선", () => {
       class MockComponent {}
       const activatedModal = new SdActivatedModalProvider();
@@ -51,9 +51,9 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       // 모달이 우선이므로 page가 아닌 modal이어야 한다
@@ -75,9 +75,9 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
       class MockComponent {}
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("modal");
@@ -103,9 +103,9 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
       });
 
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("page");
@@ -123,16 +123,16 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
       class MockComponent {}
       const comp = new MockComponent();
-      let signal: Signal<TSdViewType> | undefined;
+      let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal(() => comp);
       });
 
       expect(signal!()).toBe("control");
     });
   });
 
-  describe("Rule: useViewTitleSignal이 모달 컨텍스트에서 모달 제목을 반환한다", () => {
+  describe("Rule: injectViewTitleSignal이 모달 컨텍스트에서 모달 제목을 반환한다", () => {
     it("Unit: modalComponent가 아직 설정되지 않았으면 빈 문자열 반환", () => {
       const activatedModal = new SdActivatedModalProvider();
       // modalComponent is undefined by default
@@ -157,7 +157,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTitleSignal();
+        signal = injectViewTitleSignal();
       });
 
       expect(signal!()).toBe("");
@@ -191,7 +191,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTitleSignal();
+        signal = injectViewTitleSignal();
       });
 
       expect(signal!()).toBe("주문 상세");
@@ -228,7 +228,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useViewTitleSignal();
+        signal = injectViewTitleSignal();
       });
 
       expect(signal!()).toBe("[메인] 서브");

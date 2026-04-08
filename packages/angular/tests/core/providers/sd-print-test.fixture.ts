@@ -1,5 +1,5 @@
 import { Component, input, signal } from "@angular/core";
-import type { ISdPrint } from "../../../src/core/providers/sd-print.provider";
+import type { SdPrint } from "../../../src/core/providers/sd-print.provider";
 
 /**
  * 기본 인쇄 테스트 컴포넌트 (즉시 initialized)
@@ -10,7 +10,7 @@ import type { ISdPrint } from "../../../src/core/providers/sd-print.provider";
   template: `<div class="print-content" style="width: 200px; height: 100px; background: white;">{{ title() }}</div>`,
   host: { style: "display: block" },
 })
-export class SdPrintTestBasic implements ISdPrint {
+export class SdPrintTestBasic implements SdPrint {
   readonly _optionalPrintInputs?: "title";
   title = input("기본 제목");
   initialized = signal(true);
@@ -29,7 +29,7 @@ export class SdPrintTestBasic implements ISdPrint {
     </div>
   `,
 })
-export class SdPrintTestWithImages implements ISdPrint {
+export class SdPrintTestWithImages implements SdPrint {
   initialized = signal(true);
 }
 
@@ -41,7 +41,7 @@ export class SdPrintTestWithImages implements ISdPrint {
   standalone: true,
   template: `<div class="print-content">지연 컴포넌트</div>`,
 })
-export class SdPrintTestDelayed implements ISdPrint {
+export class SdPrintTestDelayed implements SdPrint {
   static latestInstance: SdPrintTestDelayed | undefined;
 
   initialized = signal(false);
@@ -63,7 +63,7 @@ export class SdPrintTestDelayed implements ISdPrint {
     <div class="page" style="width: 200px; height: 100px; background: white;">Page 3</div>
   `,
 })
-export class SdPrintTestMultiPage implements ISdPrint {
+export class SdPrintTestMultiPage implements SdPrint {
   initialized = signal(true);
 }
 
@@ -76,6 +76,6 @@ export class SdPrintTestMultiPage implements ISdPrint {
   template: `<div class="print-content" style="width: 200px; height: 100px; background: white;">텍스트만</div>`,
   host: { style: "display: block" },
 })
-export class SdPrintTestNoImages implements ISdPrint {
+export class SdPrintTestNoImages implements SdPrint {
   initialized = signal(true);
 }

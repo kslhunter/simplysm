@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core";
 import { vi } from "vitest";
+import { SdDataDetail } from "../../../src/features/data-view/sd-data-detail";
 import {
-  AbsSdDataDetail,
-  SdDataDetailControl,
-  type ISdDataDetailDataInfo,
-} from "../../../src/features/data-view/sd-data-detail.control";
+  SdDataDetailBase,
+  type SdDataDetailDataInfo,
+} from "../../../src/features/data-view/sd-data-detail.base";
 
 export interface TestDetailItem {
   id: number | undefined;
@@ -14,7 +14,7 @@ export interface TestDetailItem {
 @Component({
   selector: "dd-test-host",
   standalone: true,
-  imports: [SdDataDetailControl],
+  imports: [SdDataDetail],
   template: `
     <sd-data-detail>
       <ng-template #contentTpl>
@@ -23,11 +23,11 @@ export interface TestDetailItem {
     </sd-data-detail>
   `,
 })
-export class DDTestHost extends AbsSdDataDetail<TestDetailItem> {
+export class DDTestHost extends SdDataDetailBase<TestDetailItem> {
   canUse = signal(true);
   canEdit = signal(true);
 
-  loadFn = vi.fn<() => Promise<{ data: TestDetailItem; info: ISdDataDetailDataInfo }>>();
+  loadFn = vi.fn<() => Promise<{ data: TestDetailItem; info: SdDataDetailDataInfo }>>();
 
   submitFn = vi.fn<(data: TestDetailItem) => Promise<boolean | undefined>>();
 

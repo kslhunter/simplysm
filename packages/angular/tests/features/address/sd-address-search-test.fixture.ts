@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-export interface IMockDaumPostcodeOptions {
+export interface MockDaumPostcodeOptions {
   oncomplete: (data: any) => void;
   onresize: (size: { height: number }) => void;
   width: string;
@@ -9,10 +9,10 @@ export interface IMockDaumPostcodeOptions {
 
 export function setupMockDaum() {
   const embedFn = vi.fn();
-  let capturedOptions: IMockDaumPostcodeOptions | undefined;
+  let capturedOptions: MockDaumPostcodeOptions | undefined;
 
   class MockPostcode {
-    constructor(options: IMockDaumPostcodeOptions) {
+    constructor(options: MockDaumPostcodeOptions) {
       capturedOptions = options;
     }
 

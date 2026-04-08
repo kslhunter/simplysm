@@ -28,8 +28,8 @@ async function tick(fixture: any): Promise<void> {
 }
 
 describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
-  // Acceptance: ISdModalInfo와 옵션으로 모달 열기
-  it("showAsync 호출 시 SdModalControl이 document.body에 삽입되고 modalCount가 증가한다", async () => {
+  // Acceptance: SdModalInfo와 옵션으로 모달 열기
+  it("showAsync 호출 시 SdModal이 document.body에 삽입되고 modalCount가 증가한다", async () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 

@@ -1,7 +1,7 @@
 import { Component, signal } from "@angular/core";
 import { tablerCheck } from "@ng-icons/tabler-icons";
-import { SdListControl } from "../../../../src/ui/data/list/sd-list.control";
-import { SdListItemControl } from "../../../../src/ui/data/list/sd-list-item.control";
+import { SdList } from "../../../../src/ui/data/list/sd-list";
+import { SdListItem } from "../../../../src/ui/data/list/sd-list-item";
 
 // --- sd-list basic fixtures ---
 
@@ -14,7 +14,7 @@ import { SdListItemControl } from "../../../../src/ui/data/list/sd-list-item.con
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListDefaultTest {}
 
@@ -26,7 +26,7 @@ export class SdListDefaultTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListInsetTest {}
 
@@ -43,7 +43,7 @@ export class SdListInsetTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListNestedTest {}
 
@@ -62,7 +62,7 @@ export class SdListNestedTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemAccordionTest {
   open = signal(false);
@@ -81,7 +81,7 @@ export class SdListItemAccordionTest {
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemAccordionOpenTest {}
 
@@ -98,7 +98,7 @@ export class SdListItemAccordionOpenTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemFlatTest {}
 
@@ -110,7 +110,7 @@ export class SdListItemFlatTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemNoChildrenTest {}
 
@@ -124,7 +124,7 @@ export class SdListItemNoChildrenTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemSelectedTest {}
 
@@ -136,7 +136,7 @@ export class SdListItemSelectedTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemSelectedIconTest {
   icons = { tablerCheck };
@@ -150,7 +150,7 @@ export class SdListItemSelectedIconTest {
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemUnselectedIconTest {
   icons = { tablerCheck };
@@ -164,7 +164,7 @@ export class SdListItemUnselectedIconTest {
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemReadonlyTest {}
 
@@ -181,6 +181,6 @@ export class SdListItemReadonlyTest {}
     </sd-list>
   `,
   standalone: true,
-  imports: [SdListControl, SdListItemControl],
+  imports: [SdList, SdListItem],
 })
 export class SdListItemToolTest {}

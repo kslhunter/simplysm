@@ -13,7 +13,7 @@ function setupTestBed(component: any) {
   });
 }
 
-describe("Feature 6.3 Slice 2: SdKanbanControl", () => {
+describe("Feature 6.3 Slice 2: SdKanban", () => {
   // --- Acceptance Tests: 드래그 & 드롭 ---
 
   it("카드를 다른 레인의 카드 위로 드롭한다 — drop 이벤트가 정확한 값으로 발생하고 드래그 상태가 초기화된다", () => {

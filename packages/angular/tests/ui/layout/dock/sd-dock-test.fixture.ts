@@ -1,11 +1,11 @@
 import { Component } from "@angular/core";
-import { SdDockContainerControl } from "../../../../src/ui/layout/dock/sd-dock-container.control";
-import { SdDockControl } from "../../../../src/ui/layout/dock/sd-dock.control";
+import { SdDockContainer } from "../../../../src/ui/layout/dock/sd-dock-container";
+import { SdDock } from "../../../../src/ui/layout/dock/sd-dock";
 
 @Component({
   selector: "sd-dock-test-top",
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl],
+  imports: [SdDockContainer, SdDock],
   template: `
     <sd-dock-container>
       <sd-dock [position]="'top'" style="height: 50px">top dock</sd-dock>
@@ -18,7 +18,7 @@ export class SdDockTestTop {}
 @Component({
   selector: "sd-dock-test-multi",
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl],
+  imports: [SdDockContainer, SdDock],
   template: `
     <sd-dock-container>
       <sd-dock [position]="'left'" style="width: 100px">left dock</sd-dock>
@@ -32,7 +32,7 @@ export class SdDockTestMulti {}
 @Component({
   selector: "sd-dock-test-empty",
   standalone: true,
-  imports: [SdDockContainerControl],
+  imports: [SdDockContainer],
   template: `
     <sd-dock-container>
       <div>content only</div>
@@ -44,7 +44,7 @@ export class SdDockTestEmpty {}
 @Component({
   selector: "sd-dock-test-content-class",
   standalone: true,
-  imports: [SdDockContainerControl],
+  imports: [SdDockContainer],
   template: `
     <sd-dock-container [contentClass]="'my-class'">
       <div>content</div>
@@ -56,7 +56,7 @@ export class SdDockTestContentClass {}
 @Component({
   selector: "sd-dock-test-resizable",
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl],
+  imports: [SdDockContainer, SdDock],
   template: `
     <sd-dock-container>
       <sd-dock [position]="'top'" [resizable]="true" style="height: 50px">resizable dock</sd-dock>
@@ -69,7 +69,7 @@ export class SdDockTestResizable {}
 @Component({
   selector: "sd-dock-test-not-resizable",
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl],
+  imports: [SdDockContainer, SdDock],
   template: `
     <sd-dock-container>
       <sd-dock [position]="'top'" style="height: 50px">not resizable</sd-dock>
@@ -82,7 +82,7 @@ export class SdDockTestNotResizable {}
 @Component({
   selector: "sd-dock-test-four-directions",
   standalone: true,
-  imports: [SdDockContainerControl, SdDockControl],
+  imports: [SdDockContainer, SdDock],
   template: `
     <sd-dock-container>
       <sd-dock [position]="'top'" style="height: 30px">top</sd-dock>

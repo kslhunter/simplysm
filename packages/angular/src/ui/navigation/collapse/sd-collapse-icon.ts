@@ -1,0 +1,51 @@
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  numberAttribute,
+  ViewEncapsulation,
+} from "@angular/core";
+import { NgIcon } from "@ng-icons/core";
+import { tablerChevronRight } from "@ng-icons/tabler-icons";
+
+@Component({
+  selector: "sd-collapse-icon",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [NgIcon],
+  template: `
+    <ng-icon [svg]="icons.tablerChevronRight" />
+  `,
+  styles: [
+    /* language=SCSS */ `
+      sd-collapse-icon {
+        display: inline-block;
+
+        > ng-icon {
+          display: block;
+        }
+      }
+    `,
+  ],
+  host: {
+    "[style.transform]": "transformStyle()",
+    "[style.transition]": "transitionStyle()",
+  },
+})
+export class SdCollapseIcon {
+  open = input(false, { transform: booleanAttribute });
+  openRotate = input(90, { transform: numberAttribute });
+
+  icons = { tablerChevronRight };
+
+  transformStyle = computed(() => {
+    return this.open() ? `rotate(${this.openRotate()}deg)` : "";
+  });
+
+  transitionStyle = computed(() => {
+    return this.open() ? "transform 0.1s ease-out" : "transform 0.1s ease-in";
+  });
+}

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/service-common` — 서비스 클라이언트·서버가 공유하는 프로토콜, 메시지 타입, 서비스 인터페이스 정의 패키지. 7개 TypeScript 소스 파일.
+`@simplysm/service-common` — 서비스 클라이언트·서버가 공유하는 프로토콜, 메시지 타입, 서비스 인터페이스, 앱 구조 정의 패키지. 10개 TypeScript 소스 파일.
 
 의존성: `@simplysm/core-common`, `@simplysm/orm-common`
 
@@ -13,14 +13,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 src/
 ├── protocol/
-│   ├── protocol.types.ts          ← 프로토콜 상수(PROTOCOL_CONFIG) 및 모든 메시지 타입 정의
-│   └── create-service-protocol.ts ← ServiceProtocol 인터페이스 및 팩토리 함수
+│   ├── protocol.types.ts              ← 프로토콜 상수(PROTOCOL_CONFIG) 및 모든 메시지 타입 정의
+│   └── create-service-protocol.ts     ← ServiceProtocol 인터페이스 및 팩토리 함수
 ├── service-types/
-│   ├── orm-service.types.ts       ← OrmService 인터페이스 (DB 연결·트랜잭션·쿼리)
-│   └── auto-update-service.types.ts ← AutoUpdateService 인터페이스
-├── types.ts                       ← 공통 타입 (ServiceUploadResult)
-├── define-event.ts                ← defineEvent() 팩토리 및 ServiceEventDef 인터페이스
-└── index.ts                       ← public API re-export
+│   ├── orm-service.types.ts           ← OrmService 인터페이스 (DB 연결·트랜잭션·쿼리)
+│   ├── auto-update-service.types.ts   ← AutoUpdateService 인터페이스
+│   └── app-structure-service.types.ts ← AppStructureService 인터페이스
+├── app-structure/
+│   ├── app-structure.types.ts         ← 앱 구조 타입 (메뉴 트리, 권한, 모듈)
+│   └── app-structure.utils.ts         ← 앱 구조 유틸 (모듈 필터링, 권한 플래트닝)
+├── types.ts                           ← 공통 타입 (ServiceUploadResult)
+├── define-event.ts                    ← defineEvent() 팩토리 및 ServiceEventDef 인터페이스
+└── index.ts                           ← public API re-export
 ```
 
 ## Key Patterns
@@ -82,9 +86,15 @@ await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
 
 ### 서비스 인터페이스
 
-`OrmService`, `AutoUpdateService`는 서버 구현체와 클라이언트 프록시가 공유하는 인터페이스다. 이 패키지에는 구현체가 없으며, 타입 계약만 정의한다.
+`OrmService`, `AutoUpdateService`, `AppStructureService`는 서버 구현체와 클라이언트 프록시가 공유하는 인터페이스다. 이 패키지에는 구현체가 없으며, 타입 계약만 정의한다.
 
 `OrmService`는 연결 ID(`connId: number`) 기반으로 상태를 관리한다. 사용 순서는 `connect()` → `beginTransaction()` → `executeDefs()`/`executeParametrized()` → `commitTransaction()`/`rollbackTransaction()` → `close()`이다.
+
+### 앱 구조 (App Structure)
+
+`AppStructureItem`은 메뉴·권한 트리를 표현하는 재귀 타입이다. `children`이 있으면 `AppStructureGroupItem`, 없으면 `AppStructureLeafItem`이다. 각 항목에 `modules`(OR 조건)과 `requiredModules`(AND 조건)로 모듈 접근 제어를 설정한다.
+
+`getFlatPermissions()`는 트리를 BFS로 순회하며 모듈 조건을 필터링하여 `FlatPermission[]`으로 플래트닝한다. `isUsableModules()`와 `isUsableModulesChain()`은 모듈 접근 가능 여부를 판단하는 헬퍼 함수다.
 
 ## 컴파일러 설정
 
@@ -96,8 +106,11 @@ await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
 
 ```
 tests/
-└── protocol/
-    └── service-protocol.spec.ts  ← ServiceProtocol encode/decode/청킹/UUID 인터리빙 테스트
+├── protocol/
+│   └── service-protocol.spec.ts       ← ServiceProtocol encode/decode/청킹/UUID 인터리빙 테스트
+└── app-structure/
+    ├── app-structure.spec.ts          ← getFlatPermissions 통합 테스트 (모듈 필터링, subPerms)
+    └── app-structure-utils.spec.ts    ← isUsableModules/isUsableModulesChain 단위 테스트
 ```
 
 `service-protocol.spec.ts`는 `beforeEach`/`afterEach`로 프로토콜 인스턴스를 생성·해제한다. 청킹 테스트는 4MB 데이터를 직접 생성하여 검증한다.
@@ -116,3 +129,5 @@ describe("ServiceProtocol", () => {
   });
 });
 ```
+
+`app-structure.spec.ts`와 `app-structure-utils.spec.ts`는 트리 구조 데이터를 직접 구성하여 모듈 필터링과 권한 플래트닝 로직을 검증한다.

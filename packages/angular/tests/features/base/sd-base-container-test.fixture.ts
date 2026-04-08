@@ -1,11 +1,11 @@
 import { Component, signal } from "@angular/core";
-import type { TSdViewType } from "../../../src/core/utils/useViewTypeSignal";
-import { SdBaseContainerControl } from "../../../src/features/base/sd-base-container.control";
+import type { SdViewType } from "../../../src/core/utils/injectViewTypeSignal";
+import { SdBaseContainer } from "../../../src/features/base/sd-base-container";
 
 @Component({
   selector: "bc-test-host",
   standalone: true,
-  imports: [SdBaseContainerControl],
+  imports: [SdBaseContainer],
   template: `
     <sd-base-container
       [viewType]="viewType()"
@@ -27,7 +27,7 @@ import { SdBaseContainerControl } from "../../../src/features/base/sd-base-conta
   `,
 })
 export class BCTestHost {
-  viewType = signal<TSdViewType | undefined>(undefined);
+  viewType = signal<SdViewType | undefined>(undefined);
   header = signal<string | undefined>(undefined);
   restricted = signal(false);
   initialized = signal<boolean | undefined>(undefined);

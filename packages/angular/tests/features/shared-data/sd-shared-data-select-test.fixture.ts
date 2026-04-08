@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core";
-import type { ISharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
-import { SdSharedDataSelectControl } from "../../../src/features/shared-data/sd-shared-data-select.control";
-import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-of-template.directive";
-import type { TSdSelectModalInfo, ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import type { SharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
+import { SdSharedDataSelect } from "../../../src/features/shared-data/sd-shared-data-select";
+import { SdItemOfTemplate } from "../../../src/core/directives/sd-item-of-template";
+import type { SdSelectModalInfo, SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
-export interface ITestSharedItem extends ISharedDataBase<number> {
+export interface TestSharedItem extends SharedDataBase<number> {
   __valueKey: number;
   __searchText: string;
   __isHidden: boolean;
@@ -17,7 +17,7 @@ export function item(
   key: number,
   name: string,
   opts?: { hidden?: boolean; parentKey?: number; order?: number },
-): ITestSharedItem {
+): TestSharedItem {
   return {
     __valueKey: key,
     __searchText: name,
@@ -31,7 +31,7 @@ export function item(
 @Component({
   selector: "sd-shared-data-select-test-host",
   standalone: true,
-  imports: [SdSharedDataSelectControl, SdItemOfTemplateDirective],
+  imports: [SdSharedDataSelect, SdItemOfTemplate],
   template: `
     <sd-shared-data-select
       [(value)]="value"
@@ -51,11 +51,11 @@ export function item(
 })
 export class SharedDataSelectTestHost {
   value = signal<number | number[] | undefined>(undefined);
-  items = signal<ITestSharedItem[]>([]);
+  items = signal<TestSharedItem[]>([]);
   selectMode = signal<"single" | "multi">("single");
   disabled = signal(false);
   required = signal(false);
-  filterFn = signal<((item: ITestSharedItem, index: number) => boolean) | undefined>(undefined);
+  filterFn = signal<((item: TestSharedItem, index: number) => boolean) | undefined>(undefined);
   displayOrderKeyProp = signal<string | undefined>(undefined);
-  modal = signal<TSdSelectModalInfo<ISdSelectModal<any>> | undefined>(undefined);
+  modal = signal<SdSelectModalInfo<SdSelectModal<any>> | undefined>(undefined);
 }

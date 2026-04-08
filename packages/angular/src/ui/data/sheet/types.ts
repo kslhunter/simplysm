@@ -1,4 +1,4 @@
-export interface ISdSheetColumnDef {
+export interface SdSheetColumnDef {
   key: string;
   header: string | string[];
   width: string | undefined;
@@ -10,15 +10,15 @@ export interface ISdSheetColumnDef {
   ordering: number;
 }
 
-export interface ISdSheetHeaderDef {
+export interface SdSheetHeaderDef {
   text: string;
   colspan: number;
   rowspan: number;
   isLastRow: boolean;
-  colDef: ISdSheetColumnDef | undefined;
+  colDef: SdSheetColumnDef | undefined;
 }
 
-export interface ISdSheetConfig {
+export interface SdSheetConfig {
   columnRecord: Record<
     string,
     {
@@ -30,12 +30,12 @@ export interface ISdSheetConfig {
   >;
 }
 
-export interface ISdSheetItemKeydownEventParam<T> {
+export interface SdSheetItemKeydownEventParam<T> {
   item: T;
   event: KeyboardEvent;
 }
 
-export interface ISdSheetCellKeydownEventParam<T> {
+export interface SdSheetCellKeydownEventParam<T> {
   item: T;
   key: string;
   event: KeyboardEvent;

@@ -1,18 +1,18 @@
 # Features
 
-## `SdBaseContainerControl`
+## `SdBaseContainer`
 
 페이지/모달/뷰 공통 레이아웃 컨테이너. `currViewType()`에 따라 page(topbar 포함), modal(bottom 슬롯 포함), control(raw content) 중 하나를 렌더링한다.
 
 ```typescript
 @Component({ selector: "sd-base-container" })
-class SdBaseContainerControl {
+class SdBaseContainer {
   contentTplRef = contentChild.required("contentTpl", { read: TemplateRef });
   pageTopbarTplRef = contentChild("pageTopbarTpl", { read: TemplateRef });
   modalBottomTplRef = contentChild("modalBottomTpl", { read: TemplateRef });
 
-  viewType = input<TSdViewType>();
-  currViewType: Signal<TSdViewType>; // viewType ?? parentViewType
+  viewType = input<SdViewType>();
+  currViewType: Signal<SdViewType>; // viewType ?? parentViewType
   header = input<string>();
   modalOrPageTitle: Signal<string>; // header ?? 모달 타이틀 ?? 앱 구조 타이틀
 
@@ -25,7 +25,7 @@ class SdBaseContainerControl {
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
-| `viewType` | `TSdViewType \| undefined` | `undefined` | 뷰 타입 오버라이드 |
+| `viewType` | `SdViewType \| undefined` | `undefined` | 뷰 타입 오버라이드 |
 | `header` | `string \| undefined` | `undefined` | 헤더 타이틀 오버라이드 |
 | `initialized` | `boolean \| undefined` | `undefined` | `false`면 컨텐츠 숨김, `undefined`면 표시 |
 | `restricted` | `boolean` | `false` | `true`면 권한 없음 메시지 표시 |
@@ -39,20 +39,20 @@ Content children:
 
 ## `SdAddressSearchModal`
 
-Daum Postcode API를 사용한 주소 검색 모달. `ISdModal<IAddress>`를 구현한다.
+Daum Postcode API를 사용한 주소 검색 모달. `SdModalContentDef<Address>`를 구현한다.
 
 ```typescript
 @Component({ selector: "sd-address-search-modal" })
-class SdAddressSearchModal implements ISdModal<IAddress>, OnInit {
-  close = output<IAddress>();
+class SdAddressSearchModal implements SdModalContentDef<Address>, OnInit {
+  close = output<Address>();
   initialized = signal(false);
 }
 ```
 
-### `IAddress`
+### `Address`
 
 ```typescript
-interface IAddress {
+interface Address {
   postNumber: string | undefined;
   address: string | undefined;
   buildingName: string | undefined;
@@ -65,14 +65,14 @@ interface IAddress {
 | `address` | `string \| undefined` | 주소 |
 | `buildingName` | `string \| undefined` | 건물명 |
 
-## `SdPermissionTableControl`
+## `SdPermissionTable`
 
-권한 매트릭스 테이블. `ISdPermission` 트리를 테이블로 렌더링하여 use/edit 체크박스를 표시한다.
+권한 매트릭스 테이블. `SdPermission` 트리를 테이블로 렌더링하여 use/edit 체크박스를 표시한다.
 
 ```typescript
 @Component({ selector: "sd-permission-table" })
-class SdPermissionTableControl {
-  permissions = input.required<ISdPermission[]>();
+class SdPermissionTable {
+  permissions = input.required<SdPermission[]>();
   permRecord = model<Record<string, boolean>>({});
   disabled = input(false, { transform: booleanAttribute });
 }
@@ -80,26 +80,26 @@ class SdPermissionTableControl {
 
 ## Data View Abstractions
 
-### `AbsSdDataSheet`
+### `SdDataSheetBase`
 
-데이터 시트 CRUD 추상 클래스. 소비 프로젝트에서 상속하여 구현한다. `ISdSelectModal<TItem>`을 구현하므로 모달 선택에도 사용 가능.
+데이터 시트 CRUD 추상 클래스. 소비 프로젝트에서 상속하여 구현한다. `SdSelectModal<TItem>`을 구현하므로 모달 선택에도 사용 가능.
 
 ```typescript
 @Directive()
-abstract class AbsSdDataSheet<
+abstract class SdDataSheetBase<
   TFilter extends Record<string, any>,
   TItem,
   TKey extends string | number | undefined,
-> implements ISdSelectModal<TItem> {
+> implements SdSelectModal<TItem> {
   // 필수 구현
   abstract canUse: Signal<boolean>;
   abstract canEdit: Signal<boolean>;
   abstract editMode: "inline" | "modal" | undefined;
   abstract selectMode: InputSignal<"single" | "multi" | undefined>;
   abstract bindFilter(): TFilter;
-  abstract itemPropInfo: ISdDataSheetItemPropInfo<TItem>;
-  abstract getItemInfoFn: (item: TItem) => ISdDataSheetItemInfo<TKey>;
-  abstract search(usePagination: boolean): Promise<ISdDataSheetSearchResult<TItem>> | ISdDataSheetSearchResult<TItem>;
+  abstract itemPropInfo: SdDataSheetItemPropInfo<TItem>;
+  abstract getItemInfoFn: (item: TItem) => SdDataSheetItemInfo<TKey>;
+  abstract search(usePagination: boolean): Promise<SdDataSheetSearchResult<TItem>> | SdDataSheetSearchResult<TItem>;
 
   // 선택적 구현
   hideTool?: Signal<boolean>;
@@ -113,30 +113,30 @@ abstract class AbsSdDataSheet<
 }
 ```
 
-### `SdDataSheetControl`
+### `SdDataSheet`
 
-데이터 시트 presentation 컴포넌트. `AbsSdDataSheet`의 상속자를 부모로 자동 감지하여 렌더링한다.
+데이터 시트 presentation 컴포넌트. `SdDataSheetBase`의 상속자를 부모로 자동 감지하여 렌더링한다.
 
 ```typescript
 @Component({ selector: "sd-data-sheet" })
-class SdDataSheetControl { }
+class SdDataSheet { }
 ```
 
-### `SdDataSheetColumnDirective`
+### `SdDataSheetColumn`
 
-데이터 시트 컬럼. `SdSheetColumnDirective`를 확장하여 `edit` input을 추가한다.
+데이터 시트 컬럼. `SdSheetColumn`를 확장하여 `edit` input을 추가한다.
 
 ```typescript
 @Directive({ selector: "sd-data-sheet-column" })
-class SdDataSheetColumnDirective extends SdSheetColumnDirective {
+class SdDataSheetColumn extends SdSheetColumn {
   edit = input(false, { transform: booleanAttribute });
 }
 ```
 
-### `ISdDataSheetItemPropInfo`
+### `SdDataSheetItemPropInfo`
 
 ```typescript
-interface ISdDataSheetItemPropInfo<I> {
+interface SdDataSheetItemPropInfo<I> {
   isDeleted: (keyof I & string) | undefined;
   lastModifiedAt: (keyof I & string) | undefined;
   lastModifiedBy: (keyof I & string) | undefined;
@@ -149,10 +149,10 @@ interface ISdDataSheetItemPropInfo<I> {
 | `lastModifiedAt` | `keyof I \| undefined` | 최종 수정일시 프로퍼티 키 |
 | `lastModifiedBy` | `keyof I \| undefined` | 최종 수정자 프로퍼티 키 |
 
-### `ISdDataSheetItemInfo`
+### `SdDataSheetItemInfo`
 
 ```typescript
-interface ISdDataSheetItemInfo<K> {
+interface SdDataSheetItemInfo<K> {
   key: K;
   canSelect: boolean;
   canEdit: boolean;
@@ -167,10 +167,10 @@ interface ISdDataSheetItemInfo<K> {
 | `canEdit` | `boolean` | 편집 가능 여부 |
 | `canDelete` | `boolean` | 삭제 가능 여부 |
 
-### `ISdDataSheetSearchResult`
+### `SdDataSheetSearchResult`
 
 ```typescript
-interface ISdDataSheetSearchResult<I> {
+interface SdDataSheetSearchResult<I> {
   items: I[];
   pageLength?: number;
   summary?: Partial<I>;
@@ -183,17 +183,17 @@ interface ISdDataSheetSearchResult<I> {
 | `pageLength` | `number \| undefined` | 총 페이지 수 |
 | `summary` | `Partial<I> \| undefined` | 요약 행 데이터 |
 
-### `AbsSdDataDetail`
+### `SdDataDetailBase`
 
-상세 폼 추상 클래스. 모달로 표시되며, `ISdModal<R>`을 구현한다.
+상세 폼 추상 클래스. 모달로 표시되며, `SdModalContentDef<R>`을 구현한다.
 
 ```typescript
 @Directive()
-abstract class AbsSdDataDetail<T extends object, R = boolean> implements ISdModal<R> {
+abstract class SdDataDetailBase<T extends object, R = boolean> implements SdModalContentDef<R> {
   // 필수 구현
   abstract canUse: Signal<boolean>;
   abstract canEdit: Signal<boolean>;
-  abstract load(): Promise<{ data: T; info: ISdDataDetailDataInfo }> | { data: T; info: ISdDataDetailDataInfo };
+  abstract load(): Promise<{ data: T; info: SdDataDetailDataInfo }> | { data: T; info: SdDataDetailDataInfo };
 
   // 선택적 구현
   canDelete?: Signal<boolean>;
@@ -203,19 +203,19 @@ abstract class AbsSdDataDetail<T extends object, R = boolean> implements ISdModa
 }
 ```
 
-### `SdDataDetailControl`
+### `SdDataDetail`
 
 상세 폼 presentation 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-data-detail" })
-class SdDataDetailControl { }
+class SdDataDetail { }
 ```
 
-### `ISdDataDetailDataInfo`
+### `SdDataDetailDataInfo`
 
 ```typescript
-interface ISdDataDetailDataInfo {
+interface SdDataDetailDataInfo {
   isNew: boolean;
   isDeleted: boolean;
   lastModifiedAt: DateTime | undefined;
@@ -230,17 +230,17 @@ interface ISdDataDetailDataInfo {
 | `lastModifiedAt` | `DateTime \| undefined` | 최종 수정일시 |
 | `lastModifiedBy` | `string \| undefined` | 최종 수정자 |
 
-### `AbsSdDataSelectButton`
+### `SdDataSelectButtonBase`
 
 모달 기반 선택 버튼 추상 클래스.
 
 ```typescript
 @Directive()
-abstract class AbsSdDataSelectButton<TItem extends object, TKey, TMode extends keyof TSelectModeValue<TKey>> {
-  abstract modal: Signal<TSdSelectModalInfo<ISdSelectModal<any>>>;
+abstract class SdDataSelectButtonBase<TItem extends object, TKey, TMode extends keyof SelectModeValue<TKey>> {
+  abstract modal: Signal<SdSelectModalInfo<SdSelectModal<any>>>;
   abstract load(keys: TKey[]): Promise<TItem[]> | TItem[];
 
-  value = model<TSelectModeValue<TKey>[TMode]>();
+  value = model<SelectModeValue<TKey>[TMode]>();
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
@@ -249,26 +249,26 @@ abstract class AbsSdDataSelectButton<TItem extends object, TKey, TMode extends k
 }
 ```
 
-### `SdDataSelectButtonControl`
+### `SdDataSelectButton`
 
 선택 버튼 presentation 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-data-select-button" })
-class SdDataSelectButtonControl { }
+class SdDataSelectButton { }
 ```
 
 ## Shared Data Controls
 
-### `SdSharedDataSelectControl`
+### `SdSharedDataSelect`
 
 공유 데이터 드롭다운 선택 컴포넌트. 검색 기능 포함.
 
 ```typescript
 @Component({ selector: "sd-shared-data-select" })
-class SdSharedDataSelectControl<TItem extends ISharedDataBase<string | number>, TMode extends keyof TSelectModeValue<...>> {
+class SdSharedDataSelect<TItem extends SharedDataBase<string | number>, TMode extends keyof SelectModeValue<...>> {
   items = input.required<TItem[]>();
-  value = model<TSelectModeValue<...>[TMode]>();
+  value = model<SelectModeValue<...>[TMode]>();
   selectMode = input<TMode>("single" as TMode);
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
@@ -278,22 +278,22 @@ class SdSharedDataSelectControl<TItem extends ISharedDataBase<string | number>, 
 }
 ```
 
-### `SdSharedDataSelectButtonControl`
+### `SdSharedDataSelectButton`
 
-공유 데이터 모달 선택 버튼. `SdDataSelectButtonControl`을 래핑하여 공유 데이터 항목을 표시한다.
+공유 데이터 모달 선택 버튼. `SdDataSelectButton`을 래핑하여 공유 데이터 항목을 표시한다.
 
 ```typescript
 @Component({ selector: "sd-shared-data-select-button" })
-class SdSharedDataSelectButtonControl<TItem extends ISharedDataBase<...>, TMode extends keyof TSelectModeValue<...>> { }
+class SdSharedDataSelectButton<TItem extends SharedDataBase<...>, TMode extends keyof SelectModeValue<...>> { }
 ```
 
-### `SdSharedDataSelectListControl`
+### `SdSharedDataSelectList`
 
 공유 데이터 목록형 선택 컴포넌트. 검색, 페이지네이션, 외부 링크 기능을 포함한다.
 
 ```typescript
 @Component({ selector: "sd-shared-data-select-list" })
-class SdSharedDataSelectListControl<TItem extends ISharedDataBase<...>> {
+class SdSharedDataSelectList<TItem extends SharedDataBase<...>> {
   items = input.required<TItem[]>();
   value = model<(string | number)[]>();
   disabled = input(false, { transform: booleanAttribute });

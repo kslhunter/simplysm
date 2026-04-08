@@ -2,12 +2,12 @@ import { beforeEach, describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { SdNavigateWindowProvider } from "../../../src/core/providers/sd-navigate-window.provider";
-import { SdRouterLinkDirective } from "../../../src/core/directives/sd-router-link.directive";
+import { SdRouterLink } from "../../../src/core/directives/sd-router-link";
 import { SdRouterLinkTestHost } from "./sd-router-link-test.fixture";
 
 describe("Feature 1.7 Slice 2: 라우터 연동", () => {
-  describe("Rule: SdRouterLinkDirective가 키 조합에 따라 라우팅 모드를 분기한다", () => {
-    let directive: SdRouterLinkDirective;
+  describe("Rule: SdRouterLink가 키 조합에 따라 라우팅 모드를 분기한다", () => {
+    let directive: SdRouterLink;
     let mockRouter: { navigate: ReturnType<typeof vi.fn> };
     let mockNavWindow: { isWindow: boolean; open: ReturnType<typeof vi.fn> };
 
@@ -23,7 +23,7 @@ describe("Feature 1.7 Slice 2: 라우터 연동", () => {
       });
 
       TestBed.runInInjectionContext(() => {
-        directive = new SdRouterLinkDirective();
+        directive = new SdRouterLink();
       });
     });
 

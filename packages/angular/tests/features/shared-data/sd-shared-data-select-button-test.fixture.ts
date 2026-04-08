@@ -1,24 +1,24 @@
 import { Component, signal } from "@angular/core";
-import type { ISharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
-import { SdSharedDataSelectButtonControl } from "../../../src/features/shared-data/sd-shared-data-select-button.control";
-import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-of-template.directive";
-import type { TSdSelectModalInfo, ISdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button.control";
+import type { SharedDataBase } from "../../../src/core/providers/sd-shared-data.provider";
+import { SdSharedDataSelectButton } from "../../../src/features/shared-data/sd-shared-data-select-button";
+import { SdItemOfTemplate } from "../../../src/core/directives/sd-item-of-template";
+import type { SdSelectModalInfo, SdSelectModal } from "../../../src/ui/form/button/sd-modal-select-button";
 
-export interface ITestItem extends ISharedDataBase<number> {
+export interface TestItem extends SharedDataBase<number> {
   __valueKey: number;
   __searchText: string;
   __isHidden: boolean;
   name: string;
 }
 
-export function testItem(key: number, name: string): ITestItem {
+export function testItem(key: number, name: string): TestItem {
   return { __valueKey: key, __searchText: name, __isHidden: false, name };
 }
 
 @Component({
   selector: "sdsb-test-host",
   standalone: true,
-  imports: [SdSharedDataSelectButtonControl, SdItemOfTemplateDirective],
+  imports: [SdSharedDataSelectButton, SdItemOfTemplate],
   template: `
     <sd-shared-data-select-button
       [(value)]="value"
@@ -34,9 +34,9 @@ export function testItem(key: number, name: string): ITestItem {
 })
 export class SDSBTestHost {
   value = signal<number | undefined>(undefined);
-  items = signal<ITestItem[]>([]);
+  items = signal<TestItem[]>([]);
   selectMode = signal<"single" | "multi">("single");
-  modal = signal<TSdSelectModalInfo<ISdSelectModal<any>>>({
+  modal = signal<SdSelectModalInfo<SdSelectModal<any>>>({
     title: "Test",
     type: class {} as any,
     inputs: {},

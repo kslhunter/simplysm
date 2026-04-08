@@ -91,6 +91,8 @@ npm install @simplysm/service-server
 | `OrmServiceType` | type | `OrmService`의 메서드 시그니처 타입 |
 | `AutoUpdateService` | const | 자동 업데이트 서비스 정의. 플랫폼별 최신 버전 파일을 탐색한다 |
 | `AutoUpdateServiceType` | type | `AutoUpdateService`의 메서드 시그니처 타입 |
+| `AppStructureService` | function | 앱 구조 정보 서비스를 생성하는 팩토리 함수. `Record<string, AppStructureItem[]>`을 받아 서비스 정의를 반환한다 |
+| `AppStructureServiceType` | type | `AppStructureService`가 반환하는 서비스의 메서드 시그니처 타입 |
 
 → See [docs/services.md](./docs/services.md) for details.
 

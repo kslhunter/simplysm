@@ -1,60 +1,29 @@
-export type TSdAppStructureItem<TModule = unknown> =
-  | ISdAppStructureGroupItem<TModule>
-  | ISdAppStructureLeafItem<TModule>;
+export type {
+  AppStructureItem,
+  AppStructureGroupItem,
+  AppStructureLeafItem,
+  AppStructureSubPermission,
+  FlatPermission,
+} from "@simplysm/service-common";
 
-export interface ISdAppStructureGroupItem<TModule> {
-  code: string;
-  title: string;
-  modules?: TModule[];
-  requiredModules?: TModule[];
-  icon?: string;
-  children: TSdAppStructureItem<TModule>[];
-}
-
-export interface ISdAppStructureLeafItem<TModule> {
-  code: string;
-  title: string;
-  modules?: TModule[];
-  requiredModules?: TModule[];
-  perms?: ("use" | "edit")[];
-  subPerms?: ISdAppStructureSubPermission<TModule>[];
-  icon?: string;
-  url?: string;
-  isNotMenu?: boolean;
-}
-
-export interface ISdAppStructureSubPermission<TModule> {
-  code: string;
-  title: string;
-  modules?: TModule[];
-  requiredModules?: TModule[];
-  perms: ("use" | "edit")[];
-}
-
-export interface ISdMenu {
+export interface SdMenu {
   title: string;
   codeChain: string[];
   url?: string;
   icon?: string;
-  children?: ISdMenu[];
+  children?: SdMenu[];
 }
 
-export interface ISdFlatMenu<TModule = unknown> {
+export interface SdFlatMenu<TModule = unknown> {
   titleChain: string[];
   codeChain: string[];
   modulesChain: TModule[][];
 }
 
-export interface ISdPermission<TModule = unknown> {
+export interface SdPermission<TModule = unknown> {
   title: string;
   codeChain: string[];
   modules: TModule[] | undefined;
   perms: ("use" | "edit")[] | undefined;
-  children: ISdPermission<TModule>[] | undefined;
-}
-
-export interface ISdFlatPermission<TModule = unknown> {
-  titleChain: string[];
-  codeChain: string[];
-  modulesChain: TModule[][];
+  children: SdPermission<TModule>[] | undefined;
 }

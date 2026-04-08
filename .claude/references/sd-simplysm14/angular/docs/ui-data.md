@@ -2,13 +2,13 @@
 
 ## List
 
-### `SdListControl`
+### `SdList`
 
 리스트 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-list" })
-class SdListControl {
+class SdList {
   inset = input(false, { transform: booleanAttribute });
 }
 ```
@@ -17,13 +17,13 @@ class SdListControl {
 |-------|------|---------|-------------|
 | `inset` | `boolean` | `false` | 삽입 스타일 (테두리 없음) |
 
-### `SdListItemControl`
+### `SdListItem`
 
 리스트 항목 컴포넌트. 접기/펼치기 자식 리스트를 지원한다.
 
 ```typescript
 @Component({ selector: "sd-list-item" })
-class SdListItemControl {
+class SdListItem {
   open = model(false);
   selected = input(false, { transform: booleanAttribute });
   readonly = input(false, { transform: booleanAttribute });
@@ -38,13 +38,13 @@ class SdListItemControl {
 
 ## Sheet
 
-### `SdSheetControl`
+### `SdSheet`
 
 스프레드시트 컴포넌트. 정렬, 컬럼 고정, 리사이즈, 페이지네이션, 설정 저장을 지원한다.
 
 ```typescript
 @Component({ selector: "sd-sheet" })
-class SdSheetControl<T> {
+class SdSheet<T> {
   items = input.required<T[]>();
   currentPage = model(0);
   totalPageCount = input(0);
@@ -53,7 +53,7 @@ class SdSheetControl<T> {
   useAutoSort = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
   hideConfigBar = input(false, { transform: booleanAttribute });
-  sorts = model<ISortingDef[]>([]);
+  sorts = model<SortingDef[]>([]);
   selectedItems = model<T[]>([]);
   selectMode = input<"single" | "multi">();
   expandedItems = model<T[]>([]);
@@ -62,8 +62,8 @@ class SdSheetControl<T> {
   configKey = input<string>();
   trackByFn = input<(index: number, item: T) => any>();
 
-  itemKeydown = output<ISdSheetItemKeydownEventParam<T>>();
-  cellKeydown = output<ISdSheetCellKeydownEventParam<T>>();
+  itemKeydown = output<SdSheetItemKeydownEventParam<T>>();
+  cellKeydown = output<SdSheetCellKeydownEventParam<T>>();
 }
 ```
 
@@ -75,7 +75,7 @@ class SdSheetControl<T> {
 | `useAutoSort` | `boolean` | `false` | 클라이언트 측 자동 정렬 |
 | `inset` | `boolean` | `false` | 삽입 스타일 |
 | `hideConfigBar` | `boolean` | `false` | 설정 바 숨김 |
-| `sorts` | `ISortingDef[]` | `[]` | 정렬 설정 (two-way) |
+| `sorts` | `SortingDef[]` | `[]` | 정렬 설정 (two-way) |
 | `selectedItems` | `T[]` | `[]` | 선택된 항목 (two-way) |
 | `selectMode` | `"single" \| "multi" \| undefined` | - | 선택 모드 |
 | `expandedItems` | `T[]` | `[]` | 확장된 항목 (two-way) |
@@ -83,13 +83,13 @@ class SdSheetControl<T> {
 | `getItemSelectableFn` | `((item) => boolean \| string) \| undefined` | - | 선택 가능 여부 함수. string은 비활성 사유 |
 | `configKey` | `string \| undefined` | - | 설정 저장 키 |
 
-### `SdSheetColumnDirective`
+### `SdSheetColumn`
 
 시트 컬럼 정의 디렉티브.
 
 ```typescript
 @Directive({ selector: "sd-sheet-column" })
-class SdSheetColumnDirective {
+class SdSheetColumn {
   key = input.required<string>();
   header = input<string | string[]>();
   width = input<string>();
@@ -120,18 +120,18 @@ class SdSheetColumnDirective {
 
 ```typescript
 @Component({ selector: "sd-sheet-config-modal" })
-class SdSheetConfigModal implements ISdModal<ISdSheetConfig> {
-  controls = input.required<readonly SdSheetColumnDirective[]>();
-  config = input.required<ISdSheetConfig | undefined>();
-  close = output<ISdSheetConfig>();
+class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig> {
+  controls = input.required<readonly SdSheetColumn[]>();
+  config = input.required<SdSheetConfig | undefined>();
+  close = output<SdSheetConfig>();
   initialized = signal(true);
 }
 ```
 
-### `ISdSheetColumnDef`
+### `SdSheetColumnDef`
 
 ```typescript
-interface ISdSheetColumnDef {
+interface SdSheetColumnDef {
   key: string;
   header: string | string[];
   width: string | undefined;
@@ -144,10 +144,10 @@ interface ISdSheetColumnDef {
 }
 ```
 
-### `ISdSheetConfig`
+### `SdSheetConfig`
 
 ```typescript
-interface ISdSheetConfig {
+interface SdSheetConfig {
   columnRecord: Record<string, {
     width?: string;
     hidden?: boolean;
@@ -157,31 +157,31 @@ interface ISdSheetConfig {
 }
 ```
 
-### `ISdSheetHeaderDef`
+### `SdSheetHeaderDef`
 
 ```typescript
-interface ISdSheetHeaderDef {
+interface SdSheetHeaderDef {
   text: string;
   colspan: number;
   rowspan: number;
   isLastRow: boolean;
-  colDef: ISdSheetColumnDef | undefined;
+  colDef: SdSheetColumnDef | undefined;
 }
 ```
 
-### `ISdSheetItemKeydownEventParam`
+### `SdSheetItemKeydownEventParam`
 
 ```typescript
-interface ISdSheetItemKeydownEventParam<T> {
+interface SdSheetItemKeydownEventParam<T> {
   item: T;
   event: KeyboardEvent;
 }
 ```
 
-### `ISdSheetCellKeydownEventParam`
+### `SdSheetCellKeydownEventParam`
 
 ```typescript
-interface ISdSheetCellKeydownEventParam<T> {
+interface SdSheetCellKeydownEventParam<T> {
   item: T;
   key: string;
   event: KeyboardEvent;

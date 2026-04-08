@@ -2,13 +2,13 @@
 
 ## Collapse
 
-### `SdCollapseControl`
+### `SdCollapse`
 
 접기/펼치기 패널 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-collapse" })
-class SdCollapseControl {
+class SdCollapse {
   open = input(false, { transform: booleanAttribute });
 }
 ```
@@ -17,13 +17,13 @@ class SdCollapseControl {
 |-------|------|---------|-------------|
 | `open` | `boolean` | `false` | 펼침 상태 |
 
-### `SdCollapseIconControl`
+### `SdCollapseIcon`
 
 접기/펼치기 아이콘 컴포넌트. 화살표 회전 애니메이션.
 
 ```typescript
 @Component({ selector: "sd-collapse-icon" })
-class SdCollapseIconControl {
+class SdCollapseIcon {
   open = input(false, { transform: booleanAttribute });
   openRotate = input(90, { transform: numberAttribute });
 }
@@ -36,59 +36,59 @@ class SdCollapseIconControl {
 
 ## Tab
 
-### `SdTabControl`
+### `SdTab`
 
 탭 컨테이너 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-tab" })
-class SdTabControl<T> {
+class SdTab<T> {
   value = model<T>();
 }
 ```
 
-### `SdTabItemControl`
+### `SdTabItem`
 
 탭 항목 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-tab-item" })
-class SdTabItemControl<T> {
+class SdTabItem<T> {
   value = input.required<T>();
 }
 ```
 
-### `SdTabviewControl`
+### `SdTabview`
 
 탭뷰 컨테이너 (탭 + 컨텐츠 영역).
 
 ```typescript
 @Component({ selector: "sd-tabview" })
-class SdTabviewControl<T> {
+class SdTabview<T> {
   value = model<T>();
 }
 ```
 
-### `SdTabviewItemControl`
+### `SdTabviewItem`
 
 탭뷰 항목.
 
 ```typescript
 @Component({ selector: "sd-tabview-item" })
-class SdTabviewItemControl<T> {
+class SdTabviewItem<T> {
   value = input.required<T>();
 }
 ```
 
 ## Pagination
 
-### `SdPaginationControl`
+### `SdPagination`
 
 페이지네이션 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-pagination" })
-class SdPaginationControl {
+class SdPagination {
   currentPage = model(0);
   totalPageCount = input(0, { transform: numberAttribute });
   visiblePageCount = input(10, { transform: numberAttribute });
@@ -103,111 +103,114 @@ class SdPaginationControl {
 
 ## Sidebar
 
-### `SdSidebarContainerControl`
+### `SdSidebarContainer`
 
 사이드바 컨테이너.
 
 ```typescript
 @Component({ selector: "sd-sidebar-container" })
-class SdSidebarContainerControl { }
+class SdSidebarContainer { }
 ```
 
-### `SdSidebarControl`
+### `SdSidebar`
 
 사이드바 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-sidebar" })
-class SdSidebarControl { }
+class SdSidebar { }
 ```
 
-### `SdSidebarMenuControl`
+### `SdSidebarMenu`
 
 사이드바 메뉴 항목. 재귀적 트리 구조 지원.
 
 ```typescript
 @Component({ selector: "sd-sidebar-menu" })
-class SdSidebarMenuControl { }
+class SdSidebarMenu { }
 ```
 
-### `SdSidebarUserControl`
+### `SdSidebarUser`
 
 사이드바 사용자 영역 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-sidebar-user" })
-class SdSidebarUserControl {
-  menus = input<ISidebarUserMenu[]>([]);
+class SdSidebarUser {
+  userMenu = input<SdSidebarUserMenu>();
 }
 ```
 
-### `ISidebarUserMenu`
+### `SdSidebarUserMenu`
 
 ```typescript
-interface ISidebarUserMenu {
-  label: string;
-  onClick: () => void | Promise<void>;
+interface SdSidebarUserMenu {
+  title: string;
+  menus: {
+    title: string;
+    onClick: () => void;
+  }[];
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `label` | `string` | 메뉴 라벨 |
-| `onClick` | `() => void \| Promise<void>` | 클릭 핸들러 |
+| `title` | `string` | 사용자 메뉴 제목 |
+| `menus` | `{ title: string; onClick: () => void }[]` | 하위 메뉴 항목 배열 |
 
 ## Topbar
 
-### `SdTopbarContainerControl`
+### `SdTopbarContainer`
 
 탑바 컨테이너.
 
 ```typescript
 @Component({ selector: "sd-topbar-container" })
-class SdTopbarContainerControl { }
+class SdTopbarContainer { }
 ```
 
-### `SdTopbarControl`
+### `SdTopbar`
 
 탑바 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-topbar" })
-class SdTopbarControl { }
+class SdTopbar { }
 ```
 
-### `SdTopbarMenuControl`
+### `SdTopbarMenu`
 
 탑바 메뉴 항목.
 
 ```typescript
 @Component({ selector: "sd-topbar-menu" })
-class SdTopbarMenuControl { }
+class SdTopbarMenu { }
 ```
 
-### `SdTopbarUserControl`
+### `SdTopbarUser`
 
 탑바 사용자 영역 컴포넌트.
 
 ```typescript
 @Component({ selector: "sd-topbar-user" })
-class SdTopbarUserControl {
-  menus = input.required<ISdTopbarUserMenu[]>();
+class SdTopbarUser {
+  menus = input.required<SdTopbarUserMenu[]>();
 }
 ```
 
-### `ISdTopbarUserMenu`
+### `SdTopbarUserMenu`
 
 ```typescript
-interface ISdTopbarUserMenu {
-  label: string;
-  onClick: () => void | Promise<void>;
+interface SdTopbarUserMenu {
+  title: string;
+  onClick: () => void;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `label` | `string` | 메뉴 라벨 |
-| `onClick` | `() => void \| Promise<void>` | 클릭 핸들러 |
+| `title` | `string` | 메뉴 제목 |
+| `onClick` | `() => void` | 클릭 핸들러 |
 
 ## Menu Utilities
 
@@ -217,7 +220,7 @@ interface ISdTopbarUserMenu {
 
 ```typescript
 function getMenuRouterLinkOption(
-  menu: ISdMenu,
+  menu: SdMenu,
 ): { link: string; queryParams: Record<string, string> | undefined } | undefined
 ```
 
@@ -229,14 +232,14 @@ function getMenuRouterLinkOption(
 
 ```typescript
 function getIsMenuSelected(
-  menu: ISdMenu,
+  menu: SdMenu,
   fullPageCode: string | undefined,
-  customFn?: (menu: ISdMenu) => boolean,
+  customFn?: (menu: SdMenu) => boolean,
 ): boolean
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `menu` | `ISdMenu` | 메뉴 항목 |
+| `menu` | `SdMenu` | 메뉴 항목 |
 | `fullPageCode` | `string \| undefined` | 현재 페이지 코드 |
 | `customFn` | `((menu) => boolean) \| undefined` | 커스텀 비교 함수 |

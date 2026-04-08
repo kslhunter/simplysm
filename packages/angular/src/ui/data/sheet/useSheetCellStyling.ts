@@ -1,14 +1,14 @@
 import { computed, type Signal } from "@angular/core";
-import type { ISdSheetColumnDef, ISdSheetHeaderDef } from "./types";
-import type { IExpandItemDef } from "../../../core/utils/useExpandingManager";
+import type { SdSheetColumnDef, SdSheetHeaderDef } from "./types";
+import type { ExpandItemDef } from "../../../core/utils/useExpandingManager";
 
 export function useSheetCellStyling<T>(options: {
-  columnDefs: Signal<ISdSheetColumnDef[]>;
+  columnDefs: Signal<SdSheetColumnDef[]>;
   fixedLeftMap: Signal<Map<string, number>>;
   getItemCellStyleFn: Signal<((item: T, colKey: string) => string | undefined) | undefined>;
   getItemCellClassFn: Signal<((item: T, colKey: string) => string) | undefined>;
   getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
-  expandingDef: (item: T) => IExpandItemDef<T>;
+  expandingDef: (item: T) => ExpandItemDef<T>;
   isCellEditMode: (addr: { r: number; c: number }) => boolean;
 }) {
   function getColDefStyle(colDef: { width: string | undefined; collapse: boolean }): string | null {
@@ -22,7 +22,7 @@ export function useSheetCellStyling<T>(options: {
   }
 
   function getFixedStyle(
-    colDef: ISdSheetColumnDef,
+    colDef: SdSheetColumnDef,
     zIndex: number = 1,
     background: string = "var(--control-color)",
   ): string | null {
@@ -58,12 +58,12 @@ export function useSheetCellStyling<T>(options: {
     return map;
   });
 
-  function getHeaderCellStyle(cell: ISdSheetHeaderDef): string | null {
+  function getHeaderCellStyle(cell: SdSheetHeaderDef): string | null {
     if (cell.colDef == null) return null;
     return headerColumnStyles().get(cell.colDef.key) ?? null;
   }
 
-  function getCellStyle(item: T, colDef: ISdSheetColumnDef): string | null {
+  function getCellStyle(item: T, colDef: SdSheetColumnDef): string | null {
     const baseStyle = dataColumnBaseStyles().get(colDef.key) ?? null;
     const styleFn = options.getItemCellStyleFn();
     const customStyle = styleFn != null ? styleFn(item, colDef.key) : undefined;
@@ -71,11 +71,11 @@ export function useSheetCellStyling<T>(options: {
     return customStyle ?? baseStyle ?? null;
   }
 
-  function getFixedCellStyle(colDef: ISdSheetColumnDef): string | null {
+  function getFixedCellStyle(colDef: SdSheetColumnDef): string | null {
     return getFixedStyle(colDef, 3);
   }
 
-  function getCellStyleWithIndent(item: T, colDef: ISdSheetColumnDef, colIdx: number): string | null {
+  function getCellStyleWithIndent(item: T, colDef: SdSheetColumnDef, colIdx: number): string | null {
     const parts: string[] = [];
     const cellStyle = getCellStyle(item, colDef);
     if (cellStyle != null) {
@@ -90,7 +90,7 @@ export function useSheetCellStyling<T>(options: {
     return parts.length > 0 ? parts.join("; ") : null;
   }
 
-  function getDataCellClass(item: T, colDef: ISdSheetColumnDef, r: number, c: number): string | null {
+  function getDataCellClass(item: T, colDef: SdSheetColumnDef, r: number, c: number): string | null {
     const parts: string[] = [];
     const classFn = options.getItemCellClassFn();
     const customClass = classFn != null ? classFn(item, colDef.key) : undefined;

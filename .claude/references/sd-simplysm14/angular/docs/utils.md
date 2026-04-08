@@ -55,12 +55,12 @@ function setSafeStyle(
 
 ## Resource Functions
 
-### `useSdSystemConfigResource`
+### `injectSdSystemConfigResource`
 
 컴포넌트 태그명 기반 키로 시스템 설정을 읽고 쓰는 resource 래퍼. 생성자에서 호출.
 
 ```typescript
-function useSdSystemConfigResource<T>(options: {
+function injectSdSystemConfigResource<T>(options: {
   key: Signal<string | undefined>;
 }): {
   value: Signal<T | undefined>;
@@ -77,36 +77,36 @@ function useSdSystemConfigResource<T>(options: {
 
 ## Page Code / View Signals
 
-### `useCurrentPageCodeSignal`
+### `injectCurrentPageCodeSignal`
 
 현재 활성 라우트의 경로 세그먼트를 `.`으로 연결한 코드 signal. `ActivatedRoute`가 없으면 undefined 반환.
 
 ```typescript
-function useCurrentPageCodeSignal(): Signal<string> | undefined
+function injectCurrentPageCodeSignal(): Signal<string> | undefined
 ```
 
-### `useFullPageCodeSignal`
+### `injectFullPageCodeSignal`
 
 전체 URL 기반 페이지 코드 signal. `NavigationEnd` 이벤트를 구독하여 URL에서 코드를 추출한다.
 
 ```typescript
-function useFullPageCodeSignal(): Signal<string>
+function injectFullPageCodeSignal(): Signal<string>
 ```
 
-### `useViewTitleSignal`
+### `injectViewTitleSignal`
 
 현재 뷰의 타이틀 signal. 모달이면 모달 타이틀, 페이지이면 `SdAppStructureProvider`에서 조회.
 
 ```typescript
-function useViewTitleSignal(): Signal<string>
+function injectViewTitleSignal(): Signal<string>
 ```
 
-### `useViewTypeSignal`
+### `injectViewTypeSignal`
 
 현재 뷰의 타입 signal. 모달/페이지/컨트롤 중 하나를 반환한다.
 
 ```typescript
-function useViewTypeSignal(getComp: () => object): Signal<TSdViewType>
+function injectViewTypeSignal(getComp: () => object): Signal<SdViewType>
 ```
 
 | Parameter | Type | Description |
@@ -158,7 +158,7 @@ function useSelectionManager<T>(options: {
 
 ```typescript
 function useSortingManager(options: {
-  sorts: WritableSignal<ISortingDef[]>;
+  sorts: WritableSignal<SortingDef[]>;
 }): {
   defMap: Signal<Map<string, { indexText?: string; desc: boolean }>>;
   toggle(key: string, multiple: boolean): void;
@@ -189,7 +189,7 @@ function useExpandingManager<T>(binding: {
   toggle(item: T): void;
   toggleAll(): void;
   isVisible(item: T): boolean;
-  def(item: T): IExpandItemDef<T>;
+  def(item: T): ExpandItemDef<T>;
 }
 ```
 
@@ -201,7 +201,7 @@ function useExpandingManager<T>(binding: {
 | `toggle(item)` | `void` | 항목 확장/축소 토글 |
 | `toggleAll()` | `void` | 전체 확장/축소 토글 |
 | `isVisible(item)` | `boolean` | 부모 체인이 모두 펼쳐져 항목이 보이는지 |
-| `def(item)` | `IExpandItemDef<T>` | 항목의 트리 정의 (depth, parentDef 등) |
+| `def(item)` | `ExpandItemDef<T>` | 항목의 트리 정의 (depth, parentDef 등) |
 
 ## Setup Functions
 
@@ -291,6 +291,6 @@ function setupCloserWhenSingleSelectionChange<TItem, TKey>(options: {
   selectedItemKeys: Signal<TKey[]>;
   selectedItems: Signal<TItem[]>;
   selectMode: () => "single" | "multi" | undefined;
-  close: OutputEmitterRef<ISelectModalOutputResult<TItem>>;
+  close: OutputEmitterRef<SelectModalOutputResult<TItem>>;
 }): void
 ```

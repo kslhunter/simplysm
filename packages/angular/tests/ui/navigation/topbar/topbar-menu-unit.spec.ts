@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { SdTopbarMenuControl } from "../../../../src/ui/navigation/topbar/sd-topbar-menu.control";
+import { SdTopbarMenu } from "../../../../src/ui/navigation/topbar/sd-topbar-menu";
 import { TopbarMenuUnitTest } from "./sd-topbar-menu-unit-test.fixture";
 
-describe("SdTopbarMenuControl unit", () => {
+describe("SdTopbarMenu unit", () => {
   it("getMenuRouterLinkOption: children 없고 url 없으면 link와 queryParams 반환", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarMenuUnitTest],
@@ -14,7 +14,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Test",
       codeChain: ["mod", "pg"],
@@ -31,7 +31,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Test",
       codeChain: ["mod", "pg?a=1&b=2"],
@@ -50,7 +50,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Parent",
       codeChain: ["p"],
@@ -68,7 +68,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const result = ctrl.getMenuRouterLinkOption({
       title: "Ext",
       codeChain: ["ext"],
@@ -86,7 +86,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     // With empty URL, fullPageCode = "" and codeChain.join('.') = "" -> true
     const result = ctrl.getIsMenuSelected({ title: "X", codeChain: [] });
     expect(result).toBe(true);
@@ -101,7 +101,7 @@ describe("SdTopbarMenuControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     // With empty URL, fullPageCode = "" but codeChain.join('.') = "module.page"
     const result = ctrl.getIsMenuSelected({
       title: "X",

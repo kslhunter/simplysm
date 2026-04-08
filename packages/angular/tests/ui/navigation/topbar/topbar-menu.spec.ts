@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { SdTopbarMenuControl } from "../../../../src/ui/navigation/topbar/sd-topbar-menu.control";
-import { SdDropdownControl } from "../../../../src/ui/overlay/dropdown/sd-dropdown.control";
+import { SdTopbarMenu } from "../../../../src/ui/navigation/topbar/sd-topbar-menu";
+import { SdDropdown } from "../../../../src/ui/overlay/dropdown/sd-dropdown";
 import {
   TopbarMenuBasicTest,
   TopbarMenuIconTest,
@@ -13,7 +13,7 @@ import {
   TopbarMenuDepthTest,
 } from "./sd-topbar-menu-test.fixture";
 
-describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
+describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
   it("최상위 메뉴마다 드롭다운 버튼이 생성된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarMenuBasicTest],
@@ -144,7 +144,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const menu = { title: "Test", codeChain: ["module", "page"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -160,7 +160,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const menu = { title: "QS", codeChain: ["module", "page?key=value"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -205,7 +205,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const menu = {
       title: "Parent",
       codeChain: ["parent"],
@@ -224,7 +224,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     // With empty URL, fullPageCode = "" and codeChain.join('.') = "" -> match for empty
     const result = ctrl.getIsMenuSelected({ title: "X", codeChain: [] });
     expect(typeof result).toBe("boolean");
@@ -239,7 +239,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenuControl;
+      .componentInstance as SdTopbarMenu;
     const menu = { title: "Custom", codeChain: ["custom"] };
     expect(ctrl.getIsMenuSelected(menu)).toBe(true);
   });
@@ -261,8 +261,8 @@ describe("Feature 4.4 Slice 2: SdTopbarMenuControl 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     const dropdownCtrl = fixture.debugElement
-      .query((el) => el.componentInstance instanceof SdDropdownControl)
-      .componentInstance as SdDropdownControl;
+      .query((el) => el.componentInstance instanceof SdDropdown)
+      .componentInstance as SdDropdown;
     expect(dropdownCtrl.open()).toBe(true);
 
     // Click list item in popup (popup is on document.body)

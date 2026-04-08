@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
-import { SdSidebarControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
+import { SdSidebar } from "../../../../src/ui/navigation/sidebar/sd-sidebar";
 
 @Component({
   selector: "sd-sidebar-unit-test",
@@ -11,6 +11,6 @@ import { SdSidebarControl } from "../../../../src/ui/navigation/sidebar/sd-sideb
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl, SdSidebarControl],
+  imports: [SdSidebarContainer, SdSidebar],
 })
 export class SidebarUnitTest {}

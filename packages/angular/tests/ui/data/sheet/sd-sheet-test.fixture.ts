@@ -1,16 +1,16 @@
 import { Component, signal } from "@angular/core";
-import { SdSheetControl } from "../../../../src/ui/data/sheet/sd-sheet.control";
-import { SdSheetColumnDirective } from "../../../../src/ui/data/sheet/sd-sheet-column.directive";
-import type { ISortingDef } from "../../../../src/core/utils/useSortingManager";
+import { SdSheet } from "../../../../src/ui/data/sheet/sd-sheet";
+import { SdSheetColumn } from "../../../../src/ui/data/sheet/sd-sheet-column";
+import type { SortingDef } from "../../../../src/core/utils/useSortingManager";
 
 // --- Common test interface ---
 
-export interface ITestItem {
+export interface TestItem {
   name: string;
   age: number;
 }
 
-export interface ITestItem3 {
+export interface TestItem3 {
   name: string;
   age: number;
   city: string;
@@ -28,10 +28,10 @@ export interface ITestItem3 {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetBasicTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
@@ -50,10 +50,10 @@ export class SdSheetBasicTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetMultiHeaderTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 @Component({
@@ -67,10 +67,10 @@ export class SdSheetMultiHeaderTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSummaryTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 @Component({
@@ -86,10 +86,10 @@ export class SdSheetSummaryTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetHiddenTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 @Component({
@@ -105,10 +105,10 @@ export class SdSheetHiddenTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetCollapseTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 @Component({
@@ -121,10 +121,10 @@ export class SdSheetCollapseTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetEmptyTest {
-  items = signal<ITestItem[]>([]);
+  items = signal<TestItem[]>([]);
 }
 
 @Component({
@@ -141,12 +141,12 @@ export class SdSheetEmptyTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetCellStyleTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
-  getClassFn = (_item: ITestItem, _colKey: string) => "custom-class";
-  getStyleFn = (_item: ITestItem, _colKey: string) => "color: red";
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  getClassFn = (_item: TestItem, _colKey: string) => "custom-class";
+  getStyleFn = (_item: TestItem, _colKey: string) => "color: red";
 }
 
 @Component({
@@ -159,10 +159,10 @@ export class SdSheetCellStyleTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetInsetTest {
-  items = signal<ITestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 // --- Slice 2: 컬럼 고정 fixtures ---
@@ -183,10 +183,10 @@ export class SdSheetInsetTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetFixedTest {
-  items = signal<ITestItem3[]>([
+  items = signal<TestItem3[]>([
     { name: "Alice", age: 30, city: "Seoul" },
   ]);
 }
@@ -210,10 +210,10 @@ export class SdSheetFixedTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetFixed3ColTest {
-  items = signal<ITestItem3[]>([
+  items = signal<TestItem3[]>([
     { name: "Alice", age: 30, city: "Seoul" },
   ]);
 }
@@ -230,15 +230,15 @@ export class SdSheetFixed3ColTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSelectSingleTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<ITestItem[]>([]);
+  selectedItems = signal<TestItem[]>([]);
 }
 
 @Component({
@@ -251,15 +251,15 @@ export class SdSheetSelectSingleTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSelectMultiTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<ITestItem[]>([]);
+  selectedItems = signal<TestItem[]>([]);
 }
 
 @Component({
@@ -277,16 +277,16 @@ export class SdSheetSelectMultiTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSelectDisabledTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<ITestItem[]>([]);
-  selectableFn = (item: ITestItem): boolean | string => {
+  selectedItems = signal<TestItem[]>([]);
+  selectableFn = (item: TestItem): boolean | string => {
     if (item.name === "C") return "권한 없음";
     return true;
   };
@@ -302,10 +302,10 @@ export class SdSheetSelectDisabledTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetNoSelectTest {
-  items = signal<ITestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<TestItem[]>([{ name: "A", age: 1 }]);
 }
 
 @Component({
@@ -323,14 +323,14 @@ export class SdSheetNoSelectTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetAutoSelectClickTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
   ]);
-  selectedItems = signal<ITestItem[]>([]);
+  selectedItems = signal<TestItem[]>([]);
 }
 
 @Component({
@@ -348,14 +348,14 @@ export class SdSheetAutoSelectClickTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetAutoSelectFocusTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
   ]);
-  selectedItems = signal<ITestItem[]>([]);
+  selectedItems = signal<TestItem[]>([]);
 }
 
 @Component({
@@ -368,10 +368,10 @@ export class SdSheetAutoSelectFocusTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetFocusModeRowTest {
-  items = signal<ITestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<TestItem[]>([{ name: "A", age: 1 }]);
 }
 
 // --- Slice 4: 정렬 fixtures ---
@@ -389,15 +389,15 @@ export class SdSheetFocusModeRowTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSortTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "Charlie", age: 30 },
     { name: "Alice", age: 25 },
     { name: "Bob", age: 35 },
   ]);
-  sorts = signal<ISortingDef[]>([]);
+  sorts = signal<SortingDef[]>([]);
 }
 
 @Component({
@@ -410,14 +410,14 @@ export class SdSheetSortTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSortNoAutoTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "Charlie", age: 30 },
     { name: "Alice", age: 25 },
   ]);
-  sorts = signal<ISortingDef[]>([]);
+  sorts = signal<SortingDef[]>([]);
 }
 
 @Component({
@@ -430,21 +430,21 @@ export class SdSheetSortNoAutoTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetSortDisabledTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "Charlie", age: 30 },
     { name: "Alice", age: 25 },
   ]);
-  sorts = signal<ISortingDef[]>([]);
+  sorts = signal<SortingDef[]>([]);
 }
 
 // --- Slice 5: 트리 구조 + 페이지네이션 fixtures ---
 
-export interface ITreeItem {
+export interface TreeItem {
   name: string;
-  children?: ITreeItem[];
+  children?: TreeItem[];
 }
 
 @Component({
@@ -461,17 +461,17 @@ export interface ITreeItem {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetTreeTest {
-  child1: ITreeItem = { name: "Child1" };
-  child2: ITreeItem = { name: "Child2" };
-  parentA: ITreeItem = { name: "ParentA", children: [this.child1, this.child2] };
-  parentB: ITreeItem = { name: "ParentB" };
+  child1: TreeItem = { name: "Child1" };
+  child2: TreeItem = { name: "Child2" };
+  parentA: TreeItem = { name: "ParentA", children: [this.child1, this.child2] };
+  parentB: TreeItem = { name: "ParentB" };
 
-  items = signal<ITreeItem[]>([this.parentA, this.parentB]);
-  expandedItems = signal<ITreeItem[]>([]);
-  childrenFn = (item: ITreeItem) => item.children;
+  items = signal<TreeItem[]>([this.parentA, this.parentB]);
+  expandedItems = signal<TreeItem[]>([]);
+  childrenFn = (item: TreeItem) => item.children;
 }
 
 @Component({
@@ -484,10 +484,10 @@ export class SdSheetTreeTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetNoTreeTest {
-  items = signal<ITestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<TestItem[]>([{ name: "A", age: 1 }]);
 }
 
 @Component({
@@ -505,10 +505,10 @@ export class SdSheetNoTreeTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetPaginationTest {
-  items = signal<ITestItem[]>([
+  items = signal<TestItem[]>([
     { name: "A", age: 1 },
     { name: "B", age: 2 },
   ]);
@@ -525,8 +525,8 @@ export class SdSheetPaginationTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetNoPaginationTest {
-  items = signal<ITestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<TestItem[]>([{ name: "A", age: 1 }]);
 }

@@ -15,7 +15,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
   override addEventListener(
     element: HTMLElement,
     eventName: string,
-    handler: (entry: ISdResizeEvent) => void,
+    handler: (entry: SdResizeEvent) => void,
   ): () => void {
     let prevWidth = 0;
     let prevHeight = 0;
@@ -53,7 +53,7 @@ export class SdResizeEventPlugin extends EventManagerPlugin {
   }
 }
 
-export interface ISdResizeEvent {
+export interface SdResizeEvent {
   heightChanged: boolean;
   widthChanged: boolean;
   target: Element;

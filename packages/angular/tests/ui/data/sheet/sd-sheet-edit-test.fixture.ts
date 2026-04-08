@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core";
 import "@simplysm/core-browser";
-import { SdSheetControl } from "../../../../src/ui/data/sheet/sd-sheet.control";
-import { SdSheetColumnDirective } from "../../../../src/ui/data/sheet/sd-sheet-column.directive";
-import type { ISortingDef } from "../../../../src/core/utils/useSortingManager";
+import { SdSheet } from "../../../../src/ui/data/sheet/sd-sheet";
+import { SdSheetColumn } from "../../../../src/ui/data/sheet/sd-sheet-column";
+import type { SortingDef } from "../../../../src/core/utils/useSortingManager";
 
-export interface IEditTestItem {
+export interface EditTestItem {
   name: string;
   age: number;
 }
@@ -34,10 +34,10 @@ export interface IEditTestItem {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetEditTest {
-  items = signal<IEditTestItem[]>([
+  items = signal<EditTestItem[]>([
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
     { name: "Charlie", age: 35 },
@@ -62,10 +62,10 @@ export class SdSheetEditTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetEditTextareaTest {
-  items = signal<IEditTestItem[]>([
+  items = signal<EditTestItem[]>([
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
@@ -87,10 +87,10 @@ export class SdSheetEditTextareaTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetEditContenteditableTest {
-  items = signal<IEditTestItem[]>([
+  items = signal<EditTestItem[]>([
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
@@ -111,11 +111,11 @@ export class SdSheetEditContenteditableTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetResizeTest {
-  items = signal<IEditTestItem[]>([{ name: "Alice", age: 30 }]);
-  sorts = signal<ISortingDef[]>([]);
+  items = signal<EditTestItem[]>([{ name: "Alice", age: 30 }]);
+  sorts = signal<SortingDef[]>([]);
 }
 
 @Component({
@@ -131,10 +131,10 @@ export class SdSheetResizeTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetResizeDisabledTest {
-  items = signal<IEditTestItem[]>([{ name: "Alice", age: 30 }]);
+  items = signal<EditTestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
 // --- Slice 3: config bar fixtures ---
@@ -149,10 +149,10 @@ export class SdSheetResizeDisabledTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetConfigBarKeyTest {
-  items = signal<IEditTestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
 }
 
 @Component({
@@ -165,10 +165,10 @@ export class SdSheetConfigBarKeyTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetConfigBarPageTest {
-  items = signal<IEditTestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
   currentPage = signal(0);
 }
 
@@ -182,10 +182,10 @@ export class SdSheetConfigBarPageTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetNoConfigBarTest {
-  items = signal<IEditTestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
 }
 
 @Component({
@@ -198,8 +198,8 @@ export class SdSheetNoConfigBarTest {
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheetControl, SdSheetColumnDirective],
+  imports: [SdSheet, SdSheetColumn],
 })
 export class SdSheetHideConfigBarTest {
-  items = signal<IEditTestItem[]>([{ name: "A", age: 1 }]);
+  items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
 }

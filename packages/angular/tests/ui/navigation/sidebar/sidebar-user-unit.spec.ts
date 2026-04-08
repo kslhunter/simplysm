@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdSidebarUserControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-user.control";
+import { SdSidebarUser } from "../../../../src/ui/navigation/sidebar/sd-sidebar-user";
 import { UserUnitTest } from "./sd-sidebar-user-unit-test.fixture";
 
-describe("SdSidebarUserControl unit", () => {
+describe("SdSidebarUser unit", () => {
   it("menuOpen 초기값이 false이다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [UserUnitTest],
@@ -16,7 +16,7 @@ describe("SdSidebarUserControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarUserControl;
+      .componentInstance as SdSidebarUser;
     expect(ctrl.menuOpen()).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe("SdSidebarUserControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarUserControl;
+      .componentInstance as SdSidebarUser;
     expect(ctrl.menuOpen()).toBe(false);
 
     ctrl.onMenuOpenButtonClick();

@@ -3,8 +3,8 @@ import { TestBed } from "@angular/core/testing";
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from "@angular/router";
 import { BehaviorSubject, Subject } from "rxjs";
 import type { Signal } from "@angular/core";
-import { useCurrentPageCodeSignal } from "../../../src/core/utils/useCurrentPageCodeSignal";
-import { useFullPageCodeSignal } from "../../../src/core/utils/useFullPageCodeSignal";
+import { injectCurrentPageCodeSignal } from "../../../src/core/utils/injectCurrentPageCodeSignal";
+import { injectFullPageCodeSignal } from "../../../src/core/utils/injectFullPageCodeSignal";
 
 function mockUrlRoute(path: string) {
   const segments = path !== "" ? [new UrlSegment(path, {})] : [];
@@ -35,7 +35,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useCurrentPageCodeSignal();
+        signal = injectCurrentPageCodeSignal();
       });
 
       expect(signal!()).toBe("main.sub");
@@ -61,7 +61,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useCurrentPageCodeSignal();
+        signal = injectCurrentPageCodeSignal();
       });
 
       expect(signal!()).toBe("main.sub");
@@ -76,7 +76,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useCurrentPageCodeSignal();
+        signal = injectCurrentPageCodeSignal();
       });
 
       expect(signal).toBeUndefined();
@@ -96,7 +96,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useCurrentPageCodeSignal();
+        signal = injectCurrentPageCodeSignal();
       });
 
       expect(signal!()).toBe("");
@@ -116,7 +116,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useFullPageCodeSignal();
+        signal = injectFullPageCodeSignal();
       });
 
       expect(signal!()).toBe("main.sub");
@@ -134,7 +134,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useFullPageCodeSignal();
+        signal = injectFullPageCodeSignal();
       });
 
       expect(signal!()).toBe("page.child");
@@ -153,7 +153,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useFullPageCodeSignal();
+        signal = injectFullPageCodeSignal();
       });
 
       expect(signal!()).toBe("page1");
@@ -175,7 +175,7 @@ describe("Feature 1.11 Slice 1: 페이지 코드 시그널", () => {
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = useFullPageCodeSignal();
+        signal = injectFullPageCodeSignal();
       });
 
       expect(signal!()).toBe("main.sub");

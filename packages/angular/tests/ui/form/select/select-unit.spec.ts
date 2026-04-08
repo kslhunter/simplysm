@@ -27,7 +27,7 @@ function openDropdown(fixture: any): HTMLElement {
   return document.body.querySelector("sd-dropdown-popup") as HTMLElement;
 }
 
-describe("SdSelectControl unit tests", () => {
+describe("SdSelect unit tests", () => {
   it("renders sd-dropdown with trigger area and sd-dropdown-popup", () => {
     setupTestBed(SdSelectSingleTest);
     const fixture = TestBed.createComponent(SdSelectSingleTest);
@@ -75,7 +75,7 @@ describe("SdSelectControl unit tests", () => {
     expect(placeholderSpan!.textContent.trim()).toBe("Select an item");
   });
 
-  it("SdSelectItemControl click triggers value change on parent", () => {
+  it("SdSelectItem click triggers value change on parent", () => {
     setupTestBed(SdSelectSingleTest);
     const fixture = TestBed.createComponent(SdSelectSingleTest);
     fixture.detectChanges();

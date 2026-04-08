@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 
 @Component({
   selector: "sd-container-unit-test",
@@ -9,7 +9,7 @@ import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar
     </sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl],
+  imports: [SdSidebarContainer],
 })
 export class ContainerUnitTest {}
 
@@ -19,6 +19,6 @@ export class ContainerUnitTest {}
     <sd-sidebar-container>content</sd-sidebar-container>
   `,
   standalone: true,
-  imports: [SdSidebarContainerControl],
+  imports: [SdSidebarContainer],
 })
 export class ContainerRouterTest {}

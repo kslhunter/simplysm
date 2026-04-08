@@ -1,6 +1,6 @@
 import { Component, input, output, signal } from "@angular/core";
-import { type ISdModal } from "../../../../src/ui/overlay/modal/sd-modal.provider";
-import { SdModalControl } from "../../../../src/ui/overlay/modal/sd-modal.control";
+import { type SdModalContentDef } from "../../../../src/ui/overlay/modal/sd-modal.provider";
+import { SdModal } from "../../../../src/ui/overlay/modal/sd-modal";
 
 /**
  * 테스트용 모달 컴포넌트 (string 결과 반환)
@@ -10,7 +10,7 @@ import { SdModalControl } from "../../../../src/ui/overlay/modal/sd-modal.contro
   standalone: true,
   template: `<div class="content">{{ title() }}</div>`,
 })
-export class SdModalTestBasic implements ISdModal<string> {
+export class SdModalTestBasic implements SdModalContentDef<string> {
   readonly _optionalModalInputs?: "age";
   initialized = signal(false);
   close = output<string | undefined>();
@@ -19,12 +19,12 @@ export class SdModalTestBasic implements ISdModal<string> {
 }
 
 /**
- * SdModalControl 기본 테스트 (backdrop + ESC + close button 활성)
+ * SdModal 기본 테스트 (backdrop + ESC + close button 활성)
  */
 @Component({
   selector: "sd-modal-test-control-default",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="open()" [title]="'Test'" (closeRequest)="onClose()">
       <div class="modal-body">body content</div>
@@ -46,7 +46,7 @@ export class SdModalTestControlDefault {
 @Component({
   selector: "sd-modal-test-no-backdrop",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="true" [title]="'Test'" [useCloseByBackdrop]="false" (closeRequest)="onClose()">
       <div class="modal-body">body</div>
@@ -66,7 +66,7 @@ export class SdModalTestNoBackdrop {
 @Component({
   selector: "sd-modal-test-no-esc",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="true" [title]="'Test'" [useCloseByEscapeKey]="false" (closeRequest)="onClose()">
       <div class="modal-body">body</div>
@@ -86,7 +86,7 @@ export class SdModalTestNoEsc {
 @Component({
   selector: "sd-modal-test-hide-close",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="true" [title]="'Test'" [hideCloseButton]="true">
       <div class="modal-body">body</div>
@@ -101,7 +101,7 @@ export class SdModalTestHideCloseButton {}
 @Component({
   selector: "sd-modal-test-hide-header",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="true" [title]="'Test'" [hideHeader]="true">
       <div class="modal-body">body</div>
@@ -116,7 +116,7 @@ export class SdModalTestHideHeader {}
 @Component({
   selector: "sd-modal-test-movable",
   standalone: true,
-  imports: [SdModalControl],
+  imports: [SdModal],
   template: `
     <sd-modal [open]="true" [title]="'Test'" [movable]="true" (closeRequest)="onClose()">
       <div class="modal-body">body content</div>
@@ -153,7 +153,7 @@ export class SdModalProviderTestHost {
     <input class="last-input" type="text" />
   `,
 })
-export class SdModalTestFocusable implements ISdModal<void> {
+export class SdModalTestFocusable implements SdModalContentDef<void> {
   readonly _optionalModalInputs?: "title";
   initialized = signal(false);
   close = output<void | undefined>();

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { TopbarContainerUnitTest } from "./sd-topbar-container-unit-test.fixture";
 
-describe("SdTopbarContainerControl unit", () => {
+describe("SdTopbarContainer unit", () => {
   it("host 요소가 display: flex, flex-direction: column으로 렌더링된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [TopbarContainerUnitTest],

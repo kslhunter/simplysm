@@ -1,5 +1,5 @@
 import { Component, signal } from "@angular/core";
-import { SdTextareaControl } from "../../../../src/ui/form/input/sd-textarea.control";
+import { SdTextarea } from "../../../../src/ui/form/input/sd-textarea";
 
 // region Slice 1: Value binding + rows
 
@@ -7,7 +7,7 @@ import { SdTextareaControl } from "../../../../src/ui/form/input/sd-textarea.con
   selector: "sd-textarea-default-test",
   template: `<sd-textarea [(value)]="value" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaDefaultTest {
   value = signal<string | undefined>(undefined);
@@ -17,7 +17,7 @@ export class SdTextareaDefaultTest {
   selector: "sd-textarea-min-rows-test",
   template: `<sd-textarea [(value)]="value" [minRows]="minRows()" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaMinRowsTest {
   value = signal<string | undefined>(undefined);
@@ -28,7 +28,7 @@ export class SdTextareaMinRowsTest {
   selector: "sd-textarea-required-test",
   template: `<sd-textarea [(value)]="value" [required]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaRequiredTest {
   value = signal<string | undefined>(undefined);
@@ -38,7 +38,7 @@ export class SdTextareaRequiredTest {
   selector: "sd-textarea-validator-test",
   template: `<sd-textarea [(value)]="value" [validatorFn]="validator" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaValidatorTest {
   value = signal<string | undefined>("abc");
@@ -50,7 +50,7 @@ export class SdTextareaValidatorTest {
   selector: "sd-textarea-required-validator-test",
   template: `<sd-textarea [(value)]="value" [required]="true" [validatorFn]="validator" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaRequiredValidatorTest {
   value = signal<string | undefined>(undefined);
@@ -61,7 +61,7 @@ export class SdTextareaRequiredValidatorTest {
   selector: "sd-textarea-disabled-test",
   template: `<sd-textarea [(value)]="value" [disabled]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaDisabledTest {
   value = signal<string | undefined>("내용");
@@ -71,7 +71,7 @@ export class SdTextareaDisabledTest {
   selector: "sd-textarea-readonly-test",
   template: `<sd-textarea [(value)]="value" [readonly]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaReadonlyTest {
   value = signal<string | undefined>("내용");
@@ -81,7 +81,7 @@ export class SdTextareaReadonlyTest {
   selector: "sd-textarea-placeholder-test",
   template: `<sd-textarea [(value)]="value" [placeholder]="'입력하세요'" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaPlaceholderTest {
   value = signal<string | undefined>(undefined);
@@ -91,7 +91,7 @@ export class SdTextareaPlaceholderTest {
   selector: "sd-textarea-disabled-placeholder-test",
   template: `<sd-textarea [(value)]="value" [disabled]="true" [placeholder]="'입력하세요'" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaDisabledPlaceholderTest {
   value = signal<string | undefined>(undefined);
@@ -101,7 +101,7 @@ export class SdTextareaDisabledPlaceholderTest {
   selector: "sd-textarea-disabled-empty-test",
   template: `<sd-textarea [(value)]="value" [disabled]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaDisabledEmptyTest {
   value = signal<string | undefined>(undefined);
@@ -115,7 +115,7 @@ export class SdTextareaDisabledEmptyTest {
   selector: "sd-textarea-inline-test",
   template: `<sd-textarea [inline]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaInlineTest {}
 
@@ -123,7 +123,7 @@ export class SdTextareaInlineTest {}
   selector: "sd-textarea-inset-test",
   template: `<sd-textarea [(value)]="value" [inset]="true" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaInsetTest {
   value = signal<string | undefined>(undefined);
@@ -133,7 +133,7 @@ export class SdTextareaInsetTest {
   selector: "sd-textarea-size-test",
   template: `<sd-textarea [(value)]="value" [size]="'sm'" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaSizeTest {
   value = signal<string | undefined>(undefined);
@@ -143,7 +143,7 @@ export class SdTextareaSizeTest {
   selector: "sd-textarea-theme-test",
   template: `<sd-textarea [(value)]="value" [theme]="'primary'" />`,
   standalone: true,
-  imports: [SdTextareaControl],
+  imports: [SdTextarea],
 })
 export class SdTextareaThemeTest {
   value = signal<string | undefined>(undefined);

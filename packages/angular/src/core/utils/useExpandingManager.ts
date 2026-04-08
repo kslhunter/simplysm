@@ -1,9 +1,9 @@
 import { computed, type Signal, type WritableSignal } from "@angular/core";
 import "@simplysm/core-common";
 
-export interface IExpandItemDef<T> {
+export interface ExpandItemDef<T> {
   item: T;
-  parentDef: IExpandItemDef<T> | undefined;
+  parentDef: ExpandItemDef<T> | undefined;
   hasChildren: boolean;
   depth: number;
 }
@@ -20,19 +20,19 @@ export function useExpandingManager<T>(binding: {
   toggle(item: T): void;
   toggleAll(): void;
   isVisible(item: T): boolean;
-  def(item: T): IExpandItemDef<T>;
+  def(item: T): ExpandItemDef<T>;
 } {
   const allDefs = computed(() => {
     const getChildrenFn = binding.getChildrenFn();
-    const defs: IExpandItemDef<T>[] = [];
+    const defs: ExpandItemDef<T>[] = [];
 
-    function walk(items: T[], parentDef: IExpandItemDef<T> | undefined, depth: number): void {
+    function walk(items: T[], parentDef: ExpandItemDef<T> | undefined, depth: number): void {
       const sorted = binding.sort(items);
       for (let i = 0; i < sorted.length; i++) {
         const item = sorted[i];
         const children = getChildrenFn?.(item, i);
         const hasChildren = children != null && children.length > 0;
-        const itemDef: IExpandItemDef<T> = { item, parentDef, hasChildren, depth };
+        const itemDef: ExpandItemDef<T> = { item, parentDef, hasChildren, depth };
         defs.push(itemDef);
         if (hasChildren) {
           walk(children, itemDef, depth + 1);
@@ -60,7 +60,7 @@ export function useExpandingManager<T>(binding: {
   });
 
   const defMap = computed(() => {
-    const map = new Map<T, IExpandItemDef<T>>();
+    const map = new Map<T, ExpandItemDef<T>>();
     for (const d of allDefs()) {
       map.set(d.item, d);
     }
@@ -99,7 +99,7 @@ export function useExpandingManager<T>(binding: {
     return true;
   }
 
-  function def(item: T): IExpandItemDef<T> {
+  function def(item: T): ExpandItemDef<T> {
     const map = defMap();
     const d = map.get(item);
     if (d == null) {

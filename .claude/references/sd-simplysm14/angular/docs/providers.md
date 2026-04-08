@@ -42,37 +42,37 @@ class SdSystemLogProvider {
 ```typescript
 @Injectable({ providedIn: "root" })
 abstract class SdAppStructureProvider<TModule = unknown> {
-  abstract items: TSdAppStructureItem<TModule>[];
+  abstract items: AppStructureItem<TModule>[];
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
-  usableMenus: Signal<ISdMenu[]>;
-  usableFlatMenus: Signal<ISdFlatMenu<TModule>[]>;
+  usableMenus: Signal<SdMenu[]>;
+  usableFlatMenus: Signal<SdFlatMenu<TModule>[]>;
 
-  getPermissionsByStructure(items, codeChain?): ISdPermission<TModule>[];
+  getPermissionsByStructure(items, codeChain?): SdPermission<TModule>[];
   getTitleByFullCode(fullCode: string): string;
-  getItemChainByFullCode(fullCode: string): TSdAppStructureItem<TModule>[];
+  getItemChainByFullCode(fullCode: string): AppStructureItem<TModule>[];
   getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[];
 }
 ```
 
 | Abstract Field | Type | Description |
 |----------------|------|-------------|
-| `items` | `TSdAppStructureItem<TModule>[]` | 앱 구조 항목 배열 |
+| `items` | `AppStructureItem<TModule>[]` | 앱 구조 항목 배열 |
 | `usableModules` | `Signal<TModule[] \| undefined>` | 사용 가능한 모듈 목록 |
 | `permRecord` | `Signal<Record<string, boolean> \| undefined>` | 권한 레코드 |
 
 | Computed | Type | Description |
 |----------|------|-------------|
-| `usableMenus` | `Signal<ISdMenu[]>` | 사용 가능한 메뉴 트리 |
-| `usableFlatMenus` | `Signal<ISdFlatMenu<TModule>[]>` | 사용 가능한 플랫 메뉴 |
+| `usableMenus` | `Signal<SdMenu[]>` | 사용 가능한 메뉴 트리 |
+| `usableFlatMenus` | `Signal<SdFlatMenu<TModule>[]>` | 사용 가능한 플랫 메뉴 |
 
-## `usePermsSignal`
+## `injectPermsSignal`
 
 현재 뷰의 권한 목록을 signal로 반환하는 함수. 생성자에서 호출한다.
 
 ```typescript
-function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]>
+function injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]>
 ```
 
 | Parameter | Type | Description |
@@ -90,11 +90,11 @@ function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signa
 abstract class SdAppStructureUtils {
   static getTitleByFullCode<TModule>(items, fullCode): string;
   static getPermsByFullCode<TModule, K extends string>(items, fullCodes, permKeys, permRecord): K[];
-  static getItemChainByFullCode<TModule>(items, fullCode): TSdAppStructureItem<TModule>[];
-  static getMenus<TModule>(items, codeChain, usableModules, permRecord): ISdMenu[];
-  static getFlatMenus<TModule>(items, usableModules, permRecord): ISdFlatMenu<TModule>[];
-  static getPermissions<TModule>(items, codeChain, usableModules): ISdPermission<TModule>[];
-  static getFlatPermissions<TModule>(items, usableModules): ISdFlatPermission<TModule>[];
+  static getItemChainByFullCode<TModule>(items, fullCode): AppStructureItem<TModule>[];
+  static getMenus<TModule>(items, codeChain, usableModules, permRecord): SdMenu[];
+  static getFlatMenus<TModule>(items, usableModules, permRecord): SdFlatMenu<TModule>[];
+  static getPermissions<TModule>(items, codeChain, usableModules): SdPermission<TModule>[];
+  static getFlatPermissions<TModule>(items, usableModules): FlatPermission<TModule>[];
 }
 ```
 
@@ -170,11 +170,11 @@ class SdServiceClientFactoryProvider {
 
 ```typescript
 @Injectable()
-abstract class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
+abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<string | number>>> {
   readonly loadingCount: WritableSignal<number>;
 
   abstract initialize(): void;
-  register<K extends string & keyof T>(name: K, info: ISharedDataInfo<T[K]>): void;
+  register<K extends string & keyof T>(name: K, info: SharedDataInfo<T[K]>): void;
   getHandle<K extends string & keyof T>(name: K): SharedDataHandle<T[K]>;
   async emitAsync<K extends string & keyof T>(name: K, changeKeys?: (string | number)[]): Promise<void>;
   async wait(): Promise<void>;
@@ -222,7 +222,7 @@ class SdNavigateWindowProvider {
 
 ```typescript
 @Injectable()
-class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
+class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContentDef<any>> {
   modalComponent = signal<any>(undefined);
   contentComponent = signal<T | undefined>(undefined);
   canDeactiveFn: () => boolean;
@@ -231,7 +231,7 @@ class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `modalComponent` | `WritableSignal<any>` | SdModalControl 인스턴스 |
+| `modalComponent` | `WritableSignal<any>` | SdModal 인스턴스 |
 | `contentComponent` | `WritableSignal<T \| undefined>` | 컨텐츠 컴포넌트 인스턴스 |
 | `canDeactiveFn` | `() => boolean` | 모달 닫기 가능 여부 판별 함수 (기본: `() => true`) |
 
@@ -242,9 +242,9 @@ class SdActivatedModalProvider<T extends ISdModal<any> = ISdModal<any>> {
 ```typescript
 @Injectable({ providedIn: "root" })
 class SdToastProvider {
-  alertThemes = signal<TSdToastSeverity[]>([]);
+  alertThemes = signal<SdToastSeverity[]>([]);
   overlap = signal(false);
-  beforeShowFn?: (theme: TSdToastSeverity) => void;
+  beforeShowFn?: (theme: SdToastSeverity) => void;
 
   info(message: string, useProgress?: true): WritableSignal<number>;
   info(message: string, useProgress?: false): void;
@@ -255,14 +255,14 @@ class SdToastProvider {
   danger(message: string, useProgress?: true): WritableSignal<number>;
   danger(message: string, useProgress?: false): void;
 
-  notify<T extends ISdToast<any>>(input: ISdToastInput<T>): Promise<...>;
+  notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<...>;
   async try<R>(fn: () => Promise<R>, messageFn?: (err: unknown) => string): Promise<R | undefined>;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `alertThemes` | `WritableSignal<TSdToastSeverity[]>` | alert()로 표시할 테마 목록 |
+| `alertThemes` | `WritableSignal<SdToastSeverity[]>` | alert()로 표시할 테마 목록 |
 | `overlap` | `WritableSignal<boolean>` | 오버랩 모드 (새 토스트 시 기존 제거) |
 | `beforeShowFn` | `((theme) => void) \| undefined` | 토스트 표시 전 콜백 |
 
@@ -279,14 +279,14 @@ class SdToastProvider {
 ```typescript
 @Injectable({ providedIn: "root" })
 class SdBusyProvider {
-  type = signal<TSdBusyType>("bar");
+  type = signal<SdBusyType>("bar");
   globalBusyCount = signal(0);
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | `WritableSignal<TSdBusyType>` | busy 표시 유형 (`"spinner" \| "bar" \| "cube"`) |
+| `type` | `WritableSignal<SdBusyType>` | busy 표시 유형 (`"spinner" \| "bar" \| "cube"`) |
 | `globalBusyCount` | `WritableSignal<number>` | 글로벌 busy 카운트 (0보다 크면 busy 표시) |
 
 ## `SdPrintProvider`
@@ -296,13 +296,13 @@ class SdBusyProvider {
 ```typescript
 @Injectable({ providedIn: "root" })
 class SdPrintProvider {
-  async printAsync<T extends ISdPrint>(
-    template: ISdPrintInput<T>,
+  async printAsync<T extends SdPrint>(
+    template: SdPrintInput<T>,
     options?: { size?: string; margin?: string },
   ): Promise<void>;
 
-  async getPdfBufferAsync<T extends ISdPrint>(
-    template: ISdPrintInput<T>,
+  async getPdfBufferAsync<T extends SdPrint>(
+    template: SdPrintInput<T>,
     options?: { orientation?: "portrait" | "landscape"; pageSize?: string },
   ): Promise<Uint8Array>;
 }
@@ -322,9 +322,9 @@ class SdPrintProvider {
 class SdModalProvider {
   modalCount = signal(0);
 
-  async showAsync<T extends ISdModal<any>>(
-    modal: ISdModalInfo<T>,
-    options?: ISdModalOptions,
+  async showAsync<T extends SdModalContentDef<any>>(
+    modal: SdModalInfo<T>,
+    options?: SdModalOptions,
   ): Promise<Parameters<T["close"]["emit"]>[0] | undefined>;
 }
 ```

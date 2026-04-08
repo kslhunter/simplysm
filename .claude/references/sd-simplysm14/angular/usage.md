@@ -27,7 +27,7 @@ npm install @simplysm/angular
 | `SdThemeProvider` | class | 다크모드 토글 프로바이더 (`dark` signal) |
 | `SdSystemLogProvider` | class | 시스템 로그 기록 프로바이더 |
 | `SdAppStructureProvider` | class | 앱 구조(메뉴/권한) 관리 추상 프로바이더 |
-| `usePermsSignal` | function | 현재 뷰의 권한 목록을 signal로 반환 |
+| `injectPermsSignal` | function | 현재 뷰의 권한 목록을 signal로 반환 |
 | `SdAppStructureUtils` | class | 앱 구조 유틸리티 (메뉴/권한 조회 정적 메서드) |
 | `SdFileDialogProvider` | class | 네이티브 파일 선택 대화상자 프로바이더 |
 | `SdLocalStorageProvider` | class | `clientName` 스코프 localStorage 래퍼 |
@@ -48,25 +48,25 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `TSdAppStructureItem` | type | 앱 구조 항목 (그룹 또는 리프) |
-| `ISdMenu` | interface | 메뉴 트리 노드 |
-| `ISdFlatMenu` | interface | 플랫 메뉴 항목 |
-| `ISdPermission` | interface | 권한 트리 노드 |
-| `ISdFlatPermission` | interface | 플랫 권한 항목 |
-| `ISharedDataBase` | interface | 공유 데이터 기본 인터페이스 |
-| `ISharedDataInfo` | interface | 공유 데이터 등록 정보 |
+| `AppStructureItem` | type | 앱 구조 항목 (그룹 또는 리프) |
+| `SdMenu` | interface | 메뉴 트리 노드 |
+| `SdFlatMenu` | interface | 플랫 메뉴 항목 |
+| `SdPermission` | interface | 권한 트리 노드 |
+| `FlatPermission` | interface | 플랫 권한 항목 |
+| `SharedDataBase` | interface | 공유 데이터 기본 인터페이스 |
+| `SharedDataInfo` | interface | 공유 데이터 등록 정보 |
 | `SharedDataHandle` | interface | 공유 데이터 핸들 (items signal + get) |
-| `ISdModal` | interface | 모달 컴포넌트 구현 인터페이스 |
-| `ISdModalInfo` | interface | 모달 생성 시 전달하는 정보 |
-| `ISdModalOptions` | interface | 모달 옵션 (크기, 위치, 동작) |
-| `ISdToast` | interface | 토스트 컴포넌트 구현 인터페이스 |
-| `ISdToastInput` | interface | 커스텀 토스트 생성 입력 |
-| `TSdToastSeverity` | type | 토스트 심각도 (`"info" \| "success" \| "warning" \| "danger"`) |
-| `TSdToastTheme` | type | 토스트 테마 (severity + `"primary" \| "secondary" \| "gray" \| "blue-gray"`) |
-| `TSdBusyType` | type | busy 표시 유형 (`"spinner" \| "bar" \| "cube"`) |
-| `ISdPrint` | interface | 인쇄 컴포넌트 구현 인터페이스 |
-| `ISdPrintInput` | interface | 인쇄 생성 입력 |
-| `ISelectModalOutputResult` | interface | 모달 선택 결과 (`selectedItemKeys`, `selectedItems`) |
+| `SdModalContentDef` | interface | 모달 컴포넌트 구현 인터페이스 |
+| `SdModalInfo` | interface | 모달 생성 시 전달하는 정보 |
+| `SdModalOptions` | interface | 모달 옵션 (크기, 위치, 동작) |
+| `SdToastContentDef` | interface | 토스트 컴포넌트 구현 인터페이스 |
+| `SdToastInput` | interface | 커스텀 토스트 생성 입력 |
+| `SdToastSeverity` | type | 토스트 심각도 (`"info" \| "success" \| "warning" \| "danger"`) |
+| `SdToastTheme` | type | 토스트 테마 (severity + `"primary" \| "secondary" \| "gray" \| "blue-gray"`) |
+| `SdBusyType` | type | busy 표시 유형 (`"spinner" \| "bar" \| "cube"`) |
+| `SdPrint` | interface | 인쇄 컴포넌트 구현 인터페이스 |
+| `SdPrintInput` | interface | 인쇄 생성 입력 |
+| `SelectModalOutputResult` | interface | 모달 선택 결과 (`selectedItemKeys`, `selectedItems`) |
 
 -> See [docs/provider-types.md](./docs/provider-types.md) for details.
 
@@ -74,14 +74,14 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdEventsDirective` | directive | `.capture`, `.passive`, `.once` 수식어 및 커스텀 이벤트 바인딩 |
-| `SdRippleDirective` | directive | `[sd-ripple]` 리플 효과 |
-| `SdShowEffectDirective` | directive | `[sd-show-effect]` 뷰포트 진입 시 reveal 애니메이션 |
-| `SdInvalidDirective` | directive | `[sd-invalid]` 유효성 검증 표시기 |
-| `SdTypedTemplateDirective` | directive | `ng-template[typed]` 템플릿 컨텍스트 타입 가드 |
-| `SdItemOfTemplateDirective` | directive | `ng-template[itemOf]` 항목 반복 템플릿 타입 가드 |
+| `SdEvents` | directive | `.capture`, `.passive`, `.once` 수식어 및 커스텀 이벤트 바인딩 |
+| `SdRipple` | directive | `[sdRipple]` 리플 효과 |
+| `SdShowEffect` | directive | `[sdShowEffect]` 뷰포트 진입 시 reveal 애니메이션 |
+| `SdInvalid` | directive | `[sdInvalid]` 유효성 검증 표시기 |
+| `SdTypedTemplate` | directive | `ng-template[typed]` 템플릿 컨텍스트 타입 가드 |
+| `SdItemOfTemplate` | directive | `ng-template[itemOf]` 항목 반복 템플릿 타입 가드 |
 | `SdItemOfTemplateContext` | interface | itemOf 템플릿 컨텍스트 (`$implicit`, `item`, `index`, `depth`) |
-| `SdRouterLinkDirective` | directive | `[sd-router-link]` 라우터 네비게이션 (Ctrl+클릭 새 창) |
+| `SdRouterLink` | directive | `[sdRouterLink]` 라우터 네비게이션 (Ctrl+클릭 새 창) |
 
 -> See [docs/directives.md](./docs/directives.md) for details.
 
@@ -93,9 +93,9 @@ npm install @simplysm/angular
 | `SdRefreshCommandEventPlugin` | class | `(sdRefreshCommand)` Ctrl+Alt+L 이벤트 플러그인 |
 | `SdInsertCommandEventPlugin` | class | `(sdInsertCommand)` Ctrl+Insert 이벤트 플러그인 |
 | `SdResizeEventPlugin` | class | `(sdResize)` ResizeObserver 이벤트 플러그인 |
-| `ISdResizeEvent` | interface | resize 이벤트 데이터 |
+| `SdResizeEvent` | interface | resize 이벤트 데이터 |
 | `SdIntersectionEventPlugin` | class | `(sdIntersection)` IntersectionObserver 이벤트 플러그인 |
-| `ISdIntersectionEvent` | interface | intersection 이벤트 데이터 |
+| `SdIntersectionEvent` | interface | intersection 이벤트 데이터 |
 | `SdOptionEventPlugin` | class | `.capture`, `.passive`, `.once` 이벤트 옵션 플러그인 |
 | `SdGlobalErrorHandlerPlugin` | class | 글로벌 에러 핸들러 (PromiseRejection, ErrorEvent 등) |
 
@@ -117,11 +117,11 @@ npm install @simplysm/angular
 | `withBusy` | function | busy count 증감과 함께 비동기 작업 실행 |
 | `injectParent` | function | 가장 가까운 부모 컴포넌트 인스턴스 주입 |
 | `setSafeStyle` | function | Renderer2로 여러 CSS 스타일 일괄 적용 |
-| `useSdSystemConfigResource` | function | 시스템 설정 resource 래퍼 |
-| `useCurrentPageCodeSignal` | function | 현재 페이지 코드 signal |
-| `useFullPageCodeSignal` | function | 전체 페이지 코드 signal (NavigationEnd 기반) |
-| `useViewTitleSignal` | function | 현재 뷰 타이틀 signal |
-| `useViewTypeSignal` | function | 현재 뷰 타입 signal (`page \| modal \| control`) |
+| `injectSdSystemConfigResource` | function | 시스템 설정 resource 래퍼 |
+| `injectCurrentPageCodeSignal` | function | 현재 페이지 코드 signal |
+| `injectFullPageCodeSignal` | function | 전체 페이지 코드 signal (NavigationEnd 기반) |
+| `injectViewTitleSignal` | function | 현재 뷰 타이틀 signal |
+| `injectViewTypeSignal` | function | 현재 뷰 타입 signal (`page \| modal \| control`) |
 | `useSelectionManager` | function | 선택 관리 composable (single/multi) |
 | `useSortingManager` | function | 정렬 관리 composable |
 | `useExpandingManager` | function | 트리 확장/축소 관리 composable |
@@ -140,17 +140,17 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `TDirectiveInputSignals` | type | InputSignal 프로퍼티에서 값 타입 추출 |
-| `TUndefToOptional` | type | undefined 포함 프로퍼티를 optional로 변환 |
-| `TWithOptional` | type | 특정 키를 optional로 변환 |
-| `TSdViewType` | type | 뷰 타입 (`"page" \| "modal" \| "control"`) |
-| `ISortingDef` | interface | 정렬 정의 (`key`, `desc`) |
-| `IExpandItemDef` | interface | 트리 확장 항목 정의 |
-| `ISdSelectModal` | interface | 모달 선택 컴포넌트 인터페이스 |
-| `TSdSelectModalInfo` | type | 모달 선택 정보 타입 |
-| `TSdTextfieldTypes` | type | 텍스트필드 타입별 값 타입 매핑 |
+| `DirectiveInputSignals` | type | InputSignal 프로퍼티에서 값 타입 추출 |
+| `UndefToOptional` | type | undefined 포함 프로퍼티를 optional로 변환 |
+| `WithOptional` | type | 특정 키를 optional로 변환 |
+| `SdViewType` | type | 뷰 타입 (`"page" \| "modal" \| "control"`) |
+| `SortingDef` | interface | 정렬 정의 (`key`, `desc`) |
+| `ExpandItemDef` | interface | 트리 확장 항목 정의 |
+| `SdSelectModal` | interface | 모달 선택 컴포넌트 인터페이스 |
+| `SdSelectModalInfo` | type | 모달 선택 정보 타입 |
+| `SdTextfieldTypes` | type | 텍스트필드 타입별 값 타입 매핑 |
 | `sdTextfieldTypes` | const | 텍스트필드 타입 문자열 배열 |
-| `TSelectModeValue` | type | select mode별 value 타입 매핑 |
+| `SelectModeValue` | type | select mode별 value 타입 매핑 |
 
 -> See [docs/type-utilities.md](./docs/type-utilities.md) for details.
 
@@ -158,20 +158,20 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdBaseContainerControl` | component | 페이지/모달/뷰 공통 레이아웃 컨테이너 |
+| `SdBaseContainer` | component | 페이지/모달/뷰 공통 레이아웃 컨테이너 |
 | `SdAddressSearchModal` | component | Daum Postcode 주소 검색 모달 |
-| `IAddress` | interface | 주소 검색 결과 |
-| `SdPermissionTableControl` | component | 권한 매트릭스 테이블 |
-| `AbsSdDataSheet` | class | 데이터 시트 CRUD 추상 클래스 |
-| `SdDataSheetControl` | component | 데이터 시트 presentation 컴포넌트 |
-| `SdDataSheetColumnDirective` | directive | 데이터 시트 컬럼 (edit 추가) |
-| `AbsSdDataDetail` | class | 상세 폼 추상 클래스 |
-| `SdDataDetailControl` | component | 상세 폼 presentation 컴포넌트 |
-| `AbsSdDataSelectButton` | class | 모달 기반 선택 버튼 추상 클래스 |
-| `SdDataSelectButtonControl` | component | 선택 버튼 presentation 컴포넌트 |
-| `SdSharedDataSelectControl` | component | 공유 데이터 드롭다운 선택 |
-| `SdSharedDataSelectButtonControl` | component | 공유 데이터 모달 선택 버튼 |
-| `SdSharedDataSelectListControl` | component | 공유 데이터 목록형 선택 |
+| `Address` | interface | 주소 검색 결과 |
+| `SdPermissionTable` | component | 권한 매트릭스 테이블 |
+| `SdDataSheetBase` | class | 데이터 시트 CRUD 추상 클래스 |
+| `SdDataSheet` | component | 데이터 시트 presentation 컴포넌트 |
+| `SdDataSheetColumn` | directive | 데이터 시트 컬럼 (edit 추가) |
+| `SdDataDetailBase` | class | 상세 폼 추상 클래스 |
+| `SdDataDetail` | component | 상세 폼 presentation 컴포넌트 |
+| `SdDataSelectButtonBase` | class | 모달 기반 선택 버튼 추상 클래스 |
+| `SdDataSelectButton` | component | 선택 버튼 presentation 컴포넌트 |
+| `SdSharedDataSelect` | component | 공유 데이터 드롭다운 선택 |
+| `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 |
+| `SdSharedDataSelectList` | component | 공유 데이터 목록형 선택 |
 | `matchesSearchText` | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
 
 -> See [docs/features.md](./docs/features.md) for details.
@@ -180,10 +180,10 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `ISdDataSheetItemPropInfo` | interface | 데이터 시트 항목 속성 정보 |
-| `ISdDataSheetItemInfo` | interface | 데이터 시트 항목 정보 (key, canSelect 등) |
-| `ISdDataSheetSearchResult` | interface | 데이터 시트 검색 결과 |
-| `ISdDataDetailDataInfo` | interface | 상세 폼 데이터 정보 |
+| `SdDataSheetItemPropInfo` | interface | 데이터 시트 항목 속성 정보 |
+| `SdDataSheetItemInfo` | interface | 데이터 시트 항목 정보 (key, canSelect 등) |
+| `SdDataSheetSearchResult` | interface | 데이터 시트 검색 결과 |
+| `SdDataDetailDataInfo` | interface | 상세 폼 데이터 정보 |
 
 -> See [docs/features.md](./docs/features.md) for details.
 
@@ -191,16 +191,19 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdDockContainerControl` | component | 도킹 레이아웃 컨테이너 |
-| `SdDockControl` | component | 도킹 영역 (top/bottom/left/right) |
-| `SdPaneDirective` | directive | 스크롤 가능 패널 |
-| `SdGapControl` | component | 간격 (gap) 컴포넌트 |
-| `SdViewControl` | component | 탭 뷰 전환 래퍼 |
-| `SdViewItemControl` | component | 탭 뷰 항목 |
-| `SdCardDirective` | directive | 카드 스타일 디렉티브 |
-| `SdKanbanBoardControl` | component | 칸반 보드 (드래그앤드롭) |
-| `SdKanbanControl` | component | 칸반 아이템 |
-| `SdKanbanLaneControl` | component | 칸반 레인 |
+| `SdDockContainer` | component | 도킹 레이아웃 컨테이너 |
+| `SdDock` | component | 도킹 영역 (top/bottom/left/right) |
+| `SdPane` | directive | 스크롤 가능 패널 |
+| `SdGap` | component | 간격 (gap) 컴포넌트 |
+| `SdView` | component | 탭 뷰 전환 래퍼 |
+| `SdViewItem` | component | 탭 뷰 항목 |
+| `SdCard` | directive | 카드 스타일 디렉티브 |
+| `SdKanbanBoard` | component | 칸반 보드 (드래그앤드롭) |
+| `SdKanbanBoardDropInfo` | interface | 칸반 보드 드롭 이벤트 정보 |
+| `SdKanbanDragRef` | interface | 칸반 드래그 참조 인터페이스 |
+| `SdKanbanDropTarget` | interface | 칸반 드롭 타겟 인터페이스 |
+| `SdKanban` | component | 칸반 아이템 |
+| `SdKanbanLane` | component | 칸반 레인 |
 
 -> See [docs/ui-layout.md](./docs/ui-layout.md) for details.
 
@@ -208,25 +211,26 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdButtonControl` | component | 버튼 |
-| `SdAnchorControl` | component | 앵커 (인라인 버튼) |
-| `SdAdditionalButtonControl` | component | 추가 동작 버튼 (드롭다운 포함) |
-| `SdModalSelectButtonControl` | component | 모달 선택 버튼 |
-| `SdTextfieldControl` | component | 텍스트 입력 (13가지 타입: number, text, password, color, email, format, date, month, year, datetime, datetime-sec, time, time-sec) |
-| `SdTextareaControl` | component | 멀티라인 텍스트 입력 |
-| `SdNumpadControl` | component | 숫자 패드 |
-| `SdRangeControl` | component | 범위 슬라이더 |
+| `SdButton` | component | 버튼 |
+| `SdAnchor` | component | 앵커 (인라인 버튼) |
+| `SdAdditionalButton` | component | 추가 동작 버튼 (드롭다운 포함) |
+| `SdModalSelectButton` | component | 모달 선택 버튼 |
+| `SdTextfield` | component | 텍스트 입력 (13가지 타입: number, text, password, color, email, format, date, month, year, datetime, datetime-sec, time, time-sec) |
+| `SdTextarea` | component | 멀티라인 텍스트 입력 |
+| `SdNumpad` | component | 숫자 패드 |
+| `SdRange` | component | 범위 슬라이더 |
 | `SdDateRangePicker` | component | 날짜 범위 선택기 |
-| `SdStatePresetControl` | component | 상태 프리셋 저장/불러오기 |
-| `SdCheckboxControl` | component | 체크박스 |
-| `SdSwitchControl` | component | 스위치 토글 |
-| `SdCheckboxGroupControl` | component | 체크박스 그룹 |
-| `SdCheckboxGroupItemControl` | component | 체크박스 그룹 항목 |
-| `SdTiptapEditorControl` | component | TipTap 리치 텍스트 에디터 |
-| `SdSelectControl` | component | 드롭다운 선택 (single/multi/multi-with-header) |
-| `SdSelectItemControl` | component | 드롭다운 선택 항목 |
-| `SdSelectButtonControl` | component | 버튼 스타일 선택 |
-| `SdFormControl` | component | 폼 래퍼 (submit 이벤트, busy 관리) |
+| `SdStatePreset` | component | 상태 프리셋 저장/불러오기 |
+| `SdStatePresetDef` | interface | 상태 프리셋 데이터 (name, state) |
+| `SdCheckbox` | component | 체크박스 |
+| `SdSwitch` | component | 스위치 토글 |
+| `SdCheckboxGroup` | component | 체크박스 그룹 |
+| `SdCheckboxGroupItem` | component | 체크박스 그룹 항목 |
+| `SdTiptapEditor` | component | TipTap 리치 텍스트 에디터 |
+| `SdSelect` | component | 드롭다운 선택 (single/multi/multi-with-header) |
+| `SdSelectItem` | component | 드롭다운 선택 항목 |
+| `SdSelectButton` | component | 버튼 스타일 선택 |
+| `SdForm` | component | 폼 래퍼 (submit 이벤트, busy 관리) |
 
 -> See [docs/ui-form.md](./docs/ui-form.md) for details.
 
@@ -234,21 +238,23 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdCollapseControl` | component | 접기/펼치기 패널 |
-| `SdCollapseIconControl` | component | 접기/펼치기 아이콘 |
-| `SdTabControl` | component | 탭 컨테이너 |
-| `SdTabItemControl` | component | 탭 항목 |
-| `SdTabviewControl` | component | 탭뷰 (탭 + 컨텐츠) |
-| `SdTabviewItemControl` | component | 탭뷰 항목 |
-| `SdPaginationControl` | component | 페이지네이션 |
-| `SdSidebarContainerControl` | component | 사이드바 컨테이너 |
-| `SdSidebarControl` | component | 사이드바 |
-| `SdSidebarMenuControl` | component | 사이드바 메뉴 |
-| `SdSidebarUserControl` | component | 사이드바 사용자 영역 |
-| `SdTopbarContainerControl` | component | 탑바 컨테이너 |
-| `SdTopbarControl` | component | 탑바 |
-| `SdTopbarMenuControl` | component | 탑바 메뉴 |
-| `SdTopbarUserControl` | component | 탑바 사용자 영역 |
+| `SdCollapse` | component | 접기/펼치기 패널 |
+| `SdCollapseIcon` | component | 접기/펼치기 아이콘 |
+| `SdTab` | component | 탭 컨테이너 |
+| `SdTabItem` | component | 탭 항목 |
+| `SdTabview` | component | 탭뷰 (탭 + 컨텐츠) |
+| `SdTabviewItem` | component | 탭뷰 항목 |
+| `SdPagination` | component | 페이지네이션 |
+| `SdSidebarContainer` | component | 사이드바 컨테이너 |
+| `SdSidebar` | component | 사이드바 |
+| `SdSidebarMenu` | component | 사이드바 메뉴 |
+| `SdSidebarUser` | component | 사이드바 사용자 영역 |
+| `SdSidebarUserMenu` | interface | 사이드바 사용자 메뉴 항목 |
+| `SdTopbarContainer` | component | 탑바 컨테이너 |
+| `SdTopbar` | component | 탑바 |
+| `SdTopbarMenu` | component | 탑바 메뉴 |
+| `SdTopbarUser` | component | 탑바 사용자 영역 |
+| `SdTopbarUserMenu` | interface | 탑바 사용자 메뉴 항목 |
 | `getMenuRouterLinkOption` | function | 메뉴에서 라우터 링크 옵션 추출 |
 | `getIsMenuSelected` | function | 메뉴 선택 여부 확인 |
 
@@ -258,16 +264,16 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdListControl` | component | 리스트 |
-| `SdListItemControl` | component | 리스트 항목 |
-| `SdSheetControl` | component | 스프레드시트 (정렬, 고정, 리사이즈) |
-| `SdSheetColumnDirective` | directive | 시트 컬럼 정의 |
+| `SdList` | component | 리스트 |
+| `SdListItem` | component | 리스트 항목 |
+| `SdSheet` | component | 스프레드시트 (정렬, 고정, 리사이즈) |
+| `SdSheetColumn` | directive | 시트 컬럼 정의 |
 | `SdSheetConfigModal` | component | 시트 설정 모달 |
-| `ISdSheetColumnDef` | interface | 시트 컬럼 정의 데이터 |
-| `ISdSheetConfig` | interface | 시트 설정 데이터 |
-| `ISdSheetHeaderDef` | interface | 시트 헤더 정의 |
-| `ISdSheetItemKeydownEventParam` | interface | 시트 항목 keydown 이벤트 파라미터 |
-| `ISdSheetCellKeydownEventParam` | interface | 시트 셀 keydown 이벤트 파라미터 |
+| `SdSheetColumnDef` | interface | 시트 컬럼 정의 데이터 |
+| `SdSheetConfig` | interface | 시트 설정 데이터 |
+| `SdSheetHeaderDef` | interface | 시트 헤더 정의 |
+| `SdSheetItemKeydownEventParam` | interface | 시트 항목 keydown 이벤트 파라미터 |
+| `SdSheetCellKeydownEventParam` | interface | 시트 셀 keydown 이벤트 파라미터 |
 
 -> See [docs/ui-data.md](./docs/ui-data.md) for details.
 
@@ -275,13 +281,13 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdLabelControl` | component | 라벨 (테마, 크기) |
-| `SdNoteControl` | component | 노트/알림 메시지 |
-| `SdProgressControl` | component | 진행률 바 |
-| `SdCalendarControl` | component | 캘린더 |
-| `SdBarcodeControl` | component | 바코드 생성 (bwip-js) |
-| `SdEchartsControl` | component | ECharts 차트 래퍼 |
-| `TBarcodeType` | type | 바코드 타입 |
+| `SdLabel` | component | 라벨 (테마, 크기) |
+| `SdNote` | component | 노트/알림 메시지 |
+| `SdProgress` | component | 진행률 바 |
+| `SdCalendar` | component | 캘린더 |
+| `SdBarcode` | component | 바코드 생성 (bwip-js) |
+| `SdEcharts` | component | ECharts 차트 래퍼 |
+| `BarcodeType` | type | 바코드 타입 |
 
 -> See [docs/ui-visual.md](./docs/ui-visual.md) for details.
 
@@ -289,14 +295,14 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdDropdownControl` | component | 드롭다운 트리거 |
-| `SdDropdownPopupControl` | component | 드롭다운 팝업 |
-| `SdModalControl` | component | 모달 래퍼 컴포넌트 |
-| `SdPromptModalControl` | component | 프롬프트 입력 모달 |
-| `SdConfirmModalControl` | component | 확인/취소 모달 |
-| `SdToastControl` | component | 토스트 개별 항목 |
-| `SdToastContainerControl` | component | 토스트 컨테이너 |
-| `SdBusyContainerControl` | component | busy 표시 컨테이너 |
+| `SdDropdown` | component | 드롭다운 트리거 |
+| `SdDropdownPopup` | component | 드롭다운 팝업 |
+| `SdModal` | component | 모달 래퍼 컴포넌트 |
+| `SdPromptModal` | component | 프롬프트 입력 모달 |
+| `SdConfirmModal` | component | 확인/취소 모달 |
+| `SdToast` | component | 토스트 개별 항목 |
+| `SdToastContainer` | component | 토스트 컨테이너 |
+| `SdBusyContainer` | component | busy 표시 컨테이너 |
 
 -> See [docs/ui-overlay.md](./docs/ui-overlay.md) for details.
 
@@ -333,7 +339,7 @@ bootstrapApplication(AppComponent, {
 ### 모달 표시
 
 ```typescript
-import { SdModalProvider, type ISdModalInfo } from "@simplysm/angular";
+import { SdModalProvider, type SdModalInfo } from "@simplysm/angular";
 
 const sdModal = inject(SdModalProvider);
 

@@ -1,7 +1,7 @@
 import { Component, signal } from "@angular/core";
 import { DateOnly } from "@simplysm/core-common";
-import { SdCalendarControl } from "../../../src/ui/visual/sd-calendar.control";
-import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-of-template.directive";
+import { SdCalendar } from "../../../src/ui/visual/sd-calendar";
+import { SdItemOfTemplate } from "../../../src/core/directives/sd-item-of-template";
 
 @Component({
   selector: "sd-calendar-basic-test",
@@ -13,7 +13,7 @@ import { SdItemOfTemplateDirective } from "../../../src/core/directives/sd-item-
     </sd-calendar>
   `,
   standalone: true,
-  imports: [SdCalendarControl, SdItemOfTemplateDirective],
+  imports: [SdCalendar, SdItemOfTemplate],
 })
 export class SdCalendarBasicTest {
   yearMonth = signal(new DateOnly(2026, 3, 1));
@@ -38,7 +38,7 @@ export class SdCalendarBasicTest {
     </sd-calendar>
   `,
   standalone: true,
-  imports: [SdCalendarControl, SdItemOfTemplateDirective],
+  imports: [SdCalendar, SdItemOfTemplate],
 })
 export class SdCalendarMondayStartTest {
   yearMonth = signal(new DateOnly(2026, 3, 1));
@@ -56,7 +56,7 @@ export class SdCalendarMondayStartTest {
     </sd-calendar>
   `,
   standalone: true,
-  imports: [SdCalendarControl, SdItemOfTemplateDirective],
+  imports: [SdCalendar, SdItemOfTemplate],
 })
 export class SdCalendarEmptyTest {
   yearMonth = signal(new DateOnly(2026, 3, 1));

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { SdSidebarMenuControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu.control";
+import { SdSidebarMenu } from "../../../../src/ui/navigation/sidebar/sd-sidebar-menu";
 import {
   SidebarMenuFlatTest,
   SidebarMenuAccordionTest,
@@ -13,7 +13,7 @@ import {
   SidebarMenuCustomSelectedFnTest,
 } from "./sd-sidebar-menu-test.fixture";
 
-describe("Feature 4.3 Slice 2: SdSidebarMenuControl 계층 메뉴", () => {
+describe("Feature 4.3 Slice 2: SdSidebarMenu 계층 메뉴", () => {
   it("최상위 메뉴 3개 이하일 때 flat 레이아웃이 자동 선택된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SidebarMenuFlatTest],
@@ -107,7 +107,7 @@ describe("Feature 4.3 Slice 2: SdSidebarMenuControl 계층 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const menu = { title: "Test", codeChain: ["module", "page"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -123,7 +123,7 @@ describe("Feature 4.3 Slice 2: SdSidebarMenuControl 계층 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const menu = { title: "QS", codeChain: ["module", "page?key=value"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -160,7 +160,7 @@ describe("Feature 4.3 Slice 2: SdSidebarMenuControl 계층 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const menu = {
       title: "Parent",
       codeChain: ["parent"],
@@ -179,7 +179,7 @@ describe("Feature 4.3 Slice 2: SdSidebarMenuControl 계층 메뉴", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarMenuControl;
+      .componentInstance as SdSidebarMenu;
     const menu = { title: "Custom", codeChain: ["custom"] };
     expect(ctrl.getIsMenuSelected(menu)).toBe(true);
   });

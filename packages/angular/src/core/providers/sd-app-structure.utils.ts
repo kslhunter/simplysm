@@ -1,15 +1,19 @@
+import {
+  getFlatPermissions,
+  isUsableModules,
+  isUsableModulesChain,
+} from "@simplysm/service-common";
 import type {
-  TSdAppStructureItem,
-  ISdMenu,
-  ISdFlatMenu,
-  ISdPermission,
-  ISdFlatPermission,
+  AppStructureItem,
+  SdMenu,
+  SdFlatMenu,
+  SdPermission,
 } from "./sd-app-structure.types";
 
 export abstract class SdAppStructureUtils {
   //---------- Info
 
-  static getTitleByFullCode<TModule>(items: TSdAppStructureItem<TModule>[], fullCode: string) {
+  static getTitleByFullCode<TModule>(items: AppStructureItem<TModule>[], fullCode: string) {
     const itemChain = this.getItemChainByFullCode(items, fullCode);
     if (itemChain.length === 0) {
       throw new Error(`Item not found for fullCode: ${fullCode}`);
@@ -23,7 +27,7 @@ export abstract class SdAppStructureUtils {
   }
 
   static getPermsByFullCode<TModule, K extends string>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     fullCodes: string[],
     permKeys: K[],
     permRecord: Record<string, boolean> | undefined,
@@ -51,12 +55,12 @@ export abstract class SdAppStructureUtils {
   }
 
   static getItemChainByFullCode<TModule>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     fullCode: string,
-  ): TSdAppStructureItem<TModule>[] {
+  ): AppStructureItem<TModule>[] {
     const codeChain = fullCode.split(".");
 
-    const result: TSdAppStructureItem<TModule>[] = [];
+    const result: AppStructureItem<TModule>[] = [];
 
     let cursorChildren = items;
     for (const currCode of codeChain) {
@@ -72,12 +76,12 @@ export abstract class SdAppStructureUtils {
   //---------- Menus
 
   static getMenus<TModule>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     codeChain: string[],
     usableModules: TModule[] | undefined,
     permRecord: Record<string, boolean> | undefined,
-  ): ISdMenu[] {
-    const resultMenus: ISdMenu[] = [];
+  ): SdMenu[] {
+    const resultMenus: SdMenu[] = [];
 
     for (const item of items) {
       if ("isNotMenu" in item && item.isNotMenu) continue;
@@ -85,7 +89,7 @@ export abstract class SdAppStructureUtils {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if (!this._isUsableModules(item.modules, item.requiredModules, usableModules)) continue;
+      if (!isUsableModules(item.modules, item.requiredModules, usableModules)) continue;
 
       // 그룹 메뉴
       if ("children" in item) {
@@ -120,14 +124,14 @@ export abstract class SdAppStructureUtils {
   }
 
   static getFlatMenus<TModule>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     usableModules: TModule[] | undefined,
     permRecord: Record<string, boolean> | undefined,
-  ): ISdFlatMenu<TModule>[] {
-    const resultFlatMenus: ISdFlatMenu<TModule>[] = [];
+  ): SdFlatMenu<TModule>[] {
+    const resultFlatMenus: SdFlatMenu<TModule>[] = [];
 
     type QueueItem = {
-      item: TSdAppStructureItem<TModule>;
+      item: AppStructureItem<TModule>;
       titleChain: string[];
       codeChain: string[];
       modulesChain: TModule[][];
@@ -154,7 +158,7 @@ export abstract class SdAppStructureUtils {
         ? [...requiredModulesChain, item.requiredModules]
         : requiredModulesChain;
 
-      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules))
+      if (!isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules))
         continue;
 
       if ("children" in item) {
@@ -182,16 +186,16 @@ export abstract class SdAppStructureUtils {
   //---------- Perms
 
   static getPermissions<TModule>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     codeChain: string[],
     usableModules: TModule[] | undefined,
-  ): ISdPermission<TModule>[] {
-    const results: ISdPermission<TModule>[] = [];
+  ): SdPermission<TModule>[] {
+    const results: SdPermission<TModule>[] = [];
     for (const item of items) {
       const currCodeChain = [...codeChain, item.code];
 
       // 모듈 활성화 여부 확인
-      if (!this._isUsableModules(item.modules, item.requiredModules, usableModules)) continue;
+      if (!isUsableModules(item.modules, item.requiredModules, usableModules)) continue;
 
       // 그룹
       if ("children" in item) {
@@ -227,124 +231,9 @@ export abstract class SdAppStructureUtils {
   }
 
   static getFlatPermissions<TModule>(
-    items: TSdAppStructureItem<TModule>[],
+    items: AppStructureItem<TModule>[],
     usableModules: TModule[] | undefined,
   ) {
-    const results: ISdFlatPermission<TModule>[] = [];
-
-    type QueueItem = {
-      item: TSdAppStructureItem<TModule>;
-      titleChain: string[];
-      codeChain: string[];
-      modulesChain: TModule[][];
-      requiredModulesChain: TModule[][];
-    };
-
-    const queue: QueueItem[] = items.map((item) => ({
-      item,
-      titleChain: [],
-      codeChain: [],
-      modulesChain: [],
-      requiredModulesChain: [],
-    }));
-
-    while (queue.length > 0) {
-      const { item, titleChain, codeChain, modulesChain, requiredModulesChain } = queue.shift()!;
-
-      const currTitleChain = [...titleChain, item.title];
-      const currCodeChain = [...codeChain, item.code];
-      const currModulesChain = item.modules ? [...modulesChain, item.modules] : modulesChain;
-      const currRequiredModulesChain = item.requiredModules
-        ? [...requiredModulesChain, item.requiredModules]
-        : requiredModulesChain;
-
-      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules))
-        continue;
-
-      // 1. 자식 enqueue
-      if ("children" in item) {
-        for (const child of item.children) {
-          queue.push({
-            item: child,
-            titleChain: currTitleChain,
-            codeChain: currCodeChain,
-            modulesChain: currModulesChain,
-            requiredModulesChain: currRequiredModulesChain,
-          });
-        }
-      }
-
-      // 1. 직접 perms 처리
-      if ("perms" in item) {
-        for (const perm of item.perms ?? []) {
-          results.push({
-            titleChain: currTitleChain,
-            codeChain: [...currCodeChain, perm],
-            modulesChain: currModulesChain,
-          });
-        }
-      }
-
-      // 2. subPerms 처리
-      if ("subPerms" in item) {
-        for (const subPerm of item.subPerms ?? []) {
-          // subPerm도 모듈 체크
-          if (!this._isUsableModules(subPerm.modules, subPerm.requiredModules, usableModules))
-            continue;
-
-          for (const perm of subPerm.perms) {
-            results.push({
-              titleChain: currTitleChain,
-              codeChain: [...currCodeChain, subPerm.code, perm],
-              modulesChain: [...currModulesChain, subPerm.modules ?? []],
-            });
-          }
-        }
-      }
-    }
-
-    return results;
-  }
-
-  //-- Modules (private)
-
-  private static _isUsableModulesChain<TModule>(
-    modulesChain: TModule[][],
-    requiredModulesChain: TModule[][],
-    usableModules: TModule[] | undefined,
-  ) {
-    // 각 레벨의 modules (OR) 체크
-    for (const modules of modulesChain) {
-      if (!this._isUsableModules(modules, undefined, usableModules)) {
-        return false;
-      }
-    }
-
-    // 각 레벨의 requiredModules (AND) 체크
-    for (const requiredModules of requiredModulesChain) {
-      if (!this._isUsableModules(undefined, requiredModules, usableModules)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private static _isUsableModules<TModule>(
-    modules: TModule[] | undefined,
-    requiredModules: TModule[] | undefined,
-    usableModules: TModule[] | undefined,
-  ): boolean {
-    // 1. requiredModules: 모두 있어야 함 (AND)
-    if (requiredModules && requiredModules.length > 0) {
-      if (!requiredModules.every((m) => usableModules?.includes(m))) {
-        return false;
-      }
-    }
-
-    // 2. modules: 하나라도 있으면 됨 (OR)
-    return (
-      modules == null || modules.length === 0 || modules.some((m) => usableModules?.includes(m))
-    );
+    return getFlatPermissions(items, usableModules);
   }
 }

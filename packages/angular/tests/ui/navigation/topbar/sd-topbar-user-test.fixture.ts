@@ -1,8 +1,8 @@
 import { Component, signal } from "@angular/core";
 import {
-  SdTopbarUserControl,
-  type ISdTopbarUserMenu,
-} from "../../../../src/ui/navigation/topbar/sd-topbar-user.control";
+  SdTopbarUser,
+  type SdTopbarUserMenu,
+} from "../../../../src/ui/navigation/topbar/sd-topbar-user";
 
 @Component({
   selector: "sd-topbar-user-basic-test",
@@ -10,10 +10,10 @@ import {
     <sd-topbar-user [menus]="menus()">홍길동</sd-topbar-user>
   `,
   standalone: true,
-  imports: [SdTopbarUserControl],
+  imports: [SdTopbarUser],
 })
 export class TopbarUserBasicTest {
-  menus = signal<ISdTopbarUserMenu[]>([
+  menus = signal<SdTopbarUserMenu[]>([
     { title: "프로필", onClick: () => {} },
     { title: "로그아웃", onClick: () => {} },
   ]);

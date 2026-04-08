@@ -1,7 +1,7 @@
 /**
  * 모달 선택 결과
  */
-export interface ISelectModalOutputResult<T> {
+export interface SelectModalOutputResult<T> {
   selectedItemKeys: any[];
   selectedItems: T[];
 }

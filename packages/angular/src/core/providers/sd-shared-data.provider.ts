@@ -4,21 +4,21 @@ import { obj, wait as waitUtil } from "@simplysm/core-common";
 import { SdServiceClientFactoryProvider } from "./sd-service-client-factory.provider";
 import "@simplysm/core-common";
 
-export interface ISharedDataBase<TKey extends string | number> {
+export interface SharedDataBase<TKey extends string | number> {
   __valueKey: TKey;
   __searchText: string;
   __isHidden: boolean;
   __parentKey?: TKey;
 }
 
-export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
+export interface SharedDataInfo<T extends SharedDataBase<string | number>> {
   serviceKey: string;
   getter: (changeKeys?: (string | number)[]) => Promise<T[]>;
   filter?: unknown;
   orderBy?: (a: T, b: T) => number;
 }
 
-export interface SharedDataHandle<T extends ISharedDataBase<string | number>> {
+export interface SharedDataHandle<T extends SharedDataBase<string | number>> {
   items: Signal<T[]>;
   get(key: T["__valueKey"] | undefined): T | undefined;
 }
@@ -28,8 +28,8 @@ export const SdSharedDataChangeEvent = defineEvent<
   (string | number)[] | undefined
 >("SdSharedDataChange");
 
-interface ISharedDataEntry<T extends ISharedDataBase<string | number>> {
-  info: ISharedDataInfo<T>;
+interface SharedDataEntry<T extends SharedDataBase<string | number>> {
+  info: SharedDataInfo<T>;
   itemsSignal: WritableSignal<T[]>;
   handle: SharedDataHandle<T>;
   listenerKey?: string;
@@ -38,17 +38,17 @@ interface ISharedDataEntry<T extends ISharedDataBase<string | number>> {
 }
 
 @Injectable()
-export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
+export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<string | number>>> {
   private readonly _clientFactory = inject(SdServiceClientFactoryProvider);
   private readonly _errorHandler = inject(ErrorHandler);
 
   readonly loadingCount: WritableSignal<number> = signal(0);
 
-  private readonly _entries = new Map<string, ISharedDataEntry<any>>();
+  private readonly _entries = new Map<string, SharedDataEntry<any>>();
 
   abstract initialize(): void;
 
-  register<K extends string & keyof T>(name: K, info: ISharedDataInfo<T[K]>): void {
+  register<K extends string & keyof T>(name: K, info: SharedDataInfo<T[K]>): void {
     const existing = this._entries.get(name as string);
     if (existing != null) {
       // 기존 리스너 키 초기화
@@ -118,7 +118,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
     await waitUtil.until(() => this.loadingCount() <= 0);
   }
 
-  private _loadAndListen(name: string, entry: ISharedDataEntry<any>): void {
+  private _loadAndListen(name: string, entry: SharedDataEntry<any>): void {
     entry.isLoading = true;
     this.loadingCount.update((v) => v + 1);
 
@@ -155,7 +155,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataB
 
   private async _onEvent(
     name: string,
-    entry: ISharedDataEntry<any>,
+    entry: SharedDataEntry<any>,
     changeKeys: (string | number)[] | undefined,
   ): Promise<void> {
     this.loadingCount.update((v) => v + 1);

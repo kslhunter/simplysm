@@ -3,16 +3,16 @@ import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { useExpandingManager } from "../../../src/core/utils/useExpandingManager";
 
-interface IItem {
+interface Item {
   name: string;
-  children?: IItem[];
+  children?: Item[];
 }
 
-function createFlatManager(items: IItem[]) {
+function createFlatManager(items: Item[]) {
   TestBed.configureTestingModule({});
   const itemsSignal = signal(items);
-  const expandedItems = signal<IItem[]>([]);
-  const getChildrenFn = signal<((item: IItem, index: number) => IItem[] | undefined) | undefined>(
+  const expandedItems = signal<Item[]>([]);
+  const getChildrenFn = signal<((item: Item, index: number) => Item[] | undefined) | undefined>(
     undefined,
   );
 
@@ -24,13 +24,13 @@ function createFlatManager(items: IItem[]) {
   });
 }
 
-function createTreeManager(items: IItem[]) {
+function createTreeManager(items: Item[]) {
   TestBed.configureTestingModule({});
   const itemsSignal = signal(items);
-  const expandedItems = signal<IItem[]>([]);
+  const expandedItems = signal<Item[]>([]);
   const getChildrenFn = signal<
-    ((item: IItem, index: number) => IItem[] | undefined) | undefined
-  >((item: IItem) => item.children);
+    ((item: Item, index: number) => Item[] | undefined) | undefined
+  >((item: Item) => item.children);
 
   return {
     manager: useExpandingManager({
@@ -45,10 +45,10 @@ function createTreeManager(items: IItem[]) {
 
 describe("Feature 3.3 Slice 1: isVisible expandedSet 캐싱", () => {
   it("filter에서 isVisible을 N번 호출해도 expandedItems 변경이 반영된다", () => {
-    const grandchild: IItem = { name: "Grandchild" };
-    const child: IItem = { name: "Child", children: [grandchild] };
-    const parent: IItem = { name: "Parent", children: [child] };
-    const lone: IItem = { name: "Lone" };
+    const grandchild: Item = { name: "Grandchild" };
+    const child: Item = { name: "Child", children: [grandchild] };
+    const parent: Item = { name: "Parent", children: [child] };
+    const lone: Item = { name: "Lone" };
     const { manager, expandedItems } = createTreeManager([parent, lone]);
 
     const allItems = manager.displayItems();
@@ -72,7 +72,7 @@ describe("Feature 3.3 Slice 1: isVisible expandedSet 캐싱", () => {
 describe("FIX-1 Slice 5: useExpandingManager Set 기반 비교", () => {
   it("isAllExpanded가 Set.has()를 사용하여 O(n)으로 비교한다", () => {
     // 1000개 항목으로 성능 검증
-    const items: IItem[] = [];
+    const items: Item[] = [];
     for (let i = 0; i < 1000; i++) {
       items.push({ name: `Item${i}`, children: [{ name: `Child${i}` }] });
     }
@@ -99,9 +99,9 @@ describe("FIX-1 Slice 5: useExpandingManager Set 기반 비교", () => {
 
 describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   it("flat 아이템 목록: displayItems가 동일하고 depth=0, hasExpandable=false", () => {
-    const A: IItem = { name: "A" };
-    const B: IItem = { name: "B" };
-    const C: IItem = { name: "C" };
+    const A: Item = { name: "A" };
+    const B: Item = { name: "B" };
+    const C: Item = { name: "C" };
     const manager = createFlatManager([A, B, C]);
 
     expect(manager.displayItems()).toEqual([A, B, C]);
@@ -114,9 +114,9 @@ describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   });
 
   it("계층 아이템의 트리 순회: Parent -> [Child1, Child2]", () => {
-    const child1: IItem = { name: "Child1" };
-    const child2: IItem = { name: "Child2" };
-    const parent: IItem = { name: "Parent", children: [child1, child2] };
+    const child1: Item = { name: "Child1" };
+    const child2: Item = { name: "Child2" };
+    const parent: Item = { name: "Parent", children: [child1, child2] };
     const { manager } = createTreeManager([parent]);
 
     expect(manager.displayItems()).toEqual([parent, child1, child2]);
@@ -136,8 +136,8 @@ describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   });
 
   it("단일 아이템 토글: toggle으로 추가/제거", () => {
-    const child1: IItem = { name: "Child1" };
-    const parent: IItem = { name: "Parent", children: [child1] };
+    const child1: Item = { name: "Child1" };
+    const parent: Item = { name: "Parent", children: [child1] };
     const { manager, expandedItems } = createTreeManager([parent]);
 
     expect(expandedItems()).toEqual([]);
@@ -150,8 +150,8 @@ describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   });
 
   it("전체 펼치기/접기: toggleAll", () => {
-    const child1: IItem = { name: "Child1" };
-    const parent: IItem = { name: "Parent", children: [child1] };
+    const child1: Item = { name: "Child1" };
+    const parent: Item = { name: "Parent", children: [child1] };
     const { manager, expandedItems } = createTreeManager([parent]);
 
     expect(manager.isAllExpanded()).toBe(false);
@@ -166,9 +166,9 @@ describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   });
 
   it("가시성 판단: 3단계 계층에서 isVisible", () => {
-    const grandchild: IItem = { name: "Grandchild" };
-    const child: IItem = { name: "Child", children: [grandchild] };
-    const parent: IItem = { name: "Parent", children: [child] };
+    const grandchild: Item = { name: "Grandchild" };
+    const child: Item = { name: "Child", children: [grandchild] };
+    const parent: Item = { name: "Parent", children: [child] };
     const { manager, expandedItems } = createTreeManager([parent]);
 
     // 초기에는 아무것도 펼쳐지지 않음
@@ -187,8 +187,8 @@ describe("Feature 4.1 Slice 3: useExpandingManager", () => {
   });
 
   it("아이템 정의 조회: def()가 item, depth, hasChildren, parentDef를 반환", () => {
-    const child: IItem = { name: "Child" };
-    const parent: IItem = { name: "Parent", children: [child] };
+    const child: Item = { name: "Child" };
+    const parent: Item = { name: "Parent", children: [child] };
     const { manager } = createTreeManager([parent]);
 
     const parentDef = manager.def(parent);

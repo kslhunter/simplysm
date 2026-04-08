@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { SdSidebarContainerControl } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container.control";
+import { SdSidebarContainer } from "../../../../src/ui/navigation/sidebar/sd-sidebar-container";
 import { provideRouter, Router } from "@angular/router";
 import {
   ContainerUnitTest,
   ContainerRouterTest,
 } from "./sd-sidebar-container-unit-test.fixture";
 
-describe("SdSidebarContainerControl unit", () => {
+describe("SdSidebarContainer unit", () => {
   it("toggle 초기값이 false이다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [ContainerUnitTest],
@@ -16,7 +16,7 @@ describe("SdSidebarContainerControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     expect(ctrl.toggle()).toBe(false);
   });
 
@@ -28,7 +28,7 @@ describe("SdSidebarContainerControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     ctrl.toggle.set(true);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -69,7 +69,7 @@ describe("SdSidebarContainerControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     ctrl.toggle.set(true);
     expect(ctrl.toggle()).toBe(true);
 
@@ -89,7 +89,7 @@ describe("SdSidebarContainerControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     expect(ctrl.toggle()).toBe(false);
 
     const backdrop = fixture.nativeElement.querySelector("._backdrop") as HTMLElement;
@@ -109,7 +109,7 @@ describe("SdSidebarContainerControl unit", () => {
     await fixture.whenStable();
 
     const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdSidebarContainerControl;
+      .componentInstance as SdSidebarContainer;
     ctrl.toggle.set(true);
     expect(ctrl.toggle()).toBe(true);
 

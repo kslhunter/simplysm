@@ -1,10 +1,10 @@
 import { Component } from "@angular/core";
-import { SdCardDirective } from "../../../../src/ui/layout/sd-card.directive";
+import { SdCard } from "../../../../src/ui/layout/sd-card";
 
 @Component({
   selector: "sd-card-test-host",
   standalone: true,
-  imports: [SdCardDirective],
+  imports: [SdCard],
   template: `<sd-card>content</sd-card>`,
 })
 export class SdCardTestHost {}
@@ -12,7 +12,7 @@ export class SdCardTestHost {}
 @Component({
   selector: "sd-card-attr-test-host",
   standalone: true,
-  imports: [SdCardDirective],
-  template: `<div sd-card>content</div>`,
+  imports: [SdCard],
+  template: `<div sdCard>content</div>`,
 })
 export class SdCardAttrTestHost {}

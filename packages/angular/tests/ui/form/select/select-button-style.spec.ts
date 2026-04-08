@@ -18,7 +18,7 @@ function setupTestBed(component: any) {
   });
 }
 
-describe("Feature 5.1 Slice 4: SdSelectButtonControl + style variants", () => {
+describe("Feature 5.1 Slice 4: SdSelectButton + style variants", () => {
   // Scenario: 선택 버튼 표시
   it("Scenario: sd-select-button renders next to dropdown trigger", () => {
     setupTestBed(SdSelectButtonTest);

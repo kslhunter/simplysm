@@ -4,8 +4,8 @@ import { TestBed } from "@angular/core/testing";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdOptionEventPlugin } from "../../../../src/core/plugins/events/sd-option-event.plugin";
 import { SdSheetConfigModal } from "../../../../src/ui/data/sheet/sd-sheet-config.modal";
-import type { SdSheetColumnDirective } from "../../../../src/ui/data/sheet/sd-sheet-column.directive";
-import type { ISdSheetConfig } from "../../../../src/ui/data/sheet/types";
+import type { SdSheetColumn } from "../../../../src/ui/data/sheet/sd-sheet-column";
+import type { SdSheetConfig } from "../../../../src/ui/data/sheet/types";
 import "@simplysm/core-browser";
 
 function mockControl(overrides: Partial<{
@@ -15,7 +15,7 @@ function mockControl(overrides: Partial<{
   fixed: boolean;
   hidden: boolean;
   ordering: number;
-}>): SdSheetColumnDirective {
+}>): SdSheetColumn {
   return {
     key: signal(overrides.key ?? "col"),
     header: signal(overrides.header ?? ""),
@@ -28,12 +28,12 @@ function mockControl(overrides: Partial<{
     ordering: signal(overrides.ordering ?? 0),
     cellTplRef: signal(null),
     summaryTplRef: signal(null),
-  } as unknown as SdSheetColumnDirective;
+  } as unknown as SdSheetColumn;
 }
 
 function createModal(
-  controls: SdSheetColumnDirective[],
-  config: ISdSheetConfig | undefined = undefined,
+  controls: SdSheetColumn[],
+  config: SdSheetConfig | undefined = undefined,
 ) {
   const fixture = TestBed.configureTestingModule({
     imports: [SdSheetConfigModal],
@@ -75,8 +75,8 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     const fixture = createModal(controls);
     await fixture.whenStable();
 
-    let emitted: ISdSheetConfig | undefined;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 
@@ -96,8 +96,8 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     const fixture = createModal(controls);
     await fixture.whenStable();
 
-    let emitted: ISdSheetConfig | undefined | null = null;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined | null = null;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 
@@ -114,14 +114,14 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     const controls = [
       mockControl({ key: "name", header: "이름" }),
     ];
-    const config: ISdSheetConfig = {
+    const config: SdSheetConfig = {
       columnRecord: { name: { width: "300px" } },
     };
     const fixture = createModal(controls, config);
     await fixture.whenStable();
 
-    let emitted: ISdSheetConfig | undefined;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 
@@ -167,8 +167,8 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     await fixture.whenStable();
 
     // After clicking OK, the hidden state should be reflected
-    let emitted: ISdSheetConfig | undefined;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 
@@ -192,8 +192,8 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    let emitted: ISdSheetConfig | undefined;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 
@@ -221,8 +221,8 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    let emitted: ISdSheetConfig | undefined;
-    fixture.componentInstance.close.subscribe((v: ISdSheetConfig | undefined) => {
+    let emitted: SdSheetConfig | undefined;
+    fixture.componentInstance.close.subscribe((v: SdSheetConfig | undefined) => {
       emitted = v;
     });
 

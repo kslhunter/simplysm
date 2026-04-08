@@ -52,10 +52,10 @@ class SdResizeEventPlugin extends EventManagerPlugin {
 
 사용법: `<div (sdResize)="onResize($event)">`
 
-### `ISdResizeEvent`
+### `SdResizeEvent`
 
 ```typescript
-interface ISdResizeEvent {
+interface SdResizeEvent {
   heightChanged: boolean;
   widthChanged: boolean;
   target: Element;
@@ -80,10 +80,10 @@ class SdIntersectionEventPlugin extends EventManagerPlugin {
 }
 ```
 
-### `ISdIntersectionEvent`
+### `SdIntersectionEvent`
 
 ```typescript
-interface ISdIntersectionEvent {
+interface SdIntersectionEvent {
   entry: IntersectionObserverEntry;
 }
 ```

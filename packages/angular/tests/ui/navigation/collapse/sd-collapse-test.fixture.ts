@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
-import { SdCollapseControl } from "../../../../src/ui/navigation/collapse/sd-collapse.control";
-import { SdCollapseIconControl } from "../../../../src/ui/navigation/collapse/sd-collapse-icon.control";
+import { SdCollapse } from "../../../../src/ui/navigation/collapse/sd-collapse";
+import { SdCollapseIcon } from "../../../../src/ui/navigation/collapse/sd-collapse-icon";
 
 // --- sd-collapse fixtures ---
 
@@ -12,7 +12,7 @@ import { SdCollapseIconControl } from "../../../../src/ui/navigation/collapse/sd
     </sd-collapse>
   `,
   standalone: true,
-  imports: [SdCollapseControl],
+  imports: [SdCollapse],
 })
 export class SdCollapseClosedTest {}
 
@@ -24,7 +24,7 @@ export class SdCollapseClosedTest {}
     </sd-collapse>
   `,
   standalone: true,
-  imports: [SdCollapseControl],
+  imports: [SdCollapse],
 })
 export class SdCollapseOpenTest {}
 
@@ -36,7 +36,7 @@ export class SdCollapseOpenTest {}
     </sd-collapse>
   `,
   standalone: true,
-  imports: [SdCollapseControl],
+  imports: [SdCollapse],
 })
 export class SdCollapseToggleTest {
   open = signal(false);
@@ -48,7 +48,7 @@ export class SdCollapseToggleTest {
   selector: "sd-collapse-icon-closed-test",
   template: `<sd-collapse-icon [open]="false" />`,
   standalone: true,
-  imports: [SdCollapseIconControl],
+  imports: [SdCollapseIcon],
 })
 export class SdCollapseIconClosedTest {}
 
@@ -56,7 +56,7 @@ export class SdCollapseIconClosedTest {}
   selector: "sd-collapse-icon-open-test",
   template: `<sd-collapse-icon [open]="true" />`,
   standalone: true,
-  imports: [SdCollapseIconControl],
+  imports: [SdCollapseIcon],
 })
 export class SdCollapseIconOpenTest {}
 
@@ -64,6 +64,6 @@ export class SdCollapseIconOpenTest {}
   selector: "sd-collapse-icon-custom-rotate-test",
   template: `<sd-collapse-icon [open]="true" [openRotate]="180" />`,
   standalone: true,
-  imports: [SdCollapseIconControl],
+  imports: [SdCollapseIcon],
 })
 export class SdCollapseIconCustomRotateTest {}

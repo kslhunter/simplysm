@@ -2,20 +2,20 @@ import { describe, it, expect } from "vitest";
 import { signal } from "@angular/core";
 import { useSheetDisplayPipeline } from "../../../../src/ui/data/sheet/useSheetDisplayPipeline";
 
-interface IItem {
+interface Item {
   name: string;
-  children?: IItem[];
+  children?: Item[];
 }
 
 function setup(overrides: {
-  items?: IItem[];
+  items?: Item[];
   useAutoSort?: boolean;
   itemsPerPage?: number;
   totalPageCount?: number;
   currentPage?: number;
-  getChildrenFn?: (item: IItem, index: number) => IItem[] | undefined;
+  getChildrenFn?: (item: Item, index: number) => Item[] | undefined;
 } = {}) {
-  const items = signal<IItem[]>(overrides.items ?? [
+  const items = signal<Item[]>(overrides.items ?? [
     { name: "Charlie" },
     { name: "Alice" },
     { name: "Bob" },
@@ -24,12 +24,12 @@ function setup(overrides: {
   const itemsPerPage = signal(overrides.itemsPerPage ?? 0);
   const totalPageCount = signal(overrides.totalPageCount ?? 0);
   const currentPage = signal(overrides.currentPage ?? 0);
-  const expandedItems = signal<IItem[]>([]);
-  const getChildrenFn = signal<((item: IItem, index: number) => IItem[] | undefined) | undefined>(
+  const expandedItems = signal<Item[]>([]);
+  const getChildrenFn = signal<((item: Item, index: number) => Item[] | undefined) | undefined>(
     overrides.getChildrenFn,
   );
 
-  const pipeline = useSheetDisplayPipeline<IItem>({
+  const pipeline = useSheetDisplayPipeline<Item>({
     items,
     useAutoSort,
     sortItems: (arr) => [...arr].sort((a, b) => a.name.localeCompare(b.name)),
@@ -91,7 +91,7 @@ describe("useSheetDisplayPipeline", () => {
 
   describe("Rule: 트리 확장", () => {
     it("getChildrenFn 설정 시 확장되지 않은 부모만 표시한다", () => {
-      const parent: IItem = { name: "Parent", children: [{ name: "Child" }] };
+      const parent: Item = { name: "Parent", children: [{ name: "Child" }] };
       const { pipeline } = setup({
         items: [parent, { name: "Sibling" }],
         getChildrenFn: (item) => item.children,
@@ -100,8 +100,8 @@ describe("useSheetDisplayPipeline", () => {
     });
 
     it("부모 확장 시 자식이 displayItems에 포함된다", () => {
-      const child: IItem = { name: "Child" };
-      const parent: IItem = { name: "Parent", children: [child] };
+      const child: Item = { name: "Child" };
+      const parent: Item = { name: "Parent", children: [child] };
       const { pipeline, expandedItems } = setup({
         items: [parent, { name: "Sibling" }],
         getChildrenFn: (item) => item.children,
@@ -112,7 +112,7 @@ describe("useSheetDisplayPipeline", () => {
     });
 
     it("expanding.hasExpandable — 자식이 있는 아이템이 존재하면 true", () => {
-      const parent: IItem = { name: "Parent", children: [{ name: "Child" }] };
+      const parent: Item = { name: "Parent", children: [{ name: "Child" }] };
       const { pipeline } = setup({
         items: [parent],
         getChildrenFn: (item) => item.children,
