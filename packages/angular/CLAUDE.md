@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 151 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 152 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -50,7 +50,7 @@ src/
     │   ├── sidebar/    SdSidebarContainer, SdSidebar, SdSidebarMenu, SdSidebarUser
     │   ├── tab/        SdTab, SdTabItem, SdTabview, SdTabviewItem
     │   ├── topbar/     SdTopbarContainer, SdTopbar, SdTopbarMenu, SdTopbarUser
-    │   └── menu-utils.ts (not exported, internal helper)
+    │   └── menu-utils.ts (exported: getMenuRouterLinkOption, getIsMenuSelected)
     ├── overlay/
     │   ├── busy/       SdBusyContainer, SdBusyProvider
     │   ├── dropdown/   SdDropdown, SdDropdownPopup

@@ -96,12 +96,12 @@ export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin
       const { transformers } = program.compiler.prepareEmit();
       const tsProgram = program.getTsProgram();
 
-      // 파일별 emit
-      for (const filePath of sourceFiles) {
-        const sf = tsProgram.getSourceFile(filePath);
-        if (sf == null) continue;
+      // 파일별 emit (크로스 패키지 소스 포함)
+      for (const sf of tsProgram.getSourceFiles()) {
+        if (sf.isDeclarationFile) continue;
+        if (program.compiler.ignoreForEmit.has(sf)) continue;
 
-        currentSourcePath = pathx.posix(filePath);
+        currentSourcePath = pathx.posix(sf.fileName);
         tsProgram.emit(sf, host.writeFile, undefined, false, transformers);
       }
     },

@@ -1,6 +1,6 @@
 # @simplysm/sd-claude
 
-Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 16개 스킬, 규칙 파일, 참조 문서, 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 규칙 파일, 참조 문서, 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -49,9 +49,9 @@ npm install @simplysm/sd-claude
 
 | API | Type | Description |
 |-----|------|-------------|
-| `claude/skills/` | asset directory | 16개 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `references/` 포함) |
+| `claude/skills/` | asset directory | 17개 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `references/` 포함) |
 | `claude/rules/` | asset directory | Claude Code 규칙 파일 (`sd-claude-rules.md`) |
-| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 (4개) |
+| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 (6개 md파일 + 1개 디렉토리) |
 
 → See [docs/assets.md](./docs/assets.md) for details.
 

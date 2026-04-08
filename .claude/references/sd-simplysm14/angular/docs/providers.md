@@ -42,13 +42,15 @@ class SdSystemLogProvider {
 ```typescript
 @Injectable({ providedIn: "root" })
 abstract class SdAppStructureProvider<TModule = unknown> {
-  abstract items: AppStructureItem<TModule>[];
+  abstract serviceKey: string;
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
+  items = signal<AppStructureItem<TModule>[]>([]);
   usableMenus: Signal<SdMenu[]>;
   usableFlatMenus: Signal<SdFlatMenu<TModule>[]>;
 
+  async fetchItems(): Promise<void>;
   getPermissionsByStructure(items, codeChain?): SdPermission<TModule>[];
   getTitleByFullCode(fullCode: string): string;
   getItemChainByFullCode(fullCode: string): AppStructureItem<TModule>[];
@@ -58,9 +60,13 @@ abstract class SdAppStructureProvider<TModule = unknown> {
 
 | Abstract Field | Type | Description |
 |----------------|------|-------------|
-| `items` | `AppStructureItem<TModule>[]` | 앱 구조 항목 배열 |
+| `serviceKey` | `string` | 서비스 클라이언트 키 |
 | `usableModules` | `Signal<TModule[] \| undefined>` | 사용 가능한 모듈 목록 |
 | `permRecord` | `Signal<Record<string, boolean> \| undefined>` | 권한 레코드 |
+
+| Concrete Field | Type | Description |
+|----------------|------|-------------|
+| `items` | `WritableSignal<AppStructureItem<TModule>[]>` | 앱 구조 항목 배열 (fetchItems로 초기화) |
 
 | Computed | Type | Description |
 |----------|------|-------------|

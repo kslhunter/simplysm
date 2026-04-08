@@ -178,3 +178,13 @@ ExprUnit 또는 리터럴 값을 받는 입력 타입.
 ```typescript
 export type ExprInput<TPrimitive extends ColumnPrimitive> = ExprUnit<TPrimitive> | TPrimitive;
 ```
+
+## `toExpr`
+
+ExprInput을 Expr AST로 변환하는 독립 함수. 커스텀 표현식 빌더를 작성할 때 리터럴 값과 ExprUnit을 통일된 Expr로 변환할 때 사용한다.
+
+```typescript
+export function toExpr(value: ExprInput<ColumnPrimitive>): Expr
+```
+
+`ExprUnit`이면 `.expr`을 반환하고, 리터럴 값이면 `{ type: "value", value }`로 래핑한다.

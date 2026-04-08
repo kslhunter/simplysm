@@ -17,7 +17,7 @@ claude/
 
 ## `claude/skills/`
 
-16개 스킬 디렉토리. 각 스킬은 아래 파일을 포함한다:
+17개 스킬 디렉토리. 각 스킬은 아래 파일을 포함한다:
 
 | 파일 | 필수 | Description |
 |------|------|-------------|
@@ -41,6 +41,7 @@ claude/
 | `sd-outlook/` | sd-outlook | Outlook 메일 검색/다운로드 (Python) |
 | `sd-plan/` | sd-plan | 요구명세/구현계획 작성 |
 | `sd-prompt/` | sd-prompt | 스킬/프롬프트 파일 작성/개선 |
+| `sd-refactor/` | sd-refactor | 리팩토링 분석 리포트 생성 |
 | `sd-review/` | sd-review | 코드 리뷰 리포트 생성 |
 | `sd-tdd/` | sd-tdd | TDD 개발 |
 | `sd-use/` | sd-use | 자연어 → sd-* 스킬 라우팅 |
@@ -74,11 +75,14 @@ Claude Code 규칙 파일. 세션 시작 시 `sd-session-start.sh`에 의해 읽
 
 스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다.
 
-| 파일 | Description |
-|------|-------------|
+| 파일/디렉토리 | Description |
+|---------------|-------------|
 | `sd-clarify.md` | 사용자 요청 명확화 지침 |
+| `sd-debug.md` | 디버그 프로세스 참조 문서 |
 | `sd-frontend-design.md` | 프론트엔드 UI 코드 작성 지침 |
 | `sd-options.md` | 사용자에게 선택지 제시 지침 |
+| `sd-simplysm14.md` | simplysm 패키지 문서 진입점 |
+| `sd-simplysm14/` | simplysm v14 패키지별 usage 문서 디렉토리 |
 | `sd-testing.md` | 테스트 작성 지침 |
 
 ## 소스 오브 트루스

@@ -76,7 +76,7 @@ const all = await store.getAll<MyType>("items");
 store.close();
 ```
 
-`IndexedDbVirtualFs`는 `IndexedDbStore` 위에 경로 기반 가상 파일시스템을 구현한다. `IndexedDbStore` 인스턴스를 주입받아 사용한다. 키는 `/path/to/file` 형태의 문자열이다.
+`IndexedDbVirtualFs`는 `IndexedDbStore` 위에 경로 기반 가상 파일시스템을 구현한다. `IndexedDbStore` 인스턴스를 주입받아 사용한다. 키는 `/path/to/file` 형태의 문자열이다. `ensureDir(fullKeyBuilder, dirPath)`으로 중간 디렉토리를 재귀 생성할 수 있다.
 
 ```typescript
 const fs = new IndexedDbVirtualFs(store, "files", "path");
@@ -85,6 +85,7 @@ await fs.putEntry("/dir/file.txt", "file", base64Data);
 const entry = await fs.getEntry("/dir/file.txt");
 await fs.deleteByPrefix("/dir");
 const children = await fs.listChildren("/dir/");
+await fs.ensureDir((p) => "prefix" + p, "/dir/sub");
 ```
 
 ### 바이너리 / 파일 유틸

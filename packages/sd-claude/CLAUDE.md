@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 1개 rules 파일, 6개 references 파일, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 1개 rules 파일, 6개 references md파일 + 1개 references 디렉토리, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고, `claude/`는 배포 에셋 디렉토리다.
 

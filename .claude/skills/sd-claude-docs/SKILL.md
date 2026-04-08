@@ -1,6 +1,7 @@
 ---
 name: sd-claude-docs
 description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "usage 문서 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
+effort: low
 ---
 
 # sd-claude-docs: CLAUDE.md + usage 문서 통합 생성
@@ -85,36 +86,7 @@ root 문서는 생성·변경하지 않는다.
 
 ### 전체 실행 — 모노레포
 
-`packages/` 하위의 모든 패키지를 탐색한다.
-
-#### 변경 감지 필터링
-
-git 저장소인 경우, 문서 최종 커밋 이후 변경이 없는 패키지를 스킵한다. git 저장소가 아니면 모든 패키지를 처리 대상으로 한다.
-
-각 패키지에 대해:
-1. `packages/{name}/CLAUDE.md`와 `.claude/references/sd-{name}{ver}/{name}/`가 마지막으로 수정된 커밋(`DOC_COMMIT`)을 찾는다
-2. `DOC_COMMIT`이 없으면 (문서 미생성) → **처리 대상**
-3. `DOC_COMMIT`의 부모부터 working tree까지, 문서 파일을 제외한 패키지 내 변경을 확인한다:
-   ```bash
-   git diff --quiet {DOC_COMMIT}~1 -- packages/{name}/ \
-     ':!packages/{name}/CLAUDE.md'
-   ```
-   - 변경 있음 → **처리 대상**
-   - 변경 없음 → **스킵**
-4. `DOC_COMMIT`이 root 커밋(부모 없음)이면 → **처리 대상**
-
-필터링 결과를 표시한다:
-
-```
-대상 패키지:
-1. @simplysm/core-common (src 35파일) — 스킵 (변경 없음)
-2. @simplysm/angular (src 126파일) — 처리 (변경 감지)
-3. @simplysm/utils (src 8파일) — 처리 (문서 미존재)
-
-처리 대상: 2개 / 스킵: 1개
-```
-
-처리 대상 패키지가 있으면 3단계로 진행한다. 전체 스킵이면 4단계(root 문서)로 진행한다.
+`packages/` 하위의 모든 패키지를 탐색하여 전체를 처리 대상으로 한다. 3단계로 진행한다.
 
 ## Step 3: 패키지별 문서 생성 (모노레포)
 
@@ -256,14 +228,14 @@ UI:       angular (Angular)
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | 상태 | CLAUDE.md | usage 문서 | 구조 | API 항목 수 |
-|--------|------|-----------|------------|------|-------------|
-| root | — | 생성 | — | — | — |
-| sd-simplysm14.md | — | — | 갱신 | 인덱스 | — |
-| @simplysm/core-common | 스킵 | — | — | — | — |
-| @simplysm/angular | 처리 | 갱신 | 갱신 | usage + docs/ | 126 |
-| @simplysm/storage | 처리 | 생성 | 생성 | usage 단독 | 8 |
-| @simplysm/internal | 처리 | 생성 | — (private) | — | — |
+| 패키지 | CLAUDE.md | usage 문서 | 구조 | API 항목 수 |
+|--------|-----------|------------|------|-------------|
+| root | 생성 | — | — | — |
+| sd-simplysm14.md | — | 갱신 | 인덱스 | — |
+| @simplysm/core-common | 갱신 | 갱신 | usage 단독 | 35 |
+| @simplysm/angular | 갱신 | 갱신 | usage + docs/ | 126 |
+| @simplysm/storage | 생성 | 생성 | usage 단독 | 8 |
+| @simplysm/internal | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)

@@ -10,17 +10,77 @@ npm install @simplysm/core-node
 
 ## API Overview
 
-### Utilities
+### Utilities (fsx)
 
-네임스페이스로 re-export되는 유틸리티 모음. `import { fsx, cpx, pathx } from "@simplysm/core-node"` 형태로 사용한다.
+파일 시스템 유틸리티. `import { fsx } from "@simplysm/core-node"` 형태로 사용한다.
 
 | API | Type | Description |
 |-----|------|-------------|
-| `cpx` | namespace | 자식 프로세스 실행, 인코딩 감지, spawn/spawnSync |
-| `fsx` | namespace | 파일 시스템 유틸리티 (존재 확인, 읽기/쓰기, 복사, 삭제, glob) |
-| `pathx` | namespace | 경로 유틸리티 (PosixPath 브랜드 타입, posix 변환, 경로 비교) |
+| `fsx.exists` | function | 파일/디렉토리 존재 여부 확인 (비동기) |
+| `fsx.existsSync` | function | 파일/디렉토리 존재 여부 확인 (동기) |
+| `fsx.mkdir` | function | 디렉토리 재귀 생성 (비동기) |
+| `fsx.mkdirSync` | function | 디렉토리 재귀 생성 (동기) |
+| `fsx.rm` | function | 파일/디렉토리 삭제, 최대 6회 재시도 (비동기) |
+| `fsx.rmSync` | function | 파일/디렉토리 삭제, 재시도 없음 (동기) |
+| `fsx.copy` | function | 파일/디렉토리 복사, filter 옵션 지원 (비동기) |
+| `fsx.copySync` | function | 파일/디렉토리 복사, filter 옵션 지원 (동기) |
+| `fsx.read` | function | 파일을 UTF-8 문자열로 읽기 (비동기) |
+| `fsx.readSync` | function | 파일을 UTF-8 문자열로 읽기 (동기) |
+| `fsx.readBytes` | function | 파일을 Uint8Array로 읽기 (비동기) |
+| `fsx.readBytesSync` | function | 파일을 Uint8Array로 읽기 (동기) |
+| `fsx.readJson` | function | JSON 파일 읽기 (비동기) |
+| `fsx.readJsonSync` | function | JSON 파일 읽기 (동기) |
+| `fsx.write` | function | 파일 쓰기, 상위 디렉토리 자동 생성 (비동기) |
+| `fsx.writeSync` | function | 파일 쓰기, 상위 디렉토리 자동 생성 (동기) |
+| `fsx.writeJson` | function | JSON 파일 쓰기 (비동기) |
+| `fsx.writeJsonSync` | function | JSON 파일 쓰기 (동기) |
+| `fsx.readdir` | function | 디렉토리 내용 읽기 (비동기) |
+| `fsx.readdirSync` | function | 디렉토리 내용 읽기 (동기) |
+| `fsx.stat` | function | 파일 정보 조회, 심볼릭 링크 따라감 (비동기) |
+| `fsx.statSync` | function | 파일 정보 조회, 심볼릭 링크 따라감 (동기) |
+| `fsx.lstat` | function | 파일 정보 조회, 심볼릭 링크 따라가지 않음 (비동기) |
+| `fsx.lstatSync` | function | 파일 정보 조회, 심볼릭 링크 따라가지 않음 (동기) |
+| `fsx.glob` | function | glob 패턴으로 파일 검색, 절대 경로 반환 (비동기) |
+| `fsx.globSync` | function | glob 패턴으로 파일 검색, 절대 경로 반환 (동기) |
+| `fsx.clearEmptyDirectory` | function | 빈 디렉토리 재귀 삭제 (비동기) |
+| `fsx.findAllParentChildPaths` | function | 부모 디렉토리 순회하며 glob 매칭 경로 수집 (비동기) |
+| `fsx.findAllParentChildPathsSync` | function | 부모 디렉토리 순회하며 glob 매칭 경로 수집 (동기) |
 
-→ See [docs/utilities.md](./docs/utilities.md) for details.
+→ See [docs/utilities-fsx.md](./docs/utilities-fsx.md) for details.
+
+### Utilities (cpx)
+
+자식 프로세스 실행 유틸리티. `import { cpx } from "@simplysm/core-node"` 형태로 사용한다.
+
+| API | Type | Description |
+|-----|------|-------------|
+| `cpx.spawn` | function | 비동기 자식 프로세스 실행, SpawnProcess 반환 |
+| `cpx.spawnSync` | function | 동기 자식 프로세스 실행, SpawnResult 반환 |
+| `cpx.SpawnProcess` | class | spawn()의 반환 타입. PromiseLike + kill() 지원 |
+| `cpx.SpawnResult` | interface | 프로세스 실행 결과 (stdout, stderr, exitCode) |
+| `cpx.getSystemEncoding` | function | 시스템 인코딩 감지 (Windows: chcp, Linux: LANG 환경변수) |
+| `cpx.codePageToEncoding` | function | Windows 코드 페이지 번호를 인코딩 이름으로 변환 |
+| `cpx.resetEncodingCache` | function | 캐시된 시스템 인코딩 초기화 |
+| `cpx.decodeBytes` | function | Uint8Array를 시스템 인코딩으로 디코딩 |
+| `cpx.resolveStdioPipe` | function | stdio 옵션에서 stdout/stderr pipe 여부 추출 |
+
+→ See [docs/utilities-cpx.md](./docs/utilities-cpx.md) for details.
+
+### Utilities (pathx)
+
+경로 유틸리티. `import { pathx } from "@simplysm/core-node"` 형태로 사용한다.
+
+| API | Type | Description |
+|-----|------|-------------|
+| `pathx.PosixPath` | type | POSIX 슬래시 경로임을 타입 수준에서 보장하는 브랜드 타입 |
+| `pathx.posix` | function | 백슬래시를 슬래시로 변환하여 PosixPath 반환 |
+| `pathx.posixResolve` | function | 절대 경로 resolve 후 POSIX 스타일로 변환 |
+| `pathx.changeFileDirectory` | function | 파일 경로의 디렉토리 부분을 변경 |
+| `pathx.basenameWithoutExt` | function | 확장자를 제외한 파일명 반환 |
+| `pathx.isChildPath` | function | childPath가 parentPath의 하위 경로인지 확인 |
+| `pathx.filterByTargets` | function | 대상 경로 목록으로 파일 목록 필터링 |
+
+→ See [docs/utilities-pathx.md](./docs/utilities-pathx.md) for details.
 
 ### Features
 

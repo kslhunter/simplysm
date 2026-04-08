@@ -52,6 +52,7 @@ npm install @simplysm/orm-common
 | `ExprUnit` | class | 타입 안전 표현식 래퍼 |
 | `WhereExprUnit` | class | WHERE 절용 표현식 래퍼 |
 | `ExprInput` | type | ExprUnit 또는 리터럴 값을 받는 입력 타입 |
+| `toExpr` | function | ExprInput을 Expr AST로 변환하는 내부 헬퍼 (커스텀 빌더 작성 시 사용) |
 
 -> See [docs/expression.md](./docs/expression.md) for details.
 

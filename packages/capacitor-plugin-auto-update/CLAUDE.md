@@ -48,6 +48,8 @@ android/
 export interface ApkInstallerPlugin {
   install(options: { uri: string }): Promise<void>;
   checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>;
+  requestPermissions(): Promise<void>;
+  getVersionInfo(): Promise<VersionInfo>;
 }
 
 // 2. 파사드 (ApkInstaller.ts)
