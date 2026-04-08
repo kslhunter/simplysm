@@ -1,7 +1,6 @@
 ---
 name: sd-claude-docs
 description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "usage 문서 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
-effort: low
 ---
 
 # sd-claude-docs: CLAUDE.md + usage 문서 통합 생성

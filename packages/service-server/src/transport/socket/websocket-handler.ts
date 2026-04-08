@@ -28,10 +28,10 @@ export interface WebSocketHandler {
   /**
    * 매칭되는 클라이언트에 이벤트를 발생시킨다
    */
-  emit<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  emit<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void>;
 }
 
@@ -204,15 +204,14 @@ export function createWebSocketHandler(
       }
     },
 
-    async emit<TInfo, TData>(
-      eventDef: ServiceEventDef<TInfo, TData>,
-      infoSelector: (item: TInfo) => boolean,
-      data: TData,
+    async emit<TEventDef extends ServiceEventDef>(
+      eventName: string,
+      infoSelector: (item: TEventDef["$info"]) => boolean,
+      data: TEventDef["$data"],
     ): Promise<void> {
-      const eventName = eventDef.eventName;
       const targetKeys = Array.from(socketMap.values())
         .flatMap((subSock) => subSock.getEventListeners(eventName))
-        .filter((item) => infoSelector(item.info as TInfo))
+        .filter((item) => infoSelector(item.info as TEventDef["$info"]))
         .map((item) => item.key);
 
       await Promise.allSettled(

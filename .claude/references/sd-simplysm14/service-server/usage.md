@@ -15,6 +15,7 @@ npm install @simplysm/service-server
 | API | Type | Description |
 |-----|------|-------------|
 | `ServiceServer` | class | Fastify 래핑 서버. WebSocket/HTTP 라우팅, JWT 인증, 이벤트 브로드캐스트, graceful shutdown을 처리한다 |
+| `ServerEventProxy` | interface | `getEvent()`가 반환하는 서버 이벤트 프록시 (`emit` 메서드만 포함) |
 | `createServiceServer` | function | `ServiceServer` 인스턴스를 생성하는 팩토리 함수 |
 
 → See [docs/main.md](./docs/main.md) for details.
@@ -152,12 +153,18 @@ const payload = await server.verifyAuthToken(token);
 ### 이벤트 브로드캐스트
 
 ```typescript
-import { defineServiceEvent } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
-const UserUpdatedEvent = defineServiceEvent<{ userId: string }, { name: string }>("UserUpdated");
+// 서버에서 이벤트 정의 + 타입 export
+export const UserUpdatedEvent = defineEvent<{ userId: string }, { name: string }>("UserUpdated");
 
-await server.emitEvent(
-  UserUpdatedEvent,
+// 이벤트 프록시 방식 (권장 — getService()와 동일한 패턴)
+const userUpdatedEvt = server.getEvent<typeof UserUpdatedEvent>("UserUpdated");
+await userUpdatedEvt.emit((info) => info.userId === "123", { name: "새 이름" });
+
+// 직접 호출 방식 (하위 호환)
+await server.emitEvent<typeof UserUpdatedEvent>(
+  "UserUpdated",
   (info) => info.userId === "123",
   { name: "새 이름" },
 );

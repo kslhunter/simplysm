@@ -8,10 +8,10 @@
 interface WebSocketHandler {
   addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest): void;
   closeAll(): void;
-  emit<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  emit<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void>;
 }
 ```
@@ -20,7 +20,7 @@ interface WebSocketHandler {
 |--------|-------------|
 | `addSocket(socket, clientId, clientName, connReq)` | 새 WebSocket 연결을 추가한다. 동일 `clientId`의 이전 연결이 있으면 해제한다 |
 | `closeAll()` | 모든 활성 연결을 닫는다 |
-| `emit(eventDef, infoSelector, data)` | `infoSelector`에 매칭되는 이벤트 리스너를 가진 클라이언트에 이벤트를 브로드캐스트한다 |
+| `emit(eventName, infoSelector, data)` | `eventName`에 해당하는 이벤트 리스너 중 `infoSelector`에 매칭되는 클라이언트에 이벤트를 브로드캐스트한다. 제네릭 `TEventDef`로 타입 안전성 보장 |
 
 메시지 라우팅 (`processRequest` 내부):
 

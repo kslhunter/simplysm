@@ -5,17 +5,32 @@ import consola from "consola";
 
 const logger = consola.withTag("service-client:EventClient");
 
-export interface EventClient {
-  addListener<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    info: TInfo,
-    cb: (data: TData) => PromiseLike<void>,
+export interface ClientEventProxy<TEventDef extends ServiceEventDef> {
+  addListener(
+    info: TEventDef["$info"],
+    cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string>;
   removeListener(key: string): Promise<void>;
-  emit<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  emit(
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
+  ): Promise<void>;
+}
+
+export interface EventClient {
+  getEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+  ): ClientEventProxy<TEventDef>;
+  addListener<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    info: TEventDef["$info"],
+    cb: (data: TEventDef["$data"]) => PromiseLike<void>,
+  ): Promise<string>;
+  removeListener(key: string): Promise<void>;
+  emit<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void>;
   resubscribeAll(): Promise<void>;
 }
@@ -30,13 +45,12 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     await executeByKey(keys, data);
   });
 
-  async function addListener<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    info: TInfo,
-    cb: (data: TData) => PromiseLike<void>,
+  async function addListener<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    info: TEventDef["$info"],
+    cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     const key = Uuid.generate().toString();
-    const eventName = eventDef.eventName;
 
     // 서버에 등록 요청 전송
     await transport.send({
@@ -63,18 +77,17 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     }
   }
 
-  async function emit<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  async function emit<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void> {
-    const eventName = eventDef.eventName;
 
     // 서버에 'gets' 요청을 보내 대상 목록 조회
     const listenerInfos = (await transport.send({
       name: "evt:gets",
       body: { name: eventName },
-    })) as { key: string; info: TInfo }[];
+    })) as { key: string; info: TEventDef["$info"] }[];
 
     const targetKeys = listenerInfos
       .filter((item) => infoSelector(item.info))
@@ -118,7 +131,18 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     }
   }
 
+  function getEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+  ): ClientEventProxy<TEventDef> {
+    return {
+      addListener: (info, cb) => addListener<TEventDef>(eventName, info, cb),
+      removeListener,
+      emit: (infoSelector, data) => emit<TEventDef>(eventName, infoSelector, data),
+    };
+  }
+
   return {
+    getEvent,
     addListener,
     removeListener,
     emit,

@@ -112,8 +112,9 @@ const server = createServiceServer<MyAuthInfo>({
 
 await server.listen();
 
-// 서버에서 특정 클라이언트에 이벤트 발송
-await server.emitEvent(MyEvent, (info) => info.userId === "123", data);
+// 서버에서 특정 클라이언트에 이벤트 발송 (getEvent 프록시 방식)
+const myEvt = server.getEvent<typeof MyEvent>("MyEvent");
+await myEvt.emit((info) => info.userId === "123", data);
 
 // JWT 토큰 발급/검증
 const token = await server.signAuthToken({ roles: ["admin"], data: myAuthInfo });

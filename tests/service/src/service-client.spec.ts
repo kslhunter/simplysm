@@ -190,8 +190,8 @@ describe("ServiceClient 브라우저 테스트", () => {
 
       // 이벤트 수신 콜백
       const receivedData: string[] = [];
-      const listenerKey = await client.addListener(
-        TestEvent,
+      const listenerKey = await client.addListener<typeof TestEvent>(
+        "TestEvent",
         { channel: "test-channel" },
         (data) => {
           receivedData.push(data);

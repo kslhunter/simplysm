@@ -143,6 +143,8 @@ const result = await connector.connect(
 
 **프레임워크**: Vitest
 
-패키지 내부 단위 테스트: `tests/protocol/postmessage-compat.spec.ts` — Worker 미사용 fallback 환경에서 `ClientProtocolWrapper`의 encode/decode 라운드트립 검증.
+패키지 내부 단위 테스트:
+- `tests/protocol/postmessage-compat.spec.ts` — Worker 미사용 fallback 환경에서 `ClientProtocolWrapper`의 encode/decode 라운드트립 검증.
+- `tests/features/event-client.spec.ts` — `EventClient`의 `addListener`/`emit` 시그니처 및 서버 이벤트 수신 콜백 동작 검증. mock `ServiceTransport`를 사용한다.
 
 통합 테스트는 모노레포 루트의 `tests/service/`에 위치하며, `ServiceClient`의 서버 연결·RPC 호출을 검증한다.

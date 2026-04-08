@@ -72,14 +72,20 @@ protocol.dispose();
 
 `defineEvent()`로 이벤트를 정의하면 `info`(필터 조건)와 `data`(페이로드)에 대한 제네릭 타입이 보장된다. `$info`, `$data` 필드는 런타임에 사용하지 않는 타입 마커다.
 
+서버/클라이언트에서 `getEvent()` 프록시 패턴으로 사용한다 (`getService()`와 동일):
+
 ```typescript
-const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
+// 서버에서 이벤트 정의 + 타입 export
+export const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
 
-// 서버: 이벤트 발생
-ctx.socket?.emitEvent(OrderUpdated, { orderId: 123 }, { status: "shipped" });
+// 서버에서 이벤트 프록시 생성 후 발생
+const orderEvt = server.getEvent<typeof OrderUpdated>("OrderUpdated");
+await orderEvt.emit((info) => info.orderId === 123, { status: "shipped" });
 
-// 클라이언트: 이벤트 구독
-await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
+// 클라이언트에서 구독 (import type으로 타입만 가져옴)
+import type { OrderUpdated } from "@server-package";
+const orderEvt = client.getEvent<typeof OrderUpdated>("OrderUpdated");
+const key = await orderEvt.addListener({ orderId: 123 }, async (data) => {
   // data.status는 string으로 타입 추론됨
 });
 ```

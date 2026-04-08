@@ -26,7 +26,7 @@ npm install @simplysm/angular
 |-----|------|-------------|
 | `SdThemeProvider` | class | 다크모드 토글 프로바이더 (`dark` signal) |
 | `SdSystemLogProvider` | class | 시스템 로그 기록 프로바이더 |
-| `SdAppStructureProvider` | class | 앱 구조(메뉴/권한) 관리 추상 프로바이더 |
+| `SdAppStructureProvider` | class | 앱 구조(메뉴/권한) 관리 프로바이더 |
 | `injectPermsSignal` | function | 현재 뷰의 권한 목록을 signal로 반환 |
 | `SdAppStructureUtils` | class | 앱 구조 유틸리티 (메뉴/권한 조회 정적 메서드) |
 | `SdFileDialogProvider` | class | 네이티브 파일 선택 대화상자 프로바이더 |
@@ -347,6 +347,57 @@ const result = await sdModal.showAsync(
   { title: "사용자 선택", type: UserSelectModal, inputs: { filter: "active" } },
   { useCloseByBackdrop: true },
 );
+```
+
+### 서비스 + 이벤트 프록시 (AppServiceProvider 패턴)
+
+소비 프로젝트에서 서비스와 이벤트를 한 곳에서 관리하는 패턴:
+
+```typescript
+import { inject, Injectable } from "@angular/core";
+import { SdServiceClientFactoryProvider } from "@simplysm/angular";
+import { createOrmClientConnector, type OrmClientConnector, type ServiceProxy } from "@simplysm/service-client";
+import type { SystemLogServiceType } from "@my-server-package";
+import type { OrderUpdatedEvent } from "@my-server-package"; // import type만 가능
+
+@Injectable({ providedIn: "root" })
+export class AppServiceProvider {
+  private readonly _sdServiceClientFactory = inject(SdServiceClientFactoryProvider);
+
+  get client() {
+    return this._sdServiceClientFactory.get("MAIN");
+  }
+
+  // 서비스 프록시 — getService() 패턴
+  get systemLog() {
+    return this.client.getService<SystemLogServiceType>("SystemLog");
+  }
+
+  // 이벤트 프록시 — getEvent() 패턴 (getService()와 동일)
+  get orderUpdated() {
+    return this.client.getEvent<typeof OrderUpdatedEvent>("OrderUpdated");
+  }
+}
+```
+
+사용처에서:
+
+```typescript
+const appSvc = inject(AppServiceProvider);
+
+// 서비스 호출
+await appSvc.systemLog.writeLog("hello");
+
+// 이벤트 구독 — 이벤트 이름과 제네릭 타입을 반복 지정할 필요 없음
+const key = await appSvc.orderUpdated.addListener({ orderId: 123 }, async (data) => {
+  // data.status는 string으로 타입 추론
+});
+
+// 이벤트 발행
+await appSvc.orderUpdated.emit((info) => info.orderId === 123, { status: "shipped" });
+
+// 구독 해제
+await appSvc.orderUpdated.removeListener(key);
 ```
 
 ### 토스트 알림

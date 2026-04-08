@@ -13,6 +13,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   get connected(): boolean;
   get hostUrl(): string;
   getService<TService>(serviceName: string): ServiceProxy<TService>;
+  getEvent<TEventDef extends ServiceEventDef>(eventName: string): ClientEventProxy<TEventDef>;
   async connect(): Promise<void>;
   async close(): Promise<void>;
   async send(
@@ -22,16 +23,16 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     progress?: ServiceProgress,
   ): Promise<unknown>;
   async auth(token: string): Promise<void>;
-  async addListener<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    info: TInfo,
-    cb: (data: TData) => PromiseLike<void>,
+  async addListener<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    info: TEventDef["$info"],
+    cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string>;
   async removeListener(key: string): Promise<void>;
-  async emitEvent<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  async emitEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void>;
   async uploadFile(
     files: File[] | FileCollection | { name: string; data: BlobInput }[],
@@ -64,10 +65,11 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 | `close()` | WebSocket 연결 종료 및 protocol dispose |
 | `auth(token)` | 서버에 인증 토큰 전송. 재연결 시 자동 재인증됨 |
 | `getService<TService>(serviceName)` | 타입 안전한 서비스 프록시 반환 |
+| `getEvent<TEventDef>(eventName)` | 타입 안전한 이벤트 프록시 반환. `ClientEventProxy<TEventDef>`를 반환하며 이벤트 이름과 타입이 캡처됨 |
 | `send(serviceName, methodName, params, progress?)` | 서비스 메서드 원격 호출 |
-| `addListener(eventDef, info, cb)` | 서버 이벤트 구독. 연결 상태여야 함 |
+| `addListener(eventName, info, cb)` | 서버 이벤트 구독. 제네릭 `TEventDef`로 타입 안전성 보장. 연결 상태여야 함 |
 | `removeListener(key)` | 서버 이벤트 구독 해제 |
-| `emitEvent(eventDef, infoSelector, data)` | 서버 이벤트 발행 |
+| `emitEvent(eventName, infoSelector, data)` | 서버 이벤트 발행. 제네릭 `TEventDef`로 타입 안전성 보장 |
 | `uploadFile(files)` | 파일 업로드. `auth()` 호출 후 사용해야 함 |
 | `downloadFileBuffer(relPath)` | 파일 다운로드 (`Uint8Array` 반환) |
 
@@ -124,8 +126,15 @@ await client.auth("my-auth-token");
 const userSvc = client.getService<UserService>("User");
 const users = await userSvc.getList();
 
-// 이벤트 구독
-const key = await client.addListener(chatEvent, { roomId: "room-1" }, async (data) => {
+// 이벤트 프록시 방식 (권장 — getService()와 동일한 패턴)
+const chatEvt = client.getEvent<typeof ChatEvent>("Chat");
+const key = await chatEvt.addListener({ roomId: "room-1" }, async (data) => {
+  // data.message는 string으로 타입 추론
+});
+await chatEvt.removeListener(key);
+
+// 직접 호출 방식 (하위 호환)
+const key2 = await client.addListener<typeof ChatEvent>("Chat", { roomId: "room-1" }, async (data) => {
   // data.message
 });
 

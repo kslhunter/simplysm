@@ -14,18 +14,16 @@ export function injectPermsSignal<K extends string>(viewCodes: string[], keys: K
 // 권한은 모듈만 체크하고
 // 메뉴는 모듈/권한 모두 체크함
 @Injectable({ providedIn: "root" })
-export abstract class SdAppStructureProvider<TModule = unknown> {
+export class SdAppStructureProvider<TModule = unknown> {
   private readonly _clientFactory = inject(SdServiceClientFactoryProvider);
   private readonly _config = inject(SdAngularConfigProvider);
 
-  abstract serviceKey: string;
-  abstract usableModules: Signal<TModule[] | undefined>;
-  abstract permRecord: Signal<Record<string, boolean> | undefined>;
-
+  readonly usableModules = signal<TModule[] | undefined>(undefined);
+  readonly permRecord = signal<Record<string, boolean> | undefined>(undefined);
   readonly items = signal<AppStructureItem<TModule>[]>([]);
 
-  async fetchItems(): Promise<void> {
-    const client = this._clientFactory.get(this.serviceKey);
+  async initialize(serviceKey: string): Promise<void> {
+    const client = this._clientFactory.get(serviceKey);
     const svc = client.getService<AppStructureService>("AppStructure");
     const itemsMap = await svc.getItems();
     this.items.set(

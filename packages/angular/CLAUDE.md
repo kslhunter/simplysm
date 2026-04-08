@@ -161,7 +161,7 @@ src/
 - `SdThemeProvider` - `dark: WritableSignal<boolean>`. effect로 body에 `sd-theme-dark` class toggle
 - `SdSystemLogProvider` - `writeFn?` 콜백, `writeAsync(severity, ...data)` 메서드
 - `SdServiceClientFactoryProvider` - ServiceClient 인스턴스 팩토리/관리
-- `SdSharedDataProvider` (abstract, `@Injectable()`) - 이벤트 기반 공유 데이터 캐시. `register()`, `getHandle()`, `emitAsync()`, `wait()` 메서드
+- `SdSharedDataProvider` (abstract, `@Injectable()`) - 이벤트 기반 공유 데이터 캐시. `register()`, `getHandle()`, `emitAsync()`, `wait()` 메서드. 이벤트 API 호출 시 `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange")` 프록시 패턴 사용
 - `SdModalProvider` - `showAsync<T>(modal, options): Promise<OutputType>` 프로그래밍 방식 모달. 내부적으로 `createComponent` + `projectableNodes` 사용
 - `SdActivatedModalProvider` - 모달 내부에서 inject하여 모달 컴포넌트/컨텐츠 컴포넌트 참조
 - `SdToastProvider` - `info/success/warning/danger(message, useProgress?)`, `notify<T>()` 커스텀 토스트, `try(fn, messageFn?)` 에러 래퍼

@@ -17,10 +17,11 @@ class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   async listen(): Promise<void>;
   async close(): Promise<void>;
-  async emitEvent<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  getEvent<TEventDef extends ServiceEventDef>(eventName: string): ServerEventProxy<TEventDef>;
+  async emitEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void>;
   async signAuthToken(payload: AuthTokenPayload<TAuthInfo>): Promise<string>;
   async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>>;
@@ -37,7 +38,8 @@ class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 |--------|-------------|
 | `listen()` | 서버를 시작한다. 플러그인 등록, 라우트 설정, SIGINT/SIGTERM 핸들러 등록을 수행한다. 완료 시 `ready` 이벤트를 발생시킨다 |
 | `close()` | 모든 WebSocket 연결을 닫고 Fastify 서버를 종료한다. 완료 시 `close` 이벤트를 발생시킨다 |
-| `emitEvent(eventDef, infoSelector, data)` | `infoSelector`에 매칭되는 WebSocket 클라이언트에 이벤트를 브로드캐스트한다 |
+| `getEvent(eventName)` | 타입 안전한 이벤트 프록시(`ServerEventProxy<TEventDef>`)를 반환한다. `emit(infoSelector, data)` 메서드를 포함. `getService()` 패턴과 동일 |
+| `emitEvent(eventName, infoSelector, data)` | `eventName`에 해당하는 이벤트 리스너 중 `infoSelector`에 매칭되는 WebSocket 클라이언트에 이벤트를 브로드캐스트한다. 제네릭 `TEventDef`로 타입 안전성 보장 |
 | `signAuthToken(payload)` | JWT 토큰을 서명한다. `options.auth`가 설정되지 않으면 에러를 던진다 |
 | `verifyAuthToken(token)` | JWT 토큰을 검증하고 페이로드를 반환한다. `options.auth`가 설정되지 않으면 에러를 던진다 |
 

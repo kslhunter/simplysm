@@ -44,14 +44,21 @@ export function defineEvent<TInfo = unknown, TData = unknown>(
 사용 예:
 
 ```typescript
-// 이벤트 정의
-const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>(OrderUpdated);
+// 서버에서 이벤트 정의 + 타입 export
+export const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
 
-// 서버에서 이벤트 발생
-ctx.socket?.emitEvent(OrderUpdated, { orderId: 123 }, { status: shipped });
+// 서버에서 이벤트 발생 — getEvent() 프록시 방식 (권장)
+const orderEvt = server.getEvent<typeof OrderUpdated>("OrderUpdated");
+await orderEvt.emit((info) => info.orderId === 123, { status: "shipped" });
 
-// 클라이언트에서 구독
-await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
+// 클라이언트에서 구독 (import type으로 타입만 가져옴)
+import type { OrderUpdated } from "@server-package";
+const orderEvt = client.getEvent<typeof OrderUpdated>("OrderUpdated");
+const key = await orderEvt.addListener({ orderId: 123 }, async (data) => {
   // data.status는 string으로 타입 추론됨
 });
+
+// 직접 호출 방식 (하위 호환)
+await server.emitEvent<typeof OrderUpdated>("OrderUpdated", (info) => info.orderId === 123, { status: "shipped" });
+await client.addListener<typeof OrderUpdated>("OrderUpdated", { orderId: 123 }, async (data) => { ... });
 ```

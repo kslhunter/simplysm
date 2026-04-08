@@ -37,20 +37,19 @@ class SdSystemLogProvider {
 
 ## `SdAppStructureProvider`
 
-앱 구조(메뉴/권한) 관리 추상 프로바이더. 소비 프로젝트에서 상속하여 구현한다.
+앱 구조(메뉴/권한) 관리 프로바이더. 서브클래스 없이 직접 사용한다.
 
 ```typescript
 @Injectable({ providedIn: "root" })
-abstract class SdAppStructureProvider<TModule = unknown> {
-  abstract serviceKey: string;
-  abstract usableModules: Signal<TModule[] | undefined>;
-  abstract permRecord: Signal<Record<string, boolean> | undefined>;
+class SdAppStructureProvider<TModule = unknown> {
+  readonly usableModules = signal<TModule[] | undefined>(undefined);
+  readonly permRecord = signal<Record<string, boolean> | undefined>(undefined);
+  readonly items = signal<AppStructureItem<TModule>[]>([]);
 
-  items = signal<AppStructureItem<TModule>[]>([]);
   usableMenus: Signal<SdMenu[]>;
   usableFlatMenus: Signal<SdFlatMenu<TModule>[]>;
 
-  async fetchItems(): Promise<void>;
+  async initialize(serviceKey: string): Promise<void>;
   getPermissionsByStructure(items, codeChain?): SdPermission<TModule>[];
   getTitleByFullCode(fullCode: string): string;
   getItemChainByFullCode(fullCode: string): AppStructureItem<TModule>[];
@@ -58,15 +57,11 @@ abstract class SdAppStructureProvider<TModule = unknown> {
 }
 ```
 
-| Abstract Field | Type | Description |
-|----------------|------|-------------|
-| `serviceKey` | `string` | 서비스 클라이언트 키 |
-| `usableModules` | `Signal<TModule[] \| undefined>` | 사용 가능한 모듈 목록 |
-| `permRecord` | `Signal<Record<string, boolean> \| undefined>` | 권한 레코드 |
-
-| Concrete Field | Type | Description |
-|----------------|------|-------------|
-| `items` | `WritableSignal<AppStructureItem<TModule>[]>` | 앱 구조 항목 배열 (fetchItems로 초기화) |
+| WritableSignal Field | Type | Description |
+|----------------------|------|-------------|
+| `usableModules` | `WritableSignal<TModule[] \| undefined>` | 사용 가능한 모듈 목록. 외부에서 `set()`/`update()`로 설정 |
+| `permRecord` | `WritableSignal<Record<string, boolean> \| undefined>` | 권한 레코드. 외부에서 `set()`/`update()`로 설정 |
+| `items` | `WritableSignal<AppStructureItem<TModule>[]>` | 앱 구조 항목 배열 (`initialize()`로 초기화) |
 
 | Computed | Type | Description |
 |----------|------|-------------|
@@ -174,6 +169,10 @@ class SdServiceClientFactoryProvider {
 
 이벤트 기반 공유 데이터 캐시 추상 프로바이더. `@Injectable()`로 제공되며, 소비 프로젝트에서 상속한다.
 
+내부적으로 `client.getEvent()` 프록시를 사용하여 이벤트를 구독/발행한다:
+- `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange").addListener(info, cb)`
+- `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange").emit(selector, data)`
+
 ```typescript
 @Injectable()
 abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<string | number>>> {
@@ -191,18 +190,18 @@ abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<stri
 |--------|-------------|
 | `register(name, info)` | 공유 데이터 등록 (getter, serviceKey, filter, orderBy) |
 | `getHandle(name)` | 등록된 공유 데이터 핸들 반환 (items signal + get 메서드) |
-| `emitAsync(name, changeKeys?)` | 변경 이벤트 발행 (부분/전체 리로드 트리거) |
+| `emitAsync(name, changeKeys?)` | 변경 이벤트 발행. 내부에서 `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange").emit(...)` 호출 |
 | `wait()` | 모든 로딩 완료까지 대기 |
 
 ## `SdSharedDataChangeEvent`
 
-공유 데이터 변경 이벤트 정의. `defineEvent`로 생성.
+공유 데이터 변경 이벤트 정의. `defineEvent`로 생성되며, 이벤트 이름 문자열 `"SdSharedDataChange"`를 인자로 받는다.
 
 ```typescript
-const SdSharedDataChangeEvent: EventDefinition<
+const SdSharedDataChangeEvent = defineEvent<
   { name: string; filter: unknown },
   (string | number)[] | undefined
->
+>("SdSharedDataChange");
 ```
 
 ## `SdNavigateWindowProvider`

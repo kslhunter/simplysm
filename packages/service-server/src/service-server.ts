@@ -24,6 +24,13 @@ import consola from "consola";
 
 const logger = consola.withTag("service-server:ServiceServer");
 
+export interface ServerEventProxy<TEventDef extends ServiceEventDef> {
+  emit(
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
+  ): Promise<void>;
+}
+
 export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   ready: void;
   close: void;
@@ -214,12 +221,20 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.emit("close");
   }
 
-  async emitEvent<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  getEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+  ): ServerEventProxy<TEventDef> {
+    return {
+      emit: (infoSelector, data) => this.emitEvent<TEventDef>(eventName, infoSelector, data),
+    };
+  }
+
+  async emitEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ) {
-    await this._wsHandler.emit(eventDef, infoSelector, data);
+    await this._wsHandler.emit<TEventDef>(eventName, infoSelector, data);
   }
 
   async signAuthToken(payload: AuthTokenPayload<TAuthInfo>) {

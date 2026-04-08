@@ -110,13 +110,15 @@ protocol.dispose();
 ```typescript
 import { defineEvent } from "@simplysm/service-common";
 
-const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
+// 서버에서 이벤트 정의 + 타입 export
+export const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
 
-// 서버에서 이벤트 발생
-ctx.socket?.emitEvent(OrderUpdated, { orderId: 123 }, { status: "shipped" });
+// 서버에서 이벤트 발생 (제네릭 타입 파라미터 + 문자열 이름 패턴)
+await server.emitEvent<typeof OrderUpdated>("OrderUpdated", (info) => info.orderId === 123, { status: "shipped" });
 
-// 클라이언트에서 구독
-await client.addEventListener(OrderUpdated, { orderId: 123 }, (data) => {
+// 클라이언트에서 구독 (import type으로 타입만 가져옴)
+import type { OrderUpdated } from "@server-package";
+await client.addListener<typeof OrderUpdated>("OrderUpdated", { orderId: 123 }, async (data) => {
   // data.status는 string으로 타입 추론됨
 });
 ```

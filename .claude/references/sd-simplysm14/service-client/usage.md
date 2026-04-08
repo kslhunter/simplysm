@@ -51,6 +51,7 @@ npm install @simplysm/service-client
 
 | API | Type | Description |
 |-----|------|-------------|
+| `ClientEventProxy` | interface | `getEvent()`가 반환하는 이벤트 프록시 (이벤트 이름+타입 캡처) |
 | `EventClient` | interface | 서버 이벤트 구독/발행 인터페이스 (재연결 시 자동 재구독) |
 | `createEventClient` | function | EventClient 팩토리. ServiceTransport를 사용 |
 | `FileClient` | interface | 파일 업로드(POST)/다운로드(GET) 인터페이스 |
@@ -98,18 +99,26 @@ await client.close();
 ### 이벤트 구독
 
 ```typescript
-import type { ServiceEventDef } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
-const chatEvent: ServiceEventDef<{ roomId: string }, { message: string }> = {
-  eventName: "chat",
-};
+// 서버에서 이벤트 정의 + 타입 export
+export const ChatEvent = defineEvent<{ roomId: string }, { message: string }>("Chat");
 
-const key = await client.addListener(chatEvent, { roomId: "room-1" }, async (data) => {
-  console.log(data.message);
+// 클라이언트에서 import type으로 타입만 가져옴
+// import type { ChatEvent } from "@server-package";
+
+// 이벤트 프록시 방식 (권장 — getService()와 동일한 패턴)
+const chatEvt = client.getEvent<typeof ChatEvent>("Chat");
+const key = await chatEvt.addListener({ roomId: "room-1" }, async (data) => {
+  // data.message는 string으로 타입 추론
 });
+await chatEvt.removeListener(key);
 
-// 구독 해제
-await client.removeListener(key);
+// 직접 호출 방식 (하위 호환)
+const key2 = await client.addListener<typeof ChatEvent>("Chat", { roomId: "room-1" }, async (data) => {
+  // data.message는 string으로 타입 추론
+});
+await client.removeListener(key2);
 ```
 
 ### ORM 원격 연결

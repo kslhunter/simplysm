@@ -8,7 +8,7 @@ import type { ServiceConnectionOptions } from "./types/connection-options";
 import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
 import { createServiceTransport, type ServiceTransport } from "./transport/service-transport";
 import { createSocketProvider, type SocketProvider } from "./transport/socket-provider";
-import { createEventClient, type EventClient } from "./features/event-client";
+import { createEventClient, type ClientEventProxy, type EventClient } from "./features/event-client";
 import { createFileClient, type FileClient } from "./features/file-client";
 import { createClientProtocolWrapper, type ClientProtocolWrapper } from "./protocol/client-protocol-wrapper";
 
@@ -130,25 +130,31 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     this._authToken = token;
   }
 
-  async addListener<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    info: TInfo,
-    cb: (data: TData) => PromiseLike<void>,
+  getEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+  ): ClientEventProxy<TEventDef> {
+    return this._eventClient.getEvent<TEventDef>(eventName);
+  }
+
+  async addListener<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    info: TEventDef["$info"],
+    cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     if (!this.connected) throw new Error("서버에 연결되지 않았습니다.");
-    return this._eventClient.addListener(eventDef, info, cb);
+    return this._eventClient.addListener<TEventDef>(eventName, info, cb);
   }
 
   async removeListener(key: string): Promise<void> {
     await this._eventClient.removeListener(key);
   }
 
-  async emitEvent<TInfo, TData>(
-    eventDef: ServiceEventDef<TInfo, TData>,
-    infoSelector: (item: TInfo) => boolean,
-    data: TData,
+  async emitEvent<TEventDef extends ServiceEventDef>(
+    eventName: string,
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
   ): Promise<void> {
-    await this._eventClient.emit(eventDef, infoSelector, data);
+    await this._eventClient.emit<TEventDef>(eventName, infoSelector, data);
   }
 
   async uploadFile(files: File[] | FileCollection | { name: string; data: BlobInput }[]) {
