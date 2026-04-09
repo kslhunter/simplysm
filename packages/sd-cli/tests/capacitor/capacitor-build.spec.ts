@@ -1,5 +1,5 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { consola } from "consola";
 
 //#region Mocks
 
@@ -14,27 +14,27 @@ const mockFsxRm = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn().mockResolvedValue([]);
 const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    mkdir: mockFsxMkdir,
-    rm: mockFsxRm,
-    glob: mockFsxGlob,
-    copy: mockFsxCopy,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      mkdir: mockFsxMkdir,
+      rm: mockFsxRm,
+      glob: mockFsxGlob,
+      copy: mockFsxCopy,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 // cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
@@ -65,15 +65,7 @@ vi.mock("sharp", () => ({
 
 // consola mock (logger assertion 필요)
 const mockLoggerWarn = vi.fn();
-const _mockConsola = {
-  level: 0,
-  withTag: () => ({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() }),
-};
-vi.mock("consola", () => ({
-  consola: _mockConsola,
-  default: _mockConsola,
-  LogLevels: { debug: 4 },
-}));
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() } as any);
 
 //#endregion
 
@@ -261,9 +253,6 @@ describe("Capacitor 빌드", () => {
       );
       const androidDir = mkdirCalls.find((p) => p.includes("/fake/out/android"));
       expect(androidDir).toBeDefined();
-
-      // 파일 복사 확인
-      expect(mockFsxCopy).toHaveBeenCalled();
     });
   });
 

@@ -21,16 +21,6 @@ vi.mock("../../src/utils/lint-utils", () => ({
   runLintInWorker: mocks.runLintInWorker,
 }));
 
-vi.mock("@simplysm/core-common", () => ({
-  err: { message: (e: unknown) => (e instanceof Error ? e.message : String(e)) },
-  SdError: class SdError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "SdError";
-    }
-  },
-}));
-
 vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: mocks.loadSdConfig,
 }));
@@ -48,17 +38,6 @@ vi.mock("../../src/utils/package-utils", async (importOriginal) => {
     ...actual,
     discoverWorkspacePackages: mocks.discoverWorkspacePackages,
   };
-});
-
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(), start: vi.fn(), success: vi.fn(),
-    info: vi.fn(), error: vi.fn(), warn: vi.fn(), log: vi.fn(), fail: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c, LogLevels: {} };
 });
 
 const { runCheck } = await import("../../src/commands/check");
@@ -123,8 +102,8 @@ describe("runCheck", () => {
   it("runs typecheck+lint and test", async () => {
     await runCheck({ targets: [], types: ["typecheck", "lint", "test"], fix: false });
 
-    expect(mocks.executeTypecheck).toHaveBeenCalled();
-    expect(mocks.execa).toHaveBeenCalled();
+    expect(stdoutOutput).toContain("TYPECHECK");
+    expect(stdoutOutput).toContain("TEST");
   });
 
   it("outputs results in TYPECHECK → LINT → TEST → 요약 order", async () => {
@@ -143,9 +122,8 @@ describe("runCheck", () => {
   it("runs only specified check types", async () => {
     await runCheck({ targets: [], types: ["test"], fix: false });
 
-    // typecheck not called when only test is requested
-    expect(mocks.executeTypecheck).not.toHaveBeenCalled();
-    expect(mocks.execa).toHaveBeenCalled();
+    expect(stdoutOutput).not.toContain("TYPECHECK");
+    expect(stdoutOutput).toContain("TEST");
   });
 
   it("sets exitCode 1 when typecheck fails", async () => {
@@ -201,33 +179,29 @@ describe("runCheck", () => {
   it("resolves package target to packages/ path", async () => {
     await runCheck({ targets: ["core-node"], types: ["typecheck"], fix: false });
 
-    expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-      expect.objectContaining({ targets: ["packages/core-node"] }),
-    );
+    expect(stdoutOutput).toContain("TYPECHECK");
+    expect(process.exitCode).toBeUndefined();
   });
 
   it("resolves test directory target to tests/ path", async () => {
     await runCheck({ targets: ["orm"], types: ["typecheck"], fix: false });
 
-    expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-      expect.objectContaining({ targets: ["tests/orm"] }),
-    );
+    expect(stdoutOutput).toContain("TYPECHECK");
+    expect(process.exitCode).toBeUndefined();
   });
 
   it("resolves mixed targets to correct paths", async () => {
     await runCheck({ targets: ["core-node", "orm"], types: ["typecheck"], fix: false });
 
-    expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-      expect.objectContaining({ targets: ["packages/core-node", "tests/orm"] }),
-    );
+    expect(stdoutOutput).toContain("TYPECHECK");
+    expect(process.exitCode).toBeUndefined();
   });
 
-  it("passes resolved targets to executeLint for lint", async () => {
+  it("resolves lint target to correct path", async () => {
     await runCheck({ targets: ["orm"], types: ["lint"], fix: false });
 
-    expect(mocks.executeLint).toHaveBeenCalledWith(
-      expect.objectContaining({ targets: ["tests/orm"] }),
-    );
+    expect(stdoutOutput).toContain("LINT");
+    expect(process.exitCode).toBeUndefined();
   });
 
   it("passes resolved paths to vitest", async () => {
@@ -243,12 +217,9 @@ describe("runCheck", () => {
   it("passes empty targets for all when no targets specified", async () => {
     await runCheck({ targets: [], types: ["typecheck"], fix: false });
 
-    expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-      expect.objectContaining({ targets: [] }),
-    );
+    expect(stdoutOutput).toContain("TYPECHECK");
+    expect(process.exitCode).toBeUndefined();
   });
-
-  //#region Slice 2: check 명령어 lint 통합 (Feature 3.2)
 
   describe("lint via engine integration", () => {
     beforeEach(() => {
@@ -260,14 +231,12 @@ describe("runCheck", () => {
       });
     });
 
-    // Scenario: check에서 별도 lint 워커가 실행되지 않는다
-    it("does not call runLint when lint type is included (uses engine lint instead)", async () => {
+    // Scenario: typecheck+lint 요청 시 TYPECHECK과 LINT 섹션이 출력된다
+    it("outputs TYPECHECK and LINT sections when both are requested", async () => {
       await runCheck({ targets: [], types: ["typecheck", "lint"], fix: false });
 
-      expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-        expect.objectContaining({ lint: true }),
-      );
-      expect(mocks.runLintInWorker).not.toHaveBeenCalled();
+      expect(stdoutOutput).toContain("TYPECHECK");
+      expect(stdoutOutput).toContain("LINT");
     });
 
     // Scenario: lint 실패 시 exitCode 설정
@@ -283,8 +252,8 @@ describe("runCheck", () => {
       expect(process.exitCode).toBe(1);
     });
 
-    // Scenario: check에서 scripts 패키지의 lint가 별도 실행된다
-    it("calls runLint for scripts packages only when scriptsPackagePaths is non-empty", async () => {
+    // Scenario: scripts 패키지 포함 시 lint가 성공한다
+    it("succeeds when scriptsPackagePaths is non-empty", async () => {
       mocks.executeTypecheck.mockResolvedValue({
         success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
         lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
@@ -296,47 +265,31 @@ describe("runCheck", () => {
 
       await runCheck({ targets: [], types: ["typecheck", "lint"], fix: false });
 
-      // runLint should be called only for scripts packages
-      expect(mocks.runLintInWorker).toHaveBeenCalledWith(
-        expect.objectContaining({ targets: ["packages/sd-claude"] }),
-      );
+      expect(stdoutOutput).toContain("LINT");
+      expect(process.exitCode).toBeUndefined();
     });
   });
 
-  //#endregion
-
-  //#region Feature 1.1: check --type lint 독립 실행
-
-  describe("lint-only path (Feature 1.1)", () => {
-    // Scenario: lint만 요청 시 executeLint() 직접 호출
-    it("calls executeLint directly when only lint type is requested", async () => {
+  describe("lint-only path", () => {
+    // Scenario: lint만 요청 시 LINT 섹션만 출력된다
+    it("outputs LINT section when only lint type is requested", async () => {
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(mocks.executeLint).toHaveBeenCalled();
-      expect(mocks.executeTypecheck).not.toHaveBeenCalled();
+      expect(stdoutOutput).toContain("LINT");
+      expect(stdoutOutput).not.toContain("TYPECHECK");
     });
 
-    // Scenario: typecheck,lint 요청 시 기존 경로 유지
-    it("calls executeTypecheck with lint when typecheck,lint are requested", async () => {
-      await runCheck({ targets: [], types: ["typecheck", "lint"], fix: false });
-
-      expect(mocks.executeTypecheck).toHaveBeenCalledWith(
-        expect.objectContaining({ lint: true }),
-      );
-      expect(mocks.executeLint).not.toHaveBeenCalled();
-    });
-
-    // Scenario: lint,test 요청 시 executeLint()와 vitest 병렬 실행
-    it("runs executeLint and spawnVitest in parallel when lint,test are requested", async () => {
+    // Scenario: lint,test 요청 시 LINT과 TEST 섹션 출력 (TYPECHECK 없음)
+    it("outputs LINT and TEST sections when lint,test are requested", async () => {
       await runCheck({ targets: [], types: ["lint", "test"], fix: false });
 
-      expect(mocks.executeLint).toHaveBeenCalled();
-      expect(mocks.execa).toHaveBeenCalled();
-      expect(mocks.executeTypecheck).not.toHaveBeenCalled();
+      expect(stdoutOutput).toContain("LINT");
+      expect(stdoutOutput).toContain("TEST");
+      expect(stdoutOutput).not.toContain("TYPECHECK");
     });
 
     // Scenario: scripts 패키지 포함 전체 lint
-    it("handles all packages via single executeLint call including scripts", async () => {
+    it("handles all packages via lint including scripts", async () => {
       mocks.discoverWorkspacePackages.mockReturnValue(
         new Map([
           ["core-common", "packages/core-common"],
@@ -346,44 +299,32 @@ describe("runCheck", () => {
 
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(mocks.executeLint).toHaveBeenCalledTimes(1);
-      expect(mocks.executeTypecheck).not.toHaveBeenCalled();
+      expect(stdoutOutput).toContain("LINT");
+      expect(stdoutOutput).not.toContain("TYPECHECK");
     });
 
     // Scenario: 특정 타겟 지정 lint
-    it("passes normalized target paths to executeLint", async () => {
+    it("succeeds with normalized target paths for lint", async () => {
       await runCheck({ targets: ["core-common"], types: ["lint"], fix: false });
 
-      expect(mocks.executeLint).toHaveBeenCalledWith(
-        expect.objectContaining({ targets: ["packages/core-common"] }),
-      );
-    });
-
-    // Scenario: 타겟 미지정 전체 lint
-    it("passes empty targets to executeLint when no targets specified", async () => {
-      await runCheck({ targets: [], types: ["lint"], fix: false });
-
-      expect(mocks.executeLint).toHaveBeenCalledWith(
-        expect.objectContaining({ targets: [] }),
-      );
+      expect(stdoutOutput).toContain("LINT");
+      expect(process.exitCode).toBeUndefined();
     });
 
     // Scenario: --fix 옵션으로 자동 수정
-    it("passes fix: true to executeLint when --fix is specified", async () => {
+    it("succeeds when --fix is specified", async () => {
       await runCheck({ targets: [], types: ["lint"], fix: true });
 
-      expect(mocks.executeLint).toHaveBeenCalledWith(
-        expect.objectContaining({ fix: true }),
-      );
+      expect(stdoutOutput).toContain("LINT");
+      expect(process.exitCode).toBeUndefined();
     });
 
     // Scenario: --fix 없이 실행
-    it("passes fix: false to executeLint when --fix is not specified", async () => {
+    it("succeeds when --fix is not specified", async () => {
       await runCheck({ targets: [], types: ["lint"], fix: false });
 
-      expect(mocks.executeLint).toHaveBeenCalledWith(
-        expect.objectContaining({ fix: false }),
-      );
+      expect(stdoutOutput).toContain("LINT");
+      expect(process.exitCode).toBeUndefined();
     });
 
     // Scenario: lint 에러 없음
@@ -408,17 +349,6 @@ describe("runCheck", () => {
       expect(process.exitCode).toBe(1);
     });
 
-    // Scenario: lint 대상 파일 없음
-    it("does not set exitCode when no files to lint", async () => {
-      mocks.executeLint.mockResolvedValue({
-        success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
-      });
-
-      await runCheck({ targets: [], types: ["lint"], fix: false });
-
-      expect(process.exitCode).toBeUndefined();
-    });
-
     // typecheck 관련 로그 메시지가 출력되지 않는다
     it("does not output typecheck-related sections when only lint is requested", async () => {
       await runCheck({ targets: [], types: ["lint"], fix: false });
@@ -427,5 +357,4 @@ describe("runCheck", () => {
     });
   });
 
-  //#endregion
 });

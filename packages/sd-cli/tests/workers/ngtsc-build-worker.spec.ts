@@ -1,11 +1,48 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { resolve } from "node:path";
+import path, { resolve } from "node:path";
 import fs from "node:fs";
-import { runNgtscBuild, compileGlobalScss } from "../../src/utils/ngtsc-build-core";
+import { pathx } from "@simplysm/core-node";
+import { AngularBuildPipeline } from "../../src/utils/angular-build-pipeline";
+import { buildCompilerOptions, buildScssLoadPaths, compileGlobalScss } from "../../src/utils/ngtsc-build-core";
+import { parseTsconfig, getPackageSourceFiles } from "../../src/utils/tsconfig";
 
-const workspaceRoot = resolve(import.meta.dirname, "../../../..");
-const angularPkgDir = resolve(workspaceRoot, "packages/angular");
-const distDir = resolve(angularPkgDir, "dist");
+const FIXTURE_DIR = resolve(import.meta.dirname, "../angular/fixtures/packages/basic-lib");
+const distDir = resolve(FIXTURE_DIR, "dist");
+
+async function buildWithPipeline(options: {
+  js: boolean;
+  dts: boolean;
+}): Promise<{ success: boolean; errors?: string[] }> {
+  const parsedConfig = parseTsconfig(FIXTURE_DIR);
+  const sourceFiles = getPackageSourceFiles(FIXTURE_DIR, parsedConfig);
+  const compilerOptions = buildCompilerOptions(parsedConfig.options, FIXTURE_DIR, {
+    js: options.js,
+    dts: options.dts,
+  });
+  const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
+
+  const pipeline = new AngularBuildPipeline({
+    mode: "library",
+    pkgDir: FIXTURE_DIR,
+    cwd: FIXTURE_DIR,
+    rootNames: sourceFiles,
+    compilerOptions,
+    angularCompilerOptions: angularOptions,
+  });
+
+  const result = await pipeline.initialize();
+  const normalizedSrcDir = pathx.posix(path.join(FIXTURE_DIR, "src"));
+  pipeline.writeEmitResults({
+    pkgDir: FIXTURE_DIR,
+    sourceFilter: (fileName) => pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
+  });
+
+  const errors = result.diagnostics.errors.map((e) => e.message);
+  return {
+    success: result.diagnostics.errors.length === 0 && result.scssErrors.length === 0,
+    errors: errors.length > 0 ? errors : undefined,
+  };
+}
 
 describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   beforeAll(() => {
@@ -24,22 +61,17 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
 
   // Acceptance: Scenario "@Injectable 데코레이터가 런타임 코드로 변환된다"
   it("transforms @Injectable decorator to runtime ɵprov factory", async () => {
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
-      output: { js: true, dts: false },
-    });
+    const result = await buildWithPipeline({ js: true, dts: false });
 
     // Debug: print errors if build failed
-    if (!result.build.success) {
-      console.error("Build errors:", result.build.errors);
+    if (!result.success) {
+      console.error("Build errors:", result.errors);
     }
 
-    expect(result.build.success).toBe(true);
+    expect(result.success).toBe(true);
 
     // Find the provider file output
-    const providerJsPath = resolve(distDir, "core", "providers", "sd-theme-provider.js");
+    const providerJsPath = resolve(distDir, "test-provider.js");
     expect(fs.existsSync(providerJsPath)).toBe(true);
 
     const content = fs.readFileSync(providerJsPath, "utf-8");
@@ -52,7 +84,7 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "@Directive 데코레이터가 런타임 코드로 변환된다"
   it("transforms @Directive decorator to runtime ɵdir definition", () => {
     // dist already populated from prior test, check directive
-    const directiveJsPath = resolve(distDir, "core", "directives", "sd-events.js");
+    const directiveJsPath = resolve(distDir, "test-directive.js");
     expect(fs.existsSync(directiveJsPath)).toBe(true);
 
     const content = fs.readFileSync(directiveJsPath, "utf-8");
@@ -66,16 +98,11 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
-      output: { js: true, dts: true },
-    });
+    const result = await buildWithPipeline({ js: true, dts: true });
 
-    expect(result.build.success).toBe(true);
+    expect(result.success).toBe(true);
 
-    const providerDtsPath = resolve(distDir, "core", "providers", "sd-theme-provider.d.ts");
+    const providerDtsPath = resolve(distDir, "test-provider.d.ts");
     expect(fs.existsSync(providerDtsPath)).toBe(true);
 
     const content = fs.readFileSync(providerDtsPath, "utf-8");
@@ -86,8 +113,8 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
   // Acceptance: Scenario "run()으로 one-time 빌드를 수행한다"
   it("produces both JS and .d.ts when output is {js: true, dts: true}", () => {
     // dist already populated from prior test
-    const jsExists = fs.existsSync(resolve(distDir, "core", "providers", "sd-theme-provider.js"));
-    const dtsExists = fs.existsSync(resolve(distDir, "core", "providers", "sd-theme-provider.d.ts"));
+    const jsExists = fs.existsSync(resolve(distDir, "test-provider.js"));
+    const dtsExists = fs.existsSync(resolve(distDir, "test-provider.d.ts"));
 
     expect(jsExists).toBe(true);
     expect(dtsExists).toBe(true);
@@ -99,20 +126,15 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
-      output: { js: true, dts: false },
-    });
+    const result = await buildWithPipeline({ js: true, dts: false });
 
-    expect(result.build.success).toBe(true);
+    expect(result.success).toBe(true);
 
-    const jsExists = fs.existsSync(resolve(distDir, "core", "providers", "sd-theme-provider.js"));
+    const jsExists = fs.existsSync(resolve(distDir, "test-provider.js"));
     expect(jsExists).toBe(true);
 
     // Should NOT have .d.ts files
-    const dtsExists = fs.existsSync(resolve(distDir, "core", "providers", "sd-theme-provider.d.ts"));
+    const dtsExists = fs.existsSync(resolve(distDir, "test-provider.d.ts"));
     expect(dtsExists).toBe(false);
   }, 60_000);
 
@@ -122,32 +144,20 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
-      output: { js: true, dts: true },
-    });
+    const result = await buildWithPipeline({ js: true, dts: true });
 
     // Angular package should compile cleanly
-    expect(result.build.diagnostics).toBeDefined();
-    expect(Array.isArray(result.build.diagnostics)).toBe(true);
+    expect(result).toHaveProperty("success");
+    expect(result.success).toBe(true);
   }, 60_000);
 
-  // Acceptance: Scenario "타입 에러가 있어도 빌드 결과를 반환한다"
-  // This tests error handling by verifying the result structure is always returned
+  // Acceptance: Scenario "빌드 결과 구조가 항상 반환된다"
   it("returns complete result structure even when build succeeds", async () => {
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
-      output: { js: true, dts: true },
-    });
+    const result = await buildWithPipeline({ js: true, dts: true });
 
     // Verify result structure completeness
-    expect(result.build).toHaveProperty("success");
-    expect(result.build).toHaveProperty("diagnostics");
-    expect(Array.isArray(result.build.diagnostics)).toBe(true);
+    expect(result).toHaveProperty("success");
+    expect(typeof result.success).toBe("boolean");
   }, 60_000);
 
   // Acceptance: Scenario "scss/styles.scss가 CSS로 컴파일되어 dist에 출력된다"
@@ -156,14 +166,18 @@ describe("ngtsc-build-core: NgtscProgram AOT compilation", () => {
       fs.rmSync(distDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     }
 
-    const result = await runNgtscBuild({
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
+    const result = await buildWithPipeline({ js: true, dts: false });
+    expect(result.success).toBe(true);
+
+    // global SCSS는 Pipeline 외부에서 별도 호출
+    const loadPaths = buildScssLoadPaths({
+      name: "basic-lib",
+      cwd: FIXTURE_DIR,
+      pkgDir: FIXTURE_DIR,
       output: { js: true, dts: false },
     });
-
-    expect(result.build.success).toBe(true);
+    const globalErrors = compileGlobalScss(FIXTURE_DIR, loadPaths);
+    expect(globalErrors).toEqual([]);
 
     const stylesCssPath = resolve(distDir, "styles.css");
     expect(fs.existsSync(stylesCssPath)).toBe(true);

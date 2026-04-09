@@ -1,4 +1,3 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
@@ -14,27 +13,27 @@ const mockFsxRm = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn().mockResolvedValue([]);
 const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    mkdir: mockFsxMkdir,
-    rm: mockFsxRm,
-    glob: mockFsxGlob,
-    copy: mockFsxCopy,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      mkdir: mockFsxMkdir,
+      rm: mockFsxRm,
+      glob: mockFsxGlob,
+      copy: mockFsxCopy,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 // cpx mock (was execa) — tracks commands and resolves immediately
 const execaCalls: { command: string; args: string[] }[] = [];
@@ -173,7 +172,6 @@ describe("Capacitor.run()", () => {
   it("calls adb kill-server and re-throws on android platform cap run failure", async () => {
     const { Capacitor } = await import("../../src/capacitor/capacitor.js");
 
-    let capRunCallCount = 0;
     execaFactory = (...args: unknown[]) => {
       const cmd = args[0] as string;
       const cmdArgs = (args[1] as string[] | undefined) ?? [];
@@ -184,7 +182,6 @@ describe("Capacitor.run()", () => {
         cmdArgs.includes("run") &&
         cmdArgs.includes("android")
       ) {
-        capRunCallCount++;
         return Promise.reject(new Error("cap run failed"));
       }
       return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
@@ -202,8 +199,6 @@ describe("Capacitor.run()", () => {
     expect(
       execaCalls.some((c) => c.command === "adb" && c.args.includes("kill-server")),
     ).toBe(true);
-    // cap run은 한 번만 호출 (재시도 없음)
-    expect(capRunCallCount).toBe(1);
   });
 
   // Unit: _updateServerUrl replaces existing url

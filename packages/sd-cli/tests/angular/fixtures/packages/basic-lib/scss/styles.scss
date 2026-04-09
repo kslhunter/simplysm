@@ -1,0 +1,6 @@
+@use "commons/variables" as vars;
+
+.lib-container {
+  color: vars.$primary;
+  padding: vars.$spacing;
+}

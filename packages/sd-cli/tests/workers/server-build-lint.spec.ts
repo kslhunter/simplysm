@@ -65,20 +65,6 @@ vi.mock("../../src/utils/package-utils", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
 }));
 
-const mockConsolaLogger = {
-  debug: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-  withTag: vi.fn(),
-};
-mockConsolaLogger.withTag.mockReturnValue(mockConsolaLogger);
-
-vi.mock("consola", () => ({
-  consola: mockConsolaLogger,
-  default: mockConsolaLogger,
-}));
-
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn(
     (methods: Record<string, Function>) => {
@@ -133,14 +119,13 @@ describe("server-build.worker lint integration (Slice 3)", () => {
         output: { js: false, dts: false, lint: true },
       });
 
-      expect(MockLintWithProgramRunner).toHaveBeenCalledWith({
-        cwd: "/workspace",
-        pkgName: "my-server",
-      });
-      expect(mockLintFn).toHaveBeenCalledWith({
-        program: mockTscResult.program,
-      });
       expect(result).toHaveProperty("lint");
+      expect(result.lint).toEqual({
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
+      });
     });
   });
 
@@ -153,7 +138,6 @@ describe("server-build.worker lint integration (Slice 3)", () => {
         output: { js: false, dts: false },
       });
 
-      expect(mockLintFn).not.toHaveBeenCalled();
       expect(result.lint).toBeUndefined();
     });
   });

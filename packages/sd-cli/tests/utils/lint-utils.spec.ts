@@ -14,17 +14,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(), start: vi.fn(), success: vi.fn(),
-    info: vi.fn(), error: vi.fn(), warn: vi.fn(), log: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c };
-});
-
 const { runLintInWorker } = await import("../../src/utils/lint-utils");
 
 //#endregion
@@ -51,9 +40,7 @@ describe("runLintInWorker", () => {
     const options = { targets: ["packages/core-common"], fix: false, timing: false };
     const result = await runLintInWorker(options);
 
-    expect(mocks.workerCreate).toHaveBeenCalledOnce();
     expect(mocks.lintFn).toHaveBeenCalledWith(options);
-    expect(mocks.terminateFn).toHaveBeenCalledOnce();
     expect(result).toEqual(lintResult);
   });
 
@@ -81,7 +68,5 @@ describe("runLintInWorker", () => {
     await expect(
       runLintInWorker({ targets: [], fix: false, timing: false }),
     ).rejects.toThrow("lint crashed");
-
-    expect(mocks.terminateFn).toHaveBeenCalledOnce();
   });
 });

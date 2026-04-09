@@ -15,7 +15,6 @@ src/
 ├── sd-cli.ts              ← CLI 런처 (affinity 설정 + replaceDeps 처리 후 sd-cli-entry 실행)
 ├── sd-cli-entry.ts        ← yargs 커맨드 등록 진입점
 ├── sd-config.types.ts     ← sd.config.ts 타입 정의 (SdConfig, SdPackageConfig 등)
-├── vitest-plugin.ts       ← Vitest용 Angular AOT 컴파일 플러그인 (angularVitestPlugin)
 │
 ├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, publish, device, replace-deps)
 ├── orchestrators/         ← 커맨드-엔진 조율
@@ -48,6 +47,7 @@ src/
 ├── electron/              ← Electron 빌드 유틸
 └── utils/                 ← 빌드 유틸리티 함수 모음
     ├── angular-compiler.ts      ← AngularCompiler, AngularSourceFileCache (증분 재컴파일, HMR 지원)
+    ├── angular-build-pipeline.ts ← AngularBuildPipeline (AOT 컴파일 + emit + 진단 수집 통합 파이프라인)
     ├── ngtsc-build-core.ts      ← Angular 라이브러리 빌드 핵심 로직 (runNgtscBuild)
     ├── angular-build.ts         ← NgtscProgram 래퍼
     ├── hmr-candidates.ts        ← collectHmrCandidates, analyzeFileUpdates (HMR 후보 판별)
@@ -188,19 +188,6 @@ await orch.shutdown();   // 리소스 정리
 - `handleHotUpdate`: 변경 파일 감지 -> 증분 재컴파일 -> HMR 또는 full-reload
 - `buildEnd`: `AngularCompiler` dispose
 
-### angularVitestPlugin
-
-`src/vitest-plugin.ts`는 Vitest 환경에서 Angular 패키지를 테스트할 때 사용하는 Vite 플러그인이다. `src/` 파일과 `.fixture.` 파일을 Angular AOT 컴파일하여 캐싱한 뒤 `transform` 훅에서 반환한다.
-
-```typescript
-// vitest.config.ts에서 사용
-import { angularVitestPlugin } from "@simplysm/sd-cli/vitest-plugin";
-
-export default defineConfig({
-  plugins: [angularVitestPlugin({ tsconfig: "./tsconfig.json" })],
-});
-```
-
 ### typecheck-serialization
 
 `ts.Diagnostic`은 Worker 경계를 직렬화 없이 통과할 수 없다. Worker 내부에서 `serializeDiagnostic()`으로 직렬화하고, Orchestrator에서 `deserializeDiagnostic()`으로 복원한다:
@@ -231,8 +218,6 @@ tests/
 ├── orchestrators/  ← BuildOrchestrator, DevWatchOrchestrator
 ├── utils/          ← 유틸 함수 단위 테스트
 ├── workers/        ← Worker 모듈 단위 테스트
-├── vitest-plugin.spec.ts      ← angularVitestPlugin 테스트
-├── vitest-plugin-cwd.spec.ts  ← angularVitestPlugin cwd 옵션 테스트
 └── sd-cli-entry.spec.ts       ← CLI 엔트리 테스트
 ```
 

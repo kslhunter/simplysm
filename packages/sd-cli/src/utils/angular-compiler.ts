@@ -362,23 +362,36 @@ export class AngularCompiler {
     const affectedFiles = new Set<ts.SourceFile>();
 
     while (true) {
-      const result = builderProgram.getSemanticDiagnosticsOfNextAffectedFile(
-        undefined,
-        (sourceFile) => {
-          if (
-            angularCompiler.ignoreForDiagnostics.has(sourceFile) &&
-            sourceFile.fileName.endsWith(".ngtypecheck.ts")
-          ) {
-            const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
-            const originalSourceFile = builderProgram.getSourceFile(originalFilename);
-            if (originalSourceFile) {
-              affectedFiles.add(originalSourceFile);
+      // TypeScript 5.9 + NgtscProgram: getSemanticDiagnosticsOfNextAffectedFile가
+      // referencedFiles 인덱스 불일치로 크래시할 수 있음 (fixture 등 비표준 rootNames 포함 시)
+      let result: ReturnType<typeof builderProgram.getSemanticDiagnosticsOfNextAffectedFile>;
+      try {
+        result = builderProgram.getSemanticDiagnosticsOfNextAffectedFile(
+          undefined,
+          (sourceFile) => {
+            if (
+              angularCompiler.ignoreForDiagnostics.has(sourceFile) &&
+              sourceFile.fileName.endsWith(".ngtypecheck.ts")
+            ) {
+              const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
+              const originalSourceFile = builderProgram.getSourceFile(originalFilename);
+              if (originalSourceFile) {
+                affectedFiles.add(originalSourceFile);
+              }
+              return true;
             }
-            return true;
+            return false;
+          },
+        );
+      } catch {
+        logger.debug("getSemanticDiagnosticsOfNextAffectedFile 크래시 (무시) — 모든 소스를 affected로 처리");
+        for (const sourceFile of builderProgram.getSourceFiles()) {
+          if (!angularCompiler.ignoreForDiagnostics.has(sourceFile)) {
+            affectedFiles.add(sourceFile);
           }
-          return false;
-        },
-      );
+        }
+        break;
+      }
       if (!result) {
         break;
       }
@@ -521,7 +534,15 @@ export class AngularCompiler {
     // 6. .tsbuildinfo 영속화 (프로세스 재시작 후 incremental 진단 유지)
     //    TS 5.9에서 emitBuildInfo()가 제거됨. emit()이 내부적으로 build info를 기록한다.
     //    no-op writeFile로 JS/DTS 재출력 없이 build info만 갱신.
-    this._builderProgram.emit(undefined, () => {});
+    // TypeScript 5.9 + NgtscProgram: emit가 내부적으로 진단 수집을 트리거하여
+    // referencedFiles 인덱스 불일치로 크래시할 수 있음
+    // TypeScript 5.9 + NgtscProgram: emit가 내부적으로 진단 수집을 트리거하여
+    // referencedFiles 인덱스 불일치로 크래시할 수 있음
+    try {
+      this._builderProgram.emit(undefined, () => {});
+    } catch {
+      logger.debug("builderProgram.emit 크래시 (무시) — tsbuildinfo 영속화 생략");
+    }
 
     // 7. sourceFilter 적용 후 yield
     logger.debug(`emitAffectedFiles 완료 (${emitResults.length}개 파일)`);
@@ -567,7 +588,16 @@ export class AngularCompiler {
       }
 
       yield* builderProgram.getSyntacticDiagnostics(sourceFile);
-      yield* builderProgram.getSemanticDiagnostics(sourceFile);
+      // TypeScript 5.9 + NgtscProgram: getSemanticDiagnostics가 내부적으로
+      // referencedFiles 인덱스 불일치로 크래시할 수 있음 (fixture 파일 포함 시)
+      let semanticDiags: readonly ts.Diagnostic[];
+      try {
+        semanticDiags = builderProgram.getSemanticDiagnostics(sourceFile);
+      } catch {
+        logger.debug(`getSemanticDiagnostics 크래시 (무시): ${sourceFile.fileName}`);
+        semanticDiags = [];
+      }
+      yield* semanticDiags;
 
       // Declaration files는 Angular 진단 없음
       if (sourceFile.isDeclarationFile) {

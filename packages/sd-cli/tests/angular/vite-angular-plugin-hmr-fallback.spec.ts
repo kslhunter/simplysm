@@ -1,31 +1,48 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
 import type { IncomingMessage, ServerResponse } from "http";
-import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
+import type { SdConfig } from "../../src/sd-config.types";
+import {
+  FIXTURE_DIR,
+  PKG_DIR,
+  createTestSdConfig,
+  initPlugin,
+} from "./_vite-angular-plugin-test-setup";
 
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
-const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
+const mockLoadSdConfig = vi.fn<(...args: unknown[]) => Promise<SdConfig>>();
+
+vi.mock("../../src/utils/sd-config", () => ({
+  loadSdConfig: (...args: unknown[]) => mockLoadSdConfig(...args),
+}));
+
+const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.js");
 
 describe("sdAngularPlugin CSS HMR compatibility", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(process, "cwd").mockReturnValue(FIXTURE_DIR);
+    mockLoadSdConfig.mockResolvedValue(createTestSdConfig());
+  });
+
   // Acceptance: CSS 파일 변경 시 sdAngularPlugin이 Vite default HMR에 위임한다
   it("returns undefined for .css file changes (delegates to Vite default CSS HMR)", async () => {
     const onBuildStart = vi.fn();
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
       onBuildStart,
       onBuild,
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // buildStart 완료 후 초기 빌드 결과 콜백 리셋
     onBuildStart.mockClear();
     onBuild.mockClear();
 
     const cssFilePath = path
-      .join(FIXTURE_DIR, "node_modules/@scope/lib/dist/style.css")
+      .join(PKG_DIR, "node_modules/@scope/lib/dist/style.css")
       .replace(/\\/g, "/");
 
     const hmrResult = await (plugin as any).handleHotUpdate?.({
@@ -51,13 +68,13 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
     const onBuildStart = vi.fn();
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
       onBuildStart,
       onBuild,
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // buildStart 완료 후 초기 빌드 결과 콜백 리셋
     onBuildStart.mockClear();
@@ -65,7 +82,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
 
     // .ts 파일은 Angular recompilation을 트리거한다 (대조군)
     const tsFilePath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     await (plugin as any).handleHotUpdate?.({
@@ -85,7 +102,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
 
     // .css 파일은 Angular recompilation을 트리거하지 않는다
     const cssFilePath = path
-      .join(FIXTURE_DIR, "node_modules/@scope/lib/dist/style.css")
+      .join(PKG_DIR, "node_modules/@scope/lib/dist/style.css")
       .replace(/\\/g, "/");
 
     await (plugin as any).handleHotUpdate?.({
@@ -107,12 +124,12 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
   it("returns undefined for various .css file paths", async () => {
     const onBuildStart = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
       onBuildStart,
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     const cssVariants = [
       "some/path/to/style.css",
@@ -143,20 +160,20 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
     const onBuildStart = vi.fn();
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
       onBuildStart,
       onBuild,
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // buildStart 완료 후 초기 빌드 결과 콜백 리셋
     onBuildStart.mockClear();
     onBuild.mockClear();
 
     const scssFilePath = path
-      .join(FIXTURE_DIR, "src/styles.scss")
+      .join(PKG_DIR, "src/styles.scss")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).handleHotUpdate?.({
@@ -179,17 +196,23 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
 });
 
 describe("sdAngularPlugin HMR fallback", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(process, "cwd").mockReturnValue(FIXTURE_DIR);
+    mockLoadSdConfig.mockResolvedValue(createTestSdConfig());
+  });
+
   // Acceptance: templateUpdates가 undefined일 때 (HMR 불가)
   // middleware에서 빈 응답 → Vite 기본 full module invalidation
   it("returns affected modules even when templateUpdates is undefined (fallback to full invalidation)", async () => {
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
       onBuild,
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // middleware 등록
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
@@ -206,7 +229,7 @@ describe("sdAngularPlugin HMR fallback", () => {
     (plugin as any).configureServer?.(mockServer);
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     // handleHotUpdate 호출
@@ -252,14 +275,14 @@ describe("sdAngularPlugin HMR fallback", () => {
   // Unit: prod 모드(dev: false)에서는 handleHotUpdate가 void 반환 (HMR 비활성)
   it("returns undefined from handleHotUpdate in prod mode", async () => {
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: false,
+      pkg: "basic-app",
+
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin, { mode: "production", command: "build" });
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     const hmrResult = await (plugin as any).handleHotUpdate?.({
@@ -280,14 +303,14 @@ describe("sdAngularPlugin HMR fallback", () => {
   // (Angular 컴파일러 내부에서 HMR 분석을 생략하고 templateUpdates=undefined 반환)
   it("handles update with many modified files gracefully (HMR skipped by compiler)", async () => {
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
+      pkg: "basic-app",
+
     });
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     // handleHotUpdate는 단일 파일에 대해 호출됨 (Vite 설계)

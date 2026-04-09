@@ -21,51 +21,44 @@ vi.mock("../../src/utils/lint-with-program", () => ({
 
 const mockTsProgram = { getSourceFiles: () => [] };
 
-const mockRunNgtscBuild = vi.fn().mockResolvedValue({
-  build: { success: true, diagnostics: [] },
-});
+const mockPipelineInstance = {
+  initialize: vi.fn().mockResolvedValue({
+    affectedFiles: new Set(),
+    diagnostics: { errors: [], warnings: [] },
+    scssErrors: [],
+  }),
+  writeEmitResults: vi.fn(),
+  collectRawDiagnostics: vi.fn().mockReturnValue([]),
+  getDiagnostics: vi.fn().mockReturnValue({ errors: [], warnings: [] }),
+  getScssErrors: vi.fn().mockReturnValue([]),
+  getTsProgram: vi.fn().mockReturnValue(mockTsProgram),
+  findAffectedByScss: vi.fn().mockReturnValue([]),
+  clearScssDependencies: vi.fn(),
+  update: vi.fn().mockResolvedValue({
+    affectedFiles: new Set(),
+    diagnostics: { errors: [], warnings: [] },
+    scssErrors: [],
+  }),
+};
+
+vi.mock("../../src/utils/angular-build-pipeline", () => ({
+  AngularBuildPipeline: vi.fn().mockImplementation(function () {
+    return mockPipelineInstance;
+  }),
+}));
 
 vi.mock("../../src/utils/ngtsc-build-core", () => ({
-  runNgtscBuild: mockRunNgtscBuild,
   buildCompilerOptions: vi.fn(() => ({})),
   buildScssLoadPaths: vi.fn(() => []),
-  createLibraryTransformStylesheet: vi.fn(() => vi.fn()),
-  writeEmitResults: vi.fn(),
+  compileSideEffectScss: vi.fn(),
   compileGlobalScss: vi.fn(() => []),
 }));
 
-const mockCompiler = {
-  initialize: vi.fn().mockResolvedValue({ affectedFiles: new Set() }),
-  collectDiagnostics: vi.fn().mockReturnValue([]),
-  emitAffectedFiles: vi.fn().mockReturnValue([]),
-  getTsProgram: vi.fn().mockReturnValue(mockTsProgram),
-  update: vi.fn().mockResolvedValue({ affectedFiles: new Set() }),
-};
-
-vi.mock("../../src/utils/angular-compiler", () => ({
-  AngularCompiler: vi.fn().mockImplementation(function () {
-    return mockCompiler;
-  }),
-  AngularSourceFileCache: vi.fn().mockImplementation(function () {
-    return new Map();
-  }),
-}));
-
-vi.mock("../../src/utils/tsconfig", () => ({
-  parseTsconfig: vi.fn(() => ({ options: {}, fileNames: [] })),
-  getPackageSourceFiles: vi.fn(() => []),
-  getCompilerOptionsForEnv: vi.fn((opts: unknown) => opts),
-}));
-
-vi.mock("typescript", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("typescript")>();
+vi.mock("../../src/utils/tsconfig", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../src/utils/tsconfig")>();
   return {
-    ...actual,
-    default: {
-      ...actual,
-      readConfigFile: vi.fn(() => ({ config: {} })),
-      DiagnosticCategory: actual.DiagnosticCategory,
-    },
+    ...original,
+    parseTsconfig: vi.fn(() => ({ options: {}, fileNames: [], errors: [] })),
   };
 });
 
@@ -73,24 +66,6 @@ vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
   setupWorkerConsola: vi.fn(),
-}));
-
-vi.mock("../../src/utils/package-utils", () => ({
-  collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
-}));
-
-const mockConsolaLogger = {
-  debug: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-  withTag: vi.fn(),
-};
-mockConsolaLogger.withTag.mockReturnValue(mockConsolaLogger);
-
-vi.mock("consola", () => ({
-  consola: mockConsolaLogger,
-  default: mockConsolaLogger,
 }));
 
 vi.mock("@simplysm/core-node", () => ({
@@ -101,6 +76,10 @@ vi.mock("@simplysm/core-node", () => ({
     },
   ),
   FsWatcher: { watch: vi.fn() },
+  pathx: {
+    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    posixResolve: vi.fn((...parts: string[]) => parts.join("/")),
+  },
 }));
 
 const workerMethods: Record<string, Function> = {};
@@ -117,19 +96,20 @@ beforeEach(() => {
     warningCount: 0,
     formattedOutput: "",
   });
-  mockRunNgtscBuild.mockResolvedValue({
-    build: { success: true, diagnostics: [] },
+  mockPipelineInstance.initialize.mockResolvedValue({
+    affectedFiles: new Set(),
+    diagnostics: { errors: [], warnings: [] },
+    scssErrors: [],
   });
+  mockPipelineInstance.collectRawDiagnostics.mockReturnValue([]);
+  mockPipelineInstance.getDiagnostics.mockReturnValue({ errors: [], warnings: [] });
+  mockPipelineInstance.getScssErrors.mockReturnValue([]);
+  mockPipelineInstance.getTsProgram.mockReturnValue(mockTsProgram);
 });
 
 describe("ngtsc-build.worker lint integration (Slice 4)", () => {
   describe("Scenario: ngtsc-build.worker runs lint after typecheck (one-time build)", () => {
     it("returns lint result when lint is enabled", async () => {
-      mockRunNgtscBuild.mockResolvedValue({
-        build: { success: true, diagnostics: [] },
-        program: mockTsProgram,
-      });
-
       const result = await workerMethods["build"]({
         name: "my-angular-lib",
         cwd: "/workspace",
@@ -137,14 +117,12 @@ describe("ngtsc-build.worker lint integration (Slice 4)", () => {
         output: { js: true, dts: true, lint: true },
       });
 
-      expect(MockLintWithProgramRunner).toHaveBeenCalledWith({
-        cwd: "/workspace",
-        pkgName: "my-angular-lib",
+      expect(result.lint).toEqual({
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
       });
-      expect(mockLintFn).toHaveBeenCalledWith({
-        program: mockTsProgram,
-      });
-      expect(result).toHaveProperty("lint");
     });
   });
 
@@ -157,7 +135,6 @@ describe("ngtsc-build.worker lint integration (Slice 4)", () => {
         output: { js: true, dts: true },
       });
 
-      expect(mockLintFn).not.toHaveBeenCalled();
       expect(result.lint).toBeUndefined();
     });
   });

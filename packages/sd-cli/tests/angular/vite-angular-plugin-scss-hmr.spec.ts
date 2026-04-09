@@ -1,9 +1,20 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import path from "path";
-import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
+import type { SdConfig } from "../../src/sd-config.types";
+import {
+  FIXTURE_DIR,
+  PKG_DIR,
+  createTestSdConfig,
+  initPlugin,
+} from "./_vite-angular-plugin-test-setup";
 
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
-const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
+const mockLoadSdConfig = vi.fn<(...args: unknown[]) => Promise<SdConfig>>();
+
+vi.mock("../../src/utils/sd-config", () => ({
+  loadSdConfig: (...args: unknown[]) => mockLoadSdConfig(...args),
+}));
+
+const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.js");
 
 function mockServerWithModuleGraph() {
   return {
@@ -19,8 +30,10 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
   let plugin: ReturnType<typeof sdAngularPlugin>;
 
   beforeAll(async () => {
-    plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    vi.spyOn(process, "cwd").mockReturnValue(FIXTURE_DIR);
+    mockLoadSdConfig.mockResolvedValue(createTestSdConfig());
+    plugin = sdAngularPlugin({ pkg: "basic-app" });
+    await initPlugin(plugin);
   });
 
   afterAll(async () => {
@@ -30,7 +43,7 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
   // Acceptance: inline styles의 직접 @use 의존성 변경 시 재컴파일
   it("recompiles when inline SCSS @use dependency changes", async () => {
     const variablesPath = path
-      .join(FIXTURE_DIR, "scss/_variables.scss")
+      .join(PKG_DIR, "scss/_variables.scss")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).handleHotUpdate?.({
@@ -48,7 +61,7 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
   // Acceptance: inline styles의 간접 @use 의존성 변경 시 재컴파일 (체이닝)
   it("recompiles when chained @use dependency changes", async () => {
     const colorsPath = path
-      .join(FIXTURE_DIR, "scss/_colors.scss")
+      .join(PKG_DIR, "scss/_colors.scss")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).handleHotUpdate?.({
@@ -66,7 +79,7 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
   // Acceptance: 무관한 SCSS 변경 시 재빌드하지 않음
   it("does not recompile when unrelated SCSS changes", async () => {
     const unrelatedPath = path
-      .join(FIXTURE_DIR, "scss/_unrelated.scss")
+      .join(PKG_DIR, "scss/_unrelated.scss")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).handleHotUpdate?.({

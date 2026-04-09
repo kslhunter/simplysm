@@ -475,12 +475,11 @@ DDL 타입 문자열 목록.
 
 ```typescript
 export const DDL_TYPES = [
-  "switchFk", "clearSchema", "createTable", "dropTable", "renameTable", "truncate",
+  "clearSchema", "createTable", "dropTable", "renameTable", "truncate",
   "addColumn", "dropColumn", "modifyColumn", "renameColumn",
   "dropPrimaryKey", "addPrimaryKey", "addForeignKey", "dropForeignKey", "addIndex", "dropIndex",
   "createView", "dropView", "createProc", "dropProc",
-  "schemaExists",
-] as const;
+] as const satisfies readonly DdlQueryDef["type"][];
 ```
 
 ## `DdlType`

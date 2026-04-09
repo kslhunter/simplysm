@@ -1,26 +1,43 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
-import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
+import type { SdConfig } from "../../src/sd-config.types";
+import {
+  FIXTURE_DIR,
+  PKG_DIR,
+  createTestSdConfig,
+  initPlugin,
+} from "./_vite-angular-plugin-test-setup";
 
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
-const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
+const mockLoadSdConfig = vi.fn<(...args: unknown[]) => Promise<SdConfig>>();
+
+vi.mock("../../src/utils/sd-config", () => ({
+  loadSdConfig: (...args: unknown[]) => mockLoadSdConfig(...args),
+}));
+
+const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.js");
 
 describe("sdAngularPlugin legacy watch rebuild", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(process, "cwd").mockReturnValue(FIXTURE_DIR);
+    mockLoadSdConfig.mockResolvedValue(
+      createTestSdConfig({ browserSupport: { legacyModule: true } }),
+    );
+  });
+
   // Acceptance: 재빌드 시 변경 파일의 캐시가 무효화되고 증분 컴파일된다
   it("invalidates cache and produces updated output on watch rebuild", async () => {
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
-      legacyModule: true,
+      pkg: "basic-app",
       onBuild,
     });
 
     // 초기 빌드
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     // 초기 transform 결과 캡처
@@ -54,17 +71,15 @@ describe("sdAngularPlugin legacy watch rebuild", () => {
   it("performs full compilation on first buildStart", async () => {
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
-      legacyModule: true,
+      pkg: "basic-app",
       onBuild,
     });
 
     // watchChange 없이 첫 buildStart
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).transform?.call({}, "", appComponentPath);
@@ -83,20 +98,18 @@ describe("sdAngularPlugin legacy watch rebuild", () => {
   it("handles buildStart re-invocation without watchChange gracefully", async () => {
     const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
-      tsconfig: TSCONFIG_PATH,
-      dev: true,
-      legacyModule: true,
+      pkg: "basic-app",
       onBuild,
     });
 
     // 초기 빌드
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // watchChange 없이 재빌드 (예: Rolldown이 변경 없이 재빌드 트리거)
     await (plugin as any).buildStart?.call({});
 
     const appComponentPath = path
-      .join(FIXTURE_DIR, "src/app.component.ts")
+      .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
     const result = await (plugin as any).transform?.call({}, "", appComponentPath);

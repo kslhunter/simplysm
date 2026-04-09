@@ -1,4 +1,3 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 //#region Mocks
@@ -8,18 +7,18 @@ const mockFsxRead = vi.fn();
 const mockFsxWrite = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn();
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    glob: mockFsxGlob,
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      glob: mockFsxGlob,
+    },
+  };
+});
 
 //#endregion
 

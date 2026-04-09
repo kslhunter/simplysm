@@ -101,14 +101,19 @@ export function parseTsconfig(dir: string): ts.ParsedCommandLine {
 
 /**
  * 패키지에서 소스 파일(src/ 하위)을 파싱된 tsconfig 기준으로 필터링하여 반환한다.
+ * includeFixtures 옵션 사용 시 *.fixture.ts 파일도 포함한다.
  */
 export function getPackageSourceFiles(
   pkgDir: string,
   parsedConfig: ts.ParsedCommandLine,
 ): string[] {
   const srcDir = path.join(pkgDir, "src");
-  const files = parsedConfig.fileNames.filter((f) => pathx.isChildPath(f, srcDir));
-  logger.debug(`소스 파일 필터링: ${parsedConfig.fileNames.length}개 중 ${files.length}개 (src/ 하위)`);
+  const files = parsedConfig.fileNames.filter((f) => {
+    if (pathx.isChildPath(f, srcDir)) return true;
+    if (f.endsWith(".fixture.ts")) return true;
+    return false;
+  });
+  logger.debug(`소스 파일 필터링: ${parsedConfig.fileNames.length}개 중 ${files.length}개 (src/ + fixtures)`);
   return files;
 }
 

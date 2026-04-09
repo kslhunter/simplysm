@@ -2,16 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mock factories (vi.mock is hoisted) ---
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    })),
-  },
-}));
-
 const mockWorker = {
   build: vi.fn(),
   startWatch: vi.fn(),
@@ -31,7 +21,8 @@ vi.mock("@simplysm/core-node", () => ({
 const { TscEngine } = await import("../../src/engines/TscEngine");
 const { BaseEngine } = await import("../../src/engines/BaseEngine");
 
-import type { BuildPackageInfo } from "../../src/engines/types";
+import type { BuildPackageInfo, BuildOutput } from "../../src/engines/types";
+import type { BuildResult } from "../../src/infra/ResultCollector";
 
 // --- Helpers ---
 
@@ -95,24 +86,6 @@ describe("BaseEngine", () => {
   });
 
   describe("shared startWatch() event handling", () => {
-    it("registers buildStart, build, error event handlers", async () => {
-      mockWorker.startWatch.mockImplementation(() => {
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({ build: { success: true } });
-      });
-
-      const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
-      await engine.startWatch({ js: true, dts: true });
-
-      expect(mockWorker.on).toHaveBeenCalledWith("buildStart", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("build", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("error", expect.any(Function));
-
-      await engine.stop();
-    });
-
     it("reports build result to ResultCollector", async () => {
       const mockResultCollector = { add: vi.fn() };
 
@@ -324,6 +297,141 @@ describe("BaseEngine", () => {
       expect(addCalls[0][0].target).toBe("browser");
 
       await engine.stop();
+    });
+  });
+
+  describe("lint 통합", () => {
+    describe("BuildOutput.lint flag controls lint execution", () => {
+      it("BuildOutput이 lint 불리언 플래그를 수용", () => {
+        const output: BuildOutput = { js: true, dts: true, lint: true };
+        expect(output.lint).toBe(true);
+      });
+
+      it("BuildOutput.lint는 미설정 시 undefined가 기본값", () => {
+        const output: BuildOutput = { js: true, dts: true };
+        expect(output.lint).toBeUndefined();
+      });
+    });
+
+    describe("EngineResult includes lint field", () => {
+      it("run() returns EngineResult with lint field when worker provides it", async () => {
+        mockWorker.build.mockResolvedValue({
+          build: { success: true, diagnostics: [] },
+          lint: {
+            success: false,
+            errorCount: 3,
+            warningCount: 1,
+            formattedOutput: "lint errors",
+          },
+        });
+
+        const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: true, lint: true });
+
+        expect(result.lint).toEqual({
+          success: false,
+          errorCount: 3,
+          warningCount: 1,
+          formattedOutput: "lint errors",
+        });
+
+        await engine.stop();
+      });
+
+      it("run() returns EngineResult without lint when lint is not in output", async () => {
+        mockWorker.build.mockResolvedValue({
+          build: { success: true, diagnostics: [] },
+        });
+
+        const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: true });
+
+        expect(result.lint).toBeUndefined();
+
+        await engine.stop();
+      });
+    });
+
+    describe("BaseEngine.startWatch reports lint BuildResult", () => {
+      it("adds lint BuildResult to ResultCollector when build event has lint", async () => {
+        const mockResultCollector = { add: vi.fn() };
+
+        mockWorker.startWatch.mockImplementation(() => {
+          const buildHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "build",
+          )?.[1];
+          buildHandler?.({
+            build: { success: true },
+            lint: {
+              success: false,
+              errorCount: 2,
+              warningCount: 0,
+              formattedOutput: "errors",
+            },
+          });
+        });
+
+        const engine = new TscEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: true, lint: true });
+
+        const lintResult = mockResultCollector.add.mock.calls.find(
+          (c: any[]) => c[0].type === "lint",
+        );
+        expect(lintResult).toBeDefined();
+        expect(lintResult![0]).toMatchObject({
+          name: "test-pkg",
+          type: "lint",
+          status: "error",
+          message: "errors",
+        });
+
+        await engine.stop();
+      });
+
+      it("does not add lint BuildResult when build event has no lint field", async () => {
+        const mockResultCollector = { add: vi.fn() };
+
+        mockWorker.startWatch.mockImplementation(() => {
+          const buildHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "build",
+          )?.[1];
+          buildHandler?.({
+            build: { success: true },
+          });
+        });
+
+        const engine = new TscEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: true });
+
+        const lintResult = mockResultCollector.add.mock.calls.find(
+          (c: any[]) => c[0].type === "lint",
+        );
+        expect(lintResult).toBeUndefined();
+
+        await engine.stop();
+      });
+    });
+
+    describe("ResultCollector supports lint type", () => {
+      it("BuildResult 타입에 lint 포함", () => {
+        const lintResult: BuildResult = {
+          name: "test-pkg",
+          target: "node",
+          type: "lint",
+          status: "success",
+        };
+        expect(lintResult.type).toBe("lint");
+      });
     });
   });
 });

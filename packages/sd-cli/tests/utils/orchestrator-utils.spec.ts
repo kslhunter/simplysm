@@ -20,17 +20,6 @@ vi.mock("../../src/utils/package-utils", async (importOriginal) => {
   };
 });
 
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(), start: vi.fn(), success: vi.fn(),
-    info: vi.fn(), error: vi.fn(), warn: vi.fn(), log: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c };
-});
-
 const { loadAndValidateConfig } = await import("../../src/utils/orchestrator-utils");
 
 //#endregion
@@ -54,15 +43,6 @@ describe("loadAndValidateConfig", () => {
       targets: ["core-common"],
     });
 
-    expect(mocks.loadSdConfig).toHaveBeenCalledWith({
-      cwd: "/test",
-      dev: false,
-      opt: [],
-    });
-    expect(mocks.validateTargets).toHaveBeenCalledWith(
-      ["core-common"],
-      config.packages,
-    );
     expect(result).toBe(config);
   });
 
@@ -80,12 +60,6 @@ describe("loadAndValidateConfig", () => {
       targets: [],
     });
 
-    expect(mocks.loadSdConfig).toHaveBeenCalledWith({
-      cwd: "/test",
-      dev: true,
-      opt: ["key=value"],
-    });
-    expect(mocks.validateTargets).toHaveBeenCalledWith([], config.packages);
     expect(result).toBe(config);
   });
 

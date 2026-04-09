@@ -193,11 +193,7 @@ npm install @simplysm/angular
 |-----|------|-------------|
 | `SdDockContainer` | component | 도킹 레이아웃 컨테이너 |
 | `SdDock` | component | 도킹 영역 (top/bottom/left/right) |
-| `SdPane` | directive | 스크롤 가능 패널 |
 | `SdGap` | component | 간격 (gap) 컴포넌트 |
-| `SdView` | component | 탭 뷰 전환 래퍼 |
-| `SdViewItem` | component | 탭 뷰 항목 |
-| `SdCard` | directive | 카드 스타일 디렉티브 |
 | `SdKanbanBoard` | component | 칸반 보드 (드래그앤드롭) |
 | `SdKanbanBoardDropInfo` | interface | 칸반 보드 드롭 이벤트 정보 |
 | `SdKanbanDragRef` | interface | 칸반 드래그 참조 인터페이스 |
@@ -242,8 +238,6 @@ npm install @simplysm/angular
 | `SdCollapseIcon` | component | 접기/펼치기 아이콘 |
 | `SdTab` | component | 탭 컨테이너 |
 | `SdTabItem` | component | 탭 항목 |
-| `SdTabview` | component | 탭뷰 (탭 + 컨텐츠) |
-| `SdTabviewItem` | component | 탭뷰 항목 |
 | `SdPagination` | component | 페이지네이션 |
 | `SdSidebarContainer` | component | 사이드바 컨테이너 |
 | `SdSidebar` | component | 사이드바 |
@@ -320,6 +314,28 @@ npm install @simplysm/angular
 | `.sd-theme-dark` | theme class | 다크 모드 테마 |
 
 -> See [docs/styling.md](./docs/styling.md) for details.
+
+## 컴포넌트 비동기 초기화 규칙
+
+컴포넌트에서 비동기 초기화가 필요한 경우 `async ngOnInit()`을 사용한다.
+
+```typescript
+export class SomePage implements OnInit {
+  busyCount = signal(0);
+
+  async ngOnInit() {
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      // 비동기 초기화 로직
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+}
+```
+
+- constructor 내 `void (async () => { ... })()` IIFE 패턴 **금지**
+- constructor 내 `void this._init()` 같은 수동 호출 패턴 **금지** — ngOnInit이 이미 같은 역할
+- `resource()` / `httpResource()`는 데이터 로딩 → signal 매핑 용도. 사이드이펙트(라우팅, toast 등) 포함 초기화에는 사용하지 않는다
 
 ## Usage Examples
 
@@ -412,3 +428,4 @@ const result = await sdToast.try(async () => {
   return await someAsyncWork();
 });
 ```
+

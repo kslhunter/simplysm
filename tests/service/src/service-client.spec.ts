@@ -21,7 +21,7 @@ async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
 }
 
 /** 테스트 이벤트 */
-const TestEvent = defineEvent<{ channel: string }, string>("TestEvent");
+const _TestEvent = defineEvent<{ channel: string }, string>("TestEvent");
 
 describe("ServiceClient 브라우저 테스트", () => {
   let client: ServiceClient;
@@ -190,7 +190,7 @@ describe("ServiceClient 브라우저 테스트", () => {
 
       // 이벤트 수신 콜백
       const receivedData: string[] = [];
-      const listenerKey = await client.addListener<typeof TestEvent>(
+      const listenerKey = await client.addListener<typeof _TestEvent>(
         "TestEvent",
         { channel: "test-channel" },
         (data) => {

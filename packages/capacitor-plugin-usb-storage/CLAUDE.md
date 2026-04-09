@@ -40,6 +40,9 @@ android/
 // 1. 플러그인 인터페이스 (UsbStoragePlugin.ts)
 export interface UsbStoragePlugin {
   getDevices(): Promise<{ devices: UsbDeviceInfo[] }>;
+  requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
+  checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>;
+  readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>;
   readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>;
 }
 
@@ -52,17 +55,17 @@ const usbStoragePlugin = registerPlugin<UsbStoragePlugin>("UsbStorage", {
 });
 
 export abstract class UsbStorage {
-  static async readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
-    const result = await usbStoragePlugin.readFile({ ...filter, path: filePath });
-    if (result.data == null) return undefined;
-    return bytes.fromBase64(result.data);
-  }
+  static async getDevices(): Promise<UsbDeviceInfo[]>;
+  static async requestPermissions(filter: UsbDeviceFilter): Promise<boolean>;
+  static async checkPermissions(filter: UsbDeviceFilter): Promise<boolean>;
+  static async readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]>;
+  static async readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined>;
 }
 ```
 
 ### UsbDeviceFilter 패턴
 
-모든 장치 접근 메서드는 `UsbDeviceFilter`(`vendorId` + `productId`)를 첫 번째 파라미터로 받는다. 플러그인 레벨로 전달할 때는 스프레드(`...filter`)로 병합한다.
+모든 장치 접근 메서드는 `UsbDeviceFilter`(`vendorId` + `productId`)를 첫 번째 파라미터로 받는다. 경로가 필요한 메서드(`readdir`, `readFile`)는 플러그인 레벨로 전달할 때 스프레드(`...filter`)로 병합한다. 경로가 없는 메서드(`requestPermissions`, `checkPermissions`)는 필터를 그대로 전달한다.
 
 ```typescript
 static async readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]> {
@@ -104,8 +107,10 @@ IndexedDB 데이터베이스명은 `"capacitor_usb_virtual_storage"`이며, `"de
 - 라이브러리: `libaums` (USB Mass Storage 접근)
 - 권한: USB 장치 접근 권한은 `vendorId`/`productId` 기준으로 요청하며, Android UsbManager를 통해 관리된다. Android 12+(API 31+)에서는 `PendingIntent.FLAG_MUTABLE`, Android 13+(API 33+)에서는 `RECEIVER_NOT_EXPORTED` 플래그를 사용한다.
 - `getDevices()`: 연결된 USB Mass Storage 장치 목록을 반환한다.
-- `readFile()`: 파일 데이터를 Base64로 인코딩하여 반환한다. 파일이 없으면 `{ data: null }`을 반환한다. 최대 파일 크기는 100MB이다.
+- `requestPermissions()`: USB 장치 접근 권한을 요청한다. `vendorId`/`productId`로 장치를 식별한다.
+- `checkPermissions()`: USB 장치 접근 권한 보유 여부를 확인한다.
 - `readdir()`: 디렉토리가 존재하지 않으면 reject한다.
+- `readFile()`: 파일 데이터를 Base64로 인코딩하여 반환한다. 파일이 없으면 `{ data: null }`을 반환한다. 최대 파일 크기는 100MB이다.
 
 ## 컴파일러 설정 (패키지 고유)
 

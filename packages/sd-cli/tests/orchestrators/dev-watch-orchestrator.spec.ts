@@ -2,19 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mock factories (vi.mock is hoisted) ---
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      start: vi.fn(),
-      success: vi.fn(),
-    })),
-  },
-}));
-
 vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: vi.fn(),
 }));
@@ -23,42 +10,18 @@ vi.mock("../../src/utils/build-env", () => ({
   getVersion: vi.fn(),
 }));
 
-vi.mock("../../src/utils/package-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/package-utils")>();
-  return {
-    ...actual,
-    filterPackagesByTargets: vi.fn(),
-    validateTargets: vi.fn(),
-    buildPathMapFromConfig: vi.fn(),
-  };
-});
-
 vi.mock("../../src/utils/replace-deps", () => ({
   watchReplaceDeps: vi.fn(),
 }));
 
-vi.mock("../../src/utils/output-utils", () => ({
-  printErrors: vi.fn(),
-  printServers: vi.fn(),
-}));
-
-vi.mock("../../src/utils/rebuild-manager", () => ({
-  RebuildManager: vi.fn().mockImplementation(function (this: any) {
-    this.on = vi.fn();
-    this.registerBuild = vi.fn().mockReturnValue(vi.fn());
-  }),
-}));
-
-vi.mock("../../src/infra/ResultCollector", () => ({
-  ResultCollector: vi.fn().mockImplementation(function (this: any) {
-    const store = new Map<string, any>();
-    this.add = vi.fn((result: any) => {
-      store.set(`${result.name}:${result.type}`, result);
-    });
-    this.get = vi.fn((key: string) => store.get(key));
-    this.toMap = vi.fn(() => new Map(store));
-  }),
-}));
+vi.mock("../../src/utils/output-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/utils/output-utils")>();
+  return {
+    ...actual,
+    printErrors: vi.fn(),
+    printServers: vi.fn(),
+  };
+});
 
 vi.mock("../../src/infra/SignalHandler", () => ({
   SignalHandler: vi.fn().mockImplementation(function (this: any) {
@@ -74,12 +37,6 @@ vi.mock("../../src/utils/copy-src", () => ({
   }),
 }));
 
-vi.mock("@simplysm/core-common", () => ({
-  err: {
-    message: vi.fn((e: any) => (e instanceof Error ? e.message : String(e))),
-  },
-}));
-
 // Engine mock — tracks created engines and the package they were created for
 const mockBuildEngines: Array<{
   run: ReturnType<typeof vi.fn>;
@@ -89,13 +46,25 @@ const mockBuildEngines: Array<{
 }> = [];
 
 vi.mock("../../src/engines/index", () => ({
-  createBuildEngine: vi.fn((pkg: any, _options: any) => {
+  createBuildEngine: vi.fn((pkg: any, options: any) => {
     const engine = {
       run: vi.fn().mockResolvedValue({
         success: true,
         build: { success: true, errors: [], warnings: [], diagnostics: [] },
       }),
-      startWatch: vi.fn().mockResolvedValue(undefined),
+      startWatch: vi.fn().mockImplementation(() => {
+        const resolve = options.rebuildManager.registerBuild(
+          `${pkg.name}:build`,
+          `${pkg.name} (${pkg.config.target})`,
+        );
+        options.resultCollector.add({
+          name: pkg.name,
+          target: pkg.config.target,
+          type: "build",
+          status: "success",
+        });
+        resolve();
+      }),
       stop: vi.fn().mockResolvedValue(undefined),
       _pkgName: pkg.name,
     };
@@ -160,12 +129,9 @@ vi.mock("../../src/electron/electron", () => ({
 
 const { DevWatchOrchestrator } = await import("../../src/orchestrators/DevWatchOrchestrator");
 const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { filterPackagesByTargets, validateTargets, buildPathMapFromConfig } = await import("../../src/utils/package-utils");
 const { watchReplaceDeps } = await import("../../src/utils/replace-deps");
 const { printErrors, printServers: _printServers } = await import("../../src/utils/output-utils");
 const { createBuildEngine } = await import("../../src/engines/index");
-const { ResultCollector } = await import("../../src/infra/ResultCollector");
-const { RebuildManager } = await import("../../src/utils/rebuild-manager");
 const { watchCopySrcFiles } = await import("../../src/utils/copy-src");
 const { FsWatcher, Worker } = await import("@simplysm/core-node");
 const { spawn } = await import("child_process");
@@ -175,7 +141,6 @@ const { Capacitor } = await import("../../src/capacitor/capacitor");
 const { Electron } = await import("../../src/electron/electron");
 
 import type { SdConfig } from "../../src/sd-config.types";
-
 
 // --- Runtime worker mock helper ---
 
@@ -202,6 +167,10 @@ function createMockRuntimeProxy(): MockRuntimeProxy {
 
 let mockRuntimeProxies: MockRuntimeProxy[];
 
+// Capture infra objects from engine options for tests that need direct access
+let capturedRebuildManager: any;
+let capturedResultCollector: any;
+
 // --- Helpers ---
 
 function createConfig(overrides: Partial<SdConfig> = {}): SdConfig {
@@ -210,20 +179,6 @@ function createConfig(overrides: Partial<SdConfig> = {}): SdConfig {
 
 function setupDefaults(config: SdConfig): void {
   vi.mocked(loadSdConfig).mockResolvedValue(config);
-  vi.mocked(buildPathMapFromConfig).mockImplementation((configPackages) => {
-    const pathMap = new Map<string, string>();
-    for (const name of Object.keys(configPackages)) {
-      pathMap.set(name, `packages/${name}`);
-    }
-    return pathMap;
-  });
-  vi.mocked(filterPackagesByTargets).mockImplementation((pkgs) => {
-    const result: Record<string, any> = {};
-    for (const [k, v] of Object.entries(pkgs)) {
-      if (v != null) result[k] = v;
-    }
-    return result;
-  });
   vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: vi.fn() });
   vi.mocked(getVersion).mockResolvedValue("1.0.0");
 }
@@ -235,6 +190,8 @@ describe("DevWatchOrchestrator", () => {
     vi.clearAllMocks();
     mockBuildEngines.length = 0;
     mockRuntimeProxies = [];
+    capturedRebuildManager = undefined;
+    capturedResultCollector = undefined;
     vi.spyOn(process, "cwd").mockReturnValue("/test-root");
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     vi.mocked(Worker.create).mockImplementation(() => {
@@ -252,14 +209,27 @@ describe("DevWatchOrchestrator", () => {
     vi.mocked(Capacitor.create).mockResolvedValue(mockCapacitorInstance as any);
     vi.mocked(Electron.create).mockResolvedValue(mockElectronInstance as any);
     // Restore default mock implementations that may have been overridden
-    vi.mocked(validateTargets).mockImplementation(() => {});
-    vi.mocked(createBuildEngine).mockImplementation((pkg: any, _options: any) => {
+    vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+      capturedRebuildManager = options.rebuildManager;
+      capturedResultCollector = options.resultCollector;
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: true,
           build: { success: true, errors: [], warnings: [], diagnostics: [] },
         }),
-        startWatch: vi.fn().mockResolvedValue(undefined),
+        startWatch: vi.fn().mockImplementation(() => {
+          const resolve = options.rebuildManager.registerBuild(
+            `${pkg.name}:build`,
+            `${pkg.name} (${pkg.config.target})`,
+          );
+          options.resultCollector.add({
+            name: pkg.name,
+            target: pkg.config.target,
+            type: "build",
+            status: "success",
+          });
+          resolve();
+        }),
         stop: vi.fn().mockResolvedValue(undefined),
         _pkgName: pkg.name,
       };
@@ -279,7 +249,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).toHaveBeenCalledTimes(2);
+      expect(mockBuildEngines).toHaveLength(2);
     });
 
     it("does not create BuildEngine for server packages in watch mode", async () => {
@@ -290,7 +260,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).not.toHaveBeenCalled();
+      expect(mockBuildEngines).toHaveLength(0);
     });
 
     it("outputs warning when no watchable packages exist", async () => {
@@ -301,7 +271,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).not.toHaveBeenCalled();
+      expect(mockBuildEngines).toHaveLength(0);
     });
 
     // --- Acceptance: Scenario 1 — watch 모드는 Library + Scripts만 대상 (server 제외) ---
@@ -319,11 +289,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Library only = 1 engine (server excluded)
-      expect(createBuildEngine).toHaveBeenCalledTimes(1);
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "core-common" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("core-common");
 
       // Library engine: startWatch with js+dts
       const libraryEngine = mockBuildEngines.find((e) => e._pkgName === "core-common")!;
@@ -334,19 +301,18 @@ describe("DevWatchOrchestrator", () => {
     });
 
     // --- Acceptance: Scenario 2 — 통합 Orchestrator가 공통 인프라를 사용한다 ---
-    it("creates ResultCollector, RebuildManager, SignalHandler on initialize", async () => {
+    it("uses ResultCollector and RebuildManager for build lifecycle", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
       }));
 
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
+      await orchestrator.start();
 
-      expect(ResultCollector).toHaveBeenCalledTimes(1);
-      expect(RebuildManager).toHaveBeenCalledTimes(1);
-
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      expect(rebuildInstance.on).toHaveBeenCalledWith("batchComplete", expect.any(Function));
+      // 실제 인프라가 동작하여 batchComplete 후 printErrors가 호출됨
+      await new Promise((r) => setTimeout(r, 50));
+      expect(printErrors).toHaveBeenCalled();
     });
 
     // --- Acceptance: Scenario 3 — Library 패키지 watch ---
@@ -382,11 +348,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Only library engine created, no server engine
-      expect(createBuildEngine).toHaveBeenCalledTimes(1);
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "core-common" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("core-common");
       expect(Worker.create).not.toHaveBeenCalled();
     });
 
@@ -482,7 +445,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Build engine created and started
-      expect(createBuildEngine).toHaveBeenCalledTimes(1);
+      expect(mockBuildEngines).toHaveLength(1);
       const libraryEngine = mockBuildEngines.find((e) => e._pkgName === "core-common")!;
       expect(libraryEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
 
@@ -501,7 +464,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Build engine created
-      expect(createBuildEngine).toHaveBeenCalledTimes(1);
+      expect(mockBuildEngines).toHaveLength(1);
       // No hook
       expect(spawn).not.toHaveBeenCalled();
     });
@@ -570,15 +533,12 @@ describe("DevWatchOrchestrator", () => {
 
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
+      await orchestrator.start();
 
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-
-      vi.mocked(printErrors).mockClear();
-      batchHandler?.(["test:build"]);
-
-      expect(printErrors).toHaveBeenCalledOnce();
+      // engine의 startWatch가 registerBuild + resolve를 호출 → batchComplete 자연 발생
+      // microtask 대기 (RebuildManager 내부 Promise.resolve().then 처리)
+      await new Promise((r) => setTimeout(r, 50));
+      expect(printErrors).toHaveBeenCalled();
     });
 
     // --- awaitTermination ---
@@ -600,7 +560,7 @@ describe("DevWatchOrchestrator", () => {
 
     // --- targets filter ---
 
-    it("passes targets to filterPackagesByTargets", async () => {
+    it("filters packages by targets so only targeted packages get engines", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" }, "storage": { target: "node" } },
       }));
@@ -608,10 +568,9 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: ["core-common"], options: [] });
       await orchestrator.initialize();
 
-      expect(filterPackagesByTargets).toHaveBeenCalledWith(
-        expect.objectContaining({ "core-common": { target: "node" } }),
-        ["core-common"],
-      );
+      // 실제 filterPackagesByTargets가 동작하여 core-common만 엔진 생성
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("core-common");
     });
   });
 
@@ -619,12 +578,19 @@ describe("DevWatchOrchestrator", () => {
     // Helper: override engine mock to add build result to resultCollector
     function setupEngineWithResult(status: "success" | "error" = "success"): void {
       vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+        capturedRebuildManager = options.rebuildManager;
+      capturedResultCollector = options.resultCollector;
         const engine = {
           run: vi.fn().mockResolvedValue({ success: true, build: { success: true, errors: [], warnings: [], diagnostics: [] } }),
           startWatch: vi.fn().mockImplementation(() => {
-            options.resultCollector?.add({
-              name: pkg.name, target: "server", type: "build", status,
+            const resolve = options.rebuildManager.registerBuild(
+              `${pkg.name}:build`,
+              `${pkg.name} (${pkg.config.target})`,
+            );
+            options.resultCollector.add({
+              name: pkg.name, target: pkg.config.target, type: "build", status,
             });
+            resolve();
           }),
           stop: vi.fn().mockResolvedValue(undefined),
           _pkgName: pkg.name,
@@ -645,11 +611,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(createBuildEngine).toHaveBeenCalledOnce();
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "service-server" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("service-server");
       expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
       // Runtime starts during start() after all engines ready
       expect(Worker.create).toHaveBeenCalled();
@@ -669,13 +632,11 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({
-          config: expect.objectContaining({
-            env: expect.objectContaining({ VER: "1.0.0", DEV: "true", DB_HOST: "localhost" }),
-          }),
-        }),
-        expect.any(Object),
+      const serverCall = vi.mocked(createBuildEngine).mock.calls.find(
+        (c: any[]) => c[0].name === "service-server",
+      );
+      expect((serverCall![0] as any).config.env).toEqual(
+        expect.objectContaining({ VER: "1.0.0", DEV: "true", DB_HOST: "localhost" }),
       );
     });
 
@@ -709,11 +670,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Only server engine created
-      expect(createBuildEngine).toHaveBeenCalledOnce();
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "service-server" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("service-server");
     });
 
     // --- Acceptance: client target 패키지를 분류한다 ---
@@ -730,11 +688,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
 
       // Server + Client engines created
-      expect(createBuildEngine).toHaveBeenCalledTimes(2);
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "my-client" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(2);
+      expect(mockBuildEngines.find((e) => e._pkgName === "my-client")).toBeDefined();
     });
 
     // --- Acceptance: server가 string이고 해당 서버가 dev 대상 → 서버 연결 클라이언트 ---
@@ -770,10 +725,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
 
       // Client engine still created
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "my-client" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines.find((e) => e._pkgName === "my-client")).toBeDefined();
       // Warning about non-target server
       expect(process.stdout.write).toHaveBeenCalledWith(
         expect.stringContaining("non-existent-server"),
@@ -793,11 +745,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(createBuildEngine).toHaveBeenCalledOnce();
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "service-server" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("service-server");
     });
 
     // --- Unit: server가 number인 경우 독립 클라이언트 ---
@@ -812,10 +761,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "standalone" }),
-        expect.any(Object),
-      );
+      expect(mockBuildEngines.find((e) => e._pkgName === "standalone")).toBeDefined();
     });
 
     // --- Unit: client only (no server) still initializes ---
@@ -830,7 +776,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).toHaveBeenCalledOnce();
+      expect(mockBuildEngines).toHaveLength(1);
     });
 
     // --- Acceptance: Server batchComplete 시 runtime 시작 ---
@@ -893,7 +839,7 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(createBuildEngine).not.toHaveBeenCalled();
+      expect(mockBuildEngines).toHaveLength(0);
     });
 
     // Unit: multiple server packages
@@ -910,7 +856,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(createBuildEngine).toHaveBeenCalledTimes(2);
+      expect(mockBuildEngines).toHaveLength(2);
       // Runtimes start during start() after all engines ready
       expect(Worker.create).toHaveBeenCalledTimes(2);
     });
@@ -925,7 +871,7 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      expect(createBuildEngine).not.toHaveBeenCalled();
+      expect(mockBuildEngines).toHaveLength(0);
     });
 
     // Unit: disposes replaceDeps on dev shutdown
@@ -956,6 +902,8 @@ describe("DevWatchOrchestrator", () => {
       clientPort: number | null = 54321,
     ): void {
       vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+        capturedRebuildManager = options.rebuildManager;
+      capturedResultCollector = options.resultCollector;
         const isClient = pkg.config.target === "client";
         const engine: any = {
           run: vi.fn().mockResolvedValue({ success: true, build: { success: true, errors: [], warnings: [], diagnostics: [] } }),
@@ -965,12 +913,18 @@ describe("DevWatchOrchestrator", () => {
               if (clientPort != null) {
                 engine.port = clientPort;
               }
-            } else {
-              // Server: report build result
-              options.resultCollector?.add({
-                name: pkg.name, target: "server", type: "build", status: serverStatus,
-              });
             }
+            const resolve = options.rebuildManager.registerBuild(
+              `${pkg.name}:build`,
+              `${pkg.name} (${pkg.config.target})`,
+            );
+            options.resultCollector.add({
+              name: pkg.name,
+              target: isClient ? "client" : "server",
+              type: "build",
+              status: isClient ? "success" : serverStatus,
+            });
+            resolve();
           }),
           stop: vi.fn().mockResolvedValue(undefined),
           _pkgName: pkg.name,
@@ -1057,8 +1011,9 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.initialize();
       await orchestrator.start();
 
-      const resultCollector = vi.mocked(ResultCollector).mock.instances[0];
-      expect(resultCollector.add).toHaveBeenCalledWith(
+      // 실제 ResultCollector에 독립 클라이언트가 server로 등록되었는지 확인
+      const serverResult = capturedResultCollector.get("standalone:server");
+      expect(serverResult).toEqual(
         expect.objectContaining({
           name: "standalone",
           target: "client",
@@ -1132,11 +1087,9 @@ describe("DevWatchOrchestrator", () => {
         }),
       );
 
-      // Trigger batchComplete (rebuild after initial build)
-      const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-      const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-      const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
-      batchHandler?.(["service-server:build"]);
+      // Trigger batchComplete (rebuild after initial build) via real RebuildManager
+      const resolve = capturedRebuildManager.registerBuild("service-server:build", "service-server (server)");
+      resolve();
       await new Promise((r) => setTimeout(r, 200));
 
       // Second runtime start (rebuild) should also have clientPorts
@@ -1206,15 +1159,8 @@ describe("DevWatchOrchestrator", () => {
       await orchestrator.start();
 
       // Only config package should have BuildEngine created
-      expect(createBuildEngine).toHaveBeenCalledTimes(1);
-
-      const coreCall = vi.mocked(createBuildEngine).mock.calls.find(
-        (c: any[]) => c[0].name === "core-common",
-      );
-      expect(coreCall![0]).toEqual(expect.objectContaining({
-        name: "core-common",
-        dir: "/test-root/packages/core-common",
-      }));
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("core-common");
     });
 
     // sd.config.ts 패키지는 기존 packages/ 경로 유지
@@ -1234,8 +1180,8 @@ describe("DevWatchOrchestrator", () => {
       }));
     });
 
-    // buildPathMapFromConfig이 올바른 인자로 호출된다
-    it("calls buildPathMapFromConfig with sdConfig.packages", async () => {
+    // buildPathMapFromConfig 결과가 dir에 반영된다
+    it("builds pathMap from config and reflects in engine dir", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
       }));
@@ -1243,14 +1189,19 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: [], options: [] });
       await orchestrator.initialize();
 
-      expect(buildPathMapFromConfig).toHaveBeenCalledWith(
-        { "core-common": { target: "node" } },
+      // 실제 buildPathMapFromConfig가 "packages/core-common"을 반환하고
+      // orchestrator가 cwd + pathMap 값으로 dir을 구성
+      const coreEngine = vi.mocked(createBuildEngine).mock.calls.find(
+        (c: any[]) => c[0].name === "core-common",
       );
+      expect(coreEngine![0]).toEqual(expect.objectContaining({
+        dir: "/test-root/packages/core-common",
+      }));
     });
   });
 
   describe("target validation", () => {
-    it("calls validateTargets during watch initialize", async () => {
+    it("initializes without error for valid target in watch mode", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
       }));
@@ -1258,13 +1209,12 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: ["core-common"], options: [] });
       await orchestrator.initialize();
 
-      expect(validateTargets).toHaveBeenCalledWith(
-        ["core-common"],
-        expect.objectContaining({ "core-common": { target: "node" } }),
-      );
+      // 실제 validateTargets가 에러 없이 통과하고 엔진이 생성됨
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("core-common");
     });
 
-    it("calls validateTargets during dev initialize", async () => {
+    it("initializes without error for valid target in dev mode", async () => {
       setupDefaults(createConfig({
         packages: { "service-server": { target: "server" } },
       }));
@@ -1272,31 +1222,24 @@ describe("DevWatchOrchestrator", () => {
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: ["service-server"], options: [] });
       await orchestrator.initialize();
 
-      expect(validateTargets).toHaveBeenCalledWith(
-        ["service-server"],
-        expect.objectContaining({ "service-server": { target: "server" } }),
-      );
+      // 실제 validateTargets가 에러 없이 통과하고 엔진이 생성됨
+      expect(mockBuildEngines).toHaveLength(1);
+      expect(mockBuildEngines[0]._pkgName).toBe("service-server");
     });
 
-    it("throws when validateTargets throws for unknown target in watch", async () => {
+    it("throws for unknown target in watch mode", async () => {
       setupDefaults(createConfig({
         packages: { "core-common": { target: "node" } },
       }));
-      vi.mocked(validateTargets).mockImplementation(() => {
-        throw new Error("Unknown target: nonexistent");
-      });
 
       const orchestrator = new DevWatchOrchestrator({ mode: "watch", targets: ["nonexistent"], options: [] });
       await expect(orchestrator.initialize()).rejects.toThrow("Unknown target: nonexistent");
     });
 
-    it("throws when validateTargets throws for unknown target in dev", async () => {
+    it("throws for unknown target in dev mode", async () => {
       setupDefaults(createConfig({
         packages: { "service-server": { target: "server" } },
       }));
-      vi.mocked(validateTargets).mockImplementation(() => {
-        throw new Error("Unknown target: nonexistent");
-      });
 
       const orchestrator = new DevWatchOrchestrator({ mode: "dev", targets: ["nonexistent"], options: [] });
       await expect(orchestrator.initialize()).rejects.toThrow("Unknown target: nonexistent");
@@ -1307,6 +1250,8 @@ describe("DevWatchOrchestrator", () => {
     // Helper: setup engine with port so dev server URL can be constructed
     function setupEngineWithPort(port: number): void {
       vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+        capturedRebuildManager = options.rebuildManager;
+      capturedResultCollector = options.resultCollector;
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
@@ -1315,12 +1260,17 @@ describe("DevWatchOrchestrator", () => {
           startWatch: vi.fn().mockImplementation(() => {
             // Simulate server ready with port
             (engine as any).port = port;
-            options.resultCollector?.add({
+            const resolve = options.rebuildManager.registerBuild(
+              `${pkg.name}:build`,
+              `${pkg.name} (${pkg.config.target})`,
+            );
+            options.resultCollector.add({
               name: pkg.name,
               target: pkg.config.target === "client" ? "client" : "server",
               type: "build",
               status: "success",
             });
+            resolve();
           }),
           stop: vi.fn().mockResolvedValue(undefined),
           port: undefined as number | undefined,
@@ -1480,14 +1430,21 @@ describe("DevWatchOrchestrator", () => {
         setupDefaults(createConfig({
           packages: { "demo-server": { target: "server" } },
         }));
-        // Engine adds "success" result to trigger restart timer via batchComplete
+        // Engine with rebuildManager integration
         vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+          capturedRebuildManager = options.rebuildManager;
+      capturedResultCollector = options.resultCollector;
           const engine = {
             run: vi.fn(),
             startWatch: vi.fn().mockImplementation(() => {
-              options.resultCollector?.add({
+              const resolve = options.rebuildManager.registerBuild(
+                `${pkg.name}:build`,
+                `${pkg.name} (${pkg.config.target})`,
+              );
+              options.resultCollector.add({
                 name: pkg.name, target: "server", type: "build", status: "success",
               });
+              resolve();
             }),
             stop: vi.fn().mockResolvedValue(undefined),
             _pkgName: pkg.name,
@@ -1500,14 +1457,14 @@ describe("DevWatchOrchestrator", () => {
         await orchestrator.initialize();
         await orchestrator.start();
 
-        // Trigger batchComplete with a server build key → sets _serverRestartTimer
-        const rebuildInstance = vi.mocked(RebuildManager).mock.instances[0];
-        const onCall = vi.mocked(rebuildInstance.on).mock.calls.find((c) => c[0] === "batchComplete");
-        const batchHandler = onCall?.[1] as ((keys: string[]) => void) | undefined;
+        // Trigger batchComplete (rebuild) with a server build key → sets _serverRestartTimer
         const runtimeCountBefore = mockRuntimeProxies.length;
-        batchHandler?.(["demo-server:build"]);
+        const resolve = capturedRebuildManager.registerBuild("demo-server:build", "demo-server (server)");
+        resolve();
+        // Allow microtask for _runBatch to execute
+        await vi.advanceTimersByTimeAsync(0);
 
-        // shutdown before timer fires
+        // shutdown before restart timer fires
         await orchestrator.shutdown();
 
         // Advance past timer (100ms restart + 300ms print)

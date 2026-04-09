@@ -58,28 +58,6 @@ class SdTabItem<T> {
 }
 ```
 
-### `SdTabview`
-
-탭뷰 컨테이너 (탭 + 컨텐츠 영역).
-
-```typescript
-@Component({ selector: "sd-tabview" })
-class SdTabview<T> {
-  value = model<T>();
-}
-```
-
-### `SdTabviewItem`
-
-탭뷰 항목.
-
-```typescript
-@Component({ selector: "sd-tabview-item" })
-class SdTabviewItem<T> {
-  value = input.required<T>();
-}
-```
-
 ## Pagination
 
 ### `SdPagination`

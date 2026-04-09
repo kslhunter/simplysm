@@ -24,15 +24,6 @@ class SdDock {
 |-------|------|---------|-------------|
 | `resizable` | `boolean` | `false` | 크기 조절 가능 여부 |
 
-## `SdPane`
-
-스크롤 가능 패널 디렉티브.
-
-```typescript
-@Directive({ selector: "[sdPane]" })
-class SdPane { }
-```
-
 ## `SdGap`
 
 간격(gap) 컴포넌트. 요소 사이에 공간을 추가한다.
@@ -40,39 +31,6 @@ class SdPane { }
 ```typescript
 @Component({ selector: "sd-gap" })
 class SdGap { }
-```
-
-## `SdView`
-
-탭 뷰 전환 래퍼. `SdViewItem`과 함께 사용.
-
-```typescript
-@Component({ selector: "sd-view" })
-class SdView {
-  fill = input(false, { transform: booleanAttribute });
-}
-```
-
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| `fill` | `boolean` | `false` | 전체 높이 채우기 |
-
-## `SdViewItem`
-
-탭 뷰 항목.
-
-```typescript
-@Component({ selector: "sd-view-item" })
-class SdViewItem { }
-```
-
-## `SdCard`
-
-카드 스타일 디렉티브. `[sdCard]` 속성으로 적용.
-
-```typescript
-@Directive({ selector: "[sdCard]" })
-class SdCard { }
 ```
 
 ## `SdKanbanBoard`

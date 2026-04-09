@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
 
-//#region Mock Infrastructure
-
 const mocks = vi.hoisted(() => ({
   loadSdConfig: vi.fn(),
   runBuild: vi.fn(),
@@ -56,26 +54,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-vi.mock("@simplysm/core-common", () => {
-  const envProxy = new Proxy(
-    {},
-    { get: (_t, key) => process.env[key as string] },
-  );
-  return {
-    env: envProxy,
-    json: {
-      stringify: (v: unknown, opts?: { space?: number }) =>
-        JSON.stringify(v, null, opts?.space),
-    },
-    SdError: class SdError extends Error {
-      constructor(message: string) {
-        super(message);
-        this.name = "SdError";
-      }
-    },
-  };
-});
-
 vi.mock("@simplysm/storage", () => ({
   StorageFactory: { connect: mocks.storageConnect },
 }));
@@ -119,28 +97,7 @@ vi.mock("os", async (importOriginal: () => Promise<Record<string, unknown>>) => 
   };
 });
 
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(),
-    start: vi.fn(),
-    success: vi.fn(),
-    fail: vi.fn(),
-    info: vi.fn(),
-    error: vi.fn(),
-    warn: vi.fn(),
-    log: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c, LogLevels: {} };
-});
-
 const { runPublish } = await import("../../src/commands/publish");
-
-//#endregion
-
-//#region Test Helpers
 
 const CWD = process.cwd();
 
@@ -268,8 +225,6 @@ function getExecaCalls(
     .map((c: unknown[]) => ({ cmd: c[0] as string, args: (c[1] as string[] | undefined) ?? [] }));
 }
 
-//#endregion
-
 describe("runPublish", () => {
   let savedExitCode: typeof process.exitCode;
 
@@ -283,9 +238,7 @@ describe("runPublish", () => {
     process.exitCode = savedExitCode;
   });
 
-  //#region Slice 1: Package Selection + Happy Path
-
-  describe("Slice 1: Package selection", () => {
+  describe("package selection", () => {
     it("publishes only targeted packages when targets specified", async () => {
       setupHappyPath();
 
@@ -360,11 +313,7 @@ describe("runPublish", () => {
     });
   });
 
-  //#endregion
-
-  //#region Slice 2: Pre-validation
-
-  describe("Slice 2: Pre-validation", () => {
+  describe("pre-validation", () => {
     it("passes when npm whoami returns valid username", async () => {
       setupHappyPath();
 
@@ -490,11 +439,7 @@ describe("runPublish", () => {
     });
   });
 
-  //#endregion
-
-  //#region Slice 3: Version Upgrade + Git
-
-  describe("Slice 3: Version upgrade + Git", () => {
+  describe("version upgrade and git", () => {
     it("increments patch for stable version", async () => {
       setupHappyPath({ version: "14.0.0" });
 
@@ -636,11 +581,7 @@ describe("runPublish", () => {
     });
   });
 
-  //#endregion
-
-  //#region Slice 4: Deployment Types + Ordering + Retry
-
-  describe("Slice 4: Deployment types + ordering + retry", () => {
+  describe("deployment", () => {
     it("publishes npm stable version without --tag", async () => {
       setupHappyPath({ version: "14.0.0" });
 
@@ -910,11 +851,7 @@ describe("runPublish", () => {
     });
   });
 
-  //#endregion
-
-  //#region Slice 5: noBuild + Dry-run + postPublish + Build Failure
-
-  describe("Slice 5: noBuild, dry-run, postPublish, build failure", () => {
+  describe("noBuild, dry-run, postPublish", () => {
     it("skips version upgrade, build, and git when noBuild is true", async () => {
       setupHappyPath();
 
@@ -984,13 +921,21 @@ describe("runPublish", () => {
         options: [],
       });
 
-      expect(mocks.runBuild).toHaveBeenCalledWith(
-        expect.objectContaining({
-          targets: expect.arrayContaining(["pkg-a", "pkg-b"]),
-        }),
-      );
-      const buildTargets = mocks.runBuild.mock.calls[0][0].targets;
-      expect(buildTargets).not.toContain("pkg-c");
+      // publish 설정이 없는 pkg-c는 배포되지 않아야 한다
+      const publishCalls = getExecaCalls("pnpm", "publish");
+      expect(publishCalls).toHaveLength(2);
+      const publishCwds = mocks.execa.mock.calls
+        .filter((c: unknown[]) => {
+          const args = c[1] as string[] | undefined;
+          return c[0] === "pnpm" && args != null && args[0] === "publish";
+        })
+        .map((c: unknown[]) => {
+          const opts = c[2] as { cwd?: string } | undefined;
+          return opts != null ? (opts.cwd ?? "") : "";
+        });
+      for (const cwd of publishCwds) {
+        expect(cwd).not.toContain("pkg-c");
+      }
     });
 
     it("aborts with recovery message when build fails", async () => {
@@ -1136,11 +1081,7 @@ describe("runPublish", () => {
     });
   });
 
-  //#endregion
-
-  //#region Slice 3 fixes: publish security + stability
-
-  describe("Slice 3: publish security + stability", () => {
+  describe("publish security + stability", () => {
     it("dry-run does not execute git push (no network)", async () => {
       setupHappyPath({ version: "14.0.0" });
 
@@ -1200,8 +1141,6 @@ describe("runPublish", () => {
       expect(publishCalls).toHaveLength(1);
     });
   });
-
-  //#endregion
 
   describe("target validation", () => {
     it("throws error for unknown target", async () => {

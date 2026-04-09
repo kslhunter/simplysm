@@ -1,6 +1,6 @@
 # @simplysm/sd-cli
 
-Simplysm 모노레포용 빌드/개발/배포 CLI 도구. `sd.config.ts` 설정 타입과 Vitest용 Angular AOT 플러그인을 export한다.
+Simplysm 모노레포용 빌드/개발/배포 CLI 도구. `sd.config.ts` 설정 타입과 Angular AOT Vite 플러그인(`sdAngularPlugin`)을 export한다.
 
 ## Installation
 
@@ -41,12 +41,12 @@ npm install @simplysm/sd-cli
 | `SdConfigParams` | interface | sd.config.ts 함수에 전달되는 매개변수 |
 | `SdConfigFn` | type | sd.config.ts default export 함수 타입 |
 
-### Vitest Plugin
+### Angular Vite Plugin
 
 | API | Type | Description |
 |-----|------|-------------|
-| `AngularVitestPluginOptions` | interface | angularVitestPlugin 옵션 |
-| `angularVitestPlugin` | function | Vitest 환경에서 Angular 패키지를 AOT 컴파일하는 Vite 플러그인 |
+| `SdAngularPluginOptions` | interface | sdAngularPlugin 옵션 |
+| `sdAngularPlugin` | function | Angular AOT 컴파일을 수행하는 Vite 플러그인 |
 
 ## Config 상세
 
@@ -556,37 +556,45 @@ sd.config.ts는 반드시 이 형식의 함수를 default export해야 한다.
 export type SdConfigFn = (params: SdConfigParams) => SdConfig | Promise<SdConfig>;
 ```
 
-## Vitest Plugin 상세
+## Angular Vite Plugin 상세
 
-### `AngularVitestPluginOptions`
+### `SdAngularPluginOptions`
 
-angularVitestPlugin 옵션.
+sdAngularPlugin 옵션.
 
 ```typescript
-export interface AngularVitestPluginOptions {
-  tsconfig: string;
-  cwd?: string;
+export interface SdAngularPluginOptions {
+  pkg: string;
+  onBuildStart?: () => void;
+  onBuild?: (result: { success: boolean; errors?: string[]; warnings?: string[] }) => void;
+  _pkgDir?: string;
+  includeFixtures?: boolean;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `tsconfig` | `string` | Angular 패키지의 tsconfig.json 절대 경로 |
-| `cwd` | `string?` | monorepo 워크스페이스 루트 경로. 미지정 시 tsconfig 기준 상위 2단계를 사용한다 |
+| `pkg` | `string` | sd.config.ts packages 키 (패키지 디렉토리명) |
+| `onBuildStart` | `(() => void)?` | rebuild 시작 콜백 (CLI 상태 보고용) |
+| `onBuild` | `((result) => void)?` | rebuild 완료 콜백 (CLI 상태 보고용) |
+| `_pkgDir` | `string?` | @internal test용 pkgDir 오버라이드 |
+| `includeFixtures` | `boolean?` | true이면 *.fixture.ts 파일도 AOT 컴파일 대상에 포함 (테스트 전용) |
 
-### `angularVitestPlugin`
+### `sdAngularPlugin`
 
-Vitest 환경에서 Angular 패키지를 테스트할 때 사용하는 Vite 플러그인. `src/` 파일과 `.fixture.` 파일을 Angular AOT 컴파일하여 캐싱한 뒤 `transform` 훅에서 반환한다.
+Angular AOT 컴파일을 수행하는 Vite 플러그인. AngularBuildPipeline + JavaScriptTransformer를 관리한다.
 
 ```typescript
-export function angularVitestPlugin(options: AngularVitestPluginOptions): Plugin;
+export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin;
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `options` | `AngularVitestPluginOptions` | 플러그인 옵션 |
+| `options` | `SdAngularPluginOptions` | 플러그인 옵션 |
 
 **Returns**: `Plugin` (Vite 플러그인 객체)
+
+Vite 훅: `buildStart` (Pipeline 초기화 + 컴파일 + emit), `transform` (.ts 파일에 대해 컴파일된 JS 반환), `handleHotUpdate` (증분 재컴파일 + HMR), `buildEnd` (리소스 정리).
 
 ## Usage Examples
 
@@ -613,13 +621,13 @@ const config: SdConfigFn = (params) => ({
 export default config;
 ```
 
-### Vitest에서 Angular AOT 플러그인 사용
+### Vite에서 Angular AOT 플러그인 사용
 
 ```typescript
-import { defineConfig } from "vitest/config";
-import { angularVitestPlugin } from "@simplysm/sd-cli/vitest-plugin";
+import { defineConfig } from "vite";
+import { sdAngularPlugin } from "@simplysm/sd-cli";
 
 export default defineConfig({
-  plugins: [angularVitestPlugin({ tsconfig: "./tsconfig.json" })],
+  plugins: [sdAngularPlugin({ pkg: "my-client" })],
 });
 ```

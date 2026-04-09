@@ -1,72 +1,57 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Capacitor } from "../../src/capacitor/capacitor";
+import { Electron } from "../../src/electron/electron";
+import * as sdConfigModule from "../../src/utils/sd-config";
+import { runDevice } from "../../src/commands/device";
 
-// Capacitor mock
-const mockCapacitorInstance = {
-  initialize: vi.fn().mockResolvedValue(undefined),
-  run: vi.fn().mockResolvedValue(undefined),
-  build: vi.fn().mockResolvedValue(undefined),
-};
-
-vi.mock("../../src/capacitor/capacitor", () => ({
-  Capacitor: {
-    create: vi.fn().mockResolvedValue(mockCapacitorInstance),
-  },
+const mocks = vi.hoisted(() => ({
+  readFileSync: vi.fn(),
+  existsSync: vi.fn().mockReturnValue(false),
+  httpGet: vi.fn(),
 }));
 
-// Electron mock
-const mockElectronInstance = {
-  initialize: vi.fn().mockResolvedValue(undefined),
-  run: vi.fn().mockResolvedValue(undefined),
-  build: vi.fn().mockResolvedValue(undefined),
-};
-
-vi.mock("../../src/electron/electron", () => ({
-  Electron: {
-    create: vi.fn().mockResolvedValue(mockElectronInstance),
-  },
-}));
-
-// loadSdConfig mock
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: vi.fn(),
-}));
-
-// fs mock (포트 파일 읽기용)
-const mockReadFileSync = vi.fn();
-const mockExistsSync = vi.fn().mockReturnValue(false);
 vi.mock("node:fs", () => ({
   default: {
-    readFileSync: (...args: any[]) => mockReadFileSync(...args),
-    existsSync: (...args: any[]) => mockExistsSync(...args),
+    readFileSync: (...args: any[]) => mocks.readFileSync(...args),
+    existsSync: (...args: any[]) => mocks.existsSync(...args),
   },
-  readFileSync: (...args: any[]) => mockReadFileSync(...args),
-  existsSync: (...args: any[]) => mockExistsSync(...args),
+  readFileSync: (...args: any[]) => mocks.readFileSync(...args),
+  existsSync: (...args: any[]) => mocks.existsSync(...args),
 }));
 
-// http mock (헬스체크용)
-const mockHttpGet = vi.fn();
 vi.mock("node:http", () => ({
   default: {
-    get: (...args: any[]) => mockHttpGet(...args),
+    get: (...args: any[]) => mocks.httpGet(...args),
   },
-  get: (...args: any[]) => mockHttpGet(...args),
+  get: (...args: any[]) => mocks.httpGet(...args),
 }));
 
-const { Capacitor } = await import("../../src/capacitor/capacitor");
-const { Electron } = await import("../../src/electron/electron");
-const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { runDevice } = await import("../../src/commands/device");
-
 describe("runDevice", () => {
+  const mockCapacitorInstance = {
+    initialize: vi.fn().mockResolvedValue(undefined),
+    run: vi.fn().mockResolvedValue(undefined),
+    build: vi.fn().mockResolvedValue(undefined),
+  };
+  const mockElectronInstance = {
+    initialize: vi.fn().mockResolvedValue(undefined),
+    run: vi.fn().mockResolvedValue(undefined),
+    build: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCapacitorInstance.run.mockResolvedValue(undefined);
-    mockElectronInstance.run.mockResolvedValue(undefined);
+    vi.spyOn(Capacitor, "create").mockResolvedValue(mockCapacitorInstance as any);
+    vi.spyOn(Electron, "create").mockResolvedValue(mockElectronInstance as any);
+    vi.spyOn(sdConfigModule, "loadSdConfig");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   // Acceptance: Scenario "device 명령어로 Capacitor 앱 실행"
   it("runs Capacitor.create + run when capacitor config exists", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "client-pda": {
           target: "client",
@@ -88,7 +73,7 @@ describe("runDevice", () => {
 
   // Acceptance: Scenario "device 명령어로 Electron 앱 실행"
   it("runs Electron.create + run when electron config exists", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "my-client": {
           target: "client",
@@ -110,7 +95,7 @@ describe("runDevice", () => {
 
   // Acceptance: Scenario "device 명령어에 URL 옵션 지정"
   it("uses provided URL instead of auto-generated one", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "client-pda": {
           target: "client",
@@ -127,7 +112,7 @@ describe("runDevice", () => {
 
   // Unit: electron이 capacitor보다 우선 (v13 동작)
   it("prefers electron over capacitor when both are configured", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "my-client": {
           target: "client",
@@ -146,7 +131,7 @@ describe("runDevice", () => {
 
   // Unit: 존재하지 않는 패키지 에러
   it("throws when package does not exist", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "other-pkg": { target: "node" },
       },
@@ -157,7 +142,7 @@ describe("runDevice", () => {
 
   // Unit: client가 아닌 패키지 에러
   it("throws when package is not a client target", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "my-server": { target: "server" },
       },
@@ -168,7 +153,7 @@ describe("runDevice", () => {
 
   // Acceptance: Scenario "server가 string일 때 서버 패키지의 .dev-port에서 포트 읽기"
   it("reads .dev-port from server package directory when server is a string", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "client-devtool": {
           target: "client",
@@ -178,10 +163,10 @@ describe("runDevice", () => {
       },
     });
 
-    mockReadFileSync.mockReturnValue("3000");
+    mocks.readFileSync.mockReturnValue("3000");
 
     // HTTP 헬스체크 성공 mock
-    mockHttpGet.mockImplementation((_url: string, cb: Function) => {
+    mocks.httpGet.mockImplementation((_url: string, cb: Function) => {
       const res = { resume: vi.fn() };
       cb(res);
       return { on: vi.fn(), setTimeout: vi.fn() };
@@ -190,7 +175,7 @@ describe("runDevice", () => {
     await runDevice({ target: "client-devtool", options: [] });
 
     // 서버 패키지 경로의 .dev-port를 읽어야 함
-    expect(mockReadFileSync).toHaveBeenCalledWith(
+    expect(mocks.readFileSync).toHaveBeenCalledWith(
       expect.stringContaining("my-server"),
       "utf-8",
     );
@@ -201,7 +186,7 @@ describe("runDevice", () => {
 
   // Acceptance: Scenario "dev 서버 미실행 시 에러"
   it("throws when .dev-port file does not exist and server is a string", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "client-devtool": {
           target: "client",
@@ -211,7 +196,7 @@ describe("runDevice", () => {
       },
     });
 
-    mockReadFileSync.mockImplementation(() => {
+    mocks.readFileSync.mockImplementation(() => {
       throw new Error("ENOENT");
     });
 
@@ -222,7 +207,7 @@ describe("runDevice", () => {
 
   // Acceptance: Scenario "stale 포트 파일 존재 시 헬스체크 실패 에러"
   it("throws when .dev-port exists but health check fails", async () => {
-    vi.mocked(loadSdConfig).mockResolvedValue({
+    vi.mocked(sdConfigModule.loadSdConfig).mockResolvedValue({
       packages: {
         "client-devtool": {
           target: "client",
@@ -232,10 +217,10 @@ describe("runDevice", () => {
       },
     });
 
-    mockReadFileSync.mockReturnValue("5173");
+    mocks.readFileSync.mockReturnValue("5173");
 
     // HTTP 헬스체크 실패 mock
-    mockHttpGet.mockImplementation((_url: string, _cb: Function) => {
+    mocks.httpGet.mockImplementation((_url: string, _cb: Function) => {
       const req = {
         on: vi.fn((event: string, handler: Function) => {
           if (event === "error") handler(new Error("ECONNREFUSED"));

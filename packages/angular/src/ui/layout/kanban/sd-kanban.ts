@@ -19,14 +19,13 @@ import {
 import { SdKanbanLane } from "./sd-kanban-lane";
 import { SdEvents } from "../../../core/directives/sd-events";
 import type { SdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
-import { SdCard } from "../sd-card";
 
 @Component({
   selector: "sd-kanban",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEvents, SdCard],
+  imports: [SdEvents],
   host: {
     "[attr.data-sd-dragging-this]": "dragKanban() === thisRef",
     "[attr.data-sd-dragging]": "dragKanban() != null",
@@ -47,14 +46,15 @@ import { SdCard } from "../sd-card";
       [style.height]="dragOvered() ? (dragKanban()?.heightOnDrag() ?? 0) + 'px' : '0px'"
       [style.display]="dragKanban() ? 'block' : 'none'"
     ></div>
-    <sd-card
+    <div
+      class="card"
       [class]="contentClass()"
       [draggable]="draggable()"
       (dragstart)="onCardDragStart()"
       (sdResize)="onCardResize($event)"
     >
       <ng-content></ng-content>
-    </sd-card>
+    </div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -79,7 +79,7 @@ import { SdCard } from "../sd-card";
             pointer-events: auto;
           }
 
-          > sd-card {
+          > .card {
             pointer-events: none;
             cursor: pointer;
           }
@@ -103,7 +103,7 @@ import { SdCard } from "../sd-card";
           }
         }
 
-        > sd-card {
+        > .card {
           white-space: normal;
           user-select: none;
           margin-bottom: var(--gap-lg);
@@ -145,7 +145,7 @@ export class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget
 
   constructor() {
     afterNextRender(() => {
-      const card = this._elRef.nativeElement.querySelector("sd-card");
+      const card = this._elRef.nativeElement.querySelector(".card");
       if (card != null) {
         const marginBottom = getComputedStyle(card).marginBottom;
         this.cardHeight.set(card.clientHeight + (parseInt(marginBottom) || 0));

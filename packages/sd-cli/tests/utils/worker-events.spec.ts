@@ -3,15 +3,6 @@ import { registerWorkerEventHandlers } from "../../src/utils/worker-events";
 import type { BuildResult } from "../../src/infra/ResultCollector";
 import type { RebuildManager } from "../../src/utils/rebuild-manager";
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-    })),
-  },
-}));
-
 function createMockWorker() {
   const handlers = new Map<string, (data: any) => void>();
   return {
@@ -35,6 +26,7 @@ describe("registerWorkerEventHandlers", () => {
   let rebuildManager: RebuildManager;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     results = new Map();
     rebuildManager = createMockRebuildManager();
   });

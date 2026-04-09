@@ -50,7 +50,7 @@ describe("sdScopeWatchPlugin", () => {
   });
 
   // Acceptance: Scenario "라이브러리 재빌드로 의존성 변경"
-  it("configureServer sets up FsWatcher on replaceDeps dist/ directories", async () => {
+  it("configureServer sets up FsWatcher on replaceDeps package root directories", async () => {
     const onScopeRebuild = vi.fn();
 
     const plugin = sdScopeWatchPlugin({
@@ -69,10 +69,48 @@ describe("sdScopeWatchPlugin", () => {
     await (plugin as any).configureServer?.(mockServer);
 
     expect(FsWatcher.watch).toHaveBeenCalled();
+    // 패키지 루트를 감시해야 한다 (dist/가 아닌)
+    const watchedPaths = (FsWatcher.watch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string[];
+    const normalizedPaths = watchedPaths.map((p: string) => p.replace(/\\/g, "/"));
+    expect(normalizedPaths.some((p: string) => p.endsWith("/@scope/core"))).toBe(true);
+    expect(normalizedPaths.some((p: string) => p.endsWith("/@scope/core/dist"))).toBe(false);
     expect(mockWatcher.onChange).toHaveBeenCalledWith(
       expect.objectContaining({ delay: 300 }),
       expect.any(Function),
     );
+  });
+
+  // Acceptance: Scenario "SCSS 파일 변경 시 Vite change 이벤트 발생"
+  it("onChange callback emits change events for scss file changes", async () => {
+    const onScopeRebuild = vi.fn();
+
+    const plugin = sdScopeWatchPlugin({
+      pkgDir: "/packages/my-client",
+      replaceDeps: [
+        { packageName: "@scope/core", sourcePath: "/packages/core" },
+      ],
+      onScopeRebuild,
+    });
+
+    const mockServer = {
+      watcher: { emit: vi.fn() },
+      httpServer: { on: vi.fn() },
+    };
+
+    await (plugin as any).configureServer?.(mockServer);
+
+    const onChangeCallback = mockWatcher.onChange.mock.calls[0][1];
+
+    // SCSS 파일 변경 시뮬레이션
+    onChangeCallback([
+      { path: "/packages/core/scss/commons/_styles.scss" },
+    ]);
+
+    expect(mockServer.watcher.emit).toHaveBeenCalledWith(
+      "change",
+      "/packages/core/scss/commons/_styles.scss",
+    );
+    expect(onScopeRebuild).toHaveBeenCalled();
   });
 
   // Acceptance: Scenario "여러 라이브러리 파일 동시 변경 시 디바운스"
@@ -150,7 +188,7 @@ describe("sdScopeWatchPlugin", () => {
 
     await (plugin as any).configureServer?.(mockServer);
 
-    // fs.realpathSync가 dist 경로에 대해 호출되었는지 확인
+    // fs.realpathSync가 패키지 루트 경로에 대해 호출되었는지 확인
     const fsModule = (await import("fs")).default;
     expect(fsModule.realpathSync).toHaveBeenCalled();
   });

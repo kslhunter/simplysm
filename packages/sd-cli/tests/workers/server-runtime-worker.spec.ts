@@ -16,28 +16,6 @@ vi.mock("@simplysm/core-node", () => ({
   }),
 }));
 
-vi.mock("@simplysm/core-common", () => ({
-  env: vi.fn((key: string, value?: string) => {
-    if (value !== undefined) {
-      process.env[key] = value;
-      return;
-    }
-    return process.env[key];
-  }),
-  err: { message: (e: any) => e?.message ?? String(e) },
-}));
-
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn(),
-    })),
-  },
-}));
-
 vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   setupWorkerConsola: vi.fn(),

@@ -107,9 +107,10 @@ abstract class SdDataSheetBase<
   prepareRefreshEffect?(): void;
   editItem?(item?: TItem): Promise<boolean | undefined> | boolean | undefined;
   toggleDeleteItems?(del: boolean): Promise<boolean>;
-  submitItems?(diffs: ArrayOneWayDiffResult<TItem>): Promise<boolean>;
-  excelDownload?(items: TItem[]): Promise<void>;
-  excelUpload?(): Promise<TItem[]>;
+  newItem?(): Promise<TItem> | TItem;
+  submit?(diffs: ArrayOneWayDiffResult<TItem>[]): Promise<boolean> | boolean;
+  downloadExcel?(items: TItem[]): Promise<void> | void;
+  uploadExcel?(file: File): Promise<void> | void;
 }
 ```
 

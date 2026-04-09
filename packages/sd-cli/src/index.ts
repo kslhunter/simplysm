@@ -1,5 +1,5 @@
 // Config
 export * from "./sd-config.types";
 
-// Vitest Plugin
-export * from "./vitest-plugin";
+// Angular Vite Plugin
+export { sdAngularPlugin, type SdAngularPluginOptions } from "./angular/vite-angular-plugin";

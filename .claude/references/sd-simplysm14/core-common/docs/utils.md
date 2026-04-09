@@ -38,19 +38,20 @@ obj.equal(arr1, arr2, { ignoreArrayIndex: true }); // 순서 무시 비교 (O(n�
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `arrayKeys` | `string[] \| undefined` | 배열 항목 병합 시 key로 사용할 속성명 |
-| `excludes` | `string[] \| undefined` | 병합에서 제외할 속성명 |
+| `arrayProcess` | `"replace" \| "concat" \| undefined` | Array 처리 방식. `"replace"`: target으로 교체 (기본값), `"concat"`: 병합 (중복 제거) |
+| `useDelTargetNull` | `boolean \| undefined` | target이 null일 때 해당 key를 삭제할지 여부 |
 
-### `obj.merge3<TSource>(source, target1, target2, keyOptions): TSource`
+### `obj.merge3<S, O, T>(source, origin, target, optionsObj?): { conflict: boolean; result: O & S & T }`
 
-3방향 병합. `source`에서 분기된 `target1`, `target2`의 변경사항을 병합한다.
+3방향 병합. source, origin, target 세 객체를 비교하여 병합한다. source와 origin이 같고 target이 다르면 target 값, target과 origin이 같고 source가 다르면 source 값, 세 값이 모두 다르면 충돌(origin 값 유지).
 
 ### `Merge3KeyOptions` (interface)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `keys` | `string[]` | 배열 항목 식별 key 속성명 |
-| `excludes` | `string[] \| undefined` | 병합에서 제외할 속성명 |
+| `keys` | `string[] \| undefined` | 비교할 하위 key 목록 (equal의 topLevelIncludes와 동일) |
+| `excludes` | `string[] \| undefined` | 비교에서 제외할 하위 key 목록 |
+| `ignoreArrayIndex` | `boolean \| undefined` | array 순서를 무시할지 여부 |
 
 ### `obj.omit<T, K extends keyof T>(obj, keys): Omit<T, K>`
 
@@ -60,12 +61,12 @@ obj.equal(arr1, arr2, { ignoreArrayIndex: true }); // 순서 무시 비교 (O(n�
 const noId = obj.omit(user, ["id", "password"]);
 ```
 
-### `obj.omitByFilter<T>(obj, predicate): Partial<T>`
+### `obj.omitByFilter<T>(item, omitKeyFn): T`
 
-함수 조건으로 필터링한 새 객체 반환.
+key 조건으로 필터링하여 해당 key를 제외한 새 객체 반환.
 
 ```typescript
-const filtered = obj.omitByFilter(data, (key, value) => value !== undefined);
+const filtered = obj.omitByFilter(data, (key) => key.startsWith("_"));
 ```
 
 ### `obj.pick<T, K extends keyof T>(obj, keys): Pick<T, K>`
@@ -85,9 +86,9 @@ obj.getChainValue(data, "user.profile.name");
 obj.getChainValue(data, "items[0].id", true); // optional: 오류 없이 undefined 반환
 ```
 
-### `obj.getChainValueByDepth<TObject, TKey>(obj, keys): unknown`
+### `obj.getChainValueByDepth<TObject, TKey>(obj, key, depth): TObject[TKey] | undefined`
 
-키 배열의 순서대로 깊이 접근.
+단일 key를 depth 횟수만큼 재귀적으로 따라간다. 예: `getChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2)` → `{ name: 'a' }`
 
 ### `obj.setChainValue(obj, chain, value): void`
 

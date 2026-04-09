@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mock factories (vi.mock is hoisted) ---
 
+import { consola } from "consola";
+
 const mockLogger = {
   debug: vi.fn(),
   info: vi.fn(),
@@ -11,12 +13,7 @@ const mockLogger = {
   success: vi.fn(),
 };
 
-vi.mock("consola", () => {
-  const consolaObj = {
-    withTag: vi.fn(() => mockLogger),
-  };
-  return { consola: consolaObj, default: consolaObj };
-});
+vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
 
 vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: vi.fn(),

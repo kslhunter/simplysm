@@ -40,17 +40,22 @@ describe("stopEngineWorker", () => {
   });
 
   it("terminates even if stopWatch hangs (timeout)", async () => {
-    const worker = createMockWorker();
-    // stopWatch never resolves
-    worker.stopWatch.mockReturnValue(new Promise(() => {}));
+    vi.useFakeTimers();
+    try {
+      const worker = createMockWorker();
+      // stopWatch never resolves
+      worker.stopWatch.mockReturnValue(new Promise(() => {}));
 
-    const stopPromise = stopEngineWorker(worker, true);
+      const stopPromise = stopEngineWorker(worker, true);
 
-    // Should resolve within timeout (3s) + small buffer
-    await vi.waitFor(() => {
+      // Advance past SHUTDOWN_TIMEOUT (3000ms)
+      await vi.advanceTimersByTimeAsync(3000);
+
+      await stopPromise;
+
       expect(worker.terminate).toHaveBeenCalled();
-    }, { timeout: 5000 });
-
-    await stopPromise;
-  }, 10000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

@@ -42,13 +42,6 @@ vi.mock("../../src/utils/typecheck-serialization", () => ({
   serializeDiagnostic: vi.fn((d: any) => ({ code: d.code, category: d.category })),
 }));
 
-vi.mock("@simplysm/core-node", () => ({
-  pathx: {
-    isChildPath: vi.fn((filePath: string, parentDir: string) => filePath.startsWith(parentDir)),
-    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
-  },
-}));
-
 let mockEmitResult: { diagnostics: ts.Diagnostic[] };
 let mockTsProgram: Record<string, unknown>;
 let mockProgram: {
@@ -99,6 +92,7 @@ describe("runTscPackageBuild", () => {
     };
   });
 
+  describe("output modes", () => {
   // Acceptance: Scenario "JS + DTS 모두 emit"
   it("output {js:true, dts:true} sets JS+DTS compilerOptions", async () => {
     const { runTscPackageBuild } = await import("../../src/utils/tsc-build");
@@ -164,7 +158,9 @@ describe("runTscPackageBuild", () => {
     expect(capturedOptions!.declaration).toBe(false);
     expect(capturedOptions!.declarationMap).toBe(false);
   });
+  });
 
+  describe("file selection and build info", () => {
   // Unit: emit modes use src files, typecheck uses all files
   it("emit mode uses only source files as rootNames", async () => {
     const tsModule = await import("typescript");
@@ -242,7 +238,9 @@ describe("runTscPackageBuild", () => {
     });
     expect(capturedOptions!.tsBuildInfoFile).toBe(path.join(PKG_DIR, ".cache", "typecheck.tsbuildinfo"));
   });
+  });
 
+  describe("path rewriting", () => {
   // Unit: path rewriter is applied in emit modes
   it("applies path rewriter in emit mode", async () => {
     const { createOutputPathRewriter } = await import("../../src/utils/output-path-rewriter");
@@ -311,7 +309,9 @@ describe("runTscPackageBuild", () => {
 
     expect(addJsExtensionToImports).not.toHaveBeenCalled();
   });
+  });
 
+  describe("diagnostics", () => {
   // Unit: diagnostics are collected and returned
   it("collects error diagnostics and returns failure", async () => {
     const errorDiag: Partial<ts.Diagnostic> = {
@@ -406,7 +406,9 @@ describe("runTscPackageBuild", () => {
     expect(result.errorCount).toBe(1);
     expect(result.errors![0]).toBe("tsconfig not found");
   });
+  });
 
+  describe("env handling", () => {
   // Acceptance: Scenario "build 시 패키지 tsconfig의 lib/types 유지" (env 미설정)
   it("does not call getCompilerOptionsForEnv when env is not set", async () => {
     mockGetCompilerOptionsForEnv.mockClear();
@@ -493,7 +495,9 @@ describe("runTscPackageBuild", () => {
       path.join(PKG_DIR, ".cache", "build-node.tsbuildinfo"),
     );
   });
+  });
 
+  describe("affected files", () => {
   // Acceptance: Scenario "tsc-build exposes affected files for incremental lint"
   it("returns affectedFiles set from builder program diagnostics iteration", async () => {
     // Set up builder program mock to return affected files via getSemanticDiagnosticsOfNextAffectedFile
@@ -517,6 +521,7 @@ describe("runTscPackageBuild", () => {
     expect(result.affectedFiles).toBeDefined();
     expect(result.affectedFiles!.has(SRC_INDEX.replace(/\\/g, "/"))).toBe(true);
     expect(result.affectedFiles!.has(SRC_UTIL.replace(/\\/g, "/"))).toBe(true);
+  });
   });
 
 });

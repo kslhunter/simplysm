@@ -105,11 +105,7 @@ export { matchesSearchText } from "./features/shared-data/matchesSearchText";
 // ui/layout
 export { SdDockContainer } from "./ui/layout/dock/sd-dock-container";
 export { SdDock } from "./ui/layout/dock/sd-dock";
-export { SdPane } from "./ui/layout/sd-pane";
 export { SdGap } from "./ui/layout/sd-gap";
-export { SdView } from "./ui/layout/view/sd-view";
-export { SdViewItem } from "./ui/layout/view/sd-view-item";
-export { SdCard } from "./ui/layout/sd-card";
 export {
   SdKanbanBoard,
   type SdKanbanBoardDropInfo,
@@ -168,8 +164,6 @@ export { SdCollapseIcon } from "./ui/navigation/collapse/sd-collapse-icon";
 // ui/navigation/tab
 export { SdTab } from "./ui/navigation/tab/sd-tab";
 export { SdTabItem } from "./ui/navigation/tab/sd-tab-item";
-export { SdTabview } from "./ui/navigation/tab/sd-tabview";
-export { SdTabviewItem } from "./ui/navigation/tab/sd-tabview-item";
 
 // ui/navigation/menu
 export { getMenuRouterLinkOption, getIsMenuSelected } from "./ui/navigation/menu-utils";

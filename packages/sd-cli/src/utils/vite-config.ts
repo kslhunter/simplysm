@@ -1,9 +1,7 @@
 import type { InlineConfig, PluginOption } from "vite";
 import path from "path";
-import fs from "fs";
 import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import { pathx } from "@simplysm/core-node";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
 import solidPlugin from "vite-plugin-solid";
 import {
@@ -14,6 +12,7 @@ import { sdPostCssInlinePlugin } from "../angular/vite-postcss-inline-plugin.js"
 import type { SdPwaConfig } from "../sd-config.types.js";
 import { VitePWA } from "vite-plugin-pwa";
 import { generatePwaIcons } from "./generate-pwa-icons.js";
+import { loadSdConfig } from "./sd-config.js";
 
 /** createClientViteConfig 옵션 */
 export interface CreateClientViteConfigOptions {
@@ -25,8 +24,6 @@ export interface CreateClientViteConfigOptions {
   pkgName: string;
   /** 모드 */
   mode: "dev" | "build";
-  /** tsconfig.json 경로 */
-  tsconfigPath: string;
   /** Vite dev server 포트 (0: 자동 할당, >0: 지정) */
   serverPort: number;
   /** 빌드 시 치환할 환경변수 */
@@ -38,22 +35,13 @@ export interface CreateClientViteConfigOptions {
     success: boolean;
     errors?: string[];
     warnings?: string[];
-    lint?: { success: boolean; errorCount: number; warningCount: number; formattedOutput: string };
   }) => void;
-  /** 컴파일의 ts.Program을 사용하여 lint 실행 */
-  enableLint?: boolean;
   /** replaceDeps 목록 (dev 모드에서 sdScopeWatchPlugin에 전달) */
   replaceDeps?: ScopeWatchReplaceDep[];
   /** replaceDeps 변경 감지 콜백 */
   onScopeRebuild?: () => void;
-  /** browserslist 쿼리 (browserslist-to-esbuild로 변환) */
-  browserslist?: string | string[];
-  /** PostCSS 플러그인 배열 */
-  postCssPlugins?: unknown[];
   /** polyfills 경로 배열 (transformIndexHtml로 주입) */
   polyfills?: string[];
-  /** 레거시 모듈 지원 (코드 스플리팅 비활성화) */
-  legacyModule?: boolean;
   /** PWA 설정. false로 비활성화. 미설정 시 기본값으로 활성화 */
   pwa?: false | SdPwaConfig;
   /** Vite optimizeDeps.exclude에 전달할 패키지 목록 */
@@ -77,22 +65,25 @@ export async function createClientViteConfig(
 ): Promise<InlineConfig> {
   const name = options.pkgName.replace(/^@[^/]+\//, "");
 
+  // sd.config.ts 로딩 + browserSupport 추출
+  const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: options.mode === "dev", opt: [] });
+  const pkgConfig = sdConfig.packages[name];
+  if (pkgConfig == null) {
+    throw new Error(`sd.config.ts에 패키지 "${name}"가 정의되어 있지 않습니다.`);
+  }
+  const browserSupport = pkgConfig.target === "client" ? pkgConfig.browserSupport : undefined;
+  const browserslist = browserSupport?.browserslist;
+  const postCssPlugins = browserSupport?.postCss?.plugins;
+  const legacyModule = browserSupport?.legacyModule === true;
+
   // browserslist → esbuild target
   let esbuildTarget: string | string[] = "es2022";
-  if (options.browserslist != null) {
-    const queries = Array.isArray(options.browserslist)
-      ? options.browserslist
-      : [options.browserslist];
+  if (browserslist != null) {
+    const queries = Array.isArray(browserslist)
+      ? browserslist
+      : [browserslist];
     esbuildTarget = browserslistToEsbuild(queries);
   }
-
-  // browserslist 정규화 (Angular 플러그인의 PostCSS 연동용)
-  const normalizedBrowserslist =
-    options.browserslist != null
-      ? Array.isArray(options.browserslist)
-        ? options.browserslist
-        : [options.browserslist]
-      : undefined;
 
   // define: 환경변수 주입 (import.meta.env.KEY → Vite가 bare import.meta.env 객체를 자동 구성)
   const define: Record<string, string> = {};
@@ -102,28 +93,9 @@ export async function createClientViteConfig(
     }
   }
 
-  // replaceDeps dist 경로 (symlink → realpath 해결)
-  let replaceDepDistPaths: string[] | undefined;
-  if (options.replaceDeps != null && options.replaceDeps.length > 0) {
-    replaceDepDistPaths = [];
-    for (const dep of options.replaceDeps) {
-      const distDir = path.join(
-        options.pkgDir,
-        "node_modules",
-        ...dep.packageName.split("/"),
-        "dist",
-      );
-      try {
-        replaceDepDistPaths.push(pathx.posix(fs.realpathSync(distDir)));
-      } catch {
-        replaceDepDistPaths.push(pathx.posix(distDir));
-      }
-    }
-  }
-
   // plugins
   const plugins: PluginOption[] = [
-    tsconfigPaths({ projects: [options.tsconfigPath] }),
+    tsconfigPaths(),
   ];
 
   if (options.framework === "solid") {
@@ -131,23 +103,16 @@ export async function createClientViteConfig(
   } else {
     plugins.push(
       sdAngularPlugin({
-        tsconfig: options.tsconfigPath,
-        dev: options.mode === "dev",
-        legacyModule: options.legacyModule,
-        sourcemap: options.mode === "dev" || options.watch === true,
+        pkg: name,
         onBuildStart: options.onBuildStart,
         onBuild: options.onBuild,
-        enableLint: options.enableLint,
-        browserslist: normalizedBrowserslist,
-        postCssPlugins: options.postCssPlugins,
-        replaceDepDistPaths,
       }),
     );
 
     // PostCSS inline plugin (Angular @Component inline styles 전용)
-    if (options.postCssPlugins != null && options.postCssPlugins.length > 0) {
+    if (postCssPlugins != null && postCssPlugins.length > 0) {
       plugins.push(
-        sdPostCssInlinePlugin({ postCssPlugins: options.postCssPlugins }),
+        sdPostCssInlinePlugin({ postCssPlugins: postCssPlugins }),
       );
     }
   }
@@ -179,8 +144,8 @@ export async function createClientViteConfig(
 
   // css.postcss 설정 (외부 .css/.scss 파일용)
   const cssConfig =
-    options.postCssPlugins != null && options.postCssPlugins.length > 0
-      ? { postcss: { plugins: options.postCssPlugins as import("postcss").AcceptedPlugin[] } }
+    postCssPlugins != null && postCssPlugins.length > 0
+      ? { postcss: { plugins: postCssPlugins as import("postcss").AcceptedPlugin[] } }
       : undefined;
 
   // optimizeDeps.exclude (사용자 지정 exclude + replaceDeps 패키지)
@@ -253,7 +218,7 @@ export async function createClientViteConfig(
   // polyfills plugin
   if (options.polyfills != null && options.polyfills.length > 0) {
     const polyfillImports = options.polyfills;
-    if (options.legacyModule === true) {
+    if (legacyModule === true) {
       // legacyModule: 메인 엔트리의 transform에서 polyfill import를 상단에 주입한다.
       // transformIndexHtml의 인라인 <script type="module">은 Vite 빌드에서 번들링되지 않으므로,
       // Rollup이 처리할 수 있도록 소스 코드 레벨에서 주입한다.
@@ -296,7 +261,7 @@ export async function createClientViteConfig(
   }
 
   // legacyModule: true → 코드 스플리팅 비활성화 + esbuild import.meta 변환 + 잔여 import() 제거
-  if (options.legacyModule === true) {
+  if (legacyModule === true) {
     config.esbuild = {
       ...config.esbuild,
       supported: {
@@ -333,7 +298,7 @@ export async function createClientViteConfig(
   }
 
   // build 모드 설정 (프로덕션 빌드 또는 legacyModule dev)
-  if (options.mode === "build" || options.legacyModule === true) {
+  if (options.mode === "build" || legacyModule === true) {
     config.build = {
       ...config.build,
       outDir: options.outDir ?? path.join(options.pkgDir, "dist"),

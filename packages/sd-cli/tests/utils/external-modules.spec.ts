@@ -18,21 +18,12 @@ vi.mock("module", () => ({
   })),
 }));
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-    })),
-  },
-}));
-
 const { collectUninstalledOptionalPeerDeps, collectNativeModuleExternals, collectAllDependencyExternals } =
   await import("../../src/utils/esbuild-config");
 
 describe("collectUninstalledOptionalPeerDeps", () => {
   beforeEach(() => {
-    mockReadFileSync.mockReset();
-    mockResolve.mockReset();
+    vi.clearAllMocks();
   });
 
   it("detects uninstalled optional peer dependencies", () => {
@@ -109,9 +100,7 @@ describe("collectUninstalledOptionalPeerDeps", () => {
 
 describe("collectNativeModuleExternals", () => {
   beforeEach(() => {
-    mockReadFileSync.mockReset();
-    mockExistsSync.mockReset();
-    mockResolve.mockReset();
+    vi.clearAllMocks();
   });
 
   it("detects native modules with binding.gyp", () => {
@@ -162,9 +151,7 @@ describe("collectNativeModuleExternals", () => {
 
 describe("collectAllDependencyExternals", () => {
   beforeEach(() => {
-    mockReadFileSync.mockReset();
-    mockExistsSync.mockReset();
-    mockResolve.mockReset();
+    vi.clearAllMocks();
   });
 
   it("collects both optional peer deps and native modules in a single pass", () => {

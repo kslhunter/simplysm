@@ -1,15 +1,11 @@
 import path from "path";
-import ts from "typescript";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
 import {
-  runNgtscBuild,
   buildCompilerOptions,
   buildScssLoadPaths,
-  createLibraryTransformStylesheet,
-  writeEmitResults,
   compileSideEffectScss,
   compileGlobalScss,
   type NgtscBuildInfo,
@@ -17,7 +13,7 @@ import {
   type NgtscCombinedBuildEvent,
   type SideEffectScssEntry,
 } from "../utils/ngtsc-build-core";
-import { isWorkspaceDiagnostic, formatDiagnosticError } from "../utils/diagnostic-utils";
+import { serializeDiagnostic } from "../utils/typecheck-serialization";
 import { LintWithProgramRunner, type LintWithProgramResult } from "../utils/lint-with-program";
 import {
   parseTsconfig,
@@ -25,7 +21,8 @@ import {
   getPackageFiles,
   getCompilerOptionsForEnv,
 } from "../utils/tsconfig";
-import { AngularCompiler, AngularSourceFileCache } from "../utils/angular-compiler";
+import { AngularBuildPipeline } from "../utils/angular-build-pipeline";
+import { AngularSourceFileCache } from "../utils/angular-compiler";
 import { collectDeps } from "../utils/package-utils";
 
 setupWorkerConsola();
@@ -51,6 +48,7 @@ let fsWatcher: FsWatcher | undefined;
 async function cleanup(): Promise<void> {
   const watcherToClose = fsWatcher;
   fsWatcher = undefined;
+  _watchPipeline = undefined;
   lastSourceFilePaths = undefined;
 
   if (watcherToClose != null) {
@@ -66,21 +64,77 @@ registerCleanupHandlers(cleanup, logger);
 
 async function build(info: NgtscBuildInfo): Promise<NgtscBuildResult> {
   logger.debug(`[${info.name}] ngtsc worker build 시작 (pkgDir: ${info.pkgDir})`);
-  const { program, ...result } = await runNgtscBuild({ ...info, env: info.output.env });
-  logger.debug(`[${info.name}] ngtsc worker build 완료 (build.success: ${result.build.success})`);
 
-  // lint 실행 (활성화 + program 사용 가능 시)
-  if (info.output.lint === true && program != null) {
-    logger.debug(`[${info.name}] lint 시작`);
-    const lintRunner = new LintWithProgramRunner({
-      cwd: info.cwd,
-      pkgName: info.name,
+  try {
+    const buildInfo = { ...info, env: info.output.env };
+    const parsedConfig = parseTsconfig(buildInfo.pkgDir);
+    const sourceFiles = buildInfo.output.includeTests === true
+      ? getPackageFiles(buildInfo.pkgDir, parsedConfig)
+      : getPackageSourceFiles(buildInfo.pkgDir, parsedConfig);
+    const baseOptions =
+      buildInfo.env != null
+        ? getCompilerOptionsForEnv(parsedConfig.options, buildInfo.env, buildInfo.pkgDir)
+        : parsedConfig.options;
+    const compilerOptions = buildCompilerOptions(baseOptions, buildInfo.pkgDir, buildInfo.output);
+    const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
+
+    const pipeline = new AngularBuildPipeline({
+      mode: "library",
+      pkgDir: buildInfo.pkgDir,
+      cwd: buildInfo.cwd,
+      rootNames: sourceFiles,
+      compilerOptions,
+      angularCompilerOptions: angularOptions,
     });
-    result.lint = await lintRunner.lint({ program });
-    logger.debug(`[${info.name}] lint 완료`);
-  }
 
-  return result;
+    const pipelineResult = await pipeline.initialize();
+
+    // emit → 디스크 쓰기 (src/ 하위만)
+    const normalizedSrcDir = pathx.posix(path.join(buildInfo.pkgDir, "src"));
+    pipeline.writeEmitResults({
+      pkgDir: buildInfo.pkgDir,
+      sourceFilter: (fileName) => pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
+    });
+
+    // global SCSS
+    const globalScssErrors = compileGlobalScss(buildInfo.pkgDir, buildScssLoadPaths(buildInfo));
+
+    // diagnostics 직렬화
+    const rawDiags = pipeline.collectRawDiagnostics();
+    const serialized = rawDiags.map(serializeDiagnostic);
+    const errors = pipelineResult.diagnostics.errors.map((e) => e.message);
+    const allErrors = [...errors, ...pipelineResult.scssErrors, ...globalScssErrors];
+
+    const result: NgtscBuildResult = {
+      build: {
+        success: pipelineResult.diagnostics.errors.length === 0
+          && pipelineResult.scssErrors.length === 0
+          && globalScssErrors.length === 0,
+        errors: allErrors.length > 0 ? allErrors : undefined,
+        diagnostics: serialized,
+      },
+    };
+
+    // lint
+    if (info.output.lint === true) {
+      logger.debug(`[${info.name}] lint 시작`);
+      const lintRunner = new LintWithProgramRunner({
+        cwd: info.cwd,
+        pkgName: info.name,
+      });
+      result.lint = await lintRunner.lint({ program: pipeline.getTsProgram() });
+      logger.debug(`[${info.name}] lint 완료`);
+    }
+
+    logger.debug(`[${info.name}] ngtsc worker build 완료 (build.success: ${result.build.success})`);
+    return result;
+  } catch (err) {
+    const message = errNs.message(err);
+    logger.debug(`[${info.name}] ngtsc worker build 예외 발생: ${message}`);
+    return {
+      build: { success: false, errors: [message], diagnostics: [] },
+    };
+  }
 }
 
 //#endregion
@@ -90,12 +144,12 @@ async function build(info: NgtscBuildInfo): Promise<NgtscBuildResult> {
 const guardStartWatch = createOnceGuard("startWatch");
 
 let watchInfo: NgtscBuildInfo | undefined;
-let currentScssDependencies: Map<string, Set<string>> | undefined;
+let _watchPipeline: AngularBuildPipeline | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
 let lastSourceFilePaths: Set<string> | undefined;
 const sideEffectScssRegistry = new Map<string, SideEffectScssEntry>();
 
-function extractSourceFilePaths(program: ReturnType<AngularCompiler["getTsProgram"]>): Set<string> {
+function extractSourceFilePaths(program: { getSourceFiles(): readonly { fileName: string }[] }): Set<string> {
   const paths = new Set<string>();
   for (const sf of program.getSourceFiles()) {
     paths.add(pathx.posix(sf.fileName));
@@ -104,58 +158,46 @@ function extractSourceFilePaths(program: ReturnType<AngularCompiler["getTsProgra
 }
 
 /**
- * AngularCompiler를 사용하여 watch 빌드(초기 또는 증분)를 수행한다.
- * 엔진에 전송할 NgtscCombinedBuildEvent를 반환한다.
- *
- * @param affectedFileNames - 제공 시(watch 재빌드) 해당 파일만 lint 수행.
- *   미제공 시(초기 빌드) workspace 전체 파일을 lint 수행.
+ * Pipeline 빌드 결과 + side-effect/global SCSS를 통합하여 NgtscCombinedBuildEvent를 생성한다.
  */
-async function performWatchBuild(
+async function buildWatchEvent(
   info: NgtscBuildInfo,
-  compiler: AngularCompiler,
-  scssDependencies: Map<string, Set<string>>,
-  scssErrors: string[],
+  pipeline: AngularBuildPipeline,
+  loadPaths: string[],
+  hasScssChanges: boolean,
   affectedFileNames?: ReadonlySet<string>,
-  hasScssChanges = true,
 ): Promise<NgtscCombinedBuildEvent> {
-  logger.debug(`[${info.name}] performWatchBuild 시작`);
-  const pkgSrcDir = path.join(info.pkgDir, "src");
-  const normalizedSrcDir = pathx.posix(pkgSrcDir);
+  logger.debug(`[${info.name}] buildWatchEvent 시작`);
+  const normalizedSrcDir = pathx.posix(path.join(info.pkgDir, "src"));
 
-  // 진단 수집 — workspace 스코프 (패키지 단위 필터링 없음)
-  const allDiagnostics = [...compiler.collectDiagnostics()].filter(
-    (d) => isWorkspaceDiagnostic(d, info.cwd),
-  );
+  // Pipeline의 SCSS 의존성 맵을 공유하여 역방향 탐색 통합
+  const scssDepsMap = pipeline.getScssDependencies();
+  const sideEffectScssErrors: string[] = [];
 
-  const errorCount = allDiagnostics.filter(
-    (d) => d.category === ts.DiagnosticCategory.Error,
-  ).length;
-  const errors = allDiagnostics
-    .filter((d) => d.category === ts.DiagnosticCategory.Error)
-    .map(formatDiagnosticError);
-
-  // AngularCompiler로 emit + output-path-rewriting 적용
-  const loadPaths = buildScssLoadPaths(info);
-  const emitResults = compiler.emitAffectedFiles({
-    sourceFilter: (fileName: string) =>
-      pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
-  });
-  writeEmitResults(emitResults, info.pkgDir, {
-    loadPaths,
-    scssErrors,
-    scssDependencies,
-    registry: sideEffectScssRegistry,
+  // emit → 디스크 쓰기 (src/ 하위만)
+  pipeline.writeEmitResults({
+    pkgDir: info.pkgDir,
+    sourceFilter: (fileName) => pathx.posix(fileName).startsWith(normalizedSrcDir + "/"),
+    scss: {
+      loadPaths,
+      scssErrors: sideEffectScssErrors,
+      scssDependencies: scssDepsMap,
+      registry: sideEffectScssRegistry,
+    },
   });
 
-  // 사이드 이펙트 SCSS 컴파일 (.scss/.css 파일 변경 없으면 건너뜀)
+  // side-effect SCSS 컴파일 (.scss/.css 변경 시에만)
   if (hasScssChanges) {
-    compileSideEffectScss(sideEffectScssRegistry, loadPaths, scssErrors, scssDependencies);
+    compileSideEffectScss(sideEffectScssRegistry, loadPaths, sideEffectScssErrors, scssDepsMap);
   }
 
-  // 전역 SCSS 컴파일
+  // global SCSS 컴파일
   const globalScssErrors = compileGlobalScss(info.pkgDir, loadPaths);
 
-  const allErrors = [...errors, ...scssErrors, ...globalScssErrors];
+  const diagnostics = pipeline.getDiagnostics();
+  const pipelineScssErrors = pipeline.getScssErrors();
+  const errors = diagnostics.errors.map((e) => e.message);
+  const allErrors = [...errors, ...pipelineScssErrors, ...sideEffectScssErrors, ...globalScssErrors];
 
   // lint 실행 (활성화 시)
   let lint: LintWithProgramResult | undefined;
@@ -168,16 +210,19 @@ async function performWatchBuild(
       });
     }
     lint = await watchLintRunner.lint({
-      program: compiler.getTsProgram(),
+      program: pipeline.getTsProgram(),
       affectedFiles: affectedFileNames,
     });
     logger.debug(`[${info.name}] lint 완료`);
   }
 
-  logger.debug(`[${info.name}] performWatchBuild 완료`);
+  logger.debug(`[${info.name}] buildWatchEvent 완료`);
   return {
     build: {
-      success: errorCount === 0 && scssErrors.length === 0 && globalScssErrors.length === 0,
+      success: diagnostics.errors.length === 0
+        && pipelineScssErrors.length === 0
+        && sideEffectScssErrors.length === 0
+        && globalScssErrors.length === 0,
       errors: allErrors.length > 0 ? allErrors : undefined,
     },
     lint,
@@ -199,28 +244,25 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
         ? getCompilerOptionsForEnv(parsedConfig.options, watchInfo.env, watchInfo.pkgDir)
         : parsedConfig.options;
     const compilerOptions = buildCompilerOptions(baseOptions, watchInfo.pkgDir, watchInfo.output);
-
     const angularOptions = (parsedConfig.raw?.angularCompilerOptions ?? {}) as Record<string, unknown>;
-
-    // SCSS 클로저 변수
-    const scssErrors: string[] = [];
-    const scssDependencies = new Map<string, Set<string>>();
     const loadPaths = buildScssLoadPaths(watchInfo);
-    currentScssDependencies = scssDependencies;
 
-    // AngularSourceFileCache + AngularCompiler 생성
+    // Pipeline 생성 + 초기 빌드
     const sourceFileCache = new AngularSourceFileCache();
-    const compiler = new AngularCompiler({
+    const pipeline = new AngularBuildPipeline({
+      mode: "library",
+      pkgDir: watchInfo.pkgDir,
+      cwd: watchInfo.cwd,
       rootNames: sourceFiles,
       compilerOptions,
       angularCompilerOptions: angularOptions,
       sourceFileCache,
-      transformStylesheet: createLibraryTransformStylesheet(loadPaths, scssErrors, scssDependencies),
     });
-    // 초기 빌드
-    await compiler.initialize();
-    lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
-    const initialResult = await performWatchBuild(watchInfo, compiler, scssDependencies, scssErrors);
+    _watchPipeline = pipeline;
+
+    await pipeline.initialize();
+    lastSourceFilePaths = extractSourceFilePaths(pipeline.getTsProgram());
+    const initialResult = await buildWatchEvent(watchInfo, pipeline, loadPaths, true);
     sender.send("build", initialResult);
 
     // workspace 의존성 경로 + replaceDeps 수집
@@ -260,15 +302,10 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
         for (const f of changedFiles) {
           modifiedFiles.add(f.path);
 
-          // SCSS 의존성 역방향 탐색
-          if (
-            (f.path.endsWith(".scss") || f.path.endsWith(".css")) &&
-            currentScssDependencies != null
-          ) {
-            for (const [containingFile, deps] of currentScssDependencies) {
-              if (deps.has(f.path)) {
-                modifiedFiles.add(containingFile);
-              }
+          // Pipeline의 SCSS 역방향 탐색
+          if (f.path.endsWith(".scss") || f.path.endsWith(".css")) {
+            for (const affected of pipeline.findAffectedByScss(f.path)) {
+              modifiedFiles.add(affected);
             }
           }
         }
@@ -286,15 +323,12 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
 
         sender.send("buildStart", {});
 
-        // 새 리빌드를 위해 SCSS 에러 초기화
-        scssErrors.length = 0;
-        scssDependencies.clear();
-
-        // AngularCompiler.update()를 통한 증분 리빌드
-        const updateResult = await compiler.update(modifiedFiles);
+        // Pipeline 증분 업데이트 (SCSS 의존성 초기화 포함)
+        pipeline.clearScssDependencies();
+        const updateResult = await pipeline.update(modifiedFiles);
 
         // 리빌드 후 소스 파일 경로 업데이트
-        lastSourceFilePaths = extractSourceFilePaths(compiler.getTsProgram());
+        lastSourceFilePaths = extractSourceFilePaths(pipeline.getTsProgram());
 
         // 증분 lint를 위해 영향받은 ts.SourceFile 집합을 파일명 문자열로 변환
         const affectedFileNames = new Set<string>();
@@ -306,7 +340,7 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
           (f) => f.path.endsWith(".scss") || f.path.endsWith(".css"),
         );
 
-        const result = await performWatchBuild(watchInfo!, compiler, scssDependencies, scssErrors, affectedFileNames, hasScssChanges);
+        const result = await buildWatchEvent(watchInfo!, pipeline, loadPaths, hasScssChanges, affectedFileNames);
         sender.send("build", result);
       } catch (err) {
         sender.send("error", { message: errNs.message(err) });

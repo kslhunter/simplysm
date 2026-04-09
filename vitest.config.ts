@@ -1,8 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { angularVitestPlugin } from "./packages/sd-cli/src/vitest-plugin";
-import { resolve } from "node:path";
+import { sdAngularPlugin } from "./packages/sd-cli/src/angular/vite-angular-plugin";
 
 process.env["DEV"] = "true";
 process.env["VER"] = "1.0.0-test";
@@ -62,9 +61,7 @@ export default defineConfig({
       {
         extends: true,
         plugins: [
-          angularVitestPlugin({
-            tsconfig: resolve(import.meta.dirname, "packages/angular/tsconfig.json"),
-          }),
+          sdAngularPlugin({ pkg: "angular" }),
         ],
         test: {
           name: "angular",

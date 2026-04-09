@@ -6,24 +6,24 @@ const mockWatcherClose = vi.fn();
 
 const toPosix = (p: string) => p.replace(/\\/g, "/");
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    glob: vi.fn(),
-    mkdir: vi.fn(),
-    copy: vi.fn(),
-    rm: vi.fn(),
-  },
-  pathx: {
-    posix: (p: string) => p.replace(/\\/g, "/"),
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-  },
-  FsWatcher: {
-    watch: vi.fn(() => Promise.resolve({
-      onChange: mockOnChange,
-      close: mockWatcherClose,
-    })),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...actual,
+    fsx: {
+      glob: vi.fn(),
+      mkdir: vi.fn(),
+      copy: vi.fn(),
+      rm: vi.fn(),
+    },
+    FsWatcher: {
+      watch: vi.fn(() => Promise.resolve({
+        onChange: mockOnChange,
+        close: mockWatcherClose,
+      })),
+    },
+  };
+});
 
 const { fsx, FsWatcher } = await import("@simplysm/core-node");
 const { copySrcFiles, watchCopySrcFiles } = await import("../../src/utils/copy-src");
@@ -34,9 +34,7 @@ const distDir = toPosix(path.join(pkgDir, "dist"));
 
 describe("copySrcFiles", () => {
   beforeEach(() => {
-    vi.mocked(fsx.glob).mockReset();
-    vi.mocked(fsx.mkdir).mockReset();
-    vi.mocked(fsx.copy).mockReset();
+    vi.clearAllMocks();
     vi.mocked(fsx.mkdir).mockResolvedValue(undefined as any);
     vi.mocked(fsx.copy).mockResolvedValue(undefined as any);
   });
@@ -63,8 +61,14 @@ describe("copySrcFiles", () => {
 
     await copySrcFiles(pkgDir, ["**/*.css", "**/*.json"]);
 
-    expect(fsx.glob).toHaveBeenCalledTimes(2);
-    expect(fsx.copy).toHaveBeenCalledTimes(2);
+    expect(fsx.copy).toHaveBeenCalledWith(
+      toPosix(path.join(srcDir, "a.css")),
+      toPosix(path.join(distDir, "a.css")),
+    );
+    expect(fsx.copy).toHaveBeenCalledWith(
+      toPosix(path.join(srcDir, "b.json")),
+      toPosix(path.join(distDir, "b.json")),
+    );
   });
 
   it("does nothing when no files match", async () => {
@@ -78,11 +82,7 @@ describe("copySrcFiles", () => {
 
 describe("watchCopySrcFiles", () => {
   beforeEach(() => {
-    vi.mocked(fsx.glob).mockReset();
-    vi.mocked(fsx.mkdir).mockReset();
-    vi.mocked(fsx.copy).mockReset();
-    vi.mocked(fsx.rm).mockReset();
-    mockOnChange.mockReset();
+    vi.clearAllMocks();
     vi.mocked(fsx.glob).mockResolvedValue([]);
     vi.mocked(fsx.mkdir).mockResolvedValue(undefined as any);
     vi.mocked(fsx.copy).mockResolvedValue(undefined as any);

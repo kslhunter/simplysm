@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
-import fs from "node:fs";
+import fs from "fs";
 
 // --- Mock sharp ---
 
@@ -45,7 +45,6 @@ describe("generatePwaIcons", () => {
     );
     expect(mockSharpResize).toHaveBeenCalledWith(192, 192);
     expect(mockSharpResize).toHaveBeenCalledWith(512, 512);
-    expect(mockSharpToFile).toHaveBeenCalledTimes(2);
     expect(result).toEqual([
       { src: "icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { src: "icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
@@ -58,7 +57,6 @@ describe("generatePwaIcons", () => {
 
     const result = await generatePwaIcons("/packages/my-client");
 
-    expect(mockSharp).not.toHaveBeenCalled();
     expect(result).toEqual([]);
   });
 

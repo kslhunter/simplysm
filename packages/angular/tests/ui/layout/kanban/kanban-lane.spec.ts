@@ -37,7 +37,7 @@ describe("Feature 6.3 Slice 3: SdKanbanLane", () => {
     const lane2 = lanes[1];
 
     // 카드 A 드래그 시작
-    cardA.querySelector("sd-card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+    cardA.querySelector(".card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(board.dragKanban()).not.toBeUndefined();

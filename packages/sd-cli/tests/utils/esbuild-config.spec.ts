@@ -9,14 +9,6 @@ vi.mock("fs/promises", () => ({
   },
 }));
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-    })),
-  },
-}));
-
 const { createServerEsbuildOptions, createEnvBanner, writeChangedOutputFiles } =
   await import("../../src/utils/esbuild-config");
 
@@ -120,9 +112,7 @@ describe("createEnvBanner", () => {
 
 describe("writeChangedOutputFiles", () => {
   beforeEach(() => {
-    vi.mocked(mockFs.readFile).mockReset();
-    vi.mocked(mockFs.writeFile).mockReset();
-    vi.mocked(mockFs.mkdir).mockReset();
+    vi.clearAllMocks();
     vi.mocked(mockFs.mkdir).mockResolvedValue(undefined as any);
     vi.mocked(mockFs.writeFile).mockResolvedValue();
   });

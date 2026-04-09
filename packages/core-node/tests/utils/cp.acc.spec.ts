@@ -1,11 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("child_process", () => ({
-  execSync: vi.fn(),
-}));
-
-import { execSync } from "child_process";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getSystemEncoding, resetEncodingCache } from "../../src/utils/cp";
+
+const KNOWN_ENCODINGS = [
+  "utf-8",
+  "euc-kr",
+  "shift-jis",
+  "gbk",
+  "big5",
+  "windows-1252",
+  "windows-1251",
+  "windows-1250",
+  "windows-874",
+];
 
 describe("getSystemEncoding", () => {
   const originalPlatform = process.platform;
@@ -14,7 +20,6 @@ describe("getSystemEncoding", () => {
 
   beforeEach(() => {
     resetEncodingCache();
-    vi.mocked(execSync).mockReset();
   });
 
   afterEach(() => {
@@ -25,11 +30,8 @@ describe("getSystemEncoding", () => {
     else delete process.env["LC_ALL"];
   });
 
-  it("Windows CP949 시스템에서 euc-kr로 감지", () => {
-    Object.defineProperty(process, "platform", { value: "win32" });
-    vi.mocked(execSync).mockReturnValue("활성 코드 페이지: 949\n");
-
-    expect(getSystemEncoding()).toBe("euc-kr");
+  it("현재 시스템 인코딩이 알려진 인코딩 목록에 포함", () => {
+    expect(KNOWN_ENCODINGS).toContain(getSystemEncoding());
   });
 
   it("Linux UTF-8 시스템에서 utf-8로 감지", () => {

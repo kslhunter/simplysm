@@ -62,7 +62,7 @@ export class ViteEngine implements BuildEngine {
   /**
    * 일회성 빌드 (프로덕션)
    */
-  async run(output: BuildOutput): Promise<EngineResult> {
+  async run(_output: BuildOutput): Promise<EngineResult> {
     logger.debug(`[${this._pkg.name}] ViteEngine.run 시작`);
     this._createWorker();
 
@@ -73,8 +73,6 @@ export class ViteEngine implements BuildEngine {
       framework: this._pkg.config.framework,
       env: this._pkg.config.env,
       configs: this._pkg.config.configs,
-      browserSupport: this._pkg.config.browserSupport,
-      enableLint: output.lint,
       pwa: this._pkg.config.pwa,
       exclude: this._pkg.config.exclude,
       outDir: this._outDir,
@@ -89,7 +87,6 @@ export class ViteEngine implements BuildEngine {
         warnings: result.warnings ?? [],
         diagnostics: [],
       },
-      lint: result.lint,
     };
   }
 
@@ -97,7 +94,7 @@ export class ViteEngine implements BuildEngine {
    * 워치 모드 시작 (Vite 개발 서버)
    * worker의 startWatch()가 완료되면 Promise가 resolve된다.
    */
-  async startWatch(output: BuildOutput): Promise<void> {
+  async startWatch(_output: BuildOutput): Promise<void> {
     logger.debug(`[${this._pkg.name}] ViteEngine.startWatch 시작`);
     this._isWatchMode = true;
     this._createWorker();
@@ -123,7 +120,6 @@ export class ViteEngine implements BuildEngine {
         success: boolean;
         errors?: string[];
         warnings?: string[];
-        lint?: { success: boolean; errorCount: number; warningCount: number; formattedOutput: string };
       };
       const buildResult: BuildResult = {
         name: this._pkg.name,
@@ -133,18 +129,6 @@ export class ViteEngine implements BuildEngine {
         message: event.errors?.join("\n"),
       };
       this._resultCollector?.add(buildResult);
-
-      // 린트 결과 보고 (있는 경우)
-      if (event.lint != null) {
-        const lintResult: BuildResult = {
-          name: this._pkg.name,
-          target: "client",
-          type: "lint",
-          status: event.lint.success ? "success" : "error",
-          message: event.lint.formattedOutput !== "" ? event.lint.formattedOutput : undefined,
-        };
-        this._resultCollector?.add(lintResult);
-      }
 
       resolver?.();
       resolver = undefined;
@@ -185,8 +169,6 @@ export class ViteEngine implements BuildEngine {
       env: this._pkg.config.env,
       configs: this._pkg.config.configs,
       replaceDeps: this._replaceDeps,
-      browserSupport: this._pkg.config.browserSupport,
-      enableLint: output.lint,
       pwa: this._pkg.config.pwa,
       exclude: this._pkg.config.exclude,
     });

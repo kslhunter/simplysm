@@ -56,17 +56,6 @@ vi.mock("typescript", async (importOriginal) => {
   };
 });
 
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(), start: vi.fn(), success: vi.fn(),
-    info: vi.fn(), error: vi.fn(), warn: vi.fn(), log: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c, LogLevels: {} };
-});
-
 const { TypecheckOrchestrator } = await import(
   "../../src/orchestrators/TypecheckOrchestrator"
 );

@@ -19,7 +19,8 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
     "error",
     {
       name: "Buffer",
-      message: "Uint8Array를 사용하세요. 복잡한 연산에는 @simplysm/core-common의 BytesUtils를 사용하세요.",
+      message:
+        "Uint8Array를 사용하세요. 복잡한 연산에는 @simplysm/core-common의 BytesUtils를 사용하세요.",
     },
   ],
   "no-restricted-imports": [
@@ -169,10 +170,19 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/prefer-readonly": "error",
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "memberLike",
+          modifiers: ["private"],
+          format: null,
+          leadingUnderscore: "require",
+        },
+      ],
 
       "@typescript-eslint/no-misused-promises": [
         "error",
-        { checksVoidReturn: { arguments: false } },
+        { checksVoidReturn: { arguments: false, inheritedMethods: false } },
       ],
       "@typescript-eslint/only-throw-error": "error",
       "@typescript-eslint/no-array-delete": "error",

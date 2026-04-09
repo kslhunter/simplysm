@@ -21,49 +21,28 @@ vi.mock("../src/commands/replace-deps", () => ({
 }));
 
 describe("sd-cli-entry COMMAND_NAMES", () => {
-  it("does not include device command", async () => {
-    // Import the module to check COMMAND_NAMES indirectly via createCliParser
-    const { createCliParser } = await import("../src/sd-cli-entry");
-
-    // device command should not be registered — parsing "device" should fail
-    let errorThrown = false;
-    const origExit = process.exit;
-    const origError = console.error;
-    const origLog = console.log;
-
-    // Suppress yargs output during test
-    console.error = () => {};
-    console.log = () => {};
-    process.exit = (() => {
-      errorThrown = true;
-    }) as never;
-
-    try {
-      await createCliParser(["device"]).exitProcess(false).fail(() => {
-        errorThrown = true;
-      }).parse();
-    } catch {
-      errorThrown = true;
-    } finally {
-      process.exit = origExit;
-      console.error = origError;
-      console.log = origLog;
-    }
-
-    expect(errorThrown).toBe(true);
-  });
-
   it("includes expected commands", async () => {
     const { createCliParser } = await import("../src/sd-cli-entry");
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    // These commands should be registered without throwing
-    const expectedCommands = ["lint", "typecheck", "check", "watch", "dev", "build", "init", "publish", "replace-deps"];
+    try {
+      const expectedCommands = ["check", "watch", "dev", "device", "build", "publish", "replace-deps"];
 
-    for (const cmd of expectedCommands) {
-      // Verify command exists by checking help doesn't throw for "unknown command"
-      const parser = createCliParser([cmd, "--help"]).exitProcess(false);
-      // Just verify it can be created without error
-      expect(parser).toBeDefined();
+      for (const cmd of expectedCommands) {
+        exitSpy.mockClear();
+        try {
+          await createCliParser([cmd, "--help"]).exitProcess(false).parse();
+        } catch {
+          // yargs --help may throw after output
+        }
+        expect(exitSpy, `"${cmd}" should be registered`).not.toHaveBeenCalled();
+      }
+    } finally {
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
+      logSpy.mockRestore();
     }
   });
 

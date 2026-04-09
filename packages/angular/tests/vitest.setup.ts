@@ -1,15 +1,10 @@
-import { TestBed } from "@angular/core/testing";
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from "@angular/platform-browser-dynamic/testing";
-import { afterEach } from "vitest";
+import { getTestBed } from "@angular/core/testing";
+import { BrowserTestingModule, platformBrowserTesting } from "@angular/platform-browser/testing";
+import { beforeEach } from "vitest";
 
-TestBed.initTestEnvironment(
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(),
-);
+const testBed = getTestBed();
+testBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
-afterEach(() => {
-  TestBed.resetTestingModule();
+beforeEach(() => {
+  testBed.resetTestingModule();
 });

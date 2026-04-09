@@ -1,16 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mock factories (vi.mock is hoisted) ---
-
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    })),
-  },
-}));
 
 const mockWorker = {
   build: vi.fn(),
@@ -51,180 +41,67 @@ beforeEach(() => {
   mockWorker.stopWatch.mockResolvedValue(undefined);
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe("ViteEngine", () => {
   describe("run()", () => {
-    // Acceptance: Scenario "프로덕션 빌드 성공"
-    it("creates worker, calls build, and returns EngineResult with js success and dts always-success", async () => {
-      mockWorker.build.mockResolvedValue({
-        success: true,
+    describe("빌드 실행 및 결과 매핑", () => {
+      it("returns EngineResult with build success", async () => {
+        mockWorker.build.mockResolvedValue({
+          success: true,
+        });
+
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: false });
+
+        expect(result.build.success).toBe(true);
+        expect(result.build.errors).toEqual([]);
+        expect(result.build.diagnostics).toEqual([]);
+        await engine.stop();
       });
 
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
-      const result = await engine.run({ js: true, dts: false });
+      it("returns failure EngineResult when build fails", async () => {
+        mockWorker.build.mockResolvedValue({
+          success: false,
+          errors: ["TS2345: Argument of type..."],
+        });
 
-      const { Worker } = await import("@simplysm/core-node");
-      expect(Worker.create).toHaveBeenCalledTimes(1);
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "my-client",
-          pkgDir: "/packages/my-client",
-        }),
-      );
-      expect(result.build.success).toBe(true);
-      expect(result.build.errors).toEqual([]);
-      expect(result.build.diagnostics).toEqual([]);
-      await engine.stop();
-    });
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: false });
 
-    // Acceptance: Scenario "빌드 실패"
-    it("returns failure EngineResult when build fails", async () => {
-      mockWorker.build.mockResolvedValue({
-        success: false,
-        errors: ["TS2345: Argument of type..."],
+        expect(result.build.success).toBe(false);
+        expect(result.build.errors).toContain("TS2345: Argument of type...");
+        await engine.stop();
       });
 
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
-      const result = await engine.run({ js: true, dts: false });
+      it("maps worker warnings to EngineResult", async () => {
+        mockWorker.build.mockResolvedValue({
+          success: true,
+          warnings: ["deprecation warning"],
+        });
 
-      expect(result.build.success).toBe(false);
-      expect(result.build.errors).toContain("TS2345: Argument of type...");
-      await engine.stop();
-    });
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: false });
 
-    // Unit: warnings are mapped through
-    it("maps worker warnings to EngineResult", async () => {
-      mockWorker.build.mockResolvedValue({
-        success: true,
-        warnings: ["deprecation warning"],
+        expect(result.build.warnings).toEqual(["deprecation warning"]);
+        await engine.stop();
       });
 
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
-      const result = await engine.run({ js: true, dts: false });
-
-      expect(result.build.warnings).toEqual(["deprecation warning"]);
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "env 전달"
-    it("passes env from config to worker build call", async () => {
-      mockWorker.build.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            env: { VER: "1.0.0", DEV: "false", API_HOST: "https://api.com" },
-          } as any,
-        }),
-      });
-      await engine.run({ js: true, dts: false });
-
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          env: { VER: "1.0.0", DEV: "false", API_HOST: "https://api.com" },
-        }),
-      );
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "configs 전달"
-    it("passes configs from config to worker build call", async () => {
-      mockWorker.build.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            configs: { dbHost: "db.prod.com" },
-          } as any,
-        }),
-      });
-      await engine.run({ js: true, dts: false });
-
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          configs: { dbHost: "db.prod.com" },
-        }),
-      );
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "browserSupport 전달" (Feature 5.1)
-    it("passes browserSupport from config to worker build call", async () => {
-      mockWorker.build.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            browserSupport: {
-              browserslist: "last 2 Chrome versions",
-              postCss: { plugins: ["autoprefixer"] },
-              legacyModule: true,
-            },
-          } as any,
-        }),
-      });
-      await engine.run({ js: true, dts: false });
-
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          browserSupport: {
-            browserslist: "last 2 Chrome versions",
-            postCss: { plugins: ["autoprefixer"] },
-            legacyModule: true,
+      it("does not include lint in EngineResult", async () => {
+        mockWorker.build.mockResolvedValue({
+          success: true,
+          lint: {
+            success: false,
+            errorCount: 2,
+            warningCount: 1,
+            formattedOutput: "lint output",
           },
-        }),
-      );
-      await engine.stop();
-    });
+        });
 
-    // Acceptance: Scenario "exclude 전달 (build)"
-    it("passes exclude from config to worker build call", async () => {
-      mockWorker.build.mockResolvedValue({ success: true });
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+        const result = await engine.run({ js: true, dts: false });
 
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            exclude: ["jeep-sqlite"],
-          } as any,
-        }),
+        expect(result.lint).toBeUndefined();
+        await engine.stop();
       });
-      await engine.run({ js: true, dts: false });
-
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          exclude: ["jeep-sqlite"],
-        }),
-      );
-      await engine.stop();
-    });
-
-    // Unit: build failure reflects in result
-    it("reflects build failure in result", async () => {
-      mockWorker.build.mockResolvedValue({
-        success: false,
-        errors: ["error"],
-      });
-
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
-      const result = await engine.run({ js: true, dts: false });
-
-      expect(result.build.success).toBe(false);
-      await engine.stop();
     });
   });
 
@@ -271,380 +148,262 @@ describe("ViteEngine", () => {
   });
 
   describe("startWatch()", () => {
-    // Acceptance: Scenario "개발 서버 시작 및 initial build 완료"
-    it("resolves when startWatch returns success", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
+    describe("초기화 및 이벤트 구독", () => {
+      it("resolves when startWatch returns success", async () => {
+        mockWorker.startWatch.mockResolvedValue({ success: true });
 
-      const { Worker } = await import("@simplysm/core-node");
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
 
-      await engine.startWatch({ js: true, dts: false });
+        await expect(engine.startWatch({ js: true, dts: false })).resolves.toBeUndefined();
 
-      expect(Worker.create).toHaveBeenCalledTimes(1);
-      expect(mockWorker.on).toHaveBeenCalledWith("serverReady", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("error", expect.any(Function));
-
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "ResultCollector에 결과 보고 — build 이벤트 경유"
-    it("reports build result to ResultCollector via build event only", async () => {
-      const mockResultCollector = { add: vi.fn() };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        // Simulate "build" event during startWatch (Angular plugin buildStart)
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({ success: true });
-        return Promise.resolve({ success: true });
+        await engine.stop();
       });
 
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        resultCollector: mockResultCollector as any,
+      it("stores port from serverReady event", async () => {
+        mockWorker.startWatch.mockImplementation(() => {
+          const serverReadyHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "serverReady",
+          )?.[1];
+          serverReadyHandler?.({ port: 4200 });
+          return Promise.resolve({ success: true });
+        });
+
+        const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        expect(engine.port).toBe(4200);
+
+        await engine.stop();
       });
 
-      await engine.startWatch({ js: true, dts: false });
+      it("leaves port undefined when worker mock does not emit serverReady", async () => {
+        mockWorker.startWatch.mockResolvedValue({ success: true });
 
-      const addCalls = mockResultCollector.add.mock.calls;
-      const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+        });
 
-      expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("success");
+        await engine.startWatch({ js: true, dts: false });
 
-      await engine.stop();
+        expect(engine.port).toBeUndefined();
+
+        await engine.stop();
+      });
     });
 
-    // Acceptance: Scenario "dev server 포트가 ViteEngine에 보고된다"
-    it("stores port from serverReady event", async () => {
-      mockWorker.startWatch.mockImplementation(() => {
-        // Emit serverReady before resolving
-        const serverReadyHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "serverReady",
-        )?.[1];
-        serverReadyHandler?.({ port: 4200 });
-        return Promise.resolve({ success: true });
+    describe("ResultCollector 보고", () => {
+      it("reports build result to ResultCollector via build event only", async () => {
+        const mockResultCollector = { add: vi.fn() };
+
+        mockWorker.startWatch.mockImplementation(() => {
+          const buildHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "build",
+          )?.[1];
+          buildHandler?.({ success: true });
+          return Promise.resolve({ success: true });
+        });
+
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        const addCalls = mockResultCollector.add.mock.calls;
+        const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
+
+        expect(buildResult).toBeDefined();
+        expect(buildResult![0].status).toBe("success");
+
+        await engine.stop();
       });
 
-      const engine = new ViteEngine({ cwd: "/root", pkg: createMockPkg() });
+      it("does not add lint BuildResult to ResultCollector even when build event has lint", async () => {
+        const mockResultCollector = { add: vi.fn() };
 
-      await engine.startWatch({ js: true, dts: false });
-
-      expect(engine.port).toBe(4200);
-
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "env와 configs 전달"
-    it("passes env and configs from config to worker startWatch call", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            env: { VER: "1.0.0", DEV: "true" },
-            configs: { debug: true },
-          } as any,
-        }),
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      expect(mockWorker.startWatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          env: { VER: "1.0.0", DEV: "true" },
-          configs: { debug: true },
-        }),
-      );
-
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "browserSupport 전달 (watch)" (Feature 5.1)
-    it("passes browserSupport from config to worker startWatch call", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            browserSupport: {
-              browserslist: ["ie 11", "last 2 versions"],
-              legacyModule: true,
+        mockWorker.startWatch.mockImplementation(() => {
+          const buildHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "build",
+          )?.[1];
+          buildHandler?.({
+            success: true,
+            lint: {
+              success: false,
+              errorCount: 1,
+              warningCount: 0,
+              formattedOutput: "error",
             },
-          } as any,
-        }),
+          });
+          return Promise.resolve({ success: true });
+        });
+
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        const lintResult = mockResultCollector.add.mock.calls.find(
+          (c: any[]) => c[0].type === "lint",
+        );
+        expect(lintResult).toBeUndefined();
+
+        await engine.stop();
       });
 
-      await engine.startWatch({ js: true, dts: false });
+      it("reports initial build result exactly once to ResultCollector", async () => {
+        const mockResultCollector = { add: vi.fn() };
 
-      expect(mockWorker.startWatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          browserSupport: {
-            browserslist: ["ie 11", "last 2 versions"],
-            legacyModule: true,
-          },
-        }),
-      );
+        mockWorker.startWatch.mockImplementation(() => {
+          const buildHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "build",
+          )?.[1];
+          buildHandler?.({ success: true });
+          return Promise.resolve({ success: true });
+        });
 
-      await engine.stop();
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        const buildAddCalls = mockResultCollector.add.mock.calls.filter(
+          (c: any[]) => c[0].type === "build",
+        );
+        expect(buildAddCalls).toHaveLength(1);
+
+        await engine.stop();
+      });
+
+      it("reports error from error event to ResultCollector", async () => {
+        const mockResultCollector = { add: vi.fn() };
+
+        mockWorker.startWatch.mockImplementation(() => {
+          const errorHandler = mockWorker.on.mock.calls.find(
+            (call: any[]) => call[0] === "error",
+          )?.[1];
+          errorHandler?.({ message: "Build failed" });
+          return Promise.resolve({ success: false, errors: ["Build failed"] });
+        });
+
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          resultCollector: mockResultCollector as any,
+        });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        const addCalls = mockResultCollector.add.mock.calls;
+        const errorResult = addCalls.find((c: any[]) => c[0].status === "error");
+        expect(errorResult).toBeDefined();
+
+        await engine.stop();
+      });
     });
 
-    // Acceptance: Scenario "독립 클라이언트의 Vite dev server 시작 (지정 포트)"
-    it("passes port to worker startWatch when config.server is a number", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
+    describe("RebuildManager 연동", () => {
+      it("forwards buildStart event to RebuildManager.registerBuild", async () => {
+        const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
 
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: { target: "client", server: 3000 } as any,
-        }),
+        mockWorker.startWatch.mockImplementation(() => {
+          return Promise.resolve({ success: true });
+        });
+
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          rebuildManager: mockRebuildManager as any,
+        });
+
+        await engine.startWatch({ js: true, dts: false });
+
+        const buildStartHandler = mockWorker.on.mock.calls.find(
+          (call: any[]) => call[0] === "buildStart",
+        )?.[1];
+        expect(buildStartHandler).toBeDefined();
+
+        buildStartHandler?.({});
+
+        expect(mockRebuildManager.registerBuild).toHaveBeenCalled();
+
+        await engine.stop();
       });
 
-      await engine.startWatch({ js: true, dts: false });
+      it("registers with RebuildManager using '{name}:build' key pattern", async () => {
+        const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
 
-      expect(mockWorker.startWatch).toHaveBeenCalledWith(
-        expect.objectContaining({ port: 3000 }),
-      );
+        mockWorker.startWatch.mockImplementation(() => {
+          return Promise.resolve({ success: true });
+        });
 
-      await engine.stop();
-    });
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg({ name: "my-client" }),
+          rebuildManager: mockRebuildManager as any,
+        });
 
-    // Acceptance: Scenario "exclude 전달 (watch)"
-    it("passes exclude from config to worker startWatch call", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
+        await engine.startWatch({ js: true, dts: false });
 
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            exclude: ["jeep-sqlite", "another-pkg"],
-          } as any,
-        }),
+        const buildStartHandler = mockWorker.on.mock.calls.find(
+          (call: any[]) => call[0] === "buildStart",
+        )?.[1];
+        buildStartHandler?.({});
+
+        expect(mockRebuildManager.registerBuild).toHaveBeenCalledWith(
+          "my-client:build",
+          expect.any(String),
+        );
+
+        await engine.stop();
       });
 
-      await engine.startWatch({ js: true, dts: false });
+      it("resolves rebuild when build event arrives after buildStart", async () => {
+        const mockResolver = vi.fn();
+        const mockRebuildManager = { registerBuild: vi.fn(() => mockResolver) };
+        const mockResultCollector = { add: vi.fn() };
 
-      expect(mockWorker.startWatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          exclude: ["jeep-sqlite", "another-pkg"],
-        }),
-      );
+        mockWorker.startWatch.mockImplementation(() => {
+          return Promise.resolve({ success: true });
+        });
 
-      await engine.stop();
-    });
+        const engine = new ViteEngine({
+          cwd: "/root",
+          pkg: createMockPkg(),
+          rebuildManager: mockRebuildManager as any,
+          resultCollector: mockResultCollector as any,
+        });
 
-    // Unit: server: string does not pass port
-    it("does not pass port when config.server is a string", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
+        await engine.startWatch({ js: true, dts: false });
 
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: { target: "client", server: "my-server" } as any,
-        }),
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      const callArgs = mockWorker.startWatch.mock.calls[0][0];
-      expect(callArgs.port).toBeUndefined();
-
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "buildStart/build 이벤트를 RebuildManager에 연동" (Feature 3.3)
-    it("forwards buildStart event to RebuildManager.registerBuild", async () => {
-      const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        return Promise.resolve({ success: true });
-      });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        rebuildManager: mockRebuildManager as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      // Simulate buildStart event from worker
-      const buildStartHandler = mockWorker.on.mock.calls.find(
-        (call: any[]) => call[0] === "buildStart",
-      )?.[1];
-      expect(buildStartHandler).toBeDefined();
-
-      // First call is initial build, subsequent calls register with RebuildManager
-      buildStartHandler?.({});
-
-      expect(mockRebuildManager.registerBuild).toHaveBeenCalled();
-
-      await engine.stop();
-    });
-
-    // Unit: ViteEngine uses same workerKey pattern as BaseEngine (CONSIST-001)
-    it("registers with RebuildManager using '{name}:build' key pattern", async () => {
-      const mockRebuildManager = { registerBuild: vi.fn(() => vi.fn()) };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        return Promise.resolve({ success: true });
-      });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({ name: "my-client" }),
-        rebuildManager: mockRebuildManager as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      const buildStartHandler = mockWorker.on.mock.calls.find(
-        (call: any[]) => call[0] === "buildStart",
-      )?.[1];
-      buildStartHandler?.({});
-
-      expect(mockRebuildManager.registerBuild).toHaveBeenCalledWith(
-        "my-client:build",
-        expect.any(String),
-      );
-
-      await engine.stop();
-    });
-
-    // Acceptance: Scenario "build 이벤트로 ResultCollector 갱신 + resolver 호출" (Feature 3.3)
-    it("resolves rebuild when build event arrives after buildStart", async () => {
-      const mockResolver = vi.fn();
-      const mockRebuildManager = { registerBuild: vi.fn(() => mockResolver) };
-      const mockResultCollector = { add: vi.fn() };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        return Promise.resolve({ success: true });
-      });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        rebuildManager: mockRebuildManager as any,
-        resultCollector: mockResultCollector as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      // Get handlers
-      const buildStartHandler = mockWorker.on.mock.calls.find(
-        (call: any[]) => call[0] === "buildStart",
-      )?.[1];
-      const buildHandler = mockWorker.on.mock.calls.find(
-        (call: any[]) => call[0] === "build",
-      )?.[1];
-
-      // Trigger rebuild cycle
-      buildStartHandler?.({});
-      buildHandler?.({ success: true });
-
-      // resolver should be called
-      expect(mockResolver).toHaveBeenCalled();
-
-      // ResultCollector should be updated
-      const buildResult = mockResultCollector.add.mock.calls.find(
-        (c: any[]) => c[0].type === "build" && c[0].status === "success",
-      );
-      expect(buildResult).toBeDefined();
-
-      await engine.stop();
-    });
-
-    // Unit: mock worker가 serverReady를 발행하지 않으면 port가 undefined로 남는다
-    it("leaves port undefined when worker mock does not emit serverReady for legacyModule", async () => {
-      mockWorker.startWatch.mockResolvedValue({ success: true });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg({
-          config: {
-            target: "client",
-            server: "my-server",
-            browserSupport: { legacyModule: true },
-          } as any,
-        }),
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      // serverReady is subscribed but never emitted — port stays undefined
-      expect(engine.port).toBeUndefined();
-
-      // buildStart/build event handlers are still registered
-      expect(mockWorker.on).toHaveBeenCalledWith("buildStart", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("build", expect.any(Function));
-
-      await engine.stop();
-    });
-
-    // Unit: initial build result is reported exactly once (not duplicated by startWatch return)
-    it("reports initial build result exactly once to ResultCollector", async () => {
-      const mockResultCollector = { add: vi.fn() };
-
-      mockWorker.startWatch.mockImplementation(() => {
+        const buildStartHandler = mockWorker.on.mock.calls.find(
+          (call: any[]) => call[0] === "buildStart",
+        )?.[1];
         const buildHandler = mockWorker.on.mock.calls.find(
           (call: any[]) => call[0] === "build",
         )?.[1];
+
+        buildStartHandler?.({});
         buildHandler?.({ success: true });
-        return Promise.resolve({ success: true });
+
+        expect(mockResolver).toHaveBeenCalled();
+
+        const buildResult = mockResultCollector.add.mock.calls.find(
+          (c: any[]) => c[0].type === "build" && c[0].status === "success",
+        );
+        expect(buildResult).toBeDefined();
+
+        await engine.stop();
       });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        resultCollector: mockResultCollector as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      const buildAddCalls = mockResultCollector.add.mock.calls.filter(
-        (c: any[]) => c[0].type === "build",
-      );
-      expect(buildAddCalls).toHaveLength(1);
-
-      await engine.stop();
-    });
-
-    // Unit: error event reports to ResultCollector
-    it("reports error from error event to ResultCollector", async () => {
-      const mockResultCollector = { add: vi.fn() };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        // Emit error event
-        const errorHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "error",
-        )?.[1];
-        errorHandler?.({ message: "Build failed" });
-        return Promise.resolve({ success: false, errors: ["Build failed"] });
-      });
-
-      const engine = new ViteEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        resultCollector: mockResultCollector as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      const addCalls = mockResultCollector.add.mock.calls;
-      const errorResult = addCalls.find((c: any[]) => c[0].status === "error");
-      expect(errorResult).toBeDefined();
-
-      await engine.stop();
     });
   });
 });

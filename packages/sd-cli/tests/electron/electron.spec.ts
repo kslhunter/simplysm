@@ -1,5 +1,5 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { consola } from "consola";
 
 //#region Mocks
 
@@ -13,26 +13,26 @@ const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 const mockFsxReaddir = vi.fn();
 const mockFsxGlob = vi.fn();
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    write: mockFsxWrite,
-    mkdir: mockFsxMkdir,
-    copy: mockFsxCopy,
-    readdir: mockFsxReaddir,
-    glob: mockFsxGlob,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      write: mockFsxWrite,
+      mkdir: mockFsxMkdir,
+      copy: mockFsxCopy,
+      readdir: mockFsxReaddir,
+      glob: mockFsxGlob,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 // cpx mock (was execa)
 const mockCpxSpawn = vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
@@ -70,17 +70,7 @@ vi.mock("esbuild", () => ({
 const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
 const mockLoggerInfo = vi.fn();
-vi.mock("consola", () => ({
-  consola: {
-    withTag: () => ({
-      debug: mockLoggerDebug,
-      warn: mockLoggerWarn,
-      info: mockLoggerInfo,
-    }),
-    level: 0,
-  },
-  LogLevels: { debug: 4 },
-}));
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockLoggerDebug, warn: mockLoggerWarn, info: mockLoggerInfo } as any);
 
 //#endregion
 

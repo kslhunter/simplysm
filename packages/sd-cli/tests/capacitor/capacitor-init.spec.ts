@@ -1,5 +1,5 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { consola } from "consola";
 
 //#region Mocks
 
@@ -13,27 +13,27 @@ const mockFsxRm = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn();
 const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    mkdir: mockFsxMkdir,
-    rm: mockFsxRm,
-    glob: mockFsxGlob,
-    copy: mockFsxCopy,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      mkdir: mockFsxMkdir,
+      rm: mockFsxRm,
+      glob: mockFsxGlob,
+      copy: mockFsxCopy,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 const execaCalls: { command: string; args: string[] }[] = [];
 const mockCpxSpawn = vi.fn((...args: unknown[]) => {
@@ -61,15 +61,7 @@ vi.mock("sharp", () => ({
 }));
 
 const mockLoggerWarn = vi.fn();
-const _mockConsola = {
-  level: 0,
-  withTag: () => ({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() }),
-};
-vi.mock("consola", () => ({
-  consola: _mockConsola,
-  default: _mockConsola,
-  LogLevels: { debug: 4 },
-}));
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() } as any);
 
 //#endregion
 
@@ -430,170 +422,197 @@ describe("Android 네이티브 설정", () => {
     setupDefaultMocks();
   });
 
-  it("permissions를 AndroidManifest.xml에 추가한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: {
-        android: {
-          permissions: [{ name: "CAMERA" }],
+  describe("AndroidManifest.xml", () => {
+    it("permissions를 AndroidManifest.xml에 추가한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: {
+          android: {
+            permissions: [{ name: "CAMERA" }],
+          },
         },
-      },
-    });
-    await cap.initialize();
+      });
+      await cap.initialize();
 
-    const writeCalls = mockFsxWrite.mock.calls;
-    const manifestWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("AndroidManifest.xml") &&
-        typeof call[1] === "string" &&
-        call[1].includes("android.permission.CAMERA"),
-    );
-    expect(manifestWrite).toBeDefined();
-  });
-
-  it("usesCleartextTraffic을 자동 추가한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: {} },
-    });
-    await cap.initialize();
-
-    const writeCalls = mockFsxWrite.mock.calls;
-    const manifestWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("AndroidManifest.xml") &&
-        typeof call[1] === "string" &&
-        call[1].includes("usesCleartextTraffic"),
-    );
-    expect(manifestWrite).toBeDefined();
-  });
-
-  it("sdkVersion을 build.gradle에 설정한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: { sdkVersion: 33 } },
-    });
-    await cap.initialize();
-
-    const writeCalls = mockFsxWrite.mock.calls;
-    const gradleWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("build.gradle") &&
-        typeof call[1] === "string" &&
-        call[1].includes("minSdkVersion 33"),
-    );
-    expect(gradleWrite).toBeDefined();
-  });
-
-  it("versionCode를 package.json version으로 계산한다", async () => {
-    mockFsxReadJson.mockImplementation((p: string) => {
-      const normalized = p.replace(/\\/g, "/");
-      if (normalized.includes(".capacitor/package.json")) {
-        return {
-          name: "com.test.app",
-          version: "1.2.3",
-          dependencies: { "@capacitor/core": "^7.0.0", "@capacitor/app": "^7.0.0", "@capacitor/android": "^7.0.0" },
-          devDependencies: { "@capacitor/cli": "^7.0.0", "@capacitor/assets": "^3.0.0" },
-        };
-      }
-      return { name: "test-pkg", version: "1.2.3" };
+      const writeCalls = mockFsxWrite.mock.calls;
+      const manifestWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("AndroidManifest.xml") &&
+          typeof call[1] === "string" &&
+          call[1].includes("android.permission.CAMERA"),
+      );
+      expect(manifestWrite).toBeDefined();
     });
 
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: {} },
+    it("usesCleartextTraffic을 자동 추가한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: {} },
+      });
+      await cap.initialize();
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const manifestWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("AndroidManifest.xml") &&
+          typeof call[1] === "string" &&
+          call[1].includes("usesCleartextTraffic"),
+      );
+      expect(manifestWrite).toBeDefined();
     });
-    await cap.initialize();
 
-    const writeCalls = mockFsxWrite.mock.calls;
-    const gradleWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("build.gradle") &&
-        typeof call[1] === "string" &&
-        call[1].includes("versionCode 1002003"),
-    );
-    expect(gradleWrite).toBeDefined();
-  });
-
-  it("intentFilters를 MainActivity에 추가한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: {
-        android: {
-          intentFilters: [{ action: "android.intent.action.VIEW" }],
+    it("intentFilters를 MainActivity에 추가한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: {
+          android: {
+            intentFilters: [{ action: "android.intent.action.VIEW" }],
+          },
         },
-      },
-    });
-    await cap.initialize();
+      });
+      await cap.initialize();
 
-    const writeCalls = mockFsxWrite.mock.calls;
-    const manifestWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("AndroidManifest.xml") &&
-        typeof call[1] === "string" &&
-        call[1].includes("android.intent.action.VIEW"),
-    );
-    expect(manifestWrite).toBeDefined();
+      const writeCalls = mockFsxWrite.mock.calls;
+      const manifestWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("AndroidManifest.xml") &&
+          typeof call[1] === "string" &&
+          call[1].includes("android.intent.action.VIEW"),
+      );
+      expect(manifestWrite).toBeDefined();
+    });
+
+    it("application 태그에 커스텀 속성을 추가한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: {
+          android: { config: { label: "Custom Label" } },
+        },
+      });
+      await cap.initialize();
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const manifestWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("AndroidManifest.xml") &&
+          typeof call[1] === "string" &&
+          call[1].includes('android:label="Custom Label"'),
+      );
+      expect(manifestWrite).toBeDefined();
+    });
   });
 
-  it("styles.xml의 Theme.SplashScreen parent를 변경하고 android:background를 android:windowBackground로 변경한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: {} },
-    });
-    await cap.initialize();
+  describe("build.gradle", () => {
+    it("sdkVersion을 build.gradle에 설정한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: { sdkVersion: 33 } },
+      });
+      await cap.initialize();
 
-    const writeCalls = mockFsxWrite.mock.calls;
-    const stylesWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("styles.xml") &&
-        typeof call[1] === "string" &&
-        call[1].includes('parent="Theme.AppCompat.DayNight.NoActionBar"'),
-    );
-    expect(stylesWrite).toBeDefined();
-    const content = stylesWrite![1] as string;
-    // @drawable/splash는 유지
-    expect(content).toContain("@drawable/splash");
-    // Theme.SplashScreen은 제거됨
-    expect(content).not.toContain('parent="Theme.SplashScreen"');
-    // android:background → android:windowBackground로 변경됨
-    expect(content).toContain('"android:windowBackground">@drawable/splash');
-    expect(content).not.toContain('"android:background">@drawable/splash');
+      const writeCalls = mockFsxWrite.mock.calls;
+      const gradleWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("build.gradle") &&
+          typeof call[1] === "string" &&
+          call[1].includes("minSdkVersion 33"),
+      );
+      expect(gradleWrite).toBeDefined();
+    });
+
+    it("versionCode를 package.json version으로 계산한다", async () => {
+      mockFsxReadJson.mockImplementation((p: string) => {
+        const normalized = p.replace(/\\/g, "/");
+        if (normalized.includes(".capacitor/package.json")) {
+          return {
+            name: "com.test.app",
+            version: "1.2.3",
+            dependencies: { "@capacitor/core": "^7.0.0", "@capacitor/app": "^7.0.0", "@capacitor/android": "^7.0.0" },
+            devDependencies: { "@capacitor/cli": "^7.0.0", "@capacitor/assets": "^3.0.0" },
+          };
+        }
+        return { name: "test-pkg", version: "1.2.3" };
+      });
+
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: {} },
+      });
+      await cap.initialize();
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const gradleWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("build.gradle") &&
+          typeof call[1] === "string" &&
+          call[1].includes("versionCode 1002003"),
+      );
+      expect(gradleWrite).toBeDefined();
+    });
   });
 
-  it("이미 변경된 styles.xml은 재변경하지 않는다", async () => {
-    mockFsxRead.mockImplementation((p: string) => {
-      if (p.includes("styles.xml")) {
-        return `<?xml version="1.0" encoding="utf-8"?>
+  describe("styles.xml", () => {
+    it("styles.xml의 Theme.SplashScreen parent를 변경하고 android:background를 android:windowBackground로 변경한다", async () => {
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: {} },
+      });
+      await cap.initialize();
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const stylesWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("styles.xml") &&
+          typeof call[1] === "string" &&
+          call[1].includes('parent="Theme.AppCompat.DayNight.NoActionBar"'),
+      );
+      expect(stylesWrite).toBeDefined();
+      const content = stylesWrite![1] as string;
+      // @drawable/splash는 유지
+      expect(content).toContain("@drawable/splash");
+      // Theme.SplashScreen은 제거됨
+      expect(content).not.toContain('parent="Theme.SplashScreen"');
+      // android:background → android:windowBackground로 변경됨
+      expect(content).toContain('"android:windowBackground">@drawable/splash');
+      expect(content).not.toContain('"android:background">@drawable/splash');
+    });
+
+    it("이미 변경된 styles.xml은 재변경하지 않는다", async () => {
+      mockFsxRead.mockImplementation((p: string) => {
+        if (p.includes("styles.xml")) {
+          return `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowBackground">@drawable/splash</item>
     </style>
 </resources>`;
-      }
-      if (p.includes("AndroidManifest.xml")) {
-        return '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n<application>\n<activity android:name=".MainActivity">\n</activity>\n</application>\n</manifest>';
-      }
-      if (p.includes("build.gradle")) {
-        return `android {
+        }
+        if (p.includes("AndroidManifest.xml")) {
+          return '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n<application>\n<activity android:name=".MainActivity">\n</activity>\n</application>\n</manifest>';
+        }
+        if (p.includes("build.gradle")) {
+          return `android {
     defaultConfig {
         versionCode 1
         versionName "1.0"
@@ -602,71 +621,50 @@ describe("Android 네이티브 설정", () => {
     }
     buildTypes { release { } }
 }`;
-      }
-      if (p.includes("gradle.properties")) {
-        return "org.gradle.jvmargs=-Xmx2048m";
-      }
-      return "";
+        }
+        if (p.includes("gradle.properties")) {
+          return "org.gradle.jvmargs=-Xmx2048m";
+        }
+        return "";
+      });
+
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: {} },
+      });
+      await cap.initialize();
+
+      const writeCalls = mockFsxWrite.mock.calls;
+      const stylesWrite = writeCalls.find(
+        (call) =>
+          typeof call[0] === "string" &&
+          call[0].includes("styles.xml"),
+      );
+      expect(stylesWrite).toBeUndefined();
     });
 
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: {} },
+    it("styles.xml이 없으면 warn을 출력한다", async () => {
+      mockFsxExists.mockImplementation((p: string) => {
+        const n = p.replace(/\\/g, "/");
+        if (n.includes(".capacitor.lock")) return false;
+        if (n.includes("styles.xml")) return false;
+        return true;
+      });
+
+      const { Capacitor } = await import("../../src/capacitor/capacitor.js");
+      const cap = await Capacitor.create(PKG_PATH, {
+        appId: "com.test.app",
+        appName: "Test App",
+        platform: { android: {} },
+      });
+      await cap.initialize();
+
+      expect(mockLoggerWarn).toHaveBeenCalledWith(
+        expect.stringContaining("styles.xml"),
+      );
     });
-    await cap.initialize();
-
-    const writeCalls = mockFsxWrite.mock.calls;
-    const stylesWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("styles.xml"),
-    );
-    expect(stylesWrite).toBeUndefined();
-  });
-
-  it("styles.xml이 없으면 warn을 출력한다", async () => {
-    mockFsxExists.mockImplementation((p: string) => {
-      const n = p.replace(/\\/g, "/");
-      if (n.includes(".capacitor.lock")) return false;
-      if (n.includes("styles.xml")) return false;
-      return true;
-    });
-
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: { android: {} },
-    });
-    await cap.initialize();
-
-    expect(mockLoggerWarn).toHaveBeenCalledWith(
-      expect.stringContaining("styles.xml"),
-    );
-  });
-
-  it("application 태그에 커스텀 속성을 추가한다", async () => {
-    const { Capacitor } = await import("../../src/capacitor/capacitor.js");
-    const cap = await Capacitor.create(PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-      platform: {
-        android: { config: { label: "Custom Label" } },
-      },
-    });
-    await cap.initialize();
-
-    const writeCalls = mockFsxWrite.mock.calls;
-    const manifestWrite = writeCalls.find(
-      (call) =>
-        typeof call[0] === "string" &&
-        call[0].includes("AndroidManifest.xml") &&
-        typeof call[1] === "string" &&
-        call[1].includes('android:label="Custom Label"'),
-    );
-    expect(manifestWrite).toBeDefined();
   });
 });
 

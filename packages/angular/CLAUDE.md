@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 152 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 146 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -42,13 +42,12 @@ src/
     ├── layout/
     │   ├── dock/       SdDockContainer, SdDock
     │   ├── kanban/     SdKanbanBoard, SdKanban, SdKanbanLane
-    │   ├── view/       SdView, SdViewItem
-    │   └── SdPane, SdGap, SdCard
+    │   └── SdGap
     ├── navigation/
     │   ├── collapse/   SdCollapse, SdCollapseIcon
     │   ├── pagination/ SdPagination
     │   ├── sidebar/    SdSidebarContainer, SdSidebar, SdSidebarMenu, SdSidebarUser
-    │   ├── tab/        SdTab, SdTabItem, SdTabview, SdTabviewItem
+    │   ├── tab/        SdTab, SdTabItem
     │   ├── topbar/     SdTopbarContainer, SdTopbar, SdTopbarMenu, SdTopbarUser
     │   └── menu-utils.ts (exported: getMenuRouterLinkOption, getIsMenuSelected)
     ├── overlay/
@@ -243,7 +242,7 @@ type WithOptional<T, K extends keyof T>
 
 테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/features/`, `tests/ui/`, `tests/scss/`
 
-142개의 spec 파일. SCSS 컴파일 결과 검증 테스트 포함 (`tests/scss/`).
+139개의 spec 파일. SCSS 컴파일 결과 검증 테스트 포함 (`tests/scss/`).
 
 ### Test Pattern
 

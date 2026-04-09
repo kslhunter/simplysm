@@ -13,27 +13,27 @@ const mockFsxRm = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn();
 const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    mkdir: mockFsxMkdir,
-    rm: mockFsxRm,
-    glob: mockFsxGlob,
-    copy: mockFsxCopy,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      mkdir: mockFsxMkdir,
+      rm: mockFsxRm,
+      glob: mockFsxGlob,
+      copy: mockFsxCopy,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 const execaCalls: { command: string; args: string[] }[] = [];
 const mockCpxSpawn = vi.fn((...args: unknown[]) => {

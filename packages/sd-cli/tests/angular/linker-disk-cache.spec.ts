@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import type { SdConfig } from "../../src/sd-config.types";
 
 const mockTransformFile = vi.fn(() => Promise.resolve("transformed-code"));
 
@@ -13,15 +14,26 @@ vi.mock("@angular/build/private", () => ({
   },
 }));
 
+const mockLoadSdConfig = vi.fn<(...args: unknown[]) => Promise<SdConfig>>();
+vi.mock("../../src/utils/sd-config", () => ({
+  loadSdConfig: (...args: unknown[]) => mockLoadSdConfig(...args),
+}));
+
 const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.js");
 
-const TMP_DIR = path.join(os.tmpdir(), "sd-cli-linker-cache-test");
-const CACHE_DIR = path.join(TMP_DIR, "cache");
+const BASE_TMP = path.join(os.tmpdir(), "sd-cli-linker-cache-test");
+const TMP_DIR = path.join(BASE_TMP, "packages", "linker-test");
+// 기본 linker 캐시 경로: {cwd}/.cache/linker/sm (dev mode + sourcemap=false → isDev이므로 "sm")
+const CACHE_DIR = path.join(BASE_TMP, ".cache", "linker", "sm");
+
+vi.spyOn(process, "cwd").mockReturnValue(BASE_TMP);
 
 type OnLoadHandler = (args: { path: string }) => Promise<{ contents: string; loader: string } | null>;
 
-function getOnLoadHandler(plugin: ReturnType<typeof sdAngularPlugin>): OnLoadHandler {
-  const config = (plugin as any).config();
+async function getOnLoadHandler(plugin: ReturnType<typeof sdAngularPlugin>): Promise<OnLoadHandler> {
+  const config = await (plugin as any).config({}, { mode: "development", command: "serve" });
+  // configResolved를 호출하여 prebundleTransformer를 생성한다
+  (plugin as any).configResolved?.({ build: { sourcemap: false } });
   const esbuildPlugin = config.optimizeDeps.esbuildOptions.plugins[0] as {
     setup: (build: { onLoad: Function }) => void;
   };
@@ -39,10 +51,15 @@ describe("Linker disk cache (optimizeDeps)", () => {
     fs.mkdirSync(TMP_DIR, { recursive: true });
     mockTransformFile.mockClear();
     mockTransformFile.mockResolvedValue("transformed-code");
+    mockLoadSdConfig.mockResolvedValue({
+      packages: {
+        "linker-test": { target: "client" as const, server: 3000 },
+      },
+    });
   });
 
   afterEach(() => {
-    fs.rmSync(TMP_DIR, { recursive: true, force: true });
+    fs.rmSync(BASE_TMP, { recursive: true, force: true });
   });
 
   // Acceptance: cache miss → transform + store, cache hit → load from disk
@@ -51,11 +68,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
     fs.writeFileSync(jsFile, "export const x = 1;");
 
     const plugin = sdAngularPlugin({
-      tsconfig: path.join(TMP_DIR, "tsconfig.json"),
-      dev: true,
-      linkerCacheDir: CACHE_DIR,
+      pkg: "linker-test",
     });
-    const onLoad = getOnLoadHandler(plugin);
+    const onLoad = await getOnLoadHandler(plugin);
 
     // First call: cache miss
     const result1 = await onLoad({ path: jsFile });
@@ -80,11 +95,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
     fs.writeFileSync(jsFile, "export const v = 1;");
 
     const plugin = sdAngularPlugin({
-      tsconfig: path.join(TMP_DIR, "tsconfig.json"),
-      dev: true,
-      linkerCacheDir: CACHE_DIR,
+      pkg: "linker-test",
     });
-    const onLoad = getOnLoadHandler(plugin);
+    const onLoad = await getOnLoadHandler(plugin);
 
     await onLoad({ path: jsFile });
     expect(mockTransformFile).toHaveBeenCalledOnce();
@@ -105,11 +118,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
     fs.writeFileSync(jsFile, "export const y = 1;");
 
     const plugin = sdAngularPlugin({
-      tsconfig: path.join(TMP_DIR, "tsconfig.json"),
-      dev: true,
-      linkerCacheDir: CACHE_DIR,
+      pkg: "linker-test",
     });
-    const onLoad = getOnLoadHandler(plugin);
+    const onLoad = await getOnLoadHandler(plugin);
 
     // First call to populate cache
     await onLoad({ path: jsFile });
@@ -132,11 +143,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
     mockTransformFile.mockResolvedValue(new TextEncoder().encode("uint8-transformed") as unknown as string);
 
     const plugin = sdAngularPlugin({
-      tsconfig: path.join(TMP_DIR, "tsconfig.json"),
-      dev: true,
-      linkerCacheDir: CACHE_DIR,
+      pkg: "linker-test",
     });
-    const onLoad = getOnLoadHandler(plugin);
+    const onLoad = await getOnLoadHandler(plugin);
 
     const result = await onLoad({ path: jsFile });
     expect(result).toEqual({ contents: "uint8-transformed", loader: "js" });
@@ -151,11 +160,9 @@ describe("Linker disk cache (optimizeDeps)", () => {
   // Unit: non-.js file returns null (filter)
   it("returns null for non-js files", async () => {
     const plugin = sdAngularPlugin({
-      tsconfig: path.join(TMP_DIR, "tsconfig.json"),
-      dev: true,
-      linkerCacheDir: CACHE_DIR,
+      pkg: "linker-test",
     });
-    const onLoad = getOnLoadHandler(plugin);
+    const onLoad = await getOnLoadHandler(plugin);
 
     const result = await onLoad({ path: path.join(TMP_DIR, "data.json") });
     expect(result).toBeNull();

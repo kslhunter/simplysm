@@ -88,88 +88,16 @@ vi.mock("../../src/utils/angular-build", () => {
 });
 
 const {
-  runNgtscBuild,
-  createLibraryTransformStylesheet,
   buildScssLoadPaths,
 } = await import("../../src/utils/ngtsc-build-core");
+const {
+  createLibraryTransformStylesheet,
+} = await import("../../src/utils/angular-build-pipeline");
 
-import { resolve, join } from "node:path";
+import { join } from "node:path";
 
-const workspaceRoot = resolve(import.meta.dirname, "../../../..");
-const angularPkgDir = resolve(workspaceRoot, "packages/angular");
-
-// ─── runNgtscBuild가 AngularCompiler를 사용한다 ───
-
-describe("runNgtscBuild가 AngularCompiler를 사용한다", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockCollectDiagnostics.mockReturnValue([]);
-    mockEmitAffectedFiles.mockReturnValue([]);
-  });
-
-  it("runNgtscBuild가 AngularCompiler를 생성하고 initialize()를 호출한다", async () => {
-    const result = await runNgtscBuild({
-      name: "test-pkg",
-      cwd: workspaceRoot,
-      pkgDir: resolve(workspaceRoot, "packages/test-pkg"),
-      output: { js: true, dts: true },
-    });
-
-    expect(angularCompilerConstructorSpy).toHaveBeenCalledTimes(1);
-    expect(mockInitialize).toHaveBeenCalledTimes(1);
-    expect(ngtscProgramSpy).not.toHaveBeenCalled();
-
-    expect(result.build).toHaveProperty("success");
-    expect(result.build).toHaveProperty("diagnostics");
-  });
-
-  it("AngularCompiler 생성자에 transformStylesheet가 전달된다", async () => {
-    await runNgtscBuild({
-      name: "test-pkg",
-      cwd: workspaceRoot,
-      pkgDir: resolve(workspaceRoot, "packages/test-pkg"),
-      output: { js: true, dts: false },
-    });
-
-    const options = angularCompilerConstructorSpy.mock.calls[0]?.[0];
-    expect(options).toHaveProperty("transformStylesheet");
-    expect(typeof options.transformStylesheet).toBe("function");
-  });
-
-  it("collectDiagnostics()가 호출되어 진단이 수집된다", async () => {
-    await runNgtscBuild({
-      name: "test-pkg",
-      cwd: workspaceRoot,
-      pkgDir: resolve(workspaceRoot, "packages/test-pkg"),
-      output: { js: true, dts: true },
-    });
-
-    expect(mockCollectDiagnostics).toHaveBeenCalled();
-  });
-
-  it("emitAffectedFiles()가 호출되어 emit이 수행된다", async () => {
-    await runNgtscBuild({
-      name: "test-pkg",
-      cwd: workspaceRoot,
-      pkgDir: resolve(workspaceRoot, "packages/test-pkg"),
-      output: { js: true, dts: true },
-    });
-
-    expect(mockEmitAffectedFiles).toHaveBeenCalled();
-  });
-
-  it("output.js=false, output.dts=false이면 noEmit=true가 설정된다", async () => {
-    await runNgtscBuild({
-      name: "test-pkg",
-      cwd: workspaceRoot,
-      pkgDir: resolve(workspaceRoot, "packages/test-pkg"),
-      output: { js: false, dts: false },
-    });
-
-    const options = angularCompilerConstructorSpy.mock.calls[0]?.[0];
-    expect(options.compilerOptions.noEmit).toBe(true);
-  });
-});
+const fakeCwd = "/workspace";
+const fakePkgDir = "/workspace/packages/my-angular-lib";
 
 // ─── createLibraryTransformStylesheet ───
 
@@ -270,17 +198,17 @@ describe("createLibraryTransformStylesheet", () => {
 describe("buildScssLoadPaths", () => {
   it("returns [pkgDir/scss, cwd/node_modules] for given NgtscBuildInfo", () => {
     const info = {
-      name: "angular",
-      cwd: workspaceRoot,
-      pkgDir: angularPkgDir,
+      name: "my-angular-lib",
+      cwd: fakeCwd,
+      pkgDir: fakePkgDir,
       output: { js: true, dts: false },
     };
 
     const result = buildScssLoadPaths(info);
 
     expect(result).toEqual([
-      join(angularPkgDir, "scss"),
-      join(workspaceRoot, "node_modules"),
+      join(fakePkgDir, "scss"),
+      join(fakeCwd, "node_modules"),
     ]);
   });
 

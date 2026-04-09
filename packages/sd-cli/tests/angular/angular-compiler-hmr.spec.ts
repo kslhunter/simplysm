@@ -4,7 +4,7 @@ import fs from "fs";
 import { AngularCompiler, AngularSourceFileCache } from "../../src/utils/angular-compiler.js";
 import ts from "typescript";
 
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/packages/basic-app");
 const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
 const APP_COMPONENT_PATH = path.join(FIXTURE_DIR, "src/app.component.ts").replace(/\\/g, "/");
 

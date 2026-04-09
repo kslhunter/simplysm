@@ -243,23 +243,24 @@ interface DbContextExecutor {
 ```
 tests/
 ├── setup/                ← 공유 픽스처
-│   ├── models/           ←   User, Post, Company 등 테스트용 Table 정의
-│   ├── views/            ←   테스트용 View 정의
-│   ├── procedure/        ←   테스트용 Procedure 정의
+│   ├── models/           ←   User, Post, Company, Employee, Sales, MonthlySales
+│   ├── views/            ←   ActiveUsers, UserSummary
+│   ├── procedure/        ←   GetUserById, GetAllUsers
 │   ├── TestDbContext.ts  ←   TestDb class + createTestDb() 팩토리
 │   ├── MockExecutor.ts   ←   DbContextExecutor 목(mock) 구현체
 │   └── test-utils.ts     ←   공통 테스트 헬퍼
 ├── db-context/           ← DbContext class 수락 테스트
 ├── dml/                  ← INSERT/UPDATE/DELETE/UPSERT SQL 생성 테스트
-├── select/               ← SELECT 쿼리 SQL 생성 테스트
-├── expr/                 ← 표현식 빌더 테스트
-├── ddl/                  ← DDL QueryDef 생성 테스트
+├── select/               ← SELECT 쿼리 SQL 생성 + result-meta 테스트
+├── expr/                 ← 표현식 빌더 테스트 (comparison, string, math, date, conditional, utility)
+├── ddl/                  ← DDL QueryDef 생성 + relation-target-options 수락 테스트
 ├── exec/                 ← Queryable 검색(search-parser) 테스트
 ├── executable/           ← Executable(Stored Procedure) SQL 생성 테스트
 ├── errors/               ← Queryable 에러 케이스 테스트
 ├── examples/             ← 실전 패턴 테스트 (pivot, unpivot, sampling)
-├── types/                ← 타입 추론 테스트 (NullableQueryableRecord 등)
-└── utils/                ← result-parser 단위/성능 테스트
+├── types/                ← 타입 추론 테스트 (NullableQueryableRecord, 순환 참조 옵션)
+├── utils/                ← result-parser 단위/성능 테스트
+└── escape.spec.ts        ← ExprRenderer 문자열 이스케이프 테스트
 ```
 
 모든 SQL 생성 테스트는 dialect별로 기댓값을 별도 파일(`*.expected.ts`)에 분리하여 관리한다.

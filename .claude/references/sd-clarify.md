@@ -18,6 +18,6 @@
 
 ## 명확화 질문
 
-INFERRED Medium/Low와 ASSUMED는 **반드시** @.claude/references/sd-options.md 의 지침에따라 사용자에게 질문하여 명확화한다.
+INFERRED Medium/Low와 ASSUMED는 **반드시** `.claude/references/sd-options.md`의 지침에따라 사용자에게 질문하여 명확화한다.
 
 - VERIFIED와 INFERRED High는 명확한 것으로 본다.

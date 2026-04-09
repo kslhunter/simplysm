@@ -1,5 +1,5 @@
-import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { consola } from "consola";
 
 //#region Mocks
 
@@ -13,26 +13,26 @@ const mockFsxMkdir = vi.fn().mockResolvedValue(undefined);
 const mockFsxRm = vi.fn().mockResolvedValue(undefined);
 const mockFsxGlob = vi.fn();
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: mockFsxExists,
-    read: mockFsxRead,
-    write: mockFsxWrite,
-    readJson: mockFsxReadJson,
-    writeJson: mockFsxWriteJson,
-    mkdir: mockFsxMkdir,
-    rm: mockFsxRm,
-    glob: mockFsxGlob,
-  },
-  cpx: {
-    spawn: mockCpxSpawn,
-    spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-    posix: (p: string) => p.replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...original,
+    fsx: {
+      exists: mockFsxExists,
+      read: mockFsxRead,
+      write: mockFsxWrite,
+      readJson: mockFsxReadJson,
+      writeJson: mockFsxWriteJson,
+      mkdir: mockFsxMkdir,
+      rm: mockFsxRm,
+      glob: mockFsxGlob,
+    },
+    cpx: {
+      spawn: mockCpxSpawn,
+      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
+    },
+  };
+});
 
 // cpx mock (was execa)
 const execaCalls: { command: string; args: string[] }[] = [];
@@ -65,15 +65,7 @@ vi.mock("sharp", () => ({ default: mockSharp }));
 
 // consola mock (logger assertion 필요)
 const mockLoggerWarn = vi.fn();
-const _mockConsola = {
-  level: 0,
-  withTag: () => ({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() }),
-};
-vi.mock("consola", () => ({
-  consola: _mockConsola,
-  default: _mockConsola,
-  LogLevels: { debug: 4 },
-}));
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() } as any);
 
 //#endregion
 

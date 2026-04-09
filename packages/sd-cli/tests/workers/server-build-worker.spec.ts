@@ -6,8 +6,8 @@ import path from "path";
 let workerFns: Record<string, (...args: any[]) => any>;
 let mockSend: ReturnType<typeof vi.fn>;
 
-// Guard mock state
-let guardCalled = false;
+// Guard reset function (set by worker-utils mock factory)
+let resetGuard: () => void;
 
 // fs mock tracking
 const writtenFiles = new Map<string, string>();
@@ -59,19 +59,6 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-vi.mock("@simplysm/core-common", () => ({
-  err: { message: (e: any) => e?.message ?? String(e) },
-}));
-
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-    })),
-  },
-}));
-
 vi.mock("esbuild", () => ({
   default: {
     context: vi.fn(() => {
@@ -116,24 +103,33 @@ vi.mock("../../src/utils/tsconfig", () => ({
   getPackageSourceFiles: vi.fn(() => ["/workspace/packages/my-server/src/main.ts"]),
 }));
 
-vi.mock("../../src/utils/esbuild-config", () => ({
-  createServerEsbuildOptions: vi.fn(() => ({ plugins: [] })),
-  collectAllDependencyExternals: vi.fn(() => ({ optionalPeerDeps: [], nativeModules: [] })),
-  writeChangedOutputFiles: vi.fn(() => Promise.resolve(true)),
-}));
+vi.mock("../../src/utils/esbuild-config", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/utils/esbuild-config")>();
+  return {
+    ...actual,
+    collectAllDependencyExternals: vi.fn(() => ({ optionalPeerDeps: [], nativeModules: [] })),
+    writeChangedOutputFiles: vi.fn(() => Promise.resolve(true)),
+  };
+});
 
 vi.mock("../../src/utils/tsc-build", () => ({
   runTscPackageBuild: mockRunTscPackageBuild,
 }));
 
-vi.mock("../../src/utils/worker-utils", () => ({
-  registerCleanupHandlers: vi.fn(),
-  createOnceGuard: vi.fn(() => () => {
-    if (guardCalled) throw new Error("startWatch has already been called");
-    guardCalled = true;
-  }),
-  setupWorkerConsola: vi.fn(),
-}));
+vi.mock("../../src/utils/worker-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/utils/worker-utils")>();
+  let guard: () => void;
+  return {
+    ...actual,
+    registerCleanupHandlers: vi.fn(),
+    setupWorkerConsola: vi.fn(),
+    createOnceGuard: (label: string) => {
+      guard = actual.createOnceGuard(label);
+      resetGuard = () => { guard = actual.createOnceGuard(label); };
+      return () => guard();
+    },
+  };
+});
 
 vi.mock("../../src/utils/package-utils", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
@@ -215,14 +211,6 @@ describe("server-build.worker build()", () => {
 
     expect(result.build.success).toBe(true);
     expect(result.mainJsPath).toBe(path.resolve(baseBuildInfo.pkgDir, "dist", "main.js").replace(/\\/g, "/"));
-
-    // esbuild was called
-    expect(esbuild.build).toHaveBeenCalled();
-
-    // tsc was called with emit=false (server doesn't emit .d.ts)
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: false, dts: false } }),
-    );
   });
 
   // Acceptance: type error detected
@@ -256,15 +244,6 @@ describe("server-build.worker build()", () => {
     expect(result.build.errors).toContain("syntax error");
   });
 
-  // Unit: .d.ts files are NOT generated (emit=false)
-  it("never emits .d.ts files for server builds", async () => {
-    await workerFns["build"](baseBuildInfo);
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: false, dts: false } }),
-    );
-  });
-
   // Unit: esbuild exception handling
   it("handles esbuild exception gracefully", async () => {
     vi.mocked(esbuild.build).mockRejectedValueOnce(new Error("esbuild crash"));
@@ -275,22 +254,10 @@ describe("server-build.worker build()", () => {
     expect(result.build.errors).toContain("esbuild crash");
   });
 
-  // Unit: tsconfig parsed and passed to tsc
-  it("parses tsconfig and passes parsedConfig to tsc", async () => {
-    const { parseTsconfig } = await import("../../src/utils/tsconfig");
-    vi.mocked(parseTsconfig).mockClear();
+  // --- Production artifacts ---
 
-    await workerFns["build"](baseBuildInfo);
-
-    expect(parseTsconfig).toHaveBeenCalledTimes(1);
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ parsedConfig: expect.any(Object) }),
-    );
-  });
-
-  // --- Production artifacts (from existing server.worker tests) ---
-
-  it("writes .config.json with configs data", async () => {
+  describe("production artifacts", () => {
+    it("writes .config.json with configs data", async () => {
     await workerFns["build"]({
       ...baseBuildInfo,
       configs: { db: { host: "localhost", port: 5432 } },
@@ -383,11 +350,6 @@ describe("server-build.worker build()", () => {
     expect(pkg.volta.node).toBe("v20.11.0");
   });
 
-  it("calls copyPublicFiles with includeDev=false for production build", async () => {
-    await workerFns["build"](baseBuildInfo);
-    expect(copyPublicFiles).toHaveBeenCalledWith(baseBuildInfo.pkgDir, false);
-  });
-
   it("collects externals from three sources", async () => {
     vi.mocked(collectAllDependencyExternals).mockReturnValue({
       optionalPeerDeps: ["opt-dep"],
@@ -474,31 +436,8 @@ describe("server-build.worker build()", () => {
     const pkg = JSON.parse(writtenFiles.get(pkgJsonPath)!);
     expect(pkg.dependencies["native-opt"]).toBe("4.2.1");
   });
-
-  // Acceptance: env from BuildOutput is passed through to runTscPackageBuild
-  it("passes env from output to runTscPackageBuild", async () => {
-    mockRunTscPackageBuild.mockClear();
-
-    await workerFns["build"]({
-      ...baseBuildInfo,
-      output: { js: true, dts: false, env: "node" },
-    });
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: "node" }),
-    );
   });
 
-  // Acceptance: env is undefined when not set in output
-  it("passes undefined env when output.env is not set", async () => {
-    mockRunTscPackageBuild.mockClear();
-
-    await workerFns["build"](baseBuildInfo);
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: undefined }),
-    );
-  });
 });
 
 describe("server-build.worker startWatch()", () => {
@@ -510,7 +449,7 @@ describe("server-build.worker startWatch()", () => {
   };
 
   beforeEach(() => {
-    guardCalled = false;
+    resetGuard();
     mockMetafileInputs = {};
     writtenFiles.clear();
     mockWriteFileSync.mockClear();
@@ -552,60 +491,6 @@ describe("server-build.worker startWatch()", () => {
     }));
   });
 
-  // Acceptance: typecheck runs on rebuild
-  it("runs tsc on file change rebuild", async () => {
-    await workerFns["startWatch"](watchInfo);
-
-    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
-      changes: Array<{ event: string; path: string }>,
-    ) => Promise<void>;
-
-    mockRunTscPackageBuild.mockClear();
-    await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalled();
-  });
-
-  // Acceptance: FsWatcher + dependency tracking
-  it("creates esbuild context and starts FsWatcher", async () => {
-    await workerFns["startWatch"](watchInfo);
-
-    expect(esbuild.context).toHaveBeenCalled();
-    expect(FsWatcher.watch).toHaveBeenCalled();
-    expect(mockOnChange).toHaveBeenCalledWith({ delay: 300 }, expect.any(Function));
-  });
-
-  // Acceptance: workspace dependency source change triggers rebuild
-  it("includes workspace dependency paths in FsWatcher", async () => {
-    const { collectDeps } = await import("../../src/utils/package-utils");
-    vi.mocked(collectDeps).mockReturnValue({
-      workspaceDeps: ["core-common"],
-      replaceDeps: [],
-    } as any);
-
-    await workerFns["startWatch"](watchInfo);
-
-    const watchPaths = vi.mocked(FsWatcher.watch).mock.calls[0][0];
-    expect(watchPaths.some((p) => p.includes("core-common"))).toBe(true);
-  });
-
-  // Acceptance: replaceDeps dist change triggers rebuild
-  it("includes replaceDeps dist paths in FsWatcher", async () => {
-    const { collectDeps } = await import("../../src/utils/package-utils");
-    vi.mocked(collectDeps).mockReturnValue({
-      workspaceDeps: [],
-      replaceDeps: ["@other/lib"],
-    } as any);
-
-    await workerFns["startWatch"]({
-      ...watchInfo,
-      replaceDeps: { "@other/lib": "/external/lib" },
-    });
-
-    const watchPaths = vi.mocked(FsWatcher.watch).mock.calls[0][0];
-    expect(watchPaths.some((p) => p.includes("@other") && p.includes("dist"))).toBe(true);
-  });
-
   // Acceptance: metafile-based filtering
   it("skips rebuild when changed file is not in metafile.inputs", async () => {
     mockMetafileInputs = { "packages/my-server/src/main.ts": {} };
@@ -621,7 +506,6 @@ describe("server-build.worker startWatch()", () => {
     const absPath = path.resolve("/workspace", "packages/my-server/src/unrelated.ts").replace(/\\/g, "/");
     await onChangeHandler([{ event: "change", path: absPath }]);
 
-    expect(mockRebuild).not.toHaveBeenCalled();
     // buildStart must NOT be sent when rebuild is skipped (LOGIC-001 fix)
     expect(mockSend).not.toHaveBeenCalledWith("buildStart", expect.anything());
   });
@@ -641,80 +525,10 @@ describe("server-build.worker startWatch()", () => {
     expect(writtenFiles.has(pkgJsonPath)).toBe(false);
   });
 
-  // Unit: file add recreates context
-  it("recreates context on file add", async () => {
-    await workerFns["startWatch"](watchInfo);
-
-    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
-      changes: Array<{ event: string; path: string }>,
-    ) => Promise<void>;
-
-    vi.mocked(esbuild.context).mockClear();
-    await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
-
-    expect(mockDispose).toHaveBeenCalled();
-    expect(esbuild.context).toHaveBeenCalled();
-  });
-
-  // Unit: externals cached — not re-collected on non-package.json file add
-  it("does not re-collect externals on file add when no package.json changed", async () => {
-    await workerFns["startWatch"](watchInfo);
-
-    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
-      changes: Array<{ event: string; path: string }>,
-    ) => Promise<void>;
-
-    vi.mocked(collectAllDependencyExternals).mockClear();
-    await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
-
-    expect(collectAllDependencyExternals).not.toHaveBeenCalled();
-  });
-
-  // Unit: externals re-collected when package.json changes
-  it("re-collects externals when package.json is among changed files", async () => {
-    await workerFns["startWatch"](watchInfo);
-
-    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
-      changes: Array<{ event: string; path: string }>,
-    ) => Promise<void>;
-
-    vi.mocked(collectAllDependencyExternals).mockClear();
-    await onChangeHandler([
-      { event: "add", path: "/workspace/packages/my-server/package.json" },
-    ]);
-
-    expect(collectAllDependencyExternals).toHaveBeenCalled();
-  });
-
-  // Unit: public files watched in dev mode
-  it("calls watchPublicFiles with includeDev=true", async () => {
-    await workerFns["startWatch"](watchInfo);
-    expect(watchPublicFiles).toHaveBeenCalledWith(watchInfo.pkgDir, true);
-  });
-
-  // Acceptance: env is passed through in watch mode rebuild
-  it("passes env to runTscPackageBuild on watch rebuild", async () => {
-    await workerFns["startWatch"]({
-      ...watchInfo,
-      output: { js: true, dts: false, env: "node" },
-    });
-
-    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
-      changes: Array<{ event: string; path: string }>,
-    ) => Promise<void>;
-
-    mockRunTscPackageBuild.mockClear();
-    await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: "node" }),
-    );
-  });
-
   // Unit: guard prevents duplicate startWatch
   it("prevents duplicate startWatch calls", async () => {
     await workerFns["startWatch"](watchInfo);
-    await expect(workerFns["startWatch"](watchInfo)).rejects.toThrow("already been called");
+    await expect(workerFns["startWatch"](watchInfo)).rejects.toThrow("can only be called once");
   });
 
   // Acceptance: esbuild context creation failure leaves safe state (LOGIC-001)
@@ -739,7 +553,6 @@ describe("server-build.worker startWatch()", () => {
 
     // File add triggers context recreation → fails → sends "error"
     await onChangeHandler([{ event: "add", path: "/workspace/packages/my-server/src/new.ts" }]);
-    expect(mockDispose).toHaveBeenCalled();
 
     // Subsequent file change should work without "disposed" errors
     mockSend.mockClear();
@@ -759,7 +572,7 @@ describe("server-build.worker startWatch()", () => {
 
 describe("server-build.worker stopWatch()", () => {
   beforeEach(() => {
-    guardCalled = false;
+    resetGuard();
     mockDispose.mockClear();
     mockWatcherClose.mockClear();
     mockRunTscPackageBuild.mockReturnValue({

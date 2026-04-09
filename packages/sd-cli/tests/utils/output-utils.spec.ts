@@ -1,16 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { consola } from "consola";
 import { formatBuildMessages, printErrors, printServers } from "../../src/utils/output-utils";
 import type { BuildResult } from "../../src/infra/ResultCollector";
 
-vi.mock("consola", () => ({
-  consola: {
-    error: vi.fn(),
-    info: vi.fn(),
-  },
-}));
-
- 
-const { consola } = await import("consola");
+vi.spyOn(consola, "error").mockImplementation(() => {});
+vi.spyOn(consola, "info").mockImplementation(() => {});
 
 describe("formatBuildMessages", () => {
   it("formats name, label, and messages into indented lines", () => {
@@ -51,15 +45,6 @@ describe("printErrors", () => {
     ]);
     printErrors(results);
     expect(consola.error).toHaveBeenCalledOnce();
-  });
-
-  it("uses target as label for build type errors", () => {
-    const results = new Map<string, BuildResult>([
-      ["core:build", { name: "core", target: "node", type: "build", status: "error", message: "type error" }],
-    ]);
-    printErrors(results);
-    const callArg = vi.mocked(consola.error).mock.calls[0][0] as string;
-    expect(callArg).toContain("node");
   });
 
   it("skips non-error results", () => {

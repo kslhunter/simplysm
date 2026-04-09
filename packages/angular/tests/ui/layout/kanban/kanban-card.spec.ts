@@ -31,7 +31,7 @@ describe("Feature 6.3 Slice 2: SdKanban", () => {
     const cardB = kanbanEls[1];
 
     // 카드 A 드래그 시작
-    cardA.querySelector("sd-card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+    cardA.querySelector(".card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -69,7 +69,7 @@ describe("Feature 6.3 Slice 2: SdKanban", () => {
     expect(cardA.getAttribute("data-sd-dragging-this")).not.toBe("true");
 
     // 카드 A 드래그 시작
-    cardA.querySelector("sd-card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+    cardA.querySelector(".card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -89,7 +89,7 @@ describe("Feature 6.3 Slice 2: SdKanban", () => {
     const cardA = kanbanEls[0];
 
     // 드래그 시작
-    cardA.querySelector("sd-card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+    cardA.querySelector(".card")!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(board.dragKanban()).not.toBeUndefined();

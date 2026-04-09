@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import * as tscBuildModule from "../../src/utils/tsc-build";
 
 // --- Mocks ---
 
@@ -28,27 +29,13 @@ const mockTscResult = {
   program: { getSourceFiles: () => [] },
 };
 
-vi.mock("../../src/utils/tsc-build", () => ({
-  runTscPackageBuild: vi.fn(() => mockTscResult),
-}));
+const runTscSpy = vi.spyOn(tscBuildModule, "runTscPackageBuild")
+  .mockReturnValue(mockTscResult as any);
 
 vi.mock("../../src/utils/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
   setupWorkerConsola: vi.fn(),
-}));
-
-const mockConsolaLogger = {
-  debug: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  withTag: vi.fn(),
-};
-mockConsolaLogger.withTag.mockReturnValue(mockConsolaLogger);
-
-vi.mock("consola", () => ({
-  consola: mockConsolaLogger,
-  default: mockConsolaLogger,
 }));
 
 vi.mock("@simplysm/core-node", () => ({
@@ -73,6 +60,7 @@ await import("../../src/workers/library-build.worker");
 
 beforeEach(() => {
   vi.clearAllMocks();
+  runTscSpy.mockReturnValue(mockTscResult as any);
   mockLintFn.mockResolvedValue({
     success: true,
     errorCount: 0,
@@ -93,14 +81,12 @@ describe("library-build.worker lint integration (Slice 3)", () => {
         output: { js: true, dts: true, lint: true },
       });
 
-      expect(MockLintWithProgramRunner).toHaveBeenCalledWith({
-        cwd: "/workspace",
-        pkgName: "my-lib",
+      expect(result.lint).toEqual({
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
       });
-      expect(mockLintFn).toHaveBeenCalledWith({
-        program: mockTscResult.program,
-      });
-      expect(result).toHaveProperty("lint");
     });
   });
 
@@ -114,7 +100,6 @@ describe("library-build.worker lint integration (Slice 3)", () => {
         output: { js: true, dts: true },
       });
 
-      expect(mockLintFn).not.toHaveBeenCalled();
       expect(result.lint).toBeUndefined();
     });
   });

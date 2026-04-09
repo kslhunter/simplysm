@@ -56,6 +56,23 @@ class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
 Graceful shutdown: `SIGINT`/`SIGTERM` 시그널 수신 시 `close()`를 호출하고, 10초 내에 종료되지 않으면 `process.exit(1)`로 강제 종료한다.
 
+## `ServerEventProxy`
+
+`getEvent()`가 반환하는 타입 안전한 이벤트 프록시 인터페이스. `emit` 메서드만 포함한다.
+
+```typescript
+interface ServerEventProxy<TEventDef extends ServiceEventDef> {
+  emit(
+    infoSelector: (item: TEventDef["$info"]) => boolean,
+    data: TEventDef["$data"],
+  ): Promise<void>;
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `emit(infoSelector, data)` | `infoSelector`에 매칭되는 이벤트 리스너를 가진 WebSocket 클라이언트에 이벤트를 브로드캐스트한다 |
+
 ## `createServiceServer`
 
 `ServiceServer` 인스턴스를 생성하는 팩토리 함수.

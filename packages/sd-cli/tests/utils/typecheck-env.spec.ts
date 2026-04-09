@@ -11,13 +11,6 @@ vi.mock("fs", () => {
   return { ...fsMock, default: fsMock };
 });
 
-vi.mock("@simplysm/core-node", () => ({
-  pathx: {
-    norm: (p: string) => p.replace(/\\/g, "/"),
-    isChildPath: (child: string, parent: string) => child.startsWith(parent),
-  },
-}));
-
 vi.mock("typescript", () => ({
   default: {
     readConfigFile: vi.fn(),

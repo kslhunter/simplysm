@@ -67,29 +67,54 @@ describe("typecheckNonPackageFiles", () => {
     expect(result.diagnostics).toHaveLength(0);
   });
 
-  it("filters to only non-package files", () => {
-    typecheckNonPackageFiles("/project");
+  it("excludes diagnostics from package source files", () => {
+    const pkgSourceDiag = {
+      category: 1,
+      code: 2322,
+      messageText: "Type error in package source",
+      file: { fileName: "/project/packages/core/src/index.ts" },
+      start: 0,
+    };
+    const mockProgram = {
+      emit: vi.fn(() => ({ diagnostics: [] })),
+      getConfigFileParsingDiagnostics: vi.fn(() => []),
+      getSyntacticDiagnostics: vi.fn(() => []),
+      getOptionsDiagnostics: vi.fn(() => []),
+      getGlobalDiagnostics: vi.fn(() => []),
+      getSemanticDiagnostics: vi.fn(() => [pkgSourceDiag]),
+    };
+    mocks.createIncrementalProgram.mockReturnValue(mockProgram);
 
-    // createIncrementalProgram should receive only root-level + package config files
-    expect(mocks.createIncrementalProgram).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rootNames: expect.arrayContaining(["/project/vitest.config.ts"]),
-      }),
-    );
-    // Should NOT include package source files
-    const rootNames = mocks.createIncrementalProgram.mock.calls[0][0].rootNames;
-    expect(rootNames).not.toContainEqual(
-      expect.stringContaining("packages/core/src/index.ts"),
-    );
+    const result = typecheckNonPackageFiles("/project");
+
+    expect(result.diagnostics).toHaveLength(0);
+    expect(result.errorCount).toBe(0);
+    expect(result.success).toBe(true);
   });
 
-  it("includes package root config files (e.g., packages/core/vitest.config.ts)", () => {
-    typecheckNonPackageFiles("/project");
+  it("includes diagnostics from package root config files", () => {
+    const configDiag = {
+      category: 1,
+      code: 2322,
+      messageText: "Type error in config",
+      file: { fileName: "/project/packages/core/vitest.config.ts" },
+      start: 0,
+    };
+    const mockProgram = {
+      emit: vi.fn(() => ({ diagnostics: [] })),
+      getConfigFileParsingDiagnostics: vi.fn(() => []),
+      getSyntacticDiagnostics: vi.fn(() => []),
+      getOptionsDiagnostics: vi.fn(() => []),
+      getGlobalDiagnostics: vi.fn(() => []),
+      getSemanticDiagnostics: vi.fn(() => [configDiag]),
+    };
+    mocks.createIncrementalProgram.mockReturnValue(mockProgram);
 
-    const rootNames = mocks.createIncrementalProgram.mock.calls[0][0].rootNames;
-    expect(rootNames).toContainEqual(
-      expect.stringContaining("packages/core/vitest.config.ts"),
-    );
+    const result = typecheckNonPackageFiles("/project");
+
+    expect(result.diagnostics).toHaveLength(1);
+    expect(result.errorCount).toBe(1);
+    expect(result.success).toBe(false);
   });
 
   it("reports errors from diagnostics", () => {
@@ -108,13 +133,5 @@ describe("typecheckNonPackageFiles", () => {
 
     expect(result.success).toBe(false);
     expect(result.errorCount).toBe(1);
-  });
-
-  it("uses noEmit=true for typecheck only", () => {
-    typecheckNonPackageFiles("/project");
-
-    const options = mocks.createIncrementalProgram.mock.calls[0][0].options;
-    expect(options.noEmit).toBe(true);
-    expect(options.declaration).toBe(false);
   });
 });

@@ -9,8 +9,8 @@ import { consola } from "consola";
 import { registerCleanupHandlers, setupWorkerConsola } from "../utils/worker-utils.js";
 import { createClientViteConfig } from "../utils/vite-config.js";
 import type { ScopeWatchReplaceDep } from "../utils/vite-scope-watch-plugin.js";
-import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types.js";
-import type { LintWithProgramResult } from "../utils/lint-with-program.js";
+import type { SdPwaConfig } from "../sd-config.types.js";
+import { loadSdConfig } from "../utils/sd-config.js";
 
 setupWorkerConsola();
 
@@ -31,12 +31,8 @@ export interface ClientBuildInfo {
   configs?: Record<string, unknown>;
   /** replaceDeps 목록 (dev 모드에서 sdScopeWatchPlugin에 전달) */
   replaceDeps?: ScopeWatchReplaceDep[];
-  /** 브라우저 호환성 설정 */
-  browserSupport?: SdBrowserSupportConfig;
   /** PWA 설정. false로 비활성화. 미설정 시 기본값으로 활성화 */
   pwa?: false | SdPwaConfig;
-  /** 컴파일의 ts.Program을 사용하여 lint 실행 */
-  enableLint?: boolean;
   /** Vite optimizeDeps.exclude에 전달할 패키지 목록 */
   exclude?: string[];
   /** 빌드 출력 경로 (미설정 시 pkgDir/dist) */
@@ -50,7 +46,6 @@ export interface ClientBuildResult {
   success: boolean;
   errors?: string[];
   warnings?: string[];
-  lint?: LintWithProgramResult;
 }
 
 /** Worker 이벤트 타입 */
@@ -176,16 +171,19 @@ function createLegacyHttpServer(distDir: string, basePath: string): http.Server 
   });
 }
 
-function resolvePackageInfo(info: ClientBuildInfo): {
-  tsconfigPath: string;
+async function resolvePackageInfo(info: ClientBuildInfo): Promise<{
   pkgName: string;
-} {
-  const tsconfigPath = path.join(info.pkgDir, "tsconfig.json");
+  legacyModule: boolean;
+}> {
   const pkgJsonPath = path.join(info.pkgDir, "package.json");
   const pkgName = (
     JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string }
   ).name;
-  return { tsconfigPath, pkgName };
+  const name = pkgName.replace(/^@[^/]+\//, "");
+  const sdConfig = await loadSdConfig({ cwd: info.cwd, dev: true, opt: [] });
+  const pkgConfig = sdConfig.packages[name];
+  const legacyModule = pkgConfig?.target === "client" ? pkgConfig.browserSupport?.legacyModule === true : false;
+  return { pkgName, legacyModule };
 }
 
 /**
@@ -193,12 +191,12 @@ function resolvePackageInfo(info: ClientBuildInfo): {
  * 서버가 준비되면 serverReady 이벤트로 포트를 알린다.
  */
 async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
-  if (info.browserSupport?.legacyModule === true) {
-    return startLegacyWatch(info);
+  const { pkgName, legacyModule } = await resolvePackageInfo(info);
+  if (legacyModule) {
+    return startLegacyWatch(info, pkgName);
   }
   logger.debug(`[${info.name}] client worker startWatch 시작 (port: ${info.port ?? "auto"})`);
   try {
-    const { tsconfigPath, pkgName } = resolvePackageInfo(info);
 
     // polyfills.ts 자동 감지
     const polyfillsPath = path.join(info.pkgDir, "src", "polyfills.ts");
@@ -209,17 +207,12 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       pkgDir: info.pkgDir,
       pkgName,
       mode: "dev",
-      tsconfigPath,
       serverPort: info.port ?? 0,
       env: info.env,
       onBuildStart: () => sender.send("buildStart", {}),
       onBuild: (result) => sender.send("build", result),
-      enableLint: info.enableLint,
       replaceDeps: info.replaceDeps,
       onScopeRebuild: () => sender.send("scopeRebuild", {}),
-      browserslist: info.browserSupport?.browserslist,
-      postCssPlugins: info.browserSupport?.postCss?.plugins,
-      legacyModule: info.browserSupport?.legacyModule,
       polyfills,
       pwa: info.pwa,
       exclude: info.exclude,
@@ -267,10 +260,9 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
  * legacy watch 시작. Vite build --watch로 파일 변경을 감시한다.
  * legacyModule: true일 때 createServer 대신 사용한다.
  */
-async function startLegacyWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
+async function startLegacyWatch(info: ClientBuildInfo, pkgName: string): Promise<ClientBuildResult> {
   logger.debug(`[${info.name}] client worker startLegacyWatch 시작`);
   try {
-    const { tsconfigPath, pkgName } = resolvePackageInfo(info);
 
     // dist 초기화 (첫 빌드만 비움)
     const distDir = path.join(info.pkgDir, "dist");
@@ -285,18 +277,13 @@ async function startLegacyWatch(info: ClientBuildInfo): Promise<ClientBuildResul
       pkgDir: info.pkgDir,
       pkgName,
       mode: "dev",
-      tsconfigPath,
       serverPort: 0,
       env: info.env,
       watch: true,
       onBuildStart: () => sender.send("buildStart", {}),
       onBuild: (result) => sender.send("build", result),
-      enableLint: info.enableLint,
       replaceDeps: info.replaceDeps,
       onScopeRebuild: () => sender.send("scopeRebuild", {}),
-      browserslist: info.browserSupport?.browserslist,
-      postCssPlugins: info.browserSupport?.postCss?.plugins,
-      legacyModule: info.browserSupport?.legacyModule,
       polyfills,
       pwa: false,
       exclude: info.exclude,
@@ -405,13 +392,12 @@ async function stopWatch(): Promise<void> {
 async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   logger.debug(`[${info.name}] client worker build 시작`);
   try {
-    const { tsconfigPath, pkgName } = resolvePackageInfo(info);
+    const { pkgName } = await resolvePackageInfo(info);
 
     // polyfills.ts 자동 감지
     const polyfillsPath = path.join(info.pkgDir, "src", "polyfills.ts");
     const polyfills = fs.existsSync(polyfillsPath) ? ["./src/polyfills.ts"] : undefined;
 
-    let lintResult: LintWithProgramResult | undefined;
     let buildSuccess = true;
     let buildErrors: string[] | undefined;
     let buildWarnings: string[] | undefined;
@@ -421,21 +407,13 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       pkgDir: info.pkgDir,
       pkgName,
       mode: "build",
-      tsconfigPath,
       serverPort: 0,
       env: info.env,
-      enableLint: info.enableLint,
       onBuild: (result) => {
         buildSuccess = result.success;
         buildErrors = result.errors;
         buildWarnings = result.warnings;
-        if (result.lint != null) {
-          lintResult = result.lint;
-        }
       },
-      browserslist: info.browserSupport?.browserslist,
-      postCssPlugins: info.browserSupport?.postCss?.plugins,
-      legacyModule: info.browserSupport?.legacyModule,
       polyfills,
       pwa: info.pwa,
       exclude: info.exclude,
@@ -449,7 +427,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
 
     logger.debug(`[${info.name}] client worker build 완료`);
-    return { success: buildSuccess, errors: buildErrors, warnings: buildWarnings, lint: lintResult };
+    return { success: buildSuccess, errors: buildErrors, warnings: buildWarnings };
   } catch (err) {
     const message = errNs.message(err);
     logger.debug(`[${info.name}] client worker build 예외: ${message}`);

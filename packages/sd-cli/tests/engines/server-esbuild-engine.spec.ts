@@ -2,16 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mock factories ---
 
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    })),
-  },
-}));
-
 const mockWorker = {
   build: vi.fn(),
   startWatch: vi.fn(),
@@ -68,27 +58,12 @@ beforeEach(() => {
 
 describe("ServerEsbuildEngine", () => {
   describe("run()", () => {
-    // Acceptance: creates single worker and calls build with server config
-    it("creates worker and passes server config to build", async () => {
-      const { Worker } = await import("@simplysm/core-node");
+    it("returns EngineResult with build success", async () => {
       const pkg = createMockPkg();
       const engine = new ServerEsbuildEngine({ cwd: "/root", pkg });
 
       const result = await engine.run({ js: true, dts: false });
 
-      expect(Worker.create).toHaveBeenCalledTimes(1);
-      expect(mockWorker.build).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "test-server",
-          pkgDir: "/packages/test-server",
-          output: { js: true, dts: false },
-          env: { DB_HOST: "localhost" },
-          configs: { port: 3000 },
-          externals: ["bcrypt"],
-          pm2: { name: "test-app" },
-          packageManager: "mise",
-        }),
-      );
       expect(result.build.success).toBe(true);
       await engine.stop();
     });
@@ -125,111 +100,10 @@ describe("ServerEsbuildEngine", () => {
     });
   });
 
-  describe("startWatch()", () => {
-    // Acceptance: resolves when initial build event arrives
-    it("resolves when initial build event arrives", async () => {
-      mockWorker.startWatch.mockImplementation(() => {
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({
-          build: { success: true },
-          mainJsPath: "/packages/test-server/dist/main.js",
-        });
-      });
+  // shared startWatch() behavior (resolve, ResultCollector) is tested in base-engine.spec.ts
 
-      const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
-      await engine.startWatch({ js: true, dts: false });
-
-      expect(mockWorker.on).toHaveBeenCalledWith("build", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("buildStart", expect.any(Function));
-      expect(mockWorker.on).toHaveBeenCalledWith("error", expect.any(Function));
-
-      await engine.stop();
-    });
-
-    // Acceptance: reports to ResultCollector
-    it("reports build result to ResultCollector", async () => {
-      const mockResultCollector = { add: vi.fn() };
-
-      mockWorker.startWatch.mockImplementation(() => {
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({
-          build: { success: false, errors: ["type error"] },
-          mainJsPath: "/packages/test-server/dist/main.js",
-        });
-      });
-
-      const engine = new ServerEsbuildEngine({
-        cwd: "/root",
-        pkg: createMockPkg(),
-        resultCollector: mockResultCollector as any,
-      });
-
-      await engine.startWatch({ js: true, dts: false });
-
-      const addCalls = mockResultCollector.add.mock.calls;
-      const buildResult = addCalls.find((c: any[]) => c[0].type === "build");
-
-      expect(buildResult).toBeDefined();
-      expect(buildResult![0].status).toBe("error");
-
-      await engine.stop();
-    });
-
-    // Unit: passes server-specific config to worker
-    it("passes server config to worker startWatch", async () => {
-      mockWorker.startWatch.mockImplementation(() => {
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({
-          build: { success: true },
-          mainJsPath: "/packages/test-server/dist/main.js",
-        });
-      });
-
-      const pkg = createMockPkg();
-      const engine = new ServerEsbuildEngine({ cwd: "/root", pkg });
-      await engine.startWatch({ js: true, dts: false });
-
-      expect(mockWorker.startWatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "test-server",
-          env: { DB_HOST: "localhost" },
-          configs: { port: 3000 },
-          externals: ["bcrypt"],
-        }),
-      );
-
-      await engine.stop();
-    });
-  });
-
+  // shared stop() behavior (watch mode, 미실행 시) is tested in base-engine.spec.ts
   describe("stop()", () => {
-    it("calls stopWatch and terminate on worker", async () => {
-      mockWorker.startWatch.mockImplementation(() => {
-        const buildHandler = mockWorker.on.mock.calls.find(
-          (call: any[]) => call[0] === "build",
-        )?.[1];
-        buildHandler?.({ build: { success: true }, mainJsPath: "x" });
-      });
-
-      const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
-      await engine.startWatch({ js: true, dts: false });
-      await engine.stop();
-
-      expect(mockWorker.stopWatch).toHaveBeenCalled();
-      expect(mockWorker.terminate).toHaveBeenCalled();
-    });
-
-    it("handles stop without prior run/startWatch", async () => {
-      const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
-      await expect(engine.stop()).resolves.toBeUndefined();
-    });
-
     it("skips stopWatch in run mode", async () => {
       const engine = new ServerEsbuildEngine({ cwd: "/root", pkg: createMockPkg() });
       await engine.run({ js: true, dts: false });

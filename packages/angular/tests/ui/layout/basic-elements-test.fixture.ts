@@ -1,14 +1,5 @@
 import { Component } from "@angular/core";
-import { SdPane } from "../../../src/ui/layout/sd-pane";
 import { SdGap } from "../../../src/ui/layout/sd-gap";
-
-@Component({
-  selector: "sd-pane-test",
-  standalone: true,
-  imports: [SdPane],
-  template: `<div sdPane>content</div>`,
-})
-export class SdPaneTest {}
 
 @Component({
   selector: "sd-gap-test-height",

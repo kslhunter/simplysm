@@ -1,17 +1,33 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
 import type { IncomingMessage, ServerResponse } from "http";
-import { sdAngularPlugin } from "../../src/angular/vite-angular-plugin.js";
+import type { SdConfig } from "../../src/sd-config.types";
+import {
+  FIXTURE_DIR,
+  createTestSdConfig,
+  initPlugin,
+} from "./_vite-angular-plugin-test-setup";
 
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/basic-app");
-const TSCONFIG_PATH = path.join(FIXTURE_DIR, "tsconfig.json");
+const mockLoadSdConfig = vi.fn<(...args: unknown[]) => Promise<SdConfig>>();
+
+vi.mock("../../src/utils/sd-config", () => ({
+  loadSdConfig: (...args: unknown[]) => mockLoadSdConfig(...args),
+}));
+
+const { sdAngularPlugin } = await import("../../src/angular/vite-angular-plugin.js");
 
 describe("sdAngularPlugin HMR + component-middleware", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(process, "cwd").mockReturnValue(FIXTURE_DIR);
+    mockLoadSdConfig.mockResolvedValue(createTestSdConfig());
+  });
+
   // Acceptance: configureServer에서 component-middleware가 등록된다
   it("registers component-middleware that serves /@ng/component requests", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // configureServer에서 middleware가 등록되는지 확인
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
@@ -67,8 +83,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Acceptance: /@ng/component가 아닌 요청은 next()로 통과
   it("passes through non-/@ng/component requests", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
+    await initPlugin(plugin);
 
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
@@ -97,8 +113,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Unit: /@ng/component에 ?c= 파라미터가 없으면 빈 문자열 응답
   it("responds with empty string when /@ng/component has no ?c= parameter", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
+    await initPlugin(plugin);
 
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
@@ -133,9 +149,9 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Acceptance: handleHotUpdate에서 templateUpdates를 수집하고 middleware에서 서빙
   it("collects templateUpdates from handleHotUpdate and serves via middleware", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
 
-    await (plugin as any).buildStart?.call({});
+    await initPlugin(plugin);
 
     // middleware 등록
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
@@ -175,8 +191,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Acceptance: rebuild 시작 시 이전 templateUpdates 정리
   it("clears templateUpdates at the start of handleHotUpdate", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
+    await initPlugin(plugin);
 
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
@@ -231,8 +247,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Acceptance: base path가 포함된 /@ng/component 요청도 정상 응답한다
   it("serves /@ng/component requests with base path prefix", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
+    await initPlugin(plugin);
 
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];
@@ -275,8 +291,8 @@ describe("sdAngularPlugin HMR + component-middleware", () => {
 
   // Acceptance: base path가 있지만 @ng/component가 아닌 요청은 next()로 통과
   it("passes through non-/@ng/component requests with base path", async () => {
-    const plugin = sdAngularPlugin({ tsconfig: TSCONFIG_PATH, dev: true });
-    await (plugin as any).buildStart?.call({});
+    const plugin = sdAngularPlugin({ pkg: "basic-app"});
+    await initPlugin(plugin);
 
     const middlewares: Array<(req: IncomingMessage, res: ServerResponse, next: () => void) => void> =
       [];

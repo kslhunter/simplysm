@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { SdConfig, SdConfigParams } from "../../src/sd-config.types";
 
 // --- Mock factories ---
 
+const mockTsconfigPaths = vi.fn((_opts?: { projects: string[] }) => ({ name: "vite-tsconfig-paths" }));
 vi.mock("vite-tsconfig-paths", () => ({
-  default: vi.fn(() => ({ name: "vite-tsconfig-paths" })),
+  default: mockTsconfigPaths,
 }));
 
-const mockSdAngularPlugin = vi.fn(() => ({ name: "sd-angular-plugin" }));
+const mockSdAngularPlugin = vi.fn((opts: any) => ({ name: "sd-angular-plugin", _opts: opts }));
 vi.mock("../../src/angular/vite-angular-plugin.js", () => ({
   sdAngularPlugin: mockSdAngularPlugin,
 }));
@@ -27,12 +29,9 @@ vi.mock("../../src/angular/vite-postcss-inline-plugin.js", () => ({
   })),
 }));
 
+const mockBrowserslistToEsbuild = vi.fn();
 vi.mock("browserslist-to-esbuild", () => ({
-  default: vi.fn((queries: string[]) => {
-    if (queries.includes("last 2 Chrome versions")) return ["chrome120", "chrome119"];
-    if (queries.includes("ie 11")) return ["es2015"];
-    return ["es2022"];
-  }),
+  default: mockBrowserslistToEsbuild,
 }));
 
 const mockVitePWA = vi.fn(() => ({ name: "vite-plugin-pwa" }));
@@ -45,18 +44,40 @@ vi.mock("../../src/utils/generate-pwa-icons.js", () => ({
   generatePwaIcons: mockGeneratePwaIcons,
 }));
 
+// loadSdConfig mock
+const mockLoadSdConfig = vi.fn<(params: SdConfigParams) => Promise<SdConfig>>();
+vi.mock("../../src/utils/sd-config.js", () => ({
+  loadSdConfig: (params: SdConfigParams) => mockLoadSdConfig(params),
+}));
+
 // --- Dynamic import ---
 
 const { createClientViteConfig } = await import("../../src/utils/vite-config");
 
 // --- Helpers ---
 
+/** sd.config.ts 모킹용 기본 SdClientPackageConfig를 생성한다 */
+function createSdConfig(overrides?: {
+  browserSupport?: { browserslist?: string | string[]; postCss?: { plugins: unknown[] }; legacyModule?: boolean };
+  framework?: "angular" | "solid";
+}): SdConfig {
+  return {
+    packages: {
+      "my-client": {
+        target: "client" as const,
+        server: 0,
+        framework: overrides?.framework,
+        browserSupport: overrides?.browserSupport,
+      },
+    },
+  };
+}
+
 function createDefaultOptions() {
   return {
     pkgDir: "/packages/my-client",
     pkgName: "@scope/my-client",
     mode: "build" as const,
-    tsconfigPath: "/packages/my-client/tsconfig.json",
     serverPort: 0,
   };
 }
@@ -65,6 +86,8 @@ function createDefaultOptions() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // 기본: browserSupport 미설정
+  mockLoadSdConfig.mockResolvedValue(createSdConfig());
 });
 
 afterEach(() => {
@@ -72,6 +95,7 @@ afterEach(() => {
 });
 
 describe("createClientViteConfig", () => {
+  describe("browserSupport", () => {
   // Acceptance: Scenario "define['process.env'] 제거"
   it("does not include process.env in define, only import.meta.env keys", async () => {
     const config = await createClientViteConfig({
@@ -108,96 +132,106 @@ describe("createClientViteConfig", () => {
     expect(polyfillPlugin).toBeUndefined();
   });
 
-  // Acceptance: Scenario "browserslist 문자열 설정 시 해당 타겟으로 변환"
-  it("converts browserslist string to esbuild target", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      browserslist: "last 2 Chrome versions",
-    });
+  // Acceptance: Scenario "browserslist를 sd.config.ts에서 읽어 esbuild target 설정"
+  it("converts browserslist from sd.config.ts to esbuild target", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { browserslist: "last 2 Chrome versions" },
+    }));
+    mockBrowserslistToEsbuild.mockReturnValue(["chrome120", "chrome119"]);
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     expect((config.esbuild as { target: string | string[] }).target).toEqual(["chrome120", "chrome119"]);
   });
 
   // Acceptance: Scenario "browserslist 배열 설정"
-  it("converts browserslist array to esbuild target", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      browserslist: ["ie 11", "last 2 versions"],
-    });
+  it("converts browserslist array from sd.config.ts to esbuild target", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { browserslist: ["ie 11", "last 2 versions"] },
+    }));
+    mockBrowserslistToEsbuild.mockReturnValue(["es2015"]);
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     expect((config.esbuild as { target: string | string[] }).target).toEqual(["es2015"]);
   });
 
   // Acceptance: Scenario "dev server에서도 browserslist 적용"
-  it("applies browserslist in dev mode too", async () => {
+  it("applies browserslist from sd.config.ts in dev mode too", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { browserslist: "last 2 Chrome versions" },
+    }));
+    mockBrowserslistToEsbuild.mockReturnValue(["chrome120", "chrome119"]);
+
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "dev",
-      browserslist: "last 2 Chrome versions",
     });
 
     expect((config.esbuild as { target: string | string[] }).target).toEqual(["chrome120", "chrome119"]);
   });
 
-  // Unit: browserslist is passed to sdAngularPlugin
-  it("passes browserslist to sdAngularPlugin as normalized array", async () => {
-    await createClientViteConfig({
-      ...createDefaultOptions(),
-      browserslist: "last 2 Chrome versions",
-    });
+  // Unit: sdAngularPlugin receives pkg (browserslist no longer passed — plugin reads sd.config.ts)
+  it("passes pkg to sdAngularPlugin instead of browserslist", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { browserslist: "last 2 Chrome versions" },
+    }));
+    mockBrowserslistToEsbuild.mockReturnValue(["chrome120", "chrome119"]);
 
-    expect(mockSdAngularPlugin).toHaveBeenCalledWith(
-      expect.objectContaining({
-        browserslist: ["last 2 Chrome versions"],
-      }),
-    );
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    const angularPlugin = (config.plugins as any[]).find((p) => p.name === "sd-angular-plugin");
+    expect(angularPlugin._opts.pkg).toBe("my-client");
+  });
   });
 
-  // Acceptance: Scenario ".scss 파일에 PostCSS 적용"
-  it("sets css.postcss when postCssPlugins are provided", async () => {
+  describe("postCSS", () => {
+  // Acceptance: Scenario "postCssPlugins를 sd.config.ts에서 읽어 css.postcss 설정"
+  it("sets css.postcss from sd.config.ts postCssPlugins", async () => {
     const fakePlugin = { postcssPlugin: "autoprefixer" };
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      postCssPlugins: [fakePlugin],
-    });
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { postCss: { plugins: [fakePlugin] } },
+    }));
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     expect(config.css?.postcss).toEqual({ plugins: [fakePlugin] });
   });
 
-  // Unit: postCssPlugins is passed to sdAngularPlugin
-  it("passes postCssPlugins to sdAngularPlugin", async () => {
+  // Unit: postCssPlugins is no longer passed to sdAngularPlugin (plugin reads sd.config.ts)
+  it("does not pass postCssPlugins to sdAngularPlugin", async () => {
     const fakePlugin = { postcssPlugin: "autoprefixer" };
-    await createClientViteConfig({
-      ...createDefaultOptions(),
-      postCssPlugins: [fakePlugin],
-    });
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { postCss: { plugins: [fakePlugin] } },
+    }));
 
-    expect(mockSdAngularPlugin).toHaveBeenCalledWith(
-      expect.objectContaining({
-        postCssPlugins: [fakePlugin],
-      }),
-    );
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    const angularPlugin = (config.plugins as any[]).find((p) => p.name === "sd-angular-plugin");
+    expect(angularPlugin._opts).not.toHaveProperty("postCssPlugins");
   });
 
-  // Acceptance: Scenario "Angular 라이브러리 번들 JS 내 인라인 CSS에 PostCSS 적용"
-  it("adds sdPostCssInlinePlugin when postCssPlugins are provided", async () => {
+  // Acceptance: Scenario "sdPostCssInlinePlugin이 Angular 프레임워크일 때 플러그인 목록에 포함"
+  it("adds sdPostCssInlinePlugin when sd.config.ts has postCssPlugins", async () => {
     const fakePlugin = { postcssPlugin: "autoprefixer" };
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      postCssPlugins: [fakePlugin],
-    });
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { postCss: { plugins: [fakePlugin] } },
+    }));
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     const plugins = config.plugins as Array<{ name: string }>;
     const inlinePlugin = plugins.find((p) => p.name === "sd-postcss-inline");
     expect(inlinePlugin).toBeDefined();
   });
 
-  // Unit: no sdPostCssInlinePlugin when empty postCssPlugins
-  it("does not add sdPostCssInlinePlugin when postCssPlugins is empty", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      postCssPlugins: [],
-    });
+  // Unit: no sdPostCssInlinePlugin when postCss.plugins is empty in sd.config.ts
+  it("does not add sdPostCssInlinePlugin when sd.config.ts postCss.plugins is empty", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { postCss: { plugins: [] } },
+    }));
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     const plugins = config.plugins as Array<{ name: string }>;
     const inlinePlugin = plugins.find((p) => p.name === "sd-postcss-inline");
@@ -215,68 +249,46 @@ describe("createClientViteConfig", () => {
     const polyfillPlugin = plugins.find((p) => p.name === "sd-polyfills");
     expect(polyfillPlugin).toBeDefined();
   });
+  });
 
+  describe("legacyModule", () => {
   // --- legacyModule (Feature 1.1) ---
 
-  // Acceptance: Scenario "legacyModule 활성화 시 inlineDynamicImports만 설정한다"
-  it("enables inlineDynamicImports without import.meta plugin when legacyModule is true", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
+  // Acceptance: Scenario "legacyModule을 sd.config.ts에서 읽어 빌드 설정 적용"
+  it("enables inlineDynamicImports when sd.config.ts has legacyModule: true", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { legacyModule: true },
+    }));
+
+    const config = await createClientViteConfig(createDefaultOptions());
 
     // inlineDynamicImports가 활성화된다
     expect((config.build as any)?.rollupOptions?.output?.inlineDynamicImports).toBe(true);
-    // import.meta 치환 플러그인이 없다 (esbuild target이 자동 치환)
-    const plugins = config.plugins as Array<{ name: string }>;
-    const legacyPlugin = plugins.find((p) => p.name === "sd-legacy-import-meta");
-    expect(legacyPlugin).toBeUndefined();
+    // esbuild.supported에 import-meta: false가 설정된다
+    const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
+    expect(esbuildOpts?.["supported"]).toEqual(
+      expect.objectContaining({ "import-meta": false }),
+    );
   });
 
   // Acceptance: Scenario "legacyModule 미설정 시 코드 분할이 기본 동작한다"
-  it("does not set inlineDynamicImports when legacyModule is not set", async () => {
+  it("does not set inlineDynamicImports when legacyModule is not set in sd.config.ts", async () => {
     const config = await createClientViteConfig(createDefaultOptions());
 
     // 코드 분할이 기본 동작한다
     expect(config.build?.rollupOptions).toBeUndefined();
   });
 
-  // Acceptance: Scenario "legacyModule: true는 inlineDynamicImports를 활성화한다"
-  it("legacyModule: true provides inlineDynamicImports (splitting replacement)", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
-
-    // 기존 splitting: false와 동일한 inlineDynamicImports 동작
-    expect((config.build as any)?.rollupOptions?.output?.inlineDynamicImports).toBe(true);
-  });
-
-  // --- legacyModule esbuild.supported override (Feature 1.4) ---
-
-  // Acceptance: Scenario "legacyModule: true일 때 esbuild.supported에 import-meta false 설정"
-  it("sets esbuild.supported to disable import-meta when legacyModule is true", async () => {
-    const config = await createClientViteConfig({
-      ...createDefaultOptions(),
-      legacyModule: true,
-    });
-
-    const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
-    expect(esbuildOpts?.["supported"]).toEqual(
-      expect.objectContaining({
-        "import-meta": false,
-      }),
-    );
-  });
-
   // Acceptance: Scenario "legacyModule 미설정 시 esbuild.supported 변경 없음"
-  it("does not set esbuild.supported when legacyModule is not specified", async () => {
+  it("does not set esbuild.supported when legacyModule is not specified in sd.config.ts", async () => {
     const config = await createClientViteConfig(createDefaultOptions());
 
     const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
     expect(esbuildOpts?.["supported"]).toBeUndefined();
   });
+  });
 
+  describe("pwa", () => {
   // --- PWA (Feature 5.2) ---
 
   // Acceptance: Scenario "기본 PWA 활성화"
@@ -395,7 +407,6 @@ describe("createClientViteConfig", () => {
         manifest: expect.objectContaining({ icons }),
       }),
     );
-    expect(mockGeneratePwaIcons).not.toHaveBeenCalled();
   });
 
   // Acceptance: Scenario "기본 아이콘 자동 생성"
@@ -451,7 +462,9 @@ describe("createClientViteConfig", () => {
       }),
     );
   });
+  });
 
+  describe("watch", () => {
   // --- watch option (Feature 1.2: legacy dev mode) ---
 
   // Acceptance: Scenario "watch: true 시 build.watch 설정 및 emptyOutDir: false"
@@ -469,8 +482,6 @@ describe("createClientViteConfig", () => {
 
   // Acceptance: Scenario "watch: true + replaceDeps 시 sdScopeWatchPlugin 포함"
   it("includes sdScopeWatchPlugin when watch is true with replaceDeps in build mode", async () => {
-    const { sdScopeWatchPlugin } = await import("../../src/utils/vite-scope-watch-plugin");
-
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "build",
@@ -481,7 +492,6 @@ describe("createClientViteConfig", () => {
     const plugins = config.plugins as Array<{ name: string }>;
     const scopePlugin = plugins.find((p) => p.name === "sd-scope-watch-plugin");
     expect(scopePlugin).toBeDefined();
-    expect(sdScopeWatchPlugin).toHaveBeenCalled();
   });
 
   // Acceptance: Scenario "watch 미설정 시 기존 build 동작 유지"
@@ -516,6 +526,7 @@ describe("createClientViteConfig", () => {
 
     expect(config.build?.outDir).toContain("my-client");
     expect(config.build?.outDir).toMatch(/dist$/);
+  });
   });
 
   // --- outDir override ---
@@ -562,8 +573,6 @@ describe("createClientViteConfig", () => {
 
   // Acceptance: Scenario "exclude와 replaceDeps가 모두 있으면 둘 다 제외된다"
   it("sets optimizeDeps.exclude from exclude while sdScopeWatchPlugin handles replaceDeps", async () => {
-    const { sdScopeWatchPlugin } = await import("../../src/utils/vite-scope-watch-plugin");
-
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "dev",
@@ -573,8 +582,6 @@ describe("createClientViteConfig", () => {
 
     // Base config에 사용자 exclude + replaceDeps 패키지 모두 포함
     expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite", "@scope/core"]);
-    // sdScopeWatchPlugin도 호출됨
-    expect(sdScopeWatchPlugin).toHaveBeenCalled();
   });
 
   // Acceptance: Scenario "exclude만 있고 replaceDeps가 없으면 exclude만 제외된다"
@@ -592,7 +599,7 @@ describe("createClientViteConfig", () => {
     expect(scopePlugin).toBeUndefined();
   });
 
-  // --- framework selection (Feature 1.1: client-framework-selection) ---
+  describe("framework", () => {
 
   // Acceptance: Scenario "Solid 프레임워크 선택"
   it("uses solidPlugin when framework is 'solid'", async () => {
@@ -603,36 +610,41 @@ describe("createClientViteConfig", () => {
 
     const plugins = config.plugins as Array<{ name: string }>;
     expect(plugins.find((p) => p.name === "vite-plugin-solid")).toBeDefined();
-    expect(mockSolidPlugin).toHaveBeenCalled();
-    expect(mockSdAngularPlugin).not.toHaveBeenCalled();
+    expect(plugins.find((p) => p.name === "sd-angular-plugin")).toBeUndefined();
   });
 
   // Acceptance: Scenario "framework 미지정 시 기본값"
   it("uses sdAngularPlugin when framework is not specified", async () => {
-    await createClientViteConfig(createDefaultOptions());
+    const config = await createClientViteConfig(createDefaultOptions());
 
-    expect(mockSdAngularPlugin).toHaveBeenCalled();
-    expect(mockSolidPlugin).not.toHaveBeenCalled();
+    const plugins = config.plugins as Array<{ name: string }>;
+    expect(plugins.find((p) => p.name === "sd-angular-plugin")).toBeDefined();
+    expect(plugins.find((p) => p.name === "vite-plugin-solid")).toBeUndefined();
   });
 
   // Acceptance: Scenario "Angular 프레임워크 명시 선택"
   it("uses sdAngularPlugin when framework is 'angular'", async () => {
-    await createClientViteConfig({
+    const config = await createClientViteConfig({
       ...createDefaultOptions(),
       framework: "angular",
     });
 
-    expect(mockSdAngularPlugin).toHaveBeenCalled();
-    expect(mockSolidPlugin).not.toHaveBeenCalled();
+    const plugins = config.plugins as Array<{ name: string }>;
+    expect(plugins.find((p) => p.name === "sd-angular-plugin")).toBeDefined();
+    expect(plugins.find((p) => p.name === "vite-plugin-solid")).toBeUndefined();
   });
 
   // Acceptance: Scenario "Solid 빌드에서 PostCSS inline 플러그인 미적용"
-  it("does not add sdPostCssInlinePlugin when framework is 'solid' even with postCssPlugins", async () => {
+  it("does not add sdPostCssInlinePlugin when framework is 'solid' even with postCssPlugins in sd.config.ts", async () => {
     const fakePlugin = { postcssPlugin: "autoprefixer" };
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      framework: "solid",
+      browserSupport: { postCss: { plugins: [fakePlugin] } },
+    }));
+
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       framework: "solid",
-      postCssPlugins: [fakePlugin],
     });
 
     const plugins = config.plugins as Array<{ name: string }>;
@@ -640,29 +652,35 @@ describe("createClientViteConfig", () => {
     // 하지만 css.postcss는 여전히 설정된다 (외부 CSS 파일용)
     expect(config.css?.postcss).toEqual({ plugins: [fakePlugin] });
   });
+  });
 
   // --- legacyModule dev mode (Feature: fix-legacy-ngdevmode) ---
 
-  // Acceptance: Scenario "legacyModule: true + dev 명령 실행 시 sdAngularPlugin에 dev: true 전달"
-  it("passes dev: true to sdAngularPlugin when mode is dev with legacyModule", async () => {
-    await createClientViteConfig({
-      ...createDefaultOptions(),
-      mode: "dev",
-      legacyModule: true,
-      watch: true,
-    });
+  // Acceptance: Scenario "legacyModule: true + dev 명령 실행 시 sdAngularPlugin에 pkg 전달"
+  it("passes pkg to sdAngularPlugin when mode is dev with legacyModule from sd.config.ts", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { legacyModule: true },
+    }));
 
-    expect(mockSdAngularPlugin).toHaveBeenCalledWith(
-      expect.objectContaining({ dev: true }),
-    );
-  });
-
-  // Acceptance: Scenario "legacyModule dev에서 build output 설정이 적용된다"
-  it("applies build output settings when mode is dev with legacyModule", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "dev",
-      legacyModule: true,
+      watch: true,
+    });
+
+    const angularPlugin = (config.plugins as any[]).find((p) => p.name === "sd-angular-plugin");
+    expect(angularPlugin._opts.pkg).toBe("my-client");
+  });
+
+  // Acceptance: Scenario "legacyModule dev에서 build output 설정이 적용된다"
+  it("applies build output settings when mode is dev with legacyModule from sd.config.ts", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { legacyModule: true },
+    }));
+
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      mode: "dev",
       watch: true,
     });
 
@@ -673,16 +691,90 @@ describe("createClientViteConfig", () => {
   });
 
   // Unit: legacyModule dev에서 PWA가 추가되지 않는다
-  it("does not add VitePWA plugin when mode is dev with legacyModule", async () => {
+  it("does not add VitePWA plugin when mode is dev with legacyModule from sd.config.ts", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      browserSupport: { legacyModule: true },
+    }));
+
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "dev",
-      legacyModule: true,
       watch: true,
     });
 
     const plugins = config.plugins as Array<{ name: string }>;
     const pwaPlugin = plugins.find((p) => p.name === "vite-plugin-pwa");
     expect(pwaPlugin).toBeUndefined();
+  });
+
+  // --- Feature 3.1: sd.config.ts 로딩 + 옵션 제거 ---
+
+  // Unit: loadSdConfig is called with correct params
+  it("calls loadSdConfig with cwd and mode derived from options", async () => {
+    await createClientViteConfig({ ...createDefaultOptions(), mode: "dev" });
+
+    expect(mockLoadSdConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cwd: expect.any(String),
+        dev: true,
+        opt: [],
+      }),
+    );
+  });
+
+  // Unit: loadSdConfig called with dev: false for build mode
+  it("calls loadSdConfig with dev: false for build mode", async () => {
+    await createClientViteConfig(createDefaultOptions());
+
+    expect(mockLoadSdConfig).toHaveBeenCalledWith(
+      expect.objectContaining({ dev: false }),
+    );
+  });
+
+  // Acceptance: Scenario "sd.config.ts에 패키지가 없으면 에러"
+  it("throws error when package is not defined in sd.config.ts", async () => {
+    mockLoadSdConfig.mockResolvedValue({ packages: {} });
+
+    await expect(
+      createClientViteConfig(createDefaultOptions()),
+    ).rejects.toThrow("my-client");
+  });
+
+  // Acceptance: Scenario "tsconfigPath 자동 계산"
+  it("includes tsconfigPaths plugin in config", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    const plugins = config.plugins as Array<{ name: string }>;
+    expect(plugins.find((p) => p.name === "vite-tsconfig-paths")).toBeDefined();
+  });
+
+  // Acceptance: Scenario "Solid 프레임워크에서도 browserSupport 적용"
+  it("applies browserslist from sd.config.ts even when framework is solid", async () => {
+    mockLoadSdConfig.mockResolvedValue(createSdConfig({
+      framework: "solid",
+      browserSupport: { browserslist: "last 2 Chrome versions" },
+    }));
+    mockBrowserslistToEsbuild.mockReturnValue(["chrome120", "chrome119"]);
+
+    const config = await createClientViteConfig({
+      ...createDefaultOptions(),
+      framework: "solid",
+    });
+
+    expect((config.esbuild as { target: string | string[] }).target).toEqual(["chrome120", "chrome119"]);
+  });
+
+  // Acceptance: Scenario "browserSupport 미설정 시 기본값 적용" (esbuild + css + legacyModule 종합)
+  it("uses default values when browserSupport is not set in sd.config.ts", async () => {
+    const config = await createClientViteConfig(createDefaultOptions());
+
+    // esbuild target은 "es2022"
+    expect(config.esbuild).toEqual({ target: "es2022" });
+    // css.postcss는 undefined
+    expect(config.css).toBeUndefined();
+    // legacyModule 관련 설정은 적용되지 않는다
+    expect(config.build?.rollupOptions).toBeUndefined();
+    const esbuildOpts = config.esbuild as Record<string, unknown> | undefined;
+    expect(esbuildOpts?.["supported"]).toBeUndefined();
   });
 });

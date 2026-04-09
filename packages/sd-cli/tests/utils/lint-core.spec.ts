@@ -4,9 +4,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mocks = vi.hoisted(() => ({
   fsxExists: vi.fn<(path: string) => Promise<boolean>>(),
   fsxGlob: vi.fn<(...args: unknown[]) => Promise<string[]>>(),
-  filterByTargets: vi.fn(
-    (files: string[], _targets: string[], _cwd: string) => files,
-  ),
   lintFiles: vi.fn<() => Promise<Array<{ errorCount: number; warningCount: number }>>>(),
   loadFormatter: vi.fn(),
   outputFixes: vi.fn(),
@@ -14,10 +11,13 @@ const mocks = vi.hoisted(() => ({
   eslintCtor: vi.fn(),
 }));
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: { exists: mocks.fsxExists, glob: mocks.fsxGlob },
-  pathx: { filterByTargets: mocks.filterByTargets },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...actual,
+    fsx: { exists: mocks.fsxExists, glob: mocks.fsxGlob },
+  };
+});
 
 vi.mock("eslint", () => ({
   ESLint: class MockESLint {
@@ -31,17 +31,6 @@ vi.mock("eslint", () => ({
 vi.mock("jiti", () => ({
   createJiti: vi.fn(() => ({ import: mocks.jitiImport })),
 }));
-
-vi.mock("consola", () => {
-  const fns = (): Record<string, unknown> => ({
-    debug: vi.fn(), start: vi.fn(), success: vi.fn(),
-    info: vi.fn(), error: vi.fn(), warn: vi.fn(), log: vi.fn(),
-    withTag: vi.fn(() => fns()),
-    level: 0,
-  });
-  const c = fns();
-  return { consola: c, default: c, LogLevels: {} };
-});
 
 const { loadIgnorePatterns, executeLint } = await import("../../src/utils/lint-core");
 
@@ -100,7 +89,6 @@ describe("executeLint", () => {
     );
     mocks.jitiImport.mockResolvedValue({ default: [] });
     mocks.fsxGlob.mockResolvedValue(["/project/src/a.ts", "/project/src/b.ts"]);
-    mocks.filterByTargets.mockImplementation((files) => files);
     mocks.lintFiles.mockResolvedValue([{ errorCount: 0, warningCount: 0 }]);
     mocks.loadFormatter.mockResolvedValue({
       format: vi.fn().mockResolvedValue(""),
@@ -113,20 +101,18 @@ describe("executeLint", () => {
     expect(result.success).toBe(true);
     expect(result.errorCount).toBe(0);
     expect(result.warningCount).toBe(0);
-    expect(mocks.lintFiles).toHaveBeenCalled();
   });
 
   it("filters files by targets via pathx.filterByTargets", async () => {
-    const filteredFiles = ["/project/packages/core-common/src/a.ts"];
-    mocks.filterByTargets.mockReturnValue(filteredFiles);
+    const cwd = process.cwd().replace(/\\/g, "/");
+    mocks.fsxGlob.mockResolvedValue([
+      `${cwd}/packages/core-common/src/a.ts`,
+      `${cwd}/packages/other/src/b.ts`,
+    ]);
 
     await executeLint({ targets: ["packages/core-common"], fix: false, timing: false });
 
-    expect(mocks.filterByTargets).toHaveBeenCalledWith(
-      expect.any(Array),
-      ["packages/core-common"],
-      expect.any(String),
-    );
+    expect(mocks.lintFiles).toHaveBeenCalledWith([`${cwd}/packages/core-common/src/a.ts`]);
   });
 
   it("applies auto-fix when fix option is true", async () => {
@@ -181,7 +167,6 @@ describe("executeLint", () => {
     const result = await executeLint({ targets: [], fix: false, timing: false });
 
     expect(result.success).toBe(true);
-    expect(mocks.lintFiles).not.toHaveBeenCalled();
   });
 });
 

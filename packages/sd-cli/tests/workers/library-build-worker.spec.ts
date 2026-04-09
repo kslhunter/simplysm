@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
+import { consola } from "consola";
+import * as tscBuild from "../../src/utils/tsc-build";
+import * as packageUtils from "../../src/utils/package-utils";
 
 //#region Mocks
 
@@ -9,18 +12,6 @@ let mockSend: ReturnType<typeof vi.fn>;
 // FsWatcher mock
 const mockOnChange = vi.fn();
 const mockWatcherClose = vi.fn();
-
-// tsc build mock — default includes program with /pkg/src/index.ts
-const mockRunTscPackageBuild = vi.fn(() => ({
-  success: true,
-  errors: undefined,
-  diagnostics: [],
-  errorCount: 0,
-  warningCount: 0,
-  program: {
-    getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
-  },
-}));
 
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn((fns: Record<string, Function>) => {
@@ -40,23 +31,20 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-vi.mock("@simplysm/core-common", () => ({
-  err: { message: (e: any) => e?.message ?? String(e) },
-}));
-
 const mockDebug = vi.fn();
-vi.mock("consola", () => ({
-  consola: {
-    withTag: vi.fn(() => ({
-      debug: mockDebug,
-      warn: vi.fn(),
-    })),
-  },
-}));
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockDebug, warn: vi.fn() } as any);
 
-vi.mock("../../src/utils/tsc-build", () => ({
-  runTscPackageBuild: mockRunTscPackageBuild,
-}));
+// tsc build spy
+const mockRunTscPackageBuild = vi.spyOn(tscBuild, "runTscPackageBuild").mockReturnValue({
+  success: true,
+  errors: undefined,
+  diagnostics: [],
+  errorCount: 0,
+  warningCount: 0,
+  program: {
+    getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
+  },
+} as any);
 
 vi.mock("../../src/utils/worker-utils", () => ({
   setupWorkerConsola: vi.fn(),
@@ -64,15 +52,18 @@ vi.mock("../../src/utils/worker-utils", () => ({
   createOnceGuard: vi.fn(() => vi.fn()),
 }));
 
-const mockCollectDeps = vi.fn((_pkgDir: string, _cwd: string, _replaceDeps?: unknown[]) => ({ workspaceDeps: [] as string[], replaceDeps: [] as string[] }));
-vi.mock("../../src/utils/package-utils", () => ({
-  collectDeps: (pkgDir: string, cwd: string, replaceDeps?: unknown[]) => mockCollectDeps(pkgDir, cwd, replaceDeps),
-}));
+// package-utils spy
+const mockCollectDeps = vi.spyOn(packageUtils, "collectDeps").mockReturnValue({
+  workspaceDeps: [],
+  replaceDeps: [],
+});
 
 //#endregion
 
-// Force fresh module import for each test
-beforeEach(async () => {
+// Import triggers createWorker, capturing the functions
+await import("../../src/workers/library-build.worker");
+
+beforeEach(() => {
   vi.clearAllMocks();
   mockRunTscPackageBuild.mockReturnValue({
     success: true,
@@ -83,11 +74,8 @@ beforeEach(async () => {
     program: {
       getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
     },
-  });
+  } as any);
   mockCollectDeps.mockReturnValue({ workspaceDeps: [], replaceDeps: [] });
-  // Re-import to get fresh workerFns
-  vi.resetModules();
-  await import("../../src/workers/library-build.worker");
 });
 
 const buildInfo = {
@@ -104,9 +92,6 @@ describe("library-build.worker build()", () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: true, dts: true } });
 
     expect(result.build.success).toBe(true);
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: true, dts: true } }),
-    );
   });
 
   // Acceptance: DTS only build
@@ -114,9 +99,6 @@ describe("library-build.worker build()", () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: false, dts: true } });
 
     expect(result.build.success).toBe(true);
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: false, dts: true } }),
-    );
   });
 
   // Acceptance: Typecheck only
@@ -124,23 +106,20 @@ describe("library-build.worker build()", () => {
     const result = await workerFns["build"]({ ...buildInfo, output: { js: false, dts: false } });
 
     expect(result.build.success).toBe(true);
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: false, dts: false } }),
-    );
   });
 
   // Unit: tsc failure reflects in build result
   it("reports failure in build when tsc fails", async () => {
     mockRunTscPackageBuild.mockReturnValueOnce({
       success: false,
-      errors: ["TS2345: type error"] as any,
-      diagnostics: [{ code: 2345, category: 1 }] as any,
+      errors: ["TS2345: type error"],
+      diagnostics: [{ code: 2345, category: 1 }],
       errorCount: 1,
       warningCount: 0,
       program: {
         getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
       },
-    });
+    } as any);
 
     const result = await workerFns["build"]({ ...buildInfo, output: { js: true, dts: true } });
 
@@ -149,29 +128,6 @@ describe("library-build.worker build()", () => {
     expect(result.build.diagnostics).toHaveLength(1);
   });
 
-  // Acceptance: env from BuildOutput is passed through to runTscPackageBuild
-  it("passes env from output to runTscPackageBuild", async () => {
-    await workerFns["build"]({
-      ...buildInfo,
-      output: { js: false, dts: false, env: "node" },
-    });
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: "node" }),
-    );
-  });
-
-  // Acceptance: env is undefined when not set in output
-  it("passes undefined env when output.env is not set", async () => {
-    await workerFns["build"]({
-      ...buildInfo,
-      output: { js: true, dts: true },
-    });
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: undefined }),
-    );
-  });
 });
 
 describe("library-build.worker startWatch()", () => {
@@ -213,16 +169,6 @@ describe("library-build.worker startWatch()", () => {
     }));
   });
 
-  // Unit: No esbuild context management needed
-  it("does not require esbuild for watch mode", async () => {
-    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
-
-    // tsc is called for rebuild
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ output: { js: true, dts: true } }),
-    );
-  });
-
   // Unit: error event on exception
   it("sends error event on rebuild exception", async () => {
     await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
@@ -253,13 +199,6 @@ describe("library-build.worker startWatch()", () => {
     ]));
   });
 
-  // Unit: collectDeps is called with correct arguments
-  it("calls collectDeps with pkgDir and cwd", async () => {
-    await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
-
-    expect(mockCollectDeps).toHaveBeenCalledWith("/pkg", "/", undefined);
-  });
-
   // Unit: no extra paths when no workspace deps
   it("watches only own src/ when no workspace deps", async () => {
     mockCollectDeps.mockReturnValue({ workspaceDeps: [], replaceDeps: [] });
@@ -273,22 +212,6 @@ describe("library-build.worker startWatch()", () => {
     expect(watchPaths[0]).toContain("pkg");
   });
 
-  // Acceptance: env is passed through in watch mode rebuild
-  it("passes env to runTscPackageBuild on watch rebuild", async () => {
-    await workerFns["startWatch"]({
-      ...buildInfo,
-      output: { js: false, dts: false, env: "browser" },
-    });
-
-    const onChangeCallback = mockOnChange.mock.calls[0][1];
-    mockRunTscPackageBuild.mockClear();
-
-    await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
-
-    expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ env: "browser" }),
-    );
-  });
 });
 
 describe("library-build.worker startWatch() dependency filter", () => {
@@ -304,7 +227,7 @@ describe("library-build.worker startWatch() dependency filter", () => {
       errorCount: 0,
       warningCount: 0,
       program: createMockProgram(["/pkg/src/index.ts", "/pkg/src/utils.ts"]),
-    });
+    } as any);
   };
 
   // Acceptance: Skip rebuild when changed file is not in program

@@ -84,6 +84,57 @@ describe("sdPwaPlugin — manifest generation", () => {
     expect(writtenPath).toContain("packages/test-app/dist");
   });
 
+  // Unit: generated icons included in manifest
+  it("includes generated icons in manifest when no custom icons", async () => {
+    mockGeneratePwaIcons.mockResolvedValue([
+      { src: "icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ]);
+
+    const plugin = createPlugin();
+    initPlugin(plugin);
+    await (plugin.closeBundle as Function)();
+
+    expect(mockGeneratePwaIcons).toHaveBeenCalledWith("/packages/test-app");
+    const manifest = JSON.parse(getWriteCall("manifest.webmanifest")![1]) as Record<
+      string,
+      unknown
+    >;
+    expect(manifest["icons"]).toEqual([
+      { src: "icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ]);
+  });
+
+  // Unit: custom icons skip auto-generation
+  it("uses custom icons and skips generatePwaIcons", async () => {
+    const icons = [{ src: "/custom.png", sizes: "512x512", type: "image/png" }];
+    const plugin = createPlugin({
+      pwa: { manifest: { icons } },
+    });
+    initPlugin(plugin);
+    await (plugin.closeBundle as Function)();
+
+    const manifest = JSON.parse(getWriteCall("manifest.webmanifest")![1]) as Record<
+      string,
+      unknown
+    >;
+    expect(manifest["icons"]).toEqual(icons);
+  });
+
+  // Unit: no icons when generatePwaIcons returns empty
+  it("omits icons field when generatePwaIcons returns empty array", async () => {
+    mockGeneratePwaIcons.mockResolvedValue([]);
+
+    const plugin = createPlugin();
+    initPlugin(plugin);
+    await (plugin.closeBundle as Function)();
+
+    const manifest = JSON.parse(getWriteCall("manifest.webmanifest")![1]) as Record<
+      string,
+      unknown
+    >;
+    expect(manifest["icons"]).toBeUndefined();
+  });
+
   // Unit: all manifest fields can be overridden
   it("overrides all customizable manifest fields", async () => {
     const plugin = createPlugin({

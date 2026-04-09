@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import path from "path";
 
 const mockExists = vi.fn();
 const mockJitiImport = vi.fn();
 
-vi.mock("@simplysm/core-node", () => ({
-  fsx: {
-    exists: (...args: unknown[]) => mockExists(...args),
-  },
-  pathx: {
-    posixResolve: (...args: string[]) => path.resolve(...args).replace(/\\/g, "/"),
-  },
-}));
+vi.mock("@simplysm/core-node", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
+  return {
+    ...actual,
+    fsx: {
+      exists: (...args: unknown[]) => mockExists(...args),
+    },
+  };
+});
 
 vi.mock("jiti", () => ({
   createJiti: () => ({
@@ -69,13 +69,14 @@ describe("loadSdConfig", () => {
   });
 
   it("passes params to the config function", async () => {
-    const configFn = vi.fn(() => ({ packages: { a: { target: "node" } } }));
+    const configFn = vi.fn((p: any) => ({
+      packages: { [p.cwd]: { target: "node" } },
+    }));
     mockExists.mockResolvedValue(true);
     mockJitiImport.mockResolvedValue({ default: configFn });
 
-    const params = { cwd: "/project", dev: true, opt: ["key=val"] };
-    await loadSdConfig(params);
+    const result = await loadSdConfig({ cwd: "/project", dev: true, opt: ["key=val"] });
 
-    expect(configFn).toHaveBeenCalledWith(params);
+    expect(result.packages).toHaveProperty("/project");
   });
 });
