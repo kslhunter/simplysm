@@ -45,6 +45,28 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
   ],
 };
 
+const noDirectEnvAccessRules: FlatConfig.Rules = {
+  "no-restricted-properties": [
+    "error",
+    {
+      object: "process",
+      property: "env",
+      message: 'process.env를 직접 사용할 수 없습니다. env("...")를 사용하세요.',
+    },
+  ],
+  "no-restricted-syntax": [
+    "error",
+    {
+      selector: 'MemberExpression[object.type="MetaProperty"][property.name="env"]',
+      message: 'import.meta.env를 직접 사용할 수 없습니다. env("...")를 사용하세요.',
+    },
+    {
+      selector: 'CallExpression[callee.name="env"][arguments.0.value="NODE_ENV"]',
+      message: "NODE_ENV 환경변수는 사용할 수 없습니다.",
+    },
+  ],
+};
+
 const unusedImportsRules: FlatConfig.Rules = {
   "unused-imports/no-unused-imports": "error",
   "unused-imports/no-unused-vars": [
@@ -112,6 +134,7 @@ export default tseslint.config(
       "@simplysm/no-hard-private": "error",
 
       ...noNodeBuiltinsRules,
+      ...noDirectEnvAccessRules,
     },
   },
   ...angular.configs.tsRecommended,
@@ -196,6 +219,7 @@ export default tseslint.config(
 
       ...unusedImportsRules,
       ...noNodeBuiltinsRules,
+      ...noDirectEnvAccessRules,
 
       "import/no-extraneous-dependencies": "error",
     },

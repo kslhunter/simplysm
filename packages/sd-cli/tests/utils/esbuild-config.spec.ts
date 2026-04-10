@@ -83,6 +83,16 @@ describe("createServerEsbuildOptions", () => {
     const result = createServerEsbuildOptions(baseOptions);
     expect(result.tsconfig).toBe(path.join("/pkg", "tsconfig.json"));
   });
+
+  it("enables linked sourcemap in dev mode", () => {
+    const result = createServerEsbuildOptions({ ...baseOptions, dev: true });
+    expect(result.sourcemap).toBe("linked");
+  });
+
+  it("does not enable sourcemap in production mode", () => {
+    const result = createServerEsbuildOptions(baseOptions);
+    expect(result.sourcemap).toBeUndefined();
+  });
 });
 
 describe("createEnvBanner", () => {

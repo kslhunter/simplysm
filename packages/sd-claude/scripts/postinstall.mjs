@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 독립 스크립트 */
 /**
  * Installs Claude Code assets to the project's .claude/ directory.
  * postinstall hook — 실패해도 pnpm install을 차단하지 않는다.

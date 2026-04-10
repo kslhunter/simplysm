@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 독립 스크립트 */
 import fs from "fs";
 import os from "os";
 import path from "path";

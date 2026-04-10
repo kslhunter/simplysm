@@ -659,3 +659,73 @@ for (const d of dialects) {
     });
   });
 }
+
+// ============================================
+// MySQL-specific: multi-statement result separation
+// ============================================
+
+describe("MysqlDbConn multi-statement 결과 분리", () => {
+  let conn: MysqlDbConn;
+
+  beforeAll(async () => {
+    const { MysqlDbConn: MysqlDbConnClass } = await import("@simplysm/orm-node");
+    const mysql2 = await import("mysql2/promise");
+    conn = new MysqlDbConnClass(mysql2, mysqlConfig);
+    await conn.connect();
+
+    await conn.execute([
+      "DROP TABLE IF EXISTS `TestDb`.`MultiStmtTable`",
+      `CREATE TABLE \`TestDb\`.\`MultiStmtTable\` (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100)
+      )`,
+    ]);
+  });
+
+  afterAll(async () => {
+    if (conn.isConnected) {
+      await conn.execute(["DROP TABLE IF EXISTS `TestDb`.`MultiStmtTable`"]);
+      await conn.close();
+    }
+  });
+
+  it("INSERT + SELECT multi-statement 실행 시 각 statement별 result set 분리", async () => {
+    const results = await conn.executeParametrized(
+      "INSERT INTO `TestDb`.`MultiStmtTable` (name) VALUES ('multi-test');"
+      + " SELECT * FROM `TestDb`.`MultiStmtTable` WHERE name = 'multi-test'",
+    );
+
+    // 2개의 result set: INSERT(빈 배열) + SELECT(결과 배열)
+    expect(results.length).toBeGreaterThanOrEqual(2);
+    expect(results[0]).toEqual([]); // INSERT → ResultSetHeader → 빈 배열
+    expect(results[1]).toHaveLength(1); // SELECT → 1개 행
+    expect(results[1][0]).toMatchObject({ name: "multi-test" });
+  });
+
+  it("SET + INSERT + SET multi-statement 실행 시 3개 result set 분리", async () => {
+    const results = await conn.executeParametrized(
+      "SET @a = 1;"
+      + " INSERT INTO `TestDb`.`MultiStmtTable` (name) VALUES ('set-test');"
+      + " SET @b = 2",
+    );
+
+    // 3개의 result set: SET(빈) + INSERT(빈) + SET(빈)
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual([]);
+    expect(results[1]).toEqual([]);
+    expect(results[2]).toEqual([]);
+  });
+
+  it("resultSetIndex로 올바른 result set 접근 가능 (INSERT with OUTPUT 시뮬레이션)", async () => {
+    // execute()를 통해 multi-statement 실행 후 인덱스 접근 검증
+    const results = await conn.execute([
+      "INSERT INTO `TestDb`.`MultiStmtTable` (name) VALUES ('output-test');"
+      + " SELECT * FROM `TestDb`.`MultiStmtTable` WHERE name = 'output-test'",
+    ]);
+
+    // results[0] = INSERT(빈 배열), results[1] = SELECT(결과)
+    expect(results[1]).toBeDefined();
+    expect(results[1].length).toBeGreaterThanOrEqual(1);
+    expect(results[1][0]).toMatchObject({ name: "output-test" });
+  });
+});

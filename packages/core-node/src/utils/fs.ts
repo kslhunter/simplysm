@@ -153,6 +153,9 @@ export function copySync(
     mkdirSync(path.dirname(targetPath));
 
     try {
+      if (fs.existsSync(targetPath)) {
+        fs.rmSync(targetPath, { force: true, maxRetries: 6, retryDelay: 500 });
+      }
       fs.copyFileSync(sourcePath, targetPath);
     } catch (err) {
       throw new SdError(err, targetPath);
@@ -196,6 +199,9 @@ export async function copy(
     await mkdir(path.dirname(targetPath));
 
     try {
+      if (await exists(targetPath)) {
+        await fs.promises.rm(targetPath, { force: true, maxRetries: 6, retryDelay: 500 });
+      }
       await fs.promises.copyFile(sourcePath, targetPath);
     } catch (err) {
       throw new SdError(err, targetPath);

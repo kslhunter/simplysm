@@ -32,8 +32,10 @@ afterEach(() => {
 });
 
 describe("sdScopeWatchPlugin", () => {
-  // Acceptance: Scenario "replaceDeps 패키지는 Vite pre-bundling에서 제외된다"
-  it("adds replaceDeps packages to optimizeDeps.exclude", () => {
+  // Acceptance: Scenario "replaceDeps가 있으면 optimizeDeps.force를 true로 설정한다"
+  // replaceDeps는 exclude하지 않음 — pnpm strict isolation에서 exclude하면
+  // Vite 런타임 resolver가 transitive dep을 찾지 못해 NG0203 에러 발생
+  it("sets optimizeDeps.force to true without adding packages to exclude", () => {
     const plugin = sdScopeWatchPlugin({
       pkgDir: "/packages/my-client",
       replaceDeps: [
@@ -44,8 +46,7 @@ describe("sdScopeWatchPlugin", () => {
 
     const config = (plugin as any).config?.();
 
-    expect(config?.optimizeDeps?.exclude).toContain("@scope/core");
-    expect(config?.optimizeDeps?.exclude).toContain("@scope/common");
+    expect(config?.optimizeDeps?.exclude).toBeUndefined();
     expect(config?.optimizeDeps?.force).toBe(true);
   });
 

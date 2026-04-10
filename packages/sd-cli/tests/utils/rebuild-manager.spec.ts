@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { RebuildManager } from "../../src/utils/rebuild-manager";
 
 function createManager() {
@@ -8,6 +8,14 @@ function createManager() {
 }
 
 describe("RebuildManager", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("batches concurrent builds into single batchComplete event", async () => {
     const { manager } = createManager();
     const batchComplete = vi.fn();
@@ -20,8 +28,8 @@ describe("RebuildManager", () => {
     resolverA();
     resolverB();
 
-    // Wait for batch to process (microtask)
-    await new Promise((r) => setTimeout(r, 50));
+    // 100ms 디바운스 타이머 소진 + Promise 해소
+    await vi.advanceTimersByTimeAsync(100);
 
     expect(batchComplete).toHaveBeenCalledOnce();
   });
@@ -34,12 +42,17 @@ describe("RebuildManager", () => {
     const resolverA = manager.registerBuild("a", "Build A");
     resolverA();
 
-    // Wait for first batch to start, then register new build
-    await new Promise((r) => setTimeout(r, 10));
+    // 첫 번째 배치 타이머 소진 → _runBatch 시작
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(batchComplete).toHaveBeenCalledTimes(1);
+
+    // 첫 번째 배치 완료 후 새 빌드 등록
     const resolverB = manager.registerBuild("b", "Build B");
     resolverB();
 
-    await new Promise((r) => setTimeout(r, 100));
+    // 두 번째 배치 타이머 소진
+    await vi.advanceTimersByTimeAsync(100);
 
     expect(batchComplete).toHaveBeenCalledTimes(2);
   });

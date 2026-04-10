@@ -51,8 +51,11 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
   let prebundleTransformer: JavaScriptTransformer | undefined;
 
   const templateUpdates = new Map<string, string>();
-  let hmrLock: Promise<void> = Promise.resolve();
   let devServer: ViteDevServer | undefined;
+
+  // HMR 배칭: 짧은 시간 내 도착하는 다수의 handleHotUpdate를 모아 한 번에 처리
+  const pendingHmrFiles = new Set<string>();
+  let hmrBatchTimer: ReturnType<typeof setTimeout> | undefined;
 
   /** Rolldown watch 모드에서 변경된 파일 경로를 수집한다. buildStart 재호출 시 캐시 무효화에 사용. */
   const pendingWatchChanges = new Set<string>();
@@ -119,6 +122,71 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       }
     }
     return distPaths;
+  }
+
+  /**
+   * 배칭된 HMR 파일을 한 번에 처리한다.
+   * 여러 handleHotUpdate 호출에서 수집된 파일을 단일 pipeline.update()로 처리하고,
+   * full-reload를 전송한다.
+   */
+  async function processHmrBatch(server: ViteDevServer): Promise<void> {
+    if (pipeline == null || pendingHmrFiles.size === 0) return;
+
+    const filesToUpdate = [...pendingHmrFiles];
+    pendingHmrFiles.clear();
+
+    logger.debug(`HMR 배치 처리 시작 (${filesToUpdate.length}개 파일)`);
+
+    options.onBuildStart?.();
+
+    try {
+      templateUpdates.clear();
+
+      const pipelineResult = await pipeline.update(filesToUpdate);
+
+      if (pipelineResult.templateUpdates != null) {
+        for (const [key, value] of pipelineResult.templateUpdates) {
+          templateUpdates.set(key, value);
+        }
+      }
+
+      reportDiagnostics(pipelineResult.diagnostics);
+
+      options.onBuild?.({
+        success: pipelineResult.diagnostics.errors.length === 0,
+        errors: pipelineResult.diagnostics.errors.map((e) => e.message),
+        warnings: pipelineResult.diagnostics.warnings.map((w) => w.message),
+      });
+
+      // 영향받은 모듈을 Vite HMR으로 전달
+      const affectedPaths = pipeline.getLatestEmittedSourcePaths();
+      const updates: Array<{ type: "js-update"; path: string; acceptedPath: string; timestamp: number }> = [];
+      const timestamp = Date.now();
+      for (const p of affectedPaths) {
+        const mods = server.moduleGraph.getModulesByFile(p);
+        if (mods) {
+          for (const mod of mods) {
+            server.moduleGraph.invalidateModule(mod);
+            updates.push({
+              type: "js-update",
+              path: mod.url,
+              acceptedPath: mod.url,
+              timestamp,
+            });
+          }
+        }
+      }
+
+      if (updates.length > 0) {
+        server.hot.send({ type: "update", updates });
+      } else {
+        server.hot.send({ type: "full-reload" });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`HMR batch recompile failed: ${message}`);
+      options.onBuild?.({ success: false, errors: [message] });
+    }
   }
 
   return {
@@ -322,9 +390,9 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       });
     },
 
-    async handleHotUpdate({
+    handleHotUpdate({
       file,
-      modules,
+      modules: _modules,
       server,
     }: {
       file: string;
@@ -332,7 +400,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       server: ViteDevServer;
       timestamp: number;
       read: () => string | Promise<string>;
-    }): Promise<ModuleNode[] | void> {
+    }): ModuleNode[] | void {
       if (pipeline == null || !isDev) return;
       if (
         !file.endsWith(".ts") &&
@@ -340,6 +408,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
         !file.endsWith(".scss")
       ) {
         // replaceDeps .js 파일 변경 시 full-reload 강제
+        // (pnpm strict isolation에서 exclude 불가 → pre-bundle 필수 → HMR 불가)
         if (
           file.endsWith(".js") &&
           devServer != null &&
@@ -355,13 +424,14 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
       }
 
       const normalizedFile = pathx.posix(file);
-      let filesToUpdate: string[];
 
       if (file.endsWith(".scss")) {
         // SCSS @use 의존성 역방향 탐색: 변경된 SCSS를 @use하는 파일을 찾아 재컴파일
         const affectedOwnerFiles = pipeline.findAffectedByScss(normalizedFile);
         if (affectedOwnerFiles.length === 0) return;
-        filesToUpdate = affectedOwnerFiles;
+        for (const f of affectedOwnerFiles) {
+          pendingHmrFiles.add(f);
+        }
       } else {
         // 의존성 필터: TypeScript program에 포함되지 않은 파일은 건너뜀
         const programFiles = pipeline.getTsProgram().getSourceFiles();
@@ -372,85 +442,39 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           logger.debug(`변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀: ${normalizedFile}`);
           return;
         }
-        filesToUpdate = [file];
+        pendingHmrFiles.add(file);
       }
 
-      // 경쟁 조건 방지: 이전 HMR 처리 완료 대기
-      const prevLock = hmrLock;
-      let releaseLock!: () => void;
-      hmrLock = new Promise<void>((resolve) => {
-        releaseLock = resolve;
-      });
-      await prevLock;
+      // 배칭: 짧은 시간 내 도착하는 파일을 모아 한 번에 처리
+      if (hmrBatchTimer != null) clearTimeout(hmrBatchTimer);
+      hmrBatchTimer = setTimeout(() => {
+        hmrBatchTimer = undefined;
+        void processHmrBatch(server);
+      }, 100);
 
-      options.onBuildStart?.();
-
-      try {
-        // rebuild 시작 시 이전 templateUpdates 정리
-        templateUpdates.clear();
-
-        const pipelineResult = await pipeline.update(filesToUpdate);
-
-        // templateUpdates 수집
-        if (pipelineResult.templateUpdates != null) {
-          for (const [key, value] of pipelineResult.templateUpdates) {
-            templateUpdates.set(key, value);
-          }
-        }
-
-        // Pipeline.update() 후 실제 re-emit된 소스 경로 수집
-        const affectedPaths = pipeline.getLatestEmittedSourcePaths();
-
-        reportDiagnostics(pipelineResult.diagnostics);
-
-        options.onBuild?.({
-          success: pipelineResult.diagnostics.errors.length === 0,
-          errors: pipelineResult.diagnostics.errors.map((e) => e.message),
-          warnings: pipelineResult.diagnostics.warnings.map((w) => w.message),
-        });
-
-        if (file.endsWith(".scss")) {
-          // SCSS: moduleGraph에서 영향받은 TS 모듈 조회
-          const result: ModuleNode[] = [];
-          for (const p of affectedPaths) {
-            const mods = server.moduleGraph.getModulesByFile(p);
-            if (mods) result.push(...mods);
-          }
-          return result;
-        } else {
-          // TS/HTML: 전달받은 modules에서 영향받은 모듈 필터
-          const affectedSet = new Set(affectedPaths);
-          return modules.filter(
-            (m) => m.file != null && affectedSet.has(pathx.posix(m.file)),
-          );
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        logger.error(`HMR recompile failed: ${message}`);
-        options.onBuild?.({ success: false, errors: [message] });
-        return;
-      } finally {
-        releaseLock();
-      }
+      // Vite의 개별 HMR 처리를 억제 (배치 처리 후 full-reload로 대체)
+      return [];
     },
 
     async transform(_code, id) {
       if (jsTransformer == null) return;
 
+      // query param 제거 (excluded deps는 ?v=xxx 포함 가능)
+      const cleanId = id.split("?")[0];
       let code = _code;
 
       // Phase 1: TS 컴파일 — .ts 파일은 Pipeline이 emit한 JS로 교체
-      if (id.endsWith(".ts")) {
-        const normalizedId = pathx.posix(id);
+      if (cleanId.endsWith(".ts")) {
+        const normalizedId = pathx.posix(cleanId);
         const emittedContent = pipeline?.getEmittedFile(normalizedId);
         if (emittedContent == null) return;
         code = emittedContent;
-      } else if (!id.endsWith(".mjs") && !id.endsWith(".js")) {
+      } else if (!cleanId.endsWith(".mjs") && !cleanId.endsWith(".js")) {
         return;
       }
 
       // Phase 2: JS 변환 — Angular Linker로 partial → full AOT 링킹 + 최적화
-      const transformed = await jsTransformer.transformData(pathx.posix(id), code, false);
+      const transformed = await jsTransformer.transformData(pathx.posix(cleanId), code, false);
       const transformedCode = new TextDecoder().decode(transformed);
 
       // 인라인 소스맵 분리 (Rollup 경고 방지)

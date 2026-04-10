@@ -62,6 +62,24 @@ describe("BaseEngine", () => {
     expect(TscEngine.prototype.hasOwnProperty("stop")).toBe(false);
   });
 
+  describe("_createWorker resourceLimits", () => {
+    it("Worker.create에 resourceLimits를 전달한다", async () => {
+      const { Worker } = await import("@simplysm/core-node");
+
+      const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
+      await engine.run({ js: true, dts: true });
+
+      expect(Worker.create).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          resourceLimits: { maxOldGenerationSizeMb: 4096 },
+        }),
+      );
+
+      await engine.stop();
+    });
+  });
+
   describe("shared stop() behavior", () => {
     it("calls stopWatch and terminate in watch mode", async () => {
       mockWorker.startWatch.mockImplementation(() => {

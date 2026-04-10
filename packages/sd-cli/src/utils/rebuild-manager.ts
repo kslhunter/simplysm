@@ -18,6 +18,8 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
     this._logger = logger;
   }
 
+  private _batchTimer: ReturnType<typeof setTimeout> | undefined;
+
   registerBuild(key: string, title: string): () => void {
     this._logger.debug(`빌드 등록: ${key} (${title})`);
     let resolver!: () => void;
@@ -28,7 +30,12 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
     this._pendingBuilds.set(key, { title, promise, resolver });
 
     if (!this._isRunning) {
-      void Promise.resolve().then(() => void this._runBatch());
+      // 워커 스레드들의 buildStart가 도착할 시간을 확보하기 위해 짧은 대기
+      if (this._batchTimer != null) clearTimeout(this._batchTimer);
+      this._batchTimer = setTimeout(() => {
+        this._batchTimer = undefined;
+        void this._runBatch();
+      }, 100);
     }
 
     return resolver;

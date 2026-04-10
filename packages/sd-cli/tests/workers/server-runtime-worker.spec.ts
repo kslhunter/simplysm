@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";

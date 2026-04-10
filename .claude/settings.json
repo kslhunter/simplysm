@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/sd-check-git.py"
+            "command": "python .claude/sd-check-bash.py"
           }
         ]
       }

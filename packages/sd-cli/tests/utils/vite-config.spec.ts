@@ -571,8 +571,9 @@ describe("createClientViteConfig", () => {
     expect(config.optimizeDeps?.exclude).toBeUndefined();
   });
 
-  // Acceptance: Scenario "exclude와 replaceDeps가 모두 있으면 둘 다 제외된다"
-  it("sets optimizeDeps.exclude from exclude while sdScopeWatchPlugin handles replaceDeps", async () => {
+  // Acceptance: Scenario "exclude와 replaceDeps가 모두 있으면 exclude만 제외된다"
+  // replaceDeps는 include로 처리됨 (pnpm strict isolation에서 exclude하면 NG0203 에러 발생)
+  it("sets optimizeDeps.exclude from exclude only, replaceDeps are not excluded", async () => {
     const config = await createClientViteConfig({
       ...createDefaultOptions(),
       mode: "dev",
@@ -580,8 +581,8 @@ describe("createClientViteConfig", () => {
       replaceDeps: [{ packageName: "@scope/core", sourcePath: "/packages/core" }],
     });
 
-    // Base config에 사용자 exclude + replaceDeps 패키지 모두 포함
-    expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite", "@scope/core"]);
+    // exclude에는 사용자 지정값만, replaceDeps는 include로 처리되므로 exclude에 없음
+    expect(config.optimizeDeps?.exclude).toEqual(["jeep-sqlite"]);
   });
 
   // Acceptance: Scenario "exclude만 있고 replaceDeps가 없으면 exclude만 제외된다"

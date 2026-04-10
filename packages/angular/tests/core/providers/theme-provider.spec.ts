@@ -40,8 +40,8 @@ describe("Feature 1.1 Slice 1: SdThemeProvider 폰트 크기 — Unit", () => {
     document.documentElement.style.fontSize = "";
   });
 
-  it("fontSize 기본값이 16이다", () => {
-    expect(provider.fontSize()).toBe(16);
+  it("fontSize 기본값이 12이다", () => {
+    expect(provider.fontSize()).toBe(12);
   });
 
   it("비프리셋 값(15)에서 증가 시 다음 프리셋(16)으로 이동", () => {

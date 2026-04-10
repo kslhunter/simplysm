@@ -1,5 +1,6 @@
 import type { InlineConfig, PluginOption } from "vite";
 import path from "path";
+import fs from "fs";
 import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { sdAngularPlugin } from "../angular/vite-angular-plugin.js";
@@ -148,13 +149,34 @@ export async function createClientViteConfig(
       ? { postcss: { plugins: postCssPlugins as import("postcss").AcceptedPlugin[] } }
       : undefined;
 
-  // optimizeDeps.exclude (사용자 지정 exclude + replaceDeps 패키지)
-  const excludeList = [
-    ...(options.exclude ?? []),
-    ...(options.replaceDeps?.map((dep) => dep.packageName) ?? []),
-  ];
-  const optimizeDepsConfig =
-    excludeList.length > 0 ? { exclude: excludeList } : undefined;
+  // optimizeDeps 설정
+  // replaceDeps는 include하여 upfront pre-bundle한다.
+  // - exclude는 pnpm strict isolation과 호환 불가 (Vite 런타임 resolver가 pnpm store 의존성 탐색 불가)
+  // - include하면 Vite 정적 스캔에서 transitive dep 누락 방지 (런타임 발견 → NG0203 차단)
+  // - pre-bundle 시 esbuild가 pnpm symlink를 정상 탐색하여 모든 의존성 resolve 가능
+  // - replaceDep 변경 시 HMR은 불가 (full-reload). pnpm 구조적 한계.
+  const includeList: string[] = [];
+  for (const dep of (options.replaceDeps ?? [])) {
+    try {
+      const pkgJsonPath = path.join(
+        options.pkgDir, "node_modules", ...dep.packageName.split("/"), "package.json",
+      );
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8"));
+      const mainEntry = pkgJson.main ?? pkgJson.module ?? "index.js";
+      const mainPath = path.join(
+        options.pkgDir, "node_modules", ...dep.packageName.split("/"), mainEntry,
+      );
+      if (fs.existsSync(mainPath)) {
+        includeList.push(dep.packageName);
+      }
+    } catch {
+      // client node_modules에 없으면 건너뜀
+    }
+  }
+  const excludeList = options.exclude ?? [];
+  const optimizeDepsConfig: { include?: string[]; exclude?: string[] } = {};
+  if (includeList.length > 0) optimizeDepsConfig.include = includeList;
+  if (excludeList.length > 0) optimizeDepsConfig.exclude = excludeList;
 
   const config: InlineConfig = {
     root: options.pkgDir,

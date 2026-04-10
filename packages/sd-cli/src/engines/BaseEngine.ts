@@ -102,7 +102,9 @@ export abstract class BaseEngine<
    */
   protected _createWorker(): void {
     const workerPath = this._getWorkerPath();
-    this._worker = Worker.create<TWorkerModule>(workerPath);
+    this._worker = Worker.create<TWorkerModule>(workerPath, {
+      resourceLimits: { maxOldGenerationSizeMb: 8192 },
+    });
   }
 
   /**

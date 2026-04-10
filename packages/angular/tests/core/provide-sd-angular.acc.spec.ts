@@ -10,15 +10,15 @@ describe("Feature 1.1 Slice 1: localStorage 폰트 크기 영속화", () => {
     document.documentElement.style.fontSize = "";
   });
 
-  describe("Rule: 기본 폰트 크기는 16px", () => {
-    it("localStorage에 값이 없으면 fontSize() === 16", () => {
+  describe("Rule: 기본 폰트 크기는 12px", () => {
+    it("localStorage에 값이 없으면 fontSize() === 12", () => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      expect(theme.fontSize()).toBe(16);
+      expect(theme.fontSize()).toBe(12);
     });
   });
 

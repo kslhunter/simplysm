@@ -40,7 +40,7 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Acceptance: inline styles의 직접 @use 의존성 변경 시 재컴파일
+  // Acceptance: inline styles의 직접 @use 의존성 변경 시 배칭 큐에 수락
   it("recompiles when inline SCSS @use dependency changes", async () => {
     const variablesPath = path
       .join(PKG_DIR, "scss/_variables.scss")
@@ -54,11 +54,11 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       read: () => Promise.resolve(""),
     });
 
-    expect(result).toBeDefined();
-    expect(result!.length).toBeGreaterThan(0);
+    // 배칭 처리를 위해 [] 반환 (Vite 기본 HMR 억제), undefined면 무시됨
+    expect(result).toEqual([]);
   });
 
-  // Acceptance: inline styles의 간접 @use 의존성 변경 시 재컴파일 (체이닝)
+  // Acceptance: inline styles의 간접 @use 의존성 변경 시 배칭 큐에 수락 (체이닝)
   it("recompiles when chained @use dependency changes", async () => {
     const colorsPath = path
       .join(PKG_DIR, "scss/_colors.scss")
@@ -72,8 +72,8 @@ describe("sdAngularPlugin SCSS @use HMR", () => {
       read: () => Promise.resolve(""),
     });
 
-    expect(result).toBeDefined();
-    expect(result!.length).toBeGreaterThan(0);
+    // 배칭 처리를 위해 [] 반환 (Vite 기본 HMR 억제), undefined면 무시됨
+    expect(result).toEqual([]);
   });
 
   // Acceptance: 무관한 SCSS 변경 시 재빌드하지 않음

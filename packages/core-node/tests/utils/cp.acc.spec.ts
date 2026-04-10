@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getSystemEncoding, resetEncodingCache } from "../../src/utils/cp";
 

@@ -468,7 +468,16 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           Object.keys(lastMetafile.inputs).map((key) => pathx.posixResolve(info.cwd, key)),
         );
 
-        const hasRelevantChange = changes.some((c) => metafileAbsPaths.has(c.path));
+        const hasRelevantChange = changes.some((c) => {
+          if (metafileAbsPaths.has(c.path)) return true;
+          // pnpm symlink 경로와 esbuild resolved 경로 불일치 대응
+          try {
+            const realPath = pathx.posix(fs.realpathSync(c.path));
+            return metafileAbsPaths.has(realPath);
+          } catch {
+            return false;
+          }
+        });
 
         if (hasRelevantChange) {
           sender.send("buildStart", {});

@@ -1088,9 +1088,13 @@ describe("DevWatchOrchestrator", () => {
       );
 
       // Trigger batchComplete (rebuild after initial build) via real RebuildManager
+      // fake timer로 정확히 한 배치만 소진 (실시간 타이머는 피드백 루프 발생)
+      vi.useFakeTimers();
       const resolve = capturedRebuildManager.registerBuild("service-server:build", "service-server (server)");
       resolve();
-      await new Promise((r) => setTimeout(r, 200));
+      // 100ms 디바운스 + 100ms 서버 재시작 타이머
+      await vi.advanceTimersByTimeAsync(200);
+      vi.useRealTimers();
 
       // Second runtime start (rebuild) should also have clientPorts
       expect(mockRuntimeProxies).toHaveLength(2);
@@ -1461,8 +1465,8 @@ describe("DevWatchOrchestrator", () => {
         const runtimeCountBefore = mockRuntimeProxies.length;
         const resolve = capturedRebuildManager.registerBuild("demo-server:build", "demo-server (server)");
         resolve();
-        // Allow microtask for _runBatch to execute
-        await vi.advanceTimersByTimeAsync(0);
+        // 100ms 디바운스 타이머 소진 → _runBatch → batchComplete → _serverRestartTimer 설정
+        await vi.advanceTimersByTimeAsync(100);
 
         // shutdown before restart timer fires
         await orchestrator.shutdown();

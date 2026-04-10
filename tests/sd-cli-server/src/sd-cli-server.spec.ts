@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, afterAll } from "vitest";
 import esbuild from "esbuild";
 import { execSync } from "child_process";

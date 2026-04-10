@@ -95,8 +95,9 @@ export function createCliParser(argv: string[]): Argv {
           .options({
             type: {
               type: "string",
-              describe: "Check types to run (comma-separated: typecheck,lint,test)",
-              default: "typecheck,lint,test",
+              array: true,
+              describe: "Check types to run (e.g., --type typecheck --type lint)",
+              default: ["typecheck", "lint", "test"] as string[],
             },
             fix: {
               type: "boolean",
@@ -109,7 +110,7 @@ export function createCliParser(argv: string[]): Argv {
           targets: args.targets,
           types: (() => {
             const validTypes = ["typecheck", "lint", "test"] as const;
-            const types = args.type.split(",").map((t) => t.trim());
+            const types = args.type.flatMap((t) => t.split(",").map((s) => s.trim()));
             const invalidTypes = types.filter((t) => !validTypes.includes(t as CheckType));
             if (invalidTypes.length > 0) {
               throw new Error(
@@ -140,7 +141,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),
@@ -169,7 +170,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),
@@ -200,7 +201,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),
@@ -231,7 +232,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),
@@ -270,7 +271,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),
@@ -295,7 +296,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               alias: "o",
-              description: "Options to pass to sd.config.ts (e.g., -o key=value)",
+              description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
             },
           }),

@@ -193,7 +193,7 @@ async function resolveAllReplaceDepEntries(
     const targetNames: string[] = [];
     for (const pattern of Object.keys(replaceDeps)) {
       const matches = await glob(pattern, { cwd: nodeModulesDir });
-      targetNames.push(...matches);
+      targetNames.push(...matches.map((m) => m.replaceAll("\\", "/")));
     }
 
     logger.debug(`[replace-deps] 탐색: ${nodeModulesDir} → ${targetNames.length}개 매칭 (${targetNames.join(", ")})`);

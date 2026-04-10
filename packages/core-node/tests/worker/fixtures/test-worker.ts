@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 테스트 워커 fixture */
 import { createWorker } from "../../../src";
 
 interface TestWorkerEvents extends Record<string, unknown> {

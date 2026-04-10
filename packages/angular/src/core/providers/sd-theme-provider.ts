@@ -6,7 +6,7 @@ export class SdThemeProvider {
 
   readonly fontSizePresets: readonly number[] = [12, 14, 16, 20, 24, 28];
 
-  fontSize = signal<number>(16);
+  fontSize = signal<number>(12);
 
   constructor() {
     effect(() => {

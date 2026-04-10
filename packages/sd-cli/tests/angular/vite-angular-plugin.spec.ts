@@ -84,7 +84,7 @@ describe("sdAngularPlugin", () => {
     expect((plugin as any).handleHotUpdate).toBeDefined();
 
     const mockModule = { file: appComponentPath, id: appComponentPath };
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
+    const hmrResult = (plugin as any).handleHotUpdate?.({
       file: appComponentPath,
       modules: [mockModule],
       server: { watcher: { emit: vi.fn() } },
@@ -92,7 +92,10 @@ describe("sdAngularPlugin", () => {
       read: () => Promise.resolve(""),
     });
 
-    expect(onBuildStart).toHaveBeenCalled();
+    // 100ms 배치 타이머 + 비동기 Angular 재컴파일 완료 대기
+    await vi.waitFor(() => {
+      expect(onBuildStart).toHaveBeenCalled();
+    }, { timeout: 10000, interval: 50 });
     expect(onBuild).toHaveBeenCalledWith(
       expect.objectContaining({ success: expect.any(Boolean) }),
     );

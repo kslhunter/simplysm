@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties -- 빌드 설정 파일 */
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import tsconfigPaths from "vite-tsconfig-paths";

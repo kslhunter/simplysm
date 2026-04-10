@@ -67,6 +67,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       return ` LIMIT ${offset}, ${count}`;
     }
     if (top != null) {
+
       return ` LIMIT ${top}`;
     }
     return "";
@@ -731,7 +732,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       sql: `
 SET FOREIGN_KEY_CHECKS = 0;
 SET @tables = NULL;
-SELECT GROUP_CONCAT(CONCAT('\`', REPLACE(table_name, '\`', '\`\`'), '\`')) INTO @tables FROM information_schema.tables WHERE table_schema = '${dbName}';
+SELECT GROUP_CONCAT(CONCAT('\`${def.database}\`.\`', REPLACE(table_name, '\`', '\`\`'), '\`')) INTO @tables FROM information_schema.tables WHERE table_schema = '${dbName}';
 SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ', @tables));
 PREPARE stmt FROM @drop_stmt;
 EXECUTE stmt;

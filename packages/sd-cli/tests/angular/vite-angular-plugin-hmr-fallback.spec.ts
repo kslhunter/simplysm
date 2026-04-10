@@ -85,7 +85,7 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       .join(PKG_DIR, "src/app.component.ts")
       .replace(/\\/g, "/");
 
-    await (plugin as any).handleHotUpdate?.({
+    (plugin as any).handleHotUpdate?.({
       file: tsFilePath,
       modules: [{ file: tsFilePath, id: tsFilePath }],
       server: { watcher: { emit: vi.fn() } },
@@ -93,8 +93,11 @@ describe("sdAngularPlugin CSS HMR compatibility", () => {
       read: () => Promise.resolve(""),
     });
 
-    expect(onBuildStart).toHaveBeenCalledTimes(1);
-    expect(onBuild).toHaveBeenCalledTimes(1);
+    // 100ms 배치 타이머 + 비동기 Angular 재컴파일 완료 대기
+    await vi.waitFor(() => {
+      expect(onBuildStart).toHaveBeenCalled();
+      expect(onBuild).toHaveBeenCalled();
+    }, { timeout: 10000, interval: 50 });
 
     // 콜백 카운터 리셋
     onBuildStart.mockClear();

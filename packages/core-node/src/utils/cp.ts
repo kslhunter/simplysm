@@ -137,6 +137,7 @@ export function spawn(
   args: string[],
   options?: SpawnOptions & { reject?: boolean },
 ): SpawnProcess {
+  // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
   const opts: SpawnOptions = { stdio: "pipe", ...options, env: { ...process.env, ...options?.env } };
 
   const cp = cpSpawn(cmd, args, opts);
@@ -183,6 +184,7 @@ export function spawnSync(
   const opts: SpawnSyncOptions = {
     stdio: "pipe",
     ...options,
+    // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
     env: { ...process.env, ...options?.env },
   };
 

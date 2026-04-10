@@ -23,7 +23,7 @@ export interface SdScopeWatchPluginOptions {
 
 /**
  * replaceDeps 패키지의 루트 디렉토리를 감시하여 Vite HMR을 트리거하는 플러그인.
- * - config 훅: replaceDeps를 optimizeDeps.exclude에 추가
+ * - config 훅: optimizeDeps.force를 true로 설정
  * - configureServer 훅: FsWatcher로 패키지 루트 감시, 변경 시 Vite watcher에 change 이벤트 재발행
  */
 export function sdScopeWatchPlugin(options: SdScopeWatchPluginOptions): Plugin {
@@ -34,7 +34,6 @@ export function sdScopeWatchPlugin(options: SdScopeWatchPluginOptions): Plugin {
       return {
         optimizeDeps: {
           force: true,
-          exclude: options.replaceDeps.map((dep) => dep.packageName),
         },
       };
     },

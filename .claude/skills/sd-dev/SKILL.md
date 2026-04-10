@@ -11,57 +11,47 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ### 단계 전환
 
-sd-tdd 이후 단계는 완료 시 즉시 다음 단계로 진행한다. 다음단계로의 진행 여부를 사용자에게 진행 여부를 묻지 않는다.
-sd-wbs, sd-plan은 문서 작성 후 **종료**하여 사용자가 새 세션에서 검토 후 재개할 수 있도록 한다.
-
-| 전환                       | 조건                     | 동작                                                                   |
-| -------------------------- | ------------------------ | ---------------------------------------------------------------------- |
-| sd-wbs 완료                | WBS 문서 완성            | `/sd-dev {wbs경로} {Feature번호}` 안내 후 **종료**                     |
-| sd-plan 완료 (Slice 2+)    | 요구명세 + 구현계획 완성 | `/sd-dev {feature.md경로}` 안내 후 **종료**                            |
-| sd-plan 완료 (Slice 1)     | 요구명세 + 구현계획 완성 | 즉시 sd-tdd 진행                                                       |
-| sd-tdd → sd-check          | TDD 완료                 | Feature 문서 재확인 → `wbs.md` 갱신 후, 범위 결정 → 즉시 sd-check 시작 |
-| sd-check → sd-review       | 모든 패키지 check 통과   | 즉시 sd-review 시작                                                    |
-| sd-review 완료 (이슈 없음) | 이슈 0건                 | 완료                                                                   |
-| sd-review 완료 (이슈 있음) | 이슈 적용 완료           | sd-check 재실행 → 통과 시 완료                                         |
+sd-tdd 이후 단계(Step 4~6)는 완료 시 즉시 다음 단계로 진행한다. 사용자에게 진행 여부를 묻지 않는다.
+sd-wbs, sd-plan(Step 2~3)은 문서 작성 후 **종료**하여 사용자가 새 세션에서 검토 후 재개할 수 있도록 한다.
 
 ## Step 1: 입력 분기
 
-### Case 1: 인자 없음
+인자에 따라 시작 Step을 결정한다.
 
-`.claude/skills/sd-wbs/SKILL.md`를 읽고 수행한다. 완료 후 `/sd-dev {wbs경로} {첫 Feature 번호}` 안내만 하고 **종료**한다.
+| 입력 | 시작 Step |
+| --- | --- |
+| 인자 없음 | → Step 2 (sd-wbs) |
+| wbs 경로만 (추가 요청 있음) | → Step 2 (sd-wbs 업데이트) |
+| wbs 경로만 (추가 요청 없음) | → `/sd-dev {wbs경로} {Feature번호}` 안내 후 **종료** |
+| wbs + Feature 번호 | → Step 3 (sd-plan) |
+| Feature 문서 경로 | → Step 4 (sd-tdd). Slice 체크박스(`[x]`/`[ ]`)를 확인하여 진행 상태를 복원한다 |
 
-### Case 2: wbs 경로만
+## Step 2: sd-wbs
 
-사용자의 대화 맥락에 추가 요청이 있는지 확인한다:
+`.claude/skills/sd-wbs/SKILL.md`를 읽고 수행한다. 완료 후:
 
-- **추가 요청 있음** → `.claude/skills/sd-wbs/SKILL.md`를 읽고 wbs 업데이트 수행 → `/sd-dev {wbs경로} {Feature번호}` 안내 후 종료
-- **추가 요청 없음** → `/sd-dev {wbs경로} {Feature번호}` 안내 후 종료
+- **Feature 1개** → 즉시 Step 3 진행
+- **Feature 2개 이상** → `/sd-dev {wbs경로} {첫 Feature 번호}` 안내만 하고 **종료**
 
-### Case 3: wbs + Feature 번호
+## Step 3: sd-plan
 
 `.claude/skills/sd-plan/SKILL.md`를 읽고 수행한다. 완료 후:
 
-- **Slice 1개** → 즉시 sd-tdd 진행 (Step 2로)
+- **Slice 1개** → 즉시 Step 4 진행
 - **Slice 2개 이상** → `/sd-dev {feature.md경로}` 안내만 하고 **종료**
 
-### Case 4: Feature 문서 경로
-
-sd-tdd부터 재개: sd-tdd → sd-check → sd-review
-
-구현계획의 Slice 체크박스(`[x]`/`[ ]`)를 확인하여 세부 진행 상태를 복원한다. 예를 들어 Slice 2까지 `[x]`이면 Slice 3부터 재개한다.
-
-## Step 2: sd-tdd
+## Step 4: sd-tdd
 
 `.claude/skills/sd-tdd/SKILL.md`를 읽고 따른다.
 
-## Step 3: sd-check
+## Step 5: sd-check
 
 `.claude/skills/sd-check/SKILL.md`를 읽고 변경 패키지및 의존패키지에 대해 실행한다.
 - 문제 발생시 `.claude/references/sd-debug.md`를 읽고 ACH 지침에 따라 근본 원인을 분석한다.
 - **수정은 근본 원인이 명확히 특정된 경우에만** 수행한다. 원인 불명 시 사용자에게 보고한다.
 - sd-check의 에스컬레이션 규칙을 따른다.
 
-## Step 4: sd-review
+## Step 6: sd-review
 
 `.claude/skills/sd-review/SKILL.md`를 읽고 지침에 따라 wbs/feature문서를 잘 구현하고 있는지 검토한다.
 
@@ -72,7 +62,7 @@ sd-tdd부터 재개: sd-tdd → sd-check → sd-review
 
 이슈 적용 후 sd-check를 재실행하여 수정이 기존 코드를 깨뜨리지 않았는지 검증한다. 2차 리뷰는 수행하지 않는다.
 
-## Step 5: 완료
+## Step 7: 완료
 
 모든 단계 완료 후, 실행 결과를 대화에 출력한다.
 

@@ -609,6 +609,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
             {
               stdio: "inherit",
               env: {
+                // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
                 ...process.env,
                 MCP_CONNECTION_NONBLOCKING: "true",
                 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",

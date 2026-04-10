@@ -16,7 +16,7 @@ Node.js 20, Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ES
 
 ```bash
 pnpm dev [targets..]                     # 서버 패키지를 개발 모드로 실행
-pnpm dev -o key=value                    # sd.config.ts에 옵션 전달
+pnpm dev -o optA -o optB                 # sd.config.ts에 옵션 전달
 pnpm watch [targets..]                   # 라이브러리 패키지를 watch 빌드
 ```
 

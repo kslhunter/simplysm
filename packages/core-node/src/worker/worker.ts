@@ -45,6 +45,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
           stderr: true,
           ...opt,
           env: {
+            // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
             ...process.env,
             ...envObj,
           },
@@ -60,6 +61,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
         stderr: true,
         ...opt,
         env: {
+          // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
           ...process.env,
           ...envObj,
         },

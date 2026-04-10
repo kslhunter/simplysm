@@ -150,25 +150,33 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
       this._startTimeout();
 
-      // MySQL은 INSERT/UPDATE/DELETE 문에 대해 ResultSetHeader를 반환한다
-      // ResultSetHeader 객체를 필터링하여 SELECT 결과만 추출
-      // ResultSetHeader에는 affectedRows, fieldCount 등의 필드가 있다
-      const result: Record<string, unknown>[] = [];
-      if (queryResults instanceof Array) {
-        for (const queryResult of queryResults.filter(
-          (item: unknown) =>
-            !(
-              typeof item === "object" &&
-              item !== null &&
-              "affectedRows" in item &&
-              "fieldCount" in item
-            ),
-        )) {
-          result.push(queryResult as Record<string, unknown>);
-        }
+      // mysql2 반환 형식:
+      // - single SELECT: queryResults = [RowDataPacket, ...] (flat 배열)
+      // - single INSERT/UPDATE/DELETE: queryResults = ResultSetHeader (객체)
+      // - multi-statement: queryResults = [(ResultSetHeader | RowDataPacket[]), ...] (중첩 배열)
+      if (!(queryResults instanceof Array)) {
+        // single INSERT/UPDATE/DELETE → ResultSetHeader → 빈 result set
+        return [[]];
       }
 
-      return [result];
+      const first = queryResults[0] as Record<string, unknown> | unknown[] | undefined;
+      const isMultiStatement =
+        first != null &&
+        (Array.isArray(first) ||
+          (typeof first === "object" &&
+            "affectedRows" in first &&
+            "fieldCount" in first));
+
+      if (isMultiStatement) {
+        // multi-statement: 각 statement 결과를 별도 result set으로 분리
+        // ResultSetHeader → 빈 배열, RowDataPacket[] → 해당 배열
+        return (queryResults as unknown[]).map((item) =>
+          Array.isArray(item) ? (item as Record<string, unknown>[]) : [],
+        );
+      }
+
+      // single SELECT: flat RowDataPacket 배열
+      return [queryResults as Record<string, unknown>[]];
     } catch (err) {
       this._startTimeout();
       const error = err as Error & { sql?: string };

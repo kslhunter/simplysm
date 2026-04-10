@@ -13,6 +13,8 @@ import {
 } from "@angular/core";
 import { isTabbable } from "tabbable";
 import { NgTemplateOutlet } from "@angular/common";
+import { NgIcon } from "@ng-icons/core";
+import { tablerX } from "@ng-icons/tabler-icons";
 import { SdActivatedModalProvider } from "../../../core/providers/sd-activated-modal.provider";
 import { SdSystemConfigProvider } from "../../../core/providers/sd-system-config.provider";
 import "@simplysm/core-browser";
@@ -22,7 +24,7 @@ import "@simplysm/core-browser";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, NgIcon],
   host: {
     "[attr.data-sd-open]": "open() || undefined",
     "[attr.data-sd-float]": "float() || undefined",
@@ -41,7 +43,7 @@ import "@simplysm/core-browser";
             <ng-container *ngTemplateOutlet="actionTplRef()!" />
           }
           @if (!hideCloseButton()) {
-            <button class="_close-btn" (click)="onCloseButtonClick()">×</button>
+            <button class="_close-btn" (click)="onCloseButtonClick()"><ng-icon [svg]="tablerX" /></button>
           }
         </div>
       }
@@ -114,6 +116,9 @@ import "@simplysm/core-browser";
             }
 
             > ._close-btn {
+              display: flex;
+              align-items: center;
+              justify-content: center;
               padding: var(--gap-sm) var(--gap-default);
               border: none;
               background: transparent;
@@ -282,6 +287,8 @@ export class SdModal {
   private readonly _activatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _systemConfig = inject(SdSystemConfigProvider, { optional: true });
   private readonly _destroyRef = inject(DestroyRef);
+
+  protected readonly tablerX = tablerX;
 
   open = model(false);
   key = input<string | undefined>(undefined);

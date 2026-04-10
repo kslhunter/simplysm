@@ -53,7 +53,7 @@ describe("Feature 1.2 Slice 1: sd-theme-selector", () => {
   });
 
   describe("Rule: 폰트 크기 스테퍼", () => {
-    it("현재 폰트 크기(16px)와 레이블, 스테퍼 버튼이 표시된다", () => {
+    it("현재 폰트 크기(12px)와 레이블, 스테퍼 버튼이 표시된다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
@@ -63,21 +63,21 @@ describe("Feature 1.2 Slice 1: sd-theme-selector", () => {
       const popupText = popup.textContent;
 
       expect(popupText).toContain("글자 크기");
-      expect(popupText).toContain("16px");
+      expect(popupText).toContain("12px");
 
       // [-] 버튼과 [+] 버튼 확인 (popup 내 sd-button 2개)
       const buttons = popup.querySelectorAll("sd-button");
       expect(buttons.length).toBeGreaterThanOrEqual(2);
     });
 
-    it("증가 버튼 클릭 시 fontSize가 16→20으로 변경되고 표시값이 갱신된다", () => {
+    it("증가 버튼 클릭 시 fontSize가 12→14으로 변경되고 표시값이 갱신된다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
       TestBed.flushEffects();
 
       const sdTheme = TestBed.inject(SdThemeProvider);
-      expect(sdTheme.fontSize()).toBe(16);
+      expect(sdTheme.fontSize()).toBe(12);
 
       const popup = openPopup(fixture);
       const buttons = popup.querySelectorAll("sd-button");
@@ -87,29 +87,28 @@ describe("Feature 1.2 Slice 1: sd-theme-selector", () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      expect(sdTheme.fontSize()).toBe(20);
-      expect(popup.textContent).toContain("20px");
+      expect(sdTheme.fontSize()).toBe(14);
+      expect(popup.textContent).toContain("14px");
     });
 
-    it("감소 버튼 클릭 시 fontSize가 16→14로 변경되고 표시값이 갱신된다", () => {
+    it("최소값(12)에서 감소 버튼이 disabled이고 클릭해도 fontSize가 변경되지 않는다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
       TestBed.flushEffects();
 
       const sdTheme = TestBed.inject(SdThemeProvider);
-      expect(sdTheme.fontSize()).toBe(16);
+      expect(sdTheme.fontSize()).toBe(12);
 
       const popup = openPopup(fixture);
       const buttons = popup.querySelectorAll("sd-button");
       // [-] 버튼은 첫 번째 sd-button
       const minusButton = buttons[0] as HTMLElement;
-      minusButton.querySelector("button")!.click();
-      fixture.detectChanges();
-      TestBed.flushEffects();
+      const minusBtn = minusButton.querySelector("button") as HTMLButtonElement;
 
-      expect(sdTheme.fontSize()).toBe(14);
-      expect(popup.textContent).toContain("14px");
+      expect(minusBtn.disabled).toBe(true);
+      expect(sdTheme.fontSize()).toBe(12);
+      expect(popup.textContent).toContain("12px");
     });
   });
 

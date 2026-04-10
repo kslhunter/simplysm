@@ -35,7 +35,7 @@ describe("sd-theme-selector unit", () => {
   });
 
   describe("폰트 크기 스테퍼", () => {
-    it("중간값(16)에서 양쪽 버튼 모두 enabled이다", () => {
+    it("최소값(12)에서 감소 버튼은 disabled, 증가 버튼은 enabled이다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
@@ -46,7 +46,7 @@ describe("sd-theme-selector unit", () => {
       const minusBtn = buttons[0].querySelector("button") as HTMLButtonElement;
       const plusBtn = buttons[1].querySelector("button") as HTMLButtonElement;
 
-      expect(minusBtn.disabled).toBe(false);
+      expect(minusBtn.disabled).toBe(true);
       expect(plusBtn.disabled).toBe(false);
     });
 

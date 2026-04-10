@@ -85,6 +85,7 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     outdir: path.join(options.pkgDir, "dist"),
     format: "esm",
     minify: options.dev !== true,
+    sourcemap: options.dev === true ? "linked" : undefined,
     platform: "node",
     target: "node20",
     bundle: true,

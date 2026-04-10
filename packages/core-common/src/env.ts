@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties, no-restricted-syntax -- env() 구현체 */
 declare const process: { env: Record<string, string | undefined> };
 
 declare global {

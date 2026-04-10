@@ -136,6 +136,9 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
       }
     }
 
+    // main.js import 전에 sourcemap 지원 활성화 (스택 트레이스에 원본 위치 표시)
+    process.setSourceMapsEnabled(true);
+
     // main.js import (서버 인스턴스를 export해야 함)
     logger.debug("main.js 임포트 중...");
     let stepStart = performance.now();
