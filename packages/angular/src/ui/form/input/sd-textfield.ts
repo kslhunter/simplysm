@@ -316,16 +316,16 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
-  private readonly handler = computed(() => textfieldTypeHandlers[this.type()]);
+  private readonly _handler = computed(() => textfieldTypeHandlers[this.type()]);
 
-  controlType = computed(() => this.handler().controlType);
+  controlType = computed(() => this._handler().controlType);
 
-  controlStep = computed(() => this.handler().getControlStep(this.step()));
+  controlStep = computed(() => this._handler().getControlStep(this.step()));
 
   controlValue = computed(() => {
     const value = this.value();
     if (value == null) return "";
-    return this.handler().toControlValue(value, {
+    return this._handler().toControlValue(value, {
       useNumberComma: this.useNumberComma(),
       format: this.format(),
     });
@@ -334,7 +334,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   controlValueText = computed(() => {
     const value = this.value();
     if (value == null) return undefined;
-    return this.handler().toDisplayText(value, {
+    return this._handler().toDisplayText(value, {
       minDigits: this.minDigits(),
     });
   });
@@ -342,7 +342,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   constructor() {
     setupInvalid(() => {
       const value = this.value();
-      const handlerErrors = this.handler().validate(value, {
+      const handlerErrors = this._handler().validate(value, {
         required: this.required(),
         min: this.min(),
         max: this.max(),
@@ -371,7 +371,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
       this.value.set(undefined);
       return;
     }
-    const parsed = this.handler().parse(inputEl.value, { format: this.format() });
+    const parsed = this._handler().parse(inputEl.value, { format: this.format() });
     if (parsed === undefined) {
       return;
     }
@@ -385,7 +385,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
       this.value.set(undefined);
       return;
     }
-    const parsed = this.handler().parse(text, { format: this.format() });
+    const parsed = this._handler().parse(text, { format: this.format() });
     if (parsed === undefined) {
       const inputEl = event.target as HTMLInputElement;
       inputEl.value = this.controlValue();

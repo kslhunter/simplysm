@@ -13,7 +13,7 @@ import { convert12To24, format } from "../utils/date-format";
  * const parsed = Time.parse("10:30:00");
  */
 export class Time {
-  private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+  private static readonly _MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   private readonly _tick: number;
 
@@ -33,12 +33,12 @@ export class Time {
           now.getSeconds() * 1000 +
           now.getMinutes() * 60 * 1000 +
           now.getHours() * 60 * 60 * 1000) %
-        Time.MS_PER_DAY;
+        Time._MS_PER_DAY;
     } else if (arg2 !== undefined) {
       let tick =
         ((arg4 ?? 0) + (arg3 ?? 0) * 1000 + arg2 * 60 * 1000 + (arg1 as number) * 60 * 60 * 1000) %
-        Time.MS_PER_DAY;
-      if (tick < 0) tick += Time.MS_PER_DAY;
+        Time._MS_PER_DAY;
+      if (tick < 0) tick += Time._MS_PER_DAY;
       this._tick = tick;
     } else if (arg1 instanceof Date) {
       this._tick =
@@ -46,10 +46,10 @@ export class Time {
           arg1.getSeconds() * 1000 +
           arg1.getMinutes() * 60 * 1000 +
           arg1.getHours() * 60 * 60 * 1000) %
-        Time.MS_PER_DAY;
+        Time._MS_PER_DAY;
     } else {
-      let tick = arg1 % Time.MS_PER_DAY;
-      if (tick < 0) tick += Time.MS_PER_DAY;
+      let tick = arg1 % Time._MS_PER_DAY;
+      if (tick < 0) tick += Time._MS_PER_DAY;
       this._tick = tick;
     }
   }
@@ -169,29 +169,29 @@ export class Time {
 
   /** 지정된 시간을 더한 새 인스턴스 반환 (24시간 순환) */
   addHours(hours: number): Time {
-    let newTick = (this._tick + hours * 60 * 60 * 1000) % Time.MS_PER_DAY;
-    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    let newTick = (this._tick + hours * 60 * 60 * 1000) % Time._MS_PER_DAY;
+    if (newTick < 0) newTick += Time._MS_PER_DAY;
     return new Time(newTick);
   }
 
   /** 지정된 분을 더한 새 인스턴스 반환 (24시간 순환) */
   addMinutes(minutes: number): Time {
-    let newTick = (this._tick + minutes * 60 * 1000) % Time.MS_PER_DAY;
-    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    let newTick = (this._tick + minutes * 60 * 1000) % Time._MS_PER_DAY;
+    if (newTick < 0) newTick += Time._MS_PER_DAY;
     return new Time(newTick);
   }
 
   /** 지정된 초를 더한 새 인스턴스 반환 (24시간 순환) */
   addSeconds(seconds: number): Time {
-    let newTick = (this._tick + seconds * 1000) % Time.MS_PER_DAY;
-    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    let newTick = (this._tick + seconds * 1000) % Time._MS_PER_DAY;
+    if (newTick < 0) newTick += Time._MS_PER_DAY;
     return new Time(newTick);
   }
 
   /** 지정된 밀리초를 더한 새 인스턴스 반환 (24시간 순환) */
   addMilliseconds(milliseconds: number): Time {
-    let newTick = (this._tick + milliseconds) % Time.MS_PER_DAY;
-    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    let newTick = (this._tick + milliseconds) % Time._MS_PER_DAY;
+    if (newTick < 0) newTick += Time._MS_PER_DAY;
     return new Time(newTick);
   }
 

@@ -206,15 +206,17 @@ describe("DebounceQueue", () => {
       expect(calls).toEqual([]);
     });
 
-    it("using 문으로 자동 dispose", async () => {
+    it("dispose 후 디바운스 대기 중 태스크가 실행되지 않음", async () => {
       const calls: number[] = [];
-      {
-        using queue = new DebounceQueue(100);
+      const queue = new DebounceQueue(100);
+      try {
         queue.run(() => {
           calls.push(1);
         });
         await time(50);
-      } // dispose automatically called at using block end
+      } finally {
+        queue.dispose();
+      }
       await time(100);
       // Disposed during debounce wait, not executed
       expect(calls).toEqual([]);

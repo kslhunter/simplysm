@@ -446,8 +446,8 @@ export abstract class DbContext implements DbContextBase {
 
   // ── 초기화 ──
 
-  async initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void> {
-    await initializeImpl(this, options);
+  async initialize(options?: { dbs?: string[]; force?: boolean }): Promise<boolean> {
+    return initializeImpl(this, options);
   }
 
   /** 마이그레이션 정의 — 서브클래스에서 오버라이드 */

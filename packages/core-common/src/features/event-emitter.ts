@@ -107,11 +107,4 @@ export class EventEmitter<
     }
     this._listenerMap.clear();
   }
-
-  /**
-   * using 문 지원
-   */
-  [Symbol.dispose](): void {
-    this.dispose();
-  }
 }

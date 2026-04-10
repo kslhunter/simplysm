@@ -25,22 +25,34 @@ export interface ZipArchiveProgress {
  *
  * @example
  * // ZIP 파일 읽기
- * await using archive = new ZipArchive(zipBytes);
- * const content = await archive.get("file.txt");
+ * const archive = new ZipArchive(zipBytes);
+ * try {
+ *   const content = await archive.get("file.txt");
+ * } finally {
+ *   await archive.close();
+ * }
  *
  * @example
  * // ZIP 파일 생성
- * await using archive = new ZipArchive();
- * archive.write("file.txt", textBytes);
- * archive.write("data.json", jsonBytes);
- * const zipBytes = await archive.compress();
+ * const archive = new ZipArchive();
+ * try {
+ *   archive.write("file.txt", textBytes);
+ *   archive.write("data.json", jsonBytes);
+ *   const zipBytes = await archive.compress();
+ * } finally {
+ *   await archive.close();
+ * }
  *
  * @example
  * // 모든 파일 추출 (진행률 보고 포함)
- * await using archive = new ZipArchive(zipBytes);
- * const files = await archive.extractAll((progress) => {
- *   console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
- * });
+ * const archive = new ZipArchive(zipBytes);
+ * try {
+ *   const files = await archive.extractAll((progress) => {
+ *     console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
+ *   });
+ * } finally {
+ *   await archive.close();
+ * }
  */
 export class ZipArchive {
   private readonly _reader?: ZipReader<Blob | Bytes>;
@@ -218,11 +230,5 @@ export class ZipArchive {
     this._cache.clear();
   }
 
-  /**
-   * await using 지원
-   */
-  async [Symbol.asyncDispose](): Promise<void> {
-    await this.close();
-  }
   //#endregion
 }

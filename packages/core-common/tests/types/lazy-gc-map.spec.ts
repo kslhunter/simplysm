@@ -394,19 +394,21 @@ describe("LazyGcMap", () => {
       expect(map.size).toBe(0);
     });
 
-    it("using 문으로 자동 dispose", async () => {
+    it("dispose 후 GC 타이머가 정리됨", async () => {
       const expired: Array<[string, number]> = [];
-      {
-        using map = new LazyGcMap<string, number>({
-          gcInterval: 100,
-          expireTime: 200,
-          onExpire: (key, value) => {
-            expired.push([key, value]);
-          },
-        });
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+        onExpire: (key, value) => {
+          expired.push([key, value]);
+        },
+      });
+      try {
         map.set("key1", 100);
         expect(map.has("key1")).toBe(true);
-      } // dispose auto-called at end of using block
+      } finally {
+        map.dispose();
+      }
       await vi.advanceTimersByTimeAsync(350);
       // Cleaned up by dispose (onExpire not called)
       expect(expired).toHaveLength(0);

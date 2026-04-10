@@ -141,8 +141,13 @@ const sq = new SerialQueue();
 sq.run(async () => { /* 작업 1 */ });
 sq.run(async () => { /* 작업 1 완료 후 실행 */ });
 
-// using 문으로 자원 정리
-using dq2 = new DebounceQueue(100);
+// 자원 정리
+const dq2 = new DebounceQueue(100);
+try {
+  dq2.run(() => { /* ... */ });
+} finally {
+  dq2.dispose();
+}
 ```
 
 ### 값 타입 (DateTime / DateOnly / Time / Uuid)
@@ -178,18 +183,21 @@ try {
 
 ### LazyGcMap
 
-LRU 방식으로 접근 시간을 갱신하고, 일정 시간 미접근 시 자동 삭제하는 Map이다. 사용 후 반드시 `dispose()`를 호출하거나 `using` 문을 사용한다.
+LRU 방식으로 접근 시간을 갱신하고, 일정 시간 미접근 시 자동 삭제하는 Map이다. 사용 후 반드시 `try-finally` 블록에서 `dispose()`를 호출한다.
 
 ```typescript
 import { LazyGcMap } from "@simplysm/core-common";
 
-using cache = new LazyGcMap<string, Data>({
+const cache = new LazyGcMap<string, Data>({
   expireTime: 60_000,  // 60초 미접근 시 삭제
   onExpire: async (key, value) => { /* 만료 콜백 */ },
 });
-
-cache.set("key", data);
-const val = cache.get("key"); // 접근 시간 갱신
+try {
+  cache.set("key", data);
+  const val = cache.get("key"); // 접근 시간 갱신
+} finally {
+  cache.dispose();
+}
 ```
 
 ### __DEV__ 빌드 플래그

@@ -27,14 +27,15 @@ import { SD_BUILDER } from "../db-context";
  * @param options - 초기화 옵션
  * @param options.dbs - 초기화 대상 데이터베이스 목록 (미지정 시 현재 데이터베이스)
  * @param options.force - true이면 기존 schema를 삭제하고 모두 재생성
+ * @returns 마이그레이션이 실제로 적용되었으면 `true`, 아니면 `false`
  * @throws {Error} 초기화할 데이터베이스가 없을 때
  * @throws {Error} 지정된 데이터베이스가 존재하지 않을 때
  *
  * 동작:
- * - **force=true**: clearSchema → 전체 생성 → 모든 migration을 "적용됨"으로 등록
+ * - **force=true**: clearSchema → 전체 생성 → 모든 migration을 "적용됨"으로 등록 → `false`
  * - **force=false** (기본값):
- *   - _Migration 테이블 없음: 전체 생성 + 모든 migration 등록
- *   - _Migration 테이블 있음: 미적용 migration만 실행
+ *   - _Migration 테이블 없음: 전체 생성 + 모든 migration 등록 → `false`
+ *   - _Migration 테이블 있음: 미적용 migration만 실행 → 실행된 migration이 있으면 `true`
  */
 export async function initialize(
   db: DbContextBase &
@@ -43,7 +44,7 @@ export async function initialize(
       migrations: Migration[];
     },
   options?: { dbs?: string[]; force?: boolean },
-): Promise<void> {
+): Promise<boolean> {
   const dbNames = options?.dbs ?? (db.database !== undefined ? [db.database] : []);
   if (dbNames.length < 1) {
     throw new Error("초기화할 데이터베이스가 없습니다.");
@@ -79,6 +80,8 @@ export async function initialize(
     if (migrations.length > 0) {
       await db._migration().insert(migrations.map((m) => ({ code: m.name })));
     }
+
+    return false;
   } else {
     // 3. Migration 기반 초기화 — 각 대상 DB에 대해 수행
     let appliedMigrations: { code: string }[] | undefined;
@@ -101,6 +104,8 @@ export async function initialize(
       if (migrations.length > 0) {
         await db._migration().insert(migrations.map((m) => ({ code: m.name })));
       }
+
+      return false;
     } else {
       // 기존 환경: 미적용 migration만 실행
       const appliedCodes = new Set(appliedMigrations.map((m) => m.code));
@@ -110,6 +115,8 @@ export async function initialize(
         await migration.up(db);
         await db._migration().insert([{ code: migration.name }]);
       }
+
+      return pendingMigrations.length > 0;
     }
   }
 }

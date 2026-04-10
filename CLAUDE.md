@@ -4,7 +4,7 @@ pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 �
 
 ## 기술 스택
 
-Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ESLint, Prettier
+Node.js 20, Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ESLint, Prettier
 
 ## 명령어
 

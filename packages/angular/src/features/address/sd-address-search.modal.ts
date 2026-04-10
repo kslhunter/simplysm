@@ -61,10 +61,10 @@ export class SdAddressSearchModal implements SdModalContentDef<Address>, OnInit 
   initialized = signal(false);
 
   ngOnInit() {
-    void this.initAsync();
+    void this._initAsync();
   }
 
-  private async initAsync() {
+  private async _initAsync() {
     if (!document.getElementById("daum_address")) {
       await new Promise<void>((resolve, reject) => {
         const scriptEl = document.createElement("script");

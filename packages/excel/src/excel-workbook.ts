@@ -23,13 +23,6 @@ import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-wor
  *
  * @example
  * ```typescript
- * // await using 사용 (권장)
- * await using wb = new ExcelWorkbook(bytes);
- * const ws = await wb.getWorksheet(0);
- * // ... 작업 수행
- * // 스코프 종료 시 리소스 자동 해제
- *
- * // 또는 try-finally 사용
  * const wb = new ExcelWorkbook(bytes);
  * try {
  *   const ws = await wb.getWorksheet(0);
@@ -200,10 +193,6 @@ export class ExcelWorkbook {
     this._isClosed = true;
     this._wsMap.clear();
     await this.zipCache.close();
-  }
-
-  async [Symbol.asyncDispose](): Promise<void> {
-    await this.close();
   }
 
   //#endregion

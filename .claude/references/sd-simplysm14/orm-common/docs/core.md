@@ -71,7 +71,7 @@ export abstract class DbContext implements DbContextBase {
   getSwitchFkQueryDef(table: QueryDefObjectName, enabled: boolean): QueryDef;
 
   // 초기화
-  initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void>;
+  initialize(options?: { dbs?: string[]; force?: boolean }): Promise<boolean>;
 
   // DbContextBase 구현
   get database(): string | undefined;

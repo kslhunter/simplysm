@@ -13,7 +13,7 @@ import { format, normalizeMonth } from "../utils/date-format";
  * const parsed = DateOnly.parse("2025-01-15");
  */
 export class DateOnly {
-  private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+  private static readonly _MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   readonly date: Date;
 
@@ -119,7 +119,7 @@ export class DateOnly {
     } else {
       // 월 경계를 고려한 실제 남은 일수 계산
       const nextMonthDate = this.addMonths(1).setDay(1);
-      const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly.MS_PER_DAY;
+      const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly._MS_PER_DAY;
 
       // 월 경계까지의 실제 일수와 주 남은 일수 중 작은 값 사용
       const realDaysInWeek = Math.min(daysInWeek, remainedDays);
@@ -174,7 +174,7 @@ export class DateOnly {
       minDaysInFirstWeek,
     );
 
-    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly.MS_PER_DAY;
+    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly._MS_PER_DAY;
     return {
       year: base.year,
       weekSeq: Math.floor(diffDays / 7) + 1,
@@ -205,7 +205,7 @@ export class DateOnly {
       minDaysInFirstWeek,
     );
 
-    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly.MS_PER_DAY;
+    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly._MS_PER_DAY;
     return {
       year: base.year,
       monthSeq: base.monthSeq,

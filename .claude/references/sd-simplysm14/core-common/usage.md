@@ -216,15 +216,18 @@ const id = Uuid.generate();
 ```typescript
 import { LazyGcMap } from "@simplysm/core-common";
 
-using cache = new LazyGcMap<string, Data>({
+const cache = new LazyGcMap<string, Data>({
   expireTime: 60_000,
   onExpire: async (key, value) => {
     await value.cleanup();
   },
 });
-
-cache.set("key", data);
-const val = cache.get("key"); // 접근 시간 갱신
+try {
+  cache.set("key", data);
+  const val = cache.get("key"); // 접근 시간 갱신
+} finally {
+  cache.dispose();
+}
 ```
 
 ### EventEmitter 사용

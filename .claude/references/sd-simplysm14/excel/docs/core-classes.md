@@ -2,7 +2,7 @@
 
 ## `ExcelWorkbook`
 
-Excel 워크북 처리 클래스. 내부적으로 ZIP 리소스를 관리하므로 사용 후 반드시 `close()`를 호출하거나 `await using`을 사용해야 한다.
+Excel 워크북 처리 클래스. 내부적으로 ZIP 리소스를 관리하므로 사용 후 반드시 `try-finally` 블록에서 `close()`를 호출해야 한다.
 
 ```typescript
 export class ExcelWorkbook {
@@ -16,7 +16,6 @@ export class ExcelWorkbook {
   async toBytes(): Promise<Bytes>;
   async toBlob(): Promise<Blob>;
   async close(): Promise<void>;
-  async [Symbol.asyncDispose](): Promise<void>;
 }
 ```
 
@@ -59,10 +58,6 @@ export class ExcelWorkbook {
 #### `close()`
 
 ZIP 리더와 내부 캐시를 정리한다. 이미 닫힌 워크북에 대해 호출해도 안전하다 (no-op). 닫힌 워크북의 메서드를 호출하면 에러가 발생한다.
-
-#### `[Symbol.asyncDispose]()`
-
-`await using` 구문을 지원한다. 내부적으로 `close()`를 호출한다.
 
 ---
 

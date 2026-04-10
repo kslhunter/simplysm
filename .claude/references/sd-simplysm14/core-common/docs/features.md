@@ -26,7 +26,6 @@ export class EventEmitter<
   listenerCount<TEventName extends keyof TEvents & string>(type: TEventName): number;
 
   dispose(): void;
-  [Symbol.dispose](): void;
 }
 ```
 
@@ -39,7 +38,6 @@ export class EventEmitter<
 | `emit(type, data?)` | 이벤트 발행. `void` 타입 이벤트는 인자 없이 호출 |
 | `listenerCount(type)` | 특정 이벤트의 등록된 리스너 수 반환 |
 | `dispose()` | 모든 이벤트 리스너 제거 |
-| `[Symbol.dispose]()` | `using` 문 지원 |
 
 ```typescript
 interface MyEvents {
@@ -72,7 +70,6 @@ export class DebounceQueue extends EventEmitter<{ error: SdError }> {
   run(fn: () => void | Promise<void>): void;
 
   override dispose(): void;
-  override [Symbol.dispose](): void;
 }
 ```
 
@@ -89,7 +86,13 @@ dq.run(() => console.log("1")); // 무시됨
 dq.run(() => console.log("2")); // 무시됨
 dq.run(() => console.log("3")); // 300ms 후 실행
 
-using dq2 = new DebounceQueue(100); // using 문으로 자원 정리
+// 자원 정리
+const dq2 = new DebounceQueue(100);
+try {
+  dq2.run(() => { /* ... */ });
+} finally {
+  dq2.dispose();
+}
 ```
 
 ---
@@ -107,7 +110,6 @@ export class SerialQueue extends EventEmitter<{ error: SdError }> {
   run(fn: () => void | Promise<void>): void;
 
   override dispose(): void;
-  override [Symbol.dispose](): void;
 }
 ```
 
@@ -124,5 +126,11 @@ sq.run(async () => await fetch("/api/1"));
 sq.run(async () => await fetch("/api/2")); // 1 완료 후 실행
 sq.run(async () => await fetch("/api/3")); // 2 완료 후 실행
 
-using sq2 = new SerialQueue(100); // 100ms 간격으로 실행
+// 100ms 간격으로 실행, 자원 정리
+const sq2 = new SerialQueue(100);
+try {
+  sq2.run(async () => { /* ... */ });
+} finally {
+  sq2.dispose();
+}
 ```

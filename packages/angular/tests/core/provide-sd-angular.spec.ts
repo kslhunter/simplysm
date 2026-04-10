@@ -24,6 +24,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
   afterEach(() => {
     localStorage.clear();
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
     document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
   });
 
@@ -261,6 +262,7 @@ describe("FIX-1 Slice 3: provideSdAngular 수정", () => {
   afterEach(() => {
     localStorage.clear();
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
     document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
   });
 
@@ -337,6 +339,7 @@ describe("Feature 4.3: 테마 write 방지", () => {
   afterEach(() => {
     localStorage.clear();
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
     document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
   });
 
@@ -383,6 +386,7 @@ describe("Feature 2.3 Slice 2: 네비게이션 busy 카운터 수정", () => {
   afterEach(() => {
     localStorage.clear();
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
     document.querySelectorAll("div[style*='position: fixed']").forEach((el) => el.remove());
   });
 

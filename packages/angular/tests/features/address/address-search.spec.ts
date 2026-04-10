@@ -23,7 +23,7 @@ describe("SdAddressSearchModal", () => {
     const fixture = TestBed.createComponent(SdAddressSearchModal);
     fixture.detectChanges();
     const component = fixture.componentInstance;
-    await (component as any).initAsync();
+    await (component as any)._initAsync();
     return { fixture, component };
   }
 
@@ -46,10 +46,10 @@ describe("SdAddressSearchModal", () => {
         imports: [SdAddressSearchModal],
       }).compileComponents();
 
-      // detectChanges 생략 — ngOnInit의 void initAsync() unhandled rejection 방지
+      // detectChanges 생략 — ngOnInit의 void _initAsync() unhandled rejection 방지
       const fixture = TestBed.createComponent(SdAddressSearchModal);
 
-      await expect((fixture.componentInstance as any).initAsync()).rejects.toThrow(
+      await expect((fixture.componentInstance as any)._initAsync()).rejects.toThrow(
         "주소 검색 스크립트를 불러올 수 없습니다.",
       );
 

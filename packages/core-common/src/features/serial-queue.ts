@@ -46,13 +46,6 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
   }
 
   /**
-   * using 문 지원
-   */
-  override [Symbol.dispose](): void {
-    this.dispose();
-  }
-
-  /**
    * 큐에 함수를 추가하고 실행
    */
   run(fn: () => void | Promise<void>): void {

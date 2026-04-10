@@ -10,6 +10,7 @@ describe("Feature 1.2.1 Slice 2: SdThemeProvider 단순화", () => {
     TestBed.configureTestingModule({});
     provider = TestBed.inject(SdThemeProvider);
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
   });
 
   describe("Rule: SdThemeProvider에서 크기 테마 기능을 제거한다", () => {
@@ -30,6 +31,44 @@ describe("Feature 1.2.1 Slice 2: SdThemeProvider 단순화", () => {
   });
 });
 
+describe("Feature 1.1 Slice 1: SdThemeProvider 폰트 크기 — Unit", () => {
+  let provider: SdThemeProvider;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    provider = TestBed.inject(SdThemeProvider);
+    document.documentElement.style.fontSize = "";
+  });
+
+  it("fontSize 기본값이 16이다", () => {
+    expect(provider.fontSize()).toBe(16);
+  });
+
+  it("비프리셋 값(15)에서 증가 시 다음 프리셋(16)으로 이동", () => {
+    provider.fontSize.set(15);
+    provider.increaseFontSize();
+    expect(provider.fontSize()).toBe(16);
+  });
+
+  it("비프리셋 값(15)에서 감소 시 이전 프리셋(14)으로 이동", () => {
+    provider.fontSize.set(15);
+    provider.decreaseFontSize();
+    expect(provider.fontSize()).toBe(14);
+  });
+
+  it("프리셋 최소값보다 작은 값(10)에서 증가 시 첫 프리셋(12)으로 이동", () => {
+    provider.fontSize.set(10);
+    provider.increaseFontSize();
+    expect(provider.fontSize()).toBe(12);
+  });
+
+  it("프리셋 최대값보다 큰 값(30)에서 감소 시 마지막 프리셋(28)으로 이동", () => {
+    provider.fontSize.set(30);
+    provider.decreaseFontSize();
+    expect(provider.fontSize()).toBe(28);
+  });
+});
+
 describe("FIX-1 Slice 4: SdThemeProvider classList.toggle", () => {
   let provider: SdThemeProvider;
 
@@ -37,6 +76,7 @@ describe("FIX-1 Slice 4: SdThemeProvider classList.toggle", () => {
     TestBed.configureTestingModule({});
     provider = TestBed.inject(SdThemeProvider);
     document.body.className = "";
+    document.documentElement.style.fontSize = "";
   });
 
   it("다크 모드 전환 시 기존 body 클래스가 유지된다", () => {

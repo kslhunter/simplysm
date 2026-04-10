@@ -77,13 +77,17 @@ npm install @simplysm/excel
 ```typescript
 import { ExcelWorkbook } from "@simplysm/excel";
 
-await using wb = new ExcelWorkbook();
-const ws = await wb.addWorksheet("Sheet1");
-await ws.cell(0, 0).setValue("이름");
-await ws.cell(0, 1).setValue("나이");
-await ws.cell(1, 0).setValue("홍길동");
-await ws.cell(1, 1).setValue(30);
-const bytes = await wb.toBytes();
+const wb = new ExcelWorkbook();
+try {
+  const ws = await wb.addWorksheet("Sheet1");
+  await ws.cell(0, 0).setValue("이름");
+  await ws.cell(0, 1).setValue("나이");
+  await ws.cell(1, 0).setValue("홍길동");
+  await ws.cell(1, 1).setValue(30);
+  const bytes = await wb.toBytes();
+} finally {
+  await wb.close();
+}
 ```
 
 ### 기존 파일 읽기
@@ -91,10 +95,14 @@ const bytes = await wb.toBytes();
 ```typescript
 import { ExcelWorkbook } from "@simplysm/excel";
 
-await using wb = new ExcelWorkbook(fileBytes);
-const ws = await wb.getWorksheet(0);
-const value = await ws.cell(0, 0).getValue();
-const dataTable = await ws.getDataTable();
+const wb = new ExcelWorkbook(fileBytes);
+try {
+  const ws = await wb.getWorksheet(0);
+  const value = await ws.cell(0, 0).getValue();
+  const dataTable = await ws.getDataTable();
+} finally {
+  await wb.close();
+}
 ```
 
 ### Zod 스키마 기반 래퍼 사용
@@ -112,8 +120,12 @@ const schema = z.object({
 const wrapper = new ExcelWrapper(schema);
 
 // 쓰기
-await using wb = await wrapper.write("Sheet1", records);
-const bytes = await wb.toBytes();
+const wb = await wrapper.write("Sheet1", records);
+try {
+  const bytes = await wb.toBytes();
+} finally {
+  await wb.close();
+}
 
 // 읽기
 const records = await wrapper.read(fileBytes, "Sheet1");

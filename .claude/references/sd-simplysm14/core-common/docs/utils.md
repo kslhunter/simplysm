@@ -475,7 +475,6 @@ export class ZipArchive {
   write(fileName: string, bytes: Bytes): void;
   async compress(): Promise<Bytes>;
   async close(): Promise<void>;
-  async [Symbol.asyncDispose](): Promise<void>;
 }
 ```
 
@@ -488,23 +487,34 @@ export class ZipArchive {
 | `write(fileName, bytes)` | 파일 쓰기 (캐시에 저장) |
 | `compress()` | 캐시된 파일을 ZIP으로 압축 |
 | `close()` | 리더 닫기 및 캐시 비우기 |
-| `[Symbol.asyncDispose]()` | `await using` 문 지원 |
 
 ```typescript
 // ZIP 파일 읽기
-await using archive = new ZipArchive(zipBytes);
-const content = await archive.get("file.txt");
+const archive = new ZipArchive(zipBytes);
+try {
+  const content = await archive.get("file.txt");
+} finally {
+  await archive.close();
+}
 
 // ZIP 파일 생성
-await using newArchive = new ZipArchive();
-newArchive.write("file.txt", textBytes);
-const zipBytes = await newArchive.compress();
+const newArchive = new ZipArchive();
+try {
+  newArchive.write("file.txt", textBytes);
+  const zipBytes = await newArchive.compress();
+} finally {
+  await newArchive.close();
+}
 
 // 진행률 표시
-await using archive2 = new ZipArchive(zipBytes);
-const files = await archive2.extractAll((progress) => {
-  console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
-});
+const archive2 = new ZipArchive(zipBytes);
+try {
+  const files = await archive2.extractAll((progress) => {
+    console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
+  });
+} finally {
+  await archive2.close();
+}
 ```
 
 ### `ZipArchiveProgress` (interface)

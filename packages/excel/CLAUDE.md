@@ -39,18 +39,26 @@ src/
 
 ### 워크북 생성 및 리소스 관리
 
-`ExcelWorkbook`은 내부적으로 ZIP 리소스를 보유하므로, 반드시 `await using` 또는 `finally` 블록에서 `close()`를 호출한다.
+`ExcelWorkbook`은 내부적으로 ZIP 리소스를 보유하므로, 반드시 `try-finally` 블록에서 `close()`를 호출한다.
 
 ```typescript
 // 신규 생성
-await using wb = new ExcelWorkbook();
-const ws = await wb.addWorksheet("Sheet1");
-await ws.cell(0, 0).setValue("값");
-const bytes = await wb.toBytes();
+const wb = new ExcelWorkbook();
+try {
+  const ws = await wb.addWorksheet("Sheet1");
+  await ws.cell(0, 0).setValue("값");
+  const bytes = await wb.toBytes();
+} finally {
+  await wb.close();
+}
 
 // 기존 파일 읽기 (Uint8Array 또는 Blob)
-await using wb = new ExcelWorkbook(bytes);
-const ws = await wb.getWorksheet(0); // 인덱스(0 기반) 또는 시트명
+const wb = new ExcelWorkbook(bytes);
+try {
+  const ws = await wb.getWorksheet(0); // 인덱스(0 기반) 또는 시트명
+} finally {
+  await wb.close();
+}
 ```
 
 `ExcelWrapper.write()`가 반환하는 `ExcelWorkbook`은 호출자가 직접 닫아야 한다. `ExcelWrapper.write()` 내부에서 에러 발생 시 자동으로 `close()`를 호출한다.
@@ -94,8 +102,12 @@ const schema = z.object({
 const wrapper = new ExcelWrapper(schema);
 
 // 쓰기
-await using wb = await wrapper.write("Sheet1", records);
-const bytes = await wb.toBytes();
+const wb = await wrapper.write("Sheet1", records);
+try {
+  const bytes = await wb.toBytes();
+} finally {
+  await wb.close();
+}
 
 // 읽기 (시트명 또는 인덱스, 기본값: 0)
 const records = await wrapper.read(bytes, "Sheet1");

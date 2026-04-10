@@ -57,13 +57,6 @@ export class DebounceQueue extends EventEmitter<DebounceQueueEvents> {
   }
 
   /**
-   * using 문 지원
-   */
-  override [Symbol.dispose](): void {
-    this.dispose();
-  }
-
-  /**
    * 큐에 함수 추가
    * 이전에 추가된 함수가 있으면 교체됨
    */

@@ -203,17 +203,19 @@ describe("ZipArchive", () => {
       expect(content != null ? decoder.decode(content) : undefined).toBe("content");
     });
 
-    it("automatically closes with await using statement", async () => {
+    it("reads content before close", async () => {
       const zip = new ZipArchive();
       zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compress();
 
-      {
-        await using result = new ZipArchive(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
+      try {
         await result.extractAll();
         const content = await result.get("file.txt");
         expect(decoder.decode(content)).toBe("content");
-      } // close called automatically when await using block ends
+      } finally {
+        await result.close();
+      }
     });
   });
 

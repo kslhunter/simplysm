@@ -256,10 +256,10 @@ describe("SerialQueue", () => {
       expect(calls).toContain(2);
     });
 
-    it("using 문으로 자동 dispose", async () => {
+    it("dispose 후 대기 중인 태스크가 실행되지 않음", async () => {
       const calls: number[] = [];
-      {
-        using queue = new SerialQueue();
+      const queue = new SerialQueue();
+      try {
         queue.run(async () => {
           calls.push(1);
           await new Promise((r) => setTimeout(r, 100));
@@ -268,7 +268,9 @@ describe("SerialQueue", () => {
           calls.push(2);
         });
         await vi.advanceTimersByTimeAsync(20);
-      } // dispose called automatically when using block ends
+      } finally {
+        queue.dispose();
+      }
       await vi.advanceTimersByTimeAsync(150);
       // First task (running) completes, but pending tasks don't execute
       expect(calls).toEqual([1]);

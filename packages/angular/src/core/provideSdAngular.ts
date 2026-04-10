@@ -64,6 +64,20 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
           prevDark = dark;
         }
       });
+
+      const savedFontSize = sdLocalStorage.get("sd-theme-font-size");
+      if (savedFontSize != null) {
+        sdTheme.fontSize.set(savedFontSize);
+      }
+
+      let prevFontSize = sdTheme.fontSize();
+      effect(() => {
+        const fontSize = sdTheme.fontSize();
+        if (fontSize !== prevFontSize) {
+          sdLocalStorage.set("sd-theme-font-size", fontSize);
+          prevFontSize = fontSize;
+        }
+      });
     }),
     provideEnvironmentInitializer(() => {
       const envInjector = inject(EnvironmentInjector);

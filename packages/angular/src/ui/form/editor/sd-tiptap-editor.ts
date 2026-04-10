@@ -274,8 +274,8 @@ export class SdTiptapEditor {
   validatorFn = input<(value: string | undefined) => string | undefined>();
   extensions = input<AnyExtension[]>();
 
-  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly _elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly _destroyRef = inject(DestroyRef);
 
   readonly colorPresets = [
     "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc", "#d9d9d9", "#efefef",
@@ -292,10 +292,10 @@ export class SdTiptapEditor {
 
   /** @internal -- TipTap Editor 인스턴스. 테스트 및 고급 사용자용 */
   editor: WritableSignal<Editor | undefined> = signal(undefined);
-  private lastEditorHtml: string | undefined;
-  private lastExtensions: AnyExtension[] | undefined;
+  private _lastEditorHtml: string | undefined;
+  private _lastExtensions: AnyExtension[] | undefined;
 
-  private readonly resolvedExtensions = computed(() => {
+  private readonly _resolvedExtensions = computed(() => {
     const custom = this.extensions();
     if (custom !== undefined) return custom;
 
@@ -309,27 +309,27 @@ export class SdTiptapEditor {
   constructor() {
     // Single effect that tracks both extensions and value
     effect(() => {
-      const extensions = this.resolvedExtensions();
+      const extensions = this._resolvedExtensions();
       const val = this.value();
 
       // Recreate editor if extensions changed
-      if (this.lastExtensions !== extensions) {
-        this.lastExtensions = extensions;
-        this.destroyEditor();
-        this.createEditor(extensions, val);
+      if (this._lastExtensions !== extensions) {
+        this._lastExtensions = extensions;
+        this._destroyEditor();
+        this._createEditor(extensions, val);
         return;
       }
 
       // Skip if value matches last editor output (editor-originated change)
-      if (val === this.lastEditorHtml) return;
+      if (val === this._lastEditorHtml) return;
 
       // Sync value to existing editor
       const currentEditor = untracked(() => this.editor());
       if (currentEditor == null) return;
-      const currentHtml = this.getEditorHtmlFrom(currentEditor);
+      const currentHtml = this._getEditorHtmlFrom(currentEditor);
       if (currentHtml === val) return;
       currentEditor.commands.setContent(val ?? "", { emitUpdate: false });
-      this.lastEditorHtml = undefined;
+      this._lastEditorHtml = undefined;
     });
 
     // disabled/readonly → editor.setEditable()
@@ -359,13 +359,13 @@ export class SdTiptapEditor {
       return errorMessages.join("\r\n");
     });
 
-    this.destroyRef.onDestroy(() => {
-      this.destroyEditor();
+    this._destroyRef.onDestroy(() => {
+      this._destroyEditor();
     });
   }
 
-  private createEditor(extensions: AnyExtension[], initialContent: string | undefined): void {
-    const container = this.elRef.nativeElement.querySelector("._editor-container");
+  private _createEditor(extensions: AnyExtension[], initialContent: string | undefined): void {
+    const container = this._elRef.nativeElement.querySelector("._editor-container");
     if (container == null) return;
 
     this.editor.set(new Editor({
@@ -374,26 +374,26 @@ export class SdTiptapEditor {
       content: initialContent ?? "",
       editable: untracked(() => !this.disabled() && !this.readonly()),
       onUpdate: ({ editor }) => {
-        const html = this.getEditorHtmlFrom(editor);
-        this.lastEditorHtml = html;
+        const html = this._getEditorHtmlFrom(editor);
+        this._lastEditorHtml = html;
         this.value.set(html);
       },
       onTransaction: () => {
-        this.refreshActiveStates();
+        this._refreshActiveStates();
       },
     }));
   }
 
-  private destroyEditor(): void {
+  private _destroyEditor(): void {
     const ed = untracked(() => this.editor());
     if (ed != null) {
       ed.destroy();
       this.editor.set(undefined);
     }
-    this.lastEditorHtml = undefined;
+    this._lastEditorHtml = undefined;
   }
 
-  private getEditorHtmlFrom(editor: Editor): string | undefined {
+  private _getEditorHtmlFrom(editor: Editor): string | undefined {
     const html = editor.getHTML();
     if (editor.isEmpty) return undefined;
     return html;
@@ -485,7 +485,7 @@ export class SdTiptapEditor {
     this.colorPickerMode.set(undefined);
   }
 
-  private refreshActiveStates(): void {
+  private _refreshActiveStates(): void {
     const ed = this.editor();
     if (ed == null) return;
     this.activeStates.set({

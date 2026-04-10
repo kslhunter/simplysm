@@ -213,6 +213,9 @@ export { SdCalendar } from "./ui/visual/sd-calendar";
 export { SdBarcode, type BarcodeType } from "./ui/visual/sd-barcode";
 export { SdEcharts } from "./ui/visual/sd-echarts";
 
+// ui/theme
+export { SdThemeSelector } from "./ui/theme/sd-theme-selector";
+
 // ui/overlay/dropdown
 export { SdDropdown } from "./ui/overlay/dropdown/sd-dropdown";
 export { SdDropdownPopup } from "./ui/overlay/dropdown/sd-dropdown-popup";

@@ -54,7 +54,7 @@ export class SdToastProvider {
     });
   }
 
-  private get containerRef(): ComponentRef<SdToastContainer> {
+  private _getContainerRef(): ComponentRef<SdToastContainer> {
     if (this._containerRef === undefined) {
       this._containerRef = createComponent(SdToastContainer, {
         environmentInjector: this._envInjector,
@@ -97,7 +97,7 @@ export class SdToastProvider {
         this._removeAllToasts();
       }
 
-      const containerEl = this.containerRef.location.nativeElement as HTMLElement;
+      const containerEl = this._getContainerRef().location.nativeElement as HTMLElement;
 
       // 토스트 래퍼 생성
       const toastRef = createComponent(SdToast, {
@@ -187,7 +187,7 @@ export class SdToastProvider {
     }
 
     // 토스트 컴포넌트 생성
-    const containerEl = this.containerRef.location.nativeElement as HTMLElement;
+    const containerEl = this._getContainerRef().location.nativeElement as HTMLElement;
     const toastRef = createComponent(SdToast, {
       environmentInjector: this._envInjector,
     });

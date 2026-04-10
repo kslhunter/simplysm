@@ -408,17 +408,17 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   protected dateAdd(expr: ExprDateAdd): string {
     const source = this.render(expr.source);
     const value = this.render(expr.value);
-    const unit = this.dateUnitToSql(expr.unit);
+    const unit = this._dateUnitToSql(expr.unit);
     return `${source} + INTERVAL '1 ${unit}' * ${value}`;
   }
 
   protected formatDate(expr: ExprFormatDate): string {
     // JS 포맷 → PostgreSQL TO_CHAR 포맷
-    const pgFormat = this.convertDateFormat(expr.format);
+    const pgFormat = this._convertDateFormat(expr.format);
     return `TO_CHAR(${this.render(expr.source)}, '${pgFormat}')`;
   }
 
-  private dateUnitToSql(unit: DateUnit): string {
+  private _dateUnitToSql(unit: DateUnit): string {
     switch (unit) {
       case "year":
         return "year";
@@ -435,7 +435,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     }
   }
 
-  private convertDateFormat(format: string): string {
+  private _convertDateFormat(format: string): string {
     // JS 포맷 → PostgreSQL TO_CHAR 포맷
     return format
       .replace(/yyyy/g, "YYYY")
@@ -538,8 +538,8 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   //#region ========== Window ==========
 
   protected window(expr: ExprWindow): string {
-    const fn = this.renderWindowFn(expr.fn);
-    let over = this.renderWindowSpec(expr.spec);
+    const fn = this._renderWindowFn(expr.fn);
+    let over = this._renderWindowSpec(expr.spec);
 
     // LAST_VALUE 기본 프레임은 CURRENT ROW까지만 보므로 전체 프레임을 지정해야 함
     if (expr.fn.type === "lastValue" && over.length > 0) {
@@ -549,7 +549,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     return `${fn} OVER (${over})`;
   }
 
-  private renderWindowFn(fn: ExprWindow["fn"]): string {
+  private _renderWindowFn(fn: ExprWindow["fn"]): string {
     switch (fn.type) {
       case "rowNumber":
         return "ROW_NUMBER()";
@@ -586,7 +586,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
     }
   }
 
-  private renderWindowSpec(spec: ExprWindow["spec"]): string {
+  private _renderWindowSpec(spec: ExprWindow["spec"]): string {
     const parts: string[] = [];
     if (spec.partitionBy != null && spec.partitionBy.length > 0) {
       parts.push(`PARTITION BY ${spec.partitionBy.map((p) => this.render(p)).join(", ")}`);

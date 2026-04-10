@@ -1,0 +1,194 @@
+import { describe, it, expect } from "vitest";
+import { TestBed } from "@angular/core/testing";
+import { SdThemeSelectorTest } from "./sd-theme-selector-test.fixture";
+import { SdThemeProvider } from "../../../src/core/providers/sd-theme-provider";
+import "@simplysm/core-browser";
+
+function setupTestBed() {
+  TestBed.configureTestingModule({
+    imports: [SdThemeSelectorTest],
+  });
+}
+
+function openPopup(fixture: any): HTMLElement {
+  const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+  dropdown.click();
+  fixture.detectChanges();
+  TestBed.flushEffects();
+
+  return document.body.querySelector("sd-dropdown-popup") as HTMLElement;
+}
+
+describe("Feature 1.2 Slice 1: sd-theme-selector", () => {
+  describe("Rule: 드롭다운 트리거는 아이콘만 표시", () => {
+    it("tablerPalette 아이콘 버튼이 표시되고 텍스트는 없다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const triggerButton = fixture.nativeElement.querySelector(
+        "sd-dropdown > sd-button",
+      ) as HTMLElement;
+      expect(triggerButton).toBeTruthy();
+
+      const icon = triggerButton.querySelector("ng-icon") as HTMLElement;
+      expect(icon).toBeTruthy();
+
+      // 버튼에 아이콘 외 텍스트가 없어야 한다
+      const buttonEl = triggerButton.querySelector("button") as HTMLElement;
+      const textContent = buttonEl.textContent.trim();
+      expect(textContent).toBe("");
+    });
+
+    it("트리거 클릭 시 팝업이 열린다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const popup = openPopup(fixture);
+      expect(popup).toBeTruthy();
+    });
+  });
+
+  describe("Rule: 폰트 크기 스테퍼", () => {
+    it("현재 폰트 크기(16px)와 레이블, 스테퍼 버튼이 표시된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const popup = openPopup(fixture);
+      const popupText = popup.textContent;
+
+      expect(popupText).toContain("글자 크기");
+      expect(popupText).toContain("16px");
+
+      // [-] 버튼과 [+] 버튼 확인 (popup 내 sd-button 2개)
+      const buttons = popup.querySelectorAll("sd-button");
+      expect(buttons.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("증가 버튼 클릭 시 fontSize가 16→20으로 변경되고 표시값이 갱신된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      expect(sdTheme.fontSize()).toBe(16);
+
+      const popup = openPopup(fixture);
+      const buttons = popup.querySelectorAll("sd-button");
+      // [+] 버튼은 두 번째 sd-button
+      const plusButton = buttons[1] as HTMLElement;
+      plusButton.querySelector("button")!.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(sdTheme.fontSize()).toBe(20);
+      expect(popup.textContent).toContain("20px");
+    });
+
+    it("감소 버튼 클릭 시 fontSize가 16→14로 변경되고 표시값이 갱신된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      expect(sdTheme.fontSize()).toBe(16);
+
+      const popup = openPopup(fixture);
+      const buttons = popup.querySelectorAll("sd-button");
+      // [-] 버튼은 첫 번째 sd-button
+      const minusButton = buttons[0] as HTMLElement;
+      minusButton.querySelector("button")!.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(sdTheme.fontSize()).toBe(14);
+      expect(popup.textContent).toContain("14px");
+    });
+  });
+
+  describe("Rule: 스테퍼 경계 비활성화", () => {
+    it("최소값(12)에서 감소 버튼이 disabled이고 증가 버튼은 enabled이다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      sdTheme.fontSize.set(12);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const popup = openPopup(fixture);
+      const buttons = popup.querySelectorAll("sd-button");
+      const minusBtn = buttons[0].querySelector("button") as HTMLButtonElement;
+      const plusBtn = buttons[1].querySelector("button") as HTMLButtonElement;
+
+      expect(minusBtn.disabled).toBe(true);
+      expect(plusBtn.disabled).toBe(false);
+    });
+
+    it("최대값(28)에서 증가 버튼이 disabled이고 감소 버튼은 enabled이다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      sdTheme.fontSize.set(28);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const popup = openPopup(fixture);
+      const buttons = popup.querySelectorAll("sd-button");
+      const minusBtn = buttons[0].querySelector("button") as HTMLButtonElement;
+      const plusBtn = buttons[1].querySelector("button") as HTMLButtonElement;
+
+      expect(minusBtn.disabled).toBe(false);
+      expect(plusBtn.disabled).toBe(true);
+    });
+  });
+
+  describe("Rule: 다크 모드 토글", () => {
+    it("다크 모드 OFF 상태에서 레이블과 sd-switch가 OFF로 표시된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      expect(sdTheme.dark()).toBe(false);
+
+      const popup = openPopup(fixture);
+      expect(popup.textContent).toContain("다크 모드");
+
+      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
+      expect(switchEl).toBeTruthy();
+      expect(switchEl.getAttribute("data-sd-on")).toBe("false");
+    });
+
+    it("스위치 토글 시 다크 모드가 전환된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      expect(sdTheme.dark()).toBe(false);
+
+      const popup = openPopup(fixture);
+      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
+      switchEl.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(sdTheme.dark()).toBe(true);
+    });
+  });
+});

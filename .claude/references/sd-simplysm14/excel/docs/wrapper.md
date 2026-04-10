@@ -63,7 +63,7 @@ Excel 파일을 레코드 배열로 읽는다. 헤더 행의 텍스트를 스키
 | `records` | `Partial<z.infer<TSchema>>[]` | 레코드 배열 |
 | `options.excludes` | `(keyof z.infer<TSchema>)[]` | 쓰기에서 제외할 필드 키 배열 |
 
-**반환값:** `ExcelWorkbook` - 호출자가 `close()` 또는 `await using`으로 리소스를 관리해야 한다
+**반환값:** `ExcelWorkbook` - 호출자가 `try-finally` 블록에서 `close()`를 호출하여 리소스를 관리해야 한다
 
 **쓰기 동작:**
 

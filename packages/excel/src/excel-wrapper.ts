@@ -31,61 +31,64 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     wsNameOrIndex: string | number = 0,
     options?: { excludes?: (keyof z.infer<TSchema>)[] },
   ): Promise<z.infer<TSchema>[]> {
-    await using wb = new ExcelWorkbook(file);
+    const wb = new ExcelWorkbook(file);
+    try {
+      const excludes = options?.excludes as string[] | undefined;
 
-    const excludes = options?.excludes as string[] | undefined;
+      const ws = await wb.getWorksheet(wsNameOrIndex);
+      const wsName = await ws.getName();
 
-    const ws = await wb.getWorksheet(wsNameOrIndex);
-    const wsName = await ws.getName();
+      const displayNameMap = this._getDisplayNameMap(excludes);
+      const displayNames = Object.values(displayNameMap);
+      const rawData = await ws.getDataTable({
+        usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
+      });
 
-    const displayNameMap = this._getDisplayNameMap(excludes);
-    const displayNames = Object.values(displayNameMap);
-    const rawData = await ws.getDataTable({
-      usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
-    });
+      if (rawData.length === 0) {
+        throw new Error(
+          `[${wsName}] Excel 파일에서 데이터를 찾을 수 없습니다. (기대하는 헤더: ${displayNames.join(", ")})`,
+        );
+      }
 
-    if (rawData.length === 0) {
-      throw new Error(
-        `[${wsName}] Excel 파일에서 데이터를 찾을 수 없습니다. (기대하는 헤더: ${displayNames.join(", ")})`,
-      );
-    }
+      const reverseMap = this._getReverseDisplayNameMap(excludes);
+      const shape = this._schema.shape;
+      const result: z.infer<TSchema>[] = [];
 
-    const reverseMap = this._getReverseDisplayNameMap(excludes);
-    const shape = this._schema.shape;
-    const result: z.infer<TSchema>[] = [];
+      for (const row of rawData) {
+        const record: Record<string, unknown> = {};
+        let hasNonNullValue = false;
 
-    for (const row of rawData) {
-      const record: Record<string, unknown> = {};
-      let hasNonNullValue = false;
+        for (const [displayName, fieldKey] of reverseMap) {
+          const rawValue = row[displayName];
+          const fieldSchema = shape[fieldKey] as z.ZodType;
 
-      for (const [displayName, fieldKey] of reverseMap) {
-        const rawValue = row[displayName];
-        const fieldSchema = shape[fieldKey] as z.ZodType;
+          if (rawValue != null && rawValue !== "") {
+            hasNonNullValue = true;
+          }
 
-        if (rawValue != null && rawValue !== "") {
-          hasNonNullValue = true;
+          record[fieldKey] = this._convertValue(rawValue, fieldSchema);
         }
 
-        record[fieldKey] = this._convertValue(rawValue, fieldSchema);
+        if (!hasNonNullValue) {
+          continue;
+        }
+
+        // Zod 스키마로 유효성 검사
+        const parseResult = this._schema.safeParse(record);
+        if (!parseResult.success) {
+          const errors = parseResult.error.issues
+            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+            .join(", ");
+          throw new Error(`[${wsName}] 데이터 유효성 검사 실패: ${errors}`);
+        }
+
+        result.push(parseResult.data);
       }
 
-      if (!hasNonNullValue) {
-        continue;
-      }
-
-      // Zod 스키마로 유효성 검사
-      const parseResult = this._schema.safeParse(record);
-      if (!parseResult.success) {
-        const errors = parseResult.error.issues
-          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-          .join(", ");
-        throw new Error(`[${wsName}] 데이터 유효성 검사 실패: ${errors}`);
-      }
-
-      result.push(parseResult.data);
+      return result;
+    } finally {
+      await wb.close();
     }
-
-    return result;
   }
 
   /**
@@ -93,12 +96,16 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
    *
    * @remarks
    * 반환된 워크북의 리소스 관리는 호출자의 책임이다.
-   * `await using`을 사용하거나 사용 후 `close()`를 호출해야 한다.
+   * 사용 후 `close()`를 호출해야 한다.
    *
    * @example
    * ```typescript
-   * await using wb = await wrapper.write("Sheet1", records);
-   * const bytes = await wb.toBytes();
+   * const wb = await wrapper.write("Sheet1", records);
+   * try {
+   *   const bytes = await wb.toBytes();
+   * } finally {
+   *   await wb.close();
+   * }
    * ```
    */
   async write(

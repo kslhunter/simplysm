@@ -14,4 +14,4 @@ export const _Migration: TableBuilder<{ code: ColumnBuilder<string, { type: "str
 |--------|------|-------------|
 | `code` | `varchar(255)` | 마이그레이션 코드 (PK) |
 
-`_migration` 테이블은 적용된 마이그레이션 코드를 저장하여 중복 실행을 방지한다. `DbContext.initialize()` 호출 시 이 테이블을 조회하여 미적용 마이그레이션만 실행한다.
+`_migration` 테이블은 적용된 마이그레이션 코드를 저장하여 중복 실행을 방지한다. `DbContext.initialize()` 호출 시 이 테이블을 조회하여 미적용 마이그레이션만 실행하고, 마이그레이션이 실제로 적용되었으면 `true`를 반환한다.

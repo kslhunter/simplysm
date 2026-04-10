@@ -399,24 +399,24 @@ export class MssqlExprRenderer extends ExprRendererBase {
   protected dateDiff(expr: ExprDateDiff): string {
     const from = this.render(expr.from);
     const to = this.render(expr.to);
-    const unit = this.dateUnitToSql(expr.unit);
+    const unit = this._dateUnitToSql(expr.unit);
     return `DATEDIFF(${unit}, ${from}, ${to})`;
   }
 
   protected dateAdd(expr: ExprDateAdd): string {
     const source = this.render(expr.source);
     const value = this.render(expr.value);
-    const unit = this.dateUnitToSql(expr.unit);
+    const unit = this._dateUnitToSql(expr.unit);
     return `DATEADD(${unit}, ${value}, ${source})`;
   }
 
   protected formatDate(expr: ExprFormatDate): string {
     // JS 포맷 → MSSQL FORMAT 스타일
-    const mssqlFormat = this.convertDateFormat(expr.format);
+    const mssqlFormat = this._convertDateFormat(expr.format);
     return `FORMAT(${this.render(expr.source)}, '${mssqlFormat}')`;
   }
 
-  private dateUnitToSql(unit: DateUnit): string {
+  private _dateUnitToSql(unit: DateUnit): string {
     switch (unit) {
       case "year":
         return "YEAR";
@@ -433,7 +433,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     }
   }
 
-  private convertDateFormat(format: string): string {
+  private _convertDateFormat(format: string): string {
     // MSSQL FORMAT 함수용 (동일 포맷 사용)
     return format;
   }
@@ -534,8 +534,8 @@ export class MssqlExprRenderer extends ExprRendererBase {
   //#region ========== Window ==========
 
   protected window(expr: ExprWindow): string {
-    const fn = this.renderWindowFn(expr.fn);
-    let over = this.renderWindowSpec(expr.spec);
+    const fn = this._renderWindowFn(expr.fn);
+    let over = this._renderWindowSpec(expr.spec);
 
     // LAST_VALUE 기본 프레임은 CURRENT ROW까지만 보므로 전체 프레임을 지정해야 함
     if (expr.fn.type === "lastValue" && over.length > 0) {
@@ -545,7 +545,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     return `${fn} OVER (${over})`;
   }
 
-  private renderWindowFn(fn: ExprWindow["fn"]): string {
+  private _renderWindowFn(fn: ExprWindow["fn"]): string {
     switch (fn.type) {
       case "rowNumber":
         return "ROW_NUMBER()";
@@ -582,7 +582,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     }
   }
 
-  private renderWindowSpec(spec: ExprWindow["spec"]): string {
+  private _renderWindowSpec(spec: ExprWindow["spec"]): string {
     const parts: string[] = [];
     if (spec.partitionBy != null && spec.partitionBy.length > 0) {
       parts.push(`PARTITION BY ${spec.partitionBy.map((p) => this.render(p)).join(", ")}`);

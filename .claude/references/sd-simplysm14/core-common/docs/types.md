@@ -194,7 +194,7 @@ export class Uuid {
 
 LRU 방식으로 접근 시간을 갱신하고, 지정된 시간 동안 접근하지 않으면 자동 삭제하는 Map.
 
-반드시 `dispose()` 호출 또는 `using` 문을 사용해야 GC 타이머가 정리된다.
+반드시 `try-finally` 블록에서 `dispose()`를 호출해야 GC 타이머가 정리된다.
 
 ```typescript
 export class LazyGcMap<TKey, TValue> {
@@ -229,15 +229,17 @@ export class LazyGcMap<TKey, TValue> {
 | `keys()` | key만 순회 |
 | `entries()` | `[key, value]` 순회 |
 | `dispose()` | GC 타이머 중지 및 데이터 삭제 |
-| `[Symbol.dispose]()` | `using` 문 지원 |
 
 ```typescript
-using cache = new LazyGcMap<string, Data>({
+const cache = new LazyGcMap<string, Data>({
   expireTime: 60_000,
   onExpire: async (key, value) => { await value.cleanup(); },
 });
-
-cache.set("key", data);
-const val = cache.get("key"); // 접근 시간 갱신
-const val2 = cache.getOrCreate("key2", () => new Data());
+try {
+  cache.set("key", data);
+  const val = cache.get("key"); // 접근 시간 갱신
+  const val2 = cache.getOrCreate("key2", () => new Data());
+} finally {
+  cache.dispose();
+}
 ```

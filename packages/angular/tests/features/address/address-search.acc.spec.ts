@@ -37,7 +37,7 @@ describe("SdAddressSearchModal (Acceptance)", () => {
     component.close.subscribe(closeSpy);
 
     // ngOnInit 실행
-    await (component as any).initAsync();
+    await (component as any)._initAsync();
 
     const options = mockDaumCtx.getCapturedOptions()!;
     expect(options).toBeDefined();
@@ -82,11 +82,11 @@ describe("SdAddressSearchModal (Acceptance)", () => {
       imports: [SdAddressSearchModal],
     }).compileComponents();
 
-    // detectChanges 생략 — ngOnInit의 void initAsync()가 unhandled rejection을 생성하므로
+    // detectChanges 생략 — ngOnInit의 void _initAsync()가 unhandled rejection을 생성하므로
     const fixture = TestBed.createComponent(SdAddressSearchModal);
 
     // initAsync가 reject되어야 한다 (무한 대기 아님)
-    await expect((fixture.componentInstance as any).initAsync()).rejects.toThrow(
+    await expect((fixture.componentInstance as any)._initAsync()).rejects.toThrow(
       "주소 검색 스크립트를 불러올 수 없습니다.",
     );
 
@@ -99,7 +99,7 @@ describe("SdAddressSearchModal (Acceptance)", () => {
     const closeSpy = vi.fn();
     component.close.subscribe(closeSpy);
 
-    await (component as any).initAsync();
+    await (component as any)._initAsync();
 
     const options = mockDaumCtx.getCapturedOptions()!;
 
