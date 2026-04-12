@@ -12,7 +12,7 @@ const mockGetTsProgram = vi.fn().mockReturnValue({
 
 const angularCompilerConstructorSpy = vi.fn();
 
-vi.mock("../../src/utils/angular-compiler", () => {
+vi.mock("../../src/angular/angular-compiler", () => {
   class AngularCompiler {
     constructor(options: unknown) {
       angularCompilerConstructorSpy(options);
@@ -59,7 +59,7 @@ vi.mock("../../src/utils/tsconfig", () => ({
 }));
 
 const ngtscProgramSpy = vi.fn();
-vi.mock("../../src/utils/angular-build", () => {
+vi.mock("../../src/angular/angular-build", () => {
   class NgtscProgram {
     constructor(...args: unknown[]) {
       ngtscProgramSpy(...args);
@@ -89,10 +89,10 @@ vi.mock("../../src/utils/angular-build", () => {
 
 const {
   buildScssLoadPaths,
-} = await import("../../src/utils/ngtsc-build-core");
+} = await import("../../src/angular/ngtsc-build-core");
 const {
   createLibraryTransformStylesheet,
-} = await import("../../src/utils/angular-build-pipeline");
+} = await import("../../src/angular/angular-build-pipeline");
 
 import { join } from "node:path";
 

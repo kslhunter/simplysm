@@ -42,7 +42,7 @@ vi.mock("../../src/commands/build", () => ({
   runBuild: mocks.runBuild,
 }));
 
-vi.mock("../../src/utils/replace-deps", () => ({
+vi.mock("../../src/deps/replace-deps/replace-deps", () => ({
   parseWorkspaceGlobs: mocks.parseWorkspaceGlobs,
 }));
 

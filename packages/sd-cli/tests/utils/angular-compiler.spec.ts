@@ -50,7 +50,7 @@ function createRealTsProgram(
 
 let realProgram: { program: ts.Program; dir: string; rootNames: string[] };
 
-vi.mock("../../src/utils/angular-build", () => {
+vi.mock("../../src/angular/angular-build", () => {
   class NgtscProgram {
     compiler = {
       analyzeAsync: mockAnalyzeAsync,
@@ -79,7 +79,7 @@ vi.mock("../../src/utils/angular-build", () => {
 });
 
 const { AngularCompiler, AngularSourceFileCache } = await import(
-  "../../src/utils/angular-compiler"
+  "../../src/angular/angular-compiler"
 );
 
 // --- Common beforeEach ---

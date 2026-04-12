@@ -29,10 +29,9 @@ npm install @simplysm/sd-cli
 | `SdCapacitorConfig` | interface | Capacitor 설정 |
 | `SdElectronConfig` | interface | Electron 설정 |
 | `SdPwaManifestConfig` | interface | PWA manifest 설정 |
-| `SdPwaWorkboxConfig` | interface | PWA workbox 설정 |
 | `SdPwaConfig` | interface | PWA 설정 |
 | `SdBrowserSupportConfig` | interface | 클라이언트 패키지용 브라우저 지원 설정 |
-| `SdClientPackageConfig` | interface | 클라이언트 패키지 설정 (Vite 개발 서버) |
+| `SdClientPackageConfig` | interface | 클라이언트 패키지 설정 (esbuild 기반 빌드) |
 | `SdServerPackageConfig` | interface | 서버 패키지 설정 (Fastify 서버) |
 | `SdWatchHookConfig` | interface | watch 훅 설정 |
 | `SdScriptsPackageConfig` | interface | 스크립트 전용 패키지 설정 |
@@ -348,20 +347,6 @@ export interface SdPwaManifestConfig {
 | `background_color` | `string?` | 배경 색상 |
 | `icons` | `Array<{ src: string; sizes: string; type?: string }>?` | 아이콘 목록 |
 
-### `SdPwaWorkboxConfig`
-
-PWA workbox 설정.
-
-```typescript
-export interface SdPwaWorkboxConfig {
-  globPatterns?: string[];
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `globPatterns` | `string[]?` | 캐싱할 파일 glob 패턴 |
-
 ### `SdPwaConfig`
 
 PWA 설정.
@@ -369,14 +354,12 @@ PWA 설정.
 ```typescript
 export interface SdPwaConfig {
   manifest?: SdPwaManifestConfig;
-  workbox?: SdPwaWorkboxConfig;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `manifest` | `SdPwaManifestConfig?` | PWA manifest 설정 |
-| `workbox` | `SdPwaWorkboxConfig?` | PWA workbox 설정 |
 
 ### `SdBrowserSupportConfig`
 
@@ -385,7 +368,7 @@ export interface SdPwaConfig {
 ```typescript
 export interface SdBrowserSupportConfig {
   browserslist?: string | string[];
-  postCss?: { plugins: unknown[] };
+  postCss?: { plugins: [string, (object | string)?][] };
   legacyModule?: boolean;
 }
 ```
@@ -393,17 +376,16 @@ export interface SdBrowserSupportConfig {
 | Field | Type | Description |
 |-------|------|-------------|
 | `browserslist` | `string \| string[]?` | browserslist 쿼리 (예: `"last 2 Chrome versions"`) |
-| `postCss` | `{ plugins: unknown[] }?` | PostCSS 플러그인 설정 |
+| `postCss` | `{ plugins: [string, (object \| string)?][] }?` | PostCSS 플러그인 설정 ([name, options] 튜플 배열) |
 | `legacyModule` | `boolean?` | 레거시 모듈 지원 (코드 분할 비활성화 + import.meta 치환) |
 
 ### `SdClientPackageConfig`
 
-클라이언트 패키지 설정 (Vite 개발 서버).
+클라이언트 패키지 설정 (esbuild 기반 빌드).
 
 ```typescript
 export interface SdClientPackageConfig {
   target: "client";
-  framework?: "angular" | "solid";
   server: string | number;
   env?: Record<string, string>;
   publish?: SdPublishConfig;
@@ -419,8 +401,7 @@ export interface SdClientPackageConfig {
 | Field | Type | Description |
 |-------|------|-------------|
 | `target` | `"client"` | 빌드 타겟 |
-| `framework` | `"angular" \| "solid"?` | 클라이언트 프레임워크. 미지정 시 `"angular"` |
-| `server` | `string \| number` | 연결할 서버 패키지명 또는 Vite 포트 직접 지정 |
+| `server` | `string \| number` | 연결할 서버 패키지명 또는 포트 직접 지정 |
 | `env` | `Record<string, string>?` | 빌드 시 치환할 환경 변수 |
 | `publish` | `SdPublishConfig?` | 배포 설정 |
 | `capacitor` | `SdCapacitorConfig?` | Capacitor 설정 |
@@ -564,21 +545,14 @@ sdAngularPlugin 옵션.
 
 ```typescript
 export interface SdAngularPluginOptions {
+  /** sd.config.ts packages 키 (패키지 디렉토리명) */
   pkg: string;
-  onBuildStart?: () => void;
-  onBuild?: (result: { success: boolean; errors?: string[]; warnings?: string[] }) => void;
-  _pkgDir?: string;
-  includeFixtures?: boolean;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `pkg` | `string` | sd.config.ts packages 키 (패키지 디렉토리명) |
-| `onBuildStart` | `(() => void)?` | rebuild 시작 콜백 (CLI 상태 보고용) |
-| `onBuild` | `((result) => void)?` | rebuild 완료 콜백 (CLI 상태 보고용) |
-| `_pkgDir` | `string?` | @internal test용 pkgDir 오버라이드 |
-| `includeFixtures` | `boolean?` | true이면 *.fixture.ts 파일도 AOT 컴파일 대상에 포함 (테스트 전용) |
 
 ### `sdAngularPlugin`
 
@@ -594,7 +568,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin;
 
 **Returns**: `Plugin` (Vite 플러그인 객체)
 
-Vite 훅: `buildStart` (Pipeline 초기화 + 컴파일 + emit), `transform` (.ts 파일에 대해 컴파일된 JS 반환), `handleHotUpdate` (증분 재컴파일 + HMR), `buildEnd` (리소스 정리).
+Vite 훅: `buildStart` (Pipeline 초기화 + 컴파일 + emit), `transform` (.ts 파일에 대해 컴파일된 JS 반환), `handleHotUpdate` (증분 재컴파일 + HMR), `watchChange` (파일 변경 추적), `buildEnd` (리소스 정리).
 
 ## Usage Examples
 

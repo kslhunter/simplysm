@@ -24,7 +24,8 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdThemeProvider` | class | 다크모드 토글 프로바이더 (`dark` signal) |
+| `SdThemeProvider` | class | 다크모드/폰트 크기 프로바이더 (`dark`, `fontSize` signal) |
+| `SdThemeSelector` | component | 테마 설정 드롭다운 (다크모드 토글, 폰트 크기 조절) |
 | `SdSystemLogProvider` | class | 시스템 로그 기록 프로바이더 |
 | `SdAppStructureProvider` | class | 앱 구조(메뉴/권한) 관리 프로바이더 |
 | `injectPermsSignal` | function | 현재 뷰의 권한 목록을 signal로 반환 |
@@ -52,7 +53,6 @@ npm install @simplysm/angular
 | `SdMenu` | interface | 메뉴 트리 노드 |
 | `SdFlatMenu` | interface | 플랫 메뉴 항목 |
 | `SdPermission` | interface | 권한 트리 노드 |
-| `FlatPermission` | interface | 플랫 권한 항목 |
 | `SharedDataBase` | interface | 공유 데이터 기본 인터페이스 |
 | `SharedDataInfo` | interface | 공유 데이터 등록 정보 |
 | `SharedDataHandle` | interface | 공유 데이터 핸들 (items signal + get) |
@@ -113,7 +113,7 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `mark` | function | WritableSignal 변경 알림 트리거 |
+| `mark` | function | WritableSignal 변경 알림 트리거 (shallow copy) |
 | `withBusy` | function | busy count 증감과 함께 비동기 작업 실행 |
 | `injectParent` | function | 가장 가까운 부모 컴포넌트 인스턴스 주입 |
 | `setSafeStyle` | function | Renderer2로 여러 CSS 스타일 일괄 적용 |

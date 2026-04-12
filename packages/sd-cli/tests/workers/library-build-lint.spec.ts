@@ -16,7 +16,7 @@ const { mockLintFn, MockLintWithProgramRunner } = vi.hoisted(() => {
   return { mockLintFn: lintFn, MockLintWithProgramRunner: RunnerCls };
 });
 
-vi.mock("../../src/utils/lint-with-program", () => ({
+vi.mock("../../src/lint/lint-with-program", () => ({
   LintWithProgramRunner: MockLintWithProgramRunner,
 }));
 
@@ -32,7 +32,7 @@ const mockTscResult = {
 const runTscSpy = vi.spyOn(tscBuildModule, "runTscPackageBuild")
   .mockReturnValue(mockTscResult as any);
 
-vi.mock("../../src/utils/worker-utils", () => ({
+vi.mock("../../src/runtime/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
   setupWorkerConsola: vi.fn(),
@@ -48,7 +48,7 @@ vi.mock("@simplysm/core-node", () => ({
   FsWatcher: { watch: vi.fn() },
 }));
 
-vi.mock("../../src/utils/package-utils", () => ({
+vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
 }));
 

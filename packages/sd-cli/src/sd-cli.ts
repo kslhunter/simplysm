@@ -30,7 +30,7 @@ if (isDev) {
   // Phase 1: replaceDeps (인라인 — 설치된 버전으로 복사)
   try {
     const { loadSdConfig } = await import("./utils/sd-config.js");
-    const { setupReplaceDeps } = await import("./utils/replace-deps.js");
+    const { setupReplaceDeps } = await import("./deps/replace-deps/replace-deps.js");
     const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: false, opt: [] });
     if (process.argv[2] !== "replace-deps" && sdConfig.replaceDeps != null) {
       await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);

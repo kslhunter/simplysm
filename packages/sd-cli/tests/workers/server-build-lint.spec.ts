@@ -15,7 +15,7 @@ const { mockLintFn, MockLintWithProgramRunner } = vi.hoisted(() => {
   return { mockLintFn: lintFn, MockLintWithProgramRunner: RunnerCls };
 });
 
-vi.mock("../../src/utils/lint-with-program", () => ({
+vi.mock("../../src/lint/lint-with-program", () => ({
   LintWithProgramRunner: MockLintWithProgramRunner,
 }));
 
@@ -37,7 +37,7 @@ vi.mock("../../src/utils/tsconfig", () => ({
   getPackageSourceFiles: vi.fn(() => []),
 }));
 
-vi.mock("../../src/utils/esbuild-config", () => ({
+vi.mock("../../src/esbuild/esbuild-config", () => ({
   createServerEsbuildOptions: vi.fn(() => ({})),
   collectAllDependencyExternals: vi.fn(() => ({ optionalPeerDeps: [], nativeModules: [] })),
   writeChangedOutputFiles: vi.fn(),
@@ -50,7 +50,7 @@ vi.mock("esbuild", () => ({
   },
 }));
 
-vi.mock("../../src/utils/worker-utils", () => ({
+vi.mock("../../src/runtime/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
   setupWorkerConsola: vi.fn(),
@@ -61,7 +61,7 @@ vi.mock("../../src/utils/copy-public", () => ({
   watchPublicFiles: vi.fn(),
 }));
 
-vi.mock("../../src/utils/package-utils", () => ({
+vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
 }));
 

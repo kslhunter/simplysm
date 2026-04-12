@@ -22,7 +22,7 @@ const { TscEngine } = await import("../../src/engines/TscEngine");
 const { BaseEngine } = await import("../../src/engines/BaseEngine");
 
 import type { BuildPackageInfo, BuildOutput } from "../../src/engines/types";
-import type { BuildResult } from "../../src/infra/ResultCollector";
+import type { BuildResult } from "../../src/runtime/ResultCollector";
 
 // --- Helpers ---
 
@@ -72,7 +72,7 @@ describe("BaseEngine", () => {
       expect(Worker.create).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          resourceLimits: { maxOldGenerationSizeMb: 4096 },
+          resourceLimits: { maxOldGenerationSizeMb: 8192 },
         }),
       );
 
@@ -318,6 +318,44 @@ describe("BaseEngine", () => {
     });
   });
 
+  describe("_normalizeResult", () => {
+    it("errors/warnings가 undefined이면 빈 배열로 정규화한다", async () => {
+      mockWorker.build.mockResolvedValue({
+        build: { success: true, errors: undefined, warnings: undefined, diagnostics: [{ code: 1 }] },
+        lint: { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" },
+      });
+
+      const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
+      const result = await engine.run({ js: true, dts: true });
+
+      expect(result.build.errors).toEqual([]);
+      expect(result.build.warnings).toEqual([]);
+      expect(result.build.success).toBe(true);
+      expect(result.build.diagnostics).toEqual([{ code: 1 }]);
+      expect(result.lint).toEqual({ success: true, errorCount: 0, warningCount: 0, formattedOutput: "" });
+
+      await engine.stop();
+    });
+
+    it("errors/warnings가 존재하면 그대로 전달한다", async () => {
+      mockWorker.build.mockResolvedValue({
+        build: { success: false, errors: ["err1"], warnings: ["warn1"], diagnostics: [{ code: 2322 }] },
+        lint: undefined,
+      });
+
+      const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
+      const result = await engine.run({ js: true, dts: true });
+
+      expect(result.build.errors).toEqual(["err1"]);
+      expect(result.build.warnings).toEqual(["warn1"]);
+      expect(result.build.success).toBe(false);
+      expect(result.build.diagnostics).toEqual([{ code: 2322 }]);
+      expect(result.lint).toBeUndefined();
+
+      await engine.stop();
+    });
+  });
+
   describe("lint 통합", () => {
     describe("BuildOutput.lint flag controls lint execution", () => {
       it("BuildOutput이 lint 불리언 플래그를 수용", () => {
@@ -375,10 +413,10 @@ describe("BaseEngine", () => {
         const mockResultCollector = { add: vi.fn() };
 
         mockWorker.startWatch.mockImplementation(() => {
-          const buildHandler = mockWorker.on.mock.calls.find(
-            (call: any[]) => call[0] === "build",
-          )?.[1];
-          buildHandler?.({
+          const buildHandlers = mockWorker.on.mock.calls
+            .filter((call: any[]) => call[0] === "build")
+            .map((call: any[]) => call[1]);
+          const buildData = {
             build: { success: true },
             lint: {
               success: false,
@@ -386,7 +424,10 @@ describe("BaseEngine", () => {
               warningCount: 0,
               formattedOutput: "errors",
             },
-          });
+          };
+          for (const handler of buildHandlers) {
+            handler(buildData);
+          }
         });
 
         const engine = new TscEngine({

@@ -6,7 +6,7 @@ import { consola } from "consola";
 import proxy from "@fastify/http-proxy";
 import net from "net";
 import { pathToFileURL } from "url";
-import { registerCleanupHandlers, setupWorkerConsola } from "../utils/worker-utils";
+import { registerCleanupHandlers, setupWorkerConsola } from "../runtime/worker-utils";
 
 //#region Types
 

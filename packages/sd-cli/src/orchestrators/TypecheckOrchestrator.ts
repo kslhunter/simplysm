@@ -2,12 +2,14 @@ import ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
-import { loadSdConfig } from "../utils/sd-config";
-import { deserializeDiagnostic } from "../utils/typecheck-serialization";
-import { createBuildEngine } from "../engines/index";
-import { typecheckNonPackageFiles } from "../utils/typecheck-non-package";
+import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
+import { createTypecheckEngine } from "../engines/index";
+import { typecheckNonPackageFiles } from "../typecheck/typecheck-non-package";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
 import { discoverWorkspacePackages, mergeTestsPackagesIntoConfig } from "../utils/package-utils";
+import { loadAndValidateConfig } from "../utils/orchestrator-utils";
+import { formatDiagnosticsOutput } from "../utils/diagnostic-utils";
+import type { OrchestratorLifecycle } from "./types";
 import type { EngineResult } from "../engines/types";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { toTypecheckEnvs } from "../utils/tsconfig";
@@ -72,10 +74,10 @@ function extractTargetPackageNames(targets: string[]): Set<string> {
 /**
  * 타입체크를 조율하는 Orchestrator
  *
- * BuildOrchestrator/DevWatchOrchestrator와 동일한 initialize() → start() → shutdown() 생명주기를 따른다.
+ * BuildOrchestrator/WatchOrchestrator/DevOrchestrator와 동일한 initialize() → start() → shutdown() 생명주기를 따른다.
  * sd.config.ts 기반으로 패키지를 분류하고, BuildEngine을 사용하여 타입체크를 실행한다.
  */
-export class TypecheckOrchestrator {
+export class TypecheckOrchestrator implements OrchestratorLifecycle<TypecheckResult> {
   private readonly _cwd: string;
   private readonly _options: TypecheckOptions;
   private readonly _logger = consola.withTag("sd:cli:typecheck");
@@ -104,8 +106,10 @@ export class TypecheckOrchestrator {
 
     this._logger.debug(`${phaseLabel} 시작`, { targets, lint: this._options.lint });
 
-    // sd.config.ts 로드
-    const sdConfig = await loadSdConfig({ cwd: this._cwd, dev: false, opt: this._options.options });
+    // sd.config.ts 로드 (targets=[] — check.ts에서 이미 검증 완료)
+    const sdConfig = await loadAndValidateConfig({
+      cwd: this._cwd, dev: false, options: this._options.options, targets: [],
+    });
     this._logger.debug("sd.config.ts 로드 완료");
 
     // 워크스페이스 패키지 탐색 및 tests/를 설정에 병합
@@ -131,15 +135,12 @@ export class TypecheckOrchestrator {
       if (targets.length > 0 && !targetNames.has(name)) continue;
 
       const relPath = pathMap.get(name) ?? `packages/${name}`;
-      // 클라이언트 패키지의 경우 browser 타겟을 사용하여 createBuildEngine이 ViteEngine 대신 NgtscEngine으로 라우팅되도록 함
-      const typecheckConfig =
-        config.target === "client" ? { target: "browser" as const } : config;
       const envs = toTypecheckEnvs(config.target);
       for (const env of envs) {
         this._typecheckTasks.push({
           name,
           dir: pathx.posixResolve(this._cwd, relPath),
-          config: typecheckConfig,
+          config,
           env,
         });
       }
@@ -159,11 +160,6 @@ export class TypecheckOrchestrator {
    */
   async start(): Promise<TypecheckResult> {
     const phaseLabel = this._options.lint === true ? "타입체크/린트" : "타입체크";
-    const formatHost: ts.FormatDiagnosticsHost = {
-      getCanonicalFileName: (f) => f,
-      getCurrentDirectory: () => this._cwd,
-      getNewLine: () => ts.sys.newLine,
-    };
 
     if (this._typecheckTasks.length === 0 && !this._includeNonPackage) {
       this._logger.info(`${phaseLabel} 대상 없음`);
@@ -177,114 +173,171 @@ export class TypecheckOrchestrator {
       };
     }
 
-    // 동시성 제한이 있는 BuildEngine 작업 생성
+    const fileCache = new Map<string, string>();
+    const packageResults = await this._executePackageTypechecks(fileCache, phaseLabel);
+    const nonPkgResults = this._executeNonPackageTypecheck(fileCache);
+    return this._aggregateTypecheckResults(packageResults, nonPkgResults, phaseLabel);
+  }
+
+  /**
+   * 패키지 타입체크 실행
+   * - 엔진 생성 및 동시성 제어된 실행
+   * - 결과 역직렬화 및 집계
+   */
+  private async _executePackageTypechecks(
+    fileCache: Map<string, string>,
+    phaseLabel: string,
+  ): Promise<{
+    allDiagnostics: ts.Diagnostic[];
+    totalErrorCount: number;
+    totalWarningCount: number;
+    lintErrorCount: number;
+    lintWarningCount: number;
+    lintSuccess: boolean;
+    lintOutputs: string[];
+  }> {
     const allDiagnostics: ts.Diagnostic[] = [];
     let totalErrorCount = 0;
     let totalWarningCount = 0;
-    const fileCache = new Map<string, string>();
-
-    // Lint 결과 집계
     let lintErrorCount = 0;
     let lintWarningCount = 0;
     let lintSuccess = true;
     const lintOutputs: string[] = [];
 
-    if (this._typecheckTasks.length > 0) {
-      const tasks = this._typecheckTasks.map((task) => async (): Promise<EngineResult> => {
-        const label = `${task.name}:${task.env}`;
-        const engine = createBuildEngine(
-          { name: task.name, dir: task.dir, config: task.config },
-          { cwd: this._cwd },
-        );
-        try {
-          this._logger.debug(`[${label}] 타입체크 시작됨`);
-          const result = await engine.run({
-            js: false,
-            dts: false,
-            env: task.env,
-            includeTests: true,
-            ...(this._options.lint === true ? { lint: true } : {}),
-          });
-          this._logger.debug(
-            `[${label}] 타입체크 ${result.build.success ? "완료" : "실패"}`,
-          );
-          return result;
-        } catch (err) {
-          const message = errNs.message(err);
-          const stack = err instanceof Error ? err.stack : undefined;
-          this._logger.error(`[${label}] 엔진 작업 실패: ${message}`);
-          if (stack != null) {
-            this._logger.debug(`[${label}] 스택 트레이스:\n${stack}`);
-          }
-          return {
-            build: {
-              success: false,
-              errors: [`[${label}] ${message}`],
-              warnings: [],
-              diagnostics: [],
-            },
-          };
-        } finally {
-          await engine.stop();
-        }
-      });
+    if (this._typecheckTasks.length === 0) {
+      return { allDiagnostics, totalErrorCount, totalWarningCount, lintErrorCount, lintWarningCount, lintSuccess, lintOutputs };
+    }
 
-      const concurrency = getMaxConcurrency();
-      this._logger.start(
-        `${phaseLabel} 실행 중... (${tasks.length}개 작업, 동시성: ${concurrency})`,
+    const tasks = this._typecheckTasks.map((task) => async (): Promise<EngineResult> => {
+      const label = `${task.name}:${task.env}`;
+      const engine = createTypecheckEngine(
+        { name: task.name, dir: task.dir, config: task.config },
+        { cwd: this._cwd },
       );
-      const results = await runWithConcurrency(tasks, concurrency);
-      this._logger.success(`${phaseLabel} 실행 완료`);
-
-      // 엔진 결과 집계 (모든 task는 catch로 인해 항상 fulfilled)
-      for (const settled of results) {
-        if (settled.status !== "fulfilled") continue;
-        const engineResult = settled.value;
-        const buildDiags = engineResult.build.diagnostics.map((d) =>
-          deserializeDiagnostic(d, fileCache),
+      try {
+        this._logger.debug(`[${label}] 타입체크 시작됨`);
+        const result = await engine.run({
+          js: false,
+          dts: false,
+          env: task.env,
+          includeTests: true,
+          ...(this._options.lint === true ? { lint: true } : {}),
+        });
+        this._logger.debug(
+          `[${label}] 타입체크 ${result.build.success ? "완료" : "실패"}`,
         );
-        allDiagnostics.push(...buildDiags);
-        // 역직렬화된 진단 정보에서 에러/경고 수 집계
-        // 숫자 카테고리 값 사용 (ts.DiagnosticCategory: Error=1, Warning=0)
-        totalErrorCount += buildDiags.filter((d) => d.category === 1).length;
-        totalWarningCount += buildDiags.filter((d) => d.category === 0).length;
-        if (!engineResult.build.success && buildDiags.length === 0) {
-          for (const errMsg of engineResult.build.errors) {
-            allDiagnostics.push({
-              category: 1,
-              code: 0,
-              messageText: errMsg,
-              file: undefined,
-              start: undefined,
-              length: undefined,
-            });
-          }
-          totalErrorCount += engineResult.build.errors.length || 1;
+        return result;
+      } catch (err) {
+        const message = errNs.message(err);
+        const stack = err instanceof Error ? err.stack : undefined;
+        this._logger.error(`[${label}] 엔진 작업 실패: ${message}`);
+        if (stack != null) {
+          this._logger.debug(`[${label}] 스택 트레이스:\n${stack}`);
         }
+        return {
+          build: {
+            success: false,
+            errors: [`[${label}] ${message}`],
+            warnings: [],
+            diagnostics: [],
+          },
+        };
+      } finally {
+        await engine.stop();
+      }
+    });
 
-        // Lint 결과 수집
-        if (engineResult.lint != null) {
-          lintErrorCount += engineResult.lint.errorCount;
-          lintWarningCount += engineResult.lint.warningCount;
-          if (!engineResult.lint.success) lintSuccess = false;
-          if (engineResult.lint.formattedOutput !== "") {
-            lintOutputs.push(engineResult.lint.formattedOutput);
-          }
+    const concurrency = getMaxConcurrency();
+    this._logger.start(
+      `${phaseLabel} 실행 중... (${tasks.length}개 작업, 동시성: ${concurrency})`,
+    );
+    const results = await runWithConcurrency(tasks, concurrency);
+    this._logger.success(`${phaseLabel} 실행 완료`);
+
+    // 엔진 결과 집계 (모든 task는 catch로 인해 항상 fulfilled)
+    for (const settled of results) {
+      if (settled.status !== "fulfilled") continue;
+      const engineResult = settled.value;
+      const buildDiags = engineResult.build.diagnostics.map((d) =>
+        deserializeDiagnostic(d, fileCache),
+      );
+      allDiagnostics.push(...buildDiags);
+      totalErrorCount += buildDiags.filter((d) => d.category === 1).length;
+      totalWarningCount += buildDiags.filter((d) => d.category === 0).length;
+      if (!engineResult.build.success && buildDiags.length === 0) {
+        for (const errMsg of engineResult.build.errors) {
+          allDiagnostics.push({
+            category: 1,
+            code: 0,
+            messageText: errMsg,
+            file: undefined,
+            start: undefined,
+            length: undefined,
+          });
+        }
+        totalErrorCount += engineResult.build.errors.length || 1;
+      }
+
+      if (engineResult.lint != null) {
+        lintErrorCount += engineResult.lint.errorCount;
+        lintWarningCount += engineResult.lint.warningCount;
+        if (!engineResult.lint.success) lintSuccess = false;
+        if (engineResult.lint.formattedOutput !== "") {
+          lintOutputs.push(engineResult.lint.formattedOutput);
         }
       }
     }
 
-    // 비패키지 타입체크
-    if (this._includeNonPackage) {
-      this._logger.debug("비패키지 타입체크 실행 중");
-      const nonPkgResult = typecheckNonPackageFiles(this._cwd);
-      totalErrorCount += nonPkgResult.errorCount;
-      totalWarningCount += nonPkgResult.warningCount;
-      const nonPkgDiags = nonPkgResult.diagnostics.map((d) =>
-        deserializeDiagnostic(d, fileCache),
-      );
-      allDiagnostics.push(...nonPkgDiags);
+    return { allDiagnostics, totalErrorCount, totalWarningCount, lintErrorCount, lintWarningCount, lintSuccess, lintOutputs };
+  }
+
+  /**
+   * 비패키지 타입체크 실행 (sd.config.ts에 없는 루트 파일들)
+   */
+  private _executeNonPackageTypecheck(fileCache: Map<string, string>): {
+    diagnostics: ts.Diagnostic[];
+    errorCount: number;
+    warningCount: number;
+  } {
+    if (!this._includeNonPackage) {
+      return { diagnostics: [], errorCount: 0, warningCount: 0 };
     }
+
+    this._logger.debug("비패키지 타입체크 실행 중");
+    const nonPkgResult = typecheckNonPackageFiles(this._cwd);
+    const diagnostics = nonPkgResult.diagnostics.map((d) =>
+      deserializeDiagnostic(d, fileCache),
+    );
+    return {
+      diagnostics,
+      errorCount: nonPkgResult.errorCount,
+      warningCount: nonPkgResult.warningCount,
+    };
+  }
+
+  /**
+   * 타입체크 결과 집계 및 포맷 출력 생성
+   */
+  private _aggregateTypecheckResults(
+    packageResults: {
+      allDiagnostics: ts.Diagnostic[];
+      totalErrorCount: number;
+      totalWarningCount: number;
+      lintErrorCount: number;
+      lintWarningCount: number;
+      lintSuccess: boolean;
+      lintOutputs: string[];
+    },
+    nonPkgResults: {
+      diagnostics: ts.Diagnostic[];
+      errorCount: number;
+      warningCount: number;
+    },
+    phaseLabel: string,
+  ): TypecheckResult {
+    const allDiagnostics = [...packageResults.allDiagnostics, ...nonPkgResults.diagnostics];
+    const totalErrorCount = packageResults.totalErrorCount + nonPkgResults.errorCount;
+    const totalWarningCount = packageResults.totalWarningCount + nonPkgResults.warningCount;
 
     // 요약 로그
     const resultMeta: Record<string, number> = {
@@ -292,8 +345,8 @@ export class TypecheckOrchestrator {
       warningCount: totalWarningCount,
     };
     if (this._options.lint === true) {
-      resultMeta["lintErrorCount"] = lintErrorCount;
-      resultMeta["lintWarningCount"] = lintWarningCount;
+      resultMeta["lintErrorCount"] = packageResults.lintErrorCount;
+      resultMeta["lintWarningCount"] = packageResults.lintWarningCount;
     }
     if (totalErrorCount > 0) {
       this._logger.error(`${phaseLabel} 에러 발생`, resultMeta);
@@ -302,20 +355,16 @@ export class TypecheckOrchestrator {
     }
 
     // 진단 출력 포매팅
-    let formattedOutput = "";
-    if (allDiagnostics.length > 0) {
-      const uniqueDiagnostics = ts.sortAndDeduplicateDiagnostics(allDiagnostics);
-      formattedOutput = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
-    }
+    const formattedOutput = formatDiagnosticsOutput(allDiagnostics, this._cwd);
 
     // lint가 요청된 경우 lint 결과 생성
     const lintResult =
       this._options.lint === true
         ? {
-            success: lintSuccess,
-            errorCount: lintErrorCount,
-            warningCount: lintWarningCount,
-            formattedOutput: lintOutputs.join("\n"),
+            success: packageResults.lintSuccess,
+            errorCount: packageResults.lintErrorCount,
+            warningCount: packageResults.lintWarningCount,
+            formattedOutput: packageResults.lintOutputs.join("\n"),
           }
         : undefined;
 

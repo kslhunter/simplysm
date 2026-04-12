@@ -13,11 +13,11 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-const { createBuildEngine } = await import("../../src/engines/index");
+const { createBuildEngine, createTypecheckEngine } = await import("../../src/engines/index");
 const { TscEngine } = await import("../../src/engines/TscEngine");
 const { NgtscEngine } = await import("../../src/engines/NgtscEngine");
 const { ServerEsbuildEngine } = await import("../../src/engines/ServerEsbuildEngine");
-const { ViteEngine } = await import("../../src/engines/ViteEngine");
+const { EsbuildClientEngine } = await import("../../src/engines/EsbuildClientEngine");
 
 import type { BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../../src/engines/types";
 
@@ -103,8 +103,8 @@ describe("createBuildEngine", () => {
     expect(engine).toBeInstanceOf(TscEngine);
   });
 
-  // Acceptance: Scenario "client target에 ViteEngine 생성"
-  it("returns ViteEngine for client target package", () => {
+  // Acceptance: Scenario "client target에 EsbuildClientEngine 생성"
+  it("returns EsbuildClientEngine for client target package", () => {
     const pkg: ClientPackageInfo = {
       name: "my-client",
       dir: "/packages/my-client",
@@ -113,7 +113,40 @@ describe("createBuildEngine", () => {
 
     const engine = createBuildEngine(pkg, { cwd: "/root" });
 
-    expect(engine).toBeInstanceOf(ViteEngine);
+    expect(engine).toBeInstanceOf(EsbuildClientEngine);
   });
 
+});
+
+describe("createTypecheckEngine", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(packageUtils, "hasAngularCoreDependency").mockReturnValue(false);
+  });
+
+  // Unit: client target은 EsbuildClientEngine이 아닌 엔진이 반환
+  it("does not return EsbuildClientEngine for client target", () => {
+    const pkg: ClientPackageInfo = {
+      name: "my-client",
+      dir: "/packages/my-client",
+      config: { target: "client", server: "my-server" } as any,
+    };
+
+    const engine = createTypecheckEngine(pkg, { cwd: "/root" });
+
+    expect(engine).not.toBeInstanceOf(EsbuildClientEngine);
+  });
+
+  // Unit: neutral target은 TscEngine으로 위임
+  it("returns TscEngine for neutral target", () => {
+    const pkg: BuildPackageInfo = {
+      name: "core-common",
+      dir: "/packages/core-common",
+      config: { target: "neutral" } as any,
+    };
+
+    const engine = createTypecheckEngine(pkg, { cwd: "/root" });
+
+    expect(engine).toBeInstanceOf(TscEngine);
+  });
 });

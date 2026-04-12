@@ -27,10 +27,8 @@ describe("sdAngularPlugin legacy watch rebuild", () => {
 
   // Acceptance: 재빌드 시 변경 파일의 캐시가 무효화되고 증분 컴파일된다
   it("invalidates cache and produces updated output on watch rebuild", async () => {
-    const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
       pkg: "basic-app",
-      onBuild,
     });
 
     // 초기 빌드
@@ -58,21 +56,13 @@ describe("sdAngularPlugin legacy watch rebuild", () => {
     expect(rebuiltResult.code).toBeDefined();
     expect(rebuiltResult.code.length).toBeGreaterThan(0);
 
-    // onBuild이 초기 빌드와 재빌드 모두에서 호출되어야 한다
-    expect(onBuild).toHaveBeenCalledTimes(2);
-    expect(onBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true }),
-    );
-
     await (plugin as any).buildEnd?.call({});
   });
 
   // Acceptance: 첫 buildStart는 기존 로직으로 전체 컴파일한다
   it("performs full compilation on first buildStart", async () => {
-    const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
       pkg: "basic-app",
-      onBuild,
     });
 
     // watchChange 없이 첫 buildStart
@@ -86,20 +76,13 @@ describe("sdAngularPlugin legacy watch rebuild", () => {
     expect(result).toBeDefined();
     expect(result.code.length).toBeGreaterThan(0);
 
-    // onBuild 정상 호출
-    expect(onBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true }),
-    );
-
     await (plugin as any).buildEnd?.call({});
   });
 
   // Acceptance: watchChange 없이 buildStart 재호출 시에도 정상 동작
   it("handles buildStart re-invocation without watchChange gracefully", async () => {
-    const onBuild = vi.fn();
     const plugin = sdAngularPlugin({
       pkg: "basic-app",
-      onBuild,
     });
 
     // 초기 빌드

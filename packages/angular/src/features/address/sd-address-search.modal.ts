@@ -8,8 +8,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import type { OnInit } from "@angular/core";
-import { SdBusyContainer } from "../../ui/overlay/busy/sd-busy-container";
-import type { SdModalContentDef } from "../../ui/overlay/modal/sd-modal.provider";
+import { SdBusyContainer } from "../../core/busy/sd-busy-container";
+import type { SdModalContentDef } from "../../core/modal/sd-modal.provider";
 
 declare const daum: {
   postcode: {

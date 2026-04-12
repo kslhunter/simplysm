@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { RebuildManager } from "../../src/utils/rebuild-manager";
+import { RebuildManager } from "../../src/runtime/rebuild-manager";
 
 function createManager() {
   const logger = { start: vi.fn(), success: vi.fn(), error: vi.fn(), debug: vi.fn() };

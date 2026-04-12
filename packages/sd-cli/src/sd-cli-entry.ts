@@ -80,19 +80,20 @@ export function createCliParser(argv: string[]): Argv {
       setupConsola({ cli: true });
     })
     .command(
-      "check [targets..]",
+      "check",
       "Run Typecheck, Lint, Test in parallel",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("targets", {
-            type: "string",
-            array: true,
-            describe: "Packages to check (e.g., core-common, storage)",
-            default: [],
-          })
           .options({
+            target: {
+              type: "string",
+              array: true,
+              alias: "t",
+              describe: "Packages to check (e.g., --target core-common --target storage)",
+              default: [] as string[],
+            },
             type: {
               type: "string",
               array: true,
@@ -107,7 +108,7 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runCheck({
-          targets: args.targets,
+          targets: args.target,
           types: (() => {
             const validTypes = ["typecheck", "lint", "test"] as const;
             const types = args.type.flatMap((t) => t.split(",").map((s) => s.trim()));
@@ -124,22 +125,24 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .command(
-      "watch [targets..]",
+      "watch",
       "Build packages in watch mode",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("targets", {
-            type: "string",
-            array: true,
-            describe: "Packages to watch (e.g., core-common, storage)",
-            default: [],
-          })
           .options({
+            target: {
+              type: "string",
+              array: true,
+              alias: "t",
+              describe: "Packages to watch (e.g., --target core-common --target storage)",
+              default: [] as string[],
+            },
             opt: {
               type: "string",
               array: true,
+
               alias: "o",
               description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
@@ -147,28 +150,31 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runWatch({
-          targets: args.targets,
+          targets: args.target,
           options: args.opt,
         });
       },
     )
     .command(
-      "dev [targets..]",
+      "dev",
       "Run Server packages in dev mode",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("targets", {
-            type: "string",
-            array: true,
-            describe: "Packages to run (e.g., service-server)",
-            default: [],
-          })
           .options({
+            target: {
+              type: "string",
+              array: true,
+
+              alias: "t",
+              describe: "Packages to run (e.g., --target service-server)",
+              default: [] as string[],
+            },
             opt: {
               type: "string",
               array: true,
+
               alias: "o",
               description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
@@ -176,23 +182,24 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runDev({
-          targets: args.targets,
+          targets: args.target,
           options: args.opt,
         });
       },
     )
     .command(
-      "device [target]",
+      "device",
       "Run native app on device/desktop",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("target", {
-            type: "string",
-            describe: "Client package to run (e.g., my-client-app)",
-          })
           .options({
+            target: {
+              type: "string",
+              alias: "t",
+              describe: "Client package to run (e.g., --target my-client-app)",
+            },
             url: {
               type: "string",
               description: "Dev server URL (auto-detected from sd.config.ts if omitted)",
@@ -200,6 +207,7 @@ export function createCliParser(argv: string[]): Argv {
             opt: {
               type: "string",
               array: true,
+
               alias: "o",
               description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
@@ -215,22 +223,25 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .command(
-      "build [targets..]",
+      "build",
       "Run production build",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("targets", {
-            type: "string",
-            array: true,
-            describe: "Packages to build (e.g., core-common, storage)",
-            default: [],
-          })
           .options({
+            target: {
+              type: "string",
+              array: true,
+
+              alias: "t",
+              describe: "Packages to build (e.g., --target core-common --target storage)",
+              default: [] as string[],
+            },
             opt: {
               type: "string",
               array: true,
+
               alias: "o",
               description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
@@ -238,25 +249,27 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runBuild({
-          targets: args.targets,
+          targets: args.target,
           options: args.opt,
         });
       },
     )
     .command(
-      "publish [targets..]",
+      "publish",
       "Publish packages",
       (cmd) =>
         cmd
           .version(false)
           .hide("help")
-          .positional("targets", {
-            type: "string",
-            array: true,
-            describe: "Packages to publish (e.g., core-common, storage)",
-            default: [],
-          })
           .options({
+            "target": {
+              type: "string",
+              array: true,
+
+              alias: "t",
+              describe: "Packages to publish (e.g., --target core-common --target storage)",
+              default: [] as string[],
+            },
             "build": {
               type: "boolean",
               describe: "Run build (skip with --no-build)",
@@ -270,6 +283,7 @@ export function createCliParser(argv: string[]): Argv {
             "opt": {
               type: "string",
               array: true,
+
               alias: "o",
               description: "Options to pass to sd.config.ts (e.g., -o a -o b)",
               default: [] as string[],
@@ -277,7 +291,7 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runPublish({
-          targets: args.targets,
+          targets: args.target,
           noBuild: !args.build,
           dryRun: args.dryRun,
           options: args.opt,

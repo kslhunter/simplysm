@@ -9,7 +9,7 @@ claude/
 ├── references/          ← 스킬/규칙에서 참조하는 공유 문서
 ├── rules/               ← Claude Code 규칙 파일
 ├── skills/              ← 스킬 파일 디렉토리
-├── sd-check-git.py      ← 훅 스크립트
+├── sd-check-bash.py      ← 훅 스크립트
 ├── sd-check-write.py    ← 훅 스크립트
 ├── sd-session-start.sh  ← 훅 스크립트
 └── sd-statusline.py     ← 훅 스크립트

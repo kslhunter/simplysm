@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   executeLint: vi.fn(),
 }));
 
-vi.mock("../../src/utils/lint-core", () => ({
+vi.mock("../../src/lint/lint-core", () => ({
   executeLint: mocks.executeLint,
 }));
 

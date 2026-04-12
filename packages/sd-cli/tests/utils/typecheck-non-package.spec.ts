@@ -11,7 +11,7 @@ vi.mock("../../src/utils/tsconfig", () => ({
   parseTsconfig: mocks.parseTsconfig,
 }));
 
-vi.mock("../../src/utils/typecheck-serialization", () => ({
+vi.mock("../../src/typecheck/typecheck-serialization", () => ({
   serializeDiagnostic: mocks.serializeDiagnostic,
 }));
 
@@ -29,7 +29,7 @@ vi.mock("typescript", async (importOriginal) => {
   };
 });
 
-const { typecheckNonPackageFiles } = await import("../../src/utils/typecheck-non-package");
+const { typecheckNonPackageFiles } = await import("../../src/typecheck/typecheck-non-package");
 
 describe("typecheckNonPackageFiles", () => {
   beforeEach(() => {

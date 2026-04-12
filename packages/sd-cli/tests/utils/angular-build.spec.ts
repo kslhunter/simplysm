@@ -1,31 +1,28 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import * as angularBuildMod from "../../src/angular/angular-build";
 
 describe("Angular Build Adapter - Library Compilation API", () => {
   // Rule: 어댑터는 Library 빌드에 필요한 Angular 컴파일러 API를 노출한다
 
-  it("exports NgtscProgram from adapter module", async () => {
-    const { NgtscProgram } = await import("../../src/utils/angular-build");
-    expect(typeof NgtscProgram).toBe("function");
+  it("exports NgtscProgram from adapter module", () => {
+    expect(typeof angularBuildMod.NgtscProgram).toBe("function");
   });
 
-  it("exports OptimizeFor enum from adapter module", async () => {
-    const { OptimizeFor } = await import("../../src/utils/angular-build");
-    expect(OptimizeFor.WholeProgram).toBeDefined();
-    expect(OptimizeFor.SingleFile).toBeDefined();
+  it("exports OptimizeFor enum from adapter module", () => {
+    expect(angularBuildMod.OptimizeFor.WholeProgram).toBeDefined();
+    expect(angularBuildMod.OptimizeFor.SingleFile).toBeDefined();
   });
 
-  it("NgtscProgram이 AngularLibraryHostExtensions로 확장된 ts.CompilerHost를 수용", async () => {
-    const mod = await import("../../src/utils/angular-build");
-    expect(typeof mod.NgtscProgram).toBe("function");
+  it("NgtscProgram이 AngularLibraryHostExtensions로 확장된 ts.CompilerHost를 수용", () => {
+    expect(typeof angularBuildMod.NgtscProgram).toBe("function");
   });
 });
 
 describe("Angular Build Adapter - Scope after Feature 3.1", () => {
-  it("adapter only exports Library-path APIs (NgtscProgram, OptimizeFor)", async () => {
-    const mod = await import("../../src/utils/angular-build");
-    const exports = Object.keys(mod);
+  it("adapter only exports Library-path APIs (NgtscProgram, OptimizeFor)", () => {
+    const exports = Object.keys(angularBuildMod);
 
     // Library-path exports retained
     expect(exports).toContain("NgtscProgram");
@@ -42,17 +39,15 @@ describe("Angular Build Adapter - Scope after Feature 3.1", () => {
     expect(exports).not.toContain("emitFilesToDisk");
   });
 
-  it("adapter does not export browserslist/PostCSS APIs", async () => {
-    const mod = await import("../../src/utils/angular-build");
-    const exports = Object.keys(mod);
+  it("adapter does not export browserslist/PostCSS APIs", () => {
+    const exports = Object.keys(angularBuildMod);
     expect(exports).not.toContain("transformSupportedBrowsersToTargets");
     expect(exports).not.toContain("getSupportedBrowsers");
     expect(exports).not.toContain("loadPostcssConfiguration");
   });
 
-  it("adapter does not export ServiceWorker/i18n APIs", async () => {
-    const mod = await import("../../src/utils/angular-build");
-    const exports = Object.keys(mod);
+  it("adapter does not export ServiceWorker/i18n APIs", () => {
+    const exports = Object.keys(angularBuildMod);
     expect(exports).not.toContain("augmentAppWithServiceWorker");
     expect(exports).not.toContain("createI18nOptions");
   });
@@ -60,7 +55,7 @@ describe("Angular Build Adapter - Scope after Feature 3.1", () => {
 
 describe("Angular Build Adapter - Isolation", () => {
   const sdCliSrcDir = path.resolve(import.meta.dirname, "../../src");
-  const adapterFiles = ["angular-build.ts", "vite-angular-plugin.ts"];
+  const adapterFiles = ["angular-build.ts", "vite-angular-plugin.ts", "esbuild-client-config.ts", "esbuild-index-html.ts", "esbuild-pwa.ts"];
   let srcFiles: string[];
 
   beforeAll(() => {

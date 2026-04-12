@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type {
   SideEffectScssOptions,
   SideEffectScssEntry,
-} from "../../src/utils/ngtsc-build-core";
+} from "../../src/angular/ngtsc-build-core";
 import path from "path";
 import fs from "fs";
 import os from "os";
@@ -22,7 +22,7 @@ describe("writeEmitResults", () => {
   });
 
   it("emitResults를 output-path-rewriting 적용하여 파일로 쓴다", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     // Simulate nested output: dist/my-pkg/src/index.js
@@ -40,7 +40,7 @@ describe("writeEmitResults", () => {
   });
 
   it("output-path-rewriter가 null을 반환하면 파일을 쓰지 않는다", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     // Nested output from OTHER package: dist/other-pkg/src/index.js
@@ -59,7 +59,7 @@ describe("writeEmitResults", () => {
   });
 
   it("이미 flat 구조인 경로는 그대로 쓴다", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     const flatPath = path.join(distDir, "index.js");
@@ -74,7 +74,7 @@ describe("writeEmitResults", () => {
   });
 
   it("디렉��리가 없으면 ��동 생성한다", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     // Nested path under new subdirectory
@@ -109,7 +109,7 @@ describe("writeEmitResults with side-effect SCSS", () => {
   });
 
   it("compiles side-effect SCSS to CSS and rewrites import path in JS", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     // Create source SCSS file
     const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
@@ -149,7 +149,7 @@ describe("writeEmitResults with side-effect SCSS", () => {
 
   // Acceptance: Scenario "SCSS @use 의존성 해석"
   it("resolves SCSS @use dependencies via loadPaths", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     // Create SCSS load path with a shared variables file
     const scssLoadDir = path.join(pkgDir, "scss");
@@ -194,7 +194,7 @@ describe("writeEmitResults with side-effect SCSS", () => {
 
   // Acceptance: Scenario "SCSS 컴파일 에러"
   it("reports SCSS compilation error in scssErrors", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     // Create SCSS file with syntax error
     const scssPath = path.join(srcDir, "ui", "layout", "broken.scss");
@@ -224,7 +224,7 @@ describe("writeEmitResults with side-effect SCSS", () => {
 
   // Acceptance: Scenario "참조하는 SCSS 파일이 존재하지 않음"
   it("reports error when referenced SCSS file does not exist", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     const jsPath = path.join(distDir, "my-pkg", "src", "ui", "layout", "missing.directive.js");
@@ -267,7 +267,7 @@ describe("writeEmitResults with registry", () => {
   });
 
   it("registers side-effect SCSS entries in registry when provided", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     // Create source SCSS file
     const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
@@ -304,7 +304,7 @@ describe("writeEmitResults with registry", () => {
   });
 
   it("clears stale registry entries for re-emitted source file before registering new ones", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
     fs.writeFileSync(scssPath, ".sd-flex { display: flex; }", "utf-8");
@@ -345,7 +345,7 @@ describe("writeEmitResults with registry", () => {
   });
 
   it("removes registry entry when source file is re-emitted without SCSS imports", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     const sourceFileName = path.join(srcDir, "ui", "layout", "sd-flex.directive.ts");
@@ -382,7 +382,7 @@ describe("writeEmitResults with registry", () => {
   });
 
   it("preserves registry entries for non-emitted source files", async () => {
-    const { writeEmitResults } = await import("../../src/utils/angular-build-pipeline");
+    const { writeEmitResults } = await import("../../src/angular/angular-build-pipeline");
 
     const distDir = path.join(pkgDir, "dist");
     const sourceFileA = path.join(srcDir, "ui", "layout", "sd-flex.directive.ts");
@@ -450,7 +450,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: side-effect SCSS 파일 내용 변경
   it("compiles all registry entries to CSS", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     // Create source SCSS
     const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
@@ -473,7 +473,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: 여러 side-effect SCSS 파일 동시 변경
   it("compiles multiple registry entries", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     // Create two SCSS files
     const scssPath1 = path.join(srcDir, "ui", "layout", "sd-flex.scss");
@@ -502,7 +502,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: @use 의존성 파일 변경
   it("resolves @use dependencies via loadPaths and tracks them", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     // Create shared variables file
     const scssLoadDir = path.join(pkgDir, "scss");
@@ -545,7 +545,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: 간접 의존성 변경
   it("tracks transitive @use dependencies", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     // Create transitive dependency chain: sd-flex.scss -> _mixins.scss -> _variables.scss
     const scssLoadDir = path.join(pkgDir, "scss");
@@ -591,7 +591,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: SCSS 문법 에러
   it("reports error and preserves existing CSS when SCSS has syntax error", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     // Create existing CSS (from previous successful build)
     const cssAbsPath = path.join(distDir, "ui", "layout", "sd-flex.css");
@@ -620,7 +620,7 @@ describe("compileSideEffectScss", () => {
 
   // Scenario: 에러 수정 후 정상 재빌드
   it("compiles successfully after fixing syntax error", async () => {
-    const { compileSideEffectScss } = await import("../../src/utils/ngtsc-build-core");
+    const { compileSideEffectScss } = await import("../../src/angular/ngtsc-build-core");
 
     const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
     const cssAbsPath = path.join(distDir, "ui", "layout", "sd-flex.css");

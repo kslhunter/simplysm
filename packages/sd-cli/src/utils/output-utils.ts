@@ -1,5 +1,5 @@
 import { consola } from "consola";
-import type { BuildResult } from "../infra/ResultCollector";
+import type { BuildResult } from "../runtime/ResultCollector";
 
 /**
  * 빌드 경고/에러 메시지를 포맷팅한다.

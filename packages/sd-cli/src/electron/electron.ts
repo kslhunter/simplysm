@@ -4,7 +4,7 @@ import module from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
 import type { NpmConfig, SdElectronConfig } from "../sd-config.types.js";
-import { createEnvBanner } from "../utils/esbuild-config.js";
+import { createEnvBanner } from "../esbuild/esbuild-config.js";
 
 export class Electron {
   private static readonly _logger = consola.withTag("sd:cli:electron");
@@ -93,14 +93,7 @@ export class Electron {
     await this._copyPublicAssets();
 
     const esbuild = await import("esbuild");
-    const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
-
-    if (!(await fsx.exists(entryPoint))) {
-      throw new Error(`electron-main.ts 파일을 찾을 수 없습니다: ${entryPoint}`);
-    }
-
-    const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
-    const reinstallDeps = this._config.reinstallDependencies ?? [];
+    const baseOptions = await this._createBaseEsbuildOptions({ ELECTRON_DEV_URL: url });
 
     let currentElectron: cpx.SpawnProcess | null = null;
     let isRestarting = false;
@@ -124,21 +117,9 @@ export class Electron {
       });
     };
 
-    const envBanner = createEnvBanner({ ELECTRON_DEV_URL: url, ...this._config.env });
-    const bannerJs =
-      "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" +
-      envBanner;
-
     Electron._logger.debug("esbuild context 생성 시작");
     const ctx = await esbuild.context({
-      entryPoints: [entryPoint],
-      outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
-      platform: "node",
-      target: "node20",
-      format: "esm",
-      bundle: true,
-      external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
-      banner: { js: bannerJs },
+      ...baseOptions,
       plugins: [
         {
           name: "electron-restart",
@@ -284,8 +265,13 @@ export class Electron {
 
   //#region Private - Bundling
 
-  private async _bundleMainProcess(): Promise<void> {
-    const esbuild = await import("esbuild");
+  /**
+   * run()과 _bundleMainProcess()가 공유하는 esbuild 옵션을 생성한다.
+   * extraEnv가 주어지면 config.env에 병합한다 (run 모드의 ELECTRON_DEV_URL 등).
+   */
+  private async _createBaseEsbuildOptions(
+    extraEnv?: Record<string, string>,
+  ): Promise<import("esbuild").BuildOptions> {
     const entryPoint = pathx.posixResolve(this._pkgPath, "src/electron-main.ts");
 
     if (!(await fsx.exists(entryPoint))) {
@@ -295,13 +281,12 @@ export class Electron {
     const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
-    const envBanner = createEnvBanner(this._config.env);
+    const envBanner = createEnvBanner({ ...this._config.env, ...extraEnv });
     const bannerJs =
       "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" +
       envBanner;
 
-    Electron._logger.debug(`esbuild 번들링: ${entryPoint}`);
-    await esbuild.build({
+    return {
       entryPoints: [entryPoint],
       outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
@@ -310,7 +295,15 @@ export class Electron {
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],
       banner: { js: bannerJs },
-    });
+    };
+  }
+
+  private async _bundleMainProcess(): Promise<void> {
+    const esbuild = await import("esbuild");
+    const options = await this._createBaseEsbuildOptions();
+
+    Electron._logger.debug(`esbuild 번들링: ${(options.entryPoints as string[])[0]}`);
+    await esbuild.build(options);
   }
 
   //#endregion

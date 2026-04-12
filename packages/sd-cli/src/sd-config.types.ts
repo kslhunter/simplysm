@@ -192,18 +192,10 @@ export interface SdPwaManifestConfig {
 }
 
 /**
- * PWA workbox 설정
- */
-export interface SdPwaWorkboxConfig {
-  globPatterns?: string[];
-}
-
-/**
  * PWA 설정
  */
 export interface SdPwaConfig {
   manifest?: SdPwaManifestConfig;
-  workbox?: SdPwaWorkboxConfig;
 }
 
 //#endregion
@@ -214,24 +206,22 @@ export interface SdPwaConfig {
 export interface SdBrowserSupportConfig {
   /** browserslist 쿼리 (예: "last 2 Chrome versions" 또는 ["ie 11", "last 2 versions"]) */
   browserslist?: string | string[];
-  /** PostCSS 플러그인 설정 */
-  postCss?: { plugins: unknown[] };
+  /** PostCSS 플러그인 설정 ([name, options] 튜플 배열) */
+  postCss?: { plugins: [string, (object | string)?][] };
   /** 레거시 모듈 지원 (코드 분할 비활성화 + import.meta 치환) */
   legacyModule?: boolean;
 }
 
 /**
- * 클라이언트 패키지 설정 (Vite 개발 서버)
+ * 클라이언트 패키지 설정 (esbuild 기반 빌드)
  */
 export interface SdClientPackageConfig {
   /** 빌드 타겟 */
   target: "client";
-  /** 클라이언트 프레임워크 선택. 미지정 시 "angular" */
-  framework?: "angular" | "solid";
   /**
    * 서버 설정
-   * - string: 연결할 서버 패키지명 (예: "solid-demo-server")
-   * - number: Vite 포트 직접 지정 (하위 호환)
+   * - string: 연결할 서버 패키지명 (예: "demo-server")
+   * - number: 포트 직접 지정 (하위 호환)
    */
   server: string | number;
   /** 빌드 시 치환할 환경 변수 (process.env를 객체로 치환) */
@@ -244,7 +234,7 @@ export interface SdClientPackageConfig {
   electron?: SdElectronConfig;
   /** 런타임 설정 (빌드 시 dist/.config.json으로 기록) */
   configs?: Record<string, unknown>;
-  /** Vite optimizeDeps에서 제외하고 Capacitor/Electron package.json에 추가할 패키지 */
+  /** Capacitor/Electron package.json에 추가할 패키지 */
   exclude?: string[];
   /** 브라우저 지원 설정 (browserslist, PostCSS, legacyModule) */
   browserSupport?: SdBrowserSupportConfig;

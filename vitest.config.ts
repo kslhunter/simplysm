@@ -77,15 +77,6 @@ export default defineConfig({
           },
         },
       },
-      // Integration tests - Vite CSS HMR (side-effect CSS + PostCSS)
-      {
-        extends: true,
-        test: {
-          name: "vite-css-hmr",
-          environment: "node",
-          include: ["tests/vite-css-hmr/**/*.spec.ts"],
-        },
-      },
       // Integration tests - esbuild banner env injection
       {
         extends: true,
@@ -95,7 +86,7 @@ export default defineConfig({
           include: ["tests/sd-cli-server/**/*.spec.ts"],
         },
       },
-      // Integration tests - Vite define env injection
+      // Integration tests - esbuild define env injection
       {
         extends: true,
         test: {

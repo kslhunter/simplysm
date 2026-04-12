@@ -25,7 +25,7 @@
 |-----------|---------|---------|-------------|
 | `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` | 세션 시작 시 규칙 파일 경로 출력 |
 | `PreToolUse` | `Write` | `python .claude/sd-check-write.py` | 기존 파일 Write 차단 |
-| `PreToolUse` | `Bash` | `python .claude/sd-check-git.py` | 금지 git 명령어 차단 |
+| `PreToolUse` | `Bash` | `python .claude/sd-check-bash.py` | 금지 명령어 차단 (git, cd, npx tsc/eslint) |
 | `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` | 서브에이전트 시작 시 규칙 파일 경로 출력 |
 | `statusLine` | — | `python .claude/sd-statusline.py` | 상태바 표시 |
 

@@ -1,5 +1,10 @@
+import ts from "typescript";
 import { describe, it, expect } from "vitest";
-import { isWorkspaceDiagnostic, formatDiagnosticError } from "../../src/utils/diagnostic-utils";
+import {
+  isWorkspaceDiagnostic,
+  formatDiagnosticError,
+  formatDiagnosticsOutput,
+} from "../../src/utils/diagnostic-utils";
 
 describe("isWorkspaceDiagnostic", () => {
   it("includes diagnostic when file is within cwd", () => {
@@ -68,5 +73,41 @@ describe("formatDiagnosticError", () => {
     };
     const result = formatDiagnosticError(diag as any);
     expect(result).toBe("TS1001: Global error");
+  });
+});
+
+describe("formatDiagnosticsOutput", () => {
+  it("returns empty string for empty diagnostics array", () => {
+    const result = formatDiagnosticsOutput([], "/workspace");
+    expect(result).toBe("");
+  });
+
+  it("returns formatted string for file-less global diagnostic", () => {
+    const diagnostic: ts.Diagnostic = {
+      file: undefined,
+      start: undefined,
+      length: undefined,
+      messageText: "Global error message",
+      category: ts.DiagnosticCategory.Error,
+      code: 9999,
+    };
+    const result = formatDiagnosticsOutput([diagnostic], "/workspace");
+    expect(result).toContain("Global error message");
+    expect(result).toContain("9999");
+  });
+
+  it("deduplicates identical diagnostics", () => {
+    const sourceFile = ts.createSourceFile("test.ts", "const x = 1;", ts.ScriptTarget.Latest);
+    const diagnostic: ts.Diagnostic = {
+      file: sourceFile,
+      start: 0,
+      length: 5,
+      messageText: "Duplicate error",
+      category: ts.DiagnosticCategory.Error,
+      code: 1234,
+    };
+    const result = formatDiagnosticsOutput([diagnostic, diagnostic], "/workspace");
+    const occurrences = result.split("Duplicate error").length - 1;
+    expect(occurrences).toBe(1);
   });
 });

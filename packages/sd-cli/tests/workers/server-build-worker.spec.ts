@@ -103,8 +103,8 @@ vi.mock("../../src/utils/tsconfig", () => ({
   getPackageSourceFiles: vi.fn(() => ["/workspace/packages/my-server/src/main.ts"]),
 }));
 
-vi.mock("../../src/utils/esbuild-config", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/esbuild-config")>();
+vi.mock("../../src/esbuild/esbuild-config", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/esbuild/esbuild-config")>();
   return {
     ...actual,
     collectAllDependencyExternals: vi.fn(() => ({ optionalPeerDeps: [], nativeModules: [] })),
@@ -116,22 +116,21 @@ vi.mock("../../src/utils/tsc-build", () => ({
   runTscPackageBuild: mockRunTscPackageBuild,
 }));
 
-vi.mock("../../src/utils/worker-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/worker-utils")>();
-  let guard: () => void;
+vi.mock("../../src/workers/shared-worker-lifecycle", () => {
+  let guardCalled = false;
+  resetGuard = () => { guardCalled = false; };
   return {
-    ...actual,
-    registerCleanupHandlers: vi.fn(),
-    setupWorkerConsola: vi.fn(),
-    createOnceGuard: (label: string) => {
-      guard = actual.createOnceGuard(label);
-      resetGuard = () => { guard = actual.createOnceGuard(label); };
-      return () => guard();
-    },
+    setupWorkerLifecycle: vi.fn(() => ({
+      logger: { debug: vi.fn(), warn: vi.fn() },
+      guardStartWatch: () => {
+        if (guardCalled) throw new Error("startWatch can only be called once per Worker");
+        guardCalled = true;
+      },
+    })),
   };
 });
 
-vi.mock("../../src/utils/package-utils", () => ({
+vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
 }));
 
@@ -149,7 +148,7 @@ const esbuild = (await import("esbuild")).default;
 const { FsWatcher } = await import("@simplysm/core-node");
 const { copyPublicFiles, watchPublicFiles } = await import("../../src/utils/copy-public");
 const { collectAllDependencyExternals } =
-  await import("../../src/utils/esbuild-config");
+  await import("../../src/esbuild/esbuild-config");
 
 describe("server-build.worker build()", () => {
   const baseBuildInfo = {

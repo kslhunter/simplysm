@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Table, expr, DbContext } from "@simplysm/orm-common";
 import type { DbConnConfig } from "@simplysm/orm-node";
-import { NodeDbContextExecutor } from "@simplysm/orm-node";
+import {
+  MssqlDbConn,
+  MysqlDbConn,
+  PostgresqlDbConn,
+  NodeDbContextExecutor,
+} from "@simplysm/orm-node";
 import { mssqlConfig, mysqlConfig, postgresqlConfig } from "../test-configs";
+import * as tedious from "tedious";
+import * as mysql2 from "mysql2/promise";
+import * as pg from "pg";
+import * as pgCopyStreams from "pg-copy-streams";
 
 interface DialectDef {
   name: string;
@@ -11,7 +20,7 @@ interface DialectDef {
   tableDef: ReturnType<typeof createTableDef>;
   setupSql: string[];
   cleanupSql: string[];
-  createConn: () => Promise<{ connect(): Promise<void>; execute(q: string[]): Promise<unknown>; close(): Promise<void> }>;
+  createConn: () => { connect(): Promise<void>; execute(q: string[]): Promise<unknown>; close(): Promise<void> };
   extraCases: Array<{ id: number; value: string; desc: string }>;
 }
 
@@ -49,9 +58,7 @@ const dialects: DialectDef[] = [
     cleanupSql: [
       `IF OBJECT_ID('[TestDb].[dbo].[EscapeTest]', 'U') IS NOT NULL DROP TABLE [TestDb].[dbo].[EscapeTest]`,
     ],
-    async createConn() {
-      const { MssqlDbConn } = await import("@simplysm/orm-node");
-      const tedious = await import("tedious");
+    createConn() {
       return new MssqlDbConn(tedious, mssqlConfig);
     },
     extraCases: [{ id: 5, value: "emoji\u{1F600}test", desc: "유니코드 이모지가 포함된 값" }],
@@ -69,9 +76,7 @@ const dialects: DialectDef[] = [
       )`,
     ],
     cleanupSql: ["DROP TABLE IF EXISTS `TestDb`.`EscapeTest`"],
-    async createConn() {
-      const { MysqlDbConn } = await import("@simplysm/orm-node");
-      const mysql2 = await import("mysql2/promise");
+    createConn() {
       return new MysqlDbConn(mysql2, mysqlConfig);
     },
     extraCases: [
@@ -92,10 +97,7 @@ const dialects: DialectDef[] = [
       )`,
     ],
     cleanupSql: [`DROP TABLE IF EXISTS "public"."EscapeTest"`],
-    async createConn() {
-      const { PostgresqlDbConn } = await import("@simplysm/orm-node");
-      const pg = await import("pg");
-      const pgCopyStreams = await import("pg-copy-streams");
+    createConn() {
       return new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     },
     extraCases: [
@@ -113,7 +115,7 @@ describe.each(dialects)("$name Escape Integration Test", (dialect) => {
   };
 
   beforeAll(async () => {
-    const conn = await dialect.createConn();
+    const conn = dialect.createConn();
     await conn.connect();
     await conn.execute(dialect.setupSql);
     await conn.close();
@@ -127,7 +129,7 @@ describe.each(dialects)("$name Escape Integration Test", (dialect) => {
   });
 
   afterAll(async () => {
-    const conn = await dialect.createConn();
+    const conn = dialect.createConn();
     await conn.connect();
     await conn.execute(dialect.cleanupSql);
     await conn.close();

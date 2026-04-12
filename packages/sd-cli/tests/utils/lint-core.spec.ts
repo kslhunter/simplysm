@@ -33,7 +33,7 @@ vi.mock("jiti", () => ({
   createJiti: vi.fn(() => ({ import: mocks.jitiImport })),
 }));
 
-const { loadIgnorePatterns, executeLint } = await import("../../src/utils/lint-core");
+const { loadIgnorePatterns, executeLint } = await import("../../src/lint/lint-core");
 
 //#region loadIgnorePatterns
 

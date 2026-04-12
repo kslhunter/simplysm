@@ -33,9 +33,9 @@ PreToolUse 훅 (matcher: `Write`). 기존 파일에 Write 도구를 사용하려
 | 파일이 이미 존재 | stderr에 안내 메시지 출력, exit code 2 (차단) |
 | 파일이 존재하지 않음 | exit code 0 (허용) |
 
-## `sd-check-git.py`
+## `sd-check-bash.py`
 
-PreToolUse 훅 (matcher: `Bash`). 금지된 git 명령어를 차단한다.
+PreToolUse 훅 (matcher: `Bash`). 금지된 명령어를 차단한다. 명령어 체인(`&&`, `||`, `;`)에서 각 명령어 위치를 인식한다.
 
 ```python
 # stdin으로 tool_input JSON을 받아 command를 검사
@@ -46,13 +46,16 @@ PreToolUse 훅 (matcher: `Bash`). 금지된 git 명령어를 차단한다.
 
 차단 대상 명령어:
 
-| 패턴 | 차단 대상 |
-|------|-----------|
-| `\bgit\s+stash\b` | `git stash` |
-| `\bgit\s+checkout\b` | `git checkout` |
-| `\bgit\s+restore\b` | `git restore` |
-| `\bgit\s+reset\b` | `git reset` |
-| `\bgit\s+clean\b` | `git clean` |
+| 패턴 | 차단 대상 | 이유 |
+|------|-----------|------|
+| `git\s+stash` | `git stash` | 금지 git 명령어 |
+| `git\s+checkout` | `git checkout` | 금지 git 명령어 |
+| `git\s+restore` | `git restore` | 금지 git 명령어 |
+| `git\s+reset` | `git reset` | 금지 git 명령어 |
+| `git\s+clean` | `git clean` | 금지 git 명령어 |
+| `cd\s+` | `cd` (디렉토리 이동) | hook 오류 방지 |
+| `npx\s+tsc` | `npx tsc` | `pnpm typecheck` 사용 필수 |
+| `npx\s+eslint` | `npx eslint` | `pnpm lint` 사용 필수 |
 
 ## `sd-statusline.py`
 

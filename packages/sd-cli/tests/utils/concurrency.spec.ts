@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
+import { runWithConcurrency, getMaxConcurrency } from "../../src/utils/concurrency";
 
 describe("runWithConcurrency", () => {
   it("limits concurrent task execution to specified concurrency", async () => {
-    const { runWithConcurrency } = await import("../../src/utils/concurrency");
-
     let activeTasks = 0;
     let maxActiveTasks = 0;
 
@@ -23,8 +22,6 @@ describe("runWithConcurrency", () => {
   });
 
   it("returns all results in order even when individual tasks fail", async () => {
-    const { runWithConcurrency } = await import("../../src/utils/concurrency");
-
     const tasks = [
       () => Promise.resolve("a"),
       () => { throw new Error("fail"); },
@@ -40,15 +37,11 @@ describe("runWithConcurrency", () => {
   });
 
   it("handles empty task list", async () => {
-    const { runWithConcurrency } = await import("../../src/utils/concurrency");
-
     const results = await runWithConcurrency([], 3);
     expect(results).toHaveLength(0);
   });
 
   it("works when concurrency exceeds task count", async () => {
-    const { runWithConcurrency } = await import("../../src/utils/concurrency");
-
     const tasks = [() => Promise.resolve(1), () => Promise.resolve(2)];
     const results = await runWithConcurrency(tasks, 10);
 
@@ -58,8 +51,7 @@ describe("runWithConcurrency", () => {
 });
 
 describe("getMaxConcurrency", () => {
-  it("returns at least 1", async () => {
-    const { getMaxConcurrency } = await import("../../src/utils/concurrency");
+  it("returns at least 1", () => {
     expect(getMaxConcurrency()).toBeGreaterThanOrEqual(1);
   });
 });

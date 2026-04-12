@@ -9,35 +9,41 @@ Node.js 20, Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ES
 ## 명령어
 
 모든 명령어는 내부적으로 `pnpm sd-cli <command>`를 실행한다. `--debug` 플래그는 모든 명령어에서 사용 가능하다.
-`[targets..]`를 생략하면 `sd.config.ts`에 정의된 모든 패키지를 대상으로 한다.
-대상은 패키지명으로 지정한다 (예: `core-common`).
+`--target`을 생략하면 `sd.config.ts`에 정의된 모든 패키지를 대상으로 한다.
+대상은 패키지명으로 지정한다 (예: `--target core-common` 또는 `-t core-common`).
 
 ### 개발
 
 ```bash
-pnpm dev [targets..]                     # 서버 패키지를 개발 모드로 실행
+pnpm dev                                 # 모든 서버 패키지를 개발 모드로 실행
+pnpm dev -t my-server                    # 특정 패키지만 실행
 pnpm dev -o optA -o optB                 # sd.config.ts에 옵션 전달
-pnpm watch [targets..]                   # 라이브러리 패키지를 watch 빌드
+pnpm watch                               # 모든 라이브러리 패키지를 watch 빌드
+pnpm watch -t core-common storage        # 특정 패키지만 watch 빌드
 ```
 
 ### 빌드 & 배포
 
 ```bash
-pnpm build [targets..]                   # 프로덕션 빌드
-pnpm pub [targets..]                     # 빌드 후 배포 (npm/sftp)
+pnpm build                               # 전체 프로덕션 빌드
+pnpm build -t core-common storage        # 특정 패키지만 빌드
+pnpm pub                                 # 빌드 후 배포 (npm/sftp)
 pnpm pub:no-build                        # 빌드 없이 배포만
 pnpm pub --dry-run                       # 실제 배포 없이 시뮬레이션
-pnpm device <target>                     # 네이티브 앱 디바이스/데스크톱 실행
+pnpm device -t my-client-app             # 네이티브 앱 디바이스/데스크톱 실행
 ```
 
 ### 코드 품질
 
 ```bash
-pnpm check [targets..]                   # 전체 검사 (typecheck + lint + test 병렬)
-pnpm typecheck [targets..]               # TypeScript 타입 체크
-pnpm lint [targets..]                    # ESLint
-pnpm lint --fix [targets..]              # 린트 자동 수정
-pnpm test [targets..]                    # vitest 1회 실행
+pnpm check                               # 전체 검사 (typecheck + lint + test 병렬)
+pnpm check -t core-common               # 특정 패키지만 검사
+pnpm check --type lint test              # 특정 타입만 검사
+pnpm check -t angular --type         # 특정 패키지의 특정 타입만 검사
+pnpm typecheck                           # TypeScript 타입 체크
+pnpm lint                                # ESLint
+pnpm lint --fix                          # 린트 자동 수정
+pnpm test                                # vitest 1회 실행
 ```
 
 ## 아키텍처
@@ -62,7 +68,6 @@ ORM:      orm-node / orm-common
 - `tests/service` — 서비스 클라이언트-서버 통신 테스트.
 - `tests/sd-cli-client` — sd-cli 클라이언트 빌드 통합 테스트.
 - `tests/sd-cli-server` — sd-cli 서버 빌드 통합 테스트.
-- `tests/vite-css-hmr` — Vite CSS HMR 통합 테스트.
 
 ## 코딩 규칙
 
@@ -70,6 +75,7 @@ ORM:      orm-node / orm-common
 - `console.*` 금지, `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
 - `Buffer` 금지 → `Uint8Array` (복잡한 연산은 `@simplysm/core-common`의 `BytesUtils`), `events`/`eventemitter3` 금지 → `@simplysm/core-common`의 `EventEmitter`
 - `===` 필수 (`null` 비교만 `==` 허용), `require-await` 필수, 미사용 import 자동 제거
+- `process.env`/`import.meta.env` 직접 접근 금지 → `env("...")` 사용, `NODE_ENV` 환경변수 사용 금지
 - Prettier: `printWidth: 100`, `quoteProps: consistent`, `htmlWhitespaceSensitivity: ignore`, `endOfLine: lf`
 
 ### 브라우저 호환성 (Chrome 61+)

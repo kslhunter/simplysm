@@ -9,14 +9,17 @@ import type {
 } from "../sd-config.types";
 import { loadAndValidateConfig } from "../utils/orchestrator-utils";
 import { getVersion } from "../utils/build-env";
-import { deserializeDiagnostic } from "../utils/typecheck-serialization";
+import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
 import { copySrcFiles } from "../utils/copy-src";
 import { formatBuildMessages } from "../utils/output-utils";
+import { formatDiagnosticsOutput } from "../utils/diagnostic-utils";
 import { createBuildEngine } from "../engines/index";
+import type { BuildOutput, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
-import { iteratePackages } from "../utils/package-utils";
+import { iteratePackages } from "../utils/package-classify";
 import { Capacitor } from "../capacitor/capacitor";
 import { Electron } from "../electron/electron";
+import type { OrchestratorLifecycle } from "./types";
 
 //#region Types
 
@@ -115,9 +118,9 @@ async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<vo
  * - lint + 빌드 동시 실행
  * - 라이브러리 패키지: TscEngine/NgtscEngine으로 JS + DTS 빌드
  * - 서버 패키지: BuildEngine으로 JS 빌드
- * - 클라이언트 패키지: ViteEngine으로 Vite 프로덕션 빌드
+ * - 클라이언트 패키지: EsbuildClientEngine으로 esbuild 프로덕션 빌드
  */
-export class BuildOrchestrator {
+export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
   private readonly _cwd: string;
   private readonly _options: BuildOrchestratorOptions;
   private readonly _logger = consola.withTag("sd:cli:build");
@@ -185,7 +188,7 @@ export class BuildOrchestrator {
   /**
    * 빌드 실행
    * - 클린
-   * - lint + 빌드 (동시 실행)
+   * - 빌드 (동시 실행)
    * - 결과 출력
    *
    * @returns 에러 발생 여부 (true: 에러 있음)
@@ -195,189 +198,47 @@ export class BuildOrchestrator {
       return false;
     }
 
-    const classified = this._classified!;
-    const baseEnv = this._baseEnv!;
+    await this._cleanDist();
+    const { results, hasUntrackedError } = await this._buildAllPackages();
+    return this._printBuildResults(results, hasUntrackedError);
+  }
 
-    // 결과 수집
-    const results: BuildStepResult[] = [];
-    // results에 포함되지 않는 에러 추적 (네이티브 빌드 실패, rejected 태스크 등)
-    let hasUntrackedError = false;
-
-    // 파일 캐시 (진단 출력용)
-    const fileCache = new Map<string, string>();
-
-    // formatHost (진단 출력용)
-    const formatHost: ts.FormatDiagnosticsHost = {
-      getCanonicalFileName: (f) => f,
-      getCurrentDirectory: () => this._cwd,
-      getNewLine: () => ts.sys.newLine,
-    };
-
-    // Phase 1: dist 클린
+  /**
+   * dist 폴더 정리
+   */
+  private async _cleanDist(): Promise<void> {
     this._logger.start(`dist 폴더 정리 중... (${this._allPackageNames.length}개 패키지)`);
     await cleanDistFolders(this._cwd, this._allPackageNames);
     this._logger.success("dist 폴더 정리 완료");
+  }
 
-    // Phase 2: 빌드
-    const concurrency = getMaxConcurrency();
+  /**
+   * 모든 패키지 빌드 실행
+   * - 패키지 유형별 빌드 태스크 생성
+   * - 동시성 제어 실행
+   * - rejected 태스크 핸들링
+   */
+  private async _buildAllPackages(): Promise<{
+    results: BuildStepResult[];
+    hasUntrackedError: boolean;
+  }> {
+    const results: BuildStepResult[] = [];
+    const hasUntrackedError = { value: false };
+    const fileCache = new Map<string, string>();
 
     // 빌드 태스크 목록 생성
     const buildTasks: Array<() => Promise<void>> = [];
+    this._addBuildPackageTasks(buildTasks, results, fileCache);
+    this._addServerPackageTasks(buildTasks, results, fileCache);
+    this._addClientPackageTasks(buildTasks, results, fileCache, hasUntrackedError);
 
-    // 라이브러리 패키지: BuildEngine으로 JS + DTS 빌드
-    for (const { name, config } of classified.buildPackages) {
-      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
-
-      buildTasks.push(async () => {
-        this._logger.debug(`[${name}] (${config.target}) 빌드 시작`);
-        const engine = createBuildEngine(
-          { name, dir: pkgDir, config },
-          { cwd: this._cwd },
-        );
-
-        try {
-          const engineResult = await engine.run({ js: true, dts: true, lint: false });
-
-          // 빌드 결과 처리
-          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: config.target,
-            type: "build",
-            success: engineResult.build.success,
-            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
-            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
-            diagnostics,
-          });
-
-        } finally {
-          await engine.stop();
-        }
-
-        // copySrc 파일 복사
-        if (config.copySrc != null && config.copySrc.length > 0) {
-          this._logger.debug(`[${name}] copySrc 파일 복사 중 (${config.copySrc.length}개)`);
-          await copySrcFiles(pkgDir, config.copySrc);
-        }
-        this._logger.debug(`[${name}] (${config.target}) 빌드 완료`);
-      });
-    }
-
-    // 서버 패키지: BuildEngine으로 JS 빌드 + 타입체크
-    for (const { name, config } of classified.serverPackages) {
-      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
-
-      buildTasks.push(async () => {
-        this._logger.debug(`[${name}] (server) 빌드 시작`);
-        const engine = createBuildEngine(
-          { name, dir: pkgDir, config: { ...config, env: { ...baseEnv, ...config.env } } },
-          { cwd: this._cwd },
-        );
-
-        try {
-          const engineResult = await engine.run({ js: true, dts: false, lint: false });
-
-          // 빌드 결과 처리
-          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: "server",
-            type: "build",
-            success: engineResult.build.success,
-            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
-            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
-            diagnostics,
-          });
-
-        } finally {
-          await engine.stop();
-        }
-        this._logger.debug(`[${name}] (server) 빌드 완료`);
-      });
-    }
-
-    // 클라이언트 패키지: ViteEngine으로 Vite 프로덕션 빌드 (DTS 없음)
-    for (const { name, config } of classified.clientPackages) {
-      const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
-
-      buildTasks.push(async () => {
-        this._logger.debug(`[${name}] (client) 빌드 시작`);
-        const isNativeBuild = config.capacitor != null || config.electron != null;
-        const outDir = config.capacitor != null
-          ? pathx.posixResolve(pkgDir, ".capacitor/www")
-          : undefined;
-        const engine = createBuildEngine(
-          { name, dir: pkgDir, config: { ...config, env: { ...baseEnv, ...config.env } } },
-          { cwd: this._cwd, outDir, base: isNativeBuild ? "" : undefined },
-        );
-
-        try {
-          const engineResult = await engine.run({ js: true, dts: false, lint: false });
-
-          // 빌드 결과 처리
-          const diagnostics = engineResult.build.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
-          results.push({
-            name,
-            target: "client",
-            type: "build",
-            success: engineResult.build.success,
-            errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
-            warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
-            diagnostics,
-          });
-
-          // 네이티브 빌드 (빌드 성공 시에만 실행)
-          if (engineResult.build.success) {
-            const distPath = pathx.posixResolve(pkgDir, "dist");
-            const nativeBuildPromises: Array<Promise<void>> = [];
-
-            if (config.capacitor != null) {
-              this._logger.debug(`[${name}] Capacitor 네이티브 빌드 시작`);
-              nativeBuildPromises.push(
-                (async () => {
-                  const cap = await Capacitor.create(pkgDir, config.capacitor!, config.exclude);
-                  await cap.initialize();
-                  await cap.build(distPath);
-                  this._logger.debug(`[${name}] Capacitor 네이티브 빌드 완료`);
-                })(),
-              );
-            }
-
-            if (config.electron != null) {
-              this._logger.debug(`[${name}] Electron 네이티브 빌드 시작`);
-              nativeBuildPromises.push(
-                (async () => {
-                  const elc = await Electron.create(pkgDir, config.electron!, config.exclude);
-                  await elc.initialize();
-                  await elc.build(distPath);
-                  this._logger.debug(`[${name}] Electron 네이티브 빌드 완료`);
-                })(),
-              );
-            }
-
-            if (nativeBuildPromises.length > 0) {
-              const nativeResults = await Promise.allSettled(nativeBuildPromises);
-              for (const nativeResult of nativeResults) {
-                if (nativeResult.status === "rejected") {
-                  hasUntrackedError = true;
-                  const err = nativeResult.reason;
-                  this._logger.error(
-                    `[${name}] 네이티브 빌드 실패: ${err instanceof Error ? err.message : String(err)}`,
-                  );
-                }
-              }
-            }
-          }
-        } finally {
-          await engine.stop();
-        }
-        this._logger.debug(`[${name}] (client) 빌드 완료`);
-      });
-    }
-
+    // 동시성 제어 실행
+    const concurrency = getMaxConcurrency();
     this._logger.start(`빌드 실행 중... (${buildTasks.length}개 작업, 동시성: ${concurrency})`);
     this._logger.debug("빌드 작업 목록", { tasks: buildTasks.length, concurrency });
     const buildResults = await runWithConcurrency(buildTasks, concurrency);
+
+    // rejected 태스크 핸들링
     for (const settledResult of buildResults) {
       if (settledResult.status === "rejected") {
         const err = settledResult.reason;
@@ -388,22 +249,227 @@ export class BuildOrchestrator {
         if (stack != null) {
           this._logger.debug(`빌드 예외 스택:\n${stack}`);
         }
-        hasUntrackedError = true;
+        hasUntrackedError.value = true;
       }
     }
     this._logger.success("빌드 실행 완료");
 
-    // 결과 출력
+    return { results, hasUntrackedError: hasUntrackedError.value };
+  }
+
+  /**
+   * 공통 빌드 실행 — 엔진 생성, run, diagnostics 역직렬화, 결과 수집, 엔진 정리
+   */
+  private async _runEngineTask<
+    T extends SdBuildPackageConfig | SdServerPackageConfig | SdClientPackageConfig,
+  >(params: {
+    name: string;
+    target: string;
+    config: T;
+    output: BuildOutput;
+    engineOptions?: { outDir?: string; base?: string };
+    fileCache: Map<string, string>;
+  }): Promise<BuildStepResult> {
+    const pkgDir = pathx.posixResolve(this._cwd, "packages", params.name);
+    const engine = createBuildEngine(
+      { name: params.name, dir: pkgDir, config: params.config } as
+        | BuildPackageInfo
+        | ServerPackageInfo
+        | ClientPackageInfo,
+      { cwd: this._cwd, ...params.engineOptions },
+    );
+
+    try {
+      const engineResult = await engine.run(params.output);
+
+      const diagnostics = engineResult.build.diagnostics.map((d) =>
+        deserializeDiagnostic(d, params.fileCache),
+      );
+      return {
+        name: params.name,
+        target: params.target,
+        type: "build",
+        success: engineResult.build.success,
+        errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
+        warnings:
+          engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
+        diagnostics,
+      };
+    } finally {
+      await engine.stop();
+    }
+  }
+
+  /**
+   * 라이브러리 패키지(node/browser/neutral) 빌드 태스크 추가
+   */
+  private _addBuildPackageTasks(
+    tasks: Array<() => Promise<void>>,
+    results: BuildStepResult[],
+    fileCache: Map<string, string>,
+  ): void {
+    for (const { name, config } of this._classified!.buildPackages) {
+      tasks.push(async () => {
+        this._logger.debug(`[${name}] (${config.target}) 빌드 시작`);
+
+        const result = await this._runEngineTask({
+          name,
+          target: config.target,
+          config,
+          output: { js: true, dts: true, lint: false },
+          fileCache,
+        });
+        results.push(result);
+
+        if (config.copySrc != null && config.copySrc.length > 0) {
+          const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
+          this._logger.debug(`[${name}] copySrc 파일 복사 중 (${config.copySrc.length}개)`);
+          await copySrcFiles(pkgDir, config.copySrc);
+        }
+        this._logger.debug(`[${name}] (${config.target}) 빌드 완료`);
+      });
+    }
+  }
+
+  /**
+   * 서버 패키지 빌드 태스크 추가
+   */
+  private _addServerPackageTasks(
+    tasks: Array<() => Promise<void>>,
+    results: BuildStepResult[],
+    fileCache: Map<string, string>,
+  ): void {
+    const baseEnv = this._baseEnv!;
+
+    for (const { name, config } of this._classified!.serverPackages) {
+      tasks.push(async () => {
+        this._logger.debug(`[${name}] (server) 빌드 시작`);
+
+        const result = await this._runEngineTask({
+          name,
+          target: "server",
+          config: { ...config, env: { ...baseEnv, ...config.env } },
+          output: { js: true, dts: false, lint: false },
+          fileCache,
+        });
+        results.push(result);
+
+        this._logger.debug(`[${name}] (server) 빌드 완료`);
+      });
+    }
+  }
+
+  /**
+   * 클라이언트 패키지 빌드 태스크 추가
+   *
+   * @param hasUntrackedError 네이티브 빌드 실패 등 results에 포함되지 않는 에러 추적용 컨테이너
+   */
+  private _addClientPackageTasks(
+    tasks: Array<() => Promise<void>>,
+    results: BuildStepResult[],
+    fileCache: Map<string, string>,
+    hasUntrackedError: { value: boolean },
+  ): void {
+    const baseEnv = this._baseEnv!;
+
+    for (const { name, config } of this._classified!.clientPackages) {
+      tasks.push(async () => {
+        this._logger.debug(`[${name}] (client) 빌드 시작`);
+        const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
+        const isNativeBuild = config.capacitor != null || config.electron != null;
+        const outDir = config.capacitor != null
+          ? pathx.posixResolve(pkgDir, ".capacitor/www")
+          : undefined;
+
+        const result = await this._runEngineTask({
+          name,
+          target: "client",
+          config: { ...config, env: { ...baseEnv, ...config.env } },
+          output: { js: true, dts: false, lint: false },
+          engineOptions: { outDir, base: isNativeBuild ? "" : undefined },
+          fileCache,
+        });
+        results.push(result);
+
+        // 네이티브 빌드 (빌드 성공 시에만 실행)
+        if (result.success) {
+          const distPath = pathx.posixResolve(pkgDir, "dist");
+          await this._runNativeBuilds(name, pkgDir, distPath, config, hasUntrackedError);
+        }
+        this._logger.debug(`[${name}] (client) 빌드 완료`);
+      });
+    }
+  }
+
+  /**
+   * Capacitor/Electron 네이티브 빌드 실행
+   *
+   * @param hasUntrackedError 네이티브 빌드 실패 시 true로 설정되는 에러 추적 컨테이너
+   */
+  private async _runNativeBuilds(
+    name: string,
+    pkgDir: string,
+    distPath: string,
+    config: SdClientPackageConfig,
+    hasUntrackedError: { value: boolean },
+  ): Promise<void> {
+    const nativeBuildPromises: Array<Promise<void>> = [];
+
+    if (config.capacitor != null) {
+      this._logger.debug(`[${name}] Capacitor 네이티브 빌드 시작`);
+      nativeBuildPromises.push(
+        (async () => {
+          const cap = await Capacitor.create(pkgDir, config.capacitor!, config.exclude);
+          await cap.initialize();
+          await cap.build(distPath);
+          this._logger.debug(`[${name}] Capacitor 네이티브 빌드 완료`);
+        })(),
+      );
+    }
+
+    if (config.electron != null) {
+      this._logger.debug(`[${name}] Electron 네이티브 빌드 시작`);
+      nativeBuildPromises.push(
+        (async () => {
+          const elc = await Electron.create(pkgDir, config.electron!, config.exclude);
+          await elc.initialize();
+          await elc.build(distPath);
+          this._logger.debug(`[${name}] Electron 네이티브 빌드 완료`);
+        })(),
+      );
+    }
+
+    if (nativeBuildPromises.length > 0) {
+      const nativeResults = await Promise.allSettled(nativeBuildPromises);
+      for (const nativeResult of nativeResults) {
+        if (nativeResult.status === "rejected") {
+          hasUntrackedError.value = true;
+          const err = nativeResult.reason;
+          this._logger.error(
+            `[${name}] 네이티브 빌드 실패: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * 빌드 결과 출력
+   *
+   * @returns 에러 발생 여부 (true: 에러 있음)
+   */
+  private _printBuildResults(
+    results: BuildStepResult[],
+    hasUntrackedError: boolean,
+  ): boolean {
     const allDiagnostics: ts.Diagnostic[] = [];
     for (const result of results) {
       const typeLabel = result.type === "lint" ? "lint" : result.target;
 
-      // 경고 출력
       if (result.warnings != null) {
         this._logger.warn(formatBuildMessages(result.name, typeLabel, result.warnings));
       }
 
-      // 에러 출력
       if (!result.success) {
         if (result.errors != null) {
           this._logger.error(formatBuildMessages(result.name, typeLabel, result.errors));
@@ -416,14 +482,11 @@ export class BuildOrchestrator {
       }
     }
 
-    // 진단 정보 출력 (중복 제거)
-    if (allDiagnostics.length > 0) {
-      const uniqueDiagnostics = ts.sortAndDeduplicateDiagnostics(allDiagnostics);
-      const message = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
-      process.stdout.write(message);
+    const diagnosticMessage = formatDiagnosticsOutput(allDiagnostics, this._cwd);
+    if (diagnosticMessage !== "") {
+      process.stdout.write(diagnosticMessage);
     }
 
-    // 최종 결과 로그
     const errorCount = results.filter((r) => !r.success).length;
     const warningCount = results.filter((r) => r.warnings != null).length;
     const hasError = errorCount > 0 || hasUntrackedError;

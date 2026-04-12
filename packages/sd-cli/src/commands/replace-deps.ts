@@ -1,6 +1,6 @@
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
-import { setupReplaceDeps } from "../utils/replace-deps";
+import { setupReplaceDeps } from "../deps/replace-deps/replace-deps";
 
 /**
  * replace-deps 명령어 옵션

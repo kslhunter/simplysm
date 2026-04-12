@@ -27,7 +27,7 @@ vi.mock("../../src/utils/copy-src", () => ({
   copySrcFiles: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../../src/utils/lint-utils", () => ({
+vi.mock("../../src/lint/lint-utils", () => ({
   runLintInWorker: vi.fn().mockResolvedValue({ success: true, errorCount: 0, warningCount: 0, formattedOutput: "" }),
 }));
 
@@ -37,7 +37,7 @@ vi.mock("../../src/utils/output-utils", () => ({
   ),
 }));
 
-vi.mock("../../src/utils/typecheck-serialization", () => ({
+vi.mock("../../src/typecheck/typecheck-serialization", () => ({
   deserializeDiagnostic: vi.fn((d: any) => d),
 }));
 
@@ -968,7 +968,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
 
 //#region Slice 3: build 명령어 lint 통합 (Feature 3.2)
 
-const { runLintInWorker } = await import("../../src/utils/lint-utils");
+const { runLintInWorker } = await import("../../src/lint/lint-utils");
 
 describe("BuildOrchestrator lint integration", () => {
   // build에서 lint를 실행하지 않는다 (lint는 check에서만 실행)

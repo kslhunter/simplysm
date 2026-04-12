@@ -87,10 +87,12 @@ Feature는 독립적으로 설계·개발·검증할 수 있는 최소 기능 �
 
 ## Step 4: WBS 문서 생성
 
-산출물 경로: `.tasks/{timestamp}_{topic}/wbs.md`
+산출물 경로:
 
-- `{timestamp}`: `date +%y%m%d%H%M%S` 실행 결과
-- `{topic}`: 영어 kebab-case (예: `task-management`)
+- **입력이 `.tasks/` 내 기존 문서인 경우:** 해당 문서와 같은 폴더에 `wbs.md` 생성 (예: `.tasks/260411_some-project/requirements.md` → `.tasks/260411_some-project/wbs.md`)
+- **그 외:** `.tasks/{timestamp}_{topic}/wbs.md`
+  - `{timestamp}`: `date +%y%m%d%H%M%S` 실행 결과
+  - `{topic}`: 영어 kebab-case (예: `task-management`)
 
 ### 문서 템플릿
 

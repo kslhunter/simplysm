@@ -23,20 +23,7 @@ beforeEach(() => {
 });
 
 describe("sdAngularPlugin", () => {
-  // Scenario: Angular define 설정
-  it("sets ngDevMode and ngJitMode defines", async () => {
-    const devPlugin = sdAngularPlugin({ pkg: "basic-app"});
-    const prodPlugin = sdAngularPlugin({ pkg: "basic-app"});
-
-    const devConfig = await (devPlugin as any).config?.({}, { mode: "development", command: "serve" });
-    const prodConfig = await (prodPlugin as any).config?.({}, { mode: "production", command: "build" });
-
-    expect(devConfig?.define?.ngJitMode).toBe("false");
-    expect(devConfig?.define?.ngDevMode).toBeUndefined();
-
-    expect(prodConfig?.define?.ngJitMode).toBe("false");
-    expect(prodConfig?.define?.ngDevMode).toBe("false");
-  });
+  // config() define 반환은 Vitest 축소로 제거됨 (esbuild-client-config에서 처리)
 
   // Scenario: non-Angular .ts 파일은 기본 처리
   it("returns undefined for non-emitted .ts files", async () => {
@@ -60,162 +47,8 @@ describe("sdAngularPlugin", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Scenario: Angular 컴포넌트 .ts 파일 수정 시 컴포넌트 HMR
-  it("updates emit cache and returns affected modules when handleHotUpdate is called", async () => {
-    const onBuildStart = vi.fn();
-    const onBuild = vi.fn();
-
-    const plugin = sdAngularPlugin({
-      pkg: "basic-app",
-     
-      onBuildStart,
-      onBuild,
-    });
-    await initPlugin(plugin);
-
-    const appComponentPath = path
-      .join(PKG_DIR, "src/app.component.ts")
-      .replace(/\\/g, "/");
-
-    const initialResult = await (plugin as any).transform?.call({}, "", appComponentPath);
-    expect(initialResult).toBeDefined();
-    expect(initialResult.code.length).toBeGreaterThan(0);
-
-    expect((plugin as any).handleHotUpdate).toBeDefined();
-
-    const mockModule = { file: appComponentPath, id: appComponentPath };
-    const hmrResult = (plugin as any).handleHotUpdate?.({
-      file: appComponentPath,
-      modules: [mockModule],
-      server: { watcher: { emit: vi.fn() } },
-      timestamp: Date.now(),
-      read: () => Promise.resolve(""),
-    });
-
-    // 100ms 배치 타이머 + 비동기 Angular 재컴파일 완료 대기
-    await vi.waitFor(() => {
-      expect(onBuildStart).toHaveBeenCalled();
-    }, { timeout: 10000, interval: 50 });
-    expect(onBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ success: expect.any(Boolean) }),
-    );
-    expect(Array.isArray(hmrResult)).toBe(true);
-
-    const afterResult = await (plugin as any).transform?.call({}, "", appComponentPath);
-    expect(afterResult).toBeDefined();
-    expect(afterResult.code.length).toBeGreaterThan(0);
-
-    await (plugin as any).buildEnd?.call({});
-  });
-
-  // Scenario: ngHmrMode define 설정
-  it("sets ngHmrMode in dev mode and disables in prod mode", async () => {
-    const devPlugin = sdAngularPlugin({ pkg: "basic-app"});
-    const prodPlugin = sdAngularPlugin({ pkg: "basic-app"});
-
-    const devConfig = await (devPlugin as any).config?.({}, { mode: "development", command: "serve" });
-    const prodConfig = await (prodPlugin as any).config?.({}, { mode: "production", command: "build" });
-
-    expect(devConfig?.define?.ngHmrMode).toBeUndefined();
-    expect(prodConfig?.define?.ngHmrMode).toBe("false");
-  });
-
-  // Scenario: 컴파일 에러 발생 및 복구
-  it("calls onBuild with success=false when handleHotUpdate encounters compile error", async () => {
-    const onBuild = vi.fn();
-    const plugin = sdAngularPlugin({
-      pkg: "basic-app",
-     
-      onBuild,
-    });
-    await initPlugin(plugin);
-
-    const _hmrResult = await (plugin as any).handleHotUpdate?.({
-      file: path.join(PKG_DIR, "src/nonexistent-file.ts").replace(/\\/g, "/"),
-      modules: [],
-      server: { watcher: { emit: vi.fn() } },
-      timestamp: Date.now(),
-      read: () => Promise.resolve(""),
-    });
-
-    expect(onBuild).toHaveBeenCalled();
-    await (plugin as any).buildEnd?.call({});
-  });
-
-  // Scenario: non-Angular .ts 파일 수정 — handleHotUpdate passes through
-  it("handleHotUpdate skips non-ts/html/scss files", async () => {
-    const onBuildStart = vi.fn();
-    const plugin = sdAngularPlugin({
-      pkg: "basic-app",
-     
-      onBuildStart,
-    });
-    await initPlugin(plugin);
-
-    const result = await (plugin as any).handleHotUpdate?.({
-      file: "/some/file.json",
-      modules: [],
-      server: {},
-      timestamp: Date.now(),
-      read: () => Promise.resolve(""),
-    });
-
-    expect(result).toBeUndefined();
-    expect(onBuildStart).not.toHaveBeenCalled();
-    await (plugin as any).buildEnd?.call({});
-  });
-
-  // Scenario: dev 모드에서 buildEnd 후 facade 유지
-  it("keeps facade alive after buildEnd in dev mode", async () => {
-    const plugin = sdAngularPlugin({ pkg: "basic-app"});
-    await initPlugin(plugin);
-    await (plugin as any).buildEnd?.call({});
-
-    const appComponentPath = path
-      .join(PKG_DIR, "src/app.component.ts")
-      .replace(/\\/g, "/");
-    const result = await (plugin as any).transform?.call({}, "", appComponentPath);
-    expect(result).toBeDefined();
-    expect(result.code.length).toBeGreaterThan(0);
-  });
-
-  // Scenario: optimizeDeps에 Angular Linker esbuild 플러그인이 등록된다
-  it("registers angular-vite-optimize-deps esbuild plugin in optimizeDeps config", async () => {
-    const plugin = sdAngularPlugin({ pkg: "basic-app"});
-    const config = await (plugin as any).config?.({}, { mode: "development", command: "serve" });
-
-    const esbuildPlugins = config?.optimizeDeps?.esbuildOptions?.plugins as
-      | { name: string }[]
-      | undefined;
-    expect(esbuildPlugins).toBeDefined();
-    expect(esbuildPlugins!.some((p) => p.name === "angular-vite-optimize-deps")).toBe(true);
-  });
-
-  // Scenario: replaceDeps 없을 때 .js 변경은 무시
-  it("handleHotUpdate ignores .js files when no replaceDeps configured", async () => {
-    const plugin = sdAngularPlugin({ pkg: "basic-app"});
-    await initPlugin(plugin);
-
-    const mockHotSend = vi.fn();
-    const mockServer = {
-      middlewares: { use: vi.fn() },
-      httpServer: { on: vi.fn() },
-      config: { base: "/" },
-      hot: { send: mockHotSend },
-    };
-    (plugin as any).configureServer?.(mockServer);
-
-    const hmrResult = await (plugin as any).handleHotUpdate?.({
-      file: "/some/external/lib.js",
-      modules: [],
-      server: mockServer,
-      timestamp: Date.now(),
-      read: () => Promise.resolve(""),
-    });
-
-    expect(hmrResult).toBeUndefined();
-    await (plugin as any).buildEnd?.call({});
-  });
+  // handleHotUpdate, configureServer, optimizeDeps는 Vitest 축소로 제거됨
+  // Feature 3.3에서 esbuild 기반 테스트로 교체 예정
 
   // Scenario: .mjs 파일이 JavaScriptTransformer를 통과한다
   it("transforms .mjs files through JavaScriptTransformer", async () => {
@@ -286,17 +119,7 @@ describe("sdAngularPlugin", () => {
     await (plugin as any).buildEnd?.call({});
   });
 
-  // Scenario: legacyModule이 sd.config.ts에서 resolve되어 HMR 비활성화
-  it("resolves legacyModule from sd.config.ts and disables HMR", async () => {
-    mockLoadSdConfig.mockResolvedValue(
-      createTestSdConfig({ browserSupport: { legacyModule: true } }),
-    );
-
-    const plugin = sdAngularPlugin({ pkg: "basic-app" });
-    const config = await (plugin as any).config?.({}, { mode: "development", command: "serve" });
-
-    expect(config?.define?.ngHmrMode).toBe("false");
-  });
+  // config() define 반환값은 Vitest 축소로 제거됨 (Feature 3.3에서 별도 테스트)
 
   // Scenario: browserSupport 미설정 시 기본값 동작
   it("works when browserSupport is not set in sd.config.ts", async () => {

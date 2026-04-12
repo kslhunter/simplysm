@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import ts from "typescript";
 
 // Minimal mock to allow angular-compiler import (it depends on angular-build)
-vi.mock("../../src/utils/angular-build", () => ({
+vi.mock("../../src/angular/angular-build", () => ({
   NgtscProgram: vi.fn(),
   OptimizeFor: { WholeProgram: 0, SingleFile: 1 },
 }));
 
 const { AngularSourceFileCache, augmentHostWithCaching } = await import(
-  "../../src/utils/angular-compiler"
+  "../../src/angular/angular-compiler"
 );
 
 // =============================================================================

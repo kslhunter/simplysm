@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { stopEngineWorker } from "../../src/utils/engine-stop";
+import { stopEngineWorker } from "../../src/runtime/engine-stop";
 
 function createMockWorker() {
   return {

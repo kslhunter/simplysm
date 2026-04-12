@@ -1,11 +1,12 @@
 import fs from "node:fs";
-import { existsSync } from "node:fs";
-import path from "path";
-import { createRequire } from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 import { configureAndroid, findAndroidSdk, findJava21 } from "./capacitor-android.js";
+import { buildAndroid, configureSigningConfig, copyBuildOutput } from "./capacitor-build.js";
+import { writeCapacitorConfig, updateServerUrl } from "./capacitor-config-writer.js";
+import { setupIcon } from "./capacitor-icon.js";
+import { initCapNpmProject } from "./capacitor-npm-config.js";
 
 /**
  * 설정 검증 에러
@@ -105,12 +106,19 @@ export class Capacitor {
 
       // 1. Capacitor 프로젝트 초기화
       Capacitor._logger.debug("Capacitor 프로젝트 초기화 시작");
-      const changed = await this._initCap();
+      const changed = await initCapNpmProject(
+        this._capPath,
+        this._pkgPath,
+        this._config,
+        this._npmConfig,
+        this._platforms,
+        this._exclude,
+      );
       Capacitor._logger.debug(`Capacitor 프로젝트 초기화 완료 (changed: ${changed})`);
 
       // 2. Capacitor 설정 파일 생성
       Capacitor._logger.debug("Capacitor 설정 파일 생성 시작");
-      await this._writeCapConf();
+      await writeCapacitorConfig(this._capPath, this._config);
       Capacitor._logger.debug("Capacitor 설정 파일 생성 완료");
 
       // 3. 플랫폼 관리 (멱등성: 이미 존재하면 스킵)
@@ -119,9 +127,11 @@ export class Capacitor {
       Capacitor._logger.debug("플랫폼 추가 완료");
 
       // 4. 아이콘 처리
-      Capacitor._logger.debug("아이콘 처리 시작");
-      await this._setupIcon();
-      Capacitor._logger.debug("아이콘 처리 완료");
+      if (this._config.icon != null) {
+        Capacitor._logger.debug("아이콘 처리 시작");
+        await setupIcon(this._pkgPath, this._capPath, this._config.icon);
+        Capacitor._logger.debug("아이콘 처리 완료");
+      }
 
       // 5. Android 네이티브 설정 구성
       if (this._platforms.includes("android")) {
@@ -242,192 +252,6 @@ export class Capacitor {
   //#region Private - 초기화
 
   /**
-   * Capacitor 프로젝트 기본 초기화 (package.json, npm install, cap init)
-   */
-  private async _initCap(): Promise<boolean> {
-    Capacitor._logger.debug("package.json 설정 시작");
-    const depChanged = await this._setupNpmConf();
-    const nodeModulesExists = await fsx.exists(pathx.posixResolve(this._capPath, "node_modules"));
-    Capacitor._logger.debug(`depChanged: ${depChanged}, nodeModulesExists: ${nodeModulesExists}`);
-
-    if (!depChanged && nodeModulesExists) {
-      Capacitor._logger.debug("의존성 변경 없음");
-      return false;
-    }
-
-    // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
-    const workspaceYamlPath = pathx.posixResolve(this._capPath, "pnpm-workspace.yaml");
-    if (!(await fsx.exists(workspaceYamlPath))) {
-      await fsx.write(workspaceYamlPath, "");
-    }
-
-    // pnpm install + 빌드 스크립트 승인
-    Capacitor._logger.debug("pnpm install 시작");
-    await this._exec("pnpm", ["install"], this._capPath);
-    await this._exec("pnpm", ["approve-builds", "--all"], this._capPath);
-    Capacitor._logger.debug("pnpm install 완료");
-
-    // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
-    const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
-    if (!(await fsx.exists(configPath))) {
-      Capacitor._logger.debug("cap init 시작");
-      await this._execCap(["init", this._config.appId, this._config.appId]);
-      Capacitor._logger.debug("cap init 완료");
-    }
-
-    // www/index.html placeholder (cap sync/copy에 필요, 이미 존재하면 유지)
-    const wwwPath = pathx.posixResolve(this._capPath, "www");
-    await fsx.mkdir(wwwPath);
-    const wwwIndexPath = pathx.posixResolve(wwwPath, "index.html");
-    if (!(await fsx.exists(wwwIndexPath))) {
-      await fsx.write(
-        wwwIndexPath,
-        "<!DOCTYPE html><html><head></head><body></body></html>",
-      );
-    }
-
-    return true;
-  }
-
-  /**
-   * package.json 설정
-   */
-  private async _setupNpmConf(): Promise<boolean> {
-    const projNpmConfigPath = pathx.posixResolve(this._findWorkspaceRoot(), "package.json");
-
-    // 루트 package.json 존재 확인
-    if (!(await fsx.exists(projNpmConfigPath))) {
-      throw new Error(`루트 package.json을 찾을 수 없습니다: ${projNpmConfigPath}`);
-    }
-
-    const projNpmConfig = await fsx.readJson<NpmConfig>(projNpmConfigPath);
-
-    const capNpmConfPath = pathx.posixResolve(this._capPath, "package.json");
-    const orgCapNpmConf: NpmConfig = (await fsx.exists(capNpmConfPath))
-      ? await fsx.readJson<NpmConfig>(capNpmConfPath)
-      : { name: "", version: "" };
-
-    const capNpmConf: NpmConfig = { ...orgCapNpmConf };
-    capNpmConf.name = this._config.appId;
-    capNpmConf.version = this._npmConfig.version;
-    if (projNpmConfig.volta != null) {
-      capNpmConf.volta = projNpmConfig.volta;
-    }
-
-    // 기본 의존성
-    capNpmConf.dependencies = capNpmConf.dependencies ?? {};
-    capNpmConf.dependencies["@capacitor/core"] = "^7";
-    capNpmConf.dependencies["@capacitor/app"] = "^7";
-    for (const platform of this._platforms) {
-      capNpmConf.dependencies[`@capacitor/${platform}`] = "^7";
-    }
-
-    capNpmConf.devDependencies = capNpmConf.devDependencies ?? {};
-    capNpmConf.devDependencies["@capacitor/cli"] = "^7";
-    capNpmConf.devDependencies["@capacitor/assets"] = "^3";
-
-    // 플러그인 패키지 설정
-    const mainDeps = {
-      ...this._npmConfig.dependencies,
-      ...this._npmConfig.devDependencies,
-      ...this._npmConfig.peerDependencies,
-    };
-
-    const usePlugins = Object.keys(this._config.plugins ?? {});
-
-    const prevPlugins = Object.keys(capNpmConf.dependencies).filter(
-      (item) =>
-        !["@capacitor/core", "@capacitor/android", "@capacitor/ios", "@capacitor/app"].includes(
-          item,
-        ),
-    );
-
-    // 사용하지 않는 플러그인 제거
-    for (const prevPlugin of prevPlugins) {
-      if (!usePlugins.includes(prevPlugin)) {
-        delete capNpmConf.dependencies[prevPlugin];
-        Capacitor._logger.debug(`플러그인 제거: ${prevPlugin}`);
-      }
-    }
-
-    // 새 플러그인 추가
-    const pkgRequire = createRequire(pathx.posixResolve(this._pkgPath, "package.json"));
-    for (const plugin of usePlugins) {
-      const version = mainDeps[plugin] ?? "*";
-      if (typeof version === "string" && version.startsWith("workspace:")) {
-        // workspace 플러그인은 link: 프로토콜로 실제 경로를 지정
-        const pluginPkgJsonPath = pkgRequire.resolve(`${plugin}/package.json`);
-        const pluginDir = path.dirname(pluginPkgJsonPath);
-        const relativePath = path.relative(this._capPath, pluginDir).replace(/\\/g, "/");
-        capNpmConf.dependencies[plugin] = `link:${relativePath}`;
-        Capacitor._logger.debug(`workspace 플러그인 (link): ${plugin} → ${relativePath}`);
-      } else if (!(plugin in capNpmConf.dependencies)) {
-        capNpmConf.dependencies[plugin] = version;
-        Capacitor._logger.debug(`플러그인 추가: ${plugin}@${version}`);
-      }
-    }
-
-    // exclude 패키지 추가
-    for (const excludePkg of this._exclude) {
-      if (!(excludePkg in capNpmConf.dependencies)) {
-        const version = mainDeps[excludePkg] ?? "*";
-        capNpmConf.dependencies[excludePkg] = version;
-        Capacitor._logger.debug(`exclude 패키지 추가: ${excludePkg}@${version}`);
-      }
-    }
-
-    // 저장
-    await fsx.mkdir(this._capPath);
-    await fsx.writeJson(capNpmConfPath, capNpmConf, { space: 2 });
-
-    // 의존성 변경 여부 확인
-    return (
-      orgCapNpmConf.volta !== capNpmConf.volta ||
-      JSON.stringify(orgCapNpmConf.dependencies) !== JSON.stringify(capNpmConf.dependencies) ||
-      JSON.stringify(orgCapNpmConf.devDependencies) !== JSON.stringify(capNpmConf.devDependencies)
-    );
-  }
-
-  /**
-   * capacitor.config.ts 생성
-   */
-  private async _writeCapConf(): Promise<void> {
-    const confPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
-
-    // 플러그인 옵션 생성
-    const pluginOptions: Record<string, Record<string, unknown>> = {};
-    for (const [pluginName, options] of Object.entries(this._config.plugins ?? {})) {
-      if (options !== true) {
-        const configKey = this._toPascalCase(pluginName.split("/").at(-1)!);
-        pluginOptions[configKey] = options;
-      }
-    }
-
-    const pluginsConfigStr =
-      Object.keys(pluginOptions).length > 0
-        ? JSON.stringify(pluginOptions, null, 2).replace(/^/gm, "  ").trim()
-        : "{}";
-
-    const configContent = `import type { CapacitorConfig } from "@capacitor/cli";
-
-const config: CapacitorConfig = {
-  appId: "${this._config.appId}",
-  appName: "${this._config.appName}",
-  server: {
-    androidScheme: "http",
-    cleartext: true
-  },
-  android: {},
-  plugins: ${pluginsConfigStr},
-};
-
-export default config;
-`;
-
-    await fsx.write(confPath, configContent);
-  }
-
-  /**
    * 플랫폼 추가 (멱등성: 이미 존재하면 스킵)
    */
   private async _addPlatforms(): Promise<void> {
@@ -439,71 +263,6 @@ export default config;
       }
 
       await this._execCap(["add", platform]);
-    }
-  }
-
-  /**
-   * 앱 아이콘 처리 (소스 이미지 → 멀티 해상도 아이콘 + 스플래시)
-   */
-  private async _setupIcon(): Promise<void> {
-    if (this._config.icon == null) return;
-
-    const iconPath = pathx.posixResolve(this._pkgPath, this._config.icon);
-
-    if (!(await fsx.exists(iconPath))) {
-      Capacitor._logger.warn(`아이콘 파일을 찾을 수 없습니다: ${iconPath}`);
-      return;
-    }
-
-    try {
-      const sharp = (await import("sharp")).default;
-
-      // 소스 이미지를 리사이즈 (60% of 1024 = ~614px)
-      const canvasSize = 1024;
-      const contentSize = Math.round(canvasSize * 0.6);
-
-      const resizedBuffer = await sharp(iconPath)
-        .resize(contentSize, contentSize, { fit: "inside" })
-        .png()
-        .toBuffer();
-
-      // 1024x1024 투명 캔버스에 합성
-      const assetsDir = pathx.posixResolve(this._capPath, "assets");
-      await fsx.mkdir(assetsDir);
-      const logoPath = pathx.posixResolve(assetsDir, "logo.png");
-
-      await sharp({
-        create: {
-          width: canvasSize,
-          height: canvasSize,
-          channels: 4 as const,
-          background: { r: 0, g: 0, b: 0, alpha: 0 },
-        },
-      })
-        .composite([{ input: resizedBuffer, gravity: "center" }])
-        .png()
-        .toFile(logoPath);
-
-      // capacitor-assets로 모든 해상도 아이콘/스플래시 생성
-      await this._exec(
-        "pnpm",
-        [
-          "exec",
-          "capacitor-assets",
-          "generate",
-          "--iconBackgroundColor",
-          "transparent",
-          "--splashBackgroundColor",
-          "transparent",
-          "--logoSplashScale",
-          "0.6",
-        ],
-        this._capPath,
-      );
-    } catch (err) {
-      Capacitor._logger.warn(
-        `아이콘 생성에 실패했습니다: ${err instanceof Error ? err.message : err}`,
-      );
     }
   }
 
@@ -520,7 +279,7 @@ export default config;
    */
   async run(url: string): Promise<void> {
     Capacitor._logger.debug(`server.url 설정: ${url}`);
-    await this._updateServerUrl(url);
+    await updateServerUrl(this._capPath, url);
 
     for (const platform of this._platforms) {
       // Android + localhost URL이면 adb reverse로 포트 포워딩
@@ -566,27 +325,6 @@ export default config;
 
   //#endregion
 
-  //#region Private — 기기 실행
-
-  /**
-   * capacitor.config.ts의 server.url을 업데이트한다.
-   * WebView가 이 URL에서 웹 에셋을 로드하여 Hot Reload가 동작한다.
-   */
-  private async _updateServerUrl(url: string): Promise<void> {
-    const configPath = pathx.posixResolve(this._capPath, "capacitor.config.ts");
-    let content = await fsx.read(configPath);
-
-    if (content.includes("url:")) {
-      content = content.replace(/url:\s*"[^"]*"/, `url: "${url}"`);
-    } else if (content.includes("server:")) {
-      content = content.replace(/server:\s*\{/, `server: {\n    url: "${url}",`);
-    }
-
-    await fsx.write(configPath, content);
-  }
-
-  //#endregion
-
   //#region Public — 빌드
 
   /**
@@ -615,7 +353,11 @@ export default config;
     const signConfig = this._config.platform?.android?.sign;
     if (!isDebug && signConfig != null) {
       Capacitor._logger.debug("서명 설정 시작");
-      await this._configureSigningConfig(pathx.posixResolve(this._capPath, "android"), signConfig);
+      await configureSigningConfig(
+        this._pkgPath,
+        pathx.posixResolve(this._capPath, "android"),
+        signConfig,
+      );
       Capacitor._logger.debug("서명 설정 완료");
     } else if (!isDebug) {
       Capacitor._logger.warn("서명 설정이 없어 unsigned 빌드가 생성됩니다.");
@@ -623,173 +365,22 @@ export default config;
 
     // 4. Gradle 빌드
     Capacitor._logger.debug("Gradle 빌드 시작");
-    await this._buildAndroid(buildType, isBundle);
+    await buildAndroid(this._capPath, buildType, isBundle);
     Capacitor._logger.debug("Gradle 빌드 완료");
 
     // 5. 빌드 산출물 복사
     Capacitor._logger.debug("빌드 산출물 복사 시작");
-    await this._copyBuildOutput(outPath, buildType, isBundle);
+    await copyBuildOutput(
+      this._capPath,
+      outPath,
+      buildType,
+      isBundle,
+      this._config.appName,
+      this._npmConfig.version,
+    );
     Capacitor._logger.debug("빌드 산출물 복사 완료");
 
     Capacitor._logger.debug("build 완료");
-  }
-
-  //#endregion
-
-  //#region Private — 빌드
-
-  /**
-   * 서명 설정을 build.gradle에 추가하고 keystore 파일을 복사
-   */
-  private async _configureSigningConfig(
-    androidPath: string,
-    sign: import("../sd-config.types.js").SdCapacitorSignConfig,
-  ): Promise<void> {
-    // keystore 파일 확인 및 복사
-    const keystoreSrc = pathx.posixResolve(this._pkgPath, sign.keystore);
-    if (!(await fsx.exists(keystoreSrc))) {
-      throw new Error(`keystore 파일을 찾을 수 없습니다: ${keystoreSrc}`);
-    }
-
-    const keystoreDest = pathx.posixResolve(androidPath, "app", "android.keystore");
-    await fsx.copy(keystoreSrc, keystoreDest);
-
-    // build.gradle에 signingConfigs 추가
-    const buildGradlePath = pathx.posixResolve(androidPath, "app/build.gradle");
-    let content = await fsx.read(buildGradlePath);
-
-    // 이미 signingConfigs가 있으면 스킵
-    if (content.includes("signingConfigs")) return;
-
-    const storeType = sign.keystoreType ?? "jks";
-    const escapeGroovy = (s: string) => s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const escapedStorePassword = escapeGroovy(sign.storePassword);
-    const escapedKeyPassword = escapeGroovy(sign.password);
-
-    const signingBlock = `    signingConfigs {
-        release {
-            storeFile file("android.keystore")
-            storePassword '${escapedStorePassword}'
-            keyAlias '${sign.alias}'
-            keyPassword '${escapedKeyPassword}'
-            storeType "${storeType}"
-        }
-    }
-`;
-
-    // signingConfigs 블록을 buildTypes 앞에 삽입
-    content = content.replace(/(\s*buildTypes\s*\{)/, (match) => `\n${signingBlock}${match}`);
-
-    // buildTypes.release에 signingConfig 추가
-    content = content.replace(
-      /(buildTypes\s*\{[\s\S]*?release\s*\{)/,
-      "$1\n            signingConfig signingConfigs.release",
-    );
-
-    await fsx.write(buildGradlePath, content);
-  }
-
-  /**
-   * Gradle 빌드 실행 (cross-platform)
-   */
-  private async _buildAndroid(buildType: string, isBundle: boolean): Promise<void> {
-    let gradleTask: string;
-    if (buildType === "debug") {
-      gradleTask = "assembleDebug";
-    } else if (isBundle) {
-      gradleTask = "bundleRelease";
-    } else {
-      gradleTask = "assembleRelease";
-    }
-
-    const androidPath = pathx.posixResolve(this._capPath, "android");
-    const isWindows = process.platform === "win32";
-
-    if (isWindows) {
-      Capacitor._logger.debug(`Gradle 실행: cmd /c gradlew.bat ${gradleTask}`);
-      await this._exec("cmd", ["/c", "gradlew.bat", gradleTask, "--no-daemon"], androidPath);
-    } else {
-      const gradlew = pathx.posixResolve(androidPath, "gradlew");
-      Capacitor._logger.debug(`Gradle 실행: ${gradlew} ${gradleTask}`);
-      await this._exec(gradlew, [gradleTask, "--no-daemon"], androidPath);
-    }
-  }
-
-  /**
-   * 빌드 산출물을 출력 경로에 복사
-   */
-  private async _copyBuildOutput(
-    outPath: string,
-    buildType: string,
-    isBundle: boolean,
-  ): Promise<void> {
-    const ext = isBundle ? "aab" : "apk";
-    const outputType = isBundle ? "bundle" : "apk";
-    const androidBuildPath = pathx.posixResolve(
-      this._capPath,
-      "android/app/build/outputs",
-      outputType,
-      buildType,
-    );
-
-    // 빌드 산출물 찾기
-    Capacitor._logger.debug(`빌드 산출물 탐색: ${androidBuildPath}`);
-    const candidates = await fsx.glob(pathx.posixResolve(androidBuildPath, `app-*.${ext}`));
-    if (candidates.length === 0) {
-      throw new Error(`빌드 산출물을 찾을 수 없습니다: ${androidBuildPath}`);
-    }
-    const builtFile = candidates[0];
-    Capacitor._logger.debug(`빌드 산출물: ${builtFile}`);
-    const isUnsigned = builtFile.includes("unsigned");
-
-    // 출력 디렉토리 생성
-    const androidOutPath = pathx.posixResolve(outPath, "android");
-    const updatesPath = pathx.posixResolve(androidOutPath, "updates");
-    await fsx.mkdir(androidOutPath);
-    await fsx.mkdir(updatesPath);
-
-    // latest 파일명 결정
-    const unsignedSuffix = isUnsigned ? "-unsigned" : "";
-    const latestName = `${this._config.appName}${unsignedSuffix}-latest.${ext}`;
-    const versionedName = `${this._npmConfig.version}.${ext}`;
-
-    // 복사
-    await fsx.copy(builtFile, pathx.posixResolve(androidOutPath, latestName));
-    await fsx.copy(builtFile, pathx.posixResolve(updatesPath, versionedName));
-  }
-
-  //#endregion
-
-  //#region Private - 유틸리티
-
-  /**
-   * workspace:* 플러그인을 .capacitor/node_modules/에 symlink로 연결한다.
-   * cap sync는 플러그인의 android/ 네이티브 코드만 필요하므로 JS 의존성 resolve 불필요.
-   */
-  /**
-   * pnpm-workspace.yaml이 있는 워크스페이스 루트 디렉토리를 찾는다.
-   */
-  private _findWorkspaceRoot(): string {
-    let dir = this._pkgPath;
-    while (true) {
-      const parent = path.dirname(dir);
-      if (parent === dir) {
-        throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${this._pkgPath}`);
-      }
-      if (existsSync(pathx.posixResolve(parent, "pnpm-workspace.yaml"))) {
-        return parent;
-      }
-      dir = parent;
-    }
-  }
-
-  /**
-   * 문자열을 PascalCase로 변환
-   */
-  private _toPascalCase(str: string): string {
-    return str
-      .replace(/[-_](.)/g, (_, c: string) => c.toUpperCase())
-      .replace(/^./, (c) => c.toUpperCase());
   }
 
   //#endregion

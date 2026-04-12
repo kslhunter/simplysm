@@ -4,10 +4,9 @@ import fs from "fs";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { consola } from "consola";
 import type { BuildOutput } from "../engines/types";
-import type { SerializedDiagnostic } from "../utils/typecheck-serialization";
-import type { LintWithProgramResult } from "../utils/lint-with-program";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
 import {
   parseTsconfig,
   getPackageSourceFiles,
@@ -15,13 +14,15 @@ import {
 import {
   createServerEsbuildOptions,
   writeChangedOutputFiles,
-} from "../utils/esbuild-config";
-import { collectAllExternals, generateProductionFiles } from "../utils/server-production-files";
+} from "../esbuild/esbuild-config";
+import { collectAllExternals, generateProductionFiles } from "../deps/server-externals/server-production-files";
 import { runTscPackageBuild } from "../utils/tsc-build";
-import { LintWithProgramRunner } from "../utils/lint-with-program";
-import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
-import { collectDeps } from "../utils/package-utils";
+import { LintWithProgramRunner } from "../lint/lint-with-program";
+import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
+import { buildWatchPaths } from "./build-watch-paths";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
+import * as esbuildCtx from "./server-esbuild-context";
+import { startServerWatchLoop } from "./server-watch-manager";
 
 //#region Types
 
@@ -97,16 +98,6 @@ export interface ServerBuildWorkerEvents extends Record<string, unknown> {
 
 //#region Resource Management
 
-setupWorkerConsola();
-
-const logger = consola.withTag("sd:cli:server-build:worker");
-
-/** esbuild 빌드 컨텍스트 (정리 대상) */
-let esbuildContext: esbuild.BuildContext | undefined;
-
-/** 마지막 빌드 metafile (리빌드 시 변경 파일 필터링용) */
-let lastMetafile: esbuild.Metafile | undefined;
-
 /** public 파일 감시자 (정리 대상) */
 let publicWatcher: FsWatcher | undefined;
 
@@ -114,9 +105,7 @@ let publicWatcher: FsWatcher | undefined;
 let srcWatcher: FsWatcher | undefined;
 
 async function cleanup(): Promise<void> {
-  const contextToDispose = esbuildContext;
-  esbuildContext = undefined;
-  lastMetafile = undefined;
+  await esbuildCtx.dispose();
   lastBuilderProgram = undefined;
 
   const watcherToClose = publicWatcher;
@@ -125,9 +114,6 @@ async function cleanup(): Promise<void> {
   const srcWatcherToClose = srcWatcher;
   srcWatcher = undefined;
 
-  if (contextToDispose != null) {
-    await contextToDispose.dispose();
-  }
   if (watcherToClose != null) {
     await watcherToClose.close();
   }
@@ -136,7 +122,7 @@ async function cleanup(): Promise<void> {
   }
 }
 
-registerCleanupHandlers(cleanup, logger);
+const { logger, guardStartWatch } = setupWorkerLifecycle("server-build", cleanup);
 
 //#endregion
 
@@ -246,8 +232,6 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
   }
 }
 
-const guardStartWatch = createOnceGuard("startWatch");
-
 // watch 모드용 가변 상태
 let watchInfo: ServerWatchInfo | undefined;
 let watchLintRunner: LintWithProgramRunner | undefined;
@@ -263,26 +247,7 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
   const parsedConfig = parseTsconfig(info.pkgDir);
 
   // esbuild 리빌드 (비동기)
-  let esbuildPromise: Promise<{ success: boolean; errors?: string[]; warnings?: string[] }> | null = null;
-  if (info.output.js && esbuildContext != null) {
-    esbuildPromise = esbuildContext.rebuild().then(async (result) => {
-      // metafile 저장
-      if (result.metafile != null) {
-        lastMetafile = result.metafile;
-      }
-
-      if (result.outputFiles) {
-        await writeChangedOutputFiles(result.outputFiles);
-      }
-      const errors = result.errors.map((e) => e.text);
-      const warnings = result.warnings.map((w) => w.text);
-      return {
-        success: result.errors.length === 0,
-        errors: errors.length > 0 ? errors : undefined,
-        warnings: warnings.length > 0 ? warnings : undefined,
-      };
-    });
-  }
+  const esbuildPromise = info.output.js ? esbuildCtx.rebuild() : null;
 
   // tsc 리빌드 (동기, 증분)
   const tscResult = runTscPackageBuild({
@@ -313,8 +278,8 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     logger.debug(`[${info.name}] lint 완료`);
   }
 
-  const jsResult = esbuildPromise
-    ? await esbuildPromise
+  const jsResult = esbuildPromise != null
+    ? (await esbuildPromise) ?? { success: true, errors: undefined, warnings: undefined }
     : { success: true, errors: undefined, warnings: undefined };
 
   const allErrors = [...(jsResult.errors ?? []), ...(tscResult.errors ?? [])];
@@ -331,29 +296,6 @@ async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
 }
 
 /**
- * watch 모드용 esbuild 컨텍스트를 생성한다
- */
-async function createEsbuildWatchContext(
-  info: ServerWatchInfo,
-  entryPoints: string[],
-  external: string[],
-): Promise<esbuild.BuildContext> {
-  const baseOptions = createServerEsbuildOptions({
-    pkgDir: info.pkgDir,
-    entryPoints,
-    env: info.env,
-    external,
-    dev: true,
-  });
-
-  return esbuild.context({
-    ...baseOptions,
-    metafile: true,
-    write: false,
-  });
-}
-
-/**
  * watch 모드 시작
  */
 async function startWatch(info: ServerWatchInfo): Promise<void> {
@@ -365,12 +307,17 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     const parsedConfig = parseTsconfig(info.pkgDir);
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
-    // 외부 모듈 수집 (watch 모드용 캐시)
-    let cachedExternal = collectAllExternals(info.pkgDir, info.externals);
+    // 외부 모듈 수집 (watch 모드용 — watch manager가 자체 캐시를 유지)
+    const cachedExternal = collectAllExternals(info.pkgDir, info.externals);
 
     // esbuild 컨텍스트 생성 (JS 출력 필요 시)
     if (info.output.js) {
-      esbuildContext = await createEsbuildWatchContext(info, entryPoints, cachedExternal);
+      await esbuildCtx.createContext({
+        pkgDir: info.pkgDir,
+        entryPoints,
+        env: info.env,
+        external: cachedExternal,
+      });
     }
 
     // 초기 빌드: esbuild + tsc 병렬
@@ -386,109 +333,23 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     // public/ + public-dev/ 감시
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
-    // 의존성 기반 감시 경로 수집
-    const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
+    // 의존성 기반 감시 경로 수집 + FsWatcher 감시 루프 시작
+    const { watchPaths } = buildWatchPaths({
+      pkgDir: info.pkgDir,
+      cwd: info.cwd,
+      srcGlobs: ["*"],
+      replaceDeps: info.replaceDeps,
+    });
 
-    const watchPaths: string[] = [];
-
-    // 서버 패키지 자체 + workspace 의존성 패키지 소스
-    const watchDirs = [
-      info.pkgDir,
-      ...workspaceDeps.map((d) => pathx.posixResolve(info.cwd, "packages", d)),
-    ];
-    for (const dir of watchDirs) {
-      watchPaths.push(pathx.posixResolve(dir, "src", "**", "*"));
-    }
-
-    // replaceDeps 의존성 패키지 dist
-    for (const pkg of replaceDeps) {
-      watchPaths.push(pathx.posixResolve(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"));
-      watchPaths.push(
-        pathx.posixResolve(info.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-      );
-    }
-
-    // FsWatcher 시작
-    srcWatcher = await FsWatcher.watch(watchPaths);
-
-    srcWatcher.onChange({ delay: 300 }, async (changes) => {
-      try {
-        const hasFileAddOrRemove = changes.some((c) => c.event === "add" || c.event === "unlink");
-
-        if (hasFileAddOrRemove) {
-          sender.send("buildStart", {});
-
-          // 파일 추가/삭제 시 컨텍스트 재생성
-          const newParsedConfig = parseTsconfig(info.pkgDir);
-          const newEntryPoints = getPackageSourceFiles(info.pkgDir, newParsedConfig);
-
-          // package.json이 변경된 경우에만 외부 모듈 재수집
-          const hasPackageJsonChange = changes.some((c) =>
-            c.path.endsWith("package.json"),
-          );
-          if (hasPackageJsonChange) {
-            cachedExternal = collectAllExternals(info.pkgDir, info.externals);
-          }
-          const newExternal = cachedExternal;
-
-          const oldContext = esbuildContext;
-          esbuildContext = undefined; // 선제 초기화 — 생성 실패 시 disposed 참조 방지 (LOGIC-001)
-          try {
-            if (info.output.js) {
-              esbuildContext = await createEsbuildWatchContext(info, newEntryPoints, newExternal);
-            }
-          } finally {
-            if (oldContext != null) {
-              await oldContext.dispose();
-            }
-          }
-
-          const result = await rebuildAll();
-          sender.send("build", result);
-          return;
-        }
-
-        // 파일 변경만 있는 경우: metafile로 필터링
-        if (esbuildContext == null) {
-          sender.send("buildStart", {});
-          const result = await rebuildAll();
-          sender.send("build", result);
-          return;
-        }
-
-        if (lastMetafile == null) {
-          sender.send("buildStart", {});
-          const result = await rebuildAll();
-          sender.send("build", result);
-          return;
-        }
-
-        // metafile 입력 기반 필터링
-        const metafileAbsPaths = new Set(
-          Object.keys(lastMetafile.inputs).map((key) => pathx.posixResolve(info.cwd, key)),
-        );
-
-        const hasRelevantChange = changes.some((c) => {
-          if (metafileAbsPaths.has(c.path)) return true;
-          // pnpm symlink 경로와 esbuild resolved 경로 불일치 대응
-          try {
-            const realPath = pathx.posix(fs.realpathSync(c.path));
-            return metafileAbsPaths.has(realPath);
-          } catch {
-            return false;
-          }
-        });
-
-        if (hasRelevantChange) {
-          sender.send("buildStart", {});
-          const result = await rebuildAll();
-          sender.send("build", result);
-        } else {
-          logger.debug("변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀");
-        }
-      } catch (err) {
-        sender.send("error", { message: errNs.message(err) });
-      }
+    srcWatcher = await startServerWatchLoop({
+      info,
+      watchPaths,
+      logger,
+      initialExternals: cachedExternal,
+      onBuildStart: () => sender.send("buildStart", {}),
+      onBuild: (result) => sender.send("build", result),
+      onError: (message) => sender.send("error", { message }),
+      rebuild: () => rebuildAll(),
     });
   } catch (err) {
     sender.send("error", { message: errNs.message(err) });

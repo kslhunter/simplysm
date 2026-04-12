@@ -38,7 +38,7 @@ vi.mock("../../src/utils/output-path-rewriter", () => ({
   addJsExtensionToImports: vi.fn((text: string) => text + "/* js-ext-applied */"),
 }));
 
-vi.mock("../../src/utils/typecheck-serialization", () => ({
+vi.mock("../../src/typecheck/typecheck-serialization", () => ({
   serializeDiagnostic: vi.fn((d: any) => ({ code: d.code, category: d.category })),
 }));
 

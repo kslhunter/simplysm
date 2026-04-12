@@ -8,6 +8,10 @@ import {
 } from "@simplysm/orm-node";
 import { Table, DbContext } from "@simplysm/orm-common";
 import { mssqlConfig, mysqlConfig, postgresqlConfig } from "../test-configs";
+import * as tedious from "tedious";
+import * as mysql2 from "mysql2/promise";
+import * as pg from "pg";
+import * as pgCopyStreams from "pg-copy-streams";
 
 const dbCases = [
   {
@@ -16,8 +20,7 @@ const dbCases = [
     schema: "dbo" as const,
     createTable: Table("User").database("TestDb").schema("dbo"),
     dbContextOpts: { database: "TestDb", schema: "dbo" } as const,
-    async createConn(): Promise<DbConn> {
-      const tedious = await import("tedious");
+    createConn(): DbConn {
       return new MssqlDbConn(tedious, mssqlConfig);
     },
     setupSql: [
@@ -37,8 +40,7 @@ const dbCases = [
     schema: undefined,
     createTable: Table("User").database("TestDb"),
     dbContextOpts: { database: "TestDb" } as const,
-    async createConn(): Promise<DbConn> {
-      const mysql2 = await import("mysql2/promise");
+    createConn(): DbConn {
       return new MysqlDbConn(mysql2, mysqlConfig);
     },
     setupSql: [
@@ -56,9 +58,7 @@ const dbCases = [
     schema: "public" as const,
     createTable: Table("User").database("TestDb").schema("public"),
     dbContextOpts: { database: "TestDb", schema: "public" } as const,
-    async createConn(): Promise<DbConn> {
-      const pg = await import("pg");
-      const pgCopyStreams = await import("pg-copy-streams");
+    createConn(): DbConn {
       return new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     },
     setupSql: [
@@ -88,7 +88,7 @@ describe.each(dbCases)("$label DbContext - transaction", (dbCase) => {
 
   beforeAll(async () => {
     // 직접 연결하여 원시 SQL 실행
-    const conn = await dbCase.createConn();
+    const conn = dbCase.createConn();
     await conn.connect();
     await conn.execute(dbCase.setupSql);
     await conn.close();
@@ -100,7 +100,7 @@ describe.each(dbCases)("$label DbContext - transaction", (dbCase) => {
 
   afterAll(async () => {
     // 테이블 정리
-    const cleanupConn = await dbCase.createConn();
+    const cleanupConn = dbCase.createConn();
     await cleanupConn.connect();
     await cleanupConn.execute(dbCase.cleanupSql);
     await cleanupConn.close();

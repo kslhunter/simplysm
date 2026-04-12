@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   loadSdConfig: vi.fn(),
   deserializeDiagnostic: vi.fn((d: any) => d),
   typecheckNonPackageFiles: vi.fn(),
-  createBuildEngine: vi.fn(),
+  createTypecheckEngine: vi.fn(),
   discoverWorkspacePackages: vi.fn(),
   mergeTestsPackagesIntoConfig: vi.fn(),
 }));
@@ -19,16 +19,16 @@ vi.mock("../../src/utils/sd-config", () => ({
   loadSdConfig: mocks.loadSdConfig,
 }));
 
-vi.mock("../../src/utils/typecheck-serialization", () => ({
+vi.mock("../../src/typecheck/typecheck-serialization", () => ({
   deserializeDiagnostic: mocks.deserializeDiagnostic,
 }));
 
-vi.mock("../../src/utils/typecheck-non-package", () => ({
+vi.mock("../../src/typecheck/typecheck-non-package", () => ({
   typecheckNonPackageFiles: mocks.typecheckNonPackageFiles,
 }));
 
 vi.mock("../../src/engines/index", () => ({
-  createBuildEngine: mocks.createBuildEngine,
+  createTypecheckEngine: mocks.createTypecheckEngine,
 }));
 
 vi.mock("../../src/utils/package-utils", async (importOriginal) => {
@@ -97,7 +97,7 @@ function createMockEngine() {
 
 function setupDefaults(packages: Record<string, any> = {}) {
   mocks.loadSdConfig.mockResolvedValue({ packages });
-  mocks.createBuildEngine.mockImplementation(() => createMockEngine() as any);
+  mocks.createTypecheckEngine.mockImplementation(() => createMockEngine() as any);
   mocks.typecheckNonPackageFiles.mockReturnValue({
     success: true,
     errorCount: 0,
@@ -186,7 +186,7 @@ describe("executeTypecheck", () => {
     setupDefaults({ "core-node": { target: "node" } });
 
     const engineDiag = { category: 1, code: 2322, messageText: "engine err" };
-    mocks.createBuildEngine.mockImplementation(() => {
+    mocks.createTypecheckEngine.mockImplementation(() => {
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: false,
@@ -222,7 +222,7 @@ describe("executeTypecheck", () => {
 
     let active = 0;
     let maxActive = 0;
-    mocks.createBuildEngine.mockImplementation(() => {
+    mocks.createTypecheckEngine.mockImplementation(() => {
       const engine = {
         run: vi.fn(async () => {
           active++;
@@ -249,7 +249,7 @@ describe("executeTypecheck", () => {
 
   it("reports failure when engine run fails", async () => {
     setupDefaults({ "core-node": { target: "node" } });
-    mocks.createBuildEngine.mockImplementation(() => {
+    mocks.createTypecheckEngine.mockImplementation(() => {
       const engine = {
         run: vi.fn().mockRejectedValue(new Error("build error")),
         startWatch: vi.fn(),
@@ -318,7 +318,7 @@ describe("executeTypecheck", () => {
         merged: mergedPackages,
         pathMap,
       });
-      mocks.createBuildEngine.mockImplementation(() => createMockEngine() as any);
+      mocks.createTypecheckEngine.mockImplementation(() => createMockEngine() as any);
 
       const result = await executeTypecheck({ targets: [], options: [] });
 
@@ -335,7 +335,7 @@ describe("executeTypecheck", () => {
       });
 
       const diag = { category: 1, code: 2322, messageText: "type error in test" };
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
@@ -370,7 +370,7 @@ describe("executeTypecheck", () => {
           ["orm", "tests/orm"],
         ]),
       });
-      mocks.createBuildEngine.mockImplementation(() => createMockEngine() as any);
+      mocks.createTypecheckEngine.mockImplementation(() => createMockEngine() as any);
 
       const result = await executeTypecheck({ targets: ["tests/orm"], options: [] });
 
@@ -396,7 +396,7 @@ describe("executeTypecheck", () => {
       });
 
       // Configure engines to return lint results
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
@@ -448,7 +448,7 @@ describe("executeTypecheck", () => {
     it("merges lint results correctly when all succeed", async () => {
       setupDefaults({ "core-node": { target: "node" } });
 
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
@@ -538,7 +538,7 @@ describe("executeTypecheck", () => {
     it("typecheck+lint 결과 로그에 lintErrorCount, lintWarningCount가 포함된다", async () => {
       setupDefaults({ "core-node": { target: "node" } });
 
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: true,
@@ -588,7 +588,7 @@ describe("executeTypecheck", () => {
     it("엔진이 dts.errors에 문자열 에러만 반환하면 formattedOutput에 해당 메시지가 포함되고 errorCount가 일치한다", async () => {
       setupDefaults({ "core-node": { target: "node" } });
 
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
@@ -623,7 +623,7 @@ describe("executeTypecheck", () => {
       let callIdx = 0;
       const errorMessages = ["[pkg-a:node] Error in package A", "[pkg-b:node] Error in package B"];
 
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const idx = callIdx++;
         const engine = {
           run: vi.fn().mockResolvedValue({
@@ -653,7 +653,7 @@ describe("executeTypecheck", () => {
     it("단일 엔진이 build.errors에 복수 메시지를 담으면 errorCount가 메시지 수와 일치한다", async () => {
       setupDefaults({ "core-node": { target: "node" } });
 
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,
@@ -685,7 +685,7 @@ describe("executeTypecheck", () => {
       setupDefaults({ "core-node": { target: "node" } });
 
       const diag = { category: 1, code: 2322, messageText: "Type error in source" };
-      mocks.createBuildEngine.mockImplementation(() => {
+      mocks.createTypecheckEngine.mockImplementation(() => {
         const engine = {
           run: vi.fn().mockResolvedValue({
             success: false,

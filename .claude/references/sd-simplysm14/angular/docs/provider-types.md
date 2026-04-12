@@ -1,50 +1,5 @@
 # Provider Types
 
-## `AppStructureItem`
-
-앱 구조 항목. 그룹(children 보유) 또는 리프(perms/url 보유) 중 하나.
-
-```typescript
-type AppStructureItem<TModule = unknown> =
-  | AppStructureGroupItem<TModule>
-  | AppStructureLeafItem<TModule>;
-```
-
-### `AppStructureGroupItem`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | `string` | 항목 코드 |
-| `title` | `string` | 표시 제목 |
-| `modules` | `TModule[] \| undefined` | 모듈 제한 (OR 조건) |
-| `requiredModules` | `TModule[] \| undefined` | 필수 모듈 (AND 조건) |
-| `icon` | `string \| undefined` | 아이콘 |
-| `children` | `AppStructureItem<TModule>[]` | 자식 항목 |
-
-### `AppStructureLeafItem`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | `string` | 항목 코드 |
-| `title` | `string` | 표시 제목 |
-| `modules` | `TModule[] \| undefined` | 모듈 제한 (OR 조건) |
-| `requiredModules` | `TModule[] \| undefined` | 필수 모듈 (AND 조건) |
-| `perms` | `("use" \| "edit")[] \| undefined` | 권한 목록 |
-| `subPerms` | `AppStructureSubPermission<TModule>[] \| undefined` | 하위 권한 |
-| `icon` | `string \| undefined` | 아이콘 |
-| `url` | `string \| undefined` | 외부 URL |
-| `isNotMenu` | `boolean \| undefined` | 메뉴에서 제외 여부 |
-
-### `AppStructureSubPermission`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `code` | `string` | 하위 권한 코드 |
-| `title` | `string` | 표시 제목 |
-| `modules` | `TModule[] \| undefined` | 모듈 제한 |
-| `requiredModules` | `TModule[] \| undefined` | 필수 모듈 |
-| `perms` | `("use" \| "edit")[]` | 권한 목록 |
-
 ## `SdMenu`
 
 메뉴 트리 노드.
@@ -106,24 +61,6 @@ interface SdPermission<TModule = unknown> {
 | `modules` | `TModule[] \| undefined` | 모듈 제한 |
 | `perms` | `("use" \| "edit")[] \| undefined` | 권한 목록 |
 | `children` | `SdPermission<TModule>[] \| undefined` | 하위 권한 |
-
-## `FlatPermission`
-
-플랫 권한 항목.
-
-```typescript
-interface FlatPermission<TModule = unknown> {
-  titleChain: string[];
-  codeChain: string[];
-  modulesChain: TModule[][];
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `titleChain` | `string[]` | 타이틀 체인 |
-| `codeChain` | `string[]` | 코드 체인 |
-| `modulesChain` | `TModule[][]` | 모듈 체인 |
 
 ## `SharedDataBase`
 

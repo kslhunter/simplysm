@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { setupWorkerConsola, createOnceGuard, registerCleanupHandlers } from "../../src/utils/worker-utils";
+import { setupWorkerConsola, createOnceGuard, registerCleanupHandlers } from "../../src/runtime/worker-utils";
 import consola, { LogLevels } from "consola";
 
 describe("setupWorkerConsola", () => {

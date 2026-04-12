@@ -4,16 +4,15 @@
 
 ### `mark`
 
-WritableSignal의 변경 알림을 수동으로 트리거한다. 배열/객체의 내부 변경(mutation) 후 consumer에게 변경을 알릴 때 사용.
+WritableSignal의 변경 알림을 수동으로 트리거한다. 배열/객체의 내부 변경(mutation) 후 consumer에게 변경을 알릴 때 사용. shallow copy로 새 참조를 생성하여 signal을 업데이트한다.
 
 ```typescript
-function mark(sig: WritableSignal<any>, clone?: boolean): void
+function mark(sig: WritableSignal<any>): void
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `sig` | `WritableSignal<any>` | 대상 signal |
-| `clone` | `boolean \| undefined` | `true`: shallow copy 후 `update()`. `false`/생략: Angular 내부 `producerNotifyConsumers` 직접 호출 |
+| `sig` | `WritableSignal<any>` | 대상 signal. 배열이면 `[...v]`, 객체이면 `{...v}`로 shallow copy하여 update |
 
 ### `withBusy`
 

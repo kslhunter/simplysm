@@ -14,7 +14,7 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-const { runLintInWorker } = await import("../../src/utils/lint-utils");
+const { runLintInWorker } = await import("../../src/lint/lint-utils");
 
 //#endregion
 

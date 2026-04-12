@@ -1,8 +1,9 @@
 import path from "path";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { consola } from "consola";
-import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
+import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
+import { buildWatchPaths } from "./build-watch-paths";
+import { hasFileAddOrRemove, shouldSkipRebuild } from "./build-change-filter";
 import {
   buildCompilerOptions,
   buildScssLoadPaths,
@@ -12,20 +13,17 @@ import {
   type NgtscBuildResult,
   type NgtscCombinedBuildEvent,
   type SideEffectScssEntry,
-} from "../utils/ngtsc-build-core";
-import { serializeDiagnostic } from "../utils/typecheck-serialization";
-import { LintWithProgramRunner, type LintWithProgramResult } from "../utils/lint-with-program";
+} from "../angular/ngtsc-build-core";
+import { serializeDiagnostic } from "../typecheck/typecheck-serialization";
+import { LintWithProgramRunner, type LintWithProgramResult } from "../lint/lint-with-program";
 import {
   parseTsconfig,
   getPackageSourceFiles,
   getPackageFiles,
   getCompilerOptionsForEnv,
 } from "../utils/tsconfig";
-import { AngularBuildPipeline } from "../utils/angular-build-pipeline";
-import { AngularSourceFileCache } from "../utils/angular-compiler";
-import { collectDeps } from "../utils/package-utils";
-
-setupWorkerConsola();
+import { AngularBuildPipeline } from "../angular/angular-build-pipeline";
+import { AngularSourceFileCache } from "../angular/angular-compiler";
 
 //#region 타입 (워커 인터페이스용 re-export)
 
@@ -41,8 +39,6 @@ export interface NgtscBuildWorkerEvents extends Record<string, unknown> {
 
 //#region Resource Management
 
-const logger = consola.withTag("sd:cli:ngtsc-build:worker");
-
 let fsWatcher: FsWatcher | undefined;
 
 async function cleanup(): Promise<void> {
@@ -56,7 +52,7 @@ async function cleanup(): Promise<void> {
   }
 }
 
-registerCleanupHandlers(cleanup, logger);
+const { logger, guardStartWatch } = setupWorkerLifecycle("ngtsc-build", cleanup);
 
 //#endregion
 
@@ -140,8 +136,6 @@ async function build(info: NgtscBuildInfo): Promise<NgtscBuildResult> {
 //#endregion
 
 //#region startWatch (watch mode)
-
-const guardStartWatch = createOnceGuard("startWatch");
 
 let watchInfo: NgtscBuildInfo | undefined;
 let _watchPipeline: AngularBuildPipeline | undefined;
@@ -266,36 +260,21 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
     sender.send("build", initialResult);
 
     // workspace 의존성 경로 + replaceDeps 수집
-    const { workspaceDeps, replaceDeps } = collectDeps(
-      watchInfo.pkgDir,
-      watchInfo.cwd,
-      watchInfo.replaceDeps,
-    );
+    const { watchPaths } = buildWatchPaths({
+      pkgDir: watchInfo.pkgDir,
+      cwd: watchInfo.cwd,
+      srcGlobs: ["*.{ts,scss,css}"],
+      extraDirs: [{ dir: "scss", globs: ["*.{scss,css}"] }],
+      replaceDeps: watchInfo.replaceDeps,
+    });
 
     // FsWatcher 시작
     logger.debug(`[${watchInfo.name}] FsWatcher 시작`);
-    const watchPaths = [
-      pathx.posixResolve(watchInfo.pkgDir, "src", "**", "*.{ts,scss,css}"),
-      pathx.posixResolve(watchInfo.pkgDir, "scss", "**", "*.{scss,css}"),
-      ...workspaceDeps.flatMap((d) => {
-        const depDir = pathx.posixResolve(watchInfo!.cwd, "packages", d);
-        return [
-          pathx.posixResolve(depDir, "src", "**", "*.{ts,scss,css}"),
-          pathx.posixResolve(depDir, "scss", "**", "*.{scss,css}"),
-        ];
-      }),
-      ...replaceDeps.flatMap((pkg) => [
-        pathx.posixResolve(watchInfo!.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-        pathx.posixResolve(watchInfo!.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-      ]),
-    ];
     fsWatcher = await FsWatcher.watch(watchPaths);
 
     fsWatcher.onChange({ delay: 300 }, async (changedFiles) => {
       try {
-        const hasFileAddOrRemove = changedFiles.some(
-          (c) => c.event === "add" || c.event === "unlink",
-        );
+        const addOrRemove = hasFileAddOrRemove(changedFiles);
 
         // 변경된 파일 수집 (전체 변경 + SCSS 의존성 역방향 탐색)
         const modifiedFiles = new Set<string>();
@@ -311,14 +290,8 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
         }
 
         // 의존성 필터: 관련 변경이 없으면 리빌드 건너뜀
-        if (!hasFileAddOrRemove && lastSourceFilePaths != null) {
-          const hasRelevantChange = [...modifiedFiles].some((p) =>
-            lastSourceFilePaths!.has(p),
-          );
-          if (!hasRelevantChange) {
-            logger.debug("변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀");
-            return;
-          }
+        if (shouldSkipRebuild(modifiedFiles, addOrRemove, lastSourceFilePaths, logger)) {
+          return;
         }
 
         sender.send("buildStart", {});

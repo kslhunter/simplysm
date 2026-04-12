@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/sd-cli-client",
   "version": "14.0.30",
-  "description": "심플리즘 패키지 - Vite define env 주입 통합 테스트",
+  "description": "심플리즘 패키지 - esbuild define env 주입 통합 테스트",
   "author": "김석래",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "vite": "^7.3.2"
+    "@types/node": "^25.6.0",
+    "esbuild": "^0.28.0"
   }
 }

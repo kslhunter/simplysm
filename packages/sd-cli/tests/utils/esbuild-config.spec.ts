@@ -10,7 +10,7 @@ vi.mock("fs/promises", () => ({
 }));
 
 const { createServerEsbuildOptions, createEnvBanner, writeChangedOutputFiles } =
-  await import("../../src/utils/esbuild-config");
+  await import("../../src/esbuild/esbuild-config");
 
 const { default: mockFs } = await import("fs/promises");
 

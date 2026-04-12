@@ -31,7 +31,7 @@ const mockLintLogger = {
 
 vi.spyOn(consola, "withTag").mockReturnValue(mockLintLogger as any);
 
-const { LintWithProgramRunner } = await import("../../src/utils/lint-with-program");
+const { LintWithProgramRunner } = await import("../../src/lint/lint-with-program");
 
 // --- Helpers ---
 

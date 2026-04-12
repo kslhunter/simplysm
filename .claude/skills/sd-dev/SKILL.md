@@ -18,13 +18,13 @@ sd-wbs, sd-plan(Step 2~3)은 문서 작성 후 **종료**하여 사용자가 새
 
 인자에 따라 시작 Step을 결정한다.
 
-| 입력 | 시작 Step |
-| --- | --- |
-| 인자 없음 | → Step 2 (sd-wbs) |
-| wbs 경로만 (추가 요청 있음) | → Step 2 (sd-wbs 업데이트) |
+| 입력                 | 시작 Step |
+|--------------------| --- |
 | wbs 경로만 (추가 요청 없음) | → `/sd-dev {wbs경로} {Feature번호}` 안내 후 **종료** |
-| wbs + Feature 번호 | → Step 3 (sd-plan) |
-| Feature 문서 경로 | → Step 4 (sd-tdd). Slice 체크박스(`[x]`/`[ ]`)를 확인하여 진행 상태를 복원한다 |
+| wbs 경로만 (추가 요청 있음) | → Step 2 (sd-wbs 업데이트) |
+| wbs + Feature 번호   | → Step 3 (sd-plan) |
+| Feature 문서 경로      | → Step 4 (sd-tdd). Slice 체크박스(`[x]`/`[ ]`)를 확인하여 진행 상태를 복원한다 |
+| 그 외 (자연어 요청, 참고자료 등) | → Step 2 (sd-wbs) |
 
 ## Step 2: sd-wbs
 
@@ -35,10 +35,7 @@ sd-wbs, sd-plan(Step 2~3)은 문서 작성 후 **종료**하여 사용자가 새
 
 ## Step 3: sd-plan
 
-`.claude/skills/sd-plan/SKILL.md`를 읽고 수행한다. 완료 후:
-
-- **Slice 1개** → 즉시 Step 4 진행
-- **Slice 2개 이상** → `/sd-dev {feature.md경로}` 안내만 하고 **종료**
+`.claude/skills/sd-plan/SKILL.md`를 읽고 수행한다. 완료 후 즉시 Step 4로 진행한다.
 
 ## Step 4: sd-tdd
 
@@ -72,4 +69,4 @@ sd-wbs, sd-plan(Step 2~3)은 문서 작성 후 **종료**하여 사용자가 새
 
 wbs.md를 **다시 읽어서** Feature 체크박스를 확인하여 모든 Feature가 완료(`[x]`)되었으면, `/sd-review`를 사용한 최종 심층 리뷰를 안내한다.
 
-예: `/sd-review {wbs디렉토리경로}가 잘 구현되었는지 최종 심층 리뷰`
+예: `/sd-review {wbs디렉토리경로}/*.md 가 잘 구현되었는지, 문제는 없는지 최종 심층 리뷰`

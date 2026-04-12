@@ -19,7 +19,7 @@ vi.mock("module", () => ({
 }));
 
 const { collectUninstalledOptionalPeerDeps, collectNativeModuleExternals, collectAllDependencyExternals } =
-  await import("../../src/utils/esbuild-config");
+  await import("../../src/esbuild/esbuild-config");
 
 describe("collectUninstalledOptionalPeerDeps", () => {
   beforeEach(() => {

@@ -13,11 +13,11 @@ vi.mock("../../src/orchestrators/TypecheckOrchestrator", () => ({
   executeTypecheck: mocks.executeTypecheck,
 }));
 
-vi.mock("../../src/utils/lint-core", () => ({
+vi.mock("../../src/lint/lint-core", () => ({
   executeLint: mocks.executeLint,
 }));
 
-vi.mock("../../src/utils/lint-utils", () => ({
+vi.mock("../../src/lint/lint-utils", () => ({
   runLintInWorker: mocks.runLintInWorker,
 }));
 

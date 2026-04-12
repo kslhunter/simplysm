@@ -1,73 +1,289 @@
 import "@simplysm/core-browser";
 
+// core
 export { TXT_CHANGE_IGNORE_CONFIRM } from "./core/commons";
 export { provideSdAngular } from "./core/provideSdAngular";
-export { SdThemeProvider } from "./core/providers/sd-theme-provider";
-export { setupBgTheme } from "./core/utils/setups/setupBgTheme";
-export { SdOptionEventPlugin } from "./core/plugins/events/sd-option-event.plugin";
-export { SdResizeEventPlugin, type SdResizeEvent } from "./core/plugins/events/sd-resize-event.plugin";
-export { SdIntersectionEventPlugin, type SdIntersectionEvent } from "./core/plugins/events/sd-intersection-event.plugin";
-export { SdEvents } from "./core/directives/sd-events";
-export { SdSaveCommandEventPlugin } from "./core/plugins/commands/sd-save-command-event.plugin";
-export { SdRefreshCommandEventPlugin } from "./core/plugins/commands/sd-refresh-command-event.plugin";
-export { SdInsertCommandEventPlugin } from "./core/plugins/commands/sd-insert-command-event.plugin";
-export { SdGlobalErrorHandlerPlugin } from "./core/plugins/sd-global-error-handler.plugin";
-export { setSafeStyle } from "./core/utils/setSafeStyle";
-export { setupRipple } from "./core/utils/setups/setupRipple";
-export { SdRipple } from "./core/directives/sd-ripple";
-export { setupRevealOnShow } from "./core/utils/setups/setupRevealOnShow";
-export { SdShowEffect } from "./core/directives/sd-show-effect";
-export { setupInvalid } from "./core/utils/setups/setupInvalid";
-export { SdInvalid } from "./core/directives/sd-invalid";
-export { SdTypedTemplate } from "./core/directives/sd-typed-template";
+export { setupBgTheme } from "./core/setupBgTheme";
+export { setSafeStyle } from "./core/setSafeStyle";
+export { setupModelHook } from "./core/setupModelHook";
+export { injectParent } from "./core/injectParent";
+export { withBusy } from "./core/withBusy";
+export { mark } from "./core/mark";
+export { FormatPipe } from "./core/format.pipe";
+export type { SelectModalOutputResult } from "./core/select-modal-output-result";
+export type {
+  DirectiveInputSignals,
+  UndefToOptional,
+  WithOptional,
+} from "./core/directive-input-signals";
+
+// core/events
+export { SdOptionEventPlugin } from "./core/events/sd-option-event.plugin";
+export { SdResizeEventPlugin, type SdResizeEvent } from "./core/events/sd-resize-event.plugin";
+export {
+  SdIntersectionEventPlugin,
+  type SdIntersectionEvent,
+} from "./core/events/sd-intersection-event.plugin";
+export { SdEvents } from "./core/events/sd-events";
+
+// core/commands
+export { SdSaveCommandEventPlugin } from "./core/commands/sd-save-command-event.plugin";
+export { SdRefreshCommandEventPlugin } from "./core/commands/sd-refresh-command-event.plugin";
+export { SdInsertCommandEventPlugin } from "./core/commands/sd-insert-command-event.plugin";
+
+// core/error-handler
+export { SdGlobalErrorHandlerPlugin } from "./core/error-handler/sd-global-error-handler.plugin";
+
+// core/ripple
+export { setupRipple } from "./core/ripple/setupRipple";
+export { SdRipple } from "./core/ripple/sd-ripple";
+
+// core/show-effect
+export { setupRevealOnShow } from "./core/show-effect/setupRevealOnShow";
+export { SdShowEffect } from "./core/show-effect/sd-show-effect";
+
+// core/validation
+export { setupInvalid } from "./core/validation/setupInvalid";
+export { SdInvalid } from "./core/validation/sd-invalid";
+
+// core/template
+export { SdTypedTemplate } from "./core/template/sd-typed-template";
 export {
   SdItemOfTemplate,
   type SdItemOfTemplateContext,
-} from "./core/directives/sd-item-of-template";
-export { FormatPipe } from "./core/pipes/format.pipe";
-export { setupModelHook } from "./core/utils/setups/setupModelHook";
-export { SdNavigateWindowProvider } from "./core/providers/sd-navigate-window.provider";
-export { SdRouterLink } from "./core/directives/sd-router-link";
-export { SdAngularConfigProvider } from "./core/providers/sd-angular-config.provider";
-export { SdSystemLogProvider } from "./core/providers/sd-system-log.provider";
+} from "./core/template/sd-item-of-template";
+
+// core/routing
+export { SdNavigateWindowProvider } from "./core/routing/sd-navigate-window.provider";
+export { SdRouterLink } from "./core/routing/sd-router-link";
+export { injectCurrentPageCodeSignal } from "./core/routing/injectCurrentPageCodeSignal";
+export { injectFullPageCodeSignal } from "./core/routing/injectFullPageCodeSignal";
+export { injectViewTitleSignal } from "./core/routing/injectViewTitleSignal";
+export { injectViewTypeSignal, type SdViewType } from "./core/routing/injectViewTypeSignal";
+export { setupCanDeactivate } from "./core/routing/setupCanDeactivate";
+export { getMenuRouterLinkOption, getIsMenuSelected } from "./core/routing/menu-utils";
+
+// core/config
+export { SdAngularConfigProvider } from "./core/config/sd-angular-config.provider";
+export { SdSystemLogProvider } from "./core/config/sd-system-log.provider";
+export { SdLocalStorageProvider } from "./core/config/sd-local-storage.provider";
+export { SdSystemConfigProvider } from "./core/config/sd-system-config.provider";
+export { injectSdSystemConfigResource } from "./core/config/injectSdSystemConfigResource";
+
+// core/app-structure
 export {
   SdAppStructureProvider,
   injectPermsSignal,
-} from "./core/providers/sd-app-structure.provider";
-export { SdAppStructureUtils } from "./core/providers/sd-app-structure.utils";
+} from "./core/app-structure/sd-app-structure.provider";
+export { SdAppStructureUtils } from "./core/app-structure/sd-app-structure.utils";
 export type {
-  AppStructureItem,
   SdMenu,
   SdFlatMenu,
   SdPermission,
-  FlatPermission,
-} from "./core/providers/sd-app-structure.types";
-export { SdFileDialogProvider } from "./core/providers/sd-file-dialog.provider";
-export { SdLocalStorageProvider } from "./core/providers/sd-local-storage.provider";
-export { SdSystemConfigProvider } from "./core/providers/sd-system-config.provider";
-export { SdServiceClientFactoryProvider } from "./core/providers/sd-service-client-factory.provider";
+} from "./core/app-structure/sd-app-structure.types";
+
+// core/file-dialog
+export { SdFileDialogProvider } from "./core/file-dialog/sd-file-dialog.provider";
+
+// core/service-client
+export { SdServiceClientFactoryProvider } from "./core/service-client/sd-service-client-factory.provider";
+
+// core/shared-data
 export {
   SdSharedDataProvider,
   SdSharedDataChangeEvent,
   type SharedDataBase,
   type SharedDataInfo,
   type SharedDataHandle,
-} from "./core/providers/sd-shared-data.provider";
-export { injectSdSystemConfigResource } from "./core/utils/injectSdSystemConfigResource";
-export { injectCurrentPageCodeSignal } from "./core/utils/injectCurrentPageCodeSignal";
-export { injectFullPageCodeSignal } from "./core/utils/injectFullPageCodeSignal";
-export { injectViewTitleSignal } from "./core/utils/injectViewTitleSignal";
-export { injectViewTypeSignal, type SdViewType } from "./core/utils/injectViewTypeSignal";
-export { setupCanDeactivate } from "./core/utils/setups/setupCanDeactivate";
-export { setupCumulateSelectedKeys } from "./core/utils/setups/setupCumulateSelectedKeys";
-export { setupCloserWhenSingleSelectionChange } from "./features/data-view/setupCloserWhenSingleSelectionChange";
+} from "./core/shared-data/sd-shared-data.provider";
+
+// core/selection
+export { setupCumulateSelectedKeys } from "./core/selection/setupCumulateSelectedKeys";
 export {
   useExpandingManager,
   type ExpandItemDef,
-} from "./core/utils/useExpandingManager";
-export { useSelectionManager } from "./core/utils/useSelectionManager";
-export { injectParent } from "./core/utils/injectParent";
-export { withBusy } from "./core/utils/withBusy";
+} from "./core/selection/useExpandingManager";
+export { useSelectionManager } from "./core/selection/useSelectionManager";
+export { useSortingManager, type SortingDef } from "./core/selection/useSortingManager";
+
+// core/modal
+export { SdModal } from "./core/modal/sd-modal";
+export {
+  SdModalProvider,
+  type SdModalContentDef,
+  type SdModalInfo,
+  type SdModalOptions,
+} from "./core/modal/sd-modal.provider";
+export { SdActivatedModalProvider } from "./core/modal/sd-activated-modal.provider";
+export { SdPromptModal } from "./core/modal/sd-prompt-modal";
+export { SdConfirmModal } from "./core/modal/sd-confirm-modal";
+
+// core/toast
+export { SdToast } from "./core/toast/sd-toast";
+export { SdToastContainer } from "./core/toast/sd-toast-container";
+export {
+  SdToastProvider,
+  type SdToastSeverity,
+  type SdToastTheme,
+  type SdToastContentDef,
+  type SdToastInput,
+} from "./core/toast/sd-toast.provider";
+
+// core/busy
+export { SdBusyContainer } from "./core/busy/sd-busy-container";
+export {
+  SdBusyProvider,
+  type SdBusyType,
+} from "./core/busy/sd-busy.provider";
+
+// core/print
+export {
+  SdPrintProvider,
+  type SdPrint,
+  type SdPrintInput,
+} from "./core/print/sd-print.provider";
+
+// controls/button
+export { SdButton } from "./controls/button/sd-button";
+export { SdAnchor } from "./controls/button/sd-anchor";
+export { SdAdditionalButton } from "./controls/button/sd-additional-button";
+export {
+  SdModalSelectButton,
+  type SdSelectModal,
+  type SdSelectModalInfo,
+} from "./controls/button/sd-modal-select-button";
+
+// controls/input
+export { SdTextfield } from "./controls/input/sd-textfield";
+export { type SdTextfieldTypes, sdTextfieldTypes } from "./controls/input/sd-textfield-type-handlers";
+export { SdTextarea } from "./controls/input/sd-textarea";
+export { SdNumpad } from "./controls/input/sd-numpad";
+export { SdRange } from "./controls/input/sd-range";
+export { SdDateRangePicker } from "./controls/input/sd-date-range.picker";
+
+// controls/checkbox
+export { SdCheckbox } from "./controls/checkbox/sd-checkbox";
+export { SdSwitch } from "./controls/checkbox/sd-switch";
+export { SdCheckboxGroup } from "./controls/checkbox/sd-checkbox-group";
+export { SdCheckboxGroupItem } from "./controls/checkbox/sd-checkbox-group-item";
+
+// controls/select
+export { SdSelect, type SelectModeValue } from "./controls/select/sd-select";
+export { SdSelectItem } from "./controls/select/sd-select-item";
+export { SdSelectButton } from "./controls/select/sd-select-button";
+
+// controls/dropdown
+export { SdDropdown } from "./controls/dropdown/sd-dropdown";
+export { SdDropdownPopup } from "./controls/dropdown/sd-dropdown-popup";
+
+// controls/form
+export { SdForm } from "./controls/form/sd-form";
+
+// controls/collapse
+export { SdCollapse } from "./controls/collapse/sd-collapse";
+export { SdCollapseIcon } from "./controls/collapse/sd-collapse-icon";
+
+// controls/tab
+export { SdTab } from "./controls/tab/sd-tab";
+export { SdTabItem } from "./controls/tab/sd-tab-item";
+
+// controls/list
+export { SdList } from "./controls/list/sd-list";
+export { SdListItem } from "./controls/list/sd-list-item";
+
+// controls/gap
+export { SdGap } from "./controls/gap/sd-gap";
+
+// controls/pagination
+export { SdPagination } from "./controls/pagination/sd-pagination";
+
+// layout/dock
+export { SdDockContainer } from "./layout/dock/sd-dock-container";
+export { SdDock } from "./layout/dock/sd-dock";
+
+// layout/base-container
+export { SdBaseContainer } from "./layout/base-container/sd-base-container";
+
+// layout/sidebar
+export { SdSidebarContainer } from "./layout/sidebar/sd-sidebar-container";
+export { SdSidebar } from "./layout/sidebar/sd-sidebar";
+export { SdSidebarMenu } from "./layout/sidebar/sd-sidebar-menu";
+export {
+  SdSidebarUser,
+  type SdSidebarUserMenu,
+} from "./layout/sidebar/sd-sidebar-user";
+
+// layout/topbar
+export { SdTopbarContainer } from "./layout/topbar/sd-topbar-container";
+export { SdTopbar } from "./layout/topbar/sd-topbar";
+export { SdTopbarMenu } from "./layout/topbar/sd-topbar-menu";
+export {
+  SdTopbarUser,
+  type SdTopbarUserMenu,
+} from "./layout/topbar/sd-topbar-user";
+
+// data/sheet
+export { SdSheet } from "./data/sheet/sd-sheet";
+export { SdSheetColumn } from "./data/sheet/sd-sheet-column";
+export { SdSheetConfigModal } from "./data/sheet/sd-sheet-config.modal";
+export type {
+  SdSheetColumnDef,
+  SdSheetConfig,
+  SdSheetHeaderDef,
+  SdSheetItemKeydownEventParam,
+  SdSheetCellKeydownEventParam,
+} from "./data/sheet/types";
+
+// data/data-sheet
+export { SdDataSheet } from "./data/data-sheet/sd-data-sheet";
+export {
+  SdDataSheetBase,
+  type SdDataSheetItemPropInfo,
+  type SdDataSheetItemInfo,
+  type SdDataSheetSearchResult,
+} from "./data/data-sheet/sd-data-sheet.base";
+export { SdDataSheetColumn } from "./data/data-sheet/sd-data-sheet-column";
+export { setupCloserWhenSingleSelectionChange } from "./data/data-sheet/setupCloserWhenSingleSelectionChange";
+
+// data/data-detail
+export { SdDataDetail } from "./data/data-detail/sd-data-detail";
+export {
+  SdDataDetailBase,
+  type SdDataDetailDataInfo,
+} from "./data/data-detail/sd-data-detail.base";
+
+// data/data-select-button
+export { SdDataSelectButton } from "./data/data-select-button/sd-data-select-button";
+export { SdDataSelectButtonBase } from "./data/data-select-button/sd-data-select-button.base";
+
+// data/shared-data
+export { SdSharedDataSelect } from "./data/shared-data/sd-shared-data-select";
+export { SdSharedDataSelectButton } from "./data/shared-data/sd-shared-data-select-button";
+export { SdSharedDataSelectList } from "./data/shared-data/sd-shared-data-select-list";
+export { matchesSearchText } from "./data/shared-data/matchesSearchText";
+
+// data/kanban
+export {
+  SdKanbanBoard,
+  type SdKanbanBoardDropInfo,
+  type SdKanbanDragRef,
+  type SdKanbanDropTarget,
+} from "./data/kanban/sd-kanban-board";
+export { SdKanban } from "./data/kanban/sd-kanban";
+export { SdKanbanLane } from "./data/kanban/sd-kanban-lane";
+
+// data/permission-table
+export { SdPermissionTable } from "./data/permission-table/sd-permission-table";
+
+// data/state-preset
+export {
+  SdStatePreset,
+  type SdStatePresetDef,
+} from "./data/state-preset/sd-state-preset";
+
+// features/theme
+export { SdThemeProvider } from "./features/theme/sd-theme-provider";
+export { SdThemeSelector } from "./features/theme/sd-theme-selector";
 
 // features/address
 export {
@@ -75,193 +291,13 @@ export {
   type Address,
 } from "./features/address/sd-address-search.modal";
 
-// features/permission-table
-export { SdPermissionTable } from "./features/permission-table/sd-permission-table";
+// features/editor
+export { SdTiptapEditor } from "./features/editor/sd-tiptap-editor";
 
-// features
-export { SdBaseContainer } from "./features/base/sd-base-container";
-export { SdDataSheet } from "./features/data-view/sd-data-sheet";
-export {
-  SdDataSheetBase,
-  type SdDataSheetItemPropInfo,
-  type SdDataSheetItemInfo,
-  type SdDataSheetSearchResult,
-} from "./features/data-view/sd-data-sheet.base";
-export { SdDataSheetColumn } from "./features/data-view/sd-data-sheet-column";
-export { SdDataDetail } from "./features/data-view/sd-data-detail";
-export {
-  SdDataDetailBase,
-  type SdDataDetailDataInfo,
-} from "./features/data-view/sd-data-detail.base";
-export { SdDataSelectButton } from "./features/data-view/sd-data-select-button";
-export { SdDataSelectButtonBase } from "./features/data-view/sd-data-select-button.base";
-
-// features/shared-data
-export { SdSharedDataSelect } from "./features/shared-data/sd-shared-data-select";
-export { SdSharedDataSelectButton } from "./features/shared-data/sd-shared-data-select-button";
-export { SdSharedDataSelectList } from "./features/shared-data/sd-shared-data-select-list";
-export { matchesSearchText } from "./features/shared-data/matchesSearchText";
-
-// ui/layout
-export { SdDockContainer } from "./ui/layout/dock/sd-dock-container";
-export { SdDock } from "./ui/layout/dock/sd-dock";
-export { SdGap } from "./ui/layout/sd-gap";
-export {
-  SdKanbanBoard,
-  type SdKanbanBoardDropInfo,
-  type SdKanbanDragRef,
-  type SdKanbanDropTarget,
-} from "./ui/layout/kanban/sd-kanban-board";
-export { SdKanban } from "./ui/layout/kanban/sd-kanban";
-export { SdKanbanLane } from "./ui/layout/kanban/sd-kanban-lane";
-
-// ui/form/button
-export { SdButton } from "./ui/form/button/sd-button";
-export { SdAnchor } from "./ui/form/button/sd-anchor";
-export { SdAdditionalButton } from "./ui/form/button/sd-additional-button";
-export {
-  SdModalSelectButton,
-  type SdSelectModal,
-  type SdSelectModalInfo,
-} from "./ui/form/button/sd-modal-select-button";
-export type { SelectModalOutputResult } from "./core/types/select-modal-output-result";
-
-// ui/form/input
-export { SdTextfield } from "./ui/form/input/sd-textfield";
-export { type SdTextfieldTypes, sdTextfieldTypes } from "./ui/form/input/sd-textfield-type-handlers";
-export { SdTextarea } from "./ui/form/input/sd-textarea";
-export { SdNumpad } from "./ui/form/input/sd-numpad";
-export { SdRange } from "./ui/form/input/sd-range";
-export { SdDateRangePicker } from "./ui/form/input/sd-date-range.picker";
-
-// ui/form/choice
-export {
-  SdStatePreset,
-  type SdStatePresetDef,
-} from "./ui/form/choice/sd-state-preset";
-
-// ui/form/checkbox
-export { SdCheckbox } from "./ui/form/checkbox/sd-checkbox";
-export { SdSwitch } from "./ui/form/checkbox/sd-switch";
-export { SdCheckboxGroup } from "./ui/form/checkbox/sd-checkbox-group";
-export { SdCheckboxGroupItem } from "./ui/form/checkbox/sd-checkbox-group-item";
-
-// ui/form/editor
-export { SdTiptapEditor } from "./ui/form/editor/sd-tiptap-editor";
-
-// ui/form/select
-export { SdSelect, type SelectModeValue } from "./ui/form/select/sd-select";
-export { SdSelectItem } from "./ui/form/select/sd-select-item";
-export { SdSelectButton } from "./ui/form/select/sd-select-button";
-
-// ui/form
-export { SdForm } from "./ui/form/sd-form";
-
-// ui/navigation/collapse
-export { SdCollapse } from "./ui/navigation/collapse/sd-collapse";
-export { SdCollapseIcon } from "./ui/navigation/collapse/sd-collapse-icon";
-
-// ui/navigation/tab
-export { SdTab } from "./ui/navigation/tab/sd-tab";
-export { SdTabItem } from "./ui/navigation/tab/sd-tab-item";
-
-// ui/navigation/menu
-export { getMenuRouterLinkOption, getIsMenuSelected } from "./ui/navigation/menu-utils";
-
-// ui/navigation/pagination
-export { SdPagination } from "./ui/navigation/pagination/sd-pagination";
-
-// ui/navigation/sidebar
-export { SdSidebarContainer } from "./ui/navigation/sidebar/sd-sidebar-container";
-export { SdSidebar } from "./ui/navigation/sidebar/sd-sidebar";
-export { SdSidebarMenu } from "./ui/navigation/sidebar/sd-sidebar-menu";
-export {
-  SdSidebarUser,
-  type SdSidebarUserMenu,
-} from "./ui/navigation/sidebar/sd-sidebar-user";
-
-// ui/navigation/topbar
-export { SdTopbarContainer } from "./ui/navigation/topbar/sd-topbar-container";
-export { SdTopbar } from "./ui/navigation/topbar/sd-topbar";
-export { SdTopbarMenu } from "./ui/navigation/topbar/sd-topbar-menu";
-export {
-  SdTopbarUser,
-  type SdTopbarUserMenu,
-} from "./ui/navigation/topbar/sd-topbar-user";
-
-// ui/data/list
-export { SdList } from "./ui/data/list/sd-list";
-export { SdListItem } from "./ui/data/list/sd-list-item";
-
-// ui/data/sheet
-export { SdSheet } from "./ui/data/sheet/sd-sheet";
-export { SdSheetColumn } from "./ui/data/sheet/sd-sheet-column";
-export { SdSheetConfigModal } from "./ui/data/sheet/sd-sheet-config.modal";
-export type {
-  SdSheetColumnDef,
-  SdSheetConfig,
-  SdSheetHeaderDef,
-  SdSheetItemKeydownEventParam,
-  SdSheetCellKeydownEventParam,
-} from "./ui/data/sheet/types";
-
-// ui/visual
-export { SdLabel } from "./ui/visual/sd-label";
-export { SdNote } from "./ui/visual/sd-note";
-export { SdProgress } from "./ui/visual/sd-progress";
-export { SdCalendar } from "./ui/visual/sd-calendar";
-export { SdBarcode, type BarcodeType } from "./ui/visual/sd-barcode";
-export { SdEcharts } from "./ui/visual/sd-echarts";
-
-// ui/theme
-export { SdThemeSelector } from "./ui/theme/sd-theme-selector";
-
-// ui/overlay/dropdown
-export { SdDropdown } from "./ui/overlay/dropdown/sd-dropdown";
-export { SdDropdownPopup } from "./ui/overlay/dropdown/sd-dropdown-popup";
-
-// ui/overlay/modal
-export { SdModal } from "./ui/overlay/modal/sd-modal";
-export {
-  SdModalProvider,
-  type SdModalContentDef,
-  type SdModalInfo,
-  type SdModalOptions,
-} from "./ui/overlay/modal/sd-modal.provider";
-export { SdActivatedModalProvider } from "./core/providers/sd-activated-modal.provider";
-export { SdPromptModal } from "./ui/overlay/modal/sd-prompt-modal";
-export { SdConfirmModal } from "./ui/overlay/modal/sd-confirm-modal";
-
-// ui/overlay/toast
-export { SdToast } from "./ui/overlay/toast/sd-toast";
-export { SdToastContainer } from "./ui/overlay/toast/sd-toast-container";
-export {
-  SdToastProvider,
-  type SdToastSeverity,
-  type SdToastTheme,
-  type SdToastContentDef,
-  type SdToastInput,
-} from "./core/providers/sd-toast.provider";
-
-// ui/overlay/busy
-export { SdBusyContainer } from "./ui/overlay/busy/sd-busy-container";
-export {
-  SdBusyProvider,
-  type SdBusyType,
-} from "./core/providers/sd-busy.provider";
-
-// core/providers (integration)
-export {
-  SdPrintProvider,
-  type SdPrint,
-  type SdPrintInput,
-} from "./core/providers/sd-print.provider";
-
-// core/utils
-export { mark } from "./core/utils/mark";
-export { useSortingManager, type SortingDef } from "./core/utils/useSortingManager";
-export type {
-  DirectiveInputSignals,
-  UndefToOptional,
-  WithOptional,
-} from "./core/utils/directive-input-signals";
+// features/visual
+export { SdLabel } from "./features/visual/sd-label";
+export { SdNote } from "./features/visual/sd-note";
+export { SdProgress } from "./features/visual/sd-progress";
+export { SdCalendar } from "./features/visual/sd-calendar";
+export { SdBarcode, type BarcodeType } from "./features/visual/sd-barcode";
+export { SdEcharts } from "./features/visual/sd-echarts";

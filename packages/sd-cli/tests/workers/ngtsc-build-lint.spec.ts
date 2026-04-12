@@ -15,7 +15,7 @@ const { mockLintFn, MockLintWithProgramRunner } = vi.hoisted(() => {
   return { mockLintFn: lintFn, MockLintWithProgramRunner: RunnerCls };
 });
 
-vi.mock("../../src/utils/lint-with-program", () => ({
+vi.mock("../../src/lint/lint-with-program", () => ({
   LintWithProgramRunner: MockLintWithProgramRunner,
 }));
 
@@ -41,13 +41,13 @@ const mockPipelineInstance = {
   }),
 };
 
-vi.mock("../../src/utils/angular-build-pipeline", () => ({
+vi.mock("../../src/angular/angular-build-pipeline", () => ({
   AngularBuildPipeline: vi.fn().mockImplementation(function () {
     return mockPipelineInstance;
   }),
 }));
 
-vi.mock("../../src/utils/ngtsc-build-core", () => ({
+vi.mock("../../src/angular/ngtsc-build-core", () => ({
   buildCompilerOptions: vi.fn(() => ({})),
   buildScssLoadPaths: vi.fn(() => []),
   compileSideEffectScss: vi.fn(),
@@ -62,7 +62,7 @@ vi.mock("../../src/utils/tsconfig", async (importOriginal) => {
   };
 });
 
-vi.mock("../../src/utils/worker-utils", () => ({
+vi.mock("../../src/runtime/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   createOnceGuard: vi.fn(() => vi.fn()),
   setupWorkerConsola: vi.fn(),

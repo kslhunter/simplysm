@@ -12,7 +12,7 @@ import {
   getCompilerOptionsForEnv,
   type TypecheckEnv,
 } from "./tsconfig";
-import { serializeDiagnostic, type SerializedDiagnostic } from "./typecheck-serialization";
+import { serializeDiagnostic, type SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import { createOutputPathRewriter, addJsExtensionToImports } from "./output-path-rewriter";
 import { isWorkspaceDiagnostic, formatDiagnosticError } from "./diagnostic-utils";
 

@@ -6,7 +6,7 @@ import {
   compileScssFile,
   compileScssFileAsync,
   compileScssStringAsync,
-} from "../../src/utils/scss-compiler";
+} from "../../src/angular/scss-compiler";
 
 const FIXTURE_DIR = resolve(import.meta.dirname, "../angular/fixtures/packages/basic-lib");
 

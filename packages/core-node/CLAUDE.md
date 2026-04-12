@@ -114,9 +114,9 @@ glob 패턴이 포함된 경로는 glob base 디렉토리를 감시하고, Minim
 `setupConsola()`는 환경에 따라 consola reporter를 자동 구성한다. 프로젝트 루트의 `console.*` 금지 규칙을 대체하여 `consola`를 표준 로깅 수단으로 사용한다.
 
 환경별 동작:
-- **프로덕션** (`env.DEV` 아님): `FileReporter`만 사용, debug 레벨까지 파일 기록
-- **개발 + `SD_DEBUG`**: `PrettyReporter`만 사용, debug 레벨까지 터미널 출력
-- **개발 (일반)**: `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록
+- **프로덕션** (`env.DEV` 아님, `cli` 아님): `FileReporter`만 사용, debug 레벨까지 파일 기록
+- **개발 또는 `cli: true` + `SD_DEBUG`**: `PrettyReporter`만 사용, debug 레벨까지 터미널 출력
+- **개발 또는 `cli: true` (일반)**: `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록
 
 ```typescript
 import { setupConsola, PrettyReporter, createFileReporter, withMaxLevel } from "@simplysm/core-node";
@@ -124,7 +124,7 @@ import { setupConsola, PrettyReporter, createFileReporter, withMaxLevel } from "
 // 환경별 자동 구성
 setupConsola();
 
-// CLI 모드 (항상 PrettyReporter 사용)
+// CLI 모드 (프로덕션에서도 dev 경로 사용)
 setupConsola({ cli: true });
 
 // 개별 reporter 직접 사용

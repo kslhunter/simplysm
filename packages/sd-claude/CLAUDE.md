@@ -33,7 +33,7 @@ sd-claude/
 │   │   ├── sd-tdd/            ← TDD 개발
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
-│   ├── sd-check-git.py     ← Bash 도구 사전 검사 훅 (금지 git 명령어 차단)
+│   ├── sd-check-bash.py    ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
 │   ├── sd-check-write.py   ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
 │   ├── sd-session-start.sh ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
 │   └── sd-statusline.py    ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
@@ -91,7 +91,7 @@ INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
 |---------|------|-----------|
 | `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` |
 | `PreToolUse` | `Write` | `python .claude/sd-check-write.py` |
-| `PreToolUse` | `Bash` | `python .claude/sd-check-git.py` |
+| `PreToolUse` | `Bash` | `python .claude/sd-check-bash.py` |
 | `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` |
 | `statusLine` | — | `python .claude/sd-statusline.py` |
 

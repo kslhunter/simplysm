@@ -17,7 +17,7 @@ vi.mock("@simplysm/core-node", () => ({
   }),
 }));
 
-vi.mock("../../src/utils/worker-utils", () => ({
+vi.mock("../../src/runtime/worker-utils", () => ({
   registerCleanupHandlers: vi.fn(),
   setupWorkerConsola: vi.fn(),
 }));
@@ -96,7 +96,7 @@ describe("server-runtime.worker cleanup", () => {
     await workerFns["start"]({ mainJsPath: mockMainJsPath });
 
     // Get the cleanup function registered via registerCleanupHandlers
-    const { registerCleanupHandlers } = await import("../../src/utils/worker-utils");
+    const { registerCleanupHandlers } = await import("../../src/runtime/worker-utils");
     const firstCall = vi.mocked(registerCleanupHandlers).mock.calls[0];
     expect(firstCall).toBeDefined();
     const cleanupFn = firstCall[0];
@@ -284,7 +284,7 @@ describe("server-runtime.worker start", () => {
     const portFile = path.join(mockMainDir, ".dev-port");
     expect(fs.existsSync(portFile)).toBe(true);
 
-    const { registerCleanupHandlers } = await import("../../src/utils/worker-utils");
+    const { registerCleanupHandlers } = await import("../../src/runtime/worker-utils");
     const cleanupFn = vi.mocked(registerCleanupHandlers).mock.calls[0][0];
     await cleanupFn();
 

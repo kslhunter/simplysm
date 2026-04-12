@@ -1,6 +1,6 @@
 import type * as LibraryBuildWorkerModule from "../workers/library-build.worker";
-import type { ResultCollector } from "../infra/ResultCollector";
-import type { RebuildManager } from "../utils/rebuild-manager";
+import type { ResultCollector } from "../runtime/ResultCollector";
+import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, BuildPackageInfo, EngineResult } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
 import { consola } from "consola";
@@ -53,15 +53,7 @@ export class TscEngine extends BaseEngine<
       output,
     });
 
-    return {
-      build: {
-        success: result.build.success,
-        errors: result.build.errors ?? [],
-        warnings: result.build.warnings ?? [],
-        diagnostics: result.build.diagnostics,
-      },
-      lint: result.lint,
-    };
+    return this._normalizeResult(result);
   }
 
   protected async _callStartWatch(output: BuildOutput): Promise<void> {

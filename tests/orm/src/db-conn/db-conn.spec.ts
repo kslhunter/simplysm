@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import type { MssqlDbConn, MysqlDbConn, PostgresqlDbConn } from "@simplysm/orm-node";
-import { DB_CONN_ERRORS } from "@simplysm/orm-node";
+import {
+  MssqlDbConn,
+  MysqlDbConn,
+  PostgresqlDbConn,
+  DB_CONN_ERRORS,
+} from "@simplysm/orm-node";
 import { mssqlConfig, mysqlConfig, postgresqlConfig } from "../test-configs";
+import * as tedious from "tedious";
+import * as mysql2 from "mysql2/promise";
+import * as pg from "pg";
+import * as pgCopyStreams from "pg-copy-streams";
 import {
   bulkColumnMetas,
   bulkRecords,
@@ -19,7 +27,7 @@ import { Uuid } from "@simplysm/core-common";
 
 interface DbDialectDef {
   name: string;
-  createConn: () => Promise<MssqlDbConn | MysqlDbConn | PostgresqlDbConn>;
+  createConn: () => MssqlDbConn | MysqlDbConn | PostgresqlDbConn;
 
   sql: {
     /** Quote identifier (e.g. [x], `db`.`x`, "x") */
@@ -74,11 +82,7 @@ interface DbDialectDef {
 
 const mssqlDef: DbDialectDef = {
   name: "MssqlDbConn",
-  createConn: async () => {
-    const { MssqlDbConn } = await import("@simplysm/orm-node");
-    const tedious = await import("tedious");
-    return new MssqlDbConn(tedious, mssqlConfig);
-  },
+  createConn: () => new MssqlDbConn(tedious, mssqlConfig),
   sql: {
     qi: (name) => `[${name}]`,
     table: (name) => `[${name}]`,
@@ -125,11 +129,7 @@ const mssqlDef: DbDialectDef = {
 
 const mysqlDef: DbDialectDef = {
   name: "MysqlDbConn",
-  createConn: async () => {
-    const { MysqlDbConn } = await import("@simplysm/orm-node");
-    const mysql2 = await import("mysql2/promise");
-    return new MysqlDbConn(mysql2, mysqlConfig);
-  },
+  createConn: () => new MysqlDbConn(mysql2, mysqlConfig),
   sql: {
     qi: (name) => `\`${name}\``,
     table: (name) => `\`TestDb\`.\`${name}\``,
@@ -177,12 +177,7 @@ const mysqlDef: DbDialectDef = {
 
 const postgresqlDef: DbDialectDef = {
   name: "PostgresqlDbConn",
-  createConn: async () => {
-    const { PostgresqlDbConn } = await import("@simplysm/orm-node");
-    const pg = await import("pg");
-    const pgCopyStreams = await import("pg-copy-streams");
-    return new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
-  },
+  createConn: () => new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig),
   sql: {
     qi: (name) => `"${name}"`,
     table: (name) => `"${name}"`,
@@ -236,7 +231,7 @@ for (const d of dialects) {
     let conn: MssqlDbConn | MysqlDbConn | PostgresqlDbConn;
 
     beforeAll(async () => {
-      conn = await d.createConn();
+      conn = d.createConn();
     });
 
     afterAll(async () => {
@@ -247,14 +242,14 @@ for (const d of dialects) {
 
     describe("연결", () => {
       it("연결 성공", async () => {
-        const testConn = await d.createConn();
+        const testConn = d.createConn();
         await testConn.connect();
         expect(testConn.isConnected).toBe(true);
         await testConn.close();
       });
 
       it("중복 연결 시 오류 발생", async () => {
-        const testConn = await d.createConn();
+        const testConn = d.createConn();
         await testConn.connect();
         try {
           await expect(testConn.connect()).rejects.toThrow(DB_CONN_ERRORS.ALREADY_CONNECTED);
@@ -264,7 +259,7 @@ for (const d of dialects) {
       });
 
       it("연결 종료", async () => {
-        const testConn = await d.createConn();
+        const testConn = d.createConn();
         await testConn.connect();
         await testConn.close();
         expect(testConn.isConnected).toBe(false);
@@ -273,7 +268,7 @@ for (const d of dialects) {
 
     describe("쿼리 실행", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -338,14 +333,14 @@ for (const d of dialects) {
 
     describe("연결 오류 처리", () => {
       it("연결 해제된 커넥션에서 쿼리 실행 시 오류 발생", async () => {
-        const disconnectedConn = await d.createConn();
+        const disconnectedConn = d.createConn();
         await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
           DB_CONN_ERRORS.NOT_CONNECTED,
         );
       });
 
       it("잘못된 쿼리 실행 시 오류 발생", async () => {
-        const tempConn = await d.createConn();
+        const tempConn = d.createConn();
         await tempConn.connect();
 
         try {
@@ -360,7 +355,7 @@ for (const d of dialects) {
 
     describe("트랜잭션", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -411,7 +406,7 @@ for (const d of dialects) {
 
     describe("bulkInsert", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -470,7 +465,7 @@ for (const d of dialects) {
 
     describe("다양한 타입 테스트", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -509,7 +504,7 @@ for (const d of dialects) {
 
     describe("bulkInsert NULL 및 특수 타입 테스트", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -552,7 +547,7 @@ for (const d of dialects) {
 
     describe("bulkInsert UUID 및 바이너리 타입 테스트", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -591,7 +586,7 @@ for (const d of dialects) {
 
     describe("트랜잭션 격리 수준 테스트", () => {
       beforeAll(async () => {
-        conn = await d.createConn();
+        conn = d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -668,9 +663,7 @@ describe("MysqlDbConn multi-statement 결과 분리", () => {
   let conn: MysqlDbConn;
 
   beforeAll(async () => {
-    const { MysqlDbConn: MysqlDbConnClass } = await import("@simplysm/orm-node");
-    const mysql2 = await import("mysql2/promise");
-    conn = new MysqlDbConnClass(mysql2, mysqlConfig);
+    conn = new MysqlDbConn(mysql2, mysqlConfig);
     await conn.connect();
 
     await conn.execute([

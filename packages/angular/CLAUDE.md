@@ -4,69 +4,79 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 146 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 149 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
-### 3-Layer Organization
+### Categorized Feature-Based Organization
+
+의존 방향: `core → controls → layout → data`, `features`는 다양한 계층에 의존.
 
 ```
 src/
-├── core/         <- 인프라: providers(11), plugins(8), directives(7), utils, pipes
-│   ├── directives/   sd-events.ts, sd-ripple.ts, sd-show-effect.ts, sd-invalid.ts, sd-typed-template.ts, sd-item-of-template.ts, sd-router-link.ts
-│   ├── pipes/        FormatPipe (DateTime/DateOnly/string formatting)
-│   ├── plugins/
-│   │   ├── commands/     save(Ctrl+S), refresh(Ctrl+Alt+L), insert(Ctrl+Insert), findTopOpenModalEl helper
-│   │   └── events/       resize(ResizeObserver), intersection(IntersectionObserver), option(.capture/.passive/.once)
-│   ├── providers/    config, theme, system-log, app-structure, file-dialog, local-storage, system-config, service-client-factory, shared-data, navigate-window, print
-│   └── utils/
-│       └── setups/   setupBgTheme, setupRipple, setupRevealOnShow, setupInvalid, setupModelHook, setupCanDeactivate, setupCumulateSelectedKeys
-├── features/     <- 도메인별 고수준 컴포넌트
-│   ├── address/        SdAddressSearchModal (Daum Postcode 위젯)
-│   ├── base/           SdBaseContainer (페이지/모달/뷰 공통 컨테이너)
-│   ├── data-view/      데이터 시트/상세/선택 추상 클래스 + presentation 컴포넌트 + setupCloserWhenSingleSelectionChange
-│   ├── permission-table/  SdPermissionTable (권한 매트릭스)
-│   └── shared-data/    SdSharedDataSelect/SelectButton/SelectList + matchesSearchText 유틸
-└── ui/           <- 재사용 UI 컴포넌트 라이브러리 (60+개)
-    ├── form/
-    │   ├── button/     SdButton, SdAnchor, SdAdditionalButton, SdModalSelectButton
-    │   ├── checkbox/   SdCheckbox, SdSwitch, SdCheckboxGroup, SdCheckboxGroupItem
-    │   ├── choice/     SdStatePreset
-    │   ├── editor/     SdTiptapEditor (TipTap rich text editor)
-    │   ├── input/      SdTextfield(13 types), SdTextarea, SdNumpad, SdRange, SdDateRangePicker
-    │   ├── select/     SdSelect, SdSelectItem, SdSelectButton
-    │   └── SdForm
-    ├── data/
-    │   ├── list/       SdList, SdListItem
-    │   └── sheet/      SdSheet, SdSheetColumn, SdSheetConfigModal + internal helpers
-    ├── layout/
-    │   ├── dock/       SdDockContainer, SdDock
-    │   ├── kanban/     SdKanbanBoard, SdKanban, SdKanbanLane
-    │   └── SdGap
-    ├── navigation/
-    │   ├── collapse/   SdCollapse, SdCollapseIcon
-    │   ├── pagination/ SdPagination
-    │   ├── sidebar/    SdSidebarContainer, SdSidebar, SdSidebarMenu, SdSidebarUser
-    │   ├── tab/        SdTab, SdTabItem
-    │   ├── topbar/     SdTopbarContainer, SdTopbar, SdTopbarMenu, SdTopbarUser
-    │   └── menu-utils.ts (exported: getMenuRouterLinkOption, getIsMenuSelected)
-    ├── overlay/
-    │   ├── busy/       SdBusyContainer, SdBusyProvider
-    │   ├── dropdown/   SdDropdown, SdDropdownPopup
-    │   ├── modal/      SdModal, SdModalProvider, SdActivatedModalProvider, SdPromptModal, SdConfirmModal
-    │   └── toast/      SdToast, SdToastContainer, SdToastProvider
-    └── visual/         SdLabel, SdNote, SdProgress, SdCalendar, SdBarcode, SdEcharts
+├── provideSdAngular.ts   <- composition root (모든 기반 설정)
+├── core/                 <- 인프라: providers, plugins, directives, utils, pipes, types, commons
+│   ├── app-structure/    sd-app-structure.provider, .types, .utils
+│   ├── busy/             SdBusyContainer, SdBusyProvider
+│   ├── commands/         save(Ctrl+S), refresh(Ctrl+Alt+L), insert(Ctrl+Insert), findTopOpenModalEl
+│   ├── config/           sd-angular-config, sd-local-storage, sd-system-config, sd-system-log, injectSdSystemConfigResource
+│   ├── error-handler/    SdGlobalErrorHandlerPlugin
+│   ├── events/           resize(ResizeObserver), intersection(IntersectionObserver), option(.capture/.passive/.once), sd-events
+│   ├── file-dialog/      SdFileDialogProvider
+│   ├── modal/            SdModal, SdModalProvider, SdActivatedModalProvider, SdPromptModal, SdConfirmModal
+│   ├── print/            SdPrintProvider
+│   ├── ripple/           sd-ripple, setupRipple
+│   ├── routing/          sd-router-link, sd-navigate-window.provider, inject*PageCode, injectViewType/Title, setupCanDeactivate, menu-utils
+│   ├── selection/        useSelectionManager, useSortingManager, useExpandingManager, setupCumulateSelectedKeys
+│   ├── service-client/   SdServiceClientFactoryProvider
+│   ├── shared-data/      SdSharedDataProvider
+│   ├── show-effect/      sd-show-effect, setupRevealOnShow
+│   ├── template/         sd-typed-template, sd-item-of-template
+│   ├── toast/            SdToast, SdToastContainer, SdToastProvider
+│   ├── validation/       sd-invalid, setupInvalid
+│   └── (root)            mark, setSafeStyle, withBusy, setupModelHook, setupBgTheme, injectParent, directive-input-signals, select-modal-output-result, format.pipe, commons, provideSdAngular
+├── controls/             <- UI 기본요소 (core/ 의존)
+│   ├── button/           SdButton, SdAnchor, SdAdditionalButton, SdModalSelectButton
+│   ├── checkbox/         SdCheckbox, SdSwitch, SdCheckboxGroup, SdCheckboxGroupItem
+│   ├── collapse/         SdCollapse, SdCollapseIcon
+│   ├── dropdown/         SdDropdown, SdDropdownPopup
+│   ├── form/             SdForm
+│   ├── gap/              SdGap
+│   ├── input/            텍스트필드/텍스트에리어/넘패드/레인지/날짜범위
+│   ├── list/             SdList, SdListItem
+│   ├── pagination/       SdPagination
+│   ├── select/           SdSelect, SdSelectItem, SdSelectButton
+│   └── tab/              SdTab, SdTabItem
+├── layout/               <- 페이지 구조 (core/ + controls/ 의존)
+│   ├── base-container/   SdBaseContainer
+│   ├── dock/             SdDockContainer, SdDock
+│   ├── sidebar/          SdSidebarContainer, SdSidebar, SdSidebarMenu, SdSidebarUser
+│   └── topbar/           SdTopbarContainer, SdTopbar, SdTopbarMenu, SdTopbarUser
+├── data/                 <- 비즈니스 CRUD 추상화 (core/ + controls/ + layout/ 의존)
+│   ├── data-detail/      SdDataDetail, SdDataDetailBase
+│   ├── data-select-button/  SdDataSelectButton, SdDataSelectButtonBase
+│   ├── data-sheet/       SdDataSheet, SdDataSheetBase, SdDataSheetColumn, setupCloserWhenSingleSelectionChange
+│   ├── kanban/           SdKanbanBoard, SdKanban, SdKanbanLane
+│   ├── permission-table/ SdPermissionTable
+│   ├── shared-data/      SdSharedDataSelect/SelectButton/SelectList, matchesSearchText
+│   ├── sheet/            SdSheet, SdSheetColumn, SdSheetConfigModal
+│   └── state-preset/     SdStatePreset
+└── features/             <- 독립 기능 컴포넌트 (다양한 계층 의존)
+    ├── address/          SdAddressSearchModal (Daum Postcode)
+    ├── editor/           SdTiptapEditor, useTiptapToolbar
+    ├── theme/            SdThemeProvider (dark/fontSize signal), SdThemeSelector (드롭다운 UI)
+    └── visual/           SdLabel, SdNote, SdProgress, SdCalendar, SdBarcode, SdEcharts
 ```
 
 ### Bootstrap
 
-`provideSdAngular(opt: { clientName: string })` (core/provideSdAngular.ts)이 모든 기반을 설정:
+`provideSdAngular(opt: { clientName: string })` (src/provideSdAngular.ts)이 모든 기반을 설정:
 - `provideZonelessChangeDetection()` - Zone 없는 변경 감지
 - `IMAGE_CONFIG` disableImageSizeWarning/disableImageLazyLoadWarning
 - `provideNgIconsConfig({ strokeWidth: 1.5, size: "1.33em" })`
 - 커스텀 이벤트 플러그인 등록 (`EVENT_MANAGER_PLUGINS` multi-provider) - 3 command + 3 event plugins
 - 글로벌 에러 핸들러 (`SdGlobalErrorHandlerPlugin`), `unhandledrejection`/`error` 이벤트 핸들링
-- 테마 초기화 (localStorage 동기화, `SdThemeProvider.dark` signal과 effect로 연결)
+- 테마 초기화 (localStorage 동기화, `SdThemeProvider.dark`/`fontSize` signal과 effect로 연결)
 - Service Worker 업데이트 폴링 (5분 간격, 실패 시 exponential backoff, 최대 1시간 간격)
 - 라우터 네비게이션 busy 상태 추적 (`SdBusyProvider.globalBusyCount` signal 증감)
 
@@ -141,7 +151,7 @@ src/
   - `injectCurrentPageCodeSignal()`, `injectFullPageCodeSignal()`, `injectViewTitleSignal()`, `injectViewTypeSignal(getComp)`: 라우터 기반 현재 페이지 코드/타이틀/뷰 타입 signal
   - `injectPermsSignal(viewCodes, keys)`: 앱 구조 기반 권한 signal
   - `injectParent(type?, options?)`: ViewContainerRef injector chain을 순회하여 가장 가까운 부모 컴포넌트 인스턴스를 반환. Angular 내부 `_lView[8]` (CONTEXT slot) 사용. 3 overloads: no args, type filter, type + `{ optional: true }`
-- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()`, `setupCumulateSelectedKeys()` 등 (core/utils/setups/). `setupCloserWhenSingleSelectionChange()`은 features/data-view/에 위치
+- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()`, `setupCumulateSelectedKeys()` 등 (core/utils/setups/). `setupCloserWhenSingleSelectionChange()`은 data-sheet/에 위치
   - `inject()`, `effect()`, `DestroyRef.onDestroy()` 사용하여 생성자에서 실행
 - **use 함수** (순수 Signal 유틸리티, DI 미사용) - `useSelectionManager()`, `useSortingManager()`, `useExpandingManager()`
   - Signal과 메서드를 포함한 객체 반환 (클래스가 아님)
@@ -151,13 +161,13 @@ src/
 - **단독 유틸**
   - `withBusy(busyCount, fn)`: `WritableSignal<number>`를 증감시켜 비동기 작업 중 busy 표시. finally에서 감소
   - `setSafeStyle(renderer, el, styles)`: Renderer2를 사용하여 여러 CSS 스타일을 안전하게 적용
-  - `mark(sig, clone?)`: WritableSignal의 버전을 수동으로 증가시켜 consumer에게 변경을 알린다. `clone`이 `true`이면 배열/객체를 shallow copy하여 `update()`로 처리하고, `false`이면 Angular 내부 `producerIncrementEpoch`/`producerNotifyConsumers` API를 직접 호출하여 값 변경 없이 변경 알림을 트리거한다
+  - `mark(sig)`: WritableSignal의 값을 shallow copy하여 새 참조를 생성, consumer에게 변경을 알린다. 배열은 `[...v]`, 객체는 `{...v}`로 복사
 
 ### Provider System
 
 모든 provider는 `@Injectable({ providedIn: "root" })` (SdSharedDataProvider, SdActivatedModalProvider 제외). 주요 provider:
 - `SdAngularConfigProvider` - `clientName: string` 보유
-- `SdThemeProvider` - `dark: WritableSignal<boolean>`. effect로 body에 `sd-theme-dark` class toggle
+- `SdThemeProvider` - `dark: WritableSignal<boolean>`, `fontSize: WritableSignal<number>`, `fontSizePresets: readonly number[]`. effect로 body에 `sd-theme-dark` class toggle 및 `html` fontSize 설정. `increaseFontSize()`/`decreaseFontSize()` 메서드 제공
 - `SdSystemLogProvider` - `writeFn?` 콜백, `writeAsync(severity, ...data)` 메서드
 - `SdServiceClientFactoryProvider` - ServiceClient 인스턴스 팩토리/관리
 - `SdSharedDataProvider` (abstract, `@Injectable()`) - 이벤트 기반 공유 데이터 캐시. `register()`, `getHandle()`, `emitAsync()`, `wait()` 메서드. 이벤트 API 호출 시 `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange")` 프록시 패턴 사용
@@ -180,7 +190,7 @@ Angular `EventManagerPlugin` 확장. `supports()` 메서드로 이벤트명 매�
 
 ### Feature Abstractions
 
-`src/features/data-view/`의 추상 클래스가 CRUD 패턴을 정의:
+`src/data-sheet/`, `src/data-detail/`, `src/data-select-button/`의 추상 클래스가 CRUD 패턴을 정의:
 - `SdDataSheetBase` - 데이터 시트 (페이지네이션, 정렬, CRUD)
 - `SdDataDetailBase` - 상세 폼 (load, save, delete)
 - `SdDataSelectButtonBase` - 모달 기반 선택 버튼
@@ -208,7 +218,7 @@ type UndefToOptional<T>
 type WithOptional<T, K extends keyof T>
 ```
 
-`src/features/shared-data/matchesSearchText.ts`의 `matchesSearchText(itemText, searchQuery)`:
+`src/shared-data/matchesSearchText.ts`의 `matchesSearchText(itemText, searchQuery)`:
 - 공백으로 구분된 모든 검색어(AND 조건)가 itemText에 포함되면 true 반환
 - searchQuery가 undefined이거나 빈 문자열이면 항상 true 반환
 
@@ -240,9 +250,9 @@ type WithOptional<T, K extends keyof T>
 
 `tests/vitest.setup.ts`에서 `TestBed.initTestEnvironment()` + `afterEach` TestBed reset.
 
-테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/features/`, `tests/ui/`, `tests/scss/`
+테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/busy/`, `tests/modal/`, `tests/sheet/` 등 기능 단위 플랫 구조. `tests/scss/`는 SCSS 컴파일 결과 검증.
 
-139개의 spec 파일. SCSS 컴파일 결과 검증 테스트 포함 (`tests/scss/`).
+146개의 spec 파일.
 
 ### Test Pattern
 

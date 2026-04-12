@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 71개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 98개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -18,8 +18,11 @@ src/
 │
 ├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, publish, device, replace-deps)
 ├── orchestrators/         ← 커맨드-엔진 조율
+│   ├── BaseOrchestrator.ts      ← watch/dev 공통 기반 (추상 클래스)
+│   ├── WatchOrchestrator.ts     ← watch 모드 (라이브러리 빌드 + 스크립트 훅)
+│   ├── DevOrchestrator.ts       ← dev 모드 (서버 런타임 + 클라이언트 dev server)
+│   ├── ServerRuntimeManager.ts  ← dev 모드 서버 런타임 워커 관리
 │   ├── BuildOrchestrator.ts     ← 프로덕션 빌드 (일회성)
-│   ├── DevWatchOrchestrator.ts  ← watch/dev 모드 (상시 감시)
 │   └── TypecheckOrchestrator.ts ← TypeScript 타입체크 (typecheck/check 커맨드 공용)
 ├── engines/               ← 빌드 엔진 추상화
 │   ├── types.ts           ← BuildEngine 인터페이스, PackageInfo, EngineResult
@@ -27,58 +30,83 @@ src/
 │   ├── TscEngine.ts       ← node/browser/neutral 패키지용 esbuild+tsc 엔진
 │   ├── NgtscEngine.ts     ← Angular 라이브러리용 ngtsc 엔진 (angularCompilerOptions 감지)
 │   ├── ServerEsbuildEngine.ts ← server 패키지용 esbuild 엔진
-│   ├── ViteEngine.ts      ← client 패키지용 Vite 엔진 (BaseEngine 미사용)
-│   └── index.ts           ← createBuildEngine 팩토리
+│   ├── EsbuildClientEngine.ts ← client 패키지용 esbuild+Vite 엔진 (BaseEngine 미사용)
+│   └── index.ts           ← createBuildEngine / createTypecheckEngine 팩토리
 ├── workers/               ← Node.js Worker Thread 모듈
 │   ├── library-build.worker.ts  ← node/browser/neutral 빌드
 │   ├── ngtsc-build.worker.ts    ← Angular 라이브러리 빌드
 │   ├── server-build.worker.ts   ← server 패키지 esbuild 빌드
+│   ├── server-esbuild-context.ts ← esbuild watch context 관리 (모듈 스코프 상태)
+│   ├── server-watch-manager.ts  ← server-build watch 루프 설정
 │   ├── server-runtime.worker.ts ← dev 모드 서버 프로세스 실행
 │   ├── client.worker.ts         ← Vite dev server / 프로덕션 빌드
-│   └── lint.worker.ts           ← ESLint 독립 실행
-├── angular/               ← Vite 플러그인 (Angular AOT, PostCSS inline)
-│   ├── vite-angular-plugin.ts   ← sdAngularPlugin (AngularCompiler + JavaScriptTransformer)
-│   ├── vite-postcss-inline-plugin.ts
-│   └── client-transform-stylesheet.ts
-├── infra/                 ← 인프라 유틸리티
-│   ├── ResultCollector.ts ← 빌드 결과 중앙 수집 (key: "패키지명:타입")
-│   └── SignalHandler.ts   ← SIGINT/SIGTERM 감지, waitForTermination() 제공
+│   ├── lint.worker.ts           ← ESLint 독립 실행
+│   ├── shared-worker-lifecycle.ts ← Worker 공통 초기화 (consola + cleanup + guard)
+│   ├── build-change-filter.ts   ← 파일 변경 필터링 (shouldSkipRebuild, hasFileAddOrRemove)
+│   └── build-watch-paths.ts     ← watch 대상 경로 수집 (buildWatchPaths)
+├── angular/               ← Angular AOT 컴파일 + Vite 플러그인
+│   ├── vite-angular-plugin.ts        ← sdAngularPlugin (AngularCompiler + JavaScriptTransformer)
+│   ├── client-transform-stylesheet.ts
+│   ├── angular-compiler.ts           ← AngularCompiler, AngularSourceFileCache (증분 재컴파일)
+│   ├── angular-build-pipeline.ts     ← AngularBuildPipeline (AOT 컴파일 + emit + 진단 수집 통합 파이프라인)
+│   ├── angular-build.ts              ← NgtscProgram 래퍼
+│   ├── ngtsc-build-core.ts           ← Angular 라이브러리 빌드 핵심 로직 (runNgtscBuild)
+│   └── scss-compiler.ts              ← sass 컴파일 (compileScssString, compileScssFile)
+├── esbuild/               ← esbuild 설정 및 플러그인
+│   ├── esbuild-config.ts             ← esbuild 설정 생성
+│   ├── esbuild-client-config.ts      ← 클라이언트용 esbuild 설정
+│   ├── esbuild-scss-plugin.ts        ← esbuild SCSS 플러그인
+│   ├── esbuild-index-html.ts         ← index.html 생성
+│   └── esbuild-pwa.ts                ← PWA 설정 적용
+├── dev-server/            ← HMR 및 개발 서버
+│   ├── dev-http-server.ts            ← 개발용 HTTP 서버
+│   ├── hmr-service.ts                ← HMR 서비스
+│   └── hmr-client-script.ts          ← HMR 클라이언트 스크립트
+├── lint/                  ← ESLint 실행
+│   ├── lint-core.ts                  ← ESLint 실행 핵심 로직 (LintOptions, runLint)
+│   ├── lint-with-program.ts          ← ESLint + ts.Program 통합 실행
+│   └── lint-utils.ts                 ← runLintInWorker (lint Worker 유틸)
+├── typecheck/             ← TypeScript 타입체크 유틸리티
+│   ├── typecheck-serialization.ts    ← ts.Diagnostic 직렬화/역직렬화 (Worker 경계 통과용)
+│   └── typecheck-non-package.ts      ← sd.config.ts에 없는 패키지의 typecheck 처리
+├── deps/                  ← 의존성 관리
+│   ├── replace-deps/                  ← 개발 시점 의존성 관리
+│   │   ├── replace-deps.ts               ← replaceDeps 실행 (setupReplaceDeps, watchReplaceDeps)
+│   │   ├── replace-deps-resolve.ts       ← replaceDeps 패턴 해석 (resolveReplaceDepEntries, parseWorkspaceGlobs)
+│   │   └── collect-deps.ts               ← 의존성 수집 (collectDeps)
+│   └── server-externals/              ← 빌드 시점 산출물 생성
+│       └── server-production-files.ts    ← 서버 프로덕션 외부 모듈 수집 및 파일 복사
+├── runtime/               ← 런타임 유틸리티
+│   ├── ResultCollector.ts            ← 빌드 결과 중앙 수집 (key: "패키지명:타입")
+│   ├── SignalHandler.ts              ← SIGINT/SIGTERM 감지, waitForTermination() 제공
+│   ├── rebuild-manager.ts            ← RebuildManager 구현
+│   ├── worker-utils.ts               ← Worker 관련 유틸리티
+│   ├── worker-events.ts              ← Worker 이벤트 타입 정의
+│   ├── engine-stop.ts                ← 엔진 중지 유틸리티
+│   └── engine-watch-events.ts        ← watch 이벤트 공통 처리 (setupWatchEvents)
 ├── capacitor/             ← Capacitor Android 빌드 유틸
+│   ├── capacitor.ts       ← Capacitor 프로젝트 관리 클래스 (초기화 + 실행 오케스트레이션)
+│   ├── capacitor-android.ts ← Android SDK/Java 설정 유틸
+│   ├── capacitor-build.ts ← Gradle 빌드 + 서명 설정 + 산출물 복사
+│   ├── capacitor-icon.ts  ← Sharp 아이콘 생성
+│   ├── capacitor-config-writer.ts ← capacitor.config.ts 파일 생성
+│   └── capacitor-npm-config.ts    ← .capacitor/package.json 구성 및 의존성 관리
 ├── electron/              ← Electron 빌드 유틸
-└── utils/                 ← 빌드 유틸리티 함수 모음
-    ├── angular-compiler.ts      ← AngularCompiler, AngularSourceFileCache (증분 재컴파일, HMR 지원)
-    ├── angular-build-pipeline.ts ← AngularBuildPipeline (AOT 컴파일 + emit + 진단 수집 통합 파이프라인)
-    ├── ngtsc-build-core.ts      ← Angular 라이브러리 빌드 핵심 로직 (runNgtscBuild)
-    ├── angular-build.ts         ← NgtscProgram 래퍼
-    ├── hmr-candidates.ts        ← collectHmrCandidates, analyzeFileUpdates (HMR 후보 판별)
+│   └── electron.ts        ← Electron 프로젝트 관리 클래스 (초기화 + 빌드 + 패키징)
+└── utils/                 ← 범용 빌드 유틸리티
     ├── sd-config.ts             ← loadSdConfig (jiti로 sd.config.ts 동적 로드)
     ├── tsconfig.ts              ← parseTsconfig, getPackageSourceFiles, TypecheckEnv
-    ├── esbuild-config.ts        ← esbuild 설정 생성
-    ├── vite-config.ts           ← Vite 설정 생성
-    ├── vite-scope-watch-plugin.ts ← sdScopeWatchPlugin (replaceDeps dist/ 감시 → Vite HMR 트리거)
-    ├── scss-compiler.ts         ← sass 컴파일 (compileScssString, compileScssFile)
-    ├── lint-core.ts             ← ESLint 실행 핵심 로직 (LintOptions, runLint)
-    ├── lint-with-program.ts     ← ESLint + ts.Program 통합 실행
-    ├── lint-utils.ts            ← runLintInWorker (lint Worker 유틸)
-    ├── rebuild-manager.ts       ← RebuildManager 구현
-    ├── package-utils.ts         ← 패키지 분류·필터링 (classifyWatchPackages, classifyDevPackages)
-    ├── typecheck-serialization.ts ← ts.Diagnostic 직렬화/역직렬화 (Worker 경계 통과용)
-    ├── typecheck-non-package.ts ← sd.config.ts에 없는 패키지의 typecheck 처리
+    ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
+    ├── package-utils.ts         ← 워크스페이스 패키지 탐색·검증 (validateTargets, discoverWorkspacePackages)
+    ├── package-classify.ts      ← 패키지 분류·필터링 (classifyWatchPackages, classifyDevPackages)
     ├── diagnostic-utils.ts      ← isWorkspaceDiagnostic, formatDiagnosticError
     ├── output-utils.ts          ← formatBuildMessages, printErrors, printServers
     ├── output-path-rewriter.ts  ← 출력 경로 변환
     ├── concurrency.ts           ← runWithConcurrency, getMaxConcurrency
-    ├── worker-utils.ts          ← Worker 관련 유틸리티
-    ├── worker-events.ts         ← Worker 이벤트 타입 정의
     ├── build-env.ts             ← 빌드 환경 변수 처리
     ├── copy-public.ts           ← public/ 디렉토리 복사
     ├── copy-src.ts              ← copySrc 패턴에 따른 src→dist 파일 복사
-    ├── engine-stop.ts           ← 엔진 중지 유틸리티
-    ├── replace-deps.ts          ← replaceDeps 심링크 처리
-    ├── server-production-files.ts ← 서버 프로덕션 외부 모듈 수집 및 파일 복사
-    ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
     ├── generate-pwa-icons.ts    ← PWA 아이콘 생성 (sharp 사용)
-    ├── vite-pwa-plugin.ts       ← sdPwaPlugin (PWA manifest, service worker, 아이콘 생성 Vite 플러그인)
     └── orchestrator-utils.ts    ← Orchestrator 공통 유틸리티
 ```
 
@@ -125,7 +153,7 @@ interface BuildOutput {
 
 ### BaseEngine 템플릿 메서드 패턴
 
-`TscEngine`, `NgtscEngine`, `ServerEsbuildEngine`은 `BaseEngine`을 상속하고 4개 추상 메서드만 구현한다. `ViteEngine`은 worker 이벤트 구조가 달라 BaseEngine을 사용하지 않는다:
+`TscEngine`, `NgtscEngine`, `ServerEsbuildEngine`은 `BaseEngine`을 상속하고 4개 추상 메서드만 구현한다. `EsbuildClientEngine`은 worker 이벤트 구조가 달라 BaseEngine을 사용하지 않는다:
 
 ```typescript
 abstract class BaseEngine<TPkg, TWorkerModule> implements BuildEngine {
@@ -172,12 +200,19 @@ resolve(); // batchComplete 이벤트 발행
 Orchestrator는 `initialize() -> start() -> awaitTermination() -> shutdown()` 순서로 호출한다. 모든 외부 리소스(Worker, FsWatcher)는 `shutdown()`에서 정리한다:
 
 ```typescript
-const orch = new DevWatchOrchestrator(options);
+// watch 모드
+const orch = new WatchOrchestrator(options);
 await orch.initialize(); // sd.config.ts 로드, 엔진 생성
 await orch.start();      // 초기 빌드 실행
 await orch.awaitTermination(); // SIGINT/SIGTERM 대기
 await orch.shutdown();   // 리소스 정리
+
+// dev 모드
+const orch = new DevOrchestrator(options);
+// 동일한 생명주기
 ```
+
+`WatchOrchestrator`와 `DevOrchestrator`는 `BaseOrchestrator`를 상속하여 공통 초기화(config 로드, pathMap 구축, replaceDeps 감시, 런타임 인프라 생성)를 공유한다. `BuildOrchestrator`와 `TypecheckOrchestrator`는 독립 클래스이다.
 
 ### Angular AOT 컴파일 (sdAngularPlugin)
 
@@ -214,8 +249,8 @@ tests/
 ├── commands/       ← 커맨드별 단위 테스트 (build, dev, watch, check, lint, typecheck, publish, device)
 ├── electron/       ← Electron 빌드 테스트
 ├── engines/        ← 엔진 단위 및 통합 테스트 (base-engine, tsc, ngtsc, server-esbuild, vite, engine-selection)
-├── infra/          ← ResultCollector, SignalHandler
-├── orchestrators/  ← BuildOrchestrator, DevWatchOrchestrator
+├── runtime/        ← ResultCollector, SignalHandler
+├── orchestrators/  ← BuildOrchestrator, WatchOrchestrator, DevOrchestrator
 ├── utils/          ← 유틸 함수 단위 테스트
 ├── workers/        ← Worker 모듈 단위 테스트
 └── sd-cli-entry.spec.ts       ← CLI 엔트리 테스트
@@ -236,4 +271,4 @@ const { TscEngine } = await import("../../src/engines/TscEngine");
 
 ## 자주하는 실수
 
-- **build/dev에서 lint 실행 금지**: `BuildOrchestrator`/`DevWatchOrchestrator`에서 `lint: true`로 넘기면 안 된다. lint는 `pnpm check` (lint 커맨드)에서만 실행한다
+- **build/dev에서 lint 실행 금지**: `BuildOrchestrator`/`WatchOrchestrator`/`DevOrchestrator`에서 `lint: true`로 넘기면 안 된다. lint는 `pnpm check` (lint 커맨드)에서만 실행한다

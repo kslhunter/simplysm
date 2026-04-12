@@ -1,9 +1,11 @@
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import { consola } from "consola";
-import type { BuildResult, ResultCollector } from "../infra/ResultCollector";
-import { stopEngineWorker } from "../utils/engine-stop";
-import type { LintWithProgramResult } from "../utils/lint-with-program";
-import type { RebuildManager } from "../utils/rebuild-manager";
+import type { BuildResult, ResultCollector } from "../runtime/ResultCollector";
+import { stopEngineWorker } from "../runtime/engine-stop";
+import { setupWatchEvents } from "../runtime/engine-watch-events";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
+import type { RebuildManager } from "../runtime/rebuild-manager";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { BuildEngine, BuildOutput, EngineResult, PackageInfo } from "./types";
 
 const logger = consola.withTag("sd:cli:engine");
@@ -53,7 +55,7 @@ export interface BaseEngineOptions<TPkg extends PackageInfo> {
  * 이벤트 처리)이 여기에 위치하며, 서브클래스는 추상 메서드를 통해
  * 워커 경로, 빌드/워치 호출 파라미터, 타겟 결정을 제공한다.
  *
- * ViteEngine은 이 계층에 포함되지 않음 — serverReady 이벤트, port 관리 등 생명주기가 다름.
+ * EsbuildClientEngine은 이 계층에 포함되지 않음 — serverReady 이벤트, port 관리 등 생명주기가 다름.
  */
 export abstract class BaseEngine<
   TPkg extends PackageInfo,
@@ -98,6 +100,30 @@ export abstract class BaseEngine<
   protected abstract _callStartWatch(output: BuildOutput): Promise<void>;
 
   /**
+   * Worker 빌드 결과를 EngineResult로 정규화한다.
+   * errors/warnings가 undefined이면 빈 배열로 변환한다.
+   */
+  protected _normalizeResult(result: {
+    build: {
+      success: boolean;
+      errors?: string[];
+      warnings?: string[];
+      diagnostics: SerializedDiagnostic[];
+    };
+    lint?: LintWithProgramResult;
+  }): EngineResult {
+    return {
+      build: {
+        success: result.build.success,
+        errors: result.build.errors ?? [],
+        warnings: result.build.warnings ?? [],
+        diagnostics: result.build.diagnostics,
+      },
+      lint: result.lint,
+    };
+  }
+
+  /**
    * 서브클래스가 제공하는 워커 경로로 워커 인스턴스를 생성한다.
    */
   protected _createWorker(): void {
@@ -127,87 +153,40 @@ export abstract class BaseEngine<
     this._isWatchMode = true;
     this._createWorker();
 
-    return new Promise<void>((resolve) => {
-      let isInitialBuild = true;
-      let resolver: (() => void) | undefined;
-      const workerKey = `${this._pkg.name}:build`;
-
-      this._worker!.on("buildStart", () => {
-        if (this._rebuildManager != null) {
-          resolver = this._rebuildManager.registerBuild(
-            workerKey,
-            `${this._pkg.name} (${this._getTarget()})`,
-          );
-        }
-      });
-
-      this._worker!.on("build", (data) => {
-        const event = data;
-
-        if (event.build.warnings != null && event.build.warnings.length > 0) {
-          logger.warn(`${this._pkg.name}: ${event.build.warnings.join(", ")}`);
-        }
-
-        // 빌드 결과 보고
-        const buildResult: BuildResult = {
-          name: this._pkg.name,
-          target: this._getTarget(),
-          type: "build",
-          status: event.build.success ? "success" : "error",
-          message: event.build.errors?.join("\n"),
-        };
-        this._resultCollector?.add(buildResult);
-
-        // 린트 결과 보고 (있는 경우)
-        if (event.lint != null) {
-          const lintResult: BuildResult = {
-            name: this._pkg.name,
-            target: this._getTarget(),
-            type: "lint",
-            status: event.lint.success ? "success" : "error",
-            message: event.lint.formattedOutput !== "" ? event.lint.formattedOutput : undefined,
-          };
-          this._resultCollector?.add(lintResult);
-        }
-
-        resolver?.();
-        resolver = undefined;
-
-        if (isInitialBuild) {
-          isInitialBuild = false;
-          logger.debug(`[${this._pkg.name}] 초기 빌드 완료 (success: ${event.build.success})`);
-          resolve();
-        }
-      });
-
-      this._worker!.on("error", (data) => {
-        const event = data as { message: string };
-        const result: BuildResult = {
-          name: this._pkg.name,
-          target: this._getTarget(),
-          type: "build",
-          status: "error",
-          message: event.message,
-        };
-        this._resultCollector?.add(result);
-
-        resolver?.();
-        resolver = undefined;
-
-        // 에러 경로: 항상 resolve (reject하지 않음) — 호출자가 ResultCollector에서 상태를 확인
-        if (isInitialBuild) {
-          isInitialBuild = false;
-          resolve();
-        }
-      });
-
-      this._callStartWatch(output).catch(() => {
-        if (isInitialBuild) {
-          isInitialBuild = false;
-          resolve();
-        }
-      });
+    const { waitForInitialBuild, resolveInitialBuild } = setupWatchEvents(this._worker!, {
+      name: this._pkg.name,
+      target: this._getTarget(),
+      resultCollector: this._resultCollector,
+      rebuildManager: this._rebuildManager,
+      normalizeBuild: (data) =>
+        (data as CommonBuildWorkerEvents["build"]).build,
     });
+
+    // BaseEngine 전용: 경고 로깅 + 린트 결과 보고
+    this._worker!.on("build", (data) => {
+      const event = data;
+
+      if (event.build.warnings != null && event.build.warnings.length > 0) {
+        logger.warn(`${this._pkg.name}: ${event.build.warnings.join(", ")}`);
+      }
+
+      if (event.lint != null) {
+        const lintResult: BuildResult = {
+          name: this._pkg.name,
+          target: this._getTarget(),
+          type: "lint",
+          status: event.lint.success ? "success" : "error",
+          message: event.lint.formattedOutput !== "" ? event.lint.formattedOutput : undefined,
+        };
+        this._resultCollector?.add(lintResult);
+      }
+    });
+
+    this._callStartWatch(output).catch(() => {
+      resolveInitialBuild();
+    });
+
+    return waitForInitialBuild();
   }
 
   /**

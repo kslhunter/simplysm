@@ -19,7 +19,7 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
-    "basic-ftp": "^5.2.1",
+    "basic-ftp": "^5.2.2",
     "ssh2-sftp-client": "^12.1.1"
   },
   "devDependencies": {

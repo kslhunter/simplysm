@@ -7,8 +7,8 @@ import {
   discoverWorkspacePackages,
   hasAngularCoreDependency,
   mergeTestsPackagesIntoConfig,
-  iteratePackages,
 } from "../../src/utils/package-utils";
+import { iteratePackages } from "../../src/utils/package-classify";
 
 describe("validateTargets", () => {
   const packages = {

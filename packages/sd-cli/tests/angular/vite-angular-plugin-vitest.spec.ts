@@ -55,16 +55,11 @@ describe("sdAngularPlugin Vitest 지원", () => {
       createTestSdConfig({ target: "browser" } as any),
     );
 
-    const onBuild = vi.fn();
-    const browserPlugin = sdAngularPlugin({ pkg: "basic-app", onBuild });
+    const browserPlugin = sdAngularPlugin({ pkg: "basic-app" });
 
     await (browserPlugin as any).config?.({}, { mode: "development", command: "serve" });
     (browserPlugin as any).configResolved?.({ build: { sourcemap: false } });
     await (browserPlugin as any).buildStart?.call({});
-
-    expect(onBuild).toHaveBeenCalledWith(
-      expect.objectContaining({ success: expect.any(Boolean) }),
-    );
 
     const appComponentPath = resolve(PKG_DIR, "src/app.component.ts");
     const result = await (browserPlugin as any).transform?.call({}, "", appComponentPath);

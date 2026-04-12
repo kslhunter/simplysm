@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import fsp from "fs/promises";
 import path from "path";
 import postcss from "postcss";
-import { compileScssFileAsync, compileScssStringAsync } from "../utils/scss-compiler.js";
+import { compileScssFileAsync, compileScssStringAsync } from "./scss-compiler.js";
 
 export interface ClientTransformStylesheetOptions {
   loadPaths: string[];

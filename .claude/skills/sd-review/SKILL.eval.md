@@ -96,8 +96,72 @@
   - [ ] `var` 사용, `==` 비교, 미사용 변수를 리뷰 이슈로 보고하지 않았다
   - [ ] 리포트에 "발견 이슈: 0건" 또는 "보고할 이슈가 없습니다"에 해당하는 내용이 있다
 
+### 시나리오 4: 일관성 이슈 탐지
+
+- 사전 조건:
+  - `src/user-api.ts`:
+    ```typescript
+    export function getUser(userId: string): { id: string; name: string } {
+      return { id: userId, name: "Alice" };
+    }
+
+    export function updateUser(name: string, uid: string): void {
+      // userId vs uid 네이밍 불일치, 파라미터 순서 불일치
+      console.log(name, uid);
+    }
+
+    export function deleteUser(userIdx: number): boolean {
+      // userId(string) vs userIdx(number) 타입·네이밍 불일치
+      return true;
+    }
+    ```
+- 입력: "/sd-review"
+- 체크리스트:
+  - [ ] 같은 개념(사용자 식별자)에 대한 네이밍 불일치(`userId`, `uid`, `userIdx`)를 식별했다
+  - [ ] 유사 함수 간 파라미터 순서 불일치를 식별했다
+  - [ ] 해당 이슈의 category가 일관성(CONSIST)으로 분류되었다
+
+### 시나리오 5: 설계 이슈 탐지 (리소스 미해제)
+
+- 사전 조건:
+  - `src/event-manager.ts`:
+    ```typescript
+    export class EventManager {
+      private handlers: Map<string, Function[]> = new Map();
+      private cache: Map<string, object> = new Map();
+
+      register(event: string, handler: Function): void {
+        const list = this.handlers.get(event) ?? [];
+        list.push(handler);
+        this.handlers.set(event, list);
+      }
+
+      process(event: string, data: object): void {
+        this.cache.set(`${event}-${Date.now()}`, data);
+        // cache에 항목 추가만 하고 제거/초기화 없음 (무한 축적)
+        const list = this.handlers.get(event) ?? [];
+        for (const h of list) {
+          h(data);
+        }
+      }
+    }
+    ```
+- 입력: "/sd-review"
+- 체크리스트:
+  - [ ] cache Map의 무한 축적 패턴을 식별했다
+  - [ ] 해당 이슈의 category가 설계(DESIGN)으로 분류되었다
+  - [ ] 리포트 파일이 생성되었다
+
+### 시나리오 6: 완료 후 sd-dev 연계
+
+- 사전 조건:
+  - `src/order-service.ts`: (시나리오 1과 동일)
+- 입력: "/sd-review"
+- 체크리스트:
+  - [ ] 리포트 파일 경로가 대화에 표시되었다
+  - [ ] 이슈가 발견되었으므로 sd-dev SKILL.md를 읽고 수행을 시도했다
+
 ## 안티패턴 Eval
 
-- [ ] 대상 소스 코드 파일을 직접 수정했다 (sd-review는 리포트만 생성해야 한다)
-- [ ] 타입 불일치, any 사용, 코드 스타일 등 린터/타입체커가 잡는 이슈를 보고했다
+- [ ] sd-review 리포트 생성 완료 이전에 대상 소스 코드 파일을 직접 수정했다 (sd-review는 리포트만 생성해야 한다)
 - [ ] 확신 없는 이슈를 확정적으로 단정했다 ("반드시 ~를 일으킵니다" 등 단정적 표현)

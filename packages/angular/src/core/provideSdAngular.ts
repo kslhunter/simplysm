@@ -22,17 +22,17 @@ import {
 } from "@angular/router";
 import { SwUpdate } from "@angular/service-worker";
 import { provideNgIconsConfig } from "@ng-icons/core";
-import { SdBusyProvider } from "./providers/sd-busy.provider";
-import { SdAngularConfigProvider } from "./providers/sd-angular-config.provider";
-import { SdThemeProvider } from "./providers/sd-theme-provider";
-import { SdLocalStorageProvider } from "./providers/sd-local-storage.provider";
-import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
-import { SdSaveCommandEventPlugin } from "./plugins/commands/sd-save-command-event.plugin";
-import { SdRefreshCommandEventPlugin } from "./plugins/commands/sd-refresh-command-event.plugin";
-import { SdInsertCommandEventPlugin } from "./plugins/commands/sd-insert-command-event.plugin";
-import { SdResizeEventPlugin } from "./plugins/events/sd-resize-event.plugin";
-import { SdIntersectionEventPlugin } from "./plugins/events/sd-intersection-event.plugin";
-import { SdOptionEventPlugin } from "./plugins/events/sd-option-event.plugin";
+import { SdBusyProvider } from "./busy/sd-busy.provider";
+import { SdAngularConfigProvider } from "./config/sd-angular-config.provider";
+import { SdThemeProvider } from "../features/theme/sd-theme-provider";
+import { SdLocalStorageProvider } from "./config/sd-local-storage.provider";
+import { SdGlobalErrorHandlerPlugin } from "./error-handler/sd-global-error-handler.plugin";
+import { SdSaveCommandEventPlugin } from "./commands/sd-save-command-event.plugin";
+import { SdRefreshCommandEventPlugin } from "./commands/sd-refresh-command-event.plugin";
+import { SdInsertCommandEventPlugin } from "./commands/sd-insert-command-event.plugin";
+import { SdResizeEventPlugin } from "./events/sd-resize-event.plugin";
+import { SdIntersectionEventPlugin } from "./events/sd-intersection-event.plugin";
+import { SdOptionEventPlugin } from "./events/sd-option-event.plugin";
 
 export function provideSdAngular(opt: { clientName: string }): EnvironmentProviders {
   return makeEnvironmentProviders([

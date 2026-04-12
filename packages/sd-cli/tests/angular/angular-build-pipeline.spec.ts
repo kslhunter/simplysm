@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import path from "path";
 import ts from "typescript";
-import { AngularBuildPipeline } from "../../src/utils/angular-build-pipeline.js";
-import { AngularSourceFileCache } from "../../src/utils/angular-compiler.js";
+import { AngularBuildPipeline } from "../../src/angular/angular-build-pipeline.js";
+import { AngularSourceFileCache } from "../../src/angular/angular-compiler.js";
 import { getPackageSourceFiles } from "../../src/utils/tsconfig.js";
 
 const FIXTURE_DIR = path.resolve(import.meta.dirname, "fixtures/packages/basic-app");

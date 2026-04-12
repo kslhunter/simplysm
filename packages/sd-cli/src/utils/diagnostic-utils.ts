@@ -15,6 +15,21 @@ export function isWorkspaceDiagnostic(diagnostic: ts.Diagnostic, cwd: string): b
 }
 
 /**
+ * ts.Diagnostic 배열을 중복 제거 후 컬러 컨텍스트 포맷으로 변환한다.
+ * 빈 배열이면 빈 문자열을 반환한다.
+ */
+export function formatDiagnosticsOutput(diagnostics: ts.Diagnostic[], cwd: string): string {
+  if (diagnostics.length === 0) return "";
+  const formatHost: ts.FormatDiagnosticsHost = {
+    getCanonicalFileName: (f) => f,
+    getCurrentDirectory: () => cwd,
+    getNewLine: () => ts.sys.newLine,
+  };
+  const uniqueDiagnostics = ts.sortAndDeduplicateDiagnostics(diagnostics);
+  return ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
+}
+
+/**
  * 진단 에러를 "파일:줄:열: TS코드: 메시지" 형식으로 포맷한다.
  * 파일 정보가 없는 경우 "TS코드: 메시지" 형식으로 반환한다.
  */

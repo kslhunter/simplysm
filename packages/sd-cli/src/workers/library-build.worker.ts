@@ -1,17 +1,15 @@
 import type ts from "typescript";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 import type { BuildOutput } from "../engines/types";
-import type { SerializedDiagnostic } from "../utils/typecheck-serialization";
-import type { LintWithProgramResult } from "../utils/lint-with-program";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
 import { runTscPackageBuild } from "../utils/tsc-build";
-import { LintWithProgramRunner } from "../utils/lint-with-program";
-import { collectDeps } from "../utils/package-utils";
-import { registerCleanupHandlers, createOnceGuard, setupWorkerConsola } from "../utils/worker-utils";
-
-setupWorkerConsola();
+import { LintWithProgramRunner } from "../lint/lint-with-program";
+import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
+import { buildWatchPaths } from "./build-watch-paths";
+import { hasFileAddOrRemove, shouldSkipRebuild } from "./build-change-filter";
 
 //#region Types
 
@@ -45,8 +43,6 @@ export interface LibraryBuildWorkerEvents extends Record<string, unknown> {
 
 //#region Resource Management
 
-const logger = consola.withTag("sd:cli:library-build:worker");
-
 let fsWatcher: FsWatcher | undefined;
 
 async function cleanup(): Promise<void> {
@@ -57,7 +53,7 @@ async function cleanup(): Promise<void> {
   await watcherToClose?.close();
 }
 
-registerCleanupHandlers(cleanup, logger);
+const { logger, guardStartWatch } = setupWorkerLifecycle("library-build", cleanup);
 
 //#endregion
 
@@ -100,8 +96,6 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
 //#endregion
 
 //#region startWatch (watch mode)
-
-const guardStartWatch = createOnceGuard("startWatch");
 
 // watch 모드용 가변 상태
 let watchInfo: LibraryBuildInfo | undefined;
@@ -169,34 +163,21 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
     sender.send("build", initialResult);
 
     // workspace 의존성 경로 + replaceDeps 수집
-    const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
+    const { watchPaths } = buildWatchPaths({
+      pkgDir: info.pkgDir,
+      cwd: info.cwd,
+      srcGlobs: ["*.ts"],
+      replaceDeps: info.replaceDeps,
+    });
 
     // FsWatcher 시작 — 자체 src/ + workspace 의존성 src/ + replaceDeps dist/
     logger.debug(`[${info.name}] FsWatcher 시작`);
-    const watchPaths = [
-      pathx.posixResolve(info.pkgDir, "src", "**", "*.ts"),
-      ...workspaceDeps.map((d) => pathx.posixResolve(info.cwd, "packages", d, "src", "**", "*.ts")),
-      ...replaceDeps.flatMap((pkg) => [
-        pathx.posixResolve(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-        pathx.posixResolve(info.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
-      ]),
-    ];
     fsWatcher = await FsWatcher.watch(watchPaths);
 
     fsWatcher.onChange({ delay: 300 }, async (changes) => {
       try {
-        const hasFileAddOrRemove = changes.some(
-          (c) => c.event === "add" || c.event === "unlink",
-        );
-
-        if (!hasFileAddOrRemove && lastSourceFilePaths != null) {
-          const hasRelevantChange = changes.some((c) =>
-            lastSourceFilePaths!.has(c.path),
-          );
-          if (!hasRelevantChange) {
-            logger.debug("변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀");
-            return;
-          }
+        if (shouldSkipRebuild(changes.map((c) => c.path), hasFileAddOrRemove(changes), lastSourceFilePaths, logger)) {
+          return;
         }
 
         sender.send("buildStart", {});

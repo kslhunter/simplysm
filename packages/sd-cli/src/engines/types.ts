@@ -1,7 +1,7 @@
 import type { SdBuildPackageConfig, SdClientPackageConfig, SdPackageConfig, SdServerPackageConfig } from "../sd-config.types";
-import type { SerializedDiagnostic } from "../utils/typecheck-serialization";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { TypecheckEnv } from "../utils/tsconfig";
-import type { LintWithProgramResult } from "../utils/lint-with-program";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
 
 /**
  * 패키지 정보
@@ -81,6 +81,6 @@ export interface BuildEngine {
    */
   stop(): Promise<void>;
 
-  /** 개발 서버 포트 (ViteEngine의 워치 모드에서 serverReady 이벤트로 설정됨) */
+  /** 개발 서버 포트 (EsbuildClientEngine의 워치 모드에서 serverReady 이벤트로 설정됨) */
   readonly port?: number;
 }

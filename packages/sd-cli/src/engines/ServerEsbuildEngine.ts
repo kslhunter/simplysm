@@ -1,6 +1,6 @@
 import type * as ServerBuildWorkerModule from "../workers/server-build.worker";
-import type { ResultCollector } from "../infra/ResultCollector";
-import type { RebuildManager } from "../utils/rebuild-manager";
+import type { ResultCollector } from "../runtime/ResultCollector";
+import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, EngineResult, ServerPackageInfo } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
 import { consola } from "consola";
@@ -57,15 +57,7 @@ export class ServerEsbuildEngine extends BaseEngine<
       packageManager: this._pkg.config.packageManager,
     });
 
-    return {
-      build: {
-        success: result.build.success,
-        errors: result.build.errors ?? [],
-        warnings: result.build.warnings ?? [],
-        diagnostics: result.build.diagnostics,
-      },
-      lint: result.lint,
-    };
+    return this._normalizeResult(result);
   }
 
   protected async _callStartWatch(output: BuildOutput): Promise<void> {

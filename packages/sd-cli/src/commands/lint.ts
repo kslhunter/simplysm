@@ -1,4 +1,4 @@
-import { executeLint, type LintOptions } from "../utils/lint-core";
+import { executeLint, type LintOptions } from "../lint/lint-core";
 
 //#region Main
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
 import { formatBuildMessages, printErrors, printServers } from "../../src/utils/output-utils";
-import type { BuildResult } from "../../src/infra/ResultCollector";
+import type { BuildResult } from "../../src/runtime/ResultCollector";
 
 vi.spyOn(consola, "error").mockImplementation(() => {});
 vi.spyOn(consola, "info").mockImplementation(() => {});

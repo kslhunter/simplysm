@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
-import { consola } from "consola";
 import * as tscBuild from "../../src/utils/tsc-build";
-import * as packageUtils from "../../src/utils/package-utils";
+import * as collectDepsModule from "../../src/deps/replace-deps/collect-deps";
 
 //#region Mocks
 
@@ -32,7 +31,13 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 const mockDebug = vi.fn();
-vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockDebug, warn: vi.fn() } as any);
+
+vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
+  setupWorkerLifecycle: vi.fn(() => ({
+    logger: { debug: mockDebug, warn: vi.fn() },
+    guardStartWatch: vi.fn(),
+  })),
+}));
 
 // tsc build spy
 const mockRunTscPackageBuild = vi.spyOn(tscBuild, "runTscPackageBuild").mockReturnValue({
@@ -46,14 +51,8 @@ const mockRunTscPackageBuild = vi.spyOn(tscBuild, "runTscPackageBuild").mockRetu
   },
 } as any);
 
-vi.mock("../../src/utils/worker-utils", () => ({
-  setupWorkerConsola: vi.fn(),
-  registerCleanupHandlers: vi.fn(),
-  createOnceGuard: vi.fn(() => vi.fn()),
-}));
-
-// package-utils spy
-const mockCollectDeps = vi.spyOn(packageUtils, "collectDeps").mockReturnValue({
+// collect-deps spy
+const mockCollectDeps = vi.spyOn(collectDepsModule, "collectDeps").mockReturnValue({
   workspaceDeps: [],
   replaceDeps: [],
 });

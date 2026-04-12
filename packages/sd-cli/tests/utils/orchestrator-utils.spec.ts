@@ -46,8 +46,8 @@ describe("loadAndValidateConfig", () => {
     expect(result).toBe(config);
   });
 
-  // Acceptance: Scenario "DevWatchOrchestrator가 공유 초기화 유틸을 사용한다"
-  it("works with dev:true for DevWatchOrchestrator", async () => {
+  // Acceptance: dev:true 모드 동작 확인
+  it("works with dev:true", async () => {
     const config: SdConfig = {
       packages: { "demo-server": { target: "server" } as any },
     };

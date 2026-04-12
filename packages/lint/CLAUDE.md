@@ -74,7 +74,7 @@ export default createRule({
 | `**/*.html` | `@simplysm`, `@angular-eslint/template` (recommended + accessibility) | `ng-template-*` 2개 규칙 |
 | `**/tests/**/*.ts` | -- | `no-console`, `import/no-extraneous-dependencies`, `ts-no-throw-not-implemented-error` 비활성화 |
 
-공유 규칙 변수: `commonRules` (eqeqeq, no-warning-comments 등), `noNodeBuiltinsRules` (Buffer/events/eventemitter3 금지), `unusedImportsRules` (미사용 import 자동 제거).
+공유 규칙 변수: `commonRules` (eqeqeq, no-warning-comments 등), `noNodeBuiltinsRules` (Buffer/events/eventemitter3 금지), `noDirectEnvAccessRules` (process.env/import.meta.env 직접 접근 금지, NODE_ENV 사용 금지), `unusedImportsRules` (미사용 import 자동 제거).
 
 ### AST 순회 헬퍼
 

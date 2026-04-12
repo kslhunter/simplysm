@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 //#region Mocks
 
 const mocks = vi.hoisted(() => ({
-  loadSdConfig: vi.fn(),
+  loadAndValidateConfig: vi.fn(),
   deserializeDiagnostic: vi.fn((d: any) => d),
   typecheckNonPackageFiles: vi.fn(),
-  createBuildEngine: vi.fn(),
+  createTypecheckEngine: vi.fn(),
   discoverWorkspacePackages: vi.fn(),
   mergeTestsPackagesIntoConfig: vi.fn(),
 }));
@@ -16,20 +16,20 @@ const mockEngines: Array<{
   stop: ReturnType<typeof vi.fn>;
 }> = [];
 
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: mocks.loadSdConfig,
+vi.mock("../../src/utils/orchestrator-utils", () => ({
+  loadAndValidateConfig: mocks.loadAndValidateConfig,
 }));
 
-vi.mock("../../src/utils/typecheck-serialization", () => ({
+vi.mock("../../src/typecheck/typecheck-serialization", () => ({
   deserializeDiagnostic: mocks.deserializeDiagnostic,
 }));
 
-vi.mock("../../src/utils/typecheck-non-package", () => ({
+vi.mock("../../src/typecheck/typecheck-non-package", () => ({
   typecheckNonPackageFiles: mocks.typecheckNonPackageFiles,
 }));
 
 vi.mock("../../src/engines/index", () => ({
-  createBuildEngine: mocks.createBuildEngine,
+  createTypecheckEngine: mocks.createTypecheckEngine,
 }));
 
 vi.mock("../../src/utils/package-utils", async (importOriginal) => {
@@ -77,8 +77,8 @@ function createMockEngine() {
 }
 
 function setupDefaults(packages: Record<string, any> = {}) {
-  mocks.loadSdConfig.mockResolvedValue({ packages });
-  mocks.createBuildEngine.mockImplementation(() => createMockEngine() as any);
+  mocks.loadAndValidateConfig.mockResolvedValue({ packages });
+  mocks.createTypecheckEngine.mockImplementation(() => createMockEngine() as any);
   mocks.typecheckNonPackageFiles.mockReturnValue({
     success: true, errorCount: 0, warningCount: 0, diagnostics: [],
   });
@@ -120,7 +120,7 @@ describe("TypecheckOrchestrator", () => {
     expect(result.errorCount).toBe(0);
     expect(result.warningCount).toBe(0);
     // neutral → 2 tasks (node + browser), node → 1 task = 3 engines
-    expect(mocks.createBuildEngine).toHaveBeenCalledTimes(3);
+    expect(mocks.createTypecheckEngine).toHaveBeenCalledTimes(3);
     for (const engine of mockEngines) {
       expect(engine.run).toHaveBeenCalledWith(
         expect.objectContaining({ js: false, dts: false }),
@@ -143,7 +143,7 @@ describe("TypecheckOrchestrator", () => {
   // Acceptance: Scenario "엔진 실패 시 리소스 정리"
   it("calls engine.stop() even when run fails", async () => {
     setupDefaults({ "core-node": { target: "node" } });
-    mocks.createBuildEngine.mockImplementation(() => {
+    mocks.createTypecheckEngine.mockImplementation(() => {
       const engine = {
         run: vi.fn().mockRejectedValue(new Error("build error")),
         startWatch: vi.fn(),

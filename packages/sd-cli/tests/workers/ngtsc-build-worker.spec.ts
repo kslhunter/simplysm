@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import path, { resolve } from "node:path";
 import fs from "node:fs";
 import { pathx } from "@simplysm/core-node";
-import { AngularBuildPipeline } from "../../src/utils/angular-build-pipeline";
-import { buildCompilerOptions, buildScssLoadPaths, compileGlobalScss } from "../../src/utils/ngtsc-build-core";
+import { AngularBuildPipeline } from "../../src/angular/angular-build-pipeline";
+import { buildCompilerOptions, buildScssLoadPaths, compileGlobalScss } from "../../src/angular/ngtsc-build-core";
 import { parseTsconfig, getPackageSourceFiles } from "../../src/utils/tsconfig";
 
 const FIXTURE_DIR = resolve(import.meta.dirname, "../angular/fixtures/packages/basic-lib");

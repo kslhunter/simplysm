@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveReplaceDepEntries, parseWorkspaceGlobs } from "../../src/utils/replace-deps";
+import { resolveReplaceDepEntries, parseWorkspaceGlobs } from "../../src/deps/replace-deps/replace-deps-resolve";
 
 describe("resolveReplaceDepEntries", () => {
   it("matches exact package names", () => {

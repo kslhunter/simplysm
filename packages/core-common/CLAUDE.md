@@ -208,7 +208,22 @@ try {
 
 **프레임워크**: Vitest
 
-테스트 디렉토리가 `src/` 구조를 미러링한다: `tests/extensions/`, `tests/utils/`, `tests/errors/`, `tests/types/`
+테스트 디렉토리 구조:
+
+```
+tests/
+├── errors/         ← 에러 클래스 테스트 (SdError, ArgumentError 등)
+├── extensions/     ← 프로토타입 확장 테스트 (Array, Map, Set)
+├── types/          ← 값 타입 테스트 (DateTime, DateOnly, Time, Uuid, LazyGcMap)
+├── utils/          ← 유틸리티 함수 + features 테스트
+│                     (obj, str, num, bytes, path, json, xml, wait, zip,
+│                      transferable, template-strings, primitive,
+│                      date-format, serial-queue, debounce-queue, event-emitter)
+├── env.spec.ts
+└── symbol-dispose.spec.ts
+```
+
+`features/` 클래스(DebounceQueue, SerialQueue, EventEmitter)의 테스트는 `tests/utils/` 하위에 위치한다.
 
 확장 메서드 테스트는 반드시 `@simplysm/core-common`을 side-effect import하여 확장을 활성화한다.
 
