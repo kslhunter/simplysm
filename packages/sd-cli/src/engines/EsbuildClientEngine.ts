@@ -121,7 +121,7 @@ export class EsbuildClientEngine implements BuildEngine {
         ? this._pkg.config.server
         : undefined;
 
-    await this._worker!.startWatch({
+    const result = await this._worker!.startWatch({
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
@@ -131,6 +131,18 @@ export class EsbuildClientEngine implements BuildEngine {
       pwa: this._pkg.config.pwa,
       browserSupport: this._pkg.config.browserSupport,
     });
+
+    if (!result.success) {
+      const errorDetail = result.errors?.join("; ") ?? "unknown error";
+      logger.error(`[${this._pkg.name}] 초기 빌드 실패: ${errorDetail}`);
+      this._resultCollector?.add({
+        name: this._pkg.name,
+        target: "client",
+        type: "build",
+        status: "error",
+        message: errorDetail,
+      });
+    }
   }
 
   /**

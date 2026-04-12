@@ -28,7 +28,7 @@ describe("SdAddressSearchModal", () => {
   }
 
   describe("스크립트 로딩", () => {
-    it("스크립트 로드 실패 시 명확한 에러 메시지와 함께 reject한다", async () => {
+    it("스크립트 로드 실패 시 initialized가 true가 되고 에러 메시지가 표시된다", async () => {
       const origAppendChild = document.head.appendChild.bind(document.head);
       const appendSpy = vi
         .spyOn(document.head, "appendChild")
@@ -46,12 +46,23 @@ describe("SdAddressSearchModal", () => {
         imports: [SdAddressSearchModal],
       }).compileComponents();
 
-      // detectChanges 생략 — ngOnInit의 void _initAsync() unhandled rejection 방지
       const fixture = TestBed.createComponent(SdAddressSearchModal);
+      const component = fixture.componentInstance;
 
-      await expect((fixture.componentInstance as any)._initAsync()).rejects.toThrow(
-        "주소 검색 스크립트를 불러올 수 없습니다.",
-      );
+      // ngOnInit 호출
+      fixture.detectChanges();
+
+      // microtask + 비동기 완료 대기
+      await new Promise<void>((r) => setTimeout(r, 50));
+      fixture.detectChanges();
+
+      // 스크립트 로드 실패 시에도 initialized가 true가 되어야 한다
+      expect(component.initialized()).toBe(true);
+
+      // 에러 메시지가 DOM에 표시되어야 한다
+      const errorEl = fixture.nativeElement.querySelector("._error");
+      expect(errorEl).not.toBeNull();
+      expect(errorEl!.textContent).toContain("주소 검색 스크립트를 불러올 수 없습니다.");
 
       appendSpy.mockRestore();
     });
@@ -75,6 +86,85 @@ describe("SdAddressSearchModal", () => {
 
       const scripts = document.querySelectorAll("#daum_address");
       expect(scripts.length).toBe(1);
+    });
+
+    it("새 스크립트 로드 실패 시 스크립트 요소가 DOM에서 제거된다", async () => {
+      const origAppendChild = document.head.appendChild.bind(document.head);
+      const appendSpy = vi
+        .spyOn(document.head, "appendChild")
+        .mockImplementation((node: Node) => {
+          if (node instanceof HTMLScriptElement && node.id === "daum_address") {
+            origAppendChild(node);
+            void Promise.resolve().then(() => {
+              (node as any).onerror?.(new Event("error"));
+            });
+            return node as any;
+          }
+          return origAppendChild(node);
+        });
+
+      await TestBed.configureTestingModule({
+        imports: [SdAddressSearchModal],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(SdAddressSearchModal);
+      fixture.detectChanges();
+      await new Promise<void>((r) => setTimeout(r, 50));
+
+      // 실패 후 스크립트 요소가 DOM에서 제거되었는지 확인
+      expect(document.getElementById("daum_address")).toBeNull();
+
+      appendSpy.mockRestore();
+    });
+
+    it("기존 스크립트의 error 이벤트 발생 시 스크립트 요소가 DOM에서 제거된다", async () => {
+      mockDaumCtx.cleanup(); // daum 전역 객체 제거
+
+      const existingScript = document.createElement("script");
+      existingScript.id = "daum_address";
+      document.head.appendChild(existingScript);
+
+      await TestBed.configureTestingModule({
+        imports: [SdAddressSearchModal],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(SdAddressSearchModal);
+      fixture.detectChanges();
+
+      // error 이벤트 발생 시뮬레이션
+      existingScript.dispatchEvent(new Event("error"));
+
+      await new Promise<void>((r) => setTimeout(r, 50));
+
+      // 스크립트 요소가 DOM에서 제거되었는지 확인
+      expect(document.getElementById("daum_address")).toBeNull();
+    });
+
+    it("스크립트가 DOM에 있으나 아직 로드 중이면 로드 완료를 대기한다", async () => {
+      // 스크립트 요소를 삽입하되 daum 전역 객체를 제거하여 "로드 중" 상태 시뮬레이션
+      mockDaumCtx.cleanup(); // daum 전역 객체 제거
+
+      const existingScript = document.createElement("script");
+      existingScript.id = "daum_address";
+      document.head.appendChild(existingScript);
+
+      await TestBed.configureTestingModule({
+        imports: [SdAddressSearchModal],
+      }).compileComponents();
+
+      const fixture = TestBed.createComponent(SdAddressSearchModal);
+      fixture.detectChanges();
+
+      // _initAsync가 스크립트 로드 완료를 대기 중
+      // load 이벤트 발생 시뮬레이션
+      mockDaumCtx = setupMockDaum(); // daum 전역 객체 복원
+      existingScript.dispatchEvent(new Event("load"));
+
+      await new Promise<void>((r) => setTimeout(r, 50));
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.initialized()).toBe(true);
+      expect(mockDaumCtx.embedFn).toHaveBeenCalled();
     });
   });
 

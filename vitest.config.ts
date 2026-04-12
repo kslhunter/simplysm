@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-properties -- 빌드 설정 파일 */
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -61,9 +60,7 @@ export default defineConfig({
       // Angular tests (TestBed + Playwright)
       {
         extends: true,
-        plugins: [
-          sdAngularPlugin({ pkg: "angular" }),
-        ],
+        plugins: [sdAngularPlugin({ pkg: "angular" })],
         test: {
           name: "angular",
           include: ["packages/angular/tests/**/*.spec.{ts,js,mjs,cjs}"],

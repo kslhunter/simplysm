@@ -73,6 +73,19 @@ describe("Feature 2.7 Slice 1: sd-barcode", () => {
     const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
     expect(host.querySelector("svg")).not.toBeNull();
   });
+
+  it("잘못된 type/value 조합이면 예외 없이 빈 내용을 렌더링한다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdBarcodeChangeTest] })
+      .createComponent(SdBarcodeChangeTest);
+    fixture.componentInstance.type.set("ean13");
+    fixture.componentInstance.value.set("invalid-ean13-value");
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const host = fixture.nativeElement.querySelector("sd-barcode") as HTMLElement;
+    const div = host.querySelector("div") as HTMLElement;
+    expect(div.innerHTML).toBe("");
+  });
 });
 
 describe("Feature 2.7 Slice 2: sd-echarts", () => {

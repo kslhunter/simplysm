@@ -65,16 +65,16 @@ export async function createClientEsbuildContext(
   const sourceFileCache = new SourceFileCache(cachePath);
 
   // CompilerPluginOptions
-  const pluginOptions: CompilerPluginOptions & { browserOnlyBuild?: boolean } = {
+  const pluginOptions: CompilerPluginOptions = {
     tsconfig: options.tsconfig ?? path.join(options.pkgDir, "tsconfig.json"),
     sourcemap: isDev,
     advancedOptimizations: !isDev,
     thirdPartySourcemaps: isDev,
-    incremental: true,
+    incremental: isDev,
     sourceFileCache,
     loadResultCache: sourceFileCache.loadResultCache,
     templateUpdates: options.templateUpdates,
-    browserOnlyBuild: true,
+    includeTestMetadata: isDev,
   };
 
   // BundleStylesheetOptions
@@ -106,7 +106,7 @@ export async function createClientEsbuildContext(
   // SCSS side-effect import 처리 플러그인
   const scssPlugin = createScssPlugin({
     loadPaths: [
-      path.join(options.pkgDir, "scss"),
+      path.join(options.pkgDir, "node_modules"),
       path.join(options.cwd, "node_modules"),
     ],
   });
@@ -156,7 +156,7 @@ export async function createClientEsbuildContext(
     ],
     target: esbuildTarget,
     entryNames: isDev ? "[name]" : "[name]-[hash]",
-    chunkNames: isDev ? "[name]" : "[name]-[hash]",
+    chunkNames: "[name]-[hash]",
     assetNames: isDev ? "[name]" : "[name]-[hash]",
     bundle: true,
     splitting: options.legacyModule !== true,
@@ -166,7 +166,7 @@ export async function createClientEsbuildContext(
     metafile: true,
     write: true,
     sourcemap: isDev ? "linked" : false,
-    logLevel: "silent",
+    logLevel: isDev ? "warning" : "silent",
     tsconfig: options.tsconfig ?? path.join(options.pkgDir, "tsconfig.json"),
     define,
     banner: hmrBanner != null ? { js: hmrBanner } : undefined,

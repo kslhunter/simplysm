@@ -7,7 +7,7 @@
  * .js 실행 (프로덕션): replaceDeps 실행 후 새 프로세스에서 sd-cli-entry 실행
  */
 
-import { cpx } from "@simplysm/core-node";
+import { cpx, setupConsola } from "@simplysm/core-node";
 import { consola } from "consola";
 import os from "os";
 import path from "path";
@@ -26,6 +26,7 @@ if (isDev) {
   await createCliParser(process.argv.slice(2)).parse();
 } else {
   // Production mode (.js): two-stage execution
+  setupConsola({ cli: true });
 
   // Phase 1: replaceDeps (인라인 — 설치된 버전으로 복사)
   try {

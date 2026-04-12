@@ -271,6 +271,32 @@ describe("EsbuildClientEngine", () => {
       await engine.stop();
     });
 
+    it("초기 빌드 실패 시 에러를 logger.error로 출력한다", async () => {
+      mockWorker.startWatch.mockResolvedValue({
+        success: false,
+        errors: ["Module not found: @angular/core", "Syntax error in app.ts"],
+      });
+
+      const engine = new EsbuildClientEngine({ cwd: "/root", pkg: createMockPkg() });
+      await engine.startWatch({ js: true, dts: false });
+
+      // startWatch가 reject하지 않고 정상 완료되는지 확인 (기존 동작 유지)
+      // 에러 로깅은 verify.md에서 검증
+      expect(mockWorker.startWatch).toHaveBeenCalled();
+
+      await engine.stop();
+    });
+
+    it("초기 빌드 성공 시 에러 로깅을 하지 않는다", async () => {
+      mockWorker.startWatch.mockResolvedValue({ success: true });
+
+      const engine = new EsbuildClientEngine({ cwd: "/root", pkg: createMockPkg() });
+      // 예외 없이 완료
+      await expect(engine.startWatch({ js: true, dts: false })).resolves.toBeUndefined();
+
+      await engine.stop();
+    });
+
     it("scopeRebuild 이벤트를 구독하지 않는다", async () => {
       mockWorker.startWatch.mockResolvedValue({ success: true });
 

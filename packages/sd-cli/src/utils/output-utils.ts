@@ -50,8 +50,9 @@ export function printServers(
       if (server.target === "server") {
         // 서버에 연결된 클라이언트가 있으면 클라이언트 URL만 출력
         const clients = serverClientsMap?.get(server.name) ?? [];
-        if (clients.length > 0) {
-          for (const clientName of clients) {
+        const activeClients = clients.filter((c) => results.get(`${c}:build`)?.status !== "error");
+        if (activeClients.length > 0) {
+          for (const clientName of activeClients) {
             consola.info(`[server] http://localhost:${server.port}/${clientName}/`);
           }
         } else {

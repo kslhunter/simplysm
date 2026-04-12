@@ -389,7 +389,7 @@ export class SdModal {
   }
 
   private _requestClose(): void {
-    if (this._activatedModal !== null && !this._activatedModal.canDeactiveFn()) {
+    if (this._activatedModal !== null && !this._activatedModal.canDeactivateFn()) {
       return;
     }
     void this._saveConfig();

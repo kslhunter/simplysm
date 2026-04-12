@@ -7,7 +7,7 @@ import {
   SdDateRangePickerDefaultTest,
   SdDateRangePickerRequiredTest,
 } from "./sd-date-range-picker-test.fixture";
-import { SdDateRangePicker } from "../../../src/controls/input/sd-date-range.picker";
+import { SdDateRangePicker } from "../../../src/controls/input/sd-date-range-picker";
 import "@simplysm/core-browser";
 
 // region Helper

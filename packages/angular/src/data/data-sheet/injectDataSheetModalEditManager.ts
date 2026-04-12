@@ -51,7 +51,7 @@ export function injectDataSheetModalEditManager<TItem, TKey>(options: {
           if (!result) return;
 
           await options.refresh();
-          sdToast.success(`${del ? "삭제" : "복구"} 되었습니다.`);
+          sdToast.success(`${del ? "삭제" : "복구"}되었습니다.`);
         },
         (err) => options.errorMessageFn(err),
       ),

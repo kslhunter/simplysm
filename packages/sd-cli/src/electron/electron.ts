@@ -97,7 +97,7 @@ export class Electron {
 
     let currentElectron: cpx.SpawnProcess | null = null;
     let isRestarting = false;
-    let resolveTermination: (() => void) | null = null;
+    let resolveTermination: (() => void | Promise<void>) | null = null;
 
     const spawnElectron = () => {
       Electron._logger.debug("Electron 프로세스 시작");
@@ -112,7 +112,7 @@ export class Electron {
         currentElectron = null;
         if (!isRestarting && resolveTermination != null) {
           Electron._logger.info("Electron이 종료되었습니다.");
-          resolveTermination();
+          void resolveTermination();
         }
       });
     };
@@ -160,13 +160,13 @@ export class Electron {
     await new Promise<void>((resolve) => {
       let disposed = false;
 
-      const cleanup = () => {
+      const cleanup = async () => {
         if (disposed) return;
         disposed = true;
         Electron._logger.debug("cleanup 시작");
         process.removeListener("SIGINT", signalHandler);
         process.removeListener("SIGTERM", signalHandler);
-        void ctx.dispose();
+        await ctx.dispose();
         resolve();
       };
 
@@ -175,7 +175,7 @@ export class Electron {
       const signalHandler = () => {
         Electron._logger.debug("시그널 수신, Electron 종료 중");
         if (currentElectron != null) currentElectron.kill();
-        cleanup();
+        void cleanup();
       };
 
       process.once("SIGINT", signalHandler);

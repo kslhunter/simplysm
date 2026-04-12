@@ -19,8 +19,10 @@
   "sideEffects": [
     "./src/extensions/element-ext.ts",
     "./src/extensions/html-element-ext.ts",
+    "./src/index.ts",
     "./dist/extensions/element-ext.js",
-    "./dist/extensions/html-element-ext.js"
+    "./dist/extensions/html-element-ext.js",
+    "./dist/index.js"
   ],
   "dependencies": {
     "@simplysm/core-common": "workspace:*",

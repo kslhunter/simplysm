@@ -130,6 +130,12 @@ export class SdStatePreset {
     if (name == null) return;
 
     const currentPresets = this._presets();
+
+    if (currentPresets.some((p) => p.name === name)) {
+      this._sdToast.warning("이미 존재하는 프리셋 이름입니다.");
+      return;
+    }
+
     const newPreset: SdStatePresetDef = {
       name,
       state: obj.clone(this.state()),

@@ -1,4 +1,5 @@
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
+import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { BuildResult, ResultCollector } from "../runtime/ResultCollector";
 import { stopEngineWorker } from "../runtime/engine-stop";
@@ -182,7 +183,15 @@ export abstract class BaseEngine<
       }
     });
 
-    this._callStartWatch(output).catch(() => {
+    this._callStartWatch(output).catch((err: unknown) => {
+      logger.error(`[${this._pkg.name}] startWatch 실패:`, errNs.message(err));
+      this._resultCollector?.add({
+        name: this._pkg.name,
+        target: this._getTarget(),
+        type: "build",
+        status: "error",
+        message: errNs.message(err),
+      });
       resolveInitialBuild();
     });
 

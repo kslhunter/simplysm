@@ -59,7 +59,7 @@ const mockEngines: Array<{
   stop: ReturnType<typeof vi.fn>;
 }> = [];
 
-vi.mock("../../src/engines/index", () => ({
+vi.mock("../../src/engines/engine-factory", () => ({
   createBuildEngine: vi.fn(() => {
     const engine = {
       run: vi.fn().mockResolvedValue({

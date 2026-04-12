@@ -24,7 +24,6 @@ export function createBuildEngine(
   options: {
     cwd: string;
     replaceDeps?: Record<string, string>;
-    resolvedReplaceDeps?: Array<{ packageName: string; sourcePath: string }>;
     resultCollector?: ResultCollector;
     rebuildManager?: RebuildManager;
     /** 클라이언트 빌드 출력 경로 (EsbuildClientEngine에만 적용) */

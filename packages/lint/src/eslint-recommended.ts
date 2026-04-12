@@ -243,4 +243,10 @@ export default tseslint.config(
       "@simplysm/ts-no-throw-not-implemented-error": "off",
     },
   },
+  {
+    files: ["**/vitest.config.ts"],
+    rules: {
+      "no-restricted-properties": "off",
+    },
+  },
 );

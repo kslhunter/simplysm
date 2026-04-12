@@ -63,10 +63,17 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
   private _dataSnapshot?: T;
 
   constructor() {
-    effect(() => {
+    effect((onCleanup) => {
       this.prepareRefreshEffect?.();
 
+      let cancelled = false;
+      onCleanup(() => {
+        cancelled = true;
+      });
+
       queueMicrotask(async () => {
+        if (cancelled) return;
+
         if (!this.canUse()) {
           this.initialized.set(true);
           return;

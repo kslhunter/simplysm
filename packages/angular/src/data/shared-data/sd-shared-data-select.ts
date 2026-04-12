@@ -321,23 +321,34 @@ export class SdSharedDataSelect<
     return this._searchTextMatchCache().get(item.__valueKey) ?? false;
   }
 
-  getChildren = (item: SharedDataBase<string | number>): TItem[] => {
-    let result =
-      this.itemByParentKeyMap()?.get(item.__valueKey as TItem["__valueKey"]) ??
-      [];
+  private readonly _sortedChildrenMap = computed(() => {
+    const parentMap = this.itemByParentKeyMap();
+    if (parentMap == null) return undefined;
 
     const orderProp = this.displayOrderKeyProp();
-    if (orderProp != null) {
-      result = [...result].sort((a, b) => {
-        const aVal = (a as any)[orderProp];
-        const bVal = (b as any)[orderProp];
-        if (aVal < bVal) return -1;
-        if (aVal > bVal) return 1;
-        return 0;
-      });
-    }
+    if (orderProp == null) return parentMap;
 
-    return result;
+    const sorted = new Map<TItem["__valueKey"] | undefined, TItem[]>();
+    for (const [key, children] of parentMap) {
+      sorted.set(
+        key,
+        [...children].sort((a, b) => {
+          const aVal = (a as any)[orderProp];
+          const bVal = (b as any)[orderProp];
+          if (aVal < bVal) return -1;
+          if (aVal > bVal) return 1;
+          return 0;
+        }),
+      );
+    }
+    return sorted;
+  });
+
+  getChildren = (item: SharedDataBase<string | number>): TItem[] => {
+    return (
+      this._sortedChildrenMap()?.get(item.__valueKey as TItem["__valueKey"]) ??
+      []
+    );
   };
 
   onUndefinedClick(): void {

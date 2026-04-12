@@ -254,6 +254,31 @@ describe("BaseEngine", () => {
       await engine.stop();
     });
 
+    it("_callStartWatch 실패 시 에러를 ResultCollector에 보고하고 resolveInitialBuild를 호출한다", async () => {
+      const mockResultCollector = { add: vi.fn() };
+
+      mockWorker.startWatch.mockRejectedValue(new Error("Worker RPC failed"));
+
+      const engine = new TscEngine({
+        cwd: "/root",
+        pkg: createMockPkg(),
+        resultCollector: mockResultCollector as any,
+      });
+
+      // startWatch()가 hang하지 않고 resolve되어야 한다
+      await engine.startWatch({ js: true, dts: true });
+
+      // ResultCollector에 에러가 보고되어야 한다
+      const errorReport = mockResultCollector.add.mock.calls.find(
+        (c: any[]) => c[0].type === "build" && c[0].status === "error",
+      );
+      expect(errorReport).toBeDefined();
+      expect(errorReport![0].name).toBe("test-pkg");
+      expect(errorReport![0].message).toContain("Worker RPC failed");
+
+      await engine.stop();
+    });
+
     it("calls resolver on error event to release RebuildManager batch", async () => {
       const mockResolver = vi.fn();
       const mockRebuildManager = { registerBuild: vi.fn(() => mockResolver) };

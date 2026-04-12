@@ -131,6 +131,23 @@ export class SdModalTestMovable {
 }
 
 /**
+ * 생성자에서 에러를 던지는 모달 컴포넌트 (DESIGN-003 테스트용)
+ */
+@Component({
+  selector: "sd-modal-test-throw",
+  standalone: true,
+  template: `<div>error</div>`,
+})
+export class SdModalTestThrow implements SdModalContentDef<void> {
+  initialized = signal(false);
+  close = output<void | undefined>();
+
+  constructor() {
+    throw new Error("Component creation failed");
+  }
+}
+
+/**
  * SdModalProvider.showAsync 테스트용 호스트 컴포넌트
  */
 @Component({

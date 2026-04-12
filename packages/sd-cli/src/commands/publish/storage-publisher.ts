@@ -139,6 +139,7 @@ function testSshKeyAuth(
       resolve(true);
     });
     conn.on("error", () => {
+      conn.end();
       resolve(false);
     });
     conn.connect({

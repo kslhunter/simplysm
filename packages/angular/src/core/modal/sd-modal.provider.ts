@@ -86,7 +86,7 @@ export class SdModalProvider {
     modal: SdModalInfo<T>,
     options?: SdModalOptions,
   ): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
-    return new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve) => {
+    return new Promise<Parameters<T["close"]["emit"]>[0] | undefined>((resolve, reject) => {
       // 1. modalCount 증가
       this.modalCount.update((v) => v + 1);
 
@@ -99,10 +99,17 @@ export class SdModalProvider {
         parent: this._injector,
       });
 
-      const contentRef: ComponentRef<T> = createComponent(modal.type, {
-        environmentInjector: this._envInjector,
-        elementInjector: contentInjector,
-      });
+      let contentRef: ComponentRef<T>;
+      try {
+        contentRef = createComponent(modal.type, {
+          environmentInjector: this._envInjector,
+          elementInjector: contentInjector,
+        });
+      } catch (err) {
+        this.modalCount.update((v) => v - 1);
+        reject(err);
+        return;
+      }
 
       // 4. setInput으로 inputs 바인딩
       for (const [key, value] of Object.entries(modal.inputs as Record<string, unknown>)) {

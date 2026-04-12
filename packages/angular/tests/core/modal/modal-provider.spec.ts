@@ -3,6 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import {
   SdModalTestBasic,
+  SdModalTestThrow,
   SdModalProviderTestHost,
 } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
@@ -221,6 +222,21 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
 
     // transitionend 후 DOM에서 제거
     expect(getModalInBody()).toBeNull();
+  });
+
+  // DESIGN-003: createComponent 실패 시 modalCount 복구 및 reject
+  it("createComponent가 예외를 던지면 modalCount가 복구되고 Promise가 reject된다", async () => {
+    setupHost();
+    const provider = TestBed.inject(SdModalProvider);
+
+    expect(provider.modalCount()).toBe(0);
+
+    const promise = provider.showAsync(
+      { title: "Fail", type: SdModalTestThrow, inputs: {} } as any,
+    );
+
+    await expect(promise).rejects.toThrow("Component creation failed");
+    expect(provider.modalCount()).toBe(0);
   });
 
   // Unit: inputs가 컨텐츠 컴포넌트에 올바르게 전달된다

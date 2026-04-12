@@ -8,5 +8,5 @@ import type { SdModalContentDef } from "./sd-modal.provider";
 export class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContentDef<any>> {
   modalComponent = signal<any>(undefined);
   contentComponent = signal<T | undefined>(undefined);
-  canDeactiveFn: () => boolean = () => true;
+  canDeactivateFn: () => boolean = () => true;
 }

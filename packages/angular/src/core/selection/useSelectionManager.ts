@@ -26,11 +26,13 @@ export function useSelectionManager<T>(options: {
     return options.selectMode() != null;
   });
 
+  const selectedItemsSet = computed(() => new Set(options.selectedItems()));
+
   const isAllSelected = computed(() => {
     const items = selectableItems();
     if (items.length === 0) return false;
-    const selectedSet = new Set(options.selectedItems());
-    return items.every((item) => selectedSet.has(item));
+    const set = selectedItemsSet();
+    return items.every((item) => set.has(item));
   });
 
   function getSelectable(item: T): true | string | undefined {
@@ -87,7 +89,7 @@ export function useSelectionManager<T>(options: {
   }
 
   function isSelected(item: T): boolean {
-    return options.selectedItems().includes(item);
+    return selectedItemsSet().has(item);
   }
 
   return {

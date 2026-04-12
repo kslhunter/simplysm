@@ -97,11 +97,6 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
     }
 
     // 클라이언트 패키지용 BuildEngine 생성
-    const resolvedReplaceDeps = this._replaceDepWatcher?.entries.map((e) => ({
-      packageName: e.targetName,
-      sourcePath: e.resolvedSourcePath,
-    }));
-
     for (const { name, dir, config } of this._clientPackages) {
       const engineConfig = { ...config, env: { ...this._baseEnv, ...config.env } };
       const engine = createBuildEngine(
@@ -109,7 +104,6 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
         {
           cwd: this._cwd,
           replaceDeps: this._replaceDeps,
-          resolvedReplaceDeps,
           resultCollector: this._resultCollector,
           rebuildManager: this._rebuildManager,
         },

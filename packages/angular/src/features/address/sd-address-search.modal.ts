@@ -11,17 +11,19 @@ import type { OnInit } from "@angular/core";
 import { SdBusyContainer } from "../../core/busy/sd-busy-container";
 import type { SdModalContentDef } from "../../core/modal/sd-modal.provider";
 
-declare const daum: {
-  postcode: {
-    load(callback: () => void): void;
-  };
-  Postcode: new (options: {
-    oncomplete: (data: DaumPostcodeData) => void;
-    onresize: (size: { height: number }) => void;
-    width: string;
-    height: string;
-  }) => { embed(el: HTMLElement, options: { autoClose: boolean }): void };
-};
+declare const daum:
+  | {
+      postcode: {
+        load(callback: () => void): void;
+      };
+      Postcode: new (options: {
+        oncomplete: (data: DaumPostcodeData) => void;
+        onresize: (size: { height: number }) => void;
+        width: string;
+        height: string;
+      }) => { embed(el: HTMLElement, options: { autoClose: boolean }): void };
+    }
+  | undefined;
 
 interface DaumPostcodeData {
   zonecode: string;
@@ -39,6 +41,51 @@ export interface Address {
   buildingName: string | undefined;
 }
 
+function loadDaumPostcodeScript(): Promise<void> {
+  const existing = document.getElementById("daum_address");
+  if (existing != null) {
+    if (typeof daum !== "undefined") {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve, reject) => {
+      existing.addEventListener(
+        "load",
+        () => {
+          daum!.postcode.load(() => {
+            resolve();
+          });
+        },
+        { once: true },
+      );
+      existing.addEventListener(
+        "error",
+        () => {
+          existing.remove();
+          reject(new Error("주소 검색 스크립트를 불러올 수 없습니다."));
+        },
+        { once: true },
+      );
+    });
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const scriptEl = document.createElement("script");
+    scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+    scriptEl.setAttribute("id", "daum_address");
+
+    scriptEl.onload = (): void => {
+      daum!.postcode.load(() => {
+        resolve();
+      });
+    };
+    scriptEl.onerror = (): void => {
+      scriptEl.remove();
+      reject(new Error("주소 검색 스크립트를 불러올 수 없습니다."));
+    };
+    document.head.appendChild(scriptEl);
+  });
+}
+
 @Component({
   selector: "sd-address-search-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,45 +94,42 @@ export interface Address {
   imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="!initialized()">
-      <div #content style="min-height: 100px;"></div>
+      @if (errorMessage() !== null) {
+        <div class="_error">{{ errorMessage() }}</div>
+      } @else {
+        <div #content style="min-height: 100px;"></div>
+      }
     </sd-busy-container>
   `,
 })
 export class SdAddressSearchModal implements SdModalContentDef<Address>, OnInit {
-  contentElRef = viewChild.required<"content", ElementRef<HTMLElement>>("content", {
+  contentElRef = viewChild<"content", ElementRef<HTMLElement>>("content", {
     read: ElementRef,
   });
 
   close = output<Address>();
 
   initialized = signal(false);
+  errorMessage = signal<string | null>(null);
 
   ngOnInit() {
     void this._initAsync();
   }
 
   private async _initAsync() {
-    if (!document.getElementById("daum_address")) {
-      await new Promise<void>((resolve, reject) => {
-        const scriptEl = document.createElement("script");
-        scriptEl.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-        scriptEl.setAttribute("id", "daum_address");
-
-        scriptEl.onload = (): void => {
-          daum.postcode.load(() => {
-            resolve();
-          });
-        };
-        scriptEl.onerror = (): void => {
-          reject(new Error("주소 검색 스크립트를 불러올 수 없습니다."));
-        };
-        document.head.appendChild(scriptEl);
-      });
+    try {
+      await loadDaumPostcodeScript();
+    } catch (err) {
+      this.errorMessage.set(err instanceof Error ? err.message : String(err));
+      this.initialized.set(true);
+      return;
     }
 
-    const contentEl = this.contentElRef().nativeElement;
+    const contentElRef = this.contentElRef();
+    if (contentElRef == null) return;
+    const contentEl = contentElRef.nativeElement;
 
-    new daum.Postcode({
+    new daum!.Postcode({
       oncomplete: (data: DaumPostcodeData): void => {
         const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
 

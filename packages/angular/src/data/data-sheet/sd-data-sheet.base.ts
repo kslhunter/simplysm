@@ -84,7 +84,7 @@ export abstract class SdDataSheetBase<
   private readonly _excelMgr: ReturnType<typeof injectDataSheetExcelManager<TItem>>;
 
   //-- shared state (D1: class 소유)
-  key = reflectComponentType(this.constructor as any)?.selector;
+  key = reflectComponentType(this.constructor as any)?.selector ?? this.constructor.name;
 
   viewType = injectViewTypeSignal(() => this);
 

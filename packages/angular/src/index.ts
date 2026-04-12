@@ -159,7 +159,7 @@ export { type SdTextfieldTypes, sdTextfieldTypes } from "./controls/input/sd-tex
 export { SdTextarea } from "./controls/input/sd-textarea";
 export { SdNumpad } from "./controls/input/sd-numpad";
 export { SdRange } from "./controls/input/sd-range";
-export { SdDateRangePicker } from "./controls/input/sd-date-range.picker";
+export { SdDateRangePicker } from "./controls/input/sd-date-range-picker";
 
 // controls/checkbox
 export { SdCheckbox } from "./controls/checkbox/sd-checkbox";

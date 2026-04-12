@@ -57,7 +57,7 @@
 - **위치** — 에러 발생 파일:라인 또는 관련 기능/화면
 - **재현 절차** — 문제가 발생하는 구체적 조작 순서
 
-`.claude/references/sd-clarify.md`를 읽고 명확화한다. 명확화 질문 시 `.claude/references/sd-options.md`도 함께 읽는다.
+@.claude/references/sd-clarify.md 에 따라 명확화한다.
 
 ## Step 2: 근본 원인 추적 (ACH)
 
@@ -124,7 +124,7 @@
 
 ## Step 3: 방안 제시
 
-`.claude/references/sd-options.md`를 읽고 사용자에게 해결책을 제시한다.
+@.claude/references/sd-options.md 에 따라, 사용자에게 해결책을 제시하여 선택을 받는다.
 
 원인별 해결 방안을 묶어 선택지로 제시한다. 각 "원인X.방안Y"가 하나의 선택지이다.
 

@@ -134,6 +134,35 @@ describe("EsbuildClientEngine Acceptance", () => {
     await engine.stop();
   });
 
+  // Scenario: 초기 빌드 실패 시 ResultCollector에 에러 보고
+  it("초기 빌드 실패 시 ResultCollector에 에러가 보고된다", async () => {
+    // Given: client 패키지가 정의되어 있다
+    const mockResultCollector = { add: vi.fn() };
+
+    mockWorker.startWatch.mockResolvedValue({
+      success: false,
+      errors: ["esbuild compilation failed"],
+    });
+
+    const engine = new EsbuildClientEngine({
+      cwd: "/root",
+      pkg: createMockPkg(),
+      resultCollector: mockResultCollector as any,
+    });
+
+    // When: startWatch()를 호출한다
+    await engine.startWatch({ js: true, dts: false });
+
+    // Then: ResultCollector에 에러가 보고된다
+    const errorReport = mockResultCollector.add.mock.calls.find(
+      (c: any[]) => c[0].type === "build" && c[0].status === "error",
+    );
+    expect(errorReport).toBeDefined();
+    expect(errorReport![0].name).toBe("my-client");
+
+    await engine.stop();
+  });
+
   // Scenario: 엔진 중지
   it("stop()으로 worker를 종료하고 .dev-port를 삭제한다", async () => {
     // Given: dev watch 모드가 실행 중이다

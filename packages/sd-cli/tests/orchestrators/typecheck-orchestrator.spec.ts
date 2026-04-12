@@ -28,7 +28,7 @@ vi.mock("../../src/typecheck/typecheck-non-package", () => ({
   typecheckNonPackageFiles: mocks.typecheckNonPackageFiles,
 }));
 
-vi.mock("../../src/engines/index", () => ({
+vi.mock("../../src/engines/engine-factory", () => ({
   createTypecheckEngine: mocks.createTypecheckEngine,
 }));
 

@@ -472,7 +472,7 @@ describe("Feature 7.2a Slice 3: 모달 편집", () => {
     await host.doToggleDeleteItems(true);
 
     expect(host.toggleDeleteItems).toHaveBeenCalledWith(true);
-    expect(mockToast.success).toHaveBeenCalledWith("삭제 되었습니다.");
+    expect(mockToast.success).toHaveBeenCalledWith("삭제되었습니다.");
   });
 
   it("선택 항목 복구 — toggleDeleteItems(false) 호출, 성공 시 토스트", async () => {
@@ -485,7 +485,7 @@ describe("Feature 7.2a Slice 3: 모달 편집", () => {
     await host.doToggleDeleteItems(false);
 
     expect(host.toggleDeleteItems).toHaveBeenCalledWith(false);
-    expect(mockToast.success).toHaveBeenCalledWith("복구 되었습니다.");
+    expect(mockToast.success).toHaveBeenCalledWith("복구되었습니다.");
   });
 
   it("isSelectedItemsHasDeleted / isSelectedItemsHasNotDeleted 계산", async () => {
@@ -533,7 +533,7 @@ describe("Feature 7.2a Slice 4: 엑셀 내보내기/가져오기", () => {
 
     expect(host.uploadExcel).toHaveBeenCalledWith(fakeFile);
     expect(host.searchFn).toHaveBeenCalledWith(true);
-    expect(mockToast.success).toHaveBeenCalledWith("엑셀 업로드가 완료 되었습니다.");
+    expect(mockToast.success).toHaveBeenCalledWith("엑셀 업로드가 완료되었습니다.");
   });
 
   it("엑셀 업로드 파일 선택 취소 — 무동작", async () => {

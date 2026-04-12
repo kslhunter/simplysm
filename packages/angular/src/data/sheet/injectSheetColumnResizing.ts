@@ -31,6 +31,8 @@ export function injectSheetColumnResizing(options: {
   }
 
   function onMousedown(event: MouseEvent, colDef: SdSheetColumnDef): void {
+    resizingCleanup?.();
+
     event.preventDefault();
     event.stopPropagation();
 

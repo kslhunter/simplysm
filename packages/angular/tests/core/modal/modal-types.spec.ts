@@ -61,10 +61,10 @@ describe("Feature 3.2 Slice 1: 타입 기반 + 인터페이스", () => {
     expect((info.inputs as Record<string, unknown>)["age"]).toBeUndefined();
   });
 
-  // Unit: SdActivatedModalProvider의 canDeactiveFn 기본값은 true를 반환
-  it("SdActivatedModalProvider.canDeactiveFn 기본값은 true를 반환한다", () => {
+  // Unit: SdActivatedModalProvider의 canDeactivateFn 기본값은 true를 반환
+  it("SdActivatedModalProvider.canDeactivateFn 기본값은 true를 반환한다", () => {
     const provider = new SdActivatedModalProvider();
-    expect(provider.canDeactiveFn()).toBe(true);
+    expect(provider.canDeactivateFn()).toBe(true);
     expect(provider.modalComponent()).toBeUndefined();
     expect(provider.contentComponent()).toBeUndefined();
   });

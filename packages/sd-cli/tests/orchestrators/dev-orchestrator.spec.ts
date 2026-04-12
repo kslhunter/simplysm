@@ -40,7 +40,7 @@ const mockBuildEngines: Array<{
   port?: number;
 }> = [];
 
-vi.mock("../../src/engines/index", () => ({
+vi.mock("../../src/engines/engine-factory", () => ({
   createBuildEngine: vi.fn((pkg: any, options: any) => {
     const engine = {
       run: vi.fn().mockResolvedValue({

@@ -25,7 +25,7 @@ describe("EsbuildClientEngine adapter isolation", () => {
     }
   });
 
-  it("vite-angular-plugin.ts imports only JavaScriptTransformer from @angular/build/private", () => {
+  it("vite-angular-plugin.ts does not import @angular/* directly", () => {
 
     const pluginFile = path.resolve(
       import.meta.dirname,
@@ -33,8 +33,8 @@ describe("EsbuildClientEngine adapter isolation", () => {
     );
     const content = fs.readFileSync(pluginFile, "utf-8");
 
-    expect(content).toContain("@angular/build/private");
-    expect(content).toContain("JavaScriptTransformer");
+    const angularImportPattern = /from\s+["']@angular\/(build|compiler-cli)/;
+    expect(angularImportPattern.test(content)).toBe(false);
     expect(content).not.toContain("createAngularCompilation");
     expect(content).not.toMatch(/\bSourceFileCache\b(?<!AngularSourceFileCache)/);
     expect(content).not.toContain("ComponentStylesheetBundler");

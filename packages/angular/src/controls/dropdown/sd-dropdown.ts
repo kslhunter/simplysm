@@ -199,20 +199,20 @@ export class SdDropdown {
 
     const rect = contentEl.getBoundingClientRect();
 
-    const isPlaceBottom = window.innerHeight < rect.top * 2;
-    const isPlaceRight = window.innerWidth < rect.left * 2;
+    const shouldPlaceAbove = window.innerHeight < rect.top * 2;
+    const shouldPlaceLeft = window.innerWidth < rect.left * 2;
 
     const gap = 2;
-    const topPos = isPlaceBottom ? undefined : rect.bottom + gap;
-    const bottomPos = isPlaceBottom ? window.innerHeight - rect.top : undefined;
-    const leftPos = isPlaceRight ? undefined : rect.left;
-    const rightPos = isPlaceRight ? window.innerWidth - rect.right : undefined;
+    const topPos = shouldPlaceAbove ? undefined : rect.bottom + gap;
+    const bottomPos = shouldPlaceAbove ? window.innerHeight - rect.top : undefined;
+    const leftPos = shouldPlaceLeft ? undefined : rect.left;
+    const rightPos = shouldPlaceLeft ? window.innerWidth - rect.right : undefined;
 
     // Calculate available space for popup
-    const availableHeight = isPlaceBottom
+    const availableHeight = shouldPlaceAbove
       ? rect.top - gap
       : window.innerHeight - rect.bottom - gap;
-    const availableWidth = isPlaceRight ? rect.right : window.innerWidth - rect.left;
+    const availableWidth = shouldPlaceLeft ? rect.right : window.innerWidth - rect.left;
 
     Object.assign(popupEl.style, {
       top: topPos !== undefined ? topPos + "px" : "",

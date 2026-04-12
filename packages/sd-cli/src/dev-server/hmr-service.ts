@@ -1,5 +1,8 @@
 import type http from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import fs from "node:fs";
+import path from "path";
+import crypto from "crypto";
 import type esbuild from "esbuild";
 import { WebSocketServer, type WebSocket } from "ws";
 
@@ -10,6 +13,8 @@ export interface HmrServiceOptions {
   basePath: string;
   /** templateUpdates Map (createCompilerPlugin과 공유) */
   templateUpdates: Map<string, string>;
+  /** 빌드 출력 디렉토리 경로. 설정 시 파일 내용 hash로 변경 감지 (bytes 대신) */
+  outDir?: string;
 }
 
 export interface HmrService {
@@ -24,7 +29,7 @@ export interface HmrService {
 }
 
 export function createHmrService(options: HmrServiceOptions): HmrService {
-  const { httpServer, basePath, templateUpdates } = options;
+  const { httpServer, basePath, templateUpdates, outDir } = options;
   const clients = new Set<WebSocket>();
 
   const wss = new WebSocketServer({ server: httpServer });
@@ -36,7 +41,7 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
     });
   });
 
-  let prevOutputs: Map<string, number> | undefined;
+  let prevOutputs: Map<string, string> | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   let pendingMetafile: esbuild.Metafile | undefined;
 
@@ -49,12 +54,22 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
     }, 100);
   }
 
-  function collectOutputs(metafile: esbuild.Metafile): Map<string, number> {
-    const outputs = new Map<string, number>();
+  function collectOutputs(metafile: esbuild.Metafile): Map<string, string> {
+    const outputs = new Map<string, string>();
     for (const [outputPath, output] of Object.entries(metafile.outputs)) {
       const normalizedPath = outputPath.replace(/\\/g, "/");
       if (normalizedPath.endsWith(".js") || normalizedPath.endsWith(".css")) {
-        outputs.set(normalizedPath, output.bytes);
+        let fingerprint = String(output.bytes);
+        if (outDir != null) {
+          try {
+            const filePath = path.resolve(outDir, normalizedPath);
+            const content = fs.readFileSync(filePath);
+            fingerprint = crypto.createHash("md5").update(content).digest("hex");
+          } catch {
+            // 파일 읽기 실패 시 bytes 폴백
+          }
+        }
+        outputs.set(normalizedPath, fingerprint);
       }
     }
     return outputs;
@@ -91,12 +106,12 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
     let cssChanged = false;
     const changedCssFiles: string[] = [];
 
-    for (const [path, bytes] of currentOutputs) {
-      const prevBytes = prevOutputs.get(path);
-      if (prevBytes !== bytes) {
-        if (path.endsWith(".css")) {
+    for (const [outputPath, fingerprint] of currentOutputs) {
+      const prevFingerprint = prevOutputs.get(outputPath);
+      if (prevFingerprint !== fingerprint) {
+        if (outputPath.endsWith(".css")) {
           cssChanged = true;
-          changedCssFiles.push(path.split("/").pop() ?? path);
+          changedCssFiles.push(outputPath.split("/").pop() ?? outputPath);
         } else {
           jsChanged = true;
         }
@@ -104,9 +119,9 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
     }
 
     // 삭제된 파일 체크
-    for (const [path] of prevOutputs) {
-      if (!currentOutputs.has(path)) {
-        if (path.endsWith(".css")) {
+    for (const [outputPath] of prevOutputs) {
+      if (!currentOutputs.has(outputPath)) {
+        if (outputPath.endsWith(".css")) {
           cssChanged = true;
         } else {
           jsChanged = true;

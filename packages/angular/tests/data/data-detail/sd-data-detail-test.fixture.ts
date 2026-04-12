@@ -27,11 +27,17 @@ export class DDTestHost extends SdDataDetailBase<TestDetailItem> {
   canUse = signal(true);
   canEdit = signal(true);
 
+  refreshTrigger = signal(0);
+
   loadFn = vi.fn<() => Promise<{ data: TestDetailItem; info: SdDataDetailDataInfo }>>();
 
   submitFn = vi.fn<(data: TestDetailItem) => Promise<boolean | undefined>>();
 
   toggleDeleteFn = vi.fn<(del: boolean) => Promise<boolean | undefined>>();
+
+  override prepareRefreshEffect() {
+    this.refreshTrigger();
+  }
 
   async load() {
     return this.loadFn();

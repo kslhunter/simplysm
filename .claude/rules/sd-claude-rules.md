@@ -53,6 +53,7 @@
 - `src/`에는 프로덕션 코드만 둔다. 테스트에서만 사용하는 파일(타입 선언, 헬퍼 등)은 `tests/`에 위치시킨다.
 - **barrel export 금지**: `src/` 루트의 `index.ts`를 제외하고, 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 패키지 루트 `index.ts`에서 개별 파일 경로를 직접 export한다.
 - 다른 패키지의 타입등 re-export 금지.
+- **dynamic import (`import()`) 사용 금지**: 조건부 peer dependency 로딩, 외부 ts 파일 읽기 등 정적 import가 불가능한 경우를 제외하고 `import()` 사용 금지. 정적 `import` 문을 사용한다.
 
 ## 자주 하는 실수
 

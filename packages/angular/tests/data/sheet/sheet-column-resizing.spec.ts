@@ -109,6 +109,39 @@ describe("injectSheetColumnResizing", () => {
       });
     });
 
+    it("DESIGN-007: 연속 mousedown 시 이전 리스너가 정리된다", () => {
+      const { result } = setup();
+      const removeSpy = vi.spyOn(document, "removeEventListener");
+
+      const th = document.createElement("th");
+      Object.defineProperty(th, "offsetWidth", { value: 200 });
+      Object.defineProperty(th, "offsetLeft", { value: 50 });
+
+      const resizer = document.createElement("div");
+      th.appendChild(resizer);
+
+      const colDef = { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 };
+
+      // 첫 번째 mousedown
+      const event1 = new MouseEvent("mousedown", { clientX: 100, bubbles: true });
+      Object.defineProperty(event1, "target", { value: resizer });
+      result.onMousedown(event1, colDef);
+
+      // mouseup 없이 두 번째 mousedown
+      const event2 = new MouseEvent("mousedown", { clientX: 200, bubbles: true });
+      Object.defineProperty(event2, "target", { value: resizer });
+      result.onMousedown(event2, colDef);
+
+      // 첫 번째 리스너 쌍이 제거되었는지 확인
+      const removeCallArgs = removeSpy.mock.calls.map((call) => call[0]);
+      expect(removeCallArgs).toContain("mousemove");
+      expect(removeCallArgs).toContain("mouseup");
+
+      // cleanup
+      document.dispatchEvent(new MouseEvent("mouseup", { clientX: 200 }));
+      removeSpy.mockRestore();
+    });
+
     it("onDblClick — config에서 width가 제거된다", () => {
       const { result, setConfig } = setup({
         columnRecord: { name: { width: "300px" } },

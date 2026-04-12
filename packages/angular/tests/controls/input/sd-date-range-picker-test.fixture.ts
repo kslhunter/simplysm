@@ -1,6 +1,6 @@
 import { Component, signal } from "@angular/core";
 import { DateOnly } from "@simplysm/core-common";
-import { SdDateRangePicker } from "../../../src/controls/input/sd-date-range.picker";
+import { SdDateRangePicker } from "../../../src/controls/input/sd-date-range-picker";
 
 @Component({
   selector: "sd-date-range-picker-default-test",

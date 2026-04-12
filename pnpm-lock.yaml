@@ -66,11 +66,11 @@ importers:
         specifier: ^21.2.8
         version: 21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2)
       '@ng-icons/core':
-        specifier: ^33.2.0
-        version: 33.2.0(@angular-devkit/schematics@21.2.7(chokidar@5.0.0))(@angular/common@21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(@schematics/angular@21.2.4(chokidar@5.0.0))(rxjs@7.8.2)
+        specifier: ^33.2.1
+        version: 33.2.1(@angular-devkit/schematics@21.2.7(chokidar@5.0.0))(@angular/common@21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(@schematics/angular@21.2.4(chokidar@5.0.0))(rxjs@7.8.2)
       '@ng-icons/tabler-icons':
-        specifier: ^33.2.0
-        version: 33.2.0
+        specifier: ^33.2.1
+        version: 33.2.1
       '@simplysm/core-browser':
         specifier: workspace:*
         version: link:../core-browser
@@ -2371,8 +2371,8 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@ng-icons/core@33.2.0':
-    resolution: {integrity: sha512-BdAzCKZzLKuRPbZLBTmuBuCVI0Fk0WM+sPNzmhWv3PG+yXUKPpRt3O3dCIxqO5djb9S/x50OJkfOJH+IBxLUgg==}
+  '@ng-icons/core@33.2.1':
+    resolution: {integrity: sha512-2wCQHf4QdYXl9t8PaTc8LJ17BOmmvNe0OjOJ3yGKKkJpfp+un+N8gi5YJfL/cBJE+uxtb12w7kM8PAYuo1K6fg==}
     peerDependencies:
       '@angular-devkit/schematics': '>=21.0.0'
       '@angular/common': '>=21.0.0'
@@ -2380,8 +2380,8 @@ packages:
       '@schematics/angular': '>=21.0.0'
       rxjs: ^6.5.3 || ^7.4.0
 
-  '@ng-icons/tabler-icons@33.2.0':
-    resolution: {integrity: sha512-qs0ezR36qaLxsbQQcYy4btPz1stVCv1nlghLfUA1pPdAmevfsYq69DoywRXfHkY8cCctqjwsyMg0lpKbNvzpPA==}
+  '@ng-icons/tabler-icons@33.2.1':
+    resolution: {integrity: sha512-ckIfw2RMKWNj78c6KxmTYItTGgBKse88zAF2UM7nR0448LFhBZnMQ261wp1/rqt1ahj0cBHtNO/s62GG+yN6Sw==}
 
   '@npmcli/agent@4.0.0':
     resolution: {integrity: sha512-kAQTcEN9E8ERLVg5AsGwLNoFb+oEG6engbqAU2P43gD4JEIkNGMHdVQ096FsOAAYpZPB0RSt0zgInKIAS1l5QA==}
@@ -7833,7 +7833,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@ng-icons/core@33.2.0(@angular-devkit/schematics@21.2.7(chokidar@5.0.0))(@angular/common@21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(@schematics/angular@21.2.4(chokidar@5.0.0))(rxjs@7.8.2)':
+  '@ng-icons/core@33.2.1(@angular-devkit/schematics@21.2.7(chokidar@5.0.0))(@angular/common@21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(@schematics/angular@21.2.4(chokidar@5.0.0))(rxjs@7.8.2)':
     dependencies:
       '@angular-devkit/schematics': 21.2.7(chokidar@5.0.0)
       '@angular/common': 21.2.8(@angular/core@21.2.8(@angular/compiler@21.2.8)(rxjs@7.8.2))(rxjs@7.8.2)
@@ -7842,7 +7842,7 @@ snapshots:
       rxjs: 7.8.2
       tslib: 2.8.1
 
-  '@ng-icons/tabler-icons@33.2.0':
+  '@ng-icons/tabler-icons@33.2.1':
     dependencies:
       tslib: 2.8.1
 

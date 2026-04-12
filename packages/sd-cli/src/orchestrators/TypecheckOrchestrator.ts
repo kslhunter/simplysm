@@ -262,8 +262,8 @@ export class TypecheckOrchestrator implements OrchestratorLifecycle<TypecheckRes
         deserializeDiagnostic(d, fileCache),
       );
       allDiagnostics.push(...buildDiags);
-      totalErrorCount += buildDiags.filter((d) => d.category === 1).length;
-      totalWarningCount += buildDiags.filter((d) => d.category === 0).length;
+      totalErrorCount += buildDiags.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
+      totalWarningCount += buildDiags.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
       if (!engineResult.build.success && buildDiags.length === 0) {
         for (const errMsg of engineResult.build.errors) {
           allDiagnostics.push({

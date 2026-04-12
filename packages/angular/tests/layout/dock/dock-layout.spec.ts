@@ -100,6 +100,31 @@ describe("Feature 2.1 Slice 4: Dock 레이아웃", () => {
 
   // --- Unit Tests ---
 
+  it("DESIGN-002: 빠른 더블 mousedown 시 이전 리스너가 정리되고 새 리스너만 등록된다", () => {
+    setupTestBed(SdDockTestResizable);
+    const fixture = TestBed.createComponent(SdDockTestResizable);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const resizeBar = fixture.nativeElement.querySelector("._resize-bar") as HTMLElement;
+    const removeSpy = vi.spyOn(document, "removeEventListener");
+
+    // 첫 번째 드래그 시작
+    resizeBar.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 100, clientY: 100 }));
+
+    // mouseup 없이 두 번째 드래그 시작 (빠른 더블클릭 시뮬레이션)
+    resizeBar.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 200, clientY: 200 }));
+
+    // 첫 번째 리스너 쌍이 제거되었는지 확인
+    const removeCallArgs = removeSpy.mock.calls.map((call) => call[0]);
+    expect(removeCallArgs).toContain("mousemove");
+    expect(removeCallArgs).toContain("mouseup");
+
+    // cleanup
+    fixture.destroy();
+    removeSpy.mockRestore();
+  });
+
   it("DESIGN-004: 리사이즈 드래그 중 컴포넌트 파괴 시 document 리스너가 해제된다", () => {
     setupTestBed(SdDockTestResizable);
     const fixture = TestBed.createComponent(SdDockTestResizable);

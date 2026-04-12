@@ -46,7 +46,7 @@ export function injectDataSheetExcelManager<TItem>(options: {
         async () => {
           await uploadExcelFn(file);
           await options.refresh();
-          sdToast.success("엑셀 업로드가 완료 되었습니다.");
+          sdToast.success("엑셀 업로드가 완료되었습니다.");
         },
         (err) => options.errorMessageFn(err),
       ),

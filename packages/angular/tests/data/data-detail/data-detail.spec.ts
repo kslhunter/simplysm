@@ -125,6 +125,58 @@ describe("SdDataDetailBase", () => {
 
   //#endregion
 
+  //#region Acceptance Tests — effect 취소
+
+  describe("effect 취소 (DESIGN-001)", () => {
+    it("effect 재실행 시 이전 microtask가 취소되어 load가 중복 호출되지 않는다", async () => {
+      const { fixture, host } = await createFixtureAndInit();
+      host.loadFn.mockClear();
+      host.loadFn.mockResolvedValue({
+        data: { id: 1, name: "Refreshed" },
+        info: makeExistingInfo(),
+      });
+
+      // effect 재실행을 두 번 연속 트리거
+      host.refreshTrigger.set(1);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      host.refreshTrigger.set(2);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // microtask 완료 대기
+      await new Promise<void>((r) => setTimeout(r, 0));
+      fixture.detectChanges();
+
+      // 첫 번째 microtask는 취소되고 두 번째만 실행되어야 한다
+      expect(host.loadFn).toHaveBeenCalledTimes(1);
+    });
+
+    it("컴포넌트 destroy 후 microtask가 실행되지 않는다", async () => {
+      const fixture = TestBed.createComponent(DDTestHost);
+      const host = fixture.componentInstance;
+      host.loadFn.mockResolvedValue({
+        data: { id: 1, name: "Test" },
+        info: makeExistingInfo(),
+      });
+
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      // microtask 실행 전에 destroy
+      fixture.destroy();
+
+      // microtask 완료 대기
+      await new Promise<void>((r) => setTimeout(r, 0));
+
+      // destroy 후에는 load가 호출되지 않아야 한다
+      expect(host.loadFn).not.toHaveBeenCalled();
+    });
+  });
+
+  //#endregion
+
   //#region Unit Tests — refresh
 
   describe("doRefresh", () => {

@@ -108,7 +108,7 @@ describe("createClientEsbuildContext — Acceptance", () => {
     expect(pluginOpts.incremental).toBe(true);
     expect(pluginOpts.sourceFileCache).toBe(mockSourceFileCache);
     expect(pluginOpts.loadResultCache).toBe(mockSourceFileCache.loadResultCache);
-    expect((pluginOpts as any).browserOnlyBuild).toBe(true);
+    expect(pluginOpts.includeTestMetadata).toBe(true);
 
     // BundleStylesheetOptions
     expect(styleOpts.workspaceRoot).toBe("/workspace");
@@ -161,6 +161,9 @@ describe("createClientEsbuildContext — Acceptance", () => {
     expect(pluginOpts.sourcemap).toBe(false);
     expect(pluginOpts.advancedOptimizations).toBe(true);
     expect(pluginOpts.thirdPartySourcemaps).toBe(false);
+    expect(pluginOpts.incremental).toBe(false);
+    expect(pluginOpts.includeTestMetadata).toBe(false);
+    expect((pluginOpts as unknown as Record<string, unknown>)["browserOnlyBuild"]).toBeUndefined();
 
     // BundleStylesheetOptions
     expect(styleOpts.optimization).toBe(true);

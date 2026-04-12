@@ -235,7 +235,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
     });
   });
 
-  describe("Rule: setupCanDeactivate가 모달에서 canDeactiveFn을 설정한다", () => {
+  describe("Rule: setupCanDeactivate가 모달에서 canDeactivateFn을 설정한다", () => {
     it("Scenario: 모달 내부에서 닫기 차단 설정", () => {
       const activatedModal = new SdActivatedModalProvider();
       const fn = () => false;
@@ -254,7 +254,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
         setupCanDeactivate(fn);
       });
 
-      expect(activatedModal.canDeactiveFn()).toBe(false);
+      expect(activatedModal.canDeactivateFn()).toBe(false);
     });
 
     it("Scenario: 모달 내부에서 닫기 허용 설정", () => {
@@ -275,7 +275,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
         setupCanDeactivate(fn);
       });
 
-      expect(activatedModal.canDeactiveFn()).toBe(true);
+      expect(activatedModal.canDeactivateFn()).toBe(true);
     });
 
     it("Scenario: 페이지에서 호출 -> 기존 동작 유지 (라우터 가드)", () => {

@@ -282,7 +282,13 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
           // 초기 빌드 완료 시 resolve
           if (isInitialBuild) {
             isInitialBuild = false;
-            initialBuildResolve?.({ success });
+            initialBuildResolve?.({
+              success,
+              errors:
+                result.errors.length > 0
+                  ? result.errors.map((e) => e.text)
+                  : undefined,
+            });
           }
         } catch (err) {
           const message = errNs.message(err);
@@ -309,6 +315,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       httpServer: httpDevServer.httpServer,
       basePath,
       templateUpdates,
+      outDir: outdir,
     });
 
     // 7. esbuild watch 시작 + 초기 빌드 대기

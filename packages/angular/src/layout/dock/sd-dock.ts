@@ -132,6 +132,8 @@ export class SdDock {
   }
 
   onResizeBarMousedown(event: MouseEvent) {
+    this._dragCleanup?.();
+
     const thisEl = this._elRef.nativeElement;
 
     const startX = event.clientX;

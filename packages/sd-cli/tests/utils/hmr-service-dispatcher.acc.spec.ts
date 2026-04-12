@@ -155,6 +155,76 @@ describe("HMR 디스패처 통합", () => {
     });
   });
 
+  describe("Scenario: 파일 크기 동일하지만 내용 변경 → 변경 감지", () => {
+    it("CSS 내용이 변경되었지만 크기가 동일한 경우 css-update를 전송한다", async () => {
+      // 임시 dist 디렉토리에 CSS 파일 생성
+      const distDir = path.join(tmpDir, "dist-hash-test");
+      fs.mkdirSync(distDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, "main.css"), "body { color: red; }");
+      fs.writeFileSync(path.join(distDir, "main.js"), "console.log('hello');");
+
+      // outDir을 전달하는 HMR 서비스 생성
+      hmrService.close();
+      await new Promise<void>((resolve, reject) => {
+        httpServer.close((err) => {
+          if (err != null) reject(err);
+          else resolve();
+        });
+      });
+
+      httpServer = http.createServer((_req, res) => { res.writeHead(404); res.end(); });
+      hmrService = createHmrService({
+        httpServer,
+        basePath: "/app/",
+        templateUpdates,
+        outDir: distDir,
+      });
+      port = await new Promise<number>((resolve, reject) => {
+        httpServer.listen(0, "127.0.0.1", () => {
+          const addr = httpServer.address();
+          if (typeof addr === "object" && addr != null) resolve(addr.port);
+          else reject(new Error("포트 감지 실패"));
+        });
+        httpServer.on("error", reject);
+      });
+
+      const cssContent = "body { color: red; }";
+      const metafile1: esbuild.Metafile = {
+        inputs: {},
+        outputs: {
+          "main.js": { bytes: 22, inputs: {}, imports: [], exports: [] },
+          "main.css": { bytes: cssContent.length, inputs: {}, imports: [], exports: [] },
+        },
+      };
+
+      // 첫 빌드 (baseline)
+      hmrService.onBuildEnd(metafile1);
+      await new Promise((r) => setTimeout(r, 150));
+
+      // CSS 내용 변경 (같은 크기)
+      const newCssContent = "body { color: blu; }"; // 같은 길이
+      fs.writeFileSync(path.join(distDir, "main.css"), newCssContent);
+
+      const ws = await connectWs();
+      const msgPromise = waitForMessage(ws);
+
+      const metafile2: esbuild.Metafile = {
+        inputs: {},
+        outputs: {
+          "main.js": { bytes: 22, inputs: {}, imports: [], exports: [] },
+          "main.css": { bytes: newCssContent.length, inputs: {}, imports: [], exports: [] },
+        },
+      };
+      hmrService.onBuildEnd(metafile2);
+
+      const msg = await msgPromise;
+      expect(msg["type"]).toBe("css-update");
+
+      ws.close();
+      fs.rmSync(distDir, { recursive: true, force: true });
+    });
+  });
+
   describe("Scenario: CSS-only 변경 → css-update 메시지", () => {
     it("JS 출력은 동일하고 CSS만 변경되면 css-update를 전송한다", async () => {
       // 초기 빌드

@@ -8,7 +8,7 @@ export function setupCanDeactivate(fn: () => boolean): void {
   const elRef = inject(ElementRef);
 
   if (activatedModal != null) {
-    activatedModal.canDeactiveFn = fn;
+    activatedModal.canDeactivateFn = fn;
     return;
   }
 
