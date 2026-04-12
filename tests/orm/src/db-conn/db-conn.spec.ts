@@ -230,7 +230,7 @@ for (const d of dialects) {
   describe(d.name, () => {
     let conn: MssqlDbConn | MysqlDbConn | PostgresqlDbConn;
 
-    beforeAll(async () => {
+    beforeAll(() => {
       conn = d.createConn();
     });
 

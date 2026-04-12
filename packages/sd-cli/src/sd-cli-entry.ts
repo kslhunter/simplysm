@@ -9,7 +9,7 @@ import { type CheckType, runCheck } from "./commands/check";
 import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
-import { runPublish } from "./commands/publish";
+import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
 import path from "path";
 import fs from "fs";

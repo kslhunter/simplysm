@@ -7,7 +7,8 @@ import type {
 } from "../sd-config.types";
 import { filterPackagesByTargets, classifyWatchPackages } from "../utils/package-classify";
 import { printErrors } from "../utils/output-utils";
-import { createBuildEngine, type BuildEngine, type BuildPackageInfo } from "../engines/index";
+import { createBuildEngine } from "../engines/engine-factory";
+import type { BuildEngine, BuildPackageInfo } from "../engines/types";
 import { watchCopySrcFiles } from "../utils/copy-src";
 import { BaseOrchestrator } from "./BaseOrchestrator";
 import type { OrchestratorLifecycle } from "./types";

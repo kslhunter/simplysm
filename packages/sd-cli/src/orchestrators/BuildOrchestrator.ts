@@ -13,7 +13,7 @@ import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
 import { copySrcFiles } from "../utils/copy-src";
 import { formatBuildMessages } from "../utils/output-utils";
 import { formatDiagnosticsOutput } from "../utils/diagnostic-utils";
-import { createBuildEngine } from "../engines/index";
+import { createBuildEngine } from "../engines/engine-factory";
 import type { BuildOutput, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
 import { iteratePackages } from "../utils/package-classify";

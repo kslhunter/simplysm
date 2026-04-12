@@ -13,7 +13,7 @@ vi.mock("@simplysm/core-node", () => ({
   },
 }));
 
-const { createTypecheckEngine } = await import("../../src/engines/index");
+const { createTypecheckEngine } = await import("../../src/engines/engine-factory");
 const { TscEngine } = await import("../../src/engines/TscEngine");
 const { NgtscEngine } = await import("../../src/engines/NgtscEngine");
 const { ServerEsbuildEngine } = await import("../../src/engines/ServerEsbuildEngine");

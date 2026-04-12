@@ -7,7 +7,8 @@ import type {
 } from "../sd-config.types";
 import { filterPackagesByTargets, classifyDevPackages } from "../utils/package-classify";
 import { printErrors, printServers } from "../utils/output-utils";
-import { createBuildEngine, type BuildEngine, type ClientPackageInfo, type ServerPackageInfo } from "../engines/index";
+import { createBuildEngine } from "../engines/engine-factory";
+import type { BuildEngine, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
 import { Capacitor } from "../capacitor/capacitor";
 import { BaseOrchestrator } from "./BaseOrchestrator";
 import { ServerRuntimeManager } from "./ServerRuntimeManager";

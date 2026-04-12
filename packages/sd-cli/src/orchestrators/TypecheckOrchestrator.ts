@@ -3,7 +3,7 @@ import { err as errNs } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
-import { createTypecheckEngine } from "../engines/index";
+import { createTypecheckEngine } from "../engines/engine-factory";
 import { typecheckNonPackageFiles } from "../typecheck/typecheck-non-package";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
 import { discoverWorkspacePackages, mergeTestsPackagesIntoConfig } from "../utils/package-utils";

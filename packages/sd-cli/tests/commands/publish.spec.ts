@@ -97,7 +97,7 @@ vi.mock("os", async (importOriginal: () => Promise<Record<string, unknown>>) => 
   };
 });
 
-const { runPublish } = await import("../../src/commands/publish");
+const { runPublish } = await import("../../src/commands/publish/publish-command");
 
 const CWD = process.cwd();
 

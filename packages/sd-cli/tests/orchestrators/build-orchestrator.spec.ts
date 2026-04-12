@@ -106,7 +106,7 @@ const { loadSdConfig } = await import("../../src/utils/sd-config");
 const { getVersion } = await import("../../src/utils/build-env");
 const { copySrcFiles } = await import("../../src/utils/copy-src");
 const { Worker, fsx } = await import("@simplysm/core-node");
-const { createBuildEngine } = await import("../../src/engines/index");
+const { createBuildEngine } = await import("../../src/engines/engine-factory");
 
 const { Capacitor } = await import("../../src/capacitor/capacitor");
 const { Electron } = await import("../../src/electron/electron");
