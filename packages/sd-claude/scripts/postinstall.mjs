@@ -163,22 +163,22 @@ function setupSettings(targetDir) {
     }
   }
 
-  // PreToolUse: ensure sd-check-git hook exists for Bash tool
-  const sdGitEntry = {
+  // PreToolUse: ensure sd-check-bash hook exists for Bash tool
+  const sdBashEntry = {
     matcher: "Bash",
-    hooks: [{ type: "command", command: "python .claude/sd-check-git.py" }],
+    hooks: [{ type: "command", command: "python .claude/sd-check-bash.py" }],
   };
 
   if (settings["hooks"]["PreToolUse"] == null) {
-    settings["hooks"]["PreToolUse"] = [sdGitEntry];
+    settings["hooks"]["PreToolUse"] = [sdBashEntry];
   } else {
-    const gitIdx = settings["hooks"]["PreToolUse"].findIndex((entry) =>
-      entry.hooks?.some((hook) => hook.command.includes("sd-check-git")),
+    const bashIdx = settings["hooks"]["PreToolUse"].findIndex((entry) =>
+      entry.hooks?.some((hook) => hook.command.includes("sd-check-bash")),
     );
-    if (gitIdx >= 0) {
-      settings["hooks"]["PreToolUse"][gitIdx] = sdGitEntry;
+    if (bashIdx >= 0) {
+      settings["hooks"]["PreToolUse"][bashIdx] = sdBashEntry;
     } else {
-      settings["hooks"]["PreToolUse"].push(sdGitEntry);
+      settings["hooks"]["PreToolUse"].push(sdBashEntry);
     }
   }
 
