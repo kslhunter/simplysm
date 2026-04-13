@@ -22,6 +22,7 @@ import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
+import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useTiptapToolbar } from "./useTiptapToolbar";
 
@@ -32,6 +33,7 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
   Highlight.configure({ multicolor: true }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   Image.configure({ inline: false, allowBase64: true }),
+  Underline,
 ];
 
 @Component({

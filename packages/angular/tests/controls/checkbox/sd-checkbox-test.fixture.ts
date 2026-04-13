@@ -74,6 +74,21 @@ export class SdCheckboxCanChangeDenyTest {
 }
 
 @Component({
+  selector: "sd-checkbox-propagation-test",
+  template: `
+    <div (click)="parentClicked = true" (keydown)="0" tabindex="0">
+      <sd-checkbox [(value)]="value">Label</sd-checkbox>
+    </div>
+  `,
+  standalone: true,
+  imports: [SdCheckbox],
+})
+export class SdCheckboxPropagationTest {
+  value = signal(false);
+  parentClicked = false;
+}
+
+@Component({
   selector: "sd-checkbox-theme-test",
   template: `<sd-checkbox [(value)]="value" [theme]="'primary'">Themed</sd-checkbox>`,
   standalone: true,

@@ -118,6 +118,56 @@ describe("Feature 7.4b Slice 2: 접기/펼치기", () => {
   });
 });
 
+describe("Feature 1.2: collapsedItems 문자열 키 기반 (DESIGN-005)", () => {
+  it("items 재로드 후 접힘 상태가 유지된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.detectChanges();
+
+    // 최상위 항목 접기
+    const anchor = fixture.nativeElement.querySelector(
+      "sd-permission-table tr sd-anchor",
+    ) as HTMLElement;
+    anchor.click();
+    fixture.detectChanges();
+
+    // 접힌 상태 확인
+    let rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
+    expect((rows[1] as HTMLElement).getAttribute("data-sd-collapse")).toBe("true");
+
+    // items를 동일 codeChain을 가진 새 배열로 교체
+    fixture.componentInstance.items.set([
+      {
+        title: "모듈A",
+        codeChain: ["moduleA"],
+        modules: undefined,
+        perms: undefined,
+        children: [
+          {
+            title: "기능1",
+            codeChain: ["moduleA", "func1"],
+            modules: undefined,
+            perms: ["use", "edit"],
+            children: undefined,
+          },
+          {
+            title: "기능2",
+            codeChain: ["moduleA", "func2"],
+            modules: undefined,
+            perms: ["use"],
+            children: undefined,
+          },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    // 접힘 상태가 유지되어야 한다
+    rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
+    expect((rows[1] as HTMLElement).getAttribute("data-sd-collapse")).toBe("true");
+  });
+});
+
 describe("Feature 3.5 Slice 1: _changePermCheck가 value 파라미터에서 use 상태를 읽는다", () => {
   it("value 파라미터에 use=true가 설정되어 있으면 edit 체크가 적용된다 (signal과 무관)", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })

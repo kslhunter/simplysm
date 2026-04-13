@@ -215,7 +215,7 @@ export class SdPermissionTable<TModule> {
   items = input<SdPermission<TModule>[]>([]);
   disabled = input(false, { transform: booleanAttribute });
 
-  collapsedItems = signal(new Set<SdPermission<TModule>>());
+  collapsedItems = signal(new Set<string>());
 
   depthLength = computed(() => {
     return this._getDepthLength(this.items(), 0);
@@ -347,7 +347,7 @@ export class SdPermissionTable<TModule> {
   }
 
   getIsPermCollapsed(item: SdPermission<TModule>): boolean {
-    return this.collapsedItems().has(item);
+    return this.collapsedItems().has(item.codeChain.join("."));
   }
 
   getAllChildren(item: SdPermission<TModule>): SdPermission<TModule>[] {
@@ -367,15 +367,16 @@ export class SdPermissionTable<TModule> {
   }
 
   onPermCollapseToggle(item: SdPermission<TModule>) {
+    const key = item.codeChain.join(".");
     this.collapsedItems.update((v) => {
       const r = new Set(v);
-      if (r.has(item)) {
-        r.delete(item);
+      if (r.has(key)) {
+        r.delete(key);
       } else {
-        r.add(item);
+        r.add(key);
         const allChildren = this.getAllChildren(item);
         for (const allChild of allChildren) {
-          r.add(allChild);
+          r.add(allChild.codeChain.join("."));
         }
       }
       return r;

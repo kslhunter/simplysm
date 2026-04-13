@@ -98,6 +98,73 @@ describe("Feature 1.3: model.update도 canFn 검증을 거친다", () => {
   });
 });
 
+describe("Feature 1.2: model.update async canFn stale value 방지 (LOGIC-005)", () => {
+  it("async canFn resolve 후 fresh value로 set — 대기 중 model이 변경되면 fn(model())을 재계산한다", async () => {
+    const model = signal(0);
+    let resolveCanFn!: (val: boolean) => void;
+    const canFn = signal((value: number) => {
+      if (value >= 10) {
+        return new Promise<boolean>((resolve) => {
+          resolveCanFn = resolve;
+        });
+      }
+      return true as boolean | Promise<boolean>;
+    });
+    TestBed.runInInjectionContext(() => {
+      setupModelHook(model, canFn);
+    });
+
+    // model.update(v => v + 10) → fn(0) = 10 → canFn(10) returns Promise
+    model.update((v) => v + 10);
+    expect(model()).toBe(0);
+
+    // model.set(5) → canFn(5) returns true → immediately sets to 5
+    model.set(5);
+    expect(model()).toBe(5);
+
+    // Resolve the async canFn from update
+    resolveCanFn(true);
+    await new Promise((r) => setTimeout(r, 0));
+
+    // With fix: fn(model()) recalculated = fn(5) = 5 + 10 = 15
+    expect(model()).toBe(15);
+  });
+
+  it("model.update에서 async canFn이 reject되면 ErrorHandler.handleError가 호출된다", async () => {
+    const mockErrorHandler = { handleError: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErrorHandler, useValue: mockErrorHandler }],
+    });
+
+    const model = signal(0);
+    const canFn = signal(
+      (_value: number) => Promise.reject(new Error("update reject")),
+    );
+    TestBed.runInInjectionContext(() => {
+      setupModelHook(model, canFn);
+    });
+
+    model.update((v) => v + 1);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(model()).toBe(0);
+    expect(mockErrorHandler.handleError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "update reject" }),
+    );
+  });
+
+  it("동기 canFn은 기존과 동일하게 model.set에 위임하여 즉시 set한다", () => {
+    const model = signal(0);
+    const canFn = signal((_value: number) => true as boolean | Promise<boolean>);
+    TestBed.runInInjectionContext(() => {
+      setupModelHook(model, canFn);
+    });
+
+    model.update((v) => v + 1);
+    expect(model()).toBe(1);
+  });
+});
+
 describe("Feature 1.7 Slice 1: 독립 유틸리티", () => {
   describe("Rule: setupModelHook이 모델 업데이트 전 검증을 수행한다", () => {
     it("검증 함수가 true 반환 시 즉시 업데이트", () => {

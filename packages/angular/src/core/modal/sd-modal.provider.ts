@@ -67,7 +67,6 @@ export interface SdModalOptions {
   minWidthPx?: number;
   heightPx?: number;
   widthPx?: number;
-  headerStyle?: string;
   noFirstControlFocusing?: boolean;
 }
 
@@ -127,7 +126,7 @@ export class SdModalProvider {
       modalRef.setInput("title", modal.title);
       if (options !== undefined) {
         for (const [key, value] of Object.entries(options)) {
-          if (value !== undefined) {
+          if (value !== undefined && key !== "noFirstControlFocusing") {
             modalRef.setInput(key, value);
           }
         }

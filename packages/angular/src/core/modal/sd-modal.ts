@@ -3,6 +3,7 @@ import {
   Component,
   effect,
   ElementRef,
+  ErrorHandler,
   inject,
   input,
   model,
@@ -286,6 +287,7 @@ export class SdModal {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _activatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _systemConfig = inject(SdSystemConfigProvider, { optional: true });
+  private readonly _errorHandler = inject(ErrorHandler);
   private readonly _focusTrap = injectFocusTrap();
 
   protected readonly tablerX = tablerX;
@@ -306,8 +308,6 @@ export class SdModal {
   minWidthPx = input<number | undefined>(undefined);
   heightPx = input<number | undefined>(undefined);
   widthPx = input<number | undefined>(undefined);
-  headerStyle = input<string | undefined>(undefined);
-  noFirstControlFocusing = input(false);
   actionTplRef = input<TemplateRef<any> | undefined>(undefined);
 
   closeRequest = output<void>();
@@ -316,7 +316,7 @@ export class SdModal {
     getDialogEl: () => this._getDialogEl(),
     minWidthPx: this.minWidthPx,
     minHeightPx: this.minHeightPx,
-    onEnd: () => void this._saveConfig(),
+    onEnd: () => void this._saveConfig().catch((err) => this._errorHandler.handleError(err)),
   });
 
   constructor() {
@@ -349,7 +349,7 @@ export class SdModal {
       const k = this.key();
       if (k === undefined || this._systemConfig == null) return;
 
-      void this._restoreConfig(k);
+      void this._restoreConfig(k).catch((err) => this._errorHandler.handleError(err));
     });
 
   }
@@ -392,7 +392,7 @@ export class SdModal {
     if (this._activatedModal !== null && !this._activatedModal.canDeactivateFn()) {
       return;
     }
-    void this._saveConfig();
+    void this._saveConfig().catch((err) => this._errorHandler.handleError(err));
     this.closeRequest.emit();
   }
 

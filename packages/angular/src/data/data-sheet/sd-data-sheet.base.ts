@@ -25,6 +25,7 @@ import { injectDataSheetRefreshManager } from "./injectDataSheetRefreshManager";
 import { injectDataSheetInlineEditManager } from "./injectDataSheetInlineEditManager";
 import { injectDataSheetModalEditManager } from "./injectDataSheetModalEditManager";
 import { injectDataSheetExcelManager } from "./injectDataSheetExcelManager";
+import { getOrmDataEditToastErrorMessage } from "../getOrmDataEditToastErrorMessage";
 
 export type {
   SdDataSheetItemPropInfo,
@@ -197,7 +198,7 @@ export abstract class SdDataSheetBase<
       refresh: () => this._refreshMgr.refresh(),
       getNewItemFn: () => this.newItem?.bind(this),
       getSubmitFn: () => this.submit?.bind(this),
-      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
+      errorMessageFn: (err) => getOrmDataEditToastErrorMessage(err),
     });
 
     //-- modal edit composable
@@ -210,7 +211,7 @@ export abstract class SdDataSheetBase<
       refresh: () => this._refreshMgr.refresh(),
       getEditItemFn: () => this.editItem?.bind(this),
       getToggleDeleteItemsFn: () => this.toggleDeleteItems?.bind(this),
-      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
+      errorMessageFn: (err) => getOrmDataEditToastErrorMessage(err),
     });
 
     //-- excel composable
@@ -220,7 +221,7 @@ export abstract class SdDataSheetBase<
       refresh: () => this._refreshMgr.refresh(),
       getDownloadExcelFn: () => this.downloadExcel?.bind(this),
       getUploadExcelFn: () => this.uploadExcel?.bind(this),
-      errorMessageFn: (err) => this._getOrmDataEditToastErrorMessage(err),
+      errorMessageFn: (err) => getOrmDataEditToastErrorMessage(err),
     });
 
     setupCanDeactivate(() => this.viewType() === "modal" || this.checkIgnoreChanges());
@@ -290,16 +291,4 @@ export abstract class SdDataSheetBase<
     await this._excelMgr.doUploadExcel();
   }
 
-  //-- private
-
-  private _getOrmDataEditToastErrorMessage(err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (
-      message.includes("a parent row: a foreign key constraint") ||
-      message.includes("conflicted with the REFERENCE")
-    ) {
-      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
-    }
-    return message;
-  }
 }

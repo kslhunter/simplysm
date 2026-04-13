@@ -124,7 +124,7 @@
 
 ## Step 3: 방안 제시
 
-@.claude/references/sd-options.md 에 따라, 사용자에게 해결책을 제시하여 선택을 받는다.
+`.claude/rules/sd-options.md` 의 지침에 따라, 사용자에게 해결책을 제시하여 선택을 받는다.
 
 원인별 해결 방안을 묶어 선택지로 제시한다. 각 "원인X.방안Y"가 하나의 선택지이다.
 

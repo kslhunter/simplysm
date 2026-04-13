@@ -33,6 +33,7 @@ interface SharedDataEntry<T extends SharedDataBase<string | number>> {
   itemsSignal: WritableSignal<T[]>;
   handle: SharedDataHandle<T>;
   listenerKey?: string;
+  generation: number;
   needsReload: boolean;
   isLoading: boolean;
 }
@@ -51,12 +52,13 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
   register<K extends string & keyof T>(name: K, info: SharedDataInfo<T[K]>): void {
     const existing = this._entries.get(name as string);
     if (existing != null) {
-      // 기존 리스너 키 초기화
+      // 기존 리스너 키 초기화 + generation 증가로 이전 이벤트 무시
       if (existing.listenerKey != null) {
         const client = this._clientFactory.get(existing.info.serviceKey);
         void client.removeListener(existing.listenerKey);
         existing.listenerKey = undefined;
       }
+      existing.generation++;
       existing.info = info;
       existing.needsReload = true;
     } else {
@@ -77,6 +79,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
         info,
         itemsSignal,
         handle,
+        generation: 0,
         needsReload: true,
         isLoading: false,
       });
@@ -120,12 +123,16 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
 
   private _loadAndListen(name: string, entry: SharedDataEntry<any>): void {
     entry.isLoading = true;
+    const capturedGeneration = entry.generation;
     this.loadingCount.update((v) => v + 1);
 
     // 비동기 로드
     void entry.info
       .getter()
       .then(async (data: any[]) => {
+        // register 재호출로 generation이 변경되었으면 결과를 무시
+        if (entry.generation !== capturedGeneration) return;
+
         entry.itemsSignal.set(data);
 
         // 이벤트 리스너 등록
@@ -135,7 +142,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
           entry.listenerKey = await event.addListener(
             { name, filter: entry.info.filter },
             async (changeKeys) => {
-              await this._onEvent(name, entry, changeKeys);
+              await this._onEvent(name, entry, changeKeys, capturedGeneration);
             },
           );
         }
@@ -157,7 +164,11 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
     name: string,
     entry: SharedDataEntry<any>,
     changeKeys: (string | number)[] | undefined,
+    generation: number,
   ): Promise<void> {
+    // register 재호출로 generation이 변경되었으면 이벤트 무시
+    if (entry.generation !== generation) return;
+
     this.loadingCount.update((v) => v + 1);
 
     try {

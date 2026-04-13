@@ -1,6 +1,7 @@
 import {
   Directive,
   effect,
+  ErrorHandler,
   inject,
   output,
   signal,
@@ -15,6 +16,7 @@ import { injectViewTypeSignal } from "../../core/routing/injectViewTypeSignal";
 import { withBusy } from "../../core/withBusy";
 import { type SdModalContentDef } from "../../core/modal/sd-modal.provider";
 import { SdToastProvider } from "../../core/toast/sd-toast.provider";
+import { getOrmDataEditToastErrorMessage } from "../getOrmDataEditToastErrorMessage";
 
 export interface SdDataDetailDataInfo {
   isNew: boolean;
@@ -47,6 +49,7 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
 
   private readonly _sdToast = inject(SdToastProvider);
   private readonly _sdSharedData = inject(SdSharedDataProvider);
+  private readonly _errorHandler = inject(ErrorHandler);
 
   viewType = injectViewTypeSignal(() => this);
 
@@ -72,20 +75,24 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
       });
 
       queueMicrotask(async () => {
-        if (cancelled) return;
+        try {
+          if (cancelled) return;
 
-        if (!this.canUse()) {
+          if (!this.canUse()) {
+            this.initialized.set(true);
+            return;
+          }
+
+          await withBusy(this.busyCount, () =>
+            this._sdToast.try(async () => {
+              await this._sdSharedData.wait();
+              await this.refresh();
+            }),
+          );
           this.initialized.set(true);
-          return;
+        } catch (err) {
+          this._errorHandler.handleError(err);
         }
-
-        await withBusy(this.busyCount, () =>
-          this._sdToast.try(async () => {
-            await this._sdSharedData.wait();
-            await this.refresh();
-          }),
-        );
-        this.initialized.set(true);
       });
     });
 
@@ -137,7 +144,7 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
 
           this.close.emit(result);
         },
-        (err) => this._getOrmDataEditToastErrorMessage(err),
+        (err) => getOrmDataEditToastErrorMessage(err),
       ),
     );
   }
@@ -172,19 +179,9 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
 
           await this.refresh();
         },
-        (err) => this._getOrmDataEditToastErrorMessage(err),
+        (err) => getOrmDataEditToastErrorMessage(err),
       ),
     );
   }
 
-  private _getOrmDataEditToastErrorMessage(err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (
-      message.includes("a parent row: a foreign key constraint") ||
-      message.includes("conflicted with the REFERENCE")
-    ) {
-      return "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망";
-    }
-    return message;
-  }
 }

@@ -252,6 +252,9 @@ export {
   type SdDataDetailDataInfo,
 } from "./data/data-detail/sd-data-detail.base";
 
+// data/utils
+export { getOrmDataEditToastErrorMessage } from "./data/getOrmDataEditToastErrorMessage";
+
 // data/data-select-button
 export { SdDataSelectButton } from "./data/data-select-button/sd-data-select-button";
 export { SdDataSelectButtonBase } from "./data/data-select-button/sd-data-select-button.base";

@@ -35,8 +35,8 @@ src/
 ├── workers/               ← Node.js Worker Thread 모듈
 │   ├── library-build.worker.ts  ← node/browser/neutral 빌드
 │   ├── ngtsc-build.worker.ts    ← Angular 라이브러리 빌드
-│   ├── server-build.worker.ts   ← server 패키지 esbuild 빌드
-│   ├── server-esbuild-context.ts ← esbuild watch context 관리 (모듈 스코프 상태)
+│   ├── server-build.worker.ts   ← server 패키지 esbuild + tsc 플러그인 통합 빌드
+│   ├── server-esbuild-context.ts ← esbuild watch context + tsc 플러그인 관리 (모듈 스코프 상태)
 │   ├── server-watch-manager.ts  ← server-build watch 루프 설정
 │   ├── server-runtime.worker.ts ← dev 모드 서버 프로세스 실행
 │   ├── client.worker.ts         ← Vite dev server / 프로덕션 빌드
@@ -55,6 +55,7 @@ src/
 ├── esbuild/               ← esbuild 설정 및 플러그인
 │   ├── esbuild-config.ts             ← esbuild 설정 생성
 │   ├── esbuild-client-config.ts      ← 클라이언트용 esbuild 설정
+│   ├── esbuild-tsc-plugin.ts         ← 서버 빌드용 tsc 플러그인 (타입체크 + DTS)
 │   ├── esbuild-scss-plugin.ts        ← esbuild SCSS 플러그인
 │   ├── esbuild-index-html.ts         ← index.html 생성
 │   └── esbuild-pwa.ts                ← PWA 설정 적용
@@ -236,6 +237,29 @@ const fileCache = new Map<string, string>();
 const restored = deserializeDiagnostic(serialized, fileCache);
 ```
 
+### esbuild tsc 플러그인 (서버 빌드)
+
+`src/esbuild/esbuild-tsc-plugin.ts`의 `createTscPlugin`은 esbuild 플러그인으로 tsc 타입체크 + DTS emit을 통합한다. esbuild Go 네이티브 transpile과 Node.js 메인 스레드의 tsc를 microtask로 병렬 실행한다:
+
+```typescript
+// 플러그인 생성 (one-shot build: 로컬 변수, watch: 모듈 스코프)
+const tscPlugin = createTscPlugin({ pkgDir, cwd, output: { dts: true } });
+
+// esbuild.build()에 플러그인으로 전달
+await esbuild.build({ ...options, plugins: [tscPlugin.plugin] });
+
+// onStart: Promise.resolve().then(() => runTscPackageBuild()) — microtask로 tsc 스케줄링
+// onEnd: tsc Promise를 await하여 결과를 내부 상태에 저장 (result.errors에 push하지 않음)
+
+// 결과는 getter로 외부 조회
+tscPlugin.getErrors();        // tsc 에러 (string[])
+tscPlugin.getProgram();       // ts.Program (lint용)
+tscPlugin.getDiagnostics();   // SerializedDiagnostic[]
+tscPlugin.getAffectedFiles(); // 증분 lint용 affected files
+```
+
+watch 모드에서는 `server-esbuild-context.ts`가 플러그인 인스턴스를 모듈 스코프에 보관하고 위임 메서드(`getTscProgram()` 등)로 접근한다. context 재생성 시 `resetBuilderProgram()`으로 증분 빌드 상태를 리셋한다.
+
 ## Testing
 
 **프레임워크**: Vitest
@@ -249,6 +273,7 @@ tests/
 ├── commands/       ← 커맨드별 단위 테스트 (build, dev, watch, check, lint, typecheck, publish, device)
 ├── electron/       ← Electron 빌드 테스트
 ├── engines/        ← 엔진 단위 및 통합 테스트 (base-engine, tsc, ngtsc, server-esbuild, vite, engine-selection)
+├── esbuild/        ← esbuild 플러그인 테스트 (tsc-plugin 등)
 ├── runtime/        ← ResultCollector, SignalHandler
 ├── orchestrators/  ← BuildOrchestrator, WatchOrchestrator, DevOrchestrator
 ├── utils/          ← 유틸 함수 단위 테스트

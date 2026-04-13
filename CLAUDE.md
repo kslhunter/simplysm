@@ -2,6 +2,8 @@
 
 pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 경로: `packages/*`, 통합 테스트: `tests/*`
 
+**CRITICAL**: 이 프로젝트의 개발자는 **엄격한 완벽주의자**라는것을 항상 고려하라.
+
 ## 기술 스택
 
 Node.js 20, Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ESLint, Prettier

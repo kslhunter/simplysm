@@ -78,8 +78,12 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
       document.body.textContent =
         `[에러 처리 실패]\n원본: ${String(event)}\n2차: ${String(err)}`;
 
-      const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
-      appRef.destroy();
+      try {
+        const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
+        appRef.destroy();
+      } catch {
+        // _displayErrorMessage에서 이미 destroy된 경우 무시
+      }
     }
 
     return false;

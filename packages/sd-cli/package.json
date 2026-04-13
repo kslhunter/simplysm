@@ -24,6 +24,8 @@
     }
   },
   "dependencies": {
+    "acorn": "^8.14.1",
+    "acorn-walk": "^8.3.4",
     "@angular/build": "^21.2.7",
     "@angular/compiler-cli": "^21.2.8",
     "@fastify/http-proxy": "^11.4.3",

@@ -1,6 +1,47 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { SdNavigateWindowProvider } from "../../../src/core/routing/sd-navigate-window.provider";
 
+describe("Feature 1.2: URL 세미콜론 제거 (LOGIC-006)", () => {
+  let provider: SdNavigateWindowProvider;
+  let windowOpenSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    provider = new SdNavigateWindowProvider();
+    windowOpenSpy = vi.spyOn(window, "open").mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    windowOpenSpy.mockRestore();
+  });
+
+  it("params 미지정 시 URL에 세미콜론이 포함되지 않는다", () => {
+    provider.open("navigate");
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/#navigate$/),
+      "_blank",
+    );
+  });
+
+  it("빈 객체 params 시 URL에 세미콜론이 포함되지 않는다", () => {
+    provider.open("navigate", {});
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/#navigate$/),
+      "_blank",
+    );
+  });
+
+  it("params 지정 시 세미콜론+params가 포함된다", () => {
+    provider.open("navigate", { foo: "bar" });
+
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      expect.stringContaining("#navigate;foo=bar"),
+      "_blank",
+    );
+  });
+});
+
 describe("FIX-1 Slice 4: SdNavigateWindowProvider", () => {
   let provider: SdNavigateWindowProvider;
   let windowOpenSpy: ReturnType<typeof vi.spyOn>;

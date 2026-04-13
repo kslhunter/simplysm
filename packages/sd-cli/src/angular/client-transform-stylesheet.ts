@@ -6,7 +6,7 @@ import { compileScssFileAsync, compileScssStringAsync } from "./scss-compiler.js
 
 export interface ClientTransformStylesheetOptions {
   loadPaths: string[];
-  postCssPlugins?: unknown[];
+  postcssPlugins?: unknown[];
   scssErrors: string[];
   scssDependencies: Map<string, Set<string>>;
   /** SCSS 캐시 디렉토리 (미지정 시 캐시 비활성화) */
@@ -57,11 +57,11 @@ async function readFileHash(filePath: string): Promise<string | undefined> {
 export function createClientTransformStylesheet(
   options: ClientTransformStylesheetOptions,
 ): (data: string, containingFile: string, stylesheetFile?: string) => Promise<string | null> {
-  const { loadPaths, postCssPlugins, scssErrors, scssDependencies, cacheDir } = options;
+  const { loadPaths, postcssPlugins, scssErrors, scssDependencies, cacheDir } = options;
 
   const postCssProcessor =
-    postCssPlugins != null && postCssPlugins.length > 0
-      ? postcss(postCssPlugins as postcss.AcceptedPlugin[])
+    postcssPlugins != null && postcssPlugins.length > 0
+      ? postcss(postcssPlugins as postcss.AcceptedPlugin[])
       : undefined;
 
   return async (

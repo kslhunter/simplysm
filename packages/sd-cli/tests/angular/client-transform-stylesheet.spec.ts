@@ -118,7 +118,7 @@ describe("createClientTransformStylesheet", () => {
     const deps = new Map<string, Set<string>>();
     const transform = createClientTransformStylesheet({
       loadPaths: [],
-      postCssPlugins: [testPlugin],
+      postcssPlugins: [testPlugin],
       scssErrors: errors,
       scssDependencies: deps,
     });

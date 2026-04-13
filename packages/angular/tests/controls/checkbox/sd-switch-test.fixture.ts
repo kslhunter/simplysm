@@ -72,6 +72,28 @@ export class SdSwitchSizeSmTest {
 }
 
 @Component({
+  selector: "sd-switch-can-change-allow-test",
+  template: `<sd-switch [(value)]="value" [canChangeFn]="canChange" />`,
+  standalone: true,
+  imports: [SdSwitch],
+})
+export class SdSwitchCanChangeAllowTest {
+  value = signal(false);
+  canChange = () => true;
+}
+
+@Component({
+  selector: "sd-switch-can-change-deny-test",
+  template: `<sd-switch [(value)]="value" [canChangeFn]="canChange" />`,
+  standalone: true,
+  imports: [SdSwitch],
+})
+export class SdSwitchCanChangeDenyTest {
+  value = signal(false);
+  canChange = () => false;
+}
+
+@Component({
   selector: "sd-switch-propagation-test",
   template: `
     <div (click)="parentClicked = true" (keydown)="0" tabindex="0">

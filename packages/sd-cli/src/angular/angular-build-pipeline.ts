@@ -65,7 +65,7 @@ export interface AngularBuildPipelineOptions {
   compilerOptionsTransformer?: (opts: ts.CompilerOptions) => ts.CompilerOptions;
 
   // client 모드 전용
-  postCssPlugins?: unknown[];
+  postcssPlugins?: unknown[];
   scssCacheDir?: string;
 }
 
@@ -210,7 +210,7 @@ export class AngularBuildPipeline {
         this._options.mode === "client"
           ? createClientTransformStylesheet({
               loadPaths,
-              postCssPlugins: this._options.postCssPlugins,
+              postcssPlugins: this._options.postcssPlugins,
               scssErrors: this._scssErrors,
               scssDependencies: this._scssDependencies,
               cacheDir: this._options.scssCacheDir,

@@ -25,8 +25,8 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 `/sd-wbs` 스킬을 즉시 수행한다. 완료 후:
 
-- **Feature 1개** → 즉시 Step 3 진행
 - **Feature 2개 이상** → `/sd-dev {wbs경로} {첫 Feature 번호}` 안내만 하고 **종료**
+- **단일 Feature** → 즉시 Step 3 진행
 
 ## Step 3: sd-plan
 
@@ -42,7 +42,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 6: sd-review
 
-@.claude/references/sd-review.md 를 읽고, 발견사항에 대해 수정한다.
+`.claude/references/sd-review.md` 를 읽고, 발견사항에 대해 수정한다.
 
 - wbs/feature 문서를 읽고 잘 구현되었는지 함께 검토한다.
 - 수정사항이 있는 경우, `/sd-check` 스킬을 재 수행한다.
@@ -76,4 +76,4 @@ wbs.md를 **다시 읽어서** Feature 체크박스를 확인:
 
 - 모든 Feature가 완료(`[x]`)된 경우, `/sd-review`를 사용한 최종 심층 리뷰를 안내한다.
   (예: `/sd-review {wbs디렉토리경로}/*.md 가 잘 구현되었는지, 문제는 없는지 최종 심층 리뷰`)
-- 그 외의 경우에는 다음 단계를 안내하지 않는다.
+- 그 외의 경우에는 남은 Feature목록 및 각 Feature의 의존성을 안내한다.

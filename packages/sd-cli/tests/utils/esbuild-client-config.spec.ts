@@ -39,6 +39,19 @@ vi.mock("browserslist-to-esbuild", () => ({
   default: vi.fn(() => ["chrome61"]),
 }));
 
+vi.mock("module", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("module")>();
+  return {
+    ...actual,
+    createRequire: vi.fn(() => (name: string) => {
+      if (name === "nonexistent-plugin") {
+        throw new Error(`Cannot find module '${name}'`);
+      }
+      return (..._args: any[]) => ({ postcssPlugin: name });
+    }),
+  };
+});
+
 // --- Imports (after mocks) ---
 
 const { createClientEsbuildContext } = await import(
@@ -108,22 +121,19 @@ describe("createClientEsbuildContext — define 생성", () => {
     expect(opts.define!["ngHmrMode"]).toBe("false");
   });
 
-  it("env가 없으면 import.meta.env 관련 define 없음", async () => {
+  it("env가 없으면 import.meta.env define 없음", async () => {
     await createClientEsbuildContext(baseDev);
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
-    const envKeys = Object.keys(opts.define!).filter((k) =>
-      k.startsWith("import.meta.env."),
-    );
-    expect(envKeys).toHaveLength(0);
+    expect(opts.define!["import.meta.env"]).toBeUndefined();
   });
 
-  it("env 값에 특수문자가 있으면 JSON.stringify로 이스케이프", async () => {
+  it("env 설정 시 import.meta.env 객체로 define에 주입", async () => {
     await createClientEsbuildContext({
       ...baseBuild,
       env: { MSG: 'hello "world"' },
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
-    expect(opts.define!["import.meta.env.MSG"]).toBe('"hello \\"world\\""');
+    expect(opts.define!["import.meta.env"]).toBe(JSON.stringify({ MSG: 'hello "world"' }));
   });
 });
 
@@ -160,13 +170,65 @@ describe("createClientEsbuildContext — PostCSS 설정", () => {
     expect(styleOpts.postcssConfiguration).toBeUndefined();
   });
 
-  it("postcssConfigPath 미전달 시 pkgDir을 기본값으로 사용", async () => {
+  it("postcssPlugins 전달해도 postcssConfiguration은 항상 undefined", async () => {
     await createClientEsbuildContext({
       ...baseBuild,
       postcssPlugins: [["autoprefixer"]],
     });
     const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.postcssConfiguration!.configPath).toBe(baseBuild.pkgDir);
+    expect(styleOpts.postcssConfiguration).toBeUndefined();
+  });
+});
+
+describe("createClientEsbuildContext — PostCSS 플러그인 통합", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("postcssPlugins 전달 시 sd-postcss 플러그인이 plugins에 등록된다", async () => {
+    await createClientEsbuildContext({
+      ...baseBuild,
+      postcssPlugins: [["autoprefixer"]],
+    });
+    const opts = vi.mocked(esbuild.context).mock.calls[0][0];
+    const pluginNames = opts.plugins!.map((p: any) => p.name);
+    expect(pluginNames).toContain("sd-postcss");
+  });
+
+  it("postcssPlugins 미전달 시 sd-postcss 미등록", async () => {
+    await createClientEsbuildContext(baseBuild);
+    const opts = vi.mocked(esbuild.context).mock.calls[0][0];
+    const pluginNames = opts.plugins!.map((p: any) => p.name);
+    expect(pluginNames).not.toContain("sd-postcss");
+  });
+
+  it("sd-postcss가 customPlugins 뒤, sd-legacy-strip-dynamic-import 앞에 배치된다", async () => {
+    const customPlugin = { name: "custom", setup: vi.fn() };
+    await createClientEsbuildContext({
+      ...baseBuild,
+      postcssPlugins: [["autoprefixer"]],
+      plugins: [customPlugin as any],
+      legacyModule: true,
+      onEnd: vi.fn(),
+    });
+    const opts = vi.mocked(esbuild.context).mock.calls[0][0];
+    const pluginNames = opts.plugins!.map((p: any) => p.name);
+
+    const customIdx = pluginNames.indexOf("custom");
+    const postcssIdx = pluginNames.indexOf("sd-postcss");
+    const stripIdx = pluginNames.indexOf("sd-legacy-strip-dynamic-import");
+    const onEndIdx = pluginNames.indexOf("sd-on-end");
+
+    expect(postcssIdx).toBeGreaterThan(customIdx);
+    expect(postcssIdx).toBeLessThan(stripIdx);
+    expect(postcssIdx).toBeLessThan(onEndIdx);
+  });
+
+  it("존재하지 않는 플러그인 이름으로 에러가 throw된다", async () => {
+    await expect(
+      createClientEsbuildContext({
+        ...baseBuild,
+        postcssPlugins: [["nonexistent-plugin"]],
+      }),
+    ).rejects.toThrow("nonexistent-plugin");
   });
 });
 
@@ -471,8 +533,8 @@ describe("createClientEsbuildContext — legacyModule 설정", () => {
       env: { API_URL: "https://api.example.com" },
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
-    expect(opts.define!["import.meta.env.API_URL"]).toBe(
-      JSON.stringify("https://api.example.com"),
+    expect(opts.define!["import.meta.env"]).toBe(
+      JSON.stringify({ API_URL: "https://api.example.com" }),
     );
     expect(opts.supported).toEqual({ "import-meta": false });
   });

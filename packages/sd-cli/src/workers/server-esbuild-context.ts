@@ -1,8 +1,12 @@
+import type ts from "typescript";
 import esbuild from "esbuild";
 import {
   createServerEsbuildOptions,
   writeChangedOutputFiles,
 } from "../esbuild/esbuild-config";
+import { createTscPlugin, type TscPluginResult } from "../esbuild/esbuild-tsc-plugin";
+import type { TypecheckEnv } from "../utils/tsconfig";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 
 /**
  * esbuild watch context 생성 옵션
@@ -12,6 +16,13 @@ export interface EsbuildContextOptions {
   entryPoints: string[];
   env?: Record<string, string>;
   external: string[];
+  /** tsc 플러그인 옵션. 제공 시 createTscPlugin으로 플러그인을 생성하여 esbuild context에 포함한다. */
+  tsc?: {
+    cwd: string;
+    output: { dts: boolean };
+    env?: TypecheckEnv;
+    includeTests?: boolean;
+  };
 }
 
 /** esbuild watch context (모듈 스코프 상태) */
@@ -20,11 +31,24 @@ let context: esbuild.BuildContext | undefined;
 /** 마지막 빌드의 metafile (변경 필터링용) */
 let lastMetafile: esbuild.Metafile | undefined;
 
+/** tsc 플러그인 인스턴스 (모듈 스코프 상태) */
+let tscPlugin: TscPluginResult | undefined;
+
 /**
  * esbuild watch context를 생성한다.
  * dev 모드 전용 (metafile:true, write:false).
  */
 export async function createContext(options: EsbuildContextOptions): Promise<void> {
+  if (options.tsc != null) {
+    tscPlugin = createTscPlugin({
+      pkgDir: options.pkgDir,
+      cwd: options.tsc.cwd,
+      output: options.tsc.output,
+      env: options.tsc.env,
+      includeTests: options.tsc.includeTests,
+    });
+  }
+
   const baseOptions = createServerEsbuildOptions({
     pkgDir: options.pkgDir,
     entryPoints: options.entryPoints,
@@ -35,6 +59,7 @@ export async function createContext(options: EsbuildContextOptions): Promise<voi
 
   context = await esbuild.context({
     ...baseOptions,
+    plugins: tscPlugin != null ? [tscPlugin.plugin] : [],
     metafile: true,
     write: false,
   });
@@ -61,12 +86,14 @@ export async function rebuild(): Promise<{
     await writeChangedOutputFiles(result.outputFiles);
   }
 
-  const errors = result.errors.map((e) => e.text);
+  const esbuildErrors = result.errors.map((e) => e.text);
+  const tscErrors = tscPlugin?.getErrors() ?? [];
+  const allErrors = [...esbuildErrors, ...tscErrors];
   const warnings = result.warnings.map((w) => w.text);
 
   return {
-    success: result.errors.length === 0,
-    errors: errors.length > 0 ? errors : undefined,
+    success: allErrors.length === 0,
+    errors: allErrors.length > 0 ? allErrors : undefined,
     warnings: warnings.length > 0 ? warnings : undefined,
   };
 }
@@ -85,6 +112,10 @@ export async function recreateContext(options: EsbuildContextOptions): Promise<v
   context = undefined;
   lastMetafile = undefined;
 
+  if (tscPlugin != null) {
+    tscPlugin.resetBuilderProgram();
+  }
+
   try {
     await createContext(options);
   } finally {
@@ -101,6 +132,7 @@ export async function dispose(): Promise<void> {
   const contextToDispose = context;
   context = undefined;
   lastMetafile = undefined;
+  tscPlugin = undefined;
 
   if (contextToDispose != null) {
     await contextToDispose.dispose();
@@ -119,4 +151,28 @@ export function getMetafile(): esbuild.Metafile | undefined {
  */
 export function hasContext(): boolean {
   return context != null;
+}
+
+/**
+ * tsc 플러그인의 ts.Program을 반환한다.
+ * 플러그인이 없으면 undefined를 반환한다.
+ */
+export function getTscProgram(): ts.Program | undefined {
+  return tscPlugin?.getProgram();
+}
+
+/**
+ * tsc 플러그인의 affected files를 반환한다.
+ * 플러그인이 없으면 undefined를 반환한다.
+ */
+export function getTscAffectedFiles(): ReadonlySet<string> | undefined {
+  return tscPlugin?.getAffectedFiles();
+}
+
+/**
+ * tsc 플러그인의 diagnostics를 반환한다.
+ * 플러그인이 없으면 빈 배열을 반환한다.
+ */
+export function getTscDiagnostics(): SerializedDiagnostic[] {
+  return tscPlugin?.getDiagnostics() ?? [];
 }

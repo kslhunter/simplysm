@@ -1,7 +1,9 @@
 import path from "path";
 import fs from "fs";
+import { createRequire } from "module";
 import esbuild from "esbuild";
 import browserslistToEsbuild from "browserslist-to-esbuild";
+import type { AcceptedPlugin } from "postcss";
 import {
   createCompilerPlugin,
   SourceFileCache,
@@ -9,6 +11,7 @@ import {
   type BundleStylesheetOptions,
 } from "@angular/build/private";
 import { createScssPlugin } from "./esbuild-scss-plugin";
+import { createPostcssPlugin } from "./esbuild-postcss-plugin";
 
 export interface CreateClientEsbuildOptions {
   /** 패키지 디렉토리 경로 */
@@ -29,8 +32,6 @@ export interface CreateClientEsbuildOptions {
   onEnd?: (result: esbuild.BuildResult) => void | Promise<void>;
   /** PostCSS 플러그인 ([name, options] 튜플 배열) */
   postcssPlugins?: [string, (object | string)?][];
-  /** PostCSS 설정 기준 경로 */
-  postcssConfigPath?: string;
   /** 빌드 출력 경로 (기본: pkgDir/dist) */
   outdir?: string;
   /** browserslist 쿼리. 미설정 시 "es2022" 기본값 */
@@ -91,17 +92,22 @@ export async function createClientEsbuildContext(
       path: cachePath,
       basePath: cachePath,
     },
-    postcssConfiguration:
-      options.postcssPlugins != null
-        ? {
-            config: { plugins: options.postcssPlugins },
-            configPath: options.postcssConfigPath ?? options.pkgDir,
-          }
-        : undefined,
+    postcssConfiguration: undefined,
     inlineStyleLanguage: "scss",
   };
 
   const angularPlugin = createCompilerPlugin(pluginOptions, styleOptions);
+
+  // PostCSS 플러그인 로딩 (튜플 → 인스턴스)
+  let loadedPostcssPlugins: AcceptedPlugin[] | undefined;
+  if (options.postcssPlugins != null && options.postcssPlugins.length > 0) {
+    const req = createRequire(path.join(options.pkgDir, "package.json"));
+    loadedPostcssPlugins = options.postcssPlugins.map(([name, pluginOpts]) => {
+      const pluginFn = req(name);
+      const fn = pluginFn.default ?? pluginFn;
+      return pluginOpts != null ? fn(pluginOpts) : fn;
+    });
+  }
 
   // SCSS side-effect import 처리 플러그인
   const scssPlugin = createScssPlugin({
@@ -126,10 +132,10 @@ export async function createClientEsbuildContext(
   }
 
   // 커스텀 env
+  // esbuild define은 정적 패턴만 치환하므로, import.meta.env 객체 자체를 주입해야
+  // env() 함수의 동적 접근(import.meta.env?.[key])이 동작한다.
   if (options.env != null) {
-    for (const [key, value] of Object.entries(options.env)) {
-      define[`import.meta.env.${key}`] = JSON.stringify(value);
-    }
+    define["import.meta.env"] = JSON.stringify(options.env);
   }
 
   // import.meta.hot 폴리필 banner (Angular HMR 런타임용)
@@ -187,6 +193,9 @@ export async function createClientEsbuildContext(
       angularPlugin,
       scssPlugin,
       ...(options.plugins ?? []),
+      ...(loadedPostcssPlugins != null
+        ? [createPostcssPlugin({ plugins: loadedPostcssPlugins })]
+        : []),
       ...(options.legacyModule === true
         ? [
             {

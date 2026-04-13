@@ -29,6 +29,26 @@ export function setupModelHook<T, S extends WritableSignal<T>>(
   };
 
   model.update = (fn) => {
-    model.set(fn(model()));
+    const value = fn(model());
+    const canSet = canFn()(value);
+
+    if (canSet === false) {
+      return;
+    }
+
+    if (canSet === true) {
+      orgSet(value);
+      return;
+    }
+
+    void canSet
+      .then((allowed) => {
+        if (allowed !== false) {
+          orgSet(fn(model()));
+        }
+      })
+      .catch((err) => {
+        errorHandler.handleError(err);
+      });
   };
 }

@@ -32,6 +32,20 @@ vi.mock("../../src/utils/tsc-build", () => ({
   runTscPackageBuild: vi.fn(() => mockTscResult),
 }));
 
+// tsc plugin mock (build() js=true path)
+const mockTscPlugin = {
+  plugin: { name: "sd-tsc", setup: vi.fn() },
+  getProgram: vi.fn(),
+  getAffectedFiles: vi.fn(),
+  getDiagnostics: vi.fn((): unknown[] => []),
+  getErrors: vi.fn((): string[] | undefined => undefined),
+  resetBuilderProgram: vi.fn(),
+};
+
+vi.mock("../../src/esbuild/esbuild-tsc-plugin", () => ({
+  createTscPlugin: vi.fn(() => mockTscPlugin),
+}));
+
 vi.mock("../../src/utils/tsconfig", () => ({
   parseTsconfig: vi.fn(() => ({ options: {}, fileNames: [] })),
   getPackageSourceFiles: vi.fn(() => []),
@@ -107,6 +121,13 @@ beforeEach(() => {
     formattedOutput: "",
   });
   mockTscResult.program = { getSourceFiles: () => [] } as any;
+
+  // Reset tsc plugin mock
+  mockTscPlugin.getProgram.mockReset();
+  mockTscPlugin.getAffectedFiles.mockReset();
+  mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+  mockTscPlugin.getErrors.mockReset().mockReturnValue(undefined);
+  mockTscPlugin.resetBuilderProgram.mockReset();
 });
 
 describe("server-build.worker lint integration (Slice 3)", () => {
@@ -117,6 +138,28 @@ describe("server-build.worker lint integration (Slice 3)", () => {
         cwd: "/workspace",
         pkgDir: "/workspace/packages/my-server",
         output: { js: false, dts: false, lint: true },
+      });
+
+      expect(result).toHaveProperty("lint");
+      expect(result.lint).toEqual({
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
+      });
+    });
+  });
+
+  describe("Scenario: build js=true runs lint using tscPlugin.getProgram()", () => {
+    it("returns lint result using plugin program when js=true and lint enabled", async () => {
+      const fakeProgram = { getSourceFiles: () => [] };
+      mockTscPlugin.getProgram.mockReturnValue(fakeProgram);
+
+      const result = await workerMethods["build"]({
+        name: "my-server",
+        cwd: "/workspace",
+        pkgDir: "/workspace/packages/my-server",
+        output: { js: true, dts: false, lint: true },
       });
 
       expect(result).toHaveProperty("lint");

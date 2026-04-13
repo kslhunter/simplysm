@@ -373,6 +373,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     }
     const parsed = this._handler().parse(inputEl.value, { format: this.format() });
     if (parsed === undefined) {
+      inputEl.value = this.controlValue();
       return;
     }
     this.value.set(parsed as SdTextfieldTypes[K]);

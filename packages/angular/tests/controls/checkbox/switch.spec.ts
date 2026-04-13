@@ -5,6 +5,8 @@ import {
   SdSwitchOnTest,
   SdSwitchDisabledTest,
   SdSwitchPropagationTest,
+  SdSwitchCanChangeAllowTest,
+  SdSwitchCanChangeDenyTest,
 } from "./sd-switch-test.fixture";
 
 describe("Feature 2.5 Slice 2: sd-switch", () => {
@@ -96,6 +98,32 @@ describe("Feature 2.5 Slice 2: sd-switch", () => {
     expect(outerDiv).toBeTruthy();
     const innerDiv = outerDiv.querySelector(":scope > div") as HTMLElement;
     expect(innerDiv).toBeTruthy();
+  });
+});
+
+describe("Feature 1.2: SdSwitch canChangeFn 통일 (CONSIST-001)", () => {
+  it("canChangeFn이 true 반환 — value가 토글된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdSwitchCanChangeAllowTest] })
+      .createComponent(SdSwitchCanChangeAllowTest);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector("sd-switch") as HTMLElement;
+    host.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.value()).toBe(true);
+  });
+
+  it("canChangeFn이 false 반환 — value가 변경되지 않는다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdSwitchCanChangeDenyTest] })
+      .createComponent(SdSwitchCanChangeDenyTest);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector("sd-switch") as HTMLElement;
+    host.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.value()).toBe(false);
   });
 });
 

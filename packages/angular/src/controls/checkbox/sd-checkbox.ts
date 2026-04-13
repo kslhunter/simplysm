@@ -247,8 +247,8 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
     "[attr.data-sd-radio]": "radio()",
     "[attr.data-sd-size]": "size()",
     "[attr.data-sd-theme]": "theme()",
-    "[attr.tabindex]": "0",
-    "(click)": "onClick()",
+    "[attr.tabindex]": "'0'",
+    "(click)": "onClick($event)",
     "(keydown)": "onKeydown($event)",
   },
 })
@@ -282,7 +282,10 @@ export class SdCheckbox {
     setupRipple(() => !this.disabled());
   }
 
-  onClick() {
+  onClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (this.disabled()) return;
     if (this.radio()) {
       this.value.set(true);
@@ -294,6 +297,7 @@ export class SdCheckbox {
   onKeydown(event: KeyboardEvent): void {
     if (event.key === " ") {
       event.preventDefault();
+      event.stopPropagation();
       if (this.disabled()) return;
       if (this.radio()) {
         this.value.set(true);

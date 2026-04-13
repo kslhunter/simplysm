@@ -22,6 +22,7 @@ import {
   type SdViewType,
 } from "../../core/routing/injectViewTypeSignal";
 import { injectParent } from "../../core/injectParent";
+import { SdSystemLogProvider } from "../../core/config/sd-system-log.provider";
 import { NgIcon } from "@ng-icons/core";
 import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
 
@@ -81,6 +82,7 @@ import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
 export class SdBaseContainer {
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _sdAppStructure = inject(SdAppStructureProvider);
+  private readonly _systemLog = inject(SdSystemLogProvider);
 
   private readonly _parent = injectParent();
 
@@ -104,7 +106,8 @@ export class SdBaseContainer {
         this._sdActivatedModal?.modalComponent()?.title() ??
         this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode())
       );
-    } catch {
+    } catch (err) {
+      void this._systemLog.writeAsync("warn", `modalOrPageTitle 계산 중 에러: ${String(err)}`);
       return "";
     }
   });

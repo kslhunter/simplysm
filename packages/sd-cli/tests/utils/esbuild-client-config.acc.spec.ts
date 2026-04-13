@@ -37,6 +37,19 @@ vi.mock("browserslist-to-esbuild", () => ({
   default: vi.fn(() => ["chrome61"]),
 }));
 
+vi.mock("module", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("module")>();
+  return {
+    ...actual,
+    createRequire: vi.fn(() => (name: string) => {
+      if (name === "nonexistent-plugin") {
+        throw new Error(`Cannot find module '${name}'`);
+      }
+      return (..._args: any[]) => ({ postcssPlugin: name });
+    }),
+  };
+});
+
 // --- Imports (after mocks) ---
 
 const { createClientEsbuildContext } = await import(
@@ -171,7 +184,7 @@ describe("createClientEsbuildContext — Acceptance", () => {
   });
 
   // Scenario: 커스텀 env 주입
-  it("env 설정 시 import.meta.env.KEY로 define에 주입", async () => {
+  it("env 설정 시 import.meta.env 객체로 define에 주입", async () => {
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
@@ -180,27 +193,26 @@ describe("createClientEsbuildContext — Acceptance", () => {
     });
 
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
-    expect(esbuildOptions.define!["import.meta.env.API_URL"]).toBe(
-      '"https://api.example.com"',
+    expect(esbuildOptions.define!["import.meta.env"]).toBe(
+      JSON.stringify({ API_URL: "https://api.example.com", DEBUG: "true" }),
     );
-    expect(esbuildOptions.define!["import.meta.env.DEBUG"]).toBe('"true"');
   });
 
-  // Scenario: PostCSS 설정 전달
-  it("postcssPlugins 전달 시 BundleStylesheetOptions.postcssConfiguration에 반영", async () => {
+  // Scenario: PostCSS 설정 — postcssConfiguration 비활성화 + sd-postcss 등록
+  it("postcssPlugins 전달 시 postcssConfiguration은 undefined이고 sd-postcss 플러그인이 등록된다", async () => {
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
       mode: "build",
       postcssPlugins: [["autoprefixer", {}]],
-      postcssConfigPath: "/workspace/packages/my-app",
     });
 
     const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.postcssConfiguration).toEqual({
-      config: { plugins: [["autoprefixer", {}]] },
-      configPath: "/workspace/packages/my-app",
-    });
+    expect(styleOpts.postcssConfiguration).toBeUndefined();
+
+    const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
+    const pluginNames = esbuildOptions.plugins!.map((p: any) => p.name);
+    expect(pluginNames).toContain("sd-postcss");
   });
 
   // Scenario: 프로덕션 일회성 빌드
@@ -358,8 +370,8 @@ describe("createClientEsbuildContext — Acceptance", () => {
     ]);
   });
 
-  // Scenario: dev 모드 출력 네이밍 (해시 없음)
-  it("dev 모드: entryNames, chunkNames, assetNames 모두 [name]", async () => {
+  // Scenario: dev 모드 출력 네이밍 (entry/asset은 해시 없음, chunk은 해시 포함)
+  it("dev 모드: entryNames, assetNames는 [name], chunkNames는 [name]-[hash]", async () => {
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
@@ -368,7 +380,7 @@ describe("createClientEsbuildContext — Acceptance", () => {
 
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(esbuildOptions.entryNames).toBe("[name]");
-    expect(esbuildOptions.chunkNames).toBe("[name]");
+    expect(esbuildOptions.chunkNames).toBe("[name]-[hash]");
     expect(esbuildOptions.assetNames).toBe("[name]");
   });
 

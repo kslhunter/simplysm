@@ -5,6 +5,15 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 const mockRebuild = vi.fn();
 const mockDispose = vi.fn();
 
+const mockTscPlugin = {
+  plugin: { name: "sd-tsc", setup: vi.fn() },
+  getProgram: vi.fn(),
+  getAffectedFiles: vi.fn(),
+  getDiagnostics: vi.fn((): unknown[] => []),
+  getErrors: vi.fn(),
+  resetBuilderProgram: vi.fn(),
+};
+
 vi.mock("esbuild", () => ({
   default: {
     context: vi.fn(() =>
@@ -21,11 +30,18 @@ vi.mock("../../src/esbuild/esbuild-config", async (importOriginal) => {
   };
 });
 
+vi.mock("../../src/esbuild/esbuild-tsc-plugin", () => ({
+  createTscPlugin: vi.fn(() => mockTscPlugin),
+}));
+
 //#endregion
 
 const esbuild = (await import("esbuild")).default;
-const { createContext, rebuild, recreateContext, dispose, getMetafile, hasContext } =
-  await import("../../src/workers/server-esbuild-context");
+const {
+  createContext, rebuild, recreateContext, dispose, getMetafile, hasContext,
+  getTscProgram, getTscAffectedFiles, getTscDiagnostics,
+} = await import("../../src/workers/server-esbuild-context");
+const { createTscPlugin } = await import("../../src/esbuild/esbuild-tsc-plugin");
 
 const baseOptions = {
   pkgDir: "/workspace/packages/my-server",
@@ -33,11 +49,22 @@ const baseOptions = {
   external: [],
 };
 
+const baseTscOptions = {
+  cwd: "/workspace",
+  output: { dts: true },
+};
+
 describe("server-esbuild-context lifecycle", () => {
   afterEach(async () => {
     mockRebuild.mockReset();
     mockDispose.mockReset();
+    mockTscPlugin.getProgram.mockReset();
+    mockTscPlugin.getAffectedFiles.mockReset();
+    mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+    mockTscPlugin.getErrors.mockReset();
+    mockTscPlugin.resetBuilderProgram.mockReset();
     vi.mocked(esbuild.context).mockClear();
+    vi.mocked(createTscPlugin).mockClear();
     await dispose();
   });
 
@@ -94,5 +121,132 @@ describe("server-esbuild-context lifecycle", () => {
     // 이후 rebuild는 null 반환 (tsc-only 경로)
     const result = await rebuild();
     expect(result).toBeNull();
+  });
+});
+
+describe("server-esbuild-context tsc integration lifecycle", () => {
+  afterEach(async () => {
+    mockRebuild.mockReset();
+    mockDispose.mockReset();
+    mockTscPlugin.getProgram.mockReset();
+    mockTscPlugin.getAffectedFiles.mockReset();
+    mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+    mockTscPlugin.getErrors.mockReset();
+    mockTscPlugin.resetBuilderProgram.mockReset();
+    vi.mocked(esbuild.context).mockClear();
+    vi.mocked(createTscPlugin).mockClear();
+    await dispose();
+  });
+
+  // Acceptance: create with tsc → delegation works → dispose clears all
+  it("manages tsc plugin lifecycle: create with tsc → delegation returns plugin values → dispose clears", async () => {
+    const fakeProgram = { id: "fake-program" };
+    const fakeAffectedFiles = new Set(["/src/main.ts"]);
+    const fakeDiagnostics = [{ category: 1, code: 2322, messageText: "Type error" }];
+    mockTscPlugin.getProgram.mockReturnValue(fakeProgram);
+    mockTscPlugin.getAffectedFiles.mockReturnValue(fakeAffectedFiles);
+    mockTscPlugin.getDiagnostics.mockReturnValue(fakeDiagnostics);
+
+    // Create with tsc options
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+    expect(hasContext()).toBe(true);
+
+    // Delegation methods return plugin values
+    expect(getTscProgram()).toBe(fakeProgram);
+    expect(getTscAffectedFiles()).toBe(fakeAffectedFiles);
+    expect(getTscDiagnostics()).toEqual(fakeDiagnostics);
+
+    // Dispose clears everything
+    await dispose();
+    expect(hasContext()).toBe(false);
+    expect(getTscProgram()).toBeUndefined();
+    expect(getTscAffectedFiles()).toBeUndefined();
+    expect(getTscDiagnostics()).toEqual([]);
+  });
+
+  // Acceptance: create with tsc → recreate without tsc → plugin persists
+  it("persists tsc plugin across context recreation when tsc options omitted", async () => {
+    const fakeProgram = { id: "persisted-program" };
+    mockTscPlugin.getProgram.mockReturnValue(fakeProgram);
+
+    // Initial create with tsc
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+    expect(getTscProgram()).toBe(fakeProgram);
+
+    // Recreate without tsc options — plugin persists
+    await recreateContext(baseOptions);
+    expect(hasContext()).toBe(true);
+    expect(getTscProgram()).toBe(fakeProgram);
+  });
+
+  // Acceptance: create without tsc → no plugin → delegation returns defaults
+  it("returns default values from delegation methods when no tsc plugin exists", async () => {
+    await createContext(baseOptions);
+
+    expect(hasContext()).toBe(true);
+    expect(getTscProgram()).toBeUndefined();
+    expect(getTscAffectedFiles()).toBeUndefined();
+    expect(getTscDiagnostics()).toEqual([]);
+  });
+
+  // Acceptance: rebuild merges esbuild + tsc errors
+  it("merges esbuild and tsc errors in rebuild result", async () => {
+    mockRebuild.mockResolvedValue({
+      errors: [{ text: "esbuild syntax error" }],
+      warnings: [{ text: "deprecation" }],
+      outputFiles: [],
+      metafile: undefined,
+    });
+    mockTscPlugin.getErrors.mockReturnValue(["TS2322: type mismatch"]);
+
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+    const result = await rebuild();
+
+    expect(result).toEqual({
+      success: false,
+      errors: ["esbuild syntax error", "TS2322: type mismatch"],
+      warnings: ["deprecation"],
+    });
+  });
+
+  // Acceptance: recreateContext resets tsc and persists plugin
+  it("resets tsc builderProgram on recreateContext and persists plugin for next rebuild", async () => {
+    mockRebuild.mockResolvedValue({
+      errors: [],
+      warnings: [],
+      outputFiles: [],
+      metafile: { inputs: {}, outputs: {} },
+    });
+    mockTscPlugin.getErrors.mockReturnValue(undefined);
+
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+
+    // recreateContext — resets tsc + creates new esbuild context
+    await recreateContext(baseOptions);
+
+    expect(mockTscPlugin.resetBuilderProgram).toHaveBeenCalled();
+    expect(hasContext()).toBe(true);
+
+    // rebuild still works with merged result
+    const result = await rebuild();
+    expect(result).toEqual({
+      success: true,
+      errors: undefined,
+      warnings: undefined,
+    });
+  });
+
+  // Acceptance: LOGIC-001 — recreateContext failure preserves tsc plugin reset
+  it("resets tsc and disposes old context even when recreateContext fails (LOGIC-001)", async () => {
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+
+    // New context creation fails
+    vi.mocked(esbuild.context).mockRejectedValueOnce(new Error("creation failed"));
+
+    await expect(recreateContext(baseOptions)).rejects.toThrow("creation failed");
+
+    expect(mockTscPlugin.resetBuilderProgram).toHaveBeenCalled();
+    expect(mockDispose).toHaveBeenCalled();
+    expect(hasContext()).toBe(false);
   });
 });

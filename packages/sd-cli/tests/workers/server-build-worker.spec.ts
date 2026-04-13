@@ -29,8 +29,8 @@ let mockMetafileInputs: Record<string, unknown> = {};
 // tsc build mock
 const mockRunTscPackageBuild = vi.fn(() => ({
   success: true,
-  errors: undefined,
-  diagnostics: [],
+  errors: undefined as string[] | undefined,
+  diagnostics: [] as unknown[],
   errorCount: 0,
   warningCount: 0,
 }));
@@ -116,6 +116,20 @@ vi.mock("../../src/utils/tsc-build", () => ({
   runTscPackageBuild: mockRunTscPackageBuild,
 }));
 
+// tsc plugin mock (build() js=true path uses createTscPlugin)
+const mockTscPlugin = {
+  plugin: { name: "sd-tsc", setup: vi.fn() },
+  getProgram: vi.fn(),
+  getAffectedFiles: vi.fn(),
+  getDiagnostics: vi.fn((): unknown[] => []),
+  getErrors: vi.fn((): string[] | undefined => undefined),
+  resetBuilderProgram: vi.fn(),
+};
+
+vi.mock("../../src/esbuild/esbuild-tsc-plugin", () => ({
+  createTscPlugin: vi.fn(() => mockTscPlugin),
+}));
+
 vi.mock("../../src/workers/shared-worker-lifecycle", () => {
   let guardCalled = false;
   resetGuard = () => { guardCalled = false; };
@@ -175,7 +189,14 @@ describe("server-build.worker build()", () => {
       diagnostics: [],
       errorCount: 0,
       warningCount: 0,
-      });
+    });
+
+    // Reset tsc plugin mock (used for js=true path)
+    mockTscPlugin.getProgram.mockReset();
+    mockTscPlugin.getAffectedFiles.mockReset();
+    mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+    mockTscPlugin.getErrors.mockReset().mockReturnValue(undefined);
+    mockTscPlugin.resetBuilderProgram.mockReset();
 
     // Reset lockfile content and cache
     mockLockfileContent = "";
@@ -212,21 +233,65 @@ describe("server-build.worker build()", () => {
     expect(result.mainJsPath).toBe(path.resolve(baseBuildInfo.pkgDir, "dist", "main.js").replace(/\\/g, "/"));
   });
 
-  // Acceptance: type error detected
+  // Acceptance: type error detected via tsc plugin (js=true)
   it("reports typecheck error in build field", async () => {
-    mockRunTscPackageBuild.mockReturnValueOnce({
-      success: false,
-      errors: ["TS2345: type error"] as any,
-      diagnostics: [{ code: 2345, category: 1 }] as any,
-      errorCount: 1,
-      warningCount: 0,
-      });
+    mockTscPlugin.getErrors.mockReturnValue(["TS2345: type error"]);
+    mockTscPlugin.getDiagnostics.mockReturnValue([{ code: 2345, category: 1 }]);
 
     const result = await workerFns["build"](baseBuildInfo);
 
     expect(result.build.success).toBe(false);
     expect(result.build.errors).toContain("TS2345: type error");
     expect(result.build.diagnostics).toHaveLength(1);
+  });
+
+  // Acceptance: esbuild + tsc both error — merged
+  it("merges esbuild and tsc errors when both fail", async () => {
+    vi.mocked(esbuild.build).mockResolvedValueOnce({
+      errors: [{ text: "esbuild syntax error" }],
+      warnings: [],
+      outputFiles: [],
+    } as any);
+    mockTscPlugin.getErrors.mockReturnValue(["TS2322: type mismatch"]);
+
+    const result = await workerFns["build"](baseBuildInfo);
+
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("esbuild syntax error");
+    expect(result.build.errors).toContain("TS2322: type mismatch");
+  });
+
+  // Acceptance: diagnostics from tsc plugin (js=true)
+  it("includes diagnostics from tsc plugin in build result", async () => {
+    mockTscPlugin.getDiagnostics.mockReturnValue([
+      { code: 2322, category: 1, messageText: "Type mismatch" },
+    ]);
+
+    const result = await workerFns["build"](baseBuildInfo);
+
+    expect(result.build.diagnostics).toHaveLength(1);
+    expect(result.build.diagnostics[0]).toEqual(
+      expect.objectContaining({ code: 2322 }),
+    );
+  });
+
+  // Acceptance: js=false uses runTscPackageBuild directly
+  it("uses runTscPackageBuild directly when output.js=false", async () => {
+    mockRunTscPackageBuild.mockReturnValueOnce({
+      success: false,
+      errors: ["TS2345: type error"],
+      diagnostics: [{ code: 2345, category: 1 }] as any,
+      errorCount: 1,
+      warningCount: 0,
+    });
+
+    const result = await workerFns["build"]({
+      ...baseBuildInfo,
+      output: { js: false, dts: true },
+    });
+
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("TS2345: type error");
   });
 
   // Acceptance: esbuild error detected
@@ -466,7 +531,14 @@ describe("server-build.worker startWatch()", () => {
       diagnostics: [],
       errorCount: 0,
       warningCount: 0,
-      });
+    });
+
+    // Reset tsc plugin mock (used for watch mode rebuild)
+    mockTscPlugin.getProgram.mockReset();
+    mockTscPlugin.getAffectedFiles.mockReset();
+    mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+    mockTscPlugin.getErrors.mockReset().mockReturnValue(undefined);
+    mockTscPlugin.resetBuilderProgram.mockReset();
 
     mockReadFileSync.mockImplementation((filePath: string) => {
       if (String(filePath).endsWith("package.json")) {
@@ -566,6 +638,47 @@ describe("server-build.worker startWatch()", () => {
     // Build event should be sent (tsc-only result)
     const buildCalls = mockSend.mock.calls.filter((c) => c[0] === "build");
     expect(buildCalls.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // Acceptance: rebuildAll js=true — single esbuildCtx.rebuild() call, tsc not called directly
+  it("uses esbuildCtx.rebuild() without direct tsc call in watch mode rebuild", async () => {
+    mockMetafileInputs = { "packages/my-server/src/main.ts": {} };
+
+    await workerFns["startWatch"](watchInfo);
+
+    const onChangeHandler = mockOnChange.mock.calls[0][1] as (
+      changes: Array<{ event: string; path: string }>,
+    ) => Promise<void>;
+
+    mockRebuild.mockClear();
+    mockRunTscPackageBuild.mockClear();
+    mockSend.mockClear();
+
+    const absPath = path.resolve("/workspace", "packages/my-server/src/main.ts").replace(/\\/g, "/");
+    await onChangeHandler([{ event: "change", path: absPath }]);
+
+    // esbuild rebuild should have been called (tsc triggered by plugin inside)
+    expect(mockRebuild).toHaveBeenCalled();
+    // runTscPackageBuild should NOT be called directly for js=true
+    expect(mockRunTscPackageBuild).not.toHaveBeenCalled();
+    // Build event should be sent
+    expect(mockSend).toHaveBeenCalledWith("build", expect.objectContaining({
+      build: expect.objectContaining({ success: true }),
+    }));
+  });
+
+  // Acceptance: startWatch passes tsc options to createContext
+  it("passes tsc options to esbuildCtx.createContext", async () => {
+    await workerFns["startWatch"]({
+      ...watchInfo,
+      output: { js: true, dts: true, env: "node" as any, includeTests: true },
+    });
+
+    expect(esbuild.context).toHaveBeenCalledWith(
+      expect.objectContaining({
+        plugins: [mockTscPlugin.plugin],
+      }),
+    );
   });
 });
 

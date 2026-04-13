@@ -8,6 +8,7 @@ import {
   SdCheckboxDisabledTest,
   SdCheckboxCanChangeAllowTest,
   SdCheckboxCanChangeDenyTest,
+  SdCheckboxPropagationTest,
 } from "./sd-checkbox-test.fixture";
 
 describe("Feature 2.5 Slice 1: sd-checkbox", () => {
@@ -157,6 +158,21 @@ describe("Feature 2.5 Slice 1: sd-checkbox", () => {
 
     const contents = fixture.nativeElement.querySelector("sd-checkbox ._contents") as HTMLElement;
     expect(contents.textContent.trim()).toBe("Label");
+  });
+});
+
+describe("Feature 1.2: SdCheckbox stopPropagation (CONSIST-001)", () => {
+  it("클릭 이벤트가 상위 요소로 전파되지 않는다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdCheckboxPropagationTest] })
+      .createComponent(SdCheckboxPropagationTest);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector("sd-checkbox") as HTMLElement;
+    host.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.value()).toBe(true);
+    expect(fixture.componentInstance.parentClicked).toBe(false);
   });
 });
 

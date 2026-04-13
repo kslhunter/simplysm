@@ -6,6 +6,7 @@ import {
   model,
   ViewEncapsulation,
 } from "@angular/core";
+import { setupModelHook } from "../../core/setupModelHook";
 
 @Component({
   selector: "sd-switch",
@@ -116,6 +117,7 @@ import {
 })
 export class SdSwitch {
   value = model(false);
+  canChangeFn = input<(item: boolean) => boolean | Promise<boolean>>(() => true);
 
   disabled = input(false, { transform: booleanAttribute });
   inline = input(false, { transform: booleanAttribute });
@@ -126,18 +128,22 @@ export class SdSwitch {
     "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
-  onClick(event: Event) {
-    if (this.disabled()) return;
+  constructor() {
+    setupModelHook(this.value, this.canChangeFn);
+  }
 
+  onClick(event: Event) {
     event.preventDefault();
     event.stopPropagation();
 
+    if (this.disabled()) return;
     this.value.update((v) => !v);
   }
 
   onKeydown(event: KeyboardEvent) {
     if (event.key === " ") {
       event.preventDefault();
+      event.stopPropagation();
       if (this.disabled()) return;
       this.value.update((v) => !v);
     }

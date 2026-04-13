@@ -118,7 +118,6 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       polyfills,
       legacyModule,
       postcssPlugins,
-      postcssConfigPath: info.pkgDir,
       templateUpdates,
     });
 
@@ -226,15 +225,46 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       polyfills,
       legacyModule,
       postcssPlugins,
-      postcssConfigPath: info.pkgDir,
       templateUpdates: legacyModule ? undefined : templateUpdates,
       plugins: [
         {
           name: "sd-build-start",
           setup(pluginBuild: esbuild.PluginBuild) {
+            const prevMtimes = new Map<string, number>();
+
             pluginBuild.onStart(() => {
+              // loadResultCache 무효화: 변경된 JS 파일의 캐시 엔트리 제거
+              if (esbuildResult != null) {
+                const { loadResultCache } = esbuildResult.sourceFileCache;
+                for (const file of loadResultCache.watchFiles) {
+                  try {
+                    const mtime = fs.statSync(file).mtimeMs;
+                    const prev = prevMtimes.get(file);
+                    if (prev != null && prev !== mtime) {
+                      loadResultCache.invalidate(file);
+                    }
+                  } catch {
+                    if (prevMtimes.has(file)) {
+                      loadResultCache.invalidate(file);
+                    }
+                  }
+                }
+              }
+
               if (!isInitialBuild) {
                 sender.send("buildStart", {});
+              }
+            });
+
+            pluginBuild.onEnd(() => {
+              if (esbuildResult == null) return;
+              prevMtimes.clear();
+              for (const file of esbuildResult.sourceFileCache.loadResultCache.watchFiles) {
+                try {
+                  prevMtimes.set(file, fs.statSync(file).mtimeMs);
+                } catch {
+                  // 삭제된 파일
+                }
               }
             });
           },
