@@ -236,6 +236,38 @@ describe("server-esbuild-context tsc integration lifecycle", () => {
     });
   });
 
+  // Acceptance: rebuild() reject 시 tsc 에러와 병합하여 정상 결과 반환
+  it("merges tsc errors when context.rebuild() rejects instead of propagating throw", async () => {
+    mockRebuild.mockResolvedValueOnce({
+      errors: [],
+      warnings: [],
+      outputFiles: [],
+      metafile: { inputs: { "src/main.ts": {} }, outputs: {} },
+    });
+    mockTscPlugin.getErrors.mockReturnValue(["TS2322: type mismatch"]);
+
+    await createContext({ ...baseOptions, tsc: baseTscOptions });
+
+    // 첫 빌드 성공 (metafile 설정)
+    await rebuild();
+    const savedMetafile = getMetafile();
+    expect(savedMetafile).toBeDefined();
+
+    // 두 번째 빌드 실패 — reject
+    mockRebuild.mockRejectedValueOnce(new Error("Build failed with 1 error"));
+
+    const result = await rebuild();
+
+    // throw 전파 대신 정상 결과 반환 — esbuild + tsc 에러 병합
+    expect(result).toEqual({
+      success: false,
+      errors: ["Build failed with 1 error", "TS2322: type mismatch"],
+      warnings: undefined,
+    });
+    // 이전 metafile 유지
+    expect(getMetafile()).toBe(savedMetafile);
+  });
+
   // Acceptance: LOGIC-001 — recreateContext failure preserves tsc plugin reset
   it("resets tsc and disposes old context even when recreateContext fails (LOGIC-001)", async () => {
     await createContext({ ...baseOptions, tsc: baseTscOptions });

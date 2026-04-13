@@ -173,6 +173,7 @@ npm install @simplysm/angular
 | `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 |
 | `SdSharedDataSelectList` | component | 공유 데이터 목록형 선택 |
 | `matchesSearchText` | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
+| `getOrmDataEditToastErrorMessage` | function | ORM 편집 에러 메시지 변환 (FK 위반 등 DB 에러를 한국어 메시지로) |
 
 -> See [docs/features.md](./docs/features.md) for details.
 

@@ -1,4 +1,4 @@
-import { isFocusable } from "tabbable";
+import { isTabbable } from "tabbable";
 import { TimeoutError } from "@simplysm/core-common";
 
 /**
@@ -51,18 +51,18 @@ declare global {
     getParents(): Element[];
 
     /**
-     * 첫 번째 포커스 가능한 부모 요소 검색 (tabbable 사용)
+     * 첫 번째 탭 이동 가능한 부모 요소 검색 (tabbable 사용)
      *
-     * @returns 첫 번째 포커스 가능한 부모 요소 또는 undefined
+     * @returns 첫 번째 탭 이동 가능한 부모 요소 또는 undefined
      */
-    findFocusableParent(): HTMLElement | undefined;
+    findTabbableParent(): HTMLElement | undefined;
 
     /**
-     * 첫 번째 포커스 가능한 자식 요소 검색 (tabbable 사용)
+     * 첫 번째 탭 이동 가능한 자식 요소 검색 (tabbable 사용)
      *
-     * @returns 첫 번째 포커스 가능한 자식 요소 또는 undefined
+     * @returns 첫 번째 탭 이동 가능한 자식 요소 또는 undefined
      */
-    findFirstFocusableChild(): HTMLElement | undefined;
+    findFirstTabbableChild(): HTMLElement | undefined;
 
     /**
      * 요소가 offset parent인지 확인 (position: relative/absolute/fixed/sticky)
@@ -111,10 +111,10 @@ Element.prototype.getParents = function (): Element[] {
   return result;
 };
 
-Element.prototype.findFocusableParent = function (): HTMLElement | undefined {
+Element.prototype.findTabbableParent = function (): HTMLElement | undefined {
   let parentEl = this.parentElement;
   while (parentEl !== null) {
-    if (isFocusable(parentEl)) {
+    if (isTabbable(parentEl)) {
       return parentEl;
     }
     parentEl = parentEl.parentElement;
@@ -122,11 +122,11 @@ Element.prototype.findFocusableParent = function (): HTMLElement | undefined {
   return undefined;
 };
 
-Element.prototype.findFirstFocusableChild = function (): HTMLElement | undefined {
+Element.prototype.findFirstTabbableChild = function (): HTMLElement | undefined {
   const walker = document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT);
   let node = walker.nextNode();
   while (node !== null) {
-    if (node instanceof HTMLElement && isFocusable(node)) {
+    if (node instanceof HTMLElement && isTabbable(node)) {
       return node;
     }
     node = walker.nextNode();

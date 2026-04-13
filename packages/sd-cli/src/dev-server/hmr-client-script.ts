@@ -3,14 +3,14 @@
  * Chrome 61+ 호환 문법으로 작성 (optional chaining, nullish coalescing 미사용).
  * @param basePath basePath (예: "/app/")
  */
-export function getHmrClientScript(_basePath: string): string {
+export function getHmrClientScript(_basePath: string, port: number): string {
   return [
     "(function() {",
     "  var ws = null;",
     "  var reconnectDelay = 1000;",
     "",
     "  function connect() {",
-    '    ws = new WebSocket("ws://" + location.hostname + ":" + location.port);',
+    `    ws = new WebSocket("ws://" + location.hostname + ":${port}");`,
     "",
     "    ws.onmessage = function(e) {",
     "      var msg = JSON.parse(e.data);",
@@ -60,8 +60,8 @@ export function getHmrClientScript(_basePath: string): string {
  * Feature 1.2의 GenerateIndexHtmlOptions.postTransform에 전달하여 사용.
  * @param basePath basePath (예: "/app/")
  */
-export function createHmrPostTransform(basePath: string): (content: string) => Promise<string> {
-  const script = getHmrClientScript(basePath);
+export function createHmrPostTransform(basePath: string, port: number): (content: string) => Promise<string> {
+  const script = getHmrClientScript(basePath, port);
   const scriptTag = `<script>${script}</script>`;
 
   return (html: string): Promise<string> => {

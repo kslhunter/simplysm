@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import {
-  SdModalTestFocusable,
+  SdModalTestTabbable,
   SdModalProviderTestHost,
 } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
@@ -33,7 +33,7 @@ async function openModal(
 ): Promise<{ modal: HTMLElement; promise: Promise<any> }> {
   const provider = TestBed.inject(SdModalProvider);
   const promise = provider.showAsync(
-    { title: "UI Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+    { title: "UI Test", type: SdModalTestTabbable, inputs: { title: "test" } },
     options,
   );
   await tick(fixture);
@@ -161,7 +161,7 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
 
     // 첫 번째 모달: key 지정 + 크기 지정
     const promise1 = provider.showAsync(
-      { title: "Persist", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Persist", type: SdModalTestTabbable, inputs: { title: "test" } },
       { key: "test-modal", widthPx: 600, heightPx: 500 },
     );
     await tick(fixture);
@@ -171,7 +171,7 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
 
     // 두 번째 모달: 같은 key로 다시 열기
     const promise2 = provider.showAsync(
-      { title: "Persist", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Persist", type: SdModalTestTabbable, inputs: { title: "test" } },
       { key: "test-modal" },
     );
     await tick(fixture);

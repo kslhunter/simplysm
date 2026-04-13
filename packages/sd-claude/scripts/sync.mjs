@@ -23,7 +23,13 @@ for (const entry of allEntries) {
   const src = path.join(claudeDir, entry);
   const dest = path.join(targetDir, entry);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.cpSync(src, dest, { recursive: true });
+  fs.cpSync(src, dest, {
+    recursive: true,
+    filter: (source) => {
+      const name = path.basename(source);
+      return name !== "SKILL.eval.md" && !name.startsWith("eval_");
+    },
+  });
 }
 
 console.log(`Synchronized ${allEntries.length} sd-* assets.`);

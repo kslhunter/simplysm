@@ -129,11 +129,11 @@ export class SdDropdown {
         this._openPopup();
       } else {
         const popupEl = this.popupElRef().nativeElement;
-        const focusable = popupEl.findFirstFocusableChild();
-        if (focusable) {
+        const tabbable = popupEl.findFirstTabbableChild();
+        if (tabbable) {
           event.preventDefault();
           event.stopPropagation();
-          focusable.focus();
+          tabbable.focus();
         }
       }
     }
@@ -261,9 +261,9 @@ export class SdDropdown {
       mouseoverEl instanceof HTMLElement &&
       (contentEl.contains(mouseoverEl) === true || popupEl.contains(mouseoverEl) === true)
     ) {
-      const focusable = popupEl.findFirstFocusableChild();
-      if (focusable != null) {
-        focusable.focus();
+      const tabbable = popupEl.findFirstTabbableChild();
+      if (tabbable != null) {
+        tabbable.focus();
       } else {
         contentEl.focus();
       }

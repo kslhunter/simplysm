@@ -119,52 +119,52 @@ describe("Element 프로토타입 확장", () => {
     });
   });
 
-  describe("findFocusableParent", () => {
-    it("returns focusable parent element", () => {
+  describe("findTabbableParent", () => {
+    it("returns tabbable parent element", () => {
       container.innerHTML = `<button id="parent-btn"><span id="child">text</span></button>`;
       const child = container.querySelector("#child")!;
 
-      const result = child.findFocusableParent();
+      const result = child.findTabbableParent();
 
       expect(result?.id).toBe("parent-btn");
     });
 
-    it("returns undefined when no focusable parent exists", () => {
+    it("returns undefined when no tabbable parent exists", () => {
       container.innerHTML = `<div><span id="child">text</span></div>`;
       const child = container.querySelector("#child")!;
 
-      const result = child.findFocusableParent();
+      const result = child.findTabbableParent();
 
       expect(result).toBeUndefined();
     });
 
-    it("finds focusable element via tabindex attribute", () => {
+    it("finds tabbable element via tabindex attribute", () => {
       const parent = document.createElement("div");
       parent.setAttribute("tabindex", "0");
       const child = document.createElement("span");
       parent.appendChild(child);
       document.body.appendChild(parent);
 
-      const result = child.findFocusableParent();
+      const result = child.findTabbableParent();
       expect(result).toBe(parent);
 
       document.body.removeChild(parent);
     });
   });
 
-  describe("findFirstFocusableChild", () => {
-    it("returns first focusable child element", () => {
+  describe("findFirstTabbableChild", () => {
+    it("returns first tabbable child element", () => {
       container.innerHTML = `<span>text</span><button id="btn">click</button>`;
 
-      const result = container.findFirstFocusableChild();
+      const result = container.findFirstTabbableChild();
 
       expect(result?.id).toBe("btn");
     });
 
-    it("returns undefined when no focusable child exists", () => {
+    it("returns undefined when no tabbable child exists", () => {
       container.innerHTML = `<span>text</span><div>no focusable</div>`;
 
-      const result = container.findFirstFocusableChild();
+      const result = container.findFirstTabbableChild();
 
       expect(result).toBeUndefined();
     });
@@ -172,15 +172,15 @@ describe("Element 프로토타입 확장", () => {
     it("returns depth-first order element", () => {
       container.innerHTML = `<div><button id="deep">deep</button></div><button id="shallow">shallow</button>`;
 
-      const result = container.findFirstFocusableChild();
+      const result = container.findFirstTabbableChild();
 
       expect(result?.id).toBe("deep");
     });
 
-    it("recognizes tabindex attribute as focusable", () => {
+    it("recognizes tabindex attribute as tabbable", () => {
       container.innerHTML = `<div tabindex="0" id="tab">focusable</div>`;
 
-      const result = container.findFirstFocusableChild();
+      const result = container.findFirstTabbableChild();
 
       expect(result?.id).toBe("tab");
     });

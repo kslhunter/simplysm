@@ -170,11 +170,11 @@ export class SdModalProvider {
         if (options?.noFirstControlFocusing === true) {
           dialogEl.focus();
         } else {
-          // 컨텐츠 영역에서 첫 포커스 가능 요소 검색
+          // 컨텐츠 영역에서 첫 탭 이동 가능 요소 검색
           const contentEl = modalEl.querySelector("._content");
-          const firstFocusable = contentEl?.findFirstFocusableChild();
-          if (firstFocusable !== undefined) {
-            firstFocusable.focus();
+          const firstTabbable = contentEl?.findFirstTabbableChild();
+          if (firstTabbable !== undefined) {
+            firstTabbable.focus();
           } else {
             dialogEl.focus();
           }

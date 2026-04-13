@@ -33,7 +33,7 @@ npm install @simplysm/service-common
 | `ServiceMessageDecodeResult` | type | 디코딩 결과 (complete 또는 progress) |
 | `createServiceProtocol` | function | ServiceProtocol 인스턴스 팩토리 함수 |
 
--> See [docs/protocol.md](./docs/protocol.md) for details.
+→ See [docs/protocol.md](./docs/protocol.md) for details.
 
 ### Service Types
 
@@ -44,7 +44,7 @@ npm install @simplysm/service-common
 | `AutoUpdateService` | interface | 클라이언트 최신 버전 정보 조회 인터페이스 |
 | `AppStructureService` | interface | 서버에 등록된 앱 구조 항목을 클라이언트명 기준 맵으로 조회하는 인터페이스 |
 
--> See [docs/service-types.md](./docs/service-types.md) for details.
+→ See [docs/service-types.md](./docs/service-types.md) for details.
 
 ### Types
 
@@ -52,7 +52,7 @@ npm install @simplysm/service-common
 |-----|------|-------------|
 | `ServiceUploadResult` | interface | 파일 업로드 결과 (경로, 파일명, 크기) |
 
--> See [docs/types.md](./docs/types.md) for details.
+→ See [docs/types.md](./docs/types.md) for details.
 
 ### App Structure
 
@@ -67,7 +67,7 @@ npm install @simplysm/service-common
 | `isUsableModulesChain` | function | 모듈 체인 전체의 접근 가능 여부 판단 |
 | `getFlatPermissions` | function | 앱 구조 트리를 모듈 조건 필터링하여 FlatPermission[]으로 플래트닝 |
 
--> See [docs/app-structure.md](./docs/app-structure.md) for details.
+→ See [docs/app-structure.md](./docs/app-structure.md) for details.
 
 ### Events
 
@@ -76,7 +76,7 @@ npm install @simplysm/service-common
 | `ServiceEventDef` | interface | defineEvent()로 생성된 이벤트 정의 (타입 마커 포함) |
 | `defineEvent` | function | 타입 안전한 서비스 이벤트를 정의하는 팩토리 함수 |
 
--> See [docs/events.md](./docs/events.md) for details.
+→ See [docs/events.md](./docs/events.md) for details.
 
 ## Usage Examples
 

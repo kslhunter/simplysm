@@ -199,10 +199,9 @@ export function setupConsola(opts?: SetupConsolaOptions): void
 
 | 환경 | 동작 |
 |------|------|
-| 프로덕션 (`DEV` 환경변수 없음) | `FileReporter`만 사용, debug 레벨까지 파일 기록 |
-| 개발 + `SD_DEBUG=true` | `PrettyReporter`만 사용, debug 레벨까지 터미널 출력 |
-| 개발 (일반) | `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록 |
-| `cli: true` | `PrettyReporter`만 사용 (환경 무관) |
+| 프로덕션 (`DEV` 환경변수 없음, `cli` 아님) | `FileReporter`만 사용, debug 레벨까지 파일 기록 |
+| 개발 또는 `cli: true`, `SD_DEBUG=true` | `PrettyReporter`만 사용, debug 레벨까지 터미널 출력 |
+| 개발 또는 `cli: true` (일반) | `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록 |
 
 ```typescript
 import { setupConsola } from "@simplysm/core-node";

@@ -46,7 +46,7 @@ export class SdDropdownTestDisabled {}
 export class SdDropdownTestScrollable {}
 
 @Component({
-  selector: "sd-dropdown-test-with-focusable",
+  selector: "sd-dropdown-test-with-tabbable",
   standalone: true,
   imports: [SdDropdown, SdDropdownPopup],
   template: `
@@ -60,5 +60,5 @@ export class SdDropdownTestScrollable {}
     <button class="outside-button">outside</button>
   `,
 })
-export class SdDropdownTestWithFocusable {}
+export class SdDropdownTestWithTabbable {}
 

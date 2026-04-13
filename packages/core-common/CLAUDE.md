@@ -220,7 +220,8 @@ tests/
 │                      transferable, template-strings, primitive,
 │                      date-format, serial-queue, debounce-queue, event-emitter)
 ├── env.spec.ts
-└── symbol-dispose.spec.ts
+├── symbol-dispose.spec.ts
+└── symbol-dispose.acc.spec.ts
 ```
 
 `features/` 클래스(DebounceQueue, SerialQueue, EventEmitter)의 테스트는 `tests/utils/` 하위에 위치한다.

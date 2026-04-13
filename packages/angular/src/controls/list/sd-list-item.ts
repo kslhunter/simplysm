@@ -97,12 +97,6 @@ import { setupRipple } from "../../core/ripple/setupRipple";
             background: transparent;
           }
         }
-
-        &[data-sd-has-children="false"] {
-          > ._content {
-            padding-left: calc(var(--gap-default) + var(--gap-sm) + 0.75em);
-          }
-        }
       }
     `,
   ],

@@ -556,7 +556,7 @@ export interface SdAngularPluginOptions {
 
 ### `sdAngularPlugin`
 
-Angular AOT 컴파일을 수행하는 Vite 플러그인. AngularBuildPipeline + JavaScriptTransformer를 관리한다.
+Angular AOT 컴파일을 수행하는 Vite 플러그인 (Vitest 전용). AngularBuildPipeline + JavaScriptTransformer를 관리한다.
 
 ```typescript
 export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin;
@@ -568,7 +568,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin;
 
 **Returns**: `Plugin` (Vite 플러그인 객체)
 
-Vite 훅: `buildStart` (Pipeline 초기화 + 컴파일 + emit), `transform` (.ts 파일에 대해 컴파일된 JS 반환), `handleHotUpdate` (증분 재컴파일 + HMR), `watchChange` (파일 변경 추적), `buildEnd` (리소스 정리).
+Vite 훅: `config` (pkgDir 초기화), `watchChange` (파일 변경 추적), `buildStart` (Pipeline 초기화 + 컴파일 + emit, watch 재빌드 시 증분 재컴파일), `transform` (.ts 파일에 대해 캐싱된 JS 반환 + 인라인 소스맵 분리), `buildEnd` (pipeline 참조 해제).
 
 ## Usage Examples
 

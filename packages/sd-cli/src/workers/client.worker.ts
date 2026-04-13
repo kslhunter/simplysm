@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "node:fs";
-import { createWorker } from "@simplysm/core-node";
+import { createWorker, FsWatcher } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle.js";
 import {
@@ -14,7 +14,6 @@ import { createHmrService, type HmrService } from "../dev-server/hmr-service.js"
 import { createHmrPostTransform } from "../dev-server/hmr-client-script.js";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public.js";
 import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types.js";
-import type { FsWatcher } from "@simplysm/core-node";
 import type esbuild from "esbuild";
 
 //#region Types
@@ -63,6 +62,7 @@ let esbuildResult: ClientEsbuildResult | undefined;
 let devServer: DevHttpServer | undefined;
 let hmrService: HmrService | undefined;
 let publicWatcher: FsWatcher | undefined;
+let indexHtmlWatcher: FsWatcher | undefined;
 
 const { logger, guardStartWatch } = setupWorkerLifecycle("client", async () => {
   await stopWatch();
@@ -210,8 +210,29 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const polyfills = fs.existsSync(polyfillsPath) ? ["src/polyfills.ts"] : undefined;
     const entryNames = ["main", ...(polyfills != null ? ["polyfills"] : [])];
 
-    // 4. templateUpdates Map + esbuild context 생성
+    // 4. templateUpdates Map
     const templateUpdates = new Map<string, string>();
+
+    // 5. HTTP dev server 생성 + 시작 (포트 확정 — HMR 스크립트에 포트 주입 필요)
+    const httpDevServer = createDevHttpServer({
+      distDir: outdir,
+      basePath,
+      port: info.port ?? 0,
+      onRequest: (req, res) => hmrService?.handleRequest(req, res) ?? false,
+    });
+    devServer = httpDevServer;
+    const actualPort = await httpDevServer.listen();
+
+    // 6. HMR WebSocket 서비스 생성
+    hmrService = createHmrService({
+      httpServer: httpDevServer.httpServer,
+      basePath,
+      templateUpdates,
+      outDir: outdir,
+    });
+
+    // 7. esbuild context 생성
+    let lastMetafile: esbuild.Metafile | undefined;
     let initialBuildResolve: ((result: ClientBuildResult) => void) | undefined;
     let isInitialBuild = true;
 
@@ -233,21 +254,25 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
             const prevMtimes = new Map<string, number>();
 
             pluginBuild.onStart(() => {
-              // loadResultCache 무효화: 변경된 JS 파일의 캐시 엔트리 제거
+              // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
               if (esbuildResult != null) {
                 const { loadResultCache } = esbuildResult.sourceFileCache;
+                const changedFiles = new Set<string>();
                 for (const file of loadResultCache.watchFiles) {
                   try {
                     const mtime = fs.statSync(file).mtimeMs;
                     const prev = prevMtimes.get(file);
                     if (prev != null && prev !== mtime) {
-                      loadResultCache.invalidate(file);
+                      changedFiles.add(file);
                     }
                   } catch {
                     if (prevMtimes.has(file)) {
-                      loadResultCache.invalidate(file);
+                      changedFiles.add(file);
                     }
                   }
+                }
+                if (changedFiles.size > 0) {
+                  esbuildResult.sourceFileCache.invalidate(changedFiles);
                 }
               }
 
@@ -272,9 +297,10 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       ],
       onEnd: async (result: esbuild.BuildResult) => {
         try {
-          // index.html 재생성
+          // index.html 재생성 (lastMetafile 보관 — index.html 단독 변경 시 재생성용)
           if (result.metafile != null) {
-            const hmrPostTransform = createHmrPostTransform(basePath);
+            lastMetafile = result.metafile;
+            const hmrPostTransform = createHmrPostTransform(basePath, actualPort);
             const indexPath = path.join(info.pkgDir, "src", "index.html");
             const indexResult = await generateIndexHtml({
               indexPath,
@@ -331,37 +357,42 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       },
     });
 
-    // 5. HTTP dev server 생성
-    const httpDevServer = createDevHttpServer({
-      distDir: outdir,
-      basePath,
-      port: info.port ?? 0,
-      onRequest: (req, res) => hmrService?.handleRequest(req, res) ?? false,
-    });
-    devServer = httpDevServer;
-
-    // 6. HMR WebSocket 서비스 생성
-    hmrService = createHmrService({
-      httpServer: httpDevServer.httpServer,
-      basePath,
-      templateUpdates,
-      outDir: outdir,
-    });
-
-    // 7. esbuild watch 시작 + 초기 빌드 대기
+    // 8. esbuild watch 시작 + 초기 빌드 대기
     await esbuildResult.context.watch();
 
     const initialResult = await new Promise<ClientBuildResult>((resolve) => {
       initialBuildResolve = resolve;
     });
 
-    // 8. HTTP 서버 시작
-    const actualPort = await httpDevServer.listen();
+    // 9. src/index.html 감시 (esbuild watch는 HTML을 감시하지 않음)
+    const indexHtmlSrcPath = path.join(info.pkgDir, "src", "index.html");
+    indexHtmlWatcher = await FsWatcher.watch([indexHtmlSrcPath]);
+    indexHtmlWatcher.onChange({ delay: 300 }, async () => {
+      if (lastMetafile == null) return;
+      try {
+        sender.send("buildStart", {});
+        const hmrPostTransform = createHmrPostTransform(basePath, actualPort);
+        const indexResult = await generateIndexHtml({
+          indexPath: indexHtmlSrcPath,
+          metafile: lastMetafile,
+          outdir,
+          baseHref: basePath,
+          mode: "dev",
+          entryNames,
+          postTransform: hmrPostTransform,
+        });
+        fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+        hmrService?.broadcast({ type: "full-reload" });
+        sender.send("build", { success: true });
+      } catch (err) {
+        sender.send("error", { message: errNs.message(err) });
+      }
+    });
 
-    // 9. serverReady 이벤트 전송
+    // 10. serverReady 이벤트 전송
     sender.send("serverReady", { port: actualPort });
 
-    // 10. .config.json + .dev-port 기록
+    // 11. .config.json + .dev-port 기록
     writeConfigJson(outdir, info.configs);
     fs.writeFileSync(path.join(outdir, ".dev-port"), String(actualPort));
 
@@ -401,6 +432,12 @@ async function stopWatch(): Promise<void> {
   if (publicWatcher != null) {
     await publicWatcher.close();
     publicWatcher = undefined;
+  }
+
+  // 5. index.html 감시 종료
+  if (indexHtmlWatcher != null) {
+    await indexHtmlWatcher.close();
+    indexHtmlWatcher = undefined;
   }
 
   logger.debug("esbuild watch 정리 완료");

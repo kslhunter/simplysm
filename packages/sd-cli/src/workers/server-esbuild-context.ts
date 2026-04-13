@@ -1,5 +1,6 @@
 import type ts from "typescript";
 import esbuild from "esbuild";
+import { err as errNs } from "@simplysm/core-common";
 import {
   createServerEsbuildOptions,
   writeChangedOutputFiles,
@@ -76,7 +77,18 @@ export async function rebuild(): Promise<{
 } | null> {
   if (context == null) return null;
 
-  const result = await context.rebuild();
+  let result: esbuild.BuildResult;
+  try {
+    result = await context.rebuild();
+  } catch (err) {
+    const tscErrors = tscPlugin?.getErrors() ?? [];
+    const allErrors = [errNs.message(err), ...tscErrors];
+    return {
+      success: false,
+      errors: allErrors.length > 0 ? allErrors : undefined,
+      warnings: undefined,
+    };
+  }
 
   if (result.metafile != null) {
     lastMetafile = result.metafile;

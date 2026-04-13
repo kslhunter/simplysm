@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 98개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 100개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -31,7 +31,7 @@ src/
 │   ├── NgtscEngine.ts     ← Angular 라이브러리용 ngtsc 엔진 (angularCompilerOptions 감지)
 │   ├── ServerEsbuildEngine.ts ← server 패키지용 esbuild 엔진
 │   ├── EsbuildClientEngine.ts ← client 패키지용 esbuild+Vite 엔진 (BaseEngine 미사용)
-│   └── index.ts           ← createBuildEngine / createTypecheckEngine 팩토리
+│   └── engine-factory.ts  ← createBuildEngine / createTypecheckEngine 팩토리
 ├── workers/               ← Node.js Worker Thread 모듈
 │   ├── library-build.worker.ts  ← node/browser/neutral 빌드
 │   ├── ngtsc-build.worker.ts    ← Angular 라이브러리 빌드
@@ -57,6 +57,7 @@ src/
 │   ├── esbuild-client-config.ts      ← 클라이언트용 esbuild 설정
 │   ├── esbuild-tsc-plugin.ts         ← 서버 빌드용 tsc 플러그인 (타입체크 + DTS)
 │   ├── esbuild-scss-plugin.ts        ← esbuild SCSS 플러그인
+│   ├── esbuild-postcss-plugin.ts     ← esbuild PostCSS 플러그인 (빌드 후 CSS에 PostCSS 적용)
 │   ├── esbuild-index-html.ts         ← index.html 생성
 │   └── esbuild-pwa.ts                ← PWA 설정 적용
 ├── dev-server/            ← HMR 및 개발 서버
@@ -217,12 +218,13 @@ const orch = new DevOrchestrator(options);
 
 ### Angular AOT 컴파일 (sdAngularPlugin)
 
-`src/angular/vite-angular-plugin.ts`의 `sdAngularPlugin`은 Vite 플러그인으로 Angular AOT 컴파일을 수행한다:
+`src/angular/vite-angular-plugin.ts`의 `sdAngularPlugin`은 Vite 플러그인으로 Angular AOT 컴파일을 수행한다 (Vitest 전용):
 
-- `buildStart`: `AngularCompiler` 초기화 -> 전체 컴파일 -> `emit`으로 파일 캐싱
-- `transform`: `.ts` 파일 요청 시 캐싱된 JS 반환 + `JavaScriptTransformer` 적용
-- `handleHotUpdate`: 변경 파일 감지 -> 증분 재컴파일 -> HMR 또는 full-reload
-- `buildEnd`: `AngularCompiler` dispose
+- `config`: `resolvedPkgDir` 초기화
+- `watchChange`: Vitest watch 모드에서 변경 파일 경로 수집 (`pendingWatchChanges`)
+- `buildStart`: `AngularBuildPipeline` 초기화 -> 전체 컴파일 -> `emit`으로 파일 캐싱. watch 재빌드 시 변경 파일 캐시 무효화 후 증분 재컴파일
+- `transform`: `.ts` 파일 요청 시 캐싱된 JS 반환, 인라인 소스맵 분리
+- `buildEnd`: `pipeline` 참조 해제 (정리)
 
 ### typecheck-serialization
 

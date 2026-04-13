@@ -47,17 +47,23 @@ export class SdCollapse {
 
   contentHeight = signal(0);
 
+  private readonly _initialized = signal(false);
+
   contentMarginTop = computed(() => {
     return this.open() ? "" : `-${this.contentHeight()}px`;
   });
 
   contentTransition = computed(() => {
+    if (!this._initialized()) return "";
     return this.open() ? "margin-top 0.1s ease-out" : "margin-top 0.1s ease-in";
   });
 
   constructor() {
     afterNextRender(() => {
       this.contentHeight.set(this._contentElRef().nativeElement.offsetHeight);
+      requestAnimationFrame(() => {
+        this._initialized.set(true);
+      });
     });
 
     effect(() => {

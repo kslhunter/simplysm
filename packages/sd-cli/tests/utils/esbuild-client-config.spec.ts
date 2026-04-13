@@ -439,14 +439,17 @@ describe("createClientEsbuildContext — onEnd 플러그인", () => {
     expect(pluginNames[pluginNames.length - 1]).toBe("sd-on-end");
   });
 
-  it("angularPlugin이 항상 plugins 첫 번째에 위치", async () => {
+  it("customPlugins가 angularPlugin 이전에 위치 (onStart에서 sourceFileCache 무효화 선행)", async () => {
     await createClientEsbuildContext({
       ...baseDev,
       plugins: [{ name: "custom", setup: vi.fn() } as any],
       onEnd: vi.fn(),
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
-    expect(opts.plugins![0]).toEqual(mockAngularPlugin);
+    const pluginNames = opts.plugins!.map((p: any) => p.name);
+    const customIdx = pluginNames.indexOf("custom");
+    const angularIdx = pluginNames.indexOf("angular-compiler");
+    expect(customIdx).toBeLessThan(angularIdx);
   });
 });
 
@@ -481,7 +484,7 @@ describe("createClientEsbuildContext — SCSS 플러그인 통합", () => {
     expect(pluginNames).toContain("sd-scss");
   });
 
-  it("sd-scss 플러그인이 angularPlugin 다음, customPlugins 앞에 위치", async () => {
+  it("sd-scss 플러그인이 angularPlugin 다음에 위치", async () => {
     const customPlugin = { name: "custom", setup: vi.fn() };
     await createClientEsbuildContext({
       ...baseDev,
@@ -492,10 +495,8 @@ describe("createClientEsbuildContext — SCSS 플러그인 통합", () => {
 
     const angularIdx = pluginNames.indexOf("angular-compiler");
     const scssIdx = pluginNames.indexOf("sd-scss");
-    const customIdx = pluginNames.indexOf("custom");
 
     expect(scssIdx).toBe(angularIdx + 1);
-    expect(scssIdx).toBeLessThan(customIdx);
   });
 });
 

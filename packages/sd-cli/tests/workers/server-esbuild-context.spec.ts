@@ -152,6 +152,87 @@ describe("rebuild", () => {
   });
 });
 
+describe("rebuild — error handling on reject", () => {
+  afterEach(async () => {
+    mockRebuild.mockReset();
+    mockDispose.mockReset();
+    mockTscPlugin.getProgram.mockReset();
+    mockTscPlugin.getAffectedFiles.mockReset();
+    mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
+    mockTscPlugin.getErrors.mockReset();
+    mockTscPlugin.resetBuilderProgram.mockReset();
+    vi.mocked(esbuild.context).mockClear();
+    vi.mocked(writeChangedOutputFiles).mockClear();
+    vi.mocked(createTscPlugin).mockClear();
+    await dispose();
+  });
+
+  it("catches reject and returns merged esbuild + tsc errors", async () => {
+    mockRebuild.mockRejectedValue(new Error("Build failed"));
+    mockTscPlugin.getErrors.mockReturnValue(["type error"]);
+
+    await createContext({ ...baseOptions, tsc: { cwd: "/workspace", output: { dts: true } } });
+    const result = await rebuild();
+
+    expect(result).toEqual({
+      success: false,
+      errors: ["Build failed", "type error"],
+      warnings: undefined,
+    });
+  });
+
+  it("returns esbuild error only when tsc has no errors", async () => {
+    mockRebuild.mockRejectedValue(new Error("Build failed"));
+    mockTscPlugin.getErrors.mockReturnValue(undefined);
+
+    await createContext({ ...baseOptions, tsc: { cwd: "/workspace", output: { dts: true } } });
+    const result = await rebuild();
+
+    expect(result).toEqual({
+      success: false,
+      errors: ["Build failed"],
+      warnings: undefined,
+    });
+  });
+
+  it("returns esbuild error when no tsc plugin exists", async () => {
+    mockRebuild.mockRejectedValue(new Error("Build failed"));
+
+    await createContext(baseOptions);
+    const result = await rebuild();
+
+    expect(result).toEqual({
+      success: false,
+      errors: ["Build failed"],
+      warnings: undefined,
+    });
+  });
+
+  it("preserves previous metafile when rebuild rejects", async () => {
+    const mockMetafile = { inputs: { "src/main.ts": {} }, outputs: {} };
+    mockRebuild.mockResolvedValueOnce({
+      errors: [],
+      warnings: [],
+      outputFiles: [],
+      metafile: mockMetafile,
+    });
+
+    await createContext(baseOptions);
+    await rebuild();
+    expect(getMetafile()).toBe(mockMetafile);
+
+    mockRebuild.mockRejectedValueOnce(new Error("Build failed"));
+    const result = await rebuild();
+
+    expect(result).toEqual({
+      success: false,
+      errors: ["Build failed"],
+      warnings: undefined,
+    });
+    expect(getMetafile()).toBe(mockMetafile);
+  });
+});
+
 describe("recreateContext", () => {
   afterEach(async () => {
     mockRebuild.mockReset();

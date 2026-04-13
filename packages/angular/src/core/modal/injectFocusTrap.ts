@@ -21,11 +21,11 @@ export function injectFocusTrap(): {
 
   function handleTabTrap(event: KeyboardEvent): void {
     const hostEl = elRef.nativeElement;
-    const focusableElements = getTabbableElements(hostEl);
-    if (focusableElements.length === 0) return;
+    const tabbableElements = getTabbableElements(hostEl);
+    if (tabbableElements.length === 0) return;
 
-    const first = focusableElements[0];
-    const last = focusableElements[focusableElements.length - 1];
+    const first = tabbableElements[0];
+    const last = tabbableElements[tabbableElements.length - 1];
 
     if (event.shiftKey) {
       if (document.activeElement === first) {

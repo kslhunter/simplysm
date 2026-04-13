@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import {
-  SdModalTestFocusable,
+  SdModalTestTabbable,
   SdModalFocusTestHost,
   SdModalProviderTestHost,
 } from "./sd-modal-test.fixture";
@@ -35,7 +35,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const provider = TestBed.inject(SdModalProvider);
 
     const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
     );
 
     await tick(fixture);
@@ -59,7 +59,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const provider = TestBed.inject(SdModalProvider);
 
     const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
       { noFirstControlFocusing: true },
     );
 
@@ -85,7 +85,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
 
     const provider = TestBed.inject(SdModalProvider);
     const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
     );
 
     await tick(fixture);
@@ -101,13 +101,13 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
   });
 
   // Acceptance: Tab 키 순환 순방향
-  // 모달 내 마지막 focusable(last-input)에서 Tab → 모달 내 첫 focusable(close-btn)로 순환
+  // 모달 내 마지막 tabbable(last-input)에서 Tab → 모달 내 첫 tabbable(close-btn)로 순환
   it("마지막 포커싱 가능 요소에서 Tab 누르면 첫 요소로 순환한다", async () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
     const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
     );
 
     await tick(fixture);
@@ -129,7 +129,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     });
     lastInput.dispatchEvent(tabEvent);
 
-    // 모달 내 첫 focusable 요소(close-btn)로 순환
+    // 모달 내 첫 tabbable 요소(close-btn)로 순환
     expect(document.activeElement).toBe(closeBtn);
 
     // cleanup
@@ -139,13 +139,13 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
   });
 
   // Acceptance: Tab 키 순환 역방향
-  // 모달 내 첫 focusable(close-btn)에서 Shift+Tab → 모달 내 마지막 focusable(last-input)로 순환
+  // 모달 내 첫 tabbable(close-btn)에서 Shift+Tab → 모달 내 마지막 tabbable(last-input)로 순환
   it("첫 포커싱 가능 요소에서 Shift+Tab 누르면 마지막 요소로 순환한다", async () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
     const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestFocusable, inputs: { title: "test" } },
+      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
     );
 
     await tick(fixture);
@@ -155,7 +155,7 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const closeBtn = modal!.querySelector("._close-btn") as HTMLElement;
     const lastInput = modal!.querySelector(".last-input") as HTMLElement;
 
-    // 첫 focusable 요소(close-btn)에 포커스
+    // 첫 tabbable 요소(close-btn)에 포커스
     closeBtn.focus();
     expect(document.activeElement).toBe(closeBtn);
 
@@ -187,13 +187,13 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
 
     // 모달 A 열기
     const promiseA = provider.showAsync(
-      { title: "Modal A", type: SdModalTestFocusable, inputs: { title: "A" } },
+      { title: "Modal A", type: SdModalTestTabbable, inputs: { title: "A" } },
     );
     await tick(fixture);
 
     // 모달 B 열기
     const promiseB = provider.showAsync(
-      { title: "Modal B", type: SdModalTestFocusable, inputs: { title: "B" } },
+      { title: "Modal B", type: SdModalTestTabbable, inputs: { title: "B" } },
     );
     await tick(fixture);
 

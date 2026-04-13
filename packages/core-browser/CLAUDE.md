@@ -57,7 +57,7 @@ Element.prototype.findAll = function <TEl extends Element = Element>(selector: s
 };
 ```
 
-- `element-ext.ts`: `Element` 확장 — `findAll`, `findFirst`, `prependChild`, `getParents`, `findFocusableParent`, `findFirstFocusableChild`, `isOffsetElement`, `isVisible`
+- `element-ext.ts`: `Element` 확장 — `findAll`, `findFirst`, `prependChild`, `getParents`, `findTabbableParent`, `findFirstTabbableChild`, `isOffsetElement`, `isVisible`
 - `html-element-ext.ts`: `HTMLElement` 확장 — `repaint`, `getRelativeOffset`, `scrollIntoViewIfNeeded`
 
 프로토타입 확장 외에, `element-ext.ts`는 이벤트 핸들러용 정적 함수도 내보낸다: `copyElement`, `pasteToElement`, `getBounds`.

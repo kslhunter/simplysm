@@ -233,6 +233,7 @@ export default tseslint.config(
     rules: {
       "@simplysm/ng-template-no-todo-comments": "warn",
       "@simplysm/ng-template-sd-require-binding-attrs": "error",
+      "@angular-eslint/template/label-has-associated-control": "off",
     },
   },
   {

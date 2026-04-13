@@ -6,7 +6,7 @@ import {
   SdDropdownTestDefault,
   SdDropdownTestDisabled,
   SdDropdownTestScrollable,
-  SdDropdownTestWithFocusable,
+  SdDropdownTestWithTabbable,
 } from "./sd-dropdown-test.fixture";
 import { SdDropdown } from "../../../src/controls/dropdown/sd-dropdown";
 import "@simplysm/core-browser";
@@ -334,8 +334,8 @@ describe("Feature 3.1 Slice 2: 위치 자동 배치", () => {
 describe("Feature 3.1 Slice 3: 외부 포커스 닫기", () => {
   // Acceptance: 외부 요소 클릭 시 팝업이 닫힌다
   it("팝업/드롭다운 외부 요소 클릭 시 팝업이 닫힌다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -359,8 +359,8 @@ describe("Feature 3.1 Slice 3: 외부 포커스 닫기", () => {
 
   // Acceptance: 팝업 내부 포커스 이동 시 팝업이 유지된다
   it("팝업 내부 요소 간 포커스 이동 시 팝업이 유지된다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -385,8 +385,8 @@ describe("Feature 3.1 Slice 3: 외부 포커스 닫기", () => {
 
   // Acceptance: 드롭다운 자체로 포커스 이동 시 팝업이 유지된다
   it("드롭다운 자체로 포커스 이동 시 팝업이 유지된다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -410,8 +410,8 @@ describe("Feature 3.1 Slice 3: 외부 포커스 닫기", () => {
 
   // Unit: contains()로 내부 판별이 정확히 동작한다
   it("팝업 자식 요소로 포커스 이동 시 내부로 판별되어 닫히지 않는다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -441,8 +441,8 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
 
   // Acceptance: 닫힌 상태에서 ArrowDown → 팝업 열림
   it("닫힌 상태에서 ArrowDown 키를 누르면 팝업이 열린다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -456,8 +456,8 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
 
   // Acceptance: 열린 상태에서 ArrowDown → 팝업 내 첫 포커스 요소로 이동
   it("열린 상태에서 ArrowDown 키를 누르면 팝업 내 첫 포커스 가능 요소에 포커스가 이동한다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -478,8 +478,8 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
 
   // Acceptance: 열린 상태에서 ArrowUp → 팝업 닫힘
   it("열린 상태에서 ArrowUp 키를 누르면 팝업이 닫힌다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -538,8 +538,8 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
 
   // Acceptance: Escape (팝업에서)
   it("팝업에서 Escape 키로 팝업을 닫는다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -559,8 +559,8 @@ describe("Feature 3.1 Slice 4: 키보드 네비게이션", () => {
 
   // Acceptance: 팝업 닫힘 시 포커스가 드롭다운으로 복귀���다
   it("팝업 닫힘 시 포커스가 드롭다운으로 복귀한다", () => {
-    setupTestBed(SdDropdownTestWithFocusable);
-    const fixture = TestBed.createComponent(SdDropdownTestWithFocusable);
+    setupTestBed(SdDropdownTestWithTabbable);
+    const fixture = TestBed.createComponent(SdDropdownTestWithTabbable);
     fixture.detectChanges();
     TestBed.flushEffects();
 

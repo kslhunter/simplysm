@@ -1,7 +1,7 @@
 import { DestroyRef, effect, ElementRef, inject, Renderer2 } from "@angular/core";
 import { setSafeStyle } from "../setSafeStyle";
 import { Uuid } from "@simplysm/core-common";
-import { isFocusable } from "tabbable";
+import { isTabbable } from "tabbable";
 
 export function setupInvalid(getInvalidMessage: () => string): void {
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -65,6 +65,7 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement): HTMLInpu
   newEl.type = "text";
   newEl.name = Uuid.generate().toString();
   newEl.className = "sd-invalid-input";
+  newEl.tabIndex = -1;
   setSafeStyle(renderer, newEl, {
     position: "absolute",
     left: "2px",
@@ -79,11 +80,11 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement): HTMLInpu
   });
 
   renderer.listen(newEl, "focus", () => {
-    const focusableElement =
-      (isFocusable(hostEl) ? hostEl : hostEl.findFirstFocusableChild()) ??
-      hostEl.findFocusableParent();
-    if (focusableElement !== undefined) {
-      focusableElement.focus();
+    const tabbableElement =
+      (isTabbable(hostEl) ? hostEl : hostEl.findFirstTabbableChild()) ??
+      hostEl.findTabbableParent();
+    if (tabbableElement !== undefined) {
+      tabbableElement.focus();
     }
   });
 

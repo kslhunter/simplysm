@@ -190,9 +190,9 @@ export async function createClientEsbuildContext(
             },
           ]
         : []),
+      ...(options.plugins ?? []),
       angularPlugin,
       scssPlugin,
-      ...(options.plugins ?? []),
       ...(loadedPostcssPlugins != null
         ? [createPostcssPlugin({ plugins: loadedPostcssPlugins })]
         : []),

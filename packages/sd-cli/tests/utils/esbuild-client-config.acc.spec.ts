@@ -432,8 +432,8 @@ describe("createClientEsbuildContext — Acceptance", () => {
     );
   });
 
-  // Scenario: SCSS 플러그인이 angularPlugin 다음, customPlugins 앞에 배치된다
-  it("plugins 배열이 [angularPlugin, scssPlugin, customPlugins, onEndPlugin] 순서로 구성된다", async () => {
+  // Scenario: customPlugins가 angularPlugin 이전에 배치된다 (onStart에서 sourceFileCache 무효화 선행 필요)
+  it("plugins 배열이 [customPlugins, angularPlugin, scssPlugin, onEndPlugin] 순서로 구성된다", async () => {
     const customPlugin = { name: "custom", setup: vi.fn() };
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
@@ -446,13 +446,15 @@ describe("createClientEsbuildContext — Acceptance", () => {
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     const pluginNames = esbuildOptions.plugins!.map((p: any) => p.name);
 
-    expect(pluginNames[0]).toBe("angular-compiler");
-    expect(pluginNames[1]).toBe("sd-scss");
     expect(pluginNames).toContain("custom");
+    expect(pluginNames).toContain("angular-compiler");
+    expect(pluginNames).toContain("sd-scss");
     expect(pluginNames[pluginNames.length - 1]).toBe("sd-on-end");
 
-    const scssIdx = pluginNames.indexOf("sd-scss");
     const customIdx = pluginNames.indexOf("custom");
-    expect(scssIdx).toBeLessThan(customIdx);
+    const angularIdx = pluginNames.indexOf("angular-compiler");
+    const scssIdx = pluginNames.indexOf("sd-scss");
+    expect(customIdx).toBeLessThan(angularIdx);
+    expect(angularIdx).toBeLessThan(scssIdx);
   });
 });

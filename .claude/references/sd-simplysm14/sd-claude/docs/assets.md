@@ -17,7 +17,7 @@ claude/
 
 ## `claude/skills/`
 
-17개 스킬 디렉토리. 각 스킬은 아래 파일을 포함한다:
+16개 `sd-*` 접두어 스킬 디렉토리. 각 스킬은 아래 파일을 포함한다:
 
 | 파일            | 필수 | Description                                                  |
 | --------------- | ---- | ------------------------------------------------------------ |
@@ -29,7 +29,6 @@ claude/
 
 | 디렉토리            | 스킬 이름        | Description                                      |
 | ------------------- | ---------------- | ------------------------------------------------ |
-| `sd-apk-decompile/` | sd-apk-decompile | APK 디컴파일 (Python + Java 도구 포함)           |
 | `sd-check/`         | sd-check         | typecheck/lint/test 실행 및 에러 해결            |
 | `sd-claude-docs/`   | sd-claude-docs   | CLAUDE.md + usage 문서 동시 생성                 |
 | `sd-commit/`        | sd-commit        | 전체 변경사항에 대한 단일 커밋 생성              |
@@ -65,22 +64,23 @@ model: haiku
 
 ## `claude/rules/`
 
-Claude Code 규칙 파일. 세션 시작 시 `sd-session-start.sh`에 의해 읽기 대상으로 출력된다.
+Claude Code 규칙 파일. 세션 시작 시 `sd-session-start.sh`에 의해 읽기 대상으로 출력된다. 2개 파일.
 
-| 파일                 | Description                                          |
-| -------------------- | ---------------------------------------------------- |
-| `sd-claude-rules.md` | 금지 명령어, 도구 사용 규칙, 코딩 규칙, 대화 규칙 등 |
-| `sd-options.md`      | 사용자에게 선택지 제시 지침                          |
+| 파일                 | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| `sd-claude-rules.md` | 금지 명령어, 도구 사용 규칙, 코딩 규칙, 대화 규칙, 패키지 참조 규칙 |
+| `sd-options.md`      | 사용자에게 선택지 제시 지침 (장단점, 점수, 결정 대상 명시 규칙)     |
 
 ## `claude/references/`
 
-스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다.
+스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다. 7개 md파일 + 1개 디렉토리.
 
 | 파일/디렉토리           | Description                               |
 | ----------------------- | ----------------------------------------- |
 | `sd-clarify.md`         | 사용자 요청 명확화 지침                   |
 | `sd-debug.md`           | 디버그 프로세스 참조 문서                 |
 | `sd-frontend-design.md` | 프론트엔드 UI 코드 작성 지침              |
+| `sd-review.md`          | 코드 리뷰 관점 참조 문서                  |
 | `sd-simplysm14.md`      | simplysm 패키지 문서 진입점               |
 | `sd-simplysm14/`        | simplysm v14 패키지별 usage 문서 디렉토리 |
 | `sd-testing.md`         | 테스트 작성 지침                          |

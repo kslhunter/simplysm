@@ -24,8 +24,8 @@ npm install @simplysm/core-browser
 | `Element.prototype.findFirst` | prototype extension | 선택자와 일치하는 첫 번째 요소 검색 |
 | `Element.prototype.prependChild` | prototype extension | 요소를 첫 번째 자식으로 삽입 |
 | `Element.prototype.getParents` | prototype extension | 모든 부모 요소를 가까운 순서로 조회 |
-| `Element.prototype.findFocusableParent` | prototype extension | 첫 번째 포커스 가능한 부모 요소 검색 (tabbable 사용) |
-| `Element.prototype.findFirstFocusableChild` | prototype extension | 첫 번째 포커스 가능한 자식 요소 검색 (tabbable 사용) |
+| `Element.prototype.findTabbableParent` | prototype extension | 첫 번째 탭 이동 가능한 부모 요소 검색 (tabbable 사용) |
+| `Element.prototype.findFirstTabbableChild` | prototype extension | 첫 번째 탭 이동 가능한 자식 요소 검색 (tabbable 사용) |
 | `Element.prototype.isOffsetElement` | prototype extension | position이 relative/absolute/fixed/sticky인지 확인 |
 | `Element.prototype.isVisible` | prototype extension | 요소가 화면에 보이는지 확인 (clientRects, visibility, opacity) |
 | `HTMLElement.prototype.repaint` | prototype extension | 강제 리페인트 트리거 (offsetHeight 접근) |
@@ -93,11 +93,11 @@ element.prependChild<TEl extends Element>(child: TEl): TEl
 // 모든 부모 요소 배열 (가까운 순서)
 element.getParents(): Element[]
 
-// 첫 번째 포커스 가능한 부모 요소 (tabbable 라이브러리 사용)
-element.findFocusableParent(): HTMLElement | undefined
+// 첫 번째 탭 이동 가능한 부모 요소 (tabbable 라이브러리 사용)
+element.findTabbableParent(): HTMLElement | undefined
 
-// 첫 번째 포커스 가능한 자식 요소 (tabbable 라이브러리 사용)
-element.findFirstFocusableChild(): HTMLElement | undefined
+// 첫 번째 탭 이동 가능한 자식 요소 (tabbable 라이브러리 사용)
+element.findFirstTabbableChild(): HTMLElement | undefined
 
 // position이 relative/absolute/fixed/sticky인지 확인
 element.isOffsetElement(): boolean
@@ -302,5 +302,5 @@ const container = document.querySelector(".container")!;
 const buttons = container.findAll<HTMLButtonElement>("button");
 const firstInput = container.findFirst<HTMLInputElement>("input[type=text]");
 const parents = container.getParents();
-const focusable = container.findFirstFocusableChild();
+const focusable = container.findFirstTabbableChild();
 ```

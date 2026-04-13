@@ -165,6 +165,30 @@ esbuild 플러그인으로 tsc를 통합하여, 서버 빌드의 수동 병렬 �
 
 - D1: `lastBuilderProgram` 로컬 관리 방식 → B. 클로저 이동. `rebuildAll()`을 `startWatch()` 내부 클로저로 이동하여 `lastBuilderProgram`, `watchLintRunner`를 로컬 변수로 캡처. `watchInfo`는 `info` 파라미터로 대체
 
+#### [x] Feature 1.4: rebuild() BuildFailure 에러 병합
+
+**의존성:** Feature 1.2
+
+**범위:**
+
+- `server-esbuild-context.ts`의 `rebuild()`에서 `context.rebuild()`가 `BuildFailure`를 throw하는 경우의 에러 처리 추가
+- catch에서 `errNs.message(err)`로 에러 메시지를 추출하고, `tscPlugin?.getErrors()`와 병합하여 반환
+- `build()` 함수(`server-build.worker.ts:168-185`)의 `.catch()` 패턴과 대칭적인 에러 처리 달성
+- 기존 테스트(`server-esbuild-context.spec.ts`)에 `context.rebuild()` reject 시나리오 추가
+
+**경계:**
+
+- `build()` 함수의 `.catch()` 패턴은 변경하지 않음 (이미 올바르게 동작)
+- `server-watch-manager.ts`는 변경하지 않음 (rebuild 반환 타입 불변)
+- `esbuild-tsc-plugin.ts`는 변경하지 않음
+
+**근거:**
+
+- 리뷰 이슈 LOGIC-001: `.tasks/260413115409_review-server-build-pipeline/review.md`
+- `server-build.worker.ts:168-185` — `build()` 함수의 `.catch()` 패턴 (대칭 참조)
+- esbuild API: `context.rebuild()`는 `result.errors`가 비어있지 않으면 `BuildFailure`를 throw
+- `server-esbuild-context.ts:89-91` — 현재 에러 병합 코드 (throw 시 도달 불가)
+
 ### Epic 2. 테스트 업데이트
 
 구조 변경에 따라 기존 테스트를 업데이트하고, 새로 생성된 플러그인의 테스트를 작성한다.

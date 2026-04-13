@@ -46,7 +46,7 @@ export interface AppStructureLeafItem<TModule> {
   title: string;
   modules?: TModule[];
   requiredModules?: TModule[];
-  perms?: (use | edit)[];
+  perms?: ("use" | "edit")[];
   subPerms?: AppStructureSubPermission<TModule>[];
   icon?: string;
   url?: string;
@@ -60,7 +60,7 @@ export interface AppStructureLeafItem<TModule> {
 | `title` | `string` | 표시 이름 |
 | `modules` | `TModule[]?` | 접근에 필요한 모듈 목록 (OR 조건) |
 | `requiredModules` | `TModule[]?` | 접근에 필수인 모듈 목록 (AND 조건) |
-| `perms` | `(use \| edit)[]?` | 이 항목에 부여 가능한 권한 종류 |
+| `perms` | `("use" \| "edit")[]?` | 이 항목에 부여 가능한 권한 종류 |
 | `subPerms` | `AppStructureSubPermission<TModule>[]?` | 하위 권한 정의 배열 |
 | `icon` | `string?` | 아이콘 식별자 |
 | `url` | `string?` | 페이지 URL |
@@ -76,7 +76,7 @@ export interface AppStructureSubPermission<TModule> {
   title: string;
   modules?: TModule[];
   requiredModules?: TModule[];
-  perms: (use | edit)[];
+  perms: ("use" | "edit")[];
 }
 ```
 
@@ -86,7 +86,7 @@ export interface AppStructureSubPermission<TModule> {
 | `title` | `string` | 하위 권한 표시 이름 |
 | `modules` | `TModule[]?` | 접근에 필요한 모듈 목록 (OR 조건) |
 | `requiredModules` | `TModule[]?` | 접근에 필수인 모듈 목록 (AND 조건) |
-| `perms` | `(use \| edit)[]` | 부여 가능한 권한 종류 |
+| `perms` | `("use" \| "edit")[]` | 부여 가능한 권한 종류 |
 
 ## `FlatPermission`
 

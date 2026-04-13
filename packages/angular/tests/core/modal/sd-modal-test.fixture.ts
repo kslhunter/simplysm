@@ -159,10 +159,10 @@ export class SdModalProviderTestHost {
 }
 
 /**
- * 포커스 가능한 요소가 있는 모달 컴포넌트
+ * 탭 이동 가능한 요소가 있는 모달 컴포넌트
  */
 @Component({
-  selector: "sd-modal-test-focusable",
+  selector: "sd-modal-test-tabbable",
   standalone: true,
   template: `
     <input class="first-input" type="text" />
@@ -170,7 +170,7 @@ export class SdModalProviderTestHost {
     <input class="last-input" type="text" />
   `,
 })
-export class SdModalTestFocusable implements SdModalContentDef<void> {
+export class SdModalTestTabbable implements SdModalContentDef<void> {
   readonly _optionalModalInputs?: "title";
   initialized = signal(false);
   close = output<void | undefined>();

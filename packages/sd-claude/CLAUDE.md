@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 17개 스킬, 1개 rules 파일, 6개 references md파일 + 1개 references 디렉토리, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 16개 스킬(`sd-*` 접두어), 2개 rules 파일, 7개 references md파일 + 1개 references 디렉토리, 4개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -13,10 +13,9 @@ TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고,
 ```
 sd-claude/
 ├── claude/                 ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
-│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 (sd-*.md, 6개)
-│   ├── rules/              ← Claude Code 규칙 파일 (sd-claude-rules.md, 1개)
-│   ├── skills/             ← 스킬 파일 디렉토리 (17개 스킬)
-│   │   ├── sd-apk-decompile/  ← APK 디컴파일 (Python + Java 도구 포함)
+│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 (sd-*.md, 7개)
+│   ├── rules/              ← Claude Code 규칙 파일 (sd-claude-rules.md, sd-options.md, 2개)
+│   ├── skills/             ← 스킬 파일 디렉토리 (16개 sd-* 스킬)
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
 │   │   ├── sd-claude-docs/    ← CLAUDE.md + usage 문서 동시 생성
 │   │   ├── sd-commit/         ← 그룹별 커밋 생성
@@ -33,10 +32,10 @@ sd-claude/
 │   │   ├── sd-tdd/            ← TDD 개발
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
-│   ├── sd-check-bash.py    ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
-│   ├── sd-check-write.py   ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
-│   ├── sd-session-start.sh ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
-│   └── sd-statusline.py    ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
+│   ├── sd-check-bash.py     ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
+│   ├── sd-check-write.py    ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
+│   ├── sd-session-start.sh  ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
+│   └── sd-statusline.py     ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
 └── scripts/
     ├── cli.mjs             ← CLI 엔트리포인트 (bin: sd-claude)
     ├── auth.mjs            ← 멀티 계정 save/switch 로직

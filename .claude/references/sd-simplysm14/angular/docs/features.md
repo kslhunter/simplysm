@@ -312,3 +312,18 @@ function matchesSearchText(itemText: string, searchQuery: string | undefined): b
 ```
 
 모든 검색어(공백으로 분할)가 `itemText`에 포함되면 `true`. `searchQuery`가 undefined이거나 빈 문자열이면 항상 `true`.
+
+## `getOrmDataEditToastErrorMessage`
+
+ORM 편집 에러 메시지를 사용자 친화적인 한국어 메시지로 변환한다. FK 제약 위반 등 DB 에러 메시지를 감지하여 적절한 메시지를 반환한다.
+
+```typescript
+function getOrmDataEditToastErrorMessage(err: unknown): string
+```
+
+| 감지 조건 | 반환 메시지 |
+|-----------|-------------|
+| FK 제약 위반 (`a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE`) | `"경위! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망"` |
+| 그 외 | `err.message` (또는 `String(err)`) |
+
+`SdDataSheetBase`, `SdDataDetailBase` 내부에서 사용되며, 소비 코드에서 직접 사용할 수도 있다.

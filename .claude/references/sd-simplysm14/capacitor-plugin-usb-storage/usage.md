@@ -102,6 +102,8 @@ export interface UsbStoragePlugin {
 
 USB 저장 장치 접근 정적 파사드 클래스. Android에서는 libaums를 통해 USB Mass Storage에 접근하고, 브라우저에서는 IndexedDB 기반으로 에뮬레이션된다.
 
+`readFile()`의 반환 타입 `Bytes`는 `@simplysm/core-common`의 타입이다 (`Uint8Array` 별칭).
+
 ```typescript
 export abstract class UsbStorage {
   static async getDevices(): Promise<UsbDeviceInfo[]>;

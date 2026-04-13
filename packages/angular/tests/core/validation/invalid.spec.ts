@@ -75,7 +75,7 @@ describe("Feature 1.6 Slice 4: Invalid 디렉티브", () => {
     expect(getIndicator()!.style.display).toBe("block");
   });
 
-  it("hidden input focus → host의 focusable 요소로 포커스 이동", () => {
+  it("hidden input focus → host의 tabbable 요소로 포커스 이동", () => {
     const button = document.createElement("button");
     button.textContent = "Test";
     hostEl.insertBefore(button, getHiddenInput());

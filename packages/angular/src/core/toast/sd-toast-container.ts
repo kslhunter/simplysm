@@ -18,18 +18,21 @@ import {
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/variables";
+      @use "../../../scss/commons/mixins";
       @use "sass:map";
 
       sd-toast-container {
+        display: flex;
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: map.get(variables.$vars, z-index, toast);
+        height: 100%;
+        width: 100%;
         pointer-events: none;
+        padding: var(--gap-xxl);
+        z-index: map.get(variables.$vars, z-index, toast);
+
+        @include mixins.flex-direction(column);
 
         @media all and (max-width: variables.$breakpoint-mobile) {
           flex-direction: column-reverse;
@@ -37,8 +40,6 @@ import {
 
         &[data-sd-overlap] {
           display: block;
-          bottom: 0;
-          height: 100%;
 
           > sd-toast {
             position: absolute;
@@ -46,7 +47,6 @@ import {
             left: var(--gap-xxl);
             right: var(--gap-xxl);
             width: auto;
-            max-width: none;
           }
         }
       }

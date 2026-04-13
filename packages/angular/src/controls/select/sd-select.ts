@@ -279,15 +279,15 @@ export class SdSelect<M extends "single" | "multi", T> {
             event.preventDefault();
             event.stopPropagation();
 
-            const focusableEls = tabbable(popupEl);
-            if (focusableEls.length === 0) return;
+            const tabbableEls = tabbable(popupEl);
+            if (tabbableEls.length === 0) return;
 
-            const currIndex = focusableEls.indexOf(document.activeElement as HTMLElement);
+            const currIndex = tabbableEls.indexOf(document.activeElement as HTMLElement);
 
             if (event.key === "ArrowDown") {
               const nextIndex = currIndex + 1;
-              if (nextIndex < focusableEls.length) {
-                focusableEls[nextIndex].focus();
+              if (nextIndex < tabbableEls.length) {
+                tabbableEls[nextIndex].focus();
               }
             } else {
               // ArrowUp
@@ -295,7 +295,7 @@ export class SdSelect<M extends "single" | "multi", T> {
                 // Return focus to dropdown trigger
                 this._dropdownElRef().nativeElement.focus();
               } else {
-                focusableEls[currIndex - 1].focus();
+                tabbableEls[currIndex - 1].focus();
               }
             }
           }
@@ -321,14 +321,9 @@ export class SdSelect<M extends "single" | "multi", T> {
       const items = this._itemControls();
       const currentValue = this.value();
 
-      if (currentValue == null) {
-        this._selectedItemContentHTML.set(undefined);
-        return;
-      }
-
       if (this.selectMode() === "multi") {
-        const arr = currentValue as T[];
-        if (arr.length === 0) {
+        const arr = currentValue as T[] | undefined;
+        if (arr == null || arr.length === 0) {
           this._selectedItemContentHTML.set(undefined);
           return;
         }

@@ -25,9 +25,9 @@ export function useSheetCellAgent(options: {
     queueMicrotask(() => {
       const cell = options.domAccessor.getCell(r, c);
       if (cell == null) return;
-      const focusable = cell.findFirstFocusableChild();
-      if (focusable !== undefined) {
-        focusable.focus();
+      const tabbable =cell.findFirstTabbableChild();
+      if (tabbable !== undefined) {
+        tabbable.focus();
       }
     });
   }
@@ -51,9 +51,9 @@ export function useSheetCellAgent(options: {
         _isTransitioning = false;
         const targetCell = options.domAccessor.getCell(r, c);
         if (targetCell == null) return;
-        const focusable = targetCell.findFirstFocusableChild();
-        if (focusable !== undefined) {
-          focusable.focus();
+        const tabbable =targetCell.findFirstTabbableChild();
+        if (tabbable !== undefined) {
+          tabbable.focus();
         }
       });
     } else {

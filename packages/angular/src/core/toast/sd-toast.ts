@@ -18,21 +18,23 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   host: {
-    "[attr.data-sd-open]": "open() || undefined",
+    "[attr.data-sd-open]": "open()",
     "[attr.data-sd-theme]": "theme()",
     "[attr.role]": "ariaRole()",
     "[attr.aria-live]": "ariaLive()",
   },
   template: `
-    @if (message() !== undefined) {
-      <div class="_message">{{ message() }}</div>
-    }
-    <ng-content />
-    @if (useProgress()) {
-      <div class="_progress">
-        <div class="_progress-bar" [style.width.%]="progress()"></div>
-      </div>
-    }
+    <div class="_block">
+      @if (message() !== undefined) {
+        <div class="_message">{{ message() }}</div>
+      }
+      <ng-content />
+      @if (useProgress()) {
+        <div class="_progress">
+          <div class="_progress-bar" [style.width.%]="progress()"></div>
+        </div>
+      }
+    </div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -42,59 +44,90 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
 
       sd-toast {
         display: block;
-        position: relative;
-        max-width: 32.5rem;
+        margin-bottom: var(--gap-sm);
+        text-align: center;
         width: 100%;
-        margin: var(--gap-sm);
-        padding: var(--gap-default) var(--gap-lg);
-        border-radius: var(--border-radius-default);
-        color: var(--text-trans-rev-default);
-        pointer-events: auto;
-        transform: translateY(-100%);
-        opacity: 0;
-        transition:
-          transform var(--animation-duration) ease,
-          opacity var(--animation-duration) ease;
+        pointer-events: none;
 
-        @include mixins.elevation(12);
+        > ._block {
+          display: inline-block;
+          text-align: left;
+          color: var(--text-trans-rev-default);
+          transform: translateY(-100%);
+          border-radius: var(--border-radius-lg);
+          opacity: 0;
+          @include mixins.elevation(12);
+          pointer-events: auto;
 
-        &[data-sd-open] {
-          transform: translateY(0);
-          opacity: 1;
+          > ._message {
+            padding: var(--gap-default) var(--gap-lg);
+            word-break: break-all;
+            white-space: pre-wrap;
+          }
+
+          > ._progress {
+            background: var(--theme-gray-default);
+            height: 4px;
+            border-radius: var(--border-radius-xl);
+            margin: 0 4px 4px 4px;
+
+            > ._progress-bar {
+              border-radius: var(--border-radius-xl);
+              height: 4px;
+              transition: width 1s ease-out;
+            }
+          }
         }
 
         @each $theme-name, $theme-map in map.get(variables.$vars, theme) {
           &[data-sd-theme="#{$theme-name}"] {
-            background: map.get($theme-map, default);
+            > ._block {
+              background: map.get($theme-map, default);
+
+              > ._progress {
+                background: map.get($theme-map, darker);
+
+                > ._progress-bar {
+                  background: map.get($theme-map, lighter);
+                }
+              }
+            }
           }
         }
 
-        > ._message {
-          word-break: break-all;
-          white-space: pre-wrap;
+        &[data-sd-open="true"] {
+          > ._block {
+            transform: none;
+            transition: var(--animation-duration) ease-out;
+            transition-property: transform, opacity;
+            opacity: 1;
+          }
         }
 
-        > ._progress {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 0.25rem;
-          background: var(--trans-lighter);
-          border-radius: 0 0 var(--border-radius-default) var(--border-radius-default);
-          overflow: hidden;
-
-          > ._progress-bar {
-            height: 100%;
-            background: var(--trans-default);
-            transition: width 0.3s ease;
+        &[data-sd-open="false"] {
+          > ._block {
+            transform: translateY(-100%);
+            transition: var(--animation-duration) ease-in;
+            transition-property: transform, opacity;
+            opacity: 0;
           }
         }
 
         @media all and (max-width: variables.$breakpoint-mobile) {
-          max-width: none;
-          margin: var(--gap-xs);
-          border-radius: 0;
+          > ._block {
+            border-radius: calc(var(--line-height) / 2);
+            transform: translateY(100%);
+
+            > ._message {
+              padding: var(--gap-xs) var(--gap-default);
+            }
+          }
+
+          &[data-sd-open="false"] {
+            > ._block {
+              transform: translateY(100%);
+            }
+          }
         }
       }
     `,

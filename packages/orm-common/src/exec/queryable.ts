@@ -1042,7 +1042,7 @@ export class Queryable<
    * ```
    */
   async single(): Promise<TData | undefined> {
-    const result = await this.top(2).execute();
+    const result = await this.execute();
     if (result.length > 1) {
       throw new ArgumentError("단일 결과를 기대했으나 복수 결과가 반환되었습니다.", {
         table: this._getSourceName(),

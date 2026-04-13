@@ -52,6 +52,7 @@ npm install @simplysm/lint
 | `**/*.ts` | `@typescript-eslint`, `@simplysm`, `import`, `unused-imports`, `angular-eslint` | 전체 커스텀 규칙 + `require-await`, `strict-boolean-expressions`, `prefer-readonly`, `only-throw-error`, `no-array-delete` 등 |
 | `**/*.html` | `@simplysm`, `@angular-eslint/template` (recommended + accessibility) | `ng-template-no-todo-comments`, `ng-template-sd-require-binding-attrs` |
 | `**/tests/**/*.ts` | - | `no-console`, `import/no-extraneous-dependencies`, `ts-no-throw-not-implemented-error` 비활성화 |
+| `**/vitest.config.ts` | - | `no-restricted-properties` 비활성화 (`process.env` 접근 허용) |
 
 #### 공유 규칙 변수
 

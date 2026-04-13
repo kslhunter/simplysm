@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 149 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 151 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -252,7 +252,7 @@ type WithOptional<T, K extends keyof T>
 
 테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/busy/`, `tests/modal/`, `tests/sheet/` 등 기능 단위 플랫 구조. `tests/scss/`는 SCSS 컴파일 결과 검증.
 
-146개의 spec 파일.
+148개의 spec 파일.
 
 ### Test Pattern
 
