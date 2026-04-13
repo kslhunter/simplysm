@@ -6,8 +6,8 @@ import { SdToastProvider } from "../toast/sd-toast.provider";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceClientFactoryProvider {
-  private readonly _toastProvider = inject(SdToastProvider);
-  private readonly _configProvider = inject(SdAngularConfigProvider);
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _sdAngularConfig = inject(SdAngularConfigProvider);
   private readonly _destroyRef = inject(DestroyRef);
 
   private readonly _clientMap = new Map<string, ServiceClient>();
@@ -43,7 +43,7 @@ export class SdServiceClientFactoryProvider {
       ...options,
     };
 
-    const client = createServiceClient(this._configProvider.clientName, mergedOptions);
+    const client = createServiceClient(this._sdAngularConfig.clientName, mergedOptions);
 
     client.on("request-progress", (state: ServiceProgressState) => {
       this._handleProgress("요청을 전송하는 중입니다.", state);
@@ -85,7 +85,7 @@ export class SdServiceClientFactoryProvider {
 
     let progressSignal = this._progressMap.get(uuid);
     if (progressSignal == null) {
-      progressSignal = this._toastProvider.info(message, true);
+      progressSignal = this._sdToast.info(message, true);
       this._progressMap.set(uuid, progressSignal);
     }
 

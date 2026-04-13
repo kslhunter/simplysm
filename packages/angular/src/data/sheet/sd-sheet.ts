@@ -368,7 +368,7 @@ export class SdSheet<T> {
   columnControls = contentChildren(SdSheetColumn);
 
   // Injected providers
-  private readonly _modalProvider = inject(SdModalProvider);
+  private readonly _sdModal = inject(SdModalProvider);
 
   // DOM accessor & cell agent
   domAccessor = injectSheetDomAccessor();
@@ -564,7 +564,7 @@ export class SdSheet<T> {
   }
 
   async onConfigButtonClick(): Promise<void> {
-    const result = await this._modalProvider.showAsync(
+    const result = await this._sdModal.showAsync(
       {
         title: "시트 설정",
         type: SdSheetConfigModal,

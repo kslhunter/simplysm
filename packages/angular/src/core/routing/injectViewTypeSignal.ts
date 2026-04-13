@@ -5,14 +5,14 @@ import { injectCurrentPageCodeSignal } from "./injectCurrentPageCodeSignal";
 import { injectFullPageCodeSignal } from "./injectFullPageCodeSignal";
 
 export function injectViewTypeSignal(getComp: () => object): Signal<SdViewType> {
-  const activatedModal = inject(SdActivatedModalProvider, { optional: true });
+  const sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   const activatedRoute = inject(ActivatedRoute, { optional: true });
 
   const fullPageCode = injectFullPageCodeSignal();
   const currPageCode = injectCurrentPageCodeSignal();
 
   return computed<SdViewType>(() => {
-    if (activatedModal != null) {
+    if (sdActivatedModal != null) {
       return "modal";
     }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import path from "path";
+import fs from "node:fs";
 import ts from "typescript";
 import { AngularBuildPipeline } from "../../src/angular/angular-build-pipeline.js";
 import { AngularSourceFileCache } from "../../src/angular/angular-compiler.js";
@@ -166,6 +167,71 @@ describe("AngularBuildPipeline", () => {
     const updateResult = await pipeline.update([appPath]);
     expect(updateResult.diagnostics.errors).toHaveLength(0);
     expect(pipeline.getEmittedFile(appPath)).toBeDefined();
+  });
+
+  // --- updateRootNames ---
+
+  // Acceptance: Scenario "updateRootNames 호출 시 compiler까지 전파"
+  it("updateRootNames로 새 파일 추가 후 update가 성공하고 새 파일이 emit된다", async () => {
+    const pipeline = new AngularBuildPipeline(
+      createPipelineOptions("library", { sourceFileCache: new AngularSourceFileCache() }),
+    );
+    await pipeline.initialize();
+
+    const tempPath = path.join(FIXTURE_DIR, "src/temp-update-root-names-test.ts");
+    fs.writeFileSync(tempPath, "export const tempRootNamesValue = 42;", "utf-8");
+
+    try {
+      const parsed = parseFixtureConfig();
+      const newRootNames = getPackageSourceFiles(FIXTURE_DIR, parsed);
+      pipeline.updateRootNames(newRootNames);
+
+      const result = await pipeline.update([tempPath]);
+      expect(result.diagnostics.errors).toHaveLength(0);
+      expect(pipeline.getEmittedFile(tempPath.replace(/\\/g, "/"))).toBeDefined();
+    } finally {
+      fs.unlinkSync(tempPath);
+    }
+  });
+
+  // Acceptance: Scenario "기존 소스 파일 삭제 시 rootNames에서 제거"
+  it("updateRootNames로 파일 제거 후 update에서 해당 파일이 프로그램에서 제외된다", async () => {
+    const tempPath = path.join(FIXTURE_DIR, "src/temp-to-remove.ts");
+    fs.writeFileSync(tempPath, "export const toRemove = 1;", "utf-8");
+
+    try {
+      const sourceFileCache = new AngularSourceFileCache();
+      const pipeline = new AngularBuildPipeline(
+        createPipelineOptions("library", { sourceFileCache }),
+      );
+      await pipeline.initialize();
+
+      // 파일이 초기 프로그램에 포함되어 있는지 확인
+      const initialFiles = pipeline.getTsProgram().getSourceFiles().map((sf) => sf.fileName.replace(/\\/g, "/"));
+      expect(initialFiles.some((f) => f.includes("temp-to-remove.ts"))).toBe(true);
+
+      // 파일 삭제 시뮬레이션: 디스크에서 삭제 후 rootNames 재스캔
+      fs.unlinkSync(tempPath);
+      const parsed = parseFixtureConfig();
+      const newRootNames = getPackageSourceFiles(FIXTURE_DIR, parsed);
+      pipeline.updateRootNames(newRootNames);
+
+      const result = await pipeline.update([tempPath]);
+      expect(result.diagnostics.errors).toHaveLength(0);
+
+      // 삭제된 파일이 프로그램에서 제외되었는지 확인
+      const updatedFiles = pipeline.getTsProgram().getSourceFiles().map((sf) => sf.fileName.replace(/\\/g, "/"));
+      expect(updatedFiles.some((f) => f.includes("temp-to-remove.ts"))).toBe(false);
+    } finally {
+      if (fs.existsSync(tempPath)) {
+        fs.unlinkSync(tempPath);
+      }
+    }
+  });
+
+  it("updateRootNames가 compiler 미초기화 상태에서도 에러 없이 동작한다", () => {
+    const pipeline = new AngularBuildPipeline(createPipelineOptions("library"));
+    expect(() => pipeline.updateRootNames(["src/new.ts"])).not.toThrow();
   });
 
   // --- getPackageSourceFiles ---

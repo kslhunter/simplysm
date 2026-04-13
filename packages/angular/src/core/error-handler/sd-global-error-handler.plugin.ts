@@ -11,7 +11,7 @@ import { SdSystemLogProvider } from "../config/sd-system-log.provider";
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   private readonly _envInjector = inject(EnvironmentInjector);
-  private readonly _systemLog = inject(SdSystemLogProvider);
+  private readonly _sdSystemLog = inject(SdSystemLogProvider);
   private _hasDisplayedError = false;
 
   handleError(event: any) {
@@ -41,7 +41,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         const { message, filename, lineno, colno, error } = event;
 
         if (error == null) {
-          void this._systemLog.writeAsync("warn", message);
+          void this._sdSystemLog.writeAsync("warn", message);
           return;
         }
 
@@ -95,7 +95,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
 
     const paramLines = Object.keys(param).map((key) => key + ": " + param[key]);
 
-    void this._systemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
+    void this._sdSystemLog.writeAsync("error", `[${title}]\n${paramLines.join("\n")}`);
 
     const appRef = this._envInjector.get<ApplicationRef>(ApplicationRef);
     appRef.destroy();

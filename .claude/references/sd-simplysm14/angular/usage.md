@@ -338,6 +338,19 @@ export class SomePage implements OnInit {
 - constructor 내 `void this._init()` 같은 수동 호출 패턴 **금지** — ngOnInit이 이미 같은 역할
 - `resource()` / `httpResource()`는 데이터 로딩 → signal 매핑 용도. 사이드이펙트(라우팅, toast 등) 포함 초기화에는 사용하지 않는다
 
+## inject 네이밍 컨벤션
+
+`Sd*Provider`를 `inject()`할 때 변수명은 다음 규칙을 따른다:
+
+- **Sd 접두어 유지**: 클래스명에서 `Sd`를 camelCase로 변환하여 유지한다
+- **Provider 접미어 제거**: 변수명에서 `Provider`를 제거한다
+
+| inject 대상 | 클래스 필드 | 로컬 변수 |
+|-------------|-----------|----------|
+| `SdToastProvider` | `private _sdToast = inject(SdToastProvider)` | `const sdToast = inject(SdToastProvider)` |
+| `SdModalProvider` | `private _sdModal = inject(SdModalProvider)` | `const sdModal = inject(SdModalProvider)` |
+| `SdServiceClientFactoryProvider` | `private _sdServiceClientFactory = inject(SdServiceClientFactoryProvider)` | `const sdServiceClientFactory = inject(...)` |
+
 ## Usage Examples
 
 ### 앱 부트스트랩

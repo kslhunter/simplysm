@@ -36,7 +36,7 @@ export class SdToastProvider {
   private readonly _appRef = inject(ApplicationRef);
   private readonly _envInjector = inject(EnvironmentInjector);
   private readonly _injector = inject(Injector);
-  private readonly _systemLog = inject(SdSystemLogProvider);
+  private readonly _sdSystemLog = inject(SdSystemLogProvider);
 
   alertThemes = signal<SdToastSeverity[]>([]);
   overlap = signal(false);
@@ -145,11 +145,11 @@ export class SdToastProvider {
     });
   }
 
-  async try<R>(fn: () => Promise<R>): Promise<R | undefined>;
-  async try<R>(fn: () => Promise<R>, messageFn: (err: unknown) => string): Promise<R | undefined>;
+  async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
+  try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
   async try<R>(
-    fn: () => Promise<R>,
-    messageFn?: (err: unknown) => string,
+    fn: () => Promise<R> | R,
+    messageFn?: (err: Error) => string,
   ): Promise<R | undefined> {
     try {
       return await fn();
@@ -160,7 +160,7 @@ export class SdToastProvider {
 
       const message = messageFn !== undefined ? messageFn(err) : err.message;
       this.danger(message);
-      await this._systemLog.writeAsync("error", err.stack ?? err.message);
+      await this._sdSystemLog.writeAsync("error", err.stack ?? err.message);
       return undefined;
     }
   }

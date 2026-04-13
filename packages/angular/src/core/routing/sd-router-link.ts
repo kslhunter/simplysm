@@ -12,7 +12,7 @@ import { SdNavigateWindowProvider } from "./sd-navigate-window.provider";
 })
 export class SdRouterLink {
   private readonly _router = inject(Router);
-  private readonly _navWindow = inject(SdNavigateWindowProvider);
+  private readonly _sdNavigateWindow = inject(SdNavigateWindowProvider);
 
   option = input<
     | {
@@ -39,13 +39,13 @@ export class SdRouterLink {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this._navWindow.isWindow) {
+    if (this._sdNavigateWindow.isWindow) {
       const width = option.window?.width ?? 800;
       const height = option.window?.height ?? 800;
       const qp = option.queryParams
         ? "?" + new URLSearchParams(option.queryParams).toString()
         : "";
-      this._navWindow.open(
+      this._sdNavigateWindow.open(
         option.link + qp,
         option.params,
         `width=${width},height=${height}`,
@@ -54,7 +54,7 @@ export class SdRouterLink {
       const qp = option.queryParams
         ? "?" + new URLSearchParams(option.queryParams).toString()
         : "";
-      this._navWindow.open(option.link + qp, option.params);
+      this._sdNavigateWindow.open(option.link + qp, option.params);
     } else if (option.outletName === undefined) {
       await this._router.navigate(
         [option.link, ...(option.params ? [option.params] : [])],

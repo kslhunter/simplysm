@@ -115,7 +115,7 @@ describe("Feature 3.3 Slice 3: 커스텀 토스트 + 에러 래핑", () => {
 
     const result = await provider.try(
       () => Promise.reject(new Error("원본")),
-      (err) => `커스텀: ${(err as Error).message}`,
+      (err) => `커스텀: ${(err).message}`,
     );
     await tick(fixture);
 

@@ -46,6 +46,7 @@
 - `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
 - 테스트 작성 시 `.claude/references/sd-testing.md`를 읽고 따른다.
 - 프론트엔드 UI 코드 작성·수정 시 `.claude/references/sd-frontend-design.md`를 읽고 따른다.
+- 디버깅 시 `.claude/references/sd-debug.md`를 읽고 따른다.
 - 코딩을 하거나 코드예제를 출력할때는, 반드시 코드베이스의 기존 패턴을 확인하여 통일성있게 안내한다.
 - 코드를 수정할 경우 수정에 의한 사이드이펙트를 항상 고려한다. (예, html구조가 바뀌면 css의 selector도 바뀌어야함)
 - 함수 작성 혹은 함수내 기능 추가시 단일 책임 원칙을 따른다. (함수가 이름에서 드러나지 않는 일을 몰래 해선 안됨)

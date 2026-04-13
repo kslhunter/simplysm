@@ -42,6 +42,9 @@ describe("single() 동작", () => {
 
     expect(spy).toHaveBeenCalledOnce();
     const queryDef = spy.mock.calls[0][0][0];
-    expect(queryDef.top).toBeUndefined();
+    expect(queryDef.type).toBe("select");
+    if (queryDef.type === "select") {
+      expect(queryDef.top).toBeUndefined();
+    }
   });
 });

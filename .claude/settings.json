@@ -13,6 +13,15 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/sd-check-forbidden-files.py"
+          }
+        ]
+      },
+      {
         "matcher": "Write",
         "hooks": [
           {

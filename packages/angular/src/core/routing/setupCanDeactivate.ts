@@ -3,12 +3,12 @@ import { ActivatedRoute, type CanDeactivateFn } from "@angular/router";
 import { SdActivatedModalProvider } from "../modal/sd-activated-modal.provider";
 
 export function setupCanDeactivate(fn: () => boolean): void {
-  const activatedModal = inject(SdActivatedModalProvider, { optional: true });
+  const sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   const activatedRoute = inject(ActivatedRoute, { optional: true });
   const elRef = inject(ElementRef);
 
-  if (activatedModal != null) {
-    activatedModal.canDeactivateFn = fn;
+  if (sdActivatedModal != null) {
+    sdActivatedModal.canDeactivateFn = fn;
     return;
   }
 

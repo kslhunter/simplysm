@@ -1,4 +1,3 @@
-import path from "path";
 import type ts from "typescript";
 import { ESLint } from "eslint";
 import { pathx } from "@simplysm/core-node";
@@ -46,7 +45,6 @@ export class LintWithProgramRunner {
   private readonly _cwd: string;
   private readonly _pkgName: string;
   private _eslint: ESLint | undefined;
-  private _lastUseCache: boolean | undefined;
   private readonly _programsRef: ts.Program[] = [];
 
   constructor(options: LintWithProgramRunnerOptions) {
@@ -122,15 +120,9 @@ export class LintWithProgramRunner {
     this._programsRef.length = 0;
     this._programsRef.push(program);
 
-    // 캐시 정책: affected 파일 기반 증분 lint가 ESLint의
-    // 파일 내용 기반 캐시(의존성 변경을 놓침)보다 정확하다.
-    // affectedFiles가 제공되면 (watch 재빌드) 캐시를 비활성화한다.
-    // 제공되지 않으면 (일회성 빌드) 성능을 위해 캐시를 활성화한다.
-    const useCache = affectedFiles == null;
-
-    // 캐시 정책이 변경되거나 첫 호출 시 새 ESLint 인스턴스 생성
-    if (this._eslint == null || this._lastUseCache !== useCache) {
-      logger.debug(`[${this._pkgName}] ESLint 인스턴스 생성 (cache: ${String(useCache)})`);
+    // 첫 호출 시 ESLint 인스턴스 생성
+    if (this._eslint == null) {
+      logger.debug(`[${this._pkgName}] ESLint 인스턴스 생성`);
       // ESLint Flat Config는 languageOptionsToJSON()을 통해 languageOptions를 직렬화하는데,
       // parserOptions를 재귀 탐색하면서 ts.Program 메서드에서 예외가 발생한다.
       // parserOptions에 toJSON()을 추가하여 직렬화 가능한 표현을 반환하면서
@@ -146,15 +138,12 @@ export class LintWithProgramRunner {
 
       this._eslint = new ESLint({
         cwd: this._cwd,
-        cache: useCache,
-        cacheLocation: path.join(this._cwd, ".cache", `eslint-${this._pkgName.replace(/\//g, "-")}.cache`),
         overrideConfig: {
           languageOptions: {
             parserOptions,
           },
         },
       });
-      this._lastUseCache = useCache;
     }
 
     // lint 실행

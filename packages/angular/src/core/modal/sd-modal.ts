@@ -285,8 +285,8 @@ import "@simplysm/core-browser";
 })
 export class SdModal {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
-  private readonly _activatedModal = inject(SdActivatedModalProvider, { optional: true });
-  private readonly _systemConfig = inject(SdSystemConfigProvider, { optional: true });
+  private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+  private readonly _sdSystemConfig = inject(SdSystemConfigProvider, { optional: true });
   private readonly _errorHandler = inject(ErrorHandler);
   private readonly _focusTrap = injectFocusTrap();
 
@@ -347,7 +347,7 @@ export class SdModal {
     // key 기반 설정 복원
     effect(() => {
       const k = this.key();
-      if (k === undefined || this._systemConfig == null) return;
+      if (k === undefined || this._sdSystemConfig == null) return;
 
       void this._restoreConfig(k).catch((err) => this._errorHandler.handleError(err));
     });
@@ -389,7 +389,7 @@ export class SdModal {
   }
 
   private _requestClose(): void {
-    if (this._activatedModal !== null && !this._activatedModal.canDeactivateFn()) {
+    if (this._sdActivatedModal !== null && !this._sdActivatedModal.canDeactivateFn()) {
       return;
     }
     void this._saveConfig().catch((err) => this._errorHandler.handleError(err));
@@ -418,7 +418,7 @@ export class SdModal {
 
   private async _saveConfig(): Promise<void> {
     const k = this.key();
-    if (k === undefined || this._systemConfig == null) return;
+    if (k === undefined || this._sdSystemConfig == null) return;
 
     const dialogEl = this._getDialogEl();
     if (dialogEl === null) return;
@@ -429,13 +429,13 @@ export class SdModal {
     if (dialogEl.style.left !== "") config["left"] = dialogEl.style.left;
     if (dialogEl.style.top !== "") config["top"] = dialogEl.style.top;
 
-    await this._systemConfig.setAsync(`sd-modal.${k}` as any, config as any);
+    await this._sdSystemConfig.setAsync(`sd-modal.${k}` as any, config as any);
   }
 
   private async _restoreConfig(k: string): Promise<void> {
-    if (this._systemConfig == null) return;
+    if (this._sdSystemConfig == null) return;
 
-    const config = (await this._systemConfig.getAsync(`sd-modal.${k}` as any)) as
+    const config = (await this._sdSystemConfig.getAsync(`sd-modal.${k}` as any)) as
       | Record<string, string | undefined>
       | undefined;
     if (config == null) return;

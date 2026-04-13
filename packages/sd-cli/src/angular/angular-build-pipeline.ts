@@ -360,6 +360,11 @@ export class AngularBuildPipeline {
     this._scssDependencies.clear();
   }
 
+  updateRootNames(rootNames: string[]): void {
+    this._options.rootNames = rootNames;
+    this._compiler?.updateRootNames(rootNames);
+  }
+
   private _collectDiagnostics(): PipelineDiagnosticResult {
     if (this._compiler == null) {
       return { errors: [], warnings: [] };

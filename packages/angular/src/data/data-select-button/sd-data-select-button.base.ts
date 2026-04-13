@@ -32,7 +32,7 @@ export abstract class SdDataSelectButtonBase<
 
   //-- implement
 
-  private readonly _sdModal = inject(SdModalProvider);
+  protected readonly _sdModal = inject(SdModalProvider);
 
   value = model<SelectModeValue<TKey>[TMode]>();
 

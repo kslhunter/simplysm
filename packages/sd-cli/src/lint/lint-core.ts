@@ -112,7 +112,6 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
  *
  * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
  * - consola를 사용하여 진행 상황 표시
- * - 캐시 활성화 (`.cache/eslint.cache`에 저장, 설정 변경 시 자동 무효화)
  * - stdout 출력이나 process.exitCode 설정 없음 (호출자가 결정)
  *
  * @param options - 린트 실행 옵션
@@ -156,8 +155,6 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
     eslint = new ESLint({
       cwd,
       fix,
-      cache: true,
-      cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
     });
     eslintResults = await eslint.lintFiles(files);
     logger.success("린트 실행 완료");

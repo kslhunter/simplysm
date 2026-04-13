@@ -296,6 +296,15 @@ async function startWatch(info: NgtscBuildInfo): Promise<void> {
 
         sender.send("buildStart", {});
 
+        // 파일 추가/삭제 시 rootNames 재스캔
+        if (addOrRemove) {
+          const newParsedConfig = parseTsconfig(watchInfo!.pkgDir);
+          const newSourceFiles = watchInfo!.output.includeTests === true
+            ? getPackageFiles(watchInfo!.pkgDir, newParsedConfig)
+            : getPackageSourceFiles(watchInfo!.pkgDir, newParsedConfig);
+          pipeline.updateRootNames(newSourceFiles);
+        }
+
         // Pipeline 증분 업데이트 (SCSS 의존성 초기화 포함)
         pipeline.clearScssDependencies();
         const updateResult = await pipeline.update(modifiedFiles);

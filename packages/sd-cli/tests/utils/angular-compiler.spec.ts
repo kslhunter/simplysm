@@ -284,6 +284,41 @@ describe("AngularCompiler — Unit Tests", () => {
 });
 
 // =============================================================================
+// AngularCompiler — updateRootNames
+// =============================================================================
+
+describe("AngularCompiler — updateRootNames", () => {
+  // Acceptance: Scenario "updateRootNames 호출 시 compiler까지 전파"
+  it("updateRootNames() 후 initialize()에서 새 rootNames가 NgtscProgram에 전달된다", async () => {
+    const compiler = new AngularCompiler({
+      rootNames: ["src/main.ts"],
+      compilerOptions: { target: ts.ScriptTarget.ESNext },
+    });
+
+    await compiler.initialize();
+    expect(ngtscConstructorSpy.mock.calls[0][0]).toEqual(["src/main.ts"]);
+
+    compiler.updateRootNames(["src/main.ts", "src/new.ts"]);
+    await compiler.initialize();
+
+    expect(ngtscConstructorSpy.mock.calls[1][0]).toEqual(["src/main.ts", "src/new.ts"]);
+  });
+
+  it("updateRootNames()로 빈 배열 설정 후 initialize()에서 빈 rootNames가 전달된다", async () => {
+    const compiler = new AngularCompiler({
+      rootNames: ["src/main.ts"],
+      compilerOptions: { target: ts.ScriptTarget.ESNext },
+    });
+
+    await compiler.initialize();
+    compiler.updateRootNames([]);
+    await compiler.initialize();
+
+    expect(ngtscConstructorSpy.mock.calls[1][0]).toEqual([]);
+  });
+});
+
+// =============================================================================
 // AngularCompiler — 초기화
 // =============================================================================
 

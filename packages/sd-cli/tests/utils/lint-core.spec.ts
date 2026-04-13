@@ -134,13 +134,12 @@ describe("executeLint", () => {
     else process.env["TIMING"] = origTiming;
   });
 
-  it("creates ESLint with cache enabled and correct cache location", async () => {
+  it("creates ESLint without cache", async () => {
     await executeLint({ targets: [], fix: false, timing: false });
 
     expect(mocks.eslintCtor).toHaveBeenCalledWith(
-      expect.objectContaining({
+      expect.not.objectContaining({
         cache: true,
-        cacheLocation: expect.stringContaining("eslint.cache"),
       }),
     );
   });

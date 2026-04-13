@@ -37,9 +37,9 @@ describe("buildWatchPaths", () => {
     expect(result.watchPaths).toContainEqual(
       expect.stringContaining("core-common/src/**/*.ts"),
     );
-    // replaceDeps dist (cwd + pkgDir 두 위치)
+    // replaceDeps dist (cwd + pkgDir 두 위치, js + dts)
     expect(result.watchPaths).toContainEqual(
-      expect.stringContaining("node_modules/@external/lib/dist/**/*.{js,mjs,cjs}"),
+      expect.stringContaining("node_modules/@external/lib/dist/**/*.{js,mjs,cjs,d.ts,d.mts,d.cts}"),
     );
     // deps 결과 반환
     expect(result.deps.workspaceDeps).toEqual(["core-common"]);

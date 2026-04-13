@@ -152,13 +152,24 @@ export function copySync(
   } else {
     mkdirSync(path.dirname(targetPath));
 
-    try {
-      if (fs.existsSync(targetPath)) {
-        fs.rmSync(targetPath, { force: true, maxRetries: 6, retryDelay: 500 });
+    let lastErr: unknown;
+    for (let i = 0; i <= 6; i++) {
+      try {
+        fs.copyFileSync(sourcePath, targetPath);
+        lastErr = undefined;
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (i < 6) {
+          const start = Date.now();
+          while (Date.now() - start < 500) {
+            // busy wait
+          }
+        }
       }
-      fs.copyFileSync(sourcePath, targetPath);
-    } catch (err) {
-      throw new SdError(err, targetPath);
+    }
+    if (lastErr !== undefined) {
+      throw new SdError(lastErr, targetPath);
     }
   }
 }
@@ -198,13 +209,21 @@ export async function copy(
   } else {
     await mkdir(path.dirname(targetPath));
 
-    try {
-      if (await exists(targetPath)) {
-        await fs.promises.rm(targetPath, { force: true, maxRetries: 6, retryDelay: 500 });
+    let lastErr: unknown;
+    for (let i = 0; i <= 6; i++) {
+      try {
+        await fs.promises.copyFile(sourcePath, targetPath);
+        lastErr = undefined;
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (i < 6) {
+          await new Promise<void>((resolve) => setTimeout(resolve, 500));
+        }
       }
-      await fs.promises.copyFile(sourcePath, targetPath);
-    } catch (err) {
-      throw new SdError(err, targetPath);
+    }
+    if (lastErr !== undefined) {
+      throw new SdError(lastErr, targetPath);
     }
   }
 }

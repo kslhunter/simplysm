@@ -40,8 +40,8 @@ interface SharedDataEntry<T extends SharedDataBase<string | number>> {
 
 @Injectable()
 export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<string | number>>> {
-  private readonly _clientFactory = inject(SdServiceClientFactoryProvider);
-  private readonly _errorHandler = inject(ErrorHandler);
+  protected readonly _sdServiceClientFactory = inject(SdServiceClientFactoryProvider);
+  protected readonly _errorHandler = inject(ErrorHandler);
 
   readonly loadingCount: WritableSignal<number> = signal(0);
 
@@ -54,7 +54,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
     if (existing != null) {
       // 기존 리스너 키 초기화 + generation 증가로 이전 이벤트 무시
       if (existing.listenerKey != null) {
-        const client = this._clientFactory.get(existing.info.serviceKey);
+        const client = this._sdServiceClientFactory.get(existing.info.serviceKey);
         void client.removeListener(existing.listenerKey);
         existing.listenerKey = undefined;
       }
@@ -109,7 +109,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
       throw new Error(`등록되지 않은 공유 데이터: ${name as string}`);
     }
 
-    const client = this._clientFactory.get(entry.info.serviceKey);
+    const client = this._sdServiceClientFactory.get(entry.info.serviceKey);
     const event = client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange");
     await event.emit(
       (item) => item.name === (name as string) && obj.equal(item.filter, entry.info.filter),
@@ -137,7 +137,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
 
         // 이벤트 리스너 등록
         if (entry.listenerKey == null) {
-          const client = this._clientFactory.get(entry.info.serviceKey);
+          const client = this._sdServiceClientFactory.get(entry.info.serviceKey);
           const event = client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange");
           entry.listenerKey = await event.addListener(
             { name, filter: entry.info.filter },

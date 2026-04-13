@@ -16,8 +16,11 @@ if (fs.existsSync(targetDir)) {
   fs.rmSync(targetDir, { recursive: true });
 }
 
-// sd-* 항목 탐색 및 복사
+// sd-* 항목 탐색 및 settings.json 포함
 const allEntries = collectSdEntries(claudeDir);
+if (fs.existsSync(path.join(claudeDir, "settings.json"))) {
+  allEntries.push("settings.json");
+}
 
 for (const entry of allEntries) {
   const src = path.join(claudeDir, entry);

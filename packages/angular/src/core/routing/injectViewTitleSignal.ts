@@ -5,15 +5,15 @@ import { injectFullPageCodeSignal } from "./injectFullPageCodeSignal";
 import { injectCurrentPageCodeSignal } from "./injectCurrentPageCodeSignal";
 
 export function injectViewTitleSignal(): Signal<string> {
-  const activatedModal = inject(SdActivatedModalProvider, { optional: true });
+  const sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   const sdAppStructure = inject(SdAppStructureProvider);
 
   const fullPageCode = injectFullPageCodeSignal();
   const currPageCode = injectCurrentPageCodeSignal();
 
   return computed(() => {
-    if (activatedModal != null) {
-      return activatedModal.modalComponent()?.title() ?? "";
+    if (sdActivatedModal != null) {
+      return sdActivatedModal.modalComponent()?.title() ?? "";
     }
 
     try {

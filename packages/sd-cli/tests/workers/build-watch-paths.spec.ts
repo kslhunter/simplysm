@@ -63,14 +63,35 @@ describe("buildWatchPaths", () => {
     // cwd node_modules
     expect(
       watchPaths.some((p) =>
-        p.includes("/ws/node_modules/@scope/pkg/dist/**/*.{js,mjs,cjs}"),
+        p.includes("/ws/node_modules/@scope/pkg/dist/**/*.{js,mjs,cjs,d.ts,d.mts,d.cts}"),
       ),
     ).toBe(true);
     // pkgDir node_modules
     expect(
       watchPaths.some((p) =>
-        p.includes("lib/node_modules/@scope/pkg/dist/**/*.{js,mjs,cjs}"),
+        p.includes("lib/node_modules/@scope/pkg/dist/**/*.{js,mjs,cjs,d.ts,d.mts,d.cts}"),
       ),
+    ).toBe(true);
+  });
+
+  it("includes d.ts extensions in replaceDeps paths for non-scoped packages", () => {
+    mockCollectDeps.mockReturnValue({
+      workspaceDeps: [],
+      replaceDeps: ["some-lib"],
+    });
+
+    const { watchPaths } = buildWatchPaths({
+      pkgDir: "/ws/packages/lib",
+      cwd: "/ws",
+      srcGlobs: ["*.ts"],
+    });
+
+    const dtsGlob = "*.{js,mjs,cjs,d.ts,d.mts,d.cts}";
+    expect(
+      watchPaths.some((p) => p.includes(`/ws/node_modules/some-lib/dist/**/${dtsGlob}`)),
+    ).toBe(true);
+    expect(
+      watchPaths.some((p) => p.includes(`lib/node_modules/some-lib/dist/**/${dtsGlob}`)),
     ).toBe(true);
   });
 

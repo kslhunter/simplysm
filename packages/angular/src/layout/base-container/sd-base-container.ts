@@ -82,7 +82,7 @@ import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
 export class SdBaseContainer {
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _sdAppStructure = inject(SdAppStructureProvider);
-  private readonly _systemLog = inject(SdSystemLogProvider);
+  private readonly _sdSystemLog = inject(SdSystemLogProvider);
 
   private readonly _parent = injectParent();
 
@@ -107,7 +107,7 @@ export class SdBaseContainer {
         this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode())
       );
     } catch (err) {
-      void this._systemLog.writeAsync("warn", `modalOrPageTitle 계산 중 에러: ${String(err)}`);
+      void this._sdSystemLog.writeAsync("warn", `modalOrPageTitle 계산 중 에러: ${String(err)}`);
       return "";
     }
   });

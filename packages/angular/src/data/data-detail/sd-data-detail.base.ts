@@ -47,9 +47,9 @@ export abstract class SdDataDetailBase<T extends object, R = boolean>
 
   //-- implement
 
-  private readonly _sdToast = inject(SdToastProvider);
-  private readonly _sdSharedData = inject(SdSharedDataProvider);
-  private readonly _errorHandler = inject(ErrorHandler);
+  protected readonly _sdToast = inject(SdToastProvider);
+  protected readonly _sdSharedData = inject(SdSharedDataProvider);
+  protected readonly _errorHandler = inject(ErrorHandler);
 
   viewType = injectViewTypeSignal(() => this);
 

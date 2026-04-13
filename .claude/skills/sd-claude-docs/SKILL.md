@@ -67,7 +67,7 @@ description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 �
 1. 루트 `package.json`의 `name`에서 라이브러리명을 추출한다
 2. 루트 `package.json`의 `version`에서 메이저 버전을 추출한다
 3. usage 문서 경로: `.claude/references/sd-{name}{majorVersion}/` (예: `sd-simplysm14/`)
-4. 인덱스 파일 경로: `.claude/references/sd-{name}{majorVersion}.md` (예: `sd-simplysm14.md`)
+4. 인덱스 파일 경로: `.claude/rules/sd-{name}{majorVersion}.md` (예: `sd-simplysm14.md`)
 
 ## Step 2: 분기
 
@@ -194,7 +194,7 @@ UI:       angular (Angular)
 
 ### sd-{name}{ver}.md (라이브러리 프로젝트만)
 
-라이브러리 프로젝트인 경우 `.claude/references/sd-{name}{ver}.md` 인덱스 파일을 생성/갱신한다.
+라이브러리 프로젝트인 경우 `.claude/rules/sd-{name}{ver}.md` 인덱스 파일을 생성/갱신한다.
 소비앱인 경우 이 단계를 건너뛴다.
 
 #### 포함할 내용

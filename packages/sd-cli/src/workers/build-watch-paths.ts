@@ -43,10 +43,10 @@ export function buildWatchPaths(options: BuildWatchPathsOptions): BuildWatchPath
 
   for (const pkg of deps.replaceDeps) {
     watchPaths.push(
-      pathx.posixResolve(cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
+      pathx.posixResolve(cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs,d.ts,d.mts,d.cts}"),
     );
     watchPaths.push(
-      pathx.posixResolve(pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs}"),
+      pathx.posixResolve(pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.{js,mjs,cjs,d.ts,d.mts,d.cts}"),
     );
   }
 

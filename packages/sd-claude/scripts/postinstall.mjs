@@ -31,6 +31,10 @@ try {
   }
 
   const sourceEntries = collectSdEntries(sourceDir);
+  // settings.json도 함께 복사
+  if (fs.existsSync(path.join(sourceDir, "settings.json"))) {
+    sourceEntries.push("settings.json");
+  }
   if (sourceEntries.length === 0) {
     process.exit(0);
   }
@@ -39,9 +43,8 @@ try {
 
   cleanSdEntries(targetDir);
   copySdEntries(sourceDir, targetDir, sourceEntries);
-  setupSettings(targetDir);
 
-  console.log(`[@simplysm/sd-claude] Installed ${sourceEntries.length} sd-* entries.`);
+  console.log(`[@simplysm/sd-claude] Installed ${sourceEntries.length} entries.`);
 } catch (err) {
   // Ignore errors to prevent postinstall failure from blocking the entire pnpm install
   console.warn("[@simplysm/sd-claude] postinstall warning:", err.message);
@@ -101,109 +104,3 @@ function copySdEntries(sourceDir, targetDir, entries) {
   }
 }
 
-/** Ensures statusLine and SessionStart hooks are configured in settings.json. */
-function setupSettings(targetDir) {
-  const settingsPath = path.join(targetDir, "settings.json");
-
-  let settings = {};
-  if (fs.existsSync(settingsPath)) {
-    settings = JSON.parse(fs.readFileSync(settingsPath, "utf-8"));
-  }
-
-  // Migrate: move root-level SessionStart to hooks.SessionStart
-  if (settings["SessionStart"] != null) {
-    settings["hooks"] = settings["hooks"] ?? {};
-    settings["hooks"]["SessionStart"] = [
-      ...(settings["hooks"]["SessionStart"] ?? []),
-      ...settings["SessionStart"],
-    ];
-    delete settings["SessionStart"];
-  }
-
-  // SessionStart: ensure sd-session-start hook exists with correct config
-  settings["hooks"] = settings["hooks"] ?? {};
-  const sdSessionEntry = {
-    matcher: "startup|resume|clear|compact",
-    hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],
-  };
-
-  const sessionStart = settings["hooks"]["SessionStart"];
-
-  if (sessionStart == null) {
-    settings["hooks"]["SessionStart"] = [sdSessionEntry];
-  } else {
-    const idx = sessionStart.findIndex((entry) =>
-      entry.hooks?.some((hook) => hook.command.includes("sd-session-start")),
-    );
-    if (idx >= 0) {
-      sessionStart[idx] = sdSessionEntry;
-    } else {
-      sessionStart.push(sdSessionEntry);
-    }
-  }
-
-  // PreToolUse: ensure sd-check-write hook exists for Write tool
-  const sdWriteEntry = {
-    matcher: "Write",
-    hooks: [{ type: "command", command: "python .claude/sd-check-write.py" }],
-  };
-
-  const preToolUse = settings["hooks"]["PreToolUse"];
-
-  if (preToolUse == null) {
-    settings["hooks"]["PreToolUse"] = [sdWriteEntry];
-  } else {
-    const idx = preToolUse.findIndex((entry) =>
-      entry.hooks?.some((hook) => hook.command.includes("sd-check-write")),
-    );
-    if (idx >= 0) {
-      preToolUse[idx] = sdWriteEntry;
-    } else {
-      preToolUse.push(sdWriteEntry);
-    }
-  }
-
-  // PreToolUse: ensure sd-check-bash hook exists for Bash tool
-  const sdBashEntry = {
-    matcher: "Bash",
-    hooks: [{ type: "command", command: "python .claude/sd-check-bash.py" }],
-  };
-
-  if (settings["hooks"]["PreToolUse"] == null) {
-    settings["hooks"]["PreToolUse"] = [sdBashEntry];
-  } else {
-    const bashIdx = settings["hooks"]["PreToolUse"].findIndex((entry) =>
-      entry.hooks?.some((hook) => hook.command.includes("sd-check-bash")),
-    );
-    if (bashIdx >= 0) {
-      settings["hooks"]["PreToolUse"][bashIdx] = sdBashEntry;
-    } else {
-      settings["hooks"]["PreToolUse"].push(sdBashEntry);
-    }
-  }
-
-  // SubagentStart: ensure sd-session-start hook exists
-  const sdSubagentEntry = {
-    hooks: [{ type: "command", command: "bash .claude/sd-session-start.sh" }],
-  };
-
-  const subagentStart = settings["hooks"]["SubagentStart"];
-
-  if (subagentStart == null) {
-    settings["hooks"]["SubagentStart"] = [sdSubagentEntry];
-  } else {
-    const idx = subagentStart.findIndex((entry) =>
-      entry.hooks?.some((hook) => hook.command.includes("sd-session-start")),
-    );
-    if (idx >= 0) {
-      subagentStart[idx] = sdSubagentEntry;
-    } else {
-      subagentStart.push(sdSubagentEntry);
-    }
-  }
-
-  // statusLine: always overwrite
-  settings["statusLine"] = { type: "command", command: "python .claude/sd-statusline.py" };
-
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
-}

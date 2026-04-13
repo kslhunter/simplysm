@@ -287,7 +287,8 @@ class SdToastProvider {
   danger(message: string, useProgress?: false): void;
 
   notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<...>;
-  async try<R>(fn: () => Promise<R>, messageFn?: (err: unknown) => string): Promise<R | undefined>;
+  async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
+  try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
 }
 ```
 

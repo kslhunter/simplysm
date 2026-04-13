@@ -76,32 +76,21 @@ export function forEachSdEntry(dir, callback) {
 INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
 → simplysm 모노레포 동일 메이저 버전이면 건너뜀 (자기 자신에게 설치 방지)
 → cleanSdEntries: 기존 sd-* 항목 삭제
-→ copySdEntries: claude/ → .claude/ 복사
-→ setupSettings: .claude/settings.json에 훅 4종 등록
+→ copySdEntries: claude/ → .claude/ 복사 (sd-* 항목 + settings.json)
 ```
 
 `postinstall`은 실패해도 `pnpm install`을 차단하지 않는다 — 전체 try-catch로 감싸서 경고만 출력한다.
 
-### settings.json 자동 구성
+### settings.json
 
-`setupSettings()`는 `.claude/settings.json`에 아래를 멱등적으로 등록한다:
-
-| 훅 종류 | 조건 | 등록 내용 |
-|---------|------|-----------|
-| `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` |
-| `PreToolUse` | `Write` | `python .claude/sd-check-write.py` |
-| `PreToolUse` | `Bash` | `python .claude/sd-check-bash.py` |
-| `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` |
-| `statusLine` | — | `python .claude/sd-statusline.py` |
-
-기존 `settings.json`이 있으면 훅 항목을 `findIndex`로 찾아 덮어쓴다. 없으면 추가한다. 루트 레벨에 잘못 위치한 `SessionStart` 키는 `hooks.SessionStart`로 마이그레이션한다.
+`claude/settings.json`을 정적 파일로 관리하며, sd-* 항목과 함께 `.claude/settings.json`으로 복사된다. 소비 프로젝트에서 커스텀 훅이 필요하면 `settings.local.json`을 사용한다.
 
 ### prepack 동기화 (sync.mjs)
 
-npm publish/pack 전에 루트 `.claude/`의 `sd-*` 항목을 `claude/`로 복사한다. **소스 오브 트루스는 루트 `.claude/`** 이고, `packages/sd-claude/claude/`는 배포용 스냅샷이다.
+npm publish/pack 전에 루트 `.claude/`의 `sd-*` 항목과 `settings.json`을 `claude/`로 복사한다. **소스 오브 트루스는 루트 `.claude/`** 이고, `packages/sd-claude/claude/`는 배포용 스냅샷이다.
 
 ```
-루트 .claude/sd-* → packages/sd-claude/claude/sd-*
+루트 .claude/sd-* + settings.json → packages/sd-claude/claude/
 ```
 
 ### 스킬 파일 구조

@@ -119,6 +119,10 @@ export class AngularCompiler {
     this._options = options;
   }
 
+  updateRootNames(rootNames: string[]): void {
+    this._options.rootNames = rootNames;
+  }
+
   get ngtscProgram(): NgtscProgram | undefined {
     return this._ngtscProgram;
   }

@@ -288,8 +288,8 @@ describe("LintWithProgramRunner", () => {
     });
   });
 
-  describe("Scenario: ESLint cache policy depends on affectedFiles", () => {
-    it("disables ESLint cache when affectedFiles is provided (watch rebuild)", async () => {
+  describe("Scenario: ESLint cache is disabled", () => {
+    it("does not pass cache option to ESLint", async () => {
       const program = createMockProgram([
         createMockSourceFile("/workspace/packages/my-pkg/src/a.ts"),
       ]);
@@ -299,37 +299,14 @@ describe("LintWithProgramRunner", () => {
         pkgName: "my-pkg",
       });
 
-      // When: lint with affectedFiles (watch rebuild)
-      await runner.lint({
-        program: program as any,
-        affectedFiles: new Set(["/workspace/packages/my-pkg/src/a.ts"]),
-      });
-
-      // Then: ESLint is created with cache: false
-      expect(MockESLintClass).toHaveBeenCalledWith(
-        expect.objectContaining({ cache: false }),
-      );
-    });
-
-    it("enables ESLint cache when affectedFiles is not provided (one-time build)", async () => {
-      const program = createMockProgram([
-        createMockSourceFile("/workspace/packages/my-pkg/src/a.ts"),
-      ]);
-
-      const runner = new LintWithProgramRunner({
-        cwd: "/workspace",
-        pkgName: "my-pkg",
-      });
-
-      // When: lint without affectedFiles (one-time build)
       await runner.lint({
         program: program as any,
       });
 
-      // Then: ESLint is created with cache: true
-      expect(MockESLintClass).toHaveBeenCalledWith(
-        expect.objectContaining({ cache: true }),
-      );
+      // cache 옵션이 전달되지 않아야 한다
+      const ctorArg = MockESLintClass.mock.calls[0][0] as Record<string, unknown>;
+      expect(ctorArg).not.toHaveProperty("cache");
+      expect(ctorArg).not.toHaveProperty("cacheLocation");
     });
   });
 

@@ -15,6 +15,11 @@ describe("Feature 4.1 Slice 1: sd-collapse", () => {
       .createComponent(SdCollapseClosedTest);
     fixture.detectChanges();
     await fixture.whenStable();
+    // afterNextRender 완료 대기
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // afterNextRender 내부 requestAnimationFrame 완료 대기 (_initialized 설정)
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    fixture.detectChanges();
 
     const host = fixture.nativeElement.querySelector("sd-collapse") as HTMLElement;
     const content = host.querySelector("._content") as HTMLElement;
@@ -32,6 +37,11 @@ describe("Feature 4.1 Slice 1: sd-collapse", () => {
       .createComponent(SdCollapseOpenTest);
     fixture.detectChanges();
     await fixture.whenStable();
+    // afterNextRender 완료 대기
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // afterNextRender 내부 requestAnimationFrame 완료 대기 (_initialized 설정)
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    fixture.detectChanges();
 
     const host = fixture.nativeElement.querySelector("sd-collapse") as HTMLElement;
     const content = host.querySelector("._content") as HTMLElement;
