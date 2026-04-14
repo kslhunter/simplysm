@@ -1,6 +1,8 @@
 ---
 name: sd-commit
 description: 전체 변경사항에 대한 단일 커밋을 생성하는 스킬. "커밋", "commit", "변경사항 커밋" 등을 요청할 때 사용한다.
+model: sonnet[1m]
+effort: low
 ---
 
 # sd-commit: 그룹별 커밋

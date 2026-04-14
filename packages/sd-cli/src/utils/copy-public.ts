@@ -6,14 +6,15 @@ import {
 } from "@simplysm/core-node";
 
 /**
- * public/ 및 public-dev/ 디렉토리의 파일을 dist/로 복사한다.
+ * public/ 및 public-dev/ 디렉토리의 파일을 출력 디렉토리로 복사한다.
  * public-dev/가 public/보다 우선한다 (오버레이).
  *
  * @param pkgDir 패키지 루트 디렉토리
  * @param includeDev public-dev/ 포함 여부 (dev 모드에서만 true)
+ * @param outDir 출력 디렉토리 (미지정 시 pkgDir/dist)
  */
-export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Promise<void> {
-  const distDir = pathx.posix(path.join(pkgDir, "dist"));
+export async function copyPublicFiles(pkgDir: string, includeDev: boolean, outDir?: string): Promise<void> {
+  const distDir = pathx.posix(outDir ?? path.join(pkgDir, "dist"));
   await fsx.mkdir(distDir);
 
   // public/ 복사
@@ -48,23 +49,25 @@ export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Prom
 }
 
 /**
- * public/ 및 public-dev/ 디렉토리를 감시하고 변경사항을 실시간으로 dist/에 복사한다.
+ * public/ 및 public-dev/ 디렉토리를 감시하고 변경사항을 실시간으로 출력 디렉토리에 복사한다.
  * 초기 복사 후 변경/추가/삭제를 자동으로 반영한다.
  *
  * @param pkgDir 패키지 루트 디렉토리
  * @param includeDev public-dev/ 포함 여부 (dev 모드에서만 true)
+ * @param outDir 출력 디렉토리 (미지정 시 pkgDir/dist)
  * @returns FsWatcher 인스턴스 (종료 시 close() 호출 필요) 또는 감시 대상이 없으면 undefined
  */
 export async function watchPublicFiles(
   pkgDir: string,
   includeDev: boolean,
+  outDir?: string,
 ): Promise<FsWatcher | undefined> {
-  const distDir = pathx.posix(path.join(pkgDir, "dist"));
+  const distDir = pathx.posix(outDir ?? path.join(pkgDir, "dist"));
   const publicDir = pathx.posix(path.join(pkgDir, "public"));
   const publicDevDir = pathx.posix(path.join(pkgDir, "public-dev"));
 
   // 초기 복사
-  await copyPublicFiles(pkgDir, includeDev);
+  await copyPublicFiles(pkgDir, includeDev, outDir);
 
   // 감시 대상 경로 수집
   const watchPaths: string[] = [];

@@ -42,7 +42,7 @@ describe("Feature 3.1 Slice 2: cellTplRef required 전환", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const td = host.querySelector("tbody td") as HTMLElement;
+      const td = host.querySelector("tbody td:not(._feature-cell)") as HTMLElement;
       expect(td).toBeTruthy();
       expect(td.textContent.trim()).toBe("Alice");
     });
@@ -57,7 +57,7 @@ describe("Feature 3.1 Slice 2: cellTplRef required 전환", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const td = host.querySelector("tbody td") as HTMLElement;
+      const td = host.querySelector("tbody td:not(._feature-cell)") as HTMLElement;
       expect(td.querySelector(".ctx-item")!.textContent).toBe("Alice");
       expect(td.querySelector(".ctx-index")!.textContent).toBe("0");
       expect(td.querySelector(".ctx-depth")!.textContent).toBe("0");
@@ -74,7 +74,7 @@ describe("Feature 3.1 Slice 2: cellTplRef required 전환", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const tds = host.querySelectorAll("tbody td");
+      const tds = host.querySelectorAll("tbody td:not(._feature-cell)");
       expect(tds.length).toBe(2);
       expect(tds[0].textContent.trim()).toBe("name:Alice");
       expect(tds[1].textContent.trim()).toBe("age:30");

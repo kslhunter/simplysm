@@ -1,6 +1,7 @@
 import type ts from "typescript";
 import esbuild from "esbuild";
 import { err as errNs } from "@simplysm/core-common";
+import { formatEsbuildMessage } from "../utils/output-utils.js";
 import {
   createServerEsbuildOptions,
   writeChangedOutputFiles,
@@ -98,10 +99,10 @@ export async function rebuild(): Promise<{
     await writeChangedOutputFiles(result.outputFiles);
   }
 
-  const esbuildErrors = result.errors.map((e) => e.text);
+  const esbuildErrors = result.errors.map(formatEsbuildMessage);
   const tscErrors = tscPlugin?.getErrors() ?? [];
   const allErrors = [...esbuildErrors, ...tscErrors];
-  const warnings = result.warnings.map((w) => w.text);
+  const warnings = result.warnings.map(formatEsbuildMessage);
 
   return {
     success: allErrors.length === 0,

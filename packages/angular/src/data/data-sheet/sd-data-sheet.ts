@@ -211,9 +211,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
               [getItemSelectableFn]="parent.getItemSelectableFn"
             >
               @if (
-                parent.editMode === "inline" &&
-                parent.canEdit() &&
-                parent.itemPropInfo.isDeleted
+                parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
               ) {
                 <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted!">
                   <ng-template [cell]="parent.items()" let-item="item">
@@ -225,16 +223,10 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                       >
                         <ng-icon
                           [svg]="
-                            item[parent.itemPropInfo.isDeleted!]
-                              ? restoreIcon()
-                              : deleteIcon()
+                            item[parent.itemPropInfo.isDeleted!] ? restoreIcon() : deleteIcon()
                           "
                         />
-                        {{
-                          item[parent.itemPropInfo.isDeleted!]
-                            ? (restoreText() ?? "복구")
-                            : (deleteText() ?? "삭제")
-                        }}
+                        {{ item[parent.itemPropInfo.isDeleted!] ? restoreText() : deleteText() }}
                       </sd-anchor>
                     </div>
                   </ng-template>
@@ -322,10 +314,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                 >
                   <ng-template [cell]="parent.items()" let-item="item">
                     <div class="p-xs-sm tx-center">
-                      {{
-                        item[parent.itemPropInfo.lastModifiedAt!]
-                          | format: "yyyy-MM-dd HH:mm"
-                      }}
+                      {{ item[parent.itemPropInfo.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
                     </div>
                   </ng-template>
                 </sd-sheet-column>

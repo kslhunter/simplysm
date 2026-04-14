@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
-import { formatBuildMessages, printErrors, printServers } from "../../src/utils/output-utils";
+import { formatBuildMessages, formatEsbuildMessage, printErrors, printServers } from "../../src/utils/output-utils";
 import type { BuildResult } from "../../src/runtime/ResultCollector";
 
 vi.spyOn(consola, "error").mockImplementation(() => {});
@@ -23,6 +23,41 @@ describe("formatBuildMessages", () => {
     expect(result).toContain("core (node)");
     expect(result).toContain("→ err1");
     expect(result).toContain("→ err2");
+  });
+});
+
+describe("formatEsbuildMessage", () => {
+  it("notes가 없으면 text만 반환한다", () => {
+    const msg = { text: "Type error", notes: [] };
+    expect(formatEsbuildMessage(msg)).toBe("Type error");
+  });
+
+  it("notes가 1개면 text 뒤에 들여쓰기된 note를 포함한다", () => {
+    const msg = {
+      text: "Angular compilation initialization failed",
+      notes: [{ text: "Component X has error" }],
+    };
+    expect(formatEsbuildMessage(msg)).toBe(
+      "Angular compilation initialization failed\n  Component X has error",
+    );
+  });
+
+  it("notes가 여러 개면 각 note를 줄바꿈으로 연결한다", () => {
+    const msg = {
+      text: "Build failed",
+      notes: [{ text: "Error in file A" }, { text: "Error in file B" }],
+    };
+    expect(formatEsbuildMessage(msg)).toBe(
+      "Build failed\n  Error in file A\n  Error in file B",
+    );
+  });
+
+  it("esbuild Message의 추가 프로퍼티(location 등)가 있어도 무시한다", () => {
+    const msg = {
+      text: "Error",
+      notes: [{ text: "detail", location: { file: "a.ts", line: 1 } }],
+    };
+    expect(formatEsbuildMessage(msg)).toBe("Error\n  detail");
   });
 });
 

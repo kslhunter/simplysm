@@ -41,6 +41,7 @@ npm install @simplysm/sd-claude
 | `sd-session-start.sh` | SessionStart / SubagentStart hook | 세션 시작 시 `.claude/rules/*.md`와 `CLAUDE.md` 경로를 출력하여 Claude가 읽도록 안내 |
 | `sd-check-write.py` | PreToolUse hook (Write) | 기존 파일에 Write 도구 사용 시 차단하고 Edit 도구 사용을 안내 |
 | `sd-check-bash.py` | PreToolUse hook (Bash) | 금지된 명령어 차단 (git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint) |
+| `sd-check-forbidden-files.py` | PreToolUse hook (Write/Edit) | `tsconfig.json`, `eslint.config.ts` 등 보호 파일 수정 차단 |
 | `sd-statusline.py` | statusLine hook | 상태바에 `폴더 | 모델 | 컨텍스트% | 5h사용량 | 7d사용량 | $추가요금` 표시 |
 
 → See [docs/hooks.md](./docs/hooks.md) for details.

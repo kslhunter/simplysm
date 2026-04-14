@@ -2,6 +2,16 @@ import { consola } from "consola";
 import type { BuildResult } from "../runtime/ResultCollector";
 
 /**
+ * esbuild Message를 notes 포함 문자열로 변환한다.
+ */
+export function formatEsbuildMessage(
+  msg: { text: string; notes?: ReadonlyArray<{ text: string }> },
+): string {
+  if (msg.notes == null || msg.notes.length === 0) return msg.text;
+  return [msg.text, ...msg.notes.map((n) => `  ${n.text}`)].join("\n");
+}
+
+/**
  * 빌드 경고/에러 메시지를 포맷팅한다.
  */
 export function formatBuildMessages(name: string, label: string, messages: string[]): string {

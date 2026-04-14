@@ -21,11 +21,11 @@ export function useSheetCellAgent(options: {
 
   function _enterEditMode(r: number, c: number): void {
     editModeCellAddr.set({ r, c });
-    // Re-query DOM inside queueMicrotask to avoid stale reference after Angular re-render
-    queueMicrotask(() => {
+    // requestAnimationFrame: Angular가 edit=true로 re-render 한 뒤 focus해야 readonly가 해제된 상태
+    requestAnimationFrame(() => {
       const cell = options.domAccessor.getCell(r, c);
       if (cell == null) return;
-      const tabbable =cell.findFirstTabbableChild();
+      const tabbable = cell.findFirstTabbableChild();
       if (tabbable !== undefined) {
         tabbable.focus();
       }
@@ -47,11 +47,11 @@ export function useSheetCellAgent(options: {
     _exitEditMode();
     if (enterEdit) {
       editModeCellAddr.set({ r, c });
-      queueMicrotask(() => {
+      requestAnimationFrame(() => {
         _isTransitioning = false;
         const targetCell = options.domAccessor.getCell(r, c);
         if (targetCell == null) return;
-        const tabbable =targetCell.findFirstTabbableChild();
+        const tabbable = targetCell.findFirstTabbableChild();
         if (tabbable !== undefined) {
           tabbable.focus();
         }
@@ -211,7 +211,7 @@ export function useSheetCellAgent(options: {
       _enterEditMode(addr.r, addr.c);
 
       // Wait for edit mode to render, then paste
-      queueMicrotask(() => {
+      requestAnimationFrame(() => {
         const cell = options.domAccessor.getCell(addr.r, addr.c);
         if (cell == null) return;
         const inputEl = cell.querySelector<HTMLInputElement | HTMLTextAreaElement>(

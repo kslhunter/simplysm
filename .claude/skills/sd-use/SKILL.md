@@ -1,6 +1,8 @@
 ---
 name: sd-use
 description: 자연어 요청을 적절한 sd-* 스킬로 라우팅하는 스킬. "sd-use 커밋해줘", "sd-use --help" 등을 요청할 때 사용한다.
+model: sonnet[1m]
+effort: low
 ---
 
 # sd-use: SD 스킬 라우터

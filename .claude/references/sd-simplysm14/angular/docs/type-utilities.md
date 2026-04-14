@@ -143,9 +143,8 @@ select mode별 value 타입 매핑. `SdSelect`에서 export됨.
 
 ```typescript
 type SelectModeValue<T> = {
-  single: T | undefined;
   multi: T[];
-  "multi-with-header": T[];
+  single: T;
 }
 ```
 

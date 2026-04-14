@@ -38,22 +38,25 @@ class SdDropdownPopup { }
 @Component({ selector: "sd-modal" })
 class SdModal {
   open = model(false);
+  key = input<string | undefined>(undefined);
   title = input("");
   hideHeader = input(false);
   hideCloseButton = input(false);
+  headerStyle = input<string | undefined>(undefined);
   useCloseByBackdrop = input(true);
   useCloseByEscapeKey = input(true);
   float = input(false);
   fill = input(false);
   resizable = input(false);
   movable = input(false);
-  position = input<"bottom-right" | "top-right">();
-  minHeightPx = input<number>();
-  minWidthPx = input<number>();
-  heightPx = input<number>();
-  widthPx = input<number>();
-  headerStyle = input<string>();
-  noFirstControlFocusing = input(false);
+  position = input<"bottom-right" | "top-right" | undefined>(undefined);
+  minHeightPx = input<number | undefined>(undefined);
+  minWidthPx = input<number | undefined>(undefined);
+  heightPx = input<number | undefined>(undefined);
+  widthPx = input<number | undefined>(undefined);
+  actionTplRef = input<TemplateRef<any> | undefined>(undefined);
+
+  closeRequest = output<void>();
 }
 ```
 
@@ -70,7 +73,11 @@ class SdModal {
 | `resizable` | `boolean` | `false` | 크기 조절 가능 |
 | `movable` | `boolean` | `false` | 이동 가능 |
 | `position` | `"bottom-right" \| "top-right"` | - | 위치 프리셋 |
-| `noFirstControlFocusing` | `boolean` | `false` | 자동 포커스 비활성화 |
+| `actionTplRef` | `TemplateRef<any> \| undefined` | `undefined` | 헤더 액션 영역 템플릿 (SdModalProvider에서 설정) |
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `closeRequest` | `void` | 배경 클릭, ESC 키, 닫기 버튼으로 닫기 요청 시 발생 |
 
 ### `SdPromptModal`
 
@@ -109,9 +116,9 @@ class SdConfirmModal implements SdModalContentDef<boolean> {
 class SdToast {
   open = model(false);
   useProgress = input(false, { transform: booleanAttribute });
+  theme = input<SdToastTheme>("info");
   progress = model(0);
-  theme = input<SdToastTheme>();
-  message = signal<string>("");
+  message = model<string | undefined>(undefined);
 }
 ```
 
@@ -136,13 +143,15 @@ busy 표시 컨테이너 컴포넌트. spinner/bar/cube 3가지 타입을 지원
 @Component({ selector: "sd-busy-container" })
 class SdBusyContainer {
   busy = input(false, { transform: booleanAttribute });
-  type = input<SdBusyType>("bar");
-  message = input<string>();
+  message = input<string | undefined>(undefined);
+  type = input<SdBusyType | undefined>(undefined);
+  progressPercent = input<number | undefined>(undefined);
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
 | `busy` | `boolean` | `false` | busy 상태 |
-| `type` | `SdBusyType` | `"bar"` | 표시 유형 (spinner, bar, cube) |
-| `message` | `string \| undefined` | - | busy 메시지 |
+| `message` | `string \| undefined` | `undefined` | busy 메시지 |
+| `type` | `SdBusyType \| undefined` | `undefined` | 표시 유형 (spinner, bar, cube). undefined이면 부모의 SdBusyProvider.type 사용 |
+| `progressPercent` | `number \| undefined` | `undefined` | 진행률 (0-100). 설정 시 progress bar로 표시 |

@@ -63,6 +63,8 @@ Bash 출력이 길면 잘리므로 **반드시 파일로 리다이렉트**한 �
 | 3    | lint, eslint               | 린트      |
 | 4    | test, jest, vitest, mocha  | 테스트    |
 
+**typecheck와 lint는 동시수행할 수 있는 방법이 있다면 하나로 묶어 동시수행**: Step 2 + Step 3가 하나의 Step으로 병합됨
+
 ### 1-3. 탐지 결과 표시
 
 ```

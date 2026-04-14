@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 151 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 154 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -59,7 +59,7 @@ src/
 │   ├── kanban/           SdKanbanBoard, SdKanban, SdKanbanLane
 │   ├── permission-table/ SdPermissionTable
 │   ├── shared-data/      SdSharedDataSelect/SelectButton/SelectList, matchesSearchText
-│   ├── sheet/            SdSheet, SdSheetColumn, SdSheetConfigModal
+│   ├── sheet/            SdSheet, SdSheetColumn, SdSheetColumnCellTemplate, SdSheetConfigModal
 │   └── state-preset/     SdStatePreset
 └── features/             <- 독립 기능 컴포넌트 (다양한 계층 의존)
     ├── address/          SdAddressSearchModal (Daum Postcode)
@@ -240,7 +240,7 @@ type WithOptional<T, K extends keyof T>
 
 `tsconfig.json`에서 strict 옵션 전부 활성화:
 - `strictTemplates`, `strictInjectionParameters`, `strictInputAccessModifiers`
-- `strictStandalone`, `typeCheckHostBindings`, `forbidOrphanComponents`
+- `strictStandalone`, `typeCheckHostBindings`
 - `extendedDiagnostics.defaultCategory: "error"`
 - `customConditions: ["browser"]` (browser-specific import resolution)
 
@@ -252,7 +252,7 @@ type WithOptional<T, K extends keyof T>
 
 테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/busy/`, `tests/modal/`, `tests/sheet/` 등 기능 단위 플랫 구조. `tests/scss/`는 SCSS 컴파일 결과 검증.
 
-148개의 spec 파일.
+151개의 spec 파일.
 
 ### Test Pattern
 

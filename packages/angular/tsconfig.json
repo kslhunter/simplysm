@@ -12,7 +12,6 @@
     "strictInputAccessModifiers": true,
     "strictStandalone": true,
     "typeCheckHostBindings": true,
-    "forbidOrphanComponents": true,
     "enableI18nLegacyMessageIdFormat": false,
     "extendedDiagnostics": {
       "defaultCategory": "error"

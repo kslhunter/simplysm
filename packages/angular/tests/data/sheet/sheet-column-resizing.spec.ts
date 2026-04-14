@@ -18,6 +18,10 @@ function setup(configInitial?: SdSheetConfig) {
     getCell: () => null,
     getColumnResizeIndicator: () => document.createElement("div"),
     getLastDepthFixedHeaders: () => [],
+    getFocusRowIndicator: () => document.createElement("div"),
+    getFocusCellIndicator: () => document.createElement("div"),
+    getSelectRowIndicatorContainer: () => document.createElement("div"),
+    getSelectRowIndicators: () => [],
   };
 
   let result!: ReturnType<typeof injectSheetColumnResizing>;

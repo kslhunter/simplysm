@@ -407,7 +407,7 @@ export interface SdClientPackageConfig {
 | `capacitor` | `SdCapacitorConfig?` | Capacitor 설정 |
 | `electron` | `SdElectronConfig?` | Electron 설정 |
 | `configs` | `Record<string, unknown>?` | 런타임 설정 (빌드 시 dist/.config.json으로 기록) |
-| `exclude` | `string[]?` | Vite optimizeDeps에서 제외하고 Capacitor/Electron package.json에 추가할 패키지 |
+| `exclude` | `string[]?` | Capacitor/Electron package.json에 추가할 패키지 |
 | `browserSupport` | `SdBrowserSupportConfig?` | 브라우저 지원 설정 |
 | `pwa` | `false \| SdPwaConfig?` | PWA 설정. false이면 비활성화. 미지정 시 기본값으로 활성화 |
 

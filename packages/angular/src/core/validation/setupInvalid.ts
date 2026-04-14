@@ -66,6 +66,7 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement): HTMLInpu
   newEl.name = Uuid.generate().toString();
   newEl.className = "sd-invalid-input";
   newEl.tabIndex = -1;
+  newEl.autocomplete = "off";
   setSafeStyle(renderer, newEl, {
     position: "absolute",
     left: "2px",

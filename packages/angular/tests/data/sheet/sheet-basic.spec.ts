@@ -20,11 +20,11 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const th = host.querySelector("th") as HTMLElement;
+    const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
     expect(th).toBeTruthy();
     expect(th.textContent.trim()).toBe("이름");
 
-    const tds = host.querySelectorAll("tbody tr td");
+    const tds = host.querySelectorAll("tbody tr td:not(._feature-cell)");
     expect(tds.length).toBe(2); // 2 rows, 1 col each
     // Each td should have width style of 200px
     const firstTd = tds[0] as HTMLElement;
@@ -42,14 +42,14 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     const headerRows = host.querySelectorAll("thead tr");
     expect(headerRows.length).toBe(2);
 
-    // First row: 그룹A with colspan=2
-    const firstRowCells = headerRows[0].querySelectorAll("th");
+    // First row: feature-cell + 그룹A with colspan=2
+    const firstRowCells = headerRows[0].querySelectorAll("th:not(._feature-cell)");
     expect(firstRowCells.length).toBe(1);
     expect(firstRowCells[0].textContent.trim()).toBe("그룹A");
     expect(firstRowCells[0].getAttribute("colspan")).toBe("2");
 
-    // Second row: 세부1, 세부2
-    const secondRowCells = headerRows[1].querySelectorAll("th");
+    // Second row: 세부1, 세부2 (no feature-cell in non-first row)
+    const secondRowCells = headerRows[1].querySelectorAll("th:not(._feature-cell)");
     expect(secondRowCells.length).toBe(2);
     expect(secondRowCells[0].textContent.trim()).toBe("세부1");
     expect(secondRowCells[1].textContent.trim()).toBe("세부2");
@@ -63,10 +63,10 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const tfoot = host.querySelector("tfoot");
-    expect(tfoot).toBeTruthy();
-    const footCells = tfoot!.querySelectorAll("td");
-    expect(footCells.length).toBe(1);
+    const summaryRow = host.querySelector("thead tr._summary-row");
+    expect(summaryRow).toBeTruthy();
+    const summaryCells = summaryRow!.querySelectorAll("th:not(._feature-cell)");
+    expect(summaryCells.length).toBe(1);
   });
 
   it("Scenario: 컬럼 숨김 — hidden=true인 컬럼이 테이블에서 제외된다", async () => {
@@ -77,12 +77,12 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const ths = host.querySelectorAll("thead th");
+    const ths = host.querySelectorAll("thead th:not(._feature-cell)");
     expect(ths.length).toBe(1);
     expect(ths[0].textContent.trim()).toBe("이름");
 
-    // Only 1 column per row
-    const firstRowTds = host.querySelectorAll("tbody tr:first-child td");
+    // Only 1 column per row (excluding feature cell)
+    const firstRowTds = host.querySelectorAll("tbody tr:first-child td:not(._feature-cell)");
     expect(firstRowTds.length).toBe(1);
   });
 
@@ -94,12 +94,12 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const ths = host.querySelectorAll("thead th");
+    const ths = host.querySelectorAll("thead th:not(._feature-cell)");
     // Both columns should render (collapse is not hidden)
     expect(ths.length).toBe(2);
 
     // The collapsed column's td should have zero width
-    const tds = host.querySelectorAll("tbody tr:first-child td");
+    const tds = host.querySelectorAll("tbody tr:first-child td:not(._feature-cell)");
     expect(tds.length).toBe(2);
     const collapsedTd = tds[1] as HTMLElement;
     expect(collapsedTd.style.width).toBe("0px");
@@ -114,7 +114,7 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const ths = host.querySelectorAll("thead th");
+    const ths = host.querySelectorAll("thead th:not(._feature-cell)");
     expect(ths.length).toBe(1);
 
     const trs = host.querySelectorAll("tbody tr");
@@ -129,7 +129,7 @@ describe("Feature 6.1 Slice 1: 기본 렌더링", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const td = host.querySelector("tbody td") as HTMLElement;
+    const td = host.querySelector("tbody td:not(._feature-cell)") as HTMLElement;
     expect(td.classList.contains("custom-class")).toBe(true);
     expect(td.style.color).toBe("red");
   });

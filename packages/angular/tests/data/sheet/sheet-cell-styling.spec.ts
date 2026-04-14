@@ -63,7 +63,7 @@ const testItem: Item = { name: "Alice" };
 
 describe("useSheetCellStyling", () => {
   describe("Rule: fixed 컬럼 스타일", () => {
-    it("fixed 컬럼 — sticky position과 left offset이 적용된다", () => {
+    it("fixed 컬럼 — left offset이 적용된다", () => {
       const fixedMap = new Map([["name", 0]]);
       const { styling } = setup({
         columnDefs: [makeColDef({ key: "name", fixed: true })],
@@ -78,19 +78,15 @@ describe("useSheetCellStyling", () => {
         colDef: makeColDef({ key: "name", fixed: true }),
       });
 
-      expect(style).toContain("position: sticky");
       expect(style).toContain("left: 0px");
-      expect(style).toContain("z-index: 3");
     });
 
-    it("getFixedCellStyle — tfoot용 sticky 스타일 반환", () => {
+    it("getFixedCellStyle — left offset 스타일 반환", () => {
       const fixedMap = new Map([["name", 50]]);
       const { styling } = setup({ fixedLeftMap: fixedMap });
 
       const style = styling.getFixedCellStyle(makeColDef({ key: "name" }));
-      expect(style).toContain("position: sticky");
       expect(style).toContain("left: 50px");
-      expect(style).toContain("z-index: 3");
     });
 
     it("non-fixed 컬럼 — fixed 스타일이 적용되지 않는다", () => {

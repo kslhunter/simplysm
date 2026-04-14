@@ -18,9 +18,11 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
-      expect(th.style.color).toBe("red");
-      expect(th.style.fontWeight).toBe("bold");
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
+      // headerStyle is now on the inner div inside ._headerContent
+      const innerDiv = th.querySelector("._headerContent > .flex-fill") as HTMLElement;
+      expect(innerDiv.getAttribute("style")).toContain("color: red");
+      expect(innerDiv.getAttribute("style")).toContain("font-weight: bold");
     });
 
     it("Scenario: headerStyle이 기존 스타일(width)과 합쳐진다", async () => {
@@ -31,8 +33,10 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
-      expect(th.style.color).toBe("red");
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
+      // headerStyle is on the inner div, width is on th
+      const innerDiv = th.querySelector("._headerContent > .flex-fill") as HTMLElement;
+      expect(innerDiv.getAttribute("style")).toContain("color: red");
       expect(th.style.width).toBe("200px");
     });
 
@@ -44,10 +48,11 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.style.width).toBe("200px");
-      // headerStyle이 없으므로 추가 스타일 없음
-      expect(th.style.color).toBe("");
+      // headerStyle이 없으므로 inner div에 style 속성 없음
+      const innerDiv = th.querySelector("._headerContent > .flex-fill") as HTMLElement;
+      expect(innerDiv.getAttribute("style")).toBeNull();
     });
   });
 
@@ -60,7 +65,7 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.getAttribute("title")).toBe("이 컬럼은 수량입니다");
     });
 
@@ -72,7 +77,7 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.classList.contains("help")).toBe(true);
     });
 
@@ -84,7 +89,7 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.getAttribute("title")).toBe("이름");
     });
 
@@ -96,7 +101,7 @@ describe("Feature 1.1 Slice 1: headerStyle + tooltip 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.classList.contains("help")).toBe(false);
     });
   });
@@ -112,13 +117,13 @@ describe("Feature 1.1 Slice 2: headerTplRef 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       const customHeader = th.querySelector("em.custom-header");
       expect(customHeader).toBeTruthy();
       expect(customHeader!.textContent).toBe("커스텀 헤더");
-      // 기본 텍스트 span은 없어야 한다
-      const defaultSpan = th.querySelector("span");
-      expect(defaultSpan).toBeFalsy();
+      // 기본 텍스트 pre는 없어야 한다 (커스텀 템플릿이 대체)
+      const defaultPre = th.querySelector("._p-sheet pre");
+      expect(defaultPre).toBeFalsy();
     });
 
     it("Scenario: headerTplRef 미설정 시 기본 텍스트가 렌더링된다", async () => {
@@ -129,7 +134,7 @@ describe("Feature 1.1 Slice 2: headerTplRef 복원", () => {
       await fixture.whenStable();
 
       const host = fixture.nativeElement as HTMLElement;
-      const th = host.querySelector("thead th") as HTMLElement;
+      const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
       expect(th.textContent.trim()).toContain("이름");
     });
   });

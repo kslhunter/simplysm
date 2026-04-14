@@ -105,8 +105,18 @@ class SdSidebar { }
 
 ```typescript
 @Component({ selector: "sd-sidebar-menu" })
-class SdSidebarMenu { }
+class SdSidebarMenu {
+  menus = input<SdMenu[]>([]);
+  layout = input<"accordion" | "flat">();
+  getMenuIsSelectedFn = input<(menu: SdMenu) => boolean>();
+}
 ```
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `menus` | `SdMenu[]` | `[]` | 메뉴 항목 |
+| `layout` | `"accordion" \| "flat" \| undefined` | `undefined` | 레이아웃 모드 |
+| `getMenuIsSelectedFn` | `((menu) => boolean) \| undefined` | `undefined` | 커스텀 메뉴 선택 여부 함수 |
 
 ### `SdSidebarUser`
 
@@ -162,8 +172,16 @@ class SdTopbar { }
 
 ```typescript
 @Component({ selector: "sd-topbar-menu" })
-class SdTopbarMenu { }
+class SdTopbarMenu {
+  menus = input<SdMenu[]>([]);
+  getMenuIsSelectedFn = input<(menu: SdMenu) => boolean>();
+}
 ```
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `menus` | `SdMenu[]` | `[]` | 메뉴 항목 |
+| `getMenuIsSelectedFn` | `((menu) => boolean) \| undefined` | `undefined` | 커스텀 메뉴 선택 여부 함수 |
 
 ### `SdTopbarUser`
 

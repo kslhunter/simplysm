@@ -15,13 +15,12 @@ import { SdSheetColumn } from "./sd-sheet-column";
 import { SdCheckbox } from "../../controls/checkbox/sd-checkbox";
 import { NgIcon } from "@ng-icons/core";
 import {
-  tablerArrowUp,
-  tablerArrowDown,
-  tablerChevronRight,
-  tablerChevronDown,
-  tablerChevronsRight,
-  tablerChevronsDown,
+  tablerArrowRight,
+  tablerArrowsSort,
+  tablerCaretRight,
   tablerSettings,
+  tablerSortAscending,
+  tablerSortDescending,
 } from "@ng-icons/tabler-icons";
 import { useSheetLayoutEngine } from "./useSheetLayoutEngine";
 import { useSheetColumnFixing } from "./useSheetColumnFixing";
@@ -36,12 +35,15 @@ import type {
   SdSheetHeaderDef,
   SdSheetItemKeydownEventParam,
 } from "./types";
+import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
 import { injectSdSystemConfigResource } from "../../core/config/injectSdSystemConfigResource";
 import { injectSheetDomAccessor } from "./injectSheetDomAccessor";
 import { useSheetCellAgent } from "./useSheetCellAgent";
 import { injectSheetColumnResizing } from "./injectSheetColumnResizing";
 import { useSheetDisplayPipeline } from "./useSheetDisplayPipeline";
 import { useSheetCellStyling } from "./useSheetCellStyling";
+import { useSheetFocusIndicator } from "./useSheetFocusIndicator";
+import { injectSheetSelectRowIndicator } from "./injectSheetSelectRowIndicator";
 import { SdModalProvider } from "../../core/modal/sd-modal.provider";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 
@@ -52,78 +54,139 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
   standalone: true,
   imports: [NgTemplateOutlet, SdCheckbox, NgIcon, SdPagination, SdAnchor, SdButton],
   template: `
-    @if ((key() || effectivePageCount() > 1) && !hideConfigBar()) {
-      <div class="_tool">
+    @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
+      <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
-          <sd-button (click)="onConfigButtonClick()">
+          <sd-button [theme]="'link-primary'" [size]="'sm'" (click)="onConfigButtonClick()">
             <ng-icon [svg]="icons.tablerSettings" />
           </sd-button>
         }
         @if (effectivePageCount() > 1) {
-          <sd-pagination [(currentPage)]="currentPage" [totalPageCount]="effectivePageCount()" [visiblePageCount]="visiblePageCount()" />
+          <sd-pagination
+            class="flex-fill"
+            [(currentPage)]="currentPage"
+            [totalPageCount]="effectivePageCount()"
+            [visiblePageCount]="visiblePageCount()"
+          />
         }
       </div>
     }
-    <div class="_container" [style]="contentStyle()">
-      <table>
+
+    <div class="_sheet-container flex-fill" (scroll.passive)="onContainerScroll()" [style]="contentStyle()">
+      <table (sdResize)="onTableResize($event)">
         <thead>
           @for (row of layout.headerDefTable(); track $index; let rowIdx = $index) {
             <tr>
-              @if (expanding.hasExpandable() && rowIdx === 0) {
+              @if (rowIdx === 0) {
                 <th
-                  class="_expand-col"
-                  [attr.rowspan]="layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null"
-                >
-                  <sd-anchor (click)="expanding.toggleAll()">
-                    <ng-icon [svg]="expanding.isAllExpanded() ? icons.tablerChevronsDown : icons.tablerChevronsRight" />
-                  </sd-anchor>
-                </th>
-              }
-              @if (selectMode() && rowIdx === 0) {
-                <th
-                  class="_select-col"
-                  [attr.rowspan]="layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null"
+                  class="_fixed _feature-cell _last-depth"
+                  [attr.rowspan]="
+                    layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
+                  "
                 >
                   @if (selectMode() === "multi") {
                     <sd-checkbox
                       [value]="selection.isAllSelected()"
                       (click)="selection.toggleAll()"
                       [inline]="true"
-                      [inset]="true"
                     />
                   }
                 </th>
+                @if (expanding.hasExpandable()) {
+                  <th
+                    class="_fixed _feature-cell _last-depth"
+                    [attr.rowspan]="
+                      layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
+                    "
+                  >
+                    <ng-icon
+                      [svg]="icons.tablerCaretRight"
+                      [class.tx-theme-primary-default]="expanding.isAllExpanded()"
+                      [style.transform]="expanding.isAllExpanded() ? 'rotate(90deg)' : undefined"
+                      (click)="expanding.toggleAll()"
+                    />
+                  </th>
+                }
               }
               @for (cell of row; track $index) {
-                <th
-                  [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
-                  [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
-                  [attr.aria-sort]="getAriaSortValue(cell)"
-                  [attr.title]="cell.colDef?.tooltip ?? cell.text"
-                  [class.help]="cell.colDef?.tooltip"
-                  [style]="getHeaderCellStyle(cell)"
-                  (click)="onHeaderClick($event, cell)"
-                >
-                  @if (cell.colDef && getColumnHeaderTpl(cell.colDef.key); as headerTpl) {
-                    <ng-template [ngTemplateOutlet]="headerTpl" />
-                  } @else {
-                    <span>{{ cell.text }}</span>
-                  }
-                  @if (cell.colDef && getSortDef(cell.colDef.key); as sortDef) {
-                    <ng-icon
-                      class="_sort-icon"
-                      [svg]="sortDef.desc ? icons.tablerArrowDown : icons.tablerArrowUp"
-                    />
-                    @if (sortDef.indexText) {
-                      <span class="_sort-index">{{ sortDef.indexText }}</span>
+                @if (!cell.isLastRow) {
+                  <th
+                    [class._fixed]="cell.colDef?.fixed"
+                    [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
+                    [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
+                    [attr.title]="cell.text"
+                    [style.left.px]="
+                      cell.colDef?.fixed ? fixing.fixedLeftMap().get(cell.colDef!.key) : null
+                    "
+                  >
+                    <div class="_p-sheet">
+                      <pre>{{ cell.text }}</pre>
+                    </div>
+                  </th>
+                } @else {
+                  <th
+                    [class._fixed]="cell.colDef?.fixed"
+                    class="_last-depth"
+                    [class._sort]="cell.colDef && !cell.colDef.disableSorting"
+                    [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
+                    [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
+                    [attr.title]="cell.colDef?.tooltip ?? cell.text"
+                    [class.help]="cell.colDef?.tooltip"
+                    [style]="getHeaderCellStyle(cell)"
+                    (click)="onHeaderClick($event, cell)"
+                  >
+                    <div class="_headerContent flex-row">
+                      @if (cell.colDef && getColumnHeaderTpl(cell.colDef.key); as headerTpl) {
+                        <div class="flex-fill" [attr.style]="cell.colDef.headerStyle">
+                          <ng-template [ngTemplateOutlet]="headerTpl" />
+                        </div>
+                      } @else {
+                        <div class="flex-fill _p-sheet" [attr.style]="cell.colDef?.headerStyle">
+                          <pre>{{ cell.text }}</pre>
+                        </div>
+                      }
+                      @if (cell.colDef && !cell.colDef.disableSorting) {
+                        <div class="_sort-icon">
+                          @if (getSortDef(cell.colDef.key); as sortDef) {
+                            @if (sortDef.desc) {
+                              <ng-icon [svg]="icons.tablerSortDescending" />
+                            } @else {
+                              <ng-icon [svg]="icons.tablerSortAscending" />
+                            }
+                            @if (sortDef.indexText) {
+                              <sub>{{ sortDef.indexText }}</sub>
+                            }
+                          } @else {
+                            <ng-icon [svg]="icons.tablerArrowsSort" class="tx-trans-lightest" />
+                          }
+                        </div>
+                      }
+                    </div>
+                    @if (cell.colDef && !cell.colDef.disableResizing) {
+                      <div
+                        class="_resizer"
+                        (mousedown)="onResizerMousedown($event, cell.colDef)"
+                        (dblclick)="onResizerDblClick($event, cell.colDef)"
+                      ></div>
                     }
-                  }
-                  @if (cell.isLastRow && cell.colDef && !cell.colDef.disableResizing) {
-                    <div
-                      class="_resizer"
-                      (mousedown)="onResizerMousedown($event, cell.colDef)"
-                      (dblclick)="onResizerDblClick($event, cell.colDef)"
-                    ></div>
+                  </th>
+                }
+              }
+            </tr>
+          }
+          @if (layout.hasSummary()) {
+            <tr class="_summary-row">
+              <th class="_fixed _feature-cell"></th>
+              @if (expanding.hasExpandable()) {
+                <th class="_fixed _feature-cell"></th>
+              }
+              @for (colDef of layout.columnDefs(); track colDef.key) {
+                <th
+                  [class._fixed]="colDef.fixed"
+                  [style.left.px]="colDef.fixed ? fixing.fixedLeftMap().get(colDef.key) : null"
+                >
+                  @if (getColumnSummaryTpl(colDef.key); as tpl) {
+                    <ng-template [ngTemplateOutlet]="tpl" />
                   }
                 </th>
               }
@@ -131,39 +194,62 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
           }
         </thead>
         <tbody>
-          @for (item of displayItems(); track trackByFn() ? trackByFn()!(item, $index) : $index; let rowIdx = $index) {
+          @for (
+            item of displayItems();
+            track trackByFn() ? trackByFn()!(item, $index) : $index;
+            let rowIdx = $index
+          ) {
             <tr
-              [attr.aria-selected]="selection.isSelected(item) ? 'true' : null"
-              [attr.aria-expanded]="getAriaExpanded(item)"
-              [style.background]="selection.isSelected(item) ? 'var(--trans-lighter)' : null"
+              [attr.data-r]="rowIdx"
               (click)="onRowClick(item)"
               (keydown)="onItemKeydown($event, item)"
             >
-              @if (expanding.hasExpandable()) {
-                <td class="_expand-col">
-                  @if (getItemDef(item).hasChildren) {
-                    <sd-anchor (click)="onExpandClick($event, item)">
-                      <ng-icon [svg]="isExpanded(item) ? icons.tablerChevronDown : icons.tablerChevronRight" />
-                    </sd-anchor>
-                  }
-                </td>
-              }
-              @if (selectMode()) {
-                <td class="_select-col">
+              <td class="_fixed _feature-cell">
+                @if (selectMode() === "multi") {
                   <sd-checkbox
                     [value]="selection.isSelected(item)"
                     [canChangeFn]="selection.getCanChangeFn(item)"
                     (click)="onSelectCheckboxClick($event, item)"
+                    (mousedown)="onSelectorMouseDown($event, rowIdx)"
                     [inline]="true"
-                    [inset]="true"
                     [attr.title]="getSelectableTooltip(item)"
                   />
+                } @else if (selectMode() === "single") {
+                  @let selectable = selection.getSelectable(item);
+                  @if (selectable === true) {
+                    <sd-anchor
+                      [theme]="selection.isSelected(item) ? 'primary' : 'gray'"
+                      (click)="onSelectCheckboxClick($event, item)"
+                    >
+                      <ng-icon [svg]="icons.tablerArrowRight" />
+                    </sd-anchor>
+                  }
+                }
+              </td>
+              @if (expanding.hasExpandable()) {
+                <td class="_fixed _feature-cell">
+                  @let itemDef = getItemDef(item);
+                  @if (itemDef.depth > 0) {
+                    <div
+                      class="_depth-indicator"
+                      [style.margin-left.em]="itemDef.depth - 0.5"
+                    ></div>
+                  }
+                  @if (itemDef.hasChildren) {
+                    <ng-icon
+                      [svg]="icons.tablerCaretRight"
+                      [style.transform]="isExpanded(item) ? 'rotate(90deg)' : undefined"
+                      [class.tx-theme-primary-default]="isExpanded(item)"
+                      (click)="onExpandClick($event, item)"
+                    />
+                  }
                 </td>
               }
               @for (colDef of layout.columnDefs(); track colDef.key; let colIdx = $index) {
                 <td
                   [attr.data-r]="rowIdx"
                   [attr.data-c]="colIdx"
+                  [class._fixed]="colDef.fixed"
                   [class]="getDataCellClass(item, colDef, rowIdx, colIdx)"
                   [style]="getCellStyleWithIndent(item, colDef, colIdx)"
                   (click)="onCellClick($event, item)"
@@ -179,7 +265,7 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                         item: item,
                         index: rowIdx,
                         depth: getChildrenFn() !== undefined ? getItemDef(item).depth : 0,
-                        edit: cellAgent.isCellEditMode({ r: rowIdx, c: colIdx })
+                        edit: cellAgent.isCellEditMode({ r: rowIdx, c: colIdx }),
                       }"
                     />
                   }
@@ -188,154 +274,256 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
             </tr>
           }
         </tbody>
-        @if (layout.hasSummary()) {
-          <tfoot>
-            <tr>
-              @if (expanding.hasExpandable()) {
-                <td class="_expand-col"></td>
-              }
-              @if (selectMode()) {
-                <td class="_select-col"></td>
-              }
-              @for (colDef of layout.columnDefs(); track colDef.key) {
-                <td [style]="getFixedCellStyle(colDef)">
-                  @if (getColumnSummaryTpl(colDef.key); as tpl) {
-                    <ng-template [ngTemplateOutlet]="tpl" />
-                  }
-                </td>
-              }
-            </tr>
-          </tfoot>
-        }
       </table>
-      <div class="_resize-indicator" [style.display]="_isResizing() ? 'block' : 'none'" [style.left.px]="_resizeIndicatorLeft()"></div>
+
+      <div class="_focus-row-indicator">
+        <div class="_focus-cell-indicator"></div>
+      </div>
+      <div
+        class="_resize-indicator"
+        [style.display]="_isResizing() ? 'block' : 'none'"
+        [style.left.px]="_resizeIndicatorLeft()"
+      ></div>
+      <div class="_select-row-indicator-container"></div>
     </div>
   `,
   styles: [
     /* language=SCSS */ `
-      sd-sheet {
-        display: block;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid var(--trans-lighter);
+      @use "../../../scss/commons/mixins";
 
-        &[data-sd-inset="true"] {
-          border: none;
-        }
+      $z-index-fixed: 2;
+      $z-index-head: 3;
+      $z-index-head-fixed: 4;
+      $z-index-select-row-indicator: 5;
+      $z-index-focus-row-indicator: 6;
+      $z-index-resize-indicator: 7;
+
+      $border-color: var(--theme-gray-lighter);
+      $border-color-dark: var(--theme-gray-lighter);
+      $border-color-darker: var(--theme-gray-light);
+
+      $border-radius: var(--border-radius-default);
+
+      sd-sheet {
+        border: 1px solid $border-color-dark;
+        border-radius: $border-radius;
 
         > ._tool {
-          display: flex;
-          align-items: center;
-          gap: var(--gap-sm);
-          padding: var(--gap-sm) var(--gap-default);
-          border-bottom: 1px solid var(--trans-lighter);
-          background: var(--theme-secondary-lightest);
+          background: var(--control-color);
+          border-top-left-radius: $border-radius;
+          border-top-right-radius: $border-radius;
+          border-bottom: 1px solid $border-color-dark;
         }
 
-        > ._container {
+        > ._sheet-container {
+          position: relative;
+          background: var(--sheet-bg);
+          border-bottom-left-radius: $border-radius;
+          border-bottom-right-radius: $border-radius;
           overflow: auto;
-          width: 100%;
-          height: 100%;
 
           > table {
-            width: 100%;
-            border-collapse: collapse;
+            border-spacing: 0;
             table-layout: fixed;
+            margin-right: 2px;
+            margin-bottom: 2px;
+            border-bottom-right-radius: $border-radius;
 
-            > thead > tr > th {
+            > * > tr > *:last-child {
+              border-right: 1px solid $border-color-dark;
+            }
+
+            > * > tr:last-child > * {
+              border-bottom: 1px solid $border-color-dark;
+            }
+
+            > *:last-child > tr:last-child > td:last-child {
+              border-bottom-right-radius: $border-radius;
+              overflow: hidden;
+            }
+
+            > * > tr > * {
+              border-right: 1px solid $border-color;
+              border-bottom: 1px solid $border-color;
+              white-space: nowrap;
+              overflow: hidden;
+              padding: 0;
+              position: relative;
+
+              &._fixed:has(+ :not(._fixed)) + :not(._fixed):not([data-c="0"]) {
+                border-left: 1px solid $border-color;
+              }
+
+              &._feature-cell {
+                background: var(--theme-gray-lightest);
+                min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph) * 2);
+                padding: var(--sheet-pv) var(--sheet-ph);
+                text-align: left;
+
+                > ng-icon {
+                  cursor: pointer;
+                  color: var(--text-trans-lightest);
+                }
+              }
+
+              &._fixed {
+                position: sticky;
+                left: 0;
+
+                &:has(+ :not(._fixed)) {
+                  border-right: 1px solid $border-color-dark;
+                }
+              }
+            }
+
+            > thead {
               position: sticky;
               top: 0;
-              z-index: 2;
-              background: var(--theme-secondary-lightest);
-              border: 1px solid var(--trans-lighter);
-              padding: var(--gap-sm) var(--gap-default);
-              text-align: left;
-              font-weight: bold;
-              white-space: nowrap;
-              cursor: pointer;
-              user-select: none;
+              z-index: $z-index-head;
 
-              &:not(._select-col):not(._expand-col) {
+              > tr > th {
                 position: relative;
-              }
-
-              > ._sort-icon {
-                font-size: 0.85em;
+                background: var(--theme-gray-lightest);
                 vertical-align: middle;
-                margin-left: 0.25em;
+
+                &._fixed {
+                  z-index: $z-index-head-fixed;
+                }
+
+                &._last-depth {
+                  border-bottom: 1px solid $border-color-dark;
+                }
+
+                &._feature-cell {
+                  border-bottom: 1px solid $border-color-dark;
+                }
+
+                &._sort {
+                  cursor: pointer;
+
+                  &:hover {
+                    text-decoration: underline;
+                  }
+                }
+
+                > ._headerContent {
+                  > ._sort-icon {
+                    padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
+                    background-color: var(--theme-gray-lightest);
+                  }
+                }
+
+                > ._resizer {
+                  position: absolute;
+                  top: 0;
+                  right: 0;
+                  bottom: 0;
+                  width: 2px;
+                  cursor: ew-resize;
+                }
               }
 
-              > ._sort-index {
-                font-size: 0.75em;
-                vertical-align: super;
-              }
+              &:has(> tr._summary-row) {
+                > tr > th._last-depth {
+                  border-bottom: 1px solid $border-color;
+                }
 
-              > ._resizer {
-                position: absolute;
-                top: 0;
-                right: -2px;
-                width: 5px;
-                height: 100%;
-                cursor: col-resize;
-                z-index: 3;
+                > tr._summary-row > th {
+                  background: var(--theme-warning-lightest);
+                  text-align: left;
+                  border-bottom: 1px solid $border-color-dark;
+                }
               }
             }
 
             > tbody > tr > td {
-              border: 1px solid var(--trans-lighter);
-              padding: var(--gap-sm) var(--gap-default);
-              white-space: nowrap;
+              background: var(--control-color);
+              vertical-align: top;
 
-              &:focus {
-                outline: 2px solid var(--theme-primary-default);
-                outline-offset: -2px;
+              &._fixed {
+                z-index: $z-index-fixed;
+              }
+
+              > ._depth-indicator {
+                display: inline-block;
+                margin-top: 0.4em;
+                width: 0.5em;
+                height: 0.5em;
+                border-left: 1px solid var(--text-trans-default);
+                border-bottom: 1px solid var(--text-trans-default);
+                vertical-align: top;
               }
             }
+          }
 
-            > thead > tr > th._select-col,
-            > tbody > tr > td._select-col {
-              width: 2em;
-              min-width: 2em;
-              max-width: 2em;
-              text-align: center;
-              padding: 0;
-            }
+          > ._focus-row-indicator {
+            display: none;
+            position: absolute;
+            pointer-events: none;
+            background: rgba(158, 158, 158, 0.1);
+            z-index: $z-index-focus-row-indicator;
 
-            > thead > tr > th._expand-col,
-            > tbody > tr > td._expand-col {
-              width: 2em;
-              min-width: 2em;
-              max-width: 2em;
-              text-align: center;
-              padding: 0;
-            }
-
-            > tfoot > tr > td {
-              position: sticky;
-              bottom: 0;
-              z-index: 2;
-              background: var(--theme-secondary-lightest);
-              border: 1px solid var(--trans-lighter);
-              padding: var(--gap-sm) var(--gap-default);
+            > ._focus-cell-indicator {
+              position: absolute;
+              border: 2px solid var(--theme-primary-default);
+              border-radius: $border-radius;
             }
           }
 
           > ._resize-indicator {
+            display: none;
             position: absolute;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background: var(--theme-primary-default);
-            z-index: 10;
             pointer-events: none;
+            top: 0;
+            height: 100%;
+            border: 1px dotted $border-color-darker;
+            z-index: $z-index-resize-indicator;
           }
+
+          > ._select-row-indicator-container {
+            display: none;
+            position: absolute;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: $z-index-select-row-indicator;
+
+            > ._select-row-indicator {
+              display: block;
+              left: 0;
+              position: absolute;
+              pointer-events: none;
+              background: var(--theme-primary-default);
+              opacity: 0.1;
+            }
+          }
+        }
+
+        ._p-sheet {
+          padding: var(--sheet-pv) var(--sheet-ph);
+        }
+
+        &[data-sd-focus-mode="row"] {
+          > ._sheet-container > ._focus-row-indicator > ._focus-cell-indicator {
+            display: none !important;
+          }
+        }
+
+        &[data-sd-inset="true"] {
+          border: none;
+          border-radius: 0;
         }
       }
     `,
   ],
   host: {
+    "class": "flex-column fill",
     "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-focus-mode]": "focusMode()",
     "(keydown.capture)": "onKeydownCapture($event)",
+    "(focus.capture)": "onFocusCapture($event)",
     "(dblclick)": "onDblClick($event)",
     "(blur.capture)": "onBlurCapture($event)",
   },
@@ -442,6 +630,18 @@ export class SdSheet<T> {
   getCellStyleWithIndent = this._styling.getCellStyleWithIndent;
   getDataCellClass = this._styling.getDataCellClass;
 
+  // Focus indicator
+  private readonly _focusIndicator = useSheetFocusIndicator({
+    domAccessor: this.domAccessor,
+  });
+
+  // Select row indicator
+  private readonly _selectRowIndicator = injectSheetSelectRowIndicator<T>({
+    domAccessor: this.domAccessor,
+    selectedItems: this.selectedItems,
+    displayItems: this.displayItems,
+  });
+
   // Selection manager
   selection = useSelectionManager<T>({
     displayItems: this.displayItems,
@@ -452,13 +652,12 @@ export class SdSheet<T> {
 
   // Icons
   icons = {
-    tablerArrowUp,
-    tablerArrowDown,
-    tablerChevronRight,
-    tablerChevronDown,
-    tablerChevronsRight,
-    tablerChevronsDown,
     tablerSettings,
+    tablerCaretRight,
+    tablerArrowsSort,
+    tablerSortAscending,
+    tablerSortDescending,
+    tablerArrowRight,
   };
 
   private readonly _columnControlMap = computed(() => {
@@ -562,8 +761,80 @@ export class SdSheet<T> {
     this.cellAgent.handleCellDoubleClick(event);
   }
 
+  onFocusCapture(event: Event): void {
+    this._autoScrollOnFocus(event as FocusEvent);
+    this._focusIndicator.redraw();
+  }
+
   onBlurCapture(event: Event): void {
     this.cellAgent.handleBlurCapture(event as FocusEvent);
+    this._focusIndicator.redraw();
+  }
+
+  onContainerScroll(): void {
+    this._focusIndicator.redraw();
+  }
+
+  onTableResize(event: Event): void {
+    if (!(event as unknown as SdResizeEvent).widthChanged) return;
+    this._focusIndicator.redraw();
+    this._selectRowIndicator.redraw();
+  }
+
+  onSelectorMouseDown(event: MouseEvent, r: number): void {
+    if (!event.shiftKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const focusedEl = document.activeElement;
+    if (!(focusedEl instanceof HTMLElement)) return;
+
+    const focusedTrEl =
+      focusedEl.tagName.toLowerCase() === "tr" ? focusedEl : focusedEl.closest("tr");
+    if (!(focusedTrEl instanceof HTMLTableRowElement)) return;
+
+    const frAttr = focusedTrEl.getAttribute("data-r");
+    if (frAttr == null) return;
+    const fr = parseInt(frAttr, 10);
+    if (Number.isNaN(fr)) return;
+
+    setTimeout(() => {
+      const items = this.displayItems();
+      const isSelect = this.selection.isSelected(items[fr]);
+      for (let i = Math.min(fr, r); i <= Math.max(fr, r); i++) {
+        if (isSelect) {
+          this.selection.select(items[i]);
+        } else {
+          this.selection.deselect(items[i]);
+        }
+      }
+    }, 100);
+
+    const row = this.domAccessor.getRow(r);
+    row?.querySelector<HTMLElement>("[tabindex]")?.focus();
+  }
+
+  private _autoScrollOnFocus(event: FocusEvent): void {
+    if (!(event.target instanceof HTMLElement)) return;
+
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td"
+        ? event.target
+        : event.target.closest("td");
+    if (!(tdEl instanceof HTMLTableCellElement)) return;
+    if (tdEl.classList.contains("_fixed")) return;
+
+    const containerEl = this.domAccessor.getContainer();
+    const theadEl = this.domAccessor.getTHead();
+    const fixedHeaders = this.domAccessor.getLastDepthFixedHeaders();
+
+    containerEl.scrollIntoViewIfNeeded(
+      { top: tdEl.offsetTop, left: tdEl.offsetLeft },
+      {
+        top: theadEl.offsetHeight,
+        left: fixedHeaders.reduce((sum, el) => sum + el.offsetWidth, 0),
+      },
+    );
   }
 
   onItemKeydown(event: KeyboardEvent, item: T): void {
@@ -575,21 +846,19 @@ export class SdSheet<T> {
   }
 
   async onConfigButtonClick(): Promise<void> {
-    const result = await this._sdModal.showAsync(
-      {
-        title: "시트 설정",
-        type: SdSheetConfigModal,
-        inputs: {
-          controls: this.columnControls(),
-          config: this._configResource.value(),
-        },
+    const result = await this._sdModal.showAsync({
+      title: "시트 설정",
+      type: SdSheetConfigModal,
+      inputs: {
+        sheetKey: this.key()!,
+        controls: this.columnControls(),
+        config: this._configResource.value(),
       },
-    );
+    });
     if (result != null) {
       this._configResource.set(result);
     }
   }
-
 }
 
 // Re-export SortingDef from useSortingManager for convenience

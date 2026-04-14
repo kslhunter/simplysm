@@ -8,6 +8,7 @@ import {
   type ClientEsbuildResult,
 } from "../esbuild/esbuild-client-config.js";
 import { generateIndexHtml } from "../esbuild/esbuild-index-html.js";
+import { formatEsbuildMessage } from "../utils/output-utils.js";
 import { applyPwa, createPwaHtmlTransform } from "../esbuild/esbuild-pwa.js";
 import { createDevHttpServer, type DevHttpServer } from "../dev-server/dev-http-server.js";
 import { createHmrService, type HmrService } from "../dev-server/hmr-service.js";
@@ -98,7 +99,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const outdir = info.outDir ?? path.join(info.pkgDir, "dist");
 
     // 1. public/ 복사
-    await copyPublicFiles(info.pkgDir, false);
+    await copyPublicFiles(info.pkgDir, false, outdir);
 
     // 2. polyfills 감지
     const polyfillsPath = path.join(info.pkgDir, "src", "polyfills.ts");
@@ -160,7 +161,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     // SourceFileCache는 LMDB 기반. context.dispose()에 의해 정리됨.
 
     // 8. .config.json 기록
-    writeConfigJson(path.join(info.pkgDir, "dist"), info.configs);
+    writeConfigJson(outdir, info.configs);
 
     logger.debug(`[${info.name}] client worker build 완료`);
     return {
@@ -171,8 +172,8 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   } catch (err) {
     const errors: string[] = [];
     if (err != null && typeof err === "object" && "errors" in err) {
-      const buildErrors = (err as { errors: Array<{ text: string }> }).errors;
-      errors.push(...buildErrors.map((e) => e.text));
+      const buildErrors = (err as { errors: Array<{ text: string; notes: Array<{ text: string }> }> }).errors;
+      errors.push(...buildErrors.map(formatEsbuildMessage));
     }
     if (errors.length === 0) {
       errors.push(errNs.message(err));
@@ -256,9 +257,15 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
             pluginBuild.onStart(() => {
               // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
               if (esbuildResult != null) {
-                const { loadResultCache } = esbuildResult.sourceFileCache;
+                const { loadResultCache, typeScriptFileCache } =
+                  esbuildResult.sourceFileCache;
                 const changedFiles = new Set<string>();
-                for (const file of loadResultCache.watchFiles) {
+                // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 감시
+                const watchTargets = [
+                  ...loadResultCache.watchFiles,
+                  ...typeScriptFileCache.keys(),
+                ];
+                for (const file of watchTargets) {
                   try {
                     const mtime = fs.statSync(file).mtimeMs;
                     const prev = prevMtimes.get(file);
@@ -284,7 +291,12 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
             pluginBuild.onEnd(() => {
               if (esbuildResult == null) return;
               prevMtimes.clear();
-              for (const file of esbuildResult.sourceFileCache.loadResultCache.watchFiles) {
+              // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 기록
+              const watchTargets = [
+                ...esbuildResult.sourceFileCache.loadResultCache.watchFiles,
+                ...esbuildResult.sourceFileCache.typeScriptFileCache.keys(),
+              ];
+              for (const file of watchTargets) {
                 try {
                   prevMtimes.set(file, fs.statSync(file).mtimeMs);
                 } catch {
@@ -326,11 +338,11 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
               success,
               errors:
                 result.errors.length > 0
-                  ? result.errors.map((e) => e.text)
+                  ? result.errors.map(formatEsbuildMessage)
                   : undefined,
               warnings:
                 result.warnings.length > 0
-                  ? result.warnings.map((w) => w.text)
+                  ? result.warnings.map(formatEsbuildMessage)
                   : undefined,
             });
           }
@@ -342,7 +354,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
               success,
               errors:
                 result.errors.length > 0
-                  ? result.errors.map((e) => e.text)
+                  ? result.errors.map(formatEsbuildMessage)
                   : undefined,
             });
           }

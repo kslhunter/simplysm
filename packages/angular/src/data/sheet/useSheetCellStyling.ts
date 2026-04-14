@@ -21,15 +21,11 @@ export function useSheetCellStyling<T>(options: {
     return null;
   }
 
-  function getFixedStyle(
-    colDef: SdSheetColumnDef,
-    zIndex: number = 1,
-    background: string = "var(--control-color)",
-  ): string | null {
+  function getFixedStyle(colDef: SdSheetColumnDef): string | null {
     const leftValue = options.fixedLeftMap().get(colDef.key);
     if (leftValue == null) return null;
 
-    return `position: sticky; left: ${leftValue}px; z-index: ${zIndex}; background: ${background}`;
+    return `left: ${leftValue}px`;
   }
 
   const headerColumnStyles = computed(() => {
@@ -38,7 +34,7 @@ export function useSheetCellStyling<T>(options: {
       const parts: string[] = [];
       const colStyle = getColDefStyle(colDef);
       if (colStyle != null) parts.push(colStyle);
-      const fixedStyle = getFixedStyle(colDef, 3, "var(--theme-secondary-lightest)");
+      const fixedStyle = getFixedStyle(colDef);
       if (fixedStyle != null) parts.push(fixedStyle);
       map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
     }
@@ -76,7 +72,7 @@ export function useSheetCellStyling<T>(options: {
   }
 
   function getFixedCellStyle(colDef: SdSheetColumnDef): string | null {
-    return getFixedStyle(colDef, 3);
+    return getFixedStyle(colDef);
   }
 
   function getCellStyleWithIndent(item: T, colDef: SdSheetColumnDef, colIdx: number): string | null {

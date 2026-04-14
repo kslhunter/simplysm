@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  effect,
+  forwardRef,
   input,
-  linkedSignal,
   output,
   signal,
   ViewEncapsulation,
@@ -11,238 +11,259 @@ import {
 import type { SdModalContentDef } from "../../core/modal/sd-modal.provider";
 import type { SdSheetConfig } from "./types";
 import type { SdSheetColumn } from "./sd-sheet-column";
+import { SdSheet } from "./sd-sheet";
+import { SdSheetColumn as SdSheetColumnDir } from "./sd-sheet-column";
+import { SdSheetColumnCellTemplate } from "./sd-sheet-column-cell-template";
 import { SdButton } from "../../controls/button/sd-button";
 import { SdCheckbox } from "../../controls/checkbox/sd-checkbox";
+import { SdTextfield } from "../../controls/input/sd-textfield";
+import { SdAnchor } from "../../controls/button/sd-anchor";
+import { SdBusyContainer } from "../../core/busy/sd-busy-container";
 import { NgIcon } from "@ng-icons/core";
-import { tablerArrowUp, tablerArrowDown } from "@ng-icons/tabler-icons";
+import { tablerChevronUp, tablerChevronDown, tablerX } from "@ng-icons/tabler-icons";
+import { mark } from "../../core/mark";
 
 interface ConfigItem {
   key: string;
   header: string;
+  disableResizing: boolean;
   fixed: boolean;
   hidden: boolean;
-  width: string;
-  ordering: number;
+  width: string | undefined;
+  ordering: number | undefined;
 }
 
 @Component({
   selector: "sd-sheet-config-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [SdButton, SdCheckbox, NgIcon],
-  template: `
-    <div class="_sd-sheet-config-modal">
-      <table class="_config-table">
-        <thead>
-          <tr>
-            <th>Fix</th>
-            <th>Order</th>
-            <th>Header</th>
-            <th>Width</th>
-            <th>Hidden</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of _items(); track item.key; let idx = $index) {
-            <tr>
-              <td>
-                <sd-checkbox
-                  [value]="item.fixed"
-                  (click)="onFixedToggle(idx)"
-                  [inline]="true"
-                  [inset]="true"
-                />
-              </td>
-              <td class="_order-col">
-                <sd-button
-                  [disabled]="!canMoveUp(idx)"
-                  (click)="onMoveUp(idx)"
-                >
-                  <ng-icon [svg]="_icons.tablerArrowUp" />
-                </sd-button>
-                <sd-button
-                  [disabled]="!canMoveDown(idx)"
-                  (click)="onMoveDown(idx)"
-                >
-                  <ng-icon [svg]="_icons.tablerArrowDown" />
-                </sd-button>
-              </td>
-              <td>{{ item.header }}</td>
-              <td>
-                <input
-                  type="text"
-                  class="_width-input"
-                  [value]="item.width"
-                  (input)="onWidthChange(idx, $event)"
-                />
-              </td>
-              <td>
-                <sd-checkbox
-                  [value]="item.hidden"
-                  (click)="onHiddenToggle(idx)"
-                  [inline]="true"
-                  [inset]="true"
-                />
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <div class="_actions">
-        <sd-button [theme]="'primary'" (click)="onOk()">OK</sd-button>
-        <sd-button (click)="onCancel()">Cancel</sd-button>
-        <sd-button (click)="onReset()">Reset</sd-button>
-      </div>
-    </div>
-  `,
-  styles: [
-    /* language=SCSS */ `
-      sd-sheet-config-modal {
-        display: block;
-        padding: var(--gap-default);
-
-        > ._sd-sheet-config-modal {
-          > ._config-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: var(--gap-default);
-
-            th,
-            td {
-              border: 1px solid var(--trans-lighter);
-              padding: var(--gap-sm) var(--gap-default);
-              text-align: left;
-            }
-
-            th {
-              background: var(--theme-secondary-lightest);
-              font-weight: bold;
-            }
-
-            ._order-col {
-              white-space: nowrap;
-            }
-
-            ._width-input {
-              width: 80px;
-              padding: 2px 4px;
-              border: 1px solid var(--trans-lighter);
-            }
-          }
-
-          > ._actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--gap-sm);
-          }
-        }
-      }
-    `,
+  imports: [
+    forwardRef(() => SdSheet),
+    SdSheetColumnDir,
+    SdSheetColumnCellTemplate,
+    SdButton,
+    SdCheckbox,
+    SdTextfield,
+    SdAnchor,
+    SdBusyContainer,
+    NgIcon,
   ],
+  template: `
+    <sd-busy-container [busy]="!initialized()">
+      @if (initialized()) {
+        <div class="flex-fill p-default">
+          <sd-sheet
+            [key]="sheetKey() + '-config'"
+            [items]="items()"
+            [trackByFn]="trackByFn"
+            [hideConfigBar]="true"
+          >
+            <sd-sheet-column
+              [key]="'fixed'"
+              [header]="'Fix'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
+              <ng-template [cell]="items()" let-item="item">
+                <div style="text-align: center">
+                  <sd-checkbox
+                    [size]="'sm'"
+                    [inset]="true"
+                    [(value)]="item.fixed"
+                    (valueChange)="mark(items)"
+                  />
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column
+              [key]="'ordering'"
+              [header]="'Order'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
+              <ng-template [cell]="items()" let-item="item" let-index="index">
+                <div class="p-xs-sm" style="text-align: center">
+                  <sd-anchor
+                    [disabled]="index === 0 || (!item.fixed && items()[index - 1].fixed)"
+                    (click)="onMoveUp(item)"
+                  >
+                    <ng-icon [svg]="tablerChevronUp" />
+                  </sd-anchor>
+                  <sd-anchor
+                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    (click)="onMoveDown(item)"
+                  >
+                    <ng-icon [svg]="tablerChevronDown" />
+                  </sd-anchor>
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column [key]="'header'" [header]="'Header'" [disableSorting]="true">
+              <ng-template [cell]="items()" let-item="item">
+                <div class="p-xs-sm">
+                  {{ item.header }}
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column
+              [key]="'width'"
+              [header]="'Width'"
+              [disableSorting]="true"
+              [width]="'60px'"
+            >
+              <ng-template [cell]="items()" let-item="item">
+                @if (!item.disableResizing) {
+                  <sd-textfield
+                    [type]="'text'"
+                    [size]="'sm'"
+                    [inset]="true"
+                    [(value)]="item.width"
+                    (valueChange)="mark(items)"
+                  />
+                }
+              </ng-template>
+            </sd-sheet-column>
+            <sd-sheet-column
+              [key]="'hidden'"
+              [header]="'Hidden'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
+              <ng-template [cell]="items()" let-item="item">
+                <div style="text-align: center">
+                  <sd-checkbox
+                    [size]="'sm'"
+                    [inset]="true"
+                    [(value)]="item.hidden"
+                    (valueChange)="mark(items)"
+                    [icon]="tablerX"
+                    [theme]="'danger'"
+                  />
+                </div>
+              </ng-template>
+            </sd-sheet-column>
+          </sd-sheet>
+        </div>
+
+        <div class="p-sm-default flex-row gap-sm bdt bdt-theme-gray-lightest">
+          <div class="flex-fill align-start">
+            <sd-button
+              [size]="'sm'"
+              [inline]="true"
+              [theme]="'warning'"
+              (click)="onResetClick()"
+            >
+              Reset
+            </sd-button>
+          </div>
+          <sd-button
+            [size]="'sm'"
+            [theme]="'success'"
+            (click)="onOkClick()"
+          >
+            OK
+          </sd-button>
+          <sd-button
+            [size]="'sm'"
+            (click)="onCancelClick()"
+          >
+            Cancel
+          </sd-button>
+        </div>
+      }
+    </sd-busy-container>
+  `,
 })
 export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | undefined> {
-  initialized = signal(true);
+  initialized = signal(false);
   close = output<SdSheetConfig | undefined>();
 
+  sheetKey = input.required<string>();
   controls = input.required<readonly SdSheetColumn[]>();
   config = input.required<SdSheetConfig | undefined>();
 
-  _icons = { tablerArrowUp, tablerArrowDown };
+  items = signal<ConfigItem[]>([]);
 
-  private readonly _initialItems = computed((): ConfigItem[] => {
-    const cfg = this.config();
-    const controls = this.controls();
-    return controls
-      .map((ctrl): ConfigItem => {
+  trackByFn = (item: ConfigItem): string => item.key;
+
+  protected readonly tablerChevronUp = tablerChevronUp;
+  protected readonly tablerChevronDown = tablerChevronDown;
+  protected readonly tablerX = tablerX;
+  protected readonly mark = mark;
+
+  constructor() {
+    effect(() => {
+      const cfg = this.config();
+      const items: ConfigItem[] = this.controls().map((ctrl): ConfigItem => {
         const key = ctrl.key();
         const cfgCol = cfg?.columnRecord[key];
         return {
           key,
-          header: Array.isArray(ctrl.header()) ? (ctrl.header() as string[]).join(" > ") : (ctrl.header() as string),
+          header: Array.isArray(ctrl.header())
+            ? (ctrl.header() as string[]).join(" > ")
+            : (ctrl.header() as string),
+          disableResizing: ctrl.disableResizing(),
           fixed: cfgCol?.fixed ?? ctrl.fixed(),
           hidden: cfgCol?.hidden ?? ctrl.hidden(),
-          width: cfgCol?.width ?? ctrl.width() ?? "",
+          width: cfgCol?.width ?? ctrl.width(),
           ordering: cfgCol?.ordering ?? ctrl.ordering(),
         };
-      })
-      .sort((a, b) => a.ordering - b.ordering);
-  });
+      });
 
-  _items = linkedSignal<ConfigItem[]>(() => this._initialItems());
+      items.sort((a, b) => (a.ordering ?? 0) - (b.ordering ?? 0));
+      items.sort((a, b) => (a.fixed ? -1 : 0) - (b.fixed ? -1 : 0));
 
-  onFixedToggle(idx: number): void {
-    const items = [...this._items()];
-    items[idx] = { ...items[idx], fixed: !items[idx].fixed };
-    this._items.set(items);
+      this.items.set(items);
+      this.initialized.set(true);
+    });
   }
 
-  onHiddenToggle(idx: number): void {
-    const items = [...this._items()];
-    items[idx] = { ...items[idx], hidden: !items[idx].hidden };
-    this._items.set(items);
+  onMoveUp(item: ConfigItem): void {
+    this.items.update((v) => {
+      const r = [...v];
+      const index = r.indexOf(item);
+      r.splice(index, 1);
+      r.splice(index - 1, 0, item);
+      for (let i = 0; i < r.length; i++) {
+        r[i].ordering = i;
+      }
+      return r;
+    });
   }
 
-  onWidthChange(idx: number, event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
-    const items = [...this._items()];
-    items[idx] = { ...items[idx], width: inputEl.value };
-    this._items.set(items);
+  onMoveDown(item: ConfigItem): void {
+    this.items.update((v) => {
+      const r = [...v];
+      const index = r.indexOf(item);
+      r.splice(index, 1);
+      r.splice(index + 1, 0, item);
+      for (let i = 0; i < r.length; i++) {
+        r[i].ordering = i;
+      }
+      return r;
+    });
   }
 
-  canMoveUp(idx: number): boolean {
-    if (idx <= 0) return false;
-    const items = this._items();
-    const current = items[idx];
-    const above = items[idx - 1];
-    // Cannot move non-fixed above fixed
-    if (!current.fixed && above.fixed) return false;
-    return true;
-  }
-
-  canMoveDown(idx: number): boolean {
-    const items = this._items();
-    if (idx >= items.length - 1) return false;
-    const current = items[idx];
-    const below = items[idx + 1];
-    // Cannot move fixed below non-fixed
-    if (current.fixed && !below.fixed) return false;
-    return true;
-  }
-
-  onMoveUp(idx: number): void {
-    if (!this.canMoveUp(idx)) return;
-    const items = [...this._items()];
-    [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
-    this._items.set(items);
-  }
-
-  onMoveDown(idx: number): void {
-    if (!this.canMoveDown(idx)) return;
-    const items = [...this._items()];
-    [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
-    this._items.set(items);
-  }
-
-  onOk(): void {
-    const items = this._items();
-    const columnRecord: SdSheetConfig["columnRecord"] = {};
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      columnRecord[item.key] = {
+  onOkClick(): void {
+    const result: SdSheetConfig = { columnRecord: {} };
+    for (const item of this.items()) {
+      result.columnRecord[item.key] = {
         fixed: item.fixed,
+        width: item.width,
+        ordering: item.ordering,
         hidden: item.hidden,
-        width: item.width !== "" ? item.width : undefined,
-        ordering: i,
       };
     }
-    this.close.emit({ columnRecord });
+    this.close.emit(result);
   }
 
-  onCancel(): void {
+  onCancelClick(): void {
     this.close.emit(undefined);
   }
 
-  onReset(): void {
-    this.close.emit({ columnRecord: {} });
+  onResetClick(): void {
+    if (confirm("설정값이 모두 초기화 됩니다.")) {
+      this.close.emit({ columnRecord: {} });
+    }
   }
 }

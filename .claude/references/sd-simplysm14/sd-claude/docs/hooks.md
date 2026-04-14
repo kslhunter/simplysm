@@ -57,6 +57,24 @@ PreToolUse 훅 (matcher: `Bash`). 금지된 명령어를 차단한다. 명령어
 | `npx\s+tsc` | `npx tsc` | `pnpm typecheck` 사용 필수 |
 | `npx\s+eslint` | `npx eslint` | `pnpm lint` 사용 필수 |
 
+## `sd-check-forbidden-files.py`
+
+PreToolUse 훅 (matcher: `Write|Edit`). `tsconfig.json`, `eslint.config.ts` 등 보호 대상 파일의 수정을 차단한다.
+
+```python
+# stdin으로 tool_input JSON을 받아 file_path를 검사
+# 보호 대상 파일이면 stderr에 메시지 출력 후 exit(2)
+```
+
+입력: stdin JSON (`tool_input.file_path`)
+
+차단 대상 파일:
+
+| 파일명 | 이유 |
+|--------|------|
+| `tsconfig.json` | 빌드 설정 보호 |
+| `eslint.config.ts` | 린트 설정 보호 |
+
 ## `sd-statusline.py`
 
 statusLine 훅. Claude Code 상태바에 `폴더 | 모델 | 컨텍스트% | 5h사용량 | 7d사용량 | $추가요금` 형식으로 표시한다.

@@ -32,8 +32,9 @@ sd-claude/
 │   │   ├── sd-tdd/            ← TDD 개발
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
-│   ├── sd-check-bash.py     ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
-│   ├── sd-check-write.py    ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
+│   ├── sd-check-bash.py          ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
+│   ├── sd-check-forbidden-files.py ← Write/Edit 도구 사전 검사 훅 (tsconfig.json, eslint.config.ts 수정 차단)
+│   ├── sd-check-write.py         ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
 │   ├── sd-session-start.sh  ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
 │   └── sd-statusline.py     ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
 └── scripts/
@@ -76,7 +77,8 @@ export function forEachSdEntry(dir, callback) {
 INIT_CWD 또는 node_modules 경로에서 프로젝트 루트 감지
 → simplysm 모노레포 동일 메이저 버전이면 건너뜀 (자기 자신에게 설치 방지)
 → cleanSdEntries: 기존 sd-* 항목 삭제
-→ copySdEntries: claude/ → .claude/ 복사 (sd-* 항목 + settings.json)
+→ copySdEntries: claude/ → .claude/ 복사 (sd-* 항목)
+→ settings.json도 함께 .claude/settings.json으로 복사
 ```
 
 `postinstall`은 실패해도 `pnpm install`을 차단하지 않는다 — 전체 try-catch로 감싸서 경고만 출력한다.

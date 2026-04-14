@@ -265,7 +265,7 @@ function setupModelHook<T, S extends WritableSignal<T>>(
 function setupCanDeactivate(fn: () => boolean): void
 ```
 
-모달 내부이면 `SdActivatedModalProvider.canDeactiveFn`에 설정, 라우트 내부이면 `routeConfig.canDeactivate`에 추가.
+모달 내부이면 `SdActivatedModalProvider.canDeactivateFn`에 설정, 라우트 내부이면 `routeConfig.canDeactivate`에 추가.
 
 ### `setupCumulateSelectedKeys`
 

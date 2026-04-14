@@ -121,7 +121,7 @@ describe("Feature 6.2 Slice 2: 컬럼 리사이징", () => {
     const fixture = await stableFixture(SdSheetResizeDisabledTest);
     const host = fixture.nativeElement as HTMLElement;
 
-    const ths = host.querySelectorAll("thead th");
+    const ths = host.querySelectorAll("thead th._last-depth:not(._feature-cell)");
     // First column (name) has disableResizing=true — no resizer
     const nameResizer = ths[0].querySelector("._resizer");
     expect(nameResizer).toBeFalsy();
@@ -149,7 +149,7 @@ describe("Feature 6.2 Slice 2: 컬럼 리사이징", () => {
     await fixture.whenStable();
 
     // Immediately click header (should be blocked)
-    const th = host.querySelector("thead th") as HTMLElement;
+    const th = host.querySelector("thead th._last-depth:not(._feature-cell)") as HTMLElement;
     th.click();
     fixture.detectChanges();
 

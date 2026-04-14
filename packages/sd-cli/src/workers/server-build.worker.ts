@@ -4,6 +4,7 @@ import fs from "fs";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
+import { formatEsbuildMessage } from "../utils/output-utils.js";
 import type { BuildOutput } from "../engines/types";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
@@ -170,8 +171,8 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
           if (result.outputFiles) {
             await writeChangedOutputFiles(result.outputFiles);
           }
-          const errors = result.errors.map((e) => e.text);
-          const warnings = result.warnings.map((w) => w.text);
+          const errors = result.errors.map(formatEsbuildMessage);
+          const warnings = result.warnings.map(formatEsbuildMessage);
           return {
             success: result.errors.length === 0,
             errors: errors.length > 0 ? errors : undefined,

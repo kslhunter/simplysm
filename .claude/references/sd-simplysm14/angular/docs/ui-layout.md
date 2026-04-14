@@ -16,12 +16,16 @@ class SdDockContainer { }
 ```typescript
 @Component({ selector: "sd-dock" })
 class SdDock {
+  key = input<string>();
+  position = input<"top" | "bottom" | "right" | "left">("top");
   resizable = input(false, { transform: booleanAttribute });
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
+| `key` | `string \| undefined` | `undefined` | 리사이즈 설정 저장 키 |
+| `position` | `"top" \| "bottom" \| "right" \| "left"` | `"top"` | 도킹 위치 |
 | `resizable` | `boolean` | `false` | 크기 조절 가능 여부 |
 
 ## `SdGap`
@@ -39,10 +43,15 @@ class SdGap { }
 
 ```typescript
 @Component({ selector: "sd-kanban-board" })
-class SdKanbanBoard {
-  drop = output<SdKanbanBoardDropInfo>();
+class SdKanbanBoard<L, T> {
+  selectedValues = model<T[]>([]);
+  drop = output<SdKanbanBoardDropInfo<L, T>>();
 }
 ```
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `selectedValues` | `T[]` | `[]` | 선택된 칸반 아이템 값 배열 (two-way) |
 
 ### `SdKanbanBoardDropInfo`
 
@@ -94,16 +103,20 @@ interface SdKanbanDropTarget<L, T> {
 
 ```typescript
 @Component({ selector: "sd-kanban" })
-class SdKanban {
+class SdKanban<L, T> {
+  value = input<T>();
   selectable = input(false, { transform: booleanAttribute });
   draggable = input(false, { transform: booleanAttribute });
+  contentClass = input<string>();
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
+| `value` | `T \| undefined` | `undefined` | 칸반 아이템의 값 |
 | `selectable` | `boolean` | `false` | 선택 가능 여부 |
 | `draggable` | `boolean` | `false` | 드래그 가능 여부 |
+| `contentClass` | `string \| undefined` | `undefined` | 컨텐츠 CSS 클래스 |
 
 ## `SdKanbanLane`
 
@@ -111,10 +124,11 @@ class SdKanban {
 
 ```typescript
 @Component({ selector: "sd-kanban-lane" })
-class SdKanbanLane {
+class SdKanbanLane<L, T> {
   busy = input(false, { transform: booleanAttribute });
   useCollapse = input(false, { transform: booleanAttribute });
   collapse = model(false);
+  value = input<L>();
 }
 ```
 
@@ -123,3 +137,4 @@ class SdKanbanLane {
 | `busy` | `boolean` | `false` | busy 상태 |
 | `useCollapse` | `boolean` | `false` | 접기 기능 사용 |
 | `collapse` | `boolean` | `false` | 접힘 상태 (two-way) |
+| `value` | `L \| undefined` | `undefined` | 레인의 값 |

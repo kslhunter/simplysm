@@ -71,12 +71,18 @@ interface Address {
 
 ```typescript
 @Component({ selector: "sd-permission-table" })
-class SdPermissionTable {
-  permissions = input.required<SdPermission[]>();
-  permRecord = model<Record<string, boolean>>({});
+class SdPermissionTable<TModule = unknown> {
+  value = model<Record<string, boolean>>({});
+  items = input<SdPermission<TModule>[]>([]);
   disabled = input(false, { transform: booleanAttribute });
 }
 ```
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `value` | `Record<string, boolean>` | `{}` | 권한 레코드 (two-way). 키는 `codeChain.join(".") + ".use"` 또는 `".edit"` 형태 |
+| `items` | `SdPermission<TModule>[]` | `[]` | 권한 트리 |
+| `disabled` | `boolean` | `false` | 비활성화 |
 
 ## Data View Abstractions
 
@@ -250,6 +256,15 @@ abstract class SdDataSelectButtonBase<TItem extends object, TKey, TMode extends 
 }
 ```
 
+| Input/Model | Type | Default | Description |
+|-------------|------|---------|-------------|
+| `value` | `SelectModeValue<TKey>[TMode]` | - | 선택된 값 (two-way) |
+| `disabled` | `boolean` | `false` | 비활성화 |
+| `required` | `boolean` | `false` | 필수 |
+| `inset` | `boolean` | `false` | 삽입 스타일 |
+| `size` | `"sm" \| "lg" \| undefined` | `undefined` | 크기 |
+| `selectMode` | `TMode` | `"single"` | 선택 모드 |
+
 ### `SdDataSelectButton`
 
 선택 버튼 presentation 컴포넌트.
@@ -267,15 +282,25 @@ class SdDataSelectButton { }
 
 ```typescript
 @Component({ selector: "sd-shared-data-select" })
-class SdSharedDataSelect<TItem extends SharedDataBase<string | number>, TMode extends keyof SelectModeValue<...>> {
+class SdSharedDataSelect<TItem extends SharedDataBase<string | number>, TMode extends keyof SelectModeValue<...>, TModal extends SdSelectModal<any>> {
+  value = model<SelectModeValue<TItem["__valueKey"] | undefined>[TMode]>();
   items = input.required<TItem[]>();
-  value = model<SelectModeValue<...>[TMode]>();
-  selectMode = input<TMode>("single" as TMode);
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
+  useUndefined = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
+  inline = input(false, { transform: booleanAttribute });
   size = input<"sm" | "lg">();
-  // 기타 옵션...
+  selectMode = input("single" as TMode);
+  filterFn = input<(item: TItem, index: number, ...params: any[]) => boolean>();
+  filterFnParams = input<any[]>();
+  modal = input<SdSelectModalInfo<TModal>>();
+  editModal = input<SdModalInfo<SdModalContentDef<boolean>>>();
+  selectClass = input<string>();
+  multiSelectionDisplayDirection = input<"vertical">();
+  getIsHiddenFn = input<(item: TItem, index: number) => boolean>();
+  getSearchTextFn = input<(item: TItem, index: number) => string>();
+  displayOrderKeyProp = input<string>();
 }
 ```
 
@@ -285,7 +310,10 @@ class SdSharedDataSelect<TItem extends SharedDataBase<string | number>, TMode ex
 
 ```typescript
 @Component({ selector: "sd-shared-data-select-button" })
-class SdSharedDataSelectButton<TItem extends SharedDataBase<...>, TMode extends keyof SelectModeValue<...>> { }
+class SdSharedDataSelectButton<TItem extends SharedDataBase<...>, TMode extends keyof SelectModeValue<...>, TModal extends SdSelectModal<any>> {
+  items = input<TItem[]>([]);
+  modal = input.required<SdSelectModalInfo<TModal>>();
+}
 ```
 
 ### `SdSharedDataSelectList`
@@ -294,14 +322,36 @@ class SdSharedDataSelectButton<TItem extends SharedDataBase<...>, TMode extends 
 
 ```typescript
 @Component({ selector: "sd-shared-data-select-list" })
-class SdSharedDataSelectList<TItem extends SharedDataBase<...>> {
+class SdSharedDataSelectList<TItem extends SharedDataBase<string | number>, TModal extends SdSelectModal<any>> {
+  selectedItem = model<TItem>();
+  canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
   items = input.required<TItem[]>();
-  value = model<(string | number)[]>();
-  disabled = input(false, { transform: booleanAttribute });
-  pageLength = input(30);
-  // 기타 옵션...
+  selectedIcon = input<string>();
+  useUndefined = input(false, { transform: booleanAttribute });
+  filterFn = input<(item: TItem, index: number) => boolean>();
+  modal = input<SdSelectModalInfo<TModal>>();
+  header = input<string>();
+  pageItemCount = input<number>();
 }
 ```
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `selectedItem` | `TItem \| undefined` | - | 선택된 항목 (two-way) |
+| `canChangeFn` | `(item) => boolean \| Promise<boolean>` | `() => true` | 선택 변경 가능 여부 함수 |
+| `items` | `TItem[]` | required | 공유 데이터 항목 |
+| `selectedIcon` | `string \| undefined` | `undefined` | 선택됨 아이콘 |
+| `useUndefined` | `boolean` | `false` | undefined 항목 포함 |
+| `filterFn` | `((item, index) => boolean) \| undefined` | `undefined` | 필터 함수 |
+| `modal` | `SdSelectModalInfo<TModal> \| undefined` | `undefined` | 모달 선택 정보 |
+| `header` | `string \| undefined` | `undefined` | 헤더 텍스트 |
+| `pageItemCount` | `number \| undefined` | `undefined` | 페이지당 항목 수 |
+
+Content children:
+- `#headerTpl`: 헤더 커스텀 템플릿
+- `#filterTpl`: 필터 커스텀 템플릿
+- `SdItemOfTemplate`: 항목 커스텀 템플릿
+- `#undefinedTpl`: undefined 항목 커스텀 템플릿
 
 ### `matchesSearchText`
 
@@ -323,7 +373,7 @@ function getOrmDataEditToastErrorMessage(err: unknown): string
 
 | 감지 조건 | 반환 메시지 |
 |-----------|-------------|
-| FK 제약 위반 (`a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE`) | `"경위! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망"` |
+| FK 제약 위반 (`a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE`) | `"경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망"` |
 | 그 외 | `err.message` (또는 `String(err)`) |
 
 `SdDataSheetBase`, `SdDataDetailBase` 내부에서 사용되며, 소비 코드에서 직접 사용할 수도 있다.

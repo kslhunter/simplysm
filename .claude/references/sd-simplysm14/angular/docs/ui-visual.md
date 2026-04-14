@@ -7,15 +7,19 @@
 ```typescript
 @Component({ selector: "sd-label" })
 class SdLabel {
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  color = input<string>();
   clickable = input(false, { transform: booleanAttribute });
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
+| `theme` | `string \| undefined` | `undefined` | 테마 색상 |
+| `color` | `string \| undefined` | `undefined` | 커스텀 CSS 색상 |
 | `clickable` | `boolean` | `false` | 클릭 가능 여부 |
 
-호스트 속성: `data-sd-theme` (primary, secondary, info, success, warning, danger, gray, blue-gray)
+호스트 속성: `data-sd-theme`
 
 ## `SdNote`
 
@@ -24,12 +28,16 @@ class SdLabel {
 ```typescript
 @Component({ selector: "sd-note" })
 class SdNote {
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  size = input<"sm" | "lg">();
   inset = input(false, { transform: booleanAttribute });
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
+| `theme` | `string \| undefined` | `undefined` | 테마 색상 |
+| `size` | `"sm" \| "lg" \| undefined` | `undefined` | 크기 |
 | `inset` | `boolean` | `false` | 삽입 스타일 (테두리 없음) |
 
 호스트 속성: `data-sd-theme`
@@ -41,17 +49,19 @@ class SdNote {
 ```typescript
 @Component({ selector: "sd-progress" })
 class SdProgress {
+  inset = input(false, { transform: booleanAttribute });
+  size = input<"sm" | "lg">();
   theme = input.required<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
   value = input.required<number>();
-  inset = input(false, { transform: booleanAttribute });
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
+| `inset` | `boolean` | `false` | 삽입 스타일 |
+| `size` | `"sm" \| "lg" \| undefined` | `undefined` | 크기 |
 | `theme` | `string` | required | 테마 색상 |
 | `value` | `number` | required | 진행률 (0-100) |
-| `inset` | `boolean` | `false` | 삽입 스타일 |
 
 ## `SdCalendar`
 
@@ -84,16 +94,14 @@ class SdCalendar<T> {
 @Component({ selector: "sd-barcode" })
 class SdBarcode {
   type = input.required<BarcodeType>();
-  value = input.required<string>();
-  scale = input(2);
+  value = input<string>();
 }
 ```
 
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
 | `type` | `BarcodeType` | required | 바코드 타입 |
-| `value` | `string` | required | 바코드 값 |
-| `scale` | `number` | `2` | 렌더링 스케일 |
+| `value` | `string \| undefined` | `undefined` | 바코드 값. 빈 문자열이거나 undefined이면 빈 출력 |
 
 ### `BarcodeType`
 

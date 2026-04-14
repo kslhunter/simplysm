@@ -18,6 +18,7 @@ src/
 │
 ├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, publish, device, replace-deps)
 ├── orchestrators/         ← 커맨드-엔진 조율
+│   ├── types.ts                 ← Orchestrator 공통 타입 정의
 │   ├── BaseOrchestrator.ts      ← watch/dev 공통 기반 (추상 클래스)
 │   ├── WatchOrchestrator.ts     ← watch 모드 (라이브러리 빌드 + 스크립트 훅)
 │   ├── DevOrchestrator.ts       ← dev 모드 (서버 런타임 + 클라이언트 dev server)

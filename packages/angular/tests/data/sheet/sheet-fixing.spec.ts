@@ -7,7 +7,7 @@ import {
 } from "./sd-sheet-test.fixture";
 
 describe("Feature 6.1 Slice 2: 컬럼 고정 + 스크롤 동기화", () => {
-  it("Scenario: 컬럼 고정 — 고정 컬럼에 position: sticky와 left가 적용된다", async () => {
+  it("Scenario: 컬럼 고정 — 고정 컬럼에 ._fixed 클래스와 left가 적용된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SdSheetFixedTest],
     }).createComponent(SdSheetFixedTest);
@@ -15,21 +15,21 @@ describe("Feature 6.1 Slice 2: 컬럼 고정 + 스크롤 동기화", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const tds = host.querySelectorAll("tbody tr td");
+    const tds = host.querySelectorAll("tbody tr td:not(._feature-cell)");
 
-    // First column (fixed): should have position sticky and left: 0px
+    // First column (fixed): should have ._fixed class and left: 0px
     const firstTd = tds[0] as HTMLElement;
-    expect(firstTd.style.position).toBe("sticky");
+    expect(firstTd.classList.contains("_fixed")).toBe(true);
     expect(firstTd.style.left).toBe("0px");
 
-    // Second column (fixed): should have position sticky and left: 100px
+    // Second column (fixed): should have ._fixed class and left: 100px
     const secondTd = tds[1] as HTMLElement;
-    expect(secondTd.style.position).toBe("sticky");
+    expect(secondTd.classList.contains("_fixed")).toBe(true);
     expect(secondTd.style.left).toBe("100px");
 
-    // Third column (not fixed): should not have sticky position
+    // Third column (not fixed): should not have ._fixed class
     const thirdTd = tds[2] as HTMLElement;
-    expect(thirdTd.style.position).not.toBe("sticky");
+    expect(thirdTd.classList.contains("_fixed")).toBe(false);
   });
 
   it("Scenario: 헤더 고정 — 헤더 th에 position: sticky와 top: 0이 CSS로 적용된다", async () => {
@@ -46,7 +46,7 @@ describe("Feature 6.1 Slice 2: 컬럼 고정 + 스크롤 동기화", () => {
     expect(ths.length).toBeGreaterThan(0);
   });
 
-  it("Scenario: 고정 header th의 z-index가 body td보다 높다", async () => {
+  it("Scenario: 고정 컬럼에 ._fixed 클래스가 적용된다 (z-index는 SCSS가 담당)", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SdSheetFixedTest],
     }).createComponent(SdSheetFixedTest);
@@ -55,13 +55,15 @@ describe("Feature 6.1 Slice 2: 컬럼 고정 + 스크롤 동기화", () => {
 
     const host = fixture.nativeElement as HTMLElement;
 
-    // Fixed header cell: z-index should be 3 (above CSS z-index 2 of non-fixed sticky headers)
-    const fixedTh = host.querySelector("thead th") as HTMLElement;
-    expect(fixedTh.style.zIndex).toBe("3");
+    // Fixed header cell: should have ._fixed class (z-index is handled by SCSS)
+    const fixedTh = host.querySelector("thead th._fixed:not(._feature-cell)") as HTMLElement;
+    expect(fixedTh).toBeTruthy();
+    expect(fixedTh.classList.contains("_fixed")).toBe(true);
 
-    // Fixed body cell: z-index should be 1
-    const fixedTd = host.querySelector("tbody td") as HTMLElement;
-    expect(fixedTd.style.zIndex).toBe("1");
+    // Fixed body cell: should have ._fixed class (z-index is handled by SCSS)
+    const fixedTd = host.querySelector("tbody td._fixed:not(._feature-cell)") as HTMLElement;
+    expect(fixedTd).toBeTruthy();
+    expect(fixedTd.classList.contains("_fixed")).toBe(true);
   });
 
   it("Scenario: 고정 컬럼 left 값 누적 — 3개 고정 컬럼의 left가 0, 100, 250이다", async () => {
@@ -72,7 +74,7 @@ describe("Feature 6.1 Slice 2: 컬럼 고정 + 스크롤 동기화", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    const tds = host.querySelectorAll("tbody tr td");
+    const tds = host.querySelectorAll("tbody tr td:not(._feature-cell)");
 
     expect((tds[0] as HTMLElement).style.left).toBe("0px");
     expect((tds[1] as HTMLElement).style.left).toBe("100px");
@@ -94,15 +96,15 @@ describe("Feature 3.3 Slice 2: collapse + width 모순 스타일 제거", () => 
 
     const host = fixture.nativeElement as HTMLElement;
 
-    // collapsed header th (second column)
-    const ths = host.querySelectorAll("thead th");
+    // collapsed header th (second data column, skip feature cell)
+    const ths = host.querySelectorAll("thead th:not(._feature-cell)");
     const collapsedTh = ths[1] as HTMLElement;
     // style string should NOT contain "100px"
     expect(collapsedTh.style.cssText).not.toContain("100px");
     expect(collapsedTh.style.width).toBe("0px");
 
-    // collapsed body td (second column)
-    const tds = host.querySelectorAll("tbody tr:first-child td");
+    // collapsed body td (second data column, skip feature cell)
+    const tds = host.querySelectorAll("tbody tr:first-child td:not(._feature-cell)");
     const collapsedTd = tds[1] as HTMLElement;
     expect(collapsedTd.style.cssText).not.toContain("100px");
     expect(collapsedTd.style.width).toBe("0px");

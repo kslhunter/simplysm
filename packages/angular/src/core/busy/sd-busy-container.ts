@@ -62,6 +62,10 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
       sd-busy-container {
         display: block;
         position: relative;
+        width: 100%;
+        height: 100%;
+        min-width: 70px;
+        min-height: 70px;
 
         > ._screen {
           position: absolute;

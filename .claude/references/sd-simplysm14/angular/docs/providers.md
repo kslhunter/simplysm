@@ -256,7 +256,7 @@ class SdNavigateWindowProvider {
 class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContentDef<any>> {
   modalComponent = signal<any>(undefined);
   contentComponent = signal<T | undefined>(undefined);
-  canDeactiveFn: () => boolean;
+  canDeactivateFn: () => boolean;
 }
 ```
 
@@ -264,7 +264,7 @@ class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContent
 |-------|------|-------------|
 | `modalComponent` | `WritableSignal<any>` | SdModal 인스턴스 |
 | `contentComponent` | `WritableSignal<T \| undefined>` | 컨텐츠 컴포넌트 인스턴스 |
-| `canDeactiveFn` | `() => boolean` | 모달 닫기 가능 여부 판별 함수 (기본: `() => true`) |
+| `canDeactivateFn` | `() => boolean` | 모달 닫기 가능 여부 판별 함수 (기본: `() => true`) |
 
 ## `SdToastProvider`
 

@@ -183,7 +183,7 @@ export interface SetupConsolaOptions {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `cli` | `boolean` | true이면 CLI 모드. 항상 PrettyReporter를 사용하고 FileReporter를 사용하지 않는다 |
+| `cli` | `boolean` | true이면 CLI 모드. 프로덕션 경로를 건너뛰고 개발 경로로 진입한다. `SD_DEBUG`가 없으면 `FileReporter` + `PrettyReporter`(info 이하) 조합 사용 |
 
 ---
 

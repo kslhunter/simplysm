@@ -49,7 +49,6 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `AppStructureItem` | type | 앱 구조 항목 (그룹 또는 리프) |
 | `SdMenu` | interface | 메뉴 트리 노드 |
 | `SdFlatMenu` | interface | 플랫 메뉴 항목 |
 | `SdPermission` | interface | 권한 트리 노드 |
@@ -161,7 +160,7 @@ npm install @simplysm/angular
 | `SdBaseContainer` | component | 페이지/모달/뷰 공통 레이아웃 컨테이너 |
 | `SdAddressSearchModal` | component | Daum Postcode 주소 검색 모달 |
 | `Address` | interface | 주소 검색 결과 |
-| `SdPermissionTable` | component | 권한 매트릭스 테이블 |
+| `SdPermissionTable` | component | 권한 매트릭스 테이블 (items, value) |
 | `SdDataSheetBase` | class | 데이터 시트 CRUD 추상 클래스 |
 | `SdDataSheet` | component | 데이터 시트 presentation 컴포넌트 |
 | `SdDataSheetColumn` | directive | 데이터 시트 컬럼 (edit 추가) |
@@ -171,7 +170,7 @@ npm install @simplysm/angular
 | `SdDataSelectButton` | component | 선택 버튼 presentation 컴포넌트 |
 | `SdSharedDataSelect` | component | 공유 데이터 드롭다운 선택 |
 | `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 |
-| `SdSharedDataSelectList` | component | 공유 데이터 목록형 선택 |
+| `SdSharedDataSelectList` | component | 공유 데이터 목록형 선택 (selectedItem model) |
 | `matchesSearchText` | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
 | `getOrmDataEditToastErrorMessage` | function | ORM 편집 에러 메시지 변환 (FK 위반 등 DB 에러를 한국어 메시지로) |
 
@@ -195,7 +194,7 @@ npm install @simplysm/angular
 | `SdDockContainer` | component | 도킹 레이아웃 컨테이너 |
 | `SdDock` | component | 도킹 영역 (top/bottom/left/right) |
 | `SdGap` | component | 간격 (gap) 컴포넌트 |
-| `SdKanbanBoard` | component | 칸반 보드 (드래그앤드롭) |
+| `SdKanbanBoard` | component | 칸반 보드 (드래그앤드롭, selectedValues) |
 | `SdKanbanBoardDropInfo` | interface | 칸반 보드 드롭 이벤트 정보 |
 | `SdKanbanDragRef` | interface | 칸반 드래그 참조 인터페이스 |
 | `SdKanbanDropTarget` | interface | 칸반 드롭 타겟 인터페이스 |
@@ -224,7 +223,7 @@ npm install @simplysm/angular
 | `SdCheckboxGroup` | component | 체크박스 그룹 |
 | `SdCheckboxGroupItem` | component | 체크박스 그룹 항목 |
 | `SdTiptapEditor` | component | TipTap 리치 텍스트 에디터 |
-| `SdSelect` | component | 드롭다운 선택 (single/multi/multi-with-header) |
+| `SdSelect` | component | 드롭다운 선택 (single/multi) |
 | `SdSelectItem` | component | 드롭다운 선택 항목 |
 | `SdSelectButton` | component | 버튼 스타일 선택 |
 | `SdForm` | component | 폼 래퍼 (submit 이벤트, busy 관리) |
@@ -261,8 +260,10 @@ npm install @simplysm/angular
 |-----|------|-------------|
 | `SdList` | component | 리스트 |
 | `SdListItem` | component | 리스트 항목 |
-| `SdSheet` | component | 스프레드시트 (정렬, 고정, 리사이즈) |
-| `SdSheetColumn` | directive | 시트 컬럼 정의 |
+| `SdSheet` | component | 스프레드시트 (정렬, 고정, 리사이즈). `key`로 설정 저장 |
+| `SdSheetColumn` | directive | 시트 컬럼 정의 (헤더, 너비, 고정, 정렬 등) |
+| `SdSheetColumnCellTemplate` | directive | 시트 컬럼 셀 내용 정의 (`ng-template[cell]`), `SdSheetCellContext` 타입 가드 제공 |
+| `SdSheetCellContext` | interface | 시트 셀 템플릿 컨텍스트 (`$implicit`, `item`, `index`, `depth`, `edit`) |
 | `SdSheetConfigModal` | component | 시트 설정 모달 |
 | `SdSheetColumnDef` | interface | 시트 컬럼 정의 데이터 |
 | `SdSheetConfig` | interface | 시트 설정 데이터 |
