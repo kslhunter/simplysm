@@ -38,7 +38,7 @@ import "@simplysm/core-browser";
          (keydown)="onDialogKeydown($event)"
          (focus)="onDialogFocus()">
       @if (!hideHeader()) {
-        <div class="_header" (mousedown)="onHeaderMouseDown($event)">
+        <div class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
           <span class="_title">{{ title() }}</span>
           @if (actionTplRef()) {
             <ng-container *ngTemplateOutlet="actionTplRef()!" />
@@ -297,6 +297,7 @@ export class SdModal {
   title = input("");
   hideHeader = input(false);
   hideCloseButton = input(false);
+  headerStyle = input<string | undefined>(undefined);
   useCloseByBackdrop = input(true);
   useCloseByEscapeKey = input(true);
   float = input(false);

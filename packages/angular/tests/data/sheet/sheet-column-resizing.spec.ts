@@ -56,7 +56,7 @@ describe("injectSheetColumnResizing", () => {
       const event = new MouseEvent("mousedown", { clientX: 100, bubbles: true });
       Object.defineProperty(event, "target", { value: resizer });
 
-      result.onMousedown(event, { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
+      result.onMousedown(event, { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
 
       expect(result.isResizing()).toBe(true);
       // indicatorLeft = th.offsetLeft + th.offsetWidth - container.scrollLeft = 50 + 200 - 0 = 250
@@ -76,7 +76,7 @@ describe("injectSheetColumnResizing", () => {
       const mousedownEvent = new MouseEvent("mousedown", { clientX: 100, bubbles: true });
       Object.defineProperty(mousedownEvent, "target", { value: resizer });
 
-      result.onMousedown(mousedownEvent, { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
+      result.onMousedown(mousedownEvent, { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
 
       // Simulate mouseup with 50px drag
       document.dispatchEvent(new MouseEvent("mouseup", { clientX: 150 }));
@@ -100,7 +100,7 @@ describe("injectSheetColumnResizing", () => {
       const event = new MouseEvent("mousedown", { clientX: 1000, bubbles: true });
       Object.defineProperty(event, "target", { value: resizer });
 
-      result.onMousedown(event, { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
+      result.onMousedown(event, { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
 
       document.dispatchEvent(new MouseEvent("mouseup", { clientX: 0 }));
 
@@ -120,7 +120,7 @@ describe("injectSheetColumnResizing", () => {
       const resizer = document.createElement("div");
       th.appendChild(resizer);
 
-      const colDef = { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 };
+      const colDef = { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 };
 
       // 첫 번째 mousedown
       const event1 = new MouseEvent("mousedown", { clientX: 100, bubbles: true });
@@ -149,7 +149,7 @@ describe("injectSheetColumnResizing", () => {
 
       const event = new MouseEvent("dblclick", { bubbles: true });
 
-      result.onDblClick(event, { key: "name", header: "이름", width: "300px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
+      result.onDblClick(event, { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "300px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
 
       const call = setConfig.mock.calls[0][0];
       expect(call.columnRecord["name"].width).toBeUndefined();
@@ -168,7 +168,7 @@ describe("injectSheetColumnResizing", () => {
       const event = new MouseEvent("mousedown", { clientX: 100, bubbles: true });
       Object.defineProperty(event, "target", { value: resizer });
 
-      result.onMousedown(event, { key: "name", header: "이름", width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
+      result.onMousedown(event, { key: "name", header: "이름", headerStyle: undefined, tooltip: undefined, width: "200px", fixed: false, hidden: false, collapse: false, disableSorting: false, disableResizing: false, ordering: 0 });
 
       const mouseupEvent = new MouseEvent("mouseup", { clientX: 150 });
       document.dispatchEvent(mouseupEvent);

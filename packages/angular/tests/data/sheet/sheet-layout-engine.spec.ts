@@ -6,6 +6,8 @@ import { useSheetLayoutEngine } from "../../../src/data/sheet/useSheetLayoutEngi
 function createMockColumnControl(opts: {
   key: string;
   header: string | string[];
+  headerStyle?: string;
+  tooltip?: string;
   width?: string;
   fixed?: boolean;
   hidden?: boolean;
@@ -17,6 +19,8 @@ function createMockColumnControl(opts: {
   return {
     key: signal(opts.key),
     header: signal(opts.header),
+    headerStyle: signal(opts.headerStyle),
+    tooltip: signal(opts.tooltip),
     width: signal(opts.width),
     fixed: signal(opts.fixed ?? false),
     hidden: signal(opts.hidden ?? false),
@@ -25,8 +29,60 @@ function createMockColumnControl(opts: {
     disableResizing: signal(opts.disableResizing ?? false),
     ordering: signal(opts.ordering ?? 0),
     summaryTplRef: signal(undefined),
+    headerTplRef: signal(undefined),
   };
 }
+
+describe("Feature 1.1: headerStyle/tooltip columnDefs 매핑", () => {
+  it("headerStyle이 설정된 컬럼의 columnDef에 headerStyle이 포함된다", () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const cols = signal([
+        createMockColumnControl({ key: "a", header: "A", headerStyle: "color: red" }),
+      ] as any);
+
+      const engine = useSheetLayoutEngine({
+        columnControls: cols as any,
+        config: signal(undefined),
+      });
+
+      expect(engine.columnDefs()[0].headerStyle).toBe("color: red");
+    });
+  });
+
+  it("tooltip이 설정된 컬럼의 columnDef에 tooltip이 포함된다", () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const cols = signal([
+        createMockColumnControl({ key: "a", header: "A", tooltip: "도움말" }),
+      ] as any);
+
+      const engine = useSheetLayoutEngine({
+        columnControls: cols as any,
+        config: signal(undefined),
+      });
+
+      expect(engine.columnDefs()[0].tooltip).toBe("도움말");
+    });
+  });
+
+  it("headerStyle/tooltip 미설정 시 undefined로 매핑된다", () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const cols = signal([
+        createMockColumnControl({ key: "a", header: "A" }),
+      ] as any);
+
+      const engine = useSheetLayoutEngine({
+        columnControls: cols as any,
+        config: signal(undefined),
+      });
+
+      expect(engine.columnDefs()[0].headerStyle).toBeUndefined();
+      expect(engine.columnDefs()[0].tooltip).toBeUndefined();
+    });
+  });
+});
 
 describe("LOGIC-015: header merge spanStartHeaders tracking", () => {
   it("3개 이상 연속 동일 상위 헤더가 올바르게 머지된다", () => {

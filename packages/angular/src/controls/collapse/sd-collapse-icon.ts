@@ -17,7 +17,7 @@ import { tablerChevronRight } from "@ng-icons/tabler-icons";
   standalone: true,
   imports: [NgIcon],
   template: `
-    <ng-icon [svg]="icons.tablerChevronRight" />
+    <ng-icon [svg]="icon()" />
   `,
   styles: [
     /* language=SCSS */ `
@@ -36,10 +36,9 @@ import { tablerChevronRight } from "@ng-icons/tabler-icons";
   },
 })
 export class SdCollapseIcon {
+  icon = input(tablerChevronRight);
   open = input(false, { transform: booleanAttribute });
   openRotate = input(90, { transform: numberAttribute });
-
-  icons = { tablerChevronRight };
 
   transformStyle = computed(() => {
     return this.open() ? `rotate(${this.openRotate()}deg)` : "";

@@ -60,7 +60,11 @@ export function useSheetCellStyling<T>(options: {
 
   function getHeaderCellStyle(cell: SdSheetHeaderDef): string | null {
     if (cell.colDef == null) return null;
-    return headerColumnStyles().get(cell.colDef.key) ?? null;
+    const parts: string[] = [];
+    const baseStyle = headerColumnStyles().get(cell.colDef.key);
+    if (baseStyle != null) parts.push(baseStyle);
+    if (cell.colDef.headerStyle != null) parts.push(cell.colDef.headerStyle);
+    return parts.length > 0 ? parts.join("; ") : null;
   }
 
   function getCellStyle(item: T, colDef: SdSheetColumnDef): string | null {

@@ -8,6 +8,8 @@ import type { SdSheetColumn } from "../../../src/data/sheet/sd-sheet-column";
 function mockColumn(overrides: Partial<{
   key: string;
   header: string | string[];
+  headerStyle: string | undefined;
+  tooltip: string | undefined;
   width: string | undefined;
   fixed: boolean;
   hidden: boolean;
@@ -16,11 +18,14 @@ function mockColumn(overrides: Partial<{
   disableResizing: boolean;
   ordering: number;
   cellTplRef: unknown;
+  headerTplRef: unknown;
   summaryTplRef: unknown;
 }>): SdSheetColumn {
   return {
     key: signal(overrides.key ?? "col"),
     header: signal(overrides.header ?? ""),
+    headerStyle: signal(overrides.headerStyle),
+    tooltip: signal(overrides.tooltip),
     width: signal(overrides.width),
     fixed: signal(overrides.fixed ?? false),
     hidden: signal(overrides.hidden ?? false),
@@ -29,6 +34,7 @@ function mockColumn(overrides: Partial<{
     disableResizing: signal(overrides.disableResizing ?? false),
     ordering: signal(overrides.ordering ?? 0),
     cellTplRef: signal(overrides.cellTplRef ?? null),
+    headerTplRef: signal(overrides.headerTplRef ?? null),
     summaryTplRef: signal(overrides.summaryTplRef ?? null),
   } as unknown as SdSheetColumn;
 }

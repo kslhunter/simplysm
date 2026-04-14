@@ -24,8 +24,6 @@
     }
   },
   "dependencies": {
-    "acorn": "^8.14.1",
-    "acorn-walk": "^8.3.4",
     "@angular/build": "^21.2.7",
     "@angular/compiler-cli": "^21.2.8",
     "@fastify/http-proxy": "^11.4.3",
@@ -33,6 +31,8 @@
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",
+    "acorn": "^8.16.0",
+    "acorn-walk": "^8.3.5",
     "browserslist-to-esbuild": "^2.1.1",
     "consola": "^3.4.2",
     "esbuild": "^0.28.0",

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
+import { tablerChevronDown, tablerChevronRight } from "@ng-icons/tabler-icons";
+import type { SdCollapseIcon } from "../../../src/controls/collapse/sd-collapse-icon";
 import {
   SdCollapseClosedTest,
   SdCollapseOpenTest,
@@ -7,6 +10,9 @@ import {
   SdCollapseIconClosedTest,
   SdCollapseIconOpenTest,
   SdCollapseIconCustomRotateTest,
+  SdCollapseIconCustomIconTest,
+  SdCollapseIconCustomIconOpenTest,
+  SdCollapseIconDynamicIconTest,
 } from "./sd-collapse-test.fixture";
 
 describe("Feature 4.1 Slice 1: sd-collapse", () => {
@@ -103,5 +109,59 @@ describe("Feature 4.1 Slice 1: sd-collapse-icon", () => {
     const host = fixture.nativeElement.querySelector("sd-collapse-icon") as HTMLElement;
     expect(host).toBeTruthy();
     expect(host.style.transform).toBe("rotate(180deg)");
+  });
+});
+
+describe("Feature 2.2 Slice 1: sd-collapse-icon icon input", () => {
+  it("icon 미지정시 기본 아이콘(tablerChevronRight)이 렌더링된다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdCollapseIconClosedTest] })
+      .createComponent(SdCollapseIconClosedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const collapseIconDebug = fixture.debugElement.query(By.css("sd-collapse-icon"));
+    const collapseIcon = collapseIconDebug.componentInstance as SdCollapseIcon;
+    expect(collapseIcon.icon()).toBe(tablerChevronRight);
+  });
+
+  it("커스텀 icon 전달시 해당 아이콘이 렌더링된다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdCollapseIconCustomIconTest] })
+      .createComponent(SdCollapseIconCustomIconTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const collapseIconDebug = fixture.debugElement.query(By.css("sd-collapse-icon"));
+    const collapseIcon = collapseIconDebug.componentInstance as SdCollapseIcon;
+    expect(collapseIcon.icon()).toBe(tablerChevronDown);
+  });
+
+  it("커스텀 icon + open=true시 커스텀 아이콘이 렌더링되고 rotate(90deg) 적용된다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdCollapseIconCustomIconOpenTest] })
+      .createComponent(SdCollapseIconCustomIconOpenTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const collapseIconDebug = fixture.debugElement.query(By.css("sd-collapse-icon"));
+    const collapseIcon = collapseIconDebug.componentInstance as SdCollapseIcon;
+    expect(collapseIcon.icon()).toBe(tablerChevronDown);
+
+    const host = fixture.nativeElement.querySelector("sd-collapse-icon") as HTMLElement;
+    expect(host.style.transform).toBe("rotate(90deg)");
+  });
+
+  it("icon을 동적으로 변경하면 signal이 업데이트된다", async () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdCollapseIconDynamicIconTest] })
+      .createComponent(SdCollapseIconDynamicIconTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const collapseIconDebug = fixture.debugElement.query(By.css("sd-collapse-icon"));
+    const collapseIcon = collapseIconDebug.componentInstance as SdCollapseIcon;
+    expect(collapseIcon.icon()).toBe(tablerChevronDown);
+
+    fixture.componentInstance.currentIcon.set(tablerChevronRight);
+    fixture.detectChanges();
+
+    expect(collapseIcon.icon()).toBe(tablerChevronRight);
   });
 });

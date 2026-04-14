@@ -12,6 +12,8 @@ function makeColDef(overrides: Partial<SdSheetColumnDef> = {}): SdSheetColumnDef
   return {
     key: "name",
     header: "이름",
+    headerStyle: undefined,
+    tooltip: undefined,
     width: "200px",
     fixed: false,
     hidden: false,
@@ -155,6 +157,54 @@ describe("useSheetCellStyling", () => {
 
       const style = styling.getCellStyleWithIndent(testItem, makeColDef(), 0);
       expect(style == null || !style.includes("padding-left")).toBe(true);
+    });
+  });
+
+  describe("Rule: headerStyle이 getHeaderCellStyle에서 기존 스타일과 병합된다", () => {
+    it("headerStyle이 기존 width 스타일 뒤에 추가된다", () => {
+      const colDef = makeColDef({ headerStyle: "color: red" });
+      const { styling } = setup({ columnDefs: [colDef] });
+
+      const style = styling.getHeaderCellStyle({
+        text: "이름",
+        colspan: 1,
+        rowspan: 1,
+        isLastRow: true,
+        colDef,
+      });
+
+      expect(style).toContain("width: 200px");
+      expect(style).toContain("color: red");
+    });
+
+    it("headerStyle이 undefined이면 기존 스타일만 반환된다", () => {
+      const colDef = makeColDef({ headerStyle: undefined });
+      const { styling } = setup({ columnDefs: [colDef] });
+
+      const style = styling.getHeaderCellStyle({
+        text: "이름",
+        colspan: 1,
+        rowspan: 1,
+        isLastRow: true,
+        colDef,
+      });
+
+      expect(style).toContain("width: 200px");
+      expect(style).not.toContain("color");
+    });
+
+    it("colDef가 없는 비-leaf 셀은 null을 반환한다", () => {
+      const { styling } = setup();
+
+      const style = styling.getHeaderCellStyle({
+        text: "그룹",
+        colspan: 1,
+        rowspan: 1,
+        isLastRow: false,
+        colDef: undefined,
+      });
+
+      expect(style).toBeNull();
     });
   });
 

@@ -224,7 +224,8 @@ export {
 
 // data/sheet
 export { SdSheet } from "./data/sheet/sd-sheet";
-export { SdSheetColumn } from "./data/sheet/sd-sheet-column";
+export { SdSheetColumn, type SdSheetCellContext } from "./data/sheet/sd-sheet-column";
+export { SdSheetColumnCellTemplate } from "./data/sheet/sd-sheet-column-cell-template";
 export { SdSheetConfigModal } from "./data/sheet/sd-sheet-config.modal";
 export type {
   SdSheetColumnDef,

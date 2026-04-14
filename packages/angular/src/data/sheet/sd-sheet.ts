@@ -99,10 +99,16 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                   [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                   [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
                   [attr.aria-sort]="getAriaSortValue(cell)"
+                  [attr.title]="cell.colDef?.tooltip ?? cell.text"
+                  [class.help]="cell.colDef?.tooltip"
                   [style]="getHeaderCellStyle(cell)"
                   (click)="onHeaderClick($event, cell)"
                 >
-                  <span>{{ cell.text }}</span>
+                  @if (cell.colDef && getColumnHeaderTpl(cell.colDef.key); as headerTpl) {
+                    <ng-template [ngTemplateOutlet]="headerTpl" />
+                  } @else {
+                    <span>{{ cell.text }}</span>
+                  }
                   @if (cell.colDef && getSortDef(cell.colDef.key); as sortDef) {
                     <ng-icon
                       class="_sort-icon"
@@ -462,6 +468,11 @@ export class SdSheet<T> {
     }
     return map;
   });
+
+  getColumnHeaderTpl(key: string) {
+    const col = this._columnControlMap().get(key);
+    return col?.headerTplRef() ?? null;
+  }
 
   getColumnCellTpl(key: string) {
     const col = this._columnControlMap().get(key);

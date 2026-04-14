@@ -1,6 +1,7 @@
 import { Component, signal } from "@angular/core";
 import { SdSheet } from "../../../src/data/sheet/sd-sheet";
 import { SdSheetColumn } from "../../../src/data/sheet/sd-sheet-column";
+import { SdSheetColumnCellTemplate } from "../../../src/data/sheet/sd-sheet-column-cell-template";
 import type { SortingDef } from "../../../src/core/selection/useSortingManager";
 
 // --- Common test interface ---
@@ -23,12 +24,12 @@ export interface TestItem3 {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>cell</ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetBasicTest {
   items = signal<TestItem[]>([
@@ -42,15 +43,15 @@ export class SdSheetBasicTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'col1'" [header]="['그룹A', '세부1']" [width]="'100px'">
-        <ng-template #cellTpl>cell1</ng-template>
+        <ng-template [cell]="items()">cell1</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'col2'" [header]="['그룹A', '세부2']" [width]="'100px'">
-        <ng-template #cellTpl>cell2</ng-template>
+        <ng-template [cell]="items()">cell2</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetMultiHeaderTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
@@ -61,13 +62,13 @@ export class SdSheetMultiHeaderTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>cell</ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
         <ng-template #summaryTpl>합계</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSummaryTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
@@ -78,15 +79,15 @@ export class SdSheetSummaryTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'age'" [header]="'나이'" [width]="'100px'" [hidden]="true">
-        <ng-template #cellTpl>age</ng-template>
+        <ng-template [cell]="items()">age</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetHiddenTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
@@ -97,15 +98,15 @@ export class SdSheetHiddenTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'age'" [header]="'나이'" [width]="'100px'" [collapse]="true">
-        <ng-template #cellTpl>age</ng-template>
+        <ng-template [cell]="items()">age</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetCollapseTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
@@ -116,12 +117,12 @@ export class SdSheetCollapseTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>cell</ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetEmptyTest {
   items = signal<TestItem[]>([]);
@@ -136,12 +137,12 @@ export class SdSheetEmptyTest {
       [getItemCellStyleFn]="getStyleFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>cell</ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetCellStyleTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
@@ -154,14 +155,139 @@ export class SdSheetCellStyleTest {
   template: `
     <sd-sheet [items]="items()" [inset]="true">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>cell</ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetInsetTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+// --- Slice: 헤더 기능 fixtures (headerStyle, tooltip, headerTplRef) ---
+
+@Component({
+  selector: "sd-sheet-header-style-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [headerStyle]="'color: red; font-weight: bold'">
+        <ng-template [cell]="items()">cell</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetHeaderStyleTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+@Component({
+  selector: "sd-sheet-header-style-with-width-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [headerStyle]="'color: red'">
+        <ng-template [cell]="items()">cell</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetHeaderStyleWithWidthTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+@Component({
+  selector: "sd-sheet-tooltip-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [tooltip]="'이 컬럼은 수량입니다'">
+        <ng-template [cell]="items()">cell</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetTooltipTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+@Component({
+  selector: "sd-sheet-header-tpl-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template #headerTpl><em class="custom-header">커스텀 헤더</em></ng-template>
+        <ng-template [cell]="items()">cell</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetHeaderTplTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+// --- Slice: 셀 템플릿 타입 안전성 fixtures (Feature 3.1) ---
+
+@Component({
+  selector: "sd-cell-tpl-render-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()" let-item="item">{{ item.name }}</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetCellTplRenderTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+@Component({
+  selector: "sd-cell-tpl-context-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()" let-item="item" let-idx="index" let-d="depth" let-e="edit">
+          <span class="ctx-item">{{ item.name }}</span>
+          <span class="ctx-index">{{ idx }}</span>
+          <span class="ctx-depth">{{ d }}</span>
+          <span class="ctx-edit">{{ e }}</span>
+        </ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetCellTplContextTest {
+  items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+}
+
+@Component({
+  selector: "sd-cell-tpl-multi-col-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()" let-item="item">name:{{ item.name }}</ng-template>
+      </sd-sheet-column>
+      <sd-sheet-column [key]="'age'" [header]="'나이'" [width]="'100px'">
+        <ng-template [cell]="items()" let-item="item">age:{{ item.age }}</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetCellTplMultiColTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
 }
 
@@ -172,18 +298,18 @@ export class SdSheetInsetTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'100px'" [fixed]="true">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'age'" [header]="'나이'" [width]="'150px'" [fixed]="true">
-        <ng-template #cellTpl>age</ng-template>
+        <ng-template [cell]="items()">age</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'city'" [header]="'도시'" [width]="'200px'">
-        <ng-template #cellTpl>city</ng-template>
+        <ng-template [cell]="items()">city</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetFixedTest {
   items = signal<TestItem3[]>([
@@ -196,21 +322,21 @@ export class SdSheetFixedTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'a'" [header]="'A'" [width]="'100px'" [fixed]="true">
-        <ng-template #cellTpl>a</ng-template>
+        <ng-template [cell]="items()">a</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'b'" [header]="'B'" [width]="'150px'" [fixed]="true">
-        <ng-template #cellTpl>b</ng-template>
+        <ng-template [cell]="items()">b</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'c'" [header]="'C'" [width]="'200px'" [fixed]="true">
-        <ng-template #cellTpl>c</ng-template>
+        <ng-template [cell]="items()">c</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'d'" [header]="'D'" [width]="'300px'">
-        <ng-template #cellTpl>d</ng-template>
+        <ng-template [cell]="items()">d</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetFixed3ColTest {
   items = signal<TestItem3[]>([
@@ -225,12 +351,12 @@ export class SdSheetFixed3ColTest {
   template: `
     <sd-sheet [items]="items()" [selectMode]="'single'" [(selectedItems)]="selectedItems">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSelectSingleTest {
   items = signal<TestItem[]>([
@@ -246,12 +372,12 @@ export class SdSheetSelectSingleTest {
   template: `
     <sd-sheet [items]="items()" [selectMode]="'multi'" [(selectedItems)]="selectedItems">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSelectMultiTest {
   items = signal<TestItem[]>([
@@ -272,12 +398,12 @@ export class SdSheetSelectMultiTest {
       [getItemSelectableFn]="selectableFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSelectDisabledTest {
   items = signal<TestItem[]>([
@@ -297,12 +423,12 @@ export class SdSheetSelectDisabledTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetNoSelectTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
@@ -318,12 +444,12 @@ export class SdSheetNoSelectTest {
       [(selectedItems)]="selectedItems"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetAutoSelectClickTest {
   items = signal<TestItem[]>([
@@ -343,12 +469,12 @@ export class SdSheetAutoSelectClickTest {
       [(selectedItems)]="selectedItems"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetAutoSelectFocusTest {
   items = signal<TestItem[]>([
@@ -363,12 +489,12 @@ export class SdSheetAutoSelectFocusTest {
   template: `
     <sd-sheet [items]="items()" [focusMode]="'row'">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetFocusModeRowTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
@@ -381,15 +507,15 @@ export class SdSheetFocusModeRowTest {
   template: `
     <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
       <sd-sheet-column [key]="'age'" [header]="'나이'" [width]="'100px'">
-        <ng-template #cellTpl>age</ng-template>
+        <ng-template [cell]="items()">age</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSortTest {
   items = signal<TestItem[]>([
@@ -405,12 +531,12 @@ export class SdSheetSortTest {
   template: `
     <sd-sheet [items]="items()" [(sorts)]="sorts">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSortNoAutoTest {
   items = signal<TestItem[]>([
@@ -425,12 +551,12 @@ export class SdSheetSortNoAutoTest {
   template: `
     <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [disableSorting]="true">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetSortDisabledTest {
   items = signal<TestItem[]>([
@@ -456,12 +582,12 @@ export interface TreeItem {
       [(expandedItems)]="expandedItems"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetTreeTest {
   child1: TreeItem = { name: "Child1" };
@@ -479,12 +605,12 @@ export class SdSheetTreeTest {
   template: `
     <sd-sheet [items]="items()">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetNoTreeTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
@@ -500,12 +626,12 @@ export class SdSheetNoTreeTest {
       [visiblePageCount]="10"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetPaginationTest {
   items = signal<TestItem[]>([
@@ -520,12 +646,12 @@ export class SdSheetPaginationTest {
   template: `
     <sd-sheet [items]="items()" [totalPageCount]="1">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
-        <ng-template #cellTpl>name</ng-template>
+        <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
     </sd-sheet>
   `,
   standalone: true,
-  imports: [SdSheet, SdSheetColumn],
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
 })
 export class SdSheetNoPaginationTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);

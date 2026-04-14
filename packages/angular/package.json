@@ -48,7 +48,7 @@
     "@tiptap/extension-text-style": "^3.22.3",
     "@tiptap/extension-underline": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
-    "bwip-js": "^4.9.0",
+    "bwip-js": "^4.9.2",
     "echarts": "^6.0.0",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",

@@ -186,3 +186,17 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     await closeModal(fixture, modal2, promise2);
   });
 });
+
+describe("Feature 2.1 Slice 1: SdModalProvider headerStyle 전달", () => {
+  // Acceptance: SdModalProvider.showAsync에서 headerStyle 옵션을 전달할 수 있다
+  it("options.headerStyle이 전달되면 모달의 ._header div에 스타일이 적용된다", async () => {
+    const fixture = setupHost();
+    const { modal, promise } = await openModal(fixture, { headerStyle: "color: blue" });
+
+    const header = modal.querySelector("._header") as HTMLElement;
+    expect(header).not.toBeNull();
+    expect(header.style.color).toBe("blue");
+
+    await closeModal(fixture, modal, promise);
+  });
+});

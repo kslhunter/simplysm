@@ -8,6 +8,8 @@ function makeDef(overrides: Partial<SdSheetColumnDef>): SdSheetColumnDef {
   return {
     key: overrides.key ?? "col",
     header: overrides.header ?? "",
+    headerStyle: overrides.headerStyle,
+    tooltip: overrides.tooltip,
     width: overrides.width,
     fixed: overrides.fixed ?? false,
     hidden: overrides.hidden ?? false,

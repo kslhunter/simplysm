@@ -1,4 +1,5 @@
 import { Component, signal } from "@angular/core";
+import { tablerChevronDown } from "@ng-icons/tabler-icons";
 import { SdCollapse } from "../../../src/controls/collapse/sd-collapse";
 import { SdCollapseIcon } from "../../../src/controls/collapse/sd-collapse-icon";
 
@@ -67,3 +68,33 @@ export class SdCollapseIconOpenTest {}
   imports: [SdCollapseIcon],
 })
 export class SdCollapseIconCustomRotateTest {}
+
+@Component({
+  selector: "sd-collapse-icon-custom-icon-test",
+  template: `<sd-collapse-icon [icon]="customIcon" />`,
+  standalone: true,
+  imports: [SdCollapseIcon],
+})
+export class SdCollapseIconCustomIconTest {
+  customIcon = tablerChevronDown;
+}
+
+@Component({
+  selector: "sd-collapse-icon-custom-icon-open-test",
+  template: `<sd-collapse-icon [icon]="customIcon" [open]="true" />`,
+  standalone: true,
+  imports: [SdCollapseIcon],
+})
+export class SdCollapseIconCustomIconOpenTest {
+  customIcon = tablerChevronDown;
+}
+
+@Component({
+  selector: "sd-collapse-icon-dynamic-icon-test",
+  template: `<sd-collapse-icon [icon]="currentIcon()" />`,
+  standalone: true,
+  imports: [SdCollapseIcon],
+})
+export class SdCollapseIconDynamicIconTest {
+  currentIcon = signal(tablerChevronDown);
+}

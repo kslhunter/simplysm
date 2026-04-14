@@ -8,6 +8,7 @@ import {
   SdModalTestHideCloseButton,
   SdModalTestHideHeader,
   SdModalTestMovable,
+  SdModalTestHeaderStyle,
 } from "./sd-modal-test.fixture";
 import { SdActivatedModalProvider } from "../../../src/core/modal/sd-activated-modal.provider";
 
@@ -263,6 +264,55 @@ describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
 
     // early-return으로 zIndex가 변경되지 않아야 한다
     expect(modal.style.zIndex).toBe("9999");
+  });
+});
+
+// endregion
+
+// region Feature 2.1: headerStyle
+
+describe("Feature 2.1 Slice 1: headerStyle input", () => {
+  // Acceptance: headerStyle이 지정되면 ._header div에 인라인 스타일이 적용된다
+  it("headerStyle이 지정되면 ._header div에 해당 스타일이 적용된다", () => {
+    const fixture = setup(SdModalTestHeaderStyle);
+    fixture.componentInstance.headerStyle.set("background: red");
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const modal = getModal(fixture);
+    const header = getHeader(modal);
+
+    expect(header).not.toBeNull();
+    expect(header!.style.background).toBe("red");
+  });
+
+  // Acceptance: headerStyle이 미지정(undefined)이면 ._header div에 인라인 스타일이 없다
+  it("headerStyle이 미지정이면 ._header div에 인라인 스타일이 없다", () => {
+    const fixture = setup(SdModalTestHeaderStyle);
+    const modal = getModal(fixture);
+    const header = getHeader(modal);
+
+    expect(header).not.toBeNull();
+    expect(header!.getAttribute("style")).toBeNull();
+  });
+
+  // Unit: headerStyle을 동적으로 변경하면 DOM이 업데이트된다
+  it("headerStyle을 동적으로 변경하면 ._header div 스타일이 업데이트된다", () => {
+    const fixture = setup(SdModalTestHeaderStyle);
+    fixture.componentInstance.headerStyle.set("background: red");
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const modal = getModal(fixture);
+    const header = getHeader(modal)!;
+    expect(header.style.background).toBe("red");
+
+    // 동적 변경
+    fixture.componentInstance.headerStyle.set("background: blue");
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(header.style.background).toBe("blue");
   });
 });
 

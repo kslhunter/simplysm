@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from "@angular/core";
+import { Component, input, output, signal, type WritableSignal } from "@angular/core";
 import { type SdModalContentDef } from "../../../src/core/modal/sd-modal.provider";
 import { SdModal } from "../../../src/core/modal/sd-modal";
 
@@ -186,4 +186,21 @@ export class SdModalTestTabbable implements SdModalContentDef<void> {
   template: `<button class="trigger-btn">Open Modal</button>`,
 })
 export class SdModalFocusTestHost {
+}
+
+/**
+ * headerStyle 테스트
+ */
+@Component({
+  selector: "sd-modal-test-header-style",
+  standalone: true,
+  imports: [SdModal],
+  template: `
+    <sd-modal [open]="true" [title]="'Test'" [headerStyle]="headerStyle()">
+      <div class="modal-body">body</div>
+    </sd-modal>
+  `,
+})
+export class SdModalTestHeaderStyle {
+  headerStyle: WritableSignal<string | undefined> = signal<string | undefined>(undefined);
 }

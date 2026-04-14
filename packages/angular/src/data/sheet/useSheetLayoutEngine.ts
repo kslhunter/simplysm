@@ -17,6 +17,8 @@ export function useSheetLayoutEngine(options: {
         return {
           key,
           header: col.header(),
+          headerStyle: col.headerStyle(),
+          tooltip: col.tooltip(),
           width: cfgCol?.width ?? col.width(),
           fixed: cfgCol?.fixed ?? col.fixed(),
           hidden: cfgCol?.hidden ?? col.hidden(),

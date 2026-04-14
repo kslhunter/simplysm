@@ -56,6 +56,7 @@ export interface SdModalOptions {
   key?: string;
   hideHeader?: boolean;
   hideCloseButton?: boolean;
+  headerStyle?: string;
   useCloseByBackdrop?: boolean;
   useCloseByEscapeKey?: boolean;
   float?: boolean;

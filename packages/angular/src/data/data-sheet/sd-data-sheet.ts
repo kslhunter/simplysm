@@ -13,6 +13,7 @@ import {
 import { SdButton } from "../../controls/button/sd-button";
 import { SdForm } from "../../controls/form/sd-form";
 import { SdSheetColumn } from "../sheet/sd-sheet-column";
+import { SdSheetColumnCellTemplate } from "../sheet/sd-sheet-column-cell-template";
 import { SdSheet } from "../sheet/sd-sheet";
 import { injectParent } from "../../core/injectParent";
 import { FormatPipe } from "../../core/format.pipe";
@@ -45,6 +46,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
     SdButton,
     SdSheet,
     SdSheetColumn,
+    SdSheetColumnCellTemplate,
     NgTemplateOutlet,
     SdBaseContainer,
     FormatPipe,
@@ -214,7 +216,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                 parent.itemPropInfo.isDeleted
               ) {
                 <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted!">
-                  <ng-template #cellTpl let-item>
+                  <ng-template [cell]="parent.items()" let-item="item">
                     <div class="p-xs-sm tx-center">
                       <sd-anchor
                         [theme]="'danger'"
@@ -244,12 +246,19 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                   [key]="columnControl.key()"
                   [fixed]="columnControl.fixed()"
                   [header]="columnControl.header()"
+                  [headerStyle]="columnControl.headerStyle()"
+                  [tooltip]="columnControl.tooltip()"
                   [width]="columnControl.width()"
                   [disableSorting]="columnControl.disableSorting()"
                   [disableResizing]="columnControl.disableResizing()"
                   [hidden]="columnControl.hidden()"
                   [collapse]="columnControl.collapse()"
                 >
+                  @if (columnControl.headerTplRef()) {
+                    <ng-template #headerTpl>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTplRef()!" />
+                    </ng-template>
+                  }
                   @if (columnControl.summaryTplRef()) {
                     <ng-template #summaryTpl>
                       <ng-template [ngTemplateOutlet]="columnControl.summaryTplRef()!" />
@@ -257,8 +266,8 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                   }
 
                   <ng-template
-                    #cellTpl
-                    let-item
+                    [cell]="parent.items()"
+                    let-item="item"
                     let-index="index"
                     let-depth="depth"
                     let-edit="edit"
@@ -311,7 +320,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                   [key]="parent.itemPropInfo.lastModifiedAt!"
                   [hidden]="true"
                 >
-                  <ng-template #cellTpl let-item>
+                  <ng-template [cell]="parent.items()" let-item="item">
                     <div class="p-xs-sm tx-center">
                       {{
                         item[parent.itemPropInfo.lastModifiedAt!]
@@ -327,7 +336,7 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                   [key]="parent.itemPropInfo.lastModifiedBy!"
                   [hidden]="true"
                 >
-                  <ng-template #cellTpl let-item>
+                  <ng-template [cell]="parent.items()" let-item="item">
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedBy!] }}
                     </div>
