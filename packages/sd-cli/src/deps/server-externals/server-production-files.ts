@@ -1,6 +1,7 @@
 import type { ServerBuildInfo } from "../../workers/server-build.worker";
 import path from "path";
 import fs from "fs";
+import YAML from "yaml";
 import { cpx } from "@simplysm/core-node";
 import { consola } from "consola";
 import { collectAllDependencyExternals } from "../../esbuild/esbuild-config";
@@ -8,21 +9,29 @@ import { collectAllDependencyExternals } from "../../esbuild/esbuild-config";
 const logger = consola.withTag("sd:cli:server-production-files");
 
 /**
- * 세 가지 소스에서 외부 모듈을 수집하고 병합한다.
- * collectAllDependencyExternals를 통한 단일 패스 의존성 트리 순회를 사용한다.
+ * 외부 모듈을 두 용도로 분리하여 수집한다.
+ * - bundleExternals: esbuild external — 번들에서 제외할 패키지
+ * - prodDependencies: dist/package.json dependencies — 런타임에 실제 설치되어야 하는 패키지
+ *
+ * 미설치 optional peer는 번들 제외만 필요할 뿐 런타임에 쓰이지 않으므로 prodDependencies에 포함하지 않는다.
  */
-export function collectAllExternals(pkgDir: string, manualExternals?: string[]): string[] {
+export function collectAllExternals(
+  pkgDir: string,
+  manualExternals?: string[],
+): { bundleExternals: string[]; prodDependencies: string[] } {
   logger.debug("의존성 트리 스캔 중...");
   const { optionalPeerDeps, nativeModules } = collectAllDependencyExternals(pkgDir);
 
   const manual = manualExternals ?? [];
-  return [...new Set([...optionalPeerDeps, ...nativeModules, ...manual])];
+  return {
+    bundleExternals: [...new Set([...optionalPeerDeps, ...nativeModules, ...manual])],
+    prodDependencies: [...new Set([...nativeModules, ...manual])],
+  };
 }
 
 /**
  * pnpm-lock.yaml의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
- * Lockfile v9 형식: `packages:` 섹션의 `'name@version':` 키를 파싱한다.
- * YAML 파서 의존성을 피하기 위해 단순 라인 기반 파싱을 사용한다.
+ * 키 형태: "name@version" · "@scope/name@version" · "name@version(peer@ver)..."
  */
 export function parseLockfileVersions(cwd: string): Map<string, string> {
   const lockfilePath = path.join(cwd, "pnpm-lock.yaml");
@@ -31,30 +40,19 @@ export function parseLockfileVersions(cwd: string): Map<string, string> {
   }
 
   const content = fs.readFileSync(lockfilePath, "utf-8");
+  const parsed = YAML.parse(content) as { packages?: Record<string, unknown> };
   const map = new Map<string, string>();
 
-  // "packages:" 섹션을 찾고 "'@scope/name@1.2.3':" 또는 "'name@1.2.3':" 형태의 항목을 파싱
-  const lines = content.split("\n");
-  let inPackages = false;
-  for (const line of lines) {
-    if (line === "packages:") {
-      inPackages = true;
-      continue;
-    }
-    if (inPackages && line.length > 0 && !line.startsWith(" ") && !line.startsWith("'")) {
-      break; // 다음 최상위 섹션
-    }
-    if (!inPackages) continue;
-
-    // "'@scope/name@version':" 또는 "'name@version':" 매칭
-    const match = /^\s{2}'(.+)@(\d[^']*)':\s*$/.exec(line);
-    if (match != null) {
-      const name = match[1];
-      const version = match[2];
-      // 첫 번째 항목 유지 (lockfile은 각 버전을 한 번만 기록)
-      if (!map.has(name)) {
-        map.set(name, version);
-      }
+  for (const key of Object.keys(parsed.packages ?? {})) {
+    // 첫 번째 @숫자 기준으로 name / version 분리 (scope 패키지의 선두 @ 보존)
+    const m = /^(.+?)@(\d.+)$/.exec(key);
+    if (m == null) continue;
+    const name = m[1];
+    // peerDep suffix "(peer@ver)..." 제거
+    const parenIdx = m[2].indexOf("(");
+    const version = parenIdx === -1 ? m[2] : m[2].substring(0, parenIdx);
+    if (!map.has(name)) {
+      map.set(name, version);
     }
   }
 

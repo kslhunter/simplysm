@@ -5,15 +5,15 @@ import ts from "typescript";
 import type esbuild from "esbuild";
 import { consola } from "consola";
 import { JavaScriptTransformer, Cache as AngularCache } from "@angular/build/private";
-import type { AngularSourceFileCache } from "../angular/angular-compiler.js";
-import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization.js";
-import { SdTsCompiler } from "../ts-compiler/SdTsCompiler.js";
-import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result.js";
-import { FileReferenceTracker } from "./file-reference-tracker.js";
-import { LmdbCacheStore } from "./lmdb-cache-store.js";
-import { createCachedLoad, type LoadResultCache } from "./load-result-cache.js";
-import { collectHmrCandidates, HMR_MODIFIED_FILE_LIMIT } from "../angular/hmr-candidates.js";
-import { createWorkerTransformer } from "../angular/web-worker-transformer.js";
+import type { AngularSourceFileCache } from "../angular/angular-compiler";
+import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
+import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result";
+import { FileReferenceTracker } from "./file-reference-tracker";
+import { LmdbCacheStore } from "./lmdb-cache-store";
+import { createCachedLoad, type LoadResultCache } from "./load-result-cache";
+import { collectHmrCandidates, HMR_MODIFIED_FILE_LIMIT } from "../angular/hmr-candidates";
+import { transformWorkerPatterns } from "./esbuild-worker-plugin";
 
 const logger = consola.withTag("sd:cli:angular-plugin");
 
@@ -46,12 +46,6 @@ export interface AngularCompilerPluginOptions {
   stylesheetDependencies?: Map<string, Set<string>>;
   /** SCSS 에러 배열 (transformStylesheet가 기록, Plugin이 esbuild errors로 변환) */
   stylesheetErrors?: string[];
-}
-
-interface AdditionalResult {
-  outputFiles?: esbuild.OutputFile[];
-  metafile?: esbuild.Metafile;
-  errors?: esbuild.PartialMessage[];
 }
 
 //#endregion
@@ -158,46 +152,6 @@ export function convertSerializedDiagnosticToEsbuild(
 
 //#endregion
 
-//#region bundleWebWorker
-
-/**
- * Worker 파일을 esbuild.buildSync()로 별도 ESM 번들로 빌드한다.
- * TypeScript transformer 내에서 동기적으로 호출되므로 sync API를 사용한다.
- */
-export function bundleWebWorker(
-  build: esbuild.PluginBuild,
-  sourcemap: boolean,
-  workerFile: string,
-): esbuild.BuildResult {
-  try {
-    return build.esbuild.buildSync({
-      ...build.initialOptions,
-      platform: "browser",
-      write: false,
-      bundle: true,
-      metafile: true,
-      format: "esm",
-      entryNames: "worker-[hash]",
-      entryPoints: [workerFile],
-      sourcemap,
-      supported: undefined,
-      plugins: undefined,
-    });
-  } catch (error) {
-    if (
-      error != null &&
-      typeof error === "object" &&
-      "errors" in error &&
-      "warnings" in error
-    ) {
-      return error as esbuild.BuildResult;
-    }
-    throw error;
-  }
-}
-
-//#endregion
-
 //#region onLoad 헬퍼
 
 const POTENTIAL_METADATA_REGEX =
@@ -288,7 +242,12 @@ export function createAngularCompilerPlugin(
       // ── 내부 상태 ──
       const typeScriptFileCache: Map<string, string | Uint8Array> =
         pluginOptions.typeScriptFileCache ?? new Map();
-      const additionalResults = new Map<string, AdditionalResult>();
+      // containingFile별 Worker 번들 결과. 증분 빌드에서 변경된 파일만 선택적으로
+      // 제거하여, 변경되지 않은 Worker metafile/outputFiles가 유지되도록 함.
+      const workerResultsByContainingFile = new Map<
+        string,
+        { outputFiles?: esbuild.OutputFile[]; metafile?: esbuild.Metafile }
+      >();
       const referencedFileTracker = new FileReferenceTracker();
       let sdTsCompiler: SdTsCompiler | undefined;
       let lastResult: ISdTsCompilerResult | undefined;
@@ -306,58 +265,6 @@ export function createAngularCompilerPlugin(
           resolveDir: cwd,
         });
         return sideEffects;
-      }
-
-      // ── 서브함수: WebWorker 프로세서 생성 ──
-      function createWebWorkerProcessor(
-        errors: esbuild.PartialMessage[],
-        warnings: esbuild.PartialMessage[],
-      ): (workerFile: string, containingFile: string) => string {
-        return (workerFile: string, containingFile: string): string => {
-          const fullWorkerPath = path.join(path.dirname(containingFile), workerFile);
-          const workerResult = bundleWebWorker(build, pluginOptions.sourcemap, fullWorkerPath);
-
-          warnings.push(...workerResult.warnings);
-
-          if (workerResult.errors.length > 0) {
-            errors.push(...workerResult.errors);
-            // 에러 파일 경로 추적 (rebuild 허용)
-            referencedFileTracker.add(
-              containingFile,
-              workerResult.errors
-                .map((e) => e.location?.file)
-                .filter((f): f is string => f != null)
-                .map((f) => path.join(cwd, f)),
-            );
-            additionalResults.set(fullWorkerPath, { errors: workerResult.errors });
-            return workerFile;
-          }
-
-          additionalResults.set(fullWorkerPath, {
-            outputFiles: workerResult.outputFiles,
-            metafile: workerResult.metafile,
-          });
-
-          // metafile.inputs → FileReferenceTracker
-          if (workerResult.metafile != null) {
-            referencedFileTracker.add(
-              containingFile,
-              Object.keys(workerResult.metafile.inputs).map((input) => path.join(cwd, input)),
-            );
-          }
-
-          // worker-[HASH].js 파일 찾기
-          const workerCodeFile = workerResult.outputFiles?.find((file) =>
-            /^worker-[A-Z0-9]{8}\.[cm]?js$/.test(path.basename(file.path)),
-          );
-          if (workerCodeFile == null) {
-            errors.push({ text: `Web Worker bundled code file not found: ${fullWorkerPath}`, location: null });
-            return workerFile;
-          }
-          const outdir = build.initialOptions.outdir ?? "";
-          const workerCodePath = path.relative(outdir, workerCodeFile.path);
-          return workerCodePath.replaceAll("\\", "/");
-        };
       }
 
       // ── onStart ──
@@ -402,9 +309,10 @@ export function createAngularCompilerPlugin(
               sourceFileCache.modifiedFiles,
             );
 
-            // stale additionalResults 제거
+            // 변경된 파일의 Worker 결과만 선택적 제거 (변경되지 않은 파일의
+            // Worker metafile은 유지되어 onEnd에서 재병합됨)
             for (const file of expandedModifiedFiles) {
-              additionalResults.delete(file);
+              workerResultsByContainingFile.delete(file);
             }
           }
 
@@ -424,19 +332,39 @@ export function createAngularCompilerPlugin(
             });
           }
 
-          // ── processWebWorker + workerTransformer ──
-          const processWebWorker = createWebWorkerProcessor(errors, warnings);
-          const workerTransformer = createWorkerTransformer(processWebWorker);
-
           // ── compileAsync ──
           const compileResult = await sdTsCompiler.compileAsync(
             isIncremental ? expandedModifiedFiles : undefined,
-            { additionalTransformers: { before: [workerTransformer] } },
           );
 
-          // ── emitResults → typeScriptFileCache ──
+          // ── emitResults → typeScriptFileCache (Worker 패턴 처리 포함) ──
           for (const { contents, sourceFileName } of compileResult.emitResults ?? []) {
-            typeScriptFileCache.set(path.normalize(sourceFileName), contents);
+            const normalized = path.normalize(sourceFileName);
+            const workerResult = transformWorkerPatterns(contents, normalized, build);
+            if (workerResult != null) {
+              typeScriptFileCache.set(normalized, workerResult.contents);
+              errors.push(...workerResult.errors);
+              warnings.push(...workerResult.warnings);
+              if (workerResult.workerMetafile != null) {
+                referencedFileTracker.add(
+                  normalized,
+                  Object.keys(workerResult.workerMetafile.inputs).map((input) =>
+                    path.join(cwd, input),
+                  ),
+                );
+              }
+              if (
+                workerResult.workerMetafile != null ||
+                workerResult.workerOutputFiles != null
+              ) {
+                workerResultsByContainingFile.set(normalized, {
+                  outputFiles: workerResult.workerOutputFiles,
+                  metafile: workerResult.workerMetafile,
+                });
+              }
+            } else {
+              typeScriptFileCache.set(normalized, contents);
+            }
           }
 
           // ── onLoad 플래그 결정 (첫 빌드에서만) ──
@@ -612,6 +540,37 @@ export function createAngularCompilerPlugin(
             false, // skipLinker
             sideEffects,
           );
+
+          // Worker 패턴 처리 (D2)
+          const textContents = new TextDecoder().decode(contents);
+          const workerResult = transformWorkerPatterns(textContents, request, build);
+          if (workerResult != null) {
+            if (workerResult.workerMetafile != null) {
+              referencedFileTracker.add(
+                request,
+                Object.keys(workerResult.workerMetafile.inputs).map((input) =>
+                  path.join(cwd, input),
+                ),
+              );
+            }
+            if (
+              workerResult.workerMetafile != null ||
+              workerResult.workerOutputFiles != null
+            ) {
+              workerResultsByContainingFile.set(request, {
+                outputFiles: workerResult.workerOutputFiles,
+                metafile: workerResult.workerMetafile,
+              });
+            }
+            return {
+              contents: workerResult.contents,
+              loader: "js" as const,
+              resolveDir: path.dirname(request),
+              errors: workerResult.errors.length > 0 ? workerResult.errors : undefined,
+              warnings: workerResult.warnings.length > 0 ? workerResult.warnings : undefined,
+            };
+          }
+
           return {
             contents,
             loader: "js" as const,
@@ -622,13 +581,13 @@ export function createAngularCompilerPlugin(
 
       // ── onEnd ──
       build.onEnd((result: esbuild.BuildResult) => {
-        for (const { outputFiles, metafile } of additionalResults.values()) {
-          if (outputFiles != null && outputFiles.length > 0) {
-            result.outputFiles?.push(...outputFiles);
+        for (const wr of workerResultsByContainingFile.values()) {
+          if (wr.outputFiles != null && wr.outputFiles.length > 0) {
+            result.outputFiles?.push(...wr.outputFiles);
           }
-          if (result.metafile != null && metafile != null) {
-            Object.assign(result.metafile.inputs, metafile.inputs);
-            Object.assign(result.metafile.outputs, metafile.outputs);
+          if (result.metafile != null && wr.metafile != null) {
+            Object.assign(result.metafile.inputs, wr.metafile.inputs);
+            Object.assign(result.metafile.outputs, wr.metafile.outputs);
           }
         }
       });

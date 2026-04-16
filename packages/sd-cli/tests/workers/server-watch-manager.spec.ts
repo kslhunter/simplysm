@@ -45,7 +45,7 @@ vi.mock("../../src/utils/tsconfig", () => ({
 }));
 
 vi.mock("../../src/deps/server-externals/server-production-files", () => ({
-  collectAllExternals: vi.fn(() => []),
+  collectAllExternals: vi.fn(() => ({ bundleExternals: [], prodDependencies: [] })),
 }));
 
 //#endregion
@@ -89,7 +89,7 @@ describe("startServerWatchLoop", () => {
     vi.mocked(esbuildCtx.hasContext).mockReset().mockReturnValue(true);
     vi.mocked(esbuildCtx.getMetafile).mockReset().mockReturnValue(undefined);
     vi.mocked(esbuildCtx.recreateContext).mockReset().mockResolvedValue();
-    vi.mocked(collectAllExternals).mockReset().mockReturnValue([]);
+    vi.mocked(collectAllExternals).mockReset().mockReturnValue({ bundleExternals: [], prodDependencies: [] });
     (mockLogger.debug as unknown as ReturnType<typeof vi.fn>).mockClear();
   });
 

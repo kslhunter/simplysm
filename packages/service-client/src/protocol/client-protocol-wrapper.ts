@@ -5,8 +5,7 @@ import type {
   ServiceMessage,
   ServiceProtocol,
 } from "@simplysm/service-common";
-import type { WorkerLike } from "../types/browser-compat";
-import { isWorkerSupported, createBrowserWorker } from "../types/browser-compat";
+import { isWorkerSupported } from "../types/browser-compat";
 
 export interface ClientProtocolWrapper {
   encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
@@ -15,7 +14,7 @@ export interface ClientProtocolWrapper {
 }
 
 // 공유 worker 상태 (싱글턴 패턴)
-let worker: WorkerLike | undefined;
+let worker: Worker | undefined;
 const workerResolvers = new LazyGcMap<
   string,
   { resolve: (res: unknown) => void; reject: (err: Error) => void }
@@ -37,7 +36,7 @@ function isWorkerAvailable(): boolean {
   return workerAvailable;
 }
 
-function getWorker(): WorkerLike | undefined {
+function getWorker(): Worker | undefined {
   if (!isWorkerAvailable()) {
     return undefined;
   }
@@ -45,11 +44,10 @@ function getWorker(): WorkerLike | undefined {
   if (!worker) {
     // 모던 번들러 (Vite/Esbuild/Webpack)가 이 구문을 사용하여 Worker를 별도 파일로 분리/로드함
     // 참고: import.meta.resolve 대신 상대 경로 사용 (Vite 호환성)
-    worker = createBrowserWorker(
-      new URL("../workers/client-protocol.worker.ts", import.meta.url),
+    worker = new Worker(
+      new URL("../workers/client-protocol.worker.js", import.meta.url),
       { type: "module" },
     );
-    if (worker == null) return undefined;
 
     worker.onmessage = (event: MessageEvent) => {
       const { id, type, result, error } = event.data as {
@@ -70,6 +68,20 @@ function getWorker(): WorkerLike | undefined {
         }
         workerResolvers.delete(id);
       }
+    };
+
+    worker.onerror = () => {
+      // Worker 로드 실패 또는 초기화 에러 시
+      // 대기 중인 모든 요청 즉시 reject
+      const workerErr = new Error("Worker 초기화 실패");
+      for (const resolver of workerResolvers.values()) {
+        resolver.reject(workerErr);
+      }
+      workerResolvers.clear();
+
+      // 이후 메인 스레드로 fallback
+      worker = undefined;
+      workerAvailable = false;
     };
   }
   return worker;

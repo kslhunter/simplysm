@@ -92,7 +92,19 @@ export function createServiceTransport(
   }
 
   async function onMessage(buf: Bytes): Promise<void> {
-    const decoded = await protocol.decode(buf);
+    // 헤더에서 uuid 선추출 (decode 실패 시에도 해당 요청에 에러를 전달하기 위함)
+    const uuid = Uuid.fromBytes(buf.subarray(0, 16)).toString();
+
+    let decoded;
+    try {
+      decoded = await protocol.decode(buf);
+    } catch (err) {
+      const listenerInfo = pendingRequests.get(uuid);
+      pendingRequests.delete(uuid);
+      responseProgressTotalSize.delete(uuid);
+      listenerInfo?.reject(err instanceof Error ? err : new Error(String(err)));
+      return;
+    }
 
     const listenerInfo = pendingRequests.get(decoded.uuid);
 

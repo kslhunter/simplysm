@@ -62,6 +62,7 @@
 - **barrel export 금지**: `src/` 루트의 `index.ts`를 제외하고, 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 패키지 루트 `index.ts`에서 개별 파일 경로를 직접 export한다.
 - 다른 패키지의 타입등 re-export 금지.
 - **dynamic import (`import()`) 사용 금지**: 조건부 peer dependency 로딩, 외부 ts 파일 읽기 등 정적 import가 불가능한 경우를 제외하고 `import()` 사용 금지. 정적 `import` 문을 사용한다.
+- **CRITICAL: 구조화된 문법 처리 시 파서 사용 필수**: TypeScript/JavaScript, HTML, CSS, JSON, YAML 등 **문법 구조가 정의된 텍스트**를 분석·변환할 때는 반드시 해당 언어의 **공식 파서/AST**(예: TypeScript Compiler API, `@angular/compiler`, `postcss`, `parse5`, `JSON.parse` 등)를 사용한다. 정규식·문자열 치환으로 **우회 금지(NEVER)**. 정규식은 주석·문자열·중첩 구조·이스케이프 등 엣지 케이스에서 반드시 깨지며, "일단 되면 넘어가자" 식 접근의 전형적 사례이다. 파서 사용이 어렵거나 오버헤드가 크다고 판단되면 **사용자에게 먼저 질문**한다.
 - **null/undefined 비교 규칙**: `===`/`!==` 사용이 기본이지만 **null/undefined 비교만 예외**이다. 일반 값 비교는 `===`/`!==`, null/undefined 검사는 `== null`/`!= null`을 사용한다. `=== null`, `!== null`, `=== undefined`, `!== undefined`는 lint 에러이다.
   - `value === "hello"` ○ (일반 값 비교 → `===`)
   - `value == null` ○ (null/undefined 검사 → `==`)

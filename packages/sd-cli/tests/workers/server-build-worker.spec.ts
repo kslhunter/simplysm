@@ -246,6 +246,20 @@ describe("server-build.worker build()", () => {
     });
   });
 
+  // Acceptance: production build includes worker bundle plugin
+  it("includes worker bundle plugin in esbuild.build() plugins", async () => {
+    await workerFns["build"](baseBuildInfo);
+
+    expect(esbuild.build).toHaveBeenCalledWith(
+      expect.objectContaining({
+        plugins: [
+          expect.objectContaining({ name: "sd-worker-bundle" }),
+          mockTscPlugin.plugin,
+        ],
+      }),
+    );
+  });
+
   // Acceptance: esbuild + typecheck parallel execution
   it("runs esbuild and tsc in parallel for server build", async () => {
     const result = await workerFns["build"](baseBuildInfo);
@@ -442,7 +456,7 @@ describe("server-build.worker build()", () => {
     expect(pkg.volta.node).toBe("v20.11.0");
   });
 
-  it("collects externals from three sources", async () => {
+  it("includes nativeModules and manual externals in dist/package.json but excludes missing optional peer deps", async () => {
     vi.mocked(collectAllDependencyExternals).mockReturnValue({
       optionalPeerDeps: ["opt-dep"],
       nativeModules: ["native-mod"],
@@ -450,9 +464,6 @@ describe("server-build.worker build()", () => {
 
     mockLockfileContent = [
       "packages:",
-      "",
-      "  'opt-dep@1.2.3':",
-      "    resolution: {integrity: sha512-a}",
       "",
       "  'native-mod@2.4.0':",
       "    resolution: {integrity: sha512-b}",
@@ -473,16 +484,16 @@ describe("server-build.worker build()", () => {
 
     const pkgJsonPath = path.join(baseBuildInfo.pkgDir, "dist", "package.json");
     const pkg = JSON.parse(writtenFiles.get(pkgJsonPath)!);
-    expect(pkg.dependencies["opt-dep"]).toBe("1.2.3");
+    expect(pkg.dependencies["opt-dep"]).toBeUndefined();
     expect(pkg.dependencies["native-mod"]).toBe("2.4.0");
     expect(pkg.dependencies["manual-ext"]).toBe("3.1.0");
   });
 
-  // Unit: reports error for externals not found in pnpm-lock.yaml
+  // Unit: reports error when a nativeModule/manual external is missing from lockfile
   it("reports error for external dependency not in lockfile", async () => {
     vi.mocked(collectAllDependencyExternals).mockReturnValue({
-      optionalPeerDeps: ["unknown-dep"],
-      nativeModules: [],
+      optionalPeerDeps: [],
+      nativeModules: ["unknown-native"],
     });
 
     mockLockfileContent = [
@@ -499,7 +510,7 @@ describe("server-build.worker build()", () => {
 
     const result = await workerFns["build"](baseBuildInfo);
     expect(result.build.success).toBe(false);
-    expect(result.build.errors[0]).toContain("unknown-dep");
+    expect(result.build.errors[0]).toContain("unknown-native");
     expect(result.build.errors[0]).toContain("not found in pnpm-lock.yaml");
   });
 
@@ -699,8 +710,8 @@ describe("server-build.worker startWatch()", () => {
     }));
   });
 
-  // Acceptance: startWatch passes tsc options to createContext
-  it("passes tsc options to esbuildCtx.createContext", async () => {
+  // Acceptance: startWatch passes tsc options to createContext with worker plugin
+  it("passes worker bundle plugin and tsc plugin to esbuildCtx.createContext", async () => {
     await workerFns["startWatch"]({
       ...watchInfo,
       output: { js: true, dts: true, env: "node" as any, includeTests: true },
@@ -708,7 +719,10 @@ describe("server-build.worker startWatch()", () => {
 
     expect(esbuild.context).toHaveBeenCalledWith(
       expect.objectContaining({
-        plugins: [mockTscPlugin.plugin],
+        plugins: [
+          expect.objectContaining({ name: "sd-worker-bundle" }),
+          mockTscPlugin.plugin,
+        ],
       }),
     );
   });

@@ -351,7 +351,7 @@ describe("createContext — tsc plugin", () => {
     await dispose();
   });
 
-  it("includes tsc plugin in esbuild context when tsc options provided", async () => {
+  it("includes worker bundle plugin and tsc plugin when tsc options provided", async () => {
     await createContext({
       ...baseOptions,
       tsc: { cwd: "/workspace", output: { dts: true } },
@@ -359,17 +359,22 @@ describe("createContext — tsc plugin", () => {
 
     expect(esbuild.context).toHaveBeenCalledWith(
       expect.objectContaining({
-        plugins: [mockTscPlugin.plugin],
+        plugins: [
+          expect.objectContaining({ name: "sd-worker-bundle" }),
+          mockTscPlugin.plugin,
+        ],
       }),
     );
   });
 
-  it("creates esbuild context without plugins when no tsc options and no existing plugin", async () => {
+  it("includes worker bundle plugin only when no tsc options", async () => {
     await createContext(baseOptions);
 
     expect(esbuild.context).toHaveBeenCalledWith(
       expect.objectContaining({
-        plugins: [],
+        plugins: [
+          expect.objectContaining({ name: "sd-worker-bundle" }),
+        ],
       }),
     );
   });
@@ -389,7 +394,10 @@ describe("createContext — tsc plugin", () => {
 
     expect(esbuild.context).toHaveBeenCalledWith(
       expect.objectContaining({
-        plugins: [mockTscPlugin.plugin],
+        plugins: [
+          expect.objectContaining({ name: "sd-worker-bundle" }),
+          mockTscPlugin.plugin,
+        ],
       }),
     );
   });

@@ -10,6 +10,7 @@ import { createTscPlugin, type TscPluginResult } from "../esbuild/esbuild-tsc-pl
 import type { TypecheckEnv } from "../utils/tsconfig";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
+import { createWorkerBundlePlugin } from "../esbuild/esbuild-worker-plugin";
 
 /**
  * esbuild watch context 생성 옵션
@@ -62,9 +63,10 @@ export async function createContext(options: EsbuildContextOptions): Promise<voi
     dev: true,
   });
 
+  const workerPlugin = createWorkerBundlePlugin();
   context = await esbuild.context({
     ...baseOptions,
-    plugins: tscPlugin != null ? [tscPlugin.plugin] : [],
+    plugins: tscPlugin != null ? [workerPlugin, tscPlugin.plugin] : [workerPlugin],
     metafile: true,
     write: false,
   });

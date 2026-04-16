@@ -18,6 +18,7 @@ import {
 import { collectAllExternals, generateProductionFiles } from "../deps/server-externals/server-production-files";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import { createTscPlugin } from "../esbuild/esbuild-tsc-plugin";
+import { createWorkerBundlePlugin } from "../esbuild/esbuild-worker-plugin";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import { buildWatchPaths } from "./build-watch-paths";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
@@ -140,7 +141,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
     // 외부 모듈 수집
-    const external = collectAllExternals(info.pkgDir, info.externals);
+    const { bundleExternals, prodDependencies } = collectAllExternals(info.pkgDir, info.externals);
 
     let jsResult: { success: boolean; errors?: string[]; warnings?: string[] };
     let tscErrors: string[];
@@ -162,10 +163,10 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
         pkgDir: info.pkgDir,
         entryPoints,
         env: info.env,
-        external,
+        external: bundleExternals,
       });
 
-      jsResult = await esbuild.build({ ...esbuildOptions, plugins: [tscPlugin.plugin] })
+      jsResult = await esbuild.build({ ...esbuildOptions, plugins: [createWorkerBundlePlugin(), tscPlugin.plugin] })
         .then(async (result) => {
           if (result.outputFiles) {
             await writeChangedOutputFiles(result.outputFiles);
@@ -212,7 +213,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 
       await copyPublicFiles(info.pkgDir, false);
 
-      generateProductionFiles(info, external);
+      generateProductionFiles(info, prodDependencies);
     }
 
     const allErrors = [...(jsResult.errors ?? []), ...tscErrors];
@@ -310,7 +311,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
     // 외부 모듈 수집 (watch 모드용 — watch manager가 자체 캐시를 유지)
-    const cachedExternal = collectAllExternals(info.pkgDir, info.externals);
+    const { bundleExternals: cachedExternal } = collectAllExternals(info.pkgDir, info.externals);
 
     // esbuild 컨텍스트 생성 (JS 출력 필요 시, tsc 플러그인 포함)
     if (info.output.js) {

@@ -59,7 +59,7 @@ export async function startServerWatchLoop(config: ServerWatchLoopConfig): Promi
           c.path.endsWith("package.json"),
         );
         if (hasPackageJsonChange) {
-          cachedExternal = collectAllExternals(info.pkgDir, info.externals);
+          cachedExternal = collectAllExternals(info.pkgDir, info.externals).bundleExternals;
         }
 
         if (info.output.js) {

@@ -7,6 +7,7 @@ import {
   contentChildren,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   signal,
@@ -16,6 +17,8 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
+import type { SafeHtml } from "@angular/platform-browser";
+import { DomSanitizer } from "@angular/platform-browser";
 import { SdDropdown } from "../dropdown/sd-dropdown";
 import { SdDropdownPopup } from "../dropdown/sd-dropdown-popup";
 import { SdSelectItem } from "./sd-select-item";
@@ -283,7 +286,9 @@ export class SdSelect<M extends "single" | "multi", T> {
   _beforeTpl = contentChild<TemplateRef<void>>("beforeTpl");
   _itemOfTpl = contentChild(SdItemOfTemplate, { read: TemplateRef });
 
-  _selectedItemContentHTML = signal<string | undefined>(undefined);
+  private readonly _sanitizer = inject(DomSanitizer);
+
+  _selectedItemContentHTML = signal<SafeHtml | undefined>(undefined);
 
   _flatItems = computed(() => {
     const items = this.items();
@@ -409,7 +414,9 @@ export class SdSelect<M extends "single" | "multi", T> {
           }
         }
         if (htmlParts.length > 0) {
-          this._selectedItemContentHTML.set(htmlParts.join(separator));
+          this._selectedItemContentHTML.set(
+            this._sanitizer.bypassSecurityTrustHtml(htmlParts.join(separator)),
+          );
         } else {
           this._selectedItemContentHTML.set(undefined);
         }
@@ -420,7 +427,7 @@ export class SdSelect<M extends "single" | "multi", T> {
       if (selectedItem != null) {
         const html = selectedItem.contentHTML();
         if (html !== "") {
-          this._selectedItemContentHTML.set(html);
+          this._selectedItemContentHTML.set(this._sanitizer.bypassSecurityTrustHtml(html));
         } else {
           this._selectedItemContentHTML.set(undefined);
         }
